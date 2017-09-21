@@ -1,0 +1,194 @@
+﻿
+CodeWalker todo list
+
+
+update readme!!!
+
+
+---[General bugs]---
+
+bug: crash on device suspended (alt-tab...)
+bug: crash when other folders present. maybe whitelist folders instead of blacklist!
+bug: attach extensions to bones...
+bug: delete button on toolbar not enabling when it should
+bug: [FIXED?] empty .ynd (+.ymap?) files being saved when they should not be empty, project path problem?
+bug: editing world-loaded ymaps won't revert changes after closing project
+
+
+---[General features]---
+
+RPF explorer - bulk export metadata files as XML
+
+
+
+---[UI stuff]---
+
+show areas/zones with their names? popzone etc
+world view grid option?
+
+
+---[Editor stuff]---
+
+delete key - delete item!
+
+add entities with preview... asset browser
+undo add/delete entities, cargens, path nodes
+copy entity extensions when copying entities!
+
+Path editor: fix: linking to another .ynd in the project
+Path editor: fix: update links in other .ynd's when deleting vanilla nodes, add other ynd's to project
+Path editor: remap nodes to correct area/.ynd
+
+Nav mesh editor (YNV)
+Interior entities editor (YTYP)
+Archetype extension editor (YTYP)
+Entity extension editor
+Time cycle mod editor
+Grass editor
+Distant lod lights editor
+Mlo instance editor
+Water quads editor
+Collision editor (YBN)
+Timecycle/weather XML editor
+
+load/convert/save map editor / menyoo xml files, fiveM json files, etc...
+
+
+
+---[Rendering stuff]---
+
+
+model view - improve .ynv rendering (portals etc)
+model view - YPT particles - animate particles? do more work on format?
+
+mapDataGroups - how to isolate one of the grouped ymaps? eg destruction etc.
+entitySets - like mapDataGroups but for interiors..... in Mlo data?
+
+fix LOD switching
+fix decal ordering?
+fix glass/water render order issues
+fix ferris wheel LOD
+
+Improve shadow cascades configurability
+
+Finish water rendering - refraction,reflections
+
+show/hide selection models/geometries - apply not only to selection? - remember setting
+select by geometry bounds? (select sub item) - partially built
+
+vehicles - fix texturing and wheels
+
+vertex colours/normals/texcoords display for billboards?
+
+save rotation and zoom for switching model to world view?
+
+
+
+
+---[Game files stuff]---
+
+animations - wind farm / ferris wheel / UFOs... - .ycd files!! 
+use the base game .meta files to determine which rpf's to load: total conversions
+correct moon dir, wobble etc, (timecycle: http://gtaforums.com/topic/830567-v-timecycle-documentation )
+Audio stuff - do more work on .rel format  (see https://github.com/CamxxCore/RageAudioTool )
+
+
+
+
+
+
+
+
+---------------------------
+done:
+
+
+[v.26]
+Scenario editor (YMT)
+RPF Explorer first edition (OpenIV-style)
+Model Viewer window - YDR, YDD, YFT, YBN, YNV, YPT
+View YTD, GXT2, FXC, REL, AWC, YWR, YVR files
+Metadata>XML - YMT, YMAP, YTYP, CUT etc files (Meta/PSO/RBF)
+Collision detection / physics - shoot eggs
+First-person mode (press P / Start)
+XBOX controller support
+
+
+
+[v.25]
+entity hierarchy display in selection info window
+entity/archetype search window
+ydd drawable names replace hashes (mostly)
+resize side panel
+Path editor: bug: unhandled exceptions for UpDown values (delete existing node / insert invalid value)
+Path editor improvements - path links display
+open/view scenario .YMT files
+
+
+
+[v.24]
+Path editor: bug: unhandled exceptions for UpDown values (delete existing node / insert invalid value)
+edit entity pivot position/orientation
+open/view .YNV files
+bug: weather stuff not loading from update.rpf when it should - also try load clouds.xml etc from update.rpf?
+bug: paths not shown at all in ymap view... (paths in the current project should!)
+bug: mouse ray in 2D map mode! (widgets, mouse select broken)
+depth clip option for paths!
+Render nav mesh (YNV)
+Train path editor
+jenkInd can now load additional strings from text files
+PropertyGrid fix for Win10 creator update
+
+
+[v.23]
+shift key while transforming... clone object!
+Paths editor (YND) - see also junctions.xml, junctions.pso, popgroups.ymt
+Edit car generators
+JenkInd form
+render collisions for map mods
+hold shift while moving to clone objects.
+
+
+[v.22]
+render moon 
+fix bug: interior entities disappearing when selected
+fix bug: project window: ymaps in different path to project
+keys to change movement speed for users without mousewheel
+configure all key bindings
+mouse sensitivity/smoothing settings
+export search results list from rpf browser
+automatic cache building for custom DLCs without cache files.
+select extensions, tc mods, cargens, grass, distant lod lights, mlo instances, waterquads, collisions, paths
+(fixed) water quads -> water triangles
+(fixed?) bug in GameFileCache causing things to unload repeatedly after stress
+don't capture keystrokes in comboboxes..
+
+[v.21]
+support unencrypted files
+setting for maximized window
+vehicle shaders
+add main toolbar
+project window: add multiple ymaps at once
+copy/paste entities
+finish DLC/updates loading
+Map view - XY orthographic, drag to pan instead of rotate..
+
+[v.20]
+selection xyz widget + draggable version for movement
+move selection... 
+save ymap files...
+display camera position/orientation/(+zoom?) somewhere for copy/pasta 
+render cloth (properly - texcoords - different vertex format) 
+model mode: current model details in selection info
+
+[v.18]
+HDR rendering
+Emissive rendering
+Light direction control / time of day? Moonlight?
+fix golf course and beach terrain
+load mods folder last? (DLC mode)
+render bounds mode - render ybn meshes and shapes
+render orphan entities - render highest to lowest..? ymt based?
+render cables
+exclude folders from search
+finish vertex colours/texcoords display for basic shader
