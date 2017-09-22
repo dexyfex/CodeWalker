@@ -28,17 +28,23 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProjectForm));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.ProjectTreeView = new System.Windows.Forms.TreeView();
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.ProjectTabPage = new System.Windows.Forms.TabPage();
             this.ProjectPanel = new System.Windows.Forms.Panel();
+            this.ProjectTabControl = new System.Windows.Forms.TabControl();
+            this.ProjectGeneralTabPage = new System.Windows.Forms.TabPage();
+            this.ProjectNameTextBox = new System.Windows.Forms.TextBox();
             this.ProjectHideMapCheckBox = new System.Windows.Forms.CheckBox();
+            this.ProjectVersionLabel = new System.Windows.Forms.Label();
             this.ProjectShowEntitiesCheckBox = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.ProjectVersionLabel = new System.Windows.Forms.Label();
-            this.ProjectNameTextBox = new System.Windows.Forms.TextBox();
+            this.ProjectManifestTabPage = new System.Windows.Forms.TabPage();
+            this.ProjectManifestGenerateButton = new System.Windows.Forms.Button();
+            this.ProjectManifestTextBox = new FastColoredTextBoxNS.FastColoredTextBox();
             this.YmapTabPage = new System.Windows.Forms.TabPage();
             this.YmapTabControl = new System.Windows.Forms.TabControl();
             this.YmapYmapTabPage = new System.Windows.Forms.TabPage();
@@ -434,6 +440,10 @@
             this.ScenarioEntityTabPage = new System.Windows.Forms.TabPage();
             this.ScenarioEntityDeleteButton = new System.Windows.Forms.Button();
             this.ScenarioEntityPanel = new System.Windows.Forms.Panel();
+            this.label160 = new System.Windows.Forms.Label();
+            this.ScenarioEntityAddPointButton = new System.Windows.Forms.Button();
+            this.label161 = new System.Windows.Forms.Label();
+            this.ScenarioEntityPointsListBox = new System.Windows.Forms.ListBox();
             this.ScenarioEntityInfoLabel = new System.Windows.Forms.Label();
             this.label114 = new System.Windows.Forms.Label();
             this.ScenarioEntityUnk2UpDown = new System.Windows.Forms.NumericUpDown();
@@ -538,6 +548,10 @@
             this.ScenarioClusterAddToProjectButton = new System.Windows.Forms.Button();
             this.ScenarioClusterCheckBox = new System.Windows.Forms.CheckBox();
             this.ScenarioClusterPanel = new System.Windows.Forms.Panel();
+            this.label159 = new System.Windows.Forms.Label();
+            this.ScenarioClusterAddPointButton = new System.Windows.Forms.Button();
+            this.label158 = new System.Windows.Forms.Label();
+            this.ScenarioClusterPointsListBox = new System.Windows.Forms.ListBox();
             this.ScenarioClusterRadiusTextBox = new System.Windows.Forms.TextBox();
             this.label157 = new System.Windows.Forms.Label();
             this.ScenarioClusterUnk2CheckBox = new System.Windows.Forms.CheckBox();
@@ -647,16 +661,11 @@
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.ScenarioAddToProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ScenarioRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.OptionsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.OptionsHideGTAVMapMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.ScenarioClusterPointsListBox = new System.Windows.Forms.ListBox();
-            this.label158 = new System.Windows.Forms.Label();
-            this.ScenarioClusterAddPointButton = new System.Windows.Forms.Button();
-            this.label159 = new System.Windows.Forms.Label();
-            this.label160 = new System.Windows.Forms.Label();
-            this.ScenarioEntityAddPointButton = new System.Windows.Forms.Button();
-            this.label161 = new System.Windows.Forms.Label();
-            this.ScenarioEntityPointsListBox = new System.Windows.Forms.ListBox();
+            this.label162 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -664,6 +673,10 @@
             this.MainTabControl.SuspendLayout();
             this.ProjectTabPage.SuspendLayout();
             this.ProjectPanel.SuspendLayout();
+            this.ProjectTabControl.SuspendLayout();
+            this.ProjectGeneralTabPage.SuspendLayout();
+            this.ProjectManifestTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.ProjectManifestTextBox)).BeginInit();
             this.YmapTabPage.SuspendLayout();
             this.YmapTabControl.SuspendLayout();
             this.YmapYmapTabPage.SuspendLayout();
@@ -866,21 +879,55 @@
             this.ProjectPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ProjectPanel.Controls.Add(this.ProjectHideMapCheckBox);
-            this.ProjectPanel.Controls.Add(this.ProjectShowEntitiesCheckBox);
-            this.ProjectPanel.Controls.Add(this.label1);
-            this.ProjectPanel.Controls.Add(this.ProjectVersionLabel);
-            this.ProjectPanel.Controls.Add(this.ProjectNameTextBox);
+            this.ProjectPanel.Controls.Add(this.ProjectTabControl);
             this.ProjectPanel.Enabled = false;
             this.ProjectPanel.Location = new System.Drawing.Point(0, 0);
             this.ProjectPanel.Name = "ProjectPanel";
             this.ProjectPanel.Size = new System.Drawing.Size(521, 472);
             this.ProjectPanel.TabIndex = 3;
             // 
+            // ProjectTabControl
+            // 
+            this.ProjectTabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ProjectTabControl.Controls.Add(this.ProjectGeneralTabPage);
+            this.ProjectTabControl.Controls.Add(this.ProjectManifestTabPage);
+            this.ProjectTabControl.Location = new System.Drawing.Point(0, 3);
+            this.ProjectTabControl.Name = "ProjectTabControl";
+            this.ProjectTabControl.SelectedIndex = 0;
+            this.ProjectTabControl.Size = new System.Drawing.Size(518, 469);
+            this.ProjectTabControl.TabIndex = 26;
+            // 
+            // ProjectGeneralTabPage
+            // 
+            this.ProjectGeneralTabPage.Controls.Add(this.ProjectNameTextBox);
+            this.ProjectGeneralTabPage.Controls.Add(this.ProjectHideMapCheckBox);
+            this.ProjectGeneralTabPage.Controls.Add(this.ProjectVersionLabel);
+            this.ProjectGeneralTabPage.Controls.Add(this.ProjectShowEntitiesCheckBox);
+            this.ProjectGeneralTabPage.Controls.Add(this.label1);
+            this.ProjectGeneralTabPage.Location = new System.Drawing.Point(4, 22);
+            this.ProjectGeneralTabPage.Name = "ProjectGeneralTabPage";
+            this.ProjectGeneralTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.ProjectGeneralTabPage.Size = new System.Drawing.Size(510, 443);
+            this.ProjectGeneralTabPage.TabIndex = 0;
+            this.ProjectGeneralTabPage.Text = "General";
+            this.ProjectGeneralTabPage.UseVisualStyleBackColor = true;
+            // 
+            // ProjectNameTextBox
+            // 
+            this.ProjectNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ProjectNameTextBox.Location = new System.Drawing.Point(82, 16);
+            this.ProjectNameTextBox.Name = "ProjectNameTextBox";
+            this.ProjectNameTextBox.Size = new System.Drawing.Size(265, 20);
+            this.ProjectNameTextBox.TabIndex = 1;
+            this.ProjectNameTextBox.TextChanged += new System.EventHandler(this.ProjectNameTextBox_TextChanged);
+            // 
             // ProjectHideMapCheckBox
             // 
             this.ProjectHideMapCheckBox.AutoSize = true;
-            this.ProjectHideMapCheckBox.Location = new System.Drawing.Point(69, 116);
+            this.ProjectHideMapCheckBox.Location = new System.Drawing.Point(82, 123);
             this.ProjectHideMapCheckBox.Name = "ProjectHideMapCheckBox";
             this.ProjectHideMapCheckBox.Size = new System.Drawing.Size(103, 17);
             this.ProjectHideMapCheckBox.TabIndex = 25;
@@ -888,12 +935,22 @@
             this.ProjectHideMapCheckBox.UseVisualStyleBackColor = true;
             this.ProjectHideMapCheckBox.CheckedChanged += new System.EventHandler(this.ProjectHideMapCheckBox_CheckedChanged);
             // 
+            // ProjectVersionLabel
+            // 
+            this.ProjectVersionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ProjectVersionLabel.AutoSize = true;
+            this.ProjectVersionLabel.Location = new System.Drawing.Point(375, 19);
+            this.ProjectVersionLabel.Name = "ProjectVersionLabel";
+            this.ProjectVersionLabel.Size = new System.Drawing.Size(51, 13);
+            this.ProjectVersionLabel.TabIndex = 2;
+            this.ProjectVersionLabel.Text = "Version: -";
+            // 
             // ProjectShowEntitiesCheckBox
             // 
             this.ProjectShowEntitiesCheckBox.AutoSize = true;
             this.ProjectShowEntitiesCheckBox.Checked = true;
             this.ProjectShowEntitiesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ProjectShowEntitiesCheckBox.Location = new System.Drawing.Point(69, 93);
+            this.ProjectShowEntitiesCheckBox.Location = new System.Drawing.Point(82, 100);
             this.ProjectShowEntitiesCheckBox.Name = "ProjectShowEntitiesCheckBox";
             this.ProjectShowEntitiesCheckBox.Size = new System.Drawing.Size(156, 17);
             this.ProjectShowEntitiesCheckBox.TabIndex = 24;
@@ -904,31 +961,73 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 12);
+            this.label1.Location = new System.Drawing.Point(19, 19);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(38, 13);
             this.label1.TabIndex = 0;
             this.label1.Text = "Name:";
             // 
-            // ProjectVersionLabel
+            // ProjectManifestTabPage
             // 
-            this.ProjectVersionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ProjectVersionLabel.AutoSize = true;
-            this.ProjectVersionLabel.Location = new System.Drawing.Point(359, 12);
-            this.ProjectVersionLabel.Name = "ProjectVersionLabel";
-            this.ProjectVersionLabel.Size = new System.Drawing.Size(51, 13);
-            this.ProjectVersionLabel.TabIndex = 2;
-            this.ProjectVersionLabel.Text = "Version: -";
+            this.ProjectManifestTabPage.Controls.Add(this.label162);
+            this.ProjectManifestTabPage.Controls.Add(this.ProjectManifestGenerateButton);
+            this.ProjectManifestTabPage.Controls.Add(this.ProjectManifestTextBox);
+            this.ProjectManifestTabPage.Location = new System.Drawing.Point(4, 22);
+            this.ProjectManifestTabPage.Name = "ProjectManifestTabPage";
+            this.ProjectManifestTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.ProjectManifestTabPage.Size = new System.Drawing.Size(510, 443);
+            this.ProjectManifestTabPage.TabIndex = 1;
+            this.ProjectManifestTabPage.Text = "Manifest";
+            this.ProjectManifestTabPage.UseVisualStyleBackColor = true;
             // 
-            // ProjectNameTextBox
+            // ProjectManifestGenerateButton
             // 
-            this.ProjectNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.ProjectManifestGenerateButton.Location = new System.Drawing.Point(6, 6);
+            this.ProjectManifestGenerateButton.Name = "ProjectManifestGenerateButton";
+            this.ProjectManifestGenerateButton.Size = new System.Drawing.Size(75, 23);
+            this.ProjectManifestGenerateButton.TabIndex = 1;
+            this.ProjectManifestGenerateButton.Text = "Generate";
+            this.ProjectManifestGenerateButton.UseVisualStyleBackColor = true;
+            this.ProjectManifestGenerateButton.Click += new System.EventHandler(this.ProjectManifestGenerateButton_Click);
+            // 
+            // ProjectManifestTextBox
+            // 
+            this.ProjectManifestTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ProjectNameTextBox.Location = new System.Drawing.Point(69, 9);
-            this.ProjectNameTextBox.Name = "ProjectNameTextBox";
-            this.ProjectNameTextBox.Size = new System.Drawing.Size(262, 20);
-            this.ProjectNameTextBox.TabIndex = 1;
-            this.ProjectNameTextBox.TextChanged += new System.EventHandler(this.ProjectNameTextBox_TextChanged);
+            this.ProjectManifestTextBox.AutoCompleteBracketsList = new char[] {
+        '(',
+        ')',
+        '{',
+        '}',
+        '[',
+        ']',
+        '\"',
+        '\"',
+        '\'',
+        '\''};
+            this.ProjectManifestTextBox.AutoIndentCharsPatterns = "";
+            this.ProjectManifestTextBox.AutoScrollMinSize = new System.Drawing.Size(27, 14);
+            this.ProjectManifestTextBox.BackBrush = null;
+            this.ProjectManifestTextBox.CharHeight = 14;
+            this.ProjectManifestTextBox.CharWidth = 8;
+            this.ProjectManifestTextBox.CommentPrefix = null;
+            this.ProjectManifestTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.ProjectManifestTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.ProjectManifestTextBox.IsReplaceMode = false;
+            this.ProjectManifestTextBox.Language = FastColoredTextBoxNS.Language.XML;
+            this.ProjectManifestTextBox.LeftBracket = '<';
+            this.ProjectManifestTextBox.LeftBracket2 = '(';
+            this.ProjectManifestTextBox.Location = new System.Drawing.Point(3, 35);
+            this.ProjectManifestTextBox.Name = "ProjectManifestTextBox";
+            this.ProjectManifestTextBox.Paddings = new System.Windows.Forms.Padding(0);
+            this.ProjectManifestTextBox.RightBracket = '>';
+            this.ProjectManifestTextBox.RightBracket2 = ')';
+            this.ProjectManifestTextBox.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
+            this.ProjectManifestTextBox.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("ProjectManifestTextBox.ServiceColors")));
+            this.ProjectManifestTextBox.Size = new System.Drawing.Size(504, 408);
+            this.ProjectManifestTextBox.TabIndex = 0;
+            this.ProjectManifestTextBox.Zoom = 100;
             // 
             // YmapTabPage
             // 
@@ -5461,6 +5560,47 @@
             this.ScenarioEntityPanel.Size = new System.Drawing.Size(510, 414);
             this.ScenarioEntityPanel.TabIndex = 8;
             // 
+            // label160
+            // 
+            this.label160.AutoSize = true;
+            this.label160.Location = new System.Drawing.Point(332, 160);
+            this.label160.Name = "label160";
+            this.label160.Size = new System.Drawing.Size(141, 13);
+            this.label160.TabIndex = 20;
+            this.label160.Text = "(Double-click to select point)";
+            // 
+            // ScenarioEntityAddPointButton
+            // 
+            this.ScenarioEntityAddPointButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.ScenarioEntityAddPointButton.Location = new System.Drawing.Point(91, 347);
+            this.ScenarioEntityAddPointButton.Name = "ScenarioEntityAddPointButton";
+            this.ScenarioEntityAddPointButton.Size = new System.Drawing.Size(90, 23);
+            this.ScenarioEntityAddPointButton.TabIndex = 19;
+            this.ScenarioEntityAddPointButton.Text = "Add Point";
+            this.ScenarioEntityAddPointButton.UseVisualStyleBackColor = true;
+            this.ScenarioEntityAddPointButton.Click += new System.EventHandler(this.ScenarioEntityAddPointButton_Click);
+            // 
+            // label161
+            // 
+            this.label161.AutoSize = true;
+            this.label161.Location = new System.Drawing.Point(42, 160);
+            this.label161.Name = "label161";
+            this.label161.Size = new System.Drawing.Size(39, 13);
+            this.label161.TabIndex = 18;
+            this.label161.Text = "Points:";
+            // 
+            // ScenarioEntityPointsListBox
+            // 
+            this.ScenarioEntityPointsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ScenarioEntityPointsListBox.FormattingEnabled = true;
+            this.ScenarioEntityPointsListBox.Location = new System.Drawing.Point(91, 158);
+            this.ScenarioEntityPointsListBox.Name = "ScenarioEntityPointsListBox";
+            this.ScenarioEntityPointsListBox.Size = new System.Drawing.Size(235, 173);
+            this.ScenarioEntityPointsListBox.TabIndex = 17;
+            this.ScenarioEntityPointsListBox.DoubleClick += new System.EventHandler(this.ScenarioEntityPointsListBox_DoubleClick);
+            // 
             // ScenarioEntityInfoLabel
             // 
             this.ScenarioEntityInfoLabel.AutoSize = true;
@@ -6668,6 +6808,47 @@
             this.ScenarioClusterPanel.Size = new System.Drawing.Size(510, 415);
             this.ScenarioClusterPanel.TabIndex = 4;
             // 
+            // label159
+            // 
+            this.label159.AutoSize = true;
+            this.label159.Location = new System.Drawing.Point(341, 150);
+            this.label159.Name = "label159";
+            this.label159.Size = new System.Drawing.Size(141, 13);
+            this.label159.TabIndex = 16;
+            this.label159.Text = "(Double-click to select point)";
+            // 
+            // ScenarioClusterAddPointButton
+            // 
+            this.ScenarioClusterAddPointButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.ScenarioClusterAddPointButton.Location = new System.Drawing.Point(100, 337);
+            this.ScenarioClusterAddPointButton.Name = "ScenarioClusterAddPointButton";
+            this.ScenarioClusterAddPointButton.Size = new System.Drawing.Size(90, 23);
+            this.ScenarioClusterAddPointButton.TabIndex = 15;
+            this.ScenarioClusterAddPointButton.Text = "Add Point";
+            this.ScenarioClusterAddPointButton.UseVisualStyleBackColor = true;
+            this.ScenarioClusterAddPointButton.Click += new System.EventHandler(this.ScenarioClusterAddPointButton_Click);
+            // 
+            // label158
+            // 
+            this.label158.AutoSize = true;
+            this.label158.Location = new System.Drawing.Point(51, 150);
+            this.label158.Name = "label158";
+            this.label158.Size = new System.Drawing.Size(39, 13);
+            this.label158.TabIndex = 14;
+            this.label158.Text = "Points:";
+            // 
+            // ScenarioClusterPointsListBox
+            // 
+            this.ScenarioClusterPointsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ScenarioClusterPointsListBox.FormattingEnabled = true;
+            this.ScenarioClusterPointsListBox.Location = new System.Drawing.Point(100, 148);
+            this.ScenarioClusterPointsListBox.Name = "ScenarioClusterPointsListBox";
+            this.ScenarioClusterPointsListBox.Size = new System.Drawing.Size(235, 173);
+            this.ScenarioClusterPointsListBox.TabIndex = 13;
+            this.ScenarioClusterPointsListBox.DoubleClick += new System.EventHandler(this.ScenarioClusterPointsListBox_DoubleClick);
+            // 
             // ScenarioClusterRadiusTextBox
             // 
             this.ScenarioClusterRadiusTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -7224,7 +7405,8 @@
             this.YndMenu,
             this.YnvMenu,
             this.TrainsMenu,
-            this.ScenarioMenu});
+            this.ScenarioMenu,
+            this.OptionsMenu});
             this.TopMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.TopMenuStrip.Name = "TopMenuStrip";
             this.TopMenuStrip.Size = new System.Drawing.Size(776, 24);
@@ -7727,6 +7909,21 @@
             this.ScenarioRemoveFromProjectMenu.Text = "Remove from Project";
             this.ScenarioRemoveFromProjectMenu.Click += new System.EventHandler(this.ScenarioRemoveFromProjectMenu_Click);
             // 
+            // OptionsMenu
+            // 
+            this.OptionsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.OptionsHideGTAVMapMenu});
+            this.OptionsMenu.Name = "OptionsMenu";
+            this.OptionsMenu.Size = new System.Drawing.Size(61, 20);
+            this.OptionsMenu.Text = "Options";
+            // 
+            // OptionsHideGTAVMapMenu
+            // 
+            this.OptionsHideGTAVMapMenu.Name = "OptionsHideGTAVMapMenu";
+            this.OptionsHideGTAVMapMenu.Size = new System.Drawing.Size(157, 22);
+            this.OptionsHideGTAVMapMenu.Text = "Hide GTAV map";
+            this.OptionsHideGTAVMapMenu.Click += new System.EventHandler(this.OptionsHideGTAVMapMenu_Click);
+            // 
             // SaveFileDialog
             // 
             this.SaveFileDialog.Filter = "CodeWalker Projects|*.cwproj";
@@ -7735,87 +7932,14 @@
             // 
             this.OpenFileDialog.Filter = "CodeWalker Projects|*.cwproj";
             // 
-            // ScenarioClusterPointsListBox
+            // label162
             // 
-            this.ScenarioClusterPointsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioClusterPointsListBox.FormattingEnabled = true;
-            this.ScenarioClusterPointsListBox.Location = new System.Drawing.Point(100, 148);
-            this.ScenarioClusterPointsListBox.Name = "ScenarioClusterPointsListBox";
-            this.ScenarioClusterPointsListBox.Size = new System.Drawing.Size(235, 173);
-            this.ScenarioClusterPointsListBox.TabIndex = 13;
-            this.ScenarioClusterPointsListBox.DoubleClick += new System.EventHandler(this.ScenarioClusterPointsListBox_DoubleClick);
-            // 
-            // label158
-            // 
-            this.label158.AutoSize = true;
-            this.label158.Location = new System.Drawing.Point(51, 150);
-            this.label158.Name = "label158";
-            this.label158.Size = new System.Drawing.Size(39, 13);
-            this.label158.TabIndex = 14;
-            this.label158.Text = "Points:";
-            // 
-            // ScenarioClusterAddPointButton
-            // 
-            this.ScenarioClusterAddPointButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.ScenarioClusterAddPointButton.Location = new System.Drawing.Point(100, 337);
-            this.ScenarioClusterAddPointButton.Name = "ScenarioClusterAddPointButton";
-            this.ScenarioClusterAddPointButton.Size = new System.Drawing.Size(90, 23);
-            this.ScenarioClusterAddPointButton.TabIndex = 15;
-            this.ScenarioClusterAddPointButton.Text = "Add Point";
-            this.ScenarioClusterAddPointButton.UseVisualStyleBackColor = true;
-            this.ScenarioClusterAddPointButton.Click += new System.EventHandler(this.ScenarioClusterAddPointButton_Click);
-            // 
-            // label159
-            // 
-            this.label159.AutoSize = true;
-            this.label159.Location = new System.Drawing.Point(341, 150);
-            this.label159.Name = "label159";
-            this.label159.Size = new System.Drawing.Size(141, 13);
-            this.label159.TabIndex = 16;
-            this.label159.Text = "(Double-click to select point)";
-            // 
-            // label160
-            // 
-            this.label160.AutoSize = true;
-            this.label160.Location = new System.Drawing.Point(332, 160);
-            this.label160.Name = "label160";
-            this.label160.Size = new System.Drawing.Size(141, 13);
-            this.label160.TabIndex = 20;
-            this.label160.Text = "(Double-click to select point)";
-            // 
-            // ScenarioEntityAddPointButton
-            // 
-            this.ScenarioEntityAddPointButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.ScenarioEntityAddPointButton.Location = new System.Drawing.Point(91, 347);
-            this.ScenarioEntityAddPointButton.Name = "ScenarioEntityAddPointButton";
-            this.ScenarioEntityAddPointButton.Size = new System.Drawing.Size(90, 23);
-            this.ScenarioEntityAddPointButton.TabIndex = 19;
-            this.ScenarioEntityAddPointButton.Text = "Add Point";
-            this.ScenarioEntityAddPointButton.UseVisualStyleBackColor = true;
-            this.ScenarioEntityAddPointButton.Click += new System.EventHandler(this.ScenarioEntityAddPointButton_Click);
-            // 
-            // label161
-            // 
-            this.label161.AutoSize = true;
-            this.label161.Location = new System.Drawing.Point(42, 160);
-            this.label161.Name = "label161";
-            this.label161.Size = new System.Drawing.Size(39, 13);
-            this.label161.TabIndex = 18;
-            this.label161.Text = "Points:";
-            // 
-            // ScenarioEntityPointsListBox
-            // 
-            this.ScenarioEntityPointsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioEntityPointsListBox.FormattingEnabled = true;
-            this.ScenarioEntityPointsListBox.Location = new System.Drawing.Point(91, 158);
-            this.ScenarioEntityPointsListBox.Name = "ScenarioEntityPointsListBox";
-            this.ScenarioEntityPointsListBox.Size = new System.Drawing.Size(235, 173);
-            this.ScenarioEntityPointsListBox.TabIndex = 17;
-            this.ScenarioEntityPointsListBox.DoubleClick += new System.EventHandler(this.ScenarioEntityPointsListBox_DoubleClick);
+            this.label162.AutoSize = true;
+            this.label162.Location = new System.Drawing.Point(99, 11);
+            this.label162.Name = "label162";
+            this.label162.Size = new System.Drawing.Size(111, 13);
+            this.label162.TabIndex = 2;
+            this.label162.Text = "XML for _manifest.ymf";
             // 
             // ProjectForm
             // 
@@ -7837,7 +7961,12 @@
             this.MainTabControl.ResumeLayout(false);
             this.ProjectTabPage.ResumeLayout(false);
             this.ProjectPanel.ResumeLayout(false);
-            this.ProjectPanel.PerformLayout();
+            this.ProjectTabControl.ResumeLayout(false);
+            this.ProjectGeneralTabPage.ResumeLayout(false);
+            this.ProjectGeneralTabPage.PerformLayout();
+            this.ProjectManifestTabPage.ResumeLayout(false);
+            this.ProjectManifestTabPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.ProjectManifestTextBox)).EndInit();
             this.YmapTabPage.ResumeLayout(false);
             this.YmapTabControl.ResumeLayout(false);
             this.YmapYmapTabPage.ResumeLayout(false);
@@ -8648,5 +8777,13 @@
         private System.Windows.Forms.Button ScenarioEntityAddPointButton;
         private System.Windows.Forms.Label label161;
         private System.Windows.Forms.ListBox ScenarioEntityPointsListBox;
+        private System.Windows.Forms.TabControl ProjectTabControl;
+        private System.Windows.Forms.TabPage ProjectGeneralTabPage;
+        private System.Windows.Forms.TabPage ProjectManifestTabPage;
+        private System.Windows.Forms.ToolStripMenuItem OptionsMenu;
+        private System.Windows.Forms.ToolStripMenuItem OptionsHideGTAVMapMenu;
+        private System.Windows.Forms.Button ProjectManifestGenerateButton;
+        private FastColoredTextBoxNS.FastColoredTextBox ProjectManifestTextBox;
+        private System.Windows.Forms.Label label162;
     }
 }

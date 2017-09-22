@@ -103,12 +103,52 @@ namespace CodeWalker.World
         public void BuildVertices()
         {
 
+            var vlist = new List<VertexTypePC>();
+            var v1 = new VertexTypePC();
+            var v2 = new VertexTypePC();
+            var v3 = new VertexTypePC();
+            var v4 = new VertexTypePC();
+
             foreach (var group in Groups.Values)
             {
+                var hash = JenkHash.GenHash(group.NameLabel.ToLowerInvariant());
+                byte cr = (byte)((hash >> 8) & 0xFF);
+                byte cg = (byte)((hash >> 16) & 0xFF);
+                byte cb = (byte)((hash >> 24) & 0xFF);
+                byte ca = 60;
+                uint cv = (uint)new Color(cr, cg, cb, ca).ToRgba();
+                v1.Colour = cv;
+                v2.Colour = cv;
+                v3.Colour = cv;
+                v4.Colour = cv;
 
+                foreach (var box in group.Boxes)
+                {
+                    var min = box.Box.Minimum;
+                    var max = box.Box.Maximum;
 
+                    v1.Position = new Vector3(min.X, min.Y, 0);
+                    v2.Position = new Vector3(max.X, min.Y, 0);
+                    v3.Position = new Vector3(min.X, max.Y, 0);
+                    v4.Position = new Vector3(max.X, max.Y, 0);
+
+                    vlist.Add(v1);
+                    vlist.Add(v2);
+                    vlist.Add(v3);
+                    vlist.Add(v3);
+                    vlist.Add(v2);
+                    vlist.Add(v4);
+                }
             }
 
+            if (vlist.Count > 0)
+            {
+                TriangleVerts = vlist.ToArray();
+            }
+            else
+            {
+                TriangleVerts = null;
+            }
 
         }
 

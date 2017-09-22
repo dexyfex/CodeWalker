@@ -915,6 +915,83 @@ namespace CodeWalker
         }
 
 
+        private void GenerateProjectManifest()
+        {
+            StringBuilder sb = new StringBuilder();
+            Dictionary<string, YtypFile> deps = new Dictionary<string, YtypFile>();
+
+            sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
+            sb.AppendLine("<CPackFileMetaData>");
+            sb.AppendLine("  <MapDataGroups/>");
+            sb.AppendLine("  <HDTxdBindingArray/>");
+            sb.AppendLine("  <imapDependencies/>");
+
+
+            if ((CurrentProjectFile != null) && (CurrentProjectFile.YmapFiles.Count > 0))
+            {
+                sb.AppendLine("  <imapDependencies_2>");
+                foreach (var ymap in CurrentProjectFile.YmapFiles)
+                {
+                    var ymapname = ymap.RpfFileEntry?.NameLower;
+                    if (string.IsNullOrEmpty(ymapname))
+                    {
+                        ymapname = ymap.Name.ToLowerInvariant();
+                    }
+                    if (ymapname.EndsWith(".ymap"))
+                    {
+                        ymapname = ymapname.Substring(0, ymapname.Length - 5);
+                    }
+
+                    deps.Clear();
+                    if (ymap.AllEntities != null)
+                    {
+                        foreach (var ent in ymap.AllEntities)
+                        {
+                            var ytyp = ent.Archetype?.Ytyp;
+                            if (ytyp != null)
+                            {
+                                var ytypname = ytyp.FileEntry?.NameLower;
+                                if (string.IsNullOrEmpty(ytypname))
+                                {
+                                    ytypname = ytyp.FileEntry?.Name?.ToLowerInvariant();
+                                    if (ytypname == null) ytypname = "";
+                                }
+                                if (ytypname.EndsWith(".ytyp"))
+                                {
+                                    ytypname = ytypname.Substring(0, ytypname.Length - 5);
+                                }
+                                deps[ytypname] = ytyp;
+                            }
+                        }
+                    }
+
+                    sb.AppendLine("    <Item>");
+                    sb.AppendLine("      <imapName>" + ymapname + "</imapName>");
+                    sb.AppendLine("      <manifestFlags/>");
+                    sb.AppendLine("      <itypDepArray>");
+                    foreach (var kvp in deps)
+                    {
+                        sb.AppendLine("        <Item>" + kvp.Key + "</Item>");
+                    }
+                    sb.AppendLine("      </itypDepArray>");
+                    sb.AppendLine("    </Item>");
+                }
+                sb.AppendLine("  </imapDependencies_2>");
+            }
+            else
+            {
+                sb.AppendLine("  <imapDependencies_2/>");
+            }
+
+            sb.AppendLine("  <itypDependencies_2/>");
+            sb.AppendLine("  <Interiors/>");
+            sb.AppendLine("</CPackFileMetaData>");
+
+            ProjectManifestTextBox.Text = sb.ToString();
+        }
+
+
+
 
         public void NewYmap()
         {
@@ -6606,6 +6683,11 @@ namespace CodeWalker
             RemoveScenarioFromProject();
         }
 
+        private void OptionsHideGTAVMapMenu_Click(object sender, EventArgs e)
+        {
+            ProjectHideMapCheckBox.Checked = !hidegtavmap;
+        }
+
 
 
 
@@ -6745,6 +6827,12 @@ namespace CodeWalker
         private void ProjectHideMapCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             hidegtavmap = ProjectHideMapCheckBox.Checked;
+            OptionsHideGTAVMapMenu.Checked = hidegtavmap;
+        }
+
+        private void ProjectManifestGenerateButton_Click(object sender, EventArgs e)
+        {
+            GenerateProjectManifest();
         }
 
 

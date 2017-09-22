@@ -6634,7 +6634,13 @@ zRotation";
         CAnchorProps = 2170383875,
         CBlockDesc = 3072355914,
         CClassNameOfItemType = 440716365, //array type for (PSO) MAP fields
+        zones = 2319609287,
+        spName = 4254542050,
 
+
+        //from rubidium
+        mpName = 2031203854,
+        zoneName = 257000,
 
 
 

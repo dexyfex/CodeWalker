@@ -182,8 +182,7 @@ namespace CodeWalker
         bool renderscenarios = false;
         List<YmtFile> renderscenariolist = new List<YmtFile>();
 
-        bool renderpopzones = true;
-        List<PopZone> renderpopzonelist = new List<PopZone>();
+        bool renderpopzones = false;
 
 
         float timeofday = 12.0f;
@@ -2031,12 +2030,19 @@ namespace CodeWalker
         {
             if (!popzones.Inited) return;
 
-            renderpopzonelist.Clear();
-            renderpopzonelist.AddRange(popzones.Groups.Values);
+            //renderpopzonelist.Clear();
+            //renderpopzonelist.AddRange(popzones.Groups.Values);
 
             if (ProjectForm != null)
             {
                 //ProjectForm.GetVisiblePopZones(camera, renderpopzonelist);
+            }
+
+
+            RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(popzones);
+            if ((rnd != null) && (rnd.IsLoaded))
+            {
+                shaders.Enqueue(rnd);
             }
 
 
@@ -8055,6 +8061,11 @@ namespace CodeWalker
         private void SelectionBoundsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             ShowSelectionBounds = SelectionBoundsCheckBox.Checked;
+        }
+
+        private void PopZonesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            renderpopzones = PopZonesCheckBox.Checked;
         }
 
         private void ToolsPanelExpandButton_Click(object sender, EventArgs e)

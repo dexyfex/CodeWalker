@@ -222,11 +222,13 @@ namespace CodeWalker
             this.ToolbarNewYmapButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarNewYndButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarNewTrainsButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarNewScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarOpenButton = new System.Windows.Forms.ToolStripSplitButton();
             this.ToolbarOpenProjectButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarOpenYmapButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarOpenYndButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarOpenTrainsButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarOpenScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSaveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
@@ -272,8 +274,7 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
-            this.ToolbarNewScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.PopZonesCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -1741,6 +1742,7 @@ namespace CodeWalker
             // 
             // tabPage9
             // 
+            this.tabPage9.Controls.Add(this.PopZonesCheckBox);
             this.tabPage9.Controls.Add(this.NavMeshesCheckBox);
             this.tabPage9.Controls.Add(this.TrainPathsCheckBox);
             this.tabPage9.Controls.Add(this.PathsDepthClipCheckBox);
@@ -1792,10 +1794,10 @@ namespace CodeWalker
             // PathsDepthClipCheckBox
             // 
             this.PathsDepthClipCheckBox.AutoSize = true;
-            this.PathsDepthClipCheckBox.Location = new System.Drawing.Point(10, 388);
+            this.PathsDepthClipCheckBox.Location = new System.Drawing.Point(10, 411);
             this.PathsDepthClipCheckBox.Name = "PathsDepthClipCheckBox";
             this.PathsDepthClipCheckBox.Size = new System.Drawing.Size(102, 17);
-            this.PathsDepthClipCheckBox.TabIndex = 52;
+            this.PathsDepthClipCheckBox.TabIndex = 53;
             this.PathsDepthClipCheckBox.Text = "Paths depth clip";
             this.PathsDepthClipCheckBox.UseVisualStyleBackColor = true;
             this.PathsDepthClipCheckBox.CheckedChanged += new System.EventHandler(this.PathsDepthClipCheckBox_CheckedChanged);
@@ -2585,7 +2587,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(553, 25);
+            this.Toolbar.Size = new System.Drawing.Size(522, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -2635,6 +2637,13 @@ namespace CodeWalker
             this.ToolbarNewTrainsButton.Text = "New trains file";
             this.ToolbarNewTrainsButton.Click += new System.EventHandler(this.ToolbarNewTrainsButton_Click);
             // 
+            // ToolbarNewScenarioButton
+            // 
+            this.ToolbarNewScenarioButton.Name = "ToolbarNewScenarioButton";
+            this.ToolbarNewScenarioButton.Size = new System.Drawing.Size(164, 22);
+            this.ToolbarNewScenarioButton.Text = "New scenario file";
+            this.ToolbarNewScenarioButton.Click += new System.EventHandler(this.ToolbarNewScenarioButton_Click);
+            // 
             // ToolbarOpenButton
             // 
             this.ToolbarOpenButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -2680,6 +2689,13 @@ namespace CodeWalker
             this.ToolbarOpenTrainsButton.Size = new System.Drawing.Size(178, 22);
             this.ToolbarOpenTrainsButton.Text = "Open trains file...";
             this.ToolbarOpenTrainsButton.Click += new System.EventHandler(this.ToolbarOpenTrainsButton_Click);
+            // 
+            // ToolbarOpenScenarioButton
+            // 
+            this.ToolbarOpenScenarioButton.Name = "ToolbarOpenScenarioButton";
+            this.ToolbarOpenScenarioButton.Size = new System.Drawing.Size(178, 22);
+            this.ToolbarOpenScenarioButton.Text = "Open scenario file...";
+            this.ToolbarOpenScenarioButton.Click += new System.EventHandler(this.ToolbarOpenScenarioButton_Click);
             // 
             // ToolbarSaveButton
             // 
@@ -3088,19 +3104,16 @@ namespace CodeWalker
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
             // 
-            // ToolbarNewScenarioButton
+            // PopZonesCheckBox
             // 
-            this.ToolbarNewScenarioButton.Name = "ToolbarNewScenarioButton";
-            this.ToolbarNewScenarioButton.Size = new System.Drawing.Size(164, 22);
-            this.ToolbarNewScenarioButton.Text = "New scenario file";
-            this.ToolbarNewScenarioButton.Click += new System.EventHandler(this.ToolbarNewScenarioButton_Click);
-            // 
-            // ToolbarOpenScenarioButton
-            // 
-            this.ToolbarOpenScenarioButton.Name = "ToolbarOpenScenarioButton";
-            this.ToolbarOpenScenarioButton.Size = new System.Drawing.Size(178, 22);
-            this.ToolbarOpenScenarioButton.Text = "Open scenario file...";
-            this.ToolbarOpenScenarioButton.Click += new System.EventHandler(this.ToolbarOpenScenarioButton_Click);
+            this.PopZonesCheckBox.AutoSize = true;
+            this.PopZonesCheckBox.Location = new System.Drawing.Point(10, 388);
+            this.PopZonesCheckBox.Name = "PopZonesCheckBox";
+            this.PopZonesCheckBox.Size = new System.Drawing.Size(136, 17);
+            this.PopZonesCheckBox.TabIndex = 52;
+            this.PopZonesCheckBox.Text = "Show population zones";
+            this.PopZonesCheckBox.UseVisualStyleBackColor = true;
+            this.PopZonesCheckBox.CheckedChanged += new System.EventHandler(this.PopZonesCheckBox_CheckedChanged);
             // 
             // WorldForm
             // 
@@ -3430,5 +3443,6 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolsMenuRPFExplorer;
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewScenarioButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarOpenScenarioButton;
+        private System.Windows.Forms.CheckBox PopZonesCheckBox;
     }
 }
