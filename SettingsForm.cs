@@ -60,6 +60,7 @@ namespace CodeWalker
             AddKeyBinding("Edit Position", keyBindings.EditPosition);
             AddKeyBinding("Edit Rotation", keyBindings.EditRotation);
             AddKeyBinding("Edit Scale", keyBindings.EditScale);
+            AddKeyBinding("First Person Mode", keyBindings.FirstPerson);
 
         }
         private void LoadMouseSettings()

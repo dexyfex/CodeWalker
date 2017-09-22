@@ -7672,9 +7672,8 @@ namespace CodeWalker
                     {
                         ToggleToolbar();
                     }
-                    if (k == Keys.P)
+                    if (k == keyBindings.FirstPerson)
                     {
-                        //TEMPORARY!
                         SetControlMode((ControlMode == WorldControlMode.Free) ? WorldControlMode.Ped : WorldControlMode.Free);
                     }
                 }
@@ -7709,7 +7708,7 @@ namespace CodeWalker
                             break;
                     }
                 }
-                if (k == Keys.Escape) //temporary? panic get cursor back
+                if (k == Keys.Escape) //temporary? panic get cursor back when in first person mode
                 {
                     if (ControlMode != WorldControlMode.Free) SetControlMode(WorldControlMode.Free);
                 }
@@ -9400,6 +9399,7 @@ namespace CodeWalker
         public Keys EditRotation = Keys.E;
         public Keys EditScale = Keys.R;
         public Keys Jump = Keys.Space; //for control mode
+        public Keys FirstPerson = Keys.P;
 
         public KeyBindings(StringCollection sc)
         {
@@ -9433,6 +9433,7 @@ namespace CodeWalker
                 case "Edit Position": EditPosition = k; break;
                 case "Edit Rotation": EditRotation = k; break;
                 case "Edit Scale": EditScale = k; break;
+                case "First Person Mode": FirstPerson = k; break;
             }
         }
 
@@ -9453,6 +9454,7 @@ namespace CodeWalker
             sc.Add(GetSettingItem("Edit Position", EditPosition));
             sc.Add(GetSettingItem("Edit Rotation", EditRotation));
             sc.Add(GetSettingItem("Edit Scale", EditScale));
+            sc.Add(GetSettingItem("First Person Mode", FirstPerson));
             return sc;
         }
 

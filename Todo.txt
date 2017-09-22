@@ -23,7 +23,7 @@ RPF explorer - bulk export metadata files as XML
 
 ---[UI stuff]---
 
-show areas/zones with their names? popzone etc
+show area/zone names? popzone etc
 world view grid option?
 
 
@@ -32,7 +32,7 @@ world view grid option?
 delete key - delete item!
 
 add entities with preview... asset browser
-undo add/delete entities, cargens, path nodes
+undo add/delete entities, cargens, path nodes, scenario points...
 copy entity extensions when copying entities!
 
 Path editor: fix: linking to another .ynd in the project
@@ -112,6 +112,8 @@ Metadata>XML - YMT, YMAP, YTYP, CUT etc files (Meta/PSO/RBF)
 Collision detection / physics - shoot eggs
 First-person mode (press P / Start)
 XBOX controller support
+Display Population Zones
+Generate _manifest.ymf XML for ymaps in project
 
 
 
