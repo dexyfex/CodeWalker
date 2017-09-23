@@ -1865,6 +1865,10 @@ namespace CodeWalker
                 EntityPivotEditCheckBox.Checked = false;
                 EntityPivotPositionTextBox.Text = string.Empty;
                 EntityPivotRotationTextBox.Text = string.Empty;
+                foreach (int i in EntityFlagsCheckedListBox.CheckedIndices)
+                {
+                    EntityFlagsCheckedListBox.SetItemCheckState(i, CheckState.Unchecked);
+                }
             }
             else
             {
@@ -1891,6 +1895,11 @@ namespace CodeWalker
                 EntityTintValueTextBox.Text = e.tintValue.ToString();
                 EntityPivotPositionTextBox.Text = FloatUtil.GetVector3String(CurrentEntity.PivotPosition);
                 EntityPivotRotationTextBox.Text = FloatUtil.GetVector4String(new Vector4(po.X, po.Y, po.Z, po.W));
+                for (int i = 0; i < EntityFlagsCheckedListBox.Items.Count; i++)
+                {
+                    var cv = ((e.flags & (1u << i)) > 0);
+                    EntityFlagsCheckedListBox.SetItemCheckState(i, cv ? CheckState.Checked : CheckState.Unchecked);
+                }
                 populatingui = false;
 
 
@@ -2063,6 +2072,10 @@ namespace CodeWalker
                 CarBodyColorRemap3TextBox.Text = string.Empty;
                 CarBodyColorRemap4TextBox.Text = string.Empty;
                 CarLiveryTextBox.Text = string.Empty;
+                foreach (int i in CarFlagsCheckedListBox.CheckedIndices)
+                {
+                    CarFlagsCheckedListBox.SetItemCheckState(i, CheckState.Unchecked);
+                }
             }
             else
             {
@@ -2083,6 +2096,11 @@ namespace CodeWalker
                 CarBodyColorRemap3TextBox.Text = c.bodyColorRemap3.ToString();
                 CarBodyColorRemap4TextBox.Text = c.bodyColorRemap4.ToString();
                 CarLiveryTextBox.Text = c.livery.ToString();
+                for (int i = 0; i < CarFlagsCheckedListBox.Items.Count; i++)
+                {
+                    var cv = ((c.flags & (1u << i)) > 0);
+                    CarFlagsCheckedListBox.SetItemCheckState(i, cv ? CheckState.Checked : CheckState.Unchecked);
+                }
                 populatingui = false;
 
                 if (WorldForm != null)
@@ -7100,6 +7118,48 @@ namespace CodeWalker
             if (CurrentEntity == null) return;
             uint flags = 0;
             uint.TryParse(EntityFlagsTextBox.Text, out flags);
+            populatingui = true;
+            for (int i = 0; i < EntityFlagsCheckedListBox.Items.Count; i++)
+            {
+                var c = ((flags & (1u << i)) > 0);
+                EntityFlagsCheckedListBox.SetItemCheckState(i, c ? CheckState.Checked : CheckState.Unchecked);
+            }
+            populatingui = false;
+            lock (ymapsyncroot)
+            {
+                if (CurrentEntity._CEntityDef.flags != flags)
+                {
+                    CurrentEntity._CEntityDef.flags = flags;
+                    SetYmapHasChanged(true);
+                }
+            }
+        }
+
+        private void EntityFlagsCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentEntity == null) return;
+            uint flags = 0;
+            for (int i = 0; i < EntityFlagsCheckedListBox.Items.Count; i++)
+            {
+                if (e.Index == i)
+                {
+                    if (e.NewValue == CheckState.Checked)
+                    {
+                        flags += (uint)(1 << i);
+                    }
+                }
+                else
+                {
+                    if (EntityFlagsCheckedListBox.GetItemChecked(i))
+                    {
+                        flags += (uint)(1 << i);
+                    }
+                }
+            }
+            populatingui = true;
+            EntityFlagsTextBox.Text = flags.ToString();
+            populatingui = false;
             lock (ymapsyncroot)
             {
                 if (CurrentEntity._CEntityDef.flags != flags)
@@ -7536,6 +7596,48 @@ namespace CodeWalker
             if (CurrentCarGen == null) return;
             uint flags = 0;
             uint.TryParse(CarFlagsTextBox.Text, out flags);
+            populatingui = true;
+            for (int i = 0; i < CarFlagsCheckedListBox.Items.Count; i++)
+            {
+                var c = ((flags & (1u << i)) > 0);
+                CarFlagsCheckedListBox.SetItemCheckState(i, c ? CheckState.Checked : CheckState.Unchecked);
+            }
+            populatingui = false;
+            lock (ymapsyncroot)
+            {
+                if (CurrentCarGen._CCarGen.flags != flags)
+                {
+                    CurrentCarGen._CCarGen.flags = flags;
+                    SetYmapHasChanged(true);
+                }
+            }
+        }
+
+        private void CarFlagsCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentCarGen == null) return;
+            uint flags = 0;
+            for (int i = 0; i < CarFlagsCheckedListBox.Items.Count; i++)
+            {
+                if (e.Index == i)
+                {
+                    if (e.NewValue == CheckState.Checked)
+                    {
+                        flags += (uint)(1 << i);
+                    }
+                }
+                else
+                {
+                    if (CarFlagsCheckedListBox.GetItemChecked(i))
+                    {
+                        flags += (uint)(1 << i);
+                    }
+                }
+            }
+            populatingui = true;
+            CarFlagsTextBox.Text = flags.ToString();
+            populatingui = false;
             lock (ymapsyncroot)
             {
                 if (CurrentCarGen._CCarGen.flags != flags)

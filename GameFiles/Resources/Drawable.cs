@@ -565,6 +565,22 @@ namespace CodeWalker.GameFiles
             this.Transformations = reader.ReadStructsAt<SharpDX.Matrix>(this.TransformationsPointer, this.BonesCount);
             this.ParentIndices = reader.ReadUshortsAt(this.ParentIndicesPointer, this.BonesCount);
             this.Unknown_40h_Data = reader.ReadUshortsAt(this.Unknown_40h_Pointer, this.Count4);
+
+
+            if ((Bones != null) && (ParentIndices != null))
+            {
+                var maxcnt = Math.Min(Bones.Count, ParentIndices.Length);
+                for (int i = 0; i < maxcnt; i++)
+                {
+                    var bone = Bones[i];
+                    var pind = ParentIndices[i];
+                    if (pind < Bones.Count)
+                    {
+                        bone.Parent = Bones[pind];
+                    }
+                }
+            }
+
         }
 
         /// <summary>
@@ -716,6 +732,9 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public string Name { get; set; }
+
+        public Bone Parent { get; set; }
+
 
         /// <summary>
         /// Reads the data-block from a stream.

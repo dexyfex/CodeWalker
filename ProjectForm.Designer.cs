@@ -43,6 +43,7 @@
             this.ProjectShowEntitiesCheckBox = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
             this.ProjectManifestTabPage = new System.Windows.Forms.TabPage();
+            this.label162 = new System.Windows.Forms.Label();
             this.ProjectManifestGenerateButton = new System.Windows.Forms.Button();
             this.ProjectManifestTextBox = new FastColoredTextBoxNS.FastColoredTextBox();
             this.YmapTabPage = new System.Windows.Forms.TabPage();
@@ -665,7 +666,8 @@
             this.OptionsHideGTAVMapMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.label162 = new System.Windows.Forms.Label();
+            this.CarFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
+            this.EntityFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -980,6 +982,15 @@
             this.ProjectManifestTabPage.Text = "Manifest";
             this.ProjectManifestTabPage.UseVisualStyleBackColor = true;
             // 
+            // label162
+            // 
+            this.label162.AutoSize = true;
+            this.label162.Location = new System.Drawing.Point(99, 11);
+            this.label162.Name = "label162";
+            this.label162.Size = new System.Drawing.Size(111, 13);
+            this.label162.TabIndex = 2;
+            this.label162.Text = "XML for _manifest.ymf";
+            // 
             // ProjectManifestGenerateButton
             // 
             this.ProjectManifestGenerateButton.Location = new System.Drawing.Point(6, 6);
@@ -1007,13 +1018,14 @@
         '\'',
         '\''};
             this.ProjectManifestTextBox.AutoIndentCharsPatterns = "";
-            this.ProjectManifestTextBox.AutoScrollMinSize = new System.Drawing.Size(27, 14);
+            this.ProjectManifestTextBox.AutoScrollMinSize = new System.Drawing.Size(2, 14);
             this.ProjectManifestTextBox.BackBrush = null;
             this.ProjectManifestTextBox.CharHeight = 14;
             this.ProjectManifestTextBox.CharWidth = 8;
             this.ProjectManifestTextBox.CommentPrefix = null;
             this.ProjectManifestTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.ProjectManifestTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.ProjectManifestTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.ProjectManifestTextBox.IsReplaceMode = false;
             this.ProjectManifestTextBox.Language = FastColoredTextBoxNS.Language.XML;
             this.ProjectManifestTextBox.LeftBracket = '<';
@@ -1622,25 +1634,20 @@
             // 
             // EntityGeneralTabPage
             // 
+            this.EntityGeneralTabPage.Controls.Add(this.EntityFlagsCheckedListBox);
             this.EntityGeneralTabPage.Controls.Add(this.label13);
             this.EntityGeneralTabPage.Controls.Add(this.label28);
             this.EntityGeneralTabPage.Controls.Add(this.EntityDeleteButton);
             this.EntityGeneralTabPage.Controls.Add(this.EntityTintValueTextBox);
             this.EntityGeneralTabPage.Controls.Add(this.EntityAddToProjectButton);
             this.EntityGeneralTabPage.Controls.Add(this.label27);
-            this.EntityGeneralTabPage.Controls.Add(this.label16);
             this.EntityGeneralTabPage.Controls.Add(this.EntityArtificialAOTextBox);
-            this.EntityGeneralTabPage.Controls.Add(this.EntityPositionTextBox);
             this.EntityGeneralTabPage.Controls.Add(this.label26);
-            this.EntityGeneralTabPage.Controls.Add(this.EntityNormalizeRotationButton);
             this.EntityGeneralTabPage.Controls.Add(this.EntityAOMultiplierTextBox);
             this.EntityGeneralTabPage.Controls.Add(this.EntityGuidTextBox);
             this.EntityGeneralTabPage.Controls.Add(this.EntityPriorityLevelComboBox);
             this.EntityGeneralTabPage.Controls.Add(this.label24);
-            this.EntityGeneralTabPage.Controls.Add(this.EntityGoToButton);
-            this.EntityGeneralTabPage.Controls.Add(this.label17);
             this.EntityGeneralTabPage.Controls.Add(this.label15);
-            this.EntityGeneralTabPage.Controls.Add(this.EntityRotationTextBox);
             this.EntityGeneralTabPage.Controls.Add(this.EntityFlagsTextBox);
             this.EntityGeneralTabPage.Controls.Add(this.label18);
             this.EntityGeneralTabPage.Controls.Add(this.EntityLodLevelComboBox);
@@ -1655,6 +1662,12 @@
             this.EntityGeneralTabPage.Controls.Add(this.EntityScaleZTextBox);
             this.EntityGeneralTabPage.Controls.Add(this.EntityLodDistTextBox);
             this.EntityGeneralTabPage.Controls.Add(this.EntityArchetypeTextBox);
+            this.EntityGeneralTabPage.Controls.Add(this.label16);
+            this.EntityGeneralTabPage.Controls.Add(this.EntityPositionTextBox);
+            this.EntityGeneralTabPage.Controls.Add(this.EntityNormalizeRotationButton);
+            this.EntityGeneralTabPage.Controls.Add(this.EntityGoToButton);
+            this.EntityGeneralTabPage.Controls.Add(this.label17);
+            this.EntityGeneralTabPage.Controls.Add(this.EntityRotationTextBox);
             this.EntityGeneralTabPage.Location = new System.Drawing.Point(4, 22);
             this.EntityGeneralTabPage.Name = "EntityGeneralTabPage";
             this.EntityGeneralTabPage.Padding = new System.Windows.Forms.Padding(3);
@@ -1666,27 +1679,27 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(15, 12);
+            this.label13.Location = new System.Drawing.Point(15, 64);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(58, 13);
-            this.label13.TabIndex = 9;
+            this.label13.TabIndex = 7;
             this.label13.Text = "Archetype:";
             // 
             // label28
             // 
             this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(15, 352);
+            this.label28.Location = new System.Drawing.Point(15, 326);
             this.label28.Name = "label28";
             this.label28.Size = new System.Drawing.Size(55, 13);
-            this.label28.TabIndex = 40;
+            this.label28.TabIndex = 28;
             this.label28.Text = "TintValue:";
             // 
             // EntityDeleteButton
             // 
-            this.EntityDeleteButton.Location = new System.Drawing.Point(194, 385);
+            this.EntityDeleteButton.Location = new System.Drawing.Point(175, 376);
             this.EntityDeleteButton.Name = "EntityDeleteButton";
             this.EntityDeleteButton.Size = new System.Drawing.Size(95, 23);
-            this.EntityDeleteButton.TabIndex = 43;
+            this.EntityDeleteButton.TabIndex = 34;
             this.EntityDeleteButton.Text = "Delete Entity";
             this.EntityDeleteButton.UseVisualStyleBackColor = true;
             this.EntityDeleteButton.Click += new System.EventHandler(this.EntityDeleteButton_Click);
@@ -1695,18 +1708,18 @@
             // 
             this.EntityTintValueTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityTintValueTextBox.Location = new System.Drawing.Point(93, 349);
+            this.EntityTintValueTextBox.Location = new System.Drawing.Point(93, 323);
             this.EntityTintValueTextBox.Name = "EntityTintValueTextBox";
             this.EntityTintValueTextBox.Size = new System.Drawing.Size(177, 20);
-            this.EntityTintValueTextBox.TabIndex = 41;
+            this.EntityTintValueTextBox.TabIndex = 29;
             this.EntityTintValueTextBox.TextChanged += new System.EventHandler(this.EntityTintValueTextBox_TextChanged);
             // 
             // EntityAddToProjectButton
             // 
-            this.EntityAddToProjectButton.Location = new System.Drawing.Point(93, 385);
+            this.EntityAddToProjectButton.Location = new System.Drawing.Point(74, 376);
             this.EntityAddToProjectButton.Name = "EntityAddToProjectButton";
             this.EntityAddToProjectButton.Size = new System.Drawing.Size(95, 23);
-            this.EntityAddToProjectButton.TabIndex = 42;
+            this.EntityAddToProjectButton.TabIndex = 33;
             this.EntityAddToProjectButton.Text = "Add to Project";
             this.EntityAddToProjectButton.UseVisualStyleBackColor = true;
             this.EntityAddToProjectButton.Click += new System.EventHandler(this.EntityAddToProjectButton_Click);
@@ -1714,57 +1727,57 @@
             // label27
             // 
             this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(15, 326);
+            this.label27.Location = new System.Drawing.Point(15, 300);
             this.label27.Name = "label27";
             this.label27.Size = new System.Drawing.Size(61, 13);
-            this.label27.TabIndex = 38;
+            this.label27.TabIndex = 26;
             this.label27.Text = "ArtificialAO:";
             // 
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(15, 90);
+            this.label16.Location = new System.Drawing.Point(15, 12);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(47, 13);
-            this.label16.TabIndex = 16;
+            this.label16.TabIndex = 1;
             this.label16.Text = "Position:";
             // 
             // EntityArtificialAOTextBox
             // 
             this.EntityArtificialAOTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityArtificialAOTextBox.Location = new System.Drawing.Point(93, 323);
+            this.EntityArtificialAOTextBox.Location = new System.Drawing.Point(93, 297);
             this.EntityArtificialAOTextBox.Name = "EntityArtificialAOTextBox";
             this.EntityArtificialAOTextBox.Size = new System.Drawing.Size(177, 20);
-            this.EntityArtificialAOTextBox.TabIndex = 39;
+            this.EntityArtificialAOTextBox.TabIndex = 27;
             this.EntityArtificialAOTextBox.TextChanged += new System.EventHandler(this.EntityArtificialAOTextBox_TextChanged);
             // 
             // EntityPositionTextBox
             // 
             this.EntityPositionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityPositionTextBox.Location = new System.Drawing.Point(93, 87);
+            this.EntityPositionTextBox.Location = new System.Drawing.Point(93, 9);
             this.EntityPositionTextBox.Name = "EntityPositionTextBox";
             this.EntityPositionTextBox.Size = new System.Drawing.Size(326, 20);
-            this.EntityPositionTextBox.TabIndex = 17;
+            this.EntityPositionTextBox.TabIndex = 2;
             this.EntityPositionTextBox.TextChanged += new System.EventHandler(this.EntityPositionTextBox_TextChanged);
             // 
             // label26
             // 
             this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(15, 300);
+            this.label26.Location = new System.Drawing.Point(15, 274);
             this.label26.Name = "label26";
             this.label26.Size = new System.Drawing.Size(66, 13);
-            this.label26.TabIndex = 36;
+            this.label26.TabIndex = 24;
             this.label26.Text = "AOMultiplier:";
             // 
             // EntityNormalizeRotationButton
             // 
             this.EntityNormalizeRotationButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityNormalizeRotationButton.Location = new System.Drawing.Point(425, 111);
+            this.EntityNormalizeRotationButton.Location = new System.Drawing.Point(425, 33);
             this.EntityNormalizeRotationButton.Name = "EntityNormalizeRotationButton";
             this.EntityNormalizeRotationButton.Size = new System.Drawing.Size(68, 23);
-            this.EntityNormalizeRotationButton.TabIndex = 20;
+            this.EntityNormalizeRotationButton.TabIndex = 6;
             this.EntityNormalizeRotationButton.Text = "Normalize";
             this.EntityNormalizeRotationButton.UseVisualStyleBackColor = true;
             this.EntityNormalizeRotationButton.Click += new System.EventHandler(this.EntityNormalizeRotationButton_Click);
@@ -1773,20 +1786,20 @@
             // 
             this.EntityAOMultiplierTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityAOMultiplierTextBox.Location = new System.Drawing.Point(93, 297);
+            this.EntityAOMultiplierTextBox.Location = new System.Drawing.Point(93, 271);
             this.EntityAOMultiplierTextBox.Name = "EntityAOMultiplierTextBox";
             this.EntityAOMultiplierTextBox.Size = new System.Drawing.Size(177, 20);
-            this.EntityAOMultiplierTextBox.TabIndex = 37;
+            this.EntityAOMultiplierTextBox.TabIndex = 25;
             this.EntityAOMultiplierTextBox.TextChanged += new System.EventHandler(this.EntityAOMultiplierTextBox_TextChanged);
             // 
             // EntityGuidTextBox
             // 
             this.EntityGuidTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityGuidTextBox.Location = new System.Drawing.Point(93, 61);
+            this.EntityGuidTextBox.Location = new System.Drawing.Point(93, 87);
             this.EntityGuidTextBox.Name = "EntityGuidTextBox";
             this.EntityGuidTextBox.Size = new System.Drawing.Size(177, 20);
-            this.EntityGuidTextBox.TabIndex = 15;
+            this.EntityGuidTextBox.TabIndex = 11;
             this.EntityGuidTextBox.TextChanged += new System.EventHandler(this.EntityGuidTextBox_TextChanged);
             // 
             // EntityPriorityLevelComboBox
@@ -1795,28 +1808,28 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityPriorityLevelComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.EntityPriorityLevelComboBox.FormattingEnabled = true;
-            this.EntityPriorityLevelComboBox.Location = new System.Drawing.Point(93, 270);
+            this.EntityPriorityLevelComboBox.Location = new System.Drawing.Point(93, 244);
             this.EntityPriorityLevelComboBox.Name = "EntityPriorityLevelComboBox";
             this.EntityPriorityLevelComboBox.Size = new System.Drawing.Size(177, 21);
-            this.EntityPriorityLevelComboBox.TabIndex = 33;
+            this.EntityPriorityLevelComboBox.TabIndex = 23;
             this.EntityPriorityLevelComboBox.SelectedIndexChanged += new System.EventHandler(this.EntityPriorityLevelComboBox_SelectedIndexChanged);
             // 
             // label24
             // 
             this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(15, 273);
+            this.label24.Location = new System.Drawing.Point(15, 247);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(67, 13);
-            this.label24.TabIndex = 32;
+            this.label24.TabIndex = 22;
             this.label24.Text = "PriorityLevel:";
             // 
             // EntityGoToButton
             // 
             this.EntityGoToButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityGoToButton.Location = new System.Drawing.Point(425, 85);
+            this.EntityGoToButton.Location = new System.Drawing.Point(425, 7);
             this.EntityGoToButton.Name = "EntityGoToButton";
             this.EntityGoToButton.Size = new System.Drawing.Size(68, 23);
-            this.EntityGoToButton.TabIndex = 18;
+            this.EntityGoToButton.TabIndex = 3;
             this.EntityGoToButton.Text = "Go to";
             this.EntityGoToButton.UseVisualStyleBackColor = true;
             this.EntityGoToButton.Click += new System.EventHandler(this.EntityGoToButton_Click);
@@ -1824,48 +1837,47 @@
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(15, 116);
+            this.label17.Location = new System.Drawing.Point(15, 38);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(50, 13);
-            this.label17.TabIndex = 18;
+            this.label17.TabIndex = 4;
             this.label17.Text = "Rotation:";
             // 
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(15, 64);
+            this.label15.Location = new System.Drawing.Point(15, 90);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(37, 13);
-            this.label15.TabIndex = 14;
+            this.label15.TabIndex = 10;
             this.label15.Text = "GUID:";
             // 
             // EntityRotationTextBox
             // 
             this.EntityRotationTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityRotationTextBox.Location = new System.Drawing.Point(93, 113);
+            this.EntityRotationTextBox.Location = new System.Drawing.Point(93, 35);
             this.EntityRotationTextBox.Name = "EntityRotationTextBox";
             this.EntityRotationTextBox.Size = new System.Drawing.Size(326, 20);
-            this.EntityRotationTextBox.TabIndex = 19;
+            this.EntityRotationTextBox.TabIndex = 5;
             this.EntityRotationTextBox.TextChanged += new System.EventHandler(this.EntityRotationTextBox_TextChanged);
             // 
             // EntityFlagsTextBox
             // 
-            this.EntityFlagsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityFlagsTextBox.Location = new System.Drawing.Point(93, 35);
+            this.EntityFlagsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.EntityFlagsTextBox.Location = new System.Drawing.Point(346, 87);
             this.EntityFlagsTextBox.Name = "EntityFlagsTextBox";
-            this.EntityFlagsTextBox.Size = new System.Drawing.Size(177, 20);
-            this.EntityFlagsTextBox.TabIndex = 13;
+            this.EntityFlagsTextBox.Size = new System.Drawing.Size(147, 20);
+            this.EntityFlagsTextBox.TabIndex = 31;
             this.EntityFlagsTextBox.TextChanged += new System.EventHandler(this.EntityFlagsTextBox_TextChanged);
             // 
             // label18
             // 
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(15, 142);
+            this.label18.Location = new System.Drawing.Point(15, 116);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(51, 13);
-            this.label18.TabIndex = 20;
+            this.label18.TabIndex = 12;
             this.label18.Text = "ScaleXY:";
             // 
             // EntityLodLevelComboBox
@@ -1874,115 +1886,116 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityLodLevelComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.EntityLodLevelComboBox.FormattingEnabled = true;
-            this.EntityLodLevelComboBox.Location = new System.Drawing.Point(93, 243);
+            this.EntityLodLevelComboBox.Location = new System.Drawing.Point(93, 217);
             this.EntityLodLevelComboBox.Name = "EntityLodLevelComboBox";
             this.EntityLodLevelComboBox.Size = new System.Drawing.Size(177, 21);
-            this.EntityLodLevelComboBox.TabIndex = 31;
+            this.EntityLodLevelComboBox.TabIndex = 21;
             this.EntityLodLevelComboBox.SelectedIndexChanged += new System.EventHandler(this.EntityLodLevelComboBox_SelectedIndexChanged);
             // 
             // label14
             // 
+            this.label14.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(15, 38);
+            this.label14.Location = new System.Drawing.Point(305, 90);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(35, 13);
-            this.label14.TabIndex = 12;
+            this.label14.TabIndex = 30;
             this.label14.Text = "Flags:";
             // 
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(15, 246);
+            this.label23.Location = new System.Drawing.Point(15, 220);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(54, 13);
-            this.label23.TabIndex = 30;
+            this.label23.TabIndex = 20;
             this.label23.Text = "LodLevel:";
             // 
             // EntityScaleXYTextBox
             // 
             this.EntityScaleXYTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityScaleXYTextBox.Location = new System.Drawing.Point(93, 139);
+            this.EntityScaleXYTextBox.Location = new System.Drawing.Point(93, 113);
             this.EntityScaleXYTextBox.Name = "EntityScaleXYTextBox";
             this.EntityScaleXYTextBox.Size = new System.Drawing.Size(177, 20);
-            this.EntityScaleXYTextBox.TabIndex = 21;
+            this.EntityScaleXYTextBox.TabIndex = 13;
             this.EntityScaleXYTextBox.TextChanged += new System.EventHandler(this.EntityScaleXYTextBox_TextChanged);
             // 
             // label22
             // 
             this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(15, 220);
+            this.label22.Location = new System.Drawing.Point(15, 194);
             this.label22.Name = "label22";
             this.label22.Size = new System.Drawing.Size(69, 13);
-            this.label22.TabIndex = 28;
+            this.label22.TabIndex = 18;
             this.label22.Text = "ChildLodDist:";
             // 
             // EntityArchetypeHashLabel
             // 
             this.EntityArchetypeHashLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityArchetypeHashLabel.AutoSize = true;
-            this.EntityArchetypeHashLabel.Location = new System.Drawing.Point(276, 12);
+            this.EntityArchetypeHashLabel.Location = new System.Drawing.Point(276, 64);
             this.EntityArchetypeHashLabel.Name = "EntityArchetypeHashLabel";
             this.EntityArchetypeHashLabel.Size = new System.Drawing.Size(44, 13);
-            this.EntityArchetypeHashLabel.TabIndex = 11;
+            this.EntityArchetypeHashLabel.TabIndex = 9;
             this.EntityArchetypeHashLabel.Text = "Hash: 0";
             // 
             // EntityChildLodDistTextBox
             // 
             this.EntityChildLodDistTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityChildLodDistTextBox.Location = new System.Drawing.Point(93, 217);
+            this.EntityChildLodDistTextBox.Location = new System.Drawing.Point(93, 191);
             this.EntityChildLodDistTextBox.Name = "EntityChildLodDistTextBox";
             this.EntityChildLodDistTextBox.Size = new System.Drawing.Size(177, 20);
-            this.EntityChildLodDistTextBox.TabIndex = 29;
+            this.EntityChildLodDistTextBox.TabIndex = 19;
             this.EntityChildLodDistTextBox.TextChanged += new System.EventHandler(this.EntityChildLodDistTextBox_TextChanged);
             // 
             // label19
             // 
             this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(15, 168);
+            this.label19.Location = new System.Drawing.Point(15, 142);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(44, 13);
-            this.label19.TabIndex = 22;
+            this.label19.TabIndex = 14;
             this.label19.Text = "ScaleZ:";
             // 
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(15, 194);
+            this.label21.Location = new System.Drawing.Point(15, 168);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(46, 13);
-            this.label21.TabIndex = 26;
+            this.label21.TabIndex = 16;
             this.label21.Text = "LodDist:";
             // 
             // EntityScaleZTextBox
             // 
             this.EntityScaleZTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityScaleZTextBox.Location = new System.Drawing.Point(93, 165);
+            this.EntityScaleZTextBox.Location = new System.Drawing.Point(93, 139);
             this.EntityScaleZTextBox.Name = "EntityScaleZTextBox";
             this.EntityScaleZTextBox.Size = new System.Drawing.Size(177, 20);
-            this.EntityScaleZTextBox.TabIndex = 23;
+            this.EntityScaleZTextBox.TabIndex = 15;
             this.EntityScaleZTextBox.TextChanged += new System.EventHandler(this.EntityScaleZTextBox_TextChanged);
             // 
             // EntityLodDistTextBox
             // 
             this.EntityLodDistTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityLodDistTextBox.Location = new System.Drawing.Point(93, 191);
+            this.EntityLodDistTextBox.Location = new System.Drawing.Point(93, 165);
             this.EntityLodDistTextBox.Name = "EntityLodDistTextBox";
             this.EntityLodDistTextBox.Size = new System.Drawing.Size(177, 20);
-            this.EntityLodDistTextBox.TabIndex = 27;
+            this.EntityLodDistTextBox.TabIndex = 17;
             this.EntityLodDistTextBox.TextChanged += new System.EventHandler(this.EntityLodDistTextBox_TextChanged);
             // 
             // EntityArchetypeTextBox
             // 
             this.EntityArchetypeTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityArchetypeTextBox.Location = new System.Drawing.Point(93, 9);
+            this.EntityArchetypeTextBox.Location = new System.Drawing.Point(93, 61);
             this.EntityArchetypeTextBox.Name = "EntityArchetypeTextBox";
             this.EntityArchetypeTextBox.Size = new System.Drawing.Size(177, 20);
-            this.EntityArchetypeTextBox.TabIndex = 10;
+            this.EntityArchetypeTextBox.TabIndex = 8;
             this.EntityArchetypeTextBox.TextChanged += new System.EventHandler(this.EntityArchetypeTextBox_TextChanged);
             // 
             // EntityLodTabPage
@@ -2146,6 +2159,7 @@
             this.CarGenPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.CarGenPanel.Controls.Add(this.CarFlagsCheckedListBox);
             this.CarGenPanel.Controls.Add(this.CarDeleteButton);
             this.CarGenPanel.Controls.Add(this.CarAddToProjectButton);
             this.CarGenPanel.Controls.Add(this.label44);
@@ -2183,20 +2197,20 @@
             // 
             // CarDeleteButton
             // 
-            this.CarDeleteButton.Location = new System.Drawing.Point(221, 347);
+            this.CarDeleteButton.Location = new System.Drawing.Point(168, 392);
             this.CarDeleteButton.Name = "CarDeleteButton";
             this.CarDeleteButton.Size = new System.Drawing.Size(95, 23);
-            this.CarDeleteButton.TabIndex = 71;
+            this.CarDeleteButton.TabIndex = 75;
             this.CarDeleteButton.Text = "Delete CarGen";
             this.CarDeleteButton.UseVisualStyleBackColor = true;
             this.CarDeleteButton.Click += new System.EventHandler(this.CarDeleteButton_Click);
             // 
             // CarAddToProjectButton
             // 
-            this.CarAddToProjectButton.Location = new System.Drawing.Point(120, 347);
+            this.CarAddToProjectButton.Location = new System.Drawing.Point(67, 392);
             this.CarAddToProjectButton.Name = "CarAddToProjectButton";
             this.CarAddToProjectButton.Size = new System.Drawing.Size(95, 23);
-            this.CarAddToProjectButton.TabIndex = 70;
+            this.CarAddToProjectButton.TabIndex = 74;
             this.CarAddToProjectButton.Text = "Add to Project";
             this.CarAddToProjectButton.UseVisualStyleBackColor = true;
             this.CarAddToProjectButton.Click += new System.EventHandler(this.CarAddToProjectButton_Click);
@@ -2204,208 +2218,208 @@
             // label44
             // 
             this.label44.AutoSize = true;
-            this.label44.Location = new System.Drawing.Point(6, 298);
+            this.label44.Location = new System.Drawing.Point(6, 272);
             this.label44.Name = "label44";
             this.label44.Size = new System.Drawing.Size(38, 13);
-            this.label44.TabIndex = 68;
+            this.label44.TabIndex = 69;
             this.label44.Text = "Livery:";
             // 
             // CarLiveryTextBox
             // 
             this.CarLiveryTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarLiveryTextBox.Location = new System.Drawing.Point(120, 295);
+            this.CarLiveryTextBox.Location = new System.Drawing.Point(120, 269);
             this.CarLiveryTextBox.Name = "CarLiveryTextBox";
-            this.CarLiveryTextBox.Size = new System.Drawing.Size(231, 20);
-            this.CarLiveryTextBox.TabIndex = 69;
+            this.CarLiveryTextBox.Size = new System.Drawing.Size(155, 20);
+            this.CarLiveryTextBox.TabIndex = 70;
             this.CarLiveryTextBox.TextChanged += new System.EventHandler(this.CarLiveryTextBox_TextChanged);
             // 
             // label43
             // 
             this.label43.AutoSize = true;
-            this.label43.Location = new System.Drawing.Point(6, 272);
+            this.label43.Location = new System.Drawing.Point(6, 246);
             this.label43.Name = "label43";
             this.label43.Size = new System.Drawing.Size(98, 13);
-            this.label43.TabIndex = 66;
+            this.label43.TabIndex = 67;
             this.label43.Text = "BodyColorRemap4:";
             // 
             // CarBodyColorRemap4TextBox
             // 
             this.CarBodyColorRemap4TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarBodyColorRemap4TextBox.Location = new System.Drawing.Point(120, 269);
+            this.CarBodyColorRemap4TextBox.Location = new System.Drawing.Point(120, 243);
             this.CarBodyColorRemap4TextBox.Name = "CarBodyColorRemap4TextBox";
-            this.CarBodyColorRemap4TextBox.Size = new System.Drawing.Size(231, 20);
-            this.CarBodyColorRemap4TextBox.TabIndex = 67;
+            this.CarBodyColorRemap4TextBox.Size = new System.Drawing.Size(155, 20);
+            this.CarBodyColorRemap4TextBox.TabIndex = 68;
             this.CarBodyColorRemap4TextBox.TextChanged += new System.EventHandler(this.CarBodyColorRemap4TextBox_TextChanged);
             // 
             // label42
             // 
             this.label42.AutoSize = true;
-            this.label42.Location = new System.Drawing.Point(6, 246);
+            this.label42.Location = new System.Drawing.Point(6, 220);
             this.label42.Name = "label42";
             this.label42.Size = new System.Drawing.Size(98, 13);
-            this.label42.TabIndex = 64;
+            this.label42.TabIndex = 65;
             this.label42.Text = "BodyColorRemap3:";
             // 
             // CarBodyColorRemap3TextBox
             // 
             this.CarBodyColorRemap3TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarBodyColorRemap3TextBox.Location = new System.Drawing.Point(120, 243);
+            this.CarBodyColorRemap3TextBox.Location = new System.Drawing.Point(120, 217);
             this.CarBodyColorRemap3TextBox.Name = "CarBodyColorRemap3TextBox";
-            this.CarBodyColorRemap3TextBox.Size = new System.Drawing.Size(231, 20);
-            this.CarBodyColorRemap3TextBox.TabIndex = 65;
+            this.CarBodyColorRemap3TextBox.Size = new System.Drawing.Size(155, 20);
+            this.CarBodyColorRemap3TextBox.TabIndex = 66;
             this.CarBodyColorRemap3TextBox.TextChanged += new System.EventHandler(this.CarBodyColorRemap3TextBox_TextChanged);
             // 
             // label41
             // 
             this.label41.AutoSize = true;
-            this.label41.Location = new System.Drawing.Point(6, 220);
+            this.label41.Location = new System.Drawing.Point(6, 194);
             this.label41.Name = "label41";
             this.label41.Size = new System.Drawing.Size(98, 13);
-            this.label41.TabIndex = 62;
+            this.label41.TabIndex = 63;
             this.label41.Text = "BodyColorRemap2:";
             // 
             // CarBodyColorRemap2TextBox
             // 
             this.CarBodyColorRemap2TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarBodyColorRemap2TextBox.Location = new System.Drawing.Point(120, 217);
+            this.CarBodyColorRemap2TextBox.Location = new System.Drawing.Point(120, 191);
             this.CarBodyColorRemap2TextBox.Name = "CarBodyColorRemap2TextBox";
-            this.CarBodyColorRemap2TextBox.Size = new System.Drawing.Size(231, 20);
-            this.CarBodyColorRemap2TextBox.TabIndex = 63;
+            this.CarBodyColorRemap2TextBox.Size = new System.Drawing.Size(155, 20);
+            this.CarBodyColorRemap2TextBox.TabIndex = 64;
             this.CarBodyColorRemap2TextBox.TextChanged += new System.EventHandler(this.CarBodyColorRemap2TextBox_TextChanged);
             // 
             // CarPopGroupTextBox
             // 
             this.CarPopGroupTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarPopGroupTextBox.Location = new System.Drawing.Point(84, 35);
+            this.CarPopGroupTextBox.Location = new System.Drawing.Point(84, 61);
             this.CarPopGroupTextBox.Name = "CarPopGroupTextBox";
             this.CarPopGroupTextBox.Size = new System.Drawing.Size(267, 20);
-            this.CarPopGroupTextBox.TabIndex = 48;
+            this.CarPopGroupTextBox.TabIndex = 50;
             this.CarPopGroupTextBox.TextChanged += new System.EventHandler(this.CarPopGroupTextBox_TextChanged);
             // 
             // label39
             // 
             this.label39.AutoSize = true;
-            this.label39.Location = new System.Drawing.Point(6, 38);
+            this.label39.Location = new System.Drawing.Point(6, 64);
             this.label39.Name = "label39";
             this.label39.Size = new System.Drawing.Size(58, 13);
-            this.label39.TabIndex = 59;
+            this.label39.TabIndex = 49;
             this.label39.Text = "PopGroup:";
             // 
             // CarPopGroupHashLabel
             // 
             this.CarPopGroupHashLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.CarPopGroupHashLabel.AutoSize = true;
-            this.CarPopGroupHashLabel.Location = new System.Drawing.Point(357, 38);
+            this.CarPopGroupHashLabel.Location = new System.Drawing.Point(357, 64);
             this.CarPopGroupHashLabel.Name = "CarPopGroupHashLabel";
             this.CarPopGroupHashLabel.Size = new System.Drawing.Size(44, 13);
-            this.CarPopGroupHashLabel.TabIndex = 61;
+            this.CarPopGroupHashLabel.TabIndex = 51;
             this.CarPopGroupHashLabel.Text = "Hash: 0";
             // 
             // label38
             // 
             this.label38.AutoSize = true;
-            this.label38.Location = new System.Drawing.Point(6, 194);
+            this.label38.Location = new System.Drawing.Point(6, 168);
             this.label38.Name = "label38";
             this.label38.Size = new System.Drawing.Size(98, 13);
-            this.label38.TabIndex = 57;
+            this.label38.TabIndex = 61;
             this.label38.Text = "BodyColorRemap1:";
             // 
             // CarBodyColorRemap1TextBox
             // 
             this.CarBodyColorRemap1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarBodyColorRemap1TextBox.Location = new System.Drawing.Point(120, 191);
+            this.CarBodyColorRemap1TextBox.Location = new System.Drawing.Point(120, 165);
             this.CarBodyColorRemap1TextBox.Name = "CarBodyColorRemap1TextBox";
-            this.CarBodyColorRemap1TextBox.Size = new System.Drawing.Size(231, 20);
-            this.CarBodyColorRemap1TextBox.TabIndex = 58;
+            this.CarBodyColorRemap1TextBox.Size = new System.Drawing.Size(155, 20);
+            this.CarBodyColorRemap1TextBox.TabIndex = 62;
             this.CarBodyColorRemap1TextBox.TextChanged += new System.EventHandler(this.CarBodyColorRemap1TextBox_TextChanged);
             // 
             // label37
             // 
+            this.label37.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label37.AutoSize = true;
-            this.label37.Location = new System.Drawing.Point(6, 64);
+            this.label37.Location = new System.Drawing.Point(321, 90);
             this.label37.Name = "label37";
             this.label37.Size = new System.Drawing.Size(35, 13);
-            this.label37.TabIndex = 55;
+            this.label37.TabIndex = 71;
             this.label37.Text = "Flags:";
             // 
             // CarFlagsTextBox
             // 
-            this.CarFlagsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarFlagsTextBox.Location = new System.Drawing.Point(84, 61);
+            this.CarFlagsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.CarFlagsTextBox.Location = new System.Drawing.Point(362, 87);
             this.CarFlagsTextBox.Name = "CarFlagsTextBox";
-            this.CarFlagsTextBox.Size = new System.Drawing.Size(267, 20);
-            this.CarFlagsTextBox.TabIndex = 50;
+            this.CarFlagsTextBox.Size = new System.Drawing.Size(143, 20);
+            this.CarFlagsTextBox.TabIndex = 72;
             this.CarFlagsTextBox.TextChanged += new System.EventHandler(this.CarFlagsTextBox_TextChanged);
             // 
             // CarPerpendicularLengthTextBox
             // 
             this.CarPerpendicularLengthTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarPerpendicularLengthTextBox.Location = new System.Drawing.Point(120, 165);
+            this.CarPerpendicularLengthTextBox.Location = new System.Drawing.Point(120, 139);
             this.CarPerpendicularLengthTextBox.Name = "CarPerpendicularLengthTextBox";
-            this.CarPerpendicularLengthTextBox.Size = new System.Drawing.Size(231, 20);
-            this.CarPerpendicularLengthTextBox.TabIndex = 55;
+            this.CarPerpendicularLengthTextBox.Size = new System.Drawing.Size(155, 20);
+            this.CarPerpendicularLengthTextBox.TabIndex = 60;
             this.CarPerpendicularLengthTextBox.TextChanged += new System.EventHandler(this.CarPerpendicularLengthTextBox_TextChanged);
             // 
             // label36
             // 
             this.label36.AutoSize = true;
-            this.label36.Location = new System.Drawing.Point(6, 168);
+            this.label36.Location = new System.Drawing.Point(6, 142);
             this.label36.Name = "label36";
             this.label36.Size = new System.Drawing.Size(108, 13);
-            this.label36.TabIndex = 53;
+            this.label36.TabIndex = 59;
             this.label36.Text = "PerpendicularLength:";
             // 
             // CarOrientYTextBox
             // 
             this.CarOrientYTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarOrientYTextBox.Location = new System.Drawing.Point(84, 139);
+            this.CarOrientYTextBox.Location = new System.Drawing.Point(84, 113);
             this.CarOrientYTextBox.Name = "CarOrientYTextBox";
-            this.CarOrientYTextBox.Size = new System.Drawing.Size(267, 20);
-            this.CarOrientYTextBox.TabIndex = 54;
+            this.CarOrientYTextBox.Size = new System.Drawing.Size(191, 20);
+            this.CarOrientYTextBox.TabIndex = 58;
             this.CarOrientYTextBox.TextChanged += new System.EventHandler(this.CarOrientYTextBox_TextChanged);
             // 
             // label34
             // 
             this.label34.AutoSize = true;
-            this.label34.Location = new System.Drawing.Point(6, 142);
+            this.label34.Location = new System.Drawing.Point(6, 116);
             this.label34.Name = "label34";
             this.label34.Size = new System.Drawing.Size(45, 13);
-            this.label34.TabIndex = 51;
+            this.label34.TabIndex = 57;
             this.label34.Text = "OrientY:";
             // 
             // CarOrientXTextBox
             // 
             this.CarOrientXTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarOrientXTextBox.Location = new System.Drawing.Point(84, 113);
+            this.CarOrientXTextBox.Location = new System.Drawing.Point(84, 87);
             this.CarOrientXTextBox.Name = "CarOrientXTextBox";
-            this.CarOrientXTextBox.Size = new System.Drawing.Size(267, 20);
-            this.CarOrientXTextBox.TabIndex = 53;
+            this.CarOrientXTextBox.Size = new System.Drawing.Size(191, 20);
+            this.CarOrientXTextBox.TabIndex = 56;
             this.CarOrientXTextBox.TextChanged += new System.EventHandler(this.CarOrientXTextBox_TextChanged);
             // 
             // label35
             // 
             this.label35.AutoSize = true;
-            this.label35.Location = new System.Drawing.Point(6, 116);
+            this.label35.Location = new System.Drawing.Point(6, 90);
             this.label35.Name = "label35";
             this.label35.Size = new System.Drawing.Size(45, 13);
-            this.label35.TabIndex = 49;
+            this.label35.TabIndex = 55;
             this.label35.Text = "OrientX:";
             // 
             // CarModelTextBox
             // 
             this.CarModelTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarModelTextBox.Location = new System.Drawing.Point(84, 9);
+            this.CarModelTextBox.Location = new System.Drawing.Point(84, 35);
             this.CarModelTextBox.Name = "CarModelTextBox";
             this.CarModelTextBox.Size = new System.Drawing.Size(267, 20);
             this.CarModelTextBox.TabIndex = 47;
@@ -2414,7 +2428,7 @@
             // label32
             // 
             this.label32.AutoSize = true;
-            this.label32.Location = new System.Drawing.Point(6, 12);
+            this.label32.Location = new System.Drawing.Point(6, 38);
             this.label32.Name = "label32";
             this.label32.Size = new System.Drawing.Size(55, 13);
             this.label32.TabIndex = 46;
@@ -2424,7 +2438,7 @@
             // 
             this.CarModelHashLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.CarModelHashLabel.AutoSize = true;
-            this.CarModelHashLabel.Location = new System.Drawing.Point(357, 12);
+            this.CarModelHashLabel.Location = new System.Drawing.Point(357, 38);
             this.CarModelHashLabel.Name = "CarModelHashLabel";
             this.CarModelHashLabel.Size = new System.Drawing.Size(44, 13);
             this.CarModelHashLabel.TabIndex = 48;
@@ -2433,10 +2447,10 @@
             // CarGoToButton
             // 
             this.CarGoToButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarGoToButton.Location = new System.Drawing.Point(437, 85);
+            this.CarGoToButton.Location = new System.Drawing.Point(437, 7);
             this.CarGoToButton.Name = "CarGoToButton";
             this.CarGoToButton.Size = new System.Drawing.Size(68, 23);
-            this.CarGoToButton.TabIndex = 52;
+            this.CarGoToButton.TabIndex = 54;
             this.CarGoToButton.Text = "Go to";
             this.CarGoToButton.UseVisualStyleBackColor = true;
             this.CarGoToButton.Click += new System.EventHandler(this.CarGoToButton_Click);
@@ -2445,19 +2459,19 @@
             // 
             this.CarPositionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarPositionTextBox.Location = new System.Drawing.Point(84, 87);
+            this.CarPositionTextBox.Location = new System.Drawing.Point(84, 9);
             this.CarPositionTextBox.Name = "CarPositionTextBox";
             this.CarPositionTextBox.Size = new System.Drawing.Size(347, 20);
-            this.CarPositionTextBox.TabIndex = 51;
+            this.CarPositionTextBox.TabIndex = 53;
             this.CarPositionTextBox.TextChanged += new System.EventHandler(this.CarPositionTextBox_TextChanged);
             // 
             // label31
             // 
             this.label31.AutoSize = true;
-            this.label31.Location = new System.Drawing.Point(6, 90);
+            this.label31.Location = new System.Drawing.Point(6, 12);
             this.label31.Name = "label31";
             this.label31.Size = new System.Drawing.Size(47, 13);
-            this.label31.TabIndex = 43;
+            this.label31.TabIndex = 52;
             this.label31.Text = "Position:";
             // 
             // YndTabPage
@@ -7932,14 +7946,95 @@
             // 
             this.OpenFileDialog.Filter = "CodeWalker Projects|*.cwproj";
             // 
-            // label162
+            // CarFlagsCheckedListBox
             // 
-            this.label162.AutoSize = true;
-            this.label162.Location = new System.Drawing.Point(99, 11);
-            this.label162.Name = "label162";
-            this.label162.Size = new System.Drawing.Size(111, 13);
-            this.label162.TabIndex = 2;
-            this.label162.Text = "XML for _manifest.ymf";
+            this.CarFlagsCheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CarFlagsCheckedListBox.CheckOnClick = true;
+            this.CarFlagsCheckedListBox.FormattingEnabled = true;
+            this.CarFlagsCheckedListBox.Items.AddRange(new object[] {
+            "1 - Unk01",
+            "2 - Unk02",
+            "4 - Unk03",
+            "8 - Unk04",
+            "16 - Unk05",
+            "32 - Unk06",
+            "64 - Unk07",
+            "128 - Unk08",
+            "256 - Unk09",
+            "512 - Unk10",
+            "1024 - Unk11",
+            "2048 - Unk12",
+            "4096 - Unk13",
+            "8192 - Unk14",
+            "16384 - Unk15",
+            "32768 - Unk16",
+            "65536 - Unk17",
+            "131072 - Unk18",
+            "262144 - Unk19",
+            "524288 - Unk20",
+            "1048576 - Unk21",
+            "2097152 - Unk22",
+            "4194304 - Unk23",
+            "8388608 - Unk24",
+            "16777216 - Unk25",
+            "33554432 - Unk26",
+            "67108864 - Unk27",
+            "134217728 - Unk28",
+            "268435456 - Unk29",
+            "536870912 - Unk30",
+            "1073741824 - Unk31",
+            "2147483648 - Unk32"});
+            this.CarFlagsCheckedListBox.Location = new System.Drawing.Point(304, 113);
+            this.CarFlagsCheckedListBox.Name = "CarFlagsCheckedListBox";
+            this.CarFlagsCheckedListBox.Size = new System.Drawing.Size(201, 319);
+            this.CarFlagsCheckedListBox.TabIndex = 73;
+            this.CarFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.CarFlagsCheckedListBox_ItemCheck);
+            // 
+            // EntityFlagsCheckedListBox
+            // 
+            this.EntityFlagsCheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.EntityFlagsCheckedListBox.CheckOnClick = true;
+            this.EntityFlagsCheckedListBox.FormattingEnabled = true;
+            this.EntityFlagsCheckedListBox.Items.AddRange(new object[] {
+            "1 - Unk01",
+            "2 - Unk02",
+            "4 - Unk03",
+            "8 - Unk04",
+            "16 - Unk05",
+            "32 - Unk06",
+            "64 - Unk07",
+            "128 - Unk08",
+            "256 - Unk09",
+            "512 - Unk10",
+            "1024 - Unk11",
+            "2048 - Unk12",
+            "4096 - Unk13",
+            "8192 - Unk14",
+            "16384 - Unk15",
+            "32768 - Unk16",
+            "65536 - Unk17",
+            "131072 - Unk18",
+            "262144 - Unk19",
+            "524288 - Unk20",
+            "1048576 - Unk21",
+            "2097152 - Unk22",
+            "4194304 - Unk23",
+            "8388608 - Unk24",
+            "16777216 - Unk25",
+            "33554432 - Unk26",
+            "67108864 - Unk27",
+            "134217728 - Unk28",
+            "268435456 - Unk29",
+            "536870912 - Unk30",
+            "1073741824 - Unk31",
+            "2147483648 - Unk32"});
+            this.EntityFlagsCheckedListBox.Location = new System.Drawing.Point(292, 113);
+            this.EntityFlagsCheckedListBox.Name = "EntityFlagsCheckedListBox";
+            this.EntityFlagsCheckedListBox.Size = new System.Drawing.Size(201, 289);
+            this.EntityFlagsCheckedListBox.TabIndex = 32;
+            this.EntityFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.EntityFlagsCheckedListBox_ItemCheck);
             // 
             // ProjectForm
             // 
@@ -8785,5 +8880,7 @@
         private System.Windows.Forms.Button ProjectManifestGenerateButton;
         private FastColoredTextBoxNS.FastColoredTextBox ProjectManifestTextBox;
         private System.Windows.Forms.Label label162;
+        private System.Windows.Forms.CheckedListBox CarFlagsCheckedListBox;
+        private System.Windows.Forms.CheckedListBox EntityFlagsCheckedListBox;
     }
 }

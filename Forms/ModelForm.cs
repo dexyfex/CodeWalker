@@ -120,6 +120,9 @@ namespace CodeWalker.Forms
         bool waitforchildrentoload = true;
         bool rendercollisionmeshes = false;// Settings.Default.ShowCollisionMeshes;
 
+        bool renderskeletons = true;
+        List<Renderable> renderskeletonlist = new List<Renderable>();
+
         bool CtrlPressed = false;
         bool ShiftPressed = false;
 
@@ -364,6 +367,7 @@ namespace CodeWalker.Forms
             //BoundingBoxes.Clear();
             //BoundingSpheres.Clear();
             //BeginMouseHitTest();
+            BeginFrame();
 
 
             dxman.ClearRenderTarget(context);
@@ -394,6 +398,8 @@ namespace CodeWalker.Forms
             RenderGrid(context);
 
             shaders.RenderQueued(context, camera, currentWindVec);
+
+            RenderSkeletons(context);
 
             //RenderBounds(context);
 
@@ -522,6 +528,274 @@ namespace CodeWalker.Forms
 
 
 
+
+
+
+        private Archetype TryGetArchetype(uint hash)
+        {
+            if ((gameFileCache == null) || (!gameFileCache.IsInited)) return null;
+
+            var arch = gameFileCache.GetArchetype(hash);
+
+            if ((arch != null) && (arch != currentArchetype) && (updateArchetypeStatus))
+            {
+                UpdateStatus("Archetype: " + arch.Name.ToString());
+                currentArchetype = arch;
+                updateArchetypeStatus = false;
+            }
+
+            return arch;
+        }
+
+        private DrawableBase TryGetDrawable(Archetype arche)
+        {
+            if (arche == null) return null;
+            if ((gameFileCache == null) || (!gameFileCache.IsInited)) return null;
+
+            uint drawhash = arche.Hash;
+            DrawableBase drawable = null;
+            if ((arche.DrawableDict != 0))// && (arche.DrawableDict != arche.Hash))
+            {
+                //try get drawable from ydd...
+                YddFile ydd = gameFileCache.GetYdd(arche.DrawableDict);
+                if (ydd != null)
+                {
+                    if (ydd.Loaded && (ydd.Dict != null))
+                    {
+                        Drawable d;
+                        ydd.Dict.TryGetValue(drawhash, out d); //can't out to base class?
+                        drawable = d;
+                        if (drawable == null)
+                        {
+                            return null; //drawable wasn't in dict!!
+                        }
+                    }
+                    else
+                    {
+                        return null; //ydd not loaded yet, or has no dict
+                    }
+                }
+                else
+                {
+                    //return null; //couldn't find drawable dict... quit now?
+                }
+            }
+            if (drawable == null)
+            {
+                //try get drawable from ydr.
+                YdrFile ydr = gameFileCache.GetYdr(drawhash);
+                if (ydr != null)
+                {
+                    if (ydr.Loaded)
+                    {
+                        drawable = ydr.Drawable;
+                    }
+                }
+                else
+                {
+                    YftFile yft = gameFileCache.GetYft(drawhash);
+                    if (yft != null)
+                    {
+                        if (yft.Loaded)
+                        {
+                            if (yft.Fragment != null)
+                            {
+                                drawable = yft.Fragment.Drawable;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return drawable;
+        }
+
+        private Renderable TryGetRenderable(Archetype arche, DrawableBase drawable, uint txdHash = 0)
+        {
+            if (drawable == null) return null;
+            //BUG: only last texdict used!! needs to cache textures per archetype........
+            //(but is it possible to have the same drawable with different archetypes?)
+            uint texDict = (arche != null) ? arche.TextureDict.Hash : txdHash;
+            uint clipDict = (arche != null) ? arche.ClipDict.Hash : 0;
+            var yptTextDict = Ypt?.PtfxList?.TextureDictionary;
+
+            Renderable rndbl = renderableCache.GetRenderable(drawable);
+            if (rndbl == null) return null;
+
+
+            var gfc = gameFileCache;
+            if ((gfc != null) && (!gfc.IsInited))
+            {
+                gfc = null;
+            }
+
+
+            //if (clipDict != 0)
+            //{
+            //    YcdFile ycd = gameFileCache.GetYcd(clipDict);
+            //    if ((ycd != null) && (ycd.Loaded))
+            //    {
+            //        ClipMapEntry cme;
+            //        if (ycd.ClipMap.TryGetValue(arche.Hash, out cme))
+            //        {
+            //        }
+            //        else
+            //        { }
+            //    }
+            //}
+
+
+            bool alltexsloaded = true;
+            int missingtexcount = 0;
+            for (int mi = 0; mi < rndbl.HDModels.Length; mi++)
+            {
+                var model = rndbl.HDModels[mi];
+
+                //if (!RenderIsModelFinalRender(model) && !renderproxies)
+                //{
+                //    continue; //filter out reflection proxy models...
+                //}
+
+
+                foreach (var geom in model.Geometries)
+                {
+                    if (geom.Textures != null)
+                    {
+                        for (int i = 0; i < geom.Textures.Length; i++)
+                        {
+                            var tex = geom.Textures[i];
+                            var ttex = tex as Texture;
+                            RenderableTexture rdtex = null;
+                            if ((ttex == null) && (tex != null))
+                            {
+                                //TextureRef means this RenderableTexture needs to be loaded from texture dict...
+                                if (yptTextDict != null) //for ypt files, first try the embedded tex dict..
+                                {
+                                    var dtex = yptTextDict.Lookup(tex.NameHash);
+                                    rdtex = renderableCache.GetRenderableTexture(dtex);
+                                }
+                                else if (texDict != 0)
+                                {
+                                    YtdFile ytd = gfc?.GetYtd(texDict);
+                                    if ((ytd != null) && (ytd.Loaded) && (ytd.TextureDict != null))
+                                    {
+                                        var dtex = ytd.TextureDict.Lookup(tex.NameHash);
+                                        if (dtex == null)
+                                        {
+                                            //not present in dictionary... check already loaded texture dicts...
+                                            YtdFile ytd2 = gfc?.TryGetTextureDictForTexture(tex.NameHash);
+                                            if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
+                                            {
+                                                dtex = ytd2.TextureDict.Lookup(tex.NameHash);
+                                            }
+                                            else
+                                            {
+                                                //couldn't find texture dict?
+                                                //first try going through ytd hierarchy...
+                                                dtex = gfc?.TryFindTextureInParent(tex.NameHash, texDict);
+
+
+                                                //if (dtex == null)
+                                                //{ //try for a texture dict with the same hash as the archetype?
+                                                //    dtex = gameFileCache.TryFindTextureInParent(tex.TextureRef.NameHash, arche.Hash);
+                                                //    if (dtex != null)
+                                                //    { }
+                                                //}
+                                            }
+                                        }
+                                        if (dtex != null)
+                                        {
+                                            geom.Textures[i] = dtex; //cache it for next time to avoid the lookup...
+                                            rdtex = renderableCache.GetRenderableTexture(dtex);
+                                        }
+                                        if (rdtex == null)
+                                        { } //nothing to see here :(
+                                    }
+                                    else if ((ytd == null))
+                                    {
+                                        Texture dtex = null;
+                                        if (drawable.ShaderGroup.TextureDictionary != null)
+                                        {
+                                            dtex = drawable.ShaderGroup.TextureDictionary.Lookup(tex.NameHash);
+                                            if (dtex == null)
+                                            {
+                                                //dtex = drawable.ShaderGroup.TextureDictionary.Textures.data_items[0];
+                                            }
+                                        }
+                                        if (dtex == null)
+                                        {
+                                            YtdFile ytd2 = gfc?.TryGetTextureDictForTexture(tex.NameHash);
+                                            if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
+                                            {
+                                                dtex = ytd2.TextureDict.Lookup(tex.NameHash);
+                                            }
+                                            if (dtex == null)
+                                            {
+                                                dtex = gfc?.TryFindTextureInParent(tex.NameHash, texDict);
+                                            }
+                                        }
+                                        rdtex = renderableCache.GetRenderableTexture(dtex);
+                                        if (rdtex == null)
+                                        { missingtexcount -= 2; } //(give extra chance..)  couldn't find the texture! :(
+                                    }
+                                    else if (ytd != null)
+                                    {
+                                        alltexsloaded = false;//ytd not loaded yet
+                                        //missingtexcount++;
+                                    }
+                                }
+                                else //no texdict specified, nothing to see here..
+                                {
+                                    YtdFile ytd2 = gfc?.TryGetTextureDictForTexture(tex.NameHash);
+                                    if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
+                                    {
+                                        var dtex = ytd2.TextureDict.Lookup(tex.NameHash);
+                                        rdtex = renderableCache.GetRenderableTexture(dtex);
+                                    }
+                                }
+                            }
+                            else if (ttex != null) //ensure embedded renderable texture
+                            {
+                                rdtex = renderableCache.GetRenderableTexture(ttex);
+                            }
+                            else if (tex == null)
+                            { } //tex wasn't loaded? shouldn't happen..
+
+
+                            geom.RenderableTextures[i] = rdtex;
+                            if (rdtex != null)
+                            {
+                                if (!rdtex.IsLoaded)
+                                {
+                                    alltexsloaded = false;
+                                    missingtexcount++;
+                                }
+                            }
+                            else
+                            {
+                                //alltexsloaded = false;
+                                missingtexcount++;
+                            }
+
+
+                        }
+                    }
+                }
+            }
+
+            rndbl.AllTexturesLoaded = alltexsloaded || (missingtexcount < 2);
+
+            return rndbl;
+        }
+
+
+
+
+
+        private void BeginFrame()
+        {
+            renderskeletonlist.Clear();
+        }
 
 
 
@@ -774,6 +1048,10 @@ namespace CodeWalker.Forms
 
 
 
+
+
+
+
         private void RenderSingleItem()
         {
 
@@ -880,6 +1158,308 @@ namespace CodeWalker.Forms
 
 
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        private bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, Vector3 camrel, uint txdHash = 0)
+        {
+            //enqueue a single drawable for rendering.
+
+            if (drawable == null)
+                return false;
+
+            Renderable rndbl = TryGetRenderable(arche, drawable, txdHash);
+            if (rndbl == null)
+                return false;
+
+            return RenderRenderable(rndbl, arche, entity, camrel);
+        }
+
+
+        private bool RenderRenderable(Renderable rndbl, Archetype arche, YmapEntityDef entity, Vector3 camrel)
+        {
+            //enqueue a single renderable for rendering.
+
+            if (!rndbl.IsLoaded) return false;
+
+
+            //if (((SelectionMode == MapSelectionMode.Entity) || (SelectionMode == MapSelectionMode.EntityExtension) || (SelectionMode == MapSelectionMode.ArchetypeExtension)))
+            //{
+            //    UpdateMouseHit(rndbl, arche, entity, camrel);
+            //}
+
+            bool isselected = true;// (rndbl.Key == SelectedItem.Drawable);
+
+            Vector3 position = Vector3.Zero;
+            Vector3 scale = Vector3.One;
+            Quaternion orientation = Quaternion.Identity;
+            uint tintPaletteIndex = 0;
+            Vector3 bbmin = (arche != null) ? arche.BBMin : rndbl.Key.BoundingBoxMin.XYZ();
+            Vector3 bbmax = (arche != null) ? arche.BBMax : rndbl.Key.BoundingBoxMax.XYZ();
+            Vector3 bscen = (arche != null) ? arche.BSCenter : rndbl.Key.BoundingCenter;
+            float radius = (arche != null) ? arche.BSRadius : rndbl.Key.BoundingSphereRadius;
+            float distance = (camrel + bscen).Length();
+            if (entity != null)
+            {
+                position = entity.Position;
+                scale = entity.Scale;
+                orientation = entity.Orientation;
+                tintPaletteIndex = entity.CEntityDef.tintValue;
+                bbmin = entity.BBMin;
+                bbmax = entity.BBMax;
+                bscen = entity.BSCenter;
+            }
+
+
+            if (rendercollisionmeshes)// && collisionmeshlayerdrawable)
+            {
+                Drawable sdrawable = rndbl.Key as Drawable;
+                if ((sdrawable != null) && (sdrawable.Bound != null))
+                {
+                    RenderCollisionMesh(sdrawable.Bound, entity);
+                }
+            }
+            if (renderskeletons)
+            {
+                if (rndbl.HasSkeleton)
+                {
+                    RenderSkeleton(rndbl);
+                }
+            }
+
+
+
+            bool retval = true;// false;
+            if (rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
+            {
+                RenderableGeometryInst rginst = new RenderableGeometryInst();
+                rginst.Inst.Renderable = rndbl;
+                rginst.Inst.CamRel = camrel;
+                rginst.Inst.Position = position;
+                rginst.Inst.Scale = scale;
+                rginst.Inst.Orientation = orientation;
+                rginst.Inst.TintPaletteIndex = tintPaletteIndex;
+                rginst.Inst.BBMin = bbmin;
+                rginst.Inst.BBMax = bbmax;
+                rginst.Inst.BSCenter = bscen;
+                rginst.Inst.Radius = radius;
+                rginst.Inst.Distance = distance;
+
+
+                RenderableModel[] models = isselected ? rndbl.AllModels : rndbl.HDModels;
+
+                for (int mi = 0; mi < models.Length; mi++)
+                {
+                    var model = models[mi];
+
+                    if (isselected)
+                    {
+                        if (ModelDrawFlags.ContainsKey(model.DrawableModel))
+                        { continue; } //filter out models in selected item that aren't flagged for drawing.
+                    }
+
+                    if (!RenderIsModelFinalRender(model))// && !renderproxies)
+                    { continue; } //filter out reflection proxy models...
+
+                    for (int gi = 0; gi < model.Geometries.Length; gi++)
+                    {
+                        var geom = model.Geometries[gi];
+
+                        if (isselected)
+                        {
+                            if (GeometryDrawFlags.ContainsKey(geom.DrawableGeom))
+                            { continue; } //filter out geometries in selected item that aren't flagged for drawing.
+                        }
+
+                        rginst.Geom = geom;
+
+                        shaders.Enqueue(rginst);
+                    }
+                }
+            }
+            else
+            {
+                retval = false;
+            }
+            return retval;
+        }
+
+
+        private void RenderCollisionMesh(Bounds bounds, YmapEntityDef entity)
+        {
+            //enqueue a single collision mesh for rendering.
+
+            Vector3 position;
+            Vector3 scale;
+            Quaternion orientation;
+            if (entity != null)
+            {
+                position = entity.Position;
+                scale = entity.Scale;
+                orientation = entity.Orientation;
+            }
+            else
+            {
+                position = Vector3.Zero;
+                scale = Vector3.One;
+                orientation = Quaternion.Identity;
+            }
+
+            switch (bounds.Type)
+            {
+                case 10: //BoundComposite
+                    BoundComposite boundcomp = bounds as BoundComposite;
+                    if (boundcomp != null)
+                    {
+                        RenderableBoundComposite rndbc = renderableCache.GetRenderableBoundComp(boundcomp);
+                        if (rndbc.IsLoaded)
+                        {
+                            RenderableBoundGeometryInst rbginst = new RenderableBoundGeometryInst();
+                            rbginst.Inst.Renderable = rndbc;
+                            rbginst.Inst.Orientation = orientation;
+                            rbginst.Inst.Scale = scale;
+                            foreach (var geom in rndbc.Geometries)
+                            {
+                                if (geom == null) continue;
+                                rbginst.Geom = geom;
+                                rbginst.Inst.Position = position + orientation.Multiply(geom.BoundGeom.CenterGeom * scale);
+                                rbginst.Inst.CamRel = rbginst.Inst.Position - camera.Position;
+                                shaders.Enqueue(rbginst);
+                            }
+
+                            //UpdateMouseHits(rndbc, entity);
+                        }
+                    }
+                    else
+                    { }
+                    break;
+                case 3: //BoundBox - found in drawables - TODO
+                    BoundBox boundbox = bounds as BoundBox;
+                    if (boundbox == null)
+                    { }
+                    break;
+                case 0: //BoundSphere - found in drawables - TODO
+                    BoundSphere boundsphere = bounds as BoundSphere;
+                    if (boundsphere == null)
+                    { }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+
+        private void RenderNavmesh(YnvFile ynv)
+        {
+            RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(ynv);
+            if ((rnd != null) && (rnd.IsLoaded))
+            {
+                shaders.Enqueue(rnd);
+            }
+        }
+
+
+
+        private bool RenderIsModelFinalRender(RenderableModel model)
+        {
+
+            if ((model.Unk2Ch & 1) == 0) //smallest bit is proxy/"final render" bit? seems to work...
+            {
+                return false;// renderproxies;
+            }
+            return true;
+
+            //switch (model.Unk2Ch)
+            //{
+            //    case 65784:  //0000010000000011111000  //reflection proxy?
+            //    case 65788:  //0000010000000011111100
+            //    case 131312: //0000100000000011110000  //reflection proxy?
+            //    case 131320: //0000100000000011111000  //reflection proxy?
+            //    case 131324: //0000100000000011111100  //shadow/reflection proxy?
+            //    case 196834: //0000110000000011100010 //shadow proxy? (tree branches)
+            //    case 196848: //0000110000000011110000  //reflection proxy?
+            //    case 196856: //0000110000000011111000 //reflection proxy? hotel nr golf course
+            //    case 262392: //0001000000000011111000  //reflection proxy?
+            //    case 327932: //0001010000000011111100  //reflection proxy? (alamo/sandy shores)
+            //    case 983268: //0011110000000011100100  //big reflection proxy?
+            //    case 2293988://1000110000000011100100  //big reflection proxy?
+            //                 //case 1442047://golf course water proxy, but other things also
+            //                 //case 1114367://mike house water proxy, but other things also
+            //        return renderproxies;
+            //}
+            //return true;
+        }
+
+
+
+
+
+
+
+        private void RenderSkeleton(Renderable renderable)
+        {
+            renderskeletonlist.Add(renderable);
+        }
+
+        private void RenderSkeletons(DeviceContext context)
+        {
+
+
+
+            foreach (var renderable in renderskeletonlist)
+            {
+                DrawableBase drawable = renderable.Key;
+                Skeleton skeleton = drawable?.Skeleton;
+                if (skeleton == null) continue;
+
+                var pinds = skeleton.ParentIndices;
+                var bones = skeleton.Bones;
+                if ((pinds == null) || (bones == null)) continue;
+                var xforms = skeleton.Transformations;
+
+                int cnt = Math.Min(pinds.Length, bones.Count);
+                for (int i = 0; i < cnt; i++)
+                {
+                    var pind = pinds[i];
+                    var bone = bones[i];
+                    var pbone = bone.Parent;
+                    //if (pbone == null) continue;
+
+                    if (xforms != null)
+                    {
+                        var xform = (i < xforms.Length) ? xforms[i] : Matrix.Identity;
+                        var pxform = (pind < xforms.Length) ? xforms[pind] : Matrix.Identity;
+                    }
+                    else
+                    {
+                    }
+
+
+
+                }
+
+
+            }
+
+
+
+        }
+
+
+
+
 
 
 
@@ -1558,495 +2138,6 @@ namespace CodeWalker.Forms
                 updateArchetypeStatus = true;
             }
         }
-
-
-
-
-
-
-
-        private Archetype TryGetArchetype(uint hash)
-        {
-            if ((gameFileCache == null) || (!gameFileCache.IsInited)) return null;
-
-            var arch = gameFileCache.GetArchetype(hash);
-
-            if ((arch != null) && (arch != currentArchetype) && (updateArchetypeStatus))
-            {
-                UpdateStatus("Archetype: " + arch.Name.ToString());
-                currentArchetype = arch;
-                updateArchetypeStatus = false;
-            }
-
-            return arch;
-        }
-
-        private DrawableBase TryGetDrawable(Archetype arche)
-        {
-            if (arche == null) return null;
-            if ((gameFileCache == null) || (!gameFileCache.IsInited)) return null;
-
-            uint drawhash = arche.Hash;
-            DrawableBase drawable = null;
-            if ((arche.DrawableDict != 0))// && (arche.DrawableDict != arche.Hash))
-            {
-                //try get drawable from ydd...
-                YddFile ydd = gameFileCache.GetYdd(arche.DrawableDict);
-                if (ydd != null)
-                {
-                    if (ydd.Loaded && (ydd.Dict != null))
-                    {
-                        Drawable d;
-                        ydd.Dict.TryGetValue(drawhash, out d); //can't out to base class?
-                        drawable = d;
-                        if (drawable == null)
-                        {
-                            return null; //drawable wasn't in dict!!
-                        }
-                    }
-                    else
-                    {
-                        return null; //ydd not loaded yet, or has no dict
-                    }
-                }
-                else
-                {
-                    //return null; //couldn't find drawable dict... quit now?
-                }
-            }
-            if (drawable == null)
-            {
-                //try get drawable from ydr.
-                YdrFile ydr = gameFileCache.GetYdr(drawhash);
-                if (ydr != null)
-                {
-                    if (ydr.Loaded)
-                    {
-                        drawable = ydr.Drawable;
-                    }
-                }
-                else
-                {
-                    YftFile yft = gameFileCache.GetYft(drawhash);
-                    if (yft != null)
-                    {
-                        if (yft.Loaded)
-                        {
-                            if (yft.Fragment != null)
-                            {
-                                drawable = yft.Fragment.Drawable;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return drawable;
-        }
-
-        private Renderable TryGetRenderable(Archetype arche, DrawableBase drawable, uint txdHash = 0)
-        {
-            if (drawable == null) return null;
-            //BUG: only last texdict used!! needs to cache textures per archetype........
-            //(but is it possible to have the same drawable with different archetypes?)
-            uint texDict = (arche != null) ? arche.TextureDict.Hash : txdHash;
-            uint clipDict = (arche != null) ? arche.ClipDict.Hash : 0;
-            var yptTextDict = Ypt?.PtfxList?.TextureDictionary;
-
-            Renderable rndbl = renderableCache.GetRenderable(drawable);
-            if (rndbl == null) return null;
-
-
-            var gfc = gameFileCache;
-            if ((gfc != null) && (!gfc.IsInited))
-            {
-                gfc = null;
-            }
-
-
-            //if (clipDict != 0)
-            //{
-            //    YcdFile ycd = gameFileCache.GetYcd(clipDict);
-            //    if ((ycd != null) && (ycd.Loaded))
-            //    {
-            //        ClipMapEntry cme;
-            //        if (ycd.ClipMap.TryGetValue(arche.Hash, out cme))
-            //        {
-            //        }
-            //        else
-            //        { }
-            //    }
-            //}
-
-
-            bool alltexsloaded = true;
-            int missingtexcount = 0;
-            for (int mi = 0; mi < rndbl.HDModels.Length; mi++)
-            {
-                var model = rndbl.HDModels[mi];
-
-                //if (!RenderIsModelFinalRender(model) && !renderproxies)
-                //{
-                //    continue; //filter out reflection proxy models...
-                //}
-
-
-                foreach (var geom in model.Geometries)
-                {
-                    if (geom.Textures != null)
-                    {
-                        for (int i = 0; i < geom.Textures.Length; i++)
-                        {
-                            var tex = geom.Textures[i];
-                            var ttex = tex as Texture;
-                            RenderableTexture rdtex = null;
-                            if ((ttex == null) && (tex != null))
-                            {
-                                //TextureRef means this RenderableTexture needs to be loaded from texture dict...
-                                if (yptTextDict != null) //for ypt files, first try the embedded tex dict..
-                                {
-                                    var dtex = yptTextDict.Lookup(tex.NameHash);
-                                    rdtex = renderableCache.GetRenderableTexture(dtex);
-                                }
-                                else if (texDict != 0)
-                                {
-                                    YtdFile ytd = gfc?.GetYtd(texDict);
-                                    if ((ytd != null) && (ytd.Loaded) && (ytd.TextureDict != null))
-                                    {
-                                        var dtex = ytd.TextureDict.Lookup(tex.NameHash);
-                                        if (dtex == null)
-                                        {
-                                            //not present in dictionary... check already loaded texture dicts...
-                                            YtdFile ytd2 = gfc?.TryGetTextureDictForTexture(tex.NameHash);
-                                            if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
-                                            {
-                                                dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                            }
-                                            else
-                                            {
-                                                //couldn't find texture dict?
-                                                //first try going through ytd hierarchy...
-                                                dtex = gfc?.TryFindTextureInParent(tex.NameHash, texDict);
-
-
-                                                //if (dtex == null)
-                                                //{ //try for a texture dict with the same hash as the archetype?
-                                                //    dtex = gameFileCache.TryFindTextureInParent(tex.TextureRef.NameHash, arche.Hash);
-                                                //    if (dtex != null)
-                                                //    { }
-                                                //}
-                                            }
-                                        }
-                                        if (dtex != null)
-                                        {
-                                            geom.Textures[i] = dtex; //cache it for next time to avoid the lookup...
-                                            rdtex = renderableCache.GetRenderableTexture(dtex);
-                                        }
-                                        if (rdtex == null)
-                                        { } //nothing to see here :(
-                                    }
-                                    else if ((ytd == null))
-                                    {
-                                        Texture dtex = null;
-                                        if (drawable.ShaderGroup.TextureDictionary != null)
-                                        {
-                                            dtex = drawable.ShaderGroup.TextureDictionary.Lookup(tex.NameHash);
-                                            if (dtex == null)
-                                            {
-                                                //dtex = drawable.ShaderGroup.TextureDictionary.Textures.data_items[0];
-                                            }
-                                        }
-                                        if (dtex == null)
-                                        {
-                                            YtdFile ytd2 = gfc?.TryGetTextureDictForTexture(tex.NameHash);
-                                            if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
-                                            {
-                                                dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                            }
-                                            if (dtex == null)
-                                            {
-                                                dtex = gfc?.TryFindTextureInParent(tex.NameHash, texDict);
-                                            }
-                                        }
-                                        rdtex = renderableCache.GetRenderableTexture(dtex);
-                                        if (rdtex == null)
-                                        { missingtexcount -= 2; } //(give extra chance..)  couldn't find the texture! :(
-                                    }
-                                    else if (ytd != null)
-                                    {
-                                        alltexsloaded = false;//ytd not loaded yet
-                                        //missingtexcount++;
-                                    }
-                                }
-                                else //no texdict specified, nothing to see here..
-                                {
-                                    YtdFile ytd2 = gfc?.TryGetTextureDictForTexture(tex.NameHash);
-                                    if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
-                                    {
-                                        var dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                        rdtex = renderableCache.GetRenderableTexture(dtex);
-                                    }
-                                }
-                            }
-                            else if (ttex != null) //ensure embedded renderable texture
-                            {
-                                rdtex = renderableCache.GetRenderableTexture(ttex);
-                            }
-                            else if (tex == null)
-                            { } //tex wasn't loaded? shouldn't happen..
-
-
-                            geom.RenderableTextures[i] = rdtex;
-                            if (rdtex != null)
-                            {
-                                if (!rdtex.IsLoaded)
-                                {
-                                    alltexsloaded = false;
-                                    missingtexcount++;
-                                }
-                            }
-                            else
-                            {
-                                //alltexsloaded = false;
-                                missingtexcount++;
-                            }
-
-
-                        }
-                    }
-                }
-            }
-
-            rndbl.AllTexturesLoaded = alltexsloaded || (missingtexcount < 2);
-
-            return rndbl;
-        }
-
-
-
-        private bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, Vector3 camrel, uint txdHash = 0)
-        {
-            //enqueue a single drawable for rendering.
-
-            if (drawable == null)
-                return false;
-
-            Renderable rndbl = TryGetRenderable(arche, drawable, txdHash);
-            if (rndbl == null)
-                return false;
-
-            return RenderRenderable(rndbl, arche, entity, camrel);
-        }
-
-
-        private bool RenderRenderable(Renderable rndbl, Archetype arche, YmapEntityDef entity, Vector3 camrel)
-        {
-            //enqueue a single renderable for rendering.
-
-            if (!rndbl.IsLoaded) return false;
-
-
-            //if (((SelectionMode == MapSelectionMode.Entity) || (SelectionMode == MapSelectionMode.EntityExtension) || (SelectionMode == MapSelectionMode.ArchetypeExtension)))
-            //{
-            //    UpdateMouseHit(rndbl, arche, entity, camrel);
-            //}
-
-            bool isselected = true;// (rndbl.Key == SelectedItem.Drawable);
-
-            Vector3 position = Vector3.Zero;
-            Vector3 scale = Vector3.One;
-            Quaternion orientation = Quaternion.Identity;
-            uint tintPaletteIndex = 0;
-            Vector3 bbmin = (arche != null) ? arche.BBMin : rndbl.Key.BoundingBoxMin.XYZ();
-            Vector3 bbmax = (arche != null) ? arche.BBMax : rndbl.Key.BoundingBoxMax.XYZ();
-            Vector3 bscen = (arche != null) ? arche.BSCenter : rndbl.Key.BoundingCenter;
-            float radius = (arche != null) ? arche.BSRadius : rndbl.Key.BoundingSphereRadius;
-            float distance = (camrel + bscen).Length();
-            if (entity != null)
-            {
-                position = entity.Position;
-                scale = entity.Scale;
-                orientation = entity.Orientation;
-                tintPaletteIndex = entity.CEntityDef.tintValue;
-                bbmin = entity.BBMin;
-                bbmax = entity.BBMax;
-                bscen = entity.BSCenter;
-            }
-
-
-            if (rendercollisionmeshes)// && collisionmeshlayerdrawable)
-            {
-                Drawable sdrawable = rndbl.Key as Drawable;
-                if ((sdrawable != null) && (sdrawable.Bound != null))
-                {
-                    RenderCollisionMesh(sdrawable.Bound, entity);
-                }
-            }
-
-
-            bool retval = true;// false;
-            if (rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
-            {
-                RenderableGeometryInst rginst = new RenderableGeometryInst();
-                rginst.Inst.Renderable = rndbl;
-                rginst.Inst.CamRel = camrel;
-                rginst.Inst.Position = position;
-                rginst.Inst.Scale = scale;
-                rginst.Inst.Orientation = orientation;
-                rginst.Inst.TintPaletteIndex = tintPaletteIndex;
-                rginst.Inst.BBMin = bbmin;
-                rginst.Inst.BBMax = bbmax;
-                rginst.Inst.BSCenter = bscen;
-                rginst.Inst.Radius = radius;
-                rginst.Inst.Distance = distance;
-
-
-                RenderableModel[] models = isselected ? rndbl.AllModels : rndbl.HDModels;
-
-                for (int mi = 0; mi < models.Length; mi++)
-                {
-                    var model = models[mi];
-
-                    if (isselected)
-                    {
-                        if (ModelDrawFlags.ContainsKey(model.DrawableModel))
-                        { continue; } //filter out models in selected item that aren't flagged for drawing.
-                    }
-
-                    if (!RenderIsModelFinalRender(model))// && !renderproxies)
-                    { continue; } //filter out reflection proxy models...
-
-                    for (int gi = 0; gi < model.Geometries.Length; gi++)
-                    {
-                        var geom = model.Geometries[gi];
-
-                        if (isselected)
-                        {
-                            if (GeometryDrawFlags.ContainsKey(geom.DrawableGeom))
-                            { continue; } //filter out geometries in selected item that aren't flagged for drawing.
-                        }
-
-                        rginst.Geom = geom;
-
-                        shaders.Enqueue(rginst);
-                    }
-                }
-            }
-            else
-            {
-                retval = false;
-            }
-            return retval;
-        }
-
-
-        private void RenderCollisionMesh(Bounds bounds, YmapEntityDef entity)
-        {
-            //enqueue a single collision mesh for rendering.
-
-            Vector3 position;
-            Vector3 scale;
-            Quaternion orientation;
-            if (entity != null)
-            {
-                position = entity.Position;
-                scale = entity.Scale;
-                orientation = entity.Orientation;
-            }
-            else
-            {
-                position = Vector3.Zero;
-                scale = Vector3.One;
-                orientation = Quaternion.Identity;
-            }
-
-            switch (bounds.Type)
-            {
-                case 10: //BoundComposite
-                    BoundComposite boundcomp = bounds as BoundComposite;
-                    if (boundcomp != null)
-                    {
-                        RenderableBoundComposite rndbc = renderableCache.GetRenderableBoundComp(boundcomp);
-                        if (rndbc.IsLoaded)
-                        {
-                            RenderableBoundGeometryInst rbginst = new RenderableBoundGeometryInst();
-                            rbginst.Inst.Renderable = rndbc;
-                            rbginst.Inst.Orientation = orientation;
-                            rbginst.Inst.Scale = scale;
-                            foreach (var geom in rndbc.Geometries)
-                            {
-                                if (geom == null) continue;
-                                rbginst.Geom = geom;
-                                rbginst.Inst.Position = position + orientation.Multiply(geom.BoundGeom.CenterGeom * scale);
-                                rbginst.Inst.CamRel = rbginst.Inst.Position - camera.Position;
-                                shaders.Enqueue(rbginst);
-                            }
-
-                            //UpdateMouseHits(rndbc, entity);
-                        }
-                    }
-                    else
-                    { }
-                    break;
-                case 3: //BoundBox - found in drawables - TODO
-                    BoundBox boundbox = bounds as BoundBox;
-                    if (boundbox == null)
-                    { }
-                    break;
-                case 0: //BoundSphere - found in drawables - TODO
-                    BoundSphere boundsphere = bounds as BoundSphere;
-                    if (boundsphere == null)
-                    { }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-
-        private void RenderNavmesh(YnvFile ynv)
-        {
-            RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(ynv);
-            if ((rnd != null) && (rnd.IsLoaded))
-            {
-                shaders.Enqueue(rnd);
-            }
-        }
-
-
-
-        private bool RenderIsModelFinalRender(RenderableModel model)
-        {
-
-            if ((model.Unk2Ch & 1) == 0) //smallest bit is proxy/"final render" bit? seems to work...
-            {
-                return false;// renderproxies;
-            }
-            return true;
-
-            //switch (model.Unk2Ch)
-            //{
-            //    case 65784:  //0000010000000011111000  //reflection proxy?
-            //    case 65788:  //0000010000000011111100
-            //    case 131312: //0000100000000011110000  //reflection proxy?
-            //    case 131320: //0000100000000011111000  //reflection proxy?
-            //    case 131324: //0000100000000011111100  //shadow/reflection proxy?
-            //    case 196834: //0000110000000011100010 //shadow proxy? (tree branches)
-            //    case 196848: //0000110000000011110000  //reflection proxy?
-            //    case 196856: //0000110000000011111000 //reflection proxy? hotel nr golf course
-            //    case 262392: //0001000000000011111000  //reflection proxy?
-            //    case 327932: //0001010000000011111100  //reflection proxy? (alamo/sandy shores)
-            //    case 983268: //0011110000000011100100  //big reflection proxy?
-            //    case 2293988://1000110000000011100100  //big reflection proxy?
-            //                 //case 1442047://golf course water proxy, but other things also
-            //                 //case 1114367://mike house water proxy, but other things also
-            //        return renderproxies;
-            //}
-            //return true;
-        }
-
-
-
 
 
 

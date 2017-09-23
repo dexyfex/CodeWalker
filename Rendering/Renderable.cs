@@ -199,7 +199,14 @@ namespace CodeWalker.Rendering
                         }
                     }
 
-                    model.Transform = trans;
+                    if (((model.Unk28h >> 8) & 0xFF) > 0) //skin mesh?
+                    {
+                        model.Transform = Matrix.Identity;
+                    }
+                    else
+                    {
+                        model.Transform = trans;
+                    }
                 }
             }
         }
