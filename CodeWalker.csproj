@@ -332,6 +332,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="Project\MenyooXml.cs" />
     <Compile Include="Project\ProjectFile.cs" />
     <Compile Include="Project\UndoStep.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

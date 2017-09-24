@@ -46,6 +46,30 @@ namespace CodeWalker
             if (node == null) return null;
             return node.SelectSingleNode(name)?.InnerText;
         }
+        public static bool GetChildBoolInnerText(XmlNode node, string name)
+        {
+            if (node == null) return false;
+            string val = node.SelectSingleNode(name)?.InnerText;
+            bool b;
+            bool.TryParse(val, out b);
+            return b;
+        }
+        public static int GetChildIntInnerText(XmlNode node, string name)
+        {
+            if (node == null) return 0;
+            string val = node.SelectSingleNode(name)?.InnerText;
+            int i;
+            int.TryParse(val, out i);
+            return i;
+        }
+        public static float GetChildFloatInnerText(XmlNode node, string name)
+        {
+            if (node == null) return 0;
+            string val = node.SelectSingleNode(name)?.InnerText;
+            float f;
+            FloatUtil.TryParse(val, out f);
+            return f;
+        }
 
         public static bool GetChildBoolAttribute(XmlNode node, string name, string attribute)
         {

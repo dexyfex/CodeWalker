@@ -986,14 +986,32 @@ namespace CodeWalker.World
             List<ushort> newids = new List<ushort>();
             foreach (var cell in cells)
             {
+                bool flag = false;
                 if (cell != null)
                 {
                     newpoints.AddRange(cell);
+                    foreach (var point in cell)
+                    {
+                        if ((point.Flags & Unk_700327466.ExtendedRange) > 0)
+                        {
+                            flag = true;
+                        }
+                    }
                 }
-                newids.Add((ushort)newpoints.Count);
+
+                ushort cid = (ushort)newpoints.Count;
+                if (flag)
+                {
+                    cid += 32768; //any cells with extended range points have this bit set.
+                }
+
+                newids.Add(cid);
             }
 
             Region.Unk_3844724227 = newids.ToArray();
+
+            
+
 
             rage__spdGrid2D grid = new rage__spdGrid2D();
             grid.Unk_X_2690909759 = cellsize;

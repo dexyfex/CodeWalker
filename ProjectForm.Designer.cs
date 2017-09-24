@@ -668,6 +668,8 @@
             this.OptionsHideGTAVMapMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.ToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsImportMenyooXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -1025,6 +1027,7 @@
             this.ProjectManifestTextBox.CommentPrefix = null;
             this.ProjectManifestTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.ProjectManifestTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.ProjectManifestTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.ProjectManifestTextBox.IsReplaceMode = false;
             this.ProjectManifestTextBox.Language = FastColoredTextBoxNS.Language.XML;
             this.ProjectManifestTextBox.LeftBracket = '<';
@@ -7511,6 +7514,7 @@
             this.YnvMenu,
             this.TrainsMenu,
             this.ScenarioMenu,
+            this.ToolsMenu,
             this.OptionsMenu});
             this.TopMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.TopMenuStrip.Name = "TopMenuStrip";
@@ -8036,6 +8040,21 @@
             // OpenFileDialog
             // 
             this.OpenFileDialog.Filter = "CodeWalker Projects|*.cwproj";
+            // 
+            // ToolsMenu
+            // 
+            this.ToolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolsImportMenyooXmlMenu});
+            this.ToolsMenu.Name = "ToolsMenu";
+            this.ToolsMenu.Size = new System.Drawing.Size(47, 20);
+            this.ToolsMenu.Text = "Tools";
+            // 
+            // ToolsImportMenyooXmlMenu
+            // 
+            this.ToolsImportMenyooXmlMenu.Name = "ToolsImportMenyooXmlMenu";
+            this.ToolsImportMenyooXmlMenu.Size = new System.Drawing.Size(193, 22);
+            this.ToolsImportMenyooXmlMenu.Text = "Import Menyoo XML...";
+            this.ToolsImportMenyooXmlMenu.Click += new System.EventHandler(this.ToolsImportMenyooXmlMenu_Click);
             // 
             // ProjectForm
             // 
@@ -8883,5 +8902,7 @@
         private System.Windows.Forms.Label label162;
         private System.Windows.Forms.CheckedListBox CarFlagsCheckedListBox;
         private System.Windows.Forms.CheckedListBox EntityFlagsCheckedListBox;
+        private System.Windows.Forms.ToolStripMenuItem ToolsMenu;
+        private System.Windows.Forms.ToolStripMenuItem ToolsImportMenyooXmlMenu;
     }
 }
