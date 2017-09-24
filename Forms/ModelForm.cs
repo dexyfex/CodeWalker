@@ -122,6 +122,8 @@ namespace CodeWalker.Forms
 
         bool renderskeletons = true;
         List<Renderable> renderskeletonlist = new List<Renderable>();
+        List<VertexTypePC> skeletonLineVerts = new List<VertexTypePC>();
+
 
         bool CtrlPressed = false;
         bool ShiftPressed = false;
@@ -1416,7 +1418,14 @@ namespace CodeWalker.Forms
         private void RenderSkeletons(DeviceContext context)
         {
 
+            skeletonLineVerts.Clear();
 
+            const uint cgrn = 4278255360;// (uint)new Color4(0.0f, 1.0f, 0.0f, 1.0f).ToRgba();
+            const uint cblu = 4294901760;// (uint)new Color4(0.0f, 0.0f, 1.0f, 1.0f).ToRgba();
+            VertexTypePC v1 = new VertexTypePC();
+            VertexTypePC v2 = new VertexTypePC();
+            v1.Colour = cgrn;
+            v2.Colour = cblu;
 
             foreach (var renderable in renderskeletonlist)
             {
@@ -1435,9 +1444,9 @@ namespace CodeWalker.Forms
                     var pind = pinds[i];
                     var bone = bones[i];
                     var pbone = bone.Parent;
-                    //if (pbone == null) continue;
+                    if (pbone == null) continue; //nothing to draw for the root bone
 
-                    if (xforms != null)
+                    if (xforms != null)//how to use xforms? bind pose?
                     {
                         var xform = (i < xforms.Length) ? xforms[i] : Matrix.Identity;
                         var pxform = (pind < xforms.Length) ? xforms[pind] : Matrix.Identity;
@@ -1447,10 +1456,35 @@ namespace CodeWalker.Forms
                     }
 
 
+                    //draw line from bone's position to parent position...
+                    Vector3 lbeg = Vector3.Zero;
+                    Vector3 lend = bone.Translation;// bone.Rotation.Multiply();
+                    while (pbone != null)
+                    {
+                        lbeg = pbone.Rotation.Multiply(lbeg) + pbone.Translation;
+                        lend = pbone.Rotation.Multiply(lend) + pbone.Translation;
+                        pbone = pbone.Parent;
+                    }
+
+
+                    v1.Position = lbeg;
+                    v2.Position = lend;
+                    skeletonLineVerts.Add(v1);
+                    skeletonLineVerts.Add(v2);
 
                 }
 
 
+            }
+
+
+
+
+
+            if (skeletonLineVerts.Count > 0)
+            {
+                shaders.SetDepthStencilMode(context, DepthStencilMode.DisableAll);
+                shaders.Paths.RenderLines(context, skeletonLineVerts, camera, shaders.GlobalLights);
             }
 
 
@@ -2646,6 +2680,11 @@ namespace CodeWalker.Forms
                 gridCount = newgc;
                 UpdateGridVerts();
             }
+        }
+
+        private void SkeletonsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            renderskeletons = SkeletonsCheckBox.Checked;
         }
 
         private void ErrorConsoleCheckBox_CheckedChanged(object sender, EventArgs e)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpDX;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -708,19 +709,22 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public float RotationX { get; set; }
-        public float RotationY { get; set; }
-        public float RotationZ { get; set; }
-        public float RotationW { get; set; }
-        public float TranslationX { get; set; }
-        public float TranslationY { get; set; }
-        public float TranslationZ { get; set; }
+        //public float RotationX { get; set; }
+        //public float RotationY { get; set; }
+        //public float RotationZ { get; set; }
+        //public float RotationW { get; set; }
+        public Quaternion Rotation { get; set; }
+        public Vector3 Translation { get; set; }
+        //public float TranslationX { get; set; }
+        //public float TranslationY { get; set; }
+        //public float TranslationZ { get; set; }
         public uint Unknown_1Ch { get; set; } // 0x00000000
         public float Unknown_20h { get; set; } // 1.0
         public float Unknown_24h { get; set; } // 1.0
         public float Unknown_28h { get; set; } // 1.0
         public float Unknown_2Ch { get; set; } // 1.0
-        public uint Unknown_30h { get; set; }
+        public ushort Unknown_30h { get; set; } //limb end index? IK chain?
+        public short ParentIndex { get; set; }
         public uint Unknown_34h { get; set; } // 0x00000000
         public ulong NamePointer { get; set; }
         public ushort Unknown_40h { get; set; }
@@ -742,19 +746,22 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.RotationX = reader.ReadSingle();
-            this.RotationY = reader.ReadSingle();
-            this.RotationZ = reader.ReadSingle();
-            this.RotationW = reader.ReadSingle();
-            this.TranslationX = reader.ReadSingle();
-            this.TranslationY = reader.ReadSingle();
-            this.TranslationZ = reader.ReadSingle();
+            //this.RotationX = reader.ReadSingle();
+            //this.RotationY = reader.ReadSingle();
+            //this.RotationZ = reader.ReadSingle();
+            //this.RotationW = reader.ReadSingle();
+            this.Rotation = new Quaternion(reader.ReadVector4());
+            this.Translation = reader.ReadVector3();
+            //this.TranslationX = reader.ReadSingle();
+            //this.TranslationY = reader.ReadSingle();
+            //this.TranslationZ = reader.ReadSingle();
             this.Unknown_1Ch = reader.ReadUInt32();
             this.Unknown_20h = reader.ReadSingle();
             this.Unknown_24h = reader.ReadSingle();
             this.Unknown_28h = reader.ReadSingle();
             this.Unknown_2Ch = reader.ReadSingle();
-            this.Unknown_30h = reader.ReadUInt32();
+            this.Unknown_30h = reader.ReadUInt16();
+            this.ParentIndex = reader.ReadInt16();
             this.Unknown_34h = reader.ReadUInt32();
             this.NamePointer = reader.ReadUInt64();
             this.Unknown_40h = reader.ReadUInt16();
@@ -779,19 +786,22 @@ namespace CodeWalker.GameFiles
             //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0); //TODO: fix
 
             // write structure data
-            writer.Write(this.RotationX);
-            writer.Write(this.RotationY);
-            writer.Write(this.RotationZ);
-            writer.Write(this.RotationW);
-            writer.Write(this.TranslationX);
-            writer.Write(this.TranslationY);
-            writer.Write(this.TranslationZ);
+            //writer.Write(this.RotationX);
+            //writer.Write(this.RotationY);
+            //writer.Write(this.RotationZ);
+            //writer.Write(this.RotationW);
+            writer.Write(this.Rotation.ToVector4());
+            writer.Write(this.Translation);
+            //writer.Write(this.TranslationX);
+            //writer.Write(this.TranslationY);
+            //writer.Write(this.TranslationZ);
             writer.Write(this.Unknown_1Ch);
             writer.Write(this.Unknown_20h);
             writer.Write(this.Unknown_24h);
             writer.Write(this.Unknown_28h);
             writer.Write(this.Unknown_2Ch);
             writer.Write(this.Unknown_30h);
+            writer.Write(this.ParentIndex);
             writer.Write(this.Unknown_34h);
             writer.Write(this.NamePointer);
             writer.Write(this.Unknown_40h);

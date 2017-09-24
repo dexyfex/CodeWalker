@@ -100,25 +100,20 @@
             this.EntityPanel = new System.Windows.Forms.Panel();
             this.EntityTabControl = new System.Windows.Forms.TabControl();
             this.EntityGeneralTabPage = new System.Windows.Forms.TabPage();
+            this.EntityFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
             this.label13 = new System.Windows.Forms.Label();
             this.label28 = new System.Windows.Forms.Label();
             this.EntityDeleteButton = new System.Windows.Forms.Button();
             this.EntityTintValueTextBox = new System.Windows.Forms.TextBox();
             this.EntityAddToProjectButton = new System.Windows.Forms.Button();
             this.label27 = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
             this.EntityArtificialAOTextBox = new System.Windows.Forms.TextBox();
-            this.EntityPositionTextBox = new System.Windows.Forms.TextBox();
             this.label26 = new System.Windows.Forms.Label();
-            this.EntityNormalizeRotationButton = new System.Windows.Forms.Button();
             this.EntityAOMultiplierTextBox = new System.Windows.Forms.TextBox();
             this.EntityGuidTextBox = new System.Windows.Forms.TextBox();
             this.EntityPriorityLevelComboBox = new System.Windows.Forms.ComboBox();
             this.label24 = new System.Windows.Forms.Label();
-            this.EntityGoToButton = new System.Windows.Forms.Button();
-            this.label17 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
-            this.EntityRotationTextBox = new System.Windows.Forms.TextBox();
             this.EntityFlagsTextBox = new System.Windows.Forms.TextBox();
             this.label18 = new System.Windows.Forms.Label();
             this.EntityLodLevelComboBox = new System.Windows.Forms.ComboBox();
@@ -133,6 +128,12 @@
             this.EntityScaleZTextBox = new System.Windows.Forms.TextBox();
             this.EntityLodDistTextBox = new System.Windows.Forms.TextBox();
             this.EntityArchetypeTextBox = new System.Windows.Forms.TextBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.EntityPositionTextBox = new System.Windows.Forms.TextBox();
+            this.EntityNormalizeRotationButton = new System.Windows.Forms.Button();
+            this.EntityGoToButton = new System.Windows.Forms.Button();
+            this.label17 = new System.Windows.Forms.Label();
+            this.EntityRotationTextBox = new System.Windows.Forms.TextBox();
             this.EntityLodTabPage = new System.Windows.Forms.TabPage();
             this.label20 = new System.Windows.Forms.Label();
             this.EntityParentIndexTextBox = new System.Windows.Forms.TextBox();
@@ -149,6 +150,7 @@
             this.EntityPivotRotationTextBox = new System.Windows.Forms.TextBox();
             this.YmapCarGenTabPage = new System.Windows.Forms.TabPage();
             this.CarGenPanel = new System.Windows.Forms.Panel();
+            this.CarFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
             this.CarDeleteButton = new System.Windows.Forms.Button();
             this.CarAddToProjectButton = new System.Windows.Forms.Button();
             this.label44 = new System.Windows.Forms.Label();
@@ -666,8 +668,6 @@
             this.OptionsHideGTAVMapMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.CarFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
-            this.EntityFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -1025,7 +1025,6 @@
             this.ProjectManifestTextBox.CommentPrefix = null;
             this.ProjectManifestTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.ProjectManifestTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
-            this.ProjectManifestTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.ProjectManifestTextBox.IsReplaceMode = false;
             this.ProjectManifestTextBox.Language = FastColoredTextBoxNS.Language.XML;
             this.ProjectManifestTextBox.LeftBracket = '<';
@@ -1676,6 +1675,51 @@
             this.EntityGeneralTabPage.Text = "General";
             this.EntityGeneralTabPage.UseVisualStyleBackColor = true;
             // 
+            // EntityFlagsCheckedListBox
+            // 
+            this.EntityFlagsCheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.EntityFlagsCheckedListBox.CheckOnClick = true;
+            this.EntityFlagsCheckedListBox.FormattingEnabled = true;
+            this.EntityFlagsCheckedListBox.Items.AddRange(new object[] {
+            "1 - Unk01",
+            "2 - Unk02",
+            "4 - Unk03",
+            "8 - Unk04",
+            "16 - Unk05",
+            "32 - Unk06",
+            "64 - Unk07",
+            "128 - Unk08",
+            "256 - Unk09",
+            "512 - Unk10",
+            "1024 - Unk11",
+            "2048 - Unk12",
+            "4096 - Unk13",
+            "8192 - Unk14",
+            "16384 - Unk15",
+            "32768 - Unk16",
+            "65536 - Unk17",
+            "131072 - Unk18",
+            "262144 - Unk19",
+            "524288 - Unk20",
+            "1048576 - Unk21",
+            "2097152 - Unk22",
+            "4194304 - Unk23",
+            "8388608 - Unk24",
+            "16777216 - Unk25",
+            "33554432 - Unk26",
+            "67108864 - Unk27",
+            "134217728 - Unk28",
+            "268435456 - Unk29",
+            "536870912 - Unk30",
+            "1073741824 - Unk31",
+            "2147483648 - Unk32"});
+            this.EntityFlagsCheckedListBox.Location = new System.Drawing.Point(292, 113);
+            this.EntityFlagsCheckedListBox.Name = "EntityFlagsCheckedListBox";
+            this.EntityFlagsCheckedListBox.Size = new System.Drawing.Size(201, 289);
+            this.EntityFlagsCheckedListBox.TabIndex = 32;
+            this.EntityFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.EntityFlagsCheckedListBox_ItemCheck);
+            // 
             // label13
             // 
             this.label13.AutoSize = true;
@@ -1733,15 +1777,6 @@
             this.label27.TabIndex = 26;
             this.label27.Text = "ArtificialAO:";
             // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(15, 12);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(47, 13);
-            this.label16.TabIndex = 1;
-            this.label16.Text = "Position:";
-            // 
             // EntityArtificialAOTextBox
             // 
             this.EntityArtificialAOTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -1752,16 +1787,6 @@
             this.EntityArtificialAOTextBox.TabIndex = 27;
             this.EntityArtificialAOTextBox.TextChanged += new System.EventHandler(this.EntityArtificialAOTextBox_TextChanged);
             // 
-            // EntityPositionTextBox
-            // 
-            this.EntityPositionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityPositionTextBox.Location = new System.Drawing.Point(93, 9);
-            this.EntityPositionTextBox.Name = "EntityPositionTextBox";
-            this.EntityPositionTextBox.Size = new System.Drawing.Size(326, 20);
-            this.EntityPositionTextBox.TabIndex = 2;
-            this.EntityPositionTextBox.TextChanged += new System.EventHandler(this.EntityPositionTextBox_TextChanged);
-            // 
             // label26
             // 
             this.label26.AutoSize = true;
@@ -1770,17 +1795,6 @@
             this.label26.Size = new System.Drawing.Size(66, 13);
             this.label26.TabIndex = 24;
             this.label26.Text = "AOMultiplier:";
-            // 
-            // EntityNormalizeRotationButton
-            // 
-            this.EntityNormalizeRotationButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityNormalizeRotationButton.Location = new System.Drawing.Point(425, 33);
-            this.EntityNormalizeRotationButton.Name = "EntityNormalizeRotationButton";
-            this.EntityNormalizeRotationButton.Size = new System.Drawing.Size(68, 23);
-            this.EntityNormalizeRotationButton.TabIndex = 6;
-            this.EntityNormalizeRotationButton.Text = "Normalize";
-            this.EntityNormalizeRotationButton.UseVisualStyleBackColor = true;
-            this.EntityNormalizeRotationButton.Click += new System.EventHandler(this.EntityNormalizeRotationButton_Click);
             // 
             // EntityAOMultiplierTextBox
             // 
@@ -1823,26 +1837,6 @@
             this.label24.TabIndex = 22;
             this.label24.Text = "PriorityLevel:";
             // 
-            // EntityGoToButton
-            // 
-            this.EntityGoToButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityGoToButton.Location = new System.Drawing.Point(425, 7);
-            this.EntityGoToButton.Name = "EntityGoToButton";
-            this.EntityGoToButton.Size = new System.Drawing.Size(68, 23);
-            this.EntityGoToButton.TabIndex = 3;
-            this.EntityGoToButton.Text = "Go to";
-            this.EntityGoToButton.UseVisualStyleBackColor = true;
-            this.EntityGoToButton.Click += new System.EventHandler(this.EntityGoToButton_Click);
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(15, 38);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(50, 13);
-            this.label17.TabIndex = 4;
-            this.label17.Text = "Rotation:";
-            // 
             // label15
             // 
             this.label15.AutoSize = true;
@@ -1851,16 +1845,6 @@
             this.label15.Size = new System.Drawing.Size(37, 13);
             this.label15.TabIndex = 10;
             this.label15.Text = "GUID:";
-            // 
-            // EntityRotationTextBox
-            // 
-            this.EntityRotationTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityRotationTextBox.Location = new System.Drawing.Point(93, 35);
-            this.EntityRotationTextBox.Name = "EntityRotationTextBox";
-            this.EntityRotationTextBox.Size = new System.Drawing.Size(326, 20);
-            this.EntityRotationTextBox.TabIndex = 5;
-            this.EntityRotationTextBox.TextChanged += new System.EventHandler(this.EntityRotationTextBox_TextChanged);
             // 
             // EntityFlagsTextBox
             // 
@@ -1997,6 +1981,66 @@
             this.EntityArchetypeTextBox.Size = new System.Drawing.Size(177, 20);
             this.EntityArchetypeTextBox.TabIndex = 8;
             this.EntityArchetypeTextBox.TextChanged += new System.EventHandler(this.EntityArchetypeTextBox_TextChanged);
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(15, 12);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(47, 13);
+            this.label16.TabIndex = 1;
+            this.label16.Text = "Position:";
+            // 
+            // EntityPositionTextBox
+            // 
+            this.EntityPositionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.EntityPositionTextBox.Location = new System.Drawing.Point(93, 9);
+            this.EntityPositionTextBox.Name = "EntityPositionTextBox";
+            this.EntityPositionTextBox.Size = new System.Drawing.Size(326, 20);
+            this.EntityPositionTextBox.TabIndex = 2;
+            this.EntityPositionTextBox.TextChanged += new System.EventHandler(this.EntityPositionTextBox_TextChanged);
+            // 
+            // EntityNormalizeRotationButton
+            // 
+            this.EntityNormalizeRotationButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.EntityNormalizeRotationButton.Location = new System.Drawing.Point(425, 33);
+            this.EntityNormalizeRotationButton.Name = "EntityNormalizeRotationButton";
+            this.EntityNormalizeRotationButton.Size = new System.Drawing.Size(68, 23);
+            this.EntityNormalizeRotationButton.TabIndex = 6;
+            this.EntityNormalizeRotationButton.Text = "Normalize";
+            this.EntityNormalizeRotationButton.UseVisualStyleBackColor = true;
+            this.EntityNormalizeRotationButton.Click += new System.EventHandler(this.EntityNormalizeRotationButton_Click);
+            // 
+            // EntityGoToButton
+            // 
+            this.EntityGoToButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.EntityGoToButton.Location = new System.Drawing.Point(425, 7);
+            this.EntityGoToButton.Name = "EntityGoToButton";
+            this.EntityGoToButton.Size = new System.Drawing.Size(68, 23);
+            this.EntityGoToButton.TabIndex = 3;
+            this.EntityGoToButton.Text = "Go to";
+            this.EntityGoToButton.UseVisualStyleBackColor = true;
+            this.EntityGoToButton.Click += new System.EventHandler(this.EntityGoToButton_Click);
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(15, 38);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(50, 13);
+            this.label17.TabIndex = 4;
+            this.label17.Text = "Rotation:";
+            // 
+            // EntityRotationTextBox
+            // 
+            this.EntityRotationTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.EntityRotationTextBox.Location = new System.Drawing.Point(93, 35);
+            this.EntityRotationTextBox.Name = "EntityRotationTextBox";
+            this.EntityRotationTextBox.Size = new System.Drawing.Size(326, 20);
+            this.EntityRotationTextBox.TabIndex = 5;
+            this.EntityRotationTextBox.TextChanged += new System.EventHandler(this.EntityRotationTextBox_TextChanged);
             // 
             // EntityLodTabPage
             // 
@@ -2194,6 +2238,51 @@
             this.CarGenPanel.Name = "CarGenPanel";
             this.CarGenPanel.Size = new System.Drawing.Size(510, 443);
             this.CarGenPanel.TabIndex = 0;
+            // 
+            // CarFlagsCheckedListBox
+            // 
+            this.CarFlagsCheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CarFlagsCheckedListBox.CheckOnClick = true;
+            this.CarFlagsCheckedListBox.FormattingEnabled = true;
+            this.CarFlagsCheckedListBox.Items.AddRange(new object[] {
+            "1 - Unk01",
+            "2 - Unk02",
+            "4 - Unk03",
+            "8 - Unk04",
+            "16 - Unk05",
+            "32 - Unk06",
+            "64 - Unk07",
+            "128 - Unk08",
+            "256 - Unk09",
+            "512 - Unk10",
+            "1024 - Unk11",
+            "2048 - Unk12",
+            "4096 - Unk13",
+            "8192 - Unk14",
+            "16384 - Unk15",
+            "32768 - Unk16",
+            "65536 - Unk17",
+            "131072 - Unk18",
+            "262144 - Unk19",
+            "524288 - Unk20",
+            "1048576 - Unk21",
+            "2097152 - Unk22",
+            "4194304 - Unk23",
+            "8388608 - Unk24",
+            "16777216 - Unk25",
+            "33554432 - Unk26",
+            "67108864 - Unk27",
+            "134217728 - Unk28",
+            "268435456 - Unk29",
+            "536870912 - Unk30",
+            "1073741824 - Unk31",
+            "2147483648 - Unk32"});
+            this.CarFlagsCheckedListBox.Location = new System.Drawing.Point(304, 113);
+            this.CarFlagsCheckedListBox.Name = "CarFlagsCheckedListBox";
+            this.CarFlagsCheckedListBox.Size = new System.Drawing.Size(201, 319);
+            this.CarFlagsCheckedListBox.TabIndex = 73;
+            this.CarFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.CarFlagsCheckedListBox_ItemCheck);
             // 
             // CarDeleteButton
             // 
@@ -5576,6 +5665,7 @@
             // 
             // label160
             // 
+            this.label160.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label160.AutoSize = true;
             this.label160.Location = new System.Drawing.Point(332, 160);
             this.label160.Name = "label160";
@@ -6824,6 +6914,7 @@
             // 
             // label159
             // 
+            this.label159.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label159.AutoSize = true;
             this.label159.Location = new System.Drawing.Point(341, 150);
             this.label159.Name = "label159";
@@ -7945,96 +8036,6 @@
             // OpenFileDialog
             // 
             this.OpenFileDialog.Filter = "CodeWalker Projects|*.cwproj";
-            // 
-            // CarFlagsCheckedListBox
-            // 
-            this.CarFlagsCheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CarFlagsCheckedListBox.CheckOnClick = true;
-            this.CarFlagsCheckedListBox.FormattingEnabled = true;
-            this.CarFlagsCheckedListBox.Items.AddRange(new object[] {
-            "1 - Unk01",
-            "2 - Unk02",
-            "4 - Unk03",
-            "8 - Unk04",
-            "16 - Unk05",
-            "32 - Unk06",
-            "64 - Unk07",
-            "128 - Unk08",
-            "256 - Unk09",
-            "512 - Unk10",
-            "1024 - Unk11",
-            "2048 - Unk12",
-            "4096 - Unk13",
-            "8192 - Unk14",
-            "16384 - Unk15",
-            "32768 - Unk16",
-            "65536 - Unk17",
-            "131072 - Unk18",
-            "262144 - Unk19",
-            "524288 - Unk20",
-            "1048576 - Unk21",
-            "2097152 - Unk22",
-            "4194304 - Unk23",
-            "8388608 - Unk24",
-            "16777216 - Unk25",
-            "33554432 - Unk26",
-            "67108864 - Unk27",
-            "134217728 - Unk28",
-            "268435456 - Unk29",
-            "536870912 - Unk30",
-            "1073741824 - Unk31",
-            "2147483648 - Unk32"});
-            this.CarFlagsCheckedListBox.Location = new System.Drawing.Point(304, 113);
-            this.CarFlagsCheckedListBox.Name = "CarFlagsCheckedListBox";
-            this.CarFlagsCheckedListBox.Size = new System.Drawing.Size(201, 319);
-            this.CarFlagsCheckedListBox.TabIndex = 73;
-            this.CarFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.CarFlagsCheckedListBox_ItemCheck);
-            // 
-            // EntityFlagsCheckedListBox
-            // 
-            this.EntityFlagsCheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityFlagsCheckedListBox.CheckOnClick = true;
-            this.EntityFlagsCheckedListBox.FormattingEnabled = true;
-            this.EntityFlagsCheckedListBox.Items.AddRange(new object[] {
-            "1 - Unk01",
-            "2 - Unk02",
-            "4 - Unk03",
-            "8 - Unk04",
-            "16 - Unk05",
-            "32 - Unk06",
-            "64 - Unk07",
-            "128 - Unk08",
-            "256 - Unk09",
-            "512 - Unk10",
-            "1024 - Unk11",
-            "2048 - Unk12",
-            "4096 - Unk13",
-            "8192 - Unk14",
-            "16384 - Unk15",
-            "32768 - Unk16",
-            "65536 - Unk17",
-            "131072 - Unk18",
-            "262144 - Unk19",
-            "524288 - Unk20",
-            "1048576 - Unk21",
-            "2097152 - Unk22",
-            "4194304 - Unk23",
-            "8388608 - Unk24",
-            "16777216 - Unk25",
-            "33554432 - Unk26",
-            "67108864 - Unk27",
-            "134217728 - Unk28",
-            "268435456 - Unk29",
-            "536870912 - Unk30",
-            "1073741824 - Unk31",
-            "2147483648 - Unk32"});
-            this.EntityFlagsCheckedListBox.Location = new System.Drawing.Point(292, 113);
-            this.EntityFlagsCheckedListBox.Name = "EntityFlagsCheckedListBox";
-            this.EntityFlagsCheckedListBox.Size = new System.Drawing.Size(201, 289);
-            this.EntityFlagsCheckedListBox.TabIndex = 32;
-            this.EntityFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.EntityFlagsCheckedListBox_ItemCheck);
             // 
             // ProjectForm
             // 

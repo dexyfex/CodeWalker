@@ -34,6 +34,14 @@ namespace CodeWalker.World
             ScenarioRegions = new List<YmtFile>();
 
 
+            //rubidium:
+            //the non-replacement [XML] is hash 1074D56E
+            //replacement XML is 203D234 I think and replacement PSO A6F20ADA
+            //('replacement' implies 'when a DLC loads it it unloads the existing spmanifest first')
+            //- content.xml fileType for sp_manifest
+
+
+
             //Vector2I maxgrid = new Vector2I(0, 0);
             //List<Vector2I> griddims = new List<Vector2I>();
             //int maxcells = 0;

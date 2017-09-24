@@ -46,6 +46,11 @@
             this.ToolsDetailsTabPage = new System.Windows.Forms.TabPage();
             this.DetailsPropertyGrid = new CodeWalker.WinForms.ReadOnlyPropertyGrid();
             this.ToolsOptionsTabPage = new System.Windows.Forms.TabPage();
+            this.TimeOfDayLabel = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.TimeOfDayTrackBar = new System.Windows.Forms.TrackBar();
+            this.ControlLightDirCheckBox = new System.Windows.Forms.CheckBox();
+            this.ShowBoundsCheckBox = new System.Windows.Forms.CheckBox();
             this.GridCheckBox = new System.Windows.Forms.CheckBox();
             this.GridCountComboBox = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -67,11 +72,7 @@
             this.ToolsPanelHideButton = new System.Windows.Forms.Button();
             this.ToolsDragPanel = new System.Windows.Forms.Panel();
             this.ToolsPanelShowButton = new System.Windows.Forms.Button();
-            this.ShowBoundsCheckBox = new System.Windows.Forms.CheckBox();
-            this.ControlLightDirCheckBox = new System.Windows.Forms.CheckBox();
-            this.TimeOfDayLabel = new System.Windows.Forms.Label();
-            this.label19 = new System.Windows.Forms.Label();
-            this.TimeOfDayTrackBar = new System.Windows.Forms.TrackBar();
+            this.SkeletonsCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ConsolePanel.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
@@ -252,6 +253,7 @@
             // 
             // ToolsOptionsTabPage
             // 
+            this.ToolsOptionsTabPage.Controls.Add(this.SkeletonsCheckBox);
             this.ToolsOptionsTabPage.Controls.Add(this.TimeOfDayLabel);
             this.ToolsOptionsTabPage.Controls.Add(this.label19);
             this.ToolsOptionsTabPage.Controls.Add(this.TimeOfDayTrackBar);
@@ -281,6 +283,61 @@
             this.ToolsOptionsTabPage.TabIndex = 3;
             this.ToolsOptionsTabPage.Text = "Options";
             this.ToolsOptionsTabPage.UseVisualStyleBackColor = true;
+            // 
+            // TimeOfDayLabel
+            // 
+            this.TimeOfDayLabel.AutoSize = true;
+            this.TimeOfDayLabel.Location = new System.Drawing.Point(78, 109);
+            this.TimeOfDayLabel.Name = "TimeOfDayLabel";
+            this.TimeOfDayLabel.Size = new System.Drawing.Size(34, 13);
+            this.TimeOfDayLabel.TabIndex = 5;
+            this.TimeOfDayLabel.Text = "12:00";
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(7, 109);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(65, 13);
+            this.label19.TabIndex = 4;
+            this.label19.Text = "Time of day:";
+            // 
+            // TimeOfDayTrackBar
+            // 
+            this.TimeOfDayTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TimeOfDayTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.TimeOfDayTrackBar.LargeChange = 60;
+            this.TimeOfDayTrackBar.Location = new System.Drawing.Point(9, 125);
+            this.TimeOfDayTrackBar.Maximum = 1440;
+            this.TimeOfDayTrackBar.Name = "TimeOfDayTrackBar";
+            this.TimeOfDayTrackBar.Size = new System.Drawing.Size(188, 45);
+            this.TimeOfDayTrackBar.TabIndex = 6;
+            this.TimeOfDayTrackBar.TickFrequency = 60;
+            this.TimeOfDayTrackBar.Value = 720;
+            this.TimeOfDayTrackBar.Scroll += new System.EventHandler(this.TimeOfDayTrackBar_Scroll);
+            // 
+            // ControlLightDirCheckBox
+            // 
+            this.ControlLightDirCheckBox.AutoSize = true;
+            this.ControlLightDirCheckBox.Location = new System.Drawing.Point(19, 83);
+            this.ControlLightDirCheckBox.Name = "ControlLightDirCheckBox";
+            this.ControlLightDirCheckBox.Size = new System.Drawing.Size(124, 17);
+            this.ControlLightDirCheckBox.TabIndex = 3;
+            this.ControlLightDirCheckBox.Text = "Control light direction";
+            this.ControlLightDirCheckBox.UseVisualStyleBackColor = true;
+            this.ControlLightDirCheckBox.CheckedChanged += new System.EventHandler(this.ControlLightDirCheckBox_CheckedChanged);
+            // 
+            // ShowBoundsCheckBox
+            // 
+            this.ShowBoundsCheckBox.AutoSize = true;
+            this.ShowBoundsCheckBox.Location = new System.Drawing.Point(19, 176);
+            this.ShowBoundsCheckBox.Name = "ShowBoundsCheckBox";
+            this.ShowBoundsCheckBox.Size = new System.Drawing.Size(124, 17);
+            this.ShowBoundsCheckBox.TabIndex = 7;
+            this.ShowBoundsCheckBox.Text = "Show Model Bounds";
+            this.ShowBoundsCheckBox.UseVisualStyleBackColor = true;
+            this.ShowBoundsCheckBox.CheckedChanged += new System.EventHandler(this.ShowBoundsCheckBox_CheckedChanged);
             // 
             // GridCheckBox
             // 
@@ -351,7 +408,7 @@
             this.StatusBarCheckBox.Location = new System.Drawing.Point(19, 480);
             this.StatusBarCheckBox.Name = "StatusBarCheckBox";
             this.StatusBarCheckBox.Size = new System.Drawing.Size(74, 17);
-            this.StatusBarCheckBox.TabIndex = 21;
+            this.StatusBarCheckBox.TabIndex = 22;
             this.StatusBarCheckBox.Text = "Status bar";
             this.StatusBarCheckBox.UseVisualStyleBackColor = true;
             this.StatusBarCheckBox.CheckedChanged += new System.EventHandler(this.StatusBarCheckBox_CheckedChanged);
@@ -362,7 +419,7 @@
             this.ErrorConsoleCheckBox.Location = new System.Drawing.Point(105, 480);
             this.ErrorConsoleCheckBox.Name = "ErrorConsoleCheckBox";
             this.ErrorConsoleCheckBox.Size = new System.Drawing.Size(88, 17);
-            this.ErrorConsoleCheckBox.TabIndex = 22;
+            this.ErrorConsoleCheckBox.TabIndex = 23;
             this.ErrorConsoleCheckBox.Text = "Error console";
             this.ErrorConsoleCheckBox.UseVisualStyleBackColor = true;
             this.ErrorConsoleCheckBox.CheckedChanged += new System.EventHandler(this.ErrorConsoleCheckBox_CheckedChanged);
@@ -534,60 +591,18 @@
             this.ToolsPanelShowButton.UseVisualStyleBackColor = true;
             this.ToolsPanelShowButton.Click += new System.EventHandler(this.ToolsPanelShowButton_Click);
             // 
-            // ShowBoundsCheckBox
+            // SkeletonsCheckBox
             // 
-            this.ShowBoundsCheckBox.AutoSize = true;
-            this.ShowBoundsCheckBox.Location = new System.Drawing.Point(19, 176);
-            this.ShowBoundsCheckBox.Name = "ShowBoundsCheckBox";
-            this.ShowBoundsCheckBox.Size = new System.Drawing.Size(124, 17);
-            this.ShowBoundsCheckBox.TabIndex = 7;
-            this.ShowBoundsCheckBox.Text = "Show Model Bounds";
-            this.ShowBoundsCheckBox.UseVisualStyleBackColor = true;
-            this.ShowBoundsCheckBox.CheckedChanged += new System.EventHandler(this.ShowBoundsCheckBox_CheckedChanged);
-            // 
-            // ControlLightDirCheckBox
-            // 
-            this.ControlLightDirCheckBox.AutoSize = true;
-            this.ControlLightDirCheckBox.Location = new System.Drawing.Point(19, 83);
-            this.ControlLightDirCheckBox.Name = "ControlLightDirCheckBox";
-            this.ControlLightDirCheckBox.Size = new System.Drawing.Size(124, 17);
-            this.ControlLightDirCheckBox.TabIndex = 3;
-            this.ControlLightDirCheckBox.Text = "Control light direction";
-            this.ControlLightDirCheckBox.UseVisualStyleBackColor = true;
-            this.ControlLightDirCheckBox.CheckedChanged += new System.EventHandler(this.ControlLightDirCheckBox_CheckedChanged);
-            // 
-            // TimeOfDayLabel
-            // 
-            this.TimeOfDayLabel.AutoSize = true;
-            this.TimeOfDayLabel.Location = new System.Drawing.Point(78, 109);
-            this.TimeOfDayLabel.Name = "TimeOfDayLabel";
-            this.TimeOfDayLabel.Size = new System.Drawing.Size(34, 13);
-            this.TimeOfDayLabel.TabIndex = 5;
-            this.TimeOfDayLabel.Text = "12:00";
-            // 
-            // label19
-            // 
-            this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(7, 109);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(65, 13);
-            this.label19.TabIndex = 4;
-            this.label19.Text = "Time of day:";
-            // 
-            // TimeOfDayTrackBar
-            // 
-            this.TimeOfDayTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.TimeOfDayTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.TimeOfDayTrackBar.LargeChange = 60;
-            this.TimeOfDayTrackBar.Location = new System.Drawing.Point(9, 125);
-            this.TimeOfDayTrackBar.Maximum = 1440;
-            this.TimeOfDayTrackBar.Name = "TimeOfDayTrackBar";
-            this.TimeOfDayTrackBar.Size = new System.Drawing.Size(188, 45);
-            this.TimeOfDayTrackBar.TabIndex = 6;
-            this.TimeOfDayTrackBar.TickFrequency = 60;
-            this.TimeOfDayTrackBar.Value = 720;
-            this.TimeOfDayTrackBar.Scroll += new System.EventHandler(this.TimeOfDayTrackBar_Scroll);
+            this.SkeletonsCheckBox.AutoSize = true;
+            this.SkeletonsCheckBox.Checked = true;
+            this.SkeletonsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.SkeletonsCheckBox.Location = new System.Drawing.Point(19, 444);
+            this.SkeletonsCheckBox.Name = "SkeletonsCheckBox";
+            this.SkeletonsCheckBox.Size = new System.Drawing.Size(103, 17);
+            this.SkeletonsCheckBox.TabIndex = 21;
+            this.SkeletonsCheckBox.Text = "Show Skeletons";
+            this.SkeletonsCheckBox.UseVisualStyleBackColor = true;
+            this.SkeletonsCheckBox.CheckedChanged += new System.EventHandler(this.SkeletonsCheckBox_CheckedChanged);
             // 
             // ModelForm
             // 
@@ -670,5 +685,6 @@
         private System.Windows.Forms.Label TimeOfDayLabel;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.TrackBar TimeOfDayTrackBar;
+        private System.Windows.Forms.CheckBox SkeletonsCheckBox;
     }
 }

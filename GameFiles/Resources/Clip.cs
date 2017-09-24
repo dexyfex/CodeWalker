@@ -60,9 +60,6 @@ namespace CodeWalker.GameFiles
         public AnimationMap Animations { get; set; }
         public ResourcePointerArray64<ClipMapEntry> Clips { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -90,9 +87,6 @@ namespace CodeWalker.GameFiles
             );
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -116,9 +110,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_3Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
@@ -153,9 +144,6 @@ namespace CodeWalker.GameFiles
         // reference data
         public ResourcePointerArray64<AnimationMapEntry> Animations { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -179,9 +167,6 @@ namespace CodeWalker.GameFiles
             );
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -203,9 +188,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_2Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -232,9 +214,6 @@ namespace CodeWalker.GameFiles
         public Animation Animation { get; set; }
         public AnimationMapEntry NextEntry { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -254,9 +233,6 @@ namespace CodeWalker.GameFiles
             );
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -272,9 +248,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_1Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -322,9 +295,6 @@ namespace CodeWalker.GameFiles
         public ResourceSimpleList64Ptr BoneIdsPtr { get; set; }
         public AnimationBoneId[] BoneIds { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -356,9 +326,6 @@ namespace CodeWalker.GameFiles
             this.BoneIds = reader.ReadStructsAt<AnimationBoneId>(this.BoneIdsPtr.EntriesPointer, this.BoneIdsPtr.EntriesCount);
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
@@ -428,9 +395,6 @@ namespace CodeWalker.GameFiles
         public ushort Unknown_1Eh { get; set; }
         public byte[] Data { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -485,9 +449,6 @@ namespace CodeWalker.GameFiles
 
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
@@ -523,9 +484,6 @@ namespace CodeWalker.GameFiles
         public ClipBase Clip { get; set; }
         public ClipMapEntry Next { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -545,9 +503,6 @@ namespace CodeWalker.GameFiles
             );
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -563,9 +518,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_1Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -594,27 +546,22 @@ namespace CodeWalker.GameFiles
         public uint Unknown_10h { get; set; }
         public uint Unknown_14h { get; set; } // 0x00000000
         public ulong NamePointer { get; set; }
-        //public uint Unknown_20h { get; set; } // short, short -> name length (+1)
         public ushort Unknown_20h { get; set; } // short, name length
         public ushort Unknown_22h { get; set; } // short, name length +1
         public uint Unknown_24h { get; set; } // 0x00000000
         public ulong Unknown_28hPtr { get; set; } // 0x50000000
-        //public uint Unknown_2Ch { get; set; } // 0x00000000
         public uint Unknown_30h { get; set; }
         public uint Unknown_34h { get; set; } // 0x00000000
-        public ulong p2 { get; set; }
-        public ulong p3 { get; set; }
+        public ulong TagsPointer { get; set; }
+        public ulong PropertiesPointer { get; set; }
         public uint Unknown_48h { get; set; } // 0x00000001
         public uint Unknown_4Ch { get; set; } // 0x00000000       
 
         // reference data
         public string Name { get; set; }
-        public Unknown_CL_200 p2data { get; set; }
-        public Unknown_CL_001 p3data { get; set; }
+        public ClipTagList Tags { get; set; }
+        public ClipPropertyMap Properties { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -625,29 +572,24 @@ namespace CodeWalker.GameFiles
             this.Unknown_10h = reader.ReadUInt32();
             this.Unknown_14h = reader.ReadUInt32();
             this.NamePointer = reader.ReadUInt64();
-            //this.Unknown_20h = reader.ReadUInt32();
             this.Unknown_20h = reader.ReadUInt16();
             this.Unknown_22h = reader.ReadUInt16();
             this.Unknown_24h = reader.ReadUInt32();
             this.Unknown_28hPtr = reader.ReadUInt64();
-            //this.Unknown_2Ch = reader.ReadUInt32();
             this.Unknown_30h = reader.ReadUInt32();
             this.Unknown_34h = reader.ReadUInt32();
-            this.p2 = reader.ReadUInt64();
-            this.p3 = reader.ReadUInt64();
+            this.TagsPointer = reader.ReadUInt64();
+            this.PropertiesPointer = reader.ReadUInt64();
             this.Unknown_48h = reader.ReadUInt32();
             this.Unknown_4Ch = reader.ReadUInt32();
 
-            // read reference data
-            //this.Name = reader.ReadBlockAt<string_r>(
-            //    this.NamePointer // offset
-            //);
+
             this.Name = reader.ReadStringAt(this.NamePointer);
-            this.p2data = reader.ReadBlockAt<Unknown_CL_200>(
-                this.p2 // offset
+            this.Tags = reader.ReadBlockAt<ClipTagList>(
+                this.TagsPointer // offset
             );
-            this.p3data = reader.ReadBlockAt<Unknown_CL_001>(
-                this.p3 // offset
+            this.Properties = reader.ReadBlockAt<ClipPropertyMap>(
+                this.PropertiesPointer // offset
             );
 
             if ((Unknown_28hPtr != 0) && (Unknown_28hPtr != 0x50000000))
@@ -656,15 +598,12 @@ namespace CodeWalker.GameFiles
 
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
             //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0);
-            this.p2 = (ulong)(this.p2data != null ? this.p2data.FilePosition : 0);
-            this.p3 = (ulong)(this.p3data != null ? this.p3data.FilePosition : 0);
+            this.TagsPointer = (ulong)(this.Tags != null ? this.Tags.FilePosition : 0);
+            this.PropertiesPointer = (ulong)(this.Properties != null ? this.Properties.FilePosition : 0);
 
             // write structure data
             writer.Write(this.VFT);
@@ -677,24 +616,20 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_20h);
             writer.Write(this.Unknown_24h);
             writer.Write(this.Unknown_28hPtr);
-            //writer.Write(this.Unknown_2Ch);
             writer.Write(this.Unknown_30h);
             writer.Write(this.Unknown_34h);
-            writer.Write(this.p2);
-            writer.Write(this.p3);
+            writer.Write(this.TagsPointer);
+            writer.Write(this.PropertiesPointer);
             writer.Write(this.Unknown_48h);
             writer.Write(this.Unknown_4Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
             //if (Name != null) list.Add(Name);
-            if (p2data != null) list.Add(p2data);
-            if (p3data != null) list.Add(p3data);
+            if (Tags != null) list.Add(Tags);
+            if (Properties != null) list.Add(Properties);
             return list.ToArray();
         }
 
@@ -707,7 +642,7 @@ namespace CodeWalker.GameFiles
             switch (type)
             {
                 case 1: return new ClipAnimation();
-                case 2: return new ClipAnimations();
+                case 2: return new ClipAnimationList();
                 default: return null;// throw new Exception("Unknown type");
             }
         }
@@ -738,9 +673,6 @@ namespace CodeWalker.GameFiles
         // reference data
         public Animation Animation { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -757,9 +689,6 @@ namespace CodeWalker.GameFiles
             );
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -775,9 +704,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_6Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -786,7 +712,7 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipAnimations : ClipBase
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipAnimationList : ClipBase
     {
         public override long BlockLength
         {
@@ -806,9 +732,6 @@ namespace CodeWalker.GameFiles
         // reference data
         public ResourceSimpleArray<ClipAnimationsEntry> Animations { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -827,9 +750,6 @@ namespace CodeWalker.GameFiles
             );
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -848,9 +768,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_6Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -876,9 +793,6 @@ namespace CodeWalker.GameFiles
         // reference data
         public Animation Animation { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -894,9 +808,6 @@ namespace CodeWalker.GameFiles
             );
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -910,9 +821,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.AnimationPointer);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -922,7 +830,7 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_001 : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyMap : ResourceSystemBlock
     {
         public override long BlockLength
         {
@@ -930,59 +838,50 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public ulong p1 { get; set; }
-        public ushort c1 { get; set; }
-        public ushort c2 { get; set; }
+        public ulong PropertyEntriesPointer { get; set; }
+        public ushort PropertyEntriesCount { get; set; }
+        public ushort PropertyEntriesCapacity { get; set; }
         public uint Unknown_Ch { get; set; } // 0x01000000
 
         // reference data
-        public ResourcePointerArray64<Unknown_CL_002> p1data { get; set; }
+        public ResourcePointerArray64<ClipPropertyMapEntry> Properties { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.p1 = reader.ReadUInt64();
-            this.c1 = reader.ReadUInt16();
-            this.c2 = reader.ReadUInt16();
+            this.PropertyEntriesPointer = reader.ReadUInt64();
+            this.PropertyEntriesCount = reader.ReadUInt16();
+            this.PropertyEntriesCapacity = reader.ReadUInt16();
             this.Unknown_Ch = reader.ReadUInt32();
 
             // read reference data
-            this.p1data = reader.ReadBlockAt<ResourcePointerArray64<Unknown_CL_002>>(
-                this.p1, // offset
-                this.c1
+            this.Properties = reader.ReadBlockAt<ResourcePointerArray64<ClipPropertyMapEntry>>(
+                this.PropertyEntriesPointer, // offset
+                this.PropertyEntriesCount
             );
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.p1 = (ulong)(this.p1data != null ? this.p1data.FilePosition : 0);
+            this.PropertyEntriesPointer = (ulong)(this.Properties != null ? this.Properties.FilePosition : 0);
             //this.c1 = (ushort)(this.p1data != null ? this.p1data.Count : 0);
 
             // write structure data
-            writer.Write(this.p1);
-            writer.Write(this.c1);
-            writer.Write(this.c2);
+            writer.Write(this.PropertyEntriesPointer);
+            writer.Write(this.PropertyEntriesCount);
+            writer.Write(this.PropertyEntriesCapacity);
             writer.Write(this.Unknown_Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (p1data != null) list.Add(p1data);
+            if (Properties != null) list.Add(Properties);
             return list.ToArray();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_002 : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyMapEntry : ResourceSystemBlock
     {
         public override long BlockLength
         {
@@ -998,12 +897,9 @@ namespace CodeWalker.GameFiles
         public uint Unknown_1Ch { get; set; } // 0x00000000
 
         // reference data
-        public Unknown_CL_003 Data { get; set; }
-        public Unknown_CL_002 Next { get; set; }
+        public ClipProperty Data { get; set; }
+        public ClipPropertyMapEntry Next { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -1015,17 +911,14 @@ namespace CodeWalker.GameFiles
             this.Unknown_1Ch = reader.ReadUInt32();
 
             // read reference data
-            this.Data = reader.ReadBlockAt<Unknown_CL_003>(
+            this.Data = reader.ReadBlockAt<ClipProperty>(
                 this.DataPointer // offset
             );
-            this.Next = reader.ReadBlockAt<Unknown_CL_002>(
+            this.Next = reader.ReadBlockAt<ClipPropertyMapEntry>(
                 this.NextPointer // offset
             );
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -1041,9 +934,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_1Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -1052,7 +942,7 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_003 : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipProperty : ResourceSystemBlock
     {
         public override long BlockLength
         {
@@ -1068,9 +958,9 @@ namespace CodeWalker.GameFiles
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; }
         public uint Unknown_1Ch { get; set; } // 0x00000000
-        public ulong p1 { get; set; }
-        public ushort c1 { get; set; }
-        public ushort c2 { get; set; }
+        public ulong AttributesPointer { get; set; }
+        public ushort AttributesCount { get; set; }
+        public ushort AttributesCapacity { get; set; }
         public uint Unknown_2Ch { get; set; } // 0x00000000
         public uint Unknown_30h { get; set; } // 0x00000000
         public uint Unknown_34h { get; set; } // 0x00000000
@@ -1078,11 +968,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_3Ch { get; set; } // 0x00000000
 
         // reference data
-        public ResourcePointerArray64<Unknown_CL_004> p1data { get; set; }
+        public ResourcePointerArray64<ClipPropertyAttribute> Attributes { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -1094,9 +981,9 @@ namespace CodeWalker.GameFiles
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.p1 = reader.ReadUInt64();
-            this.c1 = reader.ReadUInt16();
-            this.c2 = reader.ReadUInt16();
+            this.AttributesPointer = reader.ReadUInt64();
+            this.AttributesCount = reader.ReadUInt16();
+            this.AttributesCapacity = reader.ReadUInt16();
             this.Unknown_2Ch = reader.ReadUInt32();
             this.Unknown_30h = reader.ReadUInt32();
             this.Unknown_34h = reader.ReadUInt32();
@@ -1104,19 +991,16 @@ namespace CodeWalker.GameFiles
             this.Unknown_3Ch = reader.ReadUInt32();
 
             // read reference data
-            this.p1data = reader.ReadBlockAt<ResourcePointerArray64<Unknown_CL_004>>(
-                this.p1, // offset
-                this.c1
+            this.Attributes = reader.ReadBlockAt<ResourcePointerArray64<ClipPropertyAttribute>>(
+                this.AttributesPointer, // offset
+                this.AttributesCount
             );
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.p1 = (ulong)(this.p1data != null ? this.p1data.FilePosition : 0);
+            this.AttributesPointer = (ulong)(this.Attributes != null ? this.Attributes.FilePosition : 0);
             //this.c1 = (ushort)(this.p1data != null ? this.p1data.Count : 0);
 
             // write structure data
@@ -1128,9 +1012,9 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
-            writer.Write(this.p1);
-            writer.Write(this.c1);
-            writer.Write(this.c2);
+            writer.Write(this.AttributesPointer);
+            writer.Write(this.AttributesCount);
+            writer.Write(this.AttributesCapacity);
             writer.Write(this.Unknown_2Ch);
             writer.Write(this.Unknown_30h);
             writer.Write(this.Unknown_34h);
@@ -1138,57 +1022,57 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_3Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (p1data != null) list.Add(p1data);
+            if (Attributes != null) list.Add(Attributes);
             return list.ToArray();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_004 : ResourceSystemBlock, IResourceXXSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttribute : ResourceSystemBlock, IResourceXXSystemBlock
     {
         public override long BlockLength
         {
             get { return 16; }
         }
 
-        // structure data
         public uint VFT { get; set; }
         public uint Unknown_4h { get; set; } // 0x00000001
-        public byte type { get; set; }
-        public byte Unknown_9h { get; set; }
-        public ushort Unknown_Ah { get; set; }
-        public uint Unknown_Ch { get; set; }
+        public byte Type { get; set; }
+        public byte Unknown_9h { get; set; } // 0x00
+        public ushort Unknown_Ah { get; set; } // 0x0000
+        public uint Unknown_Ch { get; set; } // 0x00000000
+        public uint Unknown_10h { get; set; } // 0x00000000
+        public uint Unknown_14h { get; set; } // 0x00000000
+        public MetaHash NameHash { get; set; }
+        public uint Unknown_1Ch { get; set; } // 0x00000000
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            // read structure data
             this.VFT = reader.ReadUInt32();
             this.Unknown_4h = reader.ReadUInt32();
-            this.type = reader.ReadByte();
+            this.Type = reader.ReadByte();
             this.Unknown_9h = reader.ReadByte();
             this.Unknown_Ah = reader.ReadUInt16();
             this.Unknown_Ch = reader.ReadUInt32();
+            this.Unknown_10h = reader.ReadUInt32();
+            this.Unknown_14h = reader.ReadUInt32();
+            this.NameHash = reader.ReadUInt32();
+            this.Unknown_1Ch = reader.ReadUInt32();
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            // write structure data
             writer.Write(this.VFT);
             writer.Write(this.Unknown_4h);
-            writer.Write(this.type);
+            writer.Write(this.Type);
             writer.Write(this.Unknown_9h);
             writer.Write(this.Unknown_Ah);
             writer.Write(this.Unknown_Ch);
+            writer.Write(this.Unknown_10h);
+            writer.Write(this.Unknown_14h);
+            writer.Write(this.NameHash);
+            writer.Write(this.Unknown_1Ch);
         }
 
         public IResourceSystemBlock GetType(ResourceDataReader reader, params object[] parameters)
@@ -1199,246 +1083,166 @@ namespace CodeWalker.GameFiles
 
             switch (type)
             {
-                case 1: return new Unknown_CL_004_type1();
-                case 2: return new Unknown_CL_004_type2();
-                case 3: return new Unknown_CL_004_type3();
-                case 4: return new Unknown_CL_004_type4();
-                case 6: return new Unknown_CL_004_type6();
-                case 8: return new Unknown_CL_004_type8();
+                case 1: return new ClipPropertyAttributeFloat();
+                case 2: return new ClipPropertyAttributeInt();
+                case 3: return new ClipPropertyAttributeBool();
+                case 4: return new ClipPropertyAttributeString();
+                case 6: return new ClipPropertyAttributeVector3();
+                case 8: return new ClipPropertyAttributeVector4();
+                case 12: return new ClipPropertyAttributeHashString();
                 default: return null;// throw new Exception("Unknown type");
             }
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_004_type1 : Unknown_CL_004
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeFloat : ClipPropertyAttribute
     {
         public override long BlockLength
         {
             get { return 48; }
         }
 
-        // structure data
-        public uint Unknown_10h { get; set; } // 0x00000000
-        public uint Unknown_14h { get; set; } // 0x00000000
-        public uint Unknown_18h { get; set; }
-        public uint Unknown_1Ch { get; set; } // 0x00000000
-        public uint Unknown_20h { get; set; }
+        public float Value { get; set; }
         public uint Unknown_24h { get; set; } // 0x00000000
         public uint Unknown_28h { get; set; } // 0x00000000
         public uint Unknown_2Ch { get; set; } // 0x00000000
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt32();
+            this.Value = reader.ReadSingle();
             this.Unknown_24h = reader.ReadUInt32();
             this.Unknown_28h = reader.ReadUInt32();
             this.Unknown_2Ch = reader.ReadUInt32();
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
 
             // write structure data
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
+            writer.Write(this.Value);
             writer.Write(this.Unknown_24h);
             writer.Write(this.Unknown_28h);
             writer.Write(this.Unknown_2Ch);
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_004_type2 : Unknown_CL_004
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeInt : ClipPropertyAttribute
     {
         public override long BlockLength
         {
             get { return 48; }
         }
 
-        // structure data
-        public uint Unknown_10h { get; set; } // 0x00000000
-        public uint Unknown_14h { get; set; } // 0x00000000
-        public uint Unknown_18h { get; set; }
-        public uint Unknown_1Ch { get; set; } // 0x00000000
-        public uint Unknown_20h { get; set; }
+        public int Value { get; set; }
         public uint Unknown_24h { get; set; } // 0x00000000
         public uint Unknown_28h { get; set; } // 0x00000000
         public uint Unknown_2Ch { get; set; } // 0x00000000
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt32();
+            this.Value = reader.ReadInt32();
             this.Unknown_24h = reader.ReadUInt32();
             this.Unknown_28h = reader.ReadUInt32();
             this.Unknown_2Ch = reader.ReadUInt32();
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
 
             // write structure data
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
+            writer.Write(this.Value);
             writer.Write(this.Unknown_24h);
             writer.Write(this.Unknown_28h);
             writer.Write(this.Unknown_2Ch);
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_004_type3 : Unknown_CL_004
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeBool : ClipPropertyAttribute
     {
         public override long BlockLength
         {
             get { return 48; }
         }
 
-        // structure data
-        public uint Unknown_10h { get; set; } // 0x00000000
-        public uint Unknown_14h { get; set; } // 0x00000000
-        public uint Unknown_18h { get; set; } // 0x6D7255E7
-        public uint Unknown_1Ch { get; set; } // 0x00000000
-        public uint Unknown_20h { get; set; } // 0x00000000
+        public uint Value { get; set; }
         public uint Unknown_24h { get; set; } // 0x00000000
         public uint Unknown_28h { get; set; } // 0x00000000
         public uint Unknown_2Ch { get; set; } // 0x00000000
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt32();
+            this.Value = reader.ReadUInt32();
             this.Unknown_24h = reader.ReadUInt32();
             this.Unknown_28h = reader.ReadUInt32();
             this.Unknown_2Ch = reader.ReadUInt32();
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
 
             // write structure data
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
+            writer.Write(this.Value);
             writer.Write(this.Unknown_24h);
             writer.Write(this.Unknown_28h);
             writer.Write(this.Unknown_2Ch);
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_004_type4 : Unknown_CL_004
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeString : ClipPropertyAttribute
     {
         public override long BlockLength
         {
             get { return 48; }
         }
 
-        // structure data
-        public uint Unknown_10h { get; set; } // 0x00000000
-        public uint Unknown_14h { get; set; } // 0x00000000
-        public uint Unknown_18h { get; set; }
-        public uint Unknown_1Ch { get; set; } // 0x00000000
-        public ulong p1 { get; set; }
-        public ushort c1 { get; set; }
-        public ushort c2 { get; set; }
+        public ulong ValuePointer { get; set; }
+        public ushort ValueLength1 { get; set; }
+        public ushort ValueLength2 { get; set; }
         public uint Unknown_2Ch { get; set; } // 0x00000000
 
-        // reference data
-        //public ResourceSimpleArray<byte_r> p1data { get; set; } // string (byte array...)
-        public byte[] p1data { get; set; } // string (byte array...)
+        public string Value;
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.p1 = reader.ReadUInt64();
-            this.c1 = reader.ReadUInt16();
-            this.c2 = reader.ReadUInt16();
+            this.ValuePointer = reader.ReadUInt64();
+            this.ValueLength1 = reader.ReadUInt16();
+            this.ValueLength2 = reader.ReadUInt16();
             this.Unknown_2Ch = reader.ReadUInt32();
 
-            // read reference data
-            //this.p1data = reader.ReadBlockAt<ResourceSimpleArray<byte_r>>(
-            //    this.p1, // offset
-            //    this.c2
+            //// read reference data
+            //this.Value = reader.ReadBlockAt<string_r>(
+            //    this.ValuePointer // offset
             //);
-            this.p1data = reader.ReadBytesAt(this.p1, this.c2);
+            Value = reader.ReadStringAt(ValuePointer);
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
 
             // update structure data
-            //this.p1 = (ulong)(this.p1data != null ? this.p1data.Position : 0);//todo:fix!~
-            ////this.c2 = (ushort)(this.p1data != null ? this.p1data.Count : 0);
+            //this.ValuePointer = (ulong)(this.Value != null ? this.Value.Position : 0);
+            //this.ValueLength1 = (ushort)(this.Value != null ? this.Value.Value.Length : 0);
+            //this.ValueLength2 = (ushort)(this.Value != null ? this.Value.Value.Length + 1 : 0);
 
             // write structure data
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.p1);
-            writer.Write(this.c1);
-            writer.Write(this.c2);
+            writer.Write(this.ValuePointer);
+            writer.Write(this.ValueLength1);
+            writer.Write(this.ValueLength2);
             writer.Write(this.Unknown_2Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
@@ -1446,107 +1250,100 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_004_type6 : Unknown_CL_004
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeVector3 : ClipPropertyAttribute
     {
         public override long BlockLength
         {
             get { return 48; }
         }
 
-        // structure data
-        public uint Unknown_10h { get; set; } // 0x00000000
-        public uint Unknown_14h { get; set; } // 0x00000000
-        public uint Unknown_18h { get; set; }
-        public uint Unknown_1Ch { get; set; } // 0x00000000
-        public uint Unknown_20h { get; set; }
-        public uint Unknown_24h { get; set; }
-        public uint Unknown_28h { get; set; }
-        public uint Unknown_2Ch { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+        public float Unknown_2Ch { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt32();
-            this.Unknown_24h = reader.ReadUInt32();
-            this.Unknown_28h = reader.ReadUInt32();
-            this.Unknown_2Ch = reader.ReadUInt32();
+            this.X = reader.ReadSingle();
+            this.Y = reader.ReadSingle();
+            this.Z = reader.ReadSingle();
+            this.Unknown_2Ch = reader.ReadSingle();
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
 
-            // write structure data
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_28h);
+            // write structure data          
+            writer.Write(this.X);
+            writer.Write(this.Y);
+            writer.Write(this.Z);
             writer.Write(this.Unknown_2Ch);
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_004_type8 : Unknown_CL_004
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeVector4 : ClipPropertyAttribute
     {
         public override long BlockLength
         {
             get { return 48; }
         }
 
-        // structure data
-        public uint Unknown_10h { get; set; } // 0x00000000
-        public uint Unknown_14h { get; set; } // 0x00000000
-        public uint Unknown_18h { get; set; } // 0x443D96E7
-        public uint Unknown_1Ch { get; set; } // 0x00000000
-        public uint Unknown_20h { get; set; }
-        public uint Unknown_24h { get; set; }
-        public uint Unknown_28h { get; set; }
-        public uint Unknown_2Ch { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+        public float W { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt32();
-            this.Unknown_24h = reader.ReadUInt32();
-            this.Unknown_28h = reader.ReadUInt32();
-            this.Unknown_2Ch = reader.ReadUInt32();
+            this.X = reader.ReadSingle();
+            this.Y = reader.ReadSingle();
+            this.Z = reader.ReadSingle();
+            this.W = reader.ReadSingle();
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
 
             // write structure data
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
+            writer.Write(this.X);
+            writer.Write(this.Y);
+            writer.Write(this.Z);
+            writer.Write(this.W);
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeHashString : ClipPropertyAttribute
+    {
+        public override long BlockLength => 0x30;
+
+        public MetaHash Value { get; set; }
+        public uint Unknown_24h { get; set; } // 0x00000000
+        public uint Unknown_28h { get; set; } // 0x00000000
+        public uint Unknown_2Ch { get; set; } // 0x00000000
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            base.Read(reader, parameters);
+
+            // read structure data
+            this.Value = reader.ReadUInt32();
+            this.Unknown_24h = reader.ReadUInt32();
+            this.Unknown_28h = reader.ReadUInt32();
+            this.Unknown_2Ch = reader.ReadUInt32();
+        }
+
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            base.Write(writer, parameters);
+
+            // write structure data
+            writer.Write(this.Value);
             writer.Write(this.Unknown_24h);
             writer.Write(this.Unknown_28h);
             writer.Write(this.Unknown_2Ch);
@@ -1554,7 +1351,7 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_200 : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipTagList : ResourceSystemBlock
     {
         public override long BlockLength
         {
@@ -1562,9 +1359,9 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public ulong p1 { get; set; }
-        public ushort c1 { get; set; }
-        public ushort c2 { get; set; }
+        public ulong TagsPointer { get; set; }
+        public ushort TagCount1 { get; set; }
+        public ushort TagCount2 { get; set; }
         public uint Unknown_Ch { get; set; } // 0x00000000
         public uint Unknown_10h { get; set; }
         public uint Unknown_14h { get; set; } // 0x00000000
@@ -1572,17 +1369,14 @@ namespace CodeWalker.GameFiles
         public uint Unknown_1Ch { get; set; } // 0x00000000
 
         // reference data
-        public ResourcePointerArray64<Unknown_CL_201> p1data { get; set; }
+        public ResourcePointerArray64<ClipTag> Tags { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.p1 = reader.ReadUInt64();
-            this.c1 = reader.ReadUInt16();
-            this.c2 = reader.ReadUInt16();
+            this.TagsPointer = reader.ReadUInt64();
+            this.TagCount1 = reader.ReadUInt16();
+            this.TagCount2 = reader.ReadUInt16();
             this.Unknown_Ch = reader.ReadUInt32();
             this.Unknown_10h = reader.ReadUInt32();
             this.Unknown_14h = reader.ReadUInt32();
@@ -1590,25 +1384,22 @@ namespace CodeWalker.GameFiles
             this.Unknown_1Ch = reader.ReadUInt32();
 
             // read reference data
-            this.p1data = reader.ReadBlockAt<ResourcePointerArray64<Unknown_CL_201>>(
-                this.p1, // offset
-                this.c1
+            this.Tags = reader.ReadBlockAt<ResourcePointerArray64<ClipTag>>(
+                this.TagsPointer, // offset
+                this.TagCount1
             );
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.p1 = (ulong)(this.p1data != null ? this.p1data.FilePosition : 0);
+            this.TagsPointer = (ulong)(this.Tags != null ? this.Tags.FilePosition : 0);
             //this.c1 = (ushort)(this.p1data != null ? this.p1data.Count : 0);
 
             // write structure data
-            writer.Write(this.p1);
-            writer.Write(this.c1);
-            writer.Write(this.c2);
+            writer.Write(this.TagsPointer);
+            writer.Write(this.TagCount1);
+            writer.Write(this.TagCount2);
             writer.Write(this.Unknown_Ch);
             writer.Write(this.Unknown_10h);
             writer.Write(this.Unknown_14h);
@@ -1616,189 +1407,63 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_1Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (p1data != null) list.Add(p1data);
+            if (Tags != null) list.Add(Tags);
             return list.ToArray();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_201 : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipTag : ClipProperty
     {
         public override long BlockLength
         {
             get { return 80; }
         }
 
-        // structure data
-        public uint VFT { get; set; }
-        public uint Unknown_4h { get; set; } // 0x00000001
-        public uint Unknown_8h { get; set; } // 0x00000000
-        public uint Unknown_Ch { get; set; } // 0x00000000
-        public uint Unknown_10h { get; set; } // 0x00000000
-        public uint Unknown_14h { get; set; } // 0x00000000
-        public uint Unknown_18h { get; set; }
-        public uint Unknown_1Ch { get; set; } // 0x00000000
-        public ulong p0 { get; set; }
-        public ushort c1 { get; set; }
-        public ushort c2 { get; set; }
-        public uint Unknown_2Ch { get; set; } // 0x00000000
-        public uint Unknown_30h { get; set; } // 0x00000000
-        public uint Unknown_34h { get; set; } // 0x00000000
-        public uint Unknown_38h { get; set; }
-        public uint Unknown_3Ch { get; set; } // 0x00000000
         public uint Unknown_40h { get; set; }
         public uint Unknown_44h { get; set; }
-        public ulong p1 { get; set; }
+        public ulong TagsPointer { get; set; }
 
         // reference data
-        public ResourcePointerArray64<Unknown_CL_202> p0data { get; set; }
-        public Unknown_CL_200 p1data { get; set; }
+        public ClipTagList Tags { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
+
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
+            base.Read(reader, parameters);
+
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt32();
-            this.Unknown_Ch = reader.ReadUInt32();
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.p0 = reader.ReadUInt64();
-            this.c1 = reader.ReadUInt16();
-            this.c2 = reader.ReadUInt16();
-            this.Unknown_2Ch = reader.ReadUInt32();
-            this.Unknown_30h = reader.ReadUInt32();
-            this.Unknown_34h = reader.ReadUInt32();
-            this.Unknown_38h = reader.ReadUInt32();
-            this.Unknown_3Ch = reader.ReadUInt32();
             this.Unknown_40h = reader.ReadUInt32();
             this.Unknown_44h = reader.ReadUInt32();
-            this.p1 = reader.ReadUInt64();
+            this.TagsPointer = reader.ReadUInt64();
 
             // read reference data
-            this.p0data = reader.ReadBlockAt<ResourcePointerArray64<Unknown_CL_202>>(
-                this.p0, // offset
-                this.c1
-            );
-            this.p1data = reader.ReadBlockAt<Unknown_CL_200>(
-                this.p1 // offset
+            this.Tags = reader.ReadBlockAt<ClipTagList>(
+                this.TagsPointer // offset
             );
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            // update structure data
-            this.p0 = (ulong)(this.p0data != null ? this.p0data.FilePosition : 0);
-            //this.c1 = (ushort)(this.p0data != null ? this.p0data.Count : 0);
-            this.p1 = (ulong)(this.p1data != null ? this.p1data.FilePosition : 0);
+            base.Write(writer, parameters);
 
-            // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_Ch);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.p0);
-            writer.Write(this.c1);
-            writer.Write(this.c2);
-            writer.Write(this.Unknown_2Ch);
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_34h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_3Ch);
+            // update structure data
+            this.TagsPointer = (ulong)(this.Tags != null ? this.Tags.FilePosition : 0);
+
+            // write structure data         
             writer.Write(this.Unknown_40h);
             writer.Write(this.Unknown_44h);
-            writer.Write(this.p1);
+            writer.Write(this.TagsPointer);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>();
-            if (p0data != null) list.Add(p0data);
-            if (p1data != null) list.Add(p1data);
+            var list = new List<IResourceBlock>(base.GetReferences());
+            if (Tags != null) list.Add(Tags);
             return list.ToArray();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Unknown_CL_202 : ResourceSystemBlock
-    {
-        public override long BlockLength
-        {
-            get { return 48; }
-        }
-
-        // structure data
-        public uint VFT { get; set; }
-        public uint Unknown_4h { get; set; } // 0x00000001
-        public uint Unknown_8h { get; set; }
-        public uint Unknown_Ch { get; set; } // 0x00000000
-        public uint Unknown_10h { get; set; } // 0x00000000
-        public uint Unknown_14h { get; set; } // 0x00000000
-        public uint Unknown_18h { get; set; }
-        public uint Unknown_1Ch { get; set; } // 0x00000000
-        public uint Unknown_20h { get; set; }
-        public uint Unknown_24h { get; set; }
-        public uint Unknown_28h { get; set; }
-        public uint Unknown_2Ch { get; set; }
-
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
-        public override void Read(ResourceDataReader reader, params object[] parameters)
-        {
-            // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt32();
-            this.Unknown_Ch = reader.ReadUInt32();
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt32();
-            this.Unknown_24h = reader.ReadUInt32();
-            this.Unknown_28h = reader.ReadUInt32();
-            this.Unknown_2Ch = reader.ReadUInt32();
-        }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
-        {
-            // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_Ch);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_2Ch);
-        }
-    }
-
 
 
 }
