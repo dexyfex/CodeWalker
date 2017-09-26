@@ -3470,11 +3470,11 @@ namespace CodeWalker
                 }
                 else
                 {
+                    var dpos = newpos - oldpos;
                     for (int i = 0; i < SelectedItems.Count; i++)
                     {
                         var refpos = SelectedItems[i].WidgetPosition;
-                        var relpos = refpos - oldpos;
-                        SelectedItems[i].SetPosition(relpos + newpos, refpos, false);
+                        SelectedItems[i].SetPosition(refpos + dpos, refpos, false);
                     }
                     SelectedItem.MultipleSelectionCenter = newpos;
                 }
@@ -3586,6 +3586,9 @@ namespace CodeWalker
         {
             if (fullupdate)
             {
+                ynd.UpdateAllNodePositions();
+                ynd.BuildBVH();
+
                 space.BuildYndData(ynd);
             }
             else
@@ -3618,6 +3621,7 @@ namespace CodeWalker
         public void UpdateTrainTrackGraphics(TrainTrack tt, bool fullupdate)
         {
             tt.BuildVertices();
+            tt.BuildBVH();
             //if (fullupdate)
             //{
             //    //space.BuildYndData(ynd);
@@ -6347,7 +6351,7 @@ namespace CodeWalker
                 {
                     switch (tw.Mode)
                     {
-                        case WidgetMode.Position: s = new MultiPositionUndoStep(SelectedItem, SelectedItems.ToArray(), UndoStartPosition); break;
+                        case WidgetMode.Position: s = new MultiPositionUndoStep(SelectedItem, SelectedItems.ToArray(), UndoStartPosition, this); break;
                     }
                 }
                 else if (ent != null)

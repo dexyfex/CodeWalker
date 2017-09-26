@@ -29,12 +29,14 @@ namespace CodeWalker.Project
         public Vector3 StartPosition { get; set; }
         public Vector3 EndPosition { get; set; }
 
-        public MultiPositionUndoStep(MapSelection multiSel, MapSelection[] items, Vector3 startpos)
+        public MultiPositionUndoStep(MapSelection multiSel, MapSelection[] items, Vector3 startpos, WorldForm wf)
         {
             Selection = multiSel;
             Items = items;
             StartPosition = startpos;
             EndPosition = multiSel.WidgetPosition;
+
+            UpdateGraphics(wf);
         }
 
         private void Update(WorldForm wf, ref MapSelection sel, Vector3 p, Vector3 o)
@@ -51,7 +53,53 @@ namespace CodeWalker.Project
 
             wf.SelectMulti(Items);
             wf.SetWidgetPosition(p);
+
+            UpdateGraphics(wf);
         }
+
+
+        private void UpdateGraphics(WorldForm wf)
+        {
+
+            Dictionary<YndFile, int> pathYnds = new Dictionary<YndFile, int>();
+            Dictionary<TrainTrack, int> trainTracks = new Dictionary<TrainTrack, int>();
+            Dictionary<YmtFile, int> scenarioYmts = new Dictionary<YmtFile, int>();
+
+            if (Items != null)
+            {
+                foreach (var item in Items)
+                {
+                    if (item.PathNode != null)
+                    {
+                        pathYnds[item.PathNode.Ynd] = 1;
+                    }
+                    if (item.TrainTrackNode != null)
+                    {
+                        trainTracks[item.TrainTrackNode.Track] = 1;
+                    }
+                    if (item.ScenarioNode != null)
+                    {
+                        scenarioYmts[item.ScenarioNode.Ymt] = 1;
+                    }
+                }
+            }
+
+            foreach (var kvp in pathYnds)
+            {
+                wf.UpdatePathYndGraphics(kvp.Key, true);
+            }
+            foreach (var kvp in trainTracks)
+            {
+                wf.UpdateTrainTrackGraphics(kvp.Key, false);
+            }
+            foreach (var kvp in scenarioYmts)
+            {
+                wf.UpdateScenarioGraphics(kvp.Key, false);
+            }
+
+        }
+
+
 
         public override void Undo(WorldForm wf, ref MapSelection sel)
         {

@@ -827,9 +827,9 @@ namespace CodeWalker.GameFiles
             _RawData.PositionZ = (short)(pos.Z * 32.0f);
 
             Vector3 newpos = pos;
-            newpos.X = _RawData.PositionX / 4.0f;
-            newpos.Y = _RawData.PositionY / 4.0f;
-            newpos.Z = _RawData.PositionZ / 32.0f;
+            //newpos.X = _RawData.PositionX / 4.0f;
+            //newpos.Y = _RawData.PositionY / 4.0f;
+            //newpos.Z = _RawData.PositionZ / 32.0f;
             Position = newpos;
 
             UpdateLinkLengths();
