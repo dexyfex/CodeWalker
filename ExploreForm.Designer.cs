@@ -103,6 +103,8 @@
             this.ListContextCopyPathMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextCopyFileListMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.ListContextOpenFileLocationMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ListContextOpenFileLocationSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.ListContextRenameMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextReplaceMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextDeleteMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -118,8 +120,7 @@
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-            this.ListContextOpenFileLocationSeparator = new System.Windows.Forms.ToolStripSeparator();
-            this.ListContextOpenFileLocationMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ListContextExtractUncompressedMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -714,6 +715,7 @@
             this.toolStripSeparator2,
             this.ListContextExportXmlMenu,
             this.ListContextExtractRawMenu,
+            this.ListContextExtractUncompressedMenu,
             this.ListContextExtractAllMenu,
             this.toolStripSeparator5,
             this.ListContextImportXmlMenu,
@@ -731,7 +733,7 @@
             this.ListContextEditSeparator,
             this.ListContextSelectAllMenu});
             this.ListContextMenu.Name = "MainContextMenu";
-            this.ListContextMenu.Size = new System.Drawing.Size(208, 392);
+            this.ListContextMenu.Size = new System.Drawing.Size(208, 414);
             // 
             // ListContextViewMenu
             // 
@@ -841,6 +843,18 @@
             this.toolStripSeparator6.Name = "toolStripSeparator6";
             this.toolStripSeparator6.Size = new System.Drawing.Size(204, 6);
             // 
+            // ListContextOpenFileLocationMenu
+            // 
+            this.ListContextOpenFileLocationMenu.Name = "ListContextOpenFileLocationMenu";
+            this.ListContextOpenFileLocationMenu.Size = new System.Drawing.Size(207, 22);
+            this.ListContextOpenFileLocationMenu.Text = "Open File Location";
+            this.ListContextOpenFileLocationMenu.Click += new System.EventHandler(this.ListContextOpenFileLocationMenu_Click);
+            // 
+            // ListContextOpenFileLocationSeparator
+            // 
+            this.ListContextOpenFileLocationSeparator.Name = "ListContextOpenFileLocationSeparator";
+            this.ListContextOpenFileLocationSeparator.Size = new System.Drawing.Size(204, 6);
+            // 
             // ListContextRenameMenu
             // 
             this.ListContextRenameMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextRenameMenu.Image")));
@@ -935,17 +949,12 @@
             this.TreeContextCollapseAllMenu.Text = "Collapse All";
             this.TreeContextCollapseAllMenu.Click += new System.EventHandler(this.TreeContextCollapseAllMenu_Click);
             // 
-            // ListContextOpenFileLocationSeparator
+            // ListContextExtractUncompressedMenu
             // 
-            this.ListContextOpenFileLocationSeparator.Name = "ListContextOpenFileLocationSeparator";
-            this.ListContextOpenFileLocationSeparator.Size = new System.Drawing.Size(204, 6);
-            // 
-            // ListContextOpenFileLocationMenu
-            // 
-            this.ListContextOpenFileLocationMenu.Name = "ListContextOpenFileLocationMenu";
-            this.ListContextOpenFileLocationMenu.Size = new System.Drawing.Size(207, 22);
-            this.ListContextOpenFileLocationMenu.Text = "Open File Location";
-            this.ListContextOpenFileLocationMenu.Click += new System.EventHandler(this.ListContextOpenFileLocationMenu_Click);
+            this.ListContextExtractUncompressedMenu.Name = "ListContextExtractUncompressedMenu";
+            this.ListContextExtractUncompressedMenu.Size = new System.Drawing.Size(207, 22);
+            this.ListContextExtractUncompressedMenu.Text = "Extract Uncompressed...";
+            this.ListContextExtractUncompressedMenu.Click += new System.EventHandler(this.ListContextExtractUncompressedMenu_Click);
             // 
             // ExploreForm
             // 
@@ -1070,5 +1079,6 @@
         private System.Windows.Forms.ColumnHeader MainPathColumnHeader;
         private System.Windows.Forms.ToolStripMenuItem ListContextOpenFileLocationMenu;
         private System.Windows.Forms.ToolStripSeparator ListContextOpenFileLocationSeparator;
+        private System.Windows.Forms.ToolStripMenuItem ListContextExtractUncompressedMenu;
     }
 }

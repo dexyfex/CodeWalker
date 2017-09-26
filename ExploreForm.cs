@@ -1396,6 +1396,7 @@ namespace CodeWalker
 
             ListContextExportXmlMenu.Enabled = canexportxml;
             ListContextExtractRawMenu.Enabled = isfile;
+            ListContextExtractUncompressedMenu.Enabled = isfile;
 
             ListContextImportRawMenu.Visible = canimport;
             ListContextImportXmlMenu.Visible = canimport;
@@ -1459,6 +1460,93 @@ namespace CodeWalker
             }
         }
         private void ExtractRaw()
+        {
+            if (MainListView.SelectedIndices.Count == 1)
+            {
+                var idx = MainListView.SelectedIndices[0];
+                if ((idx < 0) || (idx >= CurrentFiles.Count)) return;
+                var file = CurrentFiles[idx];
+                if (file.Folder == null)
+                {
+                    byte[] data = GetFileData(file);
+                    if (data == null)
+                    {
+                        MessageBox.Show("Unable to extract file: " + file.Path);
+                        return;
+                    }
+
+
+                    RpfResourceFileEntry rrfe = file.File as RpfResourceFileEntry;
+                    if (rrfe != null) //add resource header if this is a resource file.
+                    {
+                        data = ResourceBuilder.Compress(data);
+                        data = ResourceBuilder.AddResourceHeader(rrfe, data);
+                    }
+
+
+                    SaveFileDialog.FileName = file.Name;
+                    if (SaveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        string path = SaveFileDialog.FileName;
+                        try
+                        {
+                            File.WriteAllBytes(path, data);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Error saving file " + path + ":\n" + ex.ToString());
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return;
+                string folderpath = FolderBrowserDialog.SelectedPath;
+                if (!folderpath.EndsWith("\\")) folderpath += "\\";
+
+                StringBuilder errors = new StringBuilder();
+
+                for (int i = 0; i < MainListView.SelectedIndices.Count; i++)
+                {
+                    var idx = MainListView.SelectedIndices[i];
+                    if ((idx < 0) || (idx >= CurrentFiles.Count)) continue;
+                    var file = CurrentFiles[idx];
+                    if (file.Folder == null)
+                    {
+                        var path = folderpath + file.Name;
+                        var data = GetFileData(file);
+                        if (data == null)
+                        {
+                            errors.AppendLine("Unable to extract file: " + file.Path);
+                            continue;
+                        }
+                        try
+                        {
+                            RpfResourceFileEntry rrfe = file.File as RpfResourceFileEntry;
+                            if (rrfe != null) //add resource header if this is a resource file.
+                            {
+                                data = ResourceBuilder.Compress(data);
+                                data = ResourceBuilder.AddResourceHeader(rrfe, data);
+                            }
+
+                            File.WriteAllBytes(path, data);
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.AppendLine("Error saving file " + path + ":\n" + ex.ToString());
+                        }
+                    }
+                }
+
+                string errstr = errors.ToString();
+                if (!string.IsNullOrEmpty(errstr))
+                {
+                    MessageBox.Show("Errors were encountered:\n" + errstr);
+                }
+            }
+        }
+        private void ExtractUncompressed()
         {
             if (MainListView.SelectedIndices.Count == 1)
             {
@@ -1551,6 +1639,13 @@ namespace CodeWalker
                     }
                     try
                     {
+                        RpfResourceFileEntry rrfe = file.File as RpfResourceFileEntry;
+                        if (rrfe != null) //add resource header if this is a resource file.
+                        {
+                            data = ResourceBuilder.Compress(data);
+                            data = ResourceBuilder.AddResourceHeader(rrfe, data);
+                        }
+
                         File.WriteAllBytes(path, data);
                     }
                     catch (Exception ex)
@@ -2054,6 +2149,11 @@ namespace CodeWalker
         private void ListContextExtractRawMenu_Click(object sender, EventArgs e)
         {
             ExtractRaw();
+        }
+
+        private void ListContextExtractUncompressedMenu_Click(object sender, EventArgs e)
+        {
+            ExtractUncompressed();
         }
 
         private void ListContextExtractAllMenu_Click(object sender, EventArgs e)

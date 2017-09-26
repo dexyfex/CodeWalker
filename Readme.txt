@@ -74,6 +74,56 @@ CodeWalker.exe explorer
 Alternatively, run the CodeWalker Explorer batch file in the program's directory.
 
 
+Main Toolbar:
+-------------
+The main toolbar is used to access most of the editing features in CodeWalker. Shortcuts for new, open and
+create files are provided. The selection mode can be changed with the "pointer" button. Move, rotate and
+scale buttons provide access to the different editing widget modes.
+Other shortcuts on the toolbar include buttons to open the Selection Info window, and the Project window.
+See the tooltips on the toolbar items for hints.
+
+
+Project Window:
+---------------
+The project window is the starting point for editing files in CodeWalker. Project files can be created,
+and files can be added to them. It is recommended to create and save a project file before adding files
+to be edited and saved.
+The tree view displays the files in the current project, and their contents.
+
+
+YMAP editing:
+-------------
+New YMAP files can be created via the project window, and existing ymap files can be edited.
+To edit an existing single player YMAP, first change codewalker DLC level to patchday2ng, and enable DLC.
+Open the toolbar, and enable Entity selection mode. Enable the Move widget with the toolbar Move button.
+Open the project window with the toolbar button. Changes made while the project window is open are
+automatically added to the project.
+Select an entity to edit by right clicking when the entity is moused over, and its bounding box shown in
+white. Move, rotate and/or scale the selected entity with the widget. When the first change is made, the
+entity's YMAP will be added to the current project. If no project is open, a new one will be created.
+The edited YMAP file can be saved to the drive using the File menu in the project window.
+After saving the file, it needs to be added into the mods folder. Using OpenIV, find the existing YMAP
+file using the search function (note: the correct path for the edited YMAP can be found in the selection
+info window in CodeWalker, when an entity is selected, look for YMap>RpfFileEntry in the selection info
+property grid). Replace the edited YMAP into a copy of the correct archive in the /mods folder.
+Newly created YMAPs can be added to DLC archives in the same manner.
+
+
+Traffic Paths (YND) editing:
+----------------------------
+[TODO - write this!]
+
+
+Train Tracks editing:
+---------------------
+[TODO - write this!]
+
+
+Scenario Regions (YMT) editing:
+-------------------------------
+[TODO: write this!]
+
+
 
 Regarding game files: (FYI)
 ----------------------------
