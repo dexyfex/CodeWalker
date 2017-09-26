@@ -3753,9 +3753,27 @@ namespace CodeWalker.GameFiles
 
             if ((EntityOverrides != null) && (EntityOverrides.Length > 0))
             {
-                //mb.AddStructureInfo(MetaName.CScenarioEntityOverride); //will get added by MCScenarioEntityOverride
-                //mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
-                _Data.EntityOverrides = mb.AddWrapperArray(EntityOverrides);
+                //_Data.EntityOverrides = mb.AddWrapperArray(EntityOverrides);
+
+
+                mb.AddStructureInfo(MetaName.CScenarioEntityOverride);
+                var cents = new CScenarioEntityOverride[EntityOverrides.Length];
+                for (int i = 0; i < EntityOverrides.Length; i++)
+                {
+                    var mcent = EntityOverrides[i];
+                    var cent = mcent.Data;
+                    var scps = mcent.GetCScenarioPoints();
+                    if (scps != null)
+                    {
+                        mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
+                        mb.AddEnumInfo((MetaName)3573596290);
+                        mb.AddEnumInfo((MetaName)700327466);
+                        cent.ScenarioPoints = mb.AddItemArrayPtr(MetaName.CExtensionDefSpawnPoint, scps);
+                    }
+                    cents[i] = cent;
+                }
+                _Data.EntityOverrides = mb.AddItemArrayPtr(MetaName.CScenarioEntityOverride, cents);
+
             }
             else
             {
@@ -4424,6 +4442,18 @@ namespace CodeWalker.GameFiles
                 {
                     ScenarioPoints = newpoints.ToArray();
                 }
+            }
+            return r;
+        }
+
+
+        public CExtensionDefSpawnPoint[] GetCScenarioPoints()
+        {
+            if ((ScenarioPoints == null) || (ScenarioPoints.Length == 0)) return null;
+            CExtensionDefSpawnPoint[] r = new CExtensionDefSpawnPoint[ScenarioPoints.Length];
+            for (int i = 0; i < ScenarioPoints.Length; i++)
+            {
+                r[i] = ScenarioPoints[i].Data;
             }
             return r;
         }

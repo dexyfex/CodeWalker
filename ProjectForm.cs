@@ -4733,6 +4733,7 @@ namespace CodeWalker
             var copyn = CurrentScenarioNode?.ChainingNode;
             var copyp = CurrentScenarioNode?.MyPoint;
             var copye = CurrentScenarioChainEdge;
+            var copycl = CurrentScenarioNode?.Cluster;
 
             MCScenarioChain chain = new MCScenarioChain();
             if (copy != null)
@@ -4748,8 +4749,26 @@ namespace CodeWalker
             var pos1 = GetSpawnPos(10.0f);
             var pos2 = pos1 + Vector3.UnitX;
 
-            var n1 = CurrentScenario.ScenarioRegion.AddNode();
-            var n2 = CurrentScenario.ScenarioRegion.AddNode();
+            ScenarioNode n1 = null;// CurrentScenario.ScenarioRegion.AddNode();
+
+            if (copycl != null)
+            {
+                ScenarioNode copyclnode = new ScenarioNode(CurrentScenario);
+                copyclnode.Cluster = copycl;
+                copyclnode.ClusterMyPoint = new MCScenarioPoint(CurrentScenario.CScenarioPointRegion);
+                copyclnode.ClusterMyPoint.InteriorName = 493038497; //JenkHash.GenHash("none");
+                copyclnode.ClusterMyPoint.GroupName = 493038497;
+                copyclnode.ClusterMyPoint.IMapName = 493038497;
+                copyclnode.ClusterMyPoint.TimeStart = 0;
+                copyclnode.ClusterMyPoint.TimeEnd = 24;
+                n1 = CurrentScenario.ScenarioRegion.AddNode(copyclnode);
+            }
+            else
+            {
+                n1 = CurrentScenario.ScenarioRegion.AddNode();
+            }
+
+            ScenarioNode n2 = CurrentScenario.ScenarioRegion.AddNode();
 
             if (copyp != null)
             {
@@ -8910,6 +8929,11 @@ namespace CodeWalker
                 }
             }
             UpdateScenarioNodeTreeNode(CurrentScenarioNode);
+
+            if (CurrentScenarioNode.ChainingNode != null)
+            {
+                ScenarioChainNodeTypeComboBox.SelectedItem = stype;
+            }
         }
 
         private void ScenarioPointModelSetComboBox_SelectedIndexChanged(object sender, EventArgs e)

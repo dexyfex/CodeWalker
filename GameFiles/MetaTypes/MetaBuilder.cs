@@ -11,7 +11,7 @@ namespace CodeWalker.GameFiles
 
         List<MetaBuilderBlock> Blocks = new List<MetaBuilderBlock>();
 
-        int MaxBlockLength = 0x2000; //TODO: figure what this should be!
+        int MaxBlockLength = 0x4000; //TODO: figure what this should be!
 
 
         public MetaBuilderBlock EnsureBlock(MetaName type)
