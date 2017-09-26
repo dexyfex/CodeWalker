@@ -2277,28 +2277,6 @@ namespace CodeWalker.Forms
 
         }
 
-        private void StatsUpdateTimer_Tick(object sender, EventArgs e)
-        {
-            int rgc = (shaders != null) ? shaders.RenderedGeometries : 0;
-            int crc = renderableCache.LoadedRenderableCount;
-            int ctc = renderableCache.LoadedTextureCount;
-            int tcrc = renderableCache.MemCachedRenderableCount;
-            int tctc = renderableCache.MemCachedTextureCount;
-            long vr = renderableCache.TotalGraphicsMemoryUse + (shaders != null ? shaders.TotalGraphicsMemoryUse : 0);
-            string vram = TextUtil.GetBytesReadable(vr);
-            //StatsLabel.Text = string.Format("Drawn: {0} geom, Loaded: {1}/{5} dr, {2}/{6} tx, Vram: {3}, Fps: {4}", rgc, crc, ctc, vram, fps, tcrc, tctc);
-            StatsLabel.Text = string.Format("Drawn: {0} geom, Loaded: {1} dr, {2} tx, Vram: {3}, Fps: {4}", rgc, crc, ctc, vram, fps);
-
-            if (timerunning)
-            {
-                float fv = timeofday * 60.0f;
-                //TimeOfDayTrackBar.Value = (int)fv;
-                UpdateTimeOfDayLabel();
-            }
-
-            //CameraPositionTextBox.Text = FloatUtil.GetVector3String(camera.Position, "0.##");
-        }
-
         private void ModelForm_KeyDown(object sender, KeyEventArgs e)
         {
             if (ActiveControl is TextBox)
@@ -2468,6 +2446,40 @@ namespace CodeWalker.Forms
             //{
             //    e.Handled = true;
             //}
+        }
+
+        private void ModelForm_Deactivate(object sender, EventArgs e)
+        {
+            //try not to lock keyboard movement if the form loses focus.
+            kbmovefwd = false;
+            kbmovebck = false;
+            kbmovelft = false;
+            kbmovergt = false;
+            kbmoveup = false;
+            kbmovedn = false;
+            kbjump = false;
+        }
+
+        private void StatsUpdateTimer_Tick(object sender, EventArgs e)
+        {
+            int rgc = (shaders != null) ? shaders.RenderedGeometries : 0;
+            int crc = renderableCache.LoadedRenderableCount;
+            int ctc = renderableCache.LoadedTextureCount;
+            int tcrc = renderableCache.MemCachedRenderableCount;
+            int tctc = renderableCache.MemCachedTextureCount;
+            long vr = renderableCache.TotalGraphicsMemoryUse + (shaders != null ? shaders.TotalGraphicsMemoryUse : 0);
+            string vram = TextUtil.GetBytesReadable(vr);
+            //StatsLabel.Text = string.Format("Drawn: {0} geom, Loaded: {1}/{5} dr, {2}/{6} tx, Vram: {3}, Fps: {4}", rgc, crc, ctc, vram, fps, tcrc, tctc);
+            StatsLabel.Text = string.Format("Drawn: {0} geom, Loaded: {1} dr, {2} tx, Vram: {3}, Fps: {4}", rgc, crc, ctc, vram, fps);
+
+            if (timerunning)
+            {
+                float fv = timeofday * 60.0f;
+                //TimeOfDayTrackBar.Value = (int)fv;
+                UpdateTimeOfDayLabel();
+            }
+
+            //CameraPositionTextBox.Text = FloatUtil.GetVector3String(camera.Position, "0.##");
         }
 
         private void ToolsPanelShowButton_Click(object sender, EventArgs e)

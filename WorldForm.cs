@@ -216,6 +216,7 @@ namespace CodeWalker
         string SelectionModeStr = "Entity";
         MapSelectionMode SelectionMode = MapSelectionMode.Entity;
         MapSelection SelectedItem;
+        List<MapSelection> SelectedItems = new List<MapSelection>();
         WorldInfoForm InfoForm = null;
         Dictionary<DrawableModel, bool> SelectionModelDrawFlags = new Dictionary<DrawableModel, bool>();
         Dictionary<DrawableGeometry, bool> SelectionGeometryDrawFlags = new Dictionary<DrawableGeometry, bool>();
@@ -3048,7 +3049,22 @@ namespace CodeWalker
 
         private void RenderSelection(DeviceContext context)
         {
-            //immediately render the bounding box of the currently selection. also, arrows.
+            if (SelectedItem.MultipleSelection)
+            {
+                for (int i = 0; i < SelectedItems.Count; i++)
+                {
+                    var item = SelectedItems[i];
+                    RenderSelection(context, ref item);
+                }
+            }
+            else
+            {
+                RenderSelection(context, ref SelectedItem);
+            }
+        }
+        private void RenderSelection(DeviceContext context, ref MapSelection selectionItem)
+        {
+            //immediately render the bounding box of the current selection. also, arrows.
 
             const uint cgrn = 4278255360;// (uint)new Color4(0.0f, 1.0f, 0.0f, 1.0f).ToRgba();
             const uint cblu = 4294901760;// (uint)new Color4(0.0f, 0.0f, 1.0f, 1.0f).ToRgba();
@@ -3065,7 +3081,7 @@ namespace CodeWalker
             if (!ShowSelectionBounds)
             { return; }
 
-            if (!SelectedItem.HasValue)
+            if (!selectionItem.HasValue)
             { return; }
 
 
@@ -3076,21 +3092,21 @@ namespace CodeWalker
             bool clip = renderboundsclip;
 
 
-            Vector3 bbmin = SelectedItem.AABB.Minimum;
-            Vector3 bbmax = SelectedItem.AABB.Maximum;
+            Vector3 bbmin = selectionItem.AABB.Minimum;
+            Vector3 bbmax = selectionItem.AABB.Maximum;
             Vector3 camrel = -camera.Position;
             Vector3 scale = Vector3.One;
             Quaternion ori = Quaternion.Identity;
 
 
-            var arch = SelectedItem.Archetype;
-            var ent = SelectedItem.EntityDef;
-            if (SelectedItem.Archetype != null)
+            var arch = selectionItem.Archetype;
+            var ent = selectionItem.EntityDef;
+            if (selectionItem.Archetype != null)
             {
-                bbmin = SelectedItem.Archetype.BBMin;
-                bbmax = SelectedItem.Archetype.BBMax;
+                bbmin = selectionItem.Archetype.BBMin;
+                bbmax = selectionItem.Archetype.BBMax;
             }
-            if (SelectedItem.EntityDef != null)
+            if (selectionItem.EntityDef != null)
             {
                 camrel = ent.Position - camera.Position;
                 scale = ent.Scale;
@@ -3101,9 +3117,9 @@ namespace CodeWalker
                     RenderSelectionEntityPivot(ent);
                 }
             }
-            if (SelectedItem.CarGenerator != null)
+            if (selectionItem.CarGenerator != null)
             {
-                var cg = SelectedItem.CarGenerator;
+                var cg = selectionItem.CarGenerator;
                 camrel = cg.Position - camera.Position;
                 ori = cg.Orientation;
                 bbmin = cg.BBMin;
@@ -3112,19 +3128,19 @@ namespace CodeWalker
                 float arrowrad = arrowlen * 0.066f;
                 RenderSelectionArrowOutline(cg.Position, Vector3.UnitX, Vector3.UnitY, ori, arrowlen, arrowrad, cgrn);
             }
-            if (SelectedItem.PathNode != null)
+            if (selectionItem.PathNode != null)
             {
-                camrel = SelectedItem.PathNode.Position - camera.Position;
+                camrel = selectionItem.PathNode.Position - camera.Position;
             }
-            if (SelectedItem.TrainTrackNode != null)
+            if (selectionItem.TrainTrackNode != null)
             {
-                camrel = SelectedItem.TrainTrackNode.Position - camera.Position;
+                camrel = selectionItem.TrainTrackNode.Position - camera.Position;
             }
-            if (SelectedItem.ScenarioNode != null)
+            if (selectionItem.ScenarioNode != null)
             {
-                camrel = SelectedItem.ScenarioNode.Position - camera.Position;
+                camrel = selectionItem.ScenarioNode.Position - camera.Position;
 
-                var sn = SelectedItem.ScenarioNode;
+                var sn = selectionItem.ScenarioNode;
 
                 //render direction arrow for ScenarioPoint
                 ori = sn.Orientation;
@@ -3133,10 +3149,10 @@ namespace CodeWalker
                 RenderSelectionArrowOutline(sn.Position, Vector3.UnitY, Vector3.UnitZ, ori, arrowlen, arrowrad, cgrn);
 
             }
-            if (SelectedItem.ScenarioEdge != null)
+            if (selectionItem.ScenarioEdge != null)
             {
                 //render scenario edge arrow
-                var se = SelectedItem.ScenarioEdge;
+                var se = selectionItem.ScenarioEdge;
                 var sn1 = se.NodeFrom;
                 var sn2 = se.NodeTo;
                 if ((sn1 != null) && (sn2 != null))
@@ -3151,25 +3167,25 @@ namespace CodeWalker
                     RenderSelectionArrowOutline(sn1.Position, -Vector3.UnitZ, Vector3.UnitY, aori, arrowlen, arrowrad, cblu);
                 }
             }
-            if (SelectedItem.MloEntityDef != null)
+            if (selectionItem.MloEntityDef != null)
             {
-                bbmin = SelectedItem.AABB.Minimum;
-                bbmax = SelectedItem.AABB.Maximum;
+                bbmin = selectionItem.AABB.Minimum;
+                bbmax = selectionItem.AABB.Maximum;
                 clip = false;
             }
-            if ((SelectedItem.GrassBatch != null) || (SelectedItem.ArchetypeExtension != null) || (SelectedItem.EntityExtension != null) || (SelectedItem.CollisionBounds != null))
+            if ((selectionItem.GrassBatch != null) || (selectionItem.ArchetypeExtension != null) || (selectionItem.EntityExtension != null) || (selectionItem.CollisionBounds != null))
             {
-                bbmin = SelectedItem.AABB.Minimum;
-                bbmax = SelectedItem.AABB.Maximum;
+                bbmin = selectionItem.AABB.Minimum;
+                bbmax = selectionItem.AABB.Maximum;
                 scale = Vector3.One;
             }
-            if (SelectedItem.WaterQuad != null)
+            if (selectionItem.WaterQuad != null)
             {
                 clip = false;
             }
-            if (SelectedItem.NavPoly != null)
+            if (selectionItem.NavPoly != null)
             {
-                RenderSelectionNavPoly(SelectedItem.NavPoly);
+                RenderSelectionNavPoly(selectionItem.NavPoly);
 
                 //return;//don't render a selection box for nav mesh
                 //clip = false;
@@ -3447,130 +3463,75 @@ namespace CodeWalker
             //called during UpdateWidgets()
             if (newpos == oldpos) return;
 
-            if (SelectedItem.EntityDef != null)
+            if (SelectedItem.MultipleSelection)
             {
                 if (EditEntityPivot)
                 {
-                    SelectedItem.EntityDef.SetPivotPositionFromWidget(newpos);
                 }
                 else
                 {
-                    SelectedItem.EntityDef.SetPositionFromWidget(newpos);
-                }
-
-                if (ProjectForm != null)
-                {
-                    ProjectForm.OnWorldEntityModified(SelectedItem.EntityDef);
+                    for (int i = 0; i < SelectedItems.Count; i++)
+                    {
+                        var refpos = SelectedItems[i].WidgetPosition;
+                        var relpos = refpos - oldpos;
+                        SelectedItems[i].SetPosition(relpos + newpos, refpos, false);
+                    }
+                    SelectedItem.MultipleSelectionCenter = newpos;
                 }
             }
-            else if (SelectedItem.CarGenerator != null)
+            else
             {
-                SelectedItem.CarGenerator.SetPosition(newpos);
-
-                if (ProjectForm != null)
-                {
-                    ProjectForm.OnWorldCarGenModified(SelectedItem.CarGenerator);
-                }
+                SelectedItem.SetPosition(newpos, oldpos, EditEntityPivot);                
             }
-            else if (SelectedItem.PathNode != null)
+            if (ProjectForm != null)
             {
-                SelectedItem.PathNode.SetPosition(newpos);
-
-                if (ProjectForm != null)
-                {
-                    ProjectForm.OnWorldPathNodeModified(SelectedItem.PathNode, SelectedItem.PathLink);
-                }
+                ProjectForm.OnWorldSelectionModified(SelectedItem, SelectedItems);
             }
-            else if (SelectedItem.NavPoly != null)
-            {
-                //SelectedItem.NavPoly.SetPosition(newpos);
-
-                //if (ProjectForm != null)
-                //{
-                //    ProjectForm.OnWorldNavPolyModified(SelectedItem.NavPoly);
-                //}
-            }
-            else if (SelectedItem.TrainTrackNode != null)
-            {
-                SelectedItem.TrainTrackNode.SetPosition(newpos);
-
-                if (ProjectForm != null)
-                {
-                    ProjectForm.OnWorldTrainNodeModified(SelectedItem.TrainTrackNode);
-                }
-            }
-            else if (SelectedItem.ScenarioNode != null)
-            {
-                SelectedItem.ScenarioNode.SetPosition(newpos);
-
-                if (ProjectForm != null)
-                {
-                    ProjectForm.OnWorldScenarioNodeModified(SelectedItem.ScenarioNode);
-                }
-            }
-
         }
         private void Widget_OnRotationChange(Quaternion newrot, Quaternion oldrot)
         {
+            //called during UpdateWidgets()
             if (newrot == oldrot) return;
 
-            if (SelectedItem.EntityDef != null)
+            if (SelectedItem.MultipleSelection)
             {
                 if (EditEntityPivot)
                 {
-                    SelectedItem.EntityDef.SetPivotOrientationFromWidget(newrot);
                 }
                 else
                 {
-                    SelectedItem.EntityDef.SetOrientationFromWidget(newrot);
-                }
-
-                if (ProjectForm != null)
-                {
-                    ProjectForm.OnWorldEntityModified(SelectedItem.EntityDef);
                 }
             }
-            else if (SelectedItem.CarGenerator != null)
+            else
             {
-                SelectedItem.CarGenerator.SetOrientation(newrot);
-
-                if (ProjectForm != null)
-                {
-                    ProjectForm.OnWorldCarGenModified(SelectedItem.CarGenerator);
-                }
+                SelectedItem.SetRotation(newrot, oldrot, EditEntityPivot);
             }
-            else if (SelectedItem.ScenarioNode != null)
+            if (ProjectForm != null)
             {
-                SelectedItem.ScenarioNode.SetOrientation(newrot);
-
-                if (ProjectForm != null)
-                {
-                    ProjectForm.OnWorldScenarioNodeModified(SelectedItem.ScenarioNode);
-                }
+                ProjectForm.OnWorldSelectionModified(SelectedItem, SelectedItems);
             }
         }
         private void Widget_OnScaleChange(Vector3 newscale, Vector3 oldscale)
         {
+            //called during UpdateWidgets()
             if (newscale == oldscale) return;
 
-            if (SelectedItem.EntityDef != null)
+            if (SelectedItem.MultipleSelection)
             {
-                SelectedItem.EntityDef.SetScale(newscale);
-
-                if (ProjectForm != null)
+                if (EditEntityPivot)
+                {//editing pivot scale is sort of meaningless..
+                }
+                else
                 {
-                    ProjectForm.OnWorldEntityModified(SelectedItem.EntityDef);
                 }
             }
-            else if (SelectedItem.CarGenerator != null)
+            else
             {
-                SelectedItem.CarGenerator.SetScale(newscale);
-                SelectedItem.AABB = new BoundingBox(SelectedItem.CarGenerator.BBMin, SelectedItem.CarGenerator.BBMax);
-
-                if (ProjectForm != null)
-                {
-                    ProjectForm.OnWorldCarGenModified(SelectedItem.CarGenerator);
-                }
+                SelectedItem.SetScale(newscale, oldscale, EditEntityPivot);
+            }
+            if (ProjectForm != null)
+            {
+                ProjectForm.OnWorldSelectionModified(SelectedItem, SelectedItems);
             }
         }
 
@@ -5017,48 +4978,134 @@ namespace CodeWalker
             }
         }
 
-        public void SelectItem(YmapEntityDef entity, Archetype arch, DrawableBase drawable, DrawableGeometry geom = null, MapSelection? mhit = null)
+        public void SelectItem(MapSelection? mhit = null, bool addSelection = false)
         {
-            if ((arch == null) && (entity != null))
-            {
-                arch = entity.Archetype; //use the entity archetype if no archetype given
-            }
-
-            bool change = (SelectedItem.EntityDef != entity) || (SelectedItem.Archetype != arch);// || (SelectedItem.Drawable != drawable);
+            var mhitv = mhit.HasValue ? mhit.Value : new MapSelection();
             if (mhit != null)
             {
-                change = change || (SelectedItem.Drawable != drawable)
-                                || (SelectedItem.TimeCycleModifier != mhit.Value.TimeCycleModifier)
-                                || (SelectedItem.ArchetypeExtension != mhit.Value.ArchetypeExtension)
-                                || (SelectedItem.EntityExtension != mhit.Value.EntityExtension)
-                                || (SelectedItem.CarGenerator != mhit.Value.CarGenerator)
-                                || (SelectedItem.MloEntityDef != mhit.Value.MloEntityDef)
-                                || (SelectedItem.DistantLodLights != mhit.Value.DistantLodLights)
-                                || (SelectedItem.GrassBatch != mhit.Value.GrassBatch)
-                                || (SelectedItem.WaterQuad != mhit.Value.WaterQuad)
-                                || (SelectedItem.CollisionBounds != mhit.Value.CollisionBounds)
-                                || (SelectedItem.NavPoly != mhit.Value.NavPoly)
-                                || (SelectedItem.PathNode != mhit.Value.PathNode)
-                                || (SelectedItem.TrainTrackNode != mhit.Value.TrainTrackNode)
-                                || (SelectedItem.ScenarioNode != mhit.Value.ScenarioNode);
+                if ((mhitv.Archetype == null) && (mhitv.EntityDef != null))
+                {
+                    mhitv.Archetype = mhitv.EntityDef.Archetype; //use the entity archetype if no archetype given
+                }
+                if (mhitv.GrassBatch != null)
+                {
+                    mhitv.Archetype = mhitv.GrassBatch.Archetype;
+                }
+            }
+            if ((mhitv.Archetype != null) && (mhitv.Drawable == null))
+            {
+                mhitv.Drawable = TryGetDrawable(mhitv.Archetype); //no drawable given.. try to get it from the cache.. if it's not there, drawable info won't display...
+            }
+
+
+            bool change = false;
+            if (mhit != null)
+            {
+                change = SelectedItem.CheckForChanges(mhitv); 
             }
             else
             {
-                change = change // || (SelectedItem.Drawable != null)
-                                || (SelectedItem.TimeCycleModifier != null)
-                                || (SelectedItem.ArchetypeExtension != null)
-                                || (SelectedItem.EntityExtension != null)
-                                || (SelectedItem.CarGenerator != null)
-                                || (SelectedItem.MloEntityDef != null)
-                                || (SelectedItem.DistantLodLights != null)
-                                || (SelectedItem.GrassBatch != null)
-                                || (SelectedItem.WaterQuad != null)
-                                || (SelectedItem.CollisionBounds != null)
-                                || (SelectedItem.NavPoly != null)
-                                || (SelectedItem.PathNode != null)
-                                || (SelectedItem.PathLink != null)
-                                || (SelectedItem.TrainTrackNode != null)
-                                || (SelectedItem.ScenarioNode != null);
+                change = SelectedItem.CheckForChanges();
+            }
+
+            if (addSelection)
+            {
+                if (SelectedItem.MultipleSelection)
+                {
+                    if (mhitv.HasValue) //incoming selection isn't empty...
+                    {
+                        //search the list for a match, remove it if already there, otherwise add it.
+                        bool found = false;
+                        foreach (var item in SelectedItems)
+                        {
+                            if (!item.CheckForChanges(mhitv))
+                            {
+                                SelectedItems.Remove(item);
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (found)
+                        {
+                            if (SelectedItems.Count == 1)
+                            {
+                                mhitv = SelectedItems[0];
+                                SelectedItems.Clear();
+                            }
+                            else if (SelectedItems.Count <= 0)
+                            {
+                                mhitv.Clear();
+                                SelectedItems.Clear();//this shouldn't really happen..
+                            }
+                        }
+                        else
+                        {
+                            mhitv.MultipleSelection = false;
+                            SelectedItems.Add(mhitv);
+                        }
+                        change = true;
+                    }
+                    else //empty incoming value... do nothing?
+                    {
+                        return;
+                    }
+                }
+                else //current selection is single item, or empty
+                {
+                    if (change) //incoming selection item is different from the current one
+                    {
+                        if (mhitv.HasValue) //incoming selection isn't empty, add it to the list
+                        {
+                            if (SelectedItem.HasValue) //add the existing item to the selection list, if it's not empty
+                            {
+                                SelectedItem.MultipleSelection = false;
+                                SelectedItems.Add(SelectedItem);
+                                mhitv.MultipleSelection = false;
+                                SelectedItems.Add(mhitv);
+                                SelectedItem.MultipleSelection = true;
+                            }
+                        }
+                        else //empty incoming value... do nothing?
+                        {
+                            return;
+                        }
+                    }
+                    else //same thing was selected a 2nd time, just clear the selection.
+                    {
+                        SelectedItem.Clear();
+                        SelectedItems.Clear();
+                        mhit = null; //dont's wants to selects it agains!
+                        change = true;
+                    }
+                }
+
+                if (SelectedItems.Count > 1)
+                {
+                    //iterate the selected items, and calculate the selection position
+                    var center = Vector3.Zero;
+                    foreach (var item in SelectedItems)
+                    {
+                        center += item.WidgetPosition;
+                    }
+                    if (SelectedItems.Count > 0)
+                    {
+                        center *= (1.0f / SelectedItems.Count);
+                    }
+
+                    mhitv.Clear();
+                    mhitv.MultipleSelection = true;
+                    mhitv.MultipleSelectionCenter = center;
+                }
+            }
+            else
+            {
+                if (SelectedItem.MultipleSelection)
+                {
+                    change = true;
+                    SelectedItem.MultipleSelection = false;
+                    SelectedItem.Clear();
+                }
+                SelectedItems.Clear();
             }
 
             if (!change)
@@ -5068,8 +5115,8 @@ namespace CodeWalker
                     //make sure the path link gets changed (sub-selection!)
                     lock (rendersyncroot)
                     {
-                        SelectedItem.PathLink = mhit.Value.PathLink;
-                        SelectedItem.ScenarioEdge = mhit.Value.ScenarioEdge;
+                        SelectedItem.PathLink = mhitv.PathLink;
+                        SelectedItem.ScenarioEdge = mhitv.ScenarioEdge;
                     }
                 }
                 return;
@@ -5077,91 +5124,26 @@ namespace CodeWalker
 
             lock (rendersyncroot) //drawflags is used when rendering.. need that lock
             {
-                if (mhit.HasValue && mhit.Value.GrassBatch != null)
-                {
-                    arch = mhit.Value.GrassBatch.Archetype;
-                }
-
-                if ((arch != null) && (drawable == null))
-                {
-                    drawable = TryGetDrawable(arch); //no drawable given.. try to get it from the cache.. if it's not there, drawable info won't display...
-                }
-
-
                 if (mhit.HasValue)
                 {
-                    SelectedItem = mhit.Value;
+                    SelectedItem = mhitv;
                 }
                 else
                 {
                     SelectedItem.Clear();
                 }
-                SelectedItem.EntityDef = entity;
-                SelectedItem.Archetype = arch;
-                SelectedItem.Drawable = drawable;
-                SelectedItem.Geometry = geom;
 
                 if (change)
                 {
                     UpdateSelectionUI(true);
 
-                    var cargen = SelectedItem.CarGenerator;
-                    var navpoly = SelectedItem.NavPoly;
-                    var pathnode = SelectedItem.PathNode;
-                    var trainnode = SelectedItem.TrainTrackNode;
-                    var scenariond = SelectedItem.ScenarioNode;
-
-                    if (entity != null)
+                    Widget.Visible = SelectedItem.CanShowWidget;
+                    if (Widget.Visible)
                     {
-                        Widget.Position = entity.WidgetPosition;
-                        Widget.Rotation = entity.WidgetOrientation;
-                        Widget.Scale = entity.Scale;
-                        Widget.Visible = true;
-                        Widget.RotationWidget.EnableAxes = WidgetAxis.XYZ;
-                    }
-                    else if (cargen != null)
-                    {
-                        Widget.Position = cargen.Position;
-                        Widget.Rotation = cargen.Orientation;
-                        Widget.Scale = new Vector3(cargen.CCarGen.perpendicularLength);
-                        Widget.Visible = true;
-                        Widget.RotationWidget.EnableAxes = WidgetAxis.Z;
-                    }
-                    else if (navpoly != null)
-                    {
-                        Widget.Position = navpoly.Position;
-                        Widget.Rotation = Quaternion.Identity;
-                        Widget.Scale = Vector3.One;
-                        Widget.Visible = true;
-                        Widget.RotationWidget.EnableAxes = WidgetAxis.XYZ;
-                    }
-                    else if (pathnode != null)
-                    {
-                        Widget.Position = pathnode.Position;
-                        Widget.Rotation = Quaternion.Identity;
-                        Widget.Scale = Vector3.One;
-                        Widget.Visible = true;
-                        Widget.RotationWidget.EnableAxes = WidgetAxis.None;
-                    }
-                    else if (trainnode != null)
-                    {
-                        Widget.Position = trainnode.Position;
-                        Widget.Rotation = Quaternion.Identity;
-                        Widget.Scale = Vector3.One;
-                        Widget.Visible = true;
-                        Widget.RotationWidget.EnableAxes = WidgetAxis.None;
-                    }
-                    else if (scenariond != null)
-                    {
-                        Widget.Position = scenariond.Position;
-                        Widget.Rotation = scenariond.Orientation;
-                        Widget.Scale = Vector3.One;
-                        Widget.Visible = true;
-                        Widget.RotationWidget.EnableAxes = WidgetAxis.Z;
-                    }
-                    else
-                    {
-                        Widget.Visible = false;
+                        Widget.Position = SelectedItem.WidgetPosition;
+                        Widget.Rotation = SelectedItem.WidgetRotation;
+                        Widget.RotationWidget.EnableAxes = SelectedItem.WidgetRotationAxes;
+                        Widget.Scale = SelectedItem.WidgetScale;
                     }
                 }
             }
@@ -5170,29 +5152,51 @@ namespace CodeWalker
                 ProjectForm.OnWorldSelectionChanged(SelectedItem);
             }
         }
+        public void SelectMulti(MapSelection[] items)
+        {
+            SelectItem(null);
+            if (items != null)
+            {
+                foreach (var item in items)
+                {
+                    SelectItem(item, true);
+                }
+            }
+        }
         public void SelectEntity(YmapEntityDef entity)
         {
-            SelectItem(entity, null, null);
+            if (entity == null)
+            {
+                SelectItem(null);
+            }
+            else
+            {
+                MapSelection ms = new MapSelection();
+                ms.EntityDef = entity;
+                ms.Archetype = entity?.Archetype;
+                ms.AABB = new BoundingBox(entity.BBMin, entity.BBMax);
+                SelectItem(ms);
+            }
         }
         public void SelectCarGen(YmapCarGen cargen)
         {
             if (cargen == null)
             {
-                SelectItem(null, null, null);
+                SelectItem(null);
             }
             else
             {
                 MapSelection ms = new MapSelection();
                 ms.CarGenerator = cargen;
                 ms.AABB = new BoundingBox(cargen.BBMin, cargen.BBMax);
-                SelectItem(null, null, null, null, ms);
+                SelectItem(ms);
             }
         }
         public void SelectNavPoly(YnvPoly poly)
         {
             if (poly == null)
             {
-                SelectItem(null, null, null);
+                SelectItem(null);
             }
             else
             {
@@ -5207,14 +5211,14 @@ namespace CodeWalker
                 //{
                 //    ms.AABB = new BoundingBox(sect.AABBMin.XYZ(), sect.AABBMax.XYZ());
                 //}
-                SelectItem(null, null, null, null, ms);
+                SelectItem(ms);
             }
         }
         public void SelectPathNode(YndNode node)
         {
             if (node == null)
             {
-                SelectItem(null, null, null);
+                SelectItem(null);
             }
             else
             {
@@ -5223,7 +5227,7 @@ namespace CodeWalker
                 MapSelection ms = new MapSelection();
                 ms.PathNode = node;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(null, null, null, null, ms);
+                SelectItem(ms);
             }
         }
         public void SelectPathLink(YndLink link)
@@ -5231,7 +5235,7 @@ namespace CodeWalker
             var node = link?.Node1;
             if (node == null)
             {
-                SelectItem(null, null, null);
+                SelectItem(null);
             }
             else
             {
@@ -5241,14 +5245,14 @@ namespace CodeWalker
                 ms.PathNode = node;
                 ms.PathLink = link;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(null, null, null, null, ms);
+                SelectItem(ms);
             }
         }
         public void SelectTrainTrackNode(TrainTrackNode node)
         {
             if (node == null)
             {
-                SelectItem(null, null, null);
+                SelectItem(null);
             }
             else
             {
@@ -5257,14 +5261,14 @@ namespace CodeWalker
                 MapSelection ms = new MapSelection();
                 ms.TrainTrackNode = node;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(null, null, null, null, ms);
+                SelectItem(ms);
             }
         }
         public void SelectScenarioNode(ScenarioNode node)
         {
             if (node == null)
             {
-                SelectItem(null, null, null);
+                SelectItem(null);
             }
             else
             {
@@ -5273,14 +5277,14 @@ namespace CodeWalker
                 MapSelection ms = new MapSelection();
                 ms.ScenarioNode = node;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(null, null, null, null, ms);
+                SelectItem(ms);
             }
         }
         public void SelectScenarioEdge(ScenarioNode node, MCScenarioChainingEdge edge)
         {
             if (node == null)
             {
-                SelectItem(null, null, null);
+                SelectItem(null);
             }
             else
             {
@@ -5290,7 +5294,7 @@ namespace CodeWalker
                 ms.ScenarioNode = node;
                 ms.ScenarioEdge = edge;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(null, null, null, null, ms);
+                SelectItem(ms);
             }
         }
         private void SelectMousedItem()
@@ -5300,9 +5304,7 @@ namespace CodeWalker
             if (!MouseSelectEnabled)
             { return; }
 
-            var h = LastMouseHit;
-
-            SelectItem(h.EntityDef, h.Archetype, h.Drawable, h.Geometry, h);
+            SelectItem(LastMouseHit, CtrlPressed);
         }
         private void UpdateSelectionUI(bool wait)
         {
@@ -5325,7 +5327,7 @@ namespace CodeWalker
 
                     if (InfoForm != null)
                     {
-                        InfoForm.SetSelection(SelectedItem);
+                        InfoForm.SetSelection(SelectedItem, SelectedItems);
                     }
                 }
             }
@@ -5361,7 +5363,12 @@ namespace CodeWalker
             ToolbarDeleteItemButton.Enabled = false;
             ToolbarDeleteItemButton.Text = "Delete";
 
-            if (item.TimeCycleModifier != null)
+            if (item.MultipleSelection)
+            {
+                SelectionEntityTabPage.Text = "Multiple items";
+                SelEntityPropertyGrid.SelectedObject = SelectedItems.ToArray();
+            }
+            else if (item.TimeCycleModifier != null)
             {
                 SelectionEntityTabPage.Text = "TCMod";
                 SelEntityPropertyGrid.SelectedObject = item.TimeCycleModifier;
@@ -5652,7 +5659,7 @@ namespace CodeWalker
             if (InfoForm == null)
             {
                 InfoForm = new WorldInfoForm(this);
-                InfoForm.SetSelection(SelectedItem);
+                InfoForm.SetSelection(SelectedItem, SelectedItems);
                 InfoForm.SetSelectionMode(SelectionModeStr, MouseSelectEnabled);
                 InfoForm.Show(this);
             }
@@ -6300,14 +6307,15 @@ namespace CodeWalker
 
         private void MarkUndoStart(Widget w)
         {
-            bool hasval = false;
-            if (SelectedItem.EntityDef != null) hasval = true;
-            if (SelectedItem.CarGenerator != null) hasval = true;
-            if (SelectedItem.PathNode != null) hasval = true;
+            bool canundo = false;
+            if (SelectedItem.MultipleSelection) canundo = true;
+            if (SelectedItem.EntityDef != null) canundo = true;
+            if (SelectedItem.CarGenerator != null) canundo = true;
+            if (SelectedItem.PathNode != null) canundo = true;
             //if (SelectedItem.NavPoly != null) hasval = true;
-            if (SelectedItem.TrainTrackNode != null) hasval = true;
-            if (SelectedItem.ScenarioNode != null) hasval = true;
-            if (!hasval) return;
+            if (SelectedItem.TrainTrackNode != null) canundo = true;
+            if (SelectedItem.ScenarioNode != null) canundo = true;
+            if (!canundo) return;
             if (Widget is TransformWidget)
             {
                 UndoStartPosition = Widget.Position;
@@ -6317,14 +6325,15 @@ namespace CodeWalker
         }
         private void MarkUndoEnd(Widget w)
         {
-            bool hasval = false;
-            if (SelectedItem.EntityDef != null) hasval = true;
-            if (SelectedItem.CarGenerator != null) hasval = true;
-            if (SelectedItem.PathNode != null) hasval = true;
+            bool canundo = false;
+            if (SelectedItem.MultipleSelection) canundo = true;
+            if (SelectedItem.EntityDef != null) canundo = true;
+            if (SelectedItem.CarGenerator != null) canundo = true;
+            if (SelectedItem.PathNode != null) canundo = true;
             //if (SelectedItem.NavPoly != null) hasval = true;
-            if (SelectedItem.TrainTrackNode != null) hasval = true;
-            if (SelectedItem.ScenarioNode != null) hasval = true;
-            if (!hasval) return;
+            if (SelectedItem.TrainTrackNode != null) canundo = true;
+            if (SelectedItem.ScenarioNode != null) canundo = true;
+            if (!canundo) return;
             var ent = SelectedItem.EntityDef;
             var cargen = SelectedItem.CarGenerator;
             var pathnode = SelectedItem.PathNode;
@@ -6334,7 +6343,14 @@ namespace CodeWalker
             UndoStep s = null;
             if (tw != null)
             {
-                if (ent != null)
+                if (SelectedItem.MultipleSelection)
+                {
+                    switch (tw.Mode)
+                    {
+                        case WidgetMode.Position: s = new MultiPositionUndoStep(SelectedItem, SelectedItems.ToArray(), UndoStartPosition); break;
+                    }
+                }
+                else if (ent != null)
                 {
                     if (EditEntityPivot)
                     {
@@ -6367,22 +6383,22 @@ namespace CodeWalker
                 {
                     switch (tw.Mode)
                     {
-                        case WidgetMode.Position: s = new PathNodePositionUndoStep(pathnode, UndoStartPosition, this, ProjectForm); break;
+                        case WidgetMode.Position: s = new PathNodePositionUndoStep(pathnode, UndoStartPosition, this); break;
                     }
                 }
                 else if (trainnode != null)
                 {
                     switch (tw.Mode)
                     {
-                        case WidgetMode.Position: s = new TrainTrackNodePositionUndoStep(trainnode, UndoStartPosition, this, ProjectForm); break;
+                        case WidgetMode.Position: s = new TrainTrackNodePositionUndoStep(trainnode, UndoStartPosition, this); break;
                     }
                 }
                 else if (scenarionode != null)
                 {
                     switch (tw.Mode)
                     {
-                        case WidgetMode.Position: s = new ScenarioNodePositionUndoStep(scenarionode, UndoStartPosition, this, ProjectForm); break;
-                        case WidgetMode.Rotation: s = new ScenarioNodeRotationUndoStep(scenarionode, UndoStartRotation, this, ProjectForm); break;
+                        case WidgetMode.Position: s = new ScenarioNodePositionUndoStep(scenarionode, UndoStartPosition, this); break;
+                        case WidgetMode.Rotation: s = new ScenarioNodeRotationUndoStep(scenarionode, UndoStartRotation, this); break;
                     }
                 }
             }
@@ -6399,7 +6415,12 @@ namespace CodeWalker
             var s = UndoSteps.Pop();
             RedoSteps.Push(s);
 
-            s.Undo(this, ProjectForm, ref SelectedItem);
+            s.Undo(this, ref SelectedItem);
+
+            if (ProjectForm != null)
+            {
+                ProjectForm.OnWorldSelectionModified(SelectedItem, SelectedItems);
+            }
 
             UpdateUndoUI();
         }
@@ -6409,7 +6430,12 @@ namespace CodeWalker
             var s = RedoSteps.Pop();
             UndoSteps.Push(s);
 
-            s.Redo(this, ProjectForm, ref SelectedItem);
+            s.Redo(this, ref SelectedItem);
+
+            if (ProjectForm != null)
+            {
+                ProjectForm.OnWorldSelectionModified(SelectedItem, SelectedItems);
+            }
 
             UpdateUndoUI();
         }
@@ -6730,7 +6756,7 @@ namespace CodeWalker
                 }
                 else
                 {
-                    SelectItem(null, null, null);
+                    SelectItem(null);
                 }
             }
             else
@@ -6747,7 +6773,7 @@ namespace CodeWalker
                 }
                 else
                 {
-                    SelectItem(null, null, null);
+                    SelectItem(null);
                 }
             }
         }
@@ -6787,7 +6813,7 @@ namespace CodeWalker
                 }
                 else
                 {
-                    SelectItem(null, null, null);
+                    SelectItem(null);
                 }
             }
             else
@@ -6800,7 +6826,7 @@ namespace CodeWalker
                 }
                 else
                 {
-                    SelectItem(null, null, null);
+                    SelectItem(null);
                 }
             }
         }
@@ -6840,7 +6866,7 @@ namespace CodeWalker
                 }
                 else
                 {
-                    SelectItem(null, null, null);
+                    SelectItem(null);
                 }
             }
             else
@@ -6854,7 +6880,7 @@ namespace CodeWalker
                 else
                 {
                     UpdatePathNodeGraphics(pathnode, false);
-                    SelectItem(null, null, null);
+                    SelectItem(null);
                 }
             }
         }
@@ -6894,7 +6920,7 @@ namespace CodeWalker
                 }
                 else
                 {
-                    SelectItem(null, null, null);
+                    SelectItem(null);
                 }
             }
             else
@@ -6908,7 +6934,7 @@ namespace CodeWalker
                 else
                 {
                     UpdateNavPolyGraphics(navpoly, false);
-                    SelectItem(null, null, null);
+                    SelectItem(null);
                 }
             }
         }
@@ -6948,7 +6974,7 @@ namespace CodeWalker
                 }
                 else
                 {
-                    SelectItem(null, null, null);
+                    SelectItem(null);
                 }
             }
             else
@@ -6962,7 +6988,7 @@ namespace CodeWalker
                 else
                 {
                     UpdateTrainTrackNodeGraphics(trainnode, false);
-                    SelectItem(null, null, null);
+                    SelectItem(null);
                 }
             }
         }
@@ -7002,7 +7028,7 @@ namespace CodeWalker
                 }
                 else
                 {
-                    SelectItem(null, null, null);
+                    SelectItem(null);
                 }
             }
             else
@@ -7016,7 +7042,7 @@ namespace CodeWalker
                 else
                 {
                     UpdateScenarioGraphics(scenariopt.Ymt, false);
-                    SelectItem(null, null, null);
+                    SelectItem(null);
                 }
             }
         }
@@ -7753,6 +7779,18 @@ namespace CodeWalker
             {
                 e.Handled = true;
             }
+        }
+
+        private void WorldForm_Deactivate(object sender, EventArgs e)
+        {
+            //try not to lock keyboard movement if the form loses focus.
+            kbmovefwd = false;
+            kbmovebck = false;
+            kbmovelft = false;
+            kbmovergt = false;
+            kbmoveup = false;
+            kbmovedn = false;
+            kbjump = false;
         }
 
         private void ViewModeComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -9156,6 +9194,7 @@ namespace CodeWalker
         public Vector3 Scale { get; set; }
     }
 
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public struct MapSelection
     {
         public YmapEntityDef EntityDef { get; set; }
@@ -9178,6 +9217,8 @@ namespace CodeWalker
         public ScenarioNode ScenarioNode { get; set; }
         public MCScenarioChainingEdge ScenarioEdge { get; set; }
 
+        public bool MultipleSelection { get; set; }
+        public Vector3 MultipleSelectionCenter { get; set; }
 
         public BoundingBox AABB { get; set; }
         public int GeometryIndex { get; set; }
@@ -9215,6 +9256,47 @@ namespace CodeWalker
         }
 
 
+        public bool CheckForChanges(MapSelection mhit)
+        {
+            return (EntityDef != mhit.EntityDef)
+                || (Archetype != mhit.Archetype)
+                || (Drawable != mhit.Drawable)
+                || (TimeCycleModifier != mhit.TimeCycleModifier)
+                || (ArchetypeExtension != mhit.ArchetypeExtension)
+                || (EntityExtension != mhit.EntityExtension)
+                || (CarGenerator != mhit.CarGenerator)
+                || (MloEntityDef != mhit.MloEntityDef)
+                || (DistantLodLights != mhit.DistantLodLights)
+                || (GrassBatch != mhit.GrassBatch)
+                || (WaterQuad != mhit.WaterQuad)
+                || (CollisionBounds != mhit.CollisionBounds)
+                || (NavPoly != mhit.NavPoly)
+                || (PathNode != mhit.PathNode)
+                || (TrainTrackNode != mhit.TrainTrackNode)
+                || (ScenarioNode != mhit.ScenarioNode);
+        }
+        public bool CheckForChanges()
+        {
+            return (EntityDef != null)
+                || (Archetype != null)
+                || (Drawable != null)
+                || (TimeCycleModifier != null)
+                || (ArchetypeExtension != null)
+                || (EntityExtension != null)
+                || (CarGenerator != null)
+                || (MloEntityDef != null)
+                || (DistantLodLights != null)
+                || (GrassBatch != null)
+                || (WaterQuad != null)
+                || (CollisionBounds != null)
+                || (NavPoly != null)
+                || (PathNode != null)
+                || (PathLink != null)
+                || (TrainTrackNode != null)
+                || (ScenarioNode != null);
+        }
+
+
         public void Clear()
         {
             EntityDef = null;
@@ -9236,6 +9318,7 @@ namespace CodeWalker
             MloEntityDef = null;
             ScenarioNode = null;
             ScenarioEdge = null;
+            MultipleSelection = false;
             AABB = new BoundingBox();
             GeometryIndex = 0;
             CamRel = new Vector3();
@@ -9245,7 +9328,11 @@ namespace CodeWalker
         public string GetNameString(string defval)
         {
             string name = defval;
-            if (EntityDef != null)
+            if (MultipleSelection)
+            {
+                name = "Multiple items";
+            }
+            else if (EntityDef != null)
             {
                 name = EntityDef.CEntityDef.archetypeName.ToString();
             }
@@ -9303,7 +9390,11 @@ namespace CodeWalker
         public string GetFullNameString(string defval)
         {
             string name = defval;
-            if (EntityDef != null)
+            if (MultipleSelection)
+            {
+                name = "Multiple items";
+            }
+            else if (EntityDef != null)
             {
                 name = EntityDef.CEntityDef.archetypeName.ToString();
             }
@@ -9358,6 +9449,275 @@ namespace CodeWalker
             return name;
         }
 
+
+
+        public bool CanShowWidget
+        {
+            get
+            {
+                bool res = false;
+
+                if (MultipleSelection)
+                {
+                    res = true;
+                }
+                else if (EntityDef != null)
+                {
+                    res = true;
+                }
+                else if (CarGenerator != null)
+                {
+                    res = true;
+                }
+                else if (NavPoly != null)
+                {
+                    res = true;
+                }
+                else if (PathNode != null)
+                {
+                    res = true;
+                }
+                else if (TrainTrackNode != null)
+                {
+                    res = true;
+                }
+                else if (ScenarioNode != null)
+                {
+                    res = true;
+                }
+
+                return res;
+            }
+        }
+        public Vector3 WidgetPosition
+        {
+            get
+            {
+                if (MultipleSelection)
+                {
+                    return MultipleSelectionCenter;
+                }
+                else if (EntityDef != null)
+                {
+                    return EntityDef.WidgetPosition;
+                }
+                else if (CarGenerator != null)
+                {
+                    return CarGenerator.Position;
+                }
+                else if (NavPoly != null)
+                {
+                    return NavPoly.Position;
+                }
+                else if (PathNode != null)
+                {
+                    return PathNode.Position;
+                }
+                else if (TrainTrackNode != null)
+                {
+                    return TrainTrackNode.Position;
+                }
+                else if (ScenarioNode != null)
+                {
+                    return ScenarioNode.Position;
+                }
+                return Vector3.Zero;
+            }
+        }
+        public Quaternion WidgetRotation
+        {
+            get
+            {
+                if (MultipleSelection)
+                {
+                    return Quaternion.Identity;
+                }
+                else if (EntityDef != null)
+                {
+                    return EntityDef.WidgetOrientation;
+                }
+                else if (CarGenerator != null)
+                {
+                    return CarGenerator.Orientation;
+                }
+                else if (NavPoly != null)
+                {
+                    return Quaternion.Identity;
+                }
+                else if (PathNode != null)
+                {
+                    return Quaternion.Identity;
+                }
+                else if (TrainTrackNode != null)
+                {
+                    return Quaternion.Identity;
+                }
+                else if (ScenarioNode != null)
+                {
+                    return ScenarioNode.Orientation;
+                }
+                return Quaternion.Identity;
+            }
+        }
+        public WidgetAxis WidgetRotationAxes
+        {
+            get
+            {
+                if (MultipleSelection)
+                {
+                    return WidgetAxis.XYZ;
+                }
+                else if (EntityDef != null)
+                {
+                    return WidgetAxis.XYZ;
+                }
+                else if (CarGenerator != null)
+                {
+                    return WidgetAxis.Z;
+                }
+                else if (NavPoly != null)
+                {
+                    return WidgetAxis.XYZ;
+                }
+                else if (PathNode != null)
+                {
+                    return WidgetAxis.None;
+                }
+                else if (TrainTrackNode != null)
+                {
+                    return WidgetAxis.None;
+                }
+                else if (ScenarioNode != null)
+                {
+                    return WidgetAxis.Z;
+                }
+                return WidgetAxis.None;
+            }
+        }
+        public Vector3 WidgetScale
+        {
+            get
+            {
+                if (MultipleSelection)
+                {
+                    return Vector3.One;
+                }
+                else if (EntityDef != null)
+                {
+                    return EntityDef.Scale;
+                }
+                else if (CarGenerator != null)
+                {
+                    return new Vector3(CarGenerator.CCarGen.perpendicularLength);
+                }
+                else if (NavPoly != null)
+                {
+                    return Vector3.One;
+                }
+                else if (PathNode != null)
+                {
+                    return Vector3.One;
+                }
+                else if (TrainTrackNode != null)
+                {
+                    return Vector3.One;
+                }
+                else if (ScenarioNode != null)
+                {
+                    return Vector3.One;
+                }
+                return Vector3.One;
+            }
+        }
+
+
+
+
+        public void SetPosition(Vector3 newpos, Vector3 oldpos, bool editPivot)
+        {
+            if (MultipleSelection)
+            {
+                //don't do anything here for multiselection
+            }
+            else if (EntityDef != null)
+            {
+                if (editPivot)
+                {
+                    EntityDef.SetPivotPositionFromWidget(newpos);
+                }
+                else
+                {
+                    EntityDef.SetPositionFromWidget(newpos);
+                }
+            }
+            else if (CarGenerator != null)
+            {
+                CarGenerator.SetPosition(newpos);
+            }
+            else if (PathNode != null)
+            {
+                PathNode.SetPosition(newpos);
+            }
+            else if (NavPoly != null)
+            {
+                //NavPoly.SetPosition(newpos);
+
+                //if (projectForm != null)
+                //{
+                //    projectForm.OnWorldNavPolyModified(NavPoly);
+                //}
+            }
+            else if (TrainTrackNode != null)
+            {
+                TrainTrackNode.SetPosition(newpos);
+            }
+            else if (ScenarioNode != null)
+            {
+                ScenarioNode.SetPosition(newpos);
+            }
+
+        }
+        public void SetRotation(Quaternion newrot, Quaternion oldrot, bool editPivot)
+        {
+            if (EntityDef != null)
+            {
+                if (editPivot)
+                {
+                    EntityDef.SetPivotOrientationFromWidget(newrot);
+                }
+                else
+                {
+                    EntityDef.SetOrientationFromWidget(newrot);
+                }
+            }
+            else if (CarGenerator != null)
+            {
+                CarGenerator.SetOrientation(newrot);
+            }
+            else if (ScenarioNode != null)
+            {
+                ScenarioNode.SetOrientation(newrot);
+            }
+
+        }
+        public void SetScale(Vector3 newscale, Vector3 oldscale, bool editPivot)
+        {
+            if (EntityDef != null)
+            {
+                EntityDef.SetScale(newscale);
+            }
+            else if (CarGenerator != null)
+            {
+                CarGenerator.SetScale(newscale);
+                AABB = new BoundingBox(CarGenerator.BBMin, CarGenerator.BBMax);
+            }
+        }
+
+
+        public override string ToString()
+        {
+            return GetFullNameString("[Empty]");
+        }
     }
 
     public enum MapSelectionMode

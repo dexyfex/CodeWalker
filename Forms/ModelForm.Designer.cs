@@ -46,6 +46,7 @@
             this.ToolsDetailsTabPage = new System.Windows.Forms.TabPage();
             this.DetailsPropertyGrid = new CodeWalker.WinForms.ReadOnlyPropertyGrid();
             this.ToolsOptionsTabPage = new System.Windows.Forms.TabPage();
+            this.SkeletonsCheckBox = new System.Windows.Forms.CheckBox();
             this.TimeOfDayLabel = new System.Windows.Forms.Label();
             this.label19 = new System.Windows.Forms.Label();
             this.TimeOfDayTrackBar = new System.Windows.Forms.TrackBar();
@@ -72,7 +73,6 @@
             this.ToolsPanelHideButton = new System.Windows.Forms.Button();
             this.ToolsDragPanel = new System.Windows.Forms.Panel();
             this.ToolsPanelShowButton = new System.Windows.Forms.Button();
-            this.SkeletonsCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ConsolePanel.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
@@ -283,6 +283,19 @@
             this.ToolsOptionsTabPage.TabIndex = 3;
             this.ToolsOptionsTabPage.Text = "Options";
             this.ToolsOptionsTabPage.UseVisualStyleBackColor = true;
+            // 
+            // SkeletonsCheckBox
+            // 
+            this.SkeletonsCheckBox.AutoSize = true;
+            this.SkeletonsCheckBox.Checked = true;
+            this.SkeletonsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.SkeletonsCheckBox.Location = new System.Drawing.Point(19, 444);
+            this.SkeletonsCheckBox.Name = "SkeletonsCheckBox";
+            this.SkeletonsCheckBox.Size = new System.Drawing.Size(103, 17);
+            this.SkeletonsCheckBox.TabIndex = 21;
+            this.SkeletonsCheckBox.Text = "Show Skeletons";
+            this.SkeletonsCheckBox.UseVisualStyleBackColor = true;
+            this.SkeletonsCheckBox.CheckedChanged += new System.EventHandler(this.SkeletonsCheckBox_CheckedChanged);
             // 
             // TimeOfDayLabel
             // 
@@ -591,19 +604,6 @@
             this.ToolsPanelShowButton.UseVisualStyleBackColor = true;
             this.ToolsPanelShowButton.Click += new System.EventHandler(this.ToolsPanelShowButton_Click);
             // 
-            // SkeletonsCheckBox
-            // 
-            this.SkeletonsCheckBox.AutoSize = true;
-            this.SkeletonsCheckBox.Checked = true;
-            this.SkeletonsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.SkeletonsCheckBox.Location = new System.Drawing.Point(19, 444);
-            this.SkeletonsCheckBox.Name = "SkeletonsCheckBox";
-            this.SkeletonsCheckBox.Size = new System.Drawing.Size(103, 17);
-            this.SkeletonsCheckBox.TabIndex = 21;
-            this.SkeletonsCheckBox.Text = "Show Skeletons";
-            this.SkeletonsCheckBox.UseVisualStyleBackColor = true;
-            this.SkeletonsCheckBox.CheckedChanged += new System.EventHandler(this.SkeletonsCheckBox_CheckedChanged);
-            // 
             // ModelForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -618,6 +618,7 @@
             this.KeyPreview = true;
             this.Name = "ModelForm";
             this.Text = "View Model - CodeWalker by dexyfex";
+            this.Deactivate += new System.EventHandler(this.ModelForm_Deactivate);
             this.Load += new System.EventHandler(this.ModelForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ModelForm_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.ModelForm_KeyUp);

@@ -744,7 +744,7 @@ namespace CodeWalker
 
             if (WorldForm != null)
             {
-                WorldForm.SelectItem(null, null, null);//make sure current selected item isn't still selected...
+                WorldForm.SelectItem(null);//make sure current selected item isn't still selected...
             }
         }
 
@@ -1909,7 +1909,7 @@ namespace CodeWalker
 
                 if (WorldForm != null)
                 {
-                    WorldForm.SelectItem(CurrentEntity, CurrentEntity.Archetype, null); //hopefully the drawable is already loaded - this will try get from cache
+                    WorldForm.SelectEntity(CurrentEntity); //hopefully the drawable is already loaded - this will try get from cache
                 }
 
                 ////struct CEntityDef:
@@ -5033,7 +5033,7 @@ namespace CodeWalker
                 WorldForm.UpdateScenarioGraphics(cs, false);
                 if (delpoints)
                 {
-                    WorldForm.SelectItem(null, null, null);
+                    WorldForm.SelectItem(null);
                 }
             }
             else if (cs?.ScenarioRegion != null)
@@ -5222,7 +5222,7 @@ namespace CodeWalker
                 WorldForm.UpdateScenarioGraphics(cs, false);
                 if (delpoints || ((cn != null) && (cn.MyPoint == null)))
                 {
-                    WorldForm.SelectItem(null, null, null);
+                    WorldForm.SelectItem(null);
                 }
             }
             else if (cs?.ScenarioRegion != null)
@@ -5441,7 +5441,7 @@ namespace CodeWalker
             if (WorldForm != null)
             {
                 WorldForm.UpdateScenarioGraphics(cs, false);
-                WorldForm.SelectItem(null, null, null);
+                WorldForm.SelectItem(null);
             }
             else if (cs?.ScenarioRegion != null)
             {
@@ -5621,7 +5621,7 @@ namespace CodeWalker
                     cent.rotation = placement.Rotation;
                     cent.scaleXY = 1.0f;
                     cent.scaleZ = 1.0f;
-                    cent.flags = placement.Dynamic ? 32u : 0; //1572872; //?
+                    cent.flags = placement.Dynamic ? 32u : 0;// 1572872; //?
                     cent.parentIndex = -1;
                     cent.lodDist = placement.LodDistance;
                     cent.lodLevel = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
@@ -5993,7 +5993,39 @@ namespace CodeWalker
             catch { }
         }
 
-        public void OnWorldEntityModified(YmapEntityDef ent)
+        public void OnWorldSelectionModified(MapSelection sel, List<MapSelection> items)
+        {
+            if (sel.MultipleSelection)
+            {
+            }
+            else if (sel.EntityDef != null)
+            {
+                OnWorldEntityModified(sel.EntityDef);
+            }
+            else if (sel.CarGenerator != null)
+            {
+                OnWorldCarGenModified(sel.CarGenerator);
+            }
+            else if (sel.PathNode != null)
+            {
+                OnWorldPathNodeModified(sel.PathNode, sel.PathLink);
+            }
+            else if (sel.NavPoly != null)
+            {
+                OnWorldNavPolyModified(sel.NavPoly);
+            }
+            else if (sel.TrainTrackNode != null)
+            {
+                OnWorldTrainNodeModified(sel.TrainTrackNode);
+            }
+            else if (sel.ScenarioNode != null)
+            {
+                OnWorldScenarioNodeModified(sel.ScenarioNode);
+            }
+
+        }
+
+        private void OnWorldEntityModified(YmapEntityDef ent)
         {
             try
             {
@@ -6040,7 +6072,7 @@ namespace CodeWalker
             catch { }
         }
 
-        public void OnWorldCarGenModified(YmapCarGen cargen)
+        private void OnWorldCarGenModified(YmapCarGen cargen)
         {
             try
             {
@@ -6087,7 +6119,7 @@ namespace CodeWalker
             catch { }
         }
 
-        public void OnWorldPathNodeModified(YndNode node, YndLink link)
+        private void OnWorldPathNodeModified(YndNode node, YndLink link)
         {
             try
             {
@@ -6141,7 +6173,7 @@ namespace CodeWalker
             catch { }
         }
 
-        public void OnWorldNavPolyModified(YnvPoly poly)
+        private void OnWorldNavPolyModified(YnvPoly poly)
         {
             try
             {
@@ -6188,7 +6220,7 @@ namespace CodeWalker
             catch { }
         }
 
-        public void OnWorldTrainNodeModified(TrainTrackNode node)
+        private void OnWorldTrainNodeModified(TrainTrackNode node)
         {
             try
             {
@@ -6232,7 +6264,7 @@ namespace CodeWalker
             catch { }
         }
 
-        public void OnWorldScenarioNodeModified(ScenarioNode node)
+        private void OnWorldScenarioNodeModified(ScenarioNode node)
         {
             try
             {

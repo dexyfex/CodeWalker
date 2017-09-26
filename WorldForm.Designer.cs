@@ -145,6 +145,7 @@ namespace CodeWalker
             this.WaitForChildrenCheckBox = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
             this.tabPage9 = new System.Windows.Forms.TabPage();
+            this.PopZonesCheckBox = new System.Windows.Forms.CheckBox();
             this.NavMeshesCheckBox = new System.Windows.Forms.CheckBox();
             this.TrainPathsCheckBox = new System.Windows.Forms.CheckBox();
             this.PathsDepthClipCheckBox = new System.Windows.Forms.CheckBox();
@@ -274,7 +275,6 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
-            this.PopZonesCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -1769,6 +1769,17 @@ namespace CodeWalker
             this.tabPage9.Text = "Helpers";
             this.tabPage9.UseVisualStyleBackColor = true;
             // 
+            // PopZonesCheckBox
+            // 
+            this.PopZonesCheckBox.AutoSize = true;
+            this.PopZonesCheckBox.Location = new System.Drawing.Point(10, 388);
+            this.PopZonesCheckBox.Name = "PopZonesCheckBox";
+            this.PopZonesCheckBox.Size = new System.Drawing.Size(136, 17);
+            this.PopZonesCheckBox.TabIndex = 52;
+            this.PopZonesCheckBox.Text = "Show population zones";
+            this.PopZonesCheckBox.UseVisualStyleBackColor = true;
+            this.PopZonesCheckBox.CheckedChanged += new System.EventHandler(this.PopZonesCheckBox_CheckedChanged);
+            // 
             // NavMeshesCheckBox
             // 
             this.NavMeshesCheckBox.AutoSize = true;
@@ -3104,17 +3115,6 @@ namespace CodeWalker
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
             // 
-            // PopZonesCheckBox
-            // 
-            this.PopZonesCheckBox.AutoSize = true;
-            this.PopZonesCheckBox.Location = new System.Drawing.Point(10, 388);
-            this.PopZonesCheckBox.Name = "PopZonesCheckBox";
-            this.PopZonesCheckBox.Size = new System.Drawing.Size(136, 17);
-            this.PopZonesCheckBox.TabIndex = 52;
-            this.PopZonesCheckBox.Text = "Show population zones";
-            this.PopZonesCheckBox.UseVisualStyleBackColor = true;
-            this.PopZonesCheckBox.CheckedChanged += new System.EventHandler(this.PopZonesCheckBox_CheckedChanged);
-            // 
             // WorldForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3131,6 +3131,7 @@ namespace CodeWalker
             this.KeyPreview = true;
             this.Name = "WorldForm";
             this.Text = "CodeWalker";
+            this.Deactivate += new System.EventHandler(this.WorldForm_Deactivate);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.WorldForm_FormClosing);
             this.Load += new System.EventHandler(this.WorldForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.WorldForm_KeyDown);

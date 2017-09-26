@@ -13,12 +13,62 @@ namespace CodeWalker.Project
     {
 
         //revert the object to the state marked at the start of this step
-        public abstract void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel);
+        public abstract void Undo(WorldForm wf, ref MapSelection sel);
 
         //revert the object to the state marked at the end of this step
-        public abstract void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel);
+        public abstract void Redo(WorldForm wf, ref MapSelection sel);
 
     }
+
+
+
+    public class MultiPositionUndoStep : UndoStep
+    {
+        private MapSelection Selection;
+        private MapSelection[] Items;
+        public Vector3 StartPosition { get; set; }
+        public Vector3 EndPosition { get; set; }
+
+        public MultiPositionUndoStep(MapSelection multiSel, MapSelection[] items, Vector3 startpos)
+        {
+            Selection = multiSel;
+            Items = items;
+            StartPosition = startpos;
+            EndPosition = multiSel.WidgetPosition;
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p, Vector3 o)
+        {
+            //update selection items positions for new widget position p
+
+            Vector3 dp = p - o;
+            for (int i = 0; i < Items.Length; i++)
+            {
+                var refpos = Items[i].WidgetPosition;
+                Items[i].SetPosition(refpos + dp, refpos, false);
+            }
+            sel.MultipleSelectionCenter = p; //center used for widget pos...
+
+            wf.SelectMulti(Items);
+            wf.SetWidgetPosition(p);
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartPosition, EndPosition);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndPosition, StartPosition);
+        }
+
+        public override string ToString()
+        {
+            return (Items?.Length ?? 0).ToString() + " items: Position";
+        }
+    }
+
 
 
     public class EntityPositionUndoStep : UndoStep
@@ -34,26 +84,22 @@ namespace CodeWalker.Project
             EndPosition = ent?.WidgetPosition ?? Vector3.Zero;
         }
 
-        private void Update(WorldForm wf, ProjectForm pf, ref MapSelection sel, Vector3 p)
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
         {
             Entity?.SetPositionFromWidget(p);
 
             if (Entity != sel.EntityDef) wf.SelectEntity(Entity);
             wf.SetWidgetPosition(Entity.WidgetPosition);
-            if ((Entity != null) && (pf != null))
-            {
-                pf.OnWorldEntityModified(Entity);
-            }
         }
 
-        public override void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Undo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, StartPosition);
+            Update(wf, ref sel, StartPosition);
         }
 
-        public override void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Redo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, EndPosition);
+            Update(wf, ref sel, EndPosition);
         }
 
         public override string ToString()
@@ -76,27 +122,23 @@ namespace CodeWalker.Project
         }
 
 
-        private void Update(WorldForm wf, ProjectForm pf, ref MapSelection sel, Quaternion q)
+        private void Update(WorldForm wf, ref MapSelection sel, Quaternion q)
         {
             Entity?.SetOrientationFromWidget(q);
 
             if (Entity != sel.EntityDef) wf.SelectEntity(Entity);
             wf.SetWidgetRotation(q);
-            if ((Entity != null) && (pf != null))
-            {
-                pf.OnWorldEntityModified(Entity);
-            }
         }
 
 
-        public override void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Undo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, StartRotation);
+            Update(wf, ref sel, StartRotation);
         }
 
-        public override void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Redo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, EndRotation);
+            Update(wf, ref sel, EndRotation);
         }
 
         public override string ToString()
@@ -119,27 +161,23 @@ namespace CodeWalker.Project
         }
 
 
-        private void Update(WorldForm wf, ProjectForm pf, ref MapSelection sel, Vector3 s)
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 s)
         {
             Entity?.SetScale(s);
 
             if (Entity != sel.EntityDef) wf.SelectEntity(Entity);
             wf.SetWidgetScale(s);
-            if ((Entity != null) && (pf != null))
-            {
-                pf.OnWorldEntityModified(Entity);
-            }
         }
 
 
-        public override void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Undo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, StartScale);
+            Update(wf, ref sel, StartScale);
         }
 
-        public override void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Redo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, EndScale);
+            Update(wf, ref sel, EndScale);
         }
 
         public override string ToString()
@@ -162,26 +200,22 @@ namespace CodeWalker.Project
             EndPosition = ent?.WidgetPosition ?? Vector3.Zero;
         }
 
-        private void Update(WorldForm wf, ProjectForm pf, ref MapSelection sel, Vector3 p)
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
         {
             Entity?.SetPivotPositionFromWidget(p);
 
             if (Entity != sel.EntityDef) wf.SelectEntity(Entity);
             wf.SetWidgetPosition(p);
-            if ((Entity != null) && (pf != null))
-            {
-                pf.OnWorldEntityModified(Entity);
-            }
         }
 
-        public override void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Undo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, StartPosition);
+            Update(wf, ref sel, StartPosition);
         }
 
-        public override void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Redo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, EndPosition);
+            Update(wf, ref sel, EndPosition);
         }
 
         public override string ToString()
@@ -204,27 +238,23 @@ namespace CodeWalker.Project
         }
 
 
-        private void Update(WorldForm wf, ProjectForm pf, ref MapSelection sel, Quaternion q)
+        private void Update(WorldForm wf, ref MapSelection sel, Quaternion q)
         {
             Entity?.SetPivotOrientationFromWidget(q);
 
             if (Entity != sel.EntityDef) wf.SelectEntity(Entity);
             wf.SetWidgetRotation(q);
-            if ((Entity != null) && (pf != null))
-            {
-                pf.OnWorldEntityModified(Entity);
-            }
         }
 
 
-        public override void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Undo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, StartRotation);
+            Update(wf, ref sel, StartRotation);
         }
 
-        public override void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Redo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, EndRotation);
+            Update(wf, ref sel, EndRotation);
         }
 
         public override string ToString()
@@ -248,26 +278,22 @@ namespace CodeWalker.Project
             EndPosition = cargen?.Position ?? Vector3.Zero;
         }
 
-        private void Update(WorldForm wf, ProjectForm pf, ref MapSelection sel, Vector3 p)
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
         {
             CarGen?.SetPosition(p);
 
             if (CarGen != sel.CarGenerator) wf.SelectCarGen(CarGen);
             wf.SetWidgetPosition(p);
-            if ((CarGen != null) && (pf != null))
-            {
-                pf.OnWorldCarGenModified(CarGen);
-            }
         }
 
-        public override void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Undo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, StartPosition);
+            Update(wf, ref sel, StartPosition);
         }
 
-        public override void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Redo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, EndPosition);
+            Update(wf, ref sel, EndPosition);
         }
 
         public override string ToString()
@@ -290,26 +316,22 @@ namespace CodeWalker.Project
         }
 
 
-        private void Update(WorldForm wf, ProjectForm pf, ref MapSelection sel, Quaternion q)
+        private void Update(WorldForm wf, ref MapSelection sel, Quaternion q)
         {
             CarGen?.SetOrientation(q);
 
             if (CarGen != sel.CarGenerator) wf.SelectCarGen(CarGen);
             wf.SetWidgetRotation(q);
-            if ((CarGen != null) && (pf != null))
-            {
-                pf.OnWorldCarGenModified(CarGen);
-            }
         }
 
-        public override void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Undo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, StartRotation);
+            Update(wf, ref sel, StartRotation);
         }
 
-        public override void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Redo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, EndRotation);
+            Update(wf, ref sel, EndRotation);
         }
 
         public override string ToString()
@@ -331,27 +353,23 @@ namespace CodeWalker.Project
             EndScale = new Vector3(cargen?._CCarGen.perpendicularLength ?? 1.0f);
         }
 
-        private void Update(WorldForm wf, ProjectForm pf, ref MapSelection sel, Vector3 s)
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 s)
         {
             CarGen?.SetScale(s);
 
             if (CarGen != sel.CarGenerator) wf.SelectCarGen(CarGen);
             wf.SetWidgetScale(s);
-            if ((CarGen != null) && (pf != null))
-            {
-                pf.OnWorldCarGenModified(CarGen);
-            }
         }
 
 
-        public override void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Undo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, StartScale);
+            Update(wf, ref sel, StartScale);
         }
 
-        public override void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Redo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, EndScale);
+            Update(wf, ref sel, EndScale);
         }
 
         public override string ToString()
@@ -368,16 +386,16 @@ namespace CodeWalker.Project
         public Vector3 StartPosition { get; set; }
         public Vector3 EndPosition { get; set; }
 
-        public PathNodePositionUndoStep(YndNode pathnode, Vector3 startpos, WorldForm wf, ProjectForm pf)
+        public PathNodePositionUndoStep(YndNode pathnode, Vector3 startpos, WorldForm wf)
         {
             PathNode = pathnode;
             StartPosition = startpos;
             EndPosition = pathnode?.Position ?? Vector3.Zero;
 
-            UpdateGraphics(wf, pf); //forces the update of the path graphics when it's moved...
+            UpdateGraphics(wf); //forces the update of the path graphics when it's moved...
         }
 
-        private void Update(WorldForm wf, ProjectForm pf, ref MapSelection sel, Vector3 p)
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
         {
             PathNode?.SetPosition(p);
 
@@ -395,31 +413,27 @@ namespace CodeWalker.Project
             wf.SetWidgetPosition(p);
 
 
-            UpdateGraphics(wf, pf);
+            UpdateGraphics(wf);
         }
 
-        private void UpdateGraphics(WorldForm wf, ProjectForm pf)
+        private void UpdateGraphics(WorldForm wf)
         {
             if (PathNode != null)
             {
                 //Ynd graphics needs to be updated.....
                 wf.UpdatePathNodeGraphics(PathNode, false);
-                if (pf != null) //make sure to update the project form UI..
-                {
-                    pf.OnWorldPathNodeModified(PathNode, null);
-                }
             }
         }
 
 
-        public override void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Undo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, StartPosition);
+            Update(wf, ref sel, StartPosition);
         }
 
-        public override void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Redo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, EndPosition);
+            Update(wf, ref sel, EndPosition);
         }
 
         public override string ToString()
@@ -435,16 +449,16 @@ namespace CodeWalker.Project
         public Vector3 StartPosition { get; set; }
         public Vector3 EndPosition { get; set; }
 
-        public TrainTrackNodePositionUndoStep(TrainTrackNode node, Vector3 startpos, WorldForm wf, ProjectForm pf)
+        public TrainTrackNodePositionUndoStep(TrainTrackNode node, Vector3 startpos, WorldForm wf)
         {
             Node = node;
             StartPosition = startpos;
             EndPosition = node?.Position ?? Vector3.Zero;
 
-            UpdateGraphics(wf, pf); //forces the update of the path graphics when it's moved...
+            UpdateGraphics(wf); //forces the update of the path graphics when it's moved...
         }
 
-        private void Update(WorldForm wf, ProjectForm pf, ref MapSelection sel, Vector3 p)
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
         {
             Node?.SetPosition(p);
 
@@ -455,31 +469,27 @@ namespace CodeWalker.Project
             wf.SetWidgetPosition(p);
 
 
-            UpdateGraphics(wf, pf);
+            UpdateGraphics(wf);
         }
 
-        private void UpdateGraphics(WorldForm wf, ProjectForm pf)
+        private void UpdateGraphics(WorldForm wf)
         {
             if (Node != null)
             {
                 //Ynd graphics needs to be updated.....
                 wf.UpdateTrainTrackNodeGraphics(Node, false);
-                if (pf != null) //make sure to update the project form UI..
-                {
-                    pf.OnWorldTrainNodeModified(Node);
-                }
             }
         }
 
 
-        public override void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Undo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, StartPosition);
+            Update(wf, ref sel, StartPosition);
         }
 
-        public override void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Redo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, EndPosition);
+            Update(wf, ref sel, EndPosition);
         }
 
         public override string ToString()
@@ -497,46 +507,42 @@ namespace CodeWalker.Project
         public Vector3 StartPosition { get; set; }
         public Vector3 EndPosition { get; set; }
 
-        public ScenarioNodePositionUndoStep(ScenarioNode node, Vector3 startpos, WorldForm wf, ProjectForm pf)
+        public ScenarioNodePositionUndoStep(ScenarioNode node, Vector3 startpos, WorldForm wf)
         {
             ScenarioNode = node;
             StartPosition = startpos;
             EndPosition = node?.Position ?? Vector3.Zero;
 
-            UpdateGraphics(wf, pf); //forces the update of the path graphics when it's moved...
+            UpdateGraphics(wf); //forces the update of the path graphics when it's moved...
         }
 
-        private void Update(WorldForm wf, ProjectForm pf, ref MapSelection sel, Vector3 p)
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
         {
             ScenarioNode?.SetPosition(p);
 
             if (ScenarioNode != sel.ScenarioNode) wf.SelectScenarioNode(ScenarioNode);
             wf.SetWidgetPosition(p);
 
-            UpdateGraphics(wf, pf);
+            UpdateGraphics(wf);
         }
 
-        private void UpdateGraphics(WorldForm wf, ProjectForm pf)
+        private void UpdateGraphics(WorldForm wf)
         {
             if (ScenarioNode != null)
             {
                 //Ymt graphics needs to be updated.....
                 wf.UpdateScenarioGraphics(ScenarioNode.Ymt, false);
-                if (pf != null) //make sure to update the project form UI..
-                {
-                    pf.OnWorldScenarioNodeModified(ScenarioNode);
-                }
             }
         }
 
-        public override void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Undo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, StartPosition);
+            Update(wf, ref sel, StartPosition);
         }
 
-        public override void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Redo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, EndPosition);
+            Update(wf, ref sel, EndPosition);
         }
 
         public override string ToString()
@@ -551,48 +557,44 @@ namespace CodeWalker.Project
         public Quaternion StartRotation { get; set; }
         public Quaternion EndRotation { get; set; }
 
-        public ScenarioNodeRotationUndoStep(ScenarioNode node, Quaternion startrot, WorldForm wf, ProjectForm pf)
+        public ScenarioNodeRotationUndoStep(ScenarioNode node, Quaternion startrot, WorldForm wf)
         {
             ScenarioNode = node;
             StartRotation = startrot;
             EndRotation = node?.Orientation ?? Quaternion.Identity;
 
-            //UpdateGraphics(wf, pf);
+            //UpdateGraphics(wf);
         }
 
 
-        private void Update(WorldForm wf, ProjectForm pf, ref MapSelection sel, Quaternion q)
+        private void Update(WorldForm wf, ref MapSelection sel, Quaternion q)
         {
             ScenarioNode?.SetOrientation(q);
 
             if (ScenarioNode != sel.ScenarioNode) wf.SelectScenarioNode(ScenarioNode);
             wf.SetWidgetRotation(q);
 
-            //UpdateGraphics(wf, pf);
+            //UpdateGraphics(wf);
         }
 
-        private void UpdateGraphics(WorldForm wf, ProjectForm pf)
+        private void UpdateGraphics(WorldForm wf)
         {
             ////this function shouldn't actually be needed for rotating...
             //if (ScenarioNode != null)
             //{
             //    //Ymt graphics needs to be updated.....
             //    wf.UpdateScenarioGraphics(ScenarioNode.Ymt, false);
-            //    if (pf != null) //make sure to update the project form UI..
-            //    {
-            //        pf.OnWorldScenarioNodeModified(ScenarioNode);
-            //    }
             //}
         }
 
-        public override void Undo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Undo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, StartRotation);
+            Update(wf, ref sel, StartRotation);
         }
 
-        public override void Redo(WorldForm wf, ProjectForm pf, ref MapSelection sel)
+        public override void Redo(WorldForm wf, ref MapSelection sel)
         {
-            Update(wf, pf, ref sel, EndRotation);
+            Update(wf, ref sel, EndRotation);
         }
 
         public override string ToString()
