@@ -34,6 +34,7 @@ namespace CodeWalker.GameFiles
         public string[] Strings { get; set; }
         public YmapEntityDef[] AllEntities;
         public YmapEntityDef[] RootEntities;
+        public YmapEntityDef[] MloEntities;
 
         public YmapFile[] ChildYmaps = null;
         public bool MergedWithParent = false;
@@ -317,6 +318,7 @@ namespace CodeWalker.GameFiles
                 //build the entity hierarchy.
                 List<YmapEntityDef> roots = new List<YmapEntityDef>(instcount);
                 List<YmapEntityDef> alldefs = new List<YmapEntityDef>(instcount);
+                List<YmapEntityDef> mlodefs = null;
 
                 if (CEntityDefs != null)
                 {
@@ -328,10 +330,17 @@ namespace CodeWalker.GameFiles
                 }
                 if (CMloInstanceDefs != null)
                 {
+                    mlodefs = new List<YmapEntityDef>();
                     for (int i = 0; i < CMloInstanceDefs.Length; i++)
                     {
                         YmapEntityDef d = new YmapEntityDef(this, i, ref CMloInstanceDefs[i]);
+                        uint[] unkuints = MetaTypes.GetUintArray(Meta, CMloInstanceDefs[i].Unk_1407157833);
+                        if (d.MloInstance != null)
+                        {
+                            d.MloInstance.Unk_1407157833 = unkuints;
+                        }
                         alldefs.Add(d);
+                        mlodefs.Add(d);
                     }
                 }
 
@@ -374,6 +383,10 @@ namespace CodeWalker.GameFiles
 
                 AllEntities = alldefs.ToArray();
                 RootEntities = roots.ToArray();
+                if (mlodefs != null)
+                {
+                    MloEntities = mlodefs.ToArray();
+                }
 
 
                 foreach (var ent in AllEntities)
@@ -886,8 +899,10 @@ namespace CodeWalker.GameFiles
         public Quaternion Orientation { get; set; }
         public Vector3 Scale { get; set; }
         public bool IsMlo { get; set; }
-        public MloEntityData MloData { get; set; }
+        public MloInstanceData MloInstance { get; set; }
         public YmapEntityDef MloParent { get; set; }
+        public Vector3 MloRefPosition { get; set; }
+        public Quaternion MloRefOrientation { get; set; }
         public MetaWrapper[] Extensions { get; set; }
 
         public bool ChildrenRendered; //used when rendering ymap mode to reduce LOD flashing...
@@ -954,6 +969,9 @@ namespace CodeWalker.GameFiles
             //}
             IsMlo = true;
 
+            MloInstance = new MloInstanceData();
+            MloInstance.Instance = mlo;
+
             UpdateWidgetPosition();
             UpdateWidgetOrientation();
         }
@@ -983,8 +1001,11 @@ namespace CodeWalker.GameFiles
                 {
                     //transform interior entities into world space...
                     var mlod = Archetype.MloData;
-                    MloData = new MloEntityData();
-                    MloData.CreateYmapEntities(this, mlod);
+                    if (MloInstance == null)
+                    {
+                        MloInstance = new MloInstanceData();
+                    }
+                    MloInstance.CreateYmapEntities(this, mlod);
 
                     if (BSRadius == 0.0f)
                     {
@@ -1002,6 +1023,13 @@ namespace CodeWalker.GameFiles
             {
                 //TODO: SetPosition for interior entities!
                 Position = pos;
+                var inst = MloParent.MloInstance;
+                if (inst != null)
+                {
+                    //transform world position into mlo space
+                    //MloRefPosition = ...
+                    //MloRefOrientation = ...
+                }
             }
             else
             {
@@ -1028,6 +1056,13 @@ namespace CodeWalker.GameFiles
 
                 UpdateWidgetPosition();
             }
+
+
+            if (MloInstance != null)
+            {
+                MloInstance.UpdateEntities();
+            }
+
         }
 
         public void SetOrientation(Quaternion ori)

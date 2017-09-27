@@ -651,7 +651,7 @@ namespace CodeWalker.GameFiles
                     new MetaEnumEntryInfo_s((MetaName)3257836369, 3),
                     new MetaEnumEntryInfo_s((MetaName)2165609255, 4),
                     new MetaEnumEntryInfo_s(MetaName.ActivateVehicleSiren, 5),
-                    new MetaEnumEntryInfo_s((MetaName)2626064871, 6),
+                    new MetaEnumEntryInfo_s(MetaName.AggressiveVehicleDriving, 6),
                     new MetaEnumEntryInfo_s((MetaName)2004780781, 7),
                     new MetaEnumEntryInfo_s((MetaName)536864854, 8),
                     new MetaEnumEntryInfo_s((MetaName)3441065168, 9),
@@ -671,11 +671,11 @@ namespace CodeWalker.GameFiles
                     new MetaEnumEntryInfo_s(MetaName.ShortRange, 23),
                     new MetaEnumEntryInfo_s(MetaName.HighPriority, 24),
                     new MetaEnumEntryInfo_s(MetaName.IgnoreLoitering, 25),
-                    new MetaEnumEntryInfo_s((MetaName)1524211135, 26),
+                    new MetaEnumEntryInfo_s(MetaName.UseSearchlight, 26),
                     new MetaEnumEntryInfo_s(MetaName.ResetNoCollisionOnCleanUp, 27),
                     new MetaEnumEntryInfo_s((MetaName)3304563391, 28),
                     new MetaEnumEntryInfo_s((MetaName)1111379709, 29),
-                    new MetaEnumEntryInfo_s((MetaName)176469077, 30)
+                    new MetaEnumEntryInfo_s(MetaName.IgnoreWeatherRestrictions, 30)
                     );
                 case (MetaName)3044470860:
                     return new MetaEnumInfo((MetaName)3044470860, 1585854303,
@@ -1276,6 +1276,7 @@ namespace CodeWalker.GameFiles
             return result;
         }
 
+
         public static MetaDataBlock GetDataBlock(Meta meta, MetaPOINTER ptr)
         {
             int blocki = ptr.BlockID - 1;
@@ -1376,403 +1377,6 @@ namespace CodeWalker.GameFiles
 
 
 
-
-
-    //derived types - manually created (array & pointer structs)
-
-    [TC(typeof(EXP))] public struct Array_StructurePointer //16 bytes - pointer for a structure pointer array
-    {
-        public uint Pointer { get; set; }
-        public uint Unk0 { get; set; }
-        public ushort Count1 { get; set; }
-        public ushort Count2 { get; set; }
-        public uint Unk1 { get; set; }
-
-        public uint PointerDataId { get { return (Pointer & 0xFFF); } }
-        public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
-        public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
-
-        public void SwapEnd()
-        {
-            Pointer = MetaTypes.SwapBytes(Pointer);
-            Count1 = MetaTypes.SwapBytes(Count1);
-            Count2 = MetaTypes.SwapBytes(Count2);
-            Unk1 = MetaTypes.SwapBytes(Unk1);
-        }
-        public override string ToString()
-        {
-            return "Array_StructurePointer: " + PointerDataIndex.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
-        }
-    }
-    [TC(typeof(EXP))] public struct Array_Structure //16 bytes - pointer for a structure array
-    {
-        public uint Pointer { get; set; }
-        public uint Unk0 { get; set; }
-        public ushort Count1 { get; set; }
-        public ushort Count2 { get; set; }
-        public uint Unk1 { get; set; }
-
-        public uint PointerDataId { get { return (Pointer & 0xFFF); } }
-        public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
-        public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
-
-
-
-        public Array_Structure(uint ptr, int cnt)
-        {
-            Pointer = ptr;
-            Unk0 = 0;
-            Count1 = (ushort)cnt;
-            Count2 = Count1;
-            Unk1 = 0;
-        }
-        public Array_Structure(MetaBuilderPointer ptr)
-        {
-            Pointer = ptr.Pointer;
-            Unk0 = 0;
-            Count1 = (ushort)ptr.Length;
-            Count2 = Count1;
-            Unk1 = 0;
-        }
-
-        public void SwapEnd()
-        {
-            Pointer = MetaTypes.SwapBytes(Pointer);
-            Unk0 = MetaTypes.SwapBytes(Unk0);
-            Count1 = MetaTypes.SwapBytes(Count1);
-            Count2 = MetaTypes.SwapBytes(Count2);
-            Unk1 = MetaTypes.SwapBytes(Unk1);
-        }
-        public override string ToString()
-        {
-            return "Array_Structure: " + PointerDataIndex.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
-        }
-    }
-    [TC(typeof(EXP))] public struct Array_uint //16 bytes - pointer for a uint array
-    {
-        public uint Pointer { get; set; }
-        public uint Unk0 { get; set; }
-        public ushort Count1 { get; set; }
-        public ushort Count2 { get; set; }
-        public uint Unk1 { get; set; }
-
-        public uint PointerDataId { get { return (Pointer & 0xFFF); } }
-        public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
-        public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
-
-
-        public Array_uint(uint ptr, int cnt)
-        {
-            Pointer = ptr;
-            Unk0 = 0;
-            Count1 = (ushort)cnt;
-            Count2 = Count1;
-            Unk1 = 0;
-        }
-        public Array_uint(MetaBuilderPointer ptr)
-        {
-            Pointer = ptr.Pointer;
-            Unk0 = 0;
-            Count1 = (ushort)ptr.Length;
-            Count2 = Count1;
-            Unk1 = 0;
-        }
-
-        public void SwapEnd()
-        {
-            Pointer = MetaTypes.SwapBytes(Pointer);
-            Unk0 = MetaTypes.SwapBytes(Unk0);
-            Count1 = MetaTypes.SwapBytes(Count1);
-            Count2 = MetaTypes.SwapBytes(Count2);
-            Unk1 = MetaTypes.SwapBytes(Unk1);
-        }
-        public override string ToString()
-        {
-            return "Array_uint: " + PointerDataIndex.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
-        }
-    }
-    [TC(typeof(EXP))] public struct Array_ushort //16 bytes - pointer for a ushort array
-    {
-        public uint Pointer { get; set; }
-        public uint Unk0 { get; set; }
-        public ushort Count1 { get; set; }
-        public ushort Count2 { get; set; }
-        public uint Unk1 { get; set; }
-
-        public uint PointerDataId { get { return (Pointer & 0xFFF); } }
-        public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
-        public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
-
-
-        public Array_ushort(uint ptr, int cnt)
-        {
-            Pointer = ptr;
-            Unk0 = 0;
-            Count1 = (ushort)cnt;
-            Count2 = Count1;
-            Unk1 = 0;
-        }
-        public Array_ushort(MetaBuilderPointer ptr)
-        {
-            Pointer = ptr.Pointer;
-            Unk0 = 0;
-            Count1 = (ushort)ptr.Length;
-            Count2 = Count1;
-            Unk1 = 0;
-        }
-
-
-        public void SwapEnd()
-        {
-            Pointer = MetaTypes.SwapBytes(Pointer);
-            Unk0 = MetaTypes.SwapBytes(Unk0);
-            Count1 = MetaTypes.SwapBytes(Count1);
-            Count2 = MetaTypes.SwapBytes(Count2);
-            Unk1 = MetaTypes.SwapBytes(Unk1);
-        }
-        public override string ToString()
-        {
-            return "Array_ushort: " + PointerDataIndex.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
-        }
-    }
-    [TC(typeof(EXP))] public struct Array_byte //16 bytes - pointer for a byte array
-    {
-        public uint Pointer { get; set; }
-        public uint Unk0 { get; set; }
-        public ushort Count1 { get; set; }
-        public ushort Count2 { get; set; }
-        public uint Unk1 { get; set; }
-
-        public uint PointerDataId { get { return (Pointer & 0xFFF); } }
-        public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
-        public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
-
-        public void SwapEnd()
-        {
-            Pointer = MetaTypes.SwapBytes(Pointer);
-            Unk0 = MetaTypes.SwapBytes(Unk0);
-            Count1 = MetaTypes.SwapBytes(Count1);
-            Count2 = MetaTypes.SwapBytes(Count2);
-            Unk1 = MetaTypes.SwapBytes(Unk1);
-        }
-        public override string ToString()
-        {
-            return "Array_byte: " + PointerDataIndex.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
-        }
-    }
-    [TC(typeof(EXP))] public struct Array_float //16 bytes - pointer for a float array
-    {
-        public uint Pointer { get; set; }
-        public uint Unk0 { get; set; }
-        public ushort Count1 { get; set; }
-        public ushort Count2 { get; set; }
-        public uint Unk1 { get; set; }
-
-        public uint PointerDataId { get { return (Pointer & 0xFFF); } }
-        public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
-        public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
-
-        public void SwapEnd()
-        {
-            Pointer = MetaTypes.SwapBytes(Pointer);
-            Unk0 = MetaTypes.SwapBytes(Unk0);
-            Count1 = MetaTypes.SwapBytes(Count1);
-            Count2 = MetaTypes.SwapBytes(Count2);
-            Unk1 = MetaTypes.SwapBytes(Unk1);
-        }
-        public override string ToString()
-        {
-            return "Array_float: " + PointerDataIndex.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
-        }
-    }
-    [TC(typeof(EXP))] public struct Array_Vector3 //16 bytes - pointer for a Vector3 array
-    {
-        public uint Pointer { get; set; }
-        public uint Unk0 { get; set; }
-        public ushort Count1 { get; set; }
-        public ushort Count2 { get; set; }
-        public uint Unk1 { get; set; }
-
-        public uint PointerDataId { get { return (Pointer & 0xFFF); } }
-        public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
-        public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
-
-        public void SwapEnd()
-        {
-            Pointer = MetaTypes.SwapBytes(Pointer);
-            Unk0 = MetaTypes.SwapBytes(Unk0);
-            Count1 = MetaTypes.SwapBytes(Count1);
-            Count2 = MetaTypes.SwapBytes(Count2);
-            Unk1 = MetaTypes.SwapBytes(Unk1);
-        }
-        public override string ToString()
-        {
-            return "Array_Vector3: " + PointerDataIndex.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
-        }
-    }
-    [TC(typeof(EXP))] public struct CharPointer //16 bytes - pointer for a char array
-    {
-        public uint Pointer { get; set; }
-        public uint Unk0 { get; set; }
-        public ushort Count1 { get; set; }
-        public ushort Count2 { get; set; }
-        public uint Unk1 { get; set; }
-
-        public uint PointerDataId { get { return (Pointer & 0xFFF); } }
-        public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
-        public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
-
-        public CharPointer(uint ptr, int len)
-        {
-            Pointer = ptr;
-            Unk0 = 0;
-            Count1 = (ushort)len;
-            Count2 = Count1;
-            Unk1 = 0;
-        }
-        public CharPointer(MetaBuilderPointer ptr)
-        {
-            Pointer = ptr.Pointer;
-            Unk0 = 0;
-            Count1 = (ushort)ptr.Length;
-            Count2 = Count1;
-            Unk1 = 0;
-        }
-
-        public void SwapEnd()
-        {
-            Pointer = MetaTypes.SwapBytes(Pointer);
-            Unk0 = MetaTypes.SwapBytes(Unk0);
-            Count1 = MetaTypes.SwapBytes(Count1);
-            Count2 = MetaTypes.SwapBytes(Count2);
-            Unk1 = MetaTypes.SwapBytes(Unk1);
-        }
-        public override string ToString()
-        {
-            return "CharPointer: " + Pointer.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
-        }
-    }
-    [TC(typeof(EXP))] public struct DataBlockPointer //8 bytes - pointer to data block
-    {
-        public uint Ptr0 { get; set; }
-        public uint Ptr1 { get; set; }
-
-        public uint PointerDataId { get { return (Ptr0 & 0xFFF); } }
-        public uint PointerDataIndex { get { return (Ptr0 & 0xFFF) - 1; } }
-        public uint PointerDataOffset { get { return ((Ptr0 >> 12) & 0xFFFFF); } }
-
-        public override string ToString()
-        {
-            return "DataBlockPointer: " + Ptr0.ToString() + ", " + Ptr1.ToString();
-        }
-
-        public void SwapEnd()
-        {
-            Ptr0 = MetaTypes.SwapBytes(Ptr0);
-            Ptr1 = MetaTypes.SwapBytes(Ptr1);
-        }
-    }
-
-    public struct ArrayOfUshorts3 //array of 3 bytes
-    {
-        public ushort u0, u1, u2;
-        public override string ToString()
-        {
-            return u0.ToString() + ", " + u1.ToString() + ", " + u2.ToString();
-        }
-    }
-    public struct ArrayOfBytes3 //array of 3 bytes
-    {
-        public byte b0,b1,b2;
-        public override string ToString()
-        {
-            return b0.ToString() + ", " + b1.ToString() + ", " + b2.ToString();
-        }
-    }
-    public struct ArrayOfBytes4 //array of 4 bytes
-    {
-        public byte b0,b1,b2,b3;
-        public override string ToString()
-        {
-            return b0.ToString() + ", " + b1.ToString() + ", " + b2.ToString() + ", " + b3.ToString();
-        }
-    }
-    public struct ArrayOfBytes5 //array of 5 bytes
-    {
-        public byte b0, b1, b2, b3, b4;
-    }
-    public struct ArrayOfBytes6 //array of 6 bytes
-    {
-        public byte b0, b1, b2, b3, b4, b5;
-    }
-    public struct ArrayOfBytes12 //array of 12 bytes
-    {
-        public byte b00, b01, b02, b03, b04, b05, b06, b07, b08, b09, b10, b11;
-    }
-    public struct ArrayOfChars64 //array of 64 chars (bytes)
-    {
-        public byte
-            b00, b01, b02, b03, b04, b05, b06, b07, b08, b09, b10, b11, b12, b13, b14, b15, b16, b17, b18, b19,
-            b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31, b32, b33, b34, b35, b36, b37, b38, b39,
-            b40, b41, b42, b43, b44, b45, b46, b47, b48, b49, b50, b51, b52, b53, b54, b55, b56, b57, b58, b59,
-            b60, b61, b62, b63;
-        public override string ToString()
-        {
-            byte[] bytes =
-            {
-                b00, b01, b02, b03, b04, b05, b06, b07, b08, b09, b10, b11, b12, b13, b14, b15, b16, b17, b18, b19,
-                b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31, b32, b33, b34, b35, b36, b37, b38, b39,
-                b40, b41, b42, b43, b44, b45, b46, b47, b48, b49, b50, b51, b52, b53, b54, b55, b56, b57, b58, b59,
-                b60, b61, b62, b63
-            };
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < bytes.Length; i++)
-            {
-                if (bytes[i] == 0) break;
-                sb.Append((char)bytes[i]);
-            }
-            return sb.ToString();
-        }
-    }
-
-    public struct MetaVECTOR3 //12 bytes, Key:2751397072
-    {
-        public float x { get; set; } //0   0: Float: 0: x
-        public float y { get; set; } //4   4: Float: 0: y
-        public float z { get; set; } //8   8: Float: 0: z
-
-        public override string ToString()
-        {
-            return x.ToString() + ", " + y.ToString() + ", " + z.ToString();
-        }
-
-        public Vector3 ToVector3()
-        {
-            return new Vector3(x, y, z);
-        }
-    }
-
-    public struct MetaPOINTER //8 bytes - pointer to data item //SectionUNKNOWN10
-    {
-        public ushort BlockID { get; set; } //1-based ID
-        public ushort ItemOffset { get; set; } //byte offset / 16
-        public uint ExtraOffset { get; set; }
-
-        public MetaPOINTER(ushort blockID, ushort itemOffset, uint extra)
-        {
-            BlockID = blockID;
-            ItemOffset = itemOffset;
-            ExtraOffset = extra;
-        }
-
-        public override string ToString()
-        {
-            return BlockID.ToString() + ", " + ItemOffset.ToString() + ", " + ExtraOffset.ToString();
-        }
-    }
-
-
-
     //generated enums
 
     //Enum infos
@@ -1786,7 +1390,7 @@ namespace CodeWalker.GameFiles
         Unk_3257836369 = 8,//3,
         Unk_2165609255 = 16,//4,
         ActivateVehicleSiren = 32,//5,
-        Unk_2626064871 = 64,//6,         // AggressiveVehicleDriving ?
+        AggressiveVehicleDriving = 64,//6,
         Unk_2004780781 = 128,//7,
         Unk_536864854 = 256,//8,
         Unk_3441065168 = 512,//9,
@@ -1806,11 +1410,11 @@ namespace CodeWalker.GameFiles
         ShortRange = 8388608,//23,
         HighPriority = 16777216,//24,
         IgnoreLoitering = 33554432,//25,
-        Unk_1524211135 = 67108864,//26,             // UseSearchlight ?
+        UseSearchlight = 67108864,//26,
         ResetNoCollisionOnCleanUp = 134217728,//27,
         Unk_3304563391 = 268435456,//28,
         Unk_1111379709 = 536870912,//29,
-        Unk_176469077 = 1073741824,//30,         // IgnoreWeatherRestrictions ?
+        IgnoreWeatherRestrictions = 1073741824,//30,
     }
 
     public enum Unk_3573596290 //SCENARIO Spawn point availability availableInMpSp
@@ -2035,23 +1639,55 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct CTimeArchetypeDef //160 bytes, Key:2520619910
+    [TC(typeof(EXP))] public struct CBaseArchetypeDef_v2 //128 bytes, Key:2352343492  //old version...
     {
-        public CBaseArchetypeDef CBaseArchetypeDef { get; set; }
+        public uint Unused00 { get; set; }//0
+        public uint Unused01 { get; set; }//4
+        public float lodDist { get; set; } //8   8: Float: 0: lodDist
+        public uint flags { get; set; } //12   12: UnsignedInt: 0: flags
+        public uint specialAttribute { get; set; } //16   16: UnsignedInt: 0: specialAttribute
+        public uint Unused02 { get; set; }//20
+        public uint Unused03 { get; set; }//24
+        public uint Unused04 { get; set; }//28
+        public Vector3 bbMin { get; set; } //32   32: Float_XYZ: 0: bbMin
+        public float Unused05 { get; set; }//44
+        public Vector3 bbMax { get; set; } //48   48: Float_XYZ: 0: bbMax
+        public float Unused06 { get; set; }//60
+        public Vector3 bsCentre { get; set; } //64   64: Float_XYZ: 0: bsCentre
+        public float Unused07 { get; set; }//76
+        public float bsRadius { get; set; } //80   80: Float: 0: bsRadius
+        public float hdTextureDist { get; set; } //84   84: Float: 0: hdTextureDist//2908576588
+        public MetaHash name { get; set; } //88   88: Hash: 0: name
+        public MetaHash textureDictionary { get; set; } //92   92: Hash: 0: textureDictionary
+        public MetaHash clipDictionary { get; set; } //96   96: Hash: 0: clipDictionary//424089489
+        public MetaHash drawableDictionary { get; set; } //100   100: Hash: 0: drawableDictionary
+        public MetaHash physicsDictionary { get; set; } //104   104: Hash: 0: physicsDictionary//3553040380
+        public uint Unused08 { get; set; }//108
+        public Array_StructurePointer extensions { get; set; } //112   112: Array: 0: extensions  {0: StructurePointer: 0: 256}
+    }
+
+    [TC(typeof(EXP))] public struct CTimeArchetypeDefData
+    {
         public uint timeFlags { get; set; } //144   144: UnsignedInt: 0: timeFlags//2248791340
         public uint Unused11 { get; set; }//148
         public uint Unused12 { get; set; }//152
         public uint Unused13 { get; set; }//156
+    }
+    [TC(typeof(EXP))] public struct CTimeArchetypeDef //160 bytes, Key:2520619910
+    {
+        public CBaseArchetypeDef _BaseArchetypeDef;
+        public CTimeArchetypeDefData _TimeArchetypeDef;
+        public CBaseArchetypeDef BaseArchetypeDef { get { return _BaseArchetypeDef; } set { _BaseArchetypeDef = value; } }
+        public CTimeArchetypeDefData TimeArchetypeDef { get { return _TimeArchetypeDef; } set { _TimeArchetypeDef = value; } }
 
         public override string ToString()
         {
-            return CBaseArchetypeDef.ToString();
+            return _BaseArchetypeDef.ToString();
         }
     }
 
-    [TC(typeof(EXP))] public struct CMloArchetypeDef //240 bytes, Key:937664754
+    [TC(typeof(EXP))] public struct CMloArchetypeDefData
     {
-        public CBaseArchetypeDef CBaseArchetypeDef { get; set; }
         public uint mloFlags { get; set; } //144   144: UnsignedInt: 0: mloFlags//3590839912
         public uint Unused11 { get; set; }//148
         public Array_StructurePointer entities { get; set; } //152   152: Array: 0: entities  {0: StructurePointer: 0: 256}
@@ -2061,47 +1697,92 @@ namespace CodeWalker.GameFiles
         public Array_Structure timeCycleModifiers { get; set; } //216   216: Array: 0: timeCycleModifiers  {0: Structure: CMloTimeCycleModifier: 256}
         public uint Unused12 { get; set; }//232
         public uint Unused13 { get; set; }//236
+    }
+    [TC(typeof(EXP))] public struct CMloArchetypeDef //240 bytes, Key:937664754
+    {
+        public CBaseArchetypeDef _BaseArchetypeDef;
+        public CMloArchetypeDefData _MloArchetypeDef;
+        public CBaseArchetypeDef BaseArchetypeDef { get { return _BaseArchetypeDef; } set { _BaseArchetypeDef = value; } }
+        public CMloArchetypeDefData MloArchetypeDef { get { return _MloArchetypeDef; } set { _MloArchetypeDef = value; } }
 
         public override string ToString()
         {
-            return CBaseArchetypeDef.ToString();
+            return _BaseArchetypeDef.ToString();
         }
     }
 
-    [TC(typeof(EXP))] public struct CLODLight //136 bytes, Key:2325189228
+    [TC(typeof(EXP))] public struct CCompositeEntityType //304 bytes, Key:659539004 dex: composite entity type - ytyp // Tom: des_ destruction
     {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public Array_Structure direction { get; set; } //8   8: Array: 0: direction  {0: Structure: SectionUNKNOWN9: 256}
-        public Array_float falloff { get; set; } //24   24: Array: 0: falloff  {0: Float: 0: 256}
-        public Array_float falloffExponent { get; set; } //40   40: Array: 0: falloffExponent  {0: Float: 0: 256}
-        public Array_uint timeAndStateFlags { get; set; } //56   56: Array: 0: timeAndStateFlags=3112418278  {0: UnsignedInt: 0: 256}
-        public Array_uint hash { get; set; } //72   72: Array: 0: hash  {0: UnsignedInt: 0: 256}
-        public Array_byte coneInnerAngle { get; set; } //88   88: Array: 0: coneInnerAngle//1163671864  {0: UnsignedByte: 0: 256}
-        public Array_byte coneOuterAngleOrCapExt { get; set; } //104   104: Array: 0: coneOuterAngleOrCapExt=3161894080  {0: UnsignedByte: 0: 256}
-        public Array_byte coronaIntensity { get; set; } //120   120: Array: 0: coronaIntensity//2292363771  {0: UnsignedByte: 0: 256}
+        public ArrayOfChars64 Name { get; set; } //0   0: ArrayOfChars: 64: Name
+        public float lodDist { get; set; } //64   64: Float: 0: lodDist
+        public uint flags { get; set; } //68   68: UnsignedInt: 0: flags
+        public uint specialAttribute { get; set; } //72   72: UnsignedInt: 0: specialAttribute
+        public uint Unused0 { get; set; }//76
+        public Vector3 bbMin { get; set; } //80   80: Float_XYZ: 0: bbMin
+        public float Unused1 { get; set; }//92
+        public Vector3 bbMax { get; set; } //96   96: Float_XYZ: 0: bbMax
+        public float Unused2 { get; set; }//108
+        public Vector3 bsCentre { get; set; } //112   112: Float_XYZ: 0: bsCentre
+        public float Unused3 { get; set; }//124
+        public float bsRadius { get; set; } //128   128: Float: 0: bsRadius
+        public uint Unused4 { get; set; }//132
+        public ArrayOfChars64 StartModel { get; set; } //136   136: ArrayOfChars: 64: StartModel
+        public ArrayOfChars64 EndModel { get; set; } //200   200: ArrayOfChars: 64: EndModel
+        public MetaHash StartImapFile { get; set; } //264   264: Hash: 0: StartImapFile//2462971690
+        public MetaHash EndImapFile { get; set; } //268   268: Hash: 0: EndImapFile//2059586669
+        public MetaHash PtFxAssetName { get; set; } //272   272: Hash: 0: PtFxAssetName//2497993358
+        public uint Unused5 { get; set; }//276
+        public Array_Structure Animations { get; set; } //280   280: Array: 0: Animations  {0: Structure: 1980345114: 256}
+        public uint Unused6 { get; set; }//296
+        public uint Unused7 { get; set; }//300
+
+        public override string ToString()
+        {
+            return Name.ToString() + ", " + StartModel.ToString() + ", " + EndModel.ToString() + ", " + 
+                    StartImapFile.ToString() + ", " + EndImapFile.ToString() + ", " + PtFxAssetName.ToString();
+        }
     }
 
-    [TC(typeof(EXP))] public struct CDistantLODLight //48 bytes, Key:2820908419
+    [TC(typeof(EXP))] public struct Unk_1980345114 //216 bytes, Key:4110496011 //destruction animations?
     {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public Array_Structure position { get; set; } //8   8: Array: 0: position  {0: Structure: SectionUNKNOWN9: 256}
-        public Array_uint RGBI { get; set; } //24   24: Array: 0: RGBI  {0: UnsignedInt: 0: 256}
-        public ushort numStreetLights { get; set; } //40   40: UnsignedShort: 0: numStreetLights//3708891211
-        public ushort category { get; set; } //42   42: UnsignedShort: 0: category//2052871693
-        public uint Unused2 { get; set; }//44
+        public ArrayOfChars64 AnimDict { get; set; } //0   0: ArrayOfChars: 64: AnimDict
+        public ArrayOfChars64 AnimName { get; set; } //64   64: ArrayOfChars: 64: AnimName
+        public ArrayOfChars64 AnimatedModel { get; set; } //128   128: ArrayOfChars: 64: AnimatedModel
+        public float punchInPhase { get; set; } //192   192: Float: 0: punchInPhase//3142377407
+        public float punchOutPhase { get; set; } //196   196: Float: 0: punchOutPhase//2164219370
+        public Array_Structure effectsData { get; set; } //200   200: Array: 0: effectsData  {0: Structure: 3430328684: 256}
     }
 
-    [TC(typeof(EXP))] public struct CBlockDesc //72 bytes, Key:2015795449
+    [TC(typeof(EXP))] public struct Unk_3430328684 //160 bytes, Key:1724963966 //destruction animation effects data
     {
-        public uint version { get; set; } //0   0: UnsignedInt: 0: version
-        public uint flags { get; set; } //4   4: UnsignedInt: 0: flags
-        public CharPointer name { get; set; } //8   8: CharPointer: 0: name
-        public CharPointer exportedBy { get; set; } //24   24: CharPointer: 0: exportedBy//1983184981
-        public CharPointer owner { get; set; } //40   40: CharPointer: 0: owner
-        public CharPointer time { get; set; } //56   56: CharPointer: 0: time
+        public uint fxType { get; set; } //0   0: UnsignedInt: 0: fxType
+        public uint Unused0 { get; set; }//4
+        public uint Unused1 { get; set; }//8
+        public uint Unused2 { get; set; }//12
+        public Vector3 fxOffsetPos { get; set; } //16   16: Float_XYZ: 0: fxOffsetPos
+        public float Unused3 { get; set; }//28
+        public Vector4 fxOffsetRot { get; set; } //32   32: Float_XYZW: 0: fxOffsetRot
+        public uint boneTag { get; set; } //48   48: UnsignedInt: 0: boneTag
+        public float startPhase { get; set; } //52   52: Float: 0: startPhase
+        public float endPhase { get; set; } //56   56: Float: 0: endPhase
+        public byte ptFxIsTriggered { get; set; } //60   60: Boolean: 0: ptFxIsTriggered
+        public ArrayOfChars64 ptFxTag { get; set; } //61   61: ArrayOfChars: 64: ptFxTag
+        public byte Unused4 { get; set; }//125
+        public ushort Unused5 { get; set; }//126
+        public float ptFxScale { get; set; } //128   128: Float: 0: ptFxScale
+        public float ptFxProbability { get; set; } //132   132: Float: 0: ptFxProbability
+        public byte ptFxHasTint { get; set; } //136   136: Boolean: 0: ptFxHasTint
+        public byte ptFxTintR { get; set; } //137   137: UnsignedByte: 0: ptFxTintR
+        public byte ptFxTintG { get; set; } //138   138: UnsignedByte: 0: ptFxTintG
+        public byte ptFxTintB { get; set; } //139   139: UnsignedByte: 0: ptFxTintB
+        public uint Unused6 { get; set; }//140
+        public Vector3 ptFxSize { get; set; } //144   144: Float_XYZ: 0: ptFxSize
+        public uint Unused7 { get; set; }//156
     }
+
+
+
+
 
     [TC(typeof(EXP))] public struct CMapData //512 bytes, Key:3448101671
     {
@@ -2180,241 +1861,32 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct CTimeCycleModifier //64 bytes, Key:2683420777
+    [TC(typeof(EXP))] public struct Unk_975711773 //16 bytes, Key:1831736438   //boxOccluders
     {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public MetaHash name { get; set; } //8   8: Hash: 0: name  
-        public uint Unused2 { get; set; }//12
-        public Vector3 minExtents { get; set; } //16   16: Float_XYZ: 0: minExtents=1731020657
-        public float Unused3 { get; set; }//28
-        public Vector3 maxExtents { get; set; } //32   32: Float_XYZ: 0: maxExtents=2554806840
-        public float Unused4 { get; set; }//44
-        public float percentage { get; set; } //48   48: Float: 0: percentage
-        public float range { get; set; } //52   52: Float: 0: range
-        public uint startHour { get; set; } //56   56: UnsignedInt: 0: startHour
-        public uint endHour { get; set; } //60   60: UnsignedInt: 0: endHour
-
-
-        //regarding name in OpenIV:
-        //2633803310 = NoAmbientmult
-        //2003616884 = INT_NoAmbientMult
-
-
-
-        public override string ToString()
-        {
-            return name.ToString() + ": startHour " + startHour.ToString() + ", endHour " + endHour.ToString() + ", range " + range.ToString() + ", percentage " + percentage.ToString();
-        }
+        public short iCenterX { get; set; } //0   0: SignedShort: 0: 48026296
+        public short iCenterY { get; set; } //2   2: SignedShort: 0: 896907229
+        public short iCenterZ { get; set; } //4   4: SignedShort: 0: 1597508449
+        public short iCosZ { get; set; } //6   6: SignedShort: 0: iCosZ
+        public short iLength { get; set; } //8   8: SignedShort: 0: 2854610661
+        public short iWidth { get; set; } //10   10: SignedShort: 0: 168013536
+        public short iHeight { get; set; } //12   12: SignedShort: 0: 3485277993
+        public short iSinZ { get; set; } //14   14: SignedShort: 0: iSinZ
     }
 
-    [TC(typeof(EXP))] public struct CMloInstanceDef //160 bytes, Key:2151576752
+    [TC(typeof(EXP))] public struct Unk_2741784237 //64 bytes, Key:1172796107  //occludeModels
     {
-        public CEntityDef CEntityDef { get; set; }
-        public uint groupId { get; set; } //128   128: UnsignedInt: 0: 2501631252
-        public uint floorId { get; set; } //132   132: UnsignedInt: 0: floorId//2187650609
-        public Array_uint Unk_1407157833 { get; set; } //136   136: Array: 0: 1407157833  {0: Hash: 0: 256}
-        public uint Unk_528711607 { get; set; } //152   152: UnsignedInt: 0: 528711607
-        public uint Unk_3761966250 { get; set; } //156   156: UnsignedInt: 0: 3761966250
-    }
-
-    [TC(typeof(EXP))] public struct CMloRoomDef //112 bytes, Key:3885428245
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public CharPointer name { get; set; } //8   8: CharPointer: 0: name
-        public uint Unused2 { get; set; }//24
-        public uint Unused3 { get; set; }//28
-        public Vector3 bbMin { get; set; } //32   32: Float_XYZ: 0: bbMin
-        public float Unused4 { get; set; }//44
-        public Vector3 bbMax { get; set; } //48   48: Float_XYZ: 0: bbMax
-        public float Unused5 { get; set; }//60
-        public float blend { get; set; } //64   64: Float: 0: blend
-        public MetaHash timecycleName { get; set; } //68   68: Hash: 0: timecycleName//2724323497
-        public MetaHash secondaryTimecycleName { get; set; } //72   72: Hash: 0: secondaryTimecycleName//3255324828
-        public uint flags { get; set; } //76   76: UnsignedInt: 0: flags
-        public uint portalCount { get; set; } //80   80: UnsignedInt: 0: portalCount//1105339827
-        public int floorId { get; set; } //84   84: SignedInt: 0: floorId//2187650609
-        public int Unk_552849982 { get; set; } //88   88: SignedInt: 0: exteriorVisibiltyDepth//552849982
-        public uint Unused6 { get; set; }//92
-        public Array_uint attachedObjects { get; set; } //96   96: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
-    }
-
-    [TC(typeof(EXP))] public struct CMloPortalDef //64 bytes, Key:1110221513
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public uint roomFrom { get; set; } //8   8: UnsignedInt: 0: 4101034749
-        public uint roomTo { get; set; } //12   12: UnsignedInt: 0: 2607060513
-        public uint flags { get; set; } //16   16: UnsignedInt: 0: flags
-        public uint mirrorPriority { get; set; } //20   20: UnsignedInt: 0: 1185490713
-        public uint opacity { get; set; } //24   24: UnsignedInt: 0: opacity
-        public uint audioOcclusion { get; set; } //28   28: UnsignedInt: 0: 1093790004
-        public Array_Vector3 corners { get; set; } //32   32: Array: 0: corners  {0: Float_XYZ: 0: 256}
-        public Array_uint attachedObjects { get; set; } //48   48: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
-    }
-
-    [TC(typeof(EXP))] public struct CMloTimeCycleModifier //48 bytes, Key:838874674
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public MetaHash name { get; set; } //8   8: Hash: 0: name
-        public uint Unused2 { get; set; }//12
-        public Vector4 sphere { get; set; } //16   16: Float_XYZW: 0: sphere
-        public float percentage { get; set; } //32   32: Float: 0: percentage
-        public float range { get; set; } //36   36: Float: 0: range
-        public uint startHour { get; set; } //40   40: UnsignedInt: 0: startHour
-        public uint endHour { get; set; } //44   44: UnsignedInt: 0: vlink87812
-    }
-
-    [TC(typeof(EXP))] public struct CMloEntitySet //48 bytes, Key:4180211587
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public MetaHash name { get; set; } //8   8: Hash: 0: name
-        public uint Unused2 { get; set; }//12
-        public Array_uint locations { get; set; } //16   16: Array: 0: locations  {0: UnsignedInt: 0: 256}
-        public Array_StructurePointer entities { get; set; } //32   32: Array: 0: entities  {0: StructurePointer: 0: 256}
-    }
-
-    [TC(typeof(EXP))] public struct rage__spdGrid2D //64 bytes, Key:894636096
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public uint Unused2 { get; set; }//8
-        public int Unk_MinX_860552138 { get; set; } //12   12: SignedInt: 0: 860552138   //MIN X
-        public int Unk_MaxX_3824598937 { get; set; } //16   16: SignedInt: 0: 3824598937 //MAX X
-        public int Unk_MinY_496029782 { get; set; } //20   20: SignedInt: 0: 496029782   //MIN Y
-        public int Unk_MaxY_3374647798 { get; set; } //24   24: SignedInt: 0: 3374647798 //MAX Y
-        public uint Unused3 { get; set; }//28
-        public uint Unused4 { get; set; }//32
-        public uint Unused5 { get; set; }//36
-        public uint Unused6 { get; set; }//40
-        public float Unk_X_2690909759 { get; set; } //44   44: Float: 0: 2690909759 //grid scale X (cell size)
-        public float Unk_Y_3691675019 { get; set; } //48   48: Float: 0: 3691675019 //grid scale Y (cell size)
-        public uint Unused7 { get; set; }//52
-        public uint Unused8 { get; set; }//56
-        public uint Unused9 { get; set; }//60
-
-
-        public Vector2I Dimensions
-        {
-            get
-            {
-                return new Vector2I((Unk_MaxX_3824598937 - Unk_MinX_860552138)+1, (Unk_MaxY_3374647798 - Unk_MinY_496029782)+1);
-            }
-        }
-        public Vector2 Scale
-        {
-            get
-            {
-                return new Vector2(Unk_X_2690909759, Unk_Y_3691675019);
-            }
-            set
-            {
-                Unk_X_2690909759 = value.X;
-                Unk_Y_3691675019 = value.Y;
-            }
-        }
-        public Vector2 Min
-        {
-            get
-            {
-                return new Vector2(Unk_MinX_860552138, Unk_MinY_496029782) * Scale;
-            }
-            set
-            {
-                var gv = value / Scale;
-                Unk_MinX_860552138 = (int)Math.Floor(gv.X);
-                Unk_MinY_496029782 = (int)Math.Floor(gv.Y);
-            }
-        }
-        public Vector2 Max
-        {
-            get
-            {
-                return new Vector2(Unk_MaxX_3824598937, Unk_MaxY_3374647798) * Scale;
-            }
-            set
-            {
-                var gv = value / Scale;
-                Unk_MaxX_3824598937 = (int)Math.Floor(gv.X);
-                Unk_MaxY_3374647798 = (int)Math.Floor(gv.Y);
-            }
-        }
-    }
-
-    [TC(typeof(EXP))] public struct rage__spdAABB //32 bytes, Key:1158138379  //WAS: Unk_4084721864
-    {
-        public Vector4 min { get; set; } //0   0: Float_XYZW: 0: min
-        public Vector4 max { get; set; } //16   16: Float_XYZW: 0: max
-
-        public override string ToString()
-        {
-            return "min: " + min.ToString() + ", max: " + max.ToString();
-        }
-        public void SwapEnd()
-        {
-            min = MetaTypes.SwapBytes(min);
-            max = MetaTypes.SwapBytes(max);
-        }
-    }
-
-    [TC(typeof(EXP))] public struct rage__spdSphere //16 bytes, Key:1189037266  //Sphere - used in scenario parts 
-    {
-        public Vector4 centerAndRadius { get; set; } //0   0: Float_XYZW: 0: centerAndRadius
-
-        public override string ToString()
-        {
-            return centerAndRadius.ToString();
-        }
-    }
-
-    [TC(typeof(EXP))] public struct rage__phVerletClothCustomBounds //32 bytes, Key:2075461750
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public MetaHash name { get; set; } //8   8: Hash: 0: name
-        public uint Unused2 { get; set; }//12
-        public Array_Structure CollisionData { get; set; } //16   16: Array: 0: CollisionData  {0: Structure: SectionUNKNOWN1: 256}
-    }
-    [TC(typeof(EXP))] public class Mrage__phVerletClothCustomBounds : MetaWrapper
-    {
-        public rage__phVerletClothCustomBounds _Data;
-        public rage__phVerletClothCustomBounds Data { get { return _Data; } }
-
-        public MUnk_1701774085[] CollisionData { get; set; }
-
-        public override void Load(Meta meta, MetaPOINTER ptr)
-        {
-            _Data = MetaTypes.GetData<rage__phVerletClothCustomBounds>(meta, ptr);
-
-            var cdata = MetaTypes.ConvertDataArray<Unk_1701774085>(meta, (MetaName)1701774085/*.SectionUNKNOWN1*/, _Data.CollisionData);
-            if (cdata != null)
-            {
-                CollisionData = new MUnk_1701774085[cdata.Length];
-                for (int i = 0; i < cdata.Length; i++)
-                {
-                    CollisionData[i] = new MUnk_1701774085(meta, cdata[i]);
-                }
-            }
-        }
-
-        public override MetaPOINTER Save(MetaBuilder mb)
-        {
-            if (CollisionData != null)
-            {
-                _Data.CollisionData = mb.AddWrapperArray(CollisionData);
-            }
-
-            mb.AddStructureInfo(MetaName.rage__phVerletClothCustomBounds);
-            return mb.AddItemPtr(MetaName.rage__phVerletClothCustomBounds, _Data);
-        }
-
-        public override string ToString()
-        {
-            return "rage__phVerletClothCustomBounds - " + _Data.name.ToString() + " (" + (CollisionData?.Length ?? 0).ToString() + " CollisionData)";
-        }
+        public Vector3 bmin { get; set; } //0   0: Float_XYZ: 0: bmin
+        public float Unused0 { get; set; }//12
+        public Vector3 bmax { get; set; } //16   16: Float_XYZ: 0: bmax
+        public float Unused1 { get; set; }//28
+        public uint dataSize { get; set; } //32   32: UnsignedInt: 0: dataSize//2442753371
+        public uint Unused2 { get; set; }//36
+        public DataBlockPointer verts { get; set; } //40   40: DataBlockPointer: 2: verts
+        public ushort Unk_853977995 { get; set; } //48   48: UnsignedShort: 0: 853977995
+        public ushort Unk_2337695078 { get; set; } //50   50: UnsignedShort: 0: 2337695078
+        public uint flags { get; set; } //52   52: UnsignedInt: 0: flags
+        public uint Unused3 { get; set; }//56
+        public uint Unused4 { get; set; }//60
     }
 
     [TC(typeof(EXP))] public struct rage__fwInstancedMapData //48 bytes, Key:1836780118
@@ -2469,123 +1941,32 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    public struct CBaseArchetypeDef_v2 //128 bytes, Key:2352343492
-    {
-        public uint Unused00 { get; set; }//0
-        public uint Unused01 { get; set; }//4
-        public float lodDist { get; set; } //8   8: Float: 0: lodDist
-        public uint flags { get; set; } //12   12: UnsignedInt: 0: flags
-        public uint specialAttribute { get; set; } //16   16: UnsignedInt: 0: specialAttribute
-        public uint Unused02 { get; set; }//20
-        public uint Unused03 { get; set; }//24
-        public uint Unused04 { get; set; }//28
-        public Vector3 bbMin { get; set; } //32   32: Float_XYZ: 0: bbMin
-        public float Unused05 { get; set; }//44
-        public Vector3 bbMax { get; set; } //48   48: Float_XYZ: 0: bbMax
-        public float Unused06 { get; set; }//60
-        public Vector3 bsCentre { get; set; } //64   64: Float_XYZ: 0: bsCentre
-        public float Unused07 { get; set; }//76
-        public float bsRadius { get; set; } //80   80: Float: 0: bsRadius
-        public float hdTextureDist { get; set; } //84   84: Float: 0: hdTextureDist//2908576588
-        public MetaHash name { get; set; } //88   88: Hash: 0: name
-        public MetaHash textureDictionary { get; set; } //92   92: Hash: 0: textureDictionary
-        public MetaHash clipDictionary { get; set; } //96   96: Hash: 0: clipDictionary//424089489
-        public MetaHash drawableDictionary { get; set; } //100   100: Hash: 0: drawableDictionary
-        public MetaHash physicsDictionary { get; set; } //104   104: Hash: 0: physicsDictionary//3553040380
-        public uint Unused08 { get; set; }//108
-        public Array_StructurePointer extensions { get; set; } //112   112: Array: 0: extensions  {0: StructurePointer: 0: 256}
-    }
-
-    public struct CCreatureMetaData //56 bytes, Key:2181653572
+    [TC(typeof(EXP))] public struct CTimeCycleModifier //64 bytes, Key:2683420777
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
-        public Array_Structure shaderVariableComponents { get; set; } //8   8: Array: 0: shaderVariableComponents  {0: Structure: CShaderVariableComponent: 256}
-        public Array_Structure pedPropExpressions { get; set; } //24   24: Array: 0: pedPropExpressions  {0: Structure: CPedPropExpressionData: 256}
-        public Array_Structure pedCompExpressions { get; set; } //40   40: Array: 0: pedCompExpressions  {0: Structure: CPedCompExpressionData: 256}
-    }
+        public MetaHash name { get; set; } //8   8: Hash: 0: name  
+        public uint Unused2 { get; set; }//12
+        public Vector3 minExtents { get; set; } //16   16: Float_XYZ: 0: minExtents=1731020657
+        public float Unused3 { get; set; }//28
+        public Vector3 maxExtents { get; set; } //32   32: Float_XYZ: 0: maxExtents=2554806840
+        public float Unused4 { get; set; }//44
+        public float percentage { get; set; } //48   48: Float: 0: percentage
+        public float range { get; set; } //52   52: Float: 0: range
+        public uint startHour { get; set; } //56   56: UnsignedInt: 0: startHour
+        public uint endHour { get; set; } //60   60: UnsignedInt: 0: endHour
 
-    public struct CShaderVariableComponent //72 bytes, Key:3085831725
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public uint pedcompID { get; set; } //8   8: UnsignedInt: 0: pedcompID
-        public uint maskID { get; set; } //12   12: UnsignedInt: 0: maskID
-        public uint shaderVariableHashString { get; set; } //16   16: Hash: 0: shaderVariableHashString
-        public uint Unused2 { get; set; }//20
-        public Array_byte tracks { get; set; } //24   24: Array: 0: tracks  {0: UnsignedByte: 0: 256}
-        public Array_ushort ids { get; set; } //40   40: Array: 0: ids  {0: UnsignedShort: 0: 256}
-        public Array_byte components { get; set; } //56   56: Array: 0: components  {0: UnsignedByte: 0: 256}
-    }
 
-    public struct CPedPropExpressionData //88 bytes, Key:1355135810
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public uint pedPropID { get; set; } //8   8: UnsignedInt: 0: pedPropID
-        public int pedPropVarIndex { get; set; } //12   12: SignedInt: 0: pedPropVarIndex
-        public uint pedPropExpressionIndex { get; set; } //16   16: UnsignedInt: 0: pedPropExpressionIndex
-        public uint Unused2 { get; set; }//20
-        public Array_byte tracks { get; set; } //24   24: Array: 0: tracks  {0: UnsignedByte: 0: 256}
-        public Array_ushort ids { get; set; } //40   40: Array: 0: ids  {0: UnsignedShort: 0: 256}
-        public Array_byte types { get; set; } //56   56: Array: 0: types  {0: UnsignedByte: 0: 256}
-        public Array_byte components { get; set; } //72   72: Array: 0: components  {0: UnsignedByte: 0: 256}
-    }
+        //regarding name in OpenIV:
+        //2633803310 = NoAmbientmult
+        //2003616884 = INT_NoAmbientMult
 
-    public struct CPedCompExpressionData //88 bytes, Key:3458164745
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public uint pedCompID { get; set; } //8   8: UnsignedInt: 0: pedCompID
-        public int pedCompVarIndex { get; set; } //12   12: SignedInt: 0: pedCompVarIndex
-        public uint pedCompExpressionIndex { get; set; } //16   16: UnsignedInt: 0: pedCompExpressionIndex
-        public uint Unused2 { get; set; }//20
-        public Array_byte tracks { get; set; } //24   24: Array: 0: tracks  {0: UnsignedByte: 0: 256}
-        public Array_ushort ids { get; set; } //40   40: Array: 0: ids  {0: UnsignedShort: 0: 256}
-        public Array_byte types { get; set; } //56   56: Array: 0: types  {0: UnsignedByte: 0: 256}
-        public Array_byte components { get; set; } //72   72: Array: 0: components  {0: UnsignedByte: 0: 256}
-    }
 
-    [TC(typeof(EXP))] public struct CLightAttrDef //160 bytes, Key:2363260268
-    {
-        public uint Unused00 { get; set; }//0
-        public uint Unused01 { get; set; }//4
-        public Vector3 posn { get; set; } //8   8: ArrayOfBytes: 3: posn //actually ArrayOfFloats3 (Vector3!)
-        public ArrayOfBytes3 colour { get; set; } //20   20: ArrayOfBytes: 3: colour
-        public byte flashiness { get; set; } //23   23: UnsignedByte: 0: 3829693202
-        public float intensity { get; set; } //24   24: Float: 0: intensity
-        public uint flags { get; set; } //28   28: UnsignedInt: 0: flags
-        public short boneTag { get; set; } //32   32: SignedShort: 0: boneTag
-        public byte lightType { get; set; } //34   34: UnsignedByte: 0: 482065968
-        public byte groupId { get; set; } //35   35: UnsignedByte: 0: 2501631252
-        public uint timeFlags { get; set; } //36   36: UnsignedInt: 0: timeFlags//2248791340
-        public float falloff { get; set; } //40   40: Float: 0: falloff
-        public float falloffExponent { get; set; } //44   44: Float: 0: falloffExponent
-        public Vector4 cullingPlane { get; set; } //48   48: ArrayOfBytes: 4: 1689591312 //48: 1689591312//cullingPlane - actually ArrayOfFloats4!
-        public byte shadowBlur { get; set; } //64   64: UnsignedByte: 0: shadowBlur
-        public byte padding1 { get; set; } //65   65: UnsignedByte: 0: padding1//3180641850
-        public short padding2 { get; set; } //66   66: SignedShort: 0: padding2//2346113727
-        public uint padding3 { get; set; } //68   68: UnsignedInt: 0: padding3//3521603295
-        public float volIntensity { get; set; } //72   72: Float: 0: volIntensity//689780512
-        public float volSizeScale { get; set; } //76   76: Float: 0: volSizeScale//2029533327
-        public ArrayOfBytes3 volOuterColour { get; set; } //80   80: ArrayOfBytes: 3: volOuterColour//2283994062
-        public byte lightHash { get; set; } //83   83: UnsignedByte: 0: lightHash//643049222
-        public float volOuterIntensity { get; set; } //84   84: Float: 0: volOuterIntensity//3008198647
-        public float coronaSize { get; set; } //88   88: Float: 0: coronaSize//1705000075
-        public float volOuterExponent { get; set; } //92   92: Float: 0: volOuterExponent//2758849250
-        public byte lightFadeDistance { get; set; } //96   96: UnsignedByte: 0: lightFadeDistance//1307926275
-        public byte shadowFadeDistance { get; set; } //97   97: UnsignedByte: 0: shadowFadeDistance//1944267876
-        public byte specularFadeDistance { get; set; } //98   98: UnsignedByte: 0: specularFadeDistance//4150887048
-        public byte volumetricFadeDistance { get; set; } //99   99: UnsignedByte: 0: volumetricFadeDistance//2066998816
-        public float shadowNearClip { get; set; } //100   100: Float: 0: shadowNearClip//954647178
-        public float coronaIntensity { get; set; } //104   104: Float: 0: coronaIntensity//2292363771
-        public float coronaZBias { get; set; } //108   108: Float: 0: coronaZBias//2520359283
-        public Vector3 direction { get; set; } //112   112: ArrayOfBytes: 3: direction //actually ArrayOfFloats3 (Vector3!)
-        public Vector3 tangent { get; set; } //124   124: ArrayOfBytes: 3: tangent //actually ArrayOfFloats3 (Vector3!)
-        public float coneInnerAngle { get; set; } //136   136: Float: 0: coneInnerAngle//1163671864
-        public float coneOuterAngle { get; set; } //140   140: Float: 0: coneOuterAngle//4175029060
-        public Vector3 extents { get; set; } //144   144: ArrayOfBytes: 3: extents//759134656 //actually ArrayOfFloats3 (Vector3!)
-        public uint projectedTextureKey { get; set; } //156   156: UnsignedInt: 0: projectedTextureKey//1076718994
+
+        public override string ToString()
+        {
+            return name.ToString() + ": startHour " + startHour.ToString() + ", endHour " + endHour.ToString() + ", range " + range.ToString() + ", percentage " + percentage.ToString();
+        }
     }
 
     [TC(typeof(EXP))] public struct CCarGen //80 bytes, Key:2345238261
@@ -2617,156 +1998,118 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct Unk_1701774085 //96 bytes, Key:2859775340 //dexy: cloth CollisionData (child of rage__phVerletClothCustomBounds) ... eg josh house  // Tom: explosions? 
+    [TC(typeof(EXP))] public struct CLODLight //136 bytes, Key:2325189228
     {
-        public CharPointer OwnerName { get; set; } //0   0: CharPointer: 0: OwnerName
-        public Vector4 Rotation { get; set; } //16   16: Float_XYZW: 0: Rotation
-        public Vector3 Position { get; set; } //32   32: Float_XYZ: 0: Position
-        public float Unused0 { get; set; }//44
-        public Vector3 Normal { get; set; } //48   48: Float_XYZ: 0: Normal
-        public float Unused1 { get; set; }//60
-        public float CapsuleRadius { get; set; } //64   64: Float: 0: CapsuleRadius
-        public float CapsuleLen { get; set; } //68   68: Float: 0: CapsuleLen
-        public float CapsuleHalfHeight { get; set; } //72   72: Float: 0: CapsuleHalfHeight
-        public float CapsuleHalfWidth { get; set; } //76   76: Float: 0: CapsuleHalfWidth
-        public Unk_3044470860 Flags { get; set; } //80   80: IntFlags2: 3044470860: Flags
-        public uint Unused2 { get; set; }//84
-        public uint Unused3 { get; set; }//88
-        public uint Unused4 { get; set; }//92
-    }
-    [TC(typeof(EXP))] public class MUnk_1701774085 : MetaWrapper
-    {
-        public Unk_1701774085 _Data;
-        public Unk_1701774085 Data { get { return _Data; } }
-
-        public string OwnerName { get; set; }
-
-        public MUnk_1701774085() { }
-        public MUnk_1701774085(Meta meta, Unk_1701774085 s)
-        {
-            _Data = s;
-            OwnerName = MetaTypes.GetString(meta, _Data.OwnerName);
-        }
-        public override void Load(Meta meta, MetaPOINTER ptr)
-        {
-            _Data = MetaTypes.GetData<Unk_1701774085>(meta, ptr);
-            OwnerName = MetaTypes.GetString(meta, _Data.OwnerName);
-        }
-
-        public override MetaPOINTER Save(MetaBuilder mb)
-        {
-            if (OwnerName != null)
-            {
-                _Data.OwnerName = mb.AddStringPtr(OwnerName);
-            }
-
-            mb.AddEnumInfo((MetaName)3044470860);
-            mb.AddStructureInfo((MetaName)1701774085/*.SectionUNKNOWN1*/);
-            return mb.AddItemPtr((MetaName)1701774085/*.SectionUNKNOWN1*/, _Data);
-        }
-
-        public override string ToString()
-        {
-            return "Unk_1701774085 - " + OwnerName;
-        }
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public Array_Structure direction { get; set; } //8   8: Array: 0: direction  {0: Structure: VECTOR3: 256}
+        public Array_float falloff { get; set; } //24   24: Array: 0: falloff  {0: Float: 0: 256}
+        public Array_float falloffExponent { get; set; } //40   40: Array: 0: falloffExponent  {0: Float: 0: 256}
+        public Array_uint timeAndStateFlags { get; set; } //56   56: Array: 0: timeAndStateFlags=3112418278  {0: UnsignedInt: 0: 256}
+        public Array_uint hash { get; set; } //72   72: Array: 0: hash  {0: UnsignedInt: 0: 256}
+        public Array_byte coneInnerAngle { get; set; } //88   88: Array: 0: coneInnerAngle//1163671864  {0: UnsignedByte: 0: 256}
+        public Array_byte coneOuterAngleOrCapExt { get; set; } //104   104: Array: 0: coneOuterAngleOrCapExt=3161894080  {0: UnsignedByte: 0: 256}
+        public Array_byte coronaIntensity { get; set; } //120   120: Array: 0: coronaIntensity//2292363771  {0: UnsignedByte: 0: 256}
     }
 
-    [TC(typeof(EXP))] public struct CCompositeEntityType //304 bytes, Key:659539004 dex: composite entity type - ytyp // Tom: des_ destruction
+    [TC(typeof(EXP))] public struct CDistantLODLight //48 bytes, Key:2820908419
     {
-        public ArrayOfChars64 Name { get; set; } //0   0: ArrayOfChars: 64: Name
-        public float lodDist { get; set; } //64   64: Float: 0: lodDist
-        public uint flags { get; set; } //68   68: UnsignedInt: 0: flags
-        public uint specialAttribute { get; set; } //72   72: UnsignedInt: 0: specialAttribute
-        public uint Unused0 { get; set; }//76
-        public Vector3 bbMin { get; set; } //80   80: Float_XYZ: 0: bbMin
-        public float Unused1 { get; set; }//92
-        public Vector3 bbMax { get; set; } //96   96: Float_XYZ: 0: bbMax
-        public float Unused2 { get; set; }//108
-        public Vector3 bsCentre { get; set; } //112   112: Float_XYZ: 0: bsCentre
-        public float Unused3 { get; set; }//124
-        public float bsRadius { get; set; } //128   128: Float: 0: bsRadius
-        public uint Unused4 { get; set; }//132
-        public ArrayOfChars64 StartModel { get; set; } //136   136: ArrayOfChars: 64: StartModel
-        public ArrayOfChars64 EndModel { get; set; } //200   200: ArrayOfChars: 64: EndModel
-        public MetaHash StartImapFile { get; set; } //264   264: Hash: 0: StartImapFile//2462971690
-        public MetaHash EndImapFile { get; set; } //268   268: Hash: 0: EndImapFile//2059586669
-        public MetaHash PtFxAssetName { get; set; } //272   272: Hash: 0: PtFxAssetName//2497993358
-        public uint Unused5 { get; set; }//276
-        public Array_Structure Animations { get; set; } //280   280: Array: 0: Animations  {0: Structure: 1980345114: 256}
-        public uint Unused6 { get; set; }//296
-        public uint Unused7 { get; set; }//300
-
-        public override string ToString()
-        {
-            return Name.ToString() + ", " + StartModel.ToString() + ", " + EndModel.ToString() + ", " + 
-                    StartImapFile.ToString() + ", " + EndImapFile.ToString() + ", " + PtFxAssetName.ToString();
-        }
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public Array_Structure position { get; set; } //8   8: Array: 0: position  {0: Structure: VECTOR3: 256}
+        public Array_uint RGBI { get; set; } //24   24: Array: 0: RGBI  {0: UnsignedInt: 0: 256}
+        public ushort numStreetLights { get; set; } //40   40: UnsignedShort: 0: numStreetLights//3708891211
+        public ushort category { get; set; } //42   42: UnsignedShort: 0: category//2052871693
+        public uint Unused2 { get; set; }//44
     }
 
-    [TC(typeof(EXP))] public struct Unk_1980345114 //216 bytes, Key:4110496011 //destruction animations?
+    [TC(typeof(EXP))] public struct CBlockDesc //72 bytes, Key:2015795449
     {
-        public ArrayOfChars64 AnimDict { get; set; } //0   0: ArrayOfChars: 64: AnimDict
-        public ArrayOfChars64 AnimName { get; set; } //64   64: ArrayOfChars: 64: AnimName
-        public ArrayOfChars64 AnimatedModel { get; set; } //128   128: ArrayOfChars: 64: AnimatedModel
-        public float punchInPhase { get; set; } //192   192: Float: 0: punchInPhase//3142377407
-        public float punchOutPhase { get; set; } //196   196: Float: 0: punchOutPhase//2164219370
-        public Array_Structure effectsData { get; set; } //200   200: Array: 0: effectsData  {0: Structure: 3430328684: 256}
+        public uint version { get; set; } //0   0: UnsignedInt: 0: version
+        public uint flags { get; set; } //4   4: UnsignedInt: 0: flags
+        public CharPointer name { get; set; } //8   8: CharPointer: 0: name
+        public CharPointer exportedBy { get; set; } //24   24: CharPointer: 0: exportedBy//1983184981
+        public CharPointer owner { get; set; } //40   40: CharPointer: 0: owner
+        public CharPointer time { get; set; } //56   56: CharPointer: 0: time
     }
 
-    [TC(typeof(EXP))] public struct Unk_2741784237 //64 bytes, Key:1172796107  //occludeModels
+
+
+    [TC(typeof(EXP))] public struct CMloInstanceDef //160 bytes, Key:2151576752
     {
-        public Vector3 bmin { get; set; } //0   0: Float_XYZ: 0: bmin
-        public float Unused0 { get; set; }//12
-        public Vector3 bmax { get; set; } //16   16: Float_XYZ: 0: bmax
-        public float Unused1 { get; set; }//28
-        public uint dataSize { get; set; } //32   32: UnsignedInt: 0: dataSize//2442753371
-        public uint Unused2 { get; set; }//36
-        public DataBlockPointer verts { get; set; } //40   40: DataBlockPointer: 2: verts
-        public ushort Unk_853977995 { get; set; } //48   48: UnsignedShort: 0: 853977995
-        public ushort Unk_2337695078 { get; set; } //50   50: UnsignedShort: 0: 2337695078
-        public uint flags { get; set; } //52   52: UnsignedInt: 0: flags
-        public uint Unused3 { get; set; }//56
-        public uint Unused4 { get; set; }//60
+        public CEntityDef CEntityDef { get; set; }
+        public uint groupId { get; set; } //128   128: UnsignedInt: 0: 2501631252
+        public uint floorId { get; set; } //132   132: UnsignedInt: 0: floorId//2187650609
+        public Array_uint Unk_1407157833 { get; set; } //136   136: Array: 0: 1407157833  {0: Hash: 0: 256}
+        public uint Unk_528711607 { get; set; } //152   152: UnsignedInt: 0: 528711607
+        public uint Unk_3761966250 { get; set; } //156   156: UnsignedInt: 0: 3761966250
     }
 
-    [TC(typeof(EXP))] public struct Unk_975711773 //16 bytes, Key:1831736438   //boxOccluders
+    [TC(typeof(EXP))] public struct CMloRoomDef //112 bytes, Key:3885428245
     {
-        public short iCenterX { get; set; } //0   0: SignedShort: 0: 48026296
-        public short iCenterY { get; set; } //2   2: SignedShort: 0: 896907229
-        public short iCenterZ { get; set; } //4   4: SignedShort: 0: 1597508449
-        public short iCosZ { get; set; } //6   6: SignedShort: 0: iCosZ
-        public short iLength { get; set; } //8   8: SignedShort: 0: 2854610661
-        public short iWidth { get; set; } //10   10: SignedShort: 0: 168013536
-        public short iHeight { get; set; } //12   12: SignedShort: 0: 3485277993
-        public short iSinZ { get; set; } //14   14: SignedShort: 0: iSinZ
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public CharPointer name { get; set; } //8   8: CharPointer: 0: name
+        public uint Unused2 { get; set; }//24
+        public uint Unused3 { get; set; }//28
+        public Vector3 bbMin { get; set; } //32   32: Float_XYZ: 0: bbMin
+        public float Unused4 { get; set; }//44
+        public Vector3 bbMax { get; set; } //48   48: Float_XYZ: 0: bbMax
+        public float Unused5 { get; set; }//60
+        public float blend { get; set; } //64   64: Float: 0: blend
+        public MetaHash timecycleName { get; set; } //68   68: Hash: 0: timecycleName//2724323497
+        public MetaHash secondaryTimecycleName { get; set; } //72   72: Hash: 0: secondaryTimecycleName//3255324828
+        public uint flags { get; set; } //76   76: UnsignedInt: 0: flags
+        public uint portalCount { get; set; } //80   80: UnsignedInt: 0: portalCount//1105339827
+        public int floorId { get; set; } //84   84: SignedInt: 0: floorId//2187650609
+        public int Unk_552849982 { get; set; } //88   88: SignedInt: 0: exteriorVisibiltyDepth//552849982
+        public uint Unused6 { get; set; }//92
+        public Array_uint attachedObjects { get; set; } //96   96: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
     }
 
-    [TC(typeof(EXP))] public struct Unk_3430328684 //160 bytes, Key:1724963966 //destruction animation effects
+    [TC(typeof(EXP))] public struct CMloPortalDef //64 bytes, Key:1110221513
     {
-        public uint fxType { get; set; } //0   0: UnsignedInt: 0: fxType
-        public uint Unused0 { get; set; }//4
-        public uint Unused1 { get; set; }//8
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public uint roomFrom { get; set; } //8   8: UnsignedInt: 0: 4101034749
+        public uint roomTo { get; set; } //12   12: UnsignedInt: 0: 2607060513
+        public uint flags { get; set; } //16   16: UnsignedInt: 0: flags
+        public uint mirrorPriority { get; set; } //20   20: UnsignedInt: 0: 1185490713
+        public uint opacity { get; set; } //24   24: UnsignedInt: 0: opacity
+        public uint audioOcclusion { get; set; } //28   28: UnsignedInt: 0: 1093790004
+        public Array_Vector3 corners { get; set; } //32   32: Array: 0: corners  {0: Float_XYZ: 0: 256}
+        public Array_uint attachedObjects { get; set; } //48   48: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
+    }
+
+    [TC(typeof(EXP))] public struct CMloEntitySet //48 bytes, Key:4180211587
+    {
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public MetaHash name { get; set; } //8   8: Hash: 0: name
         public uint Unused2 { get; set; }//12
-        public Vector3 fxOffsetPos { get; set; } //16   16: Float_XYZ: 0: fxOffsetPos
-        public float Unused3 { get; set; }//28
-        public Vector4 fxOffsetRot { get; set; } //32   32: Float_XYZW: 0: fxOffsetRot
-        public uint boneTag { get; set; } //48   48: UnsignedInt: 0: boneTag
-        public float startPhase { get; set; } //52   52: Float: 0: startPhase
-        public float endPhase { get; set; } //56   56: Float: 0: endPhase
-        public byte ptFxIsTriggered { get; set; } //60   60: Boolean: 0: ptFxIsTriggered
-        public ArrayOfChars64 ptFxTag { get; set; } //61   61: ArrayOfChars: 64: ptFxTag
-        public byte Unused4 { get; set; }//125
-        public ushort Unused5 { get; set; }//126
-        public float ptFxScale { get; set; } //128   128: Float: 0: ptFxScale
-        public float ptFxProbability { get; set; } //132   132: Float: 0: ptFxProbability
-        public byte ptFxHasTint { get; set; } //136   136: Boolean: 0: ptFxHasTint
-        public byte ptFxTintR { get; set; } //137   137: UnsignedByte: 0: ptFxTintR
-        public byte ptFxTintG { get; set; } //138   138: UnsignedByte: 0: ptFxTintG
-        public byte ptFxTintB { get; set; } //139   139: UnsignedByte: 0: ptFxTintB
-        public uint Unused6 { get; set; }//140
-        public Vector3 ptFxSize { get; set; } //144   144: Float_XYZ: 0: ptFxSize
-        public uint Unused7 { get; set; }//156
+        public Array_uint locations { get; set; } //16   16: Array: 0: locations  {0: UnsignedInt: 0: 256}
+        public Array_StructurePointer entities { get; set; } //32   32: Array: 0: entities  {0: StructurePointer: 0: 256}
     }
+
+    [TC(typeof(EXP))] public struct CMloTimeCycleModifier //48 bytes, Key:838874674
+    {
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public MetaHash name { get; set; } //8   8: Hash: 0: name
+        public uint Unused2 { get; set; }//12
+        public Vector4 sphere { get; set; } //16   16: Float_XYZW: 0: sphere
+        public float percentage { get; set; } //32   32: Float: 0: percentage
+        public float range { get; set; } //36   36: Float: 0: range
+        public uint startHour { get; set; } //40   40: UnsignedInt: 0: startHour
+        public uint endHour { get; set; } //44   44: UnsignedInt: 0: vlink87812
+    }
+
+
+
+
+
+
+
 
     [TC(typeof(EXP))] public struct CExtensionDefParticleEffect //96 bytes, Key:466596385
     {
@@ -2882,6 +2225,48 @@ namespace CodeWalker.GameFiles
         {
             return _Data.ToString() + " (" + (instances?.Length ?? 0).ToString() + " Attributes)";
         }
+    }
+
+    [TC(typeof(EXP))] public struct CLightAttrDef //160 bytes, Key:2363260268
+    {
+        public uint Unused00 { get; set; }//0
+        public uint Unused01 { get; set; }//4
+        public Vector3 posn { get; set; } //8   8: ArrayOfBytes: 3: posn //actually ArrayOfFloats3 (Vector3!)
+        public ArrayOfBytes3 colour { get; set; } //20   20: ArrayOfBytes: 3: colour
+        public byte flashiness { get; set; } //23   23: UnsignedByte: 0: 3829693202
+        public float intensity { get; set; } //24   24: Float: 0: intensity
+        public uint flags { get; set; } //28   28: UnsignedInt: 0: flags
+        public short boneTag { get; set; } //32   32: SignedShort: 0: boneTag
+        public byte lightType { get; set; } //34   34: UnsignedByte: 0: 482065968
+        public byte groupId { get; set; } //35   35: UnsignedByte: 0: 2501631252
+        public uint timeFlags { get; set; } //36   36: UnsignedInt: 0: timeFlags//2248791340
+        public float falloff { get; set; } //40   40: Float: 0: falloff
+        public float falloffExponent { get; set; } //44   44: Float: 0: falloffExponent
+        public Vector4 cullingPlane { get; set; } //48   48: ArrayOfBytes: 4: 1689591312 //48: 1689591312//cullingPlane - actually ArrayOfFloats4!
+        public byte shadowBlur { get; set; } //64   64: UnsignedByte: 0: shadowBlur
+        public byte padding1 { get; set; } //65   65: UnsignedByte: 0: padding1//3180641850
+        public short padding2 { get; set; } //66   66: SignedShort: 0: padding2//2346113727
+        public uint padding3 { get; set; } //68   68: UnsignedInt: 0: padding3//3521603295
+        public float volIntensity { get; set; } //72   72: Float: 0: volIntensity//689780512
+        public float volSizeScale { get; set; } //76   76: Float: 0: volSizeScale//2029533327
+        public ArrayOfBytes3 volOuterColour { get; set; } //80   80: ArrayOfBytes: 3: volOuterColour//2283994062
+        public byte lightHash { get; set; } //83   83: UnsignedByte: 0: lightHash//643049222
+        public float volOuterIntensity { get; set; } //84   84: Float: 0: volOuterIntensity//3008198647
+        public float coronaSize { get; set; } //88   88: Float: 0: coronaSize//1705000075
+        public float volOuterExponent { get; set; } //92   92: Float: 0: volOuterExponent//2758849250
+        public byte lightFadeDistance { get; set; } //96   96: UnsignedByte: 0: lightFadeDistance//1307926275
+        public byte shadowFadeDistance { get; set; } //97   97: UnsignedByte: 0: shadowFadeDistance//1944267876
+        public byte specularFadeDistance { get; set; } //98   98: UnsignedByte: 0: specularFadeDistance//4150887048
+        public byte volumetricFadeDistance { get; set; } //99   99: UnsignedByte: 0: volumetricFadeDistance//2066998816
+        public float shadowNearClip { get; set; } //100   100: Float: 0: shadowNearClip//954647178
+        public float coronaIntensity { get; set; } //104   104: Float: 0: coronaIntensity//2292363771
+        public float coronaZBias { get; set; } //108   108: Float: 0: coronaZBias//2520359283
+        public Vector3 direction { get; set; } //112   112: ArrayOfBytes: 3: direction //actually ArrayOfFloats3 (Vector3!)
+        public Vector3 tangent { get; set; } //124   124: ArrayOfBytes: 3: tangent //actually ArrayOfFloats3 (Vector3!)
+        public float coneInnerAngle { get; set; } //136   136: Float: 0: coneInnerAngle//1163671864
+        public float coneOuterAngle { get; set; } //140   140: Float: 0: coneOuterAngle//4175029060
+        public Vector3 extents { get; set; } //144   144: ArrayOfBytes: 3: extents//759134656 //actually ArrayOfFloats3 (Vector3!)
+        public uint projectedTextureKey { get; set; } //156   156: UnsignedInt: 0: projectedTextureKey//1076718994
     }
 
     [TC(typeof(EXP))] public struct CExtensionDefAudioCollisionSettings //48 bytes, Key:2701897500
@@ -3590,7 +2975,208 @@ namespace CodeWalker.GameFiles
         }
     }
 
+    [TC(typeof(EXP))] public struct rage__phVerletClothCustomBounds //32 bytes, Key:2075461750
+    {
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public MetaHash name { get; set; } //8   8: Hash: 0: name
+        public uint Unused2 { get; set; }//12
+        public Array_Structure CollisionData { get; set; } //16   16: Array: 0: CollisionData  {0: Structure: SectionUNKNOWN1: 256}
+    }
+    [TC(typeof(EXP))] public class Mrage__phVerletClothCustomBounds : MetaWrapper
+    {
+        public rage__phVerletClothCustomBounds _Data;
+        public rage__phVerletClothCustomBounds Data { get { return _Data; } }
 
+        public MUnk_1701774085[] CollisionData { get; set; }
+
+        public override void Load(Meta meta, MetaPOINTER ptr)
+        {
+            _Data = MetaTypes.GetData<rage__phVerletClothCustomBounds>(meta, ptr);
+
+            var cdata = MetaTypes.ConvertDataArray<Unk_1701774085>(meta, (MetaName)1701774085/*.SectionUNKNOWN1*/, _Data.CollisionData);
+            if (cdata != null)
+            {
+                CollisionData = new MUnk_1701774085[cdata.Length];
+                for (int i = 0; i < cdata.Length; i++)
+                {
+                    CollisionData[i] = new MUnk_1701774085(meta, cdata[i]);
+                }
+            }
+        }
+
+        public override MetaPOINTER Save(MetaBuilder mb)
+        {
+            if (CollisionData != null)
+            {
+                _Data.CollisionData = mb.AddWrapperArray(CollisionData);
+            }
+
+            mb.AddStructureInfo(MetaName.rage__phVerletClothCustomBounds);
+            return mb.AddItemPtr(MetaName.rage__phVerletClothCustomBounds, _Data);
+        }
+
+        public override string ToString()
+        {
+            return "rage__phVerletClothCustomBounds - " + _Data.name.ToString() + " (" + (CollisionData?.Length ?? 0).ToString() + " CollisionData)";
+        }
+    }
+
+    [TC(typeof(EXP))] public struct Unk_1701774085 //96 bytes, Key:2859775340 //dexy: cloth CollisionData (child of rage__phVerletClothCustomBounds) ... eg josh house  // Tom: explosions? 
+    {
+        public CharPointer OwnerName { get; set; } //0   0: CharPointer: 0: OwnerName
+        public Vector4 Rotation { get; set; } //16   16: Float_XYZW: 0: Rotation
+        public Vector3 Position { get; set; } //32   32: Float_XYZ: 0: Position
+        public float Unused0 { get; set; }//44
+        public Vector3 Normal { get; set; } //48   48: Float_XYZ: 0: Normal
+        public float Unused1 { get; set; }//60
+        public float CapsuleRadius { get; set; } //64   64: Float: 0: CapsuleRadius
+        public float CapsuleLen { get; set; } //68   68: Float: 0: CapsuleLen
+        public float CapsuleHalfHeight { get; set; } //72   72: Float: 0: CapsuleHalfHeight
+        public float CapsuleHalfWidth { get; set; } //76   76: Float: 0: CapsuleHalfWidth
+        public Unk_3044470860 Flags { get; set; } //80   80: IntFlags2: 3044470860: Flags
+        public uint Unused2 { get; set; }//84
+        public uint Unused3 { get; set; }//88
+        public uint Unused4 { get; set; }//92
+    }
+    [TC(typeof(EXP))] public class MUnk_1701774085 : MetaWrapper
+    {
+        public Unk_1701774085 _Data;
+        public Unk_1701774085 Data { get { return _Data; } }
+
+        public string OwnerName { get; set; }
+
+        public MUnk_1701774085() { }
+        public MUnk_1701774085(Meta meta, Unk_1701774085 s)
+        {
+            _Data = s;
+            OwnerName = MetaTypes.GetString(meta, _Data.OwnerName);
+        }
+        public override void Load(Meta meta, MetaPOINTER ptr)
+        {
+            _Data = MetaTypes.GetData<Unk_1701774085>(meta, ptr);
+            OwnerName = MetaTypes.GetString(meta, _Data.OwnerName);
+        }
+
+        public override MetaPOINTER Save(MetaBuilder mb)
+        {
+            if (OwnerName != null)
+            {
+                _Data.OwnerName = mb.AddStringPtr(OwnerName);
+            }
+
+            mb.AddEnumInfo((MetaName)3044470860);
+            mb.AddStructureInfo((MetaName)1701774085/*.SectionUNKNOWN1*/);
+            return mb.AddItemPtr((MetaName)1701774085/*.SectionUNKNOWN1*/, _Data);
+        }
+
+        public override string ToString()
+        {
+            return "Unk_1701774085 - " + OwnerName;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+    [TC(typeof(EXP))] public struct rage__spdGrid2D //64 bytes, Key:894636096
+    {
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public uint Unused2 { get; set; }//8
+        public int Unk_MinX_860552138 { get; set; } //12   12: SignedInt: 0: 860552138   //MIN X
+        public int Unk_MaxX_3824598937 { get; set; } //16   16: SignedInt: 0: 3824598937 //MAX X
+        public int Unk_MinY_496029782 { get; set; } //20   20: SignedInt: 0: 496029782   //MIN Y
+        public int Unk_MaxY_3374647798 { get; set; } //24   24: SignedInt: 0: 3374647798 //MAX Y
+        public uint Unused3 { get; set; }//28
+        public uint Unused4 { get; set; }//32
+        public uint Unused5 { get; set; }//36
+        public uint Unused6 { get; set; }//40
+        public float Unk_X_2690909759 { get; set; } //44   44: Float: 0: 2690909759 //grid scale X (cell size)
+        public float Unk_Y_3691675019 { get; set; } //48   48: Float: 0: 3691675019 //grid scale Y (cell size)
+        public uint Unused7 { get; set; }//52
+        public uint Unused8 { get; set; }//56
+        public uint Unused9 { get; set; }//60
+
+
+        public Vector2I Dimensions
+        {
+            get
+            {
+                return new Vector2I((Unk_MaxX_3824598937 - Unk_MinX_860552138)+1, (Unk_MaxY_3374647798 - Unk_MinY_496029782)+1);
+            }
+        }
+        public Vector2 Scale
+        {
+            get
+            {
+                return new Vector2(Unk_X_2690909759, Unk_Y_3691675019);
+            }
+            set
+            {
+                Unk_X_2690909759 = value.X;
+                Unk_Y_3691675019 = value.Y;
+            }
+        }
+        public Vector2 Min
+        {
+            get
+            {
+                return new Vector2(Unk_MinX_860552138, Unk_MinY_496029782) * Scale;
+            }
+            set
+            {
+                var gv = value / Scale;
+                Unk_MinX_860552138 = (int)Math.Floor(gv.X);
+                Unk_MinY_496029782 = (int)Math.Floor(gv.Y);
+            }
+        }
+        public Vector2 Max
+        {
+            get
+            {
+                return new Vector2(Unk_MaxX_3824598937, Unk_MaxY_3374647798) * Scale;
+            }
+            set
+            {
+                var gv = value / Scale;
+                Unk_MaxX_3824598937 = (int)Math.Floor(gv.X);
+                Unk_MaxY_3374647798 = (int)Math.Floor(gv.Y);
+            }
+        }
+    }
+
+    [TC(typeof(EXP))] public struct rage__spdAABB //32 bytes, Key:1158138379  //WAS: Unk_4084721864
+    {
+        public Vector4 min { get; set; } //0   0: Float_XYZW: 0: min
+        public Vector4 max { get; set; } //16   16: Float_XYZW: 0: max
+
+        public override string ToString()
+        {
+            return "min: " + min.ToString() + ", max: " + max.ToString();
+        }
+        public void SwapEnd()
+        {
+            min = MetaTypes.SwapBytes(min);
+            max = MetaTypes.SwapBytes(max);
+        }
+    }
+
+    [TC(typeof(EXP))] public struct rage__spdSphere //16 bytes, Key:1189037266  //Sphere - used in scenario parts 
+    {
+        public Vector4 centerAndRadius { get; set; } //0   0: Float_XYZW: 0: centerAndRadius
+
+        public override string ToString()
+        {
+            return centerAndRadius.ToString();
+        }
+    }
 
 
 
@@ -5345,6 +4931,59 @@ namespace CodeWalker.GameFiles
 
 
 
+    public struct CCreatureMetaData //56 bytes, Key:2181653572
+    {
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public Array_Structure shaderVariableComponents { get; set; } //8   8: Array: 0: shaderVariableComponents  {0: Structure: CShaderVariableComponent: 256}
+        public Array_Structure pedPropExpressions { get; set; } //24   24: Array: 0: pedPropExpressions  {0: Structure: CPedPropExpressionData: 256}
+        public Array_Structure pedCompExpressions { get; set; } //40   40: Array: 0: pedCompExpressions  {0: Structure: CPedCompExpressionData: 256}
+    }
+
+    public struct CShaderVariableComponent //72 bytes, Key:3085831725
+    {
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public uint pedcompID { get; set; } //8   8: UnsignedInt: 0: pedcompID
+        public uint maskID { get; set; } //12   12: UnsignedInt: 0: maskID
+        public uint shaderVariableHashString { get; set; } //16   16: Hash: 0: shaderVariableHashString
+        public uint Unused2 { get; set; }//20
+        public Array_byte tracks { get; set; } //24   24: Array: 0: tracks  {0: UnsignedByte: 0: 256}
+        public Array_ushort ids { get; set; } //40   40: Array: 0: ids  {0: UnsignedShort: 0: 256}
+        public Array_byte components { get; set; } //56   56: Array: 0: components  {0: UnsignedByte: 0: 256}
+    }
+
+    public struct CPedPropExpressionData //88 bytes, Key:1355135810
+    {
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public uint pedPropID { get; set; } //8   8: UnsignedInt: 0: pedPropID
+        public int pedPropVarIndex { get; set; } //12   12: SignedInt: 0: pedPropVarIndex
+        public uint pedPropExpressionIndex { get; set; } //16   16: UnsignedInt: 0: pedPropExpressionIndex
+        public uint Unused2 { get; set; }//20
+        public Array_byte tracks { get; set; } //24   24: Array: 0: tracks  {0: UnsignedByte: 0: 256}
+        public Array_ushort ids { get; set; } //40   40: Array: 0: ids  {0: UnsignedShort: 0: 256}
+        public Array_byte types { get; set; } //56   56: Array: 0: types  {0: UnsignedByte: 0: 256}
+        public Array_byte components { get; set; } //72   72: Array: 0: components  {0: UnsignedByte: 0: 256}
+    }
+
+    public struct CPedCompExpressionData //88 bytes, Key:3458164745
+    {
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public uint pedCompID { get; set; } //8   8: UnsignedInt: 0: pedCompID
+        public int pedCompVarIndex { get; set; } //12   12: SignedInt: 0: pedCompVarIndex
+        public uint pedCompExpressionIndex { get; set; } //16   16: UnsignedInt: 0: pedCompExpressionIndex
+        public uint Unused2 { get; set; }//20
+        public Array_byte tracks { get; set; } //24   24: Array: 0: tracks  {0: UnsignedByte: 0: 256}
+        public Array_ushort ids { get; set; } //40   40: Array: 0: ids  {0: UnsignedShort: 0: 256}
+        public Array_byte types { get; set; } //56   56: Array: 0: types  {0: UnsignedByte: 0: 256}
+        public Array_byte components { get; set; } //72   72: Array: 0: components  {0: UnsignedByte: 0: 256}
+    }
+
+
+
+
     public struct Unk_376833625 //112 bytes, Key:4030871161  //COMPONENT PEDS YMT ROOT  - in componentpeds .rpf's
     {
         public byte Unk_1235281004 { get; set; } //0   0: Boolean: 0: 1235281004
@@ -5475,7 +5114,6 @@ namespace CodeWalker.GameFiles
         public Unk_2834549053 anchor { get; set; } //16   16: IntEnum: 2834549053: anchor
         public uint Unused0 { get; set; }//20
     }
-
 
 
 

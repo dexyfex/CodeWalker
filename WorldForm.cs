@@ -1625,11 +1625,11 @@ namespace CodeWalker
 
                 if (renderinteriors && ent.IsMlo) //render Mlo child entities...
                 {
-                    if ((ent.MloData != null) && (ent.MloData.AllEntities != null))
+                    if ((ent.MloInstance != null) && (ent.MloInstance.Entities != null))
                     {
-                        for (int j = 0; j < ent.MloData.AllEntities.Length; j++)
+                        for (int j = 0; j < ent.MloInstance.Entities.Length; j++)
                         {
-                            var intent = ent.MloData.AllEntities[j];
+                            var intent = ent.MloInstance.Entities[j];
                             var intarch = intent.Archetype;
                             if (intarch == null) continue; //missing archetype...
 
@@ -2279,11 +2279,11 @@ namespace CodeWalker
 
                         if (renderinteriors && entity.IsMlo) //render Mlo child entities...
                         {
-                            if ((entity.MloData != null) && (entity.MloData.AllEntities != null))
+                            if ((entity.MloInstance != null) && (entity.MloInstance.Entities != null))
                             {
-                                for (int j = 0; j < entity.MloData.AllEntities.Length; j++)
+                                for (int j = 0; j < entity.MloInstance.Entities.Length; j++)
                                 {
-                                    var intent = entity.MloData.AllEntities[j];
+                                    var intent = entity.MloInstance.Entities[j];
                                     var intarch = intent.Archetype;
                                     if (intarch == null) continue; //missing archetype...
 
@@ -2422,11 +2422,11 @@ namespace CodeWalker
             if (arch.IsTimeArchetype)
             {
                 if (!(rendertimedents && (rendertimedentsalways || arch.IsActive(timeofday)))) return false;
-                archflags = arch.TimeArchetype.CBaseArchetypeDef.flags;
+                archflags = arch.TimeArchetype.BaseArchetypeDef.flags;
             }
             else if (arch.IsMloArchetype)
             {
-                archflags = arch.MloArchetype.CBaseArchetypeDef.flags;
+                archflags = arch.MloArchetype.BaseArchetypeDef.flags;
             }
             //switch (archflags)
             //{
@@ -4318,14 +4318,13 @@ namespace CodeWalker
                     }
                 }
             }
-            if ((SelectionMode == MapSelectionMode.MloInstance) && (ymap.CMloInstanceDefs != null))
+            if ((SelectionMode == MapSelectionMode.MloInstance) && (ymap.MloEntities != null))
             {
-                for (int i = 0; i < ymap.CMloInstanceDefs.Length; i++)
+                for (int i = 0; i < ymap.MloEntities.Length; i++)
                 {
-                    var ent = (i < ymap.AllEntities.Length) ? ymap.AllEntities[i] : null;
-                    var mlo = ymap.CMloInstanceDefs[i];
+                    var ent = ymap.MloEntities[i];
                     MapBox mb = new MapBox();
-                    mb.CamRelPos = mlo.CEntityDef.position - camera.Position;
+                    mb.CamRelPos = ent.Position - camera.Position;
                     mb.BBMin = /*ent?.BBMin ??*/ new Vector3(-1.5f);
                     mb.BBMax = /*ent?.BBMax ??*/ new Vector3(1.5f);
                     mb.Orientation = ent?.Orientation ?? Quaternion.Identity;

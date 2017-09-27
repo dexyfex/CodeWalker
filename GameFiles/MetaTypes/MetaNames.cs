@@ -6648,6 +6648,9 @@ zRotation";
         ActivateVehicleSiren = 3401359988,
         AerialVehiclePoint = 1653545417,
         MoveFollowMaster = 3724117664,
+        AggressiveVehicleDriving = 2626064871,
+        UseSearchlight = 1524211135,
+        IgnoreWeatherRestrictions = 176469077,
 
 
 

@@ -35,8 +35,8 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                if (IsTimeArchetype) return TimeArchetype.CBaseArchetypeDef.name.ToString();
-                if (IsMloArchetype) return MloArchetype.CBaseArchetypeDef.name.ToString();
+                if (IsTimeArchetype) return TimeArchetype.BaseArchetypeDef.name.ToString();
+                if (IsMloArchetype) return MloArchetype.BaseArchetypeDef.name.ToString();
                 return BaseArchetype.name.ToString();
             }
         }
@@ -44,18 +44,16 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                if (IsTimeArchetype) return TimeArchetype.CBaseArchetypeDef.assetName.ToString();
-                if (IsMloArchetype) return MloArchetype.CBaseArchetypeDef.assetName.ToString();
+                if (IsTimeArchetype) return TimeArchetype.BaseArchetypeDef.assetName.ToString();
+                if (IsMloArchetype) return MloArchetype.BaseArchetypeDef.assetName.ToString();
                 return BaseArchetype.assetName.ToString();
             }
         }
 
-        public void Init(YtypFile ytyp, CBaseArchetypeDef arch)
+        private void InitVars(ref CBaseArchetypeDef arch)
         {
             Hash = arch.assetName;
             if (Hash.Hash == 0) Hash = arch.name;
-            Ytyp = ytyp;
-            BaseArchetype = arch;
             DrawableDict = arch.drawableDictionary;
             TextureDict = arch.textureDictionary;
             ClipDict = arch.clipDictionary;
@@ -63,44 +61,33 @@ namespace CodeWalker.GameFiles
             BBMax = arch.bbMax;
             BSCenter = arch.bsCentre;
             BSRadius = arch.bsRadius;
-            IsTimeArchetype = false;
-            IsMloArchetype = false;
             LodDist = arch.lodDist;
         }
-        public void Init(YtypFile ytyp, CTimeArchetypeDef arch)
+
+        public void Init(YtypFile ytyp, ref CBaseArchetypeDef arch)
         {
-            Hash = arch.CBaseArchetypeDef.assetName;
-            if (Hash.Hash == 0) Hash = arch.CBaseArchetypeDef.name;
             Ytyp = ytyp;
+            InitVars(ref arch);
+            BaseArchetype = arch;
+            IsTimeArchetype = false;
+            IsMloArchetype = false;
+        }
+        public void Init(YtypFile ytyp, ref CTimeArchetypeDef arch)
+        {
+            Ytyp = ytyp;
+            InitVars(ref arch._BaseArchetypeDef);
             TimeArchetype = arch;
-            DrawableDict = arch.CBaseArchetypeDef.drawableDictionary;
-            TextureDict = arch.CBaseArchetypeDef.textureDictionary;
-            ClipDict = arch.CBaseArchetypeDef.clipDictionary;
-            BBMin = arch.CBaseArchetypeDef.bbMin;
-            BBMax = arch.CBaseArchetypeDef.bbMax;
-            BSCenter = arch.CBaseArchetypeDef.bsCentre;
-            BSRadius = arch.CBaseArchetypeDef.bsRadius;
             IsTimeArchetype = true;
             IsMloArchetype = false;
-            LodDist = arch.CBaseArchetypeDef.lodDist;
-            Times = new TimedArchetypeTimes(arch.timeFlags);
+            Times = new TimedArchetypeTimes(arch.TimeArchetypeDef.timeFlags);
         }
-        public void Init(YtypFile ytyp, CMloArchetypeDef arch)
+        public void Init(YtypFile ytyp, ref CMloArchetypeDef arch)
         {
-            Hash = arch.CBaseArchetypeDef.assetName;
-            if (Hash.Hash == 0) Hash = arch.CBaseArchetypeDef.name;
             Ytyp = ytyp;
+            InitVars(ref arch._BaseArchetypeDef);
             MloArchetype = arch;
-            DrawableDict = arch.CBaseArchetypeDef.drawableDictionary;
-            TextureDict = arch.CBaseArchetypeDef.textureDictionary;
-            ClipDict = arch.CBaseArchetypeDef.clipDictionary;
-            BBMin = arch.CBaseArchetypeDef.bbMin;
-            BBMax = arch.CBaseArchetypeDef.bbMax;
-            BSCenter = arch.CBaseArchetypeDef.bsCentre;
-            BSRadius = arch.CBaseArchetypeDef.bsRadius;
             IsTimeArchetype = false;
             IsMloArchetype = true;
-            LodDist = arch.CBaseArchetypeDef.lodDist;
         }
 
         public bool IsActive(float hour)
@@ -133,33 +120,57 @@ namespace CodeWalker.GameFiles
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class MloEntityData
+    public class MloInstanceData
     {
-        public YmapEntityDef[] AllEntities { get; set; }
+        public YmapEntityDef Owner { get; set; }
+        public CMloInstanceDef _Instance;
+        public CMloInstanceDef Instance { get { return _Instance; } set { _Instance = value; } }
+        public uint[] Unk_1407157833 { get; set; }
+
+        public YmapEntityDef[] Entities { get; set; }
+
 
         public void CreateYmapEntities(YmapEntityDef owner, MloArchetypeData mlod)
         {
+            Owner = owner;
             if (owner == null) return;
             if (mlod.entities == null) return;
-            AllEntities = new YmapEntityDef[mlod.entities.Length];
-            for (int i = 0; i < mlod.entities.Length; i++)
+            var ec = mlod.entities.Length;
+            Entities = new YmapEntityDef[ec];
+            for (int i = 0; i < ec; i++)
             {
                 YmapEntityDef e = new YmapEntityDef(null, i, ref mlod.entities[i]);
-
+                e.MloRefPosition = e.Position;
+                e.MloRefOrientation = e.Orientation;
                 e.MloParent = owner;
-                e.Position = owner.Position + owner.Orientation.Multiply(e.Position);
-                e.Orientation = Quaternion.Multiply(owner.Orientation, e.Orientation);
-
+                e.Position = owner.Position + owner.Orientation.Multiply(e.MloRefPosition);
+                e.Orientation = Quaternion.Multiply(owner.Orientation, e.MloRefOrientation);
                 e.UpdateWidgetPosition();
                 e.UpdateWidgetOrientation();
-
-                if ((owner.Orientation != Quaternion.Identity)&&(owner.Orientation.Z!=1.0f))
-                { }
-
-                AllEntities[i] = e;
+                Entities[i] = e;
             }
         }
+
+
+        public void UpdateEntities()
+        {
+            if (Entities == null) return;
+            if (Owner == null) return;
+
+            for (int i = 0; i < Entities.Length; i++)
+            {
+                YmapEntityDef e = Entities[i];
+                e.Position = Owner.Position + Owner.Orientation.Multiply(e.MloRefPosition);
+                e.Orientation = Quaternion.Multiply(Owner.Orientation, e.MloRefOrientation);
+                e.UpdateWidgetPosition();
+                e.UpdateWidgetOrientation();
+            }
+
+        }
+
+
     }
+
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class TimedArchetypeTimes

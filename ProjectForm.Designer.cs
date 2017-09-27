@@ -664,12 +664,14 @@
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.ScenarioAddToProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ScenarioRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsImportMenyooXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsHideGTAVMapMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.ToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsImportMenyooXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YmapMloInstanceTabPage = new System.Windows.Forms.TabPage();
+            this.YmapTimecycleModifierTabPage = new System.Windows.Forms.TabPage();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -1027,7 +1029,6 @@
             this.ProjectManifestTextBox.CommentPrefix = null;
             this.ProjectManifestTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.ProjectManifestTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
-            this.ProjectManifestTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.ProjectManifestTextBox.IsReplaceMode = false;
             this.ProjectManifestTextBox.Language = FastColoredTextBoxNS.Language.XML;
             this.ProjectManifestTextBox.LeftBracket = '<';
@@ -1062,6 +1063,8 @@
             this.YmapTabControl.Controls.Add(this.YmapYmapTabPage);
             this.YmapTabControl.Controls.Add(this.YmapEntityTabPage);
             this.YmapTabControl.Controls.Add(this.YmapCarGenTabPage);
+            this.YmapTabControl.Controls.Add(this.YmapMloInstanceTabPage);
+            this.YmapTabControl.Controls.Add(this.YmapTimecycleModifierTabPage);
             this.YmapTabControl.Location = new System.Drawing.Point(0, 3);
             this.YmapTabControl.Name = "YmapTabControl";
             this.YmapTabControl.SelectedIndex = 0;
@@ -5296,7 +5299,7 @@
             "8 - Unk",
             "16 - Unk",
             "32 - ActivateVehicleSiren",
-            "64 - Unk",
+            "64 - AggressiveVehicleDriving",
             "128 - Unk",
             "256 - Unk",
             "512 - Unk",
@@ -5316,11 +5319,11 @@
             "8388608 - ShortRange",
             "16777216 - HighPriority",
             "33554432 - IgnoreLoitering",
-            "67108864 - Unk",
+            "67108864 - UseSearchlight",
             "134217728 - ResetNoCollisionOnCleanUp",
             "268435456 - Unk",
             "536870912 - Unk",
-            "1073741824 - Unk"});
+            "1073741824 - IgnoreWeatherRestrictions"});
             this.ScenarioPointFlagsCheckedListBox.Location = new System.Drawing.Point(195, 167);
             this.ScenarioPointFlagsCheckedListBox.Name = "ScenarioPointFlagsCheckedListBox";
             this.ScenarioPointFlagsCheckedListBox.Size = new System.Drawing.Size(214, 244);
@@ -5977,7 +5980,7 @@
             "8 - Unk",
             "16 - Unk",
             "32 - ActivateVehicleSiren",
-            "64 - Unk",
+            "64 - AggressiveVehicleDriving",
             "128 - Unk",
             "256 - Unk",
             "512 - Unk",
@@ -5997,11 +6000,11 @@
             "8388608 - ShortRange",
             "16777216 - HighPriority",
             "33554432 - IgnoreLoitering",
-            "67108864 - Unk",
+            "67108864 - UseSearchlight",
             "134217728 - ResetNoCollisionOnCleanUp",
             "268435456 - Unk",
             "536870912 - Unk",
-            "1073741824 - Unk"});
+            "1073741824 - IgnoreWeatherRestrictions"});
             this.ScenarioEntityPointFlagsCheckedListBox.Location = new System.Drawing.Point(269, 193);
             this.ScenarioEntityPointFlagsCheckedListBox.Name = "ScenarioEntityPointFlagsCheckedListBox";
             this.ScenarioEntityPointFlagsCheckedListBox.Size = new System.Drawing.Size(214, 214);
@@ -7199,7 +7202,7 @@
             "8 - Unk",
             "16 - Unk",
             "32 - ActivateVehicleSiren",
-            "64 - Unk",
+            "64 - AggressiveVehicleDriving",
             "128 - Unk",
             "256 - Unk",
             "512 - Unk",
@@ -7219,11 +7222,11 @@
             "8388608 - ShortRange",
             "16777216 - HighPriority",
             "33554432 - IgnoreLoitering",
-            "67108864 - Unk",
+            "67108864 - UseSearchlight",
             "134217728 - ResetNoCollisionOnCleanUp",
             "268435456 - Unk",
             "536870912 - Unk",
-            "1073741824 - Unk"});
+            "1073741824 - IgnoreWeatherRestrictions"});
             this.ScenarioClusterPointFlagsCheckedListBox.Location = new System.Drawing.Point(195, 167);
             this.ScenarioClusterPointFlagsCheckedListBox.Name = "ScenarioClusterPointFlagsCheckedListBox";
             this.ScenarioClusterPointFlagsCheckedListBox.Size = new System.Drawing.Size(214, 244);
@@ -8018,6 +8021,21 @@
             this.ScenarioRemoveFromProjectMenu.Text = "Remove from Project";
             this.ScenarioRemoveFromProjectMenu.Click += new System.EventHandler(this.ScenarioRemoveFromProjectMenu_Click);
             // 
+            // ToolsMenu
+            // 
+            this.ToolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolsImportMenyooXmlMenu});
+            this.ToolsMenu.Name = "ToolsMenu";
+            this.ToolsMenu.Size = new System.Drawing.Size(47, 20);
+            this.ToolsMenu.Text = "Tools";
+            // 
+            // ToolsImportMenyooXmlMenu
+            // 
+            this.ToolsImportMenyooXmlMenu.Name = "ToolsImportMenyooXmlMenu";
+            this.ToolsImportMenyooXmlMenu.Size = new System.Drawing.Size(193, 22);
+            this.ToolsImportMenyooXmlMenu.Text = "Import Menyoo XML...";
+            this.ToolsImportMenyooXmlMenu.Click += new System.EventHandler(this.ToolsImportMenyooXmlMenu_Click);
+            // 
             // OptionsMenu
             // 
             this.OptionsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -8041,20 +8059,23 @@
             // 
             this.OpenFileDialog.Filter = "CodeWalker Projects|*.cwproj";
             // 
-            // ToolsMenu
+            // YmapMloInstanceTabPage
             // 
-            this.ToolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolsImportMenyooXmlMenu});
-            this.ToolsMenu.Name = "ToolsMenu";
-            this.ToolsMenu.Size = new System.Drawing.Size(47, 20);
-            this.ToolsMenu.Text = "Tools";
+            this.YmapMloInstanceTabPage.Location = new System.Drawing.Point(4, 22);
+            this.YmapMloInstanceTabPage.Name = "YmapMloInstanceTabPage";
+            this.YmapMloInstanceTabPage.Size = new System.Drawing.Size(510, 443);
+            this.YmapMloInstanceTabPage.TabIndex = 3;
+            this.YmapMloInstanceTabPage.Text = "Mlo Instance";
+            this.YmapMloInstanceTabPage.UseVisualStyleBackColor = true;
             // 
-            // ToolsImportMenyooXmlMenu
+            // YmapTimecycleModifierTabPage
             // 
-            this.ToolsImportMenyooXmlMenu.Name = "ToolsImportMenyooXmlMenu";
-            this.ToolsImportMenyooXmlMenu.Size = new System.Drawing.Size(193, 22);
-            this.ToolsImportMenyooXmlMenu.Text = "Import Menyoo XML...";
-            this.ToolsImportMenyooXmlMenu.Click += new System.EventHandler(this.ToolsImportMenyooXmlMenu_Click);
+            this.YmapTimecycleModifierTabPage.Location = new System.Drawing.Point(4, 22);
+            this.YmapTimecycleModifierTabPage.Name = "YmapTimecycleModifierTabPage";
+            this.YmapTimecycleModifierTabPage.Size = new System.Drawing.Size(510, 443);
+            this.YmapTimecycleModifierTabPage.TabIndex = 4;
+            this.YmapTimecycleModifierTabPage.Text = "Time Cycle Modifier";
+            this.YmapTimecycleModifierTabPage.UseVisualStyleBackColor = true;
             // 
             // ProjectForm
             // 
@@ -8904,5 +8925,7 @@
         private System.Windows.Forms.CheckedListBox EntityFlagsCheckedListBox;
         private System.Windows.Forms.ToolStripMenuItem ToolsMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolsImportMenyooXmlMenu;
+        private System.Windows.Forms.TabPage YmapMloInstanceTabPage;
+        private System.Windows.Forms.TabPage YmapTimecycleModifierTabPage;
     }
 }

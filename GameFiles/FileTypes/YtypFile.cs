@@ -18,25 +18,20 @@ namespace CodeWalker.GameFiles
         public PsoFile Pso { get; set; }
         public RbfFile Rbf { get; set; }
 
-        public CMapTypes CMapTypes { get; set; }
-        //public CBaseArchetypeDef[] CBaseArchetypeDefs { get; set; }
-        //public CTimeArchetypeDef[] CTimeArchetypeDefs { get; set; }
-        //public CMloArchetypeDef[] CMloArchetypeDefs { get; set; }
-
-        public CExtensionDefAudioEmitter[] AudioEmitters { get; set; }
-
-        //public CEntityDef[] CEntityDefs { get; set; }
-
-        public CCompositeEntityType[] CompositeEntityTypes { get; set; }
 
         public uint NameHash { get; set; }
         public string[] Strings { get; set; }
 
 
+        public CMapTypes CMapTypes { get; set; }
 
         public Archetype[] AllArchetypes { get; set; }
 
         public MetaWrapper[] Extensions { get; set; }
+
+        public CCompositeEntityType[] CompositeEntityTypes { get; set; }
+
+
 
 
         public override string ToString()
@@ -101,34 +96,40 @@ namespace CodeWalker.GameFiles
                     {
                         case MetaName.CBaseArchetypeDef:
                             var basearch = PsoTypes.ConvertDataRaw<CBaseArchetypeDef>(block.Data, offset);
-                            ba.Init(this, basearch);
+                            ba.Init(this, ref basearch);
                             ba.Extensions = MetaTypes.GetExtensions(Meta, basearch.extensions);
                             break;
                         case MetaName.CTimeArchetypeDef:
                             var timearch = PsoTypes.ConvertDataRaw<CTimeArchetypeDef>(block.Data, offset);
-                            ba.Init(this, timearch);
-                            ba.Extensions = MetaTypes.GetExtensions(Meta, timearch.CBaseArchetypeDef.extensions);
+                            ba.Init(this, ref timearch);
+                            ba.Extensions = MetaTypes.GetExtensions(Meta, timearch.BaseArchetypeDef.extensions);
                             break;
                         case MetaName.CMloArchetypeDef:
                             var mloarch = PsoTypes.ConvertDataRaw<CMloArchetypeDef>(block.Data, offset);
-                            ba.Init(this, mloarch);
-                            ba.Extensions = MetaTypes.GetExtensions(Meta, mloarch.CBaseArchetypeDef.extensions);
+                            ba.Init(this, ref mloarch);
+                            ba.Extensions = MetaTypes.GetExtensions(Meta, mloarch.BaseArchetypeDef.extensions);
 
                             MloArchetypeData mlod = new MloArchetypeData();
-                            mlod.entities = MetaTypes.ConvertDataArray<CEntityDef>(Meta, MetaName.CEntityDef, mloarch.entities);
-                            mlod.rooms = MetaTypes.ConvertDataArray<CMloRoomDef>(Meta, MetaName.CMloRoomDef, mloarch.rooms);
-                            mlod.portals = MetaTypes.ConvertDataArray<CMloPortalDef>(Meta, MetaName.CMloPortalDef, mloarch.portals);
-                            mlod.entitySets = MetaTypes.ConvertDataArray<CMloEntitySet>(Meta, MetaName.CMloEntitySet, mloarch.entitySets);
-                            mlod.timeCycleModifiers = MetaTypes.ConvertDataArray<CMloTimeCycleModifier>(Meta, MetaName.CMloTimeCycleModifier, mloarch.timeCycleModifiers);
+                            var mlodef = mloarch.MloArchetypeDef;
+                            mlod.entities = MetaTypes.ConvertDataArray<CEntityDef>(Meta, MetaName.CEntityDef, mlodef.entities);
+                            mlod.rooms = MetaTypes.ConvertDataArray<CMloRoomDef>(Meta, MetaName.CMloRoomDef, mlodef.rooms);
+                            mlod.portals = MetaTypes.ConvertDataArray<CMloPortalDef>(Meta, MetaName.CMloPortalDef, mlodef.portals);
+                            mlod.entitySets = MetaTypes.ConvertDataArray<CMloEntitySet>(Meta, MetaName.CMloEntitySet, mlodef.entitySets);
+                            mlod.timeCycleModifiers = MetaTypes.ConvertDataArray<CMloTimeCycleModifier>(Meta, MetaName.CMloTimeCycleModifier, mlodef.timeCycleModifiers);
                             ba.MloData = mlod;
 
-                            //if (mlod.entities != null)
-                            //{
-                            //    for (int e = 0; e < mlod.entities.Length; e++)
-                            //    {
-                            //        EnsureEntityExtensions(Meta, ref mlod.entities[e]);
-                            //    }
-                            //}
+                            if (mlod.entities != null)
+                            {
+                                //for (int e = 0; e < mlod.entities.Length; e++)
+                                //{
+                                //    if (mlod.entities[e].extensions.Count1 > 0)
+                                //    {
+                                //        var exts = MetaTypes.GetExtensions(Meta, mlod.entities[e].extensions);
+                                //        if (exts != null)
+                                //        { }
+                                //    }
+                                //}
+                            }
 
                             break;
                         default:
@@ -147,11 +148,12 @@ namespace CodeWalker.GameFiles
             { }
 
 
-            AudioEmitters = MetaTypes.GetTypedDataArray<CExtensionDefAudioEmitter>(Meta, MetaName.CExtensionDefAudioEmitter);
-            if (AudioEmitters != null)
-            { }
+            //AudioEmitters = MetaTypes.GetTypedDataArray<CExtensionDefAudioEmitter>(Meta, MetaName.CExtensionDefAudioEmitter);
+            //if (AudioEmitters != null)
+            //{ }
 
             //CEntityDefs = MetaTypes.GetTypedDataArray<CEntityDef>(Meta, MetaName.CEntityDef);
+
 
             CompositeEntityTypes = MetaTypes.ConvertDataArray<CCompositeEntityType>(Meta, MetaName.CCompositeEntityType, CMapTypes.compositeEntityTypes);
             if (CompositeEntityTypes != null)
@@ -181,76 +183,53 @@ namespace CodeWalker.GameFiles
             }
 
 
-            foreach (var block in Meta.DataBlocks)
-            {
-                switch(block.StructureNameHash)
-                {
-                    case MetaName.CMapTypes:
-                    case MetaName.CTimeArchetypeDef:
-                    case MetaName.CBaseArchetypeDef:
-                    case MetaName.CMloArchetypeDef:
-                    case MetaName.CMloTimeCycleModifier:
-                    case MetaName.CMloRoomDef:
-                    case MetaName.CMloPortalDef:
-                    case MetaName.CMloEntitySet:
-                    case MetaName.CEntityDef:
-                    case MetaName.CExtensionDefParticleEffect:
-                    case MetaName.CExtensionDefAudioCollisionSettings:
-                    case MetaName.CExtensionDefSpawnPoint:
-                    case MetaName.CExtensionDefSpawnPointOverride:
-                    case MetaName.CExtensionDefExplosionEffect:
-                    case MetaName.CExtensionDefAudioEmitter:
-                    case MetaName.CExtensionDefLadder:
-                    case MetaName.CExtensionDefBuoyancy:
-                    case MetaName.CExtensionDefExpression:
-                    case MetaName.CExtensionDefLightShaft:
-                    case MetaName.CExtensionDefLightEffect:
-                    case MetaName.CExtensionDefDoor:
-                    case MetaName.CExtensionDefWindDisturbance:
-                    case MetaName.CExtensionDefProcObject:
-                    case MetaName.CLightAttrDef:
-                    case MetaName.STRING:
-                    //case MetaName.SectionUNKNOWN2:
-                    //case MetaName.SectionUNKNOWN3:
-                    //case MetaName.SectionUNKNOWN8:
-                    case MetaName.POINTER:
-                    case MetaName.UINT:
-                    case MetaName.VECTOR4:
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-
-
-
-            //MetaTypes.ParseMetaData(Meta);
-
-
-
-
-
-
-
-
-
-
-
-
-            //RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
-            //if (resentry == null)
+            //foreach (var block in Meta.DataBlocks)
             //{
-            //      throw new Exception("File entry wasn't a resource! (is it binary data?)");
+            //    switch(block.StructureNameHash)
+            //    {
+            //        case MetaName.CMapTypes:
+            //        case MetaName.CTimeArchetypeDef:
+            //        case MetaName.CBaseArchetypeDef:
+            //        case MetaName.CMloArchetypeDef:
+            //        case MetaName.CMloTimeCycleModifier:
+            //        case MetaName.CMloRoomDef:
+            //        case MetaName.CMloPortalDef:
+            //        case MetaName.CMloEntitySet:
+            //        case MetaName.CEntityDef:
+            //        case MetaName.CExtensionDefParticleEffect:
+            //        case MetaName.CExtensionDefAudioCollisionSettings:
+            //        case MetaName.CExtensionDefSpawnPoint:
+            //        case MetaName.CExtensionDefSpawnPointOverride:
+            //        case MetaName.CExtensionDefExplosionEffect:
+            //        case MetaName.CExtensionDefAudioEmitter:
+            //        case MetaName.CExtensionDefLadder:
+            //        case MetaName.CExtensionDefBuoyancy:
+            //        case MetaName.CExtensionDefExpression:
+            //        case MetaName.CExtensionDefLightShaft:
+            //        case MetaName.CExtensionDefLightEffect:
+            //        case MetaName.CExtensionDefDoor:
+            //        case MetaName.CExtensionDefWindDisturbance:
+            //        case MetaName.CExtensionDefProcObject:
+            //        case MetaName.CLightAttrDef:
+            //        case MetaName.STRING:
+            //        case MetaName.POINTER:
+            //        case MetaName.UINT:
+            //        case MetaName.VECTOR4:
+            //            break;
+            //        default:
+            //            break;
+            //    }
             //}
 
-            //ResourceDataReader rd = new ResourceDataReader(resentry, data);
 
-            //Meta = rd.ReadBlock<Meta>();
 
-            //MetaTypes.EnsureMetaTypes(Meta);
 
             //MetaTypes.ParseMetaData(Meta);
+
+
+
+
+
 
         }
 

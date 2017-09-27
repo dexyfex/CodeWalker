@@ -1796,9 +1796,9 @@ namespace CodeWalker.GameFiles
                     var arch = GetArchetype(ent.CEntityDef.archetypeName);
                     ent.SetArchetype(arch);
 
-                    if (ent.MloData != null)
+                    if (ent.MloInstance != null)
                     {
-                        var entities = ent.MloData.AllEntities;
+                        var entities = ent.MloInstance.Entities;
                         if (entities != null)
                         {
                             for (int j = 0; j < entities.Length; j++)
@@ -2396,10 +2396,10 @@ namespace CodeWalker.GameFiles
                 {
                     if (arch.IsTimeArchetype)
                     {
-                        var t = arch.TimeArchetype.timeFlags;
-                        sb.Append(arch.TimeArchetype.CBaseArchetypeDef.name.ToString());
+                        var t = arch.TimeArchetype.TimeArchetypeDef.timeFlags;
+                        sb.Append(arch.TimeArchetype.BaseArchetypeDef.name.ToString());
                         sb.Append(",");
-                        sb.Append(arch.TimeArchetype.CBaseArchetypeDef.assetName.ToString());
+                        sb.Append(arch.TimeArchetype.BaseArchetypeDef.assetName.ToString());
                         sb.Append(",");
                         for (int i = 0; i < 32; i++)
                         {
