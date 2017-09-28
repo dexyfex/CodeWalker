@@ -882,7 +882,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct ArrayOfUshorts3 //array of 3 bytes
+    [TC(typeof(EXP))] public struct ArrayOfUshorts3 //array of 3 ushorts
     {
         public ushort u0, u1, u2;
         public override string ToString()
@@ -961,22 +961,24 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct MetaPOINTER //8 bytes - pointer to data item //SectionUNKNOWN10
+    [TC(typeof(EXP))] public struct MetaPOINTER //8 bytes - pointer to data item //was: SectionUNKNOWN10
     {
-        public ushort BlockID { get; set; } //1-based ID
-        public ushort ItemOffset { get; set; } //byte offset / 16
+        public uint Pointer { get; set; }
         public uint ExtraOffset { get; set; }
 
-        public MetaPOINTER(ushort blockID, ushort itemOffset, uint extra)
+        public int BlockIndex { get { return BlockID - 1; } }
+        public int BlockID { get { return (int)(Pointer & 0xFFF); } set { Pointer = (Pointer & 0xFFFFF000) + ((uint)value & 0xFFF); } }
+        public int Offset { get { return (int)((Pointer >> 12) & 0xFFFFF); } set { Pointer = (Pointer & 0xFFF) + (((uint)value << 12) & 0xFFFFF000); } }
+
+        public MetaPOINTER(int blockID, int itemOffset, uint extra)
         {
-            BlockID = blockID;
-            ItemOffset = itemOffset;
+            Pointer = (((uint)itemOffset << 12) & 0xFFFFF000) + ((uint)blockID & 0xFFF);
             ExtraOffset = extra;
         }
 
         public override string ToString()
         {
-            return BlockID.ToString() + ", " + ItemOffset.ToString() + ", " + ExtraOffset.ToString();
+            return BlockID.ToString() + ", " + Offset.ToString() + ", " + ExtraOffset.ToString();
         }
     }
 

@@ -2199,7 +2199,8 @@ namespace CodeWalker
                         Archetype arch = ent.Archetype;
                         if (arch != null)
                         {
-                            if (!arch.IsTimeArchetype || (rendertimedents && (rendertimedentsalways || arch.IsActive(timeofday))))
+                            bool timed = (arch.Type == MetaName.CTimeArchetypeDef);
+                            if (!timed || (rendertimedents && (rendertimedentsalways || arch.IsActive(timeofday))))
                             {
                                 ent.CamRel = ent.Position - camera.Position;
                                 RenderArchetype(arch, ent);
@@ -2232,7 +2233,8 @@ namespace CodeWalker
             Archetype arch = entity.Archetype;
             if (arch != null)
             {
-                if (!arch.IsTimeArchetype || (rendertimedents && (rendertimedentsalways || arch.IsActive(timeofday))))
+                bool timed = (arch.Type == MetaName.CTimeArchetypeDef);
+                if (!timed || (rendertimedents && (rendertimedentsalways || arch.IsActive(timeofday))))
                 {
                     bool usechild = false;
                     entity.CamRel = entity.Position - camera.Position;
@@ -2418,23 +2420,23 @@ namespace CodeWalker
             var arch = ent.Archetype;
             bool isshadowproxy = false;
             bool isreflproxy = false;
-            uint archflags = arch.BaseArchetype.flags;
-            if (arch.IsTimeArchetype)
+            uint archflags = arch._BaseArchetypeDef.flags;
+            if (arch.Type == MetaName.CTimeArchetypeDef)
             {
                 if (!(rendertimedents && (rendertimedentsalways || arch.IsActive(timeofday)))) return false;
-                archflags = arch.TimeArchetype.BaseArchetypeDef.flags;
+                //archflags = arch._BaseArchetypeDef.flags;
             }
-            else if (arch.IsMloArchetype)
-            {
-                archflags = arch.MloArchetype.BaseArchetypeDef.flags;
-            }
-            //switch (archflags)
+            //else if (arch.Type == MetaName.CMloArchetypeDef)
             //{
-            //    //case 8192:  //8192: is YTYP no shadow rendering  - CP
-            //    case 2048:      //000000000000000000100000000000  shadow proxies...
-            //    case 536872960: //100000000000000000100000000000    tunnel refl/shadow prox?
-            //        isshadowproxy = true; break;
+            //    archflags = arch._BaseArchetypeDef.flags;
             //}
+            ////switch (archflags)
+            ////{
+            ////    //case 8192:  //8192: is YTYP no shadow rendering  - CP
+            ////    case 2048:      //000000000000000000100000000000  shadow proxies...
+            ////    case 536872960: //100000000000000000100000000000    tunnel refl/shadow prox?
+            ////        isshadowproxy = true; break;
+            ////}
             if ((archflags & 2048) > 0)
             {
                 isshadowproxy = true;
@@ -2445,7 +2447,7 @@ namespace CodeWalker
             //    isreflproxy = true;
             //}
 
-            switch (ent.CEntityDef.flags)
+            switch (ent._CEntityDef.flags)
             {
                 case 135790592: //001000000110000000000000000000    prewater proxy (golf course)
                 case 135790593: //001000000110000000000000000001    water refl proxy? (mike house)
@@ -2502,9 +2504,6 @@ namespace CodeWalker
             if (arche == null) return false;
 
             Vector3 camrel = (entity != null) ? entity.CamRel : -camera.Position;
-
-            if (arche.IsMloArchetype)
-            { }
 
             Quaternion orientation = Quaternion.Identity;
             Vector3 scale = Vector3.One;

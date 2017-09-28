@@ -285,8 +285,8 @@ namespace CodeWalker.GameFiles
                         for (int n = 0; n < aCount; n++)
                         {
                             var ptr = ptrArr[n];
-                            var eboffset = ptr.ItemOffset * 16;
-                            WriteNode(sb, aind, cont, ptr.BlockID, eboffset, XmlTagMode.ItemAndType);
+                            var offset = ptr.Offset;
+                            WriteNode(sb, aind, cont, ptr.BlockID, offset, XmlTagMode.ItemAndType);
                         }
                         CloseTag(sb, indent, ename);
                     }

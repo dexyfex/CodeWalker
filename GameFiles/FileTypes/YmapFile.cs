@@ -997,15 +997,15 @@ namespace CodeWalker.GameFiles
                     ////not ideal: should transform all 8 corners!
                 }
 
-                if (Archetype.IsMloArchetype)
+                if (Archetype.Type == MetaName.CMloArchetypeDef)
                 {
                     //transform interior entities into world space...
-                    var mlod = Archetype.MloData;
+                    var mloa = Archetype as MloArchetype;
                     if (MloInstance == null)
                     {
                         MloInstance = new MloInstanceData();
                     }
-                    MloInstance.CreateYmapEntities(this, mlod);
+                    MloInstance.CreateYmapEntities(this, mloa);
 
                     if (BSRadius == 0.0f)
                     {

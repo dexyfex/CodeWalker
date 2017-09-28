@@ -47,8 +47,8 @@ namespace CodeWalker.GameFiles
             }
             int idx = block.AddItem(data);
             MetaBuilderPointer r = new MetaBuilderPointer();
-            r.Block = block.Index + 1;
-            r.Offset = (idx * data.Length) / 16;
+            r.BlockID = block.Index + 1;
+            r.Offset = (idx * data.Length);
             r.Length = data.Length;
             return r;
         }
@@ -65,11 +65,11 @@ namespace CodeWalker.GameFiles
             }
             byte[] newdata = new byte[newlen];
             Buffer.BlockCopy(data, 0, newdata, 0, datalen);
-            int offs = block.TotalSize / 16;
+            int offs = block.TotalSize;
             int idx = block.AddItem(newdata);
             MetaBuilderPointer r = new MetaBuilderPointer();
-            r.Block = block.Index + 1;
-            r.Offset = offs; //(idx * data.Length) / 16;
+            r.BlockID = block.Index + 1;
+            r.Offset = offs; //(idx * data.Length);;
             r.Length = items.Length;
             return r;
         }
@@ -86,11 +86,11 @@ namespace CodeWalker.GameFiles
             }
             byte[] newdata = new byte[newlen];
             Buffer.BlockCopy(data, 0, newdata, 0, datalen);
-            int offs = block.TotalSize / 16;
+            int offs = block.TotalSize;
             int idx = block.AddItem(newdata);
             MetaBuilderPointer r = new MetaBuilderPointer();
-            r.Block = block.Index + 1;
-            r.Offset = offs;// (idx * data.Length) / 16;//not sure if this is correct! should also use sub-offset!
+            r.BlockID = block.Index + 1;
+            r.Offset = offs;// (idx * data.Length);
             r.Length = datalen; //actual length of string.
             return r;
         }
@@ -98,7 +98,7 @@ namespace CodeWalker.GameFiles
         public MetaPOINTER AddItemPtr<T>(MetaName type, T item) where T : struct //helper method for AddItem<T>
         {
             var ptr = AddItem(type, item);
-            return new MetaPOINTER((ushort)ptr.Block, (ushort)ptr.Offset, 0);
+            return new MetaPOINTER(ptr.BlockID, ptr.Offset, 0);
         }
         public Array_Structure AddItemArrayPtr<T>(MetaName type, T[] items) where T : struct //helper method for AddItemArray<T>
         {
@@ -207,8 +207,8 @@ namespace CodeWalker.GameFiles
                 if (i == 0)
                 {
                     MetaBuilderPointer mbp = new MetaBuilderPointer();
-                    mbp.Block = meptr.BlockID;
-                    mbp.Offset = meptr.ItemOffset;
+                    mbp.BlockID = meptr.BlockID;
+                    mbp.Offset = meptr.Offset;
                     sa.Pointer = mbp.Pointer;
                 }
             }
@@ -359,15 +359,15 @@ namespace CodeWalker.GameFiles
 
     public struct MetaBuilderPointer
     {
-        public int Block { get; set; } //0-based index
-        public int Offset { get; set; } //(byteoffset/16)
+        public int BlockID { get; set; } //1-based id
+        public int Offset { get; set; } //byte offset
         public int Length { get; set; } //for temp use...
         public uint Pointer
         {
             get
             {
-                uint bidx = (((uint)Block) & 0xFFF);
-                uint offs = (((uint)Offset) & 0xFFFF) << 16;
+                uint bidx = (((uint)BlockID) & 0xFFF);
+                uint offs = (((uint)Offset) & 0xFFFFF) << 12;
                 return bidx + offs;
             }
         }

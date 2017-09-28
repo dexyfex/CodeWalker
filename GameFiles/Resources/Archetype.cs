@@ -11,11 +11,13 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class Archetype
     {
+        public virtual MetaName Type => MetaName.CBaseArchetypeDef;
+
+        public CBaseArchetypeDef _BaseArchetypeDef;
+        public CBaseArchetypeDef BaseArchetypeDef { get { return _BaseArchetypeDef; } set { _BaseArchetypeDef = value; } }
+
         public MetaHash Hash { get; set; }
         public YtypFile Ytyp { get; set; }
-        public CBaseArchetypeDef BaseArchetype { get; set; }
-        public CTimeArchetypeDef TimeArchetype { get; set; }
-        public CMloArchetypeDef MloArchetype { get; set; }
         public MetaHash DrawableDict { get; set; }
         public MetaHash TextureDict { get; set; }
         public MetaHash ClipDict { get; set; }
@@ -23,35 +25,31 @@ namespace CodeWalker.GameFiles
         public Vector3 BBMax { get; set; }
         public Vector3 BSCenter { get; set; }
         public float BSRadius { get; set; }
-        public bool IsTimeArchetype { get; set; }
-        public bool IsMloArchetype { get; set; }
         public float LodDist { get; set; }
-        public MloArchetypeData MloData { get; set; }
         public MetaWrapper[] Extensions { get; set; }
-        public TimedArchetypeTimes Times { get; set; }
+
+
 
 
         public string Name
         {
             get
             {
-                if (IsTimeArchetype) return TimeArchetype.BaseArchetypeDef.name.ToString();
-                if (IsMloArchetype) return MloArchetype.BaseArchetypeDef.name.ToString();
-                return BaseArchetype.name.ToString();
+                return _BaseArchetypeDef.name.ToString();
             }
         }
         public string AssetName
         {
             get
             {
-                if (IsTimeArchetype) return TimeArchetype.BaseArchetypeDef.assetName.ToString();
-                if (IsMloArchetype) return MloArchetype.BaseArchetypeDef.assetName.ToString();
-                return BaseArchetype.assetName.ToString();
+                return _BaseArchetypeDef.assetName.ToString();
             }
         }
 
-        private void InitVars(ref CBaseArchetypeDef arch)
+
+        protected void InitVars(ref CBaseArchetypeDef arch)
         {
+            BaseArchetypeDef = arch;
             Hash = arch.assetName;
             if (Hash.Hash == 0) Hash = arch.name;
             DrawableDict = arch.drawableDictionary;
@@ -68,56 +66,86 @@ namespace CodeWalker.GameFiles
         {
             Ytyp = ytyp;
             InitVars(ref arch);
-            BaseArchetype = arch;
-            IsTimeArchetype = false;
-            IsMloArchetype = false;
-        }
-        public void Init(YtypFile ytyp, ref CTimeArchetypeDef arch)
-        {
-            Ytyp = ytyp;
-            InitVars(ref arch._BaseArchetypeDef);
-            TimeArchetype = arch;
-            IsTimeArchetype = true;
-            IsMloArchetype = false;
-            Times = new TimedArchetypeTimes(arch.TimeArchetypeDef.timeFlags);
-        }
-        public void Init(YtypFile ytyp, ref CMloArchetypeDef arch)
-        {
-            Ytyp = ytyp;
-            InitVars(ref arch._BaseArchetypeDef);
-            MloArchetype = arch;
-            IsTimeArchetype = false;
-            IsMloArchetype = true;
         }
 
-        public bool IsActive(float hour)
+        public virtual bool IsActive(float hour)
         {
-            if (Times == null) return true;
-            //if (Times.ExtraFlag) hour -= 0.5f;
-            //if (hour < 0.0f) hour += 24.0f;
-            int h = ((int)hour) % 24;
-            if ((h < 0) || (h > 23)) return true;
-            return Times.ActiveHours[h];
+            return true;
         }
 
         public override string ToString()
         {
-            if (IsTimeArchetype) return TimeArchetype.ToString();
-            if (IsMloArchetype) return MloArchetype.ToString();
-            return BaseArchetype.ToString();
+            return _BaseArchetypeDef.ToString();
         }
     }
 
-
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class MloArchetypeData
+    public class TimeArchetype : Archetype
     {
+        public override MetaName Type => MetaName.CTimeArchetypeDef;
+
+        public CTimeArchetypeDefData _TimeArchetypeDef;
+        public CTimeArchetypeDefData TimeArchetypeDef { get { return _TimeArchetypeDef; } set { _TimeArchetypeDef = value; } }
+
+
+        public uint TimeFlags { get; set; }
+        public bool[] ActiveHours { get; set; }
+        public string[] ActiveHoursText { get; set; }
+        public bool ExtraFlag { get; set; }
+
+
+        public void Init(YtypFile ytyp, ref CTimeArchetypeDef arch)
+        {
+            Ytyp = ytyp;
+            InitVars(ref arch._BaseArchetypeDef);
+            TimeArchetypeDef = arch.TimeArchetypeDef;
+
+            TimeFlags = _TimeArchetypeDef.timeFlags;
+            ActiveHours = new bool[24];
+            ActiveHoursText = new string[24];
+            for (int i = 0; i < 24; i++)
+            {
+                bool v = ((TimeFlags >> i) & 1) == 1;
+                ActiveHours[i] = v;
+
+                int nxth = (i < 23) ? (i + 1) : 0;
+                string hrs = string.Format("{0:00}:00 - {1:00}:00", i, nxth);
+                ActiveHoursText[i] = (hrs + (v ? " - On" : " - Off"));
+            }
+            ExtraFlag = ((TimeFlags >> 24) & 1) == 1;
+        }
+
+        public override bool IsActive(float hour)
+        {
+            if (ActiveHours == null) return true;
+            int h = ((int)hour) % 24;
+            if ((h < 0) || (h > 23)) return true;
+            return ActiveHours[h];
+        }
+    }
+
+    public class MloArchetype : Archetype
+    {
+        public override MetaName Type => MetaName.CMloArchetypeDef;
+
+        public CMloArchetypeDefData _MloArchetypeDef;
+        public CMloArchetypeDefData MloArchetypeDef { get { return _MloArchetypeDef; } set { _MloArchetypeDef = value; } }
+
         public CEntityDef[] entities { get; set; }
         public CMloRoomDef[] rooms { get; set; }
         public CMloPortalDef[] portals { get; set; }
         public CMloEntitySet[] entitySets { get; set; }
         public CMloTimeCycleModifier[] timeCycleModifiers { get; set; }
+
+        public void Init(YtypFile ytyp, ref CMloArchetypeDef arch)
+        {
+            Ytyp = ytyp;
+            InitVars(ref arch._BaseArchetypeDef);
+            MloArchetypeDef = arch.MloArchetypeDef;
+        }
     }
+
+
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class MloInstanceData
@@ -130,16 +158,16 @@ namespace CodeWalker.GameFiles
         public YmapEntityDef[] Entities { get; set; }
 
 
-        public void CreateYmapEntities(YmapEntityDef owner, MloArchetypeData mlod)
+        public void CreateYmapEntities(YmapEntityDef owner, MloArchetype mloa)
         {
             Owner = owner;
             if (owner == null) return;
-            if (mlod.entities == null) return;
-            var ec = mlod.entities.Length;
+            if (mloa.entities == null) return;
+            var ec = mloa.entities.Length;
             Entities = new YmapEntityDef[ec];
             for (int i = 0; i < ec; i++)
             {
-                YmapEntityDef e = new YmapEntityDef(null, i, ref mlod.entities[i]);
+                YmapEntityDef e = new YmapEntityDef(null, i, ref mloa.entities[i]);
                 e.MloRefPosition = e.Position;
                 e.MloRefOrientation = e.Orientation;
                 e.MloParent = owner;
@@ -171,32 +199,5 @@ namespace CodeWalker.GameFiles
 
     }
 
-
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class TimedArchetypeTimes
-    {
-        public uint TimeFlags { get; set; }
-        public bool[] ActiveHours { get; set; }
-        public string[] ActiveHoursText { get; set; }
-        public bool ExtraFlag { get; set; }
-
-        public TimedArchetypeTimes(uint timeFlags)
-        {
-            TimeFlags = timeFlags;
-            ActiveHours = new bool[24];
-            ActiveHoursText = new string[24];
-            for (int i = 0; i < 24; i++)
-            {
-                bool v = ((timeFlags >> i) & 1) == 1;
-                ActiveHours[i] = v;
-
-                int nxth = (i < 23) ? (i + 1) : 0;
-                string hrs = string.Format("{0:00}:00 - {1:00}:00", i, nxth);
-                ActiveHoursText[i] = (hrs + (v ? " - On" : " - Off"));
-            }
-            ExtraFlag = ((timeFlags >> 24) & 1) == 1;
-        }
-
-    }
 
 }

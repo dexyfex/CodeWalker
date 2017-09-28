@@ -819,12 +819,10 @@ namespace CodeWalker.GameFiles
             //MetaName blocktype = 0;
             for (int i = 0; i < count; i++)
             {
-                var sptr = ptrs[i];
-                int blocki = sptr.BlockID - 1;
-                int offset = sptr.ItemOffset * 16;//block data size...
-                if (blocki >= meta.DataBlocks.Count)
-                { continue; }
-                var block = meta.DataBlocks[blocki];
+                var ptr = ptrs[i];
+                var offset = ptr.Offset;
+                var block = meta.GetBlock(ptr.BlockID);
+                if (block == null) continue;
 
                 //if (blocktype == 0)
                 //{ blocktype = block.StructureNameHash; }
@@ -983,11 +981,8 @@ namespace CodeWalker.GameFiles
 
             MetaPOINTER[] ptrs = new MetaPOINTER[count];
             int ptrsize = Marshal.SizeOf(typeof(MetaPOINTER));
-            //int itemsleft = (int)count; //large arrays get split into chunks...
-            uint ptr = array.Pointer;
-            int ptrindex = (int)(ptr & 0xFFF) - 1;
-            int ptroffset = (int)((ptr >> 12) & 0xFFFFF);
-            var ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[ptrindex] : null;
+            int ptroffset = (int)array.PointerDataOffset;
+            var ptrblock = meta.GetBlock((int)array.PointerDataId);
             if ((ptrblock == null) || (ptrblock.Data == null) || (ptrblock.StructureNameHash != MetaName.POINTER))
             { return null; }
 
@@ -1204,7 +1199,7 @@ namespace CodeWalker.GameFiles
                 {
                     var extptr = extptrs[i];
                     MetaWrapper ext = null;
-                    var block = GetDataBlock(meta, extptr);
+                    var block = meta.GetBlock(extptr.BlockID);
                     var h = block.StructureNameHash;
                     switch (h)
                     {
@@ -1277,18 +1272,10 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public static MetaDataBlock GetDataBlock(Meta meta, MetaPOINTER ptr)
-        {
-            int blocki = ptr.BlockID - 1;
-            if ((blocki < 0) || (blocki >= meta.DataBlocks.Count))
-            { return null; }
-            var block = meta.DataBlocks[blocki];
-            return block;
-        }
         public static int GetDataOffset(MetaDataBlock block, MetaPOINTER ptr)
         {
             if (block == null) return -1;
-            int offset = ptr.ItemOffset * 16;//block data size...
+            var offset = ptr.Offset;
             if (ptr.ExtraOffset != 0)
             { }
             //offset += (int)ptr.ExtraOffset;
@@ -1298,13 +1285,7 @@ namespace CodeWalker.GameFiles
         }
         public static T GetData<T>(Meta meta, MetaPOINTER ptr) where T : struct
         {
-            var block = GetDataBlock(meta, ptr);
-            var offset = GetDataOffset(block, ptr);
-            if (offset < 0) return new T();
-            return ConvertData<T>(block.Data, offset);
-        }
-        public static T GetData<T>(MetaDataBlock block, MetaPOINTER ptr) where T : struct
-        {
+            var block = meta.GetBlock(ptr.BlockID);
             var offset = GetDataOffset(block, ptr);
             if (offset < 0) return new T();
             return ConvertData<T>(block.Data, offset);

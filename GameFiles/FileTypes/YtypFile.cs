@@ -83,61 +83,65 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < ptrs.Length; i++)
                 {
                     var ptr = ptrs[i];
-                    int blocki = ptr.BlockID - 1;
-                    int offset = ptr.ItemOffset * 16;//block data size...
-                    if (blocki >= Meta.DataBlocks.Count)
+                    var offset = ptr.Offset;
+                    var block = Meta.GetBlock(ptr.BlockID);
+                    if (block == null)
                     { continue; }
-                    var block = Meta.DataBlocks[blocki];
                     if ((offset < 0) || (block.Data == null) || (offset >= block.Data.Length))
                     { continue; }
 
-                    var ba = new Archetype();
+                    Archetype a = null;
                     switch (block.StructureNameHash)
                     {
                         case MetaName.CBaseArchetypeDef:
                             var basearch = PsoTypes.ConvertDataRaw<CBaseArchetypeDef>(block.Data, offset);
-                            ba.Init(this, ref basearch);
-                            ba.Extensions = MetaTypes.GetExtensions(Meta, basearch.extensions);
+                            a = new Archetype();
+                            a.Init(this, ref basearch);
+                            a.Extensions = MetaTypes.GetExtensions(Meta, basearch.extensions);
                             break;
                         case MetaName.CTimeArchetypeDef:
                             var timearch = PsoTypes.ConvertDataRaw<CTimeArchetypeDef>(block.Data, offset);
-                            ba.Init(this, ref timearch);
-                            ba.Extensions = MetaTypes.GetExtensions(Meta, timearch.BaseArchetypeDef.extensions);
+                            var ta = new TimeArchetype();
+                            ta.Init(this, ref timearch);
+                            ta.Extensions = MetaTypes.GetExtensions(Meta, timearch._BaseArchetypeDef.extensions);
+                            a = ta;
                             break;
                         case MetaName.CMloArchetypeDef:
                             var mloarch = PsoTypes.ConvertDataRaw<CMloArchetypeDef>(block.Data, offset);
-                            ba.Init(this, ref mloarch);
-                            ba.Extensions = MetaTypes.GetExtensions(Meta, mloarch.BaseArchetypeDef.extensions);
+                            var ma = new MloArchetype();
+                            ma.Init(this, ref mloarch);
+                            ma.Extensions = MetaTypes.GetExtensions(Meta, mloarch._BaseArchetypeDef.extensions);
 
-                            MloArchetypeData mlod = new MloArchetypeData();
                             var mlodef = mloarch.MloArchetypeDef;
-                            mlod.entities = MetaTypes.ConvertDataArray<CEntityDef>(Meta, MetaName.CEntityDef, mlodef.entities);
-                            mlod.rooms = MetaTypes.ConvertDataArray<CMloRoomDef>(Meta, MetaName.CMloRoomDef, mlodef.rooms);
-                            mlod.portals = MetaTypes.ConvertDataArray<CMloPortalDef>(Meta, MetaName.CMloPortalDef, mlodef.portals);
-                            mlod.entitySets = MetaTypes.ConvertDataArray<CMloEntitySet>(Meta, MetaName.CMloEntitySet, mlodef.entitySets);
-                            mlod.timeCycleModifiers = MetaTypes.ConvertDataArray<CMloTimeCycleModifier>(Meta, MetaName.CMloTimeCycleModifier, mlodef.timeCycleModifiers);
-                            ba.MloData = mlod;
+                            ma.entities = MetaTypes.ConvertDataArray<CEntityDef>(Meta, MetaName.CEntityDef, mlodef.entities);
+                            ma.rooms = MetaTypes.ConvertDataArray<CMloRoomDef>(Meta, MetaName.CMloRoomDef, mlodef.rooms);
+                            ma.portals = MetaTypes.ConvertDataArray<CMloPortalDef>(Meta, MetaName.CMloPortalDef, mlodef.portals);
+                            ma.entitySets = MetaTypes.ConvertDataArray<CMloEntitySet>(Meta, MetaName.CMloEntitySet, mlodef.entitySets);
+                            ma.timeCycleModifiers = MetaTypes.ConvertDataArray<CMloTimeCycleModifier>(Meta, MetaName.CMloTimeCycleModifier, mlodef.timeCycleModifiers);
 
-                            if (mlod.entities != null)
+                            if (ma.entities != null)
                             {
-                                //for (int e = 0; e < mlod.entities.Length; e++)
+                                //for (int e = 0; e < ma.entities.Length; e++)
                                 //{
-                                //    if (mlod.entities[e].extensions.Count1 > 0)
+                                //    if (ma.entities[e].extensions.Count1 > 0)
                                 //    {
-                                //        var exts = MetaTypes.GetExtensions(Meta, mlod.entities[e].extensions);
+                                //        var exts = MetaTypes.GetExtensions(Meta, ma.entities[e].extensions);
                                 //        if (exts != null)
                                 //        { }
                                 //    }
                                 //}
                             }
 
+                            a = ma;
                             break;
                         default:
                             continue;
                     }
-                    
 
-                    allarchs.Add(ba);
+                    if (a != null)
+                    {
+                        allarchs.Add(a);
+                    }
                 }
             }
             AllArchetypes = allarchs.ToArray();

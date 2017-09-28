@@ -2394,12 +2394,13 @@ namespace CodeWalker.GameFiles
             {
                 foreach (var arch in ytyp.AllArchetypes)
                 {
-                    if (arch.IsTimeArchetype)
+                    if (arch.Type == MetaName.CTimeArchetypeDef)
                     {
-                        var t = arch.TimeArchetype.TimeArchetypeDef.timeFlags;
-                        sb.Append(arch.TimeArchetype.BaseArchetypeDef.name.ToString());
+                        var ta = arch as TimeArchetype;
+                        var t = ta.TimeFlags;
+                        sb.Append(arch.Name);
                         sb.Append(",");
-                        sb.Append(arch.TimeArchetype.BaseArchetypeDef.assetName.ToString());
+                        sb.Append(arch.AssetName);
                         sb.Append(",");
                         for (int i = 0; i < 32; i++)
                         {
