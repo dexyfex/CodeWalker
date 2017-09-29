@@ -11,6 +11,11 @@ namespace CodeWalker.GameFiles
         public ClipDictionary ClipDictionary { get; set; }
 
         public Dictionary<MetaHash, ClipMapEntry> ClipMap { get; set; }
+        public Dictionary<MetaHash, AnimationMapEntry> AnimMap { get; set; }
+
+        public ClipMapEntry[] ClipMapEntries { get; set; }
+        public AnimationMapEntry[] AnimMapEntries { get; set; }
+
 
         public YcdFile() : base(null, GameFileType.Ycd)
         {
@@ -22,7 +27,8 @@ namespace CodeWalker.GameFiles
 
         public void Load(byte[] data, RpfFileEntry entry)
         {
-            //Name = entry.Name;
+            Name = entry.Name;
+            RpfFileEntry = entry;
             //Hash = entry.ShortNameHash;
 
 
@@ -38,16 +44,75 @@ namespace CodeWalker.GameFiles
             ClipDictionary = rd.ReadBlock<ClipDictionary>();
 
             ClipMap = new Dictionary<MetaHash, ClipMapEntry>();
-            if ((ClipDictionary != null) && (ClipDictionary.Clips != null) && (ClipDictionary.Clips.data_items != null))
+            AnimMap = new Dictionary<MetaHash, AnimationMapEntry>();
+            if (ClipDictionary != null)
             {
-                foreach (var cme in ClipDictionary.Clips.data_items)
+                if ((ClipDictionary.Clips != null) && (ClipDictionary.Clips.data_items != null))
                 {
-                    if (cme != null)
+                    foreach (var cme in ClipDictionary.Clips.data_items)
                     {
-                        ClipMap[cme.Hash] = cme;
+                        if (cme != null)
+                        {
+                            ClipMap[cme.Hash] = cme;
+                            var nxt = cme.Next;
+                            while (nxt != null)
+                            {
+                                ClipMap[nxt.Hash] = nxt;
+                                nxt = nxt.Next;
+                            }
+                        }
+                    }
+                }
+                if ((ClipDictionary.Animations != null) && (ClipDictionary.Animations.Animations != null) && (ClipDictionary.Animations.Animations.data_items != null))
+                {
+                    foreach (var ame in ClipDictionary.Animations.Animations.data_items)
+                    {
+                        if (ame != null)
+                        {
+                            AnimMap[ame.Hash] = ame;
+                            var nxt = ame.NextEntry;
+                            while (nxt != null)
+                            {
+                                AnimMap[nxt.Hash] = nxt;
+                                nxt = nxt.NextEntry;
+                            }
+                        }
                     }
                 }
             }
+
+
+            foreach (var cme in ClipMap.Values)
+            {
+                var clip = cme.Clip;
+                if (clip == null) continue;
+                if (string.IsNullOrEmpty(clip.Name)) continue;
+                string name = clip.Name.Replace('\\', '/');
+                var slidx = name.LastIndexOf('/');
+                if ((slidx >= 0) && (slidx < name.Length - 1))
+                {
+                    name = name.Substring(slidx + 1);
+                }
+                var didx = name.LastIndexOf('.');
+                if ((didx > 0) && (didx < name.Length))
+                {
+                    name = name.Substring(0, didx);
+                }
+                name = name.ToLowerInvariant();
+                JenkIndex.Ensure(name);
+
+                //if (name.EndsWith("_uv_0")) //hash for these entries match string with this removed, +1
+                //{
+                //}
+                //if (name.EndsWith("_uv_1")) //same as above, but +2
+                //{
+                //}
+
+            }
+
+
+            ClipMapEntries = ClipMap.Values.ToArray();
+            AnimMapEntries = AnimMap.Values.ToArray();
 
 
         }

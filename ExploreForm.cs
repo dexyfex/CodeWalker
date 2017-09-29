@@ -179,7 +179,7 @@ namespace CodeWalker
             InitFileType(".dds", "DirectDraw Surface", 16);
             InitFileType(".ytd", "Texture Dictionary", 16, FileTypeAction.ViewYtd);
             InitFileType(".mrf", "MRF File", 18);
-            InitFileType(".ycd", "Clip Dictionary", 18);
+            InitFileType(".ycd", "Clip Dictionary", 18, FileTypeAction.ViewYcd);
             InitFileType(".ypt", "Particle Effect", 18, FileTypeAction.ViewModel);
             InitFileType(".ybn", "Static Collisions", 19, FileTypeAction.ViewModel);
             InitFileType(".ide", "Item Definitions", 20, FileTypeAction.ViewText);
@@ -1061,6 +1061,7 @@ namespace CodeWalker
                 case FileTypeAction.ViewFxc:
                 case FileTypeAction.ViewYwr:
                 case FileTypeAction.ViewYvr:
+                case FileTypeAction.ViewYcd:
                     return true;
                 case FileTypeAction.ViewHex:
                 default:
@@ -1148,6 +1149,9 @@ namespace CodeWalker
                         break;
                     case FileTypeAction.ViewYvr:
                         ViewYvr(name, path, data, item.File);
+                        break;
+                    case FileTypeAction.ViewYcd:
+                        ViewYcd(name, path, data, item.File);
                         break;
                     case FileTypeAction.ViewHex:
                     default:
@@ -1340,6 +1344,13 @@ namespace CodeWalker
             YvrForm f = new YvrForm();
             f.Show();
             f.LoadYvr(yvr);
+        }
+        private void ViewYcd(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var ycd = RpfFile.GetFile<YcdFile>(e, data);
+            YcdForm f = new YcdForm();
+            f.Show();
+            f.LoadYcd(ycd);
         }
 
 
@@ -2663,6 +2674,7 @@ namespace CodeWalker
         ViewFxc = 14,
         ViewYwr = 15,
         ViewYvr = 16,
+        ViewYcd = 17,
     }
 
 }

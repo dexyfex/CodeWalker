@@ -234,6 +234,12 @@
     <Compile Include="Forms\XmlForm.Designer.cs">
       <DependentUpon>XmlForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\YcdForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\YcdForm.Designer.cs">
+      <DependentUpon>YcdForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\YtdForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -481,6 +487,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\XmlForm.resx">
       <DependentUpon>XmlForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\YcdForm.resx">
+      <DependentUpon>YcdForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\YtdForm.resx">
       <DependentUpon>YtdForm.cs</DependentUpon>

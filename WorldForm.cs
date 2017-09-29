@@ -1127,12 +1127,26 @@ namespace CodeWalker
                 YcdFile ycd = gameFileCache.GetYcd(clipDict);
                 if ((ycd != null) && (ycd.Loaded))
                 {
-                    ClipMapEntry cme;
-                    if (ycd.ClipMap.TryGetValue(arche.Hash, out cme))
+                    MetaHash ahash = arche.Hash;
+                    MetaHash ahashuv1 = ahash + 1;
+                    MetaHash ahashuv2 = ahash + 2;
+                    ClipMapEntry cme, cmeuv1, cmeuv2;
+                    bool found = false;
+                    if (ycd.ClipMap.TryGetValue(ahash, out cme))
+                    {
+                        found = true;
+                    }
+                    if (ycd.ClipMap.TryGetValue(ahashuv1, out cmeuv1))
+                    {
+                        found = true;
+                    }
+                    if (ycd.ClipMap.TryGetValue(ahashuv2, out cmeuv2))
+                    {
+                        found = true;
+                    }
+                    if (!found)
                     {
                     }
-                    else
-                    { }
                 }
             }
 

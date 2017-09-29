@@ -378,18 +378,18 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public byte Unknown_00h { get; set; }
-        public byte Unknown_01h { get; set; }
-        public byte Unknown_02h { get; set; }
-        public byte Unknown_03h { get; set; }
+        //public byte Unknown_00h { get; set; }
+        //public byte Unknown_01h { get; set; }
+        //public byte Unknown_02h { get; set; }
+        //public byte Unknown_03h { get; set; }
+        public MetaHash Unknown_00h { get; set; }
         public uint DataLength { get; set; }
-        public uint Unknown_08h { get; set; } // 0x00000000
-        public uint Unknown_0Ch { get; set; }
-        public uint Unknown_10h { get; set; }
-        public ushort Unknown_14h { get; set; }
-        public ushort Unknown_16h { get; set; }
-        //public uint Unknown_18h { get; set; }
-        public ushort Unknown_18h { get; set; }
+        public uint Unknown_08h { get; set; } // 0x00000000 ..sequence header offset?
+        public uint Unknown_0Ch { get; set; } //[uv1:] bytes used by sequence "header"? offset to data items
+        public uint Unknown_10h { get; set; } //total block length, == BlockLength
+        public ushort Unknown_14h { get; set; } //
+        public ushort Unknown_16h { get; set; } // count of data items  (361?)
+        public ushort Unknown_18h { get; set; } //[uv1:8] stride of data item? 
         public ushort Unknown_1Ah { get; set; }
         public ushort Unknown_1Ch { get; set; }
         public ushort Unknown_1Eh { get; set; }
@@ -398,11 +398,11 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            //this.Unknown_00h = reader.ReadUInt32();//2965995365  2837183178
-            this.Unknown_00h = reader.ReadByte();  //101        202        97         120
-            this.Unknown_01h = reader.ReadByte();  //127        250        202        168
-            this.Unknown_02h = reader.ReadByte();  //201        27         115        126
-            this.Unknown_03h = reader.ReadByte();  //176        169        131        74
+            this.Unknown_00h = reader.ReadUInt32();//2965995365  2837183178
+            //this.Unknown_00h = reader.ReadByte();  //101        202        97         120
+            //this.Unknown_01h = reader.ReadByte();  //127        250        202        168
+            //this.Unknown_02h = reader.ReadByte();  //201        27         115        126
+            //this.Unknown_03h = reader.ReadByte();  //176        169        131        74
             this.DataLength = reader.ReadUInt32(); //282        142        1206       358
             this.Unknown_08h = reader.ReadUInt32();//0          0          0          0
             this.Unknown_0Ch = reader.ReadUInt32();//224 (E0)   32 (20)    536 (218)  300     offset in data to?
@@ -420,10 +420,10 @@ namespace CodeWalker.GameFiles
             this.Data = reader.ReadBytes((int)DataLength);
 
             reader.Position = pos;
-            float[] fvals = reader.ReadFloatsAt((ulong)pos, DataLength / 4);
-            ushort[] svals = reader.ReadUshortsAt((ulong)pos, DataLength / 2);
-            if (fvals != null)
-            { }
+            //float[] fvals = reader.ReadFloatsAt((ulong)pos, DataLength / 4);
+            //ushort[] svals = reader.ReadUshortsAt((ulong)pos, DataLength / 2);
+            //if (fvals != null)
+            //{ }
 
             //reader.Position = pos;
             //float f0 = reader.ReadSingle();   //     0        0        0        0
@@ -462,6 +462,11 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_1Ch);
             writer.Write(this.Unknown_1Eh);
             writer.Write(this.Data);
+        }
+
+        public override string ToString()
+        {
+            return Unknown_00h.ToString() + ": " + DataLength.ToString();
         }
     }
 
@@ -528,7 +533,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Hash.ToString();
+            return Clip?.Name ?? Hash.ToString();
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipBase : ResourceSystemBlock, IResourceXXSystemBlock
@@ -546,8 +551,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_10h { get; set; }
         public uint Unknown_14h { get; set; } // 0x00000000
         public ulong NamePointer { get; set; }
-        public ushort Unknown_20h { get; set; } // short, name length
-        public ushort Unknown_22h { get; set; } // short, name length +1
+        public ushort NameLength { get; set; } // short, name length
+        public ushort NameCapacity { get; set; } // short, name length +1
         public uint Unknown_24h { get; set; } // 0x00000000
         public ulong Unknown_28hPtr { get; set; } // 0x50000000
         public uint Unknown_30h { get; set; }
@@ -572,8 +577,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_10h = reader.ReadUInt32();
             this.Unknown_14h = reader.ReadUInt32();
             this.NamePointer = reader.ReadUInt64();
-            this.Unknown_20h = reader.ReadUInt16();
-            this.Unknown_22h = reader.ReadUInt16();
+            this.NameLength = reader.ReadUInt16();
+            this.NameCapacity = reader.ReadUInt16();
             this.Unknown_24h = reader.ReadUInt32();
             this.Unknown_28hPtr = reader.ReadUInt64();
             this.Unknown_30h = reader.ReadUInt32();
@@ -613,7 +618,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_10h);
             writer.Write(this.Unknown_14h);
             writer.Write(this.NamePointer);
-            writer.Write(this.Unknown_20h);
+            writer.Write(this.NameLength);
             writer.Write(this.Unknown_24h);
             writer.Write(this.Unknown_28hPtr);
             writer.Write(this.Unknown_30h);

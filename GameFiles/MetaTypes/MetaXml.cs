@@ -545,7 +545,18 @@ namespace CodeWalker.GameFiles
                         }
                         break;
                     case PsoDataType.Flags:
-                        var flagsInfo = cont.GetEnumInfo(entry.EntryNameHash);
+                        uint fCount = (entry.ReferenceKey >> 16) & 0x0000FFFF;
+                        uint fEntry = (entry.ReferenceKey & 0xFFFF);
+                        var fEnt = structInfo.GetEntry((int)fEntry);
+                        PsoEnumInfo flagsInfo = null;
+                        if ((fEnt != null) && (fEnt.EntryNameHash == MetaName.ARRAYINFO))
+                        {
+                            flagsInfo = cont.GetEnumInfo((MetaName)fEnt.ReferenceKey);
+                        }
+                        if (flagsInfo == null)
+                        {
+                            flagsInfo = cont.GetEnumInfo(entry.EntryNameHash);
+                        }
                         uint? flagsVal = null;
                         switch (entry.Unk_5h)
                         {
@@ -869,7 +880,7 @@ namespace CodeWalker.GameFiles
                             var arrHash = MetaTypes.ConvertData<Array_uint>(data, eoffset);
                             arrHash.SwapEnd();
                             var hashArr = PsoTypes.GetHashArray(cont.Pso, arrHash);
-                            WriteItemArray(sb, hashArr, indent, ename, "Hash", FormatHash);
+                            WriteItemArray(sb, hashArr, indent, ename, "Hash", HashString);
                             break;
                     }
                     break;
@@ -957,23 +968,54 @@ namespace CodeWalker.GameFiles
                     var mapreftype2 = structInfo.Entries[mapidx1];
                     var x1 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset));//same as ref key?
                     var x2 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset + 4));//0?
-                    var xStrucPtr = MetaTypes.ConvertData<Array_Structure>(data, eoffset + 8);
-                    xStrucPtr.SwapEnd();
-                    var xBlockId = (int)xStrucPtr.PointerDataId;
+                    var x3 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset + 8));//pointer?
+                    var x4 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset + 12));//
+                    var x5 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset + 16));//count/capacity?
+                    var x6 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset + 20));//
+
+                    //File.WriteAllText("C:\\CodeWalker.Projects\\testxml.xml", sb.ToString());
+
+                    if (x1 != 0x1000000)
+                    { }
+                    if (x2 != 0)
+                    { }
+                    if (x4 != 0)
+                    { }
+                    if (x6 != 0)
+                    { }
+
+
+                    var xBlockId = x3 & 0xFFF;
+                    var xOffset = (x3 >> 12) & 0xFFFFF;
+                    var xCount1 = x5 & 0xFFFF;
+                    var xCount2 = (x5 >> 16) & 0xFFFF;
+
+                    //var x1a = x1 & 0xFFF; //block id? for another pointer?
+                    //var x1b = (x1 >> 12) & 0xFFFFF; //offset?
+                    //var x4u = (uint)x4;
+                    //var x4a = x4 & 0xFFF; //block id?
+                    //var x4b = (x4 >> 12) & 0xFFFFF; //offset?
+                    //var x2h = (MetaHash)(uint)x2;
+                    //var x6h = (MetaHash)(uint)x6;
+                    //if (x1a > 0)
+                    //{ }
+
+
+
                     var xBlock = cont.Pso.GetBlock(xBlockId);
-                    if ((xBlock == null) && (xStrucPtr.Count1 > 0))
+                    if ((xBlock == null) && (xCount1 > 0))
                     {
-                        ErrorXml(sb, cind, ename + ": Couldn't find Map xBlock: " + xStrucPtr.PointerDataId.ToString());
+                        ErrorXml(sb, cind, ename + ": Couldn't find Map xBlock: " + xBlockId.ToString());
                     }
                     else
                     {
-                        if (xStrucPtr.Count1 != xStrucPtr.Count2)
+                        if (xCount1 != xCount2)
                         {
                         }
-                        if (xStrucPtr.Count1 > 0)
+                        if (xCount1 > 0)
                         {
                             var xStruct = cont.GetStructureInfo(xBlock.NameHash);
-                            var xOffset1 = xStrucPtr.PointerDataOffset;
+                            var xOffset1 = xOffset;
                             var xind = indent + 1;
                             var aind = indent + 2;
                             var kEntry = xStruct?.FindEntry(MetaName.Key);
@@ -1010,14 +1052,14 @@ namespace CodeWalker.GameFiles
                             else
                             {
                                 OpenTag(sb, xind, ename);
-                                int xOffset = (int)xOffset1;
-                                int xCount = xStrucPtr.Count1;
+                                int xOffset2 = (int)xOffset1;
+                                int xCount = xCount1;
 
                                 for (int n = 0; n < xCount; n++)
                                 {
                                     //WriteNode(sb, aind, cont, xBlockId, xOffset, XmlTagMode.Item, xStruct.IndexInfo.NameHash);
 
-                                    int sOffset = xOffset + xBlock.Offset;
+                                    int sOffset = xOffset2 + xBlock.Offset;
                                     var kOffset = sOffset + kEntry.DataOffset;
                                     var iOffset = sOffset + iEntry.DataOffset;
                                     var kStr = GetStringValue(cont.Pso, kEntry, data, kOffset);
@@ -1036,7 +1078,9 @@ namespace CodeWalker.GameFiles
                                         var iStruc = cont.GetStructureInfo(iBlock.NameHash);
                                         if (iStruc?.EntriesCount == 0)
                                         {
-                                            SelfClosingTag(sb, aind, iStr);
+                                            //SelfClosingTag(sb, aind, iStr);
+                                            OpenTag(sb, aind, iStr);
+                                            CloseTag(sb, aind, "Item");
                                         }
                                         else
                                         {
@@ -1045,7 +1089,7 @@ namespace CodeWalker.GameFiles
                                             CloseTag(sb, aind, "Item");
                                         }
                                     }
-                                    xOffset += xStruct.StructureLength;
+                                    xOffset2 += xStruct.StructureLength;
                                     if ((n < (xCount - 1)) && (xBlock != null) && (xOffset >= xBlock.Length))
                                     {
                                         ErrorXml(sb, aind, "Offset out of range! Count is " + xCount.ToString());
@@ -1489,6 +1533,15 @@ namespace CodeWalker.GameFiles
         public static string HashString(MetaHash h)
         {
             var str = JenkIndex.TryGetString(h);
+
+            if (string.IsNullOrEmpty(str))
+            {
+                var nh = (MetaName)(uint)h;
+                if (Enum.IsDefined(typeof(MetaName), nh))
+                {
+                    return nh.ToString();
+                }
+            }
 
             //todo: make sure JenkIndex is built!
             //todo: do extra hash lookup here
