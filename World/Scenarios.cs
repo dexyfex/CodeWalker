@@ -435,7 +435,7 @@ namespace CodeWalker.World
 
         public void BuildBVH()
         {
-            BVH = new PathBVH(Nodes, 10);
+            BVH = new PathBVH(Nodes, 10, 10);
         }
 
         public void BuildVertices()

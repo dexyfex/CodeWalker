@@ -297,6 +297,7 @@ namespace CodeWalker
             ScenarioNewEntityOverrideMenu.Enabled = enable && inproj;
             ScenarioNewChainMenu.Enabled = enable && inproj;
             ScenarioNewClusterMenu.Enabled = enable && inproj;
+            ScenarioImportChainMenu.Enabled = enable && inproj;
 
             if (CurrentScenario != null)
             {
@@ -5528,7 +5529,163 @@ namespace CodeWalker
 
 
 
+        private void ImportScenarioChain()
+        {
+            var paths = CurrentScenario?.CScenarioPointRegion?.Paths;
+            if (paths == null) return;
+            var rgn = CurrentScenario.ScenarioRegion;
+            if (rgn == null) return;
 
+            TextInputForm f = new TextInputForm();
+            f.TitleText = "Import scenario chain points";
+            f.PromptText = "Input chain points in CSV format. Direction is in radians. NavSpeed is from 0 to 15. NavMode can be either Direct, NavMesh, or Roads. ScenarioType is the name of the scenario type to use.";
+            f.MainText = "X, Y, Z, Direction, NavSpeed, NavMode, ScenarioType";
+            if (f.ShowDialog() == DialogResult.Cancel) return;
+
+            var stypes = Scenarios.ScenarioTypes; //these are loaded by Scenarios.Init
+            ScenarioType defaulttype = null;
+            if (stypes != null)
+            {
+                defaulttype = stypes.GetScenarioType(1194480618); //"drive";
+            }
+
+            ScenarioNode thisnode = null;
+            ScenarioNode lastnode = null;
+            MCScenarioChainingEdge lastedge = null;
+
+            var str = f.MainText;
+            var lines = str.Split('\n');
+
+
+            if (lines.Length < 2)
+            {
+                return;//need at least 2 lines (1 point) to work with...
+            }
+
+
+
+            MCScenarioChain chain = new MCScenarioChain();
+
+            paths.AddChain(chain);
+
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                var vals = line.Split(',');
+                if (vals.Length < 3) continue;
+                if (vals[0].StartsWith("X")) continue;
+                Vector3 pos = Vector3.Zero;
+                float dir = 0;
+                var action = Unk_3609807418.Move;
+                var navMode = Unk_3971773454.Direct;
+                var navSpeed = Unk_941086046.Unk_00_3279574318;
+                var stype = defaulttype;
+                var ok = true;
+                ok = ok && FloatUtil.TryParse(vals[0].Trim(), out pos.X);
+                ok = ok && FloatUtil.TryParse(vals[1].Trim(), out pos.Y);
+                ok = ok && FloatUtil.TryParse(vals[2].Trim(), out pos.Z);
+                if (vals.Length > 3)
+                {
+                    ok = ok && FloatUtil.TryParse(vals[3].Trim(), out dir);
+                }
+                if (vals.Length > 4)
+                {
+                    byte nsb = 0;
+                    byte.TryParse(vals[4].Trim(), out nsb);
+                    if (nsb > 15) nsb = 15;
+                    navSpeed = (Unk_941086046)nsb;
+                }
+                if (vals.Length > 5)
+                {
+                    switch (vals[5].Trim())
+                    {
+                        case "Direct": navMode = Unk_3971773454.Direct; break;
+                        case "NavMesh": navMode = Unk_3971773454.NavMesh; break;
+                        case "Roads": navMode = Unk_3971773454.Roads; break;
+                    }
+                }
+                if (vals.Length > 6)
+                {
+                    var sthash = JenkHash.GenHash(vals[6].Trim().ToLowerInvariant());
+                    stype = stypes?.GetScenarioType(sthash) ?? defaulttype;
+                }
+
+                if (!ok) continue;
+
+
+
+                thisnode = rgn.AddNode();
+
+                thisnode.MyPoint.Direction = dir;
+                thisnode.MyPoint.Type = stype;
+
+                thisnode.ChainingNode = new MCScenarioChainingNode();
+                thisnode.ChainingNode.Chain = chain;
+                thisnode.ChainingNode.Type = stype;
+                thisnode.ChainingNode.TypeHash = stype?.NameHash ?? 0;
+                thisnode.ChainingNode.NotLast = (i < (lines.Length - 1));
+                thisnode.ChainingNode.NotFirst = (lastnode != null);
+
+                thisnode.SetPosition(pos);
+
+                paths.AddNode(thisnode.ChainingNode);
+
+
+                if (lastnode != null)
+                {
+                    var edge = new MCScenarioChainingEdge();
+
+                    edge.NodeFrom = lastnode.ChainingNode;
+                    edge.NodeTo = thisnode.ChainingNode;
+                    edge.NodeIndexFrom = (ushort)lastnode.ChainingNode.NodeIndex;
+                    edge.NodeIndexTo = (ushort)thisnode.ChainingNode.NodeIndex;
+
+                    edge.Action = action;
+                    edge.NavMode = navMode;
+                    edge.NavSpeed = navSpeed;
+
+                    paths.AddEdge(edge);
+                    chain.AddEdge(edge);
+
+                    lastedge = edge;
+                }
+
+
+                lastnode = thisnode;
+            }
+
+
+
+
+
+
+            LoadProjectTree();
+
+            if (lastnode != null)
+            {
+                TrySelectScenarioNodeTreeNode(lastnode);
+                CurrentScenarioNode = lastnode;
+            }
+
+            CurrentScenarioChainEdge = lastedge;
+            LoadScenarioChainTabPage();
+            //LoadScenarioTabPage();
+            //LoadScenarioNodeTabPages();
+
+
+            if (WorldForm != null)
+            {
+                WorldForm.UpdateScenarioGraphics(CurrentScenario, false);
+            }
+            else
+            {
+                CurrentScenario.ScenarioRegion.BuildBVH();
+                CurrentScenario.ScenarioRegion.BuildVertices(); //for the graphics...
+            }
+
+
+        }
 
 
 
@@ -6921,6 +7078,11 @@ namespace CodeWalker
         private void ScenarioNewClusterMenu_Click(object sender, EventArgs e)
         {
             AddScenarioCluster();
+        }
+
+        private void ScenarioImportChainMenu_Click(object sender, EventArgs e)
+        {
+            ImportScenarioChain();
         }
 
         private void ScenarioAddToProjectMenu_Click(object sender, EventArgs e)
@@ -10251,6 +10413,11 @@ namespace CodeWalker
                 }
             }
             UpdateScenarioNodeTreeNode(CurrentScenarioNode);
+
+            if (CurrentScenarioNode.ChainingNode != null)
+            {
+                ScenarioChainNodeTypeComboBox.SelectedItem = stype;
+            }
         }
 
         private void ScenarioClusterPointModelSetComboBox_SelectedIndexChanged(object sender, EventArgs e)

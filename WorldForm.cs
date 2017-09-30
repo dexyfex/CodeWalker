@@ -1130,7 +1130,7 @@ namespace CodeWalker
                     MetaHash ahash = arche.Hash;
                     MetaHash ahashuv1 = ahash + 1;
                     MetaHash ahashuv2 = ahash + 2;
-                    ClipMapEntry cme, cmeuv1, cmeuv2;
+                    ClipMapEntry cme, cmeuv1, cmeuv2; //this goes to at least uv5! (from uv0) - see hw1_09.ycd
                     bool found = false;
                     if (ycd.ClipMap.TryGetValue(ahash, out cme))
                     {

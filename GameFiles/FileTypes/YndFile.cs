@@ -632,7 +632,7 @@ namespace CodeWalker.GameFiles
 
         public void BuildBVH()
         {
-            BVH = new PathBVH(Nodes, 10);
+            BVH = new PathBVH(Nodes, 10, 10);
         }
 
 
@@ -1217,6 +1217,8 @@ namespace CodeWalker.GameFiles
 
     public class PathBVHNode
     {
+        public int Depth;
+        public int MaxDepth;
         public int Threshold;
         public List<BasePathNode> Nodes;
         public BoundingBox Box;
@@ -1243,7 +1245,7 @@ namespace CodeWalker.GameFiles
 
         public void Build()
         {
-            if ((Nodes == null) || (Nodes.Count <= Threshold)) return;
+            if ((Nodes == null) || (Nodes.Count <= Threshold) || (Depth >= MaxDepth)) return;
 
             Vector3 avgsum = Vector3.Zero;
             foreach (var node in Nodes)
@@ -1287,14 +1289,19 @@ namespace CodeWalker.GameFiles
                 else l2.Add(node);
             }
 
+            var cdepth = Depth + 1;
 
             Node1 = new PathBVHNode();
+            Node1.Depth = cdepth;
+            Node1.MaxDepth = MaxDepth;
             Node1.Threshold = Threshold;
             Node1.Nodes = new List<BasePathNode>(l1);
             Node1.CalcBounds();
             Node1.Build();
 
             Node2 = new PathBVHNode();
+            Node2.Depth = cdepth;
+            Node2.MaxDepth = MaxDepth;
             Node2.Threshold = Threshold;
             Node2.Nodes = new List<BasePathNode>(l2);
             Node2.CalcBounds();
@@ -1317,9 +1324,10 @@ namespace CodeWalker.GameFiles
     public class PathBVH : PathBVHNode
     {
 
-        public PathBVH(IEnumerable<BasePathNode> nodes, int threshold)
+        public PathBVH(IEnumerable<BasePathNode> nodes, int threshold, int maxdepth)
         {
             Threshold = threshold;
+            MaxDepth = maxdepth;
             Nodes = (nodes != null) ? new List<BasePathNode>(nodes) : new List<BasePathNode>();
             CalcBounds();
             Build();

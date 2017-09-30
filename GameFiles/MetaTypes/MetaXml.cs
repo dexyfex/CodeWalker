@@ -511,17 +511,17 @@ namespace CodeWalker.GameFiles
                         WriteArrayNode(sb, cind, cont, blockId, offset, entry, structInfo, ename);
 
                         break;
-                    case PsoDataType.Boolean:
+                    case PsoDataType.Bool:
                         var boolVal = BitConverter.ToBoolean(data, eoffset);
                         ValueTag(sb, cind, ename, boolVal?"true":"false");
                         break;
-                    case PsoDataType.Byte1: //was LONG_01h //signed byte?
+                    case PsoDataType.SByte: //was LONG_01h //signed byte?
                         //var long1Val = MetaTypes.SwapBytes(BitConverter.ToUInt64(data, eoffset));
                         //ValueTag(sb, cind, ename, long1Val.ToString());
                         var byte1Val = (sbyte)data[eoffset];
                         ValueTag(sb, cind, ename, byte1Val.ToString());
                         break;
-                    case PsoDataType.Byte2:
+                    case PsoDataType.UByte:
                         var byte2Val = data[eoffset];
                         ValueTag(sb, cind, ename, byte2Val.ToString());
                         break;
@@ -614,7 +614,7 @@ namespace CodeWalker.GameFiles
                         var v3a = MetaTypes.SwapBytes(MetaTypes.ConvertData<Vector3>(data, eoffset));
                         SelfClosingTag(sb, cind, ename + " x=\"" + FloatUtil.ToString(v3a.X) + "\" y=\"" + FloatUtil.ToString(v3a.Y) + "\" z=\"" + FloatUtil.ToString(v3a.Z) + "\"");
                         break;
-                    case PsoDataType.Float3b: //TODO: check this! //...why are there 3 different types of float3?
+                    case PsoDataType.Float4a: //TODO: check this! //...why are there 3 different types of float3?
                         var v3b = MetaTypes.SwapBytes(MetaTypes.ConvertData<Vector3>(data, eoffset));
                         SelfClosingTag(sb, cind, ename + " x=\"" + FloatUtil.ToString(v3b.X) + "\" y=\"" + FloatUtil.ToString(v3b.Y) + "\" z=\"" + FloatUtil.ToString(v3b.Z) + "\"");
                         break;
@@ -622,11 +622,11 @@ namespace CodeWalker.GameFiles
                         var v4 = MetaTypes.SwapBytes(MetaTypes.ConvertData<Vector4>(data, eoffset));
                         SelfClosingTag(sb, cind, ename + " x=\"" + FloatUtil.ToString(v4.X) + "\" y=\"" + FloatUtil.ToString(v4.Y) + "\" z=\"" + FloatUtil.ToString(v4.Z) + "\" w=\"" + FloatUtil.ToString(v4.W) + "\"");
                         break;
-                    case PsoDataType.INT_05h: //TODO: convert hashes?
+                    case PsoDataType.SInt: //TODO: convert hashes?
                         var int5Val = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset));
                         ValueTag(sb, cind, ename, int5Val.ToString());
                         break;
-                    case PsoDataType.Integer:
+                    case PsoDataType.UInt:
                         switch (entry.Unk_5h)
                         {
                             default:
@@ -642,7 +642,7 @@ namespace CodeWalker.GameFiles
                                 break;
                         }
                         break;
-                    case PsoDataType.LONG_20h:
+                    case PsoDataType.Long:
                         var long2Val = MetaTypes.SwapBytes(BitConverter.ToUInt64(data, eoffset));
                         ValueTag(sb, cind, ename, long2Val.ToString());
                         break;
@@ -651,15 +651,15 @@ namespace CodeWalker.GameFiles
                         WriteMapNode(sb, indent, cont, eoffset, entry, structInfo, ename);
 
                         break;
-                    case PsoDataType.SHORT_03h:
+                    case PsoDataType.SShort:
                         var short3Val = (short)MetaTypes.SwapBytes(BitConverter.ToUInt16(data, eoffset));
                         ValueTag(sb, cind, ename, short3Val.ToString());
                         break;
-                    case PsoDataType.SHORT_04h:
+                    case PsoDataType.UShort:
                         var short4Val = MetaTypes.SwapBytes(BitConverter.ToUInt16(data, eoffset));
                         ValueTag(sb, cind, ename, short4Val.ToString());
                         break;
-                    case PsoDataType.SHORT_1Eh://half float?
+                    case PsoDataType.HFloat://half float?
                         var short1EVal = MetaTypes.SwapBytes(BitConverter.ToUInt16(data, eoffset));
                         ValueTag(sb, cind, ename, short1EVal.ToString());
                         break;
@@ -896,7 +896,7 @@ namespace CodeWalker.GameFiles
                     var v4Arr = MetaTypes.ConvertDataArray<Vector4>(data, eoffset, (int)aCount);
                     WriteRawArray(sb, v4Arr, indent, ename, "Vector3", FormatVector4SwapXYZOnly, 1);
                     break;
-                case PsoDataType.Byte2:
+                case PsoDataType.UByte:
                     var barr = new byte[aCount];
                     if (aCount > 0)
                     {
@@ -906,7 +906,7 @@ namespace CodeWalker.GameFiles
                     }
                     WriteRawArray(sb, barr, indent, ename, "byte");
                     break;
-                case PsoDataType.Boolean:
+                case PsoDataType.Bool:
                     var barr2 = new byte[aCount];
                     if (aCount > 0)
                     {
@@ -922,17 +922,17 @@ namespace CodeWalker.GameFiles
                     var floatArr = PsoTypes.GetFloatArray(cont.Pso, arrFloat);
                     WriteRawArray(sb, floatArr, indent, ename, "float");
                     break;
-                case PsoDataType.SHORT_04h:
+                case PsoDataType.UShort:
                     var arrShort = MetaTypes.ConvertData<Array_Structure>(data, eoffset);
                     arrShort.SwapEnd();
                     var shortArr = PsoTypes.GetUShortArray(cont.Pso, arrShort);
                     WriteRawArray(sb, shortArr, indent, ename, "ushort");
                     break;
-                case PsoDataType.Integer:
+                case PsoDataType.UInt:
                     var intArr = MetaTypes.ConvertDataArray<int>(data, eoffset, (int)aCount);
                     WriteRawArray(sb, intArr, indent, ename, "int");
                     break;
-                case PsoDataType.INT_05h:
+                case PsoDataType.SInt:
                     var arrUint2 = MetaTypes.ConvertData<Array_uint>(data, eoffset);
                     arrUint2.SwapEnd();
                     var intArr2 = PsoTypes.GetUintArray(cont.Pso, arrUint2);

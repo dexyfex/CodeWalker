@@ -3374,6 +3374,10 @@ namespace CodeWalker.GameFiles
         vfxPedInfos = 1918175602,
 
 
+        CPedModelInfo__InitData = 3949383814,
+
+
+
 
 
 

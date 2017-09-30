@@ -49,35 +49,13 @@ namespace CodeWalker.GameFiles
 
     public enum PsoDataType : byte
     {
-        //BYTE_00h = 0x00,
-        //LONG_01h = 0x01,
-        //BYTE_02h = 0x02,
-        //SHORT_03h = 0x03,
-        //SHORT_04h = 0x04,
-        //INT_05h = 0x05,
-        //INT_06h = 0x06,
-        //Float = 0x07,
-        //LONG_08h = 0x08,
-        //TYPE_09h = 0x09,
-        //TYPE_0Ah = 0x0a,
-        //INT_0Bh = 0x0b, //Hash? Name
-        //Structure = 0x0c,
-        //Array = 0x0d,
-        //BYTE_ENUM_VALUE = 0x0e,
-        //SHORT_0Fh = 0x0f, //short flags
-        //TYPE_10h = 0x10,
-        //TYPE_14h = 0x14,
-        //Vector4 = 0x15,
-        //SHORT_1Eh = 0x1e,
-        //LONG_20h = 0x20
-
-        Boolean = 0x00,
-        Byte1 = 0x01, //signed byte..
-        Byte2 = 0x02,
-        SHORT_03h = 0x03, //signed short?
-        SHORT_04h = 0x04,
-        INT_05h = 0x05, //signed int?
-        Integer = 0x06, //...unsigned?
+        Bool = 0x00,
+        SByte = 0x01,
+        UByte = 0x02,
+        SShort = 0x03,
+        UShort = 0x04,
+        SInt = 0x05,
+        UInt = 0x06,
         Float = 0x07,
         Float2 = 0x08,
         Float3 = 0x09,
@@ -89,69 +67,39 @@ namespace CodeWalker.GameFiles
         Flags = 0x0f,
         Map = 0x10,
         Float3a = 0x14,
-        Float3b = 0x15,
-        SHORT_1Eh = 0x1e,
-        LONG_20h = 0x20
-
+        Float4a = 0x15,
+        HFloat = 0x1e,
+        Long = 0x20,
     }
     public static class PsoDataTypes
     {
         public static string GetCSharpTypeName(PsoDataType t)
         {
-            //MetaStructureEntryDataType mdt = (MetaStructureEntryDataType)t;
             switch (t)
             {
-                case PsoDataType.Boolean: return "bool";
-                case PsoDataType.Byte1: return "sbyte"; //was LONG_01h.. why?
-                case PsoDataType.Byte2: return "byte";
-                case PsoDataType.SHORT_03h: return "short";
-                case PsoDataType.SHORT_04h: return "short";
-                case PsoDataType.INT_05h: return "int";
-                case PsoDataType.Integer: return "int";
+                case PsoDataType.Bool: return "bool";
+                case PsoDataType.SByte: return "sbyte";
+                case PsoDataType.UByte: return "byte";
+                case PsoDataType.SShort: return "short";
+                case PsoDataType.UShort: return "ushort";
+                case PsoDataType.SInt: return "int";
+                case PsoDataType.UInt: return "int";
                 case PsoDataType.Float: return "float";
                 case PsoDataType.Float2: return "long";
                 case PsoDataType.String: return "uint"; //hash? NEEDS WORK?
                 case PsoDataType.Enum: return "byte";
                 case PsoDataType.Flags: return "short";
-                case PsoDataType.SHORT_1Eh: return "short";
-                case PsoDataType.LONG_20h: return "long";
+                case PsoDataType.HFloat: return "short";
+                case PsoDataType.Long: return "long";
                 case PsoDataType.Float3:
                 case PsoDataType.Float4:
                 case PsoDataType.Map:
                 case PsoDataType.Float3a:
-                case PsoDataType.Float3b:
+                case PsoDataType.Float4a:
                 case PsoDataType.Structure:
                 case PsoDataType.Array:
                 default:
                     return t.ToString();
-
-                //case MetaStructureEntryDataType.Boolean: return "bool";
-                //case MetaStructureEntryDataType.SignedByte: return "sbyte";
-                //case MetaStructureEntryDataType.UnsignedByte: return "byte";
-                //case MetaStructureEntryDataType.SignedShort: return "short";
-                //case MetaStructureEntryDataType.UnsignedShort: return "ushort";
-                //case MetaStructureEntryDataType.SignedInt: return "int";
-                //case MetaStructureEntryDataType.UnsignedInt: return "uint";
-                //case MetaStructureEntryDataType.Float: return "float";
-                //case MetaStructureEntryDataType.Float_XYZ: return "Vector3";
-                //case MetaStructureEntryDataType.Float_XYZW: return "Vector4";
-
-                //case MetaStructureEntryDataType.Hash: return "uint"; //uint hashes...
-                //case MetaStructureEntryDataType.ByteEnum: return "byte"; //convert to enum later..
-                //case MetaStructureEntryDataType.IntEnum: return "int";
-                //case MetaStructureEntryDataType.ShortFlags: return "short";
-                //case MetaStructureEntryDataType.IntFlags1: return "int";
-                //case MetaStructureEntryDataType.IntFlags2: return "int";
-
-                //case MetaStructureEntryDataType.Array:
-                //case MetaStructureEntryDataType.ArrayOfChars:
-                //case MetaStructureEntryDataType.ArrayOfBytes:
-                //case MetaStructureEntryDataType.DataBlockPointer:
-                //case MetaStructureEntryDataType.CharPointer:
-                //case MetaStructureEntryDataType.StructurePointer:
-                //case MetaStructureEntryDataType.Structure:
-                //default:
-                //    return t.ToString();
             }
         }
     }
