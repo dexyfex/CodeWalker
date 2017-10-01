@@ -326,6 +326,18 @@ namespace CodeWalker.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Grass {
+            get {
+                return ((bool)(this["Grass"]));
+            }
+            set {
+                this["Grass"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool ShowStatusBar {
             get {
                 return ((bool)(this["ShowStatusBar"]));

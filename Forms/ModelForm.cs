@@ -1112,28 +1112,7 @@ namespace CodeWalker.Forms
                         hash = Yft?.RpfFileEntry?.ShortNameHash ?? 0;
                         arch = TryGetArchetype(hash);
 
-                        RenderDrawable(f.Drawable, arch, null, -camera.Position, hash);
-
-                        if (f.Unknown_F8h_Data != null) //cloth
-                        {
-                            RenderDrawable(f.Unknown_F8h_Data, arch, null, -camera.Position, hash);
-                        }
-                        //vehicle wheels...
-                        if ((f.PhysicsLODGroup != null) && (f.PhysicsLODGroup.PhysicsLOD1 != null))
-                        {
-                            var pl1 = f.PhysicsLODGroup.PhysicsLOD1;
-                            if ((pl1.Children != null) && (pl1.Children.data_items != null))
-                            {
-                                for (int i = 0; i < pl1.Children.data_items.Length; i++)
-                                {
-                                    var pch = pl1.Children.data_items[i];
-                                    if ((pch.Drawable1 != null) && (pch.Drawable1.AllModels.Length != 0))
-                                    {
-                                        //RenderDrawable(pch.Drawable1, null, null, -camera.Position, hash);
-                                    }
-                                }
-                            }
-                        }
+                        RenderFragment(arch, null, f, hash);
                     }
                 }
             }
@@ -1173,7 +1152,36 @@ namespace CodeWalker.Forms
 
 
 
+        private bool RenderFragment(Archetype arch, YmapEntityDef ent, FragType f, uint txdhash = 0)
+        {
+            var pos = ent?.Position ?? Vector3.Zero;
 
+            RenderDrawable(f.Drawable, arch, ent, pos - camera.Position, txdhash);
+
+            if (f.Unknown_F8h_Data != null) //cloth
+            {
+                RenderDrawable(f.Unknown_F8h_Data, arch, ent, pos - camera.Position, txdhash);
+            }
+
+            //vehicle wheels...
+            if ((f.PhysicsLODGroup != null) && (f.PhysicsLODGroup.PhysicsLOD1 != null))
+            {
+                var pl1 = f.PhysicsLODGroup.PhysicsLOD1;
+                if ((pl1.Children != null) && (pl1.Children.data_items != null))
+                {
+                    for (int i = 0; i < pl1.Children.data_items.Length; i++)
+                    {
+                        var pch = pl1.Children.data_items[i];
+                        if ((pch.Drawable1 != null) && (pch.Drawable1.AllModels.Length != 0))
+                        {
+                            //RenderDrawable(pch.Drawable1, arch, ent, -camera.Position, hash);
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
 
         private bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, Vector3 camrel, uint txdHash = 0)
         {
@@ -1188,7 +1196,6 @@ namespace CodeWalker.Forms
 
             return RenderRenderable(rndbl, arche, entity, camrel);
         }
-
 
         private bool RenderRenderable(Renderable rndbl, Archetype arche, YmapEntityDef entity, Vector3 camrel)
         {

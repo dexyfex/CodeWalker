@@ -6282,6 +6282,7 @@ namespace CodeWalker
             HDRRenderingCheckBox.Checked = s.HDR;
             ShadowsCheckBox.Checked = s.Shadows;
             SkydomeCheckBox.Checked = s.Skydome;
+            GrassCheckBox.Checked = s.Grass;
             TimedEntitiesCheckBox.Checked = s.ShowTimedEntities;
             CollisionMeshesCheckBox.Checked = s.ShowCollisionMeshes;
             CollisionMeshRangeTrackBar.Value = s.CollisionMeshRange;
@@ -6315,6 +6316,7 @@ namespace CodeWalker
             s.HDR = HDRRenderingCheckBox.Checked;
             s.Shadows = ShadowsCheckBox.Checked;
             s.Skydome = SkydomeCheckBox.Checked;
+            s.Grass = GrassCheckBox.Checked;
             s.ShowTimedEntities = TimedEntitiesCheckBox.Checked;
             s.ShowCollisionMeshes = CollisionMeshesCheckBox.Checked;
             s.CollisionMeshRange = CollisionMeshRangeTrackBar.Value;
