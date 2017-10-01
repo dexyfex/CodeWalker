@@ -135,6 +135,7 @@ namespace CodeWalker
         List<MapBox> BoundingBoxes = new List<MapBox>();
         List<MapSphere> BoundingSpheres = new List<MapSphere>();
         List<MapBox> HilightBoxes = new List<MapBox>();
+        List<MapBox> SelectionBoxes = new List<MapBox>();
 
 
         bool controllightdir = false; //if not, use timecycle
@@ -222,6 +223,8 @@ namespace CodeWalker
         Dictionary<DrawableGeometry, bool> SelectionGeometryDrawFlags = new Dictionary<DrawableGeometry, bool>();
         List<VertexTypePC> SelectionLineVerts = new List<VertexTypePC>();
         List<VertexTypePC> SelectionTriVerts = new List<VertexTypePC>();
+
+        YmapEntityDef SelectedCarGenEntity = new YmapEntityDef();
 
 
         TransformWidget Widget = new TransformWidget();
@@ -562,6 +565,7 @@ namespace CodeWalker
 
             UpdateWidgets();
 
+            SelectionBoxes.Clear();
             HilightBoxes.Clear();
             BoundingBoxes.Clear();
             BoundingSpheres.Clear();
@@ -594,15 +598,15 @@ namespace CodeWalker
                 RenderSingleItem();
             }
 
+            RenderSelection();
+
             shaders.RenderQueued(context, camera, currentWindVec);
 
             RenderBounds(context);
 
-            RenderSelection(context);
+            RenderSelectionGeometry(context);
 
             RenderMoused(context);
-
-            RenderSelectionGeometry(context);
 
             shaders.RenderFinalPass(context);
 
@@ -2119,29 +2123,7 @@ namespace CodeWalker
                                 {
                                     var f = yft.Fragment;
 
-                                    RenderDrawable(f.Drawable, null, null, -camera.Position, hash);
-
-                                    if (f.Unknown_F8h_Data != null) //cloth
-                                    {
-                                        RenderDrawable(f.Unknown_F8h_Data, null, null, -camera.Position, hash);
-                                    }
-
-                                    //vehicle wheels...
-                                    if ((f.PhysicsLODGroup != null) && (f.PhysicsLODGroup.PhysicsLOD1 != null))
-                                    {
-                                        var pl1 = f.PhysicsLODGroup.PhysicsLOD1;
-                                        if ((pl1.Children != null) && (pl1.Children.data_items != null))
-                                        {
-                                            for (int i = 0; i < pl1.Children.data_items.Length; i++)
-                                            {
-                                                var pch = pl1.Children.data_items[i];
-                                                if ((pch.Drawable1 != null) && (pch.Drawable1.AllModels.Length != 0))
-                                                {
-                                                    //RenderDrawable(pch.Drawable1, null, null, -camera.Position, hash);
-                                                }
-                                            }
-                                        }
-                                    }
+                                    RenderFragment(null, null, f, hash);
 
                                     seldrwbl = f.Drawable;
                                 }
@@ -2511,6 +2493,38 @@ namespace CodeWalker
 
 
 
+
+        private bool RenderFragment(Archetype arch, YmapEntityDef ent, FragType f, uint txdhash=0)
+        {
+            var pos = ent?.Position ?? Vector3.Zero;
+
+            RenderDrawable(f.Drawable, arch, ent, pos-camera.Position, txdhash);
+
+            if (f.Unknown_F8h_Data != null) //cloth
+            {
+                RenderDrawable(f.Unknown_F8h_Data, arch, ent, pos-camera.Position, txdhash);
+            }
+
+            //vehicle wheels...
+            if ((f.PhysicsLODGroup != null) && (f.PhysicsLODGroup.PhysicsLOD1 != null))
+            {
+                var pl1 = f.PhysicsLODGroup.PhysicsLOD1;
+                if ((pl1.Children != null) && (pl1.Children.data_items != null))
+                {
+                    for (int i = 0; i < pl1.Children.data_items.Length; i++)
+                    {
+                        var pch = pl1.Children.data_items[i];
+                        if ((pch.Drawable1 != null) && (pch.Drawable1.AllModels.Length != 0))
+                        {
+                            //RenderDrawable(pch.Drawable1, arch, ent, -camera.Position, hash);
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
         private bool RenderArchetype(Archetype arche, YmapEntityDef entity, Renderable rndbl = null, bool cull = true)
         {
             //enqueue a single archetype for rendering.
@@ -2875,10 +2889,8 @@ namespace CodeWalker
             if (mode == BoundsShaderMode.None)
             { return; }
 
-            Vector3 colour = new Vector3(0, 0, 1);
-            Vector3 colourhi = new Vector3(0, 1, 1);
-            colour *= globalLights.HdrIntensity;
-            colourhi *= globalLights.HdrIntensity;
+            Vector3 colour = new Vector3(0, 0, 1) * globalLights.HdrIntensity;
+            Vector3 colourhi = new Vector3(0, 1, 1) * globalLights.HdrIntensity;
 
             shaders.SetDepthStencilMode(context, clip ? DepthStencilMode.Enabled : DepthStencilMode.DisableAll);
             var shader = shaders.Bounds;
@@ -2914,6 +2926,7 @@ namespace CodeWalker
                     shader.DrawSphere(context);
                 }
             }
+
 
             shader.UnbindResources(context);
         }
@@ -3060,22 +3073,22 @@ namespace CodeWalker
 
         }
 
-        private void RenderSelection(DeviceContext context)
+        private void RenderSelection()
         {
             if (SelectedItem.MultipleSelection)
             {
                 for (int i = 0; i < SelectedItems.Count; i++)
                 {
                     var item = SelectedItems[i];
-                    RenderSelection(context, ref item);
+                    RenderSelection(ref item);
                 }
             }
             else
             {
-                RenderSelection(context, ref SelectedItem);
+                RenderSelection(ref SelectedItem);
             }
         }
-        private void RenderSelection(DeviceContext context, ref MapSelection selectionItem)
+        private void RenderSelection(ref MapSelection selectionItem)
         {
             //immediately render the bounding box of the current selection. also, arrows.
 
@@ -3140,6 +3153,21 @@ namespace CodeWalker
                 float arrowlen = cg._CCarGen.perpendicularLength;
                 float arrowrad = arrowlen * 0.066f;
                 RenderSelectionArrowOutline(cg.Position, Vector3.UnitX, Vector3.UnitY, ori, arrowlen, arrowrad, cgrn);
+
+                Quaternion cgtrn = Quaternion.RotationAxis(Vector3.UnitZ, (float)Math.PI * -0.5f); //car fragments currently need to be rotated 90 deg right...
+                Quaternion cgori = Quaternion.Multiply(cg.Orientation, cgtrn);
+
+                SelectedCarGenEntity.SetPosition(cg.Position);
+                SelectedCarGenEntity.SetOrientation(cgori);
+                
+                uint carhash = cg._CCarGen.carModel;
+                if (carhash == 0) carhash = 418536135; //"infernus"
+
+                YftFile caryft = gameFileCache.GetYft(carhash);
+                if ((caryft != null) && (caryft.Loaded) && (caryft.Fragment != null))
+                {
+                    RenderFragment(null, SelectedCarGenEntity, caryft.Fragment, carhash);
+                }
             }
             if (selectionItem.PathNode != null)
             {
@@ -3207,20 +3235,13 @@ namespace CodeWalker
 
 
 
-            shaders.SetDepthStencilMode(context, clip ? DepthStencilMode.Enabled : DepthStencilMode.DisableAll);
-
-            //render selected object box...
-            var shader = shaders.Bounds;
-            shader.SetMode(BoundsShaderMode.Box);
-            shader.SetShader(context);
-            shader.SetInputLayout(context, VertexType.Default);
-            shader.SetSceneVars(context, camera, null, globalLights);
-            shader.SetColourVars(context, new Vector4(colour, 1));
-
-            shader.SetBoxVars(context, camrel, bbmin, bbmax, ori, scale);
-            shader.DrawBox(context);
-
-            shader.UnbindResources(context);
+            MapBox box = new MapBox();
+            box.CamRelPos = camrel;
+            box.BBMin = bbmin;
+            box.BBMax = bbmax;
+            box.Orientation = ori;
+            box.Scale = scale;
+            SelectionBoxes.Add(box);
 
         }
 
@@ -3366,9 +3387,13 @@ namespace CodeWalker
         {
 
             bool clip = true;
-            if (SelectionMode == MapSelectionMode.NavMesh)
+            switch (SelectionMode)
             {
-                clip = false;
+                case MapSelectionMode.NavMesh:
+                case MapSelectionMode.WaterQuad:
+                case MapSelectionMode.MloInstance:
+                    clip = false;
+                    break;
             }
 
 
@@ -3382,6 +3407,27 @@ namespace CodeWalker
             if (SelectionLineVerts.Count > 0)
             {
                 pshader.RenderLines(context, SelectionLineVerts, camera, shaders.GlobalLights);
+            }
+
+
+
+
+            if (SelectionBoxes.Count > 0)
+            {
+                Vector3 coloursel = new Vector3(0, 1, 0) * globalLights.HdrIntensity * 5.0f;
+                var shader = shaders.Bounds;
+                shader.SetMode(BoundsShaderMode.Box);
+                shader.SetShader(context);
+                shader.SetInputLayout(context, VertexType.Default);
+                shader.SetSceneVars(context, camera, null, globalLights);
+                shader.SetColourVars(context, new Vector4(coloursel, 1));
+                for (int i = 0; i < SelectionBoxes.Count; i++)
+                {
+                    MapBox mb = SelectionBoxes[i];
+                    shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
+                    shader.DrawBox(context);
+                }
+                shader.UnbindResources(context);
             }
 
         }
@@ -4330,6 +4376,10 @@ namespace CodeWalker
                         CurMouseHit.AABB = bbox;
                     }
                 }
+                if (SelectedItem.CarGenerator != null)
+                {
+                }
+
             }
             if ((SelectionMode == MapSelectionMode.MloInstance) && (ymap.MloEntities != null))
             {

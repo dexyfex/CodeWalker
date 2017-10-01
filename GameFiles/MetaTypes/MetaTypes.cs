@@ -3452,6 +3452,7 @@ namespace CodeWalker.GameFiles
                 _Data.LookUps = new CScenarioPointLookUps(); //this shouldn't happen...
             }
 
+            mb.AddString("Made with CodeWalker by dexyfex. " + DateTime.Now.ToString());
 
             return mb.AddItemPtr(MetaName.CScenarioPointRegion, _Data);
         }

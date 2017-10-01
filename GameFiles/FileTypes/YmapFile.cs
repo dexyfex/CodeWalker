@@ -937,6 +937,12 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public YmapEntityDef()
+        {
+            Scale = Vector3.One;
+            Position = Vector3.One;
+            Orientation = Quaternion.Identity;
+        }
         public YmapEntityDef(YmapFile ymap, int index, ref CEntityDef def)
         {
             Ymap = ymap;

@@ -133,6 +133,7 @@ namespace CodeWalker.GameFiles
                 InitDlc();
 
 
+                //TestYcds();
                 //TestYmaps();
                 //TestPlacements();
                 //TestDrawables();
@@ -2015,6 +2016,29 @@ namespace CodeWalker.GameFiles
 
 
 
+        public void TestYcds()
+        {
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    try
+                    {
+                        if (entry.NameLower.EndsWith(".ycd"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            YcdFile ycdfile = RpfMan.GetFile<YcdFile>(entry);
+                            if ((ycdfile != null))// && (ycdfile.Meta != null))
+                            { }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                    }
+                }
+            }
+        }
         public void TestYmaps()
         {
             foreach (RpfFile file in AllRpfs)
@@ -2418,7 +2442,6 @@ namespace CodeWalker.GameFiles
 
 
         }
-
         public void DecodeRelFiles()
         {
             UpdateStatus("Decoding REL files");

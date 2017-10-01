@@ -383,6 +383,7 @@ namespace CodeWalker.GameFiles
         //public byte Unknown_02h { get; set; }
         //public byte Unknown_03h { get; set; }
         public MetaHash Unknown_00h { get; set; }
+        public MetaName Unknown_00hn { get; set; }
         public uint DataLength { get; set; }
         public uint Unknown_08h { get; set; } // 0x00000000 ..sequence header offset?
         public uint Unknown_0Ch { get; set; } //[uv1:] bytes used by sequence "header"? offset to data items
@@ -392,13 +393,15 @@ namespace CodeWalker.GameFiles
         public ushort Unknown_18h { get; set; } //[uv1:8] stride of data item? 
         public ushort Unknown_1Ah { get; set; }
         public ushort Unknown_1Ch { get; set; }
-        public ushort Unknown_1Eh { get; set; }
+        public byte Unknown_1Eh { get; set; }
+        public byte Unknown_1Fh { get; set; }
         public byte[] Data { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
             this.Unknown_00h = reader.ReadUInt32();//2965995365  2837183178
+            this.Unknown_00hn = (MetaName)(uint)Unknown_00h;
             //this.Unknown_00h = reader.ReadByte();  //101        202        97         120
             //this.Unknown_01h = reader.ReadByte();  //127        250        202        168
             //this.Unknown_02h = reader.ReadByte();  //201        27         115        126
@@ -409,42 +412,51 @@ namespace CodeWalker.GameFiles
             this.Unknown_10h = reader.ReadUInt32();//314        174        1238       390 (=Length)
             this.Unknown_14h = reader.ReadUInt16();//0          0          0          0
             this.Unknown_16h = reader.ReadUInt16();//221 (DD)   17 (11)    151 (97)   201
-            this.Unknown_18h = reader.ReadUInt16();//0          4          4          0      type?
+            this.Unknown_18h = reader.ReadUInt16();//0          4          4          0      stride?
             this.Unknown_1Ah = reader.ReadUInt16();//0          0          106        0      
             this.Unknown_1Ch = reader.ReadUInt16();//0          17         0          0      bone?
-            this.Unknown_1Eh = reader.ReadUInt16();//64         255        255        64
+            this.Unknown_1Eh = reader.ReadByte();  //64         255        255        64
+            this.Unknown_1Fh = reader.ReadByte();  //0          0          0          0
 
-
-            var pos = reader.Position;
 
             this.Data = reader.ReadBytes((int)DataLength);
 
-            reader.Position = pos;
-            //float[] fvals = reader.ReadFloatsAt((ulong)pos, DataLength / 4);
-            //ushort[] svals = reader.ReadUshortsAt((ulong)pos, DataLength / 2);
-            //if (fvals != null)
-            //{ }
 
-            //reader.Position = pos;
-            //float f0 = reader.ReadSingle();   //     0        0        0        0
-            //var v0 = reader.ReadStruct<Vector3>();// 0,0,0    1,1,1    0,0,0    0,0,0
-            //float f1 = reader.ReadSingle();   //     0        0        0        0
-            //uint u0 = reader.ReadUInt32();    //     0        17       0        0
-            //short s1 = reader.ReadInt16();    //     0        112      0        0
-            //short s2 = reader.ReadInt16();    //     0        14048    0        0
-            ////float f2 = reader.ReadSingle();   //     0   6.675771E-06  0
-            //float f3 = reader.ReadSingle();   //     0       -0.875    0
-            //short u2 = reader.ReadInt16();    //     0       -1
-            //short u3 = reader.ReadInt16();    //     0       1
-            //short u4 = reader.ReadInt16();    //     0       -1
-            //short u5 = reader.ReadInt16();    //     0       1
-            //short u6 = reader.ReadInt16();    //     0       -18725
-            //short u7 = reader.ReadInt16();    //     0       1
-            //short u8 = reader.ReadInt16();    //     23      -18725   
-            //short u9 = reader.ReadInt16();    //     0       1
-            //short uA = reader.ReadInt16();    //     2825    28086
-            //short uB = reader.ReadInt16();    //     0       1
 
+            switch (Unknown_18h)
+            {
+                case 0:
+                    break;
+                case 4:
+                    break;
+                case 12:
+                    break;
+                default:
+                    break;
+            }
+
+            switch (Unknown_1Eh)
+            {
+                case 64: //0x40
+                case 255: //0xFF
+                    break;
+                default://no hits
+                    break;
+            }
+
+            switch (Unknown_1Fh)
+            {
+                case 0:
+                case 17: //0x11
+                case 20: //0x14
+                case 21: //0x15
+                case 49: //0x31
+                case 52: //0x34
+                case 53: //0x35
+                    break;
+                default: //no hits
+                    break;
+            }
 
 
         }
