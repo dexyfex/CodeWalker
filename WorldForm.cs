@@ -3161,6 +3161,19 @@ namespace CodeWalker
                 SelectedCarGenEntity.SetOrientation(cgori);
                 
                 uint carhash = cg._CCarGen.carModel;
+                if ((carhash == 0) && (cg._CCarGen.popGroup != 0))
+                {
+                    //find the pop group... and choose a vehicle..
+                    var stypes = Scenarios.ScenarioTypes;
+                    if (stypes != null)
+                    {
+                        var modelset = stypes.GetVehicleModelSet(cg._CCarGen.popGroup);
+                        if ((modelset != null) && (modelset.Models != null) && (modelset.Models.Length > 0))
+                        {
+                            carhash = JenkHash.GenHash(modelset.Models[0].NameLower);
+                        }
+                    }
+                }
                 if (carhash == 0) carhash = 418536135; //"infernus"
 
                 YftFile caryft = gameFileCache.GetYft(carhash);
@@ -9484,7 +9497,7 @@ namespace CodeWalker
             }
             if (CarGenerator != null)
             {
-                name = CarGenerator.CCarGen.carModel.ToString();
+                name = CarGenerator.NameString();
             }
             if (EntityExtension != null)
             {

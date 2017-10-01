@@ -1358,6 +1358,16 @@ namespace CodeWalker.GameFiles
             BBMax = new Vector3(hlen);
         }
 
+        public string NameString()
+        {
+            MetaHash mh = _CCarGen.carModel;
+            if ((mh == 0) && (_CCarGen.popGroup != 0))
+            {
+                mh = _CCarGen.popGroup;
+            }
+            return mh.ToString();
+        }
+
         public override string ToString()
         {
             return _CCarGen.carModel.ToString() + ", " + Position.ToString() + ", " + _CCarGen.popGroup.ToString() + ", " + _CCarGen.livery.ToString();
