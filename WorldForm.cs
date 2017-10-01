@@ -2734,6 +2734,38 @@ namespace CodeWalker
 
 
 
+        private void RenderCar(Vector3 pos, Quaternion ori, MetaHash modelHash, MetaHash modelSetHash)
+        {
+            SelectedCarGenEntity.SetPosition(pos);
+            SelectedCarGenEntity.SetOrientation(ori);
+
+            uint carhash = modelHash;
+            if ((carhash == 0) && (modelSetHash != 0))
+            {
+                //find the pop group... and choose a vehicle..
+                var stypes = Scenarios.ScenarioTypes;
+                if (stypes != null)
+                {
+                    var modelset = stypes.GetVehicleModelSet(modelSetHash);
+                    if ((modelset != null) && (modelset.Models != null) && (modelset.Models.Length > 0))
+                    {
+                        carhash = JenkHash.GenHash(modelset.Models[0].NameLower);
+                    }
+                }
+            }
+            if (carhash == 0) carhash = 418536135; //"infernus"
+
+            YftFile caryft = gameFileCache.GetYft(carhash);
+            if ((caryft != null) && (caryft.Loaded) && (caryft.Fragment != null))
+            {
+                RenderFragment(null, SelectedCarGenEntity, caryft.Fragment, carhash);
+            }
+        }
+
+
+
+
+
         private void RenderWorldCollisionMeshes()
         {
             //enqueue collision meshes for rendering - from the world grid
@@ -3155,32 +3187,9 @@ namespace CodeWalker
                 RenderSelectionArrowOutline(cg.Position, Vector3.UnitX, Vector3.UnitY, ori, arrowlen, arrowrad, cgrn);
 
                 Quaternion cgtrn = Quaternion.RotationAxis(Vector3.UnitZ, (float)Math.PI * -0.5f); //car fragments currently need to be rotated 90 deg right...
-                Quaternion cgori = Quaternion.Multiply(cg.Orientation, cgtrn);
+                Quaternion cgori = Quaternion.Multiply(ori, cgtrn);
 
-                SelectedCarGenEntity.SetPosition(cg.Position);
-                SelectedCarGenEntity.SetOrientation(cgori);
-                
-                uint carhash = cg._CCarGen.carModel;
-                if ((carhash == 0) && (cg._CCarGen.popGroup != 0))
-                {
-                    //find the pop group... and choose a vehicle..
-                    var stypes = Scenarios.ScenarioTypes;
-                    if (stypes != null)
-                    {
-                        var modelset = stypes.GetVehicleModelSet(cg._CCarGen.popGroup);
-                        if ((modelset != null) && (modelset.Models != null) && (modelset.Models.Length > 0))
-                        {
-                            carhash = JenkHash.GenHash(modelset.Models[0].NameLower);
-                        }
-                    }
-                }
-                if (carhash == 0) carhash = 418536135; //"infernus"
-
-                YftFile caryft = gameFileCache.GetYft(carhash);
-                if ((caryft != null) && (caryft.Loaded) && (caryft.Fragment != null))
-                {
-                    RenderFragment(null, SelectedCarGenEntity, caryft.Fragment, carhash);
-                }
+                RenderCar(cg.Position, cgori, cg._CCarGen.carModel, cg._CCarGen.popGroup);
             }
             if (selectionItem.PathNode != null)
             {
@@ -3201,6 +3210,24 @@ namespace CodeWalker
                 float arrowlen = 2.0f;
                 float arrowrad = 0.25f;
                 RenderSelectionArrowOutline(sn.Position, Vector3.UnitY, Vector3.UnitZ, ori, arrowlen, arrowrad, cgrn);
+
+                MCScenarioPoint vpoint = sn.MyPoint ?? sn.ClusterMyPoint;
+                if ((vpoint != null) && (vpoint?.Type?.IsVehicle ?? false))
+                {
+                    var vhash = vpoint.ModelSet?.NameHash ?? vpoint.Type?.VehicleModelSetHash ?? 0;
+                    if ((vhash == 0) && (sn.ChainingNode?.Chain?.Edges != null) && (sn.ChainingNode.Chain.Edges.Length > 0))
+                    {
+                        var fedge = sn.ChainingNode.Chain.Edges[0]; //for chain nodes, show the first node's model...
+                        var fnode = fedge?.NodeFrom?.ScenarioNode;
+                        if (fnode != null)
+                        {
+                            vpoint = fnode.MyPoint ?? fnode.ClusterMyPoint;
+                            vhash = vpoint.ModelSet?.NameHash ?? vpoint.Type?.VehicleModelSetHash ?? 0;
+                        }
+                    }
+
+                    RenderCar(sn.Position, sn.Orientation, 0, vhash);
+                }
 
             }
             if (selectionItem.ScenarioEdge != null)
@@ -4230,7 +4257,7 @@ namespace CodeWalker
                     {
                         bool nearer = (hitdist < CurMouseHit.HitDist);  //closer than the last..
                         bool radsm = true;
-                        if ((CurMouseHit.Archetype != null)) //compare hit archetype sizes...
+                        if ((CurMouseHit.Archetype != null) && (arche != null)) //compare hit archetype sizes...
                         {
                             //var b1 = (arche.BBMax - arche.BBMin) * scale;
                             //var b2 = (mousehit.Archetype.BBMax - mousehit.Archetype.BBMin) * scale;

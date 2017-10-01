@@ -4371,6 +4371,7 @@ namespace CodeWalker.GameFiles
     {
         [TC(typeof(EXP))] public MUnk_4023740759 Parent { get; set; }
         public MCScenarioPointRegion Region { get; set; }
+        public ScenarioNode ScenarioNode { get; set; }
 
         public CScenarioChainingNode _Data;
         public CScenarioChainingNode Data { get { return _Data; } set { _Data = value; } }

@@ -4789,6 +4789,9 @@ namespace CodeWalker
             n1.ChainingNode.NotLast = true;
             n2.ChainingNode.NotFirst = true;
 
+            n1.ChainingNode.ScenarioNode = n1;
+            n2.ChainingNode.ScenarioNode = n2;
+
             paths.AddNode(n1.ChainingNode);
             paths.AddNode(n2.ChainingNode);
 
@@ -5621,6 +5624,7 @@ namespace CodeWalker
                 thisnode.MyPoint.Type = stype;
 
                 thisnode.ChainingNode = new MCScenarioChainingNode();
+                thisnode.ChainingNode.ScenarioNode = thisnode;
                 thisnode.ChainingNode.Chain = chain;
                 thisnode.ChainingNode.Type = stype;
                 thisnode.ChainingNode.TypeHash = stype?.NameHash ?? 0;

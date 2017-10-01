@@ -576,6 +576,7 @@ namespace CodeWalker.World
                 NodeDict[cnode.Position] = exnode;
                 Nodes.Add(exnode);
             }
+            cnode.ScenarioNode = exnode;
             return exnode;
         }
         private ScenarioNode EnsureNode(MCScenarioPoint point)
@@ -745,6 +746,7 @@ namespace CodeWalker.World
                 if (copy.ChainingNode != null)
                 {
                     n.ChainingNode = new MCScenarioChainingNode(rgn, copy.ChainingNode);
+                    n.ChainingNode.ScenarioNode = n;
                 }
             }
             else
@@ -1755,6 +1757,9 @@ namespace CodeWalker.World
         public string NameLower { get; set; }
         public MetaHash NameHash { get; set; }
         public bool IsVehicle { get; set; }
+        public string VehicleModelSet { get; set; }
+        public MetaHash VehicleModelSetHash { get; set; }
+
 
         public virtual void Load(XmlNode node)
         {
@@ -1762,6 +1767,16 @@ namespace CodeWalker.World
             Name = Xml.GetChildInnerText(node, "Name");
             NameLower = Name.ToLowerInvariant();
             NameHash = JenkHash.GenHash(NameLower);
+
+
+            if (IsVehicle)
+            {
+                VehicleModelSet = Xml.GetChildStringAttribute(node, "VehicleModelSet", "ref");
+                if (!string.IsNullOrEmpty(VehicleModelSet) && (VehicleModelSet != "NULL"))
+                {
+                    VehicleModelSetHash = JenkHash.GenHash(VehicleModelSet.ToLowerInvariant());
+                }
+            }
         }
 
         public override string ToString()

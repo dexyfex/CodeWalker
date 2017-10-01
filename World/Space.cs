@@ -263,7 +263,7 @@ namespace CodeWalker.World
                                 MapDataStoreNode dsn = new MapDataStoreNode(ymap);
                                 if (dsn.Name != 0)
                                 {
-                                    nodedict[dsn.Name] = dsn;
+                                    nodedict[dsn.Name] = dsn;//perhaps should add as entry.ShortNameHash?
                                 }
                                 else
                                 { }
