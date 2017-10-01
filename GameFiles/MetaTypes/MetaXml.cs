@@ -1029,9 +1029,9 @@ namespace CodeWalker.GameFiles
                             {
                                 ErrorXml(sb, aind, ename + ": Map struct type not found: " + HashString(xBlock.NameHash));
                             }
-                            else if ((xStruct.IndexInfo == null) || (xStruct.IndexInfo.NameHash != MetaName.ARRAYINFO))
+                            else if ((xStruct.IndexInfo == null))// || (xStruct.IndexInfo.NameHash != MetaName.ARRAYINFO))
                             {
-                                ErrorXml(sb, aind, ename + ": Map struct was not ARRAYINFO! " + (xStruct == null ? "" : xStruct.ToString()));
+                                ErrorXml(sb, aind, ename + ": Map struct was missing IndexInfo! " + (xStruct == null ? "" : xStruct.ToString()));
                             }
                             else if ((kEntry == null) || (iEntry == null))
                             {
@@ -1047,7 +1047,7 @@ namespace CodeWalker.GameFiles
                             }
                             else if (iEntry.Unk_5h != 3)
                             {
-                                ErrorXml(sb, aind, ename + ": Map Item was not a structure pointer!");
+                                ErrorXml(sb, aind, ename + ": Map Item was not a structure pointer - TODO!");
                             }
                             else
                             {

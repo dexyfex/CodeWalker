@@ -620,7 +620,7 @@ namespace CodeWalker.GameFiles
         public uint Unk2 { get; set; }
 
         public ushort BlockID { get { return (ushort)(Pointer & 0xFFF); } } //1-based ID
-        public uint ItemOffset { get { return (ushort)((Pointer>>12) & 0xFFFFF); } } //byte offset
+        public uint ItemOffset { get { return ((Pointer>>12) & 0xFFFFF); } } //byte offset
 
 
         public override string ToString()
