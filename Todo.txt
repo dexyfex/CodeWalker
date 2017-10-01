@@ -103,6 +103,16 @@ Audio stuff - do more work on .rel format  (see https://github.com/CamxxCore/Rag
 done:
 
 
+
+[v.27]
+Multi-select
+Display selected CarGen/scenario vehicle models
+Import Menyoo XML to ymap
+Show skeletons in model viewer
+YCD inspector form
+
+
+
 [v.26]
 Scenario editor (YMT)
 RPF Explorer first edition (OpenIV-style)
