@@ -5002,14 +5002,17 @@ namespace CodeWalker
             Dictionary<MCScenarioChainingNode, int> ndict = new Dictionary<MCScenarioChainingNode, int>();
 
             var edges = chain.Edges;
-            foreach (var edge in edges)
+            if (edges != null)
             {
-                //paths.RemoveEdge(edge); //removing nodes also removes edges!
-                paths.RemoveNode(edge.NodeFrom);
-                paths.RemoveNode(edge.NodeTo);
+                foreach (var edge in edges)
+                {
+                    //paths.RemoveEdge(edge); //removing nodes also removes edges!
+                    paths.RemoveNode(edge.NodeFrom);
+                    paths.RemoveNode(edge.NodeTo);
 
-                ndict[edge.NodeFrom] = 1;
-                ndict[edge.NodeTo] = 1;
+                    ndict[edge.NodeFrom] = 1;
+                    ndict[edge.NodeTo] = 1;
+                }
             }
 
             paths.RemoveChain(chain);
@@ -5541,8 +5544,8 @@ namespace CodeWalker
 
             TextInputForm f = new TextInputForm();
             f.TitleText = "Import scenario chain points";
-            f.PromptText = "Input chain points in CSV format. Direction is in radians. NavSpeed is from 0 to 15. NavMode can be either Direct, NavMesh, or Roads. ScenarioType is the name of the scenario type to use.";
-            f.MainText = "X, Y, Z, Direction, NavSpeed, NavMode, ScenarioType";
+            f.PromptText = "Input chain points in CSV (or TSV) format. Direction is in radians. NavSpeed is from 0 to 15. NavMode can be either Direct, NavMesh, or Roads. ScenarioType is the name of the scenario type to use.";
+            f.MainText = "X, Y, Z, Direction, NavSpeed, NavMode, ScenarioType, ModelSet, Flags";
             if (f.ShowDialog() == DialogResult.Cancel) return;
 
             var stypes = Scenarios.ScenarioTypes; //these are loaded by Scenarios.Init
@@ -5551,6 +5554,9 @@ namespace CodeWalker
             {
                 defaulttype = stypes.GetScenarioType(1194480618); //"drive";
             }
+
+            AmbientModelSet defaultmodelset = null;
+            uint defaultflags = 0;
 
             ScenarioNode thisnode = null;
             ScenarioNode lastnode = null;
@@ -5575,7 +5581,8 @@ namespace CodeWalker
             for (int i = 0; i < lines.Length; i++)
             {
                 var line = lines[i];
-                var vals = line.Split(',');
+                var delim = line.Contains(",") ? "," : " ";
+                var vals = line.Split(new[] { delim }, StringSplitOptions.RemoveEmptyEntries);
                 if (vals.Length < 3) continue;
                 if (vals[0].StartsWith("X")) continue;
                 Vector3 pos = Vector3.Zero;
@@ -5584,6 +5591,8 @@ namespace CodeWalker
                 var navMode = Unk_3971773454.Direct;
                 var navSpeed = Unk_941086046.Unk_00_3279574318;
                 var stype = defaulttype;
+                var modelset = defaultmodelset;
+                var flags = defaultflags;
                 var ok = true;
                 ok = ok && FloatUtil.TryParse(vals[0].Trim(), out pos.X);
                 ok = ok && FloatUtil.TryParse(vals[1].Trim(), out pos.Y);
@@ -5591,6 +5600,8 @@ namespace CodeWalker
                 if (vals.Length > 3)
                 {
                     ok = ok && FloatUtil.TryParse(vals[3].Trim(), out dir);
+                    while (dir > Math.PI) dir -= 2.0f * (float)Math.PI;
+                    while (dir < -Math.PI) dir += 2.0f * (float)Math.PI;
                 }
                 if (vals.Length > 4)
                 {
@@ -5613,6 +5624,16 @@ namespace CodeWalker
                     var sthash = JenkHash.GenHash(vals[6].Trim().ToLowerInvariant());
                     stype = stypes?.GetScenarioType(sthash) ?? defaulttype;
                 }
+                if (vals.Length > 7)
+                {
+                    var mshash = JenkHash.GenHash(vals[7].Trim().ToLowerInvariant());
+                    modelset = stypes?.GetPedModelSet(mshash) ?? null;
+                    if (modelset == null) modelset = stypes?.GetVehicleModelSet(mshash) ?? null;
+                }
+                if (vals.Length > 8)
+                {
+                    if (!uint.TryParse(vals[8].Trim(), out flags)) flags = defaultflags;
+                }
 
                 if (!ok) continue;
 
@@ -5622,6 +5643,8 @@ namespace CodeWalker
 
                 thisnode.MyPoint.Direction = dir;
                 thisnode.MyPoint.Type = stype;
+                thisnode.MyPoint.ModelSet = modelset;
+                thisnode.MyPoint.Flags = (Unk_700327466)flags;
 
                 thisnode.ChainingNode = new MCScenarioChainingNode();
                 thisnode.ChainingNode.ScenarioNode = thisnode;
