@@ -463,10 +463,19 @@ namespace CodeWalker.GameFiles
         public ushort Z { get; set; }
 
 
+        public Vector3 Position { get { return ToVector3(); } set { FromVector3(value); } }
+
         public Vector3 ToVector3()
         {
-            const float usmax = (float)ushort.MaxValue;
+            const float usmax = ushort.MaxValue;
             return new Vector3(X / usmax, Y / usmax, Z / usmax);
+        }
+        public void FromVector3(Vector3 v)
+        {
+            const float usmax = ushort.MaxValue;
+            X = (ushort)(v.X * usmax);
+            Y = (ushort)(v.Y * usmax);
+            Z = (ushort)(v.Z * usmax);
         }
 
         public override string ToString()

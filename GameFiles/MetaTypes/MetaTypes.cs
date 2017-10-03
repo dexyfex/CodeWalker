@@ -1359,8 +1359,6 @@ namespace CodeWalker.GameFiles
 
 
     //generated enums
-
-    //Enum infos
     
     [Flags] public enum Unk_700327466 //SCENARIO point flags  / extension spawn point flags
         : int //Key:2814596095
@@ -1559,9 +1557,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    //generated + adjusted structs code (UnusedX padding vars manually added) from here down
-
-    //Struct infos
+    //generated + adjusted structs code (UnusedX padding vars manually added) from here down, + meta wrapper classes
 
     [TC(typeof(EXP))] public struct CMapTypes //80 bytes, Key:2608875220
     {
@@ -4300,9 +4296,12 @@ namespace CodeWalker.GameFiles
 
                     foreach (var c in Chains)
                     {
-                        for (int i = 0; i < c.Edges.Length; i++)
+                        if ((c?.Edges != null) && (c?.EdgeIds != null))
                         {
-                            c.EdgeIds[i] = (ushort)c.Edges[i].EdgeIndex;
+                            for (int i = 0; i < c.Edges.Length; i++)
+                            {
+                                c.EdgeIds[i] = (ushort)c.Edges[i].EdgeIndex;
+                            }
                         }
                     }
                 }

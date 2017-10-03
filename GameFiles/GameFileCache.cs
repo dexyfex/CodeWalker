@@ -2031,6 +2031,13 @@ namespace CodeWalker.GameFiles
                             if ((ycdfile != null))// && (ycdfile.Meta != null))
                             { }
                         }
+                        //if (entry.NameLower.EndsWith(".awc")) //awcs can also contain clip dicts..
+                        //{
+                        //    UpdateStatus(string.Format(entry.Path));
+                        //    AwcFile awcfile = RpfMan.GetFile<AwcFile>(entry);
+                        //    if ((awcfile != null))
+                        //    { }
+                        //}
                     }
                     catch (Exception ex)
                     {
@@ -2038,6 +2045,11 @@ namespace CodeWalker.GameFiles
                     }
                 }
             }
+
+            //var sd = Sequence.SeqDict;
+            //if (sd != null)
+            //{
+            //}
         }
         public void TestYmaps()
         {

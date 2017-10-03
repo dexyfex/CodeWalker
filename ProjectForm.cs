@@ -5632,6 +5632,7 @@ namespace CodeWalker
                 thisnode.ChainingNode.NotFirst = (lastnode != null);
 
                 thisnode.SetPosition(pos);
+                thisnode.Orientation = thisnode.MyPoint.Orientation;
 
                 paths.AddNode(thisnode.ChainingNode);
 
