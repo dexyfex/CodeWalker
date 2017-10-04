@@ -177,67 +177,50 @@ namespace CodeWalker.Forms
 
         public void LoadMeta(YmtFile ymt)
         {
-            var fn = (ymt?.RpfFileEntry?.Name) ?? "";
-            if (ymt.Meta != null) { LoadMeta(ymt.Meta); fn += ".xml"; }
-            else if (ymt.Pso != null) { LoadMeta(ymt.Pso); fn += ".pso.xml"; }
-            else if (ymt.Rbf != null) { LoadMeta(ymt.Rbf); fn += ".rbf.xml"; }
+            string fn;
+            Xml = MetaXml.GetXml(ymt, out fn);
             FileName = fn;
             RawPropertyGrid.SelectedObject = ymt;
+            modified = false;
         }
         public void LoadMeta(YmfFile ymf)
         {
-            var fn = (ymf?.FileEntry?.Name) ?? "";
-            if (ymf.Meta != null) { LoadMeta(ymf.Meta); fn += ".xml"; }
-            else if (ymf.Pso != null) { LoadMeta(ymf.Pso); fn += ".pso.xml"; }
-            else if (ymf.Rbf != null) { LoadMeta(ymf.Rbf); fn += ".rbf.xml"; }
+            string fn;
+            Xml = MetaXml.GetXml(ymf, out fn);
             FileName = fn;
             RawPropertyGrid.SelectedObject = ymf;
+            modified = false;
         }
         public void LoadMeta(YmapFile ymap)
         {
-            var fn = (ymap?.RpfFileEntry?.Name) ?? "";
-            if (ymap.Meta != null) { LoadMeta(ymap.Meta); fn += ".xml"; }
-            else if (ymap.Pso != null) { LoadMeta(ymap.Pso); fn += ".pso.xml"; }
-            else if (ymap.Rbf != null) { LoadMeta(ymap.Rbf); fn += ".rbf.xml"; }
+            string fn;
+            Xml = MetaXml.GetXml(ymap, out fn);
             FileName = fn;
             RawPropertyGrid.SelectedObject = ymap;
+            modified = false;
         }
         public void LoadMeta(YtypFile ytyp)
         {
-            var fn = (ytyp?.FileEntry?.Name) ?? "";
-            if (ytyp.Meta != null) { LoadMeta(ytyp.Meta); fn += ".xml"; }
-            else if (ytyp.Pso != null) { LoadMeta(ytyp.Pso); fn += ".pso.xml"; }
-            else if (ytyp.Rbf != null) { LoadMeta(ytyp.Rbf); fn += ".rbf.xml"; }
+            string fn;
+            Xml = MetaXml.GetXml(ytyp, out fn);
             FileName = fn;
             RawPropertyGrid.SelectedObject = ytyp;
+            modified = false;
         }
         public void LoadMeta(JPsoFile jpso)
         {
-            var fn = jpso?.FileEntry?.Name ?? "";
-            if (jpso.Pso != null) { LoadMeta(jpso.Pso); fn += ".pso.xml"; }
+            string fn;
+            Xml = MetaXml.GetXml(jpso, out fn);
             FileName = fn;
             RawPropertyGrid.SelectedObject = jpso;
+            modified = false;
         }
         public void LoadMeta(CutFile cut)
         {
-            var fn = cut?.FileEntry?.Name ?? "";
-            if (cut.Pso != null) { LoadMeta(cut.Pso); fn += ".pso.xml"; }
+            string fn;
+            Xml = MetaXml.GetXml(cut, out fn);
             FileName = fn;
             RawPropertyGrid.SelectedObject = cut;
-        }
-        public void LoadMeta(Meta meta)
-        {
-            Xml = MetaXml.GetXml(meta);
-            modified = false;
-        }
-        public void LoadMeta(PsoFile pso)
-        {
-            Xml = PsoXml.GetXml(pso);
-            modified = false;
-        }
-        public void LoadMeta(RbfFile rbf)
-        {
-            Xml = RbfXml.GetXml(rbf);
             modified = false;
         }
 

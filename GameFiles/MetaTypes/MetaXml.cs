@@ -11,6 +11,101 @@ namespace CodeWalker.GameFiles
     public class MetaXml : MetaXmlBase
     {
 
+        public static string GetXml(RpfFileEntry e, byte[] data, out string filename)
+        {
+            var fn = e.Name;
+            var fnl = fn.ToLowerInvariant();
+            if (fnl.EndsWith(".ymt"))
+            {
+                YmtFile ymt = RpfFile.GetFile<YmtFile>(e, data);
+                return GetXml(ymt, out filename);
+            }
+            else if (fnl.EndsWith(".ymf"))
+            {
+                YmfFile ymf = RpfFile.GetFile<YmfFile>(e, data);
+                return GetXml(ymf, out filename);
+            }
+            else if (fnl.EndsWith(".ymap"))
+            {
+                YmapFile ymap = RpfFile.GetFile<YmapFile>(e, data);
+                return GetXml(ymap, out filename);
+            }
+            else if (fnl.EndsWith(".ytyp"))
+            {
+                YtypFile ytyp = RpfFile.GetFile<YtypFile>(e, data);
+                return GetXml(ytyp, out filename);
+            }
+            else if (fnl.EndsWith(".pso"))
+            {
+                JPsoFile pso = RpfFile.GetFile<JPsoFile>(e, data);
+                return GetXml(pso, out filename);
+            }
+            else if (fnl.EndsWith(".cut"))
+            {
+                CutFile cut = RpfFile.GetFile<CutFile>(e, data);
+                return GetXml(cut, out filename);
+            }
+            filename = fn;
+            return string.Empty;
+        }
+        public static string GetXml(YmtFile ymt, out string filename)
+        {
+            var fn = (ymt?.RpfFileEntry?.Name) ?? "";
+            if (ymt.Meta != null) { filename = fn + ".xml"; return GetXml(ymt.Meta); }
+            else if (ymt.Pso != null) { filename = fn + ".pso.xml"; return PsoXml.GetXml(ymt.Pso); }
+            else if (ymt.Rbf != null) { filename = fn + ".rbf.xml"; return RbfXml.GetXml(ymt.Rbf); }
+            filename = string.Empty;
+            return string.Empty;
+        }
+        public static string GetXml(YmfFile ymf, out string filename)
+        {
+            var fn = (ymf?.FileEntry?.Name) ?? "";
+            if (ymf.Meta != null) { filename = fn + ".xml"; return GetXml(ymf.Meta); }
+            else if (ymf.Pso != null) { filename = fn + ".pso.xml"; return PsoXml.GetXml(ymf.Pso); }
+            else if (ymf.Rbf != null) { filename = fn + ".rbf.xml"; return RbfXml.GetXml(ymf.Rbf); }
+            filename = string.Empty;
+            return string.Empty;
+        }
+        public static string GetXml(YmapFile ymap, out string filename)
+        {
+            var fn = (ymap?.RpfFileEntry?.Name) ?? "";
+            if (ymap.Meta != null) { filename = fn + ".xml"; return GetXml(ymap.Meta); }
+            else if (ymap.Pso != null) { filename = fn + ".pso.xml"; return PsoXml.GetXml(ymap.Pso); }
+            else if (ymap.Rbf != null) { filename = fn + ".rbf.xml"; return RbfXml.GetXml(ymap.Rbf); }
+            filename = string.Empty;
+            return string.Empty;
+        }
+        public static string GetXml(YtypFile ytyp, out string filename)
+        {
+            var fn = (ytyp?.FileEntry?.Name) ?? "";
+            if (ytyp.Meta != null) { filename = fn + ".xml"; return GetXml(ytyp.Meta); }
+            else if (ytyp.Pso != null) { filename = fn + ".pso.xml"; return PsoXml.GetXml(ytyp.Pso); }
+            else if (ytyp.Rbf != null) { filename = fn + ".rbf.xml"; return RbfXml.GetXml(ytyp.Rbf); }
+            filename = string.Empty;
+            return string.Empty;
+        }
+        public static string GetXml(JPsoFile pso, out string filename)
+        {
+            var fn = (pso?.FileEntry?.Name) ?? "";
+            if (pso.Pso != null) { filename = fn + ".pso.xml"; return PsoXml.GetXml(pso.Pso); }
+            filename = string.Empty;
+            return string.Empty;
+        }
+        public static string GetXml(CutFile cut, out string filename)
+        {
+            var fn = (cut?.FileEntry?.Name) ?? "";
+            if (cut.Pso != null) { filename = fn + ".pso.xml"; return PsoXml.GetXml(cut.Pso); }
+            filename = string.Empty;
+            return string.Empty;
+        }
+
+
+
+
+
+
+
+
 
         public static string GetXml(Meta meta)
         {

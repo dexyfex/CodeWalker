@@ -1070,6 +1070,21 @@ namespace CodeWalker
             return false;
         }
 
+        private bool CanExportXml(MainListItem item)
+        {
+            if (item == null) return false;
+            if (item.FileType == null) return false;
+            switch (item.FileType.DefaultAction)
+            {
+                case FileTypeAction.ViewYmt:
+                case FileTypeAction.ViewYmf:
+                case FileTypeAction.ViewYmap:
+                case FileTypeAction.ViewYtyp:
+                case FileTypeAction.ViewJPso:
+                    return true;
+            }
+            return false;
+        }
 
 
         private void View(MainListItem item)
@@ -1396,6 +1411,7 @@ namespace CodeWalker
                 isfolder = (item.Folder != null);
                 isfilesys = (item.File == null) && (item.Folder == null);
                 canview = CanViewFile(item);
+                canexportxml = CanExportXml(item);
                 isitem = true;
                 isfile = !isfolder;
                 canedit = editmode && !canimport;
@@ -1458,15 +1474,94 @@ namespace CodeWalker
         }
         private void ExportXml()
         {
-            MessageBox.Show("Export XML TODO!");
-            for (int i = 0; i < MainListView.SelectedIndices.Count; i++)
+            if (MainListView.SelectedIndices.Count == 1)
             {
-                var idx = MainListView.SelectedIndices[i];
-                if ((idx < 0) || (idx >= CurrentFiles.Count)) continue;
+                var idx = MainListView.SelectedIndices[0];
+                if ((idx < 0) || (idx >= CurrentFiles.Count)) return;
                 var file = CurrentFiles[idx];
                 if (file.Folder == null)
                 {
-                    //todo: meta convert to XML and export...
+                    if (CanExportXml(file))
+                    {
+                        byte[] data = GetFileData(file);
+                        if (data == null)
+                        {
+                            MessageBox.Show("Unable to extract file: " + file.Path);
+                            return;
+                        }
+
+                        string newfn;
+                        string xml = MetaXml.GetXml(file.File, data, out newfn);
+                        if (string.IsNullOrEmpty(xml))
+                        {
+                            MessageBox.Show("Unable to convert file to XML: " + file.Path);
+                            return;
+                        }
+
+                        SaveFileDialog.FileName = newfn;
+                        if (SaveFileDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            string path = SaveFileDialog.FileName;
+                            try
+                            {
+                                File.WriteAllText(path, xml);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Error saving file " + path + ":\n" + ex.ToString());
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return;
+                string folderpath = FolderBrowserDialog.SelectedPath;
+                if (!folderpath.EndsWith("\\")) folderpath += "\\";
+
+                StringBuilder errors = new StringBuilder();
+
+                for (int i = 0; i < MainListView.SelectedIndices.Count; i++)
+                {
+                    var idx = MainListView.SelectedIndices[i];
+                    if ((idx < 0) || (idx >= CurrentFiles.Count)) continue;
+                    var file = CurrentFiles[idx];
+                    if (file.Folder == null)
+                    {
+                        if (!CanExportXml(file)) continue;
+
+                        var data = GetFileData(file);
+                        if (data == null)
+                        {
+                            errors.AppendLine("Unable to extract file: " + file.Path);
+                            continue;
+                        }
+
+                        string newfn;
+                        string xml = MetaXml.GetXml(file.File, data, out newfn);
+                        if (string.IsNullOrEmpty(xml))
+                        {
+                            errors.AppendLine("Unable to convert file to XML: " + file.Path);
+                            continue;
+                        }
+
+                        var path = folderpath + newfn;
+                        try
+                        {
+                            File.WriteAllText(path, xml);
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.AppendLine("Error saving file " + path + ":\n" + ex.ToString());
+                        }
+                    }
+                }
+
+                string errstr = errors.ToString();
+                if (!string.IsNullOrEmpty(errstr))
+                {
+                    MessageBox.Show("Errors were encountered:\n" + errstr);
                 }
             }
         }
