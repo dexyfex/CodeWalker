@@ -14,6 +14,8 @@ namespace CodeWalker.Forms
     public partial class YcdForm : Form
     {
 
+        YcdFile Ycd;
+
         private string fileName;
         public string FileName
         {
@@ -43,6 +45,8 @@ namespace CodeWalker.Forms
 
         public void LoadYcd(YcdFile ycd)
         {
+            Ycd = ycd;
+
             fileName = ycd?.Name;
             if (string.IsNullOrEmpty(fileName))
             {
@@ -51,11 +55,51 @@ namespace CodeWalker.Forms
 
             UpdateFormTitle();
 
+            //MainPropertyGrid.SelectedObject = ycd;
 
-            MainPropertyGrid.SelectedObject = ycd;
+            MainListView.Items.Clear();
+
+            if (ycd?.ClipMapEntries != null)
+            {
+                foreach (var cme in ycd.ClipMapEntries)
+                {
+                    if (cme != null)
+                    {
+                        var lvi = MainListView.Items.Add(cme.Clip?.ShortName ?? cme.Hash.ToString());
+                        lvi.Tag = cme.Clip;
+                        lvi.Group = MainListView.Groups["Clips"];
+                    }
+                }
+            }
+
+            if (ycd?.AnimMapEntries != null)
+            {
+                foreach (var ame in ycd.AnimMapEntries)
+                {
+                    if (ame != null)
+                    {
+                        var lvi = MainListView.Items.Add(ame.Hash.ToString());
+                        lvi.Tag = ame.Animation;
+                        lvi.Group = MainListView.Groups["Anims"];
+                    }
+                }
+            }
+
 
         }
 
 
+
+        private void MainListView_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (MainListView.SelectedItems.Count == 1)
+            {
+                MainPropertyGrid.SelectedObject = MainListView.SelectedItems[0].Tag;
+            }
+            else
+            {
+                //MainPropertyGrid.SelectedObject = null;
+            }
+        }
     }
 }

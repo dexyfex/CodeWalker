@@ -295,6 +295,9 @@ namespace CodeWalker.GameFiles
         public ResourceSimpleList64Ptr BoneIdsPtr { get; set; }
         public AnimationBoneId[] BoneIds { get; set; }
 
+        public YcdFile Ycd { get; set; }
+
+
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -652,6 +655,9 @@ namespace CodeWalker.GameFiles
         public ClipTagList Tags { get; set; }
         public ClipPropertyMap Properties { get; set; }
 
+        public YcdFile Ycd { get; set; }
+        public string ShortName { get; set; }
+
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -1001,7 +1007,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "Count: " + AllProperties?.Length.ToString() ?? "0";
+            return "Count: " + (AllProperties?.Length ?? 0).ToString();
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyMapEntry : ResourceSystemBlock
@@ -1604,7 +1610,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "Count: " + AllTags?.Length.ToString() ?? "0";
+            return "Count: " + (AllTags?.Length ?? 0).ToString();
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipTag : ClipProperty

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
 {
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public class YcdFile : GameFile, PackedFile
     {
         public ClipDictionary ClipDictionary { get; set; }
@@ -81,11 +83,11 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-
             foreach (var cme in ClipMap.Values)
             {
                 var clip = cme.Clip;
                 if (clip == null) continue;
+                clip.Ycd = this;
                 if (string.IsNullOrEmpty(clip.Name)) continue;
                 string name = clip.Name.Replace('\\', '/');
                 var slidx = name.LastIndexOf('/');
@@ -98,8 +100,10 @@ namespace CodeWalker.GameFiles
                 {
                     name = name.Substring(0, didx);
                 }
+                clip.ShortName = name;
                 name = name.ToLowerInvariant();
                 JenkIndex.Ensure(name);
+
 
                 //if (name.EndsWith("_uv_0")) //hash for these entries match string with this removed, +1
                 //{
@@ -108,6 +112,12 @@ namespace CodeWalker.GameFiles
                 //{
                 //}
 
+            }
+            foreach (var ame in AnimMap.Values)
+            {
+                var anim = ame.Animation;
+                if (anim == null) continue;
+                anim.Ycd = this;
             }
 
 
