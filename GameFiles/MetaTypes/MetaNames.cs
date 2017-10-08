@@ -3358,6 +3358,7 @@ namespace CodeWalker.GameFiles
         iInterior = 1975994103,
         iRequiredIMapId = 1229525587,
         iTimeTillPedLeaves = 2296188475,
+        uAvailableInMpSp = 717991212,
 
 
         CPopGroupList = 738910261,

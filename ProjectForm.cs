@@ -4269,7 +4269,7 @@ namespace CodeWalker
                 ScenarioPointTimeStartUpDown.Value = p.TimeStart;
                 ScenarioPointTimeEndUpDown.Value = p.TimeEnd;
                 ScenarioPointProbabilityUpDown.Value = p.Probability;
-                ScenarioPointSpOnlyFlagUpDown.Value = p.SpOnlyFlag;
+                ScenarioPointSpOnlyFlagUpDown.Value = p.AvailableMpSp;
                 ScenarioPointRadiusUpDown.Value = p.Radius;
                 ScenarioPointWaitTimeUpDown.Value = p.WaitTime;
                 var iflags = (int)p.Flags;
@@ -4614,7 +4614,7 @@ namespace CodeWalker
                 ScenarioClusterPointTimeStartUpDown.Value = p.TimeStart;
                 ScenarioClusterPointTimeEndUpDown.Value = p.TimeEnd;
                 ScenarioClusterPointProbabilityUpDown.Value = p.Probability;
-                ScenarioClusterPointAnimalFlagUpDown.Value = p.SpOnlyFlag;
+                ScenarioClusterPointAnimalFlagUpDown.Value = p.AvailableMpSp;
                 ScenarioClusterPointRadiusUpDown.Value = p.Radius;
                 ScenarioClusterPointWaitTimeUpDown.Value = p.WaitTime;
                 var iflags = (int)p.Flags;
@@ -4737,6 +4737,7 @@ namespace CodeWalker
             var copycl = CurrentScenarioNode?.Cluster;
 
             MCScenarioChain chain = new MCScenarioChain();
+            chain.Unk1 = 1; //default value
             if (copy != null)
             {
                 chain.Data = copy.Data;
@@ -9270,9 +9271,9 @@ namespace CodeWalker
             byte v = (byte)ScenarioPointSpOnlyFlagUpDown.Value;
             lock (scenariosyncroot)
             {
-                if (CurrentScenarioNode.MyPoint.SpOnlyFlag != v)
+                if (CurrentScenarioNode.MyPoint.AvailableMpSp != v)
                 {
-                    CurrentScenarioNode.MyPoint.SpOnlyFlag = v;
+                    CurrentScenarioNode.MyPoint.AvailableMpSp = v;
                     SetScenarioHasChanged(true);
                 }
             }
@@ -10592,9 +10593,9 @@ namespace CodeWalker
             byte v = (byte)ScenarioClusterPointAnimalFlagUpDown.Value;
             lock (scenariosyncroot)
             {
-                if (CurrentScenarioNode.ClusterMyPoint.SpOnlyFlag != v)
+                if (CurrentScenarioNode.ClusterMyPoint.AvailableMpSp != v)
                 {
-                    CurrentScenarioNode.ClusterMyPoint.SpOnlyFlag = v;
+                    CurrentScenarioNode.ClusterMyPoint.AvailableMpSp = v;
                     SetScenarioHasChanged(true);
                 }
             }

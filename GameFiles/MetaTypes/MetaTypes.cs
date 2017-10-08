@@ -536,7 +536,7 @@ namespace CodeWalker.GameFiles
                     new MetaStructureEntryInfo_s(MetaName.iInterior, 23, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                     new MetaStructureEntryInfo_s(MetaName.iRequiredIMapId, 24, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                     new MetaStructureEntryInfo_s(MetaName.iProbability, 25, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)717991212, 26, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.uAvailableInMpSp, 26, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                     new MetaStructureEntryInfo_s(MetaName.iTimeStartOverride, 27, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                     new MetaStructureEntryInfo_s(MetaName.iTimeEndOverride, 28, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                     new MetaStructureEntryInfo_s(MetaName.iRadius, 29, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
@@ -3753,7 +3753,7 @@ namespace CodeWalker.GameFiles
         public byte iInterior { get; set; } //23   23: UnsignedByte: 0: 1975994103
         public byte iRequiredIMapId { get; set; } //24   24: UnsignedByte: 0: iRequiredIMapId//1229525587
         public byte iProbability { get; set; } //25   25: UnsignedByte: 0: iProbability//2974610960
-        public byte Unk_717991212_SpOnly { get; set; } //26   26: UnsignedByte: 0: 717991212   // animal point, or a ped with a pet?
+        public byte uAvailableInMpSp { get; set; } //26   26: UnsignedByte: 0: uAvailableInMpSp//717991212
         public byte iTimeStartOverride { get; set; } //27   27: UnsignedByte: 0: 591476992
         public byte iTimeEndOverride { get; set; } //28   28: UnsignedByte: 0: 2688038523
         public byte iRadius { get; set; } //29   29: UnsignedByte: 0: iRadius
@@ -3812,7 +3812,7 @@ namespace CodeWalker.GameFiles
         public byte TimeStart { get { return _Data.iTimeStartOverride; } set { _Data.iTimeStartOverride = value; } }
         public byte TimeEnd { get { return _Data.iTimeEndOverride; } set { _Data.iTimeEndOverride = value; } }
         public byte Probability { get { return _Data.iProbability; } set { _Data.iProbability = value; } }
-        public byte SpOnlyFlag { get { return _Data.Unk_717991212_SpOnly; } set { _Data.Unk_717991212_SpOnly = value; } }
+        public byte AvailableMpSp { get { return _Data.uAvailableInMpSp; } set { _Data.uAvailableInMpSp = value; } }
         public byte Radius { get { return _Data.iRadius; } set { _Data.iRadius = value; } }
         public byte WaitTime { get { return _Data.iTimeTillPedLeaves; } set { _Data.iTimeTillPedLeaves = value; } }
         public Unk_700327466 Flags { get { return _Data.Flags; } set { _Data.Flags = value; } }
