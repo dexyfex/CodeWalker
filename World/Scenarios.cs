@@ -1570,6 +1570,7 @@ namespace CodeWalker.World
                         typeobj.IsVehicle = true;
                         break;
                     default:
+                        typeobj = new ScenarioType();
                         break;
                 }
 

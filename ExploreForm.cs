@@ -504,7 +504,7 @@ namespace CodeWalker
                         isitem = true;
                         isfile = isfile || (file.Folder == null);
                         canview = canview || CanViewFile(file);
-
+                        canexportxml = canexportxml || CanExportXml(file);
                     }
                 }
                 str += ", " + sc.ToString() + " selected";

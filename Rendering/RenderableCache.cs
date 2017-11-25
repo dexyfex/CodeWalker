@@ -16,8 +16,8 @@ namespace CodeWalker.Rendering
 {
     public class RenderableCache
     {
-        public DateTime LastUpdate = DateTime.Now;
-        public DateTime LastUnload = DateTime.Now;
+        public DateTime LastUpdate = DateTime.UtcNow;
+        public DateTime LastUnload = DateTime.UtcNow;
         public double CacheTime = Settings.Default.GPUCacheTime;// 10.0; //seconds to keep something that's not used
         public double UnloadTime = Settings.Default.GPUCacheFlushTime;// 0.1; //seconds between running unload cycles
         public int MaxItemsPerLoop = 1; //to keep things flowing
@@ -119,7 +119,7 @@ namespace CodeWalker.Rendering
 
 
             //todo: change this to unload only when necessary (ie when something is loaded)
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var deltat = (now - LastUpdate).TotalSeconds;
             var unloadt = (now - LastUnload).TotalSeconds;
             if ((unloadt > UnloadTime) && (deltat < 0.25)) //don't try the unload on every loop... or when really busy
@@ -134,11 +134,11 @@ namespace CodeWalker.Rendering
                 pathbatches.UnloadProc();
                 waterquads.UnloadProc();
 
-                LastUnload = DateTime.Now;
+                LastUnload = DateTime.UtcNow;
             }
 
 
-            LastUpdate = DateTime.Now;
+            LastUpdate = DateTime.UtcNow;
 
             Monitor.Exit(updateSyncRoot);
         }
@@ -293,7 +293,7 @@ namespace CodeWalker.Rendering
         public void UnloadProc()
         {
             //unload items that haven't been used in longer than the cache period.
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var rnode = loadeditems.First;
             while (rnode != null)
             {
@@ -339,7 +339,7 @@ namespace CodeWalker.Rendering
                 item.Init(key);
                 cacheitems.Add(key, item);
             }
-            Interlocked.Exchange(ref item.LastUseTime, DateTime.Now.ToBinary());
+            Interlocked.Exchange(ref item.LastUseTime, DateTime.UtcNow.ToBinary());
             if ((!item.IsLoaded) && (!item.LoadQueued))// || 
             {
                 item.LoadQueued = true;
@@ -364,7 +364,7 @@ namespace CodeWalker.Rendering
                 item.Unload();
                 item.LoadQueued = false;
                 Interlocked.Add(ref CacheUse, -item.DataSize);
-                Interlocked.Exchange(ref item.LastUseTime, DateTime.Now.AddHours(-1).ToBinary());
+                Interlocked.Exchange(ref item.LastUseTime, DateTime.UtcNow.AddHours(-1).ToBinary());
 
                 loadeditems.Remove(item);//slow...
             }
