@@ -221,11 +221,13 @@ namespace CodeWalker.Rendering
         public long CacheUse = 0;
         public double CacheTime;
         public int LoadedCount = 0;//temporary, per loop
+        private long LastFrameTime = 0;
 
         public RenderableCacheLookup(long limit, double time)
         {
             CacheLimit = limit;
             CacheTime = time;
+            LastFrameTime = DateTime.UtcNow.ToBinary();
         }
 
         public int CurrentLoadedCount
@@ -315,6 +317,7 @@ namespace CodeWalker.Rendering
 
         public void RenderThreadSync()
         {
+            LastFrameTime = DateTime.UtcNow.ToBinary();
             TVal item;
             while (itemsToUnload.TryPop(out item))
             {
@@ -339,7 +342,7 @@ namespace CodeWalker.Rendering
                 item.Init(key);
                 cacheitems.Add(key, item);
             }
-            Interlocked.Exchange(ref item.LastUseTime, DateTime.UtcNow.ToBinary());
+            Interlocked.Exchange(ref item.LastUseTime, LastFrameTime);
             if ((!item.IsLoaded) && (!item.LoadQueued))// || 
             {
                 item.LoadQueued = true;
