@@ -122,6 +122,7 @@ Train Tracks editing:
 Scenario Regions (YMT) editing:
 -------------------------------
 [TODO: write this!]
+See https://youtu.be/U0nrVL44Fb4 - Scenario Editing Tutorial
 
 
 

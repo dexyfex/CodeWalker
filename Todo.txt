@@ -17,7 +17,6 @@ bug: editing world-loaded ymaps won't revert changes after closing project
 
 ---[General features]---
 
-RPF explorer - bulk export metadata files as XML
 
 
 
@@ -112,6 +111,7 @@ Import scenario chain points from CSV
 Import Menyoo XML to ymap
 Show skeletons in model viewer
 YCD inspector form
+RPF explorer - bulk export metadata files as XML
 
 
 
