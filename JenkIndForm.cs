@@ -242,5 +242,28 @@ namespace CodeWalker
             }
 
         }
+
+        private void SaveStringsButton_Click(object sender, EventArgs e)
+        {
+            if (SaveFileDialog.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+
+            string file = SaveFileDialog.FileName;
+
+            try
+            {
+                string[] lines = JenkIndex.GetAllStrings();
+
+                File.WriteAllLines(file, lines);
+
+                MessageBox.Show(lines.Length.ToString() + " strings exported successfully.");
+            }
+            catch
+            {
+                MessageBox.Show("Error saving strings file.");
+            }
+        }
     }
 }

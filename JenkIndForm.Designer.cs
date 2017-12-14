@@ -40,6 +40,8 @@
             this.MainPanel = new System.Windows.Forms.Panel();
             this.LoadStringsButton = new System.Windows.Forms.Button();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.SaveStringsButton = new System.Windows.Forms.Button();
+            this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.MainPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -104,7 +106,7 @@
             this.MatchTextBox.Multiline = true;
             this.MatchTextBox.Name = "MatchTextBox";
             this.MatchTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.MatchTextBox.Size = new System.Drawing.Size(472, 115);
+            this.MatchTextBox.Size = new System.Drawing.Size(502, 115);
             this.MatchTextBox.TabIndex = 5;
             // 
             // label2
@@ -130,6 +132,7 @@
             this.MainPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.MainPanel.Controls.Add(this.SaveStringsButton);
             this.MainPanel.Controls.Add(this.LoadStringsButton);
             this.MainPanel.Controls.Add(this.HashTextBox);
             this.MainPanel.Controls.Add(this.StatusLabel);
@@ -141,16 +144,16 @@
             this.MainPanel.Controls.Add(this.SignedRadioButton);
             this.MainPanel.Location = new System.Drawing.Point(12, 12);
             this.MainPanel.Name = "MainPanel";
-            this.MainPanel.Size = new System.Drawing.Size(550, 200);
+            this.MainPanel.Size = new System.Drawing.Size(571, 200);
             this.MainPanel.TabIndex = 8;
             // 
             // LoadStringsButton
             // 
-            this.LoadStringsButton.Location = new System.Drawing.Point(410, 7);
+            this.LoadStringsButton.Location = new System.Drawing.Point(391, 7);
             this.LoadStringsButton.Name = "LoadStringsButton";
-            this.LoadStringsButton.Size = new System.Drawing.Size(106, 23);
+            this.LoadStringsButton.Size = new System.Drawing.Size(84, 23);
             this.LoadStringsButton.TabIndex = 8;
-            this.LoadStringsButton.Text = "Load strings file...";
+            this.LoadStringsButton.Text = "Load strings...";
             this.LoadStringsButton.UseVisualStyleBackColor = true;
             this.LoadStringsButton.Click += new System.EventHandler(this.LoadStringsButton_Click);
             // 
@@ -158,11 +161,25 @@
             // 
             this.OpenFileDialog.Filter = "Text files|*.txt|All files|*.*";
             // 
+            // SaveStringsButton
+            // 
+            this.SaveStringsButton.Location = new System.Drawing.Point(481, 7);
+            this.SaveStringsButton.Name = "SaveStringsButton";
+            this.SaveStringsButton.Size = new System.Drawing.Size(84, 23);
+            this.SaveStringsButton.TabIndex = 9;
+            this.SaveStringsButton.Text = "Save strings...";
+            this.SaveStringsButton.UseVisualStyleBackColor = true;
+            this.SaveStringsButton.Click += new System.EventHandler(this.SaveStringsButton_Click);
+            // 
+            // SaveFileDialog
+            // 
+            this.SaveFileDialog.Filter = "Text files|*.txt|All files|*.*";
+            // 
             // JenkIndForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(574, 224);
+            this.ClientSize = new System.Drawing.Size(595, 224);
             this.Controls.Add(this.MainPanel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "JenkIndForm";
@@ -186,5 +203,7 @@
         private System.Windows.Forms.Panel MainPanel;
         private System.Windows.Forms.Button LoadStringsButton;
         private System.Windows.Forms.OpenFileDialog OpenFileDialog;
+        private System.Windows.Forms.Button SaveStringsButton;
+        private System.Windows.Forms.SaveFileDialog SaveFileDialog;
     }
 }

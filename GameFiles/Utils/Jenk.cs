@@ -248,6 +248,16 @@ namespace CodeWalker.GameFiles
             return res;
         }
 
+        public static string[] GetAllStrings()
+        {
+            string[] res = null;
+            lock (syncRoot)
+            {
+                res = Index.Values.ToArray();
+            }
+            return res;
+        }
+
     }
 
 
