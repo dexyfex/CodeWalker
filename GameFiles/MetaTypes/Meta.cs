@@ -1012,6 +1012,11 @@ namespace CodeWalker.GameFiles
             return GlobalText.GetString(Hash);
         }
 
+        public string ToCleanString()
+        {
+            if (Hash == 0) return string.Empty;
+            return ToString();
+        }
 
         public static implicit operator uint(MetaHash h)
         {

@@ -350,6 +350,21 @@ namespace CodeWalker
             var c = CultureInfo.InvariantCulture;
             return v.X.ToString(format, c) + ", " + v.Y.ToString(format, c) + ", " + v.Z.ToString(format, c);
         }
+        public static string GetVector3XmlString(Vector3 v)
+        {
+            var c = CultureInfo.InvariantCulture;
+            return string.Format("x=\"{0}\" y=\"{1}\" z=\"{2}\"", v.X.ToString(c), v.Y.ToString(c), v.Z.ToString(c));
+        }
+        public static string GetVector4XmlString(Vector4 v)
+        {
+            var c = CultureInfo.InvariantCulture;
+            return string.Format("x=\"{0}\" y=\"{1}\" z=\"{2}\" w=\"{3}\"", v.X.ToString(c), v.Y.ToString(c), v.Z.ToString(c), v.W.ToString(c));
+        }
+        public static string GetQuaternionXmlString(Quaternion q)
+        {
+            var c = CultureInfo.InvariantCulture;
+            return string.Format("x=\"{0}\" y=\"{1}\" z=\"{2}\" w=\"{3}\"", q.X.ToString(c), q.Y.ToString(c), q.Z.ToString(c), q.W.ToString(c));
+        }
 
         public static Vector3 ParseVector3String(string s)
         {

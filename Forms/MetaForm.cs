@@ -223,7 +223,14 @@ namespace CodeWalker.Forms
             RawPropertyGrid.SelectedObject = cut;
             modified = false;
         }
-
+        public void LoadMeta(CacheDatFile cachedat)
+        {
+            var fn = ((cachedat?.FileEntry?.Name) ?? "") + ".xml";
+            Xml = cachedat.GetXml();
+            FileName = fn;
+            RawPropertyGrid.SelectedObject = cachedat;
+            modified = false;
+        }
 
 
 

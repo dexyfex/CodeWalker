@@ -13,6 +13,7 @@ namespace CodeWalker.GameFiles
     {
         public RpfFileEntry FileEntry { get; set; }
 
+        public string Version { get; set; }
         public CacheFileDate[] FileDates { get; set; }
 
         public Dictionary<uint, MapDataStoreNode> MapNodeDict { get; set; }
@@ -39,7 +40,7 @@ namespace CodeWalker.GameFiles
                 if (b == 0) break;
                 sb.Append((char)b);
             }
-            string versionstr = sb.ToString();
+            Version = sb.ToString().Replace("[VERSION]", "").Replace("\r", "").Replace("\n", "");
             sb.Clear();
             int lastn = 0;
             int lspos = 0;
@@ -201,6 +202,81 @@ namespace CodeWalker.GameFiles
 
         }
 
+
+        public void LoadXml(string xml)
+        {
+        }
+
+        public string GetXml()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(MetaXmlBase.XmlHeader);
+            sb.AppendLine(string.Format("<CacheDatFile version=\"{0}\">", Version));
+            sb.AppendLine(" <fileDates>");
+            if (FileDates != null)
+            {
+                foreach (var date in FileDates)
+                {
+                    sb.AppendLine(string.Format("  <fileDate>{0}</fileDate>", date.ToCacheFileString()));
+                }
+            }
+            sb.AppendLine(" </fileDates>");
+            sb.AppendLine(" <module type=\"fwMapDataStore\">");
+            if (AllMapNodes != null)
+            {
+                foreach (var mapnode in AllMapNodes)
+                {
+                    sb.AppendLine("  <Item>");
+                    sb.AppendLine(string.Format("   <name>{0}</name>", mapnode.Name.ToCleanString()));
+                    sb.AppendLine(string.Format("   <parent>{0}</parent>", mapnode.ParentName.ToCleanString()));
+                    sb.AppendLine(string.Format("   <contentFlags value=\"{0}\" />", mapnode.ContentFlags.ToString()));
+                    sb.AppendLine(string.Format("   <streamingExtentsMin {0} />", FloatUtil.GetVector3XmlString(mapnode.streamingExtentsMin)));
+                    sb.AppendLine(string.Format("   <streamingExtentsMax {0} />", FloatUtil.GetVector3XmlString(mapnode.streamingExtentsMax)));
+                    sb.AppendLine(string.Format("   <entitiesExtentsMin {0} />", FloatUtil.GetVector3XmlString(mapnode.entitiesExtentsMin)));
+                    sb.AppendLine(string.Format("   <entitiesExtentsMax {0} />", FloatUtil.GetVector3XmlString(mapnode.entitiesExtentsMax)));
+                    sb.AppendLine(string.Format("   <flags unk1=\"{0}\" unk2=\"{1}\" unk3=\"{2}\" />", mapnode.Unk1, mapnode.Unk2, mapnode.Unk3));
+                    sb.AppendLine("  </Item>");
+                }
+            }
+            sb.AppendLine(" </module>");
+            sb.AppendLine(" <module type=\"CInteriorProxy\">");
+            if (AllCInteriorProxies != null)
+            {
+                foreach (var intprox in AllCInteriorProxies)
+                {
+                    sb.AppendLine("  <Item>");
+                    sb.AppendLine(string.Format("   <name>{0}</name>", intprox.Name.ToCleanString()));
+                    sb.AppendLine(string.Format("   <parent>{0}</parent>", intprox.Parent.ToCleanString()));
+                    sb.AppendLine(string.Format("   <position {0} />", FloatUtil.GetVector3XmlString(intprox.Position)));
+                    sb.AppendLine(string.Format("   <rotation {0} />", FloatUtil.GetQuaternionXmlString(intprox.Orientation)));
+                    sb.AppendLine(string.Format("   <aabbMin {0} />", FloatUtil.GetVector3XmlString(intprox.BBMin)));
+                    sb.AppendLine(string.Format("   <aabbMax {0} />", FloatUtil.GetVector3XmlString(intprox.BBMax)));
+                    sb.AppendLine(string.Format("   <unknowns1 unk01=\"{0}\" unk03=\"{1}\" />", intprox.Unk01, intprox.Unk03));
+                    sb.AppendLine(string.Format("   <unknowns2 unk11=\"{0}\" unk12=\"{1}\" unk13=\"{1}\" unk14=\"{1}\" />", intprox.Unk11, intprox.Unk12, intprox.Unk13, intprox.Unk14));
+                    sb.AppendLine(string.Format("   <unknowns3 unk15=\"{0}\" unk16=\"{1}\" unk17=\"{1}\" unk18=\"{1}\" />", intprox.Unk15, intprox.Unk16, intprox.Unk17, intprox.Unk18));
+                    sb.AppendLine("  </Item>");
+                }
+            }
+            sb.AppendLine(" </module>");
+            sb.AppendLine(" <module type=\"BoundsStore\">");
+            if (AllBoundsStoreItems != null)
+            {
+                foreach (var bndstore in AllBoundsStoreItems)
+                {
+                    sb.AppendLine("  <Item>");
+                    sb.AppendLine(string.Format("   <name>{0}</name>", bndstore.Name.ToCleanString()));
+                    sb.AppendLine(string.Format("   <aabbMin {0} />", FloatUtil.GetVector3XmlString(bndstore.Min)));
+                    sb.AppendLine(string.Format("   <aabbMax {0} />", FloatUtil.GetVector3XmlString(bndstore.Max)));
+                    sb.AppendLine(string.Format("   <layer value=\"{0}\" />", bndstore.Layer));
+                    sb.AppendLine("  </Item>");
+                }
+            }
+            sb.AppendLine(" </module>");
+            sb.AppendLine("</CacheDatFile>");
+            return sb.ToString();
+        }
+
+
         public override string ToString()
         {
             if (FileEntry != null)
@@ -213,7 +289,7 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class CacheFileDate
     {
-        public MetaHash FileName { get; set; }
+        public MetaHash FileName { get; set; } //"resource_surrogate:/%s.rpf"
         public DateTime TimeStamp { get; set; }
         public uint FileID { get; set; }
 
@@ -228,6 +304,11 @@ namespace CodeWalker.GameFiles
             }
             else
             { } //testing
+        }
+
+        public string ToCacheFileString()
+        {
+            return FileName.Hash.ToString() + " " + TimeStamp.ToFileTimeUtc().ToString() + " " + FileID.ToString();
         }
 
         public override string ToString()
@@ -279,11 +360,11 @@ namespace CodeWalker.GameFiles
         public Quaternion Orientation { get; set; }
         public Vector3 BBMin { get; set; }
         public Vector3 BBMax { get; set; }
-        public float Unk11 { get; set; }
+        public uint Unk11 { get; set; }
         public uint Unk12 { get; set; }
-        public float Unk13 { get; set; }
+        public uint Unk13 { get; set; }
         public uint Unk14 { get; set; }
-        public float Unk15 { get; set; }
+        public uint Unk15 { get; set; }
         public uint Unk16 { get; set; }
         public uint Unk17 { get; set; }
         public uint Unk18 { get; set; }
@@ -299,14 +380,131 @@ namespace CodeWalker.GameFiles
             Orientation = new Quaternion(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             BBMin = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             BBMax = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk11 = br.ReadSingle();
+            Unk11 = br.ReadUInt32();//could be float
             Unk12 = br.ReadUInt32();
-            Unk13 = br.ReadSingle();
+            Unk13 = br.ReadUInt32();//could be float
             Unk14 = br.ReadUInt32();
-            Unk15 = br.ReadSingle();
+            Unk15 = br.ReadUInt32();//could be float
             Unk16 = br.ReadUInt32();
-            Unk17 = br.ReadUInt32();
+            Unk17 = br.ReadUInt32();//could be float
             Unk18 = br.ReadUInt32();
+
+
+
+            switch (Unk01)
+            {
+                case 0: //v_cashdepot
+                case 19: //dt1_02_carpark
+                case 20: //dt1_03_carpark
+                case 21: //dt1_05_carpark
+                case 4: //dt1_rd1_tun
+                case 14: //id1_11_tunnel1_int
+                case 24: //v_firedept
+                case 3: //id2_21_a_tun1
+                case 22: //po1_08_warehouseint1
+                case 11: //sc1_rd_inttun1
+                case 10: //sc1_rd_inttun2b_end
+                case 18: //bt1_04_carpark
+                case 16: //v_hanger
+                case 1: //ap1_03_lisapark_subway
+                case 13: //kt1_03_carpark_int
+                case 5: //sm20_tun1
+                case 2: //vbca_tunnel1
+                case 15: //cs1_12_tunnel01_int
+                case 6: //cs1_14brailway1
+                case 9: //cs2_roadsb_tunnel_01
+                case 7: //cs3_03railtunnel_int1
+                case 8: //cs4_rwayb_tunnelint
+                case 12: //ch1_roadsdint_tun1
+                case 100: //hei_int_mph_carrierhang3
+                case 47: //xm_x17dlc_int_base_ent
+                    break;
+                default:
+                    break;
+            }
+
+            if (Unk02 != 0)
+            { }
+
+            switch (Unk03)
+            {
+                case 6: //v_cashdepot
+                case 2: //dt1_02_carpark
+                case 8: //v_fib01
+                case 4: //v_fib03
+                case 0: //v_fib04
+                case 7: //v_clotheslo
+                case 1: //v_gun
+                case 3: //v_genbank
+                case 11: //v_hospital
+                case 5: //v_shop_247
+                case 32: //v_abattoir
+                case 13: //v_franklins
+                case 15: //v_michael
+                case 18: //v_faceoffice
+                case 29: //v_recycle
+                case 9: //v_stadium
+                case 54: //v_farmhouse
+                case 12: //v_ranch
+                case 26: //hei_gta_milo_bar
+                case 17: //hei_gta_milo_bedrm
+                case 14: //hei_gta_milo_bridge
+                case 48: //apa_mpapa_yacht
+                    break;
+                default:
+                    break;
+            }
+
+
+            if ((Unk12 == 0) || (Unk12 > 0xFFFFFF))
+            { }
+
+            switch (Unk14)
+            {
+                case 1:
+                case 0:
+                case 580:
+                case 355: //sm_smugdlc_int_01
+                case 579: //xm_x17dlc_int_01
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk16)
+            {
+                case 1:
+                case 32758: //0x7FF6
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk17) //could be a float..!
+            {
+                case 9:
+                    break;
+                case 0x415CBC04: //13.7959f
+                case 0x7B81AC94:
+                case 0x40FE3224: //7.94362f v_gun
+                case 0x41515774: //13.0839f v_gun
+                case 0x414E7B34: //12.9051f bkr_biker_dlc_int_03
+                case 0x41389C14: //11.5381f imp_impexp_int_01
+                case 0x4177B664: //15.482f gr_grdlc_int_01
+                case 0xCE0404F4: //         sm_smugdlc_int_01
+                    break;
+                default:
+                    //string str = JenkIndex.GetString(Unk17);
+                    break;
+            }
+            switch(Unk18)
+            {
+                case 0:
+                case 1:
+                case 32758: //0x7FF6
+                    break;
+                default:
+                    break;
+            }
+
         }
 
         public override string ToString()
@@ -340,10 +538,10 @@ namespace CodeWalker.GameFiles
         public Vector3 streamingExtentsMax { get; set; }
         public Vector3 entitiesExtentsMin { get; set; }
         public Vector3 entitiesExtentsMax { get; set; }
-        public byte Unk02 { get; set; }
-        public byte Unk03 { get; set; }
-        public byte Unk04 { get; set; }
-        public byte Unk05 { get; set; }
+        public byte Unk1 { get; set; }
+        public byte Unk2 { get; set; }
+        public byte Unk3 { get; set; }
+        public byte Unk4 { get; set; }
 
         public MapDataStoreNodeExtra UnkExtra { get; set; }
 
@@ -372,13 +570,23 @@ namespace CodeWalker.GameFiles
             streamingExtentsMax = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             entitiesExtentsMin = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             entitiesExtentsMax = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk02 = br.ReadByte();
-            Unk03 = br.ReadByte();
-            Unk04 = br.ReadByte();
-            Unk05 = br.ReadByte();
+            Unk1 = br.ReadByte(); //HD flag? (critical, long, strm)
+            Unk2 = br.ReadByte(); //lod flag? - primary map files
+            Unk3 = br.ReadByte(); //slod flag?
+            Unk4 = br.ReadByte();
 
-            if (Unk05 == 0xFE)
+            if (Unk1 != 0)
+            { }
+            if (Unk2 != 0)
+            { }
+            if (Unk3 != 0)
+            { }
+            if (Unk4 != 0)
+            { } //no hits here now..
+
+            if (Unk4 == 0xFE)
             {
+                //this seems to never be hit anymore...
                 UnkExtra = new MapDataStoreNodeExtra(br);
             }
         }
@@ -416,6 +624,7 @@ namespace CodeWalker.GameFiles
                 InteriorProxyList = null; //plz get this GC
             }
         }
+
 
         public override string ToString()
         {

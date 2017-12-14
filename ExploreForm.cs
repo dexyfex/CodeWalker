@@ -189,21 +189,42 @@ namespace CodeWalker
             InitFileType(".awc", "Audio Wave Container", 22, FileTypeAction.ViewAwc);
             InitFileType(".rel", "Audio Data (REL)", 23, FileTypeAction.ViewRel);
 
+            InitSubFileType(".dat", "cache_y.dat", "Cache File", 6, FileTypeAction.ViewCacheDat);
         }
         private void InitFileType(string ext, string name, int imgidx, FileTypeAction defaultAction = FileTypeAction.ViewHex)
         {
             var ft = new FileTypeInfo(ext, name, imgidx, defaultAction);
             FileTypes[ext] = ft;
         }
+        private void InitSubFileType(string ext, string subext, string name, int imgidx, FileTypeAction defaultAction = FileTypeAction.ViewHex)
+        {
+            FileTypeInfo pti = null;
+            if (FileTypes.TryGetValue(ext, out pti))
+            {
+                var ft = new FileTypeInfo(subext, name, imgidx, defaultAction);
+                pti.AddSubType(ft);
+            }
+        }
         public FileTypeInfo GetFileType(string fn)
         {
             var fi = new FileInfo(fn);
-            var ext = fi.Extension.ToLower();
+            var ext = fi.Extension.ToLowerInvariant();
             if (!string.IsNullOrEmpty(ext))
             {
                 FileTypeInfo ft;
                 if (FileTypes.TryGetValue(ext, out ft))
                 {
+                    if (ft.SubTypes != null)
+                    {
+                        var fnl = fn.ToLowerInvariant();
+                        foreach (var sft in ft.SubTypes)
+                        {
+                            if (fnl.EndsWith(sft.Extension))
+                            {
+                                return sft;
+                            }
+                        }
+                    }
                     return ft;
                 }
                 else
@@ -1062,6 +1083,7 @@ namespace CodeWalker
                 case FileTypeAction.ViewYwr:
                 case FileTypeAction.ViewYvr:
                 case FileTypeAction.ViewYcd:
+                case FileTypeAction.ViewCacheDat:
                     return true;
                 case FileTypeAction.ViewHex:
                 default:
@@ -1167,6 +1189,9 @@ namespace CodeWalker
                         break;
                     case FileTypeAction.ViewYcd:
                         ViewYcd(name, path, data, item.File);
+                        break;
+                    case FileTypeAction.ViewCacheDat:
+                        ViewCacheDat(name, path, data, item.File);
                         break;
                     case FileTypeAction.ViewHex:
                     default:
@@ -1367,7 +1392,13 @@ namespace CodeWalker
             f.Show();
             f.LoadYcd(ycd);
         }
-
+        private void ViewCacheDat(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var cachedat = RpfFile.GetFile<CacheDatFile>(e, data);
+            MetaForm f = new MetaForm();
+            f.Show();
+            f.LoadMeta(cachedat);
+        }
 
 
         private void ShowTreeContextMenu(TreeNode n, Point p)
@@ -2740,6 +2771,7 @@ namespace CodeWalker
         public string Extension { get; set; }
         public int ImageIndex { get; set; }
         public FileTypeAction DefaultAction { get; set; }
+        public List<FileTypeInfo> SubTypes { get; set; }
 
         public FileTypeInfo(string extension, string name, int imageindex, FileTypeAction defaultAction)
         {
@@ -2747,6 +2779,12 @@ namespace CodeWalker
             Extension = extension;
             ImageIndex = imageindex;
             DefaultAction = defaultAction;
+        }
+
+        public void AddSubType(FileTypeInfo t)
+        {
+            if (SubTypes == null) SubTypes = new List<FileTypeInfo>();
+            SubTypes.Add(t);
         }
     }
 
@@ -2770,6 +2808,7 @@ namespace CodeWalker
         ViewYwr = 15,
         ViewYvr = 16,
         ViewYcd = 17,
+        ViewCacheDat = 18,
     }
 
 }
