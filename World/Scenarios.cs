@@ -118,15 +118,15 @@ namespace CodeWalker.World
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ScenarioRegion : BasePathData
     {
-        public VertexTypePC[] PathVerts { get; set; }
-        public VertexTypePC[] TriangleVerts { get; set; }
+        public EditorVertex[] PathVerts { get; set; }
+        public EditorVertex[] TriangleVerts { get; set; }
         public Vector4[] NodePositions { get; set; }
 
-        public VertexTypePC[] GetPathVertices()
+        public EditorVertex[] GetPathVertices()
         {
             return PathVerts;
         }
-        public VertexTypePC[] GetTriangleVertices()
+        public EditorVertex[] GetTriangleVertices()
         {
             return TriangleVerts;
         }
@@ -441,7 +441,7 @@ namespace CodeWalker.World
         public void BuildVertices()
         {
 
-            List<VertexTypePC> pathverts = new List<VertexTypePC>();
+            List<EditorVertex> pathverts = new List<EditorVertex>();
 
             uint cred = (uint)Color.Red.ToRgba();
             uint cblu = (uint)Color.Blue.ToRgba();
@@ -451,8 +451,8 @@ namespace CodeWalker.World
             if ((Ymt != null) && (Ymt.CScenarioPointRegion != null))
             {
                 var r = Ymt.CScenarioPointRegion;
-                VertexTypePC pv1 = new VertexTypePC();
-                VertexTypePC pv2 = new VertexTypePC();
+                EditorVertex pv1 = new EditorVertex();
+                EditorVertex pv2 = new EditorVertex();
 
                 if ((r.Paths != null) && (r.Paths.Nodes != null))
                 {

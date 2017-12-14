@@ -19,16 +19,16 @@ namespace CodeWalker.World
         {
             return null;
         }
-        public VertexTypePC[] GetPathVertices()
+        public EditorVertex[] GetPathVertices()
         {
             return null;
         }
-        public VertexTypePC[] GetTriangleVertices()
+        public EditorVertex[] GetTriangleVertices()
         {
             return TriangleVerts;
         }
 
-        public VertexTypePC[] TriangleVerts;
+        public EditorVertex[] TriangleVerts;
 
 
 
@@ -103,11 +103,11 @@ namespace CodeWalker.World
         public void BuildVertices()
         {
 
-            var vlist = new List<VertexTypePC>();
-            var v1 = new VertexTypePC();
-            var v2 = new VertexTypePC();
-            var v3 = new VertexTypePC();
-            var v4 = new VertexTypePC();
+            var vlist = new List<EditorVertex>();
+            var v1 = new EditorVertex();
+            var v2 = new EditorVertex();
+            var v3 = new EditorVertex();
+            var v4 = new EditorVertex();
 
             foreach (var group in Groups.Values)
             {

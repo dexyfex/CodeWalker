@@ -17,7 +17,7 @@ namespace CodeWalker.GameFiles
         public List<YnvPoly> Polys { get; set; }
 
 
-        public VertexTypePC[] TriangleVerts { get; set; }
+        public EditorVertex[] TriangleVerts { get; set; }
         public Vector4[] NodePositions { get; set; }
 
 
@@ -195,7 +195,7 @@ namespace CodeWalker.GameFiles
 
             int vc = Vertices.Count;
 
-            List<VertexTypePC> rverts = new List<VertexTypePC>();
+            List<EditorVertex> rverts = new List<EditorVertex>();
             foreach (var ypoly in Polys)
             {
                 var poly = ypoly.RawData;
@@ -218,9 +218,9 @@ namespace CodeWalker.GameFiles
                 { }
 
 
-                VertexTypePC p0 = new VertexTypePC();
-                VertexTypePC p1 = new VertexTypePC();
-                VertexTypePC p2 = new VertexTypePC();
+                EditorVertex p0 = new EditorVertex();
+                EditorVertex p1 = new EditorVertex();
+                EditorVertex p2 = new EditorVertex();
                 p0.Colour = colourval;
                 p1.Colour = colourval;
                 p2.Colour = colourval;
@@ -257,11 +257,11 @@ namespace CodeWalker.GameFiles
 
 
 
-        public VertexTypePC[] GetPathVertices()
+        public EditorVertex[] GetPathVertices()
         {
             return null;
         }
-        public VertexTypePC[] GetTriangleVertices()
+        public EditorVertex[] GetTriangleVertices()
         {
             return TriangleVerts;
         }

@@ -304,7 +304,7 @@
     <Compile Include="GameFiles\Resources\ResourceFile.cs" />
     <Compile Include="GameFiles\Resources\ResourceBaseTypes.cs" />
     <Compile Include="GameFiles\Resources\RpfManager.cs" />
-    <Compile Include="GameFiles\Resources\VertexTypes.cs" />
+    <Compile Include="GameFiles\Resources\VertexType.cs" />
     <Compile Include="GameFiles\FileTypes\YddFile.cs" />
     <Compile Include="GameFiles\FileTypes\YdrFile.cs" />
     <Compile Include="GameFiles\FileTypes\YftFile.cs" />
@@ -370,6 +370,7 @@
     <Compile Include="Rendering\Utils\UnitCylinder.cs" />
     <Compile Include="Rendering\Utils\UnitDisc.cs" />
     <Compile Include="Rendering\Utils\UnitSphere.cs" />
+    <Compile Include="Rendering\VertexTypes.cs" />
     <Compile Include="SelectFolderForm.cs">
       <SubType>Form</SubType>
     </Compile>

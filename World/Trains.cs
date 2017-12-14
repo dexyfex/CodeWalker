@@ -81,14 +81,14 @@ namespace CodeWalker.World
         }
 
 
-        public VertexTypePC[] LinkedVerts { get; set; }
+        public EditorVertex[] LinkedVerts { get; set; }
         public Vector4[] NodePositions { get; set; }
 
-        public VertexTypePC[] GetPathVertices()
+        public EditorVertex[] GetPathVertices()
         {
             return LinkedVerts;
         }
-        public VertexTypePC[] GetTriangleVertices()
+        public EditorVertex[] GetTriangleVertices()
         {
             return null;
         }
@@ -245,7 +245,7 @@ namespace CodeWalker.World
                 var lc = nc - 1;
                 var lvc = lc * 2;
                 var np = new Vector4[nc];
-                var lv = new VertexTypePC[lvc];
+                var lv = new EditorVertex[lvc];
                 for (int i = 0; i < nc; i++)
                 {
                     np[i] = new Vector4(Nodes[i].Position, 1.0f);

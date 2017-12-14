@@ -522,7 +522,7 @@ namespace CodeWalker.World
 
             //join the dots....
             //StringBuilder sb = new StringBuilder();
-            List<VertexTypePC> tverts = new List<VertexTypePC>();
+            List<EditorVertex> tverts = new List<EditorVertex>();
             List<YndLink> tlinks = new List<YndLink>();
             List<YndLink> nlinks = new List<YndLink>();
             foreach (var ynd in AllYnds.Values)
@@ -605,7 +605,7 @@ namespace CodeWalker.World
             ynd.Links = tlinks.ToArray();
 
         }
-        public void BuildYndVerts(YndFile ynd, List<VertexTypePC> tverts = null)
+        public void BuildYndVerts(YndFile ynd, List<EditorVertex> tverts = null)
         {
             var ynodes = ynd.Nodes;
             if (ynodes == null) return;
@@ -613,7 +613,7 @@ namespace CodeWalker.World
             int nodecount = ynodes.Length;
 
             //build the main linked vertex array (used by the renderable to draw the lines).
-            if(tverts==null) tverts = new List<VertexTypePC>();
+            if(tverts==null) tverts = new List<EditorVertex>();
             tverts.Clear();
             for (int i = 0; i < nodecount; i++)
             {
@@ -621,7 +621,7 @@ namespace CodeWalker.World
                 if (node.Links == null) continue;
 
 
-                var nvert = new VertexTypePC();
+                var nvert = new EditorVertex();
                 nvert.Position = node.Position;
                 nvert.Colour = (uint)node.Colour.ToRgba();
 
@@ -631,7 +631,7 @@ namespace CodeWalker.World
                     YndLink yl = node.Links[l];
                     var tnode = yl.Node2;
                     if (tnode == null) continue; //invalid links could hit here
-                    var tvert = new VertexTypePC();
+                    var tvert = new EditorVertex();
                     tvert.Position = tnode.Position;
                     tvert.Colour = (uint)tnode.Colour.ToRgba();
 
@@ -679,7 +679,7 @@ namespace CodeWalker.World
             }
 
         }
-        public void BuildYndData(YndFile ynd, List<VertexTypePC> tverts = null, List<YndLink> tlinks = null, List<YndLink> nlinks = null)
+        public void BuildYndData(YndFile ynd, List<EditorVertex> tverts = null, List<YndLink> tlinks = null, List<YndLink> nlinks = null)
         {
 
             BuildYndLinks(ynd, tlinks, nlinks);

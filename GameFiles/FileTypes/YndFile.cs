@@ -18,8 +18,8 @@ namespace CodeWalker.GameFiles
         public YndLink[] Links { get; set; }
         public YndJunction[] Junctions { get; set; }
 
-        public VertexTypePC[] LinkedVerts { get; set; }//populated by the space (needs to use grid of all ynd's!)
-        public VertexTypePC[] TriangleVerts { get; set; } //used for junctions display
+        public EditorVertex[] LinkedVerts { get; set; }//populated by the space (needs to use grid of all ynd's!)
+        public EditorVertex[] TriangleVerts { get; set; } //used for junctions display
         public Vector4[] NodePositions { get; set; }
 
         public Vector3 BBMin { get; set; }
@@ -443,11 +443,11 @@ namespace CodeWalker.GameFiles
                 vc = Links.Length * 6;
             }
 
-            List<VertexTypePC> verts = new List<VertexTypePC>(vc);
-            VertexTypePC v0 = new VertexTypePC();
-            VertexTypePC v1 = new VertexTypePC();
-            VertexTypePC v2 = new VertexTypePC();
-            VertexTypePC v3 = new VertexTypePC();
+            List<EditorVertex> verts = new List<EditorVertex>(vc);
+            EditorVertex v0 = new EditorVertex();
+            EditorVertex v1 = new EditorVertex();
+            EditorVertex v2 = new EditorVertex();
+            EditorVertex v3 = new EditorVertex();
             if ((Links != null) && (Nodes != null))
             {
                 foreach (var node in Nodes)
@@ -530,11 +530,11 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            List<VertexTypePC> verts = new List<VertexTypePC>(vc);
-            VertexTypePC v0 = new VertexTypePC();
-            VertexTypePC v1 = new VertexTypePC();
-            VertexTypePC v2 = new VertexTypePC();
-            VertexTypePC v3 = new VertexTypePC();
+            List<EditorVertex> verts = new List<EditorVertex>(vc);
+            EditorVertex v0 = new EditorVertex();
+            EditorVertex v1 = new EditorVertex();
+            EditorVertex v2 = new EditorVertex();
+            EditorVertex v3 = new EditorVertex();
             if (Nodes != null)
             {
                 foreach (var node in Nodes)
@@ -638,11 +638,11 @@ namespace CodeWalker.GameFiles
 
 
 
-        public VertexTypePC[] GetPathVertices()
+        public EditorVertex[] GetPathVertices()
         {
             return LinkedVerts;
         }
-        public VertexTypePC[] GetTriangleVertices()
+        public EditorVertex[] GetTriangleVertices()
         {
             return TriangleVerts;
         }
@@ -1347,8 +1347,8 @@ namespace CodeWalker.GameFiles
     {
         //reuse this interface for file types that need to get paths rendered...
 
-        VertexTypePC[] GetPathVertices();
-        VertexTypePC[] GetTriangleVertices();
+        EditorVertex[] GetPathVertices();
+        EditorVertex[] GetTriangleVertices();
         Vector4[] GetNodePositions();
     }
 

@@ -2598,7 +2598,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(522, 25);
+            this.Toolbar.Size = new System.Drawing.Size(553, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -2832,7 +2832,7 @@ namespace CodeWalker
             // 
             this.ToolbarSelectPathButton.Name = "ToolbarSelectPathButton";
             this.ToolbarSelectPathButton.Size = new System.Drawing.Size(181, 22);
-            this.ToolbarSelectPathButton.Text = "Path";
+            this.ToolbarSelectPathButton.Text = "Traffic Path";
             this.ToolbarSelectPathButton.Click += new System.EventHandler(this.ToolbarSelectPathButton_Click);
             // 
             // ToolbarSelectTrainTrackButton

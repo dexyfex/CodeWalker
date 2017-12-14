@@ -1008,12 +1008,12 @@ namespace CodeWalker.Rendering
     {
         public int VertexStride { get { return 16; } }
 
-        public VertexTypePC[] PathVertices;
+        public EditorVertex[] PathVertices;
         public int PathVertexCount { get; set; }
         public Buffer PathVertexBuffer { get; set; }
         public VertexBufferBinding PathVBBinding;
 
-        public VertexTypePC[] TriangleVertices;
+        public EditorVertex[] TriangleVertices;
         public int TriangleVertexCount { get; set; }
         public Buffer TriangleVertexBuffer { get; set; }
         public VertexBufferBinding TriangleVBBinding;
