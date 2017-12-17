@@ -355,10 +355,8 @@ namespace CodeWalker.GameFiles
                     {
                         var nlow = entry.NameLower;
                         if (string.IsNullOrEmpty(nlow)) continue;
-                        JenkIndex.Ensure(entry.Name);
-                        JenkIndex.Ensure(nlow);
-                        //JenkIndex.Ensure(entry.Path);
-                        //JenkIndex.Ensure(entry.Path.ToLower());
+                        //JenkIndex.Ensure(entry.Name);
+                        //JenkIndex.Ensure(nlow);
                         int ind = nlow.LastIndexOf('.');
                         if (ind > 0)
                         {
@@ -370,6 +368,11 @@ namespace CodeWalker.GameFiles
                             //    JenkIndex.Ensure(entry.Name.Substring(0, ind) + ".#" + entry.Name.Substring(ind + 2));
                             //    JenkIndex.Ensure(entry.NameLower.Substring(0, ind) + ".#" + entry.NameLower.Substring(ind + 2));
                             //}
+                        }
+                        else
+                        {
+                            JenkIndex.Ensure(entry.Name);
+                            JenkIndex.Ensure(nlow);
                         }
                         if (nlow.EndsWith(".ydr") || nlow.EndsWith(".yft"))
                         {
