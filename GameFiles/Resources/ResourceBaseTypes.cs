@@ -195,6 +195,45 @@ namespace CodeWalker.GameFiles
         }
     }
 
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct FlagsUshort
+    {
+        public ushort Value { get; set; }
+
+        public string Hex
+        {
+            get
+            {
+                return Convert.ToString(Value, 16).ToUpper().PadLeft(4, '0');
+            }
+        }
+
+        public string Bin
+        {
+            get
+            {
+                return Convert.ToString(Value, 2).PadLeft(16, '0');
+            }
+        }
+
+        public FlagsUshort(ushort v)
+        {
+            Value = v;
+        }
+
+        public override string ToString()
+        {
+            return Bin + " | 0x" + Hex + " | " + Value.ToString();
+        }
+        public string ToShortString()
+        {
+            return Bin + " | 0x" + Hex;
+        }
+
+        public static implicit operator FlagsUshort(ushort v)
+        {
+            return new FlagsUshort(v);
+        }
+    }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct FlagsUint
     {

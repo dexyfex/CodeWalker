@@ -192,7 +192,7 @@ namespace CodeWalker.GameFiles
 
             if (!string.IsNullOrEmpty(Name))
             {
-                NameHash = JenkHash.GenHash(Name.ToLower());
+                NameHash = JenkHash.GenHash(Name.ToLowerInvariant());
             }
         }
 

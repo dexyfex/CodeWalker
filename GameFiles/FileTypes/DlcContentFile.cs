@@ -82,7 +82,7 @@ namespace CodeWalker.GameFiles
 
             foreach (var datafile in dataFiles)
             {
-                string dfn = GameFileCache.GetDlcPlatformPath(datafile.filename).ToLower();
+                string dfn = GameFileCache.GetDlcPlatformPath(datafile.filename).ToLowerInvariant();
                 if (datafile.fileType == "EXTRA_FOLDER_MOUNT_DATA")
                 {
                     string efmdxmlpath = datafile.filename.Replace(setupfile.deviceName + ":", DlcFile.Path).Replace('/', '\\');

@@ -285,7 +285,7 @@ namespace CodeWalker.World
         public void Init(GameFileCache gameFileCache, XmlNode node)
         {
             Name = Xml.GetChildInnerText(node, "Name");
-            NameHash = new MetaHash(JenkHash.GenHash(Name.ToLower()));
+            NameHash = new MetaHash(JenkHash.GenHash(Name.ToLowerInvariant()));
             Sun = Xml.GetChildFloatAttribute(node, "Sun", "value");
             Cloud = Xml.GetChildFloatAttribute(node, "Cloud", "value");
             WindMin = Xml.GetChildFloatAttribute(node, "WindMin", "value");
@@ -329,7 +329,7 @@ namespace CodeWalker.World
             {
 
                 //TODO: RpfMan should be able to get the right version? or maybe let gameFileCache do it!
-                string fname = TimeCycleFilename.ToLower();
+                string fname = TimeCycleFilename.ToLowerInvariant();
                 bool useupd = gameFileCache.EnableDlc;
                 if (useupd)
                 {
@@ -338,7 +338,7 @@ namespace CodeWalker.World
                 XmlDocument tcxml = gameFileCache.RpfMan.GetFileXml(fname);
                 if (useupd && !tcxml.HasChildNodes)
                 {
-                    fname = TimeCycleFilename.ToLower();
+                    fname = TimeCycleFilename.ToLowerInvariant();
                     tcxml = gameFileCache.RpfMan.GetFileXml(fname);
                 }
 

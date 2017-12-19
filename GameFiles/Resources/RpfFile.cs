@@ -65,8 +65,8 @@ namespace CodeWalker.GameFiles
         {
             FileInfo fi = new FileInfo(fpath);
             Name = fi.Name;
-            NameLower = Name.ToLower();
-            Path = relpath.ToLower();
+            NameLower = Name.ToLowerInvariant();
+            Path = relpath.ToLowerInvariant();
             FilePath = fpath;
             FileSize = fi.Length;
             IsCompressed = false;
@@ -77,8 +77,8 @@ namespace CodeWalker.GameFiles
         public RpfFile(string name, string path, string filepath, long filesize, bool compressed, bool encrypted, string rootfn, long rootfs)
         {
             Name = name;
-            NameLower = Name.ToLower();
-            Path = path.ToLower();
+            NameLower = Name.ToLowerInvariant();
+            Path = path.ToLowerInvariant();
             FilePath = filepath;
             FileSize = filesize;
             IsCompressed = compressed;
@@ -197,7 +197,7 @@ namespace CodeWalker.GameFiles
 
                 namesrdr.Position = e.NameOffset;
                 e.Name = namesrdr.ReadString();
-                e.NameLower = e.Name.ToLower();
+                e.NameLower = e.Name.ToLowerInvariant();
 
                 if ((e is RpfFileEntry) && string.IsNullOrEmpty(e.Name))
                 {
@@ -214,7 +214,7 @@ namespace CodeWalker.GameFiles
 
 
             Root = (RpfDirectoryEntry)AllEntries[0];
-            Root.Path = Path.ToLower();// + "\\" + Root.Name;
+            Root.Path = Path.ToLowerInvariant();// + "\\" + Root.Name;
             var stack = new Stack<RpfDirectoryEntry>();
             stack.Push(Root);
             while (stack.Count > 0)
@@ -308,7 +308,6 @@ namespace CodeWalker.GameFiles
                             GrandTotalResourceCount += subfile.GrandTotalResourceCount;
                             GrandTotalBinaryFileCount += subfile.GrandTotalBinaryFileCount;
 
-
                             Children.Add(subfile);
                         }
                         else
@@ -330,7 +329,7 @@ namespace CodeWalker.GameFiles
                 }
                 catch (Exception ex)
                 {
-                    errorLog(entry.Path + ": " + ex.ToString());
+                    errorLog?.Invoke(entry.Path + ": " + ex.ToString());
                 }
             }
 
@@ -795,7 +794,7 @@ namespace CodeWalker.GameFiles
         public List<RpfFileEntry> GetFiles(string folder, bool recurse)
         {
             List<RpfFileEntry> result = new List<RpfFileEntry>();
-            string[] parts = folder.ToLower().Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = folder.ToLowerInvariant().Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
             RpfDirectoryEntry dir = Root;
             for (int i = 0; i < parts.Length; i++)
             {
@@ -833,7 +832,7 @@ namespace CodeWalker.GameFiles
             for (int i = 0; i < dir.Directories.Count; i++)
             {
                 var cdir = dir.Directories[i];
-                if (cdir.Name.ToLower() == name)
+                if (cdir.Name.ToLowerInvariant() == name)
                 {
                     return cdir;
                 }
@@ -960,20 +959,20 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))] public class RpfBinaryFileEntry : RpfFileEntry
     {
         public uint FileUncompressedSize { get; set; }
+        public uint EncryptionType { get; set; }
 
         public override void Read(DataReader reader)
         {
-            NameOffset = reader.ReadUInt16();
-
-            var buf1 = reader.ReadBytes(3);
-            FileSize = (uint)buf1[0] + (uint)(buf1[1] << 8) + (uint)(buf1[2] << 16);
-
-            var buf2 = reader.ReadBytes(3);
-            FileOffset = (uint)buf2[0] + (uint)(buf2[1] << 8) + (uint)(buf2[2] << 16);
+            ulong buf = reader.ReadUInt64();
+            NameOffset = (uint)buf & 0xFFFF;
+            FileSize = (uint)(buf >> 16) & 0xFFFFFF;
+            FileOffset = (uint)(buf >> 40) & 0xFFFFFF;
 
             FileUncompressedSize = reader.ReadUInt32();
 
-            switch (reader.ReadUInt32())
+            EncryptionType = reader.ReadUInt32();
+
+            switch (EncryptionType)
             {
                 case 0: IsEncrypted = false; break;
                 case 1: IsEncrypted = true; break;

@@ -236,7 +236,7 @@ namespace CodeWalker.GameFiles
                 {
                     foreach (XmlNode itemnode in pathsnode.ChildNodes)
                     {
-                        DlcPaths.Add(itemnode.InnerText.ToLower().Replace('\\', '/').Replace("platform:", "x64"));
+                        DlcPaths.Add(itemnode.InnerText.ToLowerInvariant().Replace('\\', '/').Replace("platform:", "x64"));
                     }
                 }
             }
@@ -286,7 +286,7 @@ namespace CodeWalker.GameFiles
                 {
                     foreach (var tumount in updcontentfile.ExtraTitleUpdates.Mounts)
                     {
-                        var lpath = tumount.path.ToLower();
+                        var lpath = tumount.path.ToLowerInvariant();
                         var relpath = lpath.Replace('/', '\\').Replace("update:\\", "");
                         var dlcname = GetDlcNameFromPath(relpath);
                         RpfFile dlcfile;
@@ -481,7 +481,7 @@ namespace CodeWalker.GameFiles
                     {
                         if (changeset.useCacheLoader)
                         {
-                            uint cachehash = JenkHash.GenHash(changeset.changeSetName.ToLower());
+                            uint cachehash = JenkHash.GenHash(changeset.changeSetName.ToLowerInvariant());
                             string cachefilename = dlcname + "_" + cachehash.ToString() + "_cache_y.dat";
                             string cachefilepath = dlcfile.Path + "\\x64\\data\\cacheloaderdata_dlc\\" + cachefilename;
                             string cachefilepathpatched = GetDlcPatchedPath(cachefilepath);
@@ -507,7 +507,7 @@ namespace CodeWalker.GameFiles
                         {
                             foreach (string file in changeset.filesToEnable)
                             {
-                                string dfn = GetDlcPlatformPath(file).ToLower();
+                                string dfn = GetDlcPlatformPath(file).ToLowerInvariant();
                                 if (contentfile.ExtraMounts.TryGetValue(dfn, out extramount))
                                 {
                                     //foreach (var rpfkvp in contentfile.RpfDataFiles)
@@ -594,8 +594,8 @@ namespace CodeWalker.GameFiles
 
         private void AddDlcActiveMapRpfFile(string vpath, string phpath)
         {
-            vpath = vpath.ToLower();
-            phpath = phpath.ToLower();
+            vpath = vpath.ToLowerInvariant();
+            phpath = phpath.ToLowerInvariant();
             if (phpath.EndsWith(".rpf"))
             {
                 RpfFile rpffile = RpfMan.FindRpfFile(phpath);
@@ -647,8 +647,8 @@ namespace CodeWalker.GameFiles
         }
         private string GetDlcRpfPhysicalPath(string path, DlcSetupFile setupfile)
         {
-            string devname = setupfile.deviceName.ToLower();
-            string fpath = GetDlcPlatformPath(path).ToLower();
+            string devname = setupfile.deviceName.ToLowerInvariant();
+            string fpath = GetDlcPlatformPath(path).ToLowerInvariant();
             string kpath = fpath.Replace(devname + ":\\", "");
             string dlcpath = setupfile.DlcFile.Path;
             fpath = fpath.Replace(devname + ":", dlcpath);
@@ -657,8 +657,8 @@ namespace CodeWalker.GameFiles
         }
         private string GetDlcOverlayPath(string path, DlcSetupFile setupfile)
         {
-            string devname = setupfile.deviceName.ToLower();
-            string fpath = path.Replace("%PLATFORM%", "x64").Replace('\\', '/').ToLower();
+            string devname = setupfile.deviceName.ToLowerInvariant();
+            string fpath = path.Replace("%PLATFORM%", "x64").Replace('\\', '/').ToLowerInvariant();
             string opath = fpath.Replace(devname + ":/", "");
             return opath;
         }
@@ -694,16 +694,16 @@ namespace CodeWalker.GameFiles
         }
         private string GetDlcNameFromPath(string path)
         {
-            string[] parts = path.ToLower().Split('\\');
+            string[] parts = path.ToLowerInvariant().Split('\\');
             if (parts.Length > 1)
             {
-                return parts[parts.Length - 2].ToLower();
+                return parts[parts.Length - 2].ToLowerInvariant();
             }
             return path;
         }
         public static string GetDlcPlatformPath(string path)
         {
-            return path.Replace("%PLATFORM%", "x64").Replace('\\', '/').Replace("platform:", "x64").ToLower();
+            return path.Replace("%PLATFORM%", "x64").Replace('\\', '/').Replace("platform:", "x64").ToLowerInvariant();
         }
         private string GetDlcMountedPath(string path)
         {
@@ -948,8 +948,8 @@ namespace CodeWalker.GameFiles
                             {
                                 foreach (var kvp in ymt.CMapParentTxds)
                                 {
-                                    uint chash = JenkHash.GenHash(kvp.Key.ToLower());
-                                    uint phash = JenkHash.GenHash(kvp.Value.ToLower());
+                                    uint chash = JenkHash.GenHash(kvp.Key.ToLowerInvariant());
+                                    uint phash = JenkHash.GenHash(kvp.Value.ToLowerInvariant());
                                     if (!parentTxds.ContainsKey(chash))
                                     {
                                         parentTxds.Add(chash, phash);
@@ -1330,7 +1330,7 @@ namespace CodeWalker.GameFiles
                             if (string.IsNullOrEmpty(statname))
                             { continue; }
 
-                            var statnamel = statname.ToLower();
+                            var statnamel = statname.ToLowerInvariant();
                             StatsNames.Ensure(statname);
                             StatsNames.Ensure(statnamel);
 
@@ -2000,7 +2000,7 @@ namespace CodeWalker.GameFiles
             {
                 for (int i = 0; i < exclpaths.Length; i++)
                 {
-                    exclpaths[i] = exclpaths[i].ToLower();
+                    exclpaths[i] = exclpaths[i].ToLowerInvariant();
                 }
             }
             else
@@ -2549,6 +2549,13 @@ namespace CodeWalker.GameFiles
                 }
 
             }
+            int ctot = Dat151RelData.TotCount;
+            StringBuilder sbp = new StringBuilder();
+            foreach (string s in Dat151RelData.FoundCoords)
+            {
+                sbp.AppendLine(s);
+            }
+            string posz = sbp.ToString();
 
             string relstrs = sb.ToString();
             string hashstrs = sbh.ToString();

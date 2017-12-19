@@ -1661,7 +1661,7 @@ namespace CodeWalker
                     }
                     else
                     {
-                        h = JenkHash.GenHash(tstr.ToLower());
+                        h = JenkHash.GenHash(tstr.ToLowerInvariant());
                         hashes.Add(h);
                     }
                 }
@@ -3444,7 +3444,7 @@ namespace CodeWalker
             track.Name = fname;
             track.FilePath = filename;
             track.RpfFileEntry.Name = fname;
-            track.RpfFileEntry.NameLower = fname.ToLower();
+            track.RpfFileEntry.NameLower = fname.ToLowerInvariant();
 
 
             if (WorldForm != null)

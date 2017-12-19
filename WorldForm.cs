@@ -1445,7 +1445,7 @@ namespace CodeWalker
                 for (int i = 0; i < frag.Layers.Length; i++)
                 {
                     CloudHatFragLayer layer = frag.Layers[i];
-                    uint dhash = JenkHash.GenHash(layer.Filename.ToLower());
+                    uint dhash = JenkHash.GenHash(layer.Filename.ToLowerInvariant());
                     Archetype arch = gameFileCache.GetArchetype(dhash);
                     if (arch == null)
                     { continue; }

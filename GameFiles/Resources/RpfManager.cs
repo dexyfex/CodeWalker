@@ -218,7 +218,7 @@ namespace CodeWalker.GameFiles
                 return file;
             }
 
-            string lpath = path.ToLower(); //try look at names etc
+            string lpath = path.ToLowerInvariant(); //try look at names etc
             foreach (RpfFile tfile in AllRpfs)
             {
                 if (tfile.NameLower == lpath)
@@ -238,7 +238,7 @@ namespace CodeWalker.GameFiles
         public RpfEntry GetEntry(string path)
         {
             RpfEntry entry;
-            string pathl = path.ToLower();
+            string pathl = path.ToLowerInvariant();
             if (EnableMods && ModEntryDict.TryGetValue(pathl, out entry))
             {
                 return entry;

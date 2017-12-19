@@ -231,7 +231,7 @@ namespace CodeWalker.Project
             //Uri toUri = new Uri(filepath);
             if (fromUri.Scheme != toUri.Scheme)
             {
-                return filepath.ToLower();
+                return filepath.ToLowerInvariant();
             }
             Uri relativeUri = fromUri.MakeRelativeUri(toUri);
             string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
@@ -239,7 +239,7 @@ namespace CodeWalker.Project
             {
                 relativePath = relativePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             }
-            return relativePath.ToLower();
+            return relativePath.ToLowerInvariant();
         }
         public string GetFullFilePath(string relpath)
         {
@@ -294,7 +294,7 @@ namespace CodeWalker.Project
         public bool ContainsYmap(string filename)
         {
             bool found = false;
-            filename = filename.ToLower();
+            filename = filename.ToLowerInvariant();
             foreach (var ymapfn in YmapFilenames)
             {
                 if (ymapfn == filename)
@@ -315,8 +315,8 @@ namespace CodeWalker.Project
         }
         public bool RenameYmap(string oldfilename, string newfilename)
         {
-            oldfilename = oldfilename.ToLower();
-            newfilename = newfilename.ToLower();
+            oldfilename = oldfilename.ToLowerInvariant();
+            newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < YmapFilenames.Count; i++)
             {
                 if (YmapFilenames[i] == oldfilename)
@@ -361,7 +361,7 @@ namespace CodeWalker.Project
         public bool ContainsYnd(string filename)
         {
             bool found = false;
-            filename = filename.ToLower();
+            filename = filename.ToLowerInvariant();
             foreach (var yndfn in YndFilenames)
             {
                 if (yndfn == filename)
@@ -382,8 +382,8 @@ namespace CodeWalker.Project
         }
         public bool RenameYnd(string oldfilename, string newfilename)
         {
-            oldfilename = oldfilename.ToLower();
-            newfilename = newfilename.ToLower();
+            oldfilename = oldfilename.ToLowerInvariant();
+            newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < YndFilenames.Count; i++)
             {
                 if (YndFilenames[i] == oldfilename)
@@ -428,7 +428,7 @@ namespace CodeWalker.Project
         public bool ContainsYnv(string filename)
         {
             bool found = false;
-            filename = filename.ToLower();
+            filename = filename.ToLowerInvariant();
             foreach (var ynvfn in YnvFilenames)
             {
                 if (ynvfn == filename)
@@ -449,8 +449,8 @@ namespace CodeWalker.Project
         }
         public bool RenameYnv(string oldfilename, string newfilename)
         {
-            oldfilename = oldfilename.ToLower();
-            newfilename = newfilename.ToLower();
+            oldfilename = oldfilename.ToLowerInvariant();
+            newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < YnvFilenames.Count; i++)
             {
                 if (YnvFilenames[i] == oldfilename)
@@ -495,7 +495,7 @@ namespace CodeWalker.Project
         public bool ContainsTrainTrack(string filename)
         {
             bool found = false;
-            filename = filename.ToLower();
+            filename = filename.ToLowerInvariant();
             foreach (var trainsfn in TrainsFilenames)
             {
                 if (trainsfn == filename)
@@ -516,8 +516,8 @@ namespace CodeWalker.Project
         }
         public bool RenameTrainTrack(string oldfilename, string newfilename)
         {
-            oldfilename = oldfilename.ToLower();
-            newfilename = newfilename.ToLower();
+            oldfilename = oldfilename.ToLowerInvariant();
+            newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < TrainsFilenames.Count; i++)
             {
                 if (TrainsFilenames[i] == oldfilename)
@@ -564,7 +564,7 @@ namespace CodeWalker.Project
         public bool ContainsScenario(string filename)
         {
             bool found = false;
-            filename = filename.ToLower();
+            filename = filename.ToLowerInvariant();
             foreach (var scenariofn in ScenarioFilenames)
             {
                 if (scenariofn == filename)
@@ -585,8 +585,8 @@ namespace CodeWalker.Project
         }
         public bool RenameScenario(string oldfilename, string newfilename)
         {
-            oldfilename = oldfilename.ToLower();
-            newfilename = newfilename.ToLower();
+            oldfilename = oldfilename.ToLowerInvariant();
+            newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < ScenarioFilenames.Count; i++)
             {
                 if (ScenarioFilenames[i] == oldfilename)

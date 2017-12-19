@@ -184,39 +184,39 @@ namespace CodeWalker.GameFiles
             BinaryReader br = new BinaryReader(ms);
 
             DataUnkVal = br.ReadUInt32(); //3 bytes used... for? ..version? flags?
-            switch (DataUnkVal)
-            {
-                case 5252715: //dlcbusiness_amp.dat10.rel
-                case 5301323: //dlcbeach_game.dat149.rel
-                case 5378673: //dlcmpheist_game.dat150.rel
-                case 5750395: //dlcbeach_game.dat150.rel
-                case 6353778: //dlcbeach_game.dat151.rel
-                case 6894089: //dlcpilotschool_game.dat151.rel
-                case 6978435: //dlcxmas2_amp.dat10.rel
-                case 7126027: //audioconfig.dat4.rel
-                case 7314721: //dlcmpheist_amp.dat10.rel
-                case 7516460: //dlcpd03_game.dat151.rel
-                case 7917027: //dlcluxe_amp.dat10.rel
-                case 7921508: //dlcluxe_game.dat151.rel
-                case 8149475: //dlcluxe2_amp.dat10.rel
-                case 8751734: //dlcsfx1_game.dat151.rel
-                case 9028036: //dlchalloween_amp.dat10.rel
-                case 9037528: //dlclowrider_amp.dat10.rel
-                case 9458585: //dlcapartment_amp.dat10.rel
-                case 9486222: //dlcapartment_mix.dat15.rel
-                case 9806108: //mpvalentines2_amp.dat10.rel
-                case 9813679: //dlcjanuary2016_amp.dat10.rel
-                case 10269543://dlclow2_amp.dat10.rel
-                case 10891463://dlcexec1_amp.dat10.rel
-                case 11171338://dlcstunt_amp.dat10.rel
-                case 11918985://dlcbiker_amp.dat10.rel
-                case 12470522://dlcimportexport_amp.dat10.rel
-                case 12974726://audioconfig.dat4.rel
-                case 13117164://dlcspecialraces_amp.dat10.rel
-                    break;
-                default:
-                    break;
-            }
+            //switch (DataUnkVal)
+            //{
+            //    case 5252715: //dlcbusiness_amp.dat10.rel
+            //    case 5301323: //dlcbeach_game.dat149.rel
+            //    case 5378673: //dlcmpheist_game.dat150.rel
+            //    case 5750395: //dlcbeach_game.dat150.rel
+            //    case 6353778: //dlcbeach_game.dat151.rel
+            //    case 6894089: //dlcpilotschool_game.dat151.rel
+            //    case 6978435: //dlcxmas2_amp.dat10.rel
+            //    case 7126027: //audioconfig.dat4.rel
+            //    case 7314721: //dlcmpheist_amp.dat10.rel
+            //    case 7516460: //dlcpd03_game.dat151.rel
+            //    case 7917027: //dlcluxe_amp.dat10.rel
+            //    case 7921508: //dlcluxe_game.dat151.rel
+            //    case 8149475: //dlcluxe2_amp.dat10.rel
+            //    case 8751734: //dlcsfx1_game.dat151.rel
+            //    case 9028036: //dlchalloween_amp.dat10.rel
+            //    case 9037528: //dlclowrider_amp.dat10.rel
+            //    case 9458585: //dlcapartment_amp.dat10.rel
+            //    case 9486222: //dlcapartment_mix.dat15.rel
+            //    case 9806108: //mpvalentines2_amp.dat10.rel
+            //    case 9813679: //dlcjanuary2016_amp.dat10.rel
+            //    case 10269543://dlclow2_amp.dat10.rel
+            //    case 10891463://dlcexec1_amp.dat10.rel
+            //    case 11171338://dlcstunt_amp.dat10.rel
+            //    case 11918985://dlcbiker_amp.dat10.rel
+            //    case 12470522://dlcimportexport_amp.dat10.rel
+            //    case 12974726://audioconfig.dat4.rel
+            //    case 13117164://dlcspecialraces_amp.dat10.rel
+            //        break;
+            //    default:
+            //        break;
+            //}
 
 
             List<RelData> reldatas = new List<RelData>();
@@ -367,8 +367,9 @@ namespace CodeWalker.GameFiles
         }
         private RelData ReadData22(RelData d, BinaryReader br)
         {
-            RelSound s = new RelSound(d, br);
-            return s;
+            //RelSound s = new RelSound(d, br);
+            //return s;
+            return d;
         }
         private RelData ReadData54(RelData d, BinaryReader br)
         {
@@ -415,8 +416,9 @@ namespace CodeWalker.GameFiles
         }
         private RelData ReadData149(RelData d, BinaryReader br)
         {
-            RelSound s = new RelSound(d, br);
-            return s;
+            //RelSound s = new RelSound(d, br);
+            //return s;
+            return d;
         }
         private RelData ReadData150(RelData d, BinaryReader br)
         {
@@ -426,8 +428,10 @@ namespace CodeWalker.GameFiles
         {
             switch ((Dat151RelType)d.TypeID)
             {
-                case Dat151RelType.ShoreLineList:
-                default: return new Dat151RelData(d, br);
+                case Dat151RelType.Unk37: return new Dat151Unk37(d, br);
+                case Dat151RelType.Unk38: return new Dat151Unk38(d, br);
+                default:
+                    return new Dat151RelData(d, br);
             }
         }
 
@@ -957,11 +961,20 @@ namespace CodeWalker.GameFiles
         {
             return GetBaseString() + ": " + TypeID.ToString();
         }
+
+        public static bool Bit(uint f, int b)
+        {
+            return ((f & (1u << b)) != 0); //just for handyness... maybe move this?
+        }
+        public static bool BadF(float f)
+        {
+            return ((f < -15000) || (f > 15000));
+        }
     }
 
     [TC(typeof(EXP))] public class RelSoundHeader
     {
-        public uint Flags { get; set; }
+        public FlagsUint Flags { get; set; }
 
         public FlagsUint UnkFlags { get; set; }
         public ushort Unk01 { get; set; }
@@ -994,14 +1007,17 @@ namespace CodeWalker.GameFiles
         public ushort Unk23 { get; set; } //0x48-0x4A
         public ushort Unk24 { get; set; } //0x4A-0x4C
 
+        public ushort Unk25 { get; set; } //0x4A-0x4C
+        public ushort Unk26 { get; set; } //0x4A-0x4C
 
 
-        public void Read(BinaryReader br)
+        public RelSoundHeader(BinaryReader br)
         {
             Flags = br.ReadUInt32();
 
 
-            if (Flags != 0xAAAAAAAA)
+            //if (Flags.Value != 0xAAAAAAAA)
+            if ((Flags.Value & 0xFF) != 0xAA)
             {
                 if (Bit(0)) UnkFlags = br.ReadUInt32();
                 if (Bit(1)) Unk01 = br.ReadUInt16();
@@ -1011,6 +1027,9 @@ namespace CodeWalker.GameFiles
                 if (Bit(5)) Unk05 = br.ReadUInt16();
                 if (Bit(6)) Unk06 = br.ReadUInt16();
                 if (Bit(7)) Unk07 = br.ReadUInt16();
+            }
+            if ((Flags.Value & 0xFF00) != 0xAA00)
+            {
                 if (Bit(8)) Unk08 = br.ReadUInt16();
                 if (Bit(9)) Unk09 = br.ReadUInt16();
                 if (Bit(10)) UnkHash1 = br.ReadUInt32();
@@ -1019,6 +1038,9 @@ namespace CodeWalker.GameFiles
                 if (Bit(13)) Unk11 = br.ReadUInt16();
                 if (Bit(14)) Unk12 = br.ReadUInt16();
                 if (Bit(15)) CategoryHash = br.ReadUInt32();
+            }
+            if ((Flags.Value & 0xFF0000) != 0xAA0000)
+            {
                 if (Bit(16)) Unk14 = br.ReadUInt16();
                 if (Bit(17)) Unk15 = br.ReadUInt16();
                 if (Bit(18)) Unk16 = br.ReadUInt16();
@@ -1027,23 +1049,28 @@ namespace CodeWalker.GameFiles
                 if (Bit(21)) Unk18 = br.ReadUInt16();
                 if (Bit(22)) Unk19 = br.ReadByte();
                 if (Bit(23)) Unk20 = br.ReadByte();
+            }
+            if ((Flags.Value & 0xFF000000) != 0xAA000000)
+            {
                 if (Bit(24)) Unk21 = br.ReadByte();
                 if (Bit(25)) UnkHash4 = br.ReadUInt32();
                 if (Bit(26)) UnkHash5 = br.ReadUInt32();
                 if (Bit(27)) Unk22 = br.ReadUInt16();
                 if (Bit(28)) Unk23 = br.ReadUInt16();
                 if (Bit(29)) Unk24 = br.ReadUInt16();
+                if (Bit(30)) Unk25 = br.ReadUInt16(); //maybe not
+                if (Bit(31)) Unk26 = br.ReadUInt16(); //maybe not
             }
         }
 
         private bool Bit(int b)
         {
-            return ((Flags & (1u << b)) != 0);
+            return ((Flags.Value & (1u << b)) != 0);
         }
 
         public override string ToString()
         {
-            return string.Format("{0}: {1}, {2}, {3}, {4}, {5}, {6}, {7}", Flags, UnkFlags.Hex, CategoryHash, UnkHash1, UnkHash2, UnkHash3, UnkHash4, UnkHash5);
+            return string.Format("{0}: {1}, {2}, {3}, {4}, {5}, {6}, {7}", Flags.Hex, UnkFlags.Hex, CategoryHash, UnkHash1, UnkHash2, UnkHash3, UnkHash4, UnkHash5);
         }
     }
 
@@ -1052,13 +1079,11 @@ namespace CodeWalker.GameFiles
         public RelSoundHeader Header { get; set; }
         public byte AudioTracksCount { get; set; }
         public MetaHash[] AudioTracks { get; set; }
-        public MetaHash[] AudioContainers { get; set; }
+        public MetaHash[] AudioContainers { get; set; } //Relative path to parent wave container (i.e. "RESIDENT/animals")
 
         public RelSound(RelData d, BinaryReader br) : base(d)
         {
-            RelSoundHeader h = new RelSoundHeader();
-            h.Read(br);
-            Header = h;
+            Header = new RelSoundHeader(br);
         }
 
         public void ReadAudioTracks(BinaryReader br)
@@ -1197,7 +1222,6 @@ namespace CodeWalker.GameFiles
             ParameterHash5 = br.ReadUInt32(); //0x40-0x44
             UnkFloat0 = br.ReadSingle(); //0x44-0x48
             UnkFloat1 = br.ReadSingle(); //0x48-0x4C
-
             AudioTracks = new[] { AudioHash };
         }
     }
@@ -1379,6 +1403,7 @@ namespace CodeWalker.GameFiles
         {
             AudioHash0 = br.ReadUInt32();
             AudioHash1 = br.ReadUInt32();
+            AudioTracks = new[] { AudioHash0, AudioHash1 };
             UnkFloat0 = br.ReadSingle(); //0x8
             UnkFloat1 = br.ReadSingle(); //0xC
             ParameterHash0 = br.ReadUInt32(); //0x10
@@ -1389,23 +1414,20 @@ namespace CodeWalker.GameFiles
             UnkInt = br.ReadInt32(); //0x24-0x28
             ParameterHash5 = br.ReadUInt32(); //0x28-0x2C
             UnkByte = br.ReadByte(); //0x2C-0x2D
-
-            AudioTracks = new[] { AudioHash0, AudioHash1 };
         }
     }
     [TC(typeof(EXP))] public class Dat54SimpleSound : Dat54Sound
     {
+        public MetaHash ContainerName { get; set; } //Relative path to parent wave container (i.e. "RESIDENT/animals")
         public MetaHash FileName { get; set; } //Name of the .wav file
-        public MetaHash ContainerName { get; set; } //Relative path to parent wave container (i.e. \"RESIDENT/animals\")
         public byte WaveSlotNum { get; set; } //Internal index of wave (.awc) container
 
         public Dat54SimpleSound(RelData d, BinaryReader br) : base(d, br)
         {
             ContainerName = br.ReadUInt32();
+            AudioContainers = new[] { ContainerName };
             FileName = br.ReadUInt32();
             WaveSlotNum = br.ReadByte();
-
-            AudioContainers = new[] { ContainerName };
         }
     }
     [TC(typeof(EXP))] public class Dat54MultitrackSound : Dat54Sound
@@ -1440,8 +1462,11 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat54EnvironmentSound : Dat54Sound
     {
+        public byte UnkByte { get; set; }
+
         public Dat54EnvironmentSound(RelData d, BinaryReader br) : base(d, br)
         {
+            UnkByte = br.ReadByte();
         }
     }
     [TC(typeof(EXP))] public class Dat54DynamicEntitySound : Dat54Sound
@@ -1997,6 +2022,11 @@ namespace CodeWalker.GameFiles
         {
             ReadAudioTracks(br);
 
+            //FlagsUint u1 = br.ReadUInt32();
+            //FlagsUint u2 = br.ReadUInt32();
+            //FlagsUint u3 = br.ReadUInt32();
+            //FlagsUint u4 = br.ReadUInt32();
+
             //TODO: could be more to read!
             if (br.BaseStream.Position != br.BaseStream.Length)
             { } //hits here!
@@ -2112,6 +2142,10 @@ namespace CodeWalker.GameFiles
     public enum Dat151RelType : byte //not sure how correct these are?
     {
         SpeechParams = 14,
+
+        Unk37 = 37, //eg parent for sos/altruist - contains coords - toggle sound? 
+        Unk38 = 38, //eg sos, altruist morse - contains coords
+
         StartTrackAction = 63,
         StopTrackAction = 64,
         SetMoodAction = 65,
@@ -2133,6 +2167,20 @@ namespace CodeWalker.GameFiles
     {
         public Dat151RelType Type { get; set; }
 
+
+        public static int TotCount = 0; //###############DEBUGG
+        public static List<string> FoundCoords = new List<string>(); //###############DEBUGG
+        public void RecVec(Vector3 v)
+        {
+            float tol = 20.0f;
+            if ((Math.Abs(v.X)>tol) || (Math.Abs(v.Y)>tol) || (Math.Abs(v.Z)>tol))
+            {
+                FoundCoords.Add(FloatUtil.GetVector3String(v) + ", " + GetNameString());
+            }
+        }
+
+
+
         public Dat151RelData() { }
         public Dat151RelData(RelData d, BinaryReader br) : base(d)
         {
@@ -2144,7 +2192,470 @@ namespace CodeWalker.GameFiles
             return GetBaseString() + ": " + Type.ToString();
         }
     }
+    [TC(typeof(EXP))] public class Dat151Sound : RelSound
+    {
+        public Dat151RelType Type { get; set; }
+
+        public Dat151Sound(RelData d, BinaryReader br) : base(d, br)
+        {
+            Type = (Dat151RelType)TypeID;
+        }
+
+        public override string ToString()
+        {
+            return GetBaseString() + ": " + Type.ToString();
+        }
+    }
+
+    [TC(typeof(EXP))] public class Dat151Unk37 : Dat151RelData    //toggle sound?
+    {
+        public uint UnkOffset0 { get; set; }
+        public FlagsUint Flags00 { get; set; }
+        public FlagsUint Flags01 { get; set; }
+        public FlagsUint Flags02 { get; set; }
+        public Vector3 Vec01 { get; set; }
+        public float Unk01 { get; set; }
+        public Vector3 Vec02 { get; set; }
+        public float Unk02 { get; set; }
+        public Vector3 Vec03 { get; set; }
+        public float Unk03 { get; set; }
+        public Vector3 Vec04 { get; set; }
+        public float Unk04 { get; set; }
+        public FlagsUint Flags03 { get; set; }
+        public Vector3 Vec05 { get; set; }
+        public Vector3 Vec06 { get; set; }
+        public float Unk06 { get; set; }
+        public Vector3 Vec07 { get; set; }
+        public float Unk07 { get; set; }
+        public Vector3 Vec08 { get; set; }
+        public float Unk08 { get; set; }
+        public Vector3 Vec09 { get; set; }
+        public float Unk09 { get; set; }
+        public FlagsUint Flags04 { get; set; }
+        public Vector3 Vec10 { get; set; }
+        public Vector3 Vec11 { get; set; }
+        public float Unk11 { get; set; }
+        public Vector3 Vec12 { get; set; }
+        public float Unk12 { get; set; }
+        public Vector3 Vec13 { get; set; }
+        public float Unk13 { get; set; }
+
+        public Dat151Unk37(RelData d, BinaryReader br) : base(d, br)
+        {
+            var data = this.Data;
+
+            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+
+            UnkOffset0 = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
+            Flags00 = br.ReadUInt32();
+            Flags01 = br.ReadUInt32();
+            Flags02 = br.ReadUInt32();
+            Vec01 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk01 = br.ReadSingle();
+            Vec02 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk02 = br.ReadSingle();
+            Vec03 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk03 = br.ReadSingle();
+            Vec04 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk04 = br.ReadSingle();
+            Flags03 = br.ReadUInt32();//###
+            Vec05 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Vec06 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk06 = br.ReadSingle();
+            Vec07 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk07 = br.ReadSingle();
+            Vec08 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk08 = br.ReadSingle();
+            Vec09 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk09 = br.ReadSingle();
+            Flags04 = br.ReadUInt32();//###
+            Vec10 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Vec11 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk11 = br.ReadSingle();
+            Vec12 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk12 = br.ReadSingle();
+            Vec13 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk13 = br.ReadSingle();
+
+            FlagsUint t1 = br.ReadUInt32();
+            byte t2 = br.ReadByte();
+            byte t3 = br.ReadByte();
+            ushort t4 = br.ReadByte();
+            byte t5 = br.ReadByte();
+            MetaHash[] hashes = new MetaHash[t4];
+            for (int i = 0; i < t4; i++)
+            {
+                hashes[i] = br.ReadUInt32();
+            }
+
+            uint bleft = (uint)(br.BaseStream.Length - br.BaseStream.Position);
+            if (bleft != (t2 * 4))
+            { }
+
+            //FlagsUint[] flags = new FlagsUint[t4];
+            //for (int i = 0; i < t4; i++)
+            //{
+            //    flags[i] = br.ReadUInt32();
+            //}
 
 
+            //var t2 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            //var t3 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+
+            //var t4 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+
+            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+
+
+
+            RecVec(Vec01);
+            RecVec(Vec02);
+            RecVec(Vec03);
+            RecVec(Vec04);
+            RecVec(Vec05);
+            RecVec(Vec06);
+            RecVec(Vec07);
+            RecVec(Vec08);
+            RecVec(Vec09);
+            RecVec(Vec10);
+            RecVec(Vec11);
+            RecVec(Vec12);
+            RecVec(Vec13);
+
+        }
+
+    }
+    [TC(typeof(EXP))] public class Dat151Unk38 : Dat151RelData
+    {
+        public uint UnkOffset0 { get; set; }
+        public FlagsUint Unk00 { get; set; }
+        public FlagsUint Unk01 { get; set; }
+        public FlagsUint Unk02 { get; set; }
+        public Vector3 Position { get; set; }
+        public FlagsUint Unk03 { get; set; }    //0
+        public MetaHash Unk04 { get; set; }
+        public MetaHash Unk05 { get; set; }
+        public FlagsUint Unk06 { get; set; }    //0
+        public FlagsUint Unk07 { get; set; }    //0xFFFFFFFF
+        public FlagsUint Unk08 { get; set; }    //0
+        public float Unk09 { get; set; }        //1, 5, 100, ...
+        public float Unk10 { get; set; }        //0, 4,         ...     100 ... min value?
+        public float Unk11 { get; set; }        //15, 16, 12, 10, 20,   300 ... max value?
+        public FlagsByte Unk12 { get; set; }
+        public FlagsByte Unk13 { get; set; }    //0,1,2,3,4,5
+        public FlagsByte Unk14 { get; set; }
+        public FlagsByte Unk15 { get; set; }    //0,1,2,3,4,5
+        public FlagsUshort Unk16 { get; set; }  //0..600
+        public FlagsUshort Unk17 { get; set; }  //0..150
+        public FlagsByte Unk18 { get; set; }    //0,1,2
+        public FlagsByte Unk19 { get; set; }    //0,1,2
+        public FlagsByte Unk20 { get; set; }    //1,2,3,4,8,255
+        public FlagsByte Unk21 { get; set; }    //1,2,3,4,5,6,8,10,255
+        public FlagsByte Unk22 { get; set; }    //0, 50, 80, 100
+        public FlagsByte Unk23 { get; set; }    //1,2,3,5
+        public ushort ExtParamCount { get; set; } //0,1,2,4
+        public ExtParam[] ExtParams { get; set; }
+
+        public struct ExtParam
+        {
+            public MetaHash Hash;
+            public float Value;
+            public uint Flags;
+            public ExtParam(BinaryReader br)
+            {
+                Hash = br.ReadUInt32();
+                Value = br.ReadSingle();
+                Flags = br.ReadUInt32();
+            }
+            public override string ToString()
+            {
+                return Hash.ToString() + ": " + FloatUtil.ToString(Value) + ": " + Flags.ToString();
+            }
+        }
+
+
+        public Dat151Unk38(RelData d, BinaryReader br) : base(d, br)
+        {
+            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+
+            UnkOffset0 = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
+            Unk00 = br.ReadUInt32();
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Position = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk03 = br.ReadUInt32();    //0
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();    //0
+            Unk07 = br.ReadUInt32();    //0xFFFFFFFF
+            Unk08 = br.ReadUInt32();    //0
+            Unk09 = br.ReadSingle();    //1, 5, 100, ...
+            Unk10 = br.ReadSingle();    //0, 4,         ...     100 ... min value?
+            Unk11 = br.ReadSingle();    //15, 16, 12, 10, 20,   300 ... max value?
+            Unk12 = br.ReadByte();     
+            Unk13 = br.ReadByte();      //0,1,2,3,4,5
+            Unk14 = br.ReadByte();     
+            Unk15 = br.ReadByte();      //0,1,2,3,4,5
+            Unk16 = br.ReadUInt16();    //0..600
+            Unk17 = br.ReadUInt16();    //0..150
+            Unk18 = br.ReadByte();      //0,1,2
+            Unk19 = br.ReadByte();      //0,1,2
+            Unk20 = br.ReadByte();      //1,2,3,4,8,255
+            Unk21 = br.ReadByte();      //1,2,3,4,5,6,8,10,255
+            Unk22 = br.ReadByte();      //0, 50, 80, 100
+            Unk23 = br.ReadByte();      //1,2,3,5
+            ExtParamCount = br.ReadUInt16();  //0,1,2,4
+
+            if (ExtParamCount > 0)
+            {
+                ExtParams = new ExtParam[ExtParamCount];
+                for (int i = 0; i < ExtParamCount; i++)
+                {
+                    ExtParams[i] = new ExtParam(br);
+                }
+                //array seems to be padded to multiples of 16 bytes. (read the rest here)
+                int brem = (16 - ((ExtParamCount * 12) % 16)) % 16;
+                if (brem > 0)
+                {
+                    byte[] brema = br.ReadBytes(brem);
+                    //for (int i = 0; i < brem; i++)
+                    //{
+                    //    if (brema[i] != 0)
+                    //    { } //check all remaining bytes are 0 - never hit here
+                    //}
+                }
+            }
+
+
+            switch (Unk12.Value)//no pattern?
+            {
+                default:
+                    break;
+            }
+            switch (Unk13.Value)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk14.Value)//no pattern?
+            {
+                default:
+                    break;
+            }
+            switch (Unk15.Value)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk16.Value)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                case 10:
+                case 11:
+                case 12:
+                case 13:
+                case 14:
+                case 15:
+                case 16:
+                case 18:
+                case 20:
+                case 22:
+                case 24:
+                case 25:
+                case 26:
+                case 30:
+                case 32:
+                case 35:
+                case 40:
+                case 45:
+                case 48:
+                case 50:
+                case 51:
+                case 54:
+                case 55:
+                case 57:
+                case 60:
+                case 64:
+                case 65:
+                case 70:
+                case 75:
+                case 80:
+                case 90:
+                case 95:
+                case 97:
+                case 100:
+                case 120:
+                case 125:
+                case 130:
+                case 135:
+                case 140:
+                case 145:
+                case 150:
+                case 160:
+                case 170:
+                case 178:
+                case 180:
+                case 190:
+                case 200:
+                case 220:
+                case 225:
+                case 240:
+                case 245:
+                case 250:
+                case 300:
+                case 350:
+                case 500:
+                case 600:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk17.Value)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                case 10:
+                case 12:
+                case 15:
+                case 17:
+                case 20:
+                case 21:
+                case 22:
+                case 25:
+                case 27:
+                case 30:
+                case 32:
+                case 35:
+                case 40:
+                case 50:
+                case 60:
+                case 100:
+                case 150:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk18.Value)
+            {
+                case 0:
+                case 1:
+                case 2:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk19.Value)
+            {
+                case 0:
+                case 1:
+                case 2:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk20.Value)
+            {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 8:
+                case 255:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk21.Value)
+            {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 8:
+                case 10:
+                case 255:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk22.Value)
+            {
+                case 0:
+                case 50:
+                case 80:
+                case 100:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk23.Value)
+            {
+                case 1:
+                case 2:
+                case 3:
+                case 5:
+                    break;
+                default:
+                    break;
+            }
+            switch (ExtParamCount)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 4:
+                    break;
+                default:
+                    break;
+            }
+
+
+
+            //if ((Position.X != 0) || (Position.Y != 0) || (Position.Z != 0))
+            //{
+            //    FoundCoords.Add(FloatUtil.GetVector3String(Position) + ", " + GetNameString());
+            //}
+
+            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+
+    }
 
 }

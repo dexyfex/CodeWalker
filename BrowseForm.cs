@@ -789,7 +789,7 @@ namespace CodeWalker
             }
 
 
-            string find = FindTextBox.Text.ToLower();
+            string find = FindTextBox.Text.ToLowerInvariant();
             Cursor = Cursors.WaitCursor;
             if (string.IsNullOrEmpty(find))
             {
@@ -806,7 +806,7 @@ namespace CodeWalker
                 int max = 500;
                 foreach (RpfFile file in ScannedFiles)
                 {
-                    if (file.Name.ToLower().Contains(find))
+                    if (file.Name.ToLowerInvariant().Contains(find))
                     {
                         AddFileNode(file, null);
                         count++;
@@ -999,7 +999,7 @@ namespace CodeWalker
             byte[] searchbytes2;
             int bytelen;
 
-            if (!casesen) searchtxt = searchtxt.ToLower(); //case sensitive search in lower case.
+            if (!casesen) searchtxt = searchtxt.ToLowerInvariant(); //case sensitive search in lower case.
 
             if (SearchIgnoreCheckBox.Checked)
             {

@@ -21,11 +21,12 @@ namespace CodeWalker
             {
                 foreach (string arg in args)
                 {
-                    if (arg.ToLower() == "menu")
+                    string argl = arg.ToLowerInvariant();
+                    if (argl == "menu")
                     {
                         menumode = true;
                     }
-                    if (arg.ToLower() == "explorer")
+                    if (argl == "explorer")
                     {
                         explorermode = true;
                     }

@@ -92,7 +92,7 @@ namespace CodeWalker.World
             numMods = Xml.GetIntAttribute(node, "numMods");
             userFlags = Xml.GetIntAttribute(node, "userFlags");
 
-            string namel = name.ToLower();
+            string namel = name.ToLowerInvariant();
             JenkIndex.Ensure(namel);
             nameHash = JenkHash.GenHash(namel);
 
