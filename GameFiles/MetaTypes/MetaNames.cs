@@ -3374,8 +3374,27 @@ namespace CodeWalker.GameFiles
         CVfxPedInfo = 3269469953,
         vfxPedInfos = 1918175602,
 
-
         CPedModelInfo__InitData = 3949383814,
+
+
+        CVfxFogVolumeInfoMgr = 1633161012,
+        CVfxFogVolumeInfo = 759946685,
+        vfxFogVolumeInfos = 2287400076,
+
+        CVfxWeaponInfoMgr = 623762845,
+        CVfxWeaponInfo = 1271168564,
+
+        CVfxInteriorInfoMgr = 4126959192,
+        CVfxInteriorInfo = 998078140,
+        vfxInteriorInfos = 3759474957,
+
+        CVfxRegionInfoMgr = 3596444566,
+        CVfxRegionInfo = 286275649,
+        vfxRegionInfos = 4124078855,
+
+
+
+
 
 
 

@@ -2213,23 +2213,23 @@ namespace CodeWalker.GameFiles
         public FlagsUint Flags00 { get; set; }
         public FlagsUint Flags01 { get; set; }
         public FlagsUint Flags02 { get; set; }
-        public Vector3 Vec01 { get; set; }
+        public Vector3 Pos01 { get; set; }
         public float Unk01 { get; set; }
-        public Vector3 Vec02 { get; set; }
+        public Vector3 Size02 { get; set; }
         public float Unk02 { get; set; }
-        public Vector3 Vec03 { get; set; }
+        public Vector3 Size03 { get; set; }
         public float Unk03 { get; set; }
-        public Vector3 Vec04 { get; set; }
+        public Vector3 Size04 { get; set; }
         public float Unk04 { get; set; }
         public FlagsUint Flags03 { get; set; }
         public Vector3 Vec05 { get; set; }
-        public Vector3 Vec06 { get; set; }
+        public Vector3 Pos06 { get; set; }
         public float Unk06 { get; set; }
-        public Vector3 Vec07 { get; set; }
+        public Vector3 Size07 { get; set; }
         public float Unk07 { get; set; }
-        public Vector3 Vec08 { get; set; }
+        public Vector3 Size08 { get; set; }
         public float Unk08 { get; set; }
-        public Vector3 Vec09 { get; set; }
+        public Vector3 Size09 { get; set; }
         public float Unk09 { get; set; }
         public FlagsUint Flags04 { get; set; }
         public Vector3 Vec10 { get; set; }
@@ -2240,33 +2240,55 @@ namespace CodeWalker.GameFiles
         public Vector3 Vec13 { get; set; }
         public float Unk13 { get; set; }
 
+        public FlagsUint Flags05 { get; set; }
+        public byte Unk14 { get; set; }
+        public byte Unk15 { get; set; }
+        public ushort HashesCount { get; set; }
+        public byte Unk16 { get; set; }
+        public MetaHash[] Hashes { get; set; }
+
+        public uint ExtParamsCount { get; set; }
+        public ExtParam[] ExtParams { get; set; }
+        public struct ExtParam
+        {
+            public MetaHash Hash { get; set; }
+            public float Value { get; set; }
+            public ExtParam(BinaryReader br)
+            {
+                Hash = br.ReadUInt32();
+                Value = br.ReadSingle();
+            }
+            public override string ToString()
+            {
+                return Hash.ToString() + ": " + FloatUtil.ToString(Value);
+            }
+        }
+
         public Dat151Unk37(RelData d, BinaryReader br) : base(d, br)
         {
-            var data = this.Data;
-
             br.BaseStream.Position = 0; //1 byte was read already (TypeID)
 
             UnkOffset0 = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
             Flags00 = br.ReadUInt32();
             Flags01 = br.ReadUInt32();
             Flags02 = br.ReadUInt32();
-            Vec01 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Pos01 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unk01 = br.ReadSingle();
-            Vec02 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Size02 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unk02 = br.ReadSingle();
-            Vec03 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Size03 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unk03 = br.ReadSingle();
-            Vec04 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Size04 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unk04 = br.ReadSingle();
             Flags03 = br.ReadUInt32();//###
             Vec05 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Vec06 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Pos06 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unk06 = br.ReadSingle();
-            Vec07 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Size07 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unk07 = br.ReadSingle();
-            Vec08 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Size08 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unk08 = br.ReadSingle();
-            Vec09 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Size09 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unk09 = br.ReadSingle();
             Flags04 = br.ReadUInt32();//###
             Vec10 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
@@ -2274,55 +2296,66 @@ namespace CodeWalker.GameFiles
             Unk11 = br.ReadSingle();
             Vec12 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unk12 = br.ReadSingle();
-            Vec13 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Vec13 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());//perhaps not float
             Unk13 = br.ReadSingle();
 
-            FlagsUint t1 = br.ReadUInt32();
-            byte t2 = br.ReadByte();
-            byte t3 = br.ReadByte();
-            ushort t4 = br.ReadByte();
-            byte t5 = br.ReadByte();
-            MetaHash[] hashes = new MetaHash[t4];
-            for (int i = 0; i < t4; i++)
+            Flags05 = br.ReadUInt32();
+            Unk14 = br.ReadByte();
+            Unk15 = br.ReadByte();
+            HashesCount = br.ReadByte();
+            Unk16 = br.ReadByte();
+            Hashes = new MetaHash[HashesCount];
+            for (int i = 0; i < HashesCount; i++)
             {
-                hashes[i] = br.ReadUInt32();
+                Hashes[i] = br.ReadUInt32();
             }
 
-            uint bleft = (uint)(br.BaseStream.Length - br.BaseStream.Position);
-            if (bleft != (t2 * 4))
+            ExtParamsCount = br.ReadUInt32();
+            ExtParams = new ExtParam[ExtParamsCount];
+            for (int i = 0; i < ExtParamsCount; i++)
+            {
+                ExtParams[i] = new ExtParam(br);
+            }
+            if (ExtParamsCount != 0)
             { }
+
+            var data = this.Data;
+
+            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            {
+                byte[] remainder = br.ReadBytes((int)bytesleft);
+                for (int i = 0; i < remainder.Length; i++)
+                {
+                    if (remainder[i] != 0)
+                    { }
+                }
+            }
+
 
             //FlagsUint[] flags = new FlagsUint[t4];
             //for (int i = 0; i < t4; i++)
             //{
             //    flags[i] = br.ReadUInt32();
             //}
-
-
             //var t2 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             //var t3 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-
             //var t4 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
 
-            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
 
-
-
-            RecVec(Vec01);
-            RecVec(Vec02);
-            RecVec(Vec03);
-            RecVec(Vec04);
-            RecVec(Vec05);
-            RecVec(Vec06);
-            RecVec(Vec07);
-            RecVec(Vec08);
-            RecVec(Vec09);
-            RecVec(Vec10);
-            RecVec(Vec11);
-            RecVec(Vec12);
-            RecVec(Vec13);
+            RecVec(Pos01);
+            //RecVec(Size02);
+            //RecVec(Size03);
+            //RecVec(Size04);
+            //RecVec(Vec05);
+            RecVec(Pos06);
+            //RecVec(Size07);
+            //RecVec(Size08);
+            //RecVec(Size09);
+            //RecVec(Vec10);
+            //RecVec(Vec11);
+            //RecVec(Vec12);
+            //RecVec(Vec13);
 
         }
 
