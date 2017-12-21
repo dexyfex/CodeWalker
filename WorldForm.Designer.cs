@@ -248,6 +248,7 @@ namespace CodeWalker
             this.ToolbarSelectDistantLodLightsButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectMloInstanceButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSelectAudioButton = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.ToolbarMoveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarRotateButton = new System.Windows.Forms.ToolStripButton();
@@ -986,6 +987,7 @@ namespace CodeWalker
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.MultiFindTextBox.Location = new System.Drawing.Point(0, 117);
+            this.MultiFindTextBox.MaxLength = 1048576;
             this.MultiFindTextBox.Multiline = true;
             this.MultiFindTextBox.Name = "MultiFindTextBox";
             this.MultiFindTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
@@ -1033,7 +1035,8 @@ namespace CodeWalker
             "Train Track",
             "Distant Lod Lights",
             "Mlo Instance",
-            "Scenario"});
+            "Scenario",
+            "Audio"});
             this.SelectionModeComboBox.Location = new System.Drawing.Point(51, 30);
             this.SelectionModeComboBox.Name = "SelectionModeComboBox";
             this.SelectionModeComboBox.Size = new System.Drawing.Size(121, 21);
@@ -2754,7 +2757,8 @@ namespace CodeWalker
             this.ToolbarSelectTrainTrackButton,
             this.ToolbarSelectDistantLodLightsButton,
             this.ToolbarSelectMloInstanceButton,
-            this.ToolbarSelectScenarioButton});
+            this.ToolbarSelectScenarioButton,
+            this.ToolbarSelectAudioButton});
             this.ToolbarSelectButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSelectButton.Image")));
             this.ToolbarSelectButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ToolbarSelectButton.Name = "ToolbarSelectButton";
@@ -2862,6 +2866,13 @@ namespace CodeWalker
             this.ToolbarSelectScenarioButton.Size = new System.Drawing.Size(181, 22);
             this.ToolbarSelectScenarioButton.Text = "Scenario";
             this.ToolbarSelectScenarioButton.Click += new System.EventHandler(this.ToolbarSelectScenarioButton_Click);
+            // 
+            // ToolbarSelectAudioButton
+            // 
+            this.ToolbarSelectAudioButton.Name = "ToolbarSelectAudioButton";
+            this.ToolbarSelectAudioButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectAudioButton.Text = "Audio";
+            this.ToolbarSelectAudioButton.Click += new System.EventHandler(this.ToolbarSelectAudioButton_Click);
             // 
             // toolStripSeparator1
             // 
@@ -3445,5 +3456,6 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewScenarioButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarOpenScenarioButton;
         private System.Windows.Forms.CheckBox PopZonesCheckBox;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarSelectAudioButton;
     }
 }

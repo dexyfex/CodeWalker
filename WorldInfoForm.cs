@@ -139,6 +139,11 @@ namespace CodeWalker
                 SelectionEntityTabPage.Text = item.ScenarioNode.FullTypeName;
                 SelEntityPropertyGrid.SelectedObject = item.ScenarioNode;
             }
+            else if (item.Audio != null)
+            {
+                SelectionEntityTabPage.Text = item.Audio.FullTypeName;
+                SelEntityPropertyGrid.SelectedObject = item.Audio;
+            }
             else
             {
                 SelectionEntityTabPage.Text = "Entity";

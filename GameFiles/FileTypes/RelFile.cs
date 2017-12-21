@@ -236,7 +236,7 @@ namespace CodeWalker.GameFiles
             }
             RelDatas = reldatas.ToArray();
 
-            reldatas.Sort((d1, d2) => d1.Offset.CompareTo(d2.Offset));
+            reldatas.Sort((d1, d2) => d1.DataOffset.CompareTo(d2.DataOffset));
             RelDatasSorted = reldatas.ToArray();
 
 
@@ -306,8 +306,8 @@ namespace CodeWalker.GameFiles
             RelData d = new RelData(); //use this base object to construct the derived one...
             d.Name = name;
             d.NameHash = hash;
-            d.Offset = offset;
-            d.Length = length;
+            d.DataOffset = offset;
+            d.DataLength = length;
             d.Data = data;
 
 
@@ -445,7 +445,7 @@ namespace CodeWalker.GameFiles
         {
             //speech.dat4.rel, audioconfig.dat4.rel
 
-            if (d.Length == 1)
+            if (d.DataLength == 1)
             {
                 byte b = br.ReadByte();
                 switch (b)
@@ -463,7 +463,7 @@ namespace CodeWalker.GameFiles
                 }
                 return;
             }
-            if (d.Length == 2)
+            if (d.DataLength == 2)
             {
                 byte b = br.ReadByte();
                 switch (b)
@@ -526,7 +526,7 @@ namespace CodeWalker.GameFiles
                 }
                 return;
             }
-            if (d.Length == 4)
+            if (d.DataLength == 4)
             {
                 uint h = br.ReadUInt32();
                 return;
@@ -928,8 +928,8 @@ namespace CodeWalker.GameFiles
     {
         public MetaHash NameHash { get; set; }
         public string Name { get; set; }
-        public uint Offset { get; set; }
-        public uint Length { get; set; }
+        public uint DataOffset { get; set; }
+        public uint DataLength { get; set; }
         public byte[] Data { get; set; }
         public byte TypeID { get; set; }
 
@@ -938,8 +938,8 @@ namespace CodeWalker.GameFiles
         {
             NameHash = d.NameHash;
             Name = d.Name;
-            Offset = d.Offset;
-            Length = d.Length;
+            DataOffset = d.DataOffset;
+            DataLength = d.DataLength;
             Data = d.Data;
             TypeID = d.TypeID;
         }
@@ -955,7 +955,7 @@ namespace CodeWalker.GameFiles
         }
         public string GetBaseString()
         {
-            return Offset.ToString() + ", " + Length.ToString() + ": " + GetNameString();
+            return DataOffset.ToString() + ", " + DataLength.ToString() + ": " + GetNameString();
         }
         public override string ToString()
         {
@@ -2143,7 +2143,7 @@ namespace CodeWalker.GameFiles
     {
         SpeechParams = 14,
 
-        Unk37 = 37, //eg parent for sos/altruist - contains coords - toggle sound? 
+        Unk37 = 37, //audio zone? eg parent for sos/altruist - contains coords - toggle sound?
         Unk38 = 38, //eg sos, altruist morse - contains coords
 
         StartTrackAction = 63,
@@ -2207,38 +2207,38 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public class Dat151Unk37 : Dat151RelData    //toggle sound?
+    public enum Dat151ZoneShape : uint
+    {
+        Box = 0,
+        Sphere = 1,
+        Line = 2,
+    }
+
+    [TC(typeof(EXP))] public class Dat151Unk37 : Dat151RelData    //audio zone? toggle sound?
     {
         public uint UnkOffset0 { get; set; }
         public FlagsUint Flags00 { get; set; }
-        public FlagsUint Flags01 { get; set; }
+        public Dat151ZoneShape Shape { get; set; }
         public FlagsUint Flags02 { get; set; }
-        public Vector3 Pos01 { get; set; }
-        public float Unk01 { get; set; }
-        public Vector3 Size02 { get; set; }
-        public float Unk02 { get; set; }
-        public Vector3 Size03 { get; set; }
-        public float Unk03 { get; set; }
-        public Vector3 Size04 { get; set; }
-        public float Unk04 { get; set; }
-        public FlagsUint Flags03 { get; set; }
-        public Vector3 Vec05 { get; set; }
-        public Vector3 Pos06 { get; set; }
-        public float Unk06 { get; set; }
-        public Vector3 Size07 { get; set; }
-        public float Unk07 { get; set; }
-        public Vector3 Size08 { get; set; }
-        public float Unk08 { get; set; }
-        public Vector3 Size09 { get; set; }
-        public float Unk09 { get; set; }
-        public FlagsUint Flags04 { get; set; }
-        public Vector3 Vec10 { get; set; }
-        public Vector3 Vec11 { get; set; }
-        public float Unk11 { get; set; }
-        public Vector3 Vec12 { get; set; }
-        public float Unk12 { get; set; }
-        public Vector3 Vec13 { get; set; }
-        public float Unk13 { get; set; }
+        public Vector3 OuterPos { get; set; }
+        public float Unused01 { get; set; }
+        public Vector3 OuterSize { get; set; }
+        public float Unused02 { get; set; }
+        public Vector4 OuterVec1 { get; set; }
+        public Vector4 OuterVec2 { get; set; }
+        public uint OuterAngle { get; set; }
+        public Vector3 OuterVec3 { get; set; }
+        public Vector3 InnerPos { get; set; }
+        public float Unused06 { get; set; }
+        public Vector3 InnerSize { get; set; }
+        public float Unused07 { get; set; }
+        public Vector4 InnerVec1 { get; set; }
+        public Vector4 InnerVec2 { get; set; }
+        public uint InnerAngle { get; set; }
+        public Vector3 InnerVec3 { get; set; }
+        public Vector4 Vec11 { get; set; }
+        public Vector4 Vec12 { get; set; }
+        public Vector4 Vec13 { get; set; }
 
         public FlagsUint Flags05 { get; set; }
         public byte Unk14 { get; set; }
@@ -2264,40 +2264,35 @@ namespace CodeWalker.GameFiles
             }
         }
 
+
+
         public Dat151Unk37(RelData d, BinaryReader br) : base(d, br)
         {
             br.BaseStream.Position = 0; //1 byte was read already (TypeID)
 
             UnkOffset0 = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
             Flags00 = br.ReadUInt32();
-            Flags01 = br.ReadUInt32();
+            Shape = (Dat151ZoneShape)br.ReadUInt32();
             Flags02 = br.ReadUInt32();
-            Pos01 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk01 = br.ReadSingle();
-            Size02 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk02 = br.ReadSingle();
-            Size03 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk03 = br.ReadSingle();
-            Size04 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk04 = br.ReadSingle();
-            Flags03 = br.ReadUInt32();//###
-            Vec05 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Pos06 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk06 = br.ReadSingle();
-            Size07 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk07 = br.ReadSingle();
-            Size08 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk08 = br.ReadSingle();
-            Size09 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk09 = br.ReadSingle();
-            Flags04 = br.ReadUInt32();//###
-            Vec10 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Vec11 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk11 = br.ReadSingle();
-            Vec12 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk12 = br.ReadSingle();
-            Vec13 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());//perhaps not float
-            Unk13 = br.ReadSingle();
+            OuterPos = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unused01 = br.ReadSingle();
+            OuterSize = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unused02 = br.ReadSingle();
+            OuterVec1 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            OuterVec2 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            OuterAngle = br.ReadUInt32();//###
+            OuterVec3 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            InnerPos = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unused06 = br.ReadSingle();
+            InnerSize = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unused07 = br.ReadSingle();
+            InnerVec1 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            InnerVec2 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            InnerAngle = br.ReadUInt32();//###
+            InnerVec3 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Vec11 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Vec12 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Vec13 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
 
             Flags05 = br.ReadUInt32();
             Unk14 = br.ReadByte();
@@ -2324,39 +2319,37 @@ namespace CodeWalker.GameFiles
             long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
             {
-                byte[] remainder = br.ReadBytes((int)bytesleft);
-                for (int i = 0; i < remainder.Length; i++)
-                {
-                    if (remainder[i] != 0)
-                    { }
-                }
+                //byte[] remainder = br.ReadBytes((int)bytesleft);
+                //for (int i = 0; i < remainder.Length; i++)
+                //{
+                //    if (remainder[i] != 0)
+                //    { } //no hits here! probably got everything, i'm assuming the block is padded to 0x10 or something.
+                //}
             }
 
 
-            //FlagsUint[] flags = new FlagsUint[t4];
-            //for (int i = 0; i < t4; i++)
-            //{
-            //    flags[i] = br.ReadUInt32();
-            //}
-            //var t2 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            //var t3 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            //var t4 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            //RecVec(Pos01);//debug coords output
+            //RecVec(Pos06);
 
 
-            RecVec(Pos01);
-            //RecVec(Size02);
-            //RecVec(Size03);
-            //RecVec(Size04);
-            //RecVec(Vec05);
-            RecVec(Pos06);
-            //RecVec(Size07);
-            //RecVec(Size08);
-            //RecVec(Size09);
-            //RecVec(Vec10);
-            //RecVec(Vec11);
-            //RecVec(Vec12);
-            //RecVec(Vec13);
-
+            if (Unused01 != 0)
+            { }//no hit
+            if (Unused02 != 0)
+            { }//no hit
+            if (Unused06 != 0)
+            { }//no hit
+            if (Unused07 != 0)
+            { }//no hit
+            if (Shape != 0)
+            { }//eg 1, 2
+            if (Flags02.Value != 0)
+            { }//no hit
+            if (OuterAngle > 360)
+            { }//no hit
+            if (InnerAngle > 360)
+            { }//no hit
+            if (Flags05.Value != 0)
+            { }//eg 0xAE64583B, 0x61083310, 0xCAE96294, 0x1C376176
         }
 
     }
@@ -2374,8 +2367,8 @@ namespace CodeWalker.GameFiles
         public FlagsUint Unk07 { get; set; }    //0xFFFFFFFF
         public FlagsUint Unk08 { get; set; }    //0
         public float Unk09 { get; set; }        //1, 5, 100, ...
-        public float Unk10 { get; set; }        //0, 4,         ...     100 ... min value?
-        public float Unk11 { get; set; }        //15, 16, 12, 10, 20,   300 ... max value?
+        public float InnerRad { get; set; }        //0, 4,         ...     100 ... min value?
+        public float OuterRad { get; set; }        //15, 16, 12, 10, 20,   300 ... max value?
         public FlagsByte Unk12 { get; set; }
         public FlagsByte Unk13 { get; set; }    //0,1,2,3,4,5
         public FlagsByte Unk14 { get; set; }
@@ -2425,8 +2418,8 @@ namespace CodeWalker.GameFiles
             Unk07 = br.ReadUInt32();    //0xFFFFFFFF
             Unk08 = br.ReadUInt32();    //0
             Unk09 = br.ReadSingle();    //1, 5, 100, ...
-            Unk10 = br.ReadSingle();    //0, 4,         ...     100 ... min value?
-            Unk11 = br.ReadSingle();    //15, 16, 12, 10, 20,   300 ... max value?
+            InnerRad = br.ReadSingle();    //0, 4,         ...     100 ... min value?
+            OuterRad = br.ReadSingle();    //15, 16, 12, 10, 20,   300 ... max value?
             Unk12 = br.ReadByte();     
             Unk13 = br.ReadByte();      //0,1,2,3,4,5
             Unk14 = br.ReadByte();     

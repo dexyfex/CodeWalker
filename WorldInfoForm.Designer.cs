@@ -544,7 +544,8 @@ namespace CodeWalker
             "Train Track",
             "Distant Lod Lights",
             "Mlo Instance",
-            "Scenario"});
+            "Scenario",
+            "Audio"});
             this.SelectionModeComboBox.Location = new System.Drawing.Point(453, 12);
             this.SelectionModeComboBox.Name = "SelectionModeComboBox";
             this.SelectionModeComboBox.Size = new System.Drawing.Size(121, 21);

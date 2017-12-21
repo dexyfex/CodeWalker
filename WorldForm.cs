@@ -57,6 +57,7 @@ namespace CodeWalker
         Trains trains = new Trains();
         Scenarios scenarios = new Scenarios();
         PopZones popzones = new PopZones();
+        AudioZones audiozones = new AudioZones();
 
 
         bool MouseLButtonDown = false;
@@ -136,6 +137,7 @@ namespace CodeWalker
         List<MapSphere> BoundingSpheres = new List<MapSphere>();
         List<MapBox> HilightBoxes = new List<MapBox>();
         List<MapBox> SelectionBoxes = new List<MapBox>();
+        List<MapBox> WhiteBoxes = new List<MapBox>();
 
 
         bool controllightdir = false; //if not, use timecycle
@@ -184,6 +186,8 @@ namespace CodeWalker
         List<YmtFile> renderscenariolist = new List<YmtFile>();
 
         bool renderpopzones = false;
+
+        bool renderaudiozones = false;
 
 
         float timeofday = 12.0f;
@@ -565,6 +569,7 @@ namespace CodeWalker
 
             UpdateWidgets();
 
+            WhiteBoxes.Clear();
             SelectionBoxes.Clear();
             HilightBoxes.Clear();
             BoundingBoxes.Clear();
@@ -855,7 +860,7 @@ namespace CodeWalker
 
                 Vector3 movevec = Vector3.Zero;
 
-                if (MapViewEnabled == true)
+                if (MapViewEnabled)
                 {
                     if (kbmovefwd) movevec.Y += 1.0f;
                     if (kbmovebck) movevec.Y -= 1.0f;
@@ -1566,7 +1571,7 @@ namespace CodeWalker
                                 if (((ent.Position.X + r) > cvwmin) && ((ent.Position.X - r) < cvwmax) && ((ent.Position.Y + r) > cvhmin) && ((ent.Position.Y - r) < cvhmax))
                                 {
                                     //minZ = Math.Min(minZ, ent.BBMin.Z);
-                                    maxZ = Math.Max(maxZ, ent.BBMax.Z);
+                                    maxZ = Math.Max(maxZ, ent.BBMax.Z+50.0f);//add some bias to avoid clipping things...
                                 }
                             }
                         }
@@ -1769,6 +1774,10 @@ namespace CodeWalker
             if (renderpopzones || (SelectionMode == MapSelectionMode.PopZone))
             {
                 RenderWorldPopZones();
+            }
+            if (renderaudiozones || (SelectionMode == MapSelectionMode.Audio))
+            {
+                RenderWorldAudioZones();
             }
         }
         private bool RenderWorldYmapIsVisible(YmapFile ymap)
@@ -2063,11 +2072,98 @@ namespace CodeWalker
             {
                 shaders.Enqueue(rnd);
             }
+        }
 
+        private void RenderWorldAudioZones()
+        {
+            if (!audiozones.Inited) return;
+
+            //renderaudzonelist.Clear();
+            //renderaudzonelist.AddRange(audzones.Zones.Values);
+
+            if (ProjectForm != null)
+            {
+                //ProjectForm.GetVisibleAudioZones(camera, renderaudzonelist);
+            }
+
+
+            //RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(audiozones);
+            //if ((rnd != null) && (rnd.IsLoaded))
+            //{
+            //    shaders.Enqueue(rnd);
+            //}
+
+
+            BoundingBox bbox = new BoundingBox();
+            Ray mray = new Ray();
+            mray.Position = camera.MouseRay.Position + camera.Position;
+            mray.Direction = camera.MouseRay.Direction;
+            float hitdist = float.MaxValue;
+
+            MapBox lastHitOuterBox = new MapBox();
+            MapBox mb = new MapBox();
+
+            for (int i = 0; i < audiozones.AllItems.Count; i++)
+            {
+                var placement = audiozones.AllItems[i];
+                switch (placement.Shape)
+                {
+                    case Dat151ZoneShape.Box:
+                    case Dat151ZoneShape.Line:
+
+                        mb.CamRelPos = placement.InnerPos - camera.Position;
+                        mb.BBMin = placement.InnerMin;
+                        mb.BBMax = placement.InnerMax;
+                        mb.Orientation = placement.InnerOri;
+                        mb.Scale = Vector3.One;
+                        HilightBoxes.Add(mb);
+
+                        mb.CamRelPos = placement.OuterPos - camera.Position;
+                        mb.BBMin = placement.OuterMin;
+                        mb.BBMax = placement.OuterMax;
+                        mb.Orientation = placement.OuterOri;
+                        mb.Scale = Vector3.One;
+                        BoundingBoxes.Add(mb);
+
+                        Vector3 hbcamrel = (placement.HitboxPos - camera.Position);
+                        Ray mraytrn = new Ray();
+                        mraytrn.Position = placement.HitboxOriInv.Multiply(camera.MouseRay.Position - hbcamrel);
+                        mraytrn.Direction = placement.HitboxOriInv.Multiply(mray.Direction);
+                        bbox.Minimum = placement.HitboxMin;
+                        bbox.Maximum = placement.HitboxMax;
+                        if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
+                        {
+                            CurMouseHit.Audio = placement;
+                            CurMouseHit.HitDist = hitdist;
+                            CurMouseHit.CamRel = hbcamrel;
+                            CurMouseHit.AABB = bbox;
+                            lastHitOuterBox = mb; //highlight the outer box
+                        }
+                        break;
+                    case Dat151ZoneShape.Sphere:
+                        break;
+                    default:
+                        break;//shouldn't get here
+                }
+            }
+
+            if (CurMouseHit.Audio != null)
+            {
+                //hilight the outer bounds of moused item
+                switch (CurMouseHit.Audio.Shape)
+                {
+                    case Dat151ZoneShape.Box:
+                    case Dat151ZoneShape.Line:
+                        HilightBoxes.Add(lastHitOuterBox);
+                        break;
+                    case Dat151ZoneShape.Sphere:
+                        //HilightSpheres.Add(lastHitOuterSphere);
+                        break;
+                }
+            }
 
 
         }
-
 
 
 
@@ -2869,72 +2965,31 @@ namespace CodeWalker
             //immediately render the entity bounding boxes/spheres - depending on boundsmode
 
 
-            //////rendering grass instance batch bounding boxes...
-            ////shaders.SetDepthStencilMode(context, renderboundsclip ? DepthStencilMode.Enabled : DepthStencilMode.DisableAll);
-            ////var shader = shaders.Bounds;
-            ////shader.SetMode(BoundsShaderMode.Box);
-            ////shader.SetShader(context);
-            ////shader.SetInputLayout(context, VertexType.Default);
-            ////shader.SetSceneVars(context, camera);
-            ////shader.SetColourVars(context, new Vector4(0, 0, 1, 1));
-            ////for (int i = 0; i < shaders.RenderInstBatches.Count; i++)
-            ////{
-            ////    var b = shaders.RenderInstBatches[i];
-            ////    var bpos = b.Batch.GrassInstanceBatch.Position;
-            ////    var camrel = bpos - camera.Position;
-            ////    var bbmin = b.Batch.GrassInstanceBatch.Batch.BatchAABB.min.XYZ() - bpos;
-            ////    var bbmax = b.Batch.GrassInstanceBatch.Batch.BatchAABB.max.XYZ() - bpos;
-            ////    shader.SetBoxVars(context, camrel, bbmin, bbmax, Quaternion.Identity, Vector3.One);
-            ////    shader.DrawBox(context);
-            ////}
-            ////shader.UnbindResources(context);
-
-
-
-
-            var mode = boundsmode; //try avoid multithreading issues
             bool clip = renderboundsclip;
 
             switch (SelectionMode)
             {
-                case MapSelectionMode.EntityExtension:
-                case MapSelectionMode.ArchetypeExtension:
-                case MapSelectionMode.TimeCycleModifier:
-                case MapSelectionMode.CarGenerator:
-                case MapSelectionMode.DistantLodLights:
-                case MapSelectionMode.Grass:
-                case MapSelectionMode.Collision:
-                case MapSelectionMode.NavMesh:
-                case MapSelectionMode.Path:
-                case MapSelectionMode.TrainTrack:
-                case MapSelectionMode.Scenario:
-                    mode = BoundsShaderMode.Box;
-                    break;
                 case MapSelectionMode.WaterQuad:
                 case MapSelectionMode.MloInstance:
-                    mode = BoundsShaderMode.Box;
                     clip = false;
                     break;
             }
 
-
-            if (mode == BoundsShaderMode.None)
-            { return; }
 
             Vector3 colour = new Vector3(0, 0, 1) * globalLights.HdrIntensity;
             Vector3 colourhi = new Vector3(0, 1, 1) * globalLights.HdrIntensity;
 
             shaders.SetDepthStencilMode(context, clip ? DepthStencilMode.Enabled : DepthStencilMode.DisableAll);
             var shader = shaders.Bounds;
-            shader.SetMode(mode);
-            shader.SetShader(context);
-            shader.SetInputLayout(context, VertexType.Default);
-            shader.SetSceneVars(context, camera, null, globalLights);
-            shader.SetColourVars(context, new Vector4(colour, 1));
 
-
-            if (mode == BoundsShaderMode.Box)
+            if ((BoundingBoxes.Count > 0) || (HilightBoxes.Count > 0))
             {
+                shader.SetMode(BoundsShaderMode.Box);
+                shader.SetShader(context);
+                shader.SetInputLayout(context, VertexType.Default);
+                shader.SetSceneVars(context, camera, null, globalLights);
+                shader.SetColourVars(context, new Vector4(colour, 1));
+
                 for (int i = 0; i < BoundingBoxes.Count; i++)
                 {
                     MapBox mb = BoundingBoxes[i];
@@ -2949,8 +3004,15 @@ namespace CodeWalker
                     shader.DrawBox(context);
                 }
             }
-            else if (mode == BoundsShaderMode.Sphere)
+
+            if (BoundingSpheres.Count > 0)
             {
+                shader.SetMode(BoundsShaderMode.Sphere);
+                shader.SetShader(context);
+                shader.SetInputLayout(context, VertexType.Default);
+                shader.SetSceneVars(context, camera, null, globalLights);
+                shader.SetColourVars(context, new Vector4(colour, 1));
+
                 for (int i = 0; i < BoundingSpheres.Count; i++)
                 {
                     MapSphere ms = BoundingSpheres[i];
@@ -2958,6 +3020,7 @@ namespace CodeWalker
                     shader.DrawSphere(context);
                 }
             }
+
 
 
             shader.UnbindResources(context);
@@ -3018,6 +3081,9 @@ namespace CodeWalker
                     break;
                 case MapSelectionMode.Scenario:
                     change = change || (LastMouseHit.ScenarioNode != PrevMouseHit.ScenarioNode);
+                    break;
+                case MapSelectionMode.Audio:
+                    change = change || (LastMouseHit.Audio != PrevMouseHit.Audio);
                     break;
             }
 
@@ -3085,6 +3151,10 @@ namespace CodeWalker
                 {
                     ori = sp.Orientation;
                 }
+            }
+            if (CurMouseHit.Audio != null)
+            {
+                ori = CurMouseHit.Audio.HitboxOri;
             }
 
 
@@ -3272,6 +3342,22 @@ namespace CodeWalker
                 //clip = false;
             }
 
+            if (selectionItem.Audio != null)
+            {
+                var au = selectionItem.Audio;
+                camrel = au.HitboxPos - camera.Position;
+                ori = au.HitboxOri;
+                bbmin = au.HitboxMin;
+                bbmax = au.HitboxMax;
+
+                MapBox wbox = new MapBox();
+                wbox.CamRelPos = au.OuterPos - camera.Position;
+                wbox.BBMin = au.OuterMin;
+                wbox.BBMax = au.OuterMax;
+                wbox.Orientation = au.OuterOri;
+                wbox.Scale = scale;
+                WhiteBoxes.Add(wbox);
+            }
 
 
 
@@ -3452,23 +3538,28 @@ namespace CodeWalker
 
 
 
-            if (SelectionBoxes.Count > 0)
+            Vector3 coloursel = new Vector3(0, 1, 0) * globalLights.HdrIntensity * 5.0f;
+            Vector3 colourwht = new Vector3(1, 1, 1) * globalLights.HdrIntensity * 10.0f;
+            var shader = shaders.Bounds;
+            shader.SetMode(BoundsShaderMode.Box);
+            shader.SetShader(context);
+            shader.SetInputLayout(context, VertexType.Default);
+            shader.SetSceneVars(context, camera, null, globalLights);
+            shader.SetColourVars(context, new Vector4(colourwht, 1));
+            for (int i = 0; i < WhiteBoxes.Count; i++)
             {
-                Vector3 coloursel = new Vector3(0, 1, 0) * globalLights.HdrIntensity * 5.0f;
-                var shader = shaders.Bounds;
-                shader.SetMode(BoundsShaderMode.Box);
-                shader.SetShader(context);
-                shader.SetInputLayout(context, VertexType.Default);
-                shader.SetSceneVars(context, camera, null, globalLights);
-                shader.SetColourVars(context, new Vector4(coloursel, 1));
-                for (int i = 0; i < SelectionBoxes.Count; i++)
-                {
-                    MapBox mb = SelectionBoxes[i];
-                    shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
-                    shader.DrawBox(context);
-                }
-                shader.UnbindResources(context);
+                MapBox mb = WhiteBoxes[i];
+                shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
+                shader.DrawBox(context);
             }
+            shader.SetColourVars(context, new Vector4(coloursel, 1));
+            for (int i = 0; i < SelectionBoxes.Count; i++)
+            {
+                MapBox mb = SelectionBoxes[i];
+                shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
+                shader.DrawBox(context);
+            }
+            shader.UnbindResources(context);
 
         }
 
@@ -5539,6 +5630,11 @@ namespace CodeWalker
                 ToolbarDeleteItemButton.Enabled = true;
                 ToolbarDeleteItemButton.Text = "Delete scenario point";
             }
+            else if (item.Audio != null)
+            {
+                SelectionEntityTabPage.Text = item.Audio.ShortTypeName;
+                SelEntityPropertyGrid.SelectedObject = item.Audio;
+            }
             else
             {
                 SelectionEntityTabPage.Text = "Entity";
@@ -5882,6 +5978,9 @@ namespace CodeWalker
 
             UpdateStatus("Loading popzones...");
             popzones.Init(gameFileCache, UpdateStatus);
+
+            UpdateStatus("Loading audio zones...");
+            audiozones.Init(gameFileCache, UpdateStatus);
 
             UpdateStatus("Loading world...");
             space.Init(gameFileCache, UpdateStatus);
@@ -7356,6 +7455,10 @@ namespace CodeWalker
                 case "Scenario":
                     mode = MapSelectionMode.Scenario;
                     ToolbarSelectScenarioButton.Checked = true;
+                    break;
+                case "Audio":
+                    mode = MapSelectionMode.Audio;
+                    ToolbarSelectAudioButton.Checked = true;
                     break;
 
             }
@@ -8930,6 +9033,12 @@ namespace CodeWalker
             SetMouseSelect(true);
         }
 
+        private void ToolbarSelectAudioButton_Click(object sender, EventArgs e)
+        {
+            SetSelectionMode("Audio");
+            SetMouseSelect(true);
+        }
+
         private void ToolbarMoveButton_Click(object sender, EventArgs e)
         {
             SetWidgetMode(ToolbarMoveButton.Checked ? "Default" : "Position");
@@ -9324,6 +9433,7 @@ namespace CodeWalker
         public TrainTrackNode TrainTrackNode { get; set; }
         public ScenarioNode ScenarioNode { get; set; }
         public MCScenarioChainingEdge ScenarioEdge { get; set; }
+        public AudioPlacement Audio { get; set; }
 
         public bool MultipleSelection { get; set; }
         public Vector3 MultipleSelectionCenter { get; set; }
@@ -9354,7 +9464,8 @@ namespace CodeWalker
                     (TrainTrackNode != null) ||
                     (DistantLodLights != null) ||
                     (MloEntityDef != null) ||
-                    (ScenarioNode != null);
+                    (ScenarioNode != null) ||
+                    (Audio != null);
             }
         }
 
@@ -9381,7 +9492,8 @@ namespace CodeWalker
                 || (NavPoly != mhit.NavPoly)
                 || (PathNode != mhit.PathNode)
                 || (TrainTrackNode != mhit.TrainTrackNode)
-                || (ScenarioNode != mhit.ScenarioNode);
+                || (ScenarioNode != mhit.ScenarioNode)
+                || (Audio != mhit.Audio);
         }
         public bool CheckForChanges()
         {
@@ -9401,7 +9513,8 @@ namespace CodeWalker
                 || (PathNode != null)
                 || (PathLink != null)
                 || (TrainTrackNode != null)
-                || (ScenarioNode != null);
+                || (ScenarioNode != null)
+                || (Audio != null);
         }
 
 
@@ -9426,6 +9539,7 @@ namespace CodeWalker
             MloEntityDef = null;
             ScenarioNode = null;
             ScenarioEdge = null;
+            Audio = null;
             MultipleSelection = false;
             AABB = new BoundingBox();
             GeometryIndex = 0;
@@ -9492,6 +9606,10 @@ namespace CodeWalker
             {
                 name = ScenarioNode.ToString();
             }
+            if (Audio != null)
+            {
+                name = Audio.ShortTypeName + " " + FloatUtil.GetVector3String(Audio.InnerPos);
+            }
             return name;
         }
 
@@ -9554,6 +9672,10 @@ namespace CodeWalker
             {
                 name = ScenarioNode.ToString();
             }
+            if (Audio != null)
+            {
+                name = Audio.ShortTypeName + " " + FloatUtil.GetVector3String(Audio.InnerPos);
+            }
             return name;
         }
 
@@ -9593,7 +9715,10 @@ namespace CodeWalker
                 {
                     res = true;
                 }
-
+                else if (Audio != null)
+                {
+                    res = true;
+                }
                 return res;
             }
         }
@@ -9628,6 +9753,10 @@ namespace CodeWalker
                 else if (ScenarioNode != null)
                 {
                     return ScenarioNode.Position;
+                }
+                else if (Audio != null)
+                {
+                    return Audio.InnerPos;
                 }
                 return Vector3.Zero;
             }
@@ -9664,6 +9793,10 @@ namespace CodeWalker
                 {
                     return ScenarioNode.Orientation;
                 }
+                else if (Audio != null)
+                {
+                    return Audio.HitboxOri;
+                }
                 return Quaternion.Identity;
             }
         }
@@ -9699,6 +9832,10 @@ namespace CodeWalker
                 {
                     return WidgetAxis.Z;
                 }
+                else if (Audio != null)
+                {
+                    return WidgetAxis.XYZ;
+                }
                 return WidgetAxis.None;
             }
         }
@@ -9731,6 +9868,10 @@ namespace CodeWalker
                     return Vector3.One;
                 }
                 else if (ScenarioNode != null)
+                {
+                    return Vector3.One;
+                }
+                else if (Audio != null)
                 {
                     return Vector3.One;
                 }
@@ -9783,6 +9924,10 @@ namespace CodeWalker
             {
                 ScenarioNode.SetPosition(newpos);
             }
+            else if (Audio != null)
+            {
+                Audio.SetPosition(newpos);
+            }
 
         }
         public void SetRotation(Quaternion newrot, Quaternion oldrot, bool editPivot)
@@ -9806,7 +9951,10 @@ namespace CodeWalker
             {
                 ScenarioNode.SetOrientation(newrot);
             }
-
+            else if (Audio != null)
+            {
+                Audio.SetOrientation(newrot);
+            }
         }
         public void SetScale(Vector3 newscale, Vector3 oldscale, bool editPivot)
         {
@@ -9846,6 +9994,7 @@ namespace CodeWalker
         MloInstance = 13,
         Scenario = 14,
         PopZone = 15,
+        Audio = 16,
     }
 
 

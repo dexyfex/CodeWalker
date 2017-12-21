@@ -415,6 +415,7 @@
     <Compile Include="WorldSearchForm.Designer.cs">
       <DependentUpon>WorldSearchForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="World\AudioZones.cs" />
     <Compile Include="World\Camera.cs" />
     <Compile Include="Rendering\DirectX\DXForm.cs" />
     <Compile Include="Rendering\DirectX\DXManager.cs" />
@@ -435,7 +436,7 @@
     <Compile Include="GameFiles\FileTypes\YtdFile.cs" />
     <Compile Include="World\Clouds.cs" />
     <Compile Include="World\Entity.cs" />
-    <Compile Include="World\PopZone.cs" />
+    <Compile Include="World\PopZones.cs" />
     <Compile Include="World\Scenarios.cs" />
     <Compile Include="World\Space.cs" />
     <Compile Include="World\Timecycle.cs" />
