@@ -121,6 +121,8 @@ namespace CodeWalker.World
 
     public class AudioPlacement
     {
+        public string Name { get; set; }
+        public MetaHash NameHash { get; set; }
         public RelFile RelFile { get; set; }
         public Dat151Unk37 AudioZone { get; set; }
         public Dat151Unk38 AudioEmitter { get; set; }
@@ -153,6 +155,8 @@ namespace CodeWalker.World
             Shape = zone.Shape;
             ShortTypeName = "AudioZone";
             FullTypeName = "Audio Zone";
+            Name = zone.Name;
+            NameHash = zone.NameHash;
 
             float deg2rad = (float)(Math.PI / 180.0);
 
@@ -165,6 +169,10 @@ namespace CodeWalker.World
                     InnerOri = Quaternion.RotationAxis(Vector3.UnitZ, zone.InnerAngle * deg2rad);
                     break;
                 case Dat151ZoneShape.Sphere:
+                    InnerPos = zone.InnerPos;
+                    InnerOri = Quaternion.Identity;
+                    InnerRad = zone.InnerSize.X;
+                    OuterRad = zone.OuterSize.X;
                     break;
                 case Dat151ZoneShape.Line:
                     InnerPos = zone.InnerPos;
@@ -180,11 +188,18 @@ namespace CodeWalker.World
             OuterOri = Quaternion.RotationAxis(Vector3.UnitZ, zone.OuterAngle * deg2rad);
 
             bool useouter = ((InnerMax.X == 0) || (InnerMax.Y == 0) || (InnerMax.Z == 0));
+            if (useouter && (zone.Shape != Dat151ZoneShape.Sphere))
+            { } //not sure what these are yet!
             HitboxPos = useouter ? OuterPos : InnerPos;
             HitboxMax = useouter ? OuterMax : InnerMax;
             HitboxMin = useouter ? OuterMin : InnerMin;
             HitboxOri = useouter ? OuterOri : InnerOri;
             HitboxOriInv = Quaternion.Invert(HitboxOri);
+            HitSphereRad = InnerRad;
+            if (zone.Shape == Dat151ZoneShape.Sphere)
+            {
+                HitboxPos = InnerPos;
+            }
         }
         public AudioPlacement(RelFile rel, Dat151Unk38 emitter)
         {
@@ -193,16 +208,23 @@ namespace CodeWalker.World
             Shape = Dat151ZoneShape.Sphere;
             ShortTypeName = "AudioEmitter";
             FullTypeName = "Audio Emitter";
+            Name = emitter.Name;
+            NameHash = emitter.NameHash;
 
             HitboxOri = Quaternion.Identity;
             HitboxOriInv = Quaternion.Identity;
             InnerPos = emitter.Position;
+            OuterPos = InnerPos;
             InnerRad = emitter.InnerRad;
             OuterRad = emitter.OuterRad;
 
             bool useouter = (InnerRad == 0);
+            if (useouter)
+            {
+                InnerRad = 1;
+            }
             HitboxPos = InnerPos;
-            HitSphereRad = useouter ? OuterRad : InnerRad;
+            HitSphereRad = InnerRad;// useouter ? OuterRad : InnerRad;
         }
 
 

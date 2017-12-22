@@ -135,9 +135,12 @@ namespace CodeWalker
         float renderboundsmaxdist = 10000.0f;
         List<MapBox> BoundingBoxes = new List<MapBox>();
         List<MapSphere> BoundingSpheres = new List<MapSphere>();
+        List<MapSphere> HilightSpheres = new List<MapSphere>();
         List<MapBox> HilightBoxes = new List<MapBox>();
         List<MapBox> SelectionBoxes = new List<MapBox>();
         List<MapBox> WhiteBoxes = new List<MapBox>();
+        List<MapSphere> SelectionSpheres = new List<MapSphere>();
+        List<MapSphere> WhiteSpheres = new List<MapSphere>();
 
 
         bool controllightdir = false; //if not, use timecycle
@@ -570,8 +573,11 @@ namespace CodeWalker
             UpdateWidgets();
 
             WhiteBoxes.Clear();
+            WhiteSpheres.Clear();
             SelectionBoxes.Clear();
+            SelectionSpheres.Clear();
             HilightBoxes.Clear();
+            HilightSpheres.Clear();
             BoundingBoxes.Clear();
             BoundingSpheres.Clear();
             BeginMouseHitTest();
@@ -859,6 +865,14 @@ namespace CodeWalker
             {
 
                 Vector3 movevec = Vector3.Zero;
+                if (ShiftPressed)
+                {
+                    moveSpeed *= 5.0f;
+                }
+                if (CtrlPressed)
+                {
+                    moveSpeed *= 0.2f;
+                }
 
                 if (MapViewEnabled)
                 {
@@ -2095,13 +2109,16 @@ namespace CodeWalker
 
 
             BoundingBox bbox = new BoundingBox();
+            BoundingSphere bsph = new BoundingSphere();
             Ray mray = new Ray();
             mray.Position = camera.MouseRay.Position + camera.Position;
             mray.Direction = camera.MouseRay.Direction;
             float hitdist = float.MaxValue;
 
             MapBox lastHitOuterBox = new MapBox();
+            MapSphere lastHitOuterSphere = new MapSphere();
             MapBox mb = new MapBox();
+            MapSphere ms = new MapSphere();
 
             for (int i = 0; i < audiozones.AllItems.Count; i++)
             {
@@ -2141,6 +2158,33 @@ namespace CodeWalker
                         }
                         break;
                     case Dat151ZoneShape.Sphere:
+
+                        if ((placement.InnerPos != Vector3.Zero) && (placement.OuterPos != Vector3.Zero))
+                        {
+                            ms.CamRelPos = placement.InnerPos - camera.Position;
+                            ms.Radius = placement.InnerRad;
+                            HilightSpheres.Add(ms);
+
+                            ms.CamRelPos = placement.OuterPos - camera.Position;
+                            ms.Radius = placement.OuterRad;
+                            BoundingSpheres.Add(ms);
+
+                            bsph.Center = placement.HitboxPos;
+                            bsph.Radius = placement.HitSphereRad;
+                            if (mray.Intersects(ref bsph, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
+                            {
+                                CurMouseHit.Audio = placement;
+                                CurMouseHit.HitDist = hitdist;
+                                CurMouseHit.CamRel = placement.HitboxPos - camera.Position;
+                                CurMouseHit.AABB = new BoundingBox(); //no box here
+                                CurMouseHit.BSphere = bsph;
+                                lastHitOuterSphere = ms; //highlight the outer sphere
+                            }
+                        }
+                        else
+                        { }
+
+
                         break;
                     default:
                         break;//shouldn't get here
@@ -2157,7 +2201,7 @@ namespace CodeWalker
                         HilightBoxes.Add(lastHitOuterBox);
                         break;
                     case Dat151ZoneShape.Sphere:
-                        //HilightSpheres.Add(lastHitOuterSphere);
+                        HilightSpheres.Add(lastHitOuterSphere);
                         break;
                 }
             }
@@ -3005,7 +3049,7 @@ namespace CodeWalker
                 }
             }
 
-            if (BoundingSpheres.Count > 0)
+            if ((BoundingSpheres.Count > 0) || (HilightSpheres.Count > 0))
             {
                 shader.SetMode(BoundsShaderMode.Sphere);
                 shader.SetShader(context);
@@ -3016,6 +3060,13 @@ namespace CodeWalker
                 for (int i = 0; i < BoundingSpheres.Count; i++)
                 {
                     MapSphere ms = BoundingSpheres[i];
+                    shader.SetSphereVars(context, ms.CamRelPos, ms.Radius);
+                    shader.DrawSphere(context);
+                }
+                shader.SetColourVars(context, new Vector4(colourhi, 1));
+                for (int i = 0; i < HilightSpheres.Count; i++)
+                {
+                    MapSphere ms = HilightSpheres[i];
                     shader.SetSphereVars(context, ms.CamRelPos, ms.Radius);
                     shader.DrawSphere(context);
                 }
@@ -3109,6 +3160,8 @@ namespace CodeWalker
 
             bool clip = renderboundsclip;
 
+            BoundsShaderMode mode = BoundsShaderMode.Box;
+            float bsphrad = CurMouseHit.BSphere.Radius;
             Vector3 bbmin = CurMouseHit.AABB.Minimum;
             Vector3 bbmax = CurMouseHit.AABB.Maximum;
             Vector3 camrel = CurMouseHit.CamRel;
@@ -3155,6 +3208,10 @@ namespace CodeWalker
             if (CurMouseHit.Audio != null)
             {
                 ori = CurMouseHit.Audio.HitboxOri;
+                if (CurMouseHit.Audio.Shape == Dat151ZoneShape.Sphere)
+                {
+                    mode = BoundsShaderMode.Sphere;
+                }
             }
 
 
@@ -3162,14 +3219,22 @@ namespace CodeWalker
 
             //render moused object box.
             var shader = shaders.Bounds;
-            shader.SetMode(BoundsShaderMode.Box);
+            shader.SetMode(mode);
             shader.SetShader(context);
             shader.SetInputLayout(context, VertexType.Default);
             shader.SetSceneVars(context, camera, null, globalLights);
             shader.SetColourVars(context, new Vector4(colour, 1)); //white box
 
-            shader.SetBoxVars(context, camrel, bbmin, bbmax, ori, scale);
-            shader.DrawBox(context);
+            if (mode == BoundsShaderMode.Box)
+            {
+                shader.SetBoxVars(context, camrel, bbmin, bbmax, ori, scale);
+                shader.DrawBox(context);
+            }
+            else if (mode == BoundsShaderMode.Sphere)
+            {
+                shader.SetSphereVars(context, camrel, bsphrad);
+                shader.DrawSphere(context);
+            }
 
             shader.UnbindResources(context);
 
@@ -3220,6 +3285,8 @@ namespace CodeWalker
             bool clip = renderboundsclip;
 
 
+            BoundsShaderMode mode = BoundsShaderMode.Box;
+            float bsphrad = selectionItem.BSphere.Radius;
             Vector3 bbmin = selectionItem.AABB.Minimum;
             Vector3 bbmax = selectionItem.AABB.Maximum;
             Vector3 camrel = -camera.Position;
@@ -3350,24 +3417,44 @@ namespace CodeWalker
                 bbmin = au.HitboxMin;
                 bbmax = au.HitboxMax;
 
-                MapBox wbox = new MapBox();
-                wbox.CamRelPos = au.OuterPos - camera.Position;
-                wbox.BBMin = au.OuterMin;
-                wbox.BBMax = au.OuterMax;
-                wbox.Orientation = au.OuterOri;
-                wbox.Scale = scale;
-                WhiteBoxes.Add(wbox);
+                if (selectionItem.Audio.Shape == Dat151ZoneShape.Sphere)
+                {
+                    mode = BoundsShaderMode.Sphere;
+                    MapSphere wsph = new MapSphere();
+                    wsph.CamRelPos = au.OuterPos - camera.Position;
+                    wsph.Radius = au.OuterRad;
+                    WhiteSpheres.Add(wsph);
+                }
+                else
+                {
+                    MapBox wbox = new MapBox();
+                    wbox.CamRelPos = au.OuterPos - camera.Position;
+                    wbox.BBMin = au.OuterMin;
+                    wbox.BBMax = au.OuterMax;
+                    wbox.Orientation = au.OuterOri;
+                    wbox.Scale = scale;
+                    WhiteBoxes.Add(wbox);
+                }
             }
 
 
-
-            MapBox box = new MapBox();
-            box.CamRelPos = camrel;
-            box.BBMin = bbmin;
-            box.BBMax = bbmax;
-            box.Orientation = ori;
-            box.Scale = scale;
-            SelectionBoxes.Add(box);
+            if (mode == BoundsShaderMode.Box)
+            {
+                MapBox box = new MapBox();
+                box.CamRelPos = camrel;
+                box.BBMin = bbmin;
+                box.BBMax = bbmax;
+                box.Orientation = ori;
+                box.Scale = scale;
+                SelectionBoxes.Add(box);
+            }
+            else if (mode == BoundsShaderMode.Sphere)
+            {
+                MapSphere sph = new MapSphere();
+                sph.CamRelPos = camrel;
+                sph.Radius = bsphrad;
+                SelectionSpheres.Add(sph);
+            }
 
         }
 
@@ -3541,25 +3628,53 @@ namespace CodeWalker
             Vector3 coloursel = new Vector3(0, 1, 0) * globalLights.HdrIntensity * 5.0f;
             Vector3 colourwht = new Vector3(1, 1, 1) * globalLights.HdrIntensity * 10.0f;
             var shader = shaders.Bounds;
-            shader.SetMode(BoundsShaderMode.Box);
-            shader.SetShader(context);
-            shader.SetInputLayout(context, VertexType.Default);
-            shader.SetSceneVars(context, camera, null, globalLights);
-            shader.SetColourVars(context, new Vector4(colourwht, 1));
-            for (int i = 0; i < WhiteBoxes.Count; i++)
+
+            if ((WhiteBoxes.Count > 0) || (SelectionBoxes.Count > 0))
             {
-                MapBox mb = WhiteBoxes[i];
-                shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
-                shader.DrawBox(context);
+                shader.SetMode(BoundsShaderMode.Box);
+                shader.SetShader(context);
+                shader.SetInputLayout(context, VertexType.Default);
+                shader.SetSceneVars(context, camera, null, globalLights);
+                shader.SetColourVars(context, new Vector4(colourwht, 1));
+                for (int i = 0; i < WhiteBoxes.Count; i++)
+                {
+                    MapBox mb = WhiteBoxes[i];
+                    shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
+                    shader.DrawBox(context);
+                }
+                shader.SetColourVars(context, new Vector4(coloursel, 1));
+                for (int i = 0; i < SelectionBoxes.Count; i++)
+                {
+                    MapBox mb = SelectionBoxes[i];
+                    shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
+                    shader.DrawBox(context);
+                }
+                shader.UnbindResources(context);
             }
-            shader.SetColourVars(context, new Vector4(coloursel, 1));
-            for (int i = 0; i < SelectionBoxes.Count; i++)
+
+            if ((WhiteSpheres.Count > 0) || (SelectionSpheres.Count > 0))
             {
-                MapBox mb = SelectionBoxes[i];
-                shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
-                shader.DrawBox(context);
+                shader.SetMode(BoundsShaderMode.Sphere);
+                shader.SetShader(context);
+                shader.SetInputLayout(context, VertexType.Default);
+                shader.SetSceneVars(context, camera, null, globalLights);
+                shader.SetColourVars(context, new Vector4(colourwht, 1));
+                for (int i = 0; i < WhiteSpheres.Count; i++)
+                {
+                    MapSphere ms = WhiteSpheres[i];
+                    shader.SetSphereVars(context, ms.CamRelPos, ms.Radius);
+                    shader.DrawSphere(context);
+                }
+                shader.SetColourVars(context, new Vector4(coloursel, 1));
+                for (int i = 0; i < SelectionSpheres.Count; i++)
+                {
+                    MapSphere ms = SelectionSpheres[i];
+                    shader.SetSphereVars(context, ms.CamRelPos, ms.Radius);
+                    shader.DrawSphere(context);
+                }
+                shader.UnbindResources(context);
             }
-            shader.UnbindResources(context);
+
 
         }
 
@@ -9439,6 +9554,7 @@ namespace CodeWalker
         public Vector3 MultipleSelectionCenter { get; set; }
 
         public BoundingBox AABB { get; set; }
+        public BoundingSphere BSphere { get; set; }
         public int GeometryIndex { get; set; }
         public Vector3 CamRel { get; set; }
         public float HitDist { get; set; }
