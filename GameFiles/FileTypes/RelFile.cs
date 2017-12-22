@@ -31,13 +31,16 @@ namespace CodeWalker.GameFiles
         public uint Unk05Count { get; set; }
         public uint[] Unk05Arr { get; set; }
         public MetaHash[] Unk05Hashes { get; set; }
-        public uint Unk06Count { get; set; }
-        public uint[] Unk06Arr { get; set; }
-        public MetaHash[] Unk06Hashes { get; set; }
+        public uint ContainerCount { get; set; }
+        public uint[] ContainerUnkArr { get; set; }
+        public MetaHash[] ContainerHashes { get; set; }
 
         public RelData[] RelDatas { get; set; }
         public RelData[] RelDatasSorted { get; set; }
         //testing zone for decoding .rel audio files.
+
+        public Dictionary<uint, RelData> RelDataDict { get; set; } = new Dictionary<uint, RelData>();
+
 
         public RelFile()
         {
@@ -82,6 +85,9 @@ namespace CodeWalker.GameFiles
                         else break;
                     }
                     names[i] = sb.ToString();
+
+                    //JenkIndex.Ensure(names[i]); //really need both here..?
+                    JenkIndex.Ensure(names[i].ToLowerInvariant());
                 }
                 NameTable = names;
             }
@@ -145,22 +151,22 @@ namespace CodeWalker.GameFiles
                 Unk05Hashes = d05h;
             }
 
-            Unk06Count = br.ReadUInt32();
-            if (Unk06Count != 0)
+            ContainerCount = br.ReadUInt32();
+            if (ContainerCount != 0)
             {
-                uint[] d06 = new uint[Unk06Count];
-                MetaHash[] d06h = new MetaHash[Unk06Count];
-                for (uint i = 0; i < Unk06Count; i++)
+                uint[] cunks = new uint[ContainerCount];
+                MetaHash[] chashes = new MetaHash[ContainerCount];
+                for (uint i = 0; i < ContainerCount; i++)
                 {
-                    d06[i] = br.ReadUInt32();
+                    cunks[i] = br.ReadUInt32();
 
                     var pos = ms.Position;
-                    ms.Position = d06[i];
-                    d06h[i] = new MetaHash(br.ReadUInt32());
+                    ms.Position = cunks[i];
+                    chashes[i] = new MetaHash(br.ReadUInt32());
                     ms.Position = pos;
                 }
-                Unk06Arr = d06;
-                Unk06Hashes = d06h;
+                ContainerUnkArr = cunks;
+                ContainerHashes = chashes;
             }
 
             if (ms.Position != ms.Length)
@@ -244,6 +250,60 @@ namespace CodeWalker.GameFiles
             ms.Dispose();
 
 
+
+
+            RelDataDict.Clear();
+            foreach (var reldata in RelDatas)
+            {
+                if ((reldata.NameHash == 0) && !string.IsNullOrEmpty(reldata.Name))
+                {
+                    reldata.NameHash = JenkHash.GenHash(reldata.Name); //should this be lower case?
+                    JenkIndex.Ensure(reldata.Name);
+                    JenkIndex.Ensure(reldata.Name.ToLowerInvariant()); //which one to use?
+                }
+                
+                //if (reldata.NameHash == 0)
+                //{ }//no hits here
+                //if (RelDataDict.ContainsKey(reldata.NameHash))
+                //{ }//no hits here
+
+                RelDataDict[reldata.NameHash] = reldata;
+            }
+            foreach (var reldata in RelDatas)
+            {
+                RelSound snd = reldata as RelSound;
+                if (snd != null)
+                {
+                    if (snd.AudioTracksCount > 0)
+                    {
+                        snd.AudioTracks = new RelData[snd.AudioTracksCount];
+                        for (int i = 0; i < snd.AudioTracksCount; i++)
+                        {
+                            var audhash = snd.AudioTrackHashes[i];
+                            RelData auddata = null;
+                            if (RelDataDict.TryGetValue(audhash, out auddata))
+                            {
+                                snd.AudioTracks[i] = auddata;
+                            }
+                            else
+                            { }
+                        }
+                    }
+                    if (snd.AudioContainers != null)
+                    {
+                        foreach (var cnt in snd.AudioContainers)
+                        {
+                            string cname = JenkIndex.TryGetString(cnt.Hash);
+                            if (!string.IsNullOrEmpty(cname))
+                            { }
+                            else
+                            { }
+                        }
+                    }
+                }
+            }
+
+            #region test
             //foreach (var d in RelDatas)
             //{
             //    using (BinaryReader dbr = new BinaryReader(new MemoryStream(d.Data)))
@@ -282,7 +342,7 @@ namespace CodeWalker.GameFiles
             //        }
             //    }
             //}
-
+            #endregion
 
         }
 
@@ -428,8 +488,8 @@ namespace CodeWalker.GameFiles
         {
             switch ((Dat151RelType)d.TypeID)
             {
-                case Dat151RelType.Unk37: return new Dat151Unk37(d, br);
-                case Dat151RelType.Unk38: return new Dat151Unk38(d, br);
+                case Dat151RelType.AmbientZone: return new Dat151AmbientZone(d, br);
+                case Dat151RelType.AmbientEmitter: return new Dat151AmbientEmitter(d, br);
                 default:
                     return new Dat151RelData(d, br);
             }
@@ -1078,7 +1138,8 @@ namespace CodeWalker.GameFiles
     {
         public RelSoundHeader Header { get; set; }
         public byte AudioTracksCount { get; set; }
-        public MetaHash[] AudioTracks { get; set; }
+        public RelData[] AudioTracks { get; set; }
+        public MetaHash[] AudioTrackHashes { get; set; }
         public MetaHash[] AudioContainers { get; set; } //Relative path to parent wave container (i.e. "RESIDENT/animals")
 
         public RelSound(RelData d, BinaryReader br) : base(d)
@@ -1086,13 +1147,13 @@ namespace CodeWalker.GameFiles
             Header = new RelSoundHeader(br);
         }
 
-        public void ReadAudioTracks(BinaryReader br)
+        public void ReadAudioTrackHashes(BinaryReader br)
         {
             AudioTracksCount = br.ReadByte();
-            AudioTracks = new MetaHash[AudioTracksCount];
+            AudioTrackHashes = new MetaHash[AudioTracksCount];
             for (int i = 0; i < AudioTracksCount; i++)
             {
-                AudioTracks[i] = br.ReadUInt32();
+                AudioTrackHashes[i] = br.ReadUInt32();
             }
         }
     }
@@ -1167,7 +1228,7 @@ namespace CodeWalker.GameFiles
             UnkShort1 = br.ReadInt16();
             UnkShort2 = br.ReadInt16();
             AudioHash = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash };
+            AudioTrackHashes = new[] { AudioHash };
             ParameterHash = br.ReadUInt32();
         }
     }
@@ -1222,7 +1283,7 @@ namespace CodeWalker.GameFiles
             ParameterHash5 = br.ReadUInt32(); //0x40-0x44
             UnkFloat0 = br.ReadSingle(); //0x44-0x48
             UnkFloat1 = br.ReadSingle(); //0x48-0x4C
-            AudioTracks = new[] { AudioHash };
+            AudioTrackHashes = new[] { AudioHash };
         }
     }
     [TC(typeof(EXP))] public class Dat54TwinLoopSound : Dat54Sound
@@ -1249,7 +1310,7 @@ namespace CodeWalker.GameFiles
             ParameterHash2 = br.ReadUInt32();
             ParameterHash3 = br.ReadUInt32();
 
-            ReadAudioTracks(br);
+            ReadAudioTrackHashes(br);
         }
     }
     [TC(typeof(EXP))] public class Dat54SpeechSound : Dat54Sound
@@ -1278,7 +1339,7 @@ namespace CodeWalker.GameFiles
             AudioHash0 = br.ReadUInt32();
             AudioHash1 = br.ReadUInt32();
             AudioHash2 = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash0, AudioHash1, AudioHash2 };
+            AudioTrackHashes = new[] { AudioHash0, AudioHash1, AudioHash2 };
         }
     }
     [TC(typeof(EXP))] public class Dat54WrapperSound : Dat54Sound
@@ -1305,14 +1366,14 @@ namespace CodeWalker.GameFiles
             }
             UnkByteData = br.ReadBytes(ItemCount);
 
-            AudioTracks = new[] { AudioHash0, AudioHash1 };
+            AudioTrackHashes = new[] { AudioHash0, AudioHash1 };
         }
     }
     [TC(typeof(EXP))] public class Dat54SequentialSound : Dat54Sound
     {
         public Dat54SequentialSound(RelData d, BinaryReader br) : base(d, br)
         {
-            ReadAudioTracks(br);
+            ReadAudioTrackHashes(br);
         }
     }
     [TC(typeof(EXP))] public class Dat54StreamingSound : Dat54Sound
@@ -1323,7 +1384,7 @@ namespace CodeWalker.GameFiles
         {
             UnkInt = br.ReadInt32();
 
-            ReadAudioTracks(br);
+            ReadAudioTrackHashes(br);
         }
     }
     [TC(typeof(EXP))] public class Dat54RetriggeredOverlappedSound : Dat54Sound
@@ -1349,7 +1410,7 @@ namespace CodeWalker.GameFiles
             AudioHash0 = br.ReadUInt32();
             AudioHash1 = br.ReadUInt32();
             AudioHash2 = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash0, AudioHash1, AudioHash2 };
+            AudioTrackHashes = new[] { AudioHash0, AudioHash1, AudioHash2 };
         }
     }
     [TC(typeof(EXP))] public class Dat54CrossfadeSound : Dat54Sound
@@ -1371,7 +1432,7 @@ namespace CodeWalker.GameFiles
         {
             AudioHash0 = br.ReadUInt32();
             AudioHash1 = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash0, AudioHash1 };
+            AudioTrackHashes = new[] { AudioHash0, AudioHash1 };
             UnkByte = br.ReadByte();
             UnkFloat0 = br.ReadSingle();
             UnkFloat1 = br.ReadSingle();
@@ -1403,7 +1464,7 @@ namespace CodeWalker.GameFiles
         {
             AudioHash0 = br.ReadUInt32();
             AudioHash1 = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash0, AudioHash1 };
+            AudioTrackHashes = new[] { AudioHash0, AudioHash1 };
             UnkFloat0 = br.ReadSingle(); //0x8
             UnkFloat1 = br.ReadSingle(); //0xC
             ParameterHash0 = br.ReadUInt32(); //0x10
@@ -1434,7 +1495,7 @@ namespace CodeWalker.GameFiles
     {
         public Dat54MultitrackSound(RelData d, BinaryReader br) : base(d, br)
         {
-            ReadAudioTracks(br);
+            ReadAudioTrackHashes(br);
         }
     }
     [TC(typeof(EXP))] public class Dat54RandomizedSound : Dat54Sound
@@ -1451,11 +1512,11 @@ namespace CodeWalker.GameFiles
             UnkBytesCount = br.ReadByte();
             UnkBytes = br.ReadBytes(UnkBytesCount);
             ItemCount = br.ReadByte();
-            AudioTracks = new MetaHash[ItemCount];
+            AudioTrackHashes = new MetaHash[ItemCount];
             AudioTrackUnkFloats = new float[ItemCount];
             for (int i = 0; i < ItemCount; i++)
             {
-                AudioTracks[i] = br.ReadUInt32();
+                AudioTrackHashes[i] = br.ReadUInt32();
                 AudioTrackUnkFloats[i] = br.ReadSingle();
             }
         }
@@ -1496,7 +1557,7 @@ namespace CodeWalker.GameFiles
             ParameterHash0 = br.ReadUInt32();
             ParameterHash1 = br.ReadUInt32();
 
-            ReadAudioTracks(br);
+            ReadAudioTrackHashes(br);
         }
     }
     [TC(typeof(EXP))] public class Dat54ModularSynthSound : Dat54Sound
@@ -1516,10 +1577,10 @@ namespace CodeWalker.GameFiles
             UnkFloat = br.ReadSingle(); //0x8-0xC
             UnkInt = br.ReadInt32(); //0xC-0x10
             TrackCount = br.ReadInt32(); //0x10-0x14
-            AudioTracks = new MetaHash[4];
+            AudioTrackHashes = new MetaHash[4];
             for (int i = 0; i < 4; i++)
             {
-                AudioTracks[i] = br.ReadUInt32();
+                AudioTrackHashes[i] = br.ReadUInt32();
             }
             UnkItemCount = br.ReadInt32();
             UnkItems = new Dat54ModularSynthSoundData[UnkItemCount];
@@ -1612,7 +1673,7 @@ namespace CodeWalker.GameFiles
 
             TrackName = br.ReadUInt32();
 
-            AudioTracks = new[] { TrackName };
+            AudioTrackHashes = new[] { TrackName };
 
             UnkVecCount = br.ReadByte();
             UnkVecData = new Vector2[UnkVecCount];
@@ -1672,7 +1733,7 @@ namespace CodeWalker.GameFiles
         public Dat54DirectionalSound(RelData d, BinaryReader br) : base(d, br)
         {
             AudioHash = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash };
+            AudioTrackHashes = new[] { AudioHash };
             UnkFloat0 = br.ReadSingle();
             UnkFloat1 = br.ReadSingle();
             UnkFloat2 = br.ReadSingle();
@@ -1690,7 +1751,7 @@ namespace CodeWalker.GameFiles
         public Dat54KineticSound(RelData d, BinaryReader br) : base(d, br)
         {
             AudioHash = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash };
+            AudioTrackHashes = new[] { AudioHash };
             UnkFloat0 = br.ReadSingle();
             UnkFloat1 = br.ReadSingle();
             UnkFloat2 = br.ReadSingle();
@@ -1704,7 +1765,7 @@ namespace CodeWalker.GameFiles
         {
             ParameterHash = br.ReadUInt32();
 
-            ReadAudioTracks(br);
+            ReadAudioTrackHashes(br);
         }
     }
     [TC(typeof(EXP))] public class Dat54VariableCurveSound : Dat54Sound
@@ -1717,7 +1778,7 @@ namespace CodeWalker.GameFiles
         public Dat54VariableCurveSound(RelData d, BinaryReader br) : base(d, br)
         {
             AudioHash = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash };
+            AudioTrackHashes = new[] { AudioHash };
             ParameterHash0 = br.ReadUInt32();
             ParameterHash1 = br.ReadUInt32();
             UnkCurvesHash = br.ReadUInt32();
@@ -1743,7 +1804,7 @@ namespace CodeWalker.GameFiles
         public Dat54VariableBlockSound(RelData d, BinaryReader br) : base(d, br)
         {
             AudioHash = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash };
+            AudioTrackHashes = new[] { AudioHash };
             VariableCount = br.ReadByte();
             Variables = new Dat54VariableData[VariableCount];
             for (int i = 0; i < VariableCount; i++)
@@ -1785,7 +1846,7 @@ namespace CodeWalker.GameFiles
         {
             AudioHash1 = br.ReadUInt32();
             AudioHash2 = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash1, AudioHash2 };
+            AudioTrackHashes = new[] { AudioHash1, AudioHash2 };
             ParameterHash1 = br.ReadUInt32();
             UnkByte = br.ReadByte();
             UnkFloat = br.ReadSingle();
@@ -1801,7 +1862,7 @@ namespace CodeWalker.GameFiles
         public Dat54MathOperationSound(RelData d, BinaryReader br) : base(d, br)
         {
             AudioHash = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash };
+            AudioTrackHashes = new[] { AudioHash };
             UnkDataCount = br.ReadByte();
             UnkData = new Dat54MathOperationSoundData[UnkDataCount];
             for (int i = 0; i < UnkDataCount; i++)
@@ -1847,7 +1908,7 @@ namespace CodeWalker.GameFiles
         public Dat54ParameterTransformSound(RelData d, BinaryReader br) : base(d, br)
         {
             AudioHash = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash };
+            AudioTrackHashes = new[] { AudioHash };
             ItemCount = br.ReadInt32(); //0x4-0x8
             Items = new Dat54ParameterTransformSoundData[ItemCount];
             for (int i = 0; i < ItemCount; i++)
@@ -1921,7 +1982,7 @@ namespace CodeWalker.GameFiles
         public Dat54FluctuatorSound(RelData d, BinaryReader br) : base(d, br)
         {
             AudioHash = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash };
+            AudioTrackHashes = new[] { AudioHash };
             ItemCount = br.ReadInt32(); //0x4-0x8
             Items = new Dat54FluctuatorSoundData[ItemCount];
             for (int i = 0; i < ItemCount; i++)
@@ -1989,7 +2050,7 @@ namespace CodeWalker.GameFiles
             UnkFloat1 = br.ReadSingle();
             ParameterHash = br.ReadUInt32();
             AudioHash1 = br.ReadUInt32();
-            AudioTracks = new[] { AudioHash0, AudioHash1 };
+            AudioTrackHashes = new[] { AudioHash0, AudioHash1 };
             WaveSlotId = br.ReadInt32();
             UnkHash1 = br.ReadUInt32();
             UnkDataCount = br.ReadInt32();
@@ -2020,7 +2081,7 @@ namespace CodeWalker.GameFiles
     {
         public Dat54ExternalStreamSound(RelData d, BinaryReader br) : base(d, br)
         {
-            ReadAudioTracks(br);
+            ReadAudioTrackHashes(br);
 
             //FlagsUint u1 = br.ReadUInt32();
             //FlagsUint u2 = br.ReadUInt32();
@@ -2041,11 +2102,11 @@ namespace CodeWalker.GameFiles
         {
             ItemCount = br.ReadInt32();
             Items = new Dat54SoundSetItem[ItemCount];
-            AudioTracks = new MetaHash[ItemCount];
+            AudioTrackHashes = new MetaHash[ItemCount];
             for (int i = 0; i < ItemCount; i++)
             {
                 Items[i] = new Dat54SoundSetItem(br);
-                AudioTracks[i] = Items[i].SoundName;
+                AudioTrackHashes[i] = Items[i].SoundName;
             }
         }
     }
@@ -2074,11 +2135,11 @@ namespace CodeWalker.GameFiles
         {
             UnkDataCount = br.ReadByte();
             UnkData = new Dat54UnknownSoundData[UnkDataCount];
-            AudioTracks = new MetaHash[UnkDataCount];
+            AudioTrackHashes = new MetaHash[UnkDataCount];
             for (int i = 0; i < UnkDataCount; i++)
             {
                 UnkData[i] = new Dat54UnknownSoundData(br);
-                AudioTracks[i] = br.ReadUInt32();
+                AudioTrackHashes[i] = br.ReadUInt32();
             }
         }
     }
@@ -2141,17 +2202,47 @@ namespace CodeWalker.GameFiles
 
     public enum Dat151RelType : byte //not sure how correct these are?
     {
+        Collision = 1, //maybe for vehicle
+        Vehicle = 3,
+        VehicleEngine = 4,
+        VehicleEntity = 5, //not sure about this
+        RadioStation = 6,//possibly, audio "stream"
+
+        Helicopter = 8, //maybe
+
         SpeechParams = 14,
 
-        Unk37 = 37, //audio zone? eg parent for sos/altruist - contains coords - toggle sound?
-        Unk38 = 38, //eg sos, altruist morse - contains coords
+        Weapon = 17,
+
+        RadioStationsDLC = 24, //
+        RadioDLC = 25, 
+        DLCMusic = 26,
+
+        PedPVG = 30, //maybe Ped Voice Group?
+
+        AmbientEmitterList = 32,
+        AmbientZone = 37,
+        AmbientEmitter = 38,
+        AmbientZoneList = 39,
+
+        WeaponAudioItem = 50,
+
+        Aeroplane = 57,
+
+        Mood = 62,
 
         StartTrackAction = 63,
         StopTrackAction = 64,
         SetMoodAction = 65,
+        PlayerAction = 66,
         StartOneShotAction = 67,
         StopOneShotAction = 68,
         AnimalParams = 73,
+
+        VehicleScannerParams = 76, //maybe not just vehicle
+        Explosion = 87,
+        VehicleEngineGranular = 88, //maybe not just vehicle
+
         ShoreLinePool = 90,
         ShoreLineLake = 91,
         ShoreLineRiver = 92,
@@ -2214,7 +2305,7 @@ namespace CodeWalker.GameFiles
         Line = 2,
     }
 
-    [TC(typeof(EXP))] public class Dat151Unk37 : Dat151RelData    //audio zone? toggle sound?
+    [TC(typeof(EXP))] public class Dat151AmbientZone : Dat151RelData
     {
         public uint UnkOffset0 { get; set; }
         public FlagsUint Flags00 { get; set; }
@@ -2266,7 +2357,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public Dat151Unk37(RelData d, BinaryReader br) : base(d, br)
+        public Dat151AmbientZone(RelData d, BinaryReader br) : base(d, br)
         {
             br.BaseStream.Position = 0; //1 byte was read already (TypeID)
 
@@ -2353,7 +2444,7 @@ namespace CodeWalker.GameFiles
         }
 
     }
-    [TC(typeof(EXP))] public class Dat151Unk38 : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151AmbientEmitter : Dat151RelData
     {
         public uint UnkOffset0 { get; set; }
         public FlagsUint Unk00 { get; set; }
@@ -2402,7 +2493,7 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public Dat151Unk38(RelData d, BinaryReader br) : base(d, br)
+        public Dat151AmbientEmitter(RelData d, BinaryReader br) : base(d, br)
         {
             br.BaseStream.Position = 0; //1 byte was read already (TypeID)
 

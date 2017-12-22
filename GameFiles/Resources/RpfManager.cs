@@ -112,6 +112,8 @@ namespace CodeWalker.GameFiles
                 }
             }
 
+            BuildBaseJenkIndex();
+
             IsInited = true;
         }
 
@@ -346,6 +348,7 @@ namespace CodeWalker.GameFiles
         public void BuildBaseJenkIndex()
         {
             JenkIndex.Clear();
+            StringBuilder sb = new StringBuilder();
             foreach (RpfFile file in AllRpfs)
             {
                 try
@@ -410,8 +413,67 @@ namespace CodeWalker.GameFiles
                                 }
                             }
                         }
+                        if (nlow.EndsWith(".awc")) //create audio container path hashes...
+                        {
+                            string[] parts = entry.Path.Split('\\');
+                            int pl = parts.Length;
+                            if (pl > 2)
+                            {
+                                string fn = parts[pl - 1];
+                                string fd = parts[pl - 2];
+                                string hpath = fn.Substring(0, fn.Length - 4);
+                                if (fd.EndsWith(".rpf"))
+                                {
+                                    fd = fd.Substring(0, fd.Length - 4);
+                                }
+                                hpath = fd + "/" + hpath;
+                                if (parts[pl - 3] != "sfx")
+                                { }//no hit
 
+                                JenkIndex.Ensure(hpath);
+                            }
+                        }
+                        if (nlow.EndsWith(".nametable"))
+                        {
+                            RpfBinaryFileEntry binfe = entry as RpfBinaryFileEntry;
+                            if (binfe != null)
+                            {
+                                byte[] data = file.ExtractFile(binfe);
+                                if (data != null)
+                                {
+                                    sb.Clear();
+                                    for (int i = 0; i < data.Length; i++)
+                                    {
+                                        byte c = data[i];
+                                        if (c == 0)
+                                        {
+                                            string str = sb.ToString();
+                                            if (!string.IsNullOrEmpty(str))
+                                            {
+                                                string strl = str.ToLowerInvariant();
+                                                //JenkIndex.Ensure(str);
+                                                JenkIndex.Ensure(strl);
 
+                                                ////DirMod_Sounds_ entries apparently can be used to infer SP audio strings
+                                                ////no luck here yet though
+                                                //if (strl.StartsWith("dirmod_sounds_") && (strl.Length > 14))
+                                                //{
+                                                //    strl = strl.Substring(14);
+                                                //    JenkIndex.Ensure(strl);
+                                                //}
+                                            }
+                                            sb.Clear();
+                                        }
+                                        else
+                                        {
+                                            sb.Append((char)c);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            { }
+                        }
                     }
 
                 }

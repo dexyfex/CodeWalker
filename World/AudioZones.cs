@@ -47,11 +47,11 @@ namespace CodeWalker.World
             AllItems.Clear();
 
 
-            Dictionary<uint, RpfFileEntry> dat151entries = new Dictionary<uint, RpfFileEntry>();
+            Dictionary<uint, RpfFileEntry> datrelentries = new Dictionary<uint, RpfFileEntry>();
             var audrpf = rpfman.FindRpfFile("x64\\audio\\audio_rel.rpf");
             if (audrpf != null)
             {
-                AddRpfDat151s(audrpf, dat151entries);
+                AddRpfDatRels(audrpf, datrelentries);
             }
 
             if (gameFileCache.EnableDlc)
@@ -59,29 +59,29 @@ namespace CodeWalker.World
                 var updrpf = rpfman.FindRpfFile("update\\update.rpf");
                 if (updrpf != null)
                 {
-                    AddRpfDat151s(updrpf, dat151entries);
+                    AddRpfDatRels(updrpf, datrelentries);
                 }
                 foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load from current dlc rpfs
                 {
-                    AddRpfDat151s(dlcrpf, dat151entries);
+                    AddRpfDatRels(dlcrpf, datrelentries);
                 }
             }
 
 
-            foreach (var dat151entry in dat151entries.Values)
+            foreach (var dat151entry in datrelentries.Values)
             {
                 var relfile = rpfman.GetFile<RelFile>(dat151entry);
                 if (relfile != null)
                 {
                     foreach (var reldata in relfile.RelDatas)
                     {
-                        if (reldata is Dat151Unk37)
+                        if (reldata is Dat151AmbientZone)
                         {
-                            Zones.Add(new AudioPlacement(relfile, reldata as Dat151Unk37));
+                            Zones.Add(new AudioPlacement(relfile, reldata as Dat151AmbientZone));
                         }
-                        else if (reldata is Dat151Unk38)
+                        else if (reldata is Dat151AmbientEmitter)
                         {
-                            Emitters.Add(new AudioPlacement(relfile, reldata as Dat151Unk38));
+                            Emitters.Add(new AudioPlacement(relfile, reldata as Dat151AmbientEmitter));
                         }
                     }
                 }
@@ -95,7 +95,7 @@ namespace CodeWalker.World
 
 
 
-        private void AddRpfDat151s(RpfFile rpffile, Dictionary<uint, RpfFileEntry> dat151entries)
+        private void AddRpfDatRels(RpfFile rpffile, Dictionary<uint, RpfFileEntry> datrelentries)
         {
             if (rpffile.AllEntries == null) return;
             foreach (var entry in rpffile.AllEntries)
@@ -103,11 +103,17 @@ namespace CodeWalker.World
                 if (entry is RpfFileEntry)
                 {
                     RpfFileEntry fentry = entry as RpfFileEntry;
+                    //if (entry.NameLower.EndsWith(".rel"))
+                    //{
+                    //    datrelentries[entry.NameHash] = fentry;
+                    //}
+                    if (entry.NameLower.EndsWith(".dat54.rel"))
+                    {
+                        datrelentries[entry.NameHash] = fentry;
+                    }
                     if (entry.NameLower.EndsWith(".dat151.rel"))
                     {
-                        if (dat151entries.ContainsKey(entry.NameHash))
-                        { }
-                        dat151entries[entry.NameHash] = fentry;
+                        datrelentries[entry.NameHash] = fentry;
                     }
                 }
             }
@@ -124,8 +130,8 @@ namespace CodeWalker.World
         public string Name { get; set; }
         public MetaHash NameHash { get; set; }
         public RelFile RelFile { get; set; }
-        public Dat151Unk37 AudioZone { get; set; }
-        public Dat151Unk38 AudioEmitter { get; set; }
+        public Dat151AmbientZone AudioZone { get; set; }
+        public Dat151AmbientEmitter AudioEmitter { get; set; }
         public Dat151ZoneShape Shape { get; set; }
         public string ShortTypeName { get; set; }
         public string FullTypeName { get; set; }
@@ -148,7 +154,7 @@ namespace CodeWalker.World
 
 
 
-        public AudioPlacement(RelFile rel, Dat151Unk37 zone)
+        public AudioPlacement(RelFile rel, Dat151AmbientZone zone)
         {
             RelFile = rel;
             AudioZone = zone;
@@ -201,7 +207,7 @@ namespace CodeWalker.World
                 HitboxPos = InnerPos;
             }
         }
-        public AudioPlacement(RelFile rel, Dat151Unk38 emitter)
+        public AudioPlacement(RelFile rel, Dat151AmbientEmitter emitter)
         {
             RelFile = rel;
             AudioEmitter = emitter;

@@ -2526,10 +2526,10 @@ namespace CodeWalker.GameFiles
                             }
                             sbh.AppendLine();
                         }
-                        if (rel.Unk06Hashes != null)
+                        if (rel.ContainerHashes != null)
                         {
-                            sbh.AppendLine(rfe.Path + ": " + rel.Unk06Hashes.Length.ToString() + " Hashes2:");
-                            foreach (var unk in rel.Unk06Hashes)
+                            sbh.AppendLine(rfe.Path + ": " + rel.ContainerHashes.Length.ToString() + " Hashes2:");
+                            foreach (var unk in rel.ContainerHashes)
                             {
                                 sbh.Append(unk.Hash.ToString("X8"));
                                 string strval;
