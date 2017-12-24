@@ -31,7 +31,7 @@ namespace CodeWalker.GameFiles
 
         public volatile bool IsInited = false;
 
-        public void Init(string folder, Action<string> updateStatus, Action<string> errorLog, bool rootOnly = false)
+        public void Init(string folder, Action<string> updateStatus, Action<string> errorLog, bool rootOnly = false, bool buildIndex = true)
         {
             UpdateStatus = updateStatus;
             ErrorLog = errorLog;
@@ -81,8 +81,12 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            updateStatus("Building jenkindex...");
-            BuildBaseJenkIndex();
+            if (buildIndex)
+            {
+                updateStatus("Building jenkindex...");
+                BuildBaseJenkIndex();
+            }
+
             updateStatus("Scan complete");
 
             IsInited = true;

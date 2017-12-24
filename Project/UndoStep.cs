@@ -651,4 +651,83 @@ namespace CodeWalker.Project
         }
     }
 
+
+
+
+    public class AudioPositionUndoStep : UndoStep
+    {
+        public AudioPlacement Audio { get; set; }
+        public Vector3 StartPosition { get; set; }
+        public Vector3 EndPosition { get; set; }
+
+        public AudioPositionUndoStep(AudioPlacement audio, Vector3 startpos)
+        {
+            Audio = audio;
+            StartPosition = startpos;
+            EndPosition = audio?.Position ?? Vector3.Zero;
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
+        {
+            Audio?.SetPosition(p);
+
+            if (Audio != sel.Audio) wf.SelectAudio(Audio);
+            wf.SetWidgetPosition(p);
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartPosition);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndPosition);
+        }
+
+        public override string ToString()
+        {
+            return "Audio " + (Audio?.GetNameString() ?? "") + ": Position";
+        }
+    }
+
+    public class AudioRotationUndoStep : UndoStep
+    {
+        public AudioPlacement Audio { get; set; }
+        public Quaternion StartRotation { get; set; }
+        public Quaternion EndRotation { get; set; }
+
+        public AudioRotationUndoStep(AudioPlacement audio, Quaternion startrot)
+        {
+            Audio = audio;
+            StartRotation = startrot;
+            EndRotation = audio?.Orientation ?? Quaternion.Identity;
+        }
+
+
+        private void Update(WorldForm wf, ref MapSelection sel, Quaternion q)
+        {
+            Audio?.SetOrientation(q);
+
+            if (Audio != sel.Audio) wf.SelectAudio(Audio);
+            wf.SetWidgetRotation(q);
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartRotation);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndRotation);
+        }
+
+        public override string ToString()
+        {
+            return "Audio " + (Audio?.GetNameString() ?? "") + ": Rotation";
+        }
+    }
+
+
 }

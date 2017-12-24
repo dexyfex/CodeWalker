@@ -2206,7 +2206,7 @@ namespace CodeWalker.GameFiles
         Vehicle = 3,
         VehicleEngine = 4,
         VehicleEntity = 5, //not sure about this
-        RadioStation = 6,//possibly, audio "stream"
+        RadioStream = 6,//possibly, generic audio stream
 
         Helicopter = 8, //maybe
 

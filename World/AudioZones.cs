@@ -145,13 +145,12 @@ namespace CodeWalker.World
         public Vector3 OuterMax { get; set; }
         public float OuterRad { get; set; }
         public Quaternion OuterOri { get; set; }
-        public Vector3 HitboxPos { get; set; }
+        public Vector3 Position { get; set; }
         public Vector3 HitboxMin { get; set; }
         public Vector3 HitboxMax { get; set; }
-        public Quaternion HitboxOri { get; set; }
-        public Quaternion HitboxOriInv { get; set; }
+        public Quaternion Orientation { get; set; }
+        public Quaternion OrientationInv { get; set; }
         public float HitSphereRad { get; set; }
-
 
 
         public AudioPlacement(RelFile rel, Dat151AmbientZone zone)
@@ -196,15 +195,15 @@ namespace CodeWalker.World
             bool useouter = ((InnerMax.X == 0) || (InnerMax.Y == 0) || (InnerMax.Z == 0));
             if (useouter && (zone.Shape != Dat151ZoneShape.Sphere))
             { } //not sure what these are yet!
-            HitboxPos = useouter ? OuterPos : InnerPos;
+            Position = useouter ? OuterPos : InnerPos;
             HitboxMax = useouter ? OuterMax : InnerMax;
             HitboxMin = useouter ? OuterMin : InnerMin;
-            HitboxOri = useouter ? OuterOri : InnerOri;
-            HitboxOriInv = Quaternion.Invert(HitboxOri);
+            Orientation = useouter ? OuterOri : InnerOri;
+            OrientationInv = Quaternion.Invert(Orientation);
             HitSphereRad = InnerRad;
             if (zone.Shape == Dat151ZoneShape.Sphere)
             {
-                HitboxPos = InnerPos;
+                Position = InnerPos;
             }
         }
         public AudioPlacement(RelFile rel, Dat151AmbientEmitter emitter)
@@ -217,8 +216,8 @@ namespace CodeWalker.World
             Name = emitter.Name;
             NameHash = emitter.NameHash;
 
-            HitboxOri = Quaternion.Identity;
-            HitboxOriInv = Quaternion.Identity;
+            Orientation = Quaternion.Identity;
+            OrientationInv = Quaternion.Identity;
             InnerPos = emitter.Position;
             OuterPos = InnerPos;
             InnerRad = emitter.InnerRad;
@@ -229,7 +228,7 @@ namespace CodeWalker.World
             {
                 InnerRad = 1;
             }
-            HitboxPos = InnerPos;
+            Position = InnerPos;
             HitSphereRad = InnerRad;// useouter ? OuterRad : InnerRad;
         }
 
@@ -240,17 +239,17 @@ namespace CodeWalker.World
             Vector3 delta = pos - InnerPos;
             InnerPos = pos;
             OuterPos += delta;
-            HitboxPos = useouter ? OuterPos : InnerPos;
+            Position = useouter ? OuterPos : InnerPos;
         }
         public void SetOrientation(Quaternion ori)
         {
-            HitboxOri = ori;
-            HitboxOriInv = Quaternion.Invert(ori);
+            Orientation = ori;
+            OrientationInv = Quaternion.Invert(ori);
 
             if (InnerOri == OuterOri)
             {
-                InnerOri = HitboxOri;
-                OuterOri = HitboxOri;
+                InnerOri = Orientation;
+                OuterOri = Orientation;
             }
             else
             {
@@ -259,15 +258,21 @@ namespace CodeWalker.World
                 bool useouter = ((InnerMax.X == 0) || (InnerMax.Y == 0) || (InnerMax.Z == 0));
                 if (useouter)
                 {
-                    OuterOri = HitboxOri;
+                    OuterOri = Orientation;
                 }
                 else
                 {
-                    InnerOri = HitboxOri;
+                    InnerOri = Orientation;
                 }
             }
         }
 
+
+        public string GetNameString()
+        {
+            if (!string.IsNullOrEmpty(Name)) return Name;
+            return NameHash.ToString();
+        }
     }
 
 

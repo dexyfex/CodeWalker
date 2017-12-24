@@ -42,7 +42,7 @@ namespace CodeWalker
 #endif
                 if (menumode)
                 {
-                    Application.Run(new MainForm());
+                    Application.Run(new MenuForm());
                 }
                 else if (explorermode)
                 {

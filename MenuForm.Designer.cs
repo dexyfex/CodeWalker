@@ -1,6 +1,6 @@
 ﻿namespace CodeWalker
 {
-    partial class MainForm
+    partial class MenuForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MenuForm));
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.ExtractScriptsButton = new System.Windows.Forms.Button();
@@ -44,6 +44,7 @@
             this.ExtractKeysButton = new System.Windows.Forms.Button();
             this.ProjectButton = new System.Windows.Forms.Button();
             this.JenkIndButton = new System.Windows.Forms.Button();
+            this.RPFExplorerButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // ExtractScriptsButton
@@ -68,10 +69,10 @@
             // 
             // RPFBrowserButton
             // 
-            this.RPFBrowserButton.Location = new System.Drawing.Point(188, 12);
+            this.RPFBrowserButton.Location = new System.Drawing.Point(188, 41);
             this.RPFBrowserButton.Name = "RPFBrowserButton";
             this.RPFBrowserButton.Size = new System.Drawing.Size(108, 23);
-            this.RPFBrowserButton.TabIndex = 0;
+            this.RPFBrowserButton.TabIndex = 13;
             this.RPFBrowserButton.Text = "RPF Browser...";
             this.RPFBrowserButton.UseVisualStyleBackColor = true;
             this.RPFBrowserButton.Click += new System.EventHandler(this.RPFBrowserButton_Click);
@@ -98,7 +99,7 @@
             // 
             // GCCollectButton
             // 
-            this.GCCollectButton.Location = new System.Drawing.Point(188, 157);
+            this.GCCollectButton.Location = new System.Drawing.Point(188, 186);
             this.GCCollectButton.Name = "GCCollectButton";
             this.GCCollectButton.Size = new System.Drawing.Size(108, 23);
             this.GCCollectButton.TabIndex = 10;
@@ -138,7 +139,7 @@
             // 
             // JenkGenButton
             // 
-            this.JenkGenButton.Location = new System.Drawing.Point(188, 70);
+            this.JenkGenButton.Location = new System.Drawing.Point(188, 99);
             this.JenkGenButton.Name = "JenkGenButton";
             this.JenkGenButton.Size = new System.Drawing.Size(108, 23);
             this.JenkGenButton.TabIndex = 12;
@@ -168,7 +169,7 @@
             // 
             // JenkIndButton
             // 
-            this.JenkIndButton.Location = new System.Drawing.Point(188, 99);
+            this.JenkIndButton.Location = new System.Drawing.Point(188, 128);
             this.JenkIndButton.Name = "JenkIndButton";
             this.JenkIndButton.Size = new System.Drawing.Size(108, 23);
             this.JenkIndButton.TabIndex = 11;
@@ -176,11 +177,22 @@
             this.JenkIndButton.UseVisualStyleBackColor = true;
             this.JenkIndButton.Click += new System.EventHandler(this.JenkIndButton_Click);
             // 
+            // RPFExplorerButton
+            // 
+            this.RPFExplorerButton.Location = new System.Drawing.Point(188, 12);
+            this.RPFExplorerButton.Name = "RPFExplorerButton";
+            this.RPFExplorerButton.Size = new System.Drawing.Size(108, 23);
+            this.RPFExplorerButton.TabIndex = 0;
+            this.RPFExplorerButton.Text = "RPF Explorer...";
+            this.RPFExplorerButton.UseVisualStyleBackColor = true;
+            this.RPFExplorerButton.Click += new System.EventHandler(this.RPFExplorerButton_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(308, 250);
+            this.Controls.Add(this.RPFExplorerButton);
             this.Controls.Add(this.JenkIndButton);
             this.Controls.Add(this.ProjectButton);
             this.Controls.Add(this.ExtractKeysButton);
@@ -219,6 +231,7 @@
         private System.Windows.Forms.Button ExtractKeysButton;
         private System.Windows.Forms.Button ProjectButton;
         private System.Windows.Forms.Button JenkIndButton;
+        private System.Windows.Forms.Button RPFExplorerButton;
     }
 }
 

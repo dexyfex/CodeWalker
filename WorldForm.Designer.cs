@@ -145,6 +145,7 @@ namespace CodeWalker
             this.WaitForChildrenCheckBox = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
             this.tabPage9 = new System.Windows.Forms.TabPage();
+            this.AudioOuterBoundsCheckBox = new System.Windows.Forms.CheckBox();
             this.PopZonesCheckBox = new System.Windows.Forms.CheckBox();
             this.NavMeshesCheckBox = new System.Windows.Forms.CheckBox();
             this.TrainPathsCheckBox = new System.Windows.Forms.CheckBox();
@@ -1745,6 +1746,7 @@ namespace CodeWalker
             // 
             // tabPage9
             // 
+            this.tabPage9.Controls.Add(this.AudioOuterBoundsCheckBox);
             this.tabPage9.Controls.Add(this.PopZonesCheckBox);
             this.tabPage9.Controls.Add(this.NavMeshesCheckBox);
             this.tabPage9.Controls.Add(this.TrainPathsCheckBox);
@@ -1771,6 +1773,19 @@ namespace CodeWalker
             this.tabPage9.TabIndex = 1;
             this.tabPage9.Text = "Helpers";
             this.tabPage9.UseVisualStyleBackColor = true;
+            // 
+            // AudioOuterBoundsCheckBox
+            // 
+            this.AudioOuterBoundsCheckBox.AutoSize = true;
+            this.AudioOuterBoundsCheckBox.Checked = true;
+            this.AudioOuterBoundsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.AudioOuterBoundsCheckBox.Location = new System.Drawing.Point(10, 434);
+            this.AudioOuterBoundsCheckBox.Name = "AudioOuterBoundsCheckBox";
+            this.AudioOuterBoundsCheckBox.Size = new System.Drawing.Size(147, 17);
+            this.AudioOuterBoundsCheckBox.TabIndex = 54;
+            this.AudioOuterBoundsCheckBox.Text = "Show audio outer bounds";
+            this.AudioOuterBoundsCheckBox.UseVisualStyleBackColor = true;
+            this.AudioOuterBoundsCheckBox.CheckedChanged += new System.EventHandler(this.AudioOuterBoundsCheckBox_CheckedChanged);
             // 
             // PopZonesCheckBox
             // 
@@ -2474,13 +2489,14 @@ namespace CodeWalker
             this.ToolsMenuExtractShaders,
             this.ToolsMenuOptions});
             this.ToolsMenu.Name = "ToolsMenu";
-            this.ToolsMenu.Size = new System.Drawing.Size(166, 290);
+            this.ToolsMenu.Size = new System.Drawing.Size(166, 312);
             // 
             // ToolsMenuRPFBrowser
             // 
             this.ToolsMenuRPFBrowser.Name = "ToolsMenuRPFBrowser";
             this.ToolsMenuRPFBrowser.Size = new System.Drawing.Size(165, 22);
             this.ToolsMenuRPFBrowser.Text = "RPF Browser...";
+            this.ToolsMenuRPFBrowser.Visible = false;
             this.ToolsMenuRPFBrowser.Click += new System.EventHandler(this.ToolsMenuRPFBrowser_Click);
             // 
             // ToolsMenuRPFExplorer
@@ -2514,6 +2530,7 @@ namespace CodeWalker
             // 
             // ToolsMenuBinarySearch
             // 
+            this.ToolsMenuBinarySearch.Enabled = false;
             this.ToolsMenuBinarySearch.Name = "ToolsMenuBinarySearch";
             this.ToolsMenuBinarySearch.Size = new System.Drawing.Size(165, 22);
             this.ToolsMenuBinarySearch.Text = "Binary search...";
@@ -2601,7 +2618,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(553, 25);
+            this.Toolbar.Size = new System.Drawing.Size(522, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -3457,5 +3474,6 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarOpenScenarioButton;
         private System.Windows.Forms.CheckBox PopZonesCheckBox;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectAudioButton;
+        private System.Windows.Forms.CheckBox AudioOuterBoundsCheckBox;
     }
 }

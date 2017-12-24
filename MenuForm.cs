@@ -13,12 +13,12 @@ using System.Windows.Forms;
 
 namespace CodeWalker
 {
-    public partial class MainForm : Form
+    public partial class MenuForm : Form
     {
         private volatile bool worldFormOpen = false;
         private WorldForm worldForm = null;
 
-        public MainForm()
+        public MenuForm()
         {
             InitializeComponent();
         }
@@ -30,6 +30,12 @@ namespace CodeWalker
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             Settings.Default.Save();
+        }
+
+        private void RPFExplorerButton_Click(object sender, EventArgs e)
+        {
+            ExploreForm f = new ExploreForm();
+            f.Show(this);
         }
 
         private void RPFBrowserButton_Click(object sender, EventArgs e)

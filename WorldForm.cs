@@ -191,6 +191,7 @@ namespace CodeWalker
         bool renderpopzones = false;
 
         bool renderaudiozones = false;
+        bool renderaudioouterbounds = true;
 
 
         float timeofday = 12.0f;
@@ -2135,17 +2136,20 @@ namespace CodeWalker
                         mb.Scale = Vector3.One;
                         HilightBoxes.Add(mb);
 
-                        mb.CamRelPos = placement.OuterPos - camera.Position;
-                        mb.BBMin = placement.OuterMin;
-                        mb.BBMax = placement.OuterMax;
-                        mb.Orientation = placement.OuterOri;
-                        mb.Scale = Vector3.One;
-                        BoundingBoxes.Add(mb);
+                        if (renderaudioouterbounds)
+                        {
+                            mb.CamRelPos = placement.OuterPos - camera.Position;
+                            mb.BBMin = placement.OuterMin;
+                            mb.BBMax = placement.OuterMax;
+                            mb.Orientation = placement.OuterOri;
+                            mb.Scale = Vector3.One;
+                            BoundingBoxes.Add(mb);
+                        }
 
-                        Vector3 hbcamrel = (placement.HitboxPos - camera.Position);
+                        Vector3 hbcamrel = (placement.Position - camera.Position);
                         Ray mraytrn = new Ray();
-                        mraytrn.Position = placement.HitboxOriInv.Multiply(camera.MouseRay.Position - hbcamrel);
-                        mraytrn.Direction = placement.HitboxOriInv.Multiply(mray.Direction);
+                        mraytrn.Position = placement.OrientationInv.Multiply(camera.MouseRay.Position - hbcamrel);
+                        mraytrn.Direction = placement.OrientationInv.Multiply(mray.Direction);
                         bbox.Minimum = placement.HitboxMin;
                         bbox.Maximum = placement.HitboxMax;
                         if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
@@ -2165,17 +2169,20 @@ namespace CodeWalker
                             ms.Radius = placement.InnerRad;
                             HilightSpheres.Add(ms);
 
-                            ms.CamRelPos = placement.OuterPos - camera.Position;
-                            ms.Radius = placement.OuterRad;
-                            BoundingSpheres.Add(ms);
+                            if (renderaudioouterbounds)
+                            {
+                                ms.CamRelPos = placement.OuterPos - camera.Position;
+                                ms.Radius = placement.OuterRad;
+                                BoundingSpheres.Add(ms);
+                            }
 
-                            bsph.Center = placement.HitboxPos;
+                            bsph.Center = placement.Position;
                             bsph.Radius = placement.HitSphereRad;
                             if (mray.Intersects(ref bsph, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
                             {
                                 CurMouseHit.Audio = placement;
                                 CurMouseHit.HitDist = hitdist;
-                                CurMouseHit.CamRel = placement.HitboxPos - camera.Position;
+                                CurMouseHit.CamRel = placement.Position - camera.Position;
                                 CurMouseHit.AABB = new BoundingBox(); //no box here
                                 CurMouseHit.BSphere = bsph;
                                 lastHitOuterSphere = ms; //highlight the outer sphere
@@ -3207,7 +3214,7 @@ namespace CodeWalker
             }
             if (CurMouseHit.Audio != null)
             {
-                ori = CurMouseHit.Audio.HitboxOri;
+                ori = CurMouseHit.Audio.Orientation;
                 if (CurMouseHit.Audio.Shape == Dat151ZoneShape.Sphere)
                 {
                     mode = BoundsShaderMode.Sphere;
@@ -3412,8 +3419,8 @@ namespace CodeWalker
             if (selectionItem.Audio != null)
             {
                 var au = selectionItem.Audio;
-                camrel = au.HitboxPos - camera.Position;
-                ori = au.HitboxOri;
+                camrel = au.Position - camera.Position;
+                ori = au.Orientation;
                 bbmin = au.HitboxMin;
                 bbmax = au.HitboxMax;
 
@@ -5609,6 +5616,21 @@ namespace CodeWalker
                 SelectItem(ms);
             }
         }
+        public void SelectAudio(AudioPlacement audio)
+        {
+            if (audio == null)
+            {
+                SelectItem(null);
+            }
+            else
+            {
+                MapSelection ms = new MapSelection();
+                ms.Audio = audio;
+                ms.AABB = new BoundingBox(audio.HitboxMin, audio.HitboxMax);
+                ms.BSphere = new BoundingSphere(audio.Position, audio.HitSphereRad);
+                SelectItem(ms);
+            }
+        }
         private void SelectMousedItem()
         {
             //when clicked, select the currently moused item and update the selection info UI
@@ -6637,6 +6659,7 @@ namespace CodeWalker
             //if (SelectedItem.NavPoly != null) hasval = true;
             if (SelectedItem.TrainTrackNode != null) canundo = true;
             if (SelectedItem.ScenarioNode != null) canundo = true;
+            if (SelectedItem.Audio != null) canundo = true;
             if (!canundo) return;
             if (Widget is TransformWidget)
             {
@@ -6655,12 +6678,14 @@ namespace CodeWalker
             //if (SelectedItem.NavPoly != null) hasval = true;
             if (SelectedItem.TrainTrackNode != null) canundo = true;
             if (SelectedItem.ScenarioNode != null) canundo = true;
+            if (SelectedItem.Audio != null) canundo = true;
             if (!canundo) return;
             var ent = SelectedItem.EntityDef;
             var cargen = SelectedItem.CarGenerator;
             var pathnode = SelectedItem.PathNode;
             var trainnode = SelectedItem.TrainTrackNode;
             var scenarionode = SelectedItem.ScenarioNode;
+            var audio = SelectedItem.Audio;
             TransformWidget tw = Widget as TransformWidget;
             UndoStep s = null;
             if (tw != null)
@@ -6721,6 +6746,14 @@ namespace CodeWalker
                     {
                         case WidgetMode.Position: s = new ScenarioNodePositionUndoStep(scenarionode, UndoStartPosition, this); break;
                         case WidgetMode.Rotation: s = new ScenarioNodeRotationUndoStep(scenarionode, UndoStartRotation, this); break;
+                    }
+                }
+                else if (audio != null)
+                {
+                    switch (tw.Mode)
+                    {
+                        case WidgetMode.Position: s = new AudioPositionUndoStep(audio, UndoStartPosition); break;
+                        case WidgetMode.Rotation: s = new AudioRotationUndoStep(audio, UndoStartRotation); break;
                     }
                 }
             }
@@ -6803,6 +6836,7 @@ namespace CodeWalker
                     ToolbarOpenButton.Enabled = true;
                     ToolbarProjectWindowButton.Enabled = true;
                     ToolsMenuProjectWindow.Enabled = true;
+                    ToolsMenuBinarySearch.Enabled = true;
                     ToolsMenuJenkInd.Enabled = true;
                 }
             }
@@ -8431,6 +8465,11 @@ namespace CodeWalker
             renderpopzones = PopZonesCheckBox.Checked;
         }
 
+        private void AudioOuterBoundsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            renderaudioouterbounds = AudioOuterBoundsCheckBox.Checked;
+        }
+
         private void ToolsPanelExpandButton_Click(object sender, EventArgs e)
         {
             toolspanelexpanded = !toolspanelexpanded;
@@ -8549,7 +8588,7 @@ namespace CodeWalker
 
         private void ToolsMenuBinarySearch_Click(object sender, EventArgs e)
         {
-            BinarySearchForm f = new BinarySearchForm();
+            BinarySearchForm f = new BinarySearchForm(gameFileCache);
             f.Show(this);
         }
 
@@ -9724,7 +9763,7 @@ namespace CodeWalker
             }
             if (Audio != null)
             {
-                name = Audio.ShortTypeName + " " + FloatUtil.GetVector3String(Audio.InnerPos);
+                name = Audio.ShortTypeName + " " + Audio.GetNameString();// FloatUtil.GetVector3String(Audio.InnerPos);
             }
             return name;
         }
@@ -9790,7 +9829,7 @@ namespace CodeWalker
             }
             if (Audio != null)
             {
-                name = Audio.ShortTypeName + " " + FloatUtil.GetVector3String(Audio.InnerPos);
+                name = Audio.ShortTypeName + " " + Audio.GetNameString();//  + FloatUtil.GetVector3String(Audio.InnerPos);
             }
             return name;
         }
@@ -9911,7 +9950,7 @@ namespace CodeWalker
                 }
                 else if (Audio != null)
                 {
-                    return Audio.HitboxOri;
+                    return Audio.Orientation;
                 }
                 return Quaternion.Identity;
             }
