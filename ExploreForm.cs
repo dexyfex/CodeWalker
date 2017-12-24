@@ -2453,6 +2453,12 @@ namespace CodeWalker
             BrowseForm f = new BrowseForm();
             f.Show(this);
         }
+
+        private void ToolsBinSearchMenu_Click(object sender, EventArgs e)
+        {
+            BinarySearchForm f = new BinarySearchForm(FileCache);
+            f.Show(this);
+        }
     }
 
 

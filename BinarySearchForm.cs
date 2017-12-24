@@ -420,7 +420,7 @@ namespace CodeWalker
                 for (int f = 0; f < scannedFiles.Count; f++)
                 {
                     var rpffile = scannedFiles[f];
-                    totfiles += rpffile.GrandTotalFileCount;
+                    totfiles += rpffile.TotalFileCount;
                 }
 
 

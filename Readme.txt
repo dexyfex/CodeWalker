@@ -21,12 +21,12 @@ in the default location (C:\Program Files (x86)\Steam\SteamApps\common\Grand The
 be skipped automatically.
 
 The World View will load by default. It will take a while to load.
-Use the WASD keys to move the camera.
+Use the WASD keys to move the camera. Hold shift to move faster.
 Drag the left mouse button to rotate the view.
-Use the mouse wheel to zoom in/out, and change the movement speed. (Zoom in = slower motion)
+Use the mouse wheel to zoom in/out, and change the base movement speed. (Zoom in = slower motion)
 XBox controller input is also supported.
 The Toolbox can be shown by clicking the "<<" button in the top right-hand corner of the screen.
-T opens the toolbar.
+T opens the main toolbar.
 
 First-person mode can be activated with the P key, or by pressing the Start button on the XBox controller.
 While in first-person mode, the left mouse button (or right trigger) will fire an egg.
