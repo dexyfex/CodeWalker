@@ -108,8 +108,8 @@ namespace CodeWalker.GameFiles
                     if (!shader.Read(br, exbyteflag1))
                     {
                         LastError += shader.LastError;
-                        gindex = 6; //get outta the loop
-                        break;
+                        //gindex = 6; //get outta the loop?
+                        //break;
                     }
                     shaders.Add(shader);
                     shadergrp.Add(shader);
@@ -134,7 +134,7 @@ namespace CodeWalker.GameFiles
             CBufferDict = new Dictionary<uint, FxcCBuffer>();
             FxcCBuffer cbtmp = null;
 
-            try //things can be undertain after this...
+            try //things can be uncertain after this...
             {
 
                 byte cbCount1 = br.ReadByte();
@@ -531,6 +531,7 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class FxcShader
     {
+        public long Offset { get; set; }
         public string Name { get; set; }
         public string[] Params { get; set; }
         public FxcShaderBufferRef[] Buffers { get; set; }//CBuffers
@@ -544,6 +545,8 @@ namespace CodeWalker.GameFiles
 
         public bool Read(BinaryReader br, bool exbyteflag)
         {
+            Offset = br.BaseStream.Position;
+
             Name = FxcFile.ReadString(br);
 
             if (Name.Length == 0)
@@ -596,8 +599,6 @@ namespace CodeWalker.GameFiles
 
                     ShaderProfile = ByteCodeObj.GetVersion();
 
-                    Disassembly = ByteCodeObj.Disassemble();
-
 
                     switch (ShaderProfile.Version)
                     {
@@ -612,6 +613,10 @@ namespace CodeWalker.GameFiles
                             VersionMinor = (byte)ShaderProfile.Minor;
                             break;
                     }
+
+
+                    //do disassembly last, so any errors won't cause the file read to break
+                    Disassembly = ByteCodeObj.Disassemble();
 
                 }
                 catch (Exception ex)
