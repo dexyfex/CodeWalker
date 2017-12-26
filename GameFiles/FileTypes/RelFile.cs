@@ -525,8 +525,118 @@ namespace CodeWalker.GameFiles
         {
             switch ((Dat151RelType)d.TypeID)
             {
+                case Dat151RelType.Collision: //maybe for vehicle
+                case Dat151RelType.Vehicle:
+                case Dat151RelType.VehicleEngine:
+                case Dat151RelType.Entity: //not sure about this
+                case Dat151RelType.Stream: //generic audio stream?
+                case Dat151RelType.Helicopter: //maybe
+                case Dat151RelType.SpeechParams:
+                case Dat151RelType.Weapon:
+                case Dat151RelType.RadioStationsDLC: //
+                case Dat151RelType.RadioDLC:
+                case Dat151RelType.DLCMusic:
+                case Dat151RelType.PedPVG: //maybe Ped Voice Group?
+                case Dat151RelType.WeaponAudioItem:
+                case Dat151RelType.Aeroplane:
+                case Dat151RelType.Mood:
+                case Dat151RelType.StartTrackAction:
+                case Dat151RelType.StopTrackAction:
+                case Dat151RelType.SetMoodAction:
+                case Dat151RelType.PlayerAction:
+                case Dat151RelType.StartOneShotAction:
+                case Dat151RelType.StopOneShotAction:
+                case Dat151RelType.AnimalParams:
+                case Dat151RelType.VehicleScannerParams: //maybe not just vehicle
+                case Dat151RelType.Explosion:
+                case Dat151RelType.VehicleEngineGranular: //maybe not just vehicle
+                case Dat151RelType.ShoreLinePool:
+                case Dat151RelType.ShoreLineLake:
+                case Dat151RelType.ShoreLineRiver:
+                case Dat151RelType.ShoreLineOcean:
+                case Dat151RelType.ShoreLineList:
+                case Dat151RelType.RadioDjSpeechAction:
+                case Dat151RelType.FadeOutRadioAction:
+                case Dat151RelType.FadeInRadioAction:
+                case Dat151RelType.ForceRadioTrackAction:
+                case Dat151RelType.Unk2:
+                case Dat151RelType.Unk7:
+                case Dat151RelType.Unk9:
+                case Dat151RelType.Unk11:
+                case Dat151RelType.Unk12:
+                case Dat151RelType.Unk13:
+                case Dat151RelType.Unk15:
+                case Dat151RelType.Unk16:
+                case Dat151RelType.Unk18:
+                case Dat151RelType.Unk22:
+                case Dat151RelType.Unk23:
+                case Dat151RelType.Unk27:
+                case Dat151RelType.Unk28:
+                case Dat151RelType.Unk29:
+                case Dat151RelType.Unk31:
+                case Dat151RelType.Unk33:
+                case Dat151RelType.Unk35:
+                case Dat151RelType.Unk36:
+                case Dat151RelType.Unk40:
+                case Dat151RelType.Unk41:
+                case Dat151RelType.Unk42:
+                case Dat151RelType.Interior:
+                case Dat151RelType.Unk45:
+                case Dat151RelType.InteriorRoom:
+                case Dat151RelType.Unk47:
+                case Dat151RelType.Unk48:
+                case Dat151RelType.Unk49:
+                case Dat151RelType.Unk51:
+                case Dat151RelType.Mod:
+                case Dat151RelType.Unk53:
+                case Dat151RelType.Unk54:
+                case Dat151RelType.Unk55:
+                case Dat151RelType.Unk56:
+                case Dat151RelType.Unk59:
+                case Dat151RelType.Unk69:
+                case Dat151RelType.Unk70:
+                case Dat151RelType.Unk71:
+                case Dat151RelType.Unk72:
+                case Dat151RelType.Unk74:
+                case Dat151RelType.Unk75:
+                case Dat151RelType.Unk77:
+                case Dat151RelType.Unk78:
+                case Dat151RelType.Unk79:
+                case Dat151RelType.Unk80:
+                case Dat151RelType.Unk81:
+                case Dat151RelType.Unk82:
+                case Dat151RelType.Unk83:
+                case Dat151RelType.Unk84:
+                case Dat151RelType.Unk85:
+                case Dat151RelType.Unk86:
+                case Dat151RelType.Unk95:
+                case Dat151RelType.Unk96:
+                case Dat151RelType.Unk99:
+                case Dat151RelType.Unk100:
+                case Dat151RelType.Unk101:
+                case Dat151RelType.Unk105:
+                case Dat151RelType.Unk106:
+                case Dat151RelType.Unk107:
+                case Dat151RelType.Unk108:
+                case Dat151RelType.Unk109:
+                case Dat151RelType.Unk110:
+                case Dat151RelType.Unk111:
+                case Dat151RelType.Unk112:
+                case Dat151RelType.Unk113:
+                case Dat151RelType.Unk114:
+                case Dat151RelType.Unk115:
+                case Dat151RelType.Unk116:
+                case Dat151RelType.Unk117:
+                case Dat151RelType.Unk118:
+                case Dat151RelType.Unk119:
+                case Dat151RelType.Unk120:
+                case Dat151RelType.Unk121:
+                    return new Dat151RelData(d, br);
+
+                case Dat151RelType.AmbientEmitterList: return new Dat151AmbientEmitterList(d, br);
                 case Dat151RelType.AmbientZone: return new Dat151AmbientZone(d, br);
                 case Dat151RelType.AmbientEmitter: return new Dat151AmbientEmitter(d, br);
+                case Dat151RelType.AmbientZoneList: return new Dat151AmbientZoneList(d, br);
                 default:
                     return new Dat151RelData(d, br);
             }
@@ -2240,55 +2350,115 @@ namespace CodeWalker.GameFiles
     public enum Dat151RelType : byte //not sure how correct these are?
     {
         Collision = 1, //maybe for vehicle
+        Unk2 = 2,
         Vehicle = 3,
         VehicleEngine = 4,
-        VehicleEntity = 5, //not sure about this
-        RadioStream = 6,//possibly, generic audio stream
-
+        Entity = 5, //not sure about this
+        Stream = 6,//possibly, generic audio stream
+        Unk7 = 7,
         Helicopter = 8, //maybe
-
+        Unk9 = 9,
+        Unk11 = 11,
+        Unk12 = 12,
+        Unk13 = 13,
         SpeechParams = 14,
-
+        Unk15 = 15,
+        Unk16 = 16,
         Weapon = 17,
-
+        Unk18 = 18,
+        Unk22 = 22,
+        Unk23 = 23,
         RadioStationsDLC = 24, //
         RadioDLC = 25, 
         DLCMusic = 26,
-
+        Unk27 = 27,
+        Unk28 = 28,
+        Unk29 = 29,
         PedPVG = 30, //maybe Ped Voice Group?
-
+        Unk31 = 31,
         AmbientEmitterList = 32,
+        Unk33 = 33,
+        Unk35 = 35,
+        Unk36 = 36,
         AmbientZone = 37,
         AmbientEmitter = 38,
         AmbientZoneList = 39,
-
+        Unk40 = 40,
+        Unk41 = 41,
+        Unk42 = 42,
+        Interior = 44,
+        Unk45 = 45,
+        InteriorRoom = 46,
+        Unk47 = 47,
+        Unk48 = 48,
+        Unk49 = 49,
         WeaponAudioItem = 50,
-
+        Unk51 = 51,
+        Mod = 52, //what actually is a "mod" here? a change in some audio settings maybe?
+        Unk53 = 53,
+        Unk54 = 54,
+        Unk55 = 55,
+        Unk56 = 56,
         Aeroplane = 57,
-
+        Unk59 = 59,
         Mood = 62,
-
         StartTrackAction = 63,
         StopTrackAction = 64,
         SetMoodAction = 65,
         PlayerAction = 66,
         StartOneShotAction = 67,
         StopOneShotAction = 68,
+        Unk69 = 69,
+        Unk70 = 70,
+        Unk71 = 71,
+        Unk72 = 72,
         AnimalParams = 73,
-
+        Unk74 = 74,
+        Unk75 = 75,
         VehicleScannerParams = 76, //maybe not just vehicle
+        Unk77 = 77,
+        Unk78 = 78,
+        Unk79 = 79,
+        Unk80 = 80,
+        Unk81 = 81,
+        Unk82 = 82,
+        Unk83 = 83,
+        Unk84 = 84,
+        Unk85 = 85,
+        Unk86 = 86,
         Explosion = 87,
         VehicleEngineGranular = 88, //maybe not just vehicle
-
         ShoreLinePool = 90,
         ShoreLineLake = 91,
         ShoreLineRiver = 92,
         ShoreLineOcean = 93,
         ShoreLineList = 94,
+        Unk95 = 95,
+        Unk96 = 96,
         RadioDjSpeechAction = 98,
+        Unk99 = 99,
+        Unk100 = 100,
+        Unk101 = 101,
         FadeOutRadioAction = 102,
         FadeInRadioAction = 103,
-        ForceRadioTrackAction = 104
+        ForceRadioTrackAction = 104,
+        Unk105 = 105,
+        Unk106 = 106,
+        Unk107 = 107,
+        Unk108 = 108,
+        Unk109 = 109,
+        Unk110 = 110,
+        Unk111 = 111,
+        Unk112 = 112,
+        Unk113 = 113,
+        Unk114 = 114,
+        Unk115 = 115,
+        Unk116 = 116,
+        Unk117 = 117,
+        Unk118 = 118,
+        Unk119 = 119,
+        Unk120 = 120,
+        Unk121 = 121,
     }
 
     [TC(typeof(EXP))] public class Dat151RelData : RelData
@@ -2342,6 +2512,30 @@ namespace CodeWalker.GameFiles
         Line = 2,
     }
 
+    [TC(typeof(EXP))] public class Dat151AmbientEmitterList : Dat151RelData
+    {
+        public uint UnkOffset0 { get; set; }
+        public uint EmitterCount { get; set; }
+        public MetaHash[] EmitterHashes { get; set; }
+
+        public Dat151AmbientEmitterList(RelData d, BinaryReader br) : base(d, br)
+        {
+            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+
+            UnkOffset0 = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
+            EmitterCount = br.ReadUInt32();
+            EmitterHashes = new MetaHash[EmitterCount];
+            for (int i = 0; i < EmitterCount; i++)
+            {
+                EmitterHashes[i] = br.ReadUInt32();
+            }
+
+            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { } //no hits here
+
+        }
+    }
     [TC(typeof(EXP))] public class Dat151AmbientZone : Dat151RelData
     {
         public uint UnkOffset0 { get; set; }
@@ -2808,6 +3002,31 @@ namespace CodeWalker.GameFiles
             long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
             { }
+        }
+
+    }
+    [TC(typeof(EXP))] public class Dat151AmbientZoneList : Dat151RelData
+    {
+        public uint UnkOffset0 { get; set; }
+        public uint ZoneCount { get; set; }
+        public MetaHash[] ZoneHashes { get; set; }
+
+        public Dat151AmbientZoneList(RelData d, BinaryReader br) : base(d, br)
+        {
+            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+
+            UnkOffset0 = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
+            ZoneCount = br.ReadUInt32();
+            ZoneHashes = new MetaHash[ZoneCount];
+            for (int i = 0; i < ZoneCount; i++)
+            {
+                ZoneHashes[i] = br.ReadUInt32();
+            }
+
+            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { } //no hits here
+
         }
 
     }
