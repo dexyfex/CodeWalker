@@ -64,6 +64,44 @@ namespace CodeWalker.GameFiles
                     break;
             }
 
+
+            /* francium - Today at 6:11 PM
+IDA decompiler code from a function that seems to be called around audio loading if not ADAT:
+  if ( a3 )
+  {
+    v3 = *a1;
+    v4 = -a2;
+    v5 = (unsigned int)(-a2 - 1);
+    v6 = 0x9E3779B9 * (52 / -a2 + 6);
+    do
+    {
+      LODWORD(v7) = -a2 - 1;
+      v8 = (v6 >> 2) & 3;
+      if ( -a2 != 1 )
+      {
+        v9 = (unsigned int)v5;
+        v10 = &a1[v5];
+        do
+        {
+          v7 = (unsigned int)(v7 - 1);
+          v11 = v9--;
+          *v10 -= ((v6 ^ v3) + (a1[v7] ^ *(_DWORD *)(a3 + 4 * (v8 ^ (unsigned __int64)(v11 & 3))) ^ 0x7B3A207F)) ^ ((4 * v3 ^ (a1[v7] >> 5)) + ((v3 >> 3) ^ 16 * a1[v7]));
+          v3 = *v10;
+          --v10;
+        }
+        while ( (_DWORD)v7 );
+      }
+      result = (v6 ^ v3) + (a1[v4 - 1] ^ *(_DWORD *)(a3 + 4 * (v8 ^ (unsigned __int64)(v7 & 3))) ^ 0x7B3A207F);
+      *a1 -= result ^ ((4 * v3 ^ (a1[v4 - 1] >> 5)) + ((v3 >> 3) ^ 16 * a1[v4 - 1]));
+      v3 = *a1;
+      v6 += 0x61C88647;
+    }
+    while ( v6 );
+  }
+  */
+
+
+
             using (MemoryStream ms = new MemoryStream(data))
             {
                 DataReader r = new DataReader(ms, endianess);

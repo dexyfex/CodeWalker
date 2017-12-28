@@ -493,19 +493,21 @@ namespace CodeWalker
                             byte b2 = searchbytes2[hitlen2];
 
                             if (b == b1) hitlen1++; else hitlen1 = 0;
-                            if (b == b2) hitlen2++; else hitlen2 = 0;
-
                             if (hitlen1 == bytelen)
                             {
                                 RpfSearchAddResult(new RpfSearchResult(fentry, (i - bytelen), bytelen));
                                 resultcount++;
                                 hitlen1 = 0;
                             }
-                            if (hitlen2 == bytelen)
+                            if (bothdirs)
                             {
-                                RpfSearchAddResult(new RpfSearchResult(fentry, (i - bytelen), bytelen));
-                                resultcount++;
-                                hitlen2 = 0;
+                                if (b == b2) hitlen2++; else hitlen2 = 0;
+                                if (hitlen2 == bytelen)
+                                {
+                                    RpfSearchAddResult(new RpfSearchResult(fentry, (i - bytelen), bytelen));
+                                    resultcount++;
+                                    hitlen2 = 0;
+                                }
                             }
                         }
                     }
