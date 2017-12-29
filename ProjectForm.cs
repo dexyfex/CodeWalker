@@ -1448,64 +1448,10 @@ namespace CodeWalker
             if (populatingui) return;
             if (CurrentYmapFile == null) return;
 
-            uint flags = 0;
-            uint contentFlags = 0;
-
-            if (CurrentYmapFile.AllEntities != null)
-            {
-                foreach (var yent in CurrentYmapFile.AllEntities)
-                {
-                    var cent = yent.CEntityDef;
-                    switch (cent.lodLevel)
-                    {
-                        case Unk_1264241711.LODTYPES_DEPTH_ORPHANHD:
-                        case Unk_1264241711.LODTYPES_DEPTH_HD:
-                            contentFlags = SetBit(contentFlags, 0); //1
-                            break;
-                        case Unk_1264241711.LODTYPES_DEPTH_LOD:
-                            contentFlags = SetBit(contentFlags, 1); //2
-                            flags = SetBit(flags, 1); //2
-                            break;
-                        case Unk_1264241711.LODTYPES_DEPTH_SLOD1:
-                            contentFlags = SetBit(contentFlags, 4); //16
-                            flags = SetBit(flags, 1); //2
-                            break;
-                        case Unk_1264241711.LODTYPES_DEPTH_SLOD2:
-                        case Unk_1264241711.LODTYPES_DEPTH_SLOD3:
-                        case Unk_1264241711.LODTYPES_DEPTH_SLOD4:
-                            contentFlags = SetBit(contentFlags, 2); //4
-                            contentFlags = SetBit(contentFlags, 4); //16
-                            flags = SetBit(flags, 1); //2
-                            break;
-                    }
-                }
-            }
-
-            if (CurrentYmapFile.CMloInstanceDefs != null)
-            {
-                if (CurrentYmapFile.CMloInstanceDefs.Length > 0)
-                {
-                    contentFlags = SetBit(contentFlags, 3); //8
-                }
-            }
-            if (CurrentYmapFile.physicsDictionaries != null)
-            {
-                if (CurrentYmapFile.physicsDictionaries.Length > 0)
-                {
-                    contentFlags = SetBit(contentFlags, 6); //64
-                }
-            }
-
             lock (ymapsyncroot)
             {
-                if (CurrentYmapFile._CMapData.flags != flags)
+                if (CurrentYmapFile.CalcFlags())
                 {
-                    CurrentYmapFile._CMapData.flags = flags;
-                    SetYmapHasChanged(true);
-                }
-                if (CurrentYmapFile._CMapData.contentFlags != contentFlags)
-                {
-                    CurrentYmapFile._CMapData.contentFlags = contentFlags;
                     SetYmapHasChanged(true);
                 }
             }
@@ -1528,100 +1474,21 @@ namespace CodeWalker
                 return;
             }
 
-            Vector3 emin = new Vector3(float.MaxValue);
-            Vector3 emax = new Vector3(float.MinValue);
-            Vector3 smin = new Vector3(float.MaxValue);
-            Vector3 smax = new Vector3(float.MinValue);
-            Vector3[] c = new Vector3[8];
-            Vector3[] s = new Vector3[8];
-
-            if (allents != null)
+            lock (ymapsyncroot)
             {
-                for (int i = 0; i < allents.Length; i++)
+                if (CurrentYmapFile.CalcExtents())
                 {
-                    var ent = allents[i];
-                    var arch = ent.Archetype;
-                    var ori = ent.Orientation;
-                    float loddist = ent._CEntityDef.lodDist;
-
-                    Vector3 bbmin = ent.Position - ent.BSRadius; //sphere
-                    Vector3 bbmax = ent.Position + ent.BSRadius;
-                    Vector3 sbmin = bbmin - loddist;
-                    Vector3 sbmax = bbmax + loddist;
-                    if (arch != null)
-                    {
-                        if (loddist <= 0.0f)
-                        {
-                            loddist = arch.LodDist;
-                        }
-
-                        Vector3 abmin = arch.BBMin * ent.Scale; //entity box
-                        Vector3 abmax = arch.BBMax * ent.Scale;
-                        c[0] = abmin;
-                        c[1] = new Vector3(abmin.X, abmin.Y, abmax.Z);
-                        c[2] = new Vector3(abmin.X, abmax.Y, abmin.Z);
-                        c[3] = new Vector3(abmin.X, abmax.Y, abmax.Z);
-                        c[4] = new Vector3(abmax.X, abmin.Y, abmin.Z);
-                        c[5] = new Vector3(abmax.X, abmin.Y, abmax.Z);
-                        c[6] = new Vector3(abmax.X, abmax.Y, abmin.Z);
-                        c[7] = abmax;
-
-                        abmin = arch.BBMin * ent.Scale - loddist; //streaming box
-                        abmax = arch.BBMax * ent.Scale + loddist;
-                        s[0] = abmin;
-                        s[1] = new Vector3(abmin.X, abmin.Y, abmax.Z);
-                        s[2] = new Vector3(abmin.X, abmax.Y, abmin.Z);
-                        s[3] = new Vector3(abmin.X, abmax.Y, abmax.Z);
-                        s[4] = new Vector3(abmax.X, abmin.Y, abmin.Z);
-                        s[5] = new Vector3(abmax.X, abmin.Y, abmax.Z);
-                        s[6] = new Vector3(abmax.X, abmax.Y, abmin.Z);
-                        s[7] = abmax;
-
-                        bbmin = new Vector3(float.MaxValue);
-                        bbmax = new Vector3(float.MinValue);
-                        sbmin = new Vector3(float.MaxValue);
-                        sbmax = new Vector3(float.MinValue);
-                        for (int j = 0; j < 8; j++)
-                        {
-                            Vector3 corn = ori.Multiply(c[j]) + ent.Position;
-                            bbmin = Vector3.Min(bbmin, corn);
-                            bbmax = Vector3.Max(bbmax, corn);
-
-                            corn = ori.Multiply(s[j]) + ent.Position;
-                            sbmin = Vector3.Min(sbmin, corn);
-                            sbmax = Vector3.Max(sbmax, corn);
-                        }
-                    }
-
-                    emin = Vector3.Min(emin, bbmin);
-                    emax = Vector3.Max(emax, bbmax);
-
-                    smin = Vector3.Min(smin, sbmin);
-                    smax = Vector3.Max(smax, sbmax);
+                    SetYmapHasChanged(true);
                 }
             }
 
-            if (allbatches != null)
-            {
-                var lodoffset = Vector3.Zero;// new Vector3(0, 0, 100);  //IDK WHY -neos7
-                foreach (var batch in allbatches) //thanks to Neos7
-                {
-                    emin = Vector3.Min(emin, batch.AABBMin);
-                    emax = Vector3.Max(emax, batch.AABBMax);
-
-                    smin = Vector3.Min(smin, (batch.AABBMin - batch.Batch.lodDist) + lodoffset);
-                    smax = Vector3.Min(smax, (batch.AABBMax + batch.Batch.lodDist) - lodoffset);
-                }
-            }
-
-
-
-
-            YmapEntitiesExtentsMinTextBox.Text = FloatUtil.GetVector3String(emin);
-            YmapEntitiesExtentsMaxTextBox.Text = FloatUtil.GetVector3String(emax);
-            YmapStreamingExtentsMinTextBox.Text = FloatUtil.GetVector3String(smin);
-            YmapStreamingExtentsMaxTextBox.Text = FloatUtil.GetVector3String(smax);
-
+            populatingui = true;
+            var md = CurrentYmapFile.CMapData;
+            YmapEntitiesExtentsMinTextBox.Text = FloatUtil.GetVector3String(md.entitiesExtentsMin);
+            YmapEntitiesExtentsMaxTextBox.Text = FloatUtil.GetVector3String(md.entitiesExtentsMax);
+            YmapStreamingExtentsMinTextBox.Text = FloatUtil.GetVector3String(md.streamingExtentsMin);
+            YmapStreamingExtentsMaxTextBox.Text = FloatUtil.GetVector3String(md.streamingExtentsMax);
+            populatingui = false;
         }
 
         private void UpdateYmapPhysicsDictionariesUI()
