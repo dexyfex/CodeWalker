@@ -592,18 +592,30 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            mapdata.entities = mb.AddItemPointerArrayPtr(MetaName.CEntityDef, CEntityDefs);
+
+            MetaPOINTER[] ptrs = new MetaPOINTER[AllEntities.Length];
+
+            for (int i = 0; i < AllEntities.Length; i++)
+            {
+                if (AllEntities[i].MloInstance != null)
+                {
+                    ptrs[i] = mb.AddItemPtr(MetaName.CMloInstanceDef, AllEntities[i].MloInstance.Instance);
+                }
+                else
+                {
+                    ptrs[i] = mb.AddItemPtr(MetaName.CEntityDef, AllEntities[i].CEntityDef);
+                }
+            }
+
+            mapdata.entities = mb.AddPointerArray(ptrs);
+
+            //mapdata.entities = mb.AddItemPointerArrayPtr(MetaName.CEntityDef, CEntityDefs);
 
             mapdata.timeCycleModifiers = mb.AddItemArrayPtr(MetaName.CTimeCycleModifier, CTimeCycleModifiers);
 
             mapdata.physicsDictionaries = mb.AddHashArrayPtr(physicsDictionaries);
 
             mapdata.carGenerators = mb.AddItemArrayPtr(MetaName.CCarGen, CCarGens);
-
-            if (CMloInstanceDefs != null)
-            {
-                LogSaveWarning("CMloInstanceDefs were present, may not save properly. (TODO!)");
-            }
 
             //clear everything out for now - TODO: fix
             if (mapdata.containerLods.Count1 != 0) LogSaveWarning("containerLods were not saved. (TODO!)");
@@ -646,6 +658,7 @@ namespace CodeWalker.GameFiles
             mb.AddStructureInfo(MetaName.CBlockDesc);
             mb.AddStructureInfo(MetaName.CMapData);
             mb.AddStructureInfo(MetaName.CEntityDef);
+            mb.AddStructureInfo(MetaName.CMloInstanceDef);
             mb.AddStructureInfo(MetaName.CTimeCycleModifier);
             if ((CCarGens != null) && (CCarGens.Length > 0))
             {

@@ -350,6 +350,34 @@ namespace CodeWalker.GameFiles
                     new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                     new MetaStructureEntryInfo_s(MetaName.tintValue, 120, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
                     );
+                case MetaName.CMloInstanceDef
+                :
+                    return new MetaStructureInfo(MetaName.CMloInstanceDef, 2151576752, 1024, 160,
+                    new MetaStructureEntryInfo_s(MetaName.archetypeName, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.guid, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.rotation, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.scaleXY, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.scaleZ, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1264241711),
+                    new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)648413703),
+                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
+                    new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.tintValue, 120, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.groupId, 128, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.floorId, 132, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.defaultEntitySets, 136, MetaStructureEntryDataType.Array, 0, 20, 0),
+                    new MetaStructureEntryInfo_s(MetaName.numExitPortals, 152, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                    new MetaStructureEntryInfo_s(MetaName.MLOInstflags, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
                 case MetaName.CTimeCycleModifier:
                     return new MetaStructureInfo(MetaName.CTimeCycleModifier, 2683420777, 1024, 64,
                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
