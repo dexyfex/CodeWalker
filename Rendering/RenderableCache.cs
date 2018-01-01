@@ -21,7 +21,6 @@ namespace CodeWalker.Rendering
         public double CacheTime = Settings.Default.GPUCacheTime;// 10.0; //seconds to keep something that's not used
         public double UnloadTime = Settings.Default.GPUCacheFlushTime;// 0.1; //seconds between running unload cycles
         public int MaxItemsPerLoop = 1; //to keep things flowing
-        public bool ItemsStillPending = false; //whether or not we need another content thread loop
 
         public long TotalGraphicsMemoryUse
         {
@@ -92,9 +91,9 @@ namespace CodeWalker.Rendering
             waterquads.Clear();
         }
 
-        public void ContentThreadProc()
+        public bool ContentThreadProc()
         {
-            if (currentDevice == null) return; //can't do anything with no device
+            if (currentDevice == null) return false; //can't do anything with no device
 
             Monitor.Enter(updateSyncRoot);
 
@@ -109,13 +108,14 @@ namespace CodeWalker.Rendering
             int waterquadcount = waterquads.LoadProc(currentDevice, MaxItemsPerLoop);
 
 
-            ItemsStillPending = (renderablecount >= MaxItemsPerLoop) ||
-                                (texturecount >= MaxItemsPerLoop) ||
-                                (boundcompcount >= MaxItemsPerLoop) ||
-                                (instbatchcount >= MaxItemsPerLoop) ||
-                                (distlodlightcount >= MaxItemsPerLoop) ||
-                                (pathbatchcount >= MaxItemsPerLoop) ||
-                                (waterquadcount >= MaxItemsPerLoop);
+            bool itemsStillPending = 
+                (renderablecount >= MaxItemsPerLoop) ||
+                (texturecount >= MaxItemsPerLoop) ||
+                (boundcompcount >= MaxItemsPerLoop) ||
+                (instbatchcount >= MaxItemsPerLoop) ||
+                (distlodlightcount >= MaxItemsPerLoop) ||
+                (pathbatchcount >= MaxItemsPerLoop) ||
+                (waterquadcount >= MaxItemsPerLoop);
 
 
             //todo: change this to unload only when necessary (ie when something is loaded)
@@ -141,6 +141,8 @@ namespace CodeWalker.Rendering
             LastUpdate = DateTime.UtcNow;
 
             Monitor.Exit(updateSyncRoot);
+
+            return itemsStillPending;
         }
 
         public void RenderThreadSync()

@@ -1,46 +1,29 @@
-﻿using CodeWalker.GameFiles;
-using CodeWalker.Properties;
-using SharpDX.Direct3D11;
-using SharpDX.DXGI;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
-using CodeWalker.Rendering;
-using Device = SharpDX.Direct3D11.Device;
-using Buffer = SharpDX.Direct3D11.Buffer;
-using DriverType = SharpDX.Direct3D.DriverType;
-using System.Runtime.InteropServices;
-using System.Collections.Concurrent;
-using CodeWalker.World;
 using System.Diagnostics;
 using SharpDX;
-using CodeWalker.Utils;
-using System.Globalization;
-using CodeWalker.Project;
-using System.Collections.Specialized;
 using SharpDX.XInput;
+using Device = SharpDX.Direct3D11.Device;
+using DeviceContext = SharpDX.Direct3D11.DeviceContext;
+using CodeWalker.World;
+using CodeWalker.Project;
+using CodeWalker.Rendering;
+using CodeWalker.GameFiles;
+using CodeWalker.Properties;
 
 namespace CodeWalker
 {
     public partial class WorldForm : Form, DXForm
     {
         public Form Form { get { return this; } } //for DXForm/DXManager use
-        DXManager dxman = new DXManager();
-        public DXManager DXMan { get { return dxman; } }
-        Device currentdevice;
-        public Device Device { get { return currentdevice; } }
-        object rendersyncroot = new object();
-        public object RenderSyncRoot { get { return rendersyncroot; } }
 
-        ShaderManager shaders;
+        private Renderer Renderer = null;
+        public object RenderSyncRoot { get { return Renderer.RenderSyncRoot; } }
 
         volatile bool formopen = false;
         volatile bool running = false;
@@ -48,11 +31,11 @@ namespace CodeWalker
         volatile bool initialised = false;
 
         Stopwatch frametimer = new Stopwatch();
-        Camera camera = new Camera();
         Space space = new Space();
-        Timecycle timecycle = new Timecycle();
-        Weather weather = new Weather();
-        Clouds clouds = new Clouds();
+        Camera camera;
+        Timecycle timecycle;
+        Weather weather;
+        Clouds clouds;
         Water water = new Water();
         Trains trains = new Trains();
         Scenarios scenarios = new Scenarios();
@@ -72,20 +55,12 @@ namespace CodeWalker
         int startupviewmode = 0; //0=world, 1=ymap, 2=model
         string modelname = "dt1_tc_dufo_core";//"dt1_11_fount_decal";//
         string[] ymaplist;
-        bool rendertimedents = Settings.Default.ShowTimedEntities;
-        bool rendertimedentsalways = false;
-        bool renderinteriors = true;
-        bool renderproxies = false;
-        bool renderchildents = false;
+
         Vector3 prevworldpos = new Vector3(0, 0, 100); //also the start pos
 
-        bool usedynamiclod = Settings.Default.DynamicLOD;
-        float lodthreshold = 50.0f / (0.1f + (float)Settings.Default.DetailDist); //to match formula for the DetailTrackBar value
-        bool waitforchildrentoload = true;
 
         public GameFileCache GameFileCache { get { return gameFileCache; } }
         GameFileCache gameFileCache = new GameFileCache();
-        RenderableCache renderableCache = new RenderableCache();
 
 
         WorldControlMode ControlMode = WorldControlMode.Free;
@@ -101,15 +76,8 @@ namespace CodeWalker
 
         Entity camEntity = new Entity();
         PedEntity pedEntity = new PedEntity();
-        volatile bool kbmovefwd = false;
-        volatile bool kbmovebck = false;
-        volatile bool kbmovelft = false;
-        volatile bool kbmovergt = false;
-        volatile bool kbmoveup = false;
-        volatile bool kbmovedn = false;
-        volatile bool kbjump = false;
 
-        KeyBindings keyBindings = new KeyBindings(Settings.Default.KeyBindings);
+
         bool iseditmode = false;
 
 
@@ -124,52 +92,24 @@ namespace CodeWalker
         List<MapMarker> SortedMarkers = new List<MapMarker>();
         List<MapMarker> MarkerBatch = new List<MapMarker>();
         bool RenderLocator = false;
-        bool markerdepthclip = Settings.Default.MarkerDepthClip;
         object markersyncroot = new object();
         object markersortedsyncroot = new object();
-        UnitQuad markerquad = null;
-
-        BoundsShaderMode boundsmode = BoundsShaderMode.None;
-        bool renderboundsclip = Settings.Default.BoundsDepthClip;
-        float renderboundsmaxrad = 20000.0f;
-        float renderboundsmaxdist = 10000.0f;
-        List<MapBox> BoundingBoxes = new List<MapBox>();
-        List<MapSphere> BoundingSpheres = new List<MapSphere>();
-        List<MapSphere> HilightSpheres = new List<MapSphere>();
-        List<MapBox> HilightBoxes = new List<MapBox>();
-        List<MapBox> SelectionBoxes = new List<MapBox>();
-        List<MapBox> WhiteBoxes = new List<MapBox>();
-        List<MapSphere> SelectionSpheres = new List<MapSphere>();
-        List<MapSphere> WhiteSpheres = new List<MapSphere>();
 
 
-        bool controllightdir = false; //if not, use timecycle
-        float lightdirx = 2.25f;//radians // approx. light dir on map satellite view
-        float lightdiry = 0.65f;//radians  - used for manual light placement
-        bool renderskydome = Settings.Default.Skydome;
+
+
+
+
 
         bool rendercollisionmeshes = Settings.Default.ShowCollisionMeshes;
         List<BoundsStoreItem> collisionitems = new List<BoundsStoreItem>();
         int collisionmeshrange = Settings.Default.CollisionMeshRange;
         bool[] collisionmeshlayers = { true, true, true };
-        bool collisionmeshlayerdrawable = true;
 
-        List<YmapEntityDef> renderworldentities = new List<YmapEntityDef>();
-        List<RenderableEntity> renderworldrenderables = new List<RenderableEntity>();
         Dictionary<MetaHash, YmapFile> renderworldVisibleYmapDict = new Dictionary<MetaHash, YmapFile>();
-        Dictionary<uint, bool> renderworldHideFlags = new Dictionary<uint, bool>();
-        Unk_1264241711 renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
-        float renderworldLodDistMult = 1.0f;
-        float renderworldDetailDistMult = 1.0f;
 
         bool worldymaptimefilter = true;
         bool worldymapweatherfilter = true;
-
-        bool rendergrass = true;
-        bool renderdistlodlights = true;
-        bool rendernaturalambientlight = true;
-        bool renderartificialambientlight = true;
-        ShaderGlobalLights globalLights = new ShaderGlobalLights();
 
         bool renderpathbounds = true;
         bool renderpaths = false;
@@ -194,22 +134,10 @@ namespace CodeWalker
         bool renderaudioouterbounds = true;
 
 
-        float timeofday = 12.0f;
-        bool controltimeofday = true;
-        bool timerunning = false;
-        float timespeed = 0.5f;//min/sec
-        string weathertype = "";
-        string individualcloudfrag = "contrails";
-
-        Vector4 currentWindVec = Vector4.Zero;
-        float currentWindTime = 0.0f;
-
         bool MapViewEnabled = false;
-        float MapViewDetail = 1.0f;
         int MapViewDragX = 0;
         int MapViewDragY = 0;
 
-        bool ShowScriptedYmaps = true;
 
         bool MouseSelectEnabled = false;
         bool ShowSelectionBounds = true;
@@ -227,20 +155,12 @@ namespace CodeWalker
         MapSelection SelectedItem;
         List<MapSelection> SelectedItems = new List<MapSelection>();
         WorldInfoForm InfoForm = null;
-        Dictionary<DrawableModel, bool> SelectionModelDrawFlags = new Dictionary<DrawableModel, bool>();
-        Dictionary<DrawableGeometry, bool> SelectionGeometryDrawFlags = new Dictionary<DrawableGeometry, bool>();
-        List<VertexTypePC> SelectionLineVerts = new List<VertexTypePC>();
-        List<VertexTypePC> SelectionTriVerts = new List<VertexTypePC>();
-
-        YmapEntityDef SelectedCarGenEntity = new YmapEntityDef();
 
 
         TransformWidget Widget = new TransformWidget();
         TransformWidget GrabbedWidget = null;
         bool ShowWidget = true;
 
-        bool CtrlPressed = false;
-        bool ShiftPressed = false;
 
         ProjectForm ProjectForm = null;
 
@@ -263,14 +183,8 @@ namespace CodeWalker
 
         WorldSearchForm SearchForm = null;
 
-        Controller xbcontroller = null;
-        State xbcontrollerstate;
-        State xbcontrollerstateprev;
-        Vector4 xbmainaxes = Vector4.Zero;
-        Vector4 xbmainaxesprev = Vector4.Zero;
-        Vector2 xbtrigs = Vector2.Zero;
-        Vector2 xbtrigsprev = Vector2.Zero;
-        float xbcontrolvelocity = 0.0f;
+
+        InputManager Input = new InputManager();
 
 
 
@@ -281,11 +195,6 @@ namespace CodeWalker
         int toolsPanelResizeStartLeft = 0;
         int toolsPanelResizeStartRight = 0;
 
-        double currentRealTime = 0;
-        int framecount = 0;
-        float fcelapsed = 0.0f;
-        int fps = 0;
-
         bool initedOk = false;
 
 
@@ -293,7 +202,13 @@ namespace CodeWalker
         {
             InitializeComponent();
 
-            initedOk = dxman.Init(this, false);
+            Renderer = new Renderer(this, gameFileCache);
+            camera = Renderer.camera;
+            timecycle = Renderer.timecycle;
+            weather = Renderer.weather;
+            clouds = Renderer.clouds;
+
+            initedOk = Renderer.Init();
         }
 
 
@@ -397,36 +312,13 @@ namespace CodeWalker
 
             UpdateToolbarShortcutsText();
 
-            InitController();
+
+            Input.Init();
 
 
-            dxman.Start();
+            Renderer.Start();
         }
 
-        private void InitController()
-        {
-            xbcontroller = new Controller(UserIndex.One);
-            if (!xbcontroller.IsConnected)
-            {
-                var controllers = new[] { new Controller(UserIndex.Two), new Controller(UserIndex.Three), new Controller(UserIndex.Four) };
-                foreach (var selectControler in controllers)
-                {
-                    if (selectControler.IsConnected)
-                    {
-                        xbcontroller = selectControler;
-                        xbcontrollerstate = xbcontroller.GetState();
-                        xbcontrollerstateprev = xbcontrollerstate;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                xbcontrollerstate = xbcontroller.GetState();
-                xbcontrollerstateprev = xbcontrollerstate;
-            }
-
-        }
 
 
         private MapIcon AddIcon(string name, string filename, int texw, int texh, float centerx, float centery, float scale)
@@ -450,22 +342,18 @@ namespace CodeWalker
 
         public void InitScene(Device device)
         {
-            currentdevice = device;
-
             int width = ClientSize.Width;
             int height = ClientSize.Height;
 
             try
             {
-                shaders = new ShaderManager(device, dxman);
-                shaders.OnWindowResize(width, height); //init the buffers
+                Renderer.DeviceCreated(device, width, height);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error loading shaders!\n" + ex.ToString());
                 return;
             }
-
 
             if (Icons != null)
             {
@@ -475,14 +363,9 @@ namespace CodeWalker
                 }
             }
 
-            markerquad = new UnitQuad(device);
-
-            renderableCache.OnDeviceCreated(device);
-
-            camera.OnWindowResize(width, height); //init the projection stuff
             camera.FollowEntity = camEntity;
-            camera.FollowEntity.Position = (startupviewmode!=2) ? prevworldpos : Vector3.Zero;// new Vector3(0.0f, 0.0f, 100.0f);
-            camera.FollowEntity.Orientation = Quaternion.LookAtLH(Vector3.Zero, Vector3.Up, Vector3.ForwardLH);
+            camEntity.Position = (startupviewmode!=2) ? prevworldpos : Vector3.Zero;
+            camEntity.Orientation = Quaternion.LookAtLH(Vector3.Zero, Vector3.Up, Vector3.ForwardLH);
 
             space.AddPersistentEntity(pedEntity);
 
@@ -499,10 +382,7 @@ namespace CodeWalker
         {
             formopen = false;
 
-            renderableCache.OnDeviceDestroyed();
-
-            shaders.Dispose();
-
+            Renderer.DeviceDestroyed();
 
             if (Icons != null)
             {
@@ -512,123 +392,84 @@ namespace CodeWalker
                 }
             }
 
-            markerquad.Dispose();
-
             int count = 0;
             while (running && (count < 5000)) //wait for the content thread to exit gracefully
             {
                 Thread.Sleep(1);
                 count++;
             }
-
-            currentdevice = null;
         }
         public void BuffersResized(int w, int h)
         {
-            lock (rendersyncroot)
-            {
-                camera.OnWindowResize(w, h);
-                shaders.OnWindowResize(w, h);
-            }
+            Renderer.BuffersResized(w, h);
         }
         public void RenderScene(DeviceContext context)
         {
             float elapsed = (float)frametimer.Elapsed.TotalSeconds;
-            framecount++;
-            fcelapsed += elapsed;
-            if (fcelapsed >= 0.5f)
-            {
-                fps = framecount * 2;
-                framecount = 0;
-                fcelapsed -= 0.5f;
-            }
-            if (elapsed > 0.1f) elapsed = 0.1f;
             frametimer.Restart();
-
-            currentRealTime += elapsed;
 
             if (pauserendering) return;
 
-            if (!Monitor.TryEnter(rendersyncroot, 50))
+            if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
             { return; } //couldn't get a lock, try again next time
-            //Monitor.Enter(rendersyncroot);
 
             UpdateControlInputs(elapsed);
 
-            UpdateTimeOfDay(elapsed);
-
-            weather.Update(elapsed);
-
-            clouds.Update(elapsed);
-
-            UpdateWindVector(elapsed);
-
-            UpdateGlobalLights();
-
             space.Update(elapsed);
 
-            camera.SetMousePosition(MouseLastPoint.X, MouseLastPoint.Y);
 
-            camera.Update(elapsed);
+
+            Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
+
+
 
             UpdateWidgets();
 
-            WhiteBoxes.Clear();
-            WhiteSpheres.Clear();
-            SelectionBoxes.Clear();
-            SelectionSpheres.Clear();
-            HilightBoxes.Clear();
-            HilightSpheres.Clear();
-            BoundingBoxes.Clear();
-            BoundingSpheres.Clear();
             BeginMouseHitTest();
 
 
-            dxman.ClearRenderTarget(context);
 
-            shaders.BeginFrame(context, currentRealTime, elapsed);
 
-            shaders.EnsureShaderTextures(gameFileCache, renderableCache);
+            Renderer.BeginRender(context);
 
-            RenderSky(context);
+            Renderer.RenderSkyAndClouds();
 
-            RenderClouds(context);
+            Renderer.SelectedDrawable = SelectedItem.Drawable;
 
-            shaders.ClearDepth(context);
-
-            if (renderworld || rendermaps)
+            if (renderworld)
             {
                 RenderWorld();
-
-                if (rendermaps)
-                {
-                    RenderYmaps();
-                }
+            }
+            else if (rendermaps)
+            {
+                RenderYmaps();
             }
             else
             {
                 RenderSingleItem();
             }
 
+            UpdateMouseHitsFromRenderer();
+
             RenderSelection();
 
-            shaders.RenderQueued(context, camera, currentWindVec);
+            Renderer.RenderQueued();
 
-            RenderBounds(context);
+            Renderer.RenderBounds(SelectionMode);
 
-            RenderSelectionGeometry(context);
+            Renderer.RenderSelectionGeometry(SelectionMode);
 
-            RenderMoused(context);
+            RenderMoused();
 
-            shaders.RenderFinalPass(context);
+            Renderer.RenderFinalPass();
 
-            RenderMarkers(context);
+            RenderMarkers();
 
-            RenderWidgets(context);
+            RenderWidgets();
 
-            renderableCache.RenderThreadSync();
+            Renderer.EndRender();
 
-            Monitor.Exit(rendersyncroot);
+            Monitor.Exit(Renderer.RenderSyncRoot);
 
             UpdateMarkerSelectionPanelInvoke();
         }
@@ -644,218 +485,20 @@ namespace CodeWalker
             TimeOfDayLabel.Text = string.Format("{0:00}:{1:00}", ih, im);
         }
 
-        private void UpdateTimeOfDay(float elapsed)
-        {
-            if (timerunning)
-            {
-                float helapsed = elapsed * timespeed / 60.0f;
-                timeofday += helapsed;
-                while (timeofday >= 24.0f) timeofday -= 24.0f;
-                while (timeofday < 0.0f) timeofday += 24.0f;
-                timecycle.SetTime(timeofday);
-            }
-
-        }
-
-        private void UpdateGlobalLights()
-        {
-            Vector3 lightdir = Vector3.Zero;//will be updated before each frame from X and Y vars
-            Color4 lightdircolour = Color4.White;
-            Color4 lightdirambcolour = new Color4(0.5f, 0.5f, 0.5f, 1.0f);
-            Color4 lightnaturalupcolour = new Color4(0.0f);
-            Color4 lightnaturaldowncolour = new Color4(0.0f);
-            Color4 lightartificialupcolour = new Color4(0.0f);
-            Color4 lightartificialdowncolour = new Color4(0.0f);
-            bool hdr = shaders.hdr;
-            float hdrint = 1.0f;
-            Vector3 sundir = Vector3.Up;
-            Vector3 moondir = Vector3.Down;
-            Vector3 moonax = Vector3.UnitZ;
-
-            if (controllightdir)
-            {
-                float cryd = (float)Math.Cos(lightdiry);
-                lightdir.X = -(float)Math.Sin(-lightdirx) * cryd;
-                lightdir.Y = -(float)Math.Cos(-lightdirx) * cryd;
-                lightdir.Z = (float)Math.Sin(lightdiry);
-                lightdircolour = Color4.White;
-                lightdirambcolour = new Color4(0.5f, 0.5f, 0.5f, 1.0f);
-                if (hdr && (weather != null) && (weather.Inited))
-                {
-                    lightdircolour *= weather.CurrentValues.skyHdr;
-                    lightdircolour.Alpha = 1.0f;
-                    lightdirambcolour *= weather.CurrentValues.skyHdr;
-                    lightdirambcolour.Alpha = 1.0f;
-                    hdrint = weather.CurrentValues.skyHdr;
-                }
-                sundir = lightdir;
-                moondir = -lightdir;
-            }
-            else
-            {
-                float sunroll = timecycle.sun_roll * (float)Math.PI / 180.0f;  //122
-                float moonroll = timecycle.moon_roll * (float)Math.PI / 180.0f;  //-122
-                float moonwobamp = timecycle.moon_wobble_amp; //0.2
-                float moonwobfreq = timecycle.moon_wobble_freq; //2
-                float moonwoboffs = timecycle.moon_wobble_offset; //0.375
-                float dayval = (0.5f + (timeofday - 6.0f) / 14.0f);
-                float nightval = (((timeofday>12.0f)?(timeofday - 7.0f):(timeofday+17.0f)) / 9.0f);
-                float daycyc = (float)Math.PI * dayval;
-                float nightcyc = (float)Math.PI * nightval;
-                Vector3 sdir = new Vector3((float)Math.Sin(daycyc), -(float)Math.Cos(daycyc), 0.0f);
-                Vector3 mdir = new Vector3(-(float)Math.Sin(nightcyc), 0.0f, -(float)Math.Cos(nightcyc));
-                Quaternion saxis = Quaternion.RotationYawPitchRoll(0.0f, sunroll, 0.0f);
-                Quaternion maxis = Quaternion.RotationYawPitchRoll(0.0f, -moonroll, 0.0f);
-                sundir = Vector3.Normalize(saxis.Multiply(sdir));
-                moondir = Vector3.Normalize(maxis.Multiply(mdir));
-                moonax = Vector3.Normalize(maxis.Multiply(Vector3.UnitY));
-                //bool usemoon = false;
-
-                lightdir = sundir;
-
-                //if (lightdir.Z < -0.5f) lightdir.Z = -lightdir.Z; //make sure the lightsource is always above the horizon...
-
-                if ((timeofday < 5.0f) || (timeofday > 21.0f))
-                {
-                    lightdir = moondir;
-                    //usemoon = true;
-                }
-
-                if (lightdir.Z < 0)
-                {
-                    lightdir.Z = 0; //don't let the light source go below the horizon...
-                }
-
-                //lightdir = Vector3.Normalize(weather.CurrentValues.sunDirection);
-
-                if (weather != null && weather.Inited)
-                {
-                    lightdircolour = (Color4)weather.CurrentValues.lightDirCol;
-                    lightdirambcolour = (Color4)weather.CurrentValues.lightDirAmbCol;
-                    lightnaturalupcolour = (Color4)weather.CurrentValues.lightNaturalAmbUp;
-                    lightnaturaldowncolour = (Color4)weather.CurrentValues.lightNaturalAmbDown;
-                    lightartificialupcolour = (Color4)weather.CurrentValues.lightArtificialExtUp;
-                    lightartificialdowncolour = (Color4)weather.CurrentValues.lightArtificialExtDown;
-                    float lamult = weather.CurrentValues.lightDirAmbIntensityMult;
-                    float abounce = weather.CurrentValues.lightDirAmbBounce;
-                    float minmult = hdr ? 0.1f : 0.5f;
-                    lightdircolour *= Math.Max(lightdircolour.Alpha, minmult);
-                    lightdirambcolour *= lightdirambcolour.Alpha * lamult; // 0.1f * lamult;
-
-                    //if (usemoon)
-                    //{
-                    //    lightdircolour *= weather.CurrentValues.skyMoonIten;
-                    //}
-
-
-                    lightnaturalupcolour *= lightnaturalupcolour.Alpha * weather.CurrentValues.lightNaturalAmbUpIntensityMult;
-                    lightnaturaldowncolour *= lightnaturaldowncolour.Alpha;
-                    lightartificialupcolour *= lightartificialupcolour.Alpha;
-                    lightartificialdowncolour *= lightartificialdowncolour.Alpha;
-
-                    if (!hdr)
-                    {
-                        Color4 maxdirc = new Color4(1.0f);
-                        Color4 maxambc = new Color4(0.5f);
-                        lightdircolour = Color4.Min(lightdircolour, maxdirc);
-                        lightdirambcolour = Color4.Min(lightdirambcolour, maxambc);
-                        lightnaturalupcolour = Color4.Min(lightnaturalupcolour, maxambc);
-                        lightnaturaldowncolour = Color4.Min(lightnaturaldowncolour, maxambc);
-                        lightartificialupcolour = Color4.Min(lightartificialupcolour, maxambc);
-                        lightartificialdowncolour = Color4.Min(lightartificialdowncolour, maxambc);
-                    }
-                    else
-                    {
-                        hdrint = weather.CurrentValues.skyHdr;//.lightDirCol.W;
-                    }
-                }
-
-
-            }
-
-            globalLights.Weather = weather;
-            globalLights.HdrEnabled = hdr;
-            globalLights.SpecularEnabled = !MapViewEnabled;//disable specular for map view.
-            globalLights.HdrIntensity = Math.Max(hdrint, 1.0f);
-            globalLights.CurrentSunDir = sundir;
-            globalLights.CurrentMoonDir = moondir;
-            globalLights.MoonAxis = moonax;
-            globalLights.Params.LightDir = lightdir;
-            globalLights.Params.LightDirColour = lightdircolour;
-            globalLights.Params.LightDirAmbColour = lightdirambcolour;
-            globalLights.Params.LightNaturalAmbUp = rendernaturalambientlight ? lightnaturalupcolour : Color4.Black;
-            globalLights.Params.LightNaturalAmbDown = rendernaturalambientlight ? lightnaturaldowncolour : Color4.Black;
-            globalLights.Params.LightArtificialAmbUp = renderartificialambientlight ? lightartificialupcolour : Color4.Black;
-            globalLights.Params.LightArtificialAmbDown = renderartificialambientlight ? lightartificialdowncolour : Color4.Black;
-
-
-            if (shaders != null)
-            {
-                shaders.SetGlobalLightParams(globalLights);
-            }
-
-        }
-
-        private void UpdateWindVector(float elapsed)
-        {
-            //wind still needs a lot of work.
-            //currently just feed the wind vector with small oscillations...
-            currentWindTime += elapsed;
-            if (currentWindTime >= 200.0f) currentWindTime -= 200.0f;
-
-            float dirval = (float)(currentWindTime * 0.01 * Math.PI);
-            float dirval1 = (float)Math.Sin(currentWindTime * 0.100 * Math.PI) * 0.3f;
-            float dirval2 = (float)(currentWindTime * 0.333 * Math.PI);
-            float dirval3 = (float)(currentWindTime * 0.5 * Math.PI);
-            float dirval4 = (float)Math.Sin(currentWindTime * 0.223 * Math.PI) * 0.4f;
-            float dirval5 = (float)Math.Sin(currentWindTime * 0.4 * Math.PI) * 5.5f;
-
-            currentWindVec.Z = (float)Math.Sin(dirval) * dirval1 + (float)Math.Cos(dirval2) * dirval4;
-            currentWindVec.W = (float)Math.Cos(dirval) * dirval5 + (float)Math.Sin(dirval3) * dirval4;
-
-            float strval = (float)(currentWindTime * 0.1 * Math.PI);
-            float strval2 = (float)(currentWindTime * 0.825 * Math.PI);
-            float strval3 = (float)(currentWindTime * 0.333 * Math.PI);
-            float strval4 = (float)(currentWindTime * 0.666 * Math.PI);
-            float strbase = 0.1f * ((float)Math.Sin(strval * 0.5));
-            float strbase2 = 0.02f * ((float)Math.Sin(strval2 * 0.1));
-
-            currentWindVec.X = (float)Math.Sin(strval) * strbase + ((float)Math.Cos(strval3) * strbase2);
-            currentWindVec.Y = (float)Math.Cos(strval2) * strbase + ((float)Math.Sin(strval4 - strval3) * strbase2);
-        }
-
         private void UpdateControlInputs(float elapsed)
         {
+            if (elapsed > 0.1f) elapsed = 0.1f;
+
             var s = Settings.Default;
 
             float moveSpeed = 50.0f;
 
-            bool xbenable = (xbcontroller != null) && (xbcontroller.IsConnected);
-            float lx = 0, ly = 0, rx = 0, ry = 0, lt = 0, rt = 0; //input axes
-            if (xbenable)
-            {
-                xbcontrollerstateprev = xbcontrollerstate;
-                xbcontrollerstate = xbcontroller.GetState();
-                xbmainaxesprev = xbmainaxes;
-                xbtrigsprev = xbtrigs;
-                xbmainaxes = ControllerMainAxes();
-                xbtrigs = ControllerTriggers();
-                lx = xbmainaxes.X;
-                ly = xbmainaxes.Y;
-                rx = xbmainaxes.Z;
-                ry = xbmainaxes.W;
-                lt = xbtrigs.X;
-                rt = xbtrigs.Y;
-                float lamt = s.XInputLThumbSensitivity * elapsed;
-                float ramt = s.XInputRThumbSensitivity * elapsed;
-                ly = s.XInputLThumbInvert ? ly : -ly;
-                ry = s.XInputRThumbInvert ? ry : -ry;
-                lx *= lamt;
-                ly *= lamt;
-                rx *= ramt;
-                ry *= ramt;
 
-                if (ControllerButtonJustPressed(GamepadButtonFlags.Start))
+            Input.Update(elapsed);
+
+            if (Input.xbenable)
+            {
+                if (Input.ControllerButtonJustPressed(GamepadButtonFlags.Start))
                 {
                     SetControlMode(ControlMode == WorldControlMode.Free ? WorldControlMode.Ped : WorldControlMode.Free);
                 }
@@ -864,27 +507,20 @@ namespace CodeWalker
 
             if (ControlMode == WorldControlMode.Free)
             {
-
-                Vector3 movevec = Vector3.Zero;
-                if (ShiftPressed)
+                if (Input.ShiftPressed)
                 {
                     moveSpeed *= 5.0f;
                 }
-                if (CtrlPressed)
+                if (Input.CtrlPressed)
                 {
                     moveSpeed *= 0.2f;
                 }
 
+                Vector3 movevec = Input.KeyboardMoveVec(MapViewEnabled);
+
                 if (MapViewEnabled)
                 {
-                    if (kbmovefwd) movevec.Y += 1.0f;
-                    if (kbmovebck) movevec.Y -= 1.0f;
-                    if (kbmovelft) movevec.X -= 1.0f;
-                    if (kbmovergt) movevec.X += 1.0f;
-                    if (kbmoveup) movevec.Y += 1.0f;
-                    if (kbmovedn) movevec.Y -= 1.0f;
                     movevec *= elapsed * moveSpeed * Math.Min(camera.OrthographicTargetSize * 0.01f, 50.0f);
-
 
                     float mapviewscale = 1.0f / camera.Height;
                     float fdx = MapViewDragX * mapviewscale;
@@ -896,12 +532,6 @@ namespace CodeWalker
                 else
                 {
                     //normal movement
-                    if (kbmovefwd) movevec.Z -= 1.0f;
-                    if (kbmovebck) movevec.Z += 1.0f;
-                    if (kbmovelft) movevec.X -= 1.0f;
-                    if (kbmovergt) movevec.X += 1.0f;
-                    if (kbmoveup) movevec.Y += 1.0f;
-                    if (kbmovedn) movevec.Y -= 1.0f;
                     movevec *= elapsed * moveSpeed * Math.Min(camera.TargetDistance, 20.0f);
                 }
 
@@ -915,39 +545,39 @@ namespace CodeWalker
 
 
 
-                if (xbenable)
+                if (Input.xbenable)
                 {
-                    camera.ControllerRotate(lx + rx, ly + ry);
+                    camera.ControllerRotate(Input.xblx + Input.xbrx, Input.xbly + Input.xbry);
 
                     float zoom = 0.0f;
                     float zoomspd = s.XInputZoomSpeed;
                     float zoomamt = zoomspd * elapsed;
-                    if (ControllerButtonPressed(GamepadButtonFlags.DPadUp)) zoom += zoomamt;
-                    if (ControllerButtonPressed(GamepadButtonFlags.DPadDown)) zoom -= zoomamt;
+                    if (Input.ControllerButtonPressed(GamepadButtonFlags.DPadUp)) zoom += zoomamt;
+                    if (Input.ControllerButtonPressed(GamepadButtonFlags.DPadDown)) zoom -= zoomamt;
 
                     camera.ControllerZoom(zoom);
 
                     float acc = 0.0f;
                     float accspd = s.XInputMoveSpeed;//actually accel speed...
-                    acc += rt * accspd;
-                    acc -= lt * accspd;
+                    acc += Input.xbrt * accspd;
+                    acc -= Input.xblt * accspd;
 
                     Vector3 newdir = camera.ViewDirection; //maybe use the "vehicle" direction...?
-                    xbcontrolvelocity += (acc * elapsed);
+                    Input.xbcontrolvelocity += (acc * elapsed);
 
-                    if (ControllerButtonPressed(GamepadButtonFlags.A | GamepadButtonFlags.RightShoulder)) //handbrake...
+                    if (Input.ControllerButtonPressed(GamepadButtonFlags.A | GamepadButtonFlags.RightShoulder)) //handbrake...
                     {
-                        xbcontrolvelocity *= Math.Max(0.75f - elapsed, 0);//not ideal for low fps...
-                                                                          //xbcontrolvelocity = 0.0f;
-                        if (Math.Abs(xbcontrolvelocity) < 0.001f) xbcontrolvelocity = 0.0f;
+                        Input.xbcontrolvelocity *= Math.Max(0.75f - elapsed, 0);//not ideal for low fps...
+                        //Input.xbcontrolvelocity = 0.0f;
+                        if (Math.Abs(Input.xbcontrolvelocity) < 0.001f) Input.xbcontrolvelocity = 0.0f;
                     }
 
-                    camEntity.Velocity = newdir * xbcontrolvelocity;
+                    camEntity.Velocity = newdir * Input.xbcontrolvelocity;
                     camEntity.Position += camEntity.Velocity * elapsed;
 
 
                     //fire!
-                    if (ControllerButtonJustPressed(GamepadButtonFlags.LeftShoulder))
+                    if (Input.ControllerButtonJustPressed(GamepadButtonFlags.LeftShoulder))
                     {
                         SpawnTestEntity(true);
                     }
@@ -984,18 +614,18 @@ namespace CodeWalker
 
                 camera.MouseRotate(mcx, mcy);
 
-                if (xbenable)
+                if (Input.xbenable)
                 {
-                    camera.ControllerRotate(rx, ry);
+                    camera.ControllerRotate(Input.xbrx, Input.xbry);
                 }
 
 
 
-                Vector2 movecontrol = new Vector2(xbmainaxes.X, xbmainaxes.Y); //(L stick)
-                if (kbmovelft) movecontrol.X -= 1.0f;
-                if (kbmovergt) movecontrol.X += 1.0f;
-                if (kbmovefwd) movecontrol.Y += 1.0f;
-                if (kbmovebck) movecontrol.Y -= 1.0f;
+                Vector2 movecontrol = new Vector2(Input.xbmainaxes.X, Input.xbmainaxes.Y); //(L stick)
+                if (Input.kbmovelft) movecontrol.X -= 1.0f;
+                if (Input.kbmovergt) movecontrol.X += 1.0f;
+                if (Input.kbmovefwd) movecontrol.Y += 1.0f;
+                if (Input.kbmovebck) movecontrol.Y -= 1.0f;
                 movecontrol.X = Math.Min(movecontrol.X, 1.0f);
                 movecontrol.X = Math.Max(movecontrol.X, -1.0f);
                 movecontrol.Y = Math.Min(movecontrol.Y, 1.0f);
@@ -1009,8 +639,8 @@ namespace CodeWalker
 
 
                 pedEntity.ControlMovement = movexy;
-                pedEntity.ControlJump = kbjump || ControllerButtonPressed(GamepadButtonFlags.X);
-                pedEntity.ControlBoost = ShiftPressed || ControllerButtonPressed(GamepadButtonFlags.A | GamepadButtonFlags.RightShoulder | GamepadButtonFlags.LeftShoulder);
+                pedEntity.ControlJump = Input.kbjump || Input.ControllerButtonPressed(GamepadButtonFlags.X);
+                pedEntity.ControlBoost = Input.ShiftPressed || Input.ControllerButtonPressed(GamepadButtonFlags.A | GamepadButtonFlags.RightShoulder | GamepadButtonFlags.LeftShoulder);
 
 
                 //Vector3 pedfwd = pedEntity.Orientation.Multiply(Vector3.UnitZ);
@@ -1020,7 +650,7 @@ namespace CodeWalker
 
 
 
-                bool fire = mlb || (xbtrigs.Y > 0);
+                bool fire = mlb || (Input.xbtrigs.Y > 0);
                 if (fire && !ControlFireToggle)
                 {
                     SpawnTestEntity(true);
@@ -1033,496 +663,7 @@ namespace CodeWalker
 
         }
 
-        private Vector4 ControllerMainAxes()
-        {
-            var gp = xbcontrollerstate.Gamepad;
-            var ldz = Gamepad.LeftThumbDeadZone;
-            var rdz = Gamepad.RightThumbDeadZone;
-            float ltnrng = -(short.MinValue + ldz);
-            float ltprng = (short.MaxValue - ldz);
-            float rtnrng = -(short.MinValue + rdz);
-            float rtprng = (short.MaxValue - rdz);
 
-            float lx = (gp.LeftThumbX < 0) ? Math.Min((gp.LeftThumbX + ldz) / ltnrng, 0) :
-                       (gp.LeftThumbX > 0) ? Math.Max((gp.LeftThumbX - ldz) / ltprng, 0) : 0;
-            float ly = (gp.LeftThumbY < 0) ? Math.Min((gp.LeftThumbY + ldz) / ltnrng, 0) :
-                       (gp.LeftThumbY > 0) ? Math.Max((gp.LeftThumbY - ldz) / ltprng, 0) : 0;
-            float rx = (gp.RightThumbX < 0) ? Math.Min((gp.RightThumbX + rdz) / rtnrng, 0) :
-                       (gp.RightThumbX > 0) ? Math.Max((gp.RightThumbX - rdz) / rtprng, 0) : 0;
-            float ry = (gp.RightThumbY < 0) ? Math.Min((gp.RightThumbY + rdz) / rtnrng, 0) :
-                       (gp.RightThumbY > 0) ? Math.Max((gp.RightThumbY - rdz) / rtprng, 0) : 0;
-
-            return new Vector4(lx, ly, rx, ry);
-        }
-        private Vector2 ControllerTriggers()
-        {
-            var gp = xbcontrollerstate.Gamepad;
-            var tt = Gamepad.TriggerThreshold;
-            float trng = byte.MaxValue - tt;
-            float lt = Math.Max((gp.LeftTrigger - tt) / trng, 0);
-            float rt = Math.Max((gp.RightTrigger - tt) / trng, 0);
-            return new Vector2(lt, rt);
-        }
-        private bool ControllerButtonPressed(GamepadButtonFlags b)
-        {
-            return ((xbcontrollerstate.Gamepad.Buttons & b) != 0);
-        }
-        private bool ControllerButtonJustPressed(GamepadButtonFlags b)
-        {
-            return (((xbcontrollerstate.Gamepad.Buttons & b) != 0) && ((xbcontrollerstateprev.Gamepad.Buttons & b) == 0));
-        }
-
-
-
-        private DrawableBase TryGetDrawable(Archetype arche)
-        {
-            if (arche == null) return null;
-            uint drawhash = arche.Hash;
-            DrawableBase drawable = null;
-            if ((arche.DrawableDict != 0))// && (arche.DrawableDict != arche.Hash))
-            {
-                //try get drawable from ydd...
-                YddFile ydd = gameFileCache.GetYdd(arche.DrawableDict);
-                if (ydd != null)
-                {
-                    if (ydd.Loaded && (ydd.Dict != null))
-                    {
-                        Drawable d;
-                        ydd.Dict.TryGetValue(drawhash, out d); //can't out to base class?
-                        drawable = d;
-                        if (drawable == null)
-                        {
-                            return null; //drawable wasn't in dict!!
-                        }
-                    }
-                    else
-                    {
-                        return null; //ydd not loaded yet, or has no dict
-                    }
-                }
-                else
-                {
-                    //return null; //couldn't find drawable dict... quit now?
-                }
-            }
-            if (drawable == null)
-            {
-                //try get drawable from ydr.
-                YdrFile ydr = gameFileCache.GetYdr(drawhash);
-                if (ydr != null)
-                {
-                    if (ydr.Loaded)
-                    {
-                        drawable = ydr.Drawable;
-                    }
-                }
-                else
-                {
-                    YftFile yft = gameFileCache.GetYft(drawhash);
-                    if (yft != null)
-                    {
-                        if (yft.Loaded)
-                        {
-                            if (yft.Fragment != null)
-                            {
-                                drawable = yft.Fragment.Drawable;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return drawable;
-        }
-
-        private Renderable TryGetRenderable(Archetype arche, DrawableBase drawable, uint txdHash = 0)
-        {
-            if (drawable == null) return null;
-            //BUG: only last texdict used!! needs to cache textures per archetype........
-            //(but is it possible to have the same drawable with different archetypes?)
-            uint texDict = (arche != null) ? arche.TextureDict.Hash : txdHash;
-            uint clipDict = (arche != null) ? arche.ClipDict.Hash : 0;
-
-            Renderable rndbl = renderableCache.GetRenderable(drawable);
-            if (rndbl == null) return null;
-
-            if (clipDict != 0)
-            {
-                YcdFile ycd = gameFileCache.GetYcd(clipDict);
-                if ((ycd != null) && (ycd.Loaded))
-                {
-                    MetaHash ahash = arche.Hash;
-                    MetaHash ahashuv1 = ahash + 1;
-                    MetaHash ahashuv2 = ahash + 2;
-                    ClipMapEntry cme, cmeuv1, cmeuv2; //this goes to at least uv5! (from uv0) - see hw1_09.ycd
-                    bool found = false;
-                    if (ycd.ClipMap.TryGetValue(ahash, out cme))
-                    {
-                        found = true;
-                    }
-                    if (ycd.ClipMap.TryGetValue(ahashuv1, out cmeuv1))
-                    {
-                        found = true;
-                    }
-                    if (ycd.ClipMap.TryGetValue(ahashuv2, out cmeuv2))
-                    {
-                        found = true;
-                    }
-                    if (!found)
-                    {
-                    }
-                }
-            }
-
-
-            bool alltexsloaded = true;
-            int missingtexcount = 0;
-            for (int mi = 0; mi < rndbl.HDModels.Length; mi++)
-            {
-                var model = rndbl.HDModels[mi];
-
-                //if (!RenderIsModelFinalRender(model) && !renderproxies)
-                //{
-                //    continue; //filter out reflection proxy models...
-                //}
-
-
-                foreach (var geom in model.Geometries)
-                {
-                    if (geom.Textures != null)
-                    {
-                        for (int i = 0; i < geom.Textures.Length; i++)
-                        {
-                            var tex = geom.Textures[i];
-                            var ttex = tex as Texture;
-                            RenderableTexture rdtex = null;
-                            if ((ttex == null) && (tex != null))
-                            {
-                                //TextureRef means this RenderableTexture needs to be loaded from texture dict...
-                                if (texDict != 0)
-                                {
-                                    YtdFile ytd = gameFileCache.GetYtd(texDict);
-                                    if ((ytd != null) && (ytd.Loaded) && (ytd.TextureDict != null))
-                                    {
-                                        var dtex = ytd.TextureDict.Lookup(tex.NameHash);
-                                        if (dtex == null)
-                                        {
-                                            //not present in dictionary... check already loaded texture dicts...
-                                            var ytd2 = gameFileCache.TryGetTextureDictForTexture(tex.NameHash);
-                                            if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
-                                            {
-                                                dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                            }
-                                            else
-                                            {
-                                                //couldn't find texture dict?
-                                                //first try going through ytd hierarchy...
-                                                dtex = gameFileCache.TryFindTextureInParent(tex.NameHash, texDict);
-
-
-                                                //if (dtex == null)
-                                                //{ //try for a texture dict with the same hash as the archetype?
-                                                //    dtex = gameFileCache.TryFindTextureInParent(tex.TextureRef.NameHash, arche.Hash);
-                                                //    if (dtex != null)
-                                                //    { }
-                                                //}
-                                            }
-                                        }
-                                        if (dtex != null)
-                                        {
-                                            geom.Textures[i] = dtex; //cache it for next time to avoid the lookup...
-                                            rdtex = renderableCache.GetRenderableTexture(dtex);
-                                        }
-                                        if (rdtex == null)
-                                        { } //nothing to see here :(
-                                    }
-                                    else if ((ytd == null))
-                                    {
-                                        Texture dtex = null;
-                                        if (drawable.ShaderGroup.TextureDictionary != null)
-                                        {
-                                            dtex = drawable.ShaderGroup.TextureDictionary.Lookup(tex.NameHash);
-                                            if (dtex == null)
-                                            {
-                                                //dtex = drawable.ShaderGroup.TextureDictionary.Textures.data_items[0];
-                                            }
-                                        }
-                                        if (dtex == null)
-                                        {
-                                            var ytd2 = gameFileCache.TryGetTextureDictForTexture(tex.NameHash);
-                                            if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
-                                            {
-                                                dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                            }
-                                            if (dtex == null)
-                                            {
-                                                dtex = gameFileCache.TryFindTextureInParent(tex.NameHash, texDict);
-                                            }
-                                        }
-                                        rdtex = renderableCache.GetRenderableTexture(dtex);
-                                        if (rdtex == null)
-                                        { missingtexcount -= 2; } //(give extra chance..)  couldn't find the texture! :(
-                                    }
-                                    else if (ytd != null)
-                                    {
-                                        alltexsloaded = false;//ytd not loaded yet
-                                        //missingtexcount++;
-                                    }
-                                }
-                                else //no texdict specified, nothing to see here..
-                                {
-                                    var ytd2 = gameFileCache.TryGetTextureDictForTexture(tex.NameHash);
-                                    if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
-                                    {
-                                        var dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                        rdtex = renderableCache.GetRenderableTexture(dtex);
-                                    }
-                                }
-                            }
-                            else if (ttex != null) //ensure embedded renderable texture
-                            {
-                                rdtex = renderableCache.GetRenderableTexture(ttex);
-                            }
-                            else if (tex == null)
-                            { } //tex wasn't loaded? shouldn't happen..
-
-
-                            geom.RenderableTextures[i] = rdtex;
-                            if (rdtex != null)
-                            {
-                                if (!rdtex.IsLoaded)
-                                {
-                                    alltexsloaded = false;
-                                    missingtexcount++;
-                                }
-                            }
-                            else
-                            {
-                                //alltexsloaded = false;
-                                missingtexcount++;
-                            }
-
-
-                        }
-                    }
-                }
-            }
-
-            rndbl.AllTexturesLoaded = alltexsloaded || (missingtexcount < 2);
-
-            return rndbl;
-        }
-
-        private bool LodDistTest(ref Vector3 p, ref Vector3 min, ref Vector3 max, float lodDist)
-        {
-            //for AABB only! for oriented BBs p must be transformed first...
-            if (p.X < (min.X - lodDist)) return false;
-            if (p.X > (max.X + lodDist)) return false;
-            if (p.Y < (min.Y - lodDist)) return false;
-            if (p.Y > (max.Y + lodDist)) return false;
-            if (p.Z < (min.Z - lodDist)) return false;
-            if (p.Z > (max.Z + lodDist)) return false;
-            return true;
-        }
-        private bool LodDistTest(Vector3 p, Vector3 min, Vector3 max, float lodDist)
-        {
-            //for AABB only! for oriented BBs p must be transformed first...
-            if (p.X < (min.X - lodDist)) return false;
-            if (p.X > (max.X + lodDist)) return false;
-            if (p.Y < (min.Y - lodDist)) return false;
-            if (p.Y > (max.Y + lodDist)) return false;
-            if (p.Z < (min.Z - lodDist)) return false;
-            if (p.Z > (max.Z + lodDist)) return false;
-            return true;
-        }
-
-
-
-        private void RenderSky(DeviceContext context)
-        {
-            if (MapViewEnabled) return;
-            if (!renderskydome) return;
-            if (!weather.Inited) return;
-
-            var shader = shaders.Skydome;
-            shader.UpdateSkyLocals(weather, globalLights);
-
-
-
-
-            DrawableBase skydomeydr = null;
-            YddFile skydomeydd = gameFileCache.GetYdd(2640562617); //skydome hash
-            if ((skydomeydd != null) && (skydomeydd.Loaded) && (skydomeydd.Dict != null))
-            {
-                skydomeydr = skydomeydd.Dict.Values.FirstOrDefault();
-            }
-
-            Texture starfield = null;
-            Texture moon = null;
-            YtdFile skydomeytd = gameFileCache.GetYtd(2640562617); //skydome hash
-            if ((skydomeytd != null) && (skydomeytd.Loaded) && (skydomeytd.TextureDict != null) && (skydomeytd.TextureDict.Dict != null))
-            {
-                skydomeytd.TextureDict.Dict.TryGetValue(1064311147, out starfield); //starfield hash
-                skydomeytd.TextureDict.Dict.TryGetValue(234339206, out moon); //moon-new hash
-            }
-
-            Renderable sdrnd = null;
-            if (skydomeydr != null)
-            {
-                sdrnd = renderableCache.GetRenderable(skydomeydr);
-            }
-
-            RenderableTexture sftex = null;
-            if (starfield != null)
-            {
-                sftex = renderableCache.GetRenderableTexture(starfield);
-            }
-
-            RenderableTexture moontex = null;
-            if (moon != null)
-            {
-                moontex = renderableCache.GetRenderableTexture(moon);
-            }
-
-            if ((sdrnd != null) && (sdrnd.IsLoaded) && (sftex != null) && (sftex.IsLoaded))
-            {
-                shaders.SetDepthStencilMode(context, DepthStencilMode.DisableAll);
-                shaders.SetRasterizerMode(context, RasterizerMode.Solid);
-
-                RenderableInst rinst = new RenderableInst();
-                rinst.Position = Vector3.Zero;
-                rinst.CamRel = Vector3.Zero;
-                rinst.Distance = 0.0f;
-                rinst.BBMin = skydomeydr.BoundingBoxMin.XYZ();
-                rinst.BBMax = skydomeydr.BoundingBoxMax.XYZ();
-                rinst.BSCenter = Vector3.Zero;
-                rinst.Radius = skydomeydr.BoundingSphereRadius;
-                rinst.Orientation = Quaternion.Identity;
-                rinst.Scale = Vector3.One;
-                rinst.TintPaletteIndex = 0;
-                rinst.Renderable = sdrnd;
-                shader.SetShader(context);
-                shader.SetInputLayout(context, VertexType.PTT);
-                shader.SetSceneVars(context, camera, null, globalLights);
-                shader.SetEntityVars(context, ref rinst);
-
-                RenderableModel rmod = ((sdrnd.HDModels != null) && (sdrnd.HDModels.Length > 0)) ? sdrnd.HDModels[0] : null;
-                RenderableGeometry rgeom = ((rmod != null) && (rmod.Geometries != null) && (rmod.Geometries.Length > 0)) ? rmod.Geometries[0] : null;
-
-                if ((rgeom != null) && (rgeom.VertexType == VertexType.PTT))
-                {
-                    shader.SetModelVars(context, rmod);
-                    shader.SetTextures(context, sftex);
-
-                    rgeom.Render(context);
-                }
-
-                //shaders.SetRasterizerMode(context, RasterizerMode.SolidDblSided);
-                //shaders.SetDepthStencilMode(context, DepthStencilMode.Enabled);
-                shader.RenderSun(context, camera, weather, globalLights);
-
-
-                if ((moontex != null) && (moontex.IsLoaded))
-                {
-                    shader.RenderMoon(context, camera, weather, globalLights, moontex);
-                }
-
-
-
-                shader.UnbindResources(context);
-            }
-
-        }
-
-        private void RenderClouds(DeviceContext context)
-        {
-            if (MapViewEnabled) return;
-            if (!renderskydome) return;
-            if (!weather.Inited) return;
-            if (!clouds.Inited) return;
-
-
-            var shader = shaders.Clouds;
-
-            shaders.SetDepthStencilMode(context, DepthStencilMode.DisableAll);
-            shaders.SetRasterizerMode(context, RasterizerMode.Solid);
-            shaders.SetDefaultBlendState(context);
-            //shaders.SetAlphaBlendState(context);
-
-            shader.SetShader(context);
-            shader.UpdateCloudsLocals(clouds, globalLights);
-            shader.SetSceneVars(context, camera, null, globalLights);
-
-            var vtype = (VertexType)0;
-
-            if (!string.IsNullOrEmpty(individualcloudfrag))
-            {
-                //render one cloud fragment.
-
-                CloudHatFrag frag = clouds.HatManager.FindFrag(individualcloudfrag);
-                if (frag == null) return;
-
-                for (int i = 0; i < frag.Layers.Length; i++)
-                {
-                    CloudHatFragLayer layer = frag.Layers[i];
-                    uint dhash = JenkHash.GenHash(layer.Filename.ToLowerInvariant());
-                    Archetype arch = gameFileCache.GetArchetype(dhash);
-                    if (arch == null)
-                    { continue; }
-
-                    if (Math.Max(camera.Position.Z, 0.0f) < layer.HeightTigger) continue;
-
-                    var drw = TryGetDrawable(arch);
-                    var rnd = TryGetRenderable(arch, drw);
-
-                    if ((rnd == null) || (rnd.IsLoaded == false) || (rnd.AllTexturesLoaded == false))
-                    { continue; }
-
-
-                    RenderableInst rinst = new RenderableInst();
-                    rinst.Position = frag.Position;// Vector3.Zero;
-                    rinst.CamRel = Vector3.Zero;// - camera.Position;
-                    rinst.Distance = rinst.CamRel.Length();
-                    rinst.BBMin = arch.BBMin;
-                    rinst.BBMax = arch.BBMax;
-                    rinst.BSCenter = frag.Position;
-                    rinst.Radius = arch.BSRadius;
-                    rinst.Orientation = Quaternion.Identity;
-                    rinst.Scale = frag.Scale;// Vector3.One;
-                    rinst.TintPaletteIndex = 0;
-                    rinst.Renderable = rnd;
-
-                    shader.SetEntityVars(context, ref rinst);
-
-
-                    for (int mi = 0; mi < rnd.HDModels.Length; mi++)
-                    {
-                        var model = rnd.HDModels[mi];
-
-                        for (int gi = 0; gi < model.Geometries.Length; gi++)
-                        {
-                            var geom = model.Geometries[gi];
-
-                            if (geom.VertexType != vtype)
-                            {
-                                vtype = geom.VertexType;
-                                shader.SetInputLayout(context, vtype);
-                            }
-
-                            shader.SetGeomVars(context, geom);
-
-                            geom.Render(context);
-                        }
-                    }
-
-                }
-
-
-            }
-
-
-
-        }
 
 
         private void RenderWorld()
@@ -1530,25 +671,19 @@ namespace CodeWalker
             //start point for world view mode rendering.
             //also used for the water, paths, collisions, nav mesh, and the project window items.
 
-            renderworldentities.Clear();
-            renderworldrenderables.Clear();
             renderworldVisibleYmapDict.Clear();
-            renderworldHideFlags.Clear();
 
 
-            int hour = worldymaptimefilter ? (int)timeofday : -1;
+            int hour = worldymaptimefilter ? (int)Renderer.timeofday : -1;
             MetaHash weathertype = worldymapweatherfilter ? ((weather.CurrentWeatherType != null) ? weather.CurrentWeatherType.NameHash : new MetaHash(0)) : new MetaHash(0);
+
+            IEnumerable<Entity> spaceEnts = null;
 
             if (renderworld)
             {
                 space.GetVisibleYmaps(camera, hour, weathertype, renderworldVisibleYmapDict);
 
-                foreach (var ae in space.TemporaryEntities)
-                {
-                    if (ae.EntityDef == null) continue; //nothing to render...
-                    RenderWorldCalcEntityVisibility(camera, ae.EntityDef);
-                    renderworldentities.Add(ae.EntityDef);
-                }
+                spaceEnts = space.TemporaryEntities;
             }
 
             if (ProjectForm != null)
@@ -1556,211 +691,16 @@ namespace CodeWalker
                 ProjectForm.GetVisibleYmaps(camera, renderworldVisibleYmapDict);
             }
 
-            //float minZ = float.MaxValue;
-            float maxZ = float.MinValue;
-            float cvwidth = camera.OrthographicSize * camera.AspectRatio*0.5f;
-            float cvheight = camera.OrthographicSize*0.5f;
-            float cvwmin = camera.Position.X - cvwidth;
-            float cvwmax = camera.Position.X + cvwidth;
-            float cvhmin = camera.Position.Y - cvheight;
-            float cvhmax = camera.Position.Y + cvheight;
 
-            foreach (var ymap in renderworldVisibleYmapDict.Values)
+            Renderer.RenderWorld(renderworldVisibleYmapDict, spaceEnts);
+
+
+            foreach (var ymap in Renderer.VisibleYmaps)
             {
-                if (!RenderWorldYmapIsVisible(ymap)) continue;
-                if (ymap.AllEntities != null)
-                {
-                    for (int i = 0; i < ymap.AllEntities.Length; i++)
-                    {
-                        var ent = ymap.AllEntities[i];
-                        ent.LargestChildLodDist = 0;
-                        ent.ChildrenLoading = false;
-                        ent.Rendered = false;
-                        ent.ChildRendered = false;
-                        if (MapViewEnabled)
-                        {
-                            //find the max Z value for positioning camera in map view, to help shadows
-                            if ((ent.Position.Z<1000.0f)&&(ent.BSRadius < 500.0f))
-                            {
-                                float r = ent.BSRadius;
-                                if (((ent.Position.X + r) > cvwmin) && ((ent.Position.X - r) < cvwmax) && ((ent.Position.Y + r) > cvhmin) && ((ent.Position.Y - r) < cvhmax))
-                                {
-                                    //minZ = Math.Min(minZ, ent.BBMin.Z);
-                                    maxZ = Math.Max(maxZ, ent.BBMax.Z+50.0f);//add some bias to avoid clipping things...
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (MapViewEnabled)
-            {
-                //move the camera closer to the geometry, to help shadows in map view.
-                if (maxZ == float.MinValue) maxZ = 1000.0f;
-                camera.Position.Z = Math.Min(maxZ, 1000.0f); 
-            }
-
-
-            foreach (var ymap in renderworldVisibleYmapDict.Values)
-            {
-                if (!RenderWorldYmapIsVisible(ymap)) continue;
-                if (ymap.RootEntities != null)
-                {
-                    YmapFile pymap;
-                    renderworldVisibleYmapDict.TryGetValue(ymap.CMapData.parent, out pymap);
-                    for (int i = 0; i < ymap.RootEntities.Length; i++)
-                    {
-                        var ent = ymap.RootEntities[i];
-                        int pind = ent.CEntityDef.parentIndex;
-                        if (pind >= 0) //connect root entities to parents if they have them..
-                        {
-                            YmapEntityDef p = null;
-                            if ((pymap != null) && (pymap.AllEntities != null))
-                            {
-                                if ((pind < pymap.AllEntities.Length))
-                                {
-                                    p = pymap.AllEntities[pind];
-                                    ent.Parent = p;
-                                    ent.ParentGuid = p.CEntityDef.guid;
-                                    ent.ParentName = p.CEntityDef.archetypeName;
-                                }
-                            }
-                            else
-                            { }//should only happen if parent ymap not loaded yet...
-                        }
-                        RenderWorldRecurseCalcEntityVisibility(camera, ent);
-                    }
-                }
-            }
-
-            foreach (var ymap in renderworldVisibleYmapDict.Values)
-            {
-                if (!RenderWorldYmapIsVisible(ymap)) continue;
-                if (ymap.RootEntities != null)
-                {
-                    for (int i = 0; i < ymap.RootEntities.Length; i++)
-                    {
-                        var ent = ymap.RootEntities[i];
-                        RenderWorldRecurseAddEntities(ent, renderworldentities);
-                    }
-                }
-
                 UpdateMouseHits(ymap);
             }
 
 
-            //go through the render list, and try ensure renderables and textures for all.
-            //if an entity is not fully loaded, set a flag for its parent, then traverse to root
-            //until found an entity that is fully loaded.
-            //on a second loop, build a final render list based on the flags.
-
-            for (int i = 0; i < renderworldentities.Count; i++)
-            {
-                var ent = renderworldentities[i];
-                var arch = ent.Archetype;
-                var pent = ent.Parent;
-
-                if (renderinteriors && ent.IsMlo) //render Mlo child entities...
-                {
-                    if ((ent.MloInstance != null) && (ent.MloInstance.Entities != null))
-                    {
-                        for (int j = 0; j < ent.MloInstance.Entities.Length; j++)
-                        {
-                            var intent = ent.MloInstance.Entities[j];
-                            var intarch = intent.Archetype;
-                            if (intarch == null) continue; //missing archetype...
-
-                            if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
-
-                            intent.CamRel = intent.Position - camera.Position;
-                            intent.Distance = intent.CamRel.Length();
-                            intent.IsVisible = true;
-
-                            var bscent = intent.CamRel + intent.BSCenter;
-                            float bsrad = intent.BSRadius;
-                            if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref bscent, bsrad))
-                            {
-                                continue; //frustum cull interior ents
-                            }
-                            var intdrbl = TryGetDrawable(intarch);
-                            var intrndbl = TryGetRenderable(intarch, intdrbl);
-                            if (intrndbl == null) continue; //no renderable
-                            if (!(intrndbl.IsLoaded && (intrndbl.AllTexturesLoaded || !waitforchildrentoload))) continue; //not loaded yet
-
-                            RenderableEntity intrent = new RenderableEntity();
-                            intrent.Entity = intent;
-                            intrent.Renderable = intrndbl;
-                            renderworldrenderables.Add(intrent);
-                        }
-                    }
-                    if (rendercollisionmeshes)
-                    {
-                        RenderInteriorCollisionMesh(ent);
-                    }
-                }
-
-                ent.Rendered = true;
-                var drawable = TryGetDrawable(arch);
-                Renderable rndbl = TryGetRenderable(arch, drawable);
-                if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
-                {
-                    RenderableEntity rent = new RenderableEntity();
-                    rent.Entity = ent;
-                    rent.Renderable = rndbl;
-                    renderworldrenderables.Add(rent);
-
-                    if (pent != null)
-                    {
-                        pent.ChildRendered = true;
-                    }
-                }
-                else if (waitforchildrentoload)
-                {
-                    //todo: render parent if children loading.......
-                }
-            }
-
-            for (int i = 0; i < renderworldrenderables.Count; i++)
-            {
-                var ent = renderworldrenderables[i].Entity;
-                if (ent.ChildRendered && !ent.ChildrenLoading)
-                {
-                    ent.ChildrenRendered = true;
-                }
-            }
-
-            for (int i = 0; i < renderworldrenderables.Count; i++)
-            {
-                var rent = renderworldrenderables[i];
-                var ent = rent.Entity;
-                var arch = ent.Archetype;
-
-                RenderArchetype(arch, ent, rent.Renderable, false);
-            }
-
-
-
-            if (rendergrass)
-            {
-                foreach (var ymap in renderworldVisibleYmapDict.Values)
-                {
-                    if (ymap.GrassInstanceBatches != null)
-                    {
-                        RenderYmapGrass(ymap);
-                    }
-                }
-            }
-            if (renderdistlodlights && timecycle.IsNightTime)
-            {
-                foreach (var ymap in renderworldVisibleYmapDict.Values)
-                {
-                    if (ymap.DistantLODLights != null)
-                    {
-                        RenderYmapDistantLODLights(ymap);
-                    }
-                }
-            }
 
             if (renderwaterquads || (SelectionMode == MapSelectionMode.WaterQuad))
             {
@@ -1794,157 +734,25 @@ namespace CodeWalker
             {
                 RenderWorldAudioZones();
             }
+
         }
-        private bool RenderWorldYmapIsVisible(YmapFile ymap)
+
+        private void RenderWorldCollisionMeshes()
         {
-            if (!ShowScriptedYmaps)
+            //enqueue collision meshes for rendering - from the world grid
+
+            collisionitems.Clear();
+            space.GetVisibleBounds(camera, collisionmeshrange, collisionmeshlayers, collisionitems);
+
+            foreach (var item in collisionitems)
             {
-                if ((ymap._CMapData.flags & 1) > 0)
-                    return false;
-            }
-
-            return true;
-        }
-        private void RenderWorldCalcEntityVisibility(Camera cam, YmapEntityDef ent)
-        {
-            ent.CamRel = ent.Position - cam.Position;
-            ent.Distance = ent.CamRel.Length();
-            float distval = ent.Distance;
-
-            if (MapViewEnabled)
-            {
-                distval = cam.OrthographicSize / MapViewDetail;
-            }
-
-
-            var loddist = ent.CEntityDef.lodDist;
-            var cloddist = ent.CEntityDef.childLodDist;
-
-            var loddistmultdef = renderworldLodDistMult * 1.0f;
-            var loddistmultorph = renderworldDetailDistMult * 1.5f;
-            var loddistmultarch = renderworldLodDistMult * 1.0f;
-
-            if (loddist <= 0.0f)//usually -1 or -2
-            {
-                if (ent.Archetype != null)
+                YbnFile ybn = gameFileCache.GetYbn(item.Name);
+                if ((ybn != null) && (ybn.Loaded))
                 {
-                    loddist = ent.Archetype.LodDist * loddistmultarch;
-                }
-            }
-            else if (ent.CEntityDef.lodLevel == Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)
-            {
-                loddist *= loddistmultorph; //orphan view dist adjustment...
-            }
-            else
-            {
-                loddist *= loddistmultdef;
-            }
-
-
-            if (cloddist <= 0)
-            {
-                if (ent.Archetype != null)
-                {
-                    cloddist = ent.Archetype.LodDist * loddistmultarch;
-                    //cloddist = ent.Archetype.BSRadius * 50.0f;
-                }
-            }
-            else
-            {
-                cloddist *= loddistmultdef;
-            }
-            if (cloddist == 0)
-            {
-                //cloddist = loddist;//always try to show children, based on their loddist
-            }
-
-
-            ent.IsVisible = (distval <= loddist);
-            ent.ChildrenVisible = (distval <= cloddist) && (ent.CEntityDef.numChildren > 0);
-            ent.ChildrenLoading = false;
-
-            if ((ent.Parent != null) && (ent.CEntityDef.lodLevel != Unk_1264241711.LODTYPES_DEPTH_ORPHANHD))
-            {
-                if (ent.Parent.CEntityDef.childLodDist == 0.0f)
-                {
-                    ent.Parent.LargestChildLodDist = Math.Max(ent.Parent.LargestChildLodDist, loddist);
+                    Renderer.RenderCollisionMesh(ybn.Bounds, null);
                 }
             }
 
-            if (renderworldMaxLOD != Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)
-            {
-                if ((ent.CEntityDef.lodLevel == Unk_1264241711.LODTYPES_DEPTH_ORPHANHD) ||
-                    (ent.CEntityDef.lodLevel < renderworldMaxLOD))
-                {
-                    ent.IsVisible = false;
-                    ent.ChildrenVisible = false;
-                }
-                if (ent.CEntityDef.lodLevel == renderworldMaxLOD)
-                {
-                    ent.ChildrenVisible = false;
-                }
-            }
-
-            if (!ent.IsVisible)
-            {
-                ent.ChildrenRendered = false;
-            }
-        }
-        private void RenderWorldRecurseCalcEntityVisibility(Camera cam, YmapEntityDef ent)
-        {
-            RenderWorldCalcEntityVisibility(cam, ent);
-            if (ent.ChildrenVisible)
-            {
-                if (ent.Children != null)
-                {
-                    for (int i = 0; i < ent.Children.Length; i++)
-                    {
-                        var child = ent.Children[i];
-                        if (child.Ymap == ent.Ymap)
-                        {
-                            RenderWorldRecurseCalcEntityVisibility(cam, child);
-                        }
-                    }
-                }
-            }
-        }
-        private void RenderWorldRecurseAddEntities(YmapEntityDef ent, List<YmapEntityDef> res)
-        {
-            //bool useclod = false; //(ent.CEntityDef.childLodDist == 0.0f);
-            //bool hide = useclod ? (ent.AnyChildVisible /*&& !ent.AnyChildInvisible*/) : ent.ChildrenVisible;
-            //bool force = !useclod && (ent.Parent != null) && ent.Parent.ChildrenVisible && !hide;
-            bool hide = ent.ChildrenVisible;
-            bool force = (ent.Parent != null) && ent.Parent.ChildrenVisible && !hide;
-            if (force || (ent.IsVisible && !hide))
-            {
-                if (ent.Archetype != null)
-                {
-                    if (!RenderIsEntityFinalRender(ent)) return;
-
-                    var bscent = ent.CamRel + ent.BSCenter;
-                    float bsrad = ent.BSRadius;
-                    if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref bscent, bsrad))
-                    {
-                        return; //frustum cull
-                    }
-
-
-                    res.Add(ent);
-                }
-                else
-                { }
-            }
-            if (ent.IsVisible && ent.ChildrenVisible && (ent.Children != null))
-            {
-                for (int i = 0; i < ent.Children.Length; i++)
-                {
-                    var child = ent.Children[i];
-                    if (child.Ymap == ent.Ymap)
-                    {
-                        RenderWorldRecurseAddEntities(ent.Children[i], res);
-                    }
-                }
-            }
         }
 
         private void RenderWorldWaterQuads()
@@ -1958,15 +766,7 @@ namespace CodeWalker
                 ProjectForm.GetVisibleWaterQuads(camera, renderwaterquadlist);
             }
 
-            foreach (var quad in renderwaterquadlist)
-            {
-                RenderableWaterQuad rquad = renderableCache.GetRenderableWaterQuad(quad);
-                if ((rquad != null) && (rquad.IsLoaded))
-                {
-                    rquad.CamRel = -camera.Position;
-                    shaders.Enqueue(rquad);
-                }
-            }
+            Renderer.RenderWaterQuads(renderwaterquadlist);
 
             UpdateMouseHits(renderwaterquadlist);
 
@@ -1974,8 +774,8 @@ namespace CodeWalker
 
         private void RenderWorldPaths()
         {
-
             renderpathynds.Clear();
+
             space.GetVisibleYnds(camera, renderpathynds);
 
             if (ProjectForm != null)
@@ -1983,14 +783,7 @@ namespace CodeWalker
                 ProjectForm.GetVisibleYnds(camera, renderpathynds);
             }
 
-            foreach (var ynd in renderpathynds)
-            {
-                RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(ynd);
-                if ((rnd != null) && (rnd.IsLoaded))
-                {
-                    shaders.Enqueue(rnd);
-                }
-            }
+            Renderer.RenderPaths(renderpathynds);
 
             UpdateMouseHits(renderpathynds);
         }
@@ -2007,14 +800,7 @@ namespace CodeWalker
                 ProjectForm.GetVisibleTrainTracks(camera, rendertraintracklist);
             }
 
-            foreach (var track in rendertraintracklist)
-            {
-                RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(track);
-                if ((rnd != null) && (rnd.IsLoaded))
-                {
-                    shaders.Enqueue(rnd);
-                }
-            }
+            Renderer.RenderTrainTracks(rendertraintracklist);
 
             UpdateMouseHits(rendertraintracklist);
         }
@@ -2030,15 +816,7 @@ namespace CodeWalker
                 //ProjectForm.GetVisibleYnvs(camera, rendernavmeshynvs);
             }
 
-
-            foreach (var ynv in rendernavmeshynvs)
-            {
-                RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(ynv);
-                if ((rnd != null) && (rnd.IsLoaded))
-                {
-                    shaders.Enqueue(rnd);
-                }
-            }
+            Renderer.RenderNavMeshes(rendernavmeshynvs);
 
             UpdateMouseHits(rendernavmeshynvs);
 
@@ -2057,14 +835,7 @@ namespace CodeWalker
                 ProjectForm.GetVisibleScenarios(camera, renderscenariolist);
             }
 
-            foreach (var scenario in renderscenariolist)
-            {
-                RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(scenario.ScenarioRegion);
-                if ((rnd != null) && (rnd.IsLoaded))
-                {
-                    shaders.Enqueue(rnd);
-                }
-            }
+            Renderer.RenderScenarios(renderscenariolist);
 
             UpdateMouseHits(renderscenariolist);
         }
@@ -2081,12 +852,7 @@ namespace CodeWalker
                 //ProjectForm.GetVisiblePopZones(camera, renderpopzonelist);
             }
 
-
-            RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(popzones);
-            if ((rnd != null) && (rnd.IsLoaded))
-            {
-                shaders.Enqueue(rnd);
-            }
+            Renderer.RenderPopZones(popzones);
         }
 
         private void RenderWorldAudioZones()
@@ -2134,7 +900,7 @@ namespace CodeWalker
                         mb.BBMax = placement.InnerMax;
                         mb.Orientation = placement.InnerOri;
                         mb.Scale = Vector3.One;
-                        HilightBoxes.Add(mb);
+                        Renderer.HilightBoxes.Add(mb);
 
                         if (renderaudioouterbounds)
                         {
@@ -2143,7 +909,7 @@ namespace CodeWalker
                             mb.BBMax = placement.OuterMax;
                             mb.Orientation = placement.OuterOri;
                             mb.Scale = Vector3.One;
-                            BoundingBoxes.Add(mb);
+                            Renderer.BoundingBoxes.Add(mb);
                         }
 
                         Vector3 hbcamrel = (placement.Position - camera.Position);
@@ -2167,13 +933,13 @@ namespace CodeWalker
                         {
                             ms.CamRelPos = placement.InnerPos - camera.Position;
                             ms.Radius = placement.InnerRad;
-                            HilightSpheres.Add(ms);
+                            Renderer.HilightSpheres.Add(ms);
 
                             if (renderaudioouterbounds)
                             {
                                 ms.CamRelPos = placement.OuterPos - camera.Position;
                                 ms.Radius = placement.OuterRad;
-                                BoundingSpheres.Add(ms);
+                                Renderer.BoundingSpheres.Add(ms);
                             }
 
                             bsph.Center = placement.Position;
@@ -2205,10 +971,10 @@ namespace CodeWalker
                 {
                     case Dat151ZoneShape.Box:
                     case Dat151ZoneShape.Line:
-                        HilightBoxes.Add(lastHitOuterBox);
+                        Renderer.HilightBoxes.Add(lastHitOuterBox);
                         break;
                     case Dat151ZoneShape.Sphere:
-                        HilightSpheres.Add(lastHitOuterSphere);
+                        Renderer.HilightSpheres.Add(lastHitOuterSphere);
                         break;
                 }
             }
@@ -2235,7 +1001,7 @@ namespace CodeWalker
 
             if (arche != null)
             {
-                RenderArchetype(arche, null);
+                Renderer.RenderArchetype(arche, null);
 
                 selarch = arche;
             }
@@ -2244,7 +1010,7 @@ namespace CodeWalker
                 YmapFile ymap = gameFileCache.GetYmap(hash);
                 if (ymap != null)
                 {
-                    RenderYmap(ymap);
+                    Renderer.RenderYmap(ymap);
                 }
                 else
                 {
@@ -2254,7 +1020,7 @@ namespace CodeWalker
                     {
                         if (ydr.Loaded)
                         {
-                            RenderDrawable(ydr.Drawable, null, null, -camera.Position, hash);
+                            Renderer.RenderDrawable(ydr.Drawable, null, null, hash);
 
                             seldrwbl = ydr.Drawable;
                         }
@@ -2270,7 +1036,7 @@ namespace CodeWalker
                                 {
                                     var f = yft.Fragment;
 
-                                    RenderFragment(null, null, f, hash);
+                                    Renderer.RenderFragment(null, null, f, hash);
 
                                     seldrwbl = f.Drawable;
                                 }
@@ -2288,7 +1054,7 @@ namespace CodeWalker
 
             if ((selarch != null) && (seldrwbl == null))
             {
-                seldrwbl = TryGetDrawable(selarch);
+                seldrwbl = gameFileCache.TryGetDrawable(selarch);
             }
 
             //select this item for viewing by the UI...
@@ -2312,600 +1078,9 @@ namespace CodeWalker
             {
                 uint hash = JenkHash.GenHash(lod);
                 YmapFile ymap = gameFileCache.GetYmap(hash);
-                RenderYmap(ymap);
-            }
-        }
-        private void RenderYmap(YmapFile ymap)
-        {
-            if (ymap == null) return;
-            if (!ymap.Loaded) return;
+                Renderer.RenderYmap(ymap);
 
-            UpdateMouseHits(ymap);
-
-            if ((ymap.AllEntities != null) && (ymap.RootEntities != null))
-            {
-                if (usedynamiclod)
-                {
-                    for (int i = 0; i < ymap.RootEntities.Length; i++)
-                    {
-                        RenderYmapLOD(ymap.RootEntities[i].Ymap, ymap.RootEntities[i]);
-                    }
-                }
-                else
-                {
-                    var ents = renderchildents ? ymap.AllEntities : ymap.RootEntities;
-                    for (int i = 0; i < ents.Length; i++)
-                    {
-                        var ent = ents[i];
-                        if (renderchildents && ent.Children != null) continue;
-                        //if (rootent.CEntityDef.parentIndex == -1) continue;
-                        Archetype arch = ent.Archetype;
-                        if (arch != null)
-                        {
-                            bool timed = (arch.Type == MetaName.CTimeArchetypeDef);
-                            if (!timed || (rendertimedents && (rendertimedentsalways || arch.IsActive(timeofday))))
-                            {
-                                ent.CamRel = ent.Position - camera.Position;
-                                RenderArchetype(arch, ent);
-                            }
-                        }
-                        else
-                        {
-                            //couldn't find archetype...
-                        }
-                    }
-                }
-            }
-
-            if (rendergrass && (ymap.GrassInstanceBatches != null))
-            {
-                RenderYmapGrass(ymap);
-            }
-            if (renderdistlodlights && timecycle.IsNightTime && (ymap.DistantLODLights != null))
-            {
-                RenderYmapDistantLODLights(ymap);
-            }
-
-        }
-        private bool RenderYmapLOD(YmapFile ymap, YmapEntityDef entity)
-        {
-            if (!ymap.Loaded) return false;
-
-            ymap.EnsureChildYmaps(gameFileCache);
-
-            Archetype arch = entity.Archetype;
-            if (arch != null)
-            {
-                bool timed = (arch.Type == MetaName.CTimeArchetypeDef);
-                if (!timed || (rendertimedents && (rendertimedentsalways || arch.IsActive(timeofday))))
-                {
-                    bool usechild = false;
-                    entity.CamRel = entity.Position - camera.Position;
-                    float dist = (entity.CamRel + entity.BSCenter).Length();
-                    float rad = arch.BSRadius;
-                    float loddist = entity.CEntityDef.lodDist;
-                    if (loddist < 1.0f)
-                    {
-                        loddist = 200.0f;
-                    }
-                    float mindist = Math.Max(dist - rad, 1.0f) * lodthreshold;
-                    if (mindist < loddist)
-                    {
-                        //recurse...
-                        var children = entity.ChildrenMerged;
-                        if ((children != null))
-                        {
-                            usechild = true;
-                            for (int i = 0; i < children.Length; i++)
-                            {
-                                var childe = children[i];
-                                if (!RenderYmapLOD(childe.Ymap, childe))
-                                {
-                                    if (waitforchildrentoload)
-                                    {
-                                        usechild = false; //might cause some overlapping, but should reduce things disappearing
-                                    }
-                                }
-                            }
-                        }
-                        if (!entity.ChildrenRendered)
-                        {
-                            entity.ChildrenRendered = usechild;
-                        }
-                    }
-                    else
-                    {
-                        entity.ChildrenRendered = false;
-                    }
-                    if (!usechild && !entity.ChildrenRendered)
-                    {
-
-
-
-                        if (renderinteriors && entity.IsMlo) //render Mlo child entities...
-                        {
-                            if ((entity.MloInstance != null) && (entity.MloInstance.Entities != null))
-                            {
-                                for (int j = 0; j < entity.MloInstance.Entities.Length; j++)
-                                {
-                                    var intent = entity.MloInstance.Entities[j];
-                                    var intarch = intent.Archetype;
-                                    if (intarch == null) continue; //missing archetype...
-
-                                    if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
-
-                                    intent.CamRel = intent.Position - camera.Position;
-                                    intent.Distance = intent.CamRel.Length();
-                                    intent.IsVisible = true;
-
-                                    RenderArchetype(intarch, intent);
-                                }
-                            }
-                            if (rendercollisionmeshes)
-                            {
-                                RenderInteriorCollisionMesh(entity);
-                            }
-                        }
-
-
-
-
-                        return RenderArchetype(arch, entity);
-                    }
-                    return true;
-                }
-
-            }
-            return false;
-        }
-
-
-        private void RenderYmapGrass(YmapFile ymap)
-        {
-            //enqueue ymap grass instance batches for rendering
-
-            if (ymap.GrassInstanceBatches == null) return;
-
-            foreach (var batch in ymap.GrassInstanceBatches)
-            {
-                batch.CamRel = batch.Position - camera.Position;
-                //batch.Distance = batch.CamRel.Length();
-
-                float lodDist = batch.Batch.lodDist * renderworldDetailDistMult;//maybe add grass dist mult
-                //if (batch.Distance > lodDist) continue; //too far away..
-
-                lodDist *= 0.75f; //reduce it just a bit to improve performance... remove this later
-
-                float cx = camera.Position.X;
-                float cy = camera.Position.Y;
-                float cz = camera.Position.Z;
-                if (cx < (batch.AABBMin.X - lodDist)) continue;
-                if (cx > (batch.AABBMax.X + lodDist)) continue;
-                if (cy < (batch.AABBMin.Y - lodDist)) continue;
-                if (cy > (batch.AABBMax.Y + lodDist)) continue;
-                if (cz < (batch.AABBMin.Z - lodDist)) continue;
-                if (cz > (batch.AABBMax.Z + lodDist)) continue;
-
-
-                var bscent = batch.CamRel;
-                float bsrad = batch.Radius;
-                if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref bscent, bsrad))
-                {
-                    continue; //frustum cull grass batches...
-                }
-
-                var arch = batch.Archetype;
-                var drbl = TryGetDrawable(arch);
-                var rndbl = TryGetRenderable(arch, drbl);
-                var instb = renderableCache.GetRenderableInstanceBatch(batch);
-                if (rndbl == null) continue; //no renderable
-                if (!(rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))) continue; //not loaded yet
-                if ((instb == null) || !instb.IsLoaded) continue;
-
-                RenderableInstanceBatchInst binst = new RenderableInstanceBatchInst();
-                binst.Batch = instb;
-                binst.Renderable = rndbl;
-
-                shaders.Enqueue(binst);
-
-            }
-
-        }
-
-        private void RenderYmapDistantLODLights(YmapFile ymap)
-        {
-            //enqueue ymap DistantLODLights instance batch for rendering
-
-            if (ymap.DistantLODLights == null) return;
-
-            switch (ymap.DistantLODLights.CDistantLODLight.category)
-            {
-                case 0: //distlodlights_small009.ymap
-                case 1: //distlodlights_medium000.ymap
-                case 2: //distlodlights_large000.ymap
-                    break;
-                default:
-                    break;
-            }
-
-            RenderableDistantLODLights lights = renderableCache.GetRenderableDistantLODLights(ymap.DistantLODLights);
-            if (!lights.IsLoaded) return;
-
-
-            uint ytdhash = 3154743001; //"graphics"
-            uint texhash = 2236244673; //"distant_light"
-            YtdFile graphicsytd = gameFileCache.GetYtd(ytdhash);
-            Texture lighttex = null;
-            if ((graphicsytd != null) && (graphicsytd.Loaded) && (graphicsytd.TextureDict != null) && (graphicsytd.TextureDict.Dict != null))
-            {
-                graphicsytd.TextureDict.Dict.TryGetValue(texhash, out lighttex); //starfield hash
-            }
-
-            if (lighttex == null) return;
-            RenderableTexture lightrtex = null;
-            if (lighttex != null)
-            {
-                lightrtex = renderableCache.GetRenderableTexture(lighttex);
-            }
-            if (lightrtex == null) return;
-            if (!lightrtex.IsLoaded) return;
-
-            lights.Texture = lightrtex;
-
-            shaders.Enqueue(lights);
-        }
-
-
-
-
-        private bool RenderIsEntityFinalRender(YmapEntityDef ent)
-        {
-            var arch = ent.Archetype;
-            bool isshadowproxy = false;
-            bool isreflproxy = false;
-            uint archflags = arch._BaseArchetypeDef.flags;
-            if (arch.Type == MetaName.CTimeArchetypeDef)
-            {
-                if (!(rendertimedents && (rendertimedentsalways || arch.IsActive(timeofday)))) return false;
-                //archflags = arch._BaseArchetypeDef.flags;
-            }
-            //else if (arch.Type == MetaName.CMloArchetypeDef)
-            //{
-            //    archflags = arch._BaseArchetypeDef.flags;
-            //}
-            ////switch (archflags)
-            ////{
-            ////    //case 8192:  //8192: is YTYP no shadow rendering  - CP
-            ////    case 2048:      //000000000000000000100000000000  shadow proxies...
-            ////    case 536872960: //100000000000000000100000000000    tunnel refl/shadow prox?
-            ////        isshadowproxy = true; break;
-            ////}
-            if ((archflags & 2048) > 0)
-            {
-                isshadowproxy = true;
-            }
-
-            //if ((ent.CEntityDef.flags & 1572864) == 1572864)
-            //{
-            //    isreflproxy = true;
-            //}
-
-            switch (ent._CEntityDef.flags)
-            {
-                case 135790592: //001000000110000000000000000000    prewater proxy (golf course)
-                case 135790593: //001000000110000000000000000001    water refl proxy? (mike house)
-                case 672661504: //101000000110000000000000000000    vb_ca_prop_tree_reflprox_2
-                case 536870912: //100000000000000000000000000000    vb_05_emissive_mirroronly
-                case 35127296:  //000010000110000000000000000000    tunnel refl proxy?
-                case 39321602:  //000010010110000000000000000010    mlo reflection?
-                    isreflproxy = true; break;
-                //nonproxy is:  //000000000110000000000000001000   (1572872)
-                //              //000000000110000000000000000000
-            }
-            if (isshadowproxy || isreflproxy)
-            {
-                return renderproxies; //filter out proxy entities...
-            }
-            return true;
-        }
-        private bool RenderIsModelFinalRender(RenderableModel model)
-        {
-
-            if ((model.Unk2Ch & 1) == 0) //smallest bit is proxy/"final render" bit? seems to work...
-            {
-                return renderproxies;
-            }
-            return true;
-
-            //switch (model.Unk2Ch)
-            //{
-            //    case 65784:  //0000010000000011111000  //reflection proxy?
-            //    case 65788:  //0000010000000011111100
-            //    case 131312: //0000100000000011110000  //reflection proxy?
-            //    case 131320: //0000100000000011111000  //reflection proxy?
-            //    case 131324: //0000100000000011111100  //shadow/reflection proxy?
-            //    case 196834: //0000110000000011100010 //shadow proxy? (tree branches)
-            //    case 196848: //0000110000000011110000  //reflection proxy?
-            //    case 196856: //0000110000000011111000 //reflection proxy? hotel nr golf course
-            //    case 262392: //0001000000000011111000  //reflection proxy?
-            //    case 327932: //0001010000000011111100  //reflection proxy? (alamo/sandy shores)
-            //    case 983268: //0011110000000011100100  //big reflection proxy?
-            //    case 2293988://1000110000000011100100  //big reflection proxy?
-            //                 //case 1442047://golf course water proxy, but other things also
-            //                 //case 1114367://mike house water proxy, but other things also
-            //        return renderproxies;
-            //}
-            //return true;
-        }
-
-
-
-
-        private bool RenderFragment(Archetype arch, YmapEntityDef ent, FragType f, uint txdhash=0)
-        {
-            var pos = ent?.Position ?? Vector3.Zero;
-
-            RenderDrawable(f.Drawable, arch, ent, pos-camera.Position, txdhash);
-
-            if (f.Unknown_F8h_Data != null) //cloth
-            {
-                RenderDrawable(f.Unknown_F8h_Data, arch, ent, pos-camera.Position, txdhash);
-            }
-
-            //vehicle wheels...
-            if ((f.PhysicsLODGroup != null) && (f.PhysicsLODGroup.PhysicsLOD1 != null))
-            {
-                var pl1 = f.PhysicsLODGroup.PhysicsLOD1;
-                if ((pl1.Children != null) && (pl1.Children.data_items != null))
-                {
-                    for (int i = 0; i < pl1.Children.data_items.Length; i++)
-                    {
-                        var pch = pl1.Children.data_items[i];
-                        if ((pch.Drawable1 != null) && (pch.Drawable1.AllModels.Length != 0))
-                        {
-                            //RenderDrawable(pch.Drawable1, arch, ent, -camera.Position, hash);
-                        }
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        private bool RenderArchetype(Archetype arche, YmapEntityDef entity, Renderable rndbl = null, bool cull = true)
-        {
-            //enqueue a single archetype for rendering.
-
-            if (arche == null) return false;
-
-            Vector3 camrel = (entity != null) ? entity.CamRel : -camera.Position;
-
-            Quaternion orientation = Quaternion.Identity;
-            Vector3 scale = Vector3.One;
-            Vector3 bscent = camrel;
-            if (entity != null)
-            {
-                orientation = entity.Orientation;
-                scale = entity.Scale;
-                bscent += entity.BSCenter;
-            }
-            else
-            {
-                bscent += arche.BSCenter;
-            }
-
-            float bsrad = arche.BSRadius;// * scale;
-            if (cull)
-            {
-                if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref bscent, bsrad))
-                {
-                    return true; //culled - not visible; don't render, but pretend we did for LOD purposes..
-                }
-            }
-
-            float dist = bscent.Length();
-
-            if (boundsmode == BoundsShaderMode.Sphere)
-            {
-                if ((bsrad < renderboundsmaxrad) && (dist < renderboundsmaxdist))
-                {
-                    MapSphere ms = new MapSphere();
-                    ms.CamRelPos = bscent;
-                    ms.Radius = bsrad;
-                    BoundingSpheres.Add(ms);
-                }
-            }
-            if (boundsmode == BoundsShaderMode.Box)
-            {
-                if ((dist < renderboundsmaxdist))
-                {
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = camrel;
-                    mb.BBMin = arche.BBMin;
-                    mb.BBMax = arche.BBMax;
-                    mb.Orientation = orientation;
-                    mb.Scale = scale;
-                    BoundingBoxes.Add(mb);
-                }
-            }
-
-
-
-            bool res = false;
-            if (rndbl == null)
-            {
-                var drawable = TryGetDrawable(arche);
-                rndbl = TryGetRenderable(arche, drawable);
-            }
-
-            if (rndbl != null)
-            {
-                res = RenderRenderable(rndbl, arche, entity, camrel);
-
-
-                //fragments have extra drawables! need to render those too... TODO: handle fragments properly...
-                FragDrawable fd = rndbl.Key as FragDrawable;
-                if (fd != null)
-                {
-                    var frag = fd.OwnerFragment;
-                    if ((frag != null) && (frag.Unknown_F8h_Data != null)) //cloth...
-                    {
-                        rndbl = TryGetRenderable(arche, frag.Unknown_F8h_Data);
-                        if (rndbl != null)
-                        {
-                            bool res2 = RenderRenderable(rndbl, arche, entity, camrel);
-                            res = res || res2;
-                        }
-                    }
-                }
-            }
-
-
-            return res;
-        }
-
-        private bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, Vector3 camrel, uint txdHash = 0)
-        {
-            //enqueue a single drawable for rendering.
-
-            if (drawable == null)
-                return false;
-
-            Renderable rndbl = TryGetRenderable(arche, drawable, txdHash);
-            if (rndbl == null)
-                return false;
-
-            return RenderRenderable(rndbl, arche, entity, camrel);
-        }
-
-        private bool RenderRenderable(Renderable rndbl, Archetype arche, YmapEntityDef entity, Vector3 camrel)
-        {
-            //enqueue a single renderable for rendering.
-
-            if (!rndbl.IsLoaded) return false;
-
-
-            if (((SelectionMode == MapSelectionMode.Entity) || (SelectionMode == MapSelectionMode.EntityExtension) || (SelectionMode == MapSelectionMode.ArchetypeExtension)))
-            {
-                UpdateMouseHit(rndbl, arche, entity, camrel);
-            }
-
-            bool isselected = (rndbl.Key == SelectedItem.Drawable);
-
-            Vector3 position = Vector3.Zero;
-            Vector3 scale = Vector3.One;
-            Quaternion orientation = Quaternion.Identity;
-            uint tintPaletteIndex = 0;
-            Vector3 bbmin = (arche != null) ? arche.BBMin : rndbl.Key.BoundingBoxMin.XYZ();
-            Vector3 bbmax = (arche != null) ? arche.BBMax : rndbl.Key.BoundingBoxMax.XYZ();
-            Vector3 bscen = (arche != null) ? arche.BSCenter : rndbl.Key.BoundingCenter;
-            float radius = (arche != null) ? arche.BSRadius : rndbl.Key.BoundingSphereRadius;
-            float distance = (camrel + bscen).Length();
-            if (entity != null)
-            {
-                position = entity.Position;
-                scale = entity.Scale;
-                orientation = entity.Orientation;
-                tintPaletteIndex = entity.CEntityDef.tintValue;
-                bbmin = entity.BBMin;
-                bbmax = entity.BBMax;
-                bscen = entity.BSCenter;
-            }
-
-
-            if (rendercollisionmeshes && collisionmeshlayerdrawable)
-            {
-                Drawable sdrawable = rndbl.Key as Drawable;
-                if ((sdrawable != null) && (sdrawable.Bound != null))
-                {
-                    RenderCollisionMesh(sdrawable.Bound, entity);
-                }
-            }
-
-
-            bool retval = true;// false;
-            if (rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
-            {
-                RenderableGeometryInst rginst = new RenderableGeometryInst();
-                rginst.Inst.Renderable = rndbl;
-                rginst.Inst.CamRel = camrel;
-                rginst.Inst.Position = position;
-                rginst.Inst.Scale = scale;
-                rginst.Inst.Orientation = orientation;
-                rginst.Inst.TintPaletteIndex = tintPaletteIndex;
-                rginst.Inst.BBMin = bbmin;
-                rginst.Inst.BBMax = bbmax;
-                rginst.Inst.BSCenter = bscen;
-                rginst.Inst.Radius = radius;
-                rginst.Inst.Distance = distance;
-
-
-                RenderableModel[] models = isselected ? rndbl.AllModels : rndbl.HDModels;
-
-                for (int mi = 0; mi < models.Length; mi++)
-                {
-                    var model = models[mi];
-
-                    if (isselected)
-                    {
-                        if (SelectionModelDrawFlags.ContainsKey(model.DrawableModel))
-                        { continue; } //filter out models in selected item that aren't flagged for drawing.
-                    }
-
-                    if (!RenderIsModelFinalRender(model) && !renderproxies)
-                    { continue; } //filter out reflection proxy models...
-
-                    for (int gi = 0; gi < model.Geometries.Length; gi++)
-                    {
-                        var geom = model.Geometries[gi];
-
-                        if (isselected)
-                        {
-                            if (SelectionGeometryDrawFlags.ContainsKey(geom.DrawableGeom))
-                            { continue; } //filter out geometries in selected item that aren't flagged for drawing.
-                        }
-
-                        rginst.Geom = geom;
-
-                        shaders.Enqueue(rginst);
-                    }
-                }
-            }
-            else
-            {
-                retval = false;
-            }
-            return retval;
-        }
-
-
-
-
-        private void RenderCar(Vector3 pos, Quaternion ori, MetaHash modelHash, MetaHash modelSetHash)
-        {
-            SelectedCarGenEntity.SetPosition(pos);
-            SelectedCarGenEntity.SetOrientation(ori);
-
-            uint carhash = modelHash;
-            if ((carhash == 0) && (modelSetHash != 0))
-            {
-                //find the pop group... and choose a vehicle..
-                var stypes = Scenarios.ScenarioTypes;
-                if (stypes != null)
-                {
-                    var modelset = stypes.GetVehicleModelSet(modelSetHash);
-                    if ((modelset != null) && (modelset.Models != null) && (modelset.Models.Length > 0))
-                    {
-                        carhash = JenkHash.GenHash(modelset.Models[0].NameLower);
-                    }
-                }
-            }
-            if (carhash == 0) carhash = 418536135; //"infernus"
-
-            YftFile caryft = gameFileCache.GetYft(carhash);
-            if ((caryft != null) && (caryft.Loaded) && (caryft.Fragment != null))
-            {
-                RenderFragment(null, SelectedCarGenEntity, caryft.Fragment, carhash);
+                UpdateMouseHits(ymap);
             }
         }
 
@@ -2913,178 +1088,8 @@ namespace CodeWalker
 
 
 
-        private void RenderWorldCollisionMeshes()
-        {
-            //enqueue collision meshes for rendering - from the world grid
 
-            collisionitems.Clear();
-            space.GetVisibleBounds(camera, collisionmeshrange, collisionmeshlayers, collisionitems);
-
-            foreach (var item in collisionitems)
-            {
-                YbnFile ybn = gameFileCache.GetYbn(item.Name);
-                if ((ybn != null) && (ybn.Loaded))
-                {
-                    RenderCollisionMesh(ybn.Bounds, null);
-                }
-            }
-
-        }
-
-        private void RenderInteriorCollisionMesh(YmapEntityDef mlo)
-        {
-            //enqueue interior collison meshes for rendering.
-
-            if (mlo.Archetype == null) return;
-            var hash = mlo.Archetype.Hash;
-            YbnFile ybn = gameFileCache.GetYbn(hash);
-            if ((ybn != null) && (ybn.Loaded))
-            {
-                RenderCollisionMesh(ybn.Bounds, mlo);
-            }
-            if (ybn == null)
-            { }
-        }
-
-        private void RenderCollisionMesh(Bounds bounds, YmapEntityDef entity)
-        {
-            //enqueue a single collision mesh for rendering.
-
-            Vector3 position;
-            Vector3 scale;
-            Quaternion orientation;
-            if (entity != null)
-            {
-                position = entity.Position;
-                scale = entity.Scale;
-                orientation = entity.Orientation;
-            }
-            else
-            {
-                position = Vector3.Zero;
-                scale = Vector3.One;
-                orientation = Quaternion.Identity;
-            }
-
-            switch (bounds.Type)
-            {
-                case 10: //BoundComposite
-                    BoundComposite boundcomp = bounds as BoundComposite;
-                    if (boundcomp != null)
-                    {
-                        RenderableBoundComposite rndbc = renderableCache.GetRenderableBoundComp(boundcomp);
-                        if (rndbc.IsLoaded)
-                        {
-                            RenderableBoundGeometryInst rbginst = new RenderableBoundGeometryInst();
-                            rbginst.Inst.Renderable = rndbc;
-                            rbginst.Inst.Orientation = orientation;
-                            rbginst.Inst.Scale = scale;
-                            foreach (var geom in rndbc.Geometries)
-                            {
-                                if (geom == null) continue;
-                                rbginst.Geom = geom;
-                                rbginst.Inst.Position = position + orientation.Multiply(geom.BoundGeom.CenterGeom * scale);
-                                rbginst.Inst.CamRel = rbginst.Inst.Position - camera.Position;
-                                shaders.Enqueue(rbginst);
-                            }
-
-                            UpdateMouseHits(rndbc, entity);
-                        }
-                    }
-                    else
-                    { }
-                    break;
-                case 3: //BoundBox - found in drawables - TODO
-                    BoundBox boundbox = bounds as BoundBox;
-                    if (boundbox == null)
-                    { }
-                    break;
-                case 0: //BoundSphere - found in drawables - TODO
-                    BoundSphere boundsphere = bounds as BoundSphere;
-                    if (boundsphere == null)
-                    { }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-
-
-        private void RenderBounds(DeviceContext context)
-        {
-            //immediately render the entity bounding boxes/spheres - depending on boundsmode
-
-
-            bool clip = renderboundsclip;
-
-            switch (SelectionMode)
-            {
-                case MapSelectionMode.WaterQuad:
-                case MapSelectionMode.MloInstance:
-                    clip = false;
-                    break;
-            }
-
-
-            Vector3 colour = new Vector3(0, 0, 1) * globalLights.HdrIntensity;
-            Vector3 colourhi = new Vector3(0, 1, 1) * globalLights.HdrIntensity;
-
-            shaders.SetDepthStencilMode(context, clip ? DepthStencilMode.Enabled : DepthStencilMode.DisableAll);
-            var shader = shaders.Bounds;
-
-            if ((BoundingBoxes.Count > 0) || (HilightBoxes.Count > 0))
-            {
-                shader.SetMode(BoundsShaderMode.Box);
-                shader.SetShader(context);
-                shader.SetInputLayout(context, VertexType.Default);
-                shader.SetSceneVars(context, camera, null, globalLights);
-                shader.SetColourVars(context, new Vector4(colour, 1));
-
-                for (int i = 0; i < BoundingBoxes.Count; i++)
-                {
-                    MapBox mb = BoundingBoxes[i];
-                    shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
-                    shader.DrawBox(context);
-                }
-                shader.SetColourVars(context, new Vector4(colourhi, 1));
-                for (int i = 0; i < HilightBoxes.Count; i++)
-                {
-                    MapBox mb = HilightBoxes[i];
-                    shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
-                    shader.DrawBox(context);
-                }
-            }
-
-            if ((BoundingSpheres.Count > 0) || (HilightSpheres.Count > 0))
-            {
-                shader.SetMode(BoundsShaderMode.Sphere);
-                shader.SetShader(context);
-                shader.SetInputLayout(context, VertexType.Default);
-                shader.SetSceneVars(context, camera, null, globalLights);
-                shader.SetColourVars(context, new Vector4(colour, 1));
-
-                for (int i = 0; i < BoundingSpheres.Count; i++)
-                {
-                    MapSphere ms = BoundingSpheres[i];
-                    shader.SetSphereVars(context, ms.CamRelPos, ms.Radius);
-                    shader.DrawSphere(context);
-                }
-                shader.SetColourVars(context, new Vector4(colourhi, 1));
-                for (int i = 0; i < HilightSpheres.Count; i++)
-                {
-                    MapSphere ms = HilightSpheres[i];
-                    shader.SetSphereVars(context, ms.CamRelPos, ms.Radius);
-                    shader.DrawSphere(context);
-                }
-            }
-
-
-
-            shader.UnbindResources(context);
-        }
-
-        private void RenderMoused(DeviceContext context)
+        private void RenderMoused()
         {
             //immediately render the bounding box of the currently moused entity.
 
@@ -3162,10 +1167,7 @@ namespace CodeWalker
             }
 
 
-            Vector3 colour = new Vector3(1, 1, 1);
-            colour *= globalLights.HdrIntensity * 5.0f;
-
-            bool clip = renderboundsclip;
+            bool clip = Renderer.renderboundsclip;
 
             BoundsShaderMode mode = BoundsShaderMode.Box;
             float bsphrad = CurMouseHit.BSphere.Radius;
@@ -3222,29 +1224,7 @@ namespace CodeWalker
             }
 
 
-            shaders.SetDepthStencilMode(context, clip ? DepthStencilMode.Enabled : DepthStencilMode.DisableAll);
-
-            //render moused object box.
-            var shader = shaders.Bounds;
-            shader.SetMode(mode);
-            shader.SetShader(context);
-            shader.SetInputLayout(context, VertexType.Default);
-            shader.SetSceneVars(context, camera, null, globalLights);
-            shader.SetColourVars(context, new Vector4(colour, 1)); //white box
-
-            if (mode == BoundsShaderMode.Box)
-            {
-                shader.SetBoxVars(context, camrel, bbmin, bbmax, ori, scale);
-                shader.DrawBox(context);
-            }
-            else if (mode == BoundsShaderMode.Sphere)
-            {
-                shader.SetSphereVars(context, camrel, bsphrad);
-                shader.DrawSphere(context);
-            }
-
-            shader.UnbindResources(context);
-
+            Renderer.RenderMouseHit(mode, clip, ref camrel, ref bbmin, ref bbmax, ref scale, ref ori, bsphrad);
         }
 
         private void RenderSelection()
@@ -3274,7 +1254,7 @@ namespace CodeWalker
                 if (MouseRayCollision.Hit)
                 {
                     var arup = GetPerpVec(MouseRayCollision.Normal);
-                    RenderSelectionArrowOutline(MouseRayCollision.Position, MouseRayCollision.Normal, arup, Quaternion.Identity, 2.0f, 0.15f, cgrn);
+                    Renderer.RenderSelectionArrowOutline(MouseRayCollision.Position, MouseRayCollision.Normal, arup, Quaternion.Identity, 2.0f, 0.15f, cgrn);
                 }
             }
 
@@ -3284,12 +1264,6 @@ namespace CodeWalker
             if (!selectionItem.HasValue)
             { return; }
 
-
-            Vector3 colour = new Vector3(0, 1, 0);
-            colour *= globalLights.HdrIntensity * 5.0f;
-
-
-            bool clip = renderboundsclip;
 
 
             BoundsShaderMode mode = BoundsShaderMode.Box;
@@ -3316,7 +1290,7 @@ namespace CodeWalker
 
                 if (EditEntityPivot)
                 {
-                    RenderSelectionEntityPivot(ent);
+                    Renderer.RenderSelectionEntityPivot(ent);
                 }
             }
             if (selectionItem.CarGenerator != null)
@@ -3328,12 +1302,12 @@ namespace CodeWalker
                 bbmax = cg.BBMax;
                 float arrowlen = cg._CCarGen.perpendicularLength;
                 float arrowrad = arrowlen * 0.066f;
-                RenderSelectionArrowOutline(cg.Position, Vector3.UnitX, Vector3.UnitY, ori, arrowlen, arrowrad, cgrn);
+                Renderer.RenderSelectionArrowOutline(cg.Position, Vector3.UnitX, Vector3.UnitY, ori, arrowlen, arrowrad, cgrn);
 
                 Quaternion cgtrn = Quaternion.RotationAxis(Vector3.UnitZ, (float)Math.PI * -0.5f); //car fragments currently need to be rotated 90 deg right...
                 Quaternion cgori = Quaternion.Multiply(ori, cgtrn);
 
-                RenderCar(cg.Position, cgori, cg._CCarGen.carModel, cg._CCarGen.popGroup);
+                Renderer.RenderCar(cg.Position, cgori, cg._CCarGen.carModel, cg._CCarGen.popGroup);
             }
             if (selectionItem.PathNode != null)
             {
@@ -3353,7 +1327,7 @@ namespace CodeWalker
                 ori = sn.Orientation;
                 float arrowlen = 2.0f;
                 float arrowrad = 0.25f;
-                RenderSelectionArrowOutline(sn.Position, Vector3.UnitY, Vector3.UnitZ, ori, arrowlen, arrowrad, cgrn);
+                Renderer.RenderSelectionArrowOutline(sn.Position, Vector3.UnitY, Vector3.UnitZ, ori, arrowlen, arrowrad, cgrn);
 
                 MCScenarioPoint vpoint = sn.MyPoint ?? sn.ClusterMyPoint;
                 if ((vpoint != null) && (vpoint?.Type?.IsVehicle ?? false))
@@ -3370,7 +1344,7 @@ namespace CodeWalker
                         }
                     }
 
-                    RenderCar(sn.Position, sn.Orientation, 0, vhash);
+                    Renderer.RenderCar(sn.Position, sn.Orientation, 0, vhash);
                 }
 
             }
@@ -3389,14 +1363,13 @@ namespace CodeWalker
                     var aori = Quaternion.Invert(Quaternion.RotationLookAtRH(dir, dup));
                     float arrowrad = 0.25f;
                     float arrowlen = Math.Max(dl - arrowrad*5.0f, 0);
-                    RenderSelectionArrowOutline(sn1.Position, -Vector3.UnitZ, Vector3.UnitY, aori, arrowlen, arrowrad, cblu);
+                    Renderer.RenderSelectionArrowOutline(sn1.Position, -Vector3.UnitZ, Vector3.UnitY, aori, arrowlen, arrowrad, cblu);
                 }
             }
             if (selectionItem.MloEntityDef != null)
             {
                 bbmin = selectionItem.AABB.Minimum;
                 bbmax = selectionItem.AABB.Maximum;
-                clip = false;
             }
             if ((selectionItem.GrassBatch != null) || (selectionItem.ArchetypeExtension != null) || (selectionItem.EntityExtension != null) || (selectionItem.CollisionBounds != null))
             {
@@ -3404,16 +1377,10 @@ namespace CodeWalker
                 bbmax = selectionItem.AABB.Maximum;
                 scale = Vector3.One;
             }
-            if (selectionItem.WaterQuad != null)
-            {
-                clip = false;
-            }
             if (selectionItem.NavPoly != null)
             {
-                RenderSelectionNavPoly(selectionItem.NavPoly);
-
-                //return;//don't render a selection box for nav mesh
-                //clip = false;
+                Renderer.RenderSelectionNavPoly(selectionItem.NavPoly);
+                //return;//don't render a selection box for nav mesh?
             }
 
             if (selectionItem.Audio != null)
@@ -3430,7 +1397,7 @@ namespace CodeWalker
                     MapSphere wsph = new MapSphere();
                     wsph.CamRelPos = au.OuterPos - camera.Position;
                     wsph.Radius = au.OuterRad;
-                    WhiteSpheres.Add(wsph);
+                    Renderer.WhiteSpheres.Add(wsph);
                 }
                 else
                 {
@@ -3440,7 +1407,7 @@ namespace CodeWalker
                     wbox.BBMax = au.OuterMax;
                     wbox.Orientation = au.OuterOri;
                     wbox.Scale = scale;
-                    WhiteBoxes.Add(wbox);
+                    Renderer.WhiteBoxes.Add(wbox);
                 }
             }
 
@@ -3453,240 +1420,21 @@ namespace CodeWalker
                 box.BBMax = bbmax;
                 box.Orientation = ori;
                 box.Scale = scale;
-                SelectionBoxes.Add(box);
+                Renderer.SelectionBoxes.Add(box);
             }
             else if (mode == BoundsShaderMode.Sphere)
             {
                 MapSphere sph = new MapSphere();
                 sph.CamRelPos = camrel;
                 sph.Radius = bsphrad;
-                SelectionSpheres.Add(sph);
+                Renderer.SelectionSpheres.Add(sph);
             }
 
         }
 
-        private void RenderSelectionEntityPivot(YmapEntityDef ent)
-        {
-            uint cred = (uint)new Color4(1.0f, 0.0f, 0.0f, 1.0f).ToRgba();
-            uint cgrn = (uint)new Color4(0.0f, 1.0f, 0.0f, 1.0f).ToRgba();
-            uint cblu = (uint)new Color4(0.0f, 0.0f, 1.0f, 1.0f).ToRgba();
-
-            var pos = ent.WidgetPosition;
-            var ori = ent.WidgetOrientation;
-
-            float pxsize = 120.0f;
-            float sssize = pxsize / camera.Height;
-            float dist = (pos - camera.Position).Length();
-            float size = sssize * dist;
-            if (camera.IsMapView || camera.IsOrthographic)
-            {
-                size = sssize * camera.OrthographicSize;
-            }
-            float rad = size * 0.066f;
-
-            RenderSelectionArrowOutline(pos, Vector3.UnitX, Vector3.UnitY, ori, size, rad, cred);
-            RenderSelectionArrowOutline(pos, Vector3.UnitY, Vector3.UnitX, ori, size, rad, cgrn);
-            RenderSelectionArrowOutline(pos, Vector3.UnitZ, Vector3.UnitY, ori, size, rad, cblu);
-
-        }
-
-        private void RenderSelectionArrowOutline(Vector3 pos, Vector3 dir, Vector3 up, Quaternion ori, float len, float rad, uint colour)
-        {
-            Vector3 ax = Vector3.Cross(dir, up);
-            Vector3 sx = ax * rad;
-            Vector3 sy = up * rad;
-            Vector3 sz = dir * len;
-            VertexTypePC[] c = new VertexTypePC[8];
-            Vector3 d0 = - sx - sy;
-            Vector3 d1 = - sx + sy;
-            Vector3 d2 = + sx - sy;
-            Vector3 d3 = + sx + sy;
-            c[0].Position = d0;
-            c[1].Position = d1;
-            c[2].Position = d2;
-            c[3].Position = d3;
-            c[4].Position = d0 + sz;
-            c[5].Position = d1 + sz;
-            c[6].Position = d2 + sz;
-            c[7].Position = d3 + sz;
-            for (int i = 0; i < 8; i++)
-            {
-                c[i].Colour = colour;
-                c[i].Position = pos + ori.Multiply(c[i].Position);
-            }
-
-            SelectionLineVerts.Add(c[0]);
-            SelectionLineVerts.Add(c[1]);
-            SelectionLineVerts.Add(c[1]);
-            SelectionLineVerts.Add(c[3]);
-            SelectionLineVerts.Add(c[3]);
-            SelectionLineVerts.Add(c[2]);
-            SelectionLineVerts.Add(c[2]);
-            SelectionLineVerts.Add(c[0]);
-            SelectionLineVerts.Add(c[4]);
-            SelectionLineVerts.Add(c[5]);
-            SelectionLineVerts.Add(c[5]);
-            SelectionLineVerts.Add(c[7]);
-            SelectionLineVerts.Add(c[7]);
-            SelectionLineVerts.Add(c[6]);
-            SelectionLineVerts.Add(c[6]);
-            SelectionLineVerts.Add(c[4]);
-            SelectionLineVerts.Add(c[0]);
-            SelectionLineVerts.Add(c[4]);
-            SelectionLineVerts.Add(c[1]);
-            SelectionLineVerts.Add(c[5]);
-            SelectionLineVerts.Add(c[2]);
-            SelectionLineVerts.Add(c[6]);
-            SelectionLineVerts.Add(c[3]);
-            SelectionLineVerts.Add(c[7]);
-
-            c[0].Position = pos + ori.Multiply(dir * (len + rad * 5.0f));
-            c[4].Position += ori.Multiply(d0);
-            c[5].Position += ori.Multiply(d1);
-            c[6].Position += ori.Multiply(d2);
-            c[7].Position += ori.Multiply(d3);
-            SelectionLineVerts.Add(c[4]);
-            SelectionLineVerts.Add(c[5]);
-            SelectionLineVerts.Add(c[5]);
-            SelectionLineVerts.Add(c[7]);
-            SelectionLineVerts.Add(c[7]);
-            SelectionLineVerts.Add(c[6]);
-            SelectionLineVerts.Add(c[6]);
-            SelectionLineVerts.Add(c[4]);
-            SelectionLineVerts.Add(c[0]);
-            SelectionLineVerts.Add(c[4]);
-            SelectionLineVerts.Add(c[0]);
-            SelectionLineVerts.Add(c[5]);
-            SelectionLineVerts.Add(c[0]);
-            SelectionLineVerts.Add(c[6]);
-            SelectionLineVerts.Add(c[0]);
-            SelectionLineVerts.Add(c[7]);
 
 
-        }
-
-        private void RenderSelectionNavPoly(YnvPoly poly)
-        {
-            ////draw poly triangles
-            var pcolour = new Color4(0.6f, 0.95f, 0.6f, 1.0f);
-            var colourval = (uint)pcolour.ToRgba();
-            var ynv = poly.Ynv;
-            var ic = poly._RawData.IndexCount;
-            var startid = poly._RawData.IndexID;
-            var endid = startid + ic;
-            var lastid = endid - 1;
-            var vc = ynv.Vertices.Count;
-            var startind = ynv.Indices[startid];
-            VertexTypePC v0 = new VertexTypePC();
-            VertexTypePC v1 = new VertexTypePC();
-            VertexTypePC v2 = new VertexTypePC();
-            v0.Position = ynv.Vertices[startind];
-            v0.Colour = colourval;
-            v1.Colour = colourval;
-            v2.Colour = colourval;
-            int tricount = ic - 2;
-            for (int t = 0; t < tricount; t++)
-            {
-                int tid = startid + t;
-                int ind1 = ynv.Indices[tid + 1];
-                int ind2 = ynv.Indices[tid + 2];
-                if ((ind1 >= vc) || (ind2 >= vc))
-                { continue; }
-                v1.Position = ynv.Vertices[ind1];
-                v2.Position = ynv.Vertices[ind2];
-                SelectionTriVerts.Add(v0);
-                SelectionTriVerts.Add(v1);
-                SelectionTriVerts.Add(v2);
-                SelectionTriVerts.Add(v0);
-                SelectionTriVerts.Add(v2);
-                SelectionTriVerts.Add(v1);
-            }
-        }
-
-        private void RenderSelectionGeometry(DeviceContext context)
-        {
-
-            bool clip = true;
-            switch (SelectionMode)
-            {
-                case MapSelectionMode.NavMesh:
-                case MapSelectionMode.WaterQuad:
-                case MapSelectionMode.MloInstance:
-                    clip = false;
-                    break;
-            }
-
-
-            shaders.SetDepthStencilMode(context, clip ? DepthStencilMode.Enabled : DepthStencilMode.DisableAll);
-
-            var pshader = shaders.Paths;
-            if (SelectionTriVerts.Count > 0)
-            {
-                pshader.RenderTriangles(context, SelectionTriVerts, camera, shaders.GlobalLights);
-            }
-            if (SelectionLineVerts.Count > 0)
-            {
-                pshader.RenderLines(context, SelectionLineVerts, camera, shaders.GlobalLights);
-            }
-
-
-
-
-            Vector3 coloursel = new Vector3(0, 1, 0) * globalLights.HdrIntensity * 5.0f;
-            Vector3 colourwht = new Vector3(1, 1, 1) * globalLights.HdrIntensity * 10.0f;
-            var shader = shaders.Bounds;
-
-            if ((WhiteBoxes.Count > 0) || (SelectionBoxes.Count > 0))
-            {
-                shader.SetMode(BoundsShaderMode.Box);
-                shader.SetShader(context);
-                shader.SetInputLayout(context, VertexType.Default);
-                shader.SetSceneVars(context, camera, null, globalLights);
-                shader.SetColourVars(context, new Vector4(colourwht, 1));
-                for (int i = 0; i < WhiteBoxes.Count; i++)
-                {
-                    MapBox mb = WhiteBoxes[i];
-                    shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
-                    shader.DrawBox(context);
-                }
-                shader.SetColourVars(context, new Vector4(coloursel, 1));
-                for (int i = 0; i < SelectionBoxes.Count; i++)
-                {
-                    MapBox mb = SelectionBoxes[i];
-                    shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
-                    shader.DrawBox(context);
-                }
-                shader.UnbindResources(context);
-            }
-
-            if ((WhiteSpheres.Count > 0) || (SelectionSpheres.Count > 0))
-            {
-                shader.SetMode(BoundsShaderMode.Sphere);
-                shader.SetShader(context);
-                shader.SetInputLayout(context, VertexType.Default);
-                shader.SetSceneVars(context, camera, null, globalLights);
-                shader.SetColourVars(context, new Vector4(colourwht, 1));
-                for (int i = 0; i < WhiteSpheres.Count; i++)
-                {
-                    MapSphere ms = WhiteSpheres[i];
-                    shader.SetSphereVars(context, ms.CamRelPos, ms.Radius);
-                    shader.DrawSphere(context);
-                }
-                shader.SetColourVars(context, new Vector4(coloursel, 1));
-                for (int i = 0; i < SelectionSpheres.Count; i++)
-                {
-                    MapSphere ms = SelectionSpheres[i];
-                    shader.SetSphereVars(context, ms.CamRelPos, ms.Radius);
-                    shader.DrawSphere(context);
-                }
-                shader.UnbindResources(context);
-            }
-
-
-        }
-
-
-        private void RenderMarkers(DeviceContext context)
+        private void RenderMarkers()
         {
             //immediately render all the current markers.
 
@@ -3717,51 +1465,15 @@ namespace CodeWalker
                 MarkerBatch.AddRange(SortedMarkers);
             }
 
-            shaders.SetRasterizerMode(context, RasterizerMode.SolidDblSided); //hmm they are backwards
-            shaders.SetDepthStencilMode(context, markerdepthclip ? DepthStencilMode.Enabled : DepthStencilMode.DisableAll);
-            shaders.SetDefaultBlendState(context);
-
-            var shader = shaders.Marker;
-            shader.SetShader(context);
-            shader.SetInputLayout(context, VertexType.Default);
-            shader.SetSceneVars(context, camera, null, globalLights);
-
-            MapIcon icon = null;
-            foreach (var marker in MarkerBatch)
-            {
-                icon = marker.Icon;
-                Vector2 texs = new Vector2(icon.TexWidth, icon.TexHeight);
-                Vector2 size = texs * marker.Distance;
-                Vector2 offset = (new Vector2(texs.X, -texs.Y) - new Vector2(icon.Center.X, -icon.Center.Y) * 2.0f) * marker.Distance;
-                shader.SetMarkerVars(context, marker.CamRelPos, size, offset);
-                shader.SetTexture(context, icon.TexView);
-                markerquad.Draw(context);
-            }
-
-            shader.UnbindResources(context);
+            Renderer.RenderMarkers(MarkerBatch);
         }
 
 
-        private void RenderWidgets(DeviceContext context)
+        private void RenderWidgets()
         {
             if (!ShowWidget) return;
 
-
-            var dsmode = DepthStencilMode.Enabled;
-            if (Widget.Mode == WidgetMode.Rotation)
-            {
-                dsmode = DepthStencilMode.DisableAll;
-            }
-
-            shaders.SetRasterizerMode(context, RasterizerMode.SolidDblSided);
-            shaders.SetDepthStencilMode(context, dsmode);
-            shaders.SetDefaultBlendState(context);
-            shaders.ClearDepth(context, false);
-
-            var shader = shaders.Widgets;
-
-            Widget.Render(context, camera, shader);
-
+            Renderer.RenderTransformWidget(Widget);
         }
         private void UpdateWidgets()
         {
@@ -3907,9 +1619,9 @@ namespace CodeWalker
             {
                 space.BuildYndVerts(ynd);
             }
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
-                renderableCache.Invalidate(ynd);
+                Renderer.Invalidate(ynd);
             }
         }
         public void UpdatePathNodeGraphics(YndNode pathnode, bool fullupdate)
@@ -3942,9 +1654,9 @@ namespace CodeWalker
             //{
             //    //space.BuildYndVerts(ynd);
             //}
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
-                renderableCache.Invalidate(tt);
+                Renderer.Invalidate(tt);
             }
         }
         public void UpdateTrainTrackNodeGraphics(TrainTrackNode node, bool fullupdate)
@@ -3963,9 +1675,9 @@ namespace CodeWalker
 
             scenario.BuildVertices();
 
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
-                renderableCache.Invalidate(scenario);
+                Renderer.Invalidate(scenario);
             }
         }
 
@@ -3973,7 +1685,7 @@ namespace CodeWalker
         public Vector3 GetCameraPosition()
         {
             //currently used by ProjectForm when creating entities
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
                 return camera.Position;
             }
@@ -3981,7 +1693,7 @@ namespace CodeWalker
         public Vector3 GetCameraViewDir()
         {
             //currently used by ProjectForm when creating entities
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
                 return camera.ViewDirection;
             }
@@ -3995,16 +1707,17 @@ namespace CodeWalker
 
         public void SetKeyBindings(KeyBindings kb)
         {
-            keyBindings = kb.Copy();
+            Input.keyBindings = kb.Copy();
             UpdateToolbarShortcutsText();
         }
         private void UpdateToolbarShortcutsText()
         {
-            ToolbarSelectButton.ToolTipText = string.Format("Select objects / Exit edit mode ({0}, {1})", keyBindings.ToggleMouseSelect, keyBindings.ExitEditMode);
-            ToolbarMoveButton.ToolTipText = string.Format("Move ({0})", keyBindings.EditPosition);
-            ToolbarRotateButton.ToolTipText = string.Format("Rotate ({0})", keyBindings.EditRotation);
-            ToolbarScaleButton.ToolTipText = string.Format("Scale ({0})", keyBindings.EditScale);
-            ShowToolbarCheckBox.Text = string.Format("Show Toolbar ({0})", keyBindings.ToggleToolbar);
+            var kb = Input.keyBindings;
+            ToolbarSelectButton.ToolTipText = string.Format("Select objects / Exit edit mode ({0}, {1})", kb.ToggleMouseSelect, kb.ExitEditMode);
+            ToolbarMoveButton.ToolTipText = string.Format("Move ({0})", kb.EditPosition);
+            ToolbarRotateButton.ToolTipText = string.Format("Rotate ({0})", kb.EditRotation);
+            ToolbarScaleButton.ToolTipText = string.Format("Scale ({0})", kb.EditScale);
+            ShowToolbarCheckBox.Text = string.Format("Show Toolbar ({0})", kb.ToggleToolbar);
         }
 
 
@@ -4166,7 +1879,7 @@ namespace CodeWalker
             e.EnableCollisions = true;
             e.Enabled = true;
 
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
                 space.AddTemporaryEntity(e);
             }
@@ -4198,7 +1911,7 @@ namespace CodeWalker
 
                 pedEntity.Enabled = false;
 
-                timerunning = false;
+                Renderer.timerunning = false;
 
                 camera.SetFollowEntity(camEntity);
                 camera.TargetDistance = 1.0f; //default?
@@ -4212,7 +1925,7 @@ namespace CodeWalker
                 pedEntity.Velocity = Vector3.Zero;
                 pedEntity.Enabled = true;
 
-                timerunning = true;
+                Renderer.timerunning = true;
 
                 camera.SetFollowEntity(pedEntity.CameraEntity);
                 camera.TargetDistance = 0.01f; //1cm
@@ -4244,11 +1957,8 @@ namespace CodeWalker
             //reset variables for beginning the mouse hit test
             CurMouseHit.Clear();
 
-            SelectionLineVerts.Clear();
-            SelectionTriVerts.Clear();
 
-
-            MouseRayCollisionEnabled = CtrlPressed; //temporary...!
+            MouseRayCollisionEnabled = Input.CtrlPressed; //temporary...!
             if (MouseRayCollisionEnabled)
             {
                 if (space.Inited && space.Grid != null)
@@ -4260,10 +1970,30 @@ namespace CodeWalker
                 }
             }
 
+
+            Renderer.RenderedDrawablesListEnable =
+                ((SelectionMode == MapSelectionMode.Entity) && MouseSelectEnabled) ||
+                (SelectionMode == MapSelectionMode.EntityExtension) ||
+                (SelectionMode == MapSelectionMode.ArchetypeExtension);
+
+            Renderer.RenderedBoundCompsListEnable = (SelectionMode == MapSelectionMode.Collision);
+
+
         }
-        private void UpdateMouseHit(Renderable rndbl, Archetype arche, YmapEntityDef entity, Vector3 camrel)
+        private void UpdateMouseHitsFromRenderer()
         {
-            if ((SelectionMode == MapSelectionMode.Entity) && !MouseSelectEnabled) return; //performance improvement when not selecting entities...
+            foreach (var rd in Renderer.RenderedDrawables)
+            {
+                UpdateMouseHits(rd.Drawable, rd.Archetype, rd.Entity);
+            }
+            foreach (var rb in Renderer.RenderedBoundComps)
+            {
+                UpdateMouseHits(rb.BoundComp, rb.Entity);
+            }
+        }
+        private void UpdateMouseHits(DrawableBase drawable, Archetype arche, YmapEntityDef entity)
+        {
+            //if ((SelectionMode == MapSelectionMode.Entity) && !MouseSelectEnabled) return; //performance improvement when not selecting entities...
 
             //test the selected entity/archetype for mouse hit.
             
@@ -4271,7 +2001,6 @@ namespace CodeWalker
             Quaternion orinv;
             Ray mraytrn;
             float hitdist = 0.0f;
-            var drawable = rndbl.Key;
             int geometryIndex = 0;
             DrawableGeometry geometry = null;
             BoundingBox geometryAABB = new BoundingBox();
@@ -4280,10 +2009,12 @@ namespace CodeWalker
             BoundingBox gbbox = new BoundingBox();
             Quaternion orientation = Quaternion.Identity;
             Vector3 scale = Vector3.One;
+            Vector3 camrel = -camera.Position;
             if (entity != null)
             {
                 orientation = entity.Orientation;
                 scale = entity.Scale;
+                camrel += entity.Position;
             }
             if (arche != null)
             {
@@ -4323,7 +2054,7 @@ namespace CodeWalker
                             mb.Scale = Vector3.One;// scale;
                             mb.BBMin *= scale;
                             mb.BBMax *= scale;
-                            BoundingBoxes.Add(mb);
+                            Renderer.BoundingBoxes.Add(mb);
 
                             bbox.Minimum = mb.BBMin; //TODO: refactor this!
                             bbox.Maximum = mb.BBMax;
@@ -4352,7 +2083,7 @@ namespace CodeWalker
                             mb.Scale = Vector3.One;// scale;
                             mb.BBMin *= scale;
                             mb.BBMax *= scale;
-                            BoundingBoxes.Add(mb);
+                            Renderer.BoundingBoxes.Add(mb);
 
                             bbox.Minimum = mb.BBMin; //TODO: refactor this!
                             bbox.Maximum = mb.BBMax;
@@ -4565,191 +2296,6 @@ namespace CodeWalker
 
 
         }
-        private void UpdateMouseHits(YmapFile ymap)
-        {
-            //find mouse hits for things like time cycle mods and car generators in ymaps.
-
-            BoundingBox bbox = new BoundingBox();
-            Ray mray = new Ray();
-            mray.Position = camera.MouseRay.Position + camera.Position;
-            mray.Direction = camera.MouseRay.Direction;
-            float hitdist = float.MaxValue;
-
-            if ((SelectionMode == MapSelectionMode.TimeCycleModifier) && (ymap.TimeCycleModifiers != null))
-            {
-                for (int i = 0; i < ymap.TimeCycleModifiers.Length; i++)
-                {
-                    var tcm = ymap.TimeCycleModifiers[i];
-                    if ((((tcm.BBMin + tcm.BBMax) * 0.5f) - camera.Position).Length() > renderboundsmaxdist) continue;
-                    //if (!LodDistTest(camera.Position, tcm.BBMin, tcm.BBMax, renderboundsmaxdist)) continue;
-
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = -camera.Position;
-                    mb.BBMin = tcm.BBMin;
-                    mb.BBMax = tcm.BBMax;
-                    mb.Orientation = Quaternion.Identity;
-                    mb.Scale = Vector3.One;
-                    BoundingBoxes.Add(mb);
-
-                    bbox.Minimum = mb.BBMin;
-                    bbox.Maximum = mb.BBMax;
-                    if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
-                    {
-                        CurMouseHit.TimeCycleModifier = tcm;
-                        CurMouseHit.HitDist = hitdist;
-                        CurMouseHit.CamRel = mb.CamRelPos;
-                        CurMouseHit.AABB = bbox;
-                    }
-                }
-            }
-            if ((SelectionMode == MapSelectionMode.CarGenerator) && (ymap.CarGenerators != null))
-            {
-                for (int i = 0; i < ymap.CarGenerators.Length; i++)
-                {
-                    var cg = ymap.CarGenerators[i];
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = cg.Position - camera.Position;
-                    mb.BBMin = cg.BBMin;
-                    mb.BBMax = cg.BBMax;
-                    mb.Orientation = cg.Orientation;
-                    mb.Scale = Vector3.One;
-                    BoundingBoxes.Add(mb);
-
-                    Quaternion orinv = Quaternion.Invert(cg.Orientation);
-                    Ray mraytrn = new Ray();
-                    mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos);
-                    mraytrn.Direction = orinv.Multiply(mray.Direction);
-                    bbox.Minimum = mb.BBMin;
-                    bbox.Maximum = mb.BBMax;
-                    if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
-                    {
-                        CurMouseHit.CarGenerator = cg;
-                        CurMouseHit.HitDist = hitdist;
-                        CurMouseHit.CamRel = mb.CamRelPos;
-                        CurMouseHit.AABB = bbox;
-                    }
-                }
-                if (SelectedItem.CarGenerator != null)
-                {
-                }
-
-            }
-            if ((SelectionMode == MapSelectionMode.MloInstance) && (ymap.MloEntities != null))
-            {
-                for (int i = 0; i < ymap.MloEntities.Length; i++)
-                {
-                    var ent = ymap.MloEntities[i];
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = ent.Position - camera.Position;
-                    mb.BBMin = /*ent?.BBMin ??*/ new Vector3(-1.5f);
-                    mb.BBMax = /*ent?.BBMax ??*/ new Vector3(1.5f);
-                    mb.Orientation = ent?.Orientation ?? Quaternion.Identity;
-                    mb.Scale = /*ent?.Scale ??*/ Vector3.One;
-                    BoundingBoxes.Add(mb);
-
-                    Quaternion orinv = Quaternion.Invert(mb.Orientation);
-                    Ray mraytrn = new Ray();
-                    mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos);
-                    mraytrn.Direction = orinv.Multiply(mray.Direction);
-                    bbox.Minimum = mb.BBMin;
-                    bbox.Maximum = mb.BBMax;
-                    if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
-                    {
-                        CurMouseHit.MloEntityDef = ent;
-                        CurMouseHit.EntityDef = ent;
-                        CurMouseHit.HitDist = hitdist;
-                        CurMouseHit.CamRel = mb.CamRelPos;
-                        CurMouseHit.AABB = new BoundingBox(mb.BBMin, mb.BBMax);
-                    }
-                }
-            }
-            if ((SelectionMode == MapSelectionMode.Grass) && (ymap.GrassInstanceBatches != null))
-            {
-                for (int i = 0; i < ymap.GrassInstanceBatches.Length; i++)
-                {
-                    var gb = ymap.GrassInstanceBatches[i];
-                    if ((gb.Position - camera.Position).Length() > renderboundsmaxdist) continue;
-                    //if (!LodDistTest(camera.Position, gb.AABBMin, gb.AABBMax, renderboundsmaxdist)) continue;
-
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = -camera.Position;
-                    mb.BBMin = gb.AABBMin;
-                    mb.BBMax = gb.AABBMax;
-                    mb.Orientation = Quaternion.Identity;
-                    mb.Scale = Vector3.One;
-                    BoundingBoxes.Add(mb);
-
-                    bbox.Minimum = mb.BBMin;
-                    bbox.Maximum = mb.BBMax;
-                    if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
-                    {
-                        CurMouseHit.GrassBatch = gb;
-                        CurMouseHit.HitDist = hitdist;
-                        CurMouseHit.CamRel = mb.CamRelPos;
-                        CurMouseHit.AABB = bbox;
-                    }
-                }
-            }
-            if ((SelectionMode == MapSelectionMode.DistantLodLights) && (ymap.DistantLODLights != null))
-            {
-                var dll = ymap.DistantLODLights;
-                if ((((dll.BBMin + dll.BBMax) * 0.5f) - camera.Position).Length() <= renderboundsmaxdist)
-                //if (LodDistTest(camera.Position, dll.BBMin, dll.BBMax, renderboundsmaxdist))
-                {
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = -camera.Position;
-                    mb.BBMin = dll.BBMin;
-                    mb.BBMax = dll.BBMax;
-                    mb.Orientation = Quaternion.Identity;
-                    mb.Scale = Vector3.One;
-                    BoundingBoxes.Add(mb);
-
-                    bbox.Minimum = mb.BBMin;
-                    bbox.Maximum = mb.BBMax;
-                    if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
-                    {
-                        CurMouseHit.DistantLodLights = dll;
-                        CurMouseHit.HitDist = hitdist;
-                        CurMouseHit.CamRel = mb.CamRelPos;
-                        CurMouseHit.AABB = bbox;
-                    }
-                }
-            }
-
-
-        }
-        private void UpdateMouseHits(List<WaterQuad> waterquads)
-        {
-            if (SelectionMode != MapSelectionMode.WaterQuad) return;
-
-            BoundingBox bbox = new BoundingBox();
-            Ray mray = new Ray();
-            mray.Position = camera.MouseRay.Position + camera.Position;
-            mray.Direction = camera.MouseRay.Direction;
-            float hitdist = float.MaxValue;
-
-
-            foreach (var quad in waterquads)
-            {
-                MapBox mb = new MapBox();
-                mb.CamRelPos = -camera.Position;
-                mb.BBMin = new Vector3(quad.minX, quad.minY, quad.z);
-                mb.BBMax = new Vector3(quad.maxX, quad.maxY, quad.z);
-                mb.Orientation = Quaternion.Identity;
-                mb.Scale = Vector3.One;
-                BoundingBoxes.Add(mb);
-
-                bbox.Minimum = mb.BBMin;
-                bbox.Maximum = mb.BBMax;
-                if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
-                {
-                    CurMouseHit.WaterQuad = quad;
-                    CurMouseHit.HitDist = hitdist;
-                    CurMouseHit.CamRel = mb.CamRelPos;
-                    CurMouseHit.AABB = bbox;
-                }
-            }
-        }
         private void UpdateMouseHits(RenderableBoundComposite rndbc, YmapEntityDef entity)
         {
             if (SelectionMode != MapSelectionMode.Collision) return;
@@ -4785,9 +2331,9 @@ namespace CodeWalker
                 mb.BBMax = geom.BoundGeom.BoundingBoxMax;
 
                 var cent = camrel + (mb.BBMin + mb.BBMax) * 0.5f;
-                if (cent.Length() > renderboundsmaxdist) continue;
+                if (cent.Length() > Renderer.renderboundsmaxdist) continue;
 
-                BoundingBoxes.Add(mb);
+                Renderer.BoundingBoxes.Add(mb);
 
                 bbox.Minimum = mb.BBMin * scale;
                 bbox.Maximum = mb.BBMax * scale;
@@ -4802,6 +2348,190 @@ namespace CodeWalker
                 }
             }
 
+        }
+        private void UpdateMouseHits(YmapFile ymap)
+        {
+            //find mouse hits for things like time cycle mods and car generators in ymaps.
+
+            BoundingBox bbox = new BoundingBox();
+            Ray mray = new Ray();
+            mray.Position = camera.MouseRay.Position + camera.Position;
+            mray.Direction = camera.MouseRay.Direction;
+            float hitdist = float.MaxValue;
+
+            float dmax = Renderer.renderboundsmaxdist;
+
+            if ((SelectionMode == MapSelectionMode.TimeCycleModifier) && (ymap.TimeCycleModifiers != null))
+            {
+                for (int i = 0; i < ymap.TimeCycleModifiers.Length; i++)
+                {
+                    var tcm = ymap.TimeCycleModifiers[i];
+                    if ((((tcm.BBMin + tcm.BBMax) * 0.5f) - camera.Position).Length() > dmax) continue;
+
+                    MapBox mb = new MapBox();
+                    mb.CamRelPos = -camera.Position;
+                    mb.BBMin = tcm.BBMin;
+                    mb.BBMax = tcm.BBMax;
+                    mb.Orientation = Quaternion.Identity;
+                    mb.Scale = Vector3.One;
+                    Renderer.BoundingBoxes.Add(mb);
+
+                    bbox.Minimum = mb.BBMin;
+                    bbox.Maximum = mb.BBMax;
+                    if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
+                    {
+                        CurMouseHit.TimeCycleModifier = tcm;
+                        CurMouseHit.HitDist = hitdist;
+                        CurMouseHit.CamRel = mb.CamRelPos;
+                        CurMouseHit.AABB = bbox;
+                    }
+                }
+            }
+            if ((SelectionMode == MapSelectionMode.CarGenerator) && (ymap.CarGenerators != null))
+            {
+                for (int i = 0; i < ymap.CarGenerators.Length; i++)
+                {
+                    var cg = ymap.CarGenerators[i];
+                    MapBox mb = new MapBox();
+                    mb.CamRelPos = cg.Position - camera.Position;
+                    mb.BBMin = cg.BBMin;
+                    mb.BBMax = cg.BBMax;
+                    mb.Orientation = cg.Orientation;
+                    mb.Scale = Vector3.One;
+                    Renderer.BoundingBoxes.Add(mb);
+
+                    Quaternion orinv = Quaternion.Invert(cg.Orientation);
+                    Ray mraytrn = new Ray();
+                    mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos);
+                    mraytrn.Direction = orinv.Multiply(mray.Direction);
+                    bbox.Minimum = mb.BBMin;
+                    bbox.Maximum = mb.BBMax;
+                    if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
+                    {
+                        CurMouseHit.CarGenerator = cg;
+                        CurMouseHit.HitDist = hitdist;
+                        CurMouseHit.CamRel = mb.CamRelPos;
+                        CurMouseHit.AABB = bbox;
+                    }
+                }
+                if (SelectedItem.CarGenerator != null)
+                {
+                }
+
+            }
+            if ((SelectionMode == MapSelectionMode.MloInstance) && (ymap.MloEntities != null))
+            {
+                for (int i = 0; i < ymap.MloEntities.Length; i++)
+                {
+                    var ent = ymap.MloEntities[i];
+                    MapBox mb = new MapBox();
+                    mb.CamRelPos = ent.Position - camera.Position;
+                    mb.BBMin = /*ent?.BBMin ??*/ new Vector3(-1.5f);
+                    mb.BBMax = /*ent?.BBMax ??*/ new Vector3(1.5f);
+                    mb.Orientation = ent?.Orientation ?? Quaternion.Identity;
+                    mb.Scale = /*ent?.Scale ??*/ Vector3.One;
+                    Renderer.BoundingBoxes.Add(mb);
+
+                    Quaternion orinv = Quaternion.Invert(mb.Orientation);
+                    Ray mraytrn = new Ray();
+                    mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos);
+                    mraytrn.Direction = orinv.Multiply(mray.Direction);
+                    bbox.Minimum = mb.BBMin;
+                    bbox.Maximum = mb.BBMax;
+                    if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
+                    {
+                        CurMouseHit.MloEntityDef = ent;
+                        CurMouseHit.EntityDef = ent;
+                        CurMouseHit.HitDist = hitdist;
+                        CurMouseHit.CamRel = mb.CamRelPos;
+                        CurMouseHit.AABB = new BoundingBox(mb.BBMin, mb.BBMax);
+                    }
+                }
+            }
+            if ((SelectionMode == MapSelectionMode.Grass) && (ymap.GrassInstanceBatches != null))
+            {
+                for (int i = 0; i < ymap.GrassInstanceBatches.Length; i++)
+                {
+                    var gb = ymap.GrassInstanceBatches[i];
+                    if ((gb.Position - camera.Position).Length() > dmax) continue;
+
+                    MapBox mb = new MapBox();
+                    mb.CamRelPos = -camera.Position;
+                    mb.BBMin = gb.AABBMin;
+                    mb.BBMax = gb.AABBMax;
+                    mb.Orientation = Quaternion.Identity;
+                    mb.Scale = Vector3.One;
+                    Renderer.BoundingBoxes.Add(mb);
+
+                    bbox.Minimum = mb.BBMin;
+                    bbox.Maximum = mb.BBMax;
+                    if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
+                    {
+                        CurMouseHit.GrassBatch = gb;
+                        CurMouseHit.HitDist = hitdist;
+                        CurMouseHit.CamRel = mb.CamRelPos;
+                        CurMouseHit.AABB = bbox;
+                    }
+                }
+            }
+            if ((SelectionMode == MapSelectionMode.DistantLodLights) && (ymap.DistantLODLights != null))
+            {
+                var dll = ymap.DistantLODLights;
+                if ((((dll.BBMin + dll.BBMax) * 0.5f) - camera.Position).Length() <= dmax)
+                {
+                    MapBox mb = new MapBox();
+                    mb.CamRelPos = -camera.Position;
+                    mb.BBMin = dll.BBMin;
+                    mb.BBMax = dll.BBMax;
+                    mb.Orientation = Quaternion.Identity;
+                    mb.Scale = Vector3.One;
+                    Renderer.BoundingBoxes.Add(mb);
+
+                    bbox.Minimum = mb.BBMin;
+                    bbox.Maximum = mb.BBMax;
+                    if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
+                    {
+                        CurMouseHit.DistantLodLights = dll;
+                        CurMouseHit.HitDist = hitdist;
+                        CurMouseHit.CamRel = mb.CamRelPos;
+                        CurMouseHit.AABB = bbox;
+                    }
+                }
+            }
+
+
+        }
+        private void UpdateMouseHits(List<WaterQuad> waterquads)
+        {
+            if (SelectionMode != MapSelectionMode.WaterQuad) return;
+
+            BoundingBox bbox = new BoundingBox();
+            Ray mray = new Ray();
+            mray.Position = camera.MouseRay.Position + camera.Position;
+            mray.Direction = camera.MouseRay.Direction;
+            float hitdist = float.MaxValue;
+
+
+            foreach (var quad in waterquads)
+            {
+                MapBox mb = new MapBox();
+                mb.CamRelPos = -camera.Position;
+                mb.BBMin = new Vector3(quad.minX, quad.minY, quad.z);
+                mb.BBMax = new Vector3(quad.maxX, quad.maxY, quad.z);
+                mb.Orientation = Quaternion.Identity;
+                mb.Scale = Vector3.One;
+                Renderer.BoundingBoxes.Add(mb);
+
+                bbox.Minimum = mb.BBMin;
+                bbox.Maximum = mb.BBMax;
+                if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
+                {
+                    CurMouseHit.WaterQuad = quad;
+                    CurMouseHit.HitDist = hitdist;
+                    CurMouseHit.CamRel = mb.CamRelPos;
+                    CurMouseHit.AABB = bbox;
+                }
+            }
         }
         private void UpdateMouseHits(List<YnvFile> ynvs)
         {
@@ -4824,7 +2554,7 @@ namespace CodeWalker
                     mb.BBMax = ynv.Nav.SectorTree.AABBMax.XYZ();
                     mb.Orientation = Quaternion.Identity;
                     mb.Scale = Vector3.One;
-                    BoundingBoxes.Add(mb);
+                    Renderer.BoundingBoxes.Add(mb);
                 }
 
                 if ((ynv.Nav != null) && (ynv.Vertices != null) && (ynv.Indices != null) && (ynv.Polys != null))
@@ -4857,18 +2587,18 @@ namespace CodeWalker
                     { continue; }
 
                     v.Position = ynv.Vertices[ind];
-                    SelectionLineVerts.Add(v);
+                    Renderer.SelectionLineVerts.Add(v);
                     if (id == startid)
                     {
                         v0 = v;
                     }
                     else
                     {
-                        SelectionLineVerts.Add(v);
+                        Renderer.SelectionLineVerts.Add(v);
                     }
                     if (id == lastid)
                     {
-                        SelectionLineVerts.Add(v0);
+                        Renderer.SelectionLineVerts.Add(v0);
                     }
                 }
 
@@ -4891,12 +2621,12 @@ namespace CodeWalker
                 //    { continue; }
                 //    v1.Position = ynv.Vertices[ind1];
                 //    v2.Position = ynv.Vertices[ind2];
-                //    SelectionTriVerts.Add(v0);
-                //    SelectionTriVerts.Add(v1);
-                //    SelectionTriVerts.Add(v2);
-                //    SelectionTriVerts.Add(v0);
-                //    SelectionTriVerts.Add(v2);
-                //    SelectionTriVerts.Add(v1);
+                //    Renderer.SelectionTriVerts.Add(v0);
+                //    Renderer.SelectionTriVerts.Add(v1);
+                //    Renderer.SelectionTriVerts.Add(v2);
+                //    Renderer.SelectionTriVerts.Add(v0);
+                //    Renderer.SelectionTriVerts.Add(v2);
+                //    Renderer.SelectionTriVerts.Add(v1);
                 //}
 
             }
@@ -5023,7 +2753,7 @@ namespace CodeWalker
                     mb.BBMax = new Vector3(ynd.BBMax.X, ynd.BBMax.Y, maxz);
                     mb.Orientation = Quaternion.Identity;
                     mb.Scale = Vector3.One;
-                    BoundingBoxes.Add(mb);
+                    Renderer.BoundingBoxes.Add(mb);
                 }
 
                 if (ynd.BVH != null)
@@ -5074,11 +2804,11 @@ namespace CodeWalker
                         mb.Scale = Vector3.One;
                         if (ln == SelectedItem.PathLink)
                         {
-                            HilightBoxes.Add(mb);
+                            Renderer.HilightBoxes.Add(mb);
                         }
                         else
                         {
-                            BoundingBoxes.Add(mb);
+                            Renderer.BoundingBoxes.Add(mb);
                         }
                     }
                 }
@@ -5132,7 +2862,7 @@ namespace CodeWalker
                         mb.BBMax = new Vector3(linkrad, linkrad, dl);
                         mb.Orientation = Quaternion.Invert(Quaternion.RotationLookAtRH(dir, dup));
                         mb.Scale = Vector3.One;
-                        BoundingBoxes.Add(mb);
+                        Renderer.BoundingBoxes.Add(mb);
                     }
                 }
             }
@@ -5159,7 +2889,7 @@ namespace CodeWalker
                     mb.BBMax = sr?.BVH?.Box.Maximum ?? Vector3.Zero;
                     mb.Orientation = Quaternion.Identity;
                     mb.Scale = Vector3.One;
-                    BoundingBoxes.Add(mb);
+                    Renderer.BoundingBoxes.Add(mb);
                 }
 
                 if (sr.BVH != null)
@@ -5207,11 +2937,11 @@ namespace CodeWalker
                     mb.Scale = Vector3.One;
                     if (renderscenariobounds)
                     {
-                        HilightBoxes.Add(mb);
+                        Renderer.HilightBoxes.Add(mb);
                     }
                     else
                     {
-                        BoundingBoxes.Add(mb);
+                        Renderer.BoundingBoxes.Add(mb);
                     }
                 }
 
@@ -5226,7 +2956,7 @@ namespace CodeWalker
                     mb.BBMax = new Vector3(0.5f);
                     mb.CamRelPos = ncl.Position - camera.Position;
                     mb.Orientation = Quaternion.Identity;
-                    HilightBoxes.Add(mb);
+                    Renderer.HilightBoxes.Add(mb);
 
 
                     //show boxes for points in the cluster
@@ -5241,7 +2971,7 @@ namespace CodeWalker
                             mb.BBMax = new Vector3(0.5f);
                             mb.CamRelPos = clpoint.Position - camera.Position;
                             mb.Orientation = clpoint.Orientation;
-                            BoundingBoxes.Add(mb);
+                            Renderer.BoundingBoxes.Add(mb);
                         }
                     }
                 }
@@ -5313,7 +3043,7 @@ namespace CodeWalker
             }
             if ((mhitv.Archetype != null) && (mhitv.Drawable == null))
             {
-                mhitv.Drawable = TryGetDrawable(mhitv.Archetype); //no drawable given.. try to get it from the cache.. if it's not there, drawable info won't display...
+                mhitv.Drawable = gameFileCache.TryGetDrawable(mhitv.Archetype); //no drawable given.. try to get it from the cache.. if it's not there, drawable info won't display...
             }
 
 
@@ -5432,7 +3162,7 @@ namespace CodeWalker
                 if (mhit.HasValue)
                 {
                     //make sure the path link gets changed (sub-selection!)
-                    lock (rendersyncroot)
+                    lock (Renderer.RenderSyncRoot)
                     {
                         SelectedItem.PathLink = mhitv.PathLink;
                         SelectedItem.ScenarioEdge = mhitv.ScenarioEdge;
@@ -5441,7 +3171,7 @@ namespace CodeWalker
                 return;
             }
 
-            lock (rendersyncroot) //drawflags is used when rendering.. need that lock
+            lock (Renderer.RenderSyncRoot) //drawflags is used when rendering.. need that lock
             {
                 if (mhit.HasValue)
                 {
@@ -5638,7 +3368,7 @@ namespace CodeWalker
             if (!MouseSelectEnabled)
             { return; }
 
-            SelectItem(LastMouseHit, CtrlPressed);
+            SelectItem(LastMouseHit, Input.CtrlPressed);
         }
         private void UpdateSelectionUI(bool wait)
         {
@@ -5674,8 +3404,8 @@ namespace CodeWalker
             SelArchetypePropertyGrid.SelectedObject = item.Archetype;
             SelDrawablePropertyGrid.SelectedObject = item.Drawable;
 
-            SelectionModelDrawFlags.Clear();
-            SelectionGeometryDrawFlags.Clear();
+            Renderer.SelectionModelDrawFlags.Clear();
+            Renderer.SelectionGeometryDrawFlags.Clear();
             SelDrawableModelsTreeView.Nodes.Clear();
             SelDrawableTexturesTreeView.Nodes.Clear();
             if (item.Drawable != null)
@@ -5883,7 +3613,7 @@ namespace CodeWalker
 
                 if (!check)
                 {
-                    SelectionModelDrawFlags[model] = false;
+                    Renderer.SelectionModelDrawFlags[model] = false;
                 }
 
                 if ((model.Geometries == null) || (model.Geometries.data_items == null)) continue;
@@ -5935,37 +3665,8 @@ namespace CodeWalker
             var model = node.Tag as DrawableModel;
             var geom = node.Tag as DrawableGeometry;
             bool rem = node.Checked;
-            lock (rendersyncroot)
-            {
-                if (model != null)
-                {
-                    if (rem)
-                    {
-                        if (SelectionModelDrawFlags.ContainsKey(model))
-                        {
-                            SelectionModelDrawFlags.Remove(model);
-                        }
-                    }
-                    else
-                    {
-                        SelectionModelDrawFlags[model] = false;
-                    }
-                }
-                if (geom != null)
-                {
-                    if (rem)
-                    {
-                        if (SelectionGeometryDrawFlags.ContainsKey(geom))
-                        {
-                            SelectionGeometryDrawFlags.Remove(geom);
-                        }
-                    }
-                    else
-                    {
-                        SelectionGeometryDrawFlags[geom] = false;
-                    }
-                }
-            }
+
+            Renderer.UpdateSelectionDrawFlags(model, geom, rem);
         }
         public void SyncSelDrawableModelsTreeNode(TreeNode node)
         {
@@ -6091,7 +3792,7 @@ namespace CodeWalker
 
             UpdateStatus("Loading timecycles...");
             timecycle.Init(gameFileCache, UpdateStatus);
-            timecycle.SetTime(timeofday);
+            timecycle.SetTime(Renderer.timeofday);
 
             UpdateStatus("Loading materials...");
             BoundsMaterialTypes.Init(gameFileCache);
@@ -6134,7 +3835,7 @@ namespace CodeWalker
             Cursor = Cursors.WaitCursor;
             Task.Run(() =>
             {
-                lock (rendersyncroot)
+                lock (Renderer.RenderSyncRoot)
                 {
                     if (gameFileCache.SetDlcLevel(dlc, enable))
                     {
@@ -6153,7 +3854,7 @@ namespace CodeWalker
             Cursor = Cursors.WaitCursor;
             Task.Run(() =>
             {
-                lock (rendersyncroot)
+                lock (Renderer.RenderSyncRoot)
                 {
                     if (gameFileCache.SetModsEnabled(enable))
                     {
@@ -6206,11 +3907,11 @@ namespace CodeWalker
 
             while (formopen && !IsDisposed) //main asset loop
             {
-                gameFileCache.ContentThreadProc();
+                bool fcItemsPending = gameFileCache.ContentThreadProc();
 
-                renderableCache.ContentThreadProc();
+                bool rcItemsPending = Renderer.ContentThreadProc();
 
-                if (!(gameFileCache.ItemsStillPending || renderableCache.ItemsStillPending))
+                if (!(fcItemsPending || rcItemsPending))
                 {
                     Thread.Sleep(1); //sleep if there's nothing to do
                 }
@@ -6294,7 +3995,7 @@ namespace CodeWalker
                     {
                         CloudsComboBox.Items.Add(frag.Name);
                     }
-                    CloudsComboBox.SelectedIndex = Math.Max(CloudsComboBox.FindString(individualcloudfrag), 0);
+                    CloudsComboBox.SelectedIndex = Math.Max(CloudsComboBox.FindString(Renderer.individualcloudfrag), 0);
 
 
                     CloudParamComboBox.Items.Clear();
@@ -7439,7 +5140,7 @@ namespace CodeWalker
             ToolbarRotateButton.Checked = false;
             ToolbarScaleButton.Checked = false;
 
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
                 switch (mode)
                 {
@@ -7477,7 +5178,7 @@ namespace CodeWalker
                 }
             }
 
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
                 switch (space)
                 {
@@ -7528,7 +5229,7 @@ namespace CodeWalker
                     mode = BoundsShaderMode.Sphere;
                     break;
             }
-            boundsmode = mode;
+            Renderer.boundsmode = mode;
         }
 
 
@@ -7638,32 +5339,28 @@ namespace CodeWalker
                 }
             }
 
-            lock (rendersyncroot)
+
+            Renderer.SetCameraMode(modestr);
+
+            switch (modestr)
             {
-                switch (modestr)
-                {
-                    case "Perspective":
-                        camera.IsOrthographic = false;
-                        MapViewEnabled = false;
-                        camera.UpdateProj = true;
-                        ToolbarCameraModeButton.Image = ToolbarCameraPerspectiveButton.Image;
-                        ToolbarCameraPerspectiveButton.Checked = true;
-                        break;
-                    case "Orthographic":
-                        camera.IsOrthographic = true;
-                        MapViewEnabled = false;
-                        ToolbarCameraModeButton.Image = ToolbarCameraOrthographicButton.Image;
-                        ToolbarCameraOrthographicButton.Checked = true;
-                        break;
-                    case "2D Map":
-                        camera.IsOrthographic = true;
-                        MapViewEnabled = true;
-                        ToolbarCameraModeButton.Image = ToolbarCameraMapViewButton.Image;
-                        ToolbarCameraMapViewButton.Checked = true;
-                        break;
-                }
-                camera.IsMapView = MapViewEnabled;
+                case "Perspective":
+                    MapViewEnabled = false;
+                    ToolbarCameraModeButton.Image = ToolbarCameraPerspectiveButton.Image;
+                    ToolbarCameraPerspectiveButton.Checked = true;
+                    break;
+                case "Orthographic":
+                    MapViewEnabled = false;
+                    ToolbarCameraModeButton.Image = ToolbarCameraOrthographicButton.Image;
+                    ToolbarCameraOrthographicButton.Checked = true;
+                    break;
+                case "2D Map":
+                    MapViewEnabled = true;
+                    ToolbarCameraModeButton.Image = ToolbarCameraMapViewButton.Image;
+                    ToolbarCameraMapViewButton.Checked = true;
+                    break;
             }
+
             FieldOfViewTrackBar.Enabled = !MapViewEnabled;
             MapViewDetailTrackBar.Enabled = MapViewEnabled;
 
@@ -7691,19 +5388,12 @@ namespace CodeWalker
 
         private void StatsUpdateTimer_Tick(object sender, EventArgs e)
         {
-            int rgc = (shaders != null) ? shaders.RenderedGeometries : 0;
-            int crc = renderableCache.LoadedRenderableCount;
-            int ctc = renderableCache.LoadedTextureCount;
-            int tcrc = renderableCache.MemCachedRenderableCount;
-            int tctc = renderableCache.MemCachedTextureCount;
-            long vr = renderableCache.TotalGraphicsMemoryUse + (shaders != null ? shaders.TotalGraphicsMemoryUse : 0);
-            string vram = TextUtil.GetBytesReadable(vr);
-            //StatsLabel.Text = string.Format("Drawn: {0} geom, Loaded: {1}/{5} dr, {2}/{6} tx, Vram: {3}, Fps: {4}", rgc, crc, ctc, vram, fps, tcrc, tctc);
-            StatsLabel.Text = string.Format("Drawn: {0} geom, Loaded: {1} dr, {2} tx, Vram: {3}, Fps: {4}", rgc, crc, ctc, vram, fps);
 
-            if (timerunning)
+            StatsLabel.Text = Renderer.GetStatusText();
+
+            if (Renderer.timerunning)
             {
-                float fv = timeofday * 60.0f;
+                float fv = Renderer.timeofday * 60.0f;
                 TimeOfDayTrackBar.Value = (int)fv;
                 UpdateTimeOfDayLabel();
             }
@@ -7765,7 +5455,7 @@ namespace CodeWalker
                         {
                             GrabbedWidget = Widget;
                             GrabbedWidget.IsDragging = true;
-                            if (ShiftPressed)
+                            if (Input.ShiftPressed)
                             {
                                 CloneItem();
                             }
@@ -7779,7 +5469,7 @@ namespace CodeWalker
                                 GrabbedWidget = null;
                             }
 
-                            if (CtrlPressed)
+                            if (Input.CtrlPressed)
                             {
                                 SpawnTestEntity();
                             }
@@ -7889,19 +5579,21 @@ namespace CodeWalker
                 }
                 if (MouseRButtonDown)
                 {
-                    if (controllightdir)
+                    if (Renderer.controllightdir)
                     {
-                        lightdirx += (dx * camera.Sensitivity);
-                        lightdiry += (dy * camera.Sensitivity);
+                        Renderer.lightdirx += (dx * camera.Sensitivity);
+                        Renderer.lightdiry += (dy * camera.Sensitivity);
                     }
-                    else if (controltimeofday)
+                    else if (Renderer.controltimeofday)
                     {
-                        timeofday += (dx - dy) / 30.0f;
-                        while (timeofday >= 24.0f) timeofday -= 24.0f;
-                        while (timeofday < 0.0f) timeofday += 24.0f;
-                        timecycle.SetTime(timeofday);
+                        float tod = Renderer.timeofday;
+                        tod += (dx - dy) / 30.0f;
+                        while (tod >= 24.0f) tod -= 24.0f;
+                        while (tod < 0.0f) tod += 24.0f;
+                        timecycle.SetTime(tod);
+                        Renderer.timeofday = tod;
 
-                        float fv = timeofday * 60.0f;
+                        float fv = tod * 60.0f;
                         TimeOfDayTrackBar.Value = (int)fv;
                         UpdateTimeOfDayLabel();
                     }
@@ -7984,83 +5676,69 @@ namespace CodeWalker
                 if (cb.DropDownStyle != ComboBoxStyle.DropDownList) return; //nontypable combobox
             }
 
-            var k = e.KeyCode;
-
-            bool ctrl = (e.Modifiers & Keys.Control) > 0;
-            bool shift = (e.Modifiers & Keys.Shift) > 0;
-            CtrlPressed = ctrl;
-            ShiftPressed = shift;
-
             bool enablemove = (!iseditmode) || (MouseLButtonDown && (GrabbedMarker == null) && (GrabbedWidget == null));
 
-            enablemove = enablemove && (!ctrl);
+            Input.KeyDown(e, enablemove);
 
-            //WASD move the camera entity...
-            if (enablemove)
-            {
-                if (k == keyBindings.MoveForward) kbmovefwd = true;
-                if (k == keyBindings.MoveBackward) kbmovebck = true;
-                if (k == keyBindings.MoveLeft) kbmovelft = true;
-                if (k == keyBindings.MoveRight) kbmovergt = true;
-                if (k == keyBindings.MoveUp) kbmoveup = true;
-                if (k == keyBindings.MoveDown) kbmovedn = true;
-                if (k == keyBindings.Jump) kbjump = true;
-            }
-
-            bool moving = kbmovefwd || kbmovebck || kbmovelft || kbmovergt || kbmoveup || kbmovedn || kbjump;
+            var k = e.KeyCode;
+            var kb = Input.keyBindings;
+            bool ctrl = Input.CtrlPressed;
+            bool shift = Input.ShiftPressed;
 
 
             if (!ctrl)
             {
-                if (k == keyBindings.MoveSlowerZoomIn)
+                if (k == kb.MoveSlowerZoomIn)
                 {
                     camera.MouseZoom(1);
                 }
-                if (k == keyBindings.MoveFasterZoomOut)
+                if (k == kb.MoveFasterZoomOut)
                 {
                     camera.MouseZoom(-1);
                 }
             }
 
 
-
-            if (!moving) //don't trigger further actions if moving.
+            if (!Input.kbmoving) //don't trigger further actions if moving.
             {
-
                 if (!ctrl)
                 {
                     //switch widget modes and spaces.
-                    if ((k == keyBindings.ExitEditMode))
+                    if ((k == kb.ExitEditMode))
                     {
                         if (Widget.Mode == WidgetMode.Default) ToggleWidgetSpace();
                         else SetWidgetMode("Default");
                     }
-                    if ((k == keyBindings.EditPosition))// && !enablemove)
+                    if ((k == kb.EditPosition))// && !enablemove)
                     {
                         if (Widget.Mode == WidgetMode.Position) ToggleWidgetSpace();
                         else SetWidgetMode("Position");
                     }
-                    if ((k == keyBindings.EditRotation))// && !enablemove)
+                    if ((k == kb.EditRotation))// && !enablemove)
                     {
                         if (Widget.Mode == WidgetMode.Rotation) ToggleWidgetSpace();
                         else SetWidgetMode("Rotation");
                     }
-                    if ((k == keyBindings.EditScale))// && !enablemove)
+                    if ((k == kb.EditScale))// && !enablemove)
                     {
                         if (Widget.Mode == WidgetMode.Scale) ToggleWidgetSpace();
                         else SetWidgetMode("Scale");
                     }
-                    if (k == keyBindings.ToggleMouseSelect)
+                    if (k == kb.ToggleMouseSelect)
                     {
                         SetMouseSelect(!MouseSelectEnabled);
                     }
-                    if (k == keyBindings.ToggleToolbar)
+                    if (k == kb.ToggleToolbar)
                     {
                         ToggleToolbar();
                     }
-                    if (k == keyBindings.FirstPerson)
+                    if (k == kb.FirstPerson)
                     {
                         SetControlMode((ControlMode == WorldControlMode.Free) ? WorldControlMode.Ped : WorldControlMode.Free);
+                    }
+                    if (k == Keys.Delete)
+                    {
+                        DeleteItem();
                     }
                 }
                 else
@@ -8108,10 +5786,7 @@ namespace CodeWalker
 
         private void WorldForm_KeyUp(object sender, KeyEventArgs e)
         {
-            bool ctrl = (e.Modifiers & Keys.Control) > 0;
-            bool shift = (e.Modifiers & Keys.Shift) > 0;
-            CtrlPressed = ctrl;
-            ShiftPressed = shift;
+            Input.KeyUp(e);
 
             if (ActiveControl is TextBox)
             {
@@ -8124,17 +5799,6 @@ namespace CodeWalker
                 if (cb.DropDownStyle != ComboBoxStyle.DropDownList) return; //non-typable combobox
             }
 
-
-            var k = e.KeyCode;
-            if (k == keyBindings.MoveForward) kbmovefwd = false;
-            if (k == keyBindings.MoveBackward) kbmovebck = false;
-            if (k == keyBindings.MoveLeft) kbmovelft = false;
-            if (k == keyBindings.MoveRight) kbmovergt = false;
-            if (k == keyBindings.MoveUp) kbmoveup = false;
-            if (k == keyBindings.MoveDown) kbmovedn = false;
-            if (k == keyBindings.Jump) kbjump = false;
-
-
             if (ControlMode != WorldControlMode.Free)
             {
                 e.Handled = true;
@@ -8144,13 +5808,7 @@ namespace CodeWalker
         private void WorldForm_Deactivate(object sender, EventArgs e)
         {
             //try not to lock keyboard movement if the form loses focus.
-            kbmovefwd = false;
-            kbmovebck = false;
-            kbmovelft = false;
-            kbmovergt = false;
-            kbmoveup = false;
-            kbmovedn = false;
-            kbjump = false;
+            Input.KeyboardStop();
         }
 
         private void ViewModeComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -8220,30 +5878,27 @@ namespace CodeWalker
 
         private void WireframeCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            shaders.wireframe = WireframeCheckBox.Checked;
+            Renderer.shaders.wireframe = WireframeCheckBox.Checked;
         }
 
         private void GrassCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            rendergrass = GrassCheckBox.Checked;
+            Renderer.rendergrass = GrassCheckBox.Checked;
         }
 
         private void TimedEntitiesCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (rendersyncroot)
-            {
-                rendertimedents = TimedEntitiesCheckBox.Checked;
-            }
+            Renderer.rendertimedents = TimedEntitiesCheckBox.Checked;
         }
 
         private void TimedEntitiesAlwaysOnCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            rendertimedentsalways = TimedEntitiesAlwaysOnCheckBox.Checked;
+            Renderer.rendertimedentsalways = TimedEntitiesAlwaysOnCheckBox.Checked;
         }
 
         private void InteriorsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            renderinteriors = InteriorsCheckBox.Checked;
+            Renderer.renderinteriors = InteriorsCheckBox.Checked;
         }
 
         private void WaterQuadsCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -8253,10 +5908,7 @@ namespace CodeWalker
 
         private void ProxiesCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (rendersyncroot)
-            {
-                renderproxies = ProxiesCheckBox.Checked;
-            }
+            Renderer.renderproxies = ProxiesCheckBox.Checked;
         }
 
         private void PathsCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -8281,7 +5933,7 @@ namespace CodeWalker
 
         private void PathsDepthClipCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            shaders.PathsDepthClip = PathsDepthClipCheckBox.Checked;
+            Renderer.shaders.PathsDepthClip = PathsDepthClipCheckBox.Checked;
         }
 
         private void ErrorConsoleCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -8291,36 +5943,32 @@ namespace CodeWalker
 
         private void DynamicLODCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            usedynamiclod = DynamicLODCheckBox.Checked;
-            ShowYmapChildrenCheckBox.Enabled = !usedynamiclod;
+            Renderer.usedynamiclod = DynamicLODCheckBox.Checked;
+            ShowYmapChildrenCheckBox.Enabled = !Renderer.usedynamiclod;
         }
 
         private void DetailTrackBar_Scroll(object sender, EventArgs e)
         {
-            lodthreshold = 50.0f / (0.1f + (float)DetailTrackBar.Value);
+            Renderer.lodthreshold = 50.0f / (0.1f + (float)DetailTrackBar.Value);
         }
 
         private void WaitForChildrenCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            waitforchildrentoload = WaitForChildrenCheckBox.Checked;
+            Renderer.waitforchildrentoload = WaitForChildrenCheckBox.Checked;
         }
 
         private void ReloadShadersButton_Click(object sender, EventArgs e)
         {
-            if (currentdevice == null) return; //can't do this with no device
+            if (Renderer.Device == null) return; //can't do this with no device
 
             Cursor = Cursors.WaitCursor;
             pauserendering = true;
 
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
                 try
                 {
-                    if (shaders != null)
-                    {
-                        shaders.Dispose();
-                    }
-                    shaders = new ShaderManager(currentdevice, dxman);
+                    Renderer.ReloadShaders();
                 }
                 catch (Exception ex)
                 {
@@ -8416,20 +6064,20 @@ namespace CodeWalker
 
         private void MarkerDepthClipCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            markerdepthclip = MarkerDepthClipCheckBox.Checked;
+            Renderer.markerdepthclip = MarkerDepthClipCheckBox.Checked;
         }
 
         private void ShadowsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
-                shaders.shadows = ShadowsCheckBox.Checked;
+                Renderer.shaders.shadows = ShadowsCheckBox.Checked;
             }
         }
 
         private void SkydomeCheckbox_CheckedChanged(object sender, EventArgs e)
         {
-            renderskydome = SkydomeCheckBox.Checked;
+            Renderer.renderskydome = SkydomeCheckBox.Checked;
         }
 
         private void BoundsStyleComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -8441,13 +6089,13 @@ namespace CodeWalker
 
         private void BoundsDepthClipCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            renderboundsclip = BoundsDepthClipCheckBox.Checked;
+            Renderer.renderboundsclip = BoundsDepthClipCheckBox.Checked;
         }
 
         private void BoundsRangeTrackBar_Scroll(object sender, EventArgs e)
         {
             float fv = BoundsRangeTrackBar.Value;
-            renderboundsmaxdist = fv * fv;
+            Renderer.renderboundsmaxdist = fv * fv;
         }
 
         private void MouseSelectCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -8463,6 +6111,11 @@ namespace CodeWalker
         private void PopZonesCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             renderpopzones = PopZonesCheckBox.Checked;
+        }
+
+        private void SkeletonsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderskeletons = SkeletonsCheckBox.Checked;
         }
 
         private void AudioOuterBoundsCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -8646,42 +6299,42 @@ namespace CodeWalker
             {
                 default:
                 case "Default":
-                    shaders.RenderMode = WorldRenderMode.Default;
+                    Renderer.shaders.RenderMode = WorldRenderMode.Default;
                     break;
                 case "Single texture":
-                    shaders.RenderMode = WorldRenderMode.SingleTexture;
+                    Renderer.shaders.RenderMode = WorldRenderMode.SingleTexture;
                     TextureSamplerComboBox.Enabled = true;
                     TextureCoordsComboBox.Enabled = true;
                     break;
                 case "Vertex normals":
-                    shaders.RenderMode = WorldRenderMode.VertexNormals;
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexNormals;
                     break;
                 case "Vertex tangents":
-                    shaders.RenderMode = WorldRenderMode.VertexTangents;
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexTangents;
                     break;
                 case "Vertex colour 1":
-                    shaders.RenderMode = WorldRenderMode.VertexColour;
-                    shaders.RenderVertexColourIndex = 1;
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.shaders.RenderVertexColourIndex = 1;
                     break;
                 case "Vertex colour 2":
-                    shaders.RenderMode = WorldRenderMode.VertexColour;
-                    shaders.RenderVertexColourIndex = 2;
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.shaders.RenderVertexColourIndex = 2;
                     break;
                 case "Vertex colour 3":
-                    shaders.RenderMode = WorldRenderMode.VertexColour;
-                    shaders.RenderVertexColourIndex = 3;
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.shaders.RenderVertexColourIndex = 3;
                     break;
                 case "Texture coord 1":
-                    shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    shaders.RenderTextureCoordIndex = 1;
+                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.shaders.RenderTextureCoordIndex = 1;
                     break;
                 case "Texture coord 2":
-                    shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    shaders.RenderTextureCoordIndex = 2;
+                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.shaders.RenderTextureCoordIndex = 2;
                     break;
                 case "Texture coord 3":
-                    shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    shaders.RenderTextureCoordIndex = 3;
+                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.shaders.RenderTextureCoordIndex = 3;
                     break;
             }
         }
@@ -8690,7 +6343,7 @@ namespace CodeWalker
         {
             if (TextureSamplerComboBox.SelectedItem is MetaName)
             {
-                shaders.RenderTextureSampler = (MetaName)TextureSamplerComboBox.SelectedItem;
+                Renderer.shaders.RenderTextureSampler = (MetaName)TextureSamplerComboBox.SelectedItem;
             }
         }
 
@@ -8700,13 +6353,13 @@ namespace CodeWalker
             {
                 default:
                 case "Texture coord 1":
-                    shaders.RenderTextureSamplerCoord = 1;
+                    Renderer.shaders.RenderTextureSamplerCoord = 1;
                     break;
                 case "Texture coord 2":
-                    shaders.RenderTextureSamplerCoord = 2;
+                    Renderer.shaders.RenderTextureSamplerCoord = 2;
                     break;
                 case "Texture coord 3":
-                    shaders.RenderTextureSamplerCoord = 3;
+                    Renderer.shaders.RenderTextureSamplerCoord = 3;
                     break;
             }
 
@@ -8715,6 +6368,7 @@ namespace CodeWalker
         private void CollisionMeshesCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             rendercollisionmeshes = CollisionMeshesCheckBox.Checked;
+            Renderer.rendercollisionmeshes = rendercollisionmeshes;
         }
 
         private void CollisionMeshRangeTrackBar_Scroll(object sender, EventArgs e)
@@ -8739,13 +6393,13 @@ namespace CodeWalker
 
         private void CollisionMeshLayerDrawableCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            collisionmeshlayerdrawable = CollisionMeshLayerDrawableCheckBox.Checked;
+            Renderer.rendercollisionmeshlayerdrawable = CollisionMeshLayerDrawableCheckBox.Checked;
         }
 
         private void ControlLightDirectionCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            controllightdir = ControlLightDirectionCheckBox.Checked;
-            if (controllightdir)
+            Renderer.controllightdir = ControlLightDirectionCheckBox.Checked;
+            if (Renderer.controllightdir)
             {
                 ControlTimeOfDayCheckBox.Checked = false;
             }
@@ -8753,8 +6407,8 @@ namespace CodeWalker
 
         private void ControlTimeOfDayCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            controltimeofday = ControlTimeOfDayCheckBox.Checked;
-            if (controltimeofday)
+            Renderer.controltimeofday = ControlTimeOfDayCheckBox.Checked;
+            if (Renderer.controltimeofday)
             {
                 ControlLightDirectionCheckBox.Checked = false;
             }
@@ -8762,20 +6416,20 @@ namespace CodeWalker
 
         private void ShowYmapChildrenCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            renderchildents = ShowYmapChildrenCheckBox.Checked;
+            Renderer.renderchildents = ShowYmapChildrenCheckBox.Checked;
         }
 
         private void HDRRenderingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
-                shaders.hdr = HDRRenderingCheckBox.Checked;
+                Renderer.shaders.hdr = HDRRenderingCheckBox.Checked;
             }
         }
 
         private void AnisotropicFilteringCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
+            Renderer.shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
         }
 
         private void WorldMaxLodComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -8784,25 +6438,25 @@ namespace CodeWalker
             {
                 default:
                 case "ORPHANHD":
-                    renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
+                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
                     break;
                 case "HD":
-                    renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_HD;
+                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_HD;
                     break;
                 case "LOD":
-                    renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_LOD;
+                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_LOD;
                     break;
                 case "SLOD1":
-                    renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_SLOD1;
+                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_SLOD1;
                     break;
                 case "SLOD2":
-                    renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_SLOD2;
+                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_SLOD2;
                     break;
                 case "SLOD3":
-                    renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_SLOD3;
+                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_SLOD3;
                     break;
                 case "SLOD4":
-                    renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_SLOD4;
+                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_SLOD4;
                     break;
             }
         }
@@ -8810,20 +6464,20 @@ namespace CodeWalker
         private void WorldLodDistTrackBar_Scroll(object sender, EventArgs e)
         {
             float loddist = ((float)WorldLodDistTrackBar.Value) * 0.1f;
-            renderworldLodDistMult = loddist;
+            Renderer.renderworldLodDistMult = loddist;
             WorldLodDistLabel.Text = loddist.ToString("0.0");
         }
 
         private void WorldDetailDistTrackBar_Scroll(object sender, EventArgs e)
         {
             float detdist = ((float)WorldDetailDistTrackBar.Value) * 0.1f;
-            renderworldDetailDistMult = detdist;
+            Renderer.renderworldDetailDistMult = detdist;
             WorldDetailDistLabel.Text = detdist.ToString("0.0");
         }
 
         private void WorldScriptedYmapsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            ShowScriptedYmaps = WorldScriptedYmapsCheckBox.Checked;
+            Renderer.ShowScriptedYmaps = WorldScriptedYmapsCheckBox.Checked;
         }
 
         private void WorldYmapTimeFilterCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -8875,22 +6529,17 @@ namespace CodeWalker
         private void TimeOfDayTrackBar_Scroll(object sender, EventArgs e)
         {
             int v = TimeOfDayTrackBar.Value;
-            float fh = v / 60.0f;
+            float hour = v / 60.0f;
             UpdateTimeOfDayLabel();
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
-                timeofday = fh;
-                timecycle.SetTime(timeofday);
+                Renderer.SetTimeOfDay(hour);
             }
         }
 
         private void WeatherComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!Monitor.TryEnter(rendersyncroot, 50))
-            { return; } //couldn't get a lock...
-            weathertype = WeatherComboBox.Text;
-            weather.SetNextWeather(weathertype);
-            Monitor.Exit(rendersyncroot);
+            Renderer.SetWeatherType(WeatherComboBox.Text);
         }
 
         private void WeatherRegionComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -8902,29 +6551,29 @@ namespace CodeWalker
         {
             //if (!Monitor.TryEnter(rendersyncroot, 50))
             //{ return; } //couldn't get a lock...
-            individualcloudfrag = CloudsComboBox.Text;
+            Renderer.individualcloudfrag = CloudsComboBox.Text;
             //Monitor.Exit(rendersyncroot);
         }
 
         private void DistantLODLightsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            renderdistlodlights = DistantLODLightsCheckBox.Checked;
+            Renderer.renderdistlodlights = DistantLODLightsCheckBox.Checked;
         }
 
         private void NaturalAmbientLightCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            rendernaturalambientlight = NaturalAmbientLightCheckBox.Checked;
+            Renderer.rendernaturalambientlight = NaturalAmbientLightCheckBox.Checked;
         }
 
         private void ArtificialAmbientLightCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            renderartificialambientlight = ArtificialAmbientLightCheckBox.Checked;
+            Renderer.renderartificialambientlight = ArtificialAmbientLightCheckBox.Checked;
         }
 
         private void TimeStartStopButton_Click(object sender, EventArgs e)
         {
-            timerunning = !timerunning;
-            TimeStartStopButton.Text = timerunning ? "Stop" : "Start";
+            Renderer.timerunning = !Renderer.timerunning;
+            TimeStartStopButton.Text = Renderer.timerunning ? "Stop" : "Start";
         }
 
         private void TimeSpeedTrackBar_Scroll(object sender, EventArgs e)
@@ -8934,9 +6583,9 @@ namespace CodeWalker
             //when tv=0.5, speed=0.5 min/sec
             //when tv=1,  speed=128 min/sec
 
-            timespeed = 128.0f * tv * tv * tv * tv * tv * tv * tv * tv;
+            Renderer.timespeed = 128.0f * tv * tv * tv * tv * tv * tv * tv * tv;
 
-            TimeSpeedLabel.Text = timespeed.ToString("0.###") + " min/sec";
+            TimeSpeedLabel.Text = Renderer.timespeed.ToString("0.###") + " min/sec";
         }
 
         private void CameraModeComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -8948,9 +6597,9 @@ namespace CodeWalker
         {
             float det = ((float)MapViewDetailTrackBar.Value) * 0.1f;
             MapViewDetailLabel.Text = det.ToString("0.0#");
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
-                MapViewDetail = det;
+                Renderer.MapViewDetail = det;
             }
         }
 
@@ -8958,7 +6607,7 @@ namespace CodeWalker
         {
             float fov = FieldOfViewTrackBar.Value * 0.01f;
             FieldOfViewLabel.Text = fov.ToString("0.0#");
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
                 camera.FieldOfView = fov;
                 camera.UpdateProj = true;
@@ -9399,16 +7048,6 @@ namespace CodeWalker
     }
 
 
-    public enum WorldRenderMode
-    {
-        Default = 0,
-        SingleTexture = 1,
-        VertexNormals = 2,
-        VertexTangents = 3,
-        VertexColour = 4,
-        TextureCoord = 5,
-    }
-
     public enum WorldControlMode
     {
         Free = 0,
@@ -9417,829 +7056,6 @@ namespace CodeWalker
         Heli = 3,
         Plane = 4,
         Jetpack = 10,
-    }
-
-
-    public class MapIcon
-    {
-        public string Name { get; set; }
-        public string Filepath { get; set; }
-        public Texture2D Tex { get; set; }
-        public ShaderResourceView TexView { get; set; }
-        public Vector3 Center { get; set; } //in image pixels
-        public float Scale { get; set; } //screen pixels per icon pixel
-        public int TexWidth { get; set; }
-        public int TexHeight { get; set; }
-
-        public MapIcon(string name, string filepath, int texw, int texh, float centerx, float centery, float scale)
-        {
-            Name = name;
-            Filepath = filepath;
-            TexWidth = texw;
-            TexHeight = texh;
-            Center = new Vector3(centerx, centery, 0.0f);
-            Scale = scale;
-
-            if (!File.Exists(filepath))
-            {
-                throw new Exception("File not found.");
-            }
-        }
-
-        public void LoadTexture(Device device, Action<string> errorAction)
-        {
-            try
-            {
-                if (device != null)
-                {
-                    Tex = TextureLoader.CreateTexture2DFromBitmap(device, TextureLoader.LoadBitmap(new SharpDX.WIC.ImagingFactory2(), Filepath));
-                    TexView = new ShaderResourceView(device, Tex);
-                }
-            }
-            catch (Exception ex)
-            {
-                errorAction("Could not load map icon " + Filepath + " for " + Name + "!\n\n" + ex.ToString());
-            }
-        }
-
-        public void UnloadTexture()
-        {
-            if (TexView != null)
-            {
-                TexView.Dispose();
-                TexView = null;
-            }
-            if (Tex != null)
-            {
-                Tex.Dispose();
-                Tex = null;
-            }
-        }
-
-        public override string ToString()
-        {
-            return Name;
-        }
-    }
-
-    public class MapMarker
-    {
-        public MapIcon Icon { get; set; }
-        public Vector3 WorldPos { get; set; } //actual world pos
-        public Vector3 CamRelPos { get; set; } //updated per frame
-        public Vector3 ScreenPos { get; set; } //position on screen (updated per frame)
-        public string Name { get; set; }
-        public List<string> Properties { get; set; } //additional data
-        public bool IsMovable { get; set; }
-        public float Distance { get; set; } //length of CamRelPos, updated per frame
-
-        public void Parse(string s)
-        {
-            Vector3 p = new Vector3(0.0f);
-            string[] ss = s.Split(',');
-            if (ss.Length > 1)
-            {
-                FloatUtil.TryParse(ss[0].Trim(), out p.X);
-                FloatUtil.TryParse(ss[1].Trim(), out p.Y);
-            }
-            if (ss.Length > 2)
-            {
-                FloatUtil.TryParse(ss[2].Trim(), out p.Z);
-            }
-            if (ss.Length > 3)
-            {
-                Name = ss[3].Trim();
-            }
-            else
-            {
-                Name = string.Empty;
-            }
-            for (int i = 4; i < ss.Length; i++)
-            {
-                if (Properties == null) Properties = new List<string>();
-                Properties.Add(ss[i].Trim());
-            }
-            WorldPos = p;
-        }
-
-        public override string ToString()
-        {
-            string cstr = Get3DWorldPosString();
-            if (!string.IsNullOrEmpty(Name))
-            {
-                cstr += ", " + Name;
-                if (Properties != null)
-                {
-                    foreach (string prop in Properties)
-                    {
-                        cstr += ", " + prop;
-                    }
-                }
-            }
-            return cstr;
-        }
-
-        public string Get2DWorldPosString()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", WorldPos.X, WorldPos.Y);
-        }
-        public string Get3DWorldPosString()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0}, {1}, {2}", WorldPos.X, WorldPos.Y, WorldPos.Z);
-        }
-
-
-    }
-
-    public struct MapSphere
-    {
-        public Vector3 CamRelPos { get; set; }
-        public float Radius { get; set; }
-    }
-    public struct MapBox
-    {
-        public Vector3 CamRelPos { get; set; }
-        public Vector3 BBMin { get; set; }
-        public Vector3 BBMax { get; set; }
-        public Quaternion Orientation { get; set; }
-        public Vector3 Scale { get; set; }
-    }
-
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-    public struct MapSelection
-    {
-        public YmapEntityDef EntityDef { get; set; }
-        public Archetype Archetype { get; set; }
-        public DrawableBase Drawable { get; set; }
-        public DrawableGeometry Geometry { get; set; }
-        public MetaWrapper EntityExtension { get; set; }
-        public MetaWrapper ArchetypeExtension { get; set; }
-        public YmapTimeCycleModifier TimeCycleModifier { get; set; }
-        public YmapCarGen CarGenerator { get; set; }
-        public YmapGrassInstanceBatch GrassBatch { get; set; }
-        public YmapDistantLODLights DistantLodLights { get; set; }
-        public YmapEntityDef MloEntityDef { get; set; }
-        public WaterQuad WaterQuad { get; set; }
-        public Bounds CollisionBounds { get; set; }
-        public YnvPoly NavPoly { get; set; }
-        public YndNode PathNode { get; set; }
-        public YndLink PathLink { get; set; }
-        public TrainTrackNode TrainTrackNode { get; set; }
-        public ScenarioNode ScenarioNode { get; set; }
-        public MCScenarioChainingEdge ScenarioEdge { get; set; }
-        public AudioPlacement Audio { get; set; }
-
-        public bool MultipleSelection { get; set; }
-        public Vector3 MultipleSelectionCenter { get; set; }
-
-        public BoundingBox AABB { get; set; }
-        public BoundingSphere BSphere { get; set; }
-        public int GeometryIndex { get; set; }
-        public Vector3 CamRel { get; set; }
-        public float HitDist { get; set; }
-
-
-        public bool HasValue
-        {
-            get
-            {
-                return (EntityDef != null) ||
-                    (Archetype != null) ||
-                    (Drawable != null) ||
-                    (Geometry != null) ||
-                    (EntityExtension != null) ||
-                    (ArchetypeExtension != null) ||
-                    (TimeCycleModifier != null) ||
-                    (CarGenerator != null) ||
-                    (GrassBatch != null) ||
-                    (WaterQuad != null) ||
-                    (CollisionBounds != null) ||
-                    (NavPoly != null) ||
-                    (PathNode != null) ||
-                    (TrainTrackNode != null) ||
-                    (DistantLodLights != null) ||
-                    (MloEntityDef != null) ||
-                    (ScenarioNode != null) ||
-                    (Audio != null);
-            }
-        }
-
-        public bool HasHit
-        {
-            get { return (HitDist != float.MaxValue); }
-        }
-
-
-        public bool CheckForChanges(MapSelection mhit)
-        {
-            return (EntityDef != mhit.EntityDef)
-                || (Archetype != mhit.Archetype)
-                || (Drawable != mhit.Drawable)
-                || (TimeCycleModifier != mhit.TimeCycleModifier)
-                || (ArchetypeExtension != mhit.ArchetypeExtension)
-                || (EntityExtension != mhit.EntityExtension)
-                || (CarGenerator != mhit.CarGenerator)
-                || (MloEntityDef != mhit.MloEntityDef)
-                || (DistantLodLights != mhit.DistantLodLights)
-                || (GrassBatch != mhit.GrassBatch)
-                || (WaterQuad != mhit.WaterQuad)
-                || (CollisionBounds != mhit.CollisionBounds)
-                || (NavPoly != mhit.NavPoly)
-                || (PathNode != mhit.PathNode)
-                || (TrainTrackNode != mhit.TrainTrackNode)
-                || (ScenarioNode != mhit.ScenarioNode)
-                || (Audio != mhit.Audio);
-        }
-        public bool CheckForChanges()
-        {
-            return (EntityDef != null)
-                || (Archetype != null)
-                || (Drawable != null)
-                || (TimeCycleModifier != null)
-                || (ArchetypeExtension != null)
-                || (EntityExtension != null)
-                || (CarGenerator != null)
-                || (MloEntityDef != null)
-                || (DistantLodLights != null)
-                || (GrassBatch != null)
-                || (WaterQuad != null)
-                || (CollisionBounds != null)
-                || (NavPoly != null)
-                || (PathNode != null)
-                || (PathLink != null)
-                || (TrainTrackNode != null)
-                || (ScenarioNode != null)
-                || (Audio != null);
-        }
-
-
-        public void Clear()
-        {
-            EntityDef = null;
-            Archetype = null;
-            Drawable = null;
-            Geometry = null;
-            EntityExtension = null;
-            ArchetypeExtension = null;
-            TimeCycleModifier = null;
-            CarGenerator = null;
-            GrassBatch = null;
-            WaterQuad = null;
-            CollisionBounds = null;
-            NavPoly = null;
-            PathNode = null;
-            PathLink = null;
-            TrainTrackNode = null;
-            DistantLodLights = null;
-            MloEntityDef = null;
-            ScenarioNode = null;
-            ScenarioEdge = null;
-            Audio = null;
-            MultipleSelection = false;
-            AABB = new BoundingBox();
-            GeometryIndex = 0;
-            CamRel = new Vector3();
-            HitDist = float.MaxValue;
-        }
-
-        public string GetNameString(string defval)
-        {
-            string name = defval;
-            if (MultipleSelection)
-            {
-                name = "Multiple items";
-            }
-            else if (EntityDef != null)
-            {
-                name = EntityDef.CEntityDef.archetypeName.ToString();
-            }
-            else if (Archetype != null)
-            {
-                name = Archetype.Hash.ToString();
-            }
-            else if (TimeCycleModifier != null)
-            {
-                name = TimeCycleModifier.CTimeCycleModifier.name.ToString();
-            }
-            else if (CarGenerator != null)
-            {
-                name = CarGenerator.CCarGen.carModel.ToString();
-            }
-            else if (DistantLodLights != null)
-            {
-                name = DistantLodLights.Ymap?.Name ?? "";
-            }
-            else if (CollisionBounds != null)
-            {
-                name = CollisionBounds.GetName();
-            }
-            if (EntityExtension != null)
-            {
-                name = EntityExtension.Name;
-            }
-            if (ArchetypeExtension != null)
-            {
-                name = ArchetypeExtension.Name;
-            }
-            if (WaterQuad != null)
-            {
-                name = "WaterQuad " + WaterQuad.ToString();
-            }
-            if (NavPoly != null)
-            {
-                name = "NavPoly " + NavPoly.ToString();
-            }
-            if (PathNode != null)
-            {
-                name = "PathNode " + PathNode.AreaID.ToString() + "." + PathNode.NodeID.ToString(); //+ FloatUtil.GetVector3String(PathNode.Position);
-            }
-            if (TrainTrackNode != null)
-            {
-                name = "TrainTrackNode " + FloatUtil.GetVector3String(TrainTrackNode.Position);
-            }
-            if (ScenarioNode != null)
-            {
-                name = ScenarioNode.ToString();
-            }
-            if (Audio != null)
-            {
-                name = Audio.ShortTypeName + " " + Audio.GetNameString();// FloatUtil.GetVector3String(Audio.InnerPos);
-            }
-            return name;
-        }
-
-        public string GetFullNameString(string defval)
-        {
-            string name = defval;
-            if (MultipleSelection)
-            {
-                name = "Multiple items";
-            }
-            else if (EntityDef != null)
-            {
-                name = EntityDef.CEntityDef.archetypeName.ToString();
-            }
-            else if (Archetype != null)
-            {
-                name = Archetype.Hash.ToString();
-            }
-            else if (CollisionBounds != null)
-            {
-                name = CollisionBounds.GetName();
-            }
-            if (Geometry != null)
-            {
-                name += " (" + GeometryIndex.ToString() + ")";
-            }
-            if (TimeCycleModifier != null)
-            {
-                name = TimeCycleModifier.CTimeCycleModifier.name.ToString();
-            }
-            if (CarGenerator != null)
-            {
-                name = CarGenerator.NameString();
-            }
-            if (EntityExtension != null)
-            {
-                name += ": " + EntityExtension.Name;
-            }
-            if (ArchetypeExtension != null)
-            {
-                name += ": " + ArchetypeExtension.Name;
-            }
-            if (WaterQuad != null)
-            {
-                name = "WaterQuad " + WaterQuad.ToString();
-            }
-            if (NavPoly != null)
-            {
-                name = "NavPoly " + NavPoly.ToString();
-            }
-            if (PathNode != null)
-            {
-                name = "PathNode " + PathNode.AreaID.ToString() + "." + PathNode.NodeID.ToString();// + FloatUtil.GetVector3String(PathNode.Position);
-            }
-            if (TrainTrackNode != null)
-            {
-                name = "TrainTrackNode " + FloatUtil.GetVector3String(TrainTrackNode.Position);
-            }
-            if (ScenarioNode != null)
-            {
-                name = ScenarioNode.ToString();
-            }
-            if (Audio != null)
-            {
-                name = Audio.ShortTypeName + " " + Audio.GetNameString();//  + FloatUtil.GetVector3String(Audio.InnerPos);
-            }
-            return name;
-        }
-
-
-
-        public bool CanShowWidget
-        {
-            get
-            {
-                bool res = false;
-
-                if (MultipleSelection)
-                {
-                    res = true;
-                }
-                else if (EntityDef != null)
-                {
-                    res = true;
-                }
-                else if (CarGenerator != null)
-                {
-                    res = true;
-                }
-                else if (NavPoly != null)
-                {
-                    res = true;
-                }
-                else if (PathNode != null)
-                {
-                    res = true;
-                }
-                else if (TrainTrackNode != null)
-                {
-                    res = true;
-                }
-                else if (ScenarioNode != null)
-                {
-                    res = true;
-                }
-                else if (Audio != null)
-                {
-                    res = true;
-                }
-                return res;
-            }
-        }
-        public Vector3 WidgetPosition
-        {
-            get
-            {
-                if (MultipleSelection)
-                {
-                    return MultipleSelectionCenter;
-                }
-                else if (EntityDef != null)
-                {
-                    return EntityDef.WidgetPosition;
-                }
-                else if (CarGenerator != null)
-                {
-                    return CarGenerator.Position;
-                }
-                else if (NavPoly != null)
-                {
-                    return NavPoly.Position;
-                }
-                else if (PathNode != null)
-                {
-                    return PathNode.Position;
-                }
-                else if (TrainTrackNode != null)
-                {
-                    return TrainTrackNode.Position;
-                }
-                else if (ScenarioNode != null)
-                {
-                    return ScenarioNode.Position;
-                }
-                else if (Audio != null)
-                {
-                    return Audio.InnerPos;
-                }
-                return Vector3.Zero;
-            }
-        }
-        public Quaternion WidgetRotation
-        {
-            get
-            {
-                if (MultipleSelection)
-                {
-                    return Quaternion.Identity;
-                }
-                else if (EntityDef != null)
-                {
-                    return EntityDef.WidgetOrientation;
-                }
-                else if (CarGenerator != null)
-                {
-                    return CarGenerator.Orientation;
-                }
-                else if (NavPoly != null)
-                {
-                    return Quaternion.Identity;
-                }
-                else if (PathNode != null)
-                {
-                    return Quaternion.Identity;
-                }
-                else if (TrainTrackNode != null)
-                {
-                    return Quaternion.Identity;
-                }
-                else if (ScenarioNode != null)
-                {
-                    return ScenarioNode.Orientation;
-                }
-                else if (Audio != null)
-                {
-                    return Audio.Orientation;
-                }
-                return Quaternion.Identity;
-            }
-        }
-        public WidgetAxis WidgetRotationAxes
-        {
-            get
-            {
-                if (MultipleSelection)
-                {
-                    return WidgetAxis.XYZ;
-                }
-                else if (EntityDef != null)
-                {
-                    return WidgetAxis.XYZ;
-                }
-                else if (CarGenerator != null)
-                {
-                    return WidgetAxis.Z;
-                }
-                else if (NavPoly != null)
-                {
-                    return WidgetAxis.XYZ;
-                }
-                else if (PathNode != null)
-                {
-                    return WidgetAxis.None;
-                }
-                else if (TrainTrackNode != null)
-                {
-                    return WidgetAxis.None;
-                }
-                else if (ScenarioNode != null)
-                {
-                    return WidgetAxis.Z;
-                }
-                else if (Audio != null)
-                {
-                    return WidgetAxis.XYZ;
-                }
-                return WidgetAxis.None;
-            }
-        }
-        public Vector3 WidgetScale
-        {
-            get
-            {
-                if (MultipleSelection)
-                {
-                    return Vector3.One;
-                }
-                else if (EntityDef != null)
-                {
-                    return EntityDef.Scale;
-                }
-                else if (CarGenerator != null)
-                {
-                    return new Vector3(CarGenerator.CCarGen.perpendicularLength);
-                }
-                else if (NavPoly != null)
-                {
-                    return Vector3.One;
-                }
-                else if (PathNode != null)
-                {
-                    return Vector3.One;
-                }
-                else if (TrainTrackNode != null)
-                {
-                    return Vector3.One;
-                }
-                else if (ScenarioNode != null)
-                {
-                    return Vector3.One;
-                }
-                else if (Audio != null)
-                {
-                    return Vector3.One;
-                }
-                return Vector3.One;
-            }
-        }
-
-
-
-
-        public void SetPosition(Vector3 newpos, Vector3 oldpos, bool editPivot)
-        {
-            if (MultipleSelection)
-            {
-                //don't do anything here for multiselection
-            }
-            else if (EntityDef != null)
-            {
-                if (editPivot)
-                {
-                    EntityDef.SetPivotPositionFromWidget(newpos);
-                }
-                else
-                {
-                    EntityDef.SetPositionFromWidget(newpos);
-                }
-            }
-            else if (CarGenerator != null)
-            {
-                CarGenerator.SetPosition(newpos);
-            }
-            else if (PathNode != null)
-            {
-                PathNode.SetPosition(newpos);
-            }
-            else if (NavPoly != null)
-            {
-                //NavPoly.SetPosition(newpos);
-
-                //if (projectForm != null)
-                //{
-                //    projectForm.OnWorldNavPolyModified(NavPoly);
-                //}
-            }
-            else if (TrainTrackNode != null)
-            {
-                TrainTrackNode.SetPosition(newpos);
-            }
-            else if (ScenarioNode != null)
-            {
-                ScenarioNode.SetPosition(newpos);
-            }
-            else if (Audio != null)
-            {
-                Audio.SetPosition(newpos);
-            }
-
-        }
-        public void SetRotation(Quaternion newrot, Quaternion oldrot, bool editPivot)
-        {
-            if (EntityDef != null)
-            {
-                if (editPivot)
-                {
-                    EntityDef.SetPivotOrientationFromWidget(newrot);
-                }
-                else
-                {
-                    EntityDef.SetOrientationFromWidget(newrot);
-                }
-            }
-            else if (CarGenerator != null)
-            {
-                CarGenerator.SetOrientation(newrot);
-            }
-            else if (ScenarioNode != null)
-            {
-                ScenarioNode.SetOrientation(newrot);
-            }
-            else if (Audio != null)
-            {
-                Audio.SetOrientation(newrot);
-            }
-        }
-        public void SetScale(Vector3 newscale, Vector3 oldscale, bool editPivot)
-        {
-            if (EntityDef != null)
-            {
-                EntityDef.SetScale(newscale);
-            }
-            else if (CarGenerator != null)
-            {
-                CarGenerator.SetScale(newscale);
-                AABB = new BoundingBox(CarGenerator.BBMin, CarGenerator.BBMax);
-            }
-        }
-
-
-        public override string ToString()
-        {
-            return GetFullNameString("[Empty]");
-        }
-    }
-
-    public enum MapSelectionMode
-    {
-        None = 0,
-        Entity = 1,
-        EntityExtension = 2,
-        ArchetypeExtension = 3,
-        TimeCycleModifier = 4,
-        CarGenerator = 5,
-        Grass = 6,
-        WaterQuad = 7,
-        Collision = 8,
-        NavMesh = 9,
-        Path = 10,
-        TrainTrack = 11,
-        DistantLodLights = 12,
-        MloInstance = 13,
-        Scenario = 14,
-        PopZone = 15,
-        Audio = 16,
-    }
-
-
-
-    public class KeyBindings
-    {
-        public Keys MoveForward = Keys.W;
-        public Keys MoveBackward = Keys.S;
-        public Keys MoveLeft = Keys.A;
-        public Keys MoveRight = Keys.D;
-        public Keys MoveUp = Keys.R;
-        public Keys MoveDown = Keys.F;
-        public Keys MoveSlowerZoomIn = Keys.Z;
-        public Keys MoveFasterZoomOut = Keys.X;
-        public Keys ToggleMouseSelect = Keys.C;
-        public Keys ToggleToolbar = Keys.T;
-        public Keys ExitEditMode = Keys.Q;
-        public Keys EditPosition = Keys.W;
-        public Keys EditRotation = Keys.E;
-        public Keys EditScale = Keys.R;
-        public Keys Jump = Keys.Space; //for control mode
-        public Keys FirstPerson = Keys.P;
-
-        public KeyBindings(StringCollection sc)
-        {
-            foreach (string s in sc)
-            {
-                string[] parts = s.Split(':');
-                if (parts.Length == 2)
-                {
-                    string sval = parts[1].Trim();
-                    Keys k = (Keys)Enum.Parse(typeof(Keys), sval);
-                    SetBinding(parts[0], k);
-                }
-            }
-        }
-
-        public void SetBinding(string name, Keys k)
-        {
-            switch (name)
-            {
-                case "Move Forwards": MoveForward = k; break;
-                case "Move Backwards": MoveBackward = k; break;
-                case "Move Left": MoveLeft = k; break;
-                case "Move Right": MoveRight = k; break;
-                case "Move Up": MoveUp = k; break;
-                case "Move Down": MoveDown = k; break;
-                case "Move Slower / Zoom In": MoveSlowerZoomIn = k; break;
-                case "Move Faster / Zoom Out": MoveFasterZoomOut = k; break;
-                case "Toggle Mouse Select": ToggleMouseSelect = k; break;
-                case "Toggle Toolbar": ToggleToolbar = k; break;
-                case "Exit Edit Mode": ExitEditMode = k; break;
-                case "Edit Position": EditPosition = k; break;
-                case "Edit Rotation": EditRotation = k; break;
-                case "Edit Scale": EditScale = k; break;
-                case "First Person Mode": FirstPerson = k; break;
-            }
-        }
-
-        public StringCollection GetSetting()
-        {
-            StringCollection sc = new StringCollection();
-            sc.Add(GetSettingItem("Move Forwards", MoveForward));
-            sc.Add(GetSettingItem("Move Backwards", MoveBackward));
-            sc.Add(GetSettingItem("Move Left", MoveLeft));
-            sc.Add(GetSettingItem("Move Right", MoveRight));
-            sc.Add(GetSettingItem("Move Up", MoveUp));
-            sc.Add(GetSettingItem("Move Down", MoveDown));
-            sc.Add(GetSettingItem("Move Slower / Zoom In", MoveSlowerZoomIn));
-            sc.Add(GetSettingItem("Move Faster / Zoom Out", MoveFasterZoomOut));
-            sc.Add(GetSettingItem("Toggle Mouse Select", ToggleMouseSelect));
-            sc.Add(GetSettingItem("Toggle Toolbar", ToggleToolbar));
-            sc.Add(GetSettingItem("Exit Edit Mode", ExitEditMode));
-            sc.Add(GetSettingItem("Edit Position", EditPosition));
-            sc.Add(GetSettingItem("Edit Rotation", EditRotation));
-            sc.Add(GetSettingItem("Edit Scale", EditScale));
-            sc.Add(GetSettingItem("First Person Mode", FirstPerson));
-            return sc;
-        }
-
-        private string GetSettingItem(string name, Keys val)
-        {
-            return name + ": " + val.ToString();
-        }
-
-        public KeyBindings Copy()
-        {
-            return (KeyBindings)MemberwiseClone();
-        }
-
     }
 
 

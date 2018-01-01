@@ -242,6 +242,14 @@ ufo
         gd6TMnIikDJyIqjVNz8T7FgKrAwFX6lVinM3aJ05lWDPRRcAAAAASUVORK5CYII=
 </value>
   </data>
+  <data name="ToolbarTransformSpaceButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAB0SURBVDhP7ZNBCoAgEEXnSJ3BqxmetNpaMLhVv5DNRJS2
+        CxIeuvA9XSjtg5mHEILPxB6U7JyLxphmSkDK1o5x9dst87SUfTXwRsYsA+paT0BGDGsVOJ92hdz3Bz4f
+        wGPC48uu7w5IGd+gBlpRMgYCnRwyESUj3CsQkYNFDwAAAABJRU5ErkJggg==
+</value>
+  </data>
   <data name="ToolbarObjectSpaceButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
@@ -259,14 +267,6 @@ ufo
         7bHCx/miCf7qYJ1jjjYYx3Fm0nfDXfJWzhjMzuBweJJvr++b5K1dOQN7hP9AH0H96EvM83zh7q+2zsH1
         L1H0fS+TJHEX+ZsBXDRobS/oRorjWB5/aqSXVkZRJKuqQnxtJEJNXCvjTu9D9kGOmhEvW5kwJiVb43wI
         WBXYx9R1nV75RuyHKrrnzCcGjE1u9ZyD4BugoZigQ9xrngAAAABJRU5ErkJggg==
-</value>
-  </data>
-  <data name="ToolbarTransformSpaceButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAB0SURBVDhP7ZNBCoAgEEXnSJ3BqxmetNpaMLhVv5DNRJS2
-        CxIeuvA9XSjtg5mHEILPxB6U7JyLxphmSkDK1o5x9dst87SUfTXwRsYsA+paT0BGDGsVOJ92hdz3Bz4f
-        wGPC48uu7w5IGd+gBlpRMgYCnRwyESUj3CsQkYNFDwAAAABJRU5ErkJggg==
 </value>
   </data>
   <data name="ToolbarUndoButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
@@ -354,6 +354,17 @@ ufo
         RK5CYII=
 </value>
   </data>
+  <data name="ToolbarCameraModeButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEvSURBVDhP3dK/K0dRGMfxKxRJopCSEkLya/guUhQRmQwG
+        WfwIkYySgYUSKUKJlOK/MBoMFMofYLUIsfJ+f3NuF3+A8tRree5zP/fcc070f6oHT/jAPTqQj6WvXvCM
+        TZQgG3H58gFGcYVLtGIN15jBNDbwiGNUIg4pQx8GsQuHhrCDW8yjHyns4Q0DcCXpykM5bFzgHGPYxw1G
+        UIVMtMHfWUUj4nIg/KurGIYrSAZYOXDGlbhXcZlegUO8Yxzb+BlQAwNW0G0jVAYK0AwHtnCEOyQDZvGC
+        ObTbKIIvLMA9WIYDizhFMsDjfsAZptCA9JcdfoVBvryOSbgCe4HPTuCz+BQMKEUvJmCy96ET1ehCuAf2
+        5ZF+uwdZKEYtmuBGFSIXhtejBe5PHX7dxL+qKPoEppRHcXOtiDsAAAAASUVORK5CYII=
+</value>
+  </data>
   <data name="ToolbarCameraPerspectiveButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAABl0RVh0U29m
@@ -387,17 +398,6 @@ ufo
         rp3fhGJScIRLzKMLFTC9cMIu3nCDVUyjB6WkYA93mEWbAyH9cMImPuA+rWMA31YwBU82kF6BS32Er/aO
         M8zAh+OEghpcwQ2bg3uwBW8ewFd7xQkm0IA4oaAS7bh2KHjBIZbhV/D6GJkFphrdcIP8lFrAGPwPOjCO
         QdQiTqrAWNICd7gPnUj+xBKaU9dxfhTkjwV/FxU+AbsiGnc46OYIAAAAAElFTkSuQmCC
-</value>
-  </data>
-  <data name="ToolbarCameraModeButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEvSURBVDhP3dK/K0dRGMfxKxRJopCSEkLya/guUhQRmQwG
-        WfwIkYySgYUSKUKJlOK/MBoMFMofYLUIsfJ+f3NuF3+A8tRree5zP/fcc070f6oHT/jAPTqQj6WvXvCM
-        TZQgG3H58gFGcYVLtGIN15jBNDbwiGNUIg4pQx8GsQuHhrCDW8yjHyns4Q0DcCXpykM5bFzgHGPYxw1G
-        UIVMtMHfWUUj4nIg/KurGIYrSAZYOXDGlbhXcZlegUO8Yxzb+BlQAwNW0G0jVAYK0AwHtnCEOyQDZvGC
-        ObTbKIIvLMA9WIYDizhFMsDjfsAZptCA9JcdfoVBvryOSbgCe4HPTuCz+BQMKEUvJmCy96ET1ehCuAf2
-        5ZF+uwdZKEYtmuBGFSIXhtejBe5PHX7dxL+qKPoEppRHcXOtiDsAAAAASUVORK5CYII=
 </value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

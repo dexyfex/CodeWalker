@@ -761,6 +761,8 @@ namespace CodeWalker.World
             if (!Inited) return;
             if (Grid == null) return;
 
+            if (elapsed > 0.1f) elapsed = 0.1f;
+
 
             Collisions.Clear();
 

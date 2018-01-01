@@ -18,7 +18,6 @@ namespace CodeWalker.GameFiles
         private Action<string> ErrorLog;
         public long CurrentMemoryUsage = 0;
         public int MaxItemsPerLoop = 1; //to keep things flowing...
-        public bool ItemsStillPending = false; //whether or not we need another content thread loop
 
         private ConcurrentStack<GameFile> requestQueue = new ConcurrentStack<GameFile>();
 
@@ -1842,7 +1841,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public void ContentThreadProc()
+        public bool ContentThreadProc()
         {
             Monitor.Enter(updateSyncRoot);
 
@@ -1912,10 +1911,14 @@ namespace CodeWalker.GameFiles
                 //loadedsomething = true;
             }
 
-            ItemsStillPending = (itemcount >= MaxItemsPerLoop);
+            //whether or not we need another content thread loop
+            bool itemsStillPending = (itemcount >= MaxItemsPerLoop);
 
 
             Monitor.Exit(updateSyncRoot);
+
+
+            return itemsStillPending;
         }
 
 
@@ -1983,6 +1986,75 @@ namespace CodeWalker.GameFiles
 
             return tex;
         }
+
+
+
+
+
+
+
+
+        public DrawableBase TryGetDrawable(Archetype arche)
+        {
+            if (arche == null) return null;
+            uint drawhash = arche.Hash;
+            DrawableBase drawable = null;
+            if ((arche.DrawableDict != 0))// && (arche.DrawableDict != arche.Hash))
+            {
+                //try get drawable from ydd...
+                YddFile ydd = GetYdd(arche.DrawableDict);
+                if (ydd != null)
+                {
+                    if (ydd.Loaded && (ydd.Dict != null))
+                    {
+                        Drawable d;
+                        ydd.Dict.TryGetValue(drawhash, out d); //can't out to base class?
+                        drawable = d;
+                        if (drawable == null)
+                        {
+                            return null; //drawable wasn't in dict!!
+                        }
+                    }
+                    else
+                    {
+                        return null; //ydd not loaded yet, or has no dict
+                    }
+                }
+                else
+                {
+                    //return null; //couldn't find drawable dict... quit now?
+                }
+            }
+            if (drawable == null)
+            {
+                //try get drawable from ydr.
+                YdrFile ydr = GetYdr(drawhash);
+                if (ydr != null)
+                {
+                    if (ydr.Loaded)
+                    {
+                        drawable = ydr.Drawable;
+                    }
+                }
+                else
+                {
+                    YftFile yft = GetYft(drawhash);
+                    if (yft != null)
+                    {
+                        if (yft.Loaded)
+                        {
+                            if (yft.Fragment != null)
+                            {
+                                drawable = yft.Fragment.Drawable;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return drawable;
+        }
+
 
 
 

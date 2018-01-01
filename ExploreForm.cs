@@ -90,9 +90,9 @@ namespace CodeWalker
                 {
                     if (FileCache.IsInited)
                     {
-                        FileCache.ContentThreadProc();
+                        bool fcItemsPending = FileCache.ContentThreadProc();
 
-                        if (!FileCache.ItemsStillPending)
+                        if (!fcItemsPending)
                         {
                             Thread.Sleep(10);
                         }

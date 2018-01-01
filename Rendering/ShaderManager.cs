@@ -730,7 +730,7 @@ namespace CodeWalker.Rendering
 
 
 
-        public void Enqueue(RenderableGeometryInst geom)
+        public void Enqueue(ref RenderableGeometryInst geom)
         {
             var shader = geom.Geom.DrawableGeom.Shader;
 
@@ -751,11 +751,11 @@ namespace CodeWalker.Rendering
 
             batch.Geometries.Add(geom);
         }
-        public void Enqueue(RenderableBoundGeometryInst geom)
+        public void Enqueue(ref RenderableBoundGeometryInst geom)
         {
             RenderBoundGeoms.Add(geom);
         }
-        public void Enqueue(RenderableInstanceBatchInst batch)
+        public void Enqueue(ref RenderableInstanceBatchInst batch)
         {
             RenderInstBatches.Add(batch);
         }

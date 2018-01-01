@@ -23,14 +23,9 @@ namespace CodeWalker.Forms
     public partial class ModelForm : Form, DXForm
     {
         public Form Form { get { return this; } } //for DXForm/DXManager use
-        DXManager dxman = new DXManager();
-        public DXManager DXMan { get { return dxman; } }
-        Device currentdevice;
-        public Device Device { get { return currentdevice; } }
-        object rendersyncroot = new object();
-        public object RenderSyncRoot { get { return rendersyncroot; } }
 
-        ShaderManager shaders;
+        private Renderer Renderer = null;
+
 
         volatile bool formopen = false;
         //volatile bool running = false;
@@ -38,10 +33,10 @@ namespace CodeWalker.Forms
         //volatile bool initialised = false;
 
         Stopwatch frametimer = new Stopwatch();
-        Camera camera = new Camera();
-        Timecycle timecycle = new Timecycle();
-        Weather weather = new Weather();
-        Clouds clouds = new Clouds();
+        Camera camera;
+        Timecycle timecycle;
+        Weather weather;
+        Clouds clouds;
 
         bool MouseLButtonDown = false;
         bool MouseRButtonDown = false;
@@ -52,48 +47,12 @@ namespace CodeWalker.Forms
 
 
 
-        //public GameFileCache GameFileCache { get { return gameFileCache; } }
-        //GameFileCache gameFileCache = new GameFileCache();
-        RenderableCache renderableCache = new RenderableCache();
-
-
         Vector3 prevworldpos = new Vector3(0, 0, 0); //also the start pos
 
         Entity camEntity = new Entity();
-        volatile bool kbmovefwd = false;
-        volatile bool kbmovebck = false;
-        volatile bool kbmovelft = false;
-        volatile bool kbmovergt = false;
-        volatile bool kbmoveup = false;
-        volatile bool kbmovedn = false;
-        volatile bool kbjump = false;
 
-        KeyBindings keyBindings = new KeyBindings(Settings.Default.KeyBindings);
         //bool iseditmode = false;
 
-
-        float timeofday = 12.0f;
-        bool controltimeofday = true;
-        bool timerunning = false;
-        float timespeed = 0.5f;//min/sec
-        //string weathertype = "";
-        string individualcloudfrag = "contrails";
-        Vector4 currentWindVec = Vector4.Zero;
-        float currentWindTime = 0.0f;
-
-        bool controllightdir = !Settings.Default.Skydome;//true; //if not, use timecycle
-        float lightdirx = 2.25f;//radians // approx. light dir on map satellite view
-        float lightdiry = 0.65f;//radians  - used for manual light placement
-        bool renderskydome = Settings.Default.Skydome;
-
-        bool rendernaturalambientlight = true;
-        bool renderartificialambientlight = true;
-        ShaderGlobalLights globalLights = new ShaderGlobalLights();
-
-        double currentRealTime = 0;
-        int framecount = 0;
-        float fcelapsed = 0.0f;
-        int fps = 0;
 
         bool initedOk = false;
 
@@ -117,25 +76,10 @@ namespace CodeWalker.Forms
         YptFile Ypt = null;
         YnvFile Ynv = null;
 
-        bool waitforchildrentoload = true;
-        bool rendercollisionmeshes = false;// Settings.Default.ShowCollisionMeshes;
-
-        bool renderskeletons = true;
-        List<Renderable> renderskeletonlist = new List<Renderable>();
-        List<VertexTypePC> skeletonLineVerts = new List<VertexTypePC>();
 
 
-        bool CtrlPressed = false;
-        bool ShiftPressed = false;
+        InputManager Input = new InputManager();
 
-        Controller xbcontroller = null;
-        State xbcontrollerstate;
-        State xbcontrollerstateprev;
-        Vector4 xbmainaxes = Vector4.Zero;
-        Vector4 xbmainaxesprev = Vector4.Zero;
-        Vector2 xbtrigs = Vector2.Zero;
-        Vector2 xbtrigsprev = Vector2.Zero;
-        float xbcontrolvelocity = 0.0f;
 
         bool toolsPanelResizing = false;
         int toolsPanelResizeStartX = 0;
@@ -143,8 +87,6 @@ namespace CodeWalker.Forms
         int toolsPanelResizeStartRight = 0;
 
         Dictionary<DrawableBase, bool> DrawableDrawFlags = new Dictionary<DrawableBase, bool>();
-        Dictionary<DrawableModel, bool> ModelDrawFlags = new Dictionary<DrawableModel, bool>();
-        Dictionary<DrawableGeometry, bool> GeometryDrawFlags = new Dictionary<DrawableGeometry, bool>();
 
 
         bool enableGrid = true;
@@ -163,14 +105,27 @@ namespace CodeWalker.Forms
             InitializeComponent();
 
 
-            gameFileCache = ExpForm?.GetFileCache(); 
+            gameFileCache = ExpForm?.GetFileCache();
 
-            initedOk = dxman.Init(this, false);
+            Renderer = new Renderer(this, gameFileCache);
+            camera = Renderer.camera;
+            timecycle = Renderer.timecycle;
+            weather = Renderer.weather;
+            clouds = Renderer.clouds;
+
+            initedOk = Renderer.Init();
+
+            Renderer.controllightdir = !Settings.Default.Skydome;
+            Renderer.rendercollisionmeshes = false;
+            Renderer.renderclouds = false;
+            Renderer.rendermoon = false;
+            Renderer.renderskeletons = true;
+            Renderer.SelectionFlagsTestAll = true;
         }
 
         private void Init()
         {
-            //called from WorldForm_Load
+            //called from ModelForm_Load
 
             if (!initedOk)
             {
@@ -228,49 +183,21 @@ namespace CodeWalker.Forms
 
 
 
-            InitController();
+            Input.Init();
 
 
-            dxman.Start();
-        }
-
-        private void InitController()
-        {
-            xbcontroller = new Controller(UserIndex.One);
-            if (!xbcontroller.IsConnected)
-            {
-                var controllers = new[] { new Controller(UserIndex.Two), new Controller(UserIndex.Three), new Controller(UserIndex.Four) };
-                foreach (var selectControler in controllers)
-                {
-                    if (selectControler.IsConnected)
-                    {
-                        xbcontroller = selectControler;
-                        xbcontrollerstate = xbcontroller.GetState();
-                        xbcontrollerstateprev = xbcontrollerstate;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                xbcontrollerstate = xbcontroller.GetState();
-                xbcontrollerstateprev = xbcontrollerstate;
-            }
-
+            Renderer.Start();
         }
 
 
         public void InitScene(Device device)
         {
-            currentdevice = device;
-
             int width = ClientSize.Width;
             int height = ClientSize.Height;
 
             try
             {
-                shaders = new ShaderManager(device, dxman);
-                shaders.OnWindowResize(width, height); //init the buffers
+                Renderer.DeviceCreated(device, width, height);
             }
             catch (Exception ex)
             {
@@ -280,9 +207,7 @@ namespace CodeWalker.Forms
 
             //shaders.hdrLumBlendSpeed = 1000.0f;
 
-            renderableCache.OnDeviceCreated(device);
 
-            camera.OnWindowResize(width, height); //init the projection stuff
             camera.FollowEntity = camEntity;
             camera.FollowEntity.Position = prevworldpos;
             camera.FollowEntity.Orientation = Quaternion.LookAtLH(Vector3.Zero, Vector3.Up, Vector3.ForwardLH);
@@ -303,10 +228,7 @@ namespace CodeWalker.Forms
         {
             formopen = false;
 
-            renderableCache.OnDeviceDestroyed();
-
-            shaders.Dispose();
-
+            Renderer.DeviceDestroyed();
 
             //int count = 0;
             //while (running && (count < 5000)) //wait for the content thread to exit gracefully
@@ -314,114 +236,48 @@ namespace CodeWalker.Forms
             //    Thread.Sleep(1);
             //    count++;
             //}
-
-            currentdevice = null;
         }
         public void BuffersResized(int w, int h)
         {
-            lock (rendersyncroot)
-            {
-                camera.OnWindowResize(w, h);
-                shaders.OnWindowResize(w, h);
-            }
+            Renderer.BuffersResized(w, h);
         }
         public void RenderScene(DeviceContext context)
         {
             float elapsed = (float)frametimer.Elapsed.TotalSeconds;
-            framecount++;
-            fcelapsed += elapsed;
-            if (fcelapsed >= 0.5f)
-            {
-                fps = framecount * 2;
-                framecount = 0;
-                fcelapsed -= 0.5f;
-            }
-            if (elapsed > 0.1f) elapsed = 0.1f;
             frametimer.Restart();
-
-            currentRealTime += elapsed;
 
             if (pauserendering) return;
 
-            if (!Monitor.TryEnter(rendersyncroot, 50))
+            if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
             { return; } //couldn't get a lock, try again next time
-            //Monitor.Enter(rendersyncroot);
 
             UpdateControlInputs(elapsed);
 
-            UpdateTimeOfDay(elapsed);
-
-            weather.Update(elapsed);
-
-            //clouds.Update(elapsed);
-
-            UpdateWindVector(elapsed);
-
-            UpdateGlobalLights();
-
-            camera.SetMousePosition(MouseLastPoint.X, MouseLastPoint.Y);
-
-            camera.Update(elapsed);
-
-            //UpdateWidgets();
-
-            //HilightBoxes.Clear();
-            //BoundingBoxes.Clear();
-            //BoundingSpheres.Clear();
-            //BeginMouseHitTest();
-            BeginFrame();
 
 
-            dxman.ClearRenderTarget(context);
+            Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
 
-            shaders.BeginFrame(context, currentRealTime, elapsed);
 
-            shaders.EnsureShaderTextures(gameFileCache, renderableCache);
+            Renderer.BeginRender(context);
 
-            RenderSky(context);
+            Renderer.RenderSkyAndClouds();
 
-            //RenderClouds(context);
 
-            shaders.ClearDepth(context);
-
-            //if (renderworld || rendermaps)
-            //{
-            //    RenderWorld();
-            //    if (rendermaps)
-            //    {
-            //        RenderYmaps();
-            //    }
-            //}
-            //else
-            //{
             RenderSingleItem();
-            //}
+
 
             RenderGrid(context);
 
-            shaders.RenderQueued(context, camera, currentWindVec);
 
-            RenderSkeletons(context);
+            Renderer.RenderQueued();
 
-            //RenderBounds(context);
 
-            //RenderSelection(context);
+            Renderer.RenderFinalPass();
 
-            //RenderMoused(context);
 
-            //RenderSelectionGeometry(context);
+            Renderer.EndRender();
 
-            shaders.RenderFinalPass(context);
-
-            //RenderMarkers(context);
-
-            //RenderWidgets(context);
-
-            renderableCache.RenderThreadSync();
-
-            Monitor.Exit(rendersyncroot);
-
-            //UpdateMarkerSelectionPanelInvoke();
+            Monitor.Exit(Renderer.RenderSyncRoot);
         }
 
 
@@ -466,10 +322,10 @@ namespace CodeWalker.Forms
                     {
                         //UpdateStatus("Loading timecycles...");
                         timecycle.Init(gameFileCache, UpdateStatus);
-                        timecycle.SetTime(timeofday);
+                        timecycle.SetTime(Renderer.timeofday);
                         //UpdateStatus("Timecycles loaded.");
                     }
-                    if (renderskydome)
+                    if (Renderer.renderskydome)
                     {
                         if (!weather.Inited)
                         {
@@ -493,9 +349,9 @@ namespace CodeWalker.Forms
                 //    gameFileCache.ContentThreadProc();
                 //}
 
-                renderableCache.ContentThreadProc();
+                bool rcItemsPending = Renderer.ContentThreadProc();
 
-                if (!(renderableCache.ItemsStillPending)) //gameFileCache.ItemsStillPending || 
+                if (!(rcItemsPending)) //gameFileCache.ItemsStillPending || 
                 {
                     Thread.Sleep(1); //sleep if there's nothing to do
                 }
@@ -547,444 +403,6 @@ namespace CodeWalker.Forms
             }
 
             return arch;
-        }
-
-        private DrawableBase TryGetDrawable(Archetype arche)
-        {
-            if (arche == null) return null;
-            if ((gameFileCache == null) || (!gameFileCache.IsInited)) return null;
-
-            uint drawhash = arche.Hash;
-            DrawableBase drawable = null;
-            if ((arche.DrawableDict != 0))// && (arche.DrawableDict != arche.Hash))
-            {
-                //try get drawable from ydd...
-                YddFile ydd = gameFileCache.GetYdd(arche.DrawableDict);
-                if (ydd != null)
-                {
-                    if (ydd.Loaded && (ydd.Dict != null))
-                    {
-                        Drawable d;
-                        ydd.Dict.TryGetValue(drawhash, out d); //can't out to base class?
-                        drawable = d;
-                        if (drawable == null)
-                        {
-                            return null; //drawable wasn't in dict!!
-                        }
-                    }
-                    else
-                    {
-                        return null; //ydd not loaded yet, or has no dict
-                    }
-                }
-                else
-                {
-                    //return null; //couldn't find drawable dict... quit now?
-                }
-            }
-            if (drawable == null)
-            {
-                //try get drawable from ydr.
-                YdrFile ydr = gameFileCache.GetYdr(drawhash);
-                if (ydr != null)
-                {
-                    if (ydr.Loaded)
-                    {
-                        drawable = ydr.Drawable;
-                    }
-                }
-                else
-                {
-                    YftFile yft = gameFileCache.GetYft(drawhash);
-                    if (yft != null)
-                    {
-                        if (yft.Loaded)
-                        {
-                            if (yft.Fragment != null)
-                            {
-                                drawable = yft.Fragment.Drawable;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return drawable;
-        }
-
-        private Renderable TryGetRenderable(Archetype arche, DrawableBase drawable, uint txdHash = 0)
-        {
-            if (drawable == null) return null;
-            //BUG: only last texdict used!! needs to cache textures per archetype........
-            //(but is it possible to have the same drawable with different archetypes?)
-            uint texDict = (arche != null) ? arche.TextureDict.Hash : txdHash;
-            uint clipDict = (arche != null) ? arche.ClipDict.Hash : 0;
-            var yptTextDict = Ypt?.PtfxList?.TextureDictionary;
-
-            Renderable rndbl = renderableCache.GetRenderable(drawable);
-            if (rndbl == null) return null;
-
-
-            var gfc = gameFileCache;
-            if ((gfc != null) && (!gfc.IsInited))
-            {
-                gfc = null;
-            }
-
-
-            //if (clipDict != 0)
-            //{
-            //    YcdFile ycd = gameFileCache.GetYcd(clipDict);
-            //    if ((ycd != null) && (ycd.Loaded))
-            //    {
-            //        ClipMapEntry cme;
-            //        if (ycd.ClipMap.TryGetValue(arche.Hash, out cme))
-            //        {
-            //        }
-            //        else
-            //        { }
-            //    }
-            //}
-
-
-            bool alltexsloaded = true;
-            int missingtexcount = 0;
-            for (int mi = 0; mi < rndbl.HDModels.Length; mi++)
-            {
-                var model = rndbl.HDModels[mi];
-
-                //if (!RenderIsModelFinalRender(model) && !renderproxies)
-                //{
-                //    continue; //filter out reflection proxy models...
-                //}
-
-
-                foreach (var geom in model.Geometries)
-                {
-                    if (geom.Textures != null)
-                    {
-                        for (int i = 0; i < geom.Textures.Length; i++)
-                        {
-                            var tex = geom.Textures[i];
-                            var ttex = tex as Texture;
-                            RenderableTexture rdtex = null;
-                            if ((ttex == null) && (tex != null))
-                            {
-                                //TextureRef means this RenderableTexture needs to be loaded from texture dict...
-                                if (yptTextDict != null) //for ypt files, first try the embedded tex dict..
-                                {
-                                    var dtex = yptTextDict.Lookup(tex.NameHash);
-                                    rdtex = renderableCache.GetRenderableTexture(dtex);
-                                }
-                                else if (texDict != 0)
-                                {
-                                    YtdFile ytd = gfc?.GetYtd(texDict);
-                                    if ((ytd != null) && (ytd.Loaded) && (ytd.TextureDict != null))
-                                    {
-                                        var dtex = ytd.TextureDict.Lookup(tex.NameHash);
-                                        if (dtex == null)
-                                        {
-                                            //not present in dictionary... check already loaded texture dicts...
-                                            YtdFile ytd2 = gfc?.TryGetTextureDictForTexture(tex.NameHash);
-                                            if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
-                                            {
-                                                dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                            }
-                                            else
-                                            {
-                                                //couldn't find texture dict?
-                                                //first try going through ytd hierarchy...
-                                                dtex = gfc?.TryFindTextureInParent(tex.NameHash, texDict);
-
-
-                                                //if (dtex == null)
-                                                //{ //try for a texture dict with the same hash as the archetype?
-                                                //    dtex = gameFileCache.TryFindTextureInParent(tex.TextureRef.NameHash, arche.Hash);
-                                                //    if (dtex != null)
-                                                //    { }
-                                                //}
-                                            }
-                                        }
-                                        if (dtex != null)
-                                        {
-                                            geom.Textures[i] = dtex; //cache it for next time to avoid the lookup...
-                                            rdtex = renderableCache.GetRenderableTexture(dtex);
-                                        }
-                                        if (rdtex == null)
-                                        { } //nothing to see here :(
-                                    }
-                                    else if ((ytd == null))
-                                    {
-                                        Texture dtex = null;
-                                        if (drawable.ShaderGroup.TextureDictionary != null)
-                                        {
-                                            dtex = drawable.ShaderGroup.TextureDictionary.Lookup(tex.NameHash);
-                                            if (dtex == null)
-                                            {
-                                                //dtex = drawable.ShaderGroup.TextureDictionary.Textures.data_items[0];
-                                            }
-                                        }
-                                        if (dtex == null)
-                                        {
-                                            YtdFile ytd2 = gfc?.TryGetTextureDictForTexture(tex.NameHash);
-                                            if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
-                                            {
-                                                dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                            }
-                                            if (dtex == null)
-                                            {
-                                                dtex = gfc?.TryFindTextureInParent(tex.NameHash, texDict);
-                                            }
-                                        }
-                                        rdtex = renderableCache.GetRenderableTexture(dtex);
-                                        if (rdtex == null)
-                                        { missingtexcount -= 2; } //(give extra chance..)  couldn't find the texture! :(
-                                    }
-                                    else if (ytd != null)
-                                    {
-                                        alltexsloaded = false;//ytd not loaded yet
-                                        //missingtexcount++;
-                                    }
-                                }
-                                else //no texdict specified, nothing to see here..
-                                {
-                                    YtdFile ytd2 = gfc?.TryGetTextureDictForTexture(tex.NameHash);
-                                    if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
-                                    {
-                                        var dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                        rdtex = renderableCache.GetRenderableTexture(dtex);
-                                    }
-                                }
-                            }
-                            else if (ttex != null) //ensure embedded renderable texture
-                            {
-                                rdtex = renderableCache.GetRenderableTexture(ttex);
-                            }
-                            else if (tex == null)
-                            { } //tex wasn't loaded? shouldn't happen..
-
-
-                            geom.RenderableTextures[i] = rdtex;
-                            if (rdtex != null)
-                            {
-                                if (!rdtex.IsLoaded)
-                                {
-                                    alltexsloaded = false;
-                                    missingtexcount++;
-                                }
-                            }
-                            else
-                            {
-                                //alltexsloaded = false;
-                                missingtexcount++;
-                            }
-
-
-                        }
-                    }
-                }
-            }
-
-            rndbl.AllTexturesLoaded = alltexsloaded || (missingtexcount < 2);
-
-            return rndbl;
-        }
-
-
-
-
-
-        private void BeginFrame()
-        {
-            renderskeletonlist.Clear();
-        }
-
-
-
-
-
-        private void RenderSky(DeviceContext context)
-        {
-            if (!renderskydome) return;
-            if (!weather.Inited) return;
-
-            var shader = shaders.Skydome;
-            shader.UpdateSkyLocals(weather, globalLights);
-
-
-
-
-            DrawableBase skydomeydr = null;
-            YddFile skydomeydd = gameFileCache.GetYdd(2640562617); //skydome hash
-            if ((skydomeydd != null) && (skydomeydd.Loaded) && (skydomeydd.Dict != null))
-            {
-                skydomeydr = skydomeydd.Dict.Values.FirstOrDefault();
-            }
-
-            Texture starfield = null;
-            //Texture moon = null;
-            YtdFile skydomeytd = gameFileCache.GetYtd(2640562617); //skydome hash
-            if ((skydomeytd != null) && (skydomeytd.Loaded) && (skydomeytd.TextureDict != null) && (skydomeytd.TextureDict.Dict != null))
-            {
-                skydomeytd.TextureDict.Dict.TryGetValue(1064311147, out starfield); //starfield hash
-                //skydomeytd.TextureDict.Dict.TryGetValue(234339206, out moon); //moon-new hash
-            }
-
-            Renderable sdrnd = null;
-            if (skydomeydr != null)
-            {
-                sdrnd = renderableCache.GetRenderable(skydomeydr);
-            }
-
-            RenderableTexture sftex = null;
-            if (starfield != null)
-            {
-                sftex = renderableCache.GetRenderableTexture(starfield);
-            }
-
-            //RenderableTexture moontex = null;
-            //if (moon != null)
-            //{
-            //    moontex = renderableCache.GetRenderableTexture(moon);
-            //}
-
-            if ((sdrnd != null) && (sdrnd.IsLoaded) && (sftex != null) && (sftex.IsLoaded))
-            {
-                shaders.SetDepthStencilMode(context, DepthStencilMode.DisableAll);
-                shaders.SetRasterizerMode(context, RasterizerMode.Solid);
-
-                RenderableInst rinst = new RenderableInst();
-                rinst.Position = Vector3.Zero;
-                rinst.CamRel = Vector3.Zero;
-                rinst.Distance = 0.0f;
-                rinst.BBMin = skydomeydr.BoundingBoxMin.XYZ();
-                rinst.BBMax = skydomeydr.BoundingBoxMax.XYZ();
-                rinst.BSCenter = Vector3.Zero;
-                rinst.Radius = skydomeydr.BoundingSphereRadius;
-                rinst.Orientation = Quaternion.Identity;
-                rinst.Scale = Vector3.One;
-                rinst.TintPaletteIndex = 0;
-                rinst.Renderable = sdrnd;
-                shader.SetShader(context);
-                shader.SetInputLayout(context, VertexType.PTT);
-                shader.SetSceneVars(context, camera, null, globalLights);
-                shader.SetEntityVars(context, ref rinst);
-
-                RenderableModel rmod = ((sdrnd.HDModels != null) && (sdrnd.HDModels.Length > 0)) ? sdrnd.HDModels[0] : null;
-                RenderableGeometry rgeom = ((rmod != null) && (rmod.Geometries != null) && (rmod.Geometries.Length > 0)) ? rmod.Geometries[0] : null;
-
-                if ((rgeom != null) && (rgeom.VertexType == VertexType.PTT))
-                {
-                    shader.SetModelVars(context, rmod);
-                    shader.SetTextures(context, sftex);
-
-                    rgeom.Render(context);
-                }
-
-                //shaders.SetRasterizerMode(context, RasterizerMode.SolidDblSided);
-                //shaders.SetDepthStencilMode(context, DepthStencilMode.Enabled);
-                shader.RenderSun(context, camera, weather, globalLights);
-
-
-                //if ((moontex != null) && (moontex.IsLoaded))
-                //{
-                //    shader.RenderMoon(context, camera, weather, globalLights, moontex);
-                //}
-
-
-
-                shader.UnbindResources(context);
-            }
-
-        }
-
-        private void RenderClouds(DeviceContext context)
-        {
-            if (!renderskydome) return;
-            if (!weather.Inited) return;
-            if (!clouds.Inited) return;
-
-
-            var shader = shaders.Clouds;
-
-            shaders.SetDepthStencilMode(context, DepthStencilMode.DisableAll);
-            shaders.SetRasterizerMode(context, RasterizerMode.Solid);
-            shaders.SetDefaultBlendState(context);
-            //shaders.SetAlphaBlendState(context);
-
-            shader.SetShader(context);
-            shader.UpdateCloudsLocals(clouds, globalLights);
-            shader.SetSceneVars(context, camera, null, globalLights);
-
-            var vtype = (VertexType)0;
-
-            if (!string.IsNullOrEmpty(individualcloudfrag))
-            {
-                //render one cloud fragment.
-
-                CloudHatFrag frag = clouds.HatManager.FindFrag(individualcloudfrag);
-                if (frag == null) return;
-
-                for (int i = 0; i < frag.Layers.Length; i++)
-                {
-                    CloudHatFragLayer layer = frag.Layers[i];
-                    uint dhash = JenkHash.GenHash(layer.Filename.ToLowerInvariant());
-                    Archetype arch = gameFileCache.GetArchetype(dhash);
-                    if (arch == null)
-                    { continue; }
-
-                    if (Math.Max(camera.Position.Z, 0.0f) < layer.HeightTigger) continue;
-
-                    var drw = TryGetDrawable(arch);
-                    var rnd = TryGetRenderable(arch, drw);
-
-                    if ((rnd == null) || (rnd.IsLoaded == false) || (rnd.AllTexturesLoaded == false))
-                    { continue; }
-
-
-                    RenderableInst rinst = new RenderableInst();
-                    rinst.Position = frag.Position;// Vector3.Zero;
-                    rinst.CamRel = Vector3.Zero;// - camera.Position;
-                    rinst.Distance = rinst.CamRel.Length();
-                    rinst.BBMin = arch.BBMin;
-                    rinst.BBMax = arch.BBMax;
-                    rinst.BSCenter = frag.Position;
-                    rinst.Radius = arch.BSRadius;
-                    rinst.Orientation = Quaternion.Identity;
-                    rinst.Scale = frag.Scale;// Vector3.One;
-                    rinst.TintPaletteIndex = 0;
-                    rinst.Renderable = rnd;
-
-                    shader.SetEntityVars(context, ref rinst);
-
-
-                    for (int mi = 0; mi < rnd.HDModels.Length; mi++)
-                    {
-                        var model = rnd.HDModels[mi];
-
-                        for (int gi = 0; gi < model.Geometries.Length; gi++)
-                        {
-                            var geom = model.Geometries[gi];
-
-                            if (geom.VertexType != vtype)
-                            {
-                                vtype = geom.VertexType;
-                                shader.SetInputLayout(context, vtype);
-                            }
-
-                            shader.SetGeomVars(context, geom);
-
-                            geom.Render(context);
-                        }
-                    }
-
-                }
-
-
-            }
-
-
-
         }
 
 
@@ -1042,8 +460,7 @@ namespace CodeWalker.Forms
             {
                 if (gridVerts.Count > 0)
                 {
-                    shaders.SetDepthStencilMode(context, DepthStencilMode.Enabled);
-                    shaders.Paths.RenderLines(context, gridVerts, camera, shaders.GlobalLights);
+                    Renderer.RenderLines(gridVerts);
                 }
             }
         }
@@ -1067,7 +484,7 @@ namespace CodeWalker.Forms
                     hash = Ydr?.RpfFileEntry?.ShortNameHash ?? 0;
                     arch = TryGetArchetype(hash);
 
-                    RenderDrawable(Ydr.Drawable, arch, null, -camera.Position, hash);
+                    Renderer.RenderDrawable(Ydr.Drawable, arch, null, hash);
                 }
             }
             else if (Ydd != null)
@@ -1081,7 +498,7 @@ namespace CodeWalker.Forms
                         {
                             arch = TryGetArchetype(kvp.Key);
 
-                            RenderDrawable(kvp.Value, arch, null, -camera.Position, Ydd.RpfFileEntry.ShortNameHash);
+                            Renderer.RenderDrawable(kvp.Value, arch, null, Ydd.RpfFileEntry.ShortNameHash);
                         }
                     }
                 }
@@ -1096,7 +513,7 @@ namespace CodeWalker.Forms
                         {
                             arch = TryGetArchetype(kvp.Key);
 
-                            RenderDrawable(kvp.Value, arch, null, -camera.Position, kvp.Key);
+                            Renderer.RenderDrawable(kvp.Value, arch, null, kvp.Key);
                         }
                     }
                 }
@@ -1112,7 +529,7 @@ namespace CodeWalker.Forms
                         hash = Yft?.RpfFileEntry?.ShortNameHash ?? 0;
                         arch = TryGetArchetype(hash);
 
-                        RenderFragment(arch, null, f, hash);
+                        Renderer.RenderFragment(arch, null, f, hash);
                     }
                 }
             }
@@ -1120,7 +537,7 @@ namespace CodeWalker.Forms
             {
                 if (Ybn.Loaded)
                 {
-                    RenderCollisionMesh(Ybn.Bounds, null);
+                    Renderer.RenderCollisionMesh(Ybn.Bounds, null);
                 }
             }
             else if (Ypt != null)
@@ -1133,372 +550,12 @@ namespace CodeWalker.Forms
             {
                 if (Ynv.Loaded)
                 {
-                    RenderNavmesh(Ynv);
+                    Renderer.RenderNavMesh(Ynv);
                 }
             }
 
 
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-        private bool RenderFragment(Archetype arch, YmapEntityDef ent, FragType f, uint txdhash = 0)
-        {
-            var pos = ent?.Position ?? Vector3.Zero;
-
-            RenderDrawable(f.Drawable, arch, ent, pos - camera.Position, txdhash);
-
-            if (f.Unknown_F8h_Data != null) //cloth
-            {
-                RenderDrawable(f.Unknown_F8h_Data, arch, ent, pos - camera.Position, txdhash);
-            }
-
-            //vehicle wheels...
-            if ((f.PhysicsLODGroup != null) && (f.PhysicsLODGroup.PhysicsLOD1 != null))
-            {
-                var pl1 = f.PhysicsLODGroup.PhysicsLOD1;
-                if ((pl1.Children != null) && (pl1.Children.data_items != null))
-                {
-                    for (int i = 0; i < pl1.Children.data_items.Length; i++)
-                    {
-                        var pch = pl1.Children.data_items[i];
-                        if ((pch.Drawable1 != null) && (pch.Drawable1.AllModels.Length != 0))
-                        {
-                            //RenderDrawable(pch.Drawable1, arch, ent, -camera.Position, hash);
-                        }
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        private bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, Vector3 camrel, uint txdHash = 0)
-        {
-            //enqueue a single drawable for rendering.
-
-            if (drawable == null)
-                return false;
-
-            Renderable rndbl = TryGetRenderable(arche, drawable, txdHash);
-            if (rndbl == null)
-                return false;
-
-            return RenderRenderable(rndbl, arche, entity, camrel);
-        }
-
-        private bool RenderRenderable(Renderable rndbl, Archetype arche, YmapEntityDef entity, Vector3 camrel)
-        {
-            //enqueue a single renderable for rendering.
-
-            if (!rndbl.IsLoaded) return false;
-
-
-            //if (((SelectionMode == MapSelectionMode.Entity) || (SelectionMode == MapSelectionMode.EntityExtension) || (SelectionMode == MapSelectionMode.ArchetypeExtension)))
-            //{
-            //    UpdateMouseHit(rndbl, arche, entity, camrel);
-            //}
-
-            bool isselected = true;// (rndbl.Key == SelectedItem.Drawable);
-
-            Vector3 position = Vector3.Zero;
-            Vector3 scale = Vector3.One;
-            Quaternion orientation = Quaternion.Identity;
-            uint tintPaletteIndex = 0;
-            Vector3 bbmin = (arche != null) ? arche.BBMin : rndbl.Key.BoundingBoxMin.XYZ();
-            Vector3 bbmax = (arche != null) ? arche.BBMax : rndbl.Key.BoundingBoxMax.XYZ();
-            Vector3 bscen = (arche != null) ? arche.BSCenter : rndbl.Key.BoundingCenter;
-            float radius = (arche != null) ? arche.BSRadius : rndbl.Key.BoundingSphereRadius;
-            float distance = (camrel + bscen).Length();
-            if (entity != null)
-            {
-                position = entity.Position;
-                scale = entity.Scale;
-                orientation = entity.Orientation;
-                tintPaletteIndex = entity.CEntityDef.tintValue;
-                bbmin = entity.BBMin;
-                bbmax = entity.BBMax;
-                bscen = entity.BSCenter;
-            }
-
-
-            if (rendercollisionmeshes)// && collisionmeshlayerdrawable)
-            {
-                Drawable sdrawable = rndbl.Key as Drawable;
-                if ((sdrawable != null) && (sdrawable.Bound != null))
-                {
-                    RenderCollisionMesh(sdrawable.Bound, entity);
-                }
-            }
-            if (renderskeletons)
-            {
-                if (rndbl.HasSkeleton)
-                {
-                    RenderSkeleton(rndbl);
-                }
-            }
-
-
-
-            bool retval = true;// false;
-            if (rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
-            {
-                RenderableGeometryInst rginst = new RenderableGeometryInst();
-                rginst.Inst.Renderable = rndbl;
-                rginst.Inst.CamRel = camrel;
-                rginst.Inst.Position = position;
-                rginst.Inst.Scale = scale;
-                rginst.Inst.Orientation = orientation;
-                rginst.Inst.TintPaletteIndex = tintPaletteIndex;
-                rginst.Inst.BBMin = bbmin;
-                rginst.Inst.BBMax = bbmax;
-                rginst.Inst.BSCenter = bscen;
-                rginst.Inst.Radius = radius;
-                rginst.Inst.Distance = distance;
-
-
-                RenderableModel[] models = isselected ? rndbl.AllModels : rndbl.HDModels;
-
-                for (int mi = 0; mi < models.Length; mi++)
-                {
-                    var model = models[mi];
-
-                    if (isselected)
-                    {
-                        if (ModelDrawFlags.ContainsKey(model.DrawableModel))
-                        { continue; } //filter out models in selected item that aren't flagged for drawing.
-                    }
-
-                    if (!RenderIsModelFinalRender(model))// && !renderproxies)
-                    { continue; } //filter out reflection proxy models...
-
-                    for (int gi = 0; gi < model.Geometries.Length; gi++)
-                    {
-                        var geom = model.Geometries[gi];
-
-                        if (isselected)
-                        {
-                            if (GeometryDrawFlags.ContainsKey(geom.DrawableGeom))
-                            { continue; } //filter out geometries in selected item that aren't flagged for drawing.
-                        }
-
-                        rginst.Geom = geom;
-
-                        shaders.Enqueue(rginst);
-                    }
-                }
-            }
-            else
-            {
-                retval = false;
-            }
-            return retval;
-        }
-
-
-        private void RenderCollisionMesh(Bounds bounds, YmapEntityDef entity)
-        {
-            //enqueue a single collision mesh for rendering.
-
-            Vector3 position;
-            Vector3 scale;
-            Quaternion orientation;
-            if (entity != null)
-            {
-                position = entity.Position;
-                scale = entity.Scale;
-                orientation = entity.Orientation;
-            }
-            else
-            {
-                position = Vector3.Zero;
-                scale = Vector3.One;
-                orientation = Quaternion.Identity;
-            }
-
-            switch (bounds.Type)
-            {
-                case 10: //BoundComposite
-                    BoundComposite boundcomp = bounds as BoundComposite;
-                    if (boundcomp != null)
-                    {
-                        RenderableBoundComposite rndbc = renderableCache.GetRenderableBoundComp(boundcomp);
-                        if (rndbc.IsLoaded)
-                        {
-                            RenderableBoundGeometryInst rbginst = new RenderableBoundGeometryInst();
-                            rbginst.Inst.Renderable = rndbc;
-                            rbginst.Inst.Orientation = orientation;
-                            rbginst.Inst.Scale = scale;
-                            foreach (var geom in rndbc.Geometries)
-                            {
-                                if (geom == null) continue;
-                                rbginst.Geom = geom;
-                                rbginst.Inst.Position = position + orientation.Multiply(geom.BoundGeom.CenterGeom * scale);
-                                rbginst.Inst.CamRel = rbginst.Inst.Position - camera.Position;
-                                shaders.Enqueue(rbginst);
-                            }
-
-                            //UpdateMouseHits(rndbc, entity);
-                        }
-                    }
-                    else
-                    { }
-                    break;
-                case 3: //BoundBox - found in drawables - TODO
-                    BoundBox boundbox = bounds as BoundBox;
-                    if (boundbox == null)
-                    { }
-                    break;
-                case 0: //BoundSphere - found in drawables - TODO
-                    BoundSphere boundsphere = bounds as BoundSphere;
-                    if (boundsphere == null)
-                    { }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-
-        private void RenderNavmesh(YnvFile ynv)
-        {
-            RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(ynv);
-            if ((rnd != null) && (rnd.IsLoaded))
-            {
-                shaders.Enqueue(rnd);
-            }
-        }
-
-
-
-        private bool RenderIsModelFinalRender(RenderableModel model)
-        {
-
-            if ((model.Unk2Ch & 1) == 0) //smallest bit is proxy/"final render" bit? seems to work...
-            {
-                return false;// renderproxies;
-            }
-            return true;
-
-            //switch (model.Unk2Ch)
-            //{
-            //    case 65784:  //0000010000000011111000  //reflection proxy?
-            //    case 65788:  //0000010000000011111100
-            //    case 131312: //0000100000000011110000  //reflection proxy?
-            //    case 131320: //0000100000000011111000  //reflection proxy?
-            //    case 131324: //0000100000000011111100  //shadow/reflection proxy?
-            //    case 196834: //0000110000000011100010 //shadow proxy? (tree branches)
-            //    case 196848: //0000110000000011110000  //reflection proxy?
-            //    case 196856: //0000110000000011111000 //reflection proxy? hotel nr golf course
-            //    case 262392: //0001000000000011111000  //reflection proxy?
-            //    case 327932: //0001010000000011111100  //reflection proxy? (alamo/sandy shores)
-            //    case 983268: //0011110000000011100100  //big reflection proxy?
-            //    case 2293988://1000110000000011100100  //big reflection proxy?
-            //                 //case 1442047://golf course water proxy, but other things also
-            //                 //case 1114367://mike house water proxy, but other things also
-            //        return renderproxies;
-            //}
-            //return true;
-        }
-
-
-
-
-
-
-
-        private void RenderSkeleton(Renderable renderable)
-        {
-            renderskeletonlist.Add(renderable);
-        }
-
-        private void RenderSkeletons(DeviceContext context)
-        {
-
-            skeletonLineVerts.Clear();
-
-            const uint cgrn = 4278255360;// (uint)new Color4(0.0f, 1.0f, 0.0f, 1.0f).ToRgba();
-            const uint cblu = 4294901760;// (uint)new Color4(0.0f, 0.0f, 1.0f, 1.0f).ToRgba();
-            VertexTypePC v1 = new VertexTypePC();
-            VertexTypePC v2 = new VertexTypePC();
-            v1.Colour = cgrn;
-            v2.Colour = cblu;
-
-            foreach (var renderable in renderskeletonlist)
-            {
-                DrawableBase drawable = renderable.Key;
-                Skeleton skeleton = drawable?.Skeleton;
-                if (skeleton == null) continue;
-
-                var pinds = skeleton.ParentIndices;
-                var bones = skeleton.Bones;
-                if ((pinds == null) || (bones == null)) continue;
-                var xforms = skeleton.Transformations;
-
-                int cnt = Math.Min(pinds.Length, bones.Count);
-                for (int i = 0; i < cnt; i++)
-                {
-                    var pind = pinds[i];
-                    var bone = bones[i];
-                    var pbone = bone.Parent;
-                    if (pbone == null) continue; //nothing to draw for the root bone
-
-                    if (xforms != null)//how to use xforms? bind pose?
-                    {
-                        var xform = (i < xforms.Length) ? xforms[i] : Matrix.Identity;
-                        var pxform = (pind < xforms.Length) ? xforms[pind] : Matrix.Identity;
-                    }
-                    else
-                    {
-                    }
-
-
-                    //draw line from bone's position to parent position...
-                    Vector3 lbeg = Vector3.Zero;
-                    Vector3 lend = bone.Translation;// bone.Rotation.Multiply();
-                    while (pbone != null)
-                    {
-                        lbeg = pbone.Rotation.Multiply(lbeg) + pbone.Translation;
-                        lend = pbone.Rotation.Multiply(lend) + pbone.Translation;
-                        pbone = pbone.Parent;
-                    }
-
-
-                    v1.Position = lbeg;
-                    v2.Position = lend;
-                    skeletonLineVerts.Add(v1);
-                    skeletonLineVerts.Add(v2);
-
-                }
-
-
-            }
-
-
-
-
-
-            if (skeletonLineVerts.Count > 0)
-            {
-                shaders.SetDepthStencilMode(context, DepthStencilMode.DisableAll);
-                shaders.Paths.RenderLines(context, skeletonLineVerts, camera, shaders.GlobalLights);
-            }
-
-
-
-        }
-
-
 
 
 
@@ -1625,220 +682,22 @@ namespace CodeWalker.Forms
             TimeOfDayLabel.Text = string.Format("{0:00}:{1:00}", ih, im);
         }
 
-        private void UpdateTimeOfDay(float elapsed)
-        {
-            if (timerunning)
-            {
-                float helapsed = elapsed * timespeed / 60.0f;
-                timeofday += helapsed;
-                while (timeofday >= 24.0f) timeofday -= 24.0f;
-                while (timeofday < 0.0f) timeofday += 24.0f;
-                timecycle.SetTime(timeofday);
-            }
-
-        }
-
-        private void UpdateGlobalLights()
-        {
-            Vector3 lightdir = Vector3.Zero;//will be updated before each frame from X and Y vars
-            Color4 lightdircolour = Color4.White;
-            Color4 lightdirambcolour = new Color4(0.5f, 0.5f, 0.5f, 1.0f);
-            Color4 lightnaturalupcolour = new Color4(0.0f);
-            Color4 lightnaturaldowncolour = new Color4(0.0f);
-            Color4 lightartificialupcolour = new Color4(0.0f);
-            Color4 lightartificialdowncolour = new Color4(0.0f);
-            bool hdr = shaders.hdr;
-            float hdrint = 1.0f;
-            Vector3 sundir = Vector3.Up;
-            Vector3 moondir = Vector3.Down;
-            Vector3 moonax = Vector3.UnitZ;
-
-            if (controllightdir || !timecycle.Inited)
-            {
-                float cryd = (float)Math.Cos(lightdiry);
-                lightdir.X = -(float)Math.Sin(-lightdirx) * cryd;
-                lightdir.Y = -(float)Math.Cos(-lightdirx) * cryd;
-                lightdir.Z = (float)Math.Sin(lightdiry);
-                lightdircolour = Color4.White;
-                lightdirambcolour = new Color4(0.5f, 0.5f, 0.5f, 1.0f);
-                if (hdr && weather.Inited)
-                {
-                    lightdircolour *= weather.CurrentValues.skyHdr;
-                    lightdircolour.Alpha = 1.0f;
-                    lightdirambcolour *= weather.CurrentValues.skyHdr;
-                    lightdirambcolour.Alpha = 1.0f;
-                    hdrint = weather.CurrentValues.skyHdr;
-                }
-                sundir = lightdir;
-                moondir = -lightdir;
-                moonax = Vector3.Normalize(Vector3.UnitY);
-            }
-            else
-            {
-                float sunroll = timecycle.sun_roll * (float)Math.PI / 180.0f;  //122
-                float moonroll = timecycle.moon_roll * (float)Math.PI / 180.0f;  //-122
-                float moonwobamp = timecycle.moon_wobble_amp; //0.2
-                float moonwobfreq = timecycle.moon_wobble_freq; //2
-                float moonwoboffs = timecycle.moon_wobble_offset; //0.375
-                float dayval = (0.5f + (timeofday - 6.0f) / 14.0f);
-                float nightval = (((timeofday > 12.0f) ? (timeofday - 7.0f) : (timeofday + 17.0f)) / 9.0f);
-                float daycyc = (float)Math.PI * dayval;
-                float nightcyc = (float)Math.PI * nightval;
-                Vector3 sdir = new Vector3((float)Math.Sin(daycyc), -(float)Math.Cos(daycyc), 0.0f);
-                Vector3 mdir = new Vector3(-(float)Math.Sin(nightcyc), 0.0f, -(float)Math.Cos(nightcyc));
-                Quaternion saxis = Quaternion.RotationYawPitchRoll(0.0f, sunroll, 0.0f);
-                Quaternion maxis = Quaternion.RotationYawPitchRoll(0.0f, -moonroll, 0.0f);
-                sundir = Vector3.Normalize(saxis.Multiply(sdir));
-                moondir = Vector3.Normalize(maxis.Multiply(mdir));
-                moonax = Vector3.Normalize(maxis.Multiply(Vector3.UnitY));
-                //bool usemoon = false;
-
-                lightdir = sundir;
-
-                //if (lightdir.Z < -0.5f) lightdir.Z = -lightdir.Z; //make sure the lightsource is always above the horizon...
-
-                if ((timeofday < 5.0f) || (timeofday > 21.0f))
-                {
-                    lightdir = moondir;
-                    //usemoon = true;
-                }
-
-                if (lightdir.Z < 0)
-                {
-                    lightdir.Z = 0; //don't let the light source go below the horizon...
-                }
-
-                //lightdir = Vector3.Normalize(weather.CurrentValues.sunDirection);
-
-                if (weather != null && weather.Inited)
-                {
-                    lightdircolour = (Color4)weather.CurrentValues.lightDirCol;
-                    lightdirambcolour = (Color4)weather.CurrentValues.lightDirAmbCol;
-                    lightnaturalupcolour = (Color4)weather.CurrentValues.lightNaturalAmbUp;
-                    lightnaturaldowncolour = (Color4)weather.CurrentValues.lightNaturalAmbDown;
-                    lightartificialupcolour = (Color4)weather.CurrentValues.lightArtificialExtUp;
-                    lightartificialdowncolour = (Color4)weather.CurrentValues.lightArtificialExtDown;
-                    float lamult = weather.CurrentValues.lightDirAmbIntensityMult;
-                    float abounce = weather.CurrentValues.lightDirAmbBounce;
-                    float minmult = hdr ? 0.1f : 0.5f;
-                    lightdircolour *= Math.Max(lightdircolour.Alpha, minmult);
-                    lightdirambcolour *= lightdirambcolour.Alpha * lamult; // 0.1f * lamult;
-
-                    //if (usemoon)
-                    //{
-                    //    lightdircolour *= weather.CurrentValues.skyMoonIten;
-                    //}
-
-
-                    lightnaturalupcolour *= lightnaturalupcolour.Alpha * weather.CurrentValues.lightNaturalAmbUpIntensityMult;
-                    lightnaturaldowncolour *= lightnaturaldowncolour.Alpha;
-                    lightartificialupcolour *= lightartificialupcolour.Alpha;
-                    lightartificialdowncolour *= lightartificialdowncolour.Alpha;
-
-                    if (!hdr)
-                    {
-                        Color4 maxdirc = new Color4(1.0f);
-                        Color4 maxambc = new Color4(0.5f);
-                        lightdircolour = Color4.Min(lightdircolour, maxdirc);
-                        lightdirambcolour = Color4.Min(lightdirambcolour, maxambc);
-                        lightnaturalupcolour = Color4.Min(lightnaturalupcolour, maxambc);
-                        lightnaturaldowncolour = Color4.Min(lightnaturaldowncolour, maxambc);
-                        lightartificialupcolour = Color4.Min(lightartificialupcolour, maxambc);
-                        lightartificialdowncolour = Color4.Min(lightartificialdowncolour, maxambc);
-                    }
-                    else
-                    {
-                        hdrint = weather.CurrentValues.skyHdr;//.lightDirCol.W;
-                    }
-                }
-
-
-            }
-
-            globalLights.Weather = weather;
-            globalLights.HdrEnabled = hdr;
-            globalLights.SpecularEnabled = true;// !MapViewEnabled;//disable specular for map view.
-            globalLights.HdrIntensity = Math.Max(hdrint, 1.0f);
-            globalLights.CurrentSunDir = sundir;
-            globalLights.CurrentMoonDir = moondir;
-            globalLights.MoonAxis = moonax;
-            globalLights.Params.LightDir = lightdir;
-            globalLights.Params.LightDirColour = lightdircolour;
-            globalLights.Params.LightDirAmbColour = lightdirambcolour;
-            globalLights.Params.LightNaturalAmbUp = rendernaturalambientlight ? lightnaturalupcolour : Color4.Black;
-            globalLights.Params.LightNaturalAmbDown = rendernaturalambientlight ? lightnaturaldowncolour : Color4.Black;
-            globalLights.Params.LightArtificialAmbUp = renderartificialambientlight ? lightartificialupcolour : Color4.Black;
-            globalLights.Params.LightArtificialAmbDown = renderartificialambientlight ? lightartificialdowncolour : Color4.Black;
-
-
-            if (shaders != null)
-            {
-                shaders.SetGlobalLightParams(globalLights);
-            }
-
-        }
-
-        private void UpdateWindVector(float elapsed)
-        {
-            //wind still needs a lot of work.
-            //currently just feed the wind vector with small oscillations...
-            currentWindTime += elapsed;
-            if (currentWindTime >= 200.0f) currentWindTime -= 200.0f;
-
-            float dirval = (float)(currentWindTime * 0.01 * Math.PI);
-            float dirval1 = (float)Math.Sin(currentWindTime * 0.100 * Math.PI) * 0.3f;
-            float dirval2 = (float)(currentWindTime * 0.333 * Math.PI);
-            float dirval3 = (float)(currentWindTime * 0.5 * Math.PI);
-            float dirval4 = (float)Math.Sin(currentWindTime * 0.223 * Math.PI) * 0.4f;
-            float dirval5 = (float)Math.Sin(currentWindTime * 0.4 * Math.PI) * 5.5f;
-
-            currentWindVec.Z = (float)Math.Sin(dirval) * dirval1 + (float)Math.Cos(dirval2) * dirval4;
-            currentWindVec.W = (float)Math.Cos(dirval) * dirval5 + (float)Math.Sin(dirval3) * dirval4;
-
-            float strval = (float)(currentWindTime * 0.1 * Math.PI);
-            float strval2 = (float)(currentWindTime * 0.825 * Math.PI);
-            float strval3 = (float)(currentWindTime * 0.333 * Math.PI);
-            float strval4 = (float)(currentWindTime * 0.666 * Math.PI);
-            float strbase = 0.1f * ((float)Math.Sin(strval * 0.5));
-            float strbase2 = 0.02f * ((float)Math.Sin(strval2 * 0.1));
-
-            currentWindVec.X = (float)Math.Sin(strval) * strbase + ((float)Math.Cos(strval3) * strbase2);
-            currentWindVec.Y = (float)Math.Cos(strval2) * strbase + ((float)Math.Sin(strval4 - strval3) * strbase2);
-        }
 
 
 
         private void UpdateControlInputs(float elapsed)
         {
+            if (elapsed > 0.1f) elapsed = 0.1f;
+
             var s = Settings.Default;
 
             float moveSpeed = 10.0f;
 
-            bool xbenable = (xbcontroller != null) && (xbcontroller.IsConnected);
-            float lx = 0, ly = 0, rx = 0, ry = 0, lt = 0, rt = 0; //input axes
-            if (xbenable)
-            {
-                xbcontrollerstateprev = xbcontrollerstate;
-                xbcontrollerstate = xbcontroller.GetState();
-                xbmainaxesprev = xbmainaxes;
-                xbtrigsprev = xbtrigs;
-                xbmainaxes = ControllerMainAxes();
-                xbtrigs = ControllerTriggers();
-                lx = xbmainaxes.X;
-                ly = xbmainaxes.Y;
-                rx = xbmainaxes.Z;
-                ry = xbmainaxes.W;
-                lt = xbtrigs.X;
-                rt = xbtrigs.Y;
-                float lamt = s.XInputLThumbSensitivity * elapsed;
-                float ramt = s.XInputRThumbSensitivity * elapsed;
-                ly = s.XInputLThumbInvert ? ly : -ly;
-                ry = s.XInputRThumbInvert ? ry : -ry;
-                lx *= lamt;
-                ly *= lamt;
-                rx *= ramt;
-                ry *= ramt;
 
+            Input.Update(elapsed);
+
+            if (Input.xbenable)
+            {
                 //if (ControllerButtonJustPressed(GamepadButtonFlags.Start))
                 //{
                 //    SetControlMode(ControlMode == WorldControlMode.Free ? WorldControlMode.Ped : WorldControlMode.Free);
@@ -1847,125 +706,84 @@ namespace CodeWalker.Forms
 
 
 
-                Vector3 movevec = Vector3.Zero;
+            if (Input.ShiftPressed)
+            {
+                moveSpeed *= 5.0f;
+            }
+            if (Input.CtrlPressed)
+            {
+                moveSpeed *= 0.2f;
+            }
 
-                //if (MapViewEnabled == true)
+            Vector3 movevec = Input.KeyboardMoveVec(false);
+
+
+            //if (MapViewEnabled == true)
+            //{
+            //    movevec *= elapsed * 100.0f * Math.Min(camera.OrthographicTargetSize * 0.01f, 30.0f);
+            //    float mapviewscale = 1.0f / camera.Height;
+            //    float fdx = MapViewDragX * mapviewscale;
+            //    float fdy = MapViewDragY * mapviewscale;
+            //    movevec.X -= fdx * camera.OrthographicSize;
+            //    movevec.Y += fdy * camera.OrthographicSize;
+            //}
+            //else
+            {
+                //normal movement
+                movevec *= elapsed * moveSpeed * Math.Min(camera.TargetDistance, 50.0f);
+            }
+
+
+            Vector3 movewvec = camera.ViewInvQuaternion.Multiply(movevec);
+            camEntity.Position += movewvec;
+
+            //MapViewDragX = 0;
+            //MapViewDragY = 0;
+
+
+
+
+            if (Input.xbenable)
+            {
+                camera.ControllerRotate(Input.xblx + Input.xbrx, Input.xbly + Input.xbry);
+
+                float zoom = 0.0f;
+                float zoomspd = s.XInputZoomSpeed;
+                float zoomamt = zoomspd * elapsed;
+                if (Input.ControllerButtonPressed(GamepadButtonFlags.DPadUp)) zoom += zoomamt;
+                if (Input.ControllerButtonPressed(GamepadButtonFlags.DPadDown)) zoom -= zoomamt;
+
+                camera.ControllerZoom(zoom);
+
+                float acc = 0.0f;
+                float accspd = s.XInputMoveSpeed;//actually accel speed...
+                acc += Input.xbrt * accspd;
+                acc -= Input.xblt * accspd;
+
+                Vector3 newdir = camera.ViewDirection; //maybe use the "vehicle" direction...?
+                Input.xbcontrolvelocity += (acc * elapsed);
+
+                if (Input.ControllerButtonPressed(GamepadButtonFlags.A | GamepadButtonFlags.RightShoulder)) //handbrake...
+                {
+                    Input.xbcontrolvelocity *= Math.Max(0.75f - elapsed, 0);//not ideal for low fps...
+                                                                        //xbcontrolvelocity = 0.0f;
+                    if (Math.Abs(Input.xbcontrolvelocity) < 0.001f) Input.xbcontrolvelocity = 0.0f;
+                }
+
+                camEntity.Velocity = newdir * Input.xbcontrolvelocity;
+                camEntity.Position += camEntity.Velocity * elapsed;
+
+
+                //fire!
+                //if (ControllerButtonJustPressed(GamepadButtonFlags.LeftShoulder))
                 //{
-                //    if (kbmovefwd) movevec.Y += 1.0f;
-                //    if (kbmovebck) movevec.Y -= 1.0f;
-                //    if (kbmovelft) movevec.X -= 1.0f;
-                //    if (kbmovergt) movevec.X += 1.0f;
-                //    if (kbmoveup) movevec.Y += 1.0f;
-                //    if (kbmovedn) movevec.Y -= 1.0f;
-                //    movevec *= elapsed * 100.0f * Math.Min(camera.OrthographicTargetSize * 0.01f, 30.0f);
-                //    float mapviewscale = 1.0f / camera.Height;
-                //    float fdx = MapViewDragX * mapviewscale;
-                //    float fdy = MapViewDragY * mapviewscale;
-                //    movevec.X -= fdx * camera.OrthographicSize;
-                //    movevec.Y += fdy * camera.OrthographicSize;
+                //    SpawnTestEntity(true);
                 //}
-                //else
-                {
-                    //normal movement
-                    if (kbmovefwd) movevec.Z -= 1.0f;
-                    if (kbmovebck) movevec.Z += 1.0f;
-                    if (kbmovelft) movevec.X -= 1.0f;
-                    if (kbmovergt) movevec.X += 1.0f;
-                    if (kbmoveup) movevec.Y += 1.0f;
-                    if (kbmovedn) movevec.Y -= 1.0f;
-                    movevec *= elapsed * moveSpeed * Math.Min(camera.TargetDistance, 50.0f);
-                }
 
-
-                Vector3 movewvec = camera.ViewInvQuaternion.Multiply(movevec);
-                camEntity.Position += movewvec;
-
-                //MapViewDragX = 0;
-                //MapViewDragY = 0;
+            }
 
 
 
-
-                if (xbenable)
-                {
-                    camera.ControllerRotate(lx + rx, ly + ry);
-
-                    float zoom = 0.0f;
-                    float zoomspd = s.XInputZoomSpeed;
-                    float zoomamt = zoomspd * elapsed;
-                    if (ControllerButtonPressed(GamepadButtonFlags.DPadUp)) zoom += zoomamt;
-                    if (ControllerButtonPressed(GamepadButtonFlags.DPadDown)) zoom -= zoomamt;
-
-                    camera.ControllerZoom(zoom);
-
-                    float acc = 0.0f;
-                    float accspd = s.XInputMoveSpeed;//actually accel speed...
-                    acc += rt * accspd;
-                    acc -= lt * accspd;
-
-                    Vector3 newdir = camera.ViewDirection; //maybe use the "vehicle" direction...?
-                    xbcontrolvelocity += (acc * elapsed);
-
-                    if (ControllerButtonPressed(GamepadButtonFlags.A | GamepadButtonFlags.RightShoulder)) //handbrake...
-                    {
-                        xbcontrolvelocity *= Math.Max(0.75f - elapsed, 0);//not ideal for low fps...
-                                                                          //xbcontrolvelocity = 0.0f;
-                        if (Math.Abs(xbcontrolvelocity) < 0.001f) xbcontrolvelocity = 0.0f;
-                    }
-
-                    camEntity.Velocity = newdir * xbcontrolvelocity;
-                    camEntity.Position += camEntity.Velocity * elapsed;
-
-
-                    //fire!
-                    //if (ControllerButtonJustPressed(GamepadButtonFlags.LeftShoulder))
-                    //{
-                    //    SpawnTestEntity(true);
-                    //}
-
-                }
-
-
-
-        }
-
-        private Vector4 ControllerMainAxes()
-        {
-            var gp = xbcontrollerstate.Gamepad;
-            var ldz = Gamepad.LeftThumbDeadZone;
-            var rdz = Gamepad.RightThumbDeadZone;
-            float ltnrng = -(short.MinValue + ldz);
-            float ltprng = (short.MaxValue - ldz);
-            float rtnrng = -(short.MinValue + rdz);
-            float rtprng = (short.MaxValue - rdz);
-
-            float lx = (gp.LeftThumbX < 0) ? Math.Min((gp.LeftThumbX + ldz) / ltnrng, 0) :
-                       (gp.LeftThumbX > 0) ? Math.Max((gp.LeftThumbX - ldz) / ltprng, 0) : 0;
-            float ly = (gp.LeftThumbY < 0) ? Math.Min((gp.LeftThumbY + ldz) / ltnrng, 0) :
-                       (gp.LeftThumbY > 0) ? Math.Max((gp.LeftThumbY - ldz) / ltprng, 0) : 0;
-            float rx = (gp.RightThumbX < 0) ? Math.Min((gp.RightThumbX + rdz) / rtnrng, 0) :
-                       (gp.RightThumbX > 0) ? Math.Max((gp.RightThumbX - rdz) / rtprng, 0) : 0;
-            float ry = (gp.RightThumbY < 0) ? Math.Min((gp.RightThumbY + rdz) / rtnrng, 0) :
-                       (gp.RightThumbY > 0) ? Math.Max((gp.RightThumbY - rdz) / rtprng, 0) : 0;
-
-            return new Vector4(lx, ly, rx, ry);
-        }
-        private Vector2 ControllerTriggers()
-        {
-            var gp = xbcontrollerstate.Gamepad;
-            var tt = Gamepad.TriggerThreshold;
-            float trng = byte.MaxValue - tt;
-            float lt = Math.Max((gp.LeftTrigger - tt) / trng, 0);
-            float rt = Math.Max((gp.RightTrigger - tt) / trng, 0);
-            return new Vector2(lt, rt);
-        }
-        private bool ControllerButtonPressed(GamepadButtonFlags b)
-        {
-            return ((xbcontrollerstate.Gamepad.Buttons & b) != 0);
-        }
-        private bool ControllerButtonJustPressed(GamepadButtonFlags b)
-        {
-            return (((xbcontrollerstate.Gamepad.Buttons & b) != 0) && ((xbcontrollerstateprev.Gamepad.Buttons & b) == 0));
         }
 
 
@@ -1976,8 +794,8 @@ namespace CodeWalker.Forms
             DetailsPropertyGrid.SelectedObject = drawable;
 
             DrawableDrawFlags.Clear();
-            ModelDrawFlags.Clear();
-            GeometryDrawFlags.Clear();
+            Renderer.SelectionModelDrawFlags.Clear();
+            Renderer.SelectionGeometryDrawFlags.Clear();
             ModelsTreeView.Nodes.Clear();
             ModelsTreeView.ShowRootLines = false;
             TexturesTreeView.Nodes.Clear();
@@ -1997,8 +815,8 @@ namespace CodeWalker.Forms
             var drawable = frag.Drawable;
 
             DrawableDrawFlags.Clear();
-            ModelDrawFlags.Clear();
-            GeometryDrawFlags.Clear();
+            Renderer.SelectionModelDrawFlags.Clear();
+            Renderer.SelectionGeometryDrawFlags.Clear();
             ModelsTreeView.Nodes.Clear();
             ModelsTreeView.ShowRootLines = false;
             TexturesTreeView.Nodes.Clear();
@@ -2016,8 +834,8 @@ namespace CodeWalker.Forms
             //DetailsPropertyGrid.SelectedObject = dict; //this won't look good...
 
             DrawableDrawFlags.Clear();
-            ModelDrawFlags.Clear();
-            GeometryDrawFlags.Clear();
+            Renderer.SelectionModelDrawFlags.Clear();
+            Renderer.SelectionGeometryDrawFlags.Clear();
             ModelsTreeView.Nodes.Clear();
             ModelsTreeView.ShowRootLines = true;
             TexturesTreeView.Nodes.Clear();
@@ -2079,7 +897,7 @@ namespace CodeWalker.Forms
 
                 if (!check)
                 {
-                    ModelDrawFlags[model] = false;
+                    Renderer.SelectionModelDrawFlags[model] = false;
                 }
 
                 if ((model.Geometries == null) || (model.Geometries.data_items == null)) continue;
@@ -2132,7 +950,7 @@ namespace CodeWalker.Forms
             var model = node.Tag as DrawableModel;
             var geom = node.Tag as DrawableGeometry;
             bool rem = node.Checked;
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
                 if (drwbl != null)
                 {
@@ -2152,28 +970,28 @@ namespace CodeWalker.Forms
                 {
                     if (rem)
                     {
-                        if (ModelDrawFlags.ContainsKey(model))
+                        if (Renderer.SelectionModelDrawFlags.ContainsKey(model))
                         {
-                            ModelDrawFlags.Remove(model);
+                            Renderer.SelectionModelDrawFlags.Remove(model);
                         }
                     }
                     else
                     {
-                        ModelDrawFlags[model] = false;
+                        Renderer.SelectionModelDrawFlags[model] = false;
                     }
                 }
                 if (geom != null)
                 {
                     if (rem)
                     {
-                        if (GeometryDrawFlags.ContainsKey(geom))
+                        if (Renderer.SelectionGeometryDrawFlags.ContainsKey(geom))
                         {
-                            GeometryDrawFlags.Remove(geom);
+                            Renderer.SelectionGeometryDrawFlags.Remove(geom);
                         }
                     }
                     else
                     {
-                        GeometryDrawFlags[geom] = false;
+                        Renderer.SelectionGeometryDrawFlags[geom] = false;
                     }
                 }
                 updateArchetypeStatus = true;
@@ -2239,19 +1057,21 @@ namespace CodeWalker.Forms
             }
             if (MouseRButtonDown)
             {
-                if (controllightdir)
+                if (Renderer.controllightdir)
                 {
-                    lightdirx += (dx * camera.Sensitivity);
-                    lightdiry += (dy * camera.Sensitivity);
+                    Renderer.lightdirx += (dx * camera.Sensitivity);
+                    Renderer.lightdiry += (dy * camera.Sensitivity);
                 }
-                else if (controltimeofday)
+                else if (Renderer.controltimeofday)
                 {
-                    timeofday += (dx - dy) / 30.0f;
-                    while (timeofday >= 24.0f) timeofday -= 24.0f;
-                    while (timeofday < 0.0f) timeofday += 24.0f;
-                    timecycle.SetTime(timeofday);
+                    float tod = Renderer.timeofday;
+                    tod += (dx - dy) / 30.0f;
+                    while (tod >= 24.0f) tod -= 24.0f;
+                    while (tod < 0.0f) tod += 24.0f;
+                    timecycle.SetTime(tod);
+                    Renderer.timeofday = tod;
 
-                    float fv = timeofday * 60.0f;
+                    float fv = tod * 60.0f;
                     TimeOfDayTrackBar.Value = (int)fv;
                     UpdateTimeOfDayLabel();
                 }
@@ -2297,49 +1117,31 @@ namespace CodeWalker.Forms
                 if (cb.DropDownStyle != ComboBoxStyle.DropDownList) return; //nontypable combobox
             }
 
-            var k = e.KeyCode;
-
-            bool ctrl = (e.Modifiers & Keys.Control) > 0;
-            bool shift = (e.Modifiers & Keys.Shift) > 0;
-            CtrlPressed = ctrl;
-            ShiftPressed = shift;
-
             bool enablemove = true;// (!iseditmode) || (MouseLButtonDown && (GrabbedMarker == null) && (GrabbedWidget == null));
 
-            enablemove = enablemove && (!ctrl);
+            Input.KeyDown(e, enablemove);
 
-            //WASD move the camera entity...
-            if (enablemove)
-            {
-                if (k == keyBindings.MoveForward) kbmovefwd = true;
-                if (k == keyBindings.MoveBackward) kbmovebck = true;
-                if (k == keyBindings.MoveLeft) kbmovelft = true;
-                if (k == keyBindings.MoveRight) kbmovergt = true;
-                if (k == keyBindings.MoveUp) kbmoveup = true;
-                if (k == keyBindings.MoveDown) kbmovedn = true;
-                if (k == keyBindings.Jump) kbjump = true;
-            }
-
-            bool moving = kbmovefwd || kbmovebck || kbmovelft || kbmovergt || kbmoveup || kbmovedn || kbjump;
+            var k = e.KeyCode;
+            var kb = Input.keyBindings;
+            bool ctrl = Input.CtrlPressed;
+            bool shift = Input.ShiftPressed;
 
 
             if (!ctrl)
             {
-                if (k == keyBindings.MoveSlowerZoomIn)
+                if (k == kb.MoveSlowerZoomIn)
                 {
                     camera.MouseZoom(1);
                 }
-                if (k == keyBindings.MoveFasterZoomOut)
+                if (k == kb.MoveFasterZoomOut)
                 {
                     camera.MouseZoom(-1);
                 }
             }
 
 
-
-            if (!moving) //don't trigger further actions if moving.
+            if (!Input.kbmoving) //don't trigger further actions if moving.
             {
-
                 if (!ctrl)
                 {
                     //switch widget modes and spaces.
@@ -2422,10 +1224,7 @@ namespace CodeWalker.Forms
 
         private void ModelForm_KeyUp(object sender, KeyEventArgs e)
         {
-            bool ctrl = (e.Modifiers & Keys.Control) > 0;
-            bool shift = (e.Modifiers & Keys.Shift) > 0;
-            CtrlPressed = ctrl;
-            ShiftPressed = shift;
+            Input.KeyUp(e);
 
             if (ActiveControl is TextBox)
             {
@@ -2438,17 +1237,6 @@ namespace CodeWalker.Forms
                 if (cb.DropDownStyle != ComboBoxStyle.DropDownList) return; //non-typable combobox
             }
 
-
-            var k = e.KeyCode;
-            if (k == keyBindings.MoveForward) kbmovefwd = false;
-            if (k == keyBindings.MoveBackward) kbmovebck = false;
-            if (k == keyBindings.MoveLeft) kbmovelft = false;
-            if (k == keyBindings.MoveRight) kbmovergt = false;
-            if (k == keyBindings.MoveUp) kbmoveup = false;
-            if (k == keyBindings.MoveDown) kbmovedn = false;
-            if (k == keyBindings.Jump) kbjump = false;
-
-
             //if (ControlMode != WorldControlMode.Free)
             //{
             //    e.Handled = true;
@@ -2458,30 +1246,16 @@ namespace CodeWalker.Forms
         private void ModelForm_Deactivate(object sender, EventArgs e)
         {
             //try not to lock keyboard movement if the form loses focus.
-            kbmovefwd = false;
-            kbmovebck = false;
-            kbmovelft = false;
-            kbmovergt = false;
-            kbmoveup = false;
-            kbmovedn = false;
-            kbjump = false;
+            Input.KeyboardStop();
         }
 
         private void StatsUpdateTimer_Tick(object sender, EventArgs e)
         {
-            int rgc = (shaders != null) ? shaders.RenderedGeometries : 0;
-            int crc = renderableCache.LoadedRenderableCount;
-            int ctc = renderableCache.LoadedTextureCount;
-            int tcrc = renderableCache.MemCachedRenderableCount;
-            int tctc = renderableCache.MemCachedTextureCount;
-            long vr = renderableCache.TotalGraphicsMemoryUse + (shaders != null ? shaders.TotalGraphicsMemoryUse : 0);
-            string vram = TextUtil.GetBytesReadable(vr);
-            //StatsLabel.Text = string.Format("Drawn: {0} geom, Loaded: {1}/{5} dr, {2}/{6} tx, Vram: {3}, Fps: {4}", rgc, crc, ctc, vram, fps, tcrc, tctc);
-            StatsLabel.Text = string.Format("Drawn: {0} geom, Loaded: {1} dr, {2} tx, Vram: {3}, Fps: {4}", rgc, crc, ctc, vram, fps);
+            StatsLabel.Text = Renderer.GetStatusText();
 
-            if (timerunning)
+            if (Renderer.timerunning)
             {
-                float fv = timeofday * 60.0f;
+                float fv = Renderer.timeofday * 60.0f;
                 //TimeOfDayTrackBar.Value = (int)fv;
                 UpdateTimeOfDayLabel();
             }
@@ -2549,29 +1323,29 @@ namespace CodeWalker.Forms
 
         private void HDRRenderingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
-                shaders.hdr = HDRRenderingCheckBox.Checked;
+                Renderer.shaders.hdr = HDRRenderingCheckBox.Checked;
             }
         }
 
         private void ShadowsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
-                shaders.shadows = ShadowsCheckBox.Checked;
+                Renderer.shaders.shadows = ShadowsCheckBox.Checked;
             }
         }
 
         private void SkydomeCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            renderskydome = SkydomeCheckBox.Checked;
-            //controllightdir = !renderskydome;
+            Renderer.renderskydome = SkydomeCheckBox.Checked;
+            //Renderer.controllightdir = !Renderer.renderskydome;
         }
 
         private void ControlLightDirCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            controllightdir = ControlLightDirCheckBox.Checked;
+            Renderer.controllightdir = ControlLightDirCheckBox.Checked;
         }
 
         private void TimeOfDayTrackBar_Scroll(object sender, EventArgs e)
@@ -2579,26 +1353,27 @@ namespace CodeWalker.Forms
             int v = TimeOfDayTrackBar.Value;
             float fh = v / 60.0f;
             UpdateTimeOfDayLabel();
-            lock (rendersyncroot)
+            lock (Renderer.RenderSyncRoot)
             {
-                timeofday = fh;
-                timecycle.SetTime(timeofday);
+                Renderer.timeofday = fh;
+                timecycle.SetTime(Renderer.timeofday);
             }
         }
 
-        private void ShowBoundsCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void ShowCollisionMeshesCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            rendercollisionmeshes = ShowBoundsCheckBox.Checked;
+            Renderer.rendercollisionmeshes = ShowCollisionMeshesCheckBox.Checked;
+            Renderer.rendercollisionmeshlayerdrawable = ShowCollisionMeshesCheckBox.Checked;
         }
 
         private void WireframeCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            shaders.wireframe = WireframeCheckBox.Checked;
+            Renderer.shaders.wireframe = WireframeCheckBox.Checked;
         }
 
         private void AnisotropicFilteringCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
+            Renderer.shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
         }
 
         private void RenderModeComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -2609,42 +1384,42 @@ namespace CodeWalker.Forms
             {
                 default:
                 case "Default":
-                    shaders.RenderMode = WorldRenderMode.Default;
+                    Renderer.shaders.RenderMode = WorldRenderMode.Default;
                     break;
                 case "Single texture":
-                    shaders.RenderMode = WorldRenderMode.SingleTexture;
+                    Renderer.shaders.RenderMode = WorldRenderMode.SingleTexture;
                     TextureSamplerComboBox.Enabled = true;
                     TextureCoordsComboBox.Enabled = true;
                     break;
                 case "Vertex normals":
-                    shaders.RenderMode = WorldRenderMode.VertexNormals;
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexNormals;
                     break;
                 case "Vertex tangents":
-                    shaders.RenderMode = WorldRenderMode.VertexTangents;
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexTangents;
                     break;
                 case "Vertex colour 1":
-                    shaders.RenderMode = WorldRenderMode.VertexColour;
-                    shaders.RenderVertexColourIndex = 1;
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.shaders.RenderVertexColourIndex = 1;
                     break;
                 case "Vertex colour 2":
-                    shaders.RenderMode = WorldRenderMode.VertexColour;
-                    shaders.RenderVertexColourIndex = 2;
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.shaders.RenderVertexColourIndex = 2;
                     break;
                 case "Vertex colour 3":
-                    shaders.RenderMode = WorldRenderMode.VertexColour;
-                    shaders.RenderVertexColourIndex = 3;
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.shaders.RenderVertexColourIndex = 3;
                     break;
                 case "Texture coord 1":
-                    shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    shaders.RenderTextureCoordIndex = 1;
+                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.shaders.RenderTextureCoordIndex = 1;
                     break;
                 case "Texture coord 2":
-                    shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    shaders.RenderTextureCoordIndex = 2;
+                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.shaders.RenderTextureCoordIndex = 2;
                     break;
                 case "Texture coord 3":
-                    shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    shaders.RenderTextureCoordIndex = 3;
+                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.shaders.RenderTextureCoordIndex = 3;
                     break;
             }
         }
@@ -2653,7 +1428,7 @@ namespace CodeWalker.Forms
         {
             if (TextureSamplerComboBox.SelectedItem is MetaName)
             {
-                shaders.RenderTextureSampler = (MetaName)TextureSamplerComboBox.SelectedItem;
+                Renderer.shaders.RenderTextureSampler = (MetaName)TextureSamplerComboBox.SelectedItem;
             }
         }
 
@@ -2663,13 +1438,13 @@ namespace CodeWalker.Forms
             {
                 default:
                 case "Texture coord 1":
-                    shaders.RenderTextureSamplerCoord = 1;
+                    Renderer.shaders.RenderTextureSamplerCoord = 1;
                     break;
                 case "Texture coord 2":
-                    shaders.RenderTextureSamplerCoord = 2;
+                    Renderer.shaders.RenderTextureSamplerCoord = 2;
                     break;
                 case "Texture coord 3":
-                    shaders.RenderTextureSamplerCoord = 3;
+                    Renderer.shaders.RenderTextureSamplerCoord = 3;
                     break;
             }
         }
@@ -2703,7 +1478,7 @@ namespace CodeWalker.Forms
 
         private void SkeletonsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            renderskeletons = SkeletonsCheckBox.Checked;
+            Renderer.renderskeletons = SkeletonsCheckBox.Checked;
         }
 
         private void ErrorConsoleCheckBox_CheckedChanged(object sender, EventArgs e)

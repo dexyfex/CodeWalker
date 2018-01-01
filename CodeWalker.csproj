@@ -344,6 +344,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameFiles\Resources\RpfFile.cs" />
     <Compile Include="Rendering\DirectX\DXUtility.cs" />
+    <Compile Include="Rendering\Renderer.cs" />
     <Compile Include="Rendering\Shaders\BasicShader.cs" />
     <Compile Include="Rendering\Shaders\BoundsShader.cs" />
     <Compile Include="Rendering\Shaders\CableShader.cs" />
@@ -392,6 +393,8 @@
     </Compile>
     <Compile Include="Utils\Cache.cs" />
     <Compile Include="Utils\DDSIO.cs" />
+    <Compile Include="Utils\InputUtils.cs" />
+    <Compile Include="Utils\MapUtils.cs" />
     <Compile Include="Utils\Matrices.cs" />
     <Compile Include="Utils\Quaternions.cs" />
     <Compile Include="Utils\TextureLoader.cs" />

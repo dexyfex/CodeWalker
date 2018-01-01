@@ -51,7 +51,7 @@
             this.label19 = new System.Windows.Forms.Label();
             this.TimeOfDayTrackBar = new System.Windows.Forms.TrackBar();
             this.ControlLightDirCheckBox = new System.Windows.Forms.CheckBox();
-            this.ShowBoundsCheckBox = new System.Windows.Forms.CheckBox();
+            this.ShowCollisionMeshesCheckBox = new System.Windows.Forms.CheckBox();
             this.GridCheckBox = new System.Windows.Forms.CheckBox();
             this.GridCountComboBox = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -258,7 +258,7 @@
             this.ToolsOptionsTabPage.Controls.Add(this.label19);
             this.ToolsOptionsTabPage.Controls.Add(this.TimeOfDayTrackBar);
             this.ToolsOptionsTabPage.Controls.Add(this.ControlLightDirCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.ShowBoundsCheckBox);
+            this.ToolsOptionsTabPage.Controls.Add(this.ShowCollisionMeshesCheckBox);
             this.ToolsOptionsTabPage.Controls.Add(this.GridCheckBox);
             this.ToolsOptionsTabPage.Controls.Add(this.GridCountComboBox);
             this.ToolsOptionsTabPage.Controls.Add(this.label2);
@@ -341,16 +341,16 @@
             this.ControlLightDirCheckBox.UseVisualStyleBackColor = true;
             this.ControlLightDirCheckBox.CheckedChanged += new System.EventHandler(this.ControlLightDirCheckBox_CheckedChanged);
             // 
-            // ShowBoundsCheckBox
+            // ShowCollisionMeshesCheckBox
             // 
-            this.ShowBoundsCheckBox.AutoSize = true;
-            this.ShowBoundsCheckBox.Location = new System.Drawing.Point(19, 176);
-            this.ShowBoundsCheckBox.Name = "ShowBoundsCheckBox";
-            this.ShowBoundsCheckBox.Size = new System.Drawing.Size(124, 17);
-            this.ShowBoundsCheckBox.TabIndex = 7;
-            this.ShowBoundsCheckBox.Text = "Show Model Bounds";
-            this.ShowBoundsCheckBox.UseVisualStyleBackColor = true;
-            this.ShowBoundsCheckBox.CheckedChanged += new System.EventHandler(this.ShowBoundsCheckBox_CheckedChanged);
+            this.ShowCollisionMeshesCheckBox.AutoSize = true;
+            this.ShowCollisionMeshesCheckBox.Location = new System.Drawing.Point(19, 176);
+            this.ShowCollisionMeshesCheckBox.Name = "ShowCollisionMeshesCheckBox";
+            this.ShowCollisionMeshesCheckBox.Size = new System.Drawing.Size(132, 17);
+            this.ShowCollisionMeshesCheckBox.TabIndex = 7;
+            this.ShowCollisionMeshesCheckBox.Text = "Show collision meshes";
+            this.ShowCollisionMeshesCheckBox.UseVisualStyleBackColor = true;
+            this.ShowCollisionMeshesCheckBox.CheckedChanged += new System.EventHandler(this.ShowCollisionMeshesCheckBox_CheckedChanged);
             // 
             // GridCheckBox
             // 
@@ -681,7 +681,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox GridSizeComboBox;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.CheckBox ShowBoundsCheckBox;
+        private System.Windows.Forms.CheckBox ShowCollisionMeshesCheckBox;
         private System.Windows.Forms.CheckBox ControlLightDirCheckBox;
         private System.Windows.Forms.Label TimeOfDayLabel;
         private System.Windows.Forms.Label label19;

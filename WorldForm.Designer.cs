@@ -145,6 +145,7 @@ namespace CodeWalker
             this.WaitForChildrenCheckBox = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
             this.tabPage9 = new System.Windows.Forms.TabPage();
+            this.SkeletonsCheckBox = new System.Windows.Forms.CheckBox();
             this.AudioOuterBoundsCheckBox = new System.Windows.Forms.CheckBox();
             this.PopZonesCheckBox = new System.Windows.Forms.CheckBox();
             this.NavMeshesCheckBox = new System.Windows.Forms.CheckBox();
@@ -1746,6 +1747,7 @@ namespace CodeWalker
             // 
             // tabPage9
             // 
+            this.tabPage9.Controls.Add(this.SkeletonsCheckBox);
             this.tabPage9.Controls.Add(this.AudioOuterBoundsCheckBox);
             this.tabPage9.Controls.Add(this.PopZonesCheckBox);
             this.tabPage9.Controls.Add(this.NavMeshesCheckBox);
@@ -1774,15 +1776,26 @@ namespace CodeWalker
             this.tabPage9.Text = "Helpers";
             this.tabPage9.UseVisualStyleBackColor = true;
             // 
+            // SkeletonsCheckBox
+            // 
+            this.SkeletonsCheckBox.AutoSize = true;
+            this.SkeletonsCheckBox.Location = new System.Drawing.Point(10, 411);
+            this.SkeletonsCheckBox.Name = "SkeletonsCheckBox";
+            this.SkeletonsCheckBox.Size = new System.Drawing.Size(101, 17);
+            this.SkeletonsCheckBox.TabIndex = 53;
+            this.SkeletonsCheckBox.Text = "Show skeletons";
+            this.SkeletonsCheckBox.UseVisualStyleBackColor = true;
+            this.SkeletonsCheckBox.CheckedChanged += new System.EventHandler(this.SkeletonsCheckBox_CheckedChanged);
+            // 
             // AudioOuterBoundsCheckBox
             // 
             this.AudioOuterBoundsCheckBox.AutoSize = true;
             this.AudioOuterBoundsCheckBox.Checked = true;
             this.AudioOuterBoundsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.AudioOuterBoundsCheckBox.Location = new System.Drawing.Point(10, 434);
+            this.AudioOuterBoundsCheckBox.Location = new System.Drawing.Point(10, 457);
             this.AudioOuterBoundsCheckBox.Name = "AudioOuterBoundsCheckBox";
             this.AudioOuterBoundsCheckBox.Size = new System.Drawing.Size(147, 17);
-            this.AudioOuterBoundsCheckBox.TabIndex = 54;
+            this.AudioOuterBoundsCheckBox.TabIndex = 55;
             this.AudioOuterBoundsCheckBox.Text = "Show audio outer bounds";
             this.AudioOuterBoundsCheckBox.UseVisualStyleBackColor = true;
             this.AudioOuterBoundsCheckBox.CheckedChanged += new System.EventHandler(this.AudioOuterBoundsCheckBox_CheckedChanged);
@@ -1823,10 +1836,10 @@ namespace CodeWalker
             // PathsDepthClipCheckBox
             // 
             this.PathsDepthClipCheckBox.AutoSize = true;
-            this.PathsDepthClipCheckBox.Location = new System.Drawing.Point(10, 411);
+            this.PathsDepthClipCheckBox.Location = new System.Drawing.Point(10, 434);
             this.PathsDepthClipCheckBox.Name = "PathsDepthClipCheckBox";
             this.PathsDepthClipCheckBox.Size = new System.Drawing.Size(102, 17);
-            this.PathsDepthClipCheckBox.TabIndex = 53;
+            this.PathsDepthClipCheckBox.TabIndex = 54;
             this.PathsDepthClipCheckBox.Text = "Paths depth clip";
             this.PathsDepthClipCheckBox.UseVisualStyleBackColor = true;
             this.PathsDepthClipCheckBox.CheckedChanged += new System.EventHandler(this.PathsDepthClipCheckBox_CheckedChanged);
@@ -2489,7 +2502,7 @@ namespace CodeWalker
             this.ToolsMenuExtractShaders,
             this.ToolsMenuOptions});
             this.ToolsMenu.Name = "ToolsMenu";
-            this.ToolsMenu.Size = new System.Drawing.Size(166, 312);
+            this.ToolsMenu.Size = new System.Drawing.Size(166, 290);
             // 
             // ToolsMenuRPFBrowser
             // 
@@ -3475,5 +3488,6 @@ namespace CodeWalker
         private System.Windows.Forms.CheckBox PopZonesCheckBox;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectAudioButton;
         private System.Windows.Forms.CheckBox AudioOuterBoundsCheckBox;
+        private System.Windows.Forms.CheckBox SkeletonsCheckBox;
     }
 }
