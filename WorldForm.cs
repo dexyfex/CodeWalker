@@ -744,6 +744,11 @@ namespace CodeWalker
             collisionitems.Clear();
             space.GetVisibleBounds(camera, collisionmeshrange, collisionmeshlayers, collisionitems);
 
+            if (ProjectForm != null)
+            {
+                ProjectForm.GetVisibleCollisionMeshes(camera, collisionitems);
+            }
+
             foreach (var item in collisionitems)
             {
                 YbnFile ybn = gameFileCache.GetYbn(item.Name);

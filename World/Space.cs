@@ -362,13 +362,14 @@ namespace CodeWalker.World
                         break;
                     case 32:
                         occlnodes.Add(node);
-                        //addtogrid = true;
+                        addtogrid = true;
                         break;
                     case 1088:
                         grassnodes.Add(node);
                         addtogrid = true;
                         break;
                     default:
+                        addtogrid = true;
                         break;
                 }
 

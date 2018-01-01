@@ -5778,6 +5778,15 @@ namespace CodeWalker
 
         }
 
+        public void GetVisibleCollisionMeshes(Camera camera, List<BoundsStoreItem> items)
+        {
+            //eventually will need to change this to use a list of Ybn's...
+            if (hidegtavmap)
+            {
+                items.Clear();
+            }
+        }
+
         public void GetVisibleWaterQuads(Camera camera, List<WaterQuad> quads)
         {
             if (hidegtavmap)
