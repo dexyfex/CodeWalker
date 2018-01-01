@@ -334,10 +334,10 @@ namespace CodeWalker.GameFiles
                     for (int i = 0; i < CMloInstanceDefs.Length; i++)
                     {
                         YmapEntityDef d = new YmapEntityDef(this, i, ref CMloInstanceDefs[i]);
-                        uint[] unkuints = MetaTypes.GetUintArray(Meta, CMloInstanceDefs[i].Unk_1407157833);
+                        uint[] defentsets = MetaTypes.GetUintArray(Meta, CMloInstanceDefs[i].defaultEntitySets);
                         if (d.MloInstance != null)
                         {
-                            d.MloInstance.Unk_1407157833 = unkuints;
+                            d.MloInstance.defaultEntitySets = defentsets;
                         }
                         alldefs.Add(d);
                         mlodefs.Add(d);
@@ -520,22 +520,39 @@ namespace CodeWalker.GameFiles
 
         public void BuildCEntityDefs()
         {
-            //recreates the CEntityDefs array from AllEntities.
+            //recreates the CEntityDefs and CMloInstanceDefs arrays from AllEntities.
+            CEntityDefs = null;
+            CMloInstanceDefs = null;
             if (AllEntities == null)
             {
-                CEntityDefs = null;
                 return;
             }
 
-            int count = AllEntities.Length;
-            CEntityDefs = new CEntityDef[count];
-            for (int i = 0; i < count; i++)
+
+            List<CEntityDef> centdefs = new List<CEntityDef>();
+            List<CMloInstanceDef> cmlodefs = new List<CMloInstanceDef>();
+
+            for (int i = 0; i < AllEntities.Length; i++)
             {
-                CEntityDefs[i] = AllEntities[i].CEntityDef;
+                var ent = AllEntities[i];
+                if (ent.MloInstance != null)
+                {
+                    cmlodefs.Add(ent.MloInstance.Instance);
+                }
+                else
+                {
+                    centdefs.Add(ent.CEntityDef);
+                }
             }
 
-            //TODO: MloInstanceDefs!
-
+            if (centdefs.Count > 0)
+            {
+                CEntityDefs = centdefs.ToArray();
+            }
+            if (cmlodefs.Count > 0)
+            {
+                CMloInstanceDefs = cmlodefs.ToArray();
+            }
         }
         public void BuildCCarGens()
         {
@@ -560,7 +577,7 @@ namespace CodeWalker.GameFiles
 
 
             //since Ymap object contents have been modified, need to recreate the arrays which are what is saved.
-            BuildCEntityDefs();
+            BuildCEntityDefs(); //technically this isn't required anymore since the CEntityDefs is no longer used for saving.
             BuildCCarGens();
 
 
@@ -583,33 +600,34 @@ namespace CodeWalker.GameFiles
             CMapData mapdata = CMapData;
 
 
-            if (CEntityDefs != null)
+
+            if ((AllEntities != null) && (AllEntities.Length > 0))
             {
-                for (int i = 0; i < CEntityDefs.Length; i++)
+                for (int i = 0; i < AllEntities.Length; i++)
                 {
-                    var yent = AllEntities[i]; //save the extensions..
-                    CEntityDefs[i].extensions = mb.AddWrapperArrayPtr(yent.Extensions);
+                    var ent = AllEntities[i]; //save the extensions first..
+                    ent._CEntityDef.extensions = mb.AddWrapperArrayPtr(ent.Extensions);
                 }
+
+                MetaPOINTER[] ptrs = new MetaPOINTER[AllEntities.Length];
+                for (int i = 0; i < AllEntities.Length; i++)
+                {
+                    var ent = AllEntities[i];
+                    if (ent.MloInstance != null)
+                    {
+                        ptrs[i] = mb.AddItemPtr(MetaName.CMloInstanceDef, ent.MloInstance.Instance);
+                    }
+                    else
+                    {
+                        ptrs[i] = mb.AddItemPtr(MetaName.CEntityDef, ent.CEntityDef);
+                    }
+                }
+                mapdata.entities = mb.AddPointerArray(ptrs);
             }
-
-
-            MetaPOINTER[] ptrs = new MetaPOINTER[AllEntities.Length];
-
-            for (int i = 0; i < AllEntities.Length; i++)
+            else
             {
-                if (AllEntities[i].MloInstance != null)
-                {
-                    ptrs[i] = mb.AddItemPtr(MetaName.CMloInstanceDef, AllEntities[i].MloInstance.Instance);
-                }
-                else
-                {
-                    ptrs[i] = mb.AddItemPtr(MetaName.CEntityDef, AllEntities[i].CEntityDef);
-                }
+                mapdata.entities = new Array_StructurePointer();
             }
-
-            mapdata.entities = mb.AddPointerArray(ptrs);
-
-            //mapdata.entities = mb.AddItemPointerArrayPtr(MetaName.CEntityDef, CEntityDefs);
 
             mapdata.timeCycleModifiers = mb.AddItemArrayPtr(MetaName.CTimeCycleModifier, CTimeCycleModifiers);
 
@@ -1262,6 +1280,7 @@ namespace CodeWalker.GameFiles
 
             if (MloInstance != null)
             {
+                MloInstance.SetPosition(Position);
                 MloInstance.UpdateEntities();
             }
 
@@ -1269,9 +1288,15 @@ namespace CodeWalker.GameFiles
 
         public void SetOrientation(Quaternion ori)
         {
+            Quaternion inv = Quaternion.Normalize(Quaternion.Invert(ori));
             Orientation = ori;
-            Quaternion qinv = Quaternion.Normalize(Quaternion.Invert(ori));
-            _CEntityDef.rotation = new Vector4(qinv.X, qinv.Y, qinv.Z, qinv.W);
+            _CEntityDef.rotation = new Vector4(inv.X, inv.Y, inv.Z, inv.W);
+
+            if (MloInstance != null)
+            {
+                MloInstance.SetOrientation(ori);
+            }
+
 
             if (Archetype != null)
             {
@@ -1283,8 +1308,15 @@ namespace CodeWalker.GameFiles
         }
         public void SetOrientationInv(Quaternion inv)
         {
+            Quaternion ori = Quaternion.Normalize(Quaternion.Invert(inv));
+            Orientation = ori;
             _CEntityDef.rotation = new Vector4(inv.X, inv.Y, inv.Z, inv.W);
-            Orientation = Quaternion.Normalize(Quaternion.Invert(inv));
+
+            if (MloInstance != null)
+            {
+                MloInstance.SetOrientation(ori);
+            }
+
 
             if (Archetype != null)
             {

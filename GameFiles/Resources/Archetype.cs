@@ -153,7 +153,7 @@ namespace CodeWalker.GameFiles
         public YmapEntityDef Owner { get; set; }
         public CMloInstanceDef _Instance;
         public CMloInstanceDef Instance { get { return _Instance; } set { _Instance = value; } }
-        public uint[] Unk_1407157833 { get; set; }
+        public uint[] defaultEntitySets { get; set; }
 
         public YmapEntityDef[] Entities { get; set; }
 
@@ -180,6 +180,20 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public void SetPosition(Vector3 pos)
+        {
+            var cent = _Instance.CEntityDef;
+            cent.position = pos;
+            _Instance.CEntityDef = cent; //TODO: maybe find a better way of doing this...
+        }
+
+        public void SetOrientation(Quaternion ori)
+        {
+            var cent = _Instance.CEntityDef;
+            cent.rotation = new Vector4(ori.X, ori.Y, ori.Z, ori.W); //mlo instances have oppposite orientations to normal entities...
+            _Instance.CEntityDef = cent; //TODO: maybe find a better way of doing this...
+        }
+
         public void UpdateEntities()
         {
             if (Entities == null) return;
@@ -195,6 +209,7 @@ namespace CodeWalker.GameFiles
             }
 
         }
+
 
 
     }

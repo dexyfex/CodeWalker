@@ -350,8 +350,7 @@ namespace CodeWalker.GameFiles
                     new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                     new MetaStructureEntryInfo_s(MetaName.tintValue, 120, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
                     );
-                case MetaName.CMloInstanceDef
-                :
+                case MetaName.CMloInstanceDef:
                     return new MetaStructureInfo(MetaName.CMloInstanceDef, 2151576752, 1024, 160,
                     new MetaStructureEntryInfo_s(MetaName.archetypeName, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
@@ -2045,9 +2044,9 @@ namespace CodeWalker.GameFiles
         public CEntityDef CEntityDef { get; set; }
         public uint groupId { get; set; } //128   128: UnsignedInt: 0: 2501631252
         public uint floorId { get; set; } //132   132: UnsignedInt: 0: floorId//2187650609
-        public Array_uint Unk_1407157833 { get; set; } //136   136: Array: 0: 1407157833  {0: Hash: 0: 256}
-        public uint Unk_528711607 { get; set; } //152   152: UnsignedInt: 0: 528711607
-        public uint Unk_3761966250 { get; set; } //156   156: UnsignedInt: 0: 3761966250
+        public Array_uint defaultEntitySets { get; set; } //136   136: Array: 0: defaultEntitySets//1407157833  {0: Hash: 0: 256}
+        public uint numExitPortals { get; set; } //152   152: UnsignedInt: 0: numExitPortals//528711607
+        public uint MLOInstflags { get; set; } //156   156: UnsignedInt: 0: MLOInstflags//3761966250
     }
 
     [TC(typeof(EXP))] public struct CMloRoomDef //112 bytes, Key:3885428245
