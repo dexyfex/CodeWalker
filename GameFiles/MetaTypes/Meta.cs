@@ -806,6 +806,23 @@ namespace CodeWalker.GameFiles
         public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
         public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
 
+        public Array_Vector3(uint ptr, int cnt)
+        {
+            Pointer = ptr;
+            Unk0 = 0;
+            Count1 = (ushort)cnt;
+            Count2 = Count1;
+            Unk1 = 0;
+        }
+        public Array_Vector3(MetaBuilderPointer ptr)
+        {
+            Pointer = ptr.Pointer;
+            Unk0 = 0;
+            Count1 = (ushort)ptr.Length;
+            Count2 = Count1;
+            Unk1 = 0;
+        }
+
         public void SwapEnd()
         {
             Pointer = MetaTypes.SwapBytes(Pointer);

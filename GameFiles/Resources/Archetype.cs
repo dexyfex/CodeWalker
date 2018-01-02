@@ -131,10 +131,10 @@ namespace CodeWalker.GameFiles
         public CMloArchetypeDefData _MloArchetypeDef;
         public CMloArchetypeDefData MloArchetypeDef { get { return _MloArchetypeDef; } set { _MloArchetypeDef = value; } }
 
-        public CEntityDef[] entities { get; set; }
-        public CMloRoomDef[] rooms { get; set; }
-        public CMloPortalDef[] portals { get; set; }
-        public CMloEntitySet[] entitySets { get; set; }
+        public MCEntityDef[] entities { get; set; }
+        public MCMloRoomDef[] rooms { get; set; }
+        public MCMloPortalDef[] portals { get; set; }
+        public MCMloEntitySet[] entitySets { get; set; }
         public CMloTimeCycleModifier[] timeCycleModifiers { get; set; }
 
         public void Init(YtypFile ytyp, ref CMloArchetypeDef arch)
@@ -143,6 +143,54 @@ namespace CodeWalker.GameFiles
             InitVars(ref arch._BaseArchetypeDef);
             MloArchetypeDef = arch.MloArchetypeDef;
         }
+
+        public void LoadChildren(Meta meta)
+        {
+            var centities = MetaTypes.ConvertDataArray<CEntityDef>(meta, MetaName.CEntityDef, _MloArchetypeDef.entities);
+            if (centities != null)
+            {
+                entities = new MCEntityDef[centities.Length];
+                for (int i = 0; i < centities.Length; i++)
+                {
+                    entities[i] = new MCEntityDef(meta, centities[i]);
+                }
+            }
+
+            var crooms = MetaTypes.ConvertDataArray<CMloRoomDef>(meta, MetaName.CMloRoomDef, _MloArchetypeDef.rooms);
+            if (crooms != null)
+            {
+                rooms = new MCMloRoomDef[crooms.Length];
+                for (int i = 0; i < crooms.Length; i++)
+                {
+                    rooms[i] = new MCMloRoomDef(meta, crooms[i]);
+                }
+            }
+
+            var cportals = MetaTypes.ConvertDataArray<CMloPortalDef>(meta, MetaName.CMloPortalDef, _MloArchetypeDef.portals);
+            if (cportals != null)
+            {
+                portals = new MCMloPortalDef[cportals.Length];
+                for (int i = 0; i < cportals.Length; i++)
+                {
+                    portals[i] = new MCMloPortalDef(meta, cportals[i]);
+                }
+            }
+
+            var centitySets = MetaTypes.ConvertDataArray<CMloEntitySet>(meta, MetaName.CMloEntitySet, _MloArchetypeDef.entitySets);
+            if (centitySets != null)
+            {
+                entitySets = new MCMloEntitySet[centitySets.Length];
+                for (int i = 0; i < centitySets.Length; i++)
+                {
+                    entitySets[i] = new MCMloEntitySet(meta, centitySets[i]);
+                }
+            }
+
+
+            timeCycleModifiers = MetaTypes.ConvertDataArray<CMloTimeCycleModifier>(meta, MetaName.CMloTimeCycleModifier, _MloArchetypeDef.timeCycleModifiers);
+
+        }
+
     }
 
 
@@ -167,7 +215,9 @@ namespace CodeWalker.GameFiles
             Entities = new YmapEntityDef[ec];
             for (int i = 0; i < ec; i++)
             {
-                YmapEntityDef e = new YmapEntityDef(null, i, ref mloa.entities[i]);
+                MCEntityDef ment = mloa.entities[i];
+                YmapEntityDef e = new YmapEntityDef(null, i, ref ment._Data);
+                e.Extensions = ment.Extensions;
                 e.MloRefPosition = e.Position;
                 e.MloRefOrientation = e.Orientation;
                 e.MloParent = owner;
@@ -177,6 +227,16 @@ namespace CodeWalker.GameFiles
                 e.UpdateWidgetOrientation();
                 Entities[i] = e;
             }
+
+            var entitySets = mloa.entitySets;
+            if (entitySets != null)
+            {
+                //for (int i = 0; i < entitySets.Length; i++)
+                //{
+                //    var entitySet = entitySets[i];
+                //}
+            }
+
         }
 
 

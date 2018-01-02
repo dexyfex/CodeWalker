@@ -1028,6 +1028,10 @@ namespace CodeWalker.GameFiles
         {
             return ConvertDataArray<MetaHash>(meta, MetaName.HASH, array.Pointer, array.Count1);
         }
+        public static Vector4[] GetPaddedVector3Array(Meta meta, Array_Vector3 array)
+        {
+            return ConvertDataArray<Vector4>(meta, MetaName.VECTOR4, array.Pointer, array.Count1);
+        }
         public static uint[] GetUintArray(Meta meta, Array_uint array)
         {
             return ConvertDataArray<uint>(meta, MetaName.UINT, array.Pointer, array.Count1);
@@ -1715,73 +1719,264 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct CCompositeEntityType //304 bytes, Key:659539004 dex: composite entity type - ytyp // Tom: des_ destruction
+    [TC(typeof(EXP))] public struct CMloInstanceDef //160 bytes, Key:2151576752
     {
-        public ArrayOfChars64 Name { get; set; } //0   0: ArrayOfChars: 64: Name
-        public float lodDist { get; set; } //64   64: Float: 0: lodDist
-        public uint flags { get; set; } //68   68: UnsignedInt: 0: flags
-        public uint specialAttribute { get; set; } //72   72: UnsignedInt: 0: specialAttribute
-        public uint Unused0 { get; set; }//76
-        public Vector3 bbMin { get; set; } //80   80: Float_XYZ: 0: bbMin
-        public float Unused1 { get; set; }//92
-        public Vector3 bbMax { get; set; } //96   96: Float_XYZ: 0: bbMax
-        public float Unused2 { get; set; }//108
-        public Vector3 bsCentre { get; set; } //112   112: Float_XYZ: 0: bsCentre
-        public float Unused3 { get; set; }//124
-        public float bsRadius { get; set; } //128   128: Float: 0: bsRadius
-        public uint Unused4 { get; set; }//132
-        public ArrayOfChars64 StartModel { get; set; } //136   136: ArrayOfChars: 64: StartModel
-        public ArrayOfChars64 EndModel { get; set; } //200   200: ArrayOfChars: 64: EndModel
-        public MetaHash StartImapFile { get; set; } //264   264: Hash: 0: StartImapFile//2462971690
-        public MetaHash EndImapFile { get; set; } //268   268: Hash: 0: EndImapFile//2059586669
-        public MetaHash PtFxAssetName { get; set; } //272   272: Hash: 0: PtFxAssetName//2497993358
-        public uint Unused5 { get; set; }//276
-        public Array_Structure Animations { get; set; } //280   280: Array: 0: Animations  {0: Structure: 1980345114: 256}
-        public uint Unused6 { get; set; }//296
-        public uint Unused7 { get; set; }//300
+        public CEntityDef CEntityDef { get; set; }
+        public uint groupId { get; set; } //128   128: UnsignedInt: 0: 2501631252
+        public uint floorId { get; set; } //132   132: UnsignedInt: 0: floorId//2187650609
+        public Array_uint defaultEntitySets { get; set; } //136   136: Array: 0: defaultEntitySets//1407157833  {0: Hash: 0: 256}
+        public uint numExitPortals { get; set; } //152   152: UnsignedInt: 0: numExitPortals//528711607
+        public uint MLOInstflags { get; set; } //156   156: UnsignedInt: 0: MLOInstflags//3761966250
+    }
+
+    [TC(typeof(EXP))] public struct CMloRoomDef //112 bytes, Key:3885428245
+    {
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public CharPointer name { get; set; } //8   8: CharPointer: 0: name
+        public uint Unused2 { get; set; }//24
+        public uint Unused3 { get; set; }//28
+        public Vector3 bbMin { get; set; } //32   32: Float_XYZ: 0: bbMin
+        public float Unused4 { get; set; }//44
+        public Vector3 bbMax { get; set; } //48   48: Float_XYZ: 0: bbMax
+        public float Unused5 { get; set; }//60
+        public float blend { get; set; } //64   64: Float: 0: blend
+        public MetaHash timecycleName { get; set; } //68   68: Hash: 0: timecycleName//2724323497
+        public MetaHash secondaryTimecycleName { get; set; } //72   72: Hash: 0: secondaryTimecycleName//3255324828
+        public uint flags { get; set; } //76   76: UnsignedInt: 0: flags
+        public uint portalCount { get; set; } //80   80: UnsignedInt: 0: portalCount//1105339827
+        public int floorId { get; set; } //84   84: SignedInt: 0: floorId//2187650609
+        public int Unk_552849982 { get; set; } //88   88: SignedInt: 0: exteriorVisibiltyDepth//552849982
+        public uint Unused6 { get; set; }//92
+        public Array_uint attachedObjects { get; set; } //96   96: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
+    }
+    [TC(typeof(EXP))] public class MCMloRoomDef : MetaWrapper
+    {
+        public CMloRoomDef _Data;
+        public CMloRoomDef Data { get { return _Data; } }
+        public string RoomName { get; set; }
+        public uint[] AttachedObjects { get; set; }
+
+        public MCMloRoomDef() { }
+        public MCMloRoomDef(Meta meta, CMloRoomDef data)
+        {
+            _Data = data;
+            RoomName = MetaTypes.GetString(meta, _Data.name);
+            AttachedObjects = MetaTypes.GetUintArray(meta, _Data.attachedObjects);
+        }
+
+        public override void Load(Meta meta, MetaPOINTER ptr)
+        {
+            _Data = MetaTypes.GetData<CMloRoomDef>(meta, ptr);
+            RoomName = MetaTypes.GetString(meta, _Data.name);
+            AttachedObjects = MetaTypes.GetUintArray(meta, _Data.attachedObjects);
+        }
+
+        public override MetaPOINTER Save(MetaBuilder mb)
+        {
+            if (!string.IsNullOrEmpty(RoomName))
+            {
+                _Data.name = mb.AddStringPtr(RoomName);
+            }
+            else
+            {
+                _Data.name = new CharPointer();
+            }
+
+            if (AttachedObjects != null)
+            {
+                _Data.attachedObjects = mb.AddUintArrayPtr(AttachedObjects);
+            }
+            else
+            {
+                _Data.attachedObjects = new Array_uint();
+            }
+
+            mb.AddStructureInfo(MetaName.CMloRoomDef);
+            return mb.AddItemPtr(MetaName.CMloRoomDef, _Data);
+        }
+
+        public override string Name
+        {
+            get
+            {
+                return RoomName;
+            }
+        }
 
         public override string ToString()
         {
-            return Name.ToString() + ", " + StartModel.ToString() + ", " + EndModel.ToString() + ", " + 
-                    StartImapFile.ToString() + ", " + EndImapFile.ToString() + ", " + PtFxAssetName.ToString();
+            return RoomName;
         }
     }
 
-    [TC(typeof(EXP))] public struct Unk_1980345114 //216 bytes, Key:4110496011 //destruction animations?
+    [TC(typeof(EXP))] public struct CMloPortalDef //64 bytes, Key:1110221513
     {
-        public ArrayOfChars64 AnimDict { get; set; } //0   0: ArrayOfChars: 64: AnimDict
-        public ArrayOfChars64 AnimName { get; set; } //64   64: ArrayOfChars: 64: AnimName
-        public ArrayOfChars64 AnimatedModel { get; set; } //128   128: ArrayOfChars: 64: AnimatedModel
-        public float punchInPhase { get; set; } //192   192: Float: 0: punchInPhase//3142377407
-        public float punchOutPhase { get; set; } //196   196: Float: 0: punchOutPhase//2164219370
-        public Array_Structure effectsData { get; set; } //200   200: Array: 0: effectsData  {0: Structure: 3430328684: 256}
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public uint roomFrom { get; set; } //8   8: UnsignedInt: 0: 4101034749
+        public uint roomTo { get; set; } //12   12: UnsignedInt: 0: 2607060513
+        public uint flags { get; set; } //16   16: UnsignedInt: 0: flags
+        public uint mirrorPriority { get; set; } //20   20: UnsignedInt: 0: 1185490713
+        public uint opacity { get; set; } //24   24: UnsignedInt: 0: opacity
+        public uint audioOcclusion { get; set; } //28   28: UnsignedInt: 0: 1093790004
+        public Array_Vector3 corners { get; set; } //32   32: Array: 0: corners  {0: Float_XYZ: 0: 256}
+        public Array_uint attachedObjects { get; set; } //48   48: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
+    }
+    [TC(typeof(EXP))] public class MCMloPortalDef : MetaWrapper
+    {
+        public CMloPortalDef _Data;
+        public CMloPortalDef Data { get { return _Data; } }
+        public Vector4[] Corners { get; set; }
+        public uint[] AttachedObjects { get; set; }
+
+        public MCMloPortalDef() { }
+        public MCMloPortalDef(Meta meta, CMloPortalDef data)
+        {
+            _Data = data;
+            Corners = MetaTypes.GetPaddedVector3Array(meta, _Data.corners);
+            AttachedObjects = MetaTypes.GetUintArray(meta, _Data.attachedObjects);
+        }
+
+        public override void Load(Meta meta, MetaPOINTER ptr)
+        {
+            _Data = MetaTypes.GetData<CMloPortalDef>(meta, ptr);
+            Corners = MetaTypes.GetPaddedVector3Array(meta, _Data.corners);
+            AttachedObjects = MetaTypes.GetUintArray(meta, _Data.attachedObjects);
+        }
+
+        public override MetaPOINTER Save(MetaBuilder mb)
+        {
+            if (Corners!=null)
+            {
+                _Data.corners = mb.AddPaddedVector3ArrayPtr(Corners);
+            }
+            else
+            {
+                _Data.corners = new Array_Vector3();
+            }
+
+            if (AttachedObjects != null)
+            {
+                _Data.attachedObjects = mb.AddUintArrayPtr(AttachedObjects);
+            }
+            else
+            {
+                _Data.attachedObjects = new Array_uint();
+            }
+
+            mb.AddStructureInfo(MetaName.CMloPortalDef);
+            return mb.AddItemPtr(MetaName.CMloPortalDef, _Data);
+        }
+
+        public override string Name
+        {
+            get
+            {
+                return _Data.roomFrom.ToString() + " to " + _Data.roomTo.ToString();
+            }
+        }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 
-    [TC(typeof(EXP))] public struct Unk_3430328684 //160 bytes, Key:1724963966 //destruction animation effects data
+    [TC(typeof(EXP))] public struct CMloEntitySet //48 bytes, Key:4180211587
     {
-        public uint fxType { get; set; } //0   0: UnsignedInt: 0: fxType
-        public uint Unused0 { get; set; }//4
-        public uint Unused1 { get; set; }//8
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public MetaHash name { get; set; } //8   8: Hash: 0: name
         public uint Unused2 { get; set; }//12
-        public Vector3 fxOffsetPos { get; set; } //16   16: Float_XYZ: 0: fxOffsetPos
-        public float Unused3 { get; set; }//28
-        public Vector4 fxOffsetRot { get; set; } //32   32: Float_XYZW: 0: fxOffsetRot
-        public uint boneTag { get; set; } //48   48: UnsignedInt: 0: boneTag
-        public float startPhase { get; set; } //52   52: Float: 0: startPhase
-        public float endPhase { get; set; } //56   56: Float: 0: endPhase
-        public byte ptFxIsTriggered { get; set; } //60   60: Boolean: 0: ptFxIsTriggered
-        public ArrayOfChars64 ptFxTag { get; set; } //61   61: ArrayOfChars: 64: ptFxTag
-        public byte Unused4 { get; set; }//125
-        public ushort Unused5 { get; set; }//126
-        public float ptFxScale { get; set; } //128   128: Float: 0: ptFxScale
-        public float ptFxProbability { get; set; } //132   132: Float: 0: ptFxProbability
-        public byte ptFxHasTint { get; set; } //136   136: Boolean: 0: ptFxHasTint
-        public byte ptFxTintR { get; set; } //137   137: UnsignedByte: 0: ptFxTintR
-        public byte ptFxTintG { get; set; } //138   138: UnsignedByte: 0: ptFxTintG
-        public byte ptFxTintB { get; set; } //139   139: UnsignedByte: 0: ptFxTintB
-        public uint Unused6 { get; set; }//140
-        public Vector3 ptFxSize { get; set; } //144   144: Float_XYZ: 0: ptFxSize
-        public uint Unused7 { get; set; }//156
+        public Array_uint locations { get; set; } //16   16: Array: 0: locations  {0: UnsignedInt: 0: 256}
+        public Array_StructurePointer entities { get; set; } //32   32: Array: 0: entities  {0: StructurePointer: 0: 256}
+    }
+    [TC(typeof(EXP))] public class MCMloEntitySet : MetaWrapper
+    {
+        public CMloEntitySet _Data;
+        public CMloEntitySet Data { get { return _Data; } }
+        public uint[] Locations { get; set; }
+        public MCEntityDef[] Entities { get; set; }
+
+        public MCMloEntitySet() { }
+        public MCMloEntitySet(Meta meta, CMloEntitySet data)
+        {
+            _Data = data;
+            Load(meta);
+        }
+
+        public override void Load(Meta meta, MetaPOINTER ptr)
+        {
+            _Data = MetaTypes.GetData<CMloEntitySet>(meta, ptr);
+            Load(meta);
+        }
+
+        private void Load(Meta meta)
+        {
+            Locations = MetaTypes.GetUintArray(meta, _Data.locations);
+
+            var ents = MetaTypes.ConvertDataArray<CEntityDef>(meta, MetaName.CEntityDef, _Data.entities);
+            if (ents != null)
+            {
+                Entities = new MCEntityDef[ents.Length];
+                for (int i = 0; i < ents.Length; i++)
+                {
+                    Entities[i] = new MCEntityDef(meta, ents[i]);
+                }
+            }
+        }
+
+
+        public override MetaPOINTER Save(MetaBuilder mb)
+        {
+            if (Locations != null)
+            {
+                _Data.locations = mb.AddUintArrayPtr(Locations);
+            }
+            else
+            {
+                _Data.locations = new Array_uint();
+            }
+
+            if (Entities!=null)
+            {
+                _Data.entities = mb.AddWrapperArrayPtr(Entities);
+            }
+            else
+            {
+                _Data.entities = new Array_StructurePointer();
+            }
+
+            mb.AddStructureInfo(MetaName.CMloEntitySet);
+            return mb.AddItemPtr(MetaName.CMloEntitySet, _Data);
+        }
+
+        public override string Name
+        {
+            get
+            {
+                return _Data.name.ToString();
+            }
+        }
+
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+
+    [TC(typeof(EXP))] public struct CMloTimeCycleModifier //48 bytes, Key:838874674
+    {
+        public uint Unused0 { get; set; }//0
+        public uint Unused1 { get; set; }//4
+        public MetaHash name { get; set; } //8   8: Hash: 0: name
+        public uint Unused2 { get; set; }//12
+        public Vector4 sphere { get; set; } //16   16: Float_XYZW: 0: sphere
+        public float percentage { get; set; } //32   32: Float: 0: percentage
+        public float range { get; set; } //36   36: Float: 0: range
+        public uint startHour { get; set; } //40   40: UnsignedInt: 0: startHour
+        public uint endHour { get; set; } //44   44: UnsignedInt: 0: vlink87812
     }
 
 
@@ -1862,6 +2057,61 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             return JenkIndex.GetString(archetypeName) + ": " + JenkIndex.GetString(guid) + ": " + position.ToString();
+        }
+    }
+    [TC(typeof(EXP))] public class MCEntityDef : MetaWrapper
+    {
+        public CEntityDef _Data;
+        public CEntityDef Data { get { return _Data; } }
+        public MetaWrapper[] Extensions { get; set; }
+
+
+        public MCEntityDef() { }
+        public MCEntityDef(MCEntityDef copy)
+        {
+            if (copy != null)
+            {
+                _Data = copy.Data;
+            }
+        }
+        public MCEntityDef(Meta meta, CEntityDef d)
+        {
+            _Data = d;
+            Extensions = MetaTypes.GetExtensions(meta, _Data.extensions);
+        }
+
+        public override void Load(Meta meta, MetaPOINTER ptr)
+        {
+            _Data = MetaTypes.GetData<CEntityDef>(meta, ptr);
+            Extensions = MetaTypes.GetExtensions(meta, _Data.extensions);
+        }
+
+        public override MetaPOINTER Save(MetaBuilder mb)
+        {
+            if (Extensions != null)
+            {
+                _Data.extensions = mb.AddWrapperArrayPtr(Extensions);
+            }
+            else
+            {
+                _Data.extensions = new Array_StructurePointer();
+            }
+
+            mb.AddStructureInfo(MetaName.CEntityDef);
+            return mb.AddItemPtr(MetaName.CEntityDef, _Data);
+        }
+
+        public override string Name
+        {
+            get
+            {
+                return _Data.archetypeName.ToString();
+            }
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 
@@ -2038,75 +2288,6 @@ namespace CodeWalker.GameFiles
     }
 
 
-
-    [TC(typeof(EXP))] public struct CMloInstanceDef //160 bytes, Key:2151576752
-    {
-        public CEntityDef CEntityDef { get; set; }
-        public uint groupId { get; set; } //128   128: UnsignedInt: 0: 2501631252
-        public uint floorId { get; set; } //132   132: UnsignedInt: 0: floorId//2187650609
-        public Array_uint defaultEntitySets { get; set; } //136   136: Array: 0: defaultEntitySets//1407157833  {0: Hash: 0: 256}
-        public uint numExitPortals { get; set; } //152   152: UnsignedInt: 0: numExitPortals//528711607
-        public uint MLOInstflags { get; set; } //156   156: UnsignedInt: 0: MLOInstflags//3761966250
-    }
-
-    [TC(typeof(EXP))] public struct CMloRoomDef //112 bytes, Key:3885428245
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public CharPointer name { get; set; } //8   8: CharPointer: 0: name
-        public uint Unused2 { get; set; }//24
-        public uint Unused3 { get; set; }//28
-        public Vector3 bbMin { get; set; } //32   32: Float_XYZ: 0: bbMin
-        public float Unused4 { get; set; }//44
-        public Vector3 bbMax { get; set; } //48   48: Float_XYZ: 0: bbMax
-        public float Unused5 { get; set; }//60
-        public float blend { get; set; } //64   64: Float: 0: blend
-        public MetaHash timecycleName { get; set; } //68   68: Hash: 0: timecycleName//2724323497
-        public MetaHash secondaryTimecycleName { get; set; } //72   72: Hash: 0: secondaryTimecycleName//3255324828
-        public uint flags { get; set; } //76   76: UnsignedInt: 0: flags
-        public uint portalCount { get; set; } //80   80: UnsignedInt: 0: portalCount//1105339827
-        public int floorId { get; set; } //84   84: SignedInt: 0: floorId//2187650609
-        public int Unk_552849982 { get; set; } //88   88: SignedInt: 0: exteriorVisibiltyDepth//552849982
-        public uint Unused6 { get; set; }//92
-        public Array_uint attachedObjects { get; set; } //96   96: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
-    }
-
-    [TC(typeof(EXP))] public struct CMloPortalDef //64 bytes, Key:1110221513
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public uint roomFrom { get; set; } //8   8: UnsignedInt: 0: 4101034749
-        public uint roomTo { get; set; } //12   12: UnsignedInt: 0: 2607060513
-        public uint flags { get; set; } //16   16: UnsignedInt: 0: flags
-        public uint mirrorPriority { get; set; } //20   20: UnsignedInt: 0: 1185490713
-        public uint opacity { get; set; } //24   24: UnsignedInt: 0: opacity
-        public uint audioOcclusion { get; set; } //28   28: UnsignedInt: 0: 1093790004
-        public Array_Vector3 corners { get; set; } //32   32: Array: 0: corners  {0: Float_XYZ: 0: 256}
-        public Array_uint attachedObjects { get; set; } //48   48: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
-    }
-
-    [TC(typeof(EXP))] public struct CMloEntitySet //48 bytes, Key:4180211587
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public MetaHash name { get; set; } //8   8: Hash: 0: name
-        public uint Unused2 { get; set; }//12
-        public Array_uint locations { get; set; } //16   16: Array: 0: locations  {0: UnsignedInt: 0: 256}
-        public Array_StructurePointer entities { get; set; } //32   32: Array: 0: entities  {0: StructurePointer: 0: 256}
-    }
-
-    [TC(typeof(EXP))] public struct CMloTimeCycleModifier //48 bytes, Key:838874674
-    {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public MetaHash name { get; set; } //8   8: Hash: 0: name
-        public uint Unused2 { get; set; }//12
-        public Vector4 sphere { get; set; } //16   16: Float_XYZW: 0: sphere
-        public float percentage { get; set; } //32   32: Float: 0: percentage
-        public float range { get; set; } //36   36: Float: 0: range
-        public uint startHour { get; set; } //40   40: UnsignedInt: 0: startHour
-        public uint endHour { get; set; } //44   44: UnsignedInt: 0: vlink87812
-    }
 
 
 
@@ -4869,6 +5050,88 @@ namespace CodeWalker.GameFiles
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    [TC(typeof(EXP))] public struct CCompositeEntityType //304 bytes, Key:659539004 dex: composite entity type - ytyp // Tom: des_ destruction
+    {
+        public ArrayOfChars64 Name { get; set; } //0   0: ArrayOfChars: 64: Name
+        public float lodDist { get; set; } //64   64: Float: 0: lodDist
+        public uint flags { get; set; } //68   68: UnsignedInt: 0: flags
+        public uint specialAttribute { get; set; } //72   72: UnsignedInt: 0: specialAttribute
+        public uint Unused0 { get; set; }//76
+        public Vector3 bbMin { get; set; } //80   80: Float_XYZ: 0: bbMin
+        public float Unused1 { get; set; }//92
+        public Vector3 bbMax { get; set; } //96   96: Float_XYZ: 0: bbMax
+        public float Unused2 { get; set; }//108
+        public Vector3 bsCentre { get; set; } //112   112: Float_XYZ: 0: bsCentre
+        public float Unused3 { get; set; }//124
+        public float bsRadius { get; set; } //128   128: Float: 0: bsRadius
+        public uint Unused4 { get; set; }//132
+        public ArrayOfChars64 StartModel { get; set; } //136   136: ArrayOfChars: 64: StartModel
+        public ArrayOfChars64 EndModel { get; set; } //200   200: ArrayOfChars: 64: EndModel
+        public MetaHash StartImapFile { get; set; } //264   264: Hash: 0: StartImapFile//2462971690
+        public MetaHash EndImapFile { get; set; } //268   268: Hash: 0: EndImapFile//2059586669
+        public MetaHash PtFxAssetName { get; set; } //272   272: Hash: 0: PtFxAssetName//2497993358
+        public uint Unused5 { get; set; }//276
+        public Array_Structure Animations { get; set; } //280   280: Array: 0: Animations  {0: Structure: 1980345114: 256}
+        public uint Unused6 { get; set; }//296
+        public uint Unused7 { get; set; }//300
+
+        public override string ToString()
+        {
+            return Name.ToString() + ", " + StartModel.ToString() + ", " + EndModel.ToString() + ", " + 
+                    StartImapFile.ToString() + ", " + EndImapFile.ToString() + ", " + PtFxAssetName.ToString();
+        }
+    }
+
+    [TC(typeof(EXP))] public struct Unk_1980345114 //216 bytes, Key:4110496011 //destruction animations?
+    {
+        public ArrayOfChars64 AnimDict { get; set; } //0   0: ArrayOfChars: 64: AnimDict
+        public ArrayOfChars64 AnimName { get; set; } //64   64: ArrayOfChars: 64: AnimName
+        public ArrayOfChars64 AnimatedModel { get; set; } //128   128: ArrayOfChars: 64: AnimatedModel
+        public float punchInPhase { get; set; } //192   192: Float: 0: punchInPhase//3142377407
+        public float punchOutPhase { get; set; } //196   196: Float: 0: punchOutPhase//2164219370
+        public Array_Structure effectsData { get; set; } //200   200: Array: 0: effectsData  {0: Structure: 3430328684: 256}
+    }
+
+    [TC(typeof(EXP))] public struct Unk_3430328684 //160 bytes, Key:1724963966 //destruction animation effects data
+    {
+        public uint fxType { get; set; } //0   0: UnsignedInt: 0: fxType
+        public uint Unused0 { get; set; }//4
+        public uint Unused1 { get; set; }//8
+        public uint Unused2 { get; set; }//12
+        public Vector3 fxOffsetPos { get; set; } //16   16: Float_XYZ: 0: fxOffsetPos
+        public float Unused3 { get; set; }//28
+        public Vector4 fxOffsetRot { get; set; } //32   32: Float_XYZW: 0: fxOffsetRot
+        public uint boneTag { get; set; } //48   48: UnsignedInt: 0: boneTag
+        public float startPhase { get; set; } //52   52: Float: 0: startPhase
+        public float endPhase { get; set; } //56   56: Float: 0: endPhase
+        public byte ptFxIsTriggered { get; set; } //60   60: Boolean: 0: ptFxIsTriggered
+        public ArrayOfChars64 ptFxTag { get; set; } //61   61: ArrayOfChars: 64: ptFxTag
+        public byte Unused4 { get; set; }//125
+        public ushort Unused5 { get; set; }//126
+        public float ptFxScale { get; set; } //128   128: Float: 0: ptFxScale
+        public float ptFxProbability { get; set; } //132   132: Float: 0: ptFxProbability
+        public byte ptFxHasTint { get; set; } //136   136: Boolean: 0: ptFxHasTint
+        public byte ptFxTintR { get; set; } //137   137: UnsignedByte: 0: ptFxTintR
+        public byte ptFxTintG { get; set; } //138   138: UnsignedByte: 0: ptFxTintG
+        public byte ptFxTintB { get; set; } //139   139: UnsignedByte: 0: ptFxTintB
+        public uint Unused6 { get; set; }//140
+        public Vector3 ptFxSize { get; set; } //144   144: Float_XYZ: 0: ptFxSize
+        public uint Unused7 { get; set; }//156
+    }
 
 
 

@@ -112,25 +112,7 @@ namespace CodeWalker.GameFiles
                             ma.Init(this, ref mloarch);
                             ma.Extensions = MetaTypes.GetExtensions(Meta, mloarch._BaseArchetypeDef.extensions);
 
-                            var mlodef = mloarch.MloArchetypeDef;
-                            ma.entities = MetaTypes.ConvertDataArray<CEntityDef>(Meta, MetaName.CEntityDef, mlodef.entities);
-                            ma.rooms = MetaTypes.ConvertDataArray<CMloRoomDef>(Meta, MetaName.CMloRoomDef, mlodef.rooms);
-                            ma.portals = MetaTypes.ConvertDataArray<CMloPortalDef>(Meta, MetaName.CMloPortalDef, mlodef.portals);
-                            ma.entitySets = MetaTypes.ConvertDataArray<CMloEntitySet>(Meta, MetaName.CMloEntitySet, mlodef.entitySets);
-                            ma.timeCycleModifiers = MetaTypes.ConvertDataArray<CMloTimeCycleModifier>(Meta, MetaName.CMloTimeCycleModifier, mlodef.timeCycleModifiers);
-
-                            if (ma.entities != null)
-                            {
-                                //for (int e = 0; e < ma.entities.Length; e++)
-                                //{
-                                //    if (ma.entities[e].extensions.Count1 > 0)
-                                //    {
-                                //        var exts = MetaTypes.GetExtensions(Meta, ma.entities[e].extensions);
-                                //        if (exts != null)
-                                //        { }
-                                //    }
-                                //}
-                            }
+                            ma.LoadChildren(Meta);
 
                             a = ma;
                             break;
