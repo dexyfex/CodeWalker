@@ -44,6 +44,7 @@ namespace CodeWalker.Forms
         int MouseY;
         System.Drawing.Point MouseDownPoint;
         System.Drawing.Point MouseLastPoint;
+        bool MouseInvert = Settings.Default.MouseInvert;
 
 
 
@@ -1050,6 +1051,11 @@ namespace CodeWalker.Forms
         {
             int dx = e.X - MouseX;
             int dy = e.Y - MouseY;
+
+            if (MouseInvert)
+            {
+                dy = -dy;
+            }
 
             if (MouseLButtonDown)
             {

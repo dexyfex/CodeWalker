@@ -21,7 +21,7 @@ namespace CodeWalker
 
         private float camSensitivity = Settings.Default.CameraSensitivity;
         private float camSmoothing = Settings.Default.CameraSmoothing;
-
+        private bool mouseinvert = Settings.Default.MouseInvert;
 
 
         public SettingsForm(WorldForm owner)
@@ -67,6 +67,7 @@ namespace CodeWalker
         {
             CameraSensitivityUpDown.Value = (decimal)camSensitivity * 1000;
             CameraSmoothingUpDown.Value = (decimal)camSmoothing;
+            MouseInvertCheckBox.Checked = mouseinvert;
         }
         private void LoadAdvancedSettings()
         {
@@ -200,6 +201,16 @@ namespace CodeWalker
             if (worldForm != null)
             {
                 worldForm.SetCameraSensitivity(camSensitivity, camSmoothing);
+            }
+        }
+
+        private void MouseInvertCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            mouseinvert = MouseInvertCheckBox.Checked;
+            Settings.Default.MouseInvert = mouseinvert;
+            if (worldForm != null)
+            {
+                worldForm.SetMouseInverted(mouseinvert);
             }
         }
 

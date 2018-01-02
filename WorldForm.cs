@@ -71,6 +71,7 @@ namespace CodeWalker
         int MouseControlWheel = 0;
         MouseButtons MouseControlButtons = MouseButtons.None;
         MouseButtons MouseControlButtonsPrev = MouseButtons.None;
+        bool MouseInvert = Settings.Default.MouseInvert;
 
         bool ControlFireToggle = false;
 
@@ -1708,6 +1709,10 @@ namespace CodeWalker
         {
             camera.Sensitivity = sensitivity;
             camera.Smoothness = smoothing;
+        }
+        public void SetMouseInverted(bool invert)
+        {
+            MouseInvert = invert;
         }
 
         public void SetKeyBindings(KeyBindings kb)
@@ -5539,6 +5544,11 @@ namespace CodeWalker
         {
             int dx = e.X - MouseX;
             int dy = e.Y - MouseY;
+
+            if (MouseInvert)
+            {
+                dy = -dy;
+            }
 
             if (ControlMode == WorldControlMode.Free)
             {

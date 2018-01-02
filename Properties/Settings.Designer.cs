@@ -686,5 +686,17 @@ namespace CodeWalker.Properties {
                 this["XInputMoveSpeed"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool MouseInvert {
+            get {
+                return ((bool)(this["MouseInvert"]));
+            }
+            set {
+                this["MouseInvert"] = value;
+            }
+        }
     }
 }

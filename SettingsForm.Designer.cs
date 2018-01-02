@@ -80,6 +80,7 @@
             this.SaveButton = new System.Windows.Forms.Button();
             this.ResetButton = new System.Windows.Forms.Button();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.MouseInvertCheckBox = new System.Windows.Forms.CheckBox();
             this.MainTabControl.SuspendLayout();
             this.ControlsTabPage.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -126,6 +127,7 @@
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.MouseInvertCheckBox);
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.label2);
@@ -141,7 +143,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(242, 30);
+            this.label4.Location = new System.Drawing.Point(237, 17);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(181, 26);
             this.label4.TabIndex = 8;
@@ -317,7 +319,7 @@
             this.AdvancedTabPage.Location = new System.Drawing.Point(4, 22);
             this.AdvancedTabPage.Name = "AdvancedTabPage";
             this.AdvancedTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.AdvancedTabPage.Size = new System.Drawing.Size(452, 404);
+            this.AdvancedTabPage.Size = new System.Drawing.Size(452, 425);
             this.AdvancedTabPage.TabIndex = 1;
             this.AdvancedTabPage.Text = "Advanced";
             this.AdvancedTabPage.UseVisualStyleBackColor = true;
@@ -783,6 +785,17 @@
             this.ResetButton.UseVisualStyleBackColor = true;
             this.ResetButton.Click += new System.EventHandler(this.ResetButton_Click);
             // 
+            // MouseInvertCheckBox
+            // 
+            this.MouseInvertCheckBox.AutoSize = true;
+            this.MouseInvertCheckBox.Location = new System.Drawing.Point(240, 55);
+            this.MouseInvertCheckBox.Name = "MouseInvertCheckBox";
+            this.MouseInvertCheckBox.Size = new System.Drawing.Size(118, 17);
+            this.MouseInvertCheckBox.TabIndex = 9;
+            this.MouseInvertCheckBox.Text = "Invert mouse Y axis";
+            this.MouseInvertCheckBox.UseVisualStyleBackColor = true;
+            this.MouseInvertCheckBox.CheckedChanged += new System.EventHandler(this.MouseInvertCheckBox_CheckedChanged);
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -871,5 +884,6 @@
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.NumericUpDown TextureCacheSizeUpDown;
         private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.CheckBox MouseInvertCheckBox;
     }
 }

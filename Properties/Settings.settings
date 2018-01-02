@@ -180,5 +180,8 @@
     <Setting Name="XInputMoveSpeed" Type="System.Single" Scope="User">
       <Value Profile="(Default)">15</Value>
     </Setting>
+    <Setting Name="MouseInvert" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
