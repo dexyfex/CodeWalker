@@ -1962,7 +1962,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Name;
+            return Name + ": " + (Entities?.Length ?? 0).ToString() + " entities";
         }
     }
 

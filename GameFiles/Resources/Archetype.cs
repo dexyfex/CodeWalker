@@ -212,31 +212,54 @@ namespace CodeWalker.GameFiles
             if (owner == null) return;
             if (mloa.entities == null) return;
             var ec = mloa.entities.Length;
-            Entities = new YmapEntityDef[ec];
+
+            var entlist = new List<YmapEntityDef>();
             for (int i = 0; i < ec; i++)
             {
-                MCEntityDef ment = mloa.entities[i];
-                YmapEntityDef e = new YmapEntityDef(null, i, ref ment._Data);
-                e.Extensions = ment.Extensions;
-                e.MloRefPosition = e.Position;
-                e.MloRefOrientation = e.Orientation;
-                e.MloParent = owner;
-                e.Position = owner.Position + owner.Orientation.Multiply(e.MloRefPosition);
-                e.Orientation = Quaternion.Multiply(owner.Orientation, e.MloRefOrientation);
-                e.UpdateWidgetPosition();
-                e.UpdateWidgetOrientation();
-                Entities[i] = e;
+                YmapEntityDef e = CreateYmapEntity(owner, mloa.entities[i], i);
+                entlist.Add(e);
             }
+
+            int lasti = ec;
 
             var entitySets = mloa.entitySets;
             if (entitySets != null)
             {
-                //for (int i = 0; i < entitySets.Length; i++)
-                //{
-                //    var entitySet = entitySets[i];
-                //}
+                for (int i = 0; i < entitySets.Length; i++)
+                {
+                    var entitySet = entitySets[i];
+                    if (entitySet.Entities != null)
+                    {
+                        for (int j = 0; j < entitySet.Entities.Length; j++)
+                        {
+                            YmapEntityDef e = CreateYmapEntity(owner, entitySet.Entities[j], lasti);
+                            e.MloEntitySet = entitySet;
+                            entlist.Add(e);
+                            lasti++;
+                        }
+                    }
+                }
             }
 
+            if (defaultEntitySets != null)
+            {
+            }
+
+            Entities = entlist.ToArray();
+        }
+
+        private YmapEntityDef CreateYmapEntity(YmapEntityDef owner, MCEntityDef ment, int i)
+        {
+            YmapEntityDef e = new YmapEntityDef(null, i, ref ment._Data);
+            e.Extensions = ment.Extensions;
+            e.MloRefPosition = e.Position;
+            e.MloRefOrientation = e.Orientation;
+            e.MloParent = owner;
+            e.Position = owner.Position + owner.Orientation.Multiply(e.MloRefPosition);
+            e.Orientation = Quaternion.Multiply(owner.Orientation, e.MloRefOrientation);
+            e.UpdateWidgetPosition();
+            e.UpdateWidgetOrientation();
+            return e;
         }
 
 
