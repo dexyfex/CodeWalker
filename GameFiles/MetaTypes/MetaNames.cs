@@ -2929,7 +2929,7 @@ namespace CodeWalker.GameFiles
         sampFiltered = 200703167,
         sampleAngle = 1030071922,
         sampleScale = 65527032,
-        Scale_ = 1342385372,
+        Scale_ = 116180525,
         ScaleIn = 1489667163,
         scalerLum = 1241172112,
         ScanlineFilterParams = 3994711222,
