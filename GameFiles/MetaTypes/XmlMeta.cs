@@ -72,7 +72,7 @@ namespace CodeWalker.GameFiles
                     {
                         case MetaStructureEntryDataType.Array:
                             {
-                                TraverseArray(cnode, mb, arrEntry, entry.DataOffset, arrayResults, data);
+                                TraverseArray(cnode, mb, arrEntry, entry.DataOffset, arrayResults);
                                 break;
                             }
 
@@ -273,7 +273,7 @@ namespace CodeWalker.GameFiles
                     }
                 }
 
-                arrayResults.WriteArrays(data, mb, type);
+                arrayResults.WriteArrays(data);
 
                 mb.AddStructureInfo(infos.StructureNameHash);
 
@@ -288,7 +288,7 @@ namespace CodeWalker.GameFiles
             return null;
         }
 
-        private static void TraverseArray(XmlNode node, MetaBuilder mb, MetaStructureEntryInfo_s arrEntry, int offset, ArrayResults results, byte[] data)
+        private static void TraverseArray(XmlNode node, MetaBuilder mb, MetaStructureEntryInfo_s arrEntry, int offset, ArrayResults results)
         {
             switch (arrEntry.DataType)
             {
@@ -611,7 +611,7 @@ namespace CodeWalker.GameFiles
         public Dictionary<int, Array_Vector3> Float_XYZs;
         public Dictionary<int, Array_uint> Hashes;
 
-        public void WriteArrays(byte[] data, MetaBuilder mb, MetaName type)
+        public void WriteArrays(byte[] data)
         {
             foreach (KeyValuePair<int, Array_Structure> ptr in Structures)
             {
