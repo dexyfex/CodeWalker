@@ -116,13 +116,17 @@ namespace CodeWalker.GameFiles
         public SharpDX.Vector3 BoundingBoxMin { get; set; }
         public uint Unknown_3Ch { get; set; }
         public SharpDX.Vector3 BoundingBoxCenter { get; set; }
-        public uint Unknown_4Ch { get; set; }
+        public byte MaterialIndex { get; set; }
+        public byte ProceduralID { get; set; }
+        public byte RoomID_and_PedDensity { get; set; } //5bits for RoomID and then 3bits for PedDensity
+        public byte Unknown_4Fh { get; set; } //bit29 related to Unknown_5Ch, should be a flag called "Has PolyFlags"
         public SharpDX.Vector3 Center { get; set; }
-        public uint Unknown_5Ch { get; set; }
+        public ushort Unknown_5Ch { get; set; } //PolyFlags?
+        public ushort Unknown_5Eh { get; set; }
         public float Unknown_60h { get; set; }
         public float Unknown_64h { get; set; }
         public float Unknown_68h { get; set; }
-        public uint Unknown_6Ch { get; set; }
+        public float BoundingBoxVolume { get; set; }
 
 
         public Bounds Parent { get; set; }
@@ -159,13 +163,17 @@ namespace CodeWalker.GameFiles
             this.BoundingBoxMin = reader.ReadStruct<SharpDX.Vector3>();
             this.Unknown_3Ch = reader.ReadUInt32();
             this.BoundingBoxCenter = reader.ReadStruct<SharpDX.Vector3>();
-            this.Unknown_4Ch = reader.ReadUInt32();
+            this.MaterialIndex = reader.ReadByte();
+            this.ProceduralID = reader.ReadByte();
+            this.RoomID_and_PedDensity = reader.ReadByte();
+            this.Unknown_4Fh = reader.ReadByte();
             this.Center = reader.ReadStruct<SharpDX.Vector3>();
-            this.Unknown_5Ch = reader.ReadUInt32();
+            this.Unknown_5Ch = reader.ReadUInt16();
+            this.Unknown_5Eh = reader.ReadUInt16();
             this.Unknown_60h = reader.ReadSingle();
             this.Unknown_64h = reader.ReadSingle();
             this.Unknown_68h = reader.ReadSingle();
-            this.Unknown_6Ch = reader.ReadUInt32();
+            this.BoundingBoxVolume = reader.ReadSingle();
         }
 
         /// <summary>
@@ -187,13 +195,17 @@ namespace CodeWalker.GameFiles
             //writer.WriteBlock(this.BoundingBoxMin);
             writer.Write(this.Unknown_3Ch);
             //writer.WriteBlock(this.BoundingBoxCenter);
-            writer.Write(this.Unknown_4Ch);
+            writer.Write(this.MaterialIndex);
+            writer.Write(this.ProceduralID);
+            writer.Write(this.RoomID_and_PedDensity);
+            writer.Write(this.Unknown_4Fh);
             //writer.WriteBlock(this.Center);
             writer.Write(this.Unknown_5Ch);
+            writer.Write(this.Unknown_5Eh);
             writer.Write(this.Unknown_60h);
             writer.Write(this.Unknown_64h);
             writer.Write(this.Unknown_68h);
-            writer.Write(this.Unknown_6Ch);
+            writer.Write(this.BoundingBoxVolume);
         }
 
         public IResourceSystemBlock GetType(ResourceDataReader reader, params object[] parameters)
