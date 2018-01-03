@@ -136,7 +136,7 @@ namespace CodeWalker.GameFiles
         {
             XmlDocument xmldoc = new XmlDocument();
             xmldoc.LoadXml(xml);
-            XmlNodeList items = xmldoc.SelectNodes("CMapParentTxds/txdRelationships/item");
+            XmlNodeList items = xmldoc.SelectNodes("CMapParentTxds/txdRelationships/Item");
 
             CMapParentTxds = new Dictionary<string, string>();
             for (int i = 0; i < items.Count; i++)
