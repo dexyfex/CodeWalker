@@ -573,14 +573,23 @@ namespace CodeWalker.Rendering
             context.OutputMerger.DepthStencilState = dsEnabled;
             context.Rasterizer.State = rsSolid;
 
-            //find the casters
+            float maxdist = 3000.0f;// cascade.IntervalFar * 5.0f;
+
+            //find the casters within range
             shadowcasters.Clear();
             shadowcastercount = 0;
-            foreach (var sbatch in shadowbatches)
+            for (int b = 0; b < shadowbatches.Count; b++)
             {
-                foreach (var srend in sbatch.Geometries)
+                //shadowcasters.AddRange(shadowbatches[b].Geometries);
+                var sbgeoms = shadowbatches[b].Geometries;
+                for (int g = 0; g < sbgeoms.Count; g++)
                 {
-                    shadowcasters.Add(srend);
+                    var sbgeom = sbgeoms[g];
+                    float idist = sbgeom.Inst.Distance - sbgeom.Inst.Radius;
+                    if (idist <= maxdist)
+                    {
+                        shadowcasters.Add(sbgeom);
+                    }
                 }
             }
 
@@ -592,21 +601,17 @@ namespace CodeWalker.Rendering
 
                 Shadowmap.BeginDepthRender(context, i);
 
-                float cfar = 3000.0f;// cascade.IntervalFar * 5.0f;
-
                 float worldtocascade = cascade.WorldUnitsToCascadeUnits * 2.0f;
+                float minrad = cascade.WorldUnitsPerTexel * 3.0f;
 
                 shadowbatch.Clear();
-                for (int c=0; c<shadowcasters.Count; c++)
+                for (int c = 0; c < shadowcasters.Count; c++)
                 {
                     //if the caster overlaps the cascade, draw it
                     var caster = shadowcasters[c];
-                    if (caster.Inst.Radius <= (cascade.WorldUnitsPerTexel * 2.0f)) continue; //don't render little things
-                    if ((caster.Inst.Distance-caster.Inst.Radius) > cfar) continue; //performance improvement?
+                    if (caster.Inst.Radius <= minrad) continue; //don't render little things
                     Vector3 iscenepos = caster.Inst.Position - Shadowmap.SceneOrigin;
-                    Vector3 ilightpos = cascade.Matrix.Multiply(iscenepos - caster.Inst.BSCenter);
-                    //Vector3 ilightrad = cascade.Matrix.Multiply(new Vector3(caster.Inst.Radius));
-                    //float ilightradf = caster.Inst.Radius;// ilightrad.Length();
+                    Vector3 ilightpos = cascade.Matrix.Multiply(iscenepos + caster.Inst.BSCenter);
                     float ilightradf = caster.Inst.Radius * worldtocascade;
                     float ilightminx = ilightpos.X - ilightradf;
                     float ilightmaxx = ilightpos.X + ilightradf;

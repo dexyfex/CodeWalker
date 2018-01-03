@@ -1120,20 +1120,12 @@ namespace CodeWalker.GameFiles
         public Quaternion MloRefOrientation { get; set; }
         public MetaWrapper[] Extensions { get; set; }
 
-        public bool ChildrenRendered; //used when rendering ymap mode to reduce LOD flashing...
-
         public int Index { get; set; }
-        public Vector3 CamRel; //used for rendering...
-        public float Distance; //used for rendering
         public bool IsVisible; //used for rendering
-        public bool Rendered; //used for rendering
-        public bool ChildRendered; //used for rendering
         public bool ChildrenVisible; //used for rendering
-        public bool ChildrenLoading; //used for rendering
-        public float LargestChildLodDist; //used for rendering
-        public YmapEntityDef Parent { get; set; } //used for rendering
-        public uint ParentGuid { get; set; } //used for rendering
-        public MetaHash ParentName { get; set; } //used for rendering
+        public bool ChildrenRendered; //used when rendering ymap mode to reduce LOD flashing...
+        public YmapEntityDef Parent { get; set; } //for browsing convenience, also used/updated for rendering
+        public MetaHash ParentName { get; set; } //just for browsing convenience
 
         public YmapFile Ymap { get; set; }
 
@@ -1398,7 +1390,6 @@ namespace CodeWalker.GameFiles
                 ChildList = new List<YmapEntityDef>();
             }
             c.Parent = this;
-            c.ParentGuid = CEntityDef.guid;
             c.ParentName = CEntityDef.archetypeName;
 
             ChildList.Add(c);

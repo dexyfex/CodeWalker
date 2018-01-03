@@ -1376,34 +1376,31 @@ namespace CodeWalker.Rendering
                 foreach (var ae in spaceEnts) //used by active space entities (eg "bullets")
                 {
                     if (ae.EntityDef == null) continue; //nothing to render...
-                    RenderWorldCalcEntityVisibility(camera, ae.EntityDef);
+                    RenderWorldCalcEntityVisibility(ae.EntityDef);
                     renderworldentities.Add(ae.EntityDef);
                 }
             }
 
-            //float minZ = float.MaxValue;
-            float maxZ = float.MinValue;
-            float cvwidth = camera.OrthographicSize * camera.AspectRatio * 0.5f;
-            float cvheight = camera.OrthographicSize * 0.5f;
-            float cvwmin = camera.Position.X - cvwidth;
-            float cvwmax = camera.Position.X + cvwidth;
-            float cvhmin = camera.Position.Y - cvheight;
-            float cvhmax = camera.Position.Y + cvheight;
-
-            foreach (var ymap in VisibleYmaps)
+            if (MapViewEnabled)
             {
-                if (ymap.AllEntities != null)
+                //find the max Z value for positioning camera in map view, to help shadows
+                //float minZ = float.MaxValue;
+                float maxZ = float.MinValue;
+                float cvwidth = camera.OrthographicSize * camera.AspectRatio * 0.5f;
+                float cvheight = camera.OrthographicSize * 0.5f;
+                float cvwmin = camera.Position.X - cvwidth; //TODO:make all these vars global...
+                float cvwmax = camera.Position.X + cvwidth;
+                float cvhmin = camera.Position.Y - cvheight;
+                float cvhmax = camera.Position.Y + cvheight;
+
+                for (int y = 0; y < VisibleYmaps.Count; y++)
                 {
-                    for (int i = 0; i < ymap.AllEntities.Length; i++)
+                    var ymap = VisibleYmaps[y];
+                    if (ymap.AllEntities != null)
                     {
-                        var ent = ymap.AllEntities[i];
-                        ent.LargestChildLodDist = 0;
-                        ent.ChildrenLoading = false;
-                        ent.Rendered = false;
-                        ent.ChildRendered = false;
-                        if (MapViewEnabled)
+                        for (int i = 0; i < ymap.AllEntities.Length; i++)
                         {
-                            //find the max Z value for positioning camera in map view, to help shadows
+                            var ent = ymap.AllEntities[i];
                             if ((ent.Position.Z < 1000.0f) && (ent.BSRadius < 500.0f))
                             {
                                 float r = ent.BSRadius;
@@ -1416,18 +1413,16 @@ namespace CodeWalker.Rendering
                         }
                     }
                 }
-            }
 
-            if (MapViewEnabled)
-            {
                 //move the camera closer to the geometry, to help shadows in map view.
                 if (maxZ == float.MinValue) maxZ = 1000.0f;
                 camera.Position.Z = Math.Min(maxZ, 1000.0f);
             }
 
 
-            foreach (var ymap in VisibleYmaps)
+            for (int y = 0; y < VisibleYmaps.Count; y++)
             {
+                var ymap = VisibleYmaps[y];
                 if (ymap.RootEntities != null)
                 {
                     YmapFile pymap;
@@ -1445,26 +1440,26 @@ namespace CodeWalker.Rendering
                                 {
                                     p = pymap.AllEntities[pind];
                                     ent.Parent = p;
-                                    ent.ParentGuid = p.CEntityDef.guid;
                                     ent.ParentName = p.CEntityDef.archetypeName;
                                 }
                             }
                             else
                             { }//should only happen if parent ymap not loaded yet...
                         }
-                        RenderWorldRecurseCalcEntityVisibility(camera, ent);
+                        RenderWorldRecurseCalcEntityVisibility(ent);
                     }
                 }
             }
 
-            foreach (var ymap in VisibleYmaps)
+            for (int y = 0; y < VisibleYmaps.Count; y++)
             {
+                var ymap = VisibleYmaps[y];
                 if (ymap.RootEntities != null)
                 {
                     for (int i = 0; i < ymap.RootEntities.Length; i++)
                     {
                         var ent = ymap.RootEntities[i];
-                        RenderWorldRecurseAddEntities(ent, renderworldentities);
+                        RenderWorldRecurseAddEntities(ent);
                     }
                 }
             }
@@ -1480,47 +1475,6 @@ namespace CodeWalker.Rendering
                 var ent = renderworldentities[i];
                 var arch = ent.Archetype;
                 var pent = ent.Parent;
-
-                if (renderinteriors && ent.IsMlo) //render Mlo child entities...
-                {
-                    if ((ent.MloInstance != null) && (ent.MloInstance.Entities != null))
-                    {
-                        for (int j = 0; j < ent.MloInstance.Entities.Length; j++)
-                        {
-                            var intent = ent.MloInstance.Entities[j];
-                            var intarch = intent.Archetype;
-                            if (intarch == null) continue; //missing archetype...
-
-                            if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
-
-                            intent.CamRel = intent.Position - camera.Position;
-                            intent.Distance = intent.CamRel.Length();
-                            intent.IsVisible = true;
-
-                            var bscent = intent.CamRel + intent.BSCenter;
-                            float bsrad = intent.BSRadius;
-                            if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref bscent, bsrad))
-                            {
-                                continue; //frustum cull interior ents
-                            }
-                            var intdrbl = gameFileCache.TryGetDrawable(intarch);
-                            var intrndbl = TryGetRenderable(intarch, intdrbl);
-                            if (intrndbl == null) continue; //no renderable
-                            if (!(intrndbl.IsLoaded && (intrndbl.AllTexturesLoaded || !waitforchildrentoload))) continue; //not loaded yet
-
-                            RenderableEntity intrent = new RenderableEntity();
-                            intrent.Entity = intent;
-                            intrent.Renderable = intrndbl;
-                            renderworldrenderables.Add(intrent);
-                        }
-                    }
-                    if (rendercollisionmeshes)
-                    {
-                        RenderInteriorCollisionMesh(ent);
-                    }
-                }
-
-                ent.Rendered = true;
                 var drawable = gameFileCache.TryGetDrawable(arch);
                 Renderable rndbl = TryGetRenderable(arch, drawable);
                 if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
@@ -1529,24 +1483,15 @@ namespace CodeWalker.Rendering
                     rent.Entity = ent;
                     rent.Renderable = rndbl;
                     renderworldrenderables.Add(rent);
-
-                    if (pent != null)
-                    {
-                        pent.ChildRendered = true;
-                    }
                 }
                 else if (waitforchildrentoload)
                 {
                     //todo: render parent if children loading.......
                 }
-            }
 
-            for (int i = 0; i < renderworldrenderables.Count; i++)
-            {
-                var ent = renderworldrenderables[i].Entity;
-                if (ent.ChildRendered && !ent.ChildrenLoading)
+                if (ent.IsMlo && rendercollisionmeshes && renderinteriors)
                 {
-                    ent.ChildrenRendered = true;
+                    RenderInteriorCollisionMesh(ent);
                 }
             }
 
@@ -1563,8 +1508,9 @@ namespace CodeWalker.Rendering
 
             if (rendergrass)
             {
-                foreach (var ymap in renderworldVisibleYmapDict.Values)
+                for (int y = 0; y < VisibleYmaps.Count; y++)
                 {
+                    var ymap = VisibleYmaps[y];
                     if (ymap.GrassInstanceBatches != null)
                     {
                         RenderYmapGrass(ymap);
@@ -1573,8 +1519,9 @@ namespace CodeWalker.Rendering
             }
             if (renderdistlodlights && timecycle.IsNightTime)
             {
-                foreach (var ymap in renderworldVisibleYmapDict.Values)
+                for (int y = 0; y < VisibleYmaps.Count; y++)
                 {
+                    var ymap = VisibleYmaps[y];
                     if (ymap.DistantLODLights != null)
                     {
                         RenderYmapDistantLODLights(ymap);
@@ -1592,39 +1539,33 @@ namespace CodeWalker.Rendering
 
             return true;
         }
-        private void RenderWorldCalcEntityVisibility(Camera cam, YmapEntityDef ent)
+        private void RenderWorldCalcEntityVisibility(YmapEntityDef ent)
         {
-            ent.CamRel = ent.Position - cam.Position;
-            ent.Distance = ent.CamRel.Length();
-            float distval = ent.Distance;
+            float dist = (ent.Position - camera.Position).Length();
 
             if (MapViewEnabled)
             {
-                distval = cam.OrthographicSize / MapViewDetail;
+                dist = camera.OrthographicSize / MapViewDetail;
             }
 
 
             var loddist = ent.CEntityDef.lodDist;
             var cloddist = ent.CEntityDef.childLodDist;
 
-            var loddistmultdef = renderworldLodDistMult * 1.0f;
-            var loddistmultorph = renderworldDetailDistMult * 1.5f;
-            var loddistmultarch = renderworldLodDistMult * 1.0f;
-
             if (loddist <= 0.0f)//usually -1 or -2
             {
                 if (ent.Archetype != null)
                 {
-                    loddist = ent.Archetype.LodDist * loddistmultarch;
+                    loddist = ent.Archetype.LodDist * renderworldLodDistMult;
                 }
             }
             else if (ent.CEntityDef.lodLevel == Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)
             {
-                loddist *= loddistmultorph; //orphan view dist adjustment...
+                loddist *= renderworldDetailDistMult * 1.5f; //orphan view dist adjustment...
             }
             else
             {
-                loddist *= loddistmultdef;
+                loddist *= renderworldLodDistMult;
             }
 
 
@@ -1632,31 +1573,19 @@ namespace CodeWalker.Rendering
             {
                 if (ent.Archetype != null)
                 {
-                    cloddist = ent.Archetype.LodDist * loddistmultarch;
-                    //cloddist = ent.Archetype.BSRadius * 50.0f;
+                    cloddist = ent.Archetype.LodDist * renderworldLodDistMult;
                 }
             }
             else
             {
-                cloddist *= loddistmultdef;
-            }
-            if (cloddist == 0)
-            {
-                //cloddist = loddist;//always try to show children, based on their loddist
+                cloddist *= renderworldLodDistMult;
             }
 
 
-            ent.IsVisible = (distval <= loddist);
-            ent.ChildrenVisible = (distval <= cloddist) && (ent.CEntityDef.numChildren > 0);
-            ent.ChildrenLoading = false;
+            ent.IsVisible = (dist <= loddist);
+            ent.ChildrenVisible = (dist <= cloddist) && (ent.CEntityDef.numChildren > 0);
 
-            if ((ent.Parent != null) && (ent.CEntityDef.lodLevel != Unk_1264241711.LODTYPES_DEPTH_ORPHANHD))
-            {
-                if (ent.Parent.CEntityDef.childLodDist == 0.0f)
-                {
-                    ent.Parent.LargestChildLodDist = Math.Max(ent.Parent.LargestChildLodDist, loddist);
-                }
-            }
+
 
             if (renderworldMaxLOD != Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)
             {
@@ -1671,15 +1600,10 @@ namespace CodeWalker.Rendering
                     ent.ChildrenVisible = false;
                 }
             }
-
-            if (!ent.IsVisible)
-            {
-                ent.ChildrenRendered = false;
-            }
         }
-        private void RenderWorldRecurseCalcEntityVisibility(Camera cam, YmapEntityDef ent)
+        private void RenderWorldRecurseCalcEntityVisibility(YmapEntityDef ent)
         {
-            RenderWorldCalcEntityVisibility(cam, ent);
+            RenderWorldCalcEntityVisibility(ent);
             if (ent.ChildrenVisible)
             {
                 if (ent.Children != null)
@@ -1689,17 +1613,14 @@ namespace CodeWalker.Rendering
                         var child = ent.Children[i];
                         if (child.Ymap == ent.Ymap)
                         {
-                            RenderWorldRecurseCalcEntityVisibility(cam, child);
+                            RenderWorldRecurseCalcEntityVisibility(child);
                         }
                     }
                 }
             }
         }
-        private void RenderWorldRecurseAddEntities(YmapEntityDef ent, List<YmapEntityDef> res)
+        private void RenderWorldRecurseAddEntities(YmapEntityDef ent)
         {
-            //bool useclod = false; //(ent.CEntityDef.childLodDist == 0.0f);
-            //bool hide = useclod ? (ent.AnyChildVisible /*&& !ent.AnyChildInvisible*/) : ent.ChildrenVisible;
-            //bool force = !useclod && (ent.Parent != null) && ent.Parent.ChildrenVisible && !hide;
             bool hide = ent.ChildrenVisible;
             bool force = (ent.Parent != null) && ent.Parent.ChildrenVisible && !hide;
             if (force || (ent.IsVisible && !hide))
@@ -1708,7 +1629,7 @@ namespace CodeWalker.Rendering
                 {
                     if (!RenderIsEntityFinalRender(ent)) return;
 
-                    var bscent = ent.CamRel + ent.BSCenter;
+                    var bscent = ent.Position + ent.BSCenter - camera.Position;
                     float bsrad = ent.BSRadius;
                     if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref bscent, bsrad))
                     {
@@ -1716,10 +1637,34 @@ namespace CodeWalker.Rendering
                     }
 
 
-                    res.Add(ent);
+                    renderworldentities.Add(ent);
+
+
+                    if (renderinteriors && ent.IsMlo) //render Mlo child entities...
+                    {
+                        if ((ent.MloInstance != null) && (ent.MloInstance.Entities != null))
+                        {
+                            for (int j = 0; j < ent.MloInstance.Entities.Length; j++)
+                            {
+                                var intent = ent.MloInstance.Entities[j];
+                                if (intent.Archetype == null) continue; //missing archetype...
+                                if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
+
+                                intent.IsVisible = true;
+
+                                var iebscent = intent.Position + intent.BSCenter - camera.Position;
+                                float iebsrad = intent.BSRadius;
+                                if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
+                                {
+                                    continue; //frustum cull interior ents
+                                }
+
+                                renderworldentities.Add(intent);
+                            }
+                        }
+                    }
+
                 }
-                else
-                { }
             }
             if (ent.IsVisible && ent.ChildrenVisible && (ent.Children != null))
             {
@@ -1728,11 +1673,15 @@ namespace CodeWalker.Rendering
                     var child = ent.Children[i];
                     if (child.Ymap == ent.Ymap)
                     {
-                        RenderWorldRecurseAddEntities(ent.Children[i], res);
+                        RenderWorldRecurseAddEntities(ent.Children[i]);
                     }
                 }
             }
         }
+
+
+
+
 
 
         private bool RenderIsEntityFinalRender(YmapEntityDef ent)
@@ -1850,7 +1799,6 @@ namespace CodeWalker.Rendering
                             bool timed = (arch.Type == MetaName.CTimeArchetypeDef);
                             if (!timed || (rendertimedents && (rendertimedentsalways || arch.IsActive(timeofday))))
                             {
-                                ent.CamRel = ent.Position - camera.Position;
                                 RenderArchetype(arch, ent);
                             }
                         }
@@ -1885,8 +1833,8 @@ namespace CodeWalker.Rendering
                 if (!timed || (rendertimedents && (rendertimedentsalways || arch.IsActive(timeofday))))
                 {
                     bool usechild = false;
-                    entity.CamRel = entity.Position - camera.Position;
-                    float dist = (entity.CamRel + entity.BSCenter).Length();
+                    Vector3 camrel = entity.Position - camera.Position;
+                    float dist = (camrel + entity.BSCenter).Length();
                     float rad = arch.BSRadius;
                     float loddist = entity.CEntityDef.lodDist;
                     if (loddist < 1.0f)
@@ -1925,8 +1873,6 @@ namespace CodeWalker.Rendering
                     if (!usechild && !entity.ChildrenRendered)
                     {
 
-
-
                         if (renderinteriors && entity.IsMlo) //render Mlo child entities...
                         {
                             if ((entity.MloInstance != null) && (entity.MloInstance.Entities != null))
@@ -1936,13 +1882,7 @@ namespace CodeWalker.Rendering
                                     var intent = entity.MloInstance.Entities[j];
                                     var intarch = intent.Archetype;
                                     if (intarch == null) continue; //missing archetype...
-
                                     if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
-
-                                    intent.CamRel = intent.Position - camera.Position;
-                                    intent.Distance = intent.CamRel.Length();
-                                    intent.IsVisible = true;
-
                                     RenderArchetype(intarch, intent);
                                 }
                             }
@@ -1951,8 +1891,6 @@ namespace CodeWalker.Rendering
                                 RenderInteriorCollisionMesh(entity);
                             }
                         }
-
-
 
 
                         return RenderArchetype(arch, entity);
@@ -2102,7 +2040,8 @@ namespace CodeWalker.Rendering
 
             if (arche == null) return false;
 
-            Vector3 camrel = (entity != null) ? entity.CamRel : -camera.Position;
+            Vector3 entpos = (entity != null) ? entity.Position : Vector3.Zero;
+            Vector3 camrel = entpos - camera.Position;
 
             Quaternion orientation = Quaternion.Identity;
             Vector3 scale = Vector3.One;

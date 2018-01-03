@@ -30,11 +30,9 @@ namespace CodeWalker.Rendering
         public List<ShadowmapCascade> Cascades;
         Matrix SceneCamView;
         Matrix LightView;
-        //Matrix LightViewInv;
         Vector3 LightDirection;
         int TextureSize;
         public int CascadeCount;
-        //public const int MaxCascades = 6;
         int PCFSize;
         float PCFOffset;
         float BlurBetweenCascades;
@@ -67,12 +65,6 @@ namespace CodeWalker.Rendering
             ShadowVars = new GpuVarsBuffer<ShadowmapVars>(device);
 
 
-
-
-            //DepthTexture = DXUtility.CreateTexture2D(device, TextureSize, TextureSize, 1, 16, Format.R32_Typeless, 1, 0, ResourceUsage.Default, BindFlags.DepthStencil | BindFlags.ShaderResource, 0, 0);
-            //DepthTextureSS = DXUtility.CreateSamplerState(device, TextureAddressMode.Border, new Color4(1.0f), Comparison.Always, Filter.MinMagMipLinear, 0, 0.0f, 0.0f, 0.0f);
-            //DepthTextureSRV = DXUtility.CreateShaderResourceView(device, DepthTexture, Format.R32_Float, ShaderResourceViewDimension.Texture2DArray, 1, 0, 16, 0);
-
             DepthTexture = DXUtility.CreateTexture2D(device, TextureSize* CascadeCount, TextureSize, 1, 1, Format.R32_Typeless, 1, 0, ResourceUsage.Default, BindFlags.DepthStencil | BindFlags.ShaderResource, 0, 0);
             DepthTextureSS = DXUtility.CreateSamplerState(device, TextureAddressMode.Border, new Color4(0.0f), Comparison.Less, Filter.ComparisonMinMagLinearMipPoint, 0, 0.0f, 0.0f, 0.0f);
             DepthTextureSRV = DXUtility.CreateShaderResourceView(device, DepthTexture, Format.R32_Float, ShaderResourceViewDimension.Texture2D, 1, 0, 0, 0);
@@ -88,7 +80,6 @@ namespace CodeWalker.Rendering
                 c.ZFar = 1.0f;
                 c.IntervalNear = 0.0f;
                 c.IntervalFar = 1.0f;
-                //c.DepthTextureDSV = DXUtility.CreateDepthStencilView(device, DepthTexture, Format.D32_Float, i);
                 c.DepthRenderVP = new ViewportF()
                 {
                     Height = (float)TextureSize,
@@ -154,14 +145,6 @@ namespace CodeWalker.Rendering
             }
             if (Cascades != null)
             {
-                //foreach (var cascade in Cascades)
-                //{
-                //    if (cascade.DepthTextureDSV != null)
-                //    {
-                //        cascade.DepthTextureDSV.Dispose();
-                //        cascade.DepthTextureDSV = null;
-                //    }
-                //}
                 Cascades.Clear();
                 Cascades = null;
             }
@@ -174,57 +157,49 @@ namespace CodeWalker.Rendering
 
             RTS.Set(context);
 
-            var ppos = cam.Position;// p.GetCurrentPosition();
-            var view = cam.ViewMatrix;// p.GetCurrentView();
-            var proj = cam.ProjMatrix;// p.GetCurrentProj();
-            var viewproj = cam.ViewProjMatrix;// p.GetCurrentViewProj();
+            var ppos = cam.Position;
+            var view = cam.ViewMatrix;
+            var proj = cam.ProjMatrix;
+            var viewproj = cam.ViewProjMatrix;
 
 
             //need to compute a local scene space for the shadows. use a snapped version of the camera coords...
             Vector3 pp = ppos;
-            float snapsize = 20.0f;// 1000000; //20m in planet space... //ideally should snap to texel size
+            float snapsize = 20.0f; //20m snap... //ideally should snap to texel size
             SceneOrigin.X = pp.X - (pp.X % snapsize);
             SceneOrigin.Y = pp.Y - (pp.Y % snapsize);
             SceneOrigin.Z = pp.Z - (pp.Z % snapsize);
-            SceneCamPos = (pp - SceneOrigin);//.ToV3F();// *0.0001f;
+            SceneCamPos = (pp - SceneOrigin);
 
 
             //the items passed in here are visible items. need to compute the scene bounds from these.
-            Vector4 vFLTMAX = new Vector4(float.MaxValue);// FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX );
-            Vector4 vFLTMIN = new Vector4(float.MinValue);// -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX );
-            Vector3 vHMAX = new Vector3(float.MaxValue);// V3H(9223372036854775807);
-            Vector3 vHMIN = new Vector3(float.MinValue);// V3H(-((huge)9223372036854775807));
+            Vector4 vFLTMAX = new Vector4(float.MaxValue);
+            Vector4 vFLTMIN = new Vector4(float.MinValue);
+            Vector3 vHMAX = new Vector3(float.MaxValue);
+            Vector3 vHMIN = new Vector3(float.MinValue);
             WorldMin = vHMAX;
             WorldMax = vHMIN;
-            foreach (var item in items)
+            for (int i = 0; i < items.Count; i++)
             {
-                Vector3 icamrel = item.Inst.CamRel;//  item->Seed.Position.RelativeTo(ppos).ToV3F();
-                float idist = icamrel.Length();// V3FLength(icamrel);
-                float irad = item.Inst.Renderable.Key.BoundingSphereRadius;// ((huge)item->Radius + 1); //+1 to account for rounding down
-                if ((idist-irad) > 3000.0f) continue; //3km limit
+                var inst = items[i].Inst;
 
-                Vector3 imin = item.Inst.BBMin - 100.0f; //extra bias to make sure scene isn't too small in model view...
-                Vector3 imax = item.Inst.BBMax + 100.0f;
-                //Vector3 ipos = item.Inst.Position;// item->Seed.Position;
-                //Vector3 imin = ipos - irad;
-                //Vector3 imax = ipos + irad;
+                Vector3 imin = inst.BBMin - 100.0f; //extra bias to make sure scene isn't too small in model view...
+                Vector3 imax = inst.BBMax + 100.0f;
 
                 WorldMin = Vector3.Min(WorldMin, imin);
                 WorldMax = Vector3.Max(WorldMax, imax);
             }
-            SceneMin = (WorldMin - SceneOrigin);// *0.0001f;
-            SceneMax = (WorldMax - SceneOrigin);// *0.0001f;
+            SceneMin = (WorldMin - SceneOrigin);
+            SceneMax = (WorldMax - SceneOrigin);
             SceneCenter = (SceneMax + SceneMin) * 0.5f;
             SceneExtent = (SceneMax - SceneMin) * 0.5f;
 
-            //M16F camViewInv = M16FInverse(camView);
             Matrix sceneCamTrans = Matrix.Translation(-SceneCamPos);
             SceneCamView = Matrix.Multiply(sceneCamTrans, view);
             Matrix camViewInv = Matrix.Invert(SceneCamView);
 
             Vector3 lightUp = new Vector3(0.0f, 1.0f, 0.0f); //BUG: should select this depending on light dir!?
             LightView = Matrix.LookAtLH(lightDir, Vector3.Zero, lightUp); //BUG?: pos/lightdir wrong way around??
-            //LightView = Matrix.LookAtLH(Vector3.Zero, -lightDir, lightUp); //BUG?: pos/lightdir wrong way around??
             LightDirection = lightDir;
 
             Vector4[] vSceneAABBPointsLightSpace = new Vector4[8];
@@ -233,7 +208,6 @@ namespace CodeWalker.Rendering
             // Transform the scene AABB to Light space.
             for (int index = 0; index < 8; ++index)
             {
-                //vSceneAABBPointsLightSpace[index] = XMVector4Transform(vSceneAABBPointsLightSpace[index], matLightCameraView);
                 vSceneAABBPointsLightSpace[index] = LightView.Multiply(vSceneAABBPointsLightSpace[index]);
             }
 
@@ -243,9 +217,6 @@ namespace CodeWalker.Rendering
             Vector4 vLightCameraOrthographicMax;
             float fCameraNearFarRange = 1000.0f; //(far - near) //1000m in planet space
             float[] fCascadeIntervals = { 0.0075f, 0.02f, 0.06f, 0.15f, 0.5f, 1.0f, 1.5f, 2.5f };
-            //CascadeCount = 6;
-            //float fCascadeIntervals[] = { 0.005f, 0.015f, 0.03f, 0.06f, 0.12f, 0.25f, 0.6f, 1.0f };
-            //CascadeCount = 8;
 
             Vector4 vWorldUnitsPerTexel = Vector4.Zero;
             float fInvTexelCount = 1.0f / (float)TextureSize;
@@ -275,10 +246,10 @@ namespace CodeWalker.Rendering
                 for (int icpIndex = 0; icpIndex < 8; ++icpIndex)
                 {
                     // Transform the frustum from camera view space to world space.
-                    vFrustumPoints[icpIndex] = camViewInv.Multiply(vFrustumPoints[icpIndex]);// +V4FF(SceneCamPos, 0.0f);// XMVector4Transform(vFrustumPoints[icpIndex], matInverseViewCamera);
-                                                                                             // Transform the point from world space to Light Camera Space.
-                    vTempTranslatedCornerPoint = LightView.Multiply(vFrustumPoints[icpIndex]);// XMVector4Transform(vFrustumPoints[icpIndex], matLightCameraView);
-                                                                                              // Find the closest point.
+                    vFrustumPoints[icpIndex] = camViewInv.Multiply(vFrustumPoints[icpIndex]);
+                    // Transform the point from world space to Light Camera Space.
+                    vTempTranslatedCornerPoint = LightView.Multiply(vFrustumPoints[icpIndex]);
+                    // Find the closest point.
                     vLightCameraOrthographicMin = Vector4.Min(vTempTranslatedCornerPoint, vLightCameraOrthographicMin);
                     vLightCameraOrthographicMax = Vector4.Max(vTempTranslatedCornerPoint, vLightCameraOrthographicMax);
                 }
@@ -293,7 +264,7 @@ namespace CodeWalker.Rendering
                 Vector4 vDiagonal = (vFrustumPoints[0] - vFrustumPoints[6]);
 
                 // The bound is the length of the diagonal of the frustum interval.
-                float fCascadeBound = vDiagonal.XYZ().Length();// V3FLength(V4FToV3F(vDiagonal));
+                float fCascadeBound = vDiagonal.XYZ().Length();
                 vDiagonal = new Vector4(fCascadeBound);
 
                 // The offset calculated will pad the ortho projection so that it is always the same size 
@@ -326,63 +297,36 @@ namespace CodeWalker.Rendering
 
                 //These are the unconfigured near and far plane values.  They are purposly awful to show 
                 // how important calculating accurate near and far planes is.
-                float fNearPlane;// = 100000.0f;
-                float fFarPlane;// = -100000.0f;
+                float fNearPlane;
+                float fFarPlane;
 
-
-                //V4F tmpmin = vLightCameraOrthographicMin;
-                //vLightCameraOrthographicMin = -vLightCameraOrthographicMax;
-                //vLightCameraOrthographicMax = -tmpmin;
 
                 // By intersecting the light frustum with the scene AABB we can get a tighter bound on the near and far plane.
                 ComputeNearAndFar(out fNearPlane, out fFarPlane, vLightCameraOrthographicMin, vLightCameraOrthographicMax, vSceneAABBPointsLightSpace);
 
 
-                //near/far swap necessary because the scene camera has negative aspect ratio...
-                //float tmpn = fNearPlane;
-                //fNearPlane = -fFarPlane;
-                //fFarPlane = -tmpn;
-
-
-
-
-                // Craete the orthographic projection for this cascade.
+                // Create the orthographic projection for this cascade.
                 cascade.Ortho = Matrix.OrthoOffCenterLH(vLightCameraOrthographicMin.X, vLightCameraOrthographicMax.X, vLightCameraOrthographicMin.Y, vLightCameraOrthographicMax.Y, fNearPlane, fFarPlane);
-                //M16FOrthographicOffCenter(cascade.Ortho, vLightCameraOrthographicMin.x, vLightCameraOrthographicMax.x, vLightCameraOrthographicMax.y, vLightCameraOrthographicMin.y, fNearPlane, fFarPlane);
-                //D3DXMatrixOrthoOffCenterLH(&m_matShadowProj[iCascadeIndex],
-                //	XMVectorGetX(vLightCameraOrthographicMin),
-                //	XMVectorGetX(vLightCameraOrthographicMax),
-                //	XMVectorGetY(vLightCameraOrthographicMin),
-                //	XMVectorGetY(vLightCameraOrthographicMax),
-                //	fNearPlane, fFarPlane);
 
                 cascade.ZNear = fNearPlane;
                 cascade.ZFar = fFarPlane;
                 cascade.IntervalNear = fFrustumIntervalBegin;
                 cascade.IntervalFar = fFrustumIntervalEnd;
-                //m_fCascadePartitionsFrustum[iCascadeIndex] = fFrustumIntervalEnd;
 
                 cascade.Matrix = Matrix.Multiply(LightView, cascade.Ortho);
-                //cascade.Matrix = cascade.Ortho;
                 cascade.MatrixInv = Matrix.Invert(cascade.Matrix);
                 cascade.WorldUnitsPerTexel = fWorldUnitsPerTexel;
-                cascade.WorldUnitsToCascadeUnits = 2.0f / fCascadeBound;// (cascade.WorldUnitsPerTexel * fInvTexelCount);
+                cascade.WorldUnitsToCascadeUnits = 2.0f / fCascadeBound;
             }
 
 
             context.ClearDepthStencilView(DepthTextureDSV, DepthStencilClearFlags.Depth, 1.0f, 0);
-            //context.ClearDepthStencilView(cascade.DepthTextureDSV, DepthStencilClearFlags.Depth, 1.0f, 0);
-            //ID3D11RenderTargetView* pnullView = NULL;
             // Set a null render target so as not to render color.
             context.OutputMerger.SetRenderTargets(DepthTextureDSV, (RenderTargetView)null);
-            //context.OutputMerger.SetRenderTargets(cascade.DepthTextureDSV, (RenderTargetView)null);
-            //context->OMSetRenderTargets(1, &pnullView, cascade.DepthTextureDSV.Get());
 
             context.OutputMerger.SetDepthStencilState(DepthRenderDS);
-            //context->OMSetDepthStencilState(DepthRenderDS.Get(), 1);
 
             context.Rasterizer.State = DepthRenderRS;
-            //context->RSSetState(DepthRenderRS.Get());
 
         }
 
@@ -390,24 +334,7 @@ namespace CodeWalker.Rendering
         {
             ShadowmapCascade cascade = Cascades[cascadeIndex];
 
-            //context.ClearDepthStencilView(DepthTextureDSV, DepthStencilClearFlags.Depth, 1.0f, 0);
-            ////context.ClearDepthStencilView(cascade.DepthTextureDSV, DepthStencilClearFlags.Depth, 1.0f, 0);
-            ////ID3D11RenderTargetView* pnullView = NULL;
-            //// Set a null render target so as not to render color.
-            //context.OutputMerger.SetRenderTargets(DepthTextureDSV, (RenderTargetView)null);
-            ////context.OutputMerger.SetRenderTargets(cascade.DepthTextureDSV, (RenderTargetView)null);
-            ////context->OMSetRenderTargets(1, &pnullView, cascade.DepthTextureDSV.Get());
-
-            //context.OutputMerger.SetDepthStencilState(DepthRenderDS);
-            ////context->OMSetDepthStencilState(DepthRenderDS.Get(), 1);
-
-            //context.Rasterizer.State = DepthRenderRS;
-            ////context->RSSetState(DepthRenderRS.Get());
-
             context.Rasterizer.SetViewport(cascade.DepthRenderVP);
-            //context.Rasterizer.SetViewport(DepthRenderVP);
-            //context->RSSetViewports(1, &DepthRenderVP);
-
         }
 
         public void EndUpdate(DeviceContext context)
@@ -418,7 +345,6 @@ namespace CodeWalker.Rendering
         public void SetFinalRenderResources(DeviceContext context)
         {
 
-            //ShadowmapVars & v = ShadowVars.Vars;
             ShadowVars.Vars.CamScenePos = new Vector4(SceneCamPos, 0.0f); //in shadow scene coords
             ShadowVars.Vars.CamSceneView = Matrix.Transpose(SceneCamView);
             ShadowVars.Vars.LightView = Matrix.Transpose(LightView);
@@ -431,27 +357,9 @@ namespace CodeWalker.Rendering
             for (int i = 0; i < CascadeCount; ++i)
             {
                 ShadowmapCascade cascade = Cascades[i];
-
-
-                //M16F mShadowTexture = m_matShadowProj[index] * dxmatTextureScale * dxmatTextureTranslation;
                 Matrix mShadowTexture = Matrix.Multiply(cascade.Ortho, dxmatTextureST);
-
-                //ShadowVars.Vars.CascadeScales[i].x = mShadowTexture.M11;
-                //ShadowVars.Vars.CascadeScales[i].y = mShadowTexture.M22;
-                //ShadowVars.Vars.CascadeScales[i].z = mShadowTexture.M33;
-                //ShadowVars.Vars.CascadeScales[i].w = 1.0f;
                 ShadowVars.Vars.CascadeScales.Set(i, new Vector4(mShadowTexture.M11, mShadowTexture.M22, mShadowTexture.M33, 1.0f));
-
-                //v.CascadeOffsets[i].x = mShadowTexture.M41;
-                //v.CascadeOffsets[i].y = mShadowTexture.M42;
-                //v.CascadeOffsets[i].z = mShadowTexture.M43;
-                //v.CascadeOffsets[i].w = 0.0f;
                 ShadowVars.Vars.CascadeOffsets.Set(i, new Vector4(mShadowTexture.M41, mShadowTexture.M42, mShadowTexture.M43, 0.0f));
-
-                //v.CascadeDepths[i].x = cascade.IntervalFar;
-                //v.CascadeDepths[i].y = 0.0f;
-                //v.CascadeDepths[i].z = 0.0f;
-                //v.CascadeDepths[i].w = 0.0f;
                 ShadowVars.Vars.CascadeDepths.Set(i, new Vector4(cascade.IntervalFar, 0.0f, 0.0f, 0.0f));
             }
 
@@ -543,7 +451,6 @@ namespace CodeWalker.Rendering
             for (int i = 0; i < 6; i++)
             {
                 // Transform point.
-                //Points[i] = XMVector4Transform(HomogenousPoints[i], matInverse);
                 Points[i] = matInverse.Multiply(HomogeneousPoints[i]);
             }
 
@@ -553,22 +460,22 @@ namespace CodeWalker.Rendering
             sf.Orientation = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
 
             // Compute the slopes.
-            Points[0] = Points[0] * (1.0f / Points[0].Z);// XMVectorReciprocal(XMVectorSplatZ(Points[0]));
-            Points[1] = Points[1] * (1.0f / Points[1].Z);// XMVectorReciprocal(XMVectorSplatZ(Points[1]));
-            Points[2] = Points[2] * (1.0f / Points[2].Z);// XMVectorReciprocal(XMVectorSplatZ(Points[2]));
-            Points[3] = Points[3] * (1.0f / Points[3].Z);// XMVectorReciprocal(XMVectorSplatZ(Points[3]));
+            Points[0] = Points[0] * (1.0f / Points[0].Z);
+            Points[1] = Points[1] * (1.0f / Points[1].Z);
+            Points[2] = Points[2] * (1.0f / Points[2].Z);
+            Points[3] = Points[3] * (1.0f / Points[3].Z);
 
-            sf.RightSlope = Points[0].X;// XMVectorGetX(Points[0]);
-            sf.LeftSlope = Points[1].X;// XMVectorGetX(Points[1]);
-            sf.TopSlope = Points[2].Y;// XMVectorGetY(Points[2]);
-            sf.BottomSlope = Points[3].Y;// XMVectorGetY(Points[3]);
+            sf.RightSlope = Points[0].X;
+            sf.LeftSlope = Points[1].X;
+            sf.TopSlope = Points[2].Y;
+            sf.BottomSlope = Points[3].Y;
 
             // Compute near and far.
-            Points[4] = Points[4] * (1.0f / Points[4].W);// XMVectorReciprocal(XMVectorSplatW(Points[4]));
-            Points[5] = Points[5] * (1.0f / Points[5].W);// XMVectorReciprocal(XMVectorSplatW(Points[5]));
+            Points[4] = Points[4] * (1.0f / Points[4].W);
+            Points[5] = Points[5] * (1.0f / Points[5].W);
 
-            sf.Near = Points[4].Z;// XMVectorGetZ(Points[4]);
-            sf.Far = Points[5].Z;// XMVectorGetZ(Points[5]);
+            sf.Near = Points[4].Z;
+            sf.Far = Points[5].Z;
         }
 
 
@@ -586,17 +493,17 @@ namespace CodeWalker.Rendering
             vViewFrust.Near = -fCascadeIntervalBegin; //negative due to negative aspect ratio projection matrix..
             vViewFrust.Far = -fCascadeIntervalEnd;
 
-            Vector3 vGrabY = new Vector3(0.0f, 1.0f, 0.0f);// ,0x00000000 };
-            Vector3 vGrabX = new Vector3(1.0f, 0.0f, 0.0f);// , 0x00000000 };
+            Vector3 vGrabY = new Vector3(0.0f, 1.0f, 0.0f);
+            Vector3 vGrabX = new Vector3(1.0f, 0.0f, 0.0f);
 
-            Vector3 vRightTop = new Vector3(vViewFrust.RightSlope, vViewFrust.TopSlope, 1.0f);// , 1.0f };
-            Vector3 vLeftBottom = new Vector3(vViewFrust.LeftSlope, vViewFrust.BottomSlope, 1.0f);// , 1.0f };
-            Vector3 vNear = new Vector3(vViewFrust.Near, vViewFrust.Near, vViewFrust.Near);// ,1.0f };
-            Vector3 vFar = new Vector3(vViewFrust.Far, vViewFrust.Far, vViewFrust.Far);// ,1.0f };
-            Vector3 vRightTopNear = vRightTop * vNear;// XMVectorMultiply(vRightTop, vNear);
-            Vector3 vRightTopFar = vRightTop * vFar;// XMVectorMultiply(vRightTop, vFar);
-            Vector3 vLeftBottomNear = vLeftBottom * vNear;// XMVectorMultiply(vLeftBottom, vNear);
-            Vector3 vLeftBottomFar = vLeftBottom * vFar;// XMVectorMultiply(vLeftBottom, vFar);
+            Vector3 vRightTop = new Vector3(vViewFrust.RightSlope, vViewFrust.TopSlope, 1.0f);
+            Vector3 vLeftBottom = new Vector3(vViewFrust.LeftSlope, vViewFrust.BottomSlope, 1.0f);
+            Vector3 vNear = new Vector3(vViewFrust.Near, vViewFrust.Near, vViewFrust.Near);
+            Vector3 vFar = new Vector3(vViewFrust.Far, vViewFrust.Far, vViewFrust.Far);
+            Vector3 vRightTopNear = vRightTop * vNear;
+            Vector3 vRightTopFar = vRightTop * vFar;
+            Vector3 vLeftBottomNear = vLeftBottom * vNear;
+            Vector3 vLeftBottomFar = vLeftBottom * vFar;
 
             pvCornerPointsWorld[0] = new Vector4(vRightTopNear, 1.0f);
             pvCornerPointsWorld[1] = new Vector4(V3FSelect(vRightTopNear, vLeftBottomNear, vGrabX), 1.0f);
@@ -639,8 +546,8 @@ namespace CodeWalker.Rendering
             //--------------------------------------------------------------------------------------
 
             // Initialize the near and far planes
-            fNearPlane = float.MaxValue;// FLT_MAX;
-            fFarPlane = float.MinValue;// -FLT_MAX;
+            fNearPlane = float.MaxValue;
+            fFarPlane = float.MinValue;
 
             ShadowmapTriangle[] triangleList = new ShadowmapTriangle[16];
             int iTriangleCnt = 1;
@@ -913,9 +820,6 @@ namespace CodeWalker.Rendering
         public ShadowmapVarsCascadeData CascadeOffsets;
         public ShadowmapVarsCascadeData CascadeScales;
         public ShadowmapVarsCascadeData CascadeDepths; //in scene eye space
-        //public Vector4 CascadeOffsets[16];
-        //public Vector4 CascadeScales[16];
-        //public Vector4 CascadeDepths[16]; //in scene eye space
         public int CascadeCount;
         public int CascadeVisual;
         public int PCFLoopStart;
@@ -1008,7 +912,6 @@ namespace CodeWalker.Rendering
         public Matrix Ortho { get; set; }
         public Matrix Matrix { get; set; }
         public Matrix MatrixInv { get; set; }
-        //public DepthStencilView DepthTextureDSV { get; set; }
         public ViewportF DepthRenderVP { get; set; }
         public float WorldUnitsPerTexel { get; set; } //updated each frame for culling
         public float WorldUnitsToCascadeUnits { get; set; }

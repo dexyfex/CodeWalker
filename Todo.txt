@@ -28,7 +28,6 @@ world view grid option?
 
 ---[Editor stuff]---
 
-delete key - delete item!
 
 add entities with preview... asset browser
 undo add/delete entities, cargens, path nodes, scenario points...
@@ -61,7 +60,6 @@ model view - improve .ynv rendering (portals etc)
 model view - YPT particles - animate particles? do more work on format?
 
 mapDataGroups - how to isolate one of the grouped ymaps? eg destruction etc.
-entitySets - like mapDataGroups but for interiors..... in Mlo data?
 
 fix LOD switching
 fix decal ordering?
@@ -102,6 +100,13 @@ Audio stuff - do more work on .rel format  (see https://github.com/CamxxCore/Rag
 done:
 
 
+[v.29]
+entitySets - like mapDataGroups but for interiors..... in Mlo data
+delete key - delete item!
+
+
+[v.28]
+Audio zones display
 
 
 [v.27]
