@@ -1760,13 +1760,6 @@ namespace CodeWalker.GameFiles
 
     //generated + adjusted structs code (UnusedX padding vars manually added) from here down, + meta wrapper classes
 
-    [TC(typeof(EXP))] public struct VECTOR3 //12 bytes, Key:2751397072
-    {
-        public float x { get; set; }//0
-        public float y { get; set; }//4
-        public float z { get; set; }//8
-    }
-
     [TC(typeof(EXP))] public struct CMapTypes //80 bytes, Key:2608875220
     {
         public uint Unused0 { get; set; }//0
