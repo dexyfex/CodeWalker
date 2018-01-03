@@ -730,7 +730,6 @@ namespace CodeWalker.GameFiles
             Unk1 = 0;
         }
 
-
         public void SwapEnd()
         {
             Pointer = MetaTypes.SwapBytes(Pointer);
@@ -756,6 +755,23 @@ namespace CodeWalker.GameFiles
         public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
         public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
 
+        public Array_byte(uint ptr, int cnt)
+        {
+            Pointer = ptr;
+            Unk0 = 0;
+            Count1 = (ushort)cnt;
+            Count2 = Count1;
+            Unk1 = 0;
+        }
+        public Array_byte(MetaBuilderPointer ptr)
+        {
+            Pointer = ptr.Pointer;
+            Unk0 = 0;
+            Count1 = (ushort)ptr.Length;
+            Count2 = Count1;
+            Unk1 = 0;
+        }
+
         public void SwapEnd()
         {
             Pointer = MetaTypes.SwapBytes(Pointer);
@@ -780,6 +796,23 @@ namespace CodeWalker.GameFiles
         public uint PointerDataId { get { return (Pointer & 0xFFF); } }
         public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
         public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
+
+        public Array_float(uint ptr, int cnt)
+        {
+            Pointer = ptr;
+            Unk0 = 0;
+            Count1 = (ushort)cnt;
+            Count2 = Count1;
+            Unk1 = 0;
+        }
+        public Array_float(MetaBuilderPointer ptr)
+        {
+            Pointer = ptr.Pointer;
+            Unk0 = 0;
+            Count1 = (ushort)ptr.Length;
+            Count2 = Count1;
+            Unk1 = 0;
+        }
 
         public void SwapEnd()
         {
