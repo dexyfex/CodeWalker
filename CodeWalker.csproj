@@ -275,6 +275,7 @@
     <Compile Include="GameFiles\FileTypes\YwrFile.cs" />
     <Compile Include="GameFiles\MetaTypes\MetaBuilder.cs" />
     <Compile Include="GameFiles\MetaTypes\MetaXml.cs" />
+    <Compile Include="GameFiles\MetaTypes\XmlMeta.cs" />
     <Compile Include="GameFiles\Resources\Archetype.cs" />
     <Compile Include="GameFiles\FileTypes\CacheDatFile.cs" />
     <Compile Include="GameFiles\Resources\Bounds.cs" />
