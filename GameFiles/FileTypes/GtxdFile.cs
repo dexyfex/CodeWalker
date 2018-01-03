@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -133,7 +134,24 @@ namespace CodeWalker.GameFiles
 
         private void LoadMapParentTxds(string xml)
         {
-            //TODO...
+            XmlDocument xmldoc = new XmlDocument();
+            xmldoc.LoadXml(xml);
+            XmlNodeList items = xmldoc.SelectNodes("CMapParentTxds/txdRelationships/item");
+
+            CMapParentTxds = new Dictionary<string, string>();
+            for (int i = 0; i < items.Count; i++)
+            {
+                string parentstr = Xml.GetChildInnerText(items[i], "parent");
+                string childstr = Xml.GetChildInnerText(items[i], "child");
+
+                if ((!string.IsNullOrEmpty(parentstr)) && (!string.IsNullOrEmpty(childstr)))
+                {
+                    if (!CMapParentTxds.ContainsKey(childstr))
+                    {
+                        CMapParentTxds.Add(childstr, parentstr);
+                    }
+                }
+            }
         }
 
     }
