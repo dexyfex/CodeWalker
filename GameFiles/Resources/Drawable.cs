@@ -1031,7 +1031,7 @@ namespace CodeWalker.GameFiles
         public ushort GeometriesCount1 { get; set; }
         public ushort GeometriesCount2 { get; set; }
         public uint Unknown_14h { get; set; } // 0x00000000
-        public ulong Unknown_18h_Pointer { get; set; }
+        public ulong BoundsPointer { get; set; }
         public ulong ShaderMappingPointer { get; set; }
         public uint Unknown_28h { get; set; }
         public uint Unknown_2Ch { get; set; }
@@ -1040,7 +1040,7 @@ namespace CodeWalker.GameFiles
         public ResourcePointerArray64<DrawableGeometry> Geometries { get; set; }
         //public ResourceSimpleArray<AABB_r> Unknown_18h_Data;
         //public ResourceSimpleArray<ushort_r> ShaderMapping;
-        public AABB_s[] Unknown_18h_Data { get; set; }
+        public AABB_s[] BoundsData { get; set; }
         public ushort[] ShaderMapping { get; set; }
 
         public long MemoryUsage
@@ -1074,9 +1074,9 @@ namespace CodeWalker.GameFiles
                         }
                     }
                 }
-                if (Unknown_18h_Data != null)
+                if (BoundsData != null)
                 {
-                    val += Unknown_18h_Data.Length * 32;
+                    val += BoundsData.Length * 32;
                 }
                 return val;
             }
@@ -1094,7 +1094,7 @@ namespace CodeWalker.GameFiles
             this.GeometriesCount1 = reader.ReadUInt16();
             this.GeometriesCount2 = reader.ReadUInt16();
             this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h_Pointer = reader.ReadUInt64();
+            this.BoundsPointer = reader.ReadUInt64();
             this.ShaderMappingPointer = reader.ReadUInt64();
             this.Unknown_28h = reader.ReadUInt32();
             this.Unknown_2Ch = reader.ReadUInt32();
@@ -1112,7 +1112,7 @@ namespace CodeWalker.GameFiles
             //    this.ShaderMappingPointer, // offset
             //    this.GeometriesCount1
             //);
-            this.Unknown_18h_Data = reader.ReadStructsAt<AABB_s>(this.Unknown_18h_Pointer, (uint)(this.GeometriesCount1 > 1 ? this.GeometriesCount1 + 1 : this.GeometriesCount1));
+            this.BoundsData = reader.ReadStructsAt<AABB_s>(this.BoundsPointer, (uint)(this.GeometriesCount1 > 1 ? this.GeometriesCount1 + 1 : this.GeometriesCount1));
             this.ShaderMapping = reader.ReadUshortsAt(this.ShaderMappingPointer, this.GeometriesCount1);
 
         }
@@ -1136,7 +1136,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.GeometriesCount1);
             writer.Write(this.GeometriesCount2);
             writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h_Pointer);
+            writer.Write(this.BoundsPointer);
             writer.Write(this.ShaderMappingPointer);
             writer.Write(this.Unknown_28h);
             writer.Write(this.Unknown_2Ch);
@@ -1189,7 +1189,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_50h { get; set; } // 0x00000000
         public uint Unknown_54h { get; set; } // 0x00000000
         public uint IndicesCount { get; set; }
-        public uint Unknown_5Ch { get; set; }
+        public uint TrianglesCount { get; set; }
         public ushort VerticesCount { get; set; }
         public ushort Unknown_62h { get; set; } // 0x0003
         public uint Unknown_64h { get; set; } // 0x00000000
@@ -1239,7 +1239,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_50h = reader.ReadUInt32();
             this.Unknown_54h = reader.ReadUInt32();
             this.IndicesCount = reader.ReadUInt32();
-            this.Unknown_5Ch = reader.ReadUInt32();
+            this.TrianglesCount = reader.ReadUInt32();
             this.VerticesCount = reader.ReadUInt16();
             this.Unknown_62h = reader.ReadUInt16();
             this.Unknown_64h = reader.ReadUInt32();
@@ -1333,7 +1333,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_50h);
             writer.Write(this.Unknown_54h);
             writer.Write(this.IndicesCount);
-            writer.Write(this.Unknown_5Ch);
+            writer.Write(this.TrianglesCount);
             writer.Write(this.VerticesCount);
             writer.Write(this.Unknown_62h);
             writer.Write(this.Unknown_64h);
@@ -2099,10 +2099,10 @@ namespace CodeWalker.GameFiles
         public ulong DrawableModelsMediumPointer { get; set; }
         public ulong DrawableModelsLowPointer { get; set; }
         public ulong DrawableModelsVeryLowPointer { get; set; }
-        public float Unknown_70h { get; set; }
-        public float Unknown_74h { get; set; }
-        public float Unknown_78h { get; set; }
-        public float Unknown_7Ch { get; set; }
+        public float LodGroupHigh { get; set; }
+        public float LodGroupMed { get; set; }
+        public float LodGroupLow { get; set; }
+        public float LodGroupVlow { get; set; }
         public uint Unknown_80h { get; set; }
         public uint Unknown_84h { get; set; }
         public uint Unknown_88h { get; set; }
@@ -2169,10 +2169,10 @@ namespace CodeWalker.GameFiles
             this.DrawableModelsMediumPointer = reader.ReadUInt64();
             this.DrawableModelsLowPointer = reader.ReadUInt64();
             this.DrawableModelsVeryLowPointer = reader.ReadUInt64();
-            this.Unknown_70h = reader.ReadSingle();
-            this.Unknown_74h = reader.ReadSingle();
-            this.Unknown_78h = reader.ReadSingle();
-            this.Unknown_7Ch = reader.ReadSingle();
+            this.LodGroupHigh = reader.ReadSingle();
+            this.LodGroupMed = reader.ReadSingle();
+            this.LodGroupLow = reader.ReadSingle();
+            this.LodGroupVlow = reader.ReadSingle();
             this.Unknown_80h = reader.ReadUInt32();
             this.Unknown_84h = reader.ReadUInt32();
             this.Unknown_88h = reader.ReadUInt32();
@@ -2307,10 +2307,10 @@ namespace CodeWalker.GameFiles
             writer.Write(this.DrawableModelsMediumPointer);
             writer.Write(this.DrawableModelsLowPointer);
             writer.Write(this.DrawableModelsVeryLowPointer);
-            writer.Write(this.Unknown_70h);
-            writer.Write(this.Unknown_74h);
-            writer.Write(this.Unknown_78h);
-            writer.Write(this.Unknown_7Ch);
+            writer.Write(this.LodGroupHigh);
+            writer.Write(this.LodGroupMed);
+            writer.Write(this.LodGroupLow);
+            writer.Write(this.LodGroupVlow);
             writer.Write(this.Unknown_80h);
             writer.Write(this.Unknown_84h);
             writer.Write(this.Unknown_88h);
