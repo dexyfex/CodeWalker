@@ -69,6 +69,7 @@ namespace CodeWalker.GameFiles
         Rel = 13,
         Ywr = 14,
         Yvr = 15,
+        Gtxd = 16,
     }
 
 }

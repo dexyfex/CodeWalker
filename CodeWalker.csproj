@@ -262,6 +262,7 @@
     <Compile Include="GameFiles\FileTypes\CutFile.cs" />
     <Compile Include="GameFiles\FileTypes\DlcContentFile.cs" />
     <Compile Include="GameFiles\FileTypes\DlcSetupFile.cs" />
+    <Compile Include="GameFiles\FileTypes\GtxdFile.cs" />
     <Compile Include="GameFiles\FileTypes\Gxt2File.cs" />
     <Compile Include="GameFiles\FileTypes\JPsoFile.cs" />
     <Compile Include="GameFiles\FileTypes\RelFile.cs" />

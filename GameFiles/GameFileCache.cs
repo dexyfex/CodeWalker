@@ -940,9 +940,9 @@ namespace CodeWalker.GameFiles
                 {
                     try
                     {
-                        if (entry.NameLower == "gtxd.ymt")
+                        if ((entry.NameLower == "gtxd.ymt") || (entry.NameLower == "gtxd.meta"))
                         {
-                            YmtFile ymt = RpfMan.GetFile<YmtFile>(entry);
+                            GtxdFile ymt = RpfMan.GetFile<GtxdFile>(entry);
                             if (ymt.CMapParentTxds != null)
                             {
                                 foreach (var kvp in ymt.CMapParentTxds)
@@ -959,9 +959,6 @@ namespace CodeWalker.GameFiles
                                 }
                             }
                         }
-                        else if (entry.NameLower == "gtxd.meta")  //these still need to be handled!
-                        {
-                        }
                     }
                     catch (Exception ex)
                     {
@@ -973,25 +970,39 @@ namespace CodeWalker.GameFiles
 
             if (EnableDlc)
             {
-                //foreach (var dlcfile in DlcActiveRpfs)
-                //{
-                //    foreach (RpfEntry entry in dlcfile.AllEntries)
-                //    {
-                //        try
-                //        {
-                //            if (entry.NameLower == "gtxd.meta")  //these still need to be handled!
-                //            {
-                //                //update\x64\dlcpacks\mpheist\dlc.rpf
-                //                //update\x64\dlcpacks\mpluxe\dlc.rpf
-                //            }
-                //        }
-                //        catch (Exception ex)
-                //        {
-                //            string errstr = entry.Path + "\n" + ex.ToString();
-                //            ErrorLog(errstr);
-                //        }
-                //    }
-                //}
+                foreach (var dlcfile in DlcActiveRpfs)
+                {
+                    foreach (RpfEntry entry in dlcfile.AllEntries)
+                    {
+                        try
+                        {
+                            if (entry.NameLower == "gtxd.meta")
+                            {
+                                GtxdFile ymt = RpfMan.GetFile<GtxdFile>(entry);
+                                if (ymt.CMapParentTxds != null)
+                                {
+                                    foreach (var kvp in ymt.CMapParentTxds)
+                                    {
+                                        uint chash = JenkHash.GenHash(kvp.Key.ToLowerInvariant());
+                                        uint phash = JenkHash.GenHash(kvp.Value.ToLowerInvariant());
+                                        if (!parentTxds.ContainsKey(chash))
+                                        {
+                                            parentTxds.Add(chash, phash);
+                                        }
+                                        else
+                                        {
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            string errstr = entry.Path + "\n" + ex.ToString();
+                            ErrorLog(errstr);
+                        }
+                    }
+                }
             }
 
 
