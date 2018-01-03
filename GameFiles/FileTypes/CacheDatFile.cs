@@ -360,11 +360,11 @@ namespace CodeWalker.GameFiles
         public Quaternion Orientation { get; set; }
         public Vector3 BBMin { get; set; }
         public Vector3 BBMax { get; set; }
-        public uint Unk11 { get; set; }
+        public float Unk11 { get; set; }
         public uint Unk12 { get; set; }
-        public uint Unk13 { get; set; }
+        public float Unk13 { get; set; }
         public uint Unk14 { get; set; }
-        public uint Unk15 { get; set; }
+        public float Unk15 { get; set; }
         public uint Unk16 { get; set; }
         public uint Unk17 { get; set; }
         public uint Unk18 { get; set; }
@@ -380,11 +380,11 @@ namespace CodeWalker.GameFiles
             Orientation = new Quaternion(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             BBMin = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             BBMax = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk11 = br.ReadUInt32();//could be float
+            Unk11 = br.ReadSingle();
             Unk12 = br.ReadUInt32();
-            Unk13 = br.ReadUInt32();//could be float
+            Unk13 = br.ReadSingle();
             Unk14 = br.ReadUInt32();
-            Unk15 = br.ReadUInt32();//could be float
+            Unk15 = br.ReadSingle();
             Unk16 = br.ReadUInt32();
             Unk17 = br.ReadUInt32();//could be float
             Unk18 = br.ReadUInt32();

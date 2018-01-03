@@ -22,6 +22,8 @@ namespace CodeWalker.World
         private Dictionary<SpaceBoundsKey, BoundsStoreItem> visibleBoundsDict = new Dictionary<SpaceBoundsKey, BoundsStoreItem>();
 
         private Dictionary<MetaHash, MetaHash> interiorLookup = new Dictionary<MetaHash, MetaHash>();
+        private Dictionary<MetaHash, YmfInterior> interiorManifest = new Dictionary<MetaHash, YmfInterior>();
+        private Dictionary<SpaceBoundsKey, CInteriorProxy> interiorProxies = new Dictionary<SpaceBoundsKey, CInteriorProxy>();
         private Dictionary<MetaHash, YmfMapDataGroup> dataGroupDict = new Dictionary<MetaHash, YmfMapDataGroup>();
         private Dictionary<MetaHash, MapDataStoreNode> nodedict = new Dictionary<MetaHash, MapDataStoreNode>();
         private Dictionary<SpaceBoundsKey, BoundsStoreItem> boundsdict = new Dictionary<SpaceBoundsKey, BoundsStoreItem>();
@@ -79,6 +81,7 @@ namespace CodeWalker.World
         private void InitManifestData()
         {
             interiorLookup.Clear();
+            interiorManifest.Clear();
             ymaptimes.Clear();
             ymapweathertypes.Clear();
             dataGroupDict.Clear();
@@ -91,13 +94,18 @@ namespace CodeWalker.World
                 {
                     foreach (var interior in manifest.Interiors)
                     {
+                        var intname = interior.Interior.Name;
+                        if (interiorManifest.ContainsKey(intname))
+                        { }
+                        interiorManifest[intname] = interior;
+
                         if (interior.Bounds != null)
                         {
                             foreach (var intbound in interior.Bounds)
                             {
                                 if (interiorLookup.ContainsKey(intbound))
                                 { }//updates can hit here
-                                interiorLookup[intbound] = interior.Interior.Name;
+                                interiorLookup[intbound] = intname;
                             }
                         }
                         else
@@ -163,6 +171,7 @@ namespace CodeWalker.World
             List<BoundsStoreItem> intlist = new List<BoundsStoreItem>();
             boundsdict = new Dictionary<SpaceBoundsKey, BoundsStoreItem>();
             usedboundsdict = new Dictionary<MetaHash, BoundsStoreItem>();
+            interiorProxies = new Dictionary<SpaceBoundsKey, CInteriorProxy>();
 
             Dictionary<MetaHash, CacheFileDate> filedates = new Dictionary<MetaHash, CacheFileDate>();
             Dictionary<uint, CacheFileDate> filedates2 = new Dictionary<uint, CacheFileDate>();
@@ -217,6 +226,10 @@ namespace CodeWalker.World
                 {
                     //these might need to go into the grid. which grid..?
                     //but might need to map back to the bounds store... this has more info though!
+                    SpaceBoundsKey key = new SpaceBoundsKey(intprx.Name, intprx.Position);
+                    if (interiorProxies.ContainsKey(key))
+                    { }//updates/dlc hit here
+                    interiorProxies[key] = intprx;
                 }
 
                 foreach (var item in cache.AllBoundsStoreItems)
@@ -305,15 +318,15 @@ namespace CodeWalker.World
 
             Grid = new SpaceGrid();
 
-            List<MapDataStoreNode> containers = new List<MapDataStoreNode>();
-            List<MapDataStoreNode> critnodes = new List<MapDataStoreNode>();
-            List<MapDataStoreNode> hdnodes = new List<MapDataStoreNode>();
-            List<MapDataStoreNode> lodnodes = new List<MapDataStoreNode>();
-            List<MapDataStoreNode> strmnodes = new List<MapDataStoreNode>();
-            List<MapDataStoreNode> intnodes = new List<MapDataStoreNode>();
-            List<MapDataStoreNode> occlnodes = new List<MapDataStoreNode>();
-            List<MapDataStoreNode> grassnodes = new List<MapDataStoreNode>();
-            List<MapDataStoreNode> lodlightsnodes = new List<MapDataStoreNode>();
+            //List<MapDataStoreNode> containers = new List<MapDataStoreNode>();
+            //List<MapDataStoreNode> critnodes = new List<MapDataStoreNode>();
+            //List<MapDataStoreNode> hdnodes = new List<MapDataStoreNode>();
+            //List<MapDataStoreNode> lodnodes = new List<MapDataStoreNode>();
+            //List<MapDataStoreNode> strmnodes = new List<MapDataStoreNode>();
+            //List<MapDataStoreNode> intnodes = new List<MapDataStoreNode>();
+            //List<MapDataStoreNode> occlnodes = new List<MapDataStoreNode>();
+            //List<MapDataStoreNode> grassnodes = new List<MapDataStoreNode>();
+            //List<MapDataStoreNode> lodlightsnodes = new List<MapDataStoreNode>();
 
             foreach (var node in nodedict.Values)
             {
@@ -321,51 +334,51 @@ namespace CodeWalker.World
                 byte t = (byte)(node.ContentFlags & 0xFF);
                 switch (node.ContentFlags)// t)
                 {
-                    case 0:
-                        addtogrid = true; //for mods/unused stuff? could be interesting.
+                    case 0: //for mods/unused stuff? could be interesting.
+                        addtogrid = true;
                         break;
                     case 16://"container" node?
-                        containers.Add(node);
+                        //containers.Add(node);
                         break;
                     case 18:
-                    case 82:
-                        hdnodes.Add(node);
+                    case 82: //HD nodes
+                        //hdnodes.Add(node);
                         addtogrid = true;
                         break;
                     case 1:
-                    case 65:
-                        strmnodes.Add(node);
+                    case 65: //Stream nodes
+                        //strmnodes.Add(node);
                         addtogrid = true;
                         break;
                     case 513:
-                    case 577:
-                        critnodes.Add(node);
+                    case 577: //critical nodes
+                        //critnodes.Add(node);
                         addtogrid = true;
                         break;
                     case 9:
-                    case 73:
-                        intnodes.Add(node);
+                    case 73: //interior nodes
+                        //intnodes.Add(node);
                         addtogrid = true;
                         break;
                     case 2:
                     case 4:
                     case 20:
                     case 66:
-                    case 514:
-                        lodnodes.Add(node);
+                    case 514: //LOD nodes
+                        //lodnodes.Add(node);
                         addtogrid = true;
                         break;
                     case 128:
-                    case 256:
-                        lodlightsnodes.Add(node);
+                    case 256: //LOD lights nodes
+                        //lodlightsnodes.Add(node);
                         addtogrid = true;
                         break;
-                    case 32:
-                        occlnodes.Add(node);
+                    case 32: //occlusion nodes
+                        //occlnodes.Add(node);
                         addtogrid = true;
                         break;
-                    case 1088:
-                        grassnodes.Add(node);
+                    case 1088: //grass nodes
+                        //grassnodes.Add(node);
                         addtogrid = true;
                         break;
                     default:
@@ -385,6 +398,11 @@ namespace CodeWalker.World
             foreach (var item in boundsdict.Values)
             {
                 Grid.AddBounds(item);
+            }
+
+            foreach (var intprx in interiorProxies.Values)
+            {
+                Grid.AddInterior(intprx);
             }
 
         }
@@ -441,12 +459,13 @@ namespace CodeWalker.World
 
                         AllYnds[fnhash] = cell.Ynd;
 
-                        if (cell.Ynd == null) continue;
-                        if (cell.Ynd.NodeDictionary == null) continue;
-                        if (cell.Ynd.NodeDictionary.Nodes == null) continue;
-                        var na = cell.Ynd.NodeDictionary.Nodes;
 
                         #region node flags test
+
+                        //if (cell.Ynd == null) continue;
+                        //if (cell.Ynd.NodeDictionary == null) continue;
+                        //if (cell.Ynd.NodeDictionary.Nodes == null) continue;
+                        //var na = cell.Ynd.NodeDictionary.Nodes;
 
                         //for (int i = 0; i < na.Length; i++)
                         //{
@@ -1727,6 +1746,11 @@ namespace CodeWalker.World
         public int MaxNodesInCell = 0; //biggest number of nodes added to a single cell
         private SpaceGridCell DensestNodeCell = null;
 
+        public int TotalInteriorCount = 0;
+        public int TotalInteriorRefCount = 0;
+        public int MaxInteriorsInCell = 0;
+        private SpaceGridCell DensestInteriorCell = null;
+
         public SpaceGridCell[,] Cells { get; set; } = new SpaceGridCell[CellCount, CellCount];
 
 
@@ -1835,12 +1859,38 @@ namespace CodeWalker.World
             TotalNodeCount++;
         }
 
+        public void AddInterior(CInteriorProxy intprx)
+        {
+            Vector2I min = GetCellPos(intprx.BBMin);
+            Vector2I max = GetCellPos(intprx.BBMax);
+
+            int cellcount = 0;
+            for (int x = min.X; x <= max.X; x++)
+            {
+                for (int y = min.Y; y <= max.Y; y++)
+                {
+                    var cell = GetCell(new Vector2I(x, y));
+                    cell.AddInterior(intprx);
+                    TotalInteriorRefCount++;
+                    if (cell.InteriorList.Count > MaxInteriorsInCell)
+                    {
+                        MaxInteriorsInCell = cell.InteriorList.Count;
+                        DensestInteriorCell = cell;
+                    }
+                    cellcount++;
+                }
+            }
+            if (cellcount == 0)
+            { }
+
+            TotalInteriorCount++;
+        }
     }
     public class SpaceGridCell
     {
         public List<MapDataStoreNode> NodesList;
         public List<BoundsStoreItem> BoundsList;
-
+        public List<CInteriorProxy> InteriorList;
 
         public void AddNode(MapDataStoreNode node)
         {
@@ -1865,6 +1915,15 @@ namespace CodeWalker.World
             {
                 BoundsList.Remove(item);
             }
+        }
+
+        public void AddInterior(CInteriorProxy intprx)
+        {
+            if (InteriorList == null)
+            {
+                InteriorList = new List<CInteriorProxy>(5);
+            }
+            InteriorList.Add(intprx);
         }
     }
     public struct SpaceBoundsKey
