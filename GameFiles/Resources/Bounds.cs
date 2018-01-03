@@ -30,14 +30,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+
+using TC = System.ComponentModel.TypeConverterAttribute;
+using EXP = System.ComponentModel.ExpandableObjectConverter;
+
 
 namespace CodeWalker.GameFiles
 {
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundsDictionary : ResourceFileBase
+    [TC(typeof(EXP))] public class BoundsDictionary : ResourceFileBase
     {
         public override long BlockLength
         {
@@ -97,7 +102,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Bounds : ResourceFileBase, IResourceXXSystemBlock
+    [TC(typeof(EXP))] public class Bounds : ResourceFileBase, IResourceXXSystemBlock
     {
         public override long BlockLength
         {
@@ -232,9 +237,9 @@ namespace CodeWalker.GameFiles
             }
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundSphere : Bounds
+    [TC(typeof(EXP))] public class BoundSphere : Bounds
     { }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundCapsule : Bounds
+    [TC(typeof(EXP))] public class BoundCapsule : Bounds
     {
         public override long BlockLength
         {
@@ -275,9 +280,9 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_7Ch);
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundBox : Bounds
+    [TC(typeof(EXP))] public class BoundBox : Bounds
     { }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundGeometry : Bounds
+    [TC(typeof(EXP))] public class BoundGeometry : Bounds
     {
         public override long BlockLength
         {
@@ -556,7 +561,8 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct BoundMaterial_s
+
+    [TC(typeof(EXP))] [StructLayout(LayoutKind.Sequential, Pack = 1)] public struct BoundMaterial_s
     {
         public BoundsMaterialType Type { get; set; }
         public byte ProceduralId { get; set; }
@@ -569,7 +575,8 @@ namespace CodeWalker.GameFiles
             return Type.ToString() + ", " + ProceduralId.ToString() + ", " + RoomId_and_PedDensity.ToString() + ", " + MaterialColorIndex.ToString() + ", " + PolyFlags.ToString() + ", " + Unk4.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct BoundMaterialColour
+
+    [TC(typeof(EXP))] public struct BoundMaterialColour
     {
         //public BoundsMaterialType Type { get; set; }
         public byte R { get; set; }
@@ -582,7 +589,7 @@ namespace CodeWalker.GameFiles
             return R.ToString() + ", " + G.ToString() + ", " + B.ToString() + ", " + A.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct BoundVertex_s
+    [TC(typeof(EXP))] public struct BoundVertex_s
     {
         public short X { get; set; }
         public short Y { get; set; }
@@ -596,7 +603,7 @@ namespace CodeWalker.GameFiles
         Box = 3,
         Cylinder = 4,
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public abstract class BoundPolygon
+    [TC(typeof(EXP))] public abstract class BoundPolygon
     {
         public BoundPolygonType Type { get; set; }
         public abstract void Read(byte[] bytes, int offset);
@@ -606,7 +613,7 @@ namespace CodeWalker.GameFiles
             return Type.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundPolygonTriangle : BoundPolygon
+    [TC(typeof(EXP))] public class BoundPolygonTriangle : BoundPolygon
     {
         public float triArea { get; set; }
         public ushort triIndex1 { get; set; }
@@ -644,7 +651,7 @@ namespace CodeWalker.GameFiles
             return base.ToString() + ": " + vertIndex1.ToString() + ", " + vertIndex2.ToString() + ", " + vertIndex3.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundPolygonSphere : BoundPolygon
+    [TC(typeof(EXP))] public class BoundPolygonSphere : BoundPolygon
     {
         public ushort sphereType { get; set; }
         public ushort sphereIndex { get; set; }
@@ -670,7 +677,7 @@ namespace CodeWalker.GameFiles
             return base.ToString() + ": " + sphereIndex.ToString() + ", " + sphereRadius.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundPolygonCapsule : BoundPolygon
+    [TC(typeof(EXP))] public class BoundPolygonCapsule : BoundPolygon
     {
         public ushort capsuleType { get; set; }
         public ushort capsuleIndex1 { get; set; }
@@ -698,7 +705,7 @@ namespace CodeWalker.GameFiles
             return base.ToString() + ": " + capsuleIndex1.ToString() + ", " + capsuleIndex2.ToString() + ", " + capsuleRadius.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundPolygonBox : BoundPolygon
+    [TC(typeof(EXP))] public class BoundPolygonBox : BoundPolygon
     {
         public uint boxType { get; set; }
         public short boxIndex1 { get; set; }
@@ -726,7 +733,7 @@ namespace CodeWalker.GameFiles
             return base.ToString() + ": " + boxIndex1.ToString() + ", " + boxIndex2.ToString() + ", " + boxIndex3.ToString() + ", " + boxIndex4.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundPolygonCylinder : BoundPolygon
+    [TC(typeof(EXP))] public class BoundPolygonCylinder : BoundPolygon
     {
         public ushort cylinderType { get; set; }
         public ushort cylinderIndex1 { get; set; }
@@ -754,7 +761,7 @@ namespace CodeWalker.GameFiles
             return base.ToString() + ": " + cylinderIndex1.ToString() + ", " + cylinderIndex2.ToString() + ", " + cylinderRadius.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundBVH : BoundGeometry
+    [TC(typeof(EXP))] public class BoundBVH : BoundGeometry
     {
         public override long BlockLength
         {
@@ -835,7 +842,7 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundComposite : Bounds
+    [TC(typeof(EXP))] public class BoundComposite : Bounds
     {
         public override long BlockLength
         {
@@ -984,7 +991,7 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct BoundComposite_Unknown_B_002_s
+    [TC(typeof(EXP))] public struct BoundComposite_Unknown_B_002_s
     {
         public uint Unknown_0h { get; set; }
         public uint Unknown_4h { get; set; }
@@ -994,7 +1001,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundDisc : Bounds
+    [TC(typeof(EXP))] public class BoundDisc : Bounds
     {
         public override long BlockLength
         {
@@ -1035,7 +1042,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_7Ch);
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundCylinder : Bounds
+    [TC(typeof(EXP))] public class BoundCylinder : Bounds
     {
         public override long BlockLength
         {
@@ -1077,7 +1084,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BVH : ResourceSystemBlock
+    [TC(typeof(EXP))] public class BVH : ResourceSystemBlock
     {
         public override long BlockLength
         {
@@ -1198,7 +1205,7 @@ namespace CodeWalker.GameFiles
             };
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct BVHTreeInfo_s
+    [TC(typeof(EXP))] public struct BVHTreeInfo_s
     {
         public short MinX { get; set; }
         public short MinY { get; set; }
@@ -1214,7 +1221,7 @@ namespace CodeWalker.GameFiles
             return NodeIndex1.ToString() + ", " + NodeIndex2.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct BVHNode_s
+    [TC(typeof(EXP))] public struct BVHNode_s
     {
         public short MinX { get; set; }
         public short MinY { get; set; }
@@ -1233,7 +1240,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct BoundsMaterialType
+    [TC(typeof(EXP))] public struct BoundsMaterialType
     {
         public byte Index { get; set; }
 
@@ -1251,7 +1258,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundsMaterialData
+    [TC(typeof(EXP))] public class BoundsMaterialData
     {
         public string Name { get; set; }
         public string Filter { get; set; }
