@@ -112,14 +112,14 @@ namespace CodeWalker.GameFiles
         public uint Unknown_18h { get; set; }
         public uint Unknown_1Ch { get; set; }
         public SharpDX.Vector3 BoundingBoxMax { get; set; }
-        public float Unknown_2Ch { get; set; }
+        public float Margin { get; set; }
         public SharpDX.Vector3 BoundingBoxMin { get; set; }
         public uint Unknown_3Ch { get; set; }
         public SharpDX.Vector3 BoundingBoxCenter { get; set; }
         public byte MaterialIndex { get; set; }
         public byte ProceduralID { get; set; }
         public byte RoomID_and_PedDensity { get; set; } //5bits for RoomID and then 3bits for PedDensity
-        public byte Unknown_4Fh { get; set; } //bit29 related to Unknown_5Ch, should be a flag called "Has PolyFlags"
+        public byte Unknown_4Fh { get; set; } //bit5 related to Unknown_5Ch, should be a flag called "Has PolyFlags"
         public SharpDX.Vector3 Center { get; set; }
         public ushort Unknown_5Ch { get; set; } //PolyFlags?
         public ushort Unknown_5Eh { get; set; }
@@ -159,7 +159,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
             this.BoundingBoxMax = reader.ReadStruct<SharpDX.Vector3>();
-            this.Unknown_2Ch = reader.ReadSingle();
+            this.Margin = reader.ReadSingle();
             this.BoundingBoxMin = reader.ReadStruct<SharpDX.Vector3>();
             this.Unknown_3Ch = reader.ReadUInt32();
             this.BoundingBoxCenter = reader.ReadStruct<SharpDX.Vector3>();
@@ -191,7 +191,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
             //writer.WriteBlock(this.BoundingBoxMax); //TODO: FIX!!
-            writer.Write(this.Unknown_2Ch);
+            writer.Write(this.Margin);
             //writer.WriteBlock(this.BoundingBoxMin);
             writer.Write(this.Unknown_3Ch);
             //writer.WriteBlock(this.BoundingBoxCenter);
