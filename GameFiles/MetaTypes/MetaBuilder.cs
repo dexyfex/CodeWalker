@@ -35,8 +35,13 @@ namespace CodeWalker.GameFiles
 
         public MetaBuilderPointer AddItem<T>(MetaName type, T item) where T : struct
         {
-            MetaBuilderBlock block = EnsureBlock(type);
             byte[] data = MetaTypes.ConvertToBytes(item);
+            return AddItem(type, data);
+        }
+
+        public MetaBuilderPointer AddItem(MetaName type, byte[] data)
+        {
+            MetaBuilderBlock block = EnsureBlock(type);
             int brem = data.Length % 16;
             if (brem > 0)
             {
@@ -52,10 +57,16 @@ namespace CodeWalker.GameFiles
             r.Length = data.Length;
             return r;
         }
+
         public MetaBuilderPointer AddItemArray<T>(MetaName type, T[] items) where T : struct
         {
-            MetaBuilderBlock block = EnsureBlock(type);
             byte[] data = MetaTypes.ConvertArrayToBytes(items);
+            return AddItemArray(type, data, items.Length);
+        }
+
+        public MetaBuilderPointer AddItemArray(MetaName type, byte[] data, int length)
+        {
+            MetaBuilderBlock block = EnsureBlock(type);
             int datalen = data.Length;
             int newlen = datalen;
             int lenrem = newlen % 16;
@@ -70,9 +81,10 @@ namespace CodeWalker.GameFiles
             MetaBuilderPointer r = new MetaBuilderPointer();
             r.BlockID = block.Index + 1;
             r.Offset = offs; //(idx * data.Length);;
-            r.Length = items.Length;
+            r.Length = length;
             return r;
         }
+
         public MetaBuilderPointer AddString(string str)
         {
             MetaBuilderBlock block = EnsureBlock(MetaName.STRING);
@@ -100,12 +112,45 @@ namespace CodeWalker.GameFiles
             var ptr = AddItem(type, item);
             return new MetaPOINTER(ptr.BlockID, ptr.Offset, 0);
         }
+
+        public MetaPOINTER AddItemPtr(MetaName type, byte[] data)//helper method for AddItem<T>
+        {
+            var ptr = AddItem(type, data);
+            return new MetaPOINTER(ptr.BlockID, ptr.Offset, 0);
+        }
+
         public Array_Structure AddItemArrayPtr<T>(MetaName type, T[] items) where T : struct //helper method for AddItemArray<T>
         {
             if ((items == null) || (items.Length == 0)) return new Array_Structure();
             var ptr = AddItemArray(type, items);
             return new Array_Structure(ptr);
         }
+
+        public Array_Structure AddItemArrayPtr(MetaName type, byte[][] data) //helper method for AddItemArray<T>
+        {
+            if ((data == null) || (data.Length == 0)) return new Array_Structure();
+
+            int len = 0;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                len += data[i].Length;
+            }
+
+            var newdata = new byte[len];
+
+            int offset = 0;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                Buffer.BlockCopy(data[i], 0, newdata, offset, data[i].Length);
+                offset += data[i].Length;
+            }
+
+            var ptr = AddItemArray(type, newdata, data.Length);
+            return new Array_Structure(ptr);
+        }
+
         public Array_Vector3 AddPaddedVector3ArrayPtr(SharpDX.Vector4[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_Vector3();
@@ -121,7 +166,7 @@ namespace CodeWalker.GameFiles
         public Array_uint AddUintArrayPtr(uint[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_uint();
-            var ptr = AddItemArray(MetaName.HASH, items);
+            var ptr = AddItemArray(MetaName.UINT, items);
             return new Array_uint(ptr);
         }
         public Array_ushort AddUshortArrayPtr(ushort[] items)
@@ -129,6 +174,18 @@ namespace CodeWalker.GameFiles
             if ((items == null) || (items.Length == 0)) return new Array_ushort();
             var ptr = AddItemArray(MetaName.USHORT, items);
             return new Array_ushort(ptr);
+        }
+        public Array_byte AddByteArrayPtr(byte[] items)
+        {
+            if ((items == null) || (items.Length == 0)) return new Array_byte();
+            var ptr = AddItemArray(MetaName.BYTE, items);
+            return new Array_byte(ptr);
+        }
+        public Array_float AddFloatArrayPtr(float[] items)
+        {
+            if ((items == null) || (items.Length == 0)) return new Array_float();
+            var ptr = AddItemArray(MetaName.FLOAT, items);
+            return new Array_float(ptr);
         }
         public CharPointer AddStringPtr(string str) //helper method for AddString
         {
