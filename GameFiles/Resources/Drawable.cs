@@ -2034,10 +2034,10 @@ namespace CodeWalker.GameFiles
         public byte ColorB { get; set; }
         public byte Unknown_1Bh { get; set; }
         public float Intensity { get; set; }
-        public uint Unknown_20h { get; set; }
+        public uint Flags { get; set; }
         public ushort BoneId { get; set; }
         public ushort Type { get; set; }
-        public uint Unknown_28h { get; set; }
+        public uint TimeFlags { get; set; }
         public float Falloff { get; set; }
         public float FalloffExponent { get; set; }
         public float CullingPlaneNormalX { get; set; }
