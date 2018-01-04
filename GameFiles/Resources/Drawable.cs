@@ -1034,10 +1034,7 @@ namespace CodeWalker.GameFiles
         public ulong BoundsPointer { get; set; }
         public ulong ShaderMappingPointer { get; set; }
         public uint Unknown_28h { get; set; }
-        public byte Mask { get; set; }
-        public byte Unknown_2Dh { get; set; }
-        public byte Unknown_2Eh { get; set; } //ShaderMappingCount ??
-        public byte Unknown_2Fh { get; set; }
+        public uint Unknown_2Ch { get; set; } //First byte is called "Mask" in GIMS EVO, third byte is always equal to GeometriesCount, is it ShaderMappingCount?
 
         // reference data
         public ResourcePointerArray64<DrawableGeometry> Geometries { get; set; }
@@ -1100,10 +1097,7 @@ namespace CodeWalker.GameFiles
             this.BoundsPointer = reader.ReadUInt64();
             this.ShaderMappingPointer = reader.ReadUInt64();
             this.Unknown_28h = reader.ReadUInt32();
-            this.Mask = reader.ReadByte();
-            this.Unknown_2Dh = reader.ReadByte();
-            this.Unknown_2Eh = reader.ReadByte();
-            this.Unknown_2Fh = reader.ReadByte();
+            this.Unknown_2Ch = reader.ReadUInt32();
 
             // read reference data
             this.Geometries = reader.ReadBlockAt<ResourcePointerArray64<DrawableGeometry>>(
@@ -1145,10 +1139,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.BoundsPointer);
             writer.Write(this.ShaderMappingPointer);
             writer.Write(this.Unknown_28h);
-            writer.Write(this.Mask);
-            writer.Write(this.Unknown_2Dh);
-            writer.Write(this.Unknown_2Eh);
-            writer.Write(this.Unknown_2Fh);
+            writer.Write(this.Unknown_2Ch);
         }
 
         /// <summary>

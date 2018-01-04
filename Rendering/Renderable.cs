@@ -282,7 +282,7 @@ namespace CodeWalker.Rendering
             Unk4h = dmodel.Unknown_4h;
             Unk14h = dmodel.Unknown_14h;
             Unk28h = dmodel.Unknown_28h;
-            Unk2Ch = dmodel.Mask;
+            Unk2Ch = dmodel.Unknown_2Ch; //only the first byte of Unknown_2Ch seems be related to this
 
 
             DrawableModel = dmodel;
