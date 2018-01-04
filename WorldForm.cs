@@ -2130,7 +2130,7 @@ namespace CodeWalker
                 for (int i = 0; i < dmodels.data_items.Length; i++)
                 {
                     var m = dmodels.data_items[i];
-                    if (m.Unknown_18h_Data == null)
+                    if (m.BoundsData == null)
                     { usegeomboxes = false; break; }
                 }
             }
@@ -2152,10 +2152,10 @@ namespace CodeWalker
                 for (int i = 0; i < dmodels.data_items.Length; i++)
                 {
                     var m = dmodels.data_items[i];
-                    int gbbcount = m.Unknown_18h_Data.Length;
+                    int gbbcount = m.BoundsData.Length;
                     for (int j = 0; j < gbbcount; j++) //first box seems to be whole model
                     {
-                        var gbox = m.Unknown_18h_Data[j];
+                        var gbox = m.BoundsData[j];
                         gbbox.Minimum = gbox.Min.XYZ();
                         gbbox.Maximum = gbox.Max.XYZ();
                         bbox.Minimum = gbbox.Minimum * scale;

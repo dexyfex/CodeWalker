@@ -282,7 +282,7 @@ namespace CodeWalker.Rendering
             Unk4h = dmodel.Unknown_4h;
             Unk14h = dmodel.Unknown_14h;
             Unk28h = dmodel.Unknown_28h;
-            Unk2Ch = dmodel.Unknown_2Ch;
+            Unk2Ch = dmodel.Mask;
 
 
             DrawableModel = dmodel;
@@ -300,9 +300,9 @@ namespace CodeWalker.Rendering
                 Geometries[i] = rgeom;
                 GeometrySize += rgeom.TotalDataSize;
 
-                if ((dmodel.Unknown_18h_Data != null) && (i < dmodel.Unknown_18h_Data.Length))
+                if ((dmodel.BoundsData != null) && (i < dmodel.BoundsData.Length))
                 {
-                    GeometryBounds[i] = dmodel.Unknown_18h_Data[i];
+                    GeometryBounds[i] = dmodel.BoundsData[i];
                 }
                 else
                 {
