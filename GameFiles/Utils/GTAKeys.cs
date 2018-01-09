@@ -64,7 +64,7 @@ namespace CodeWalker.GameFiles
         public static byte[] PC_LUT; // 256
 
 
-        public static byte[] PC_AWC_KEY; // 16
+        public static uint[] PC_AWC_KEY; // 16
 
 
 
@@ -302,12 +302,12 @@ namespace CodeWalker.GameFiles
             byte[] b1 = new byte[27472];
             byte[] b2 = new byte[278528];
             byte[] b3 = new byte[256];
-            byte[] b4 = new byte[16];
+            uint[] b4 = new uint[4];
             int bp = 0;
             Buffer.BlockCopy(b, bp, b1, 0, b1.Length); bp += b1.Length; // 27472
             Buffer.BlockCopy(b, bp, b2, 0, b2.Length); bp += b2.Length; // 278528
             Buffer.BlockCopy(b, bp, b3, 0, b3.Length); bp += b3.Length; // 256
-            Buffer.BlockCopy(b, bp, b4, 0, b4.Length); bp += b4.Length; // 16
+            Buffer.BlockCopy(b, bp, b4, 0, b4.Length * 4); bp += b4.Length; // 16
 
             PC_NG_KEYS = CryptoIO.ReadNgKeys(b1);
             PC_NG_DECRYPT_TABLES = CryptoIO.ReadNgTables(b2);

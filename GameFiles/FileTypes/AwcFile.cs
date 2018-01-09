@@ -30,6 +30,28 @@ namespace CodeWalker.GameFiles
         public uint[] AudioIds { get; set; }
         public AwcAudio[] Audios { get; set; }
 
+        public void Decrypt_RSXXTEA(ref byte[] data, uint[] key)
+        {
+            // Rockstar's modified version of XXTEA
+            uint[] blocks = new uint[data.Length / 4];
+            Buffer.BlockCopy(data, 0, blocks, 0, data.Length);
+
+            int block_count = blocks.Length;
+            uint a, b = blocks[0], i;
+
+            i = (uint)(0x9E3779B9 * (6 + 52 / block_count));
+            do
+            {
+                for (int block_index = block_count - 1; block_index >= 0; --block_index)
+                {
+                    a = blocks[(block_index > 0 ? block_index : block_count) - 1];
+                    b = blocks[block_index] -= (a >> 5 ^ b << 2) + (b >> 3 ^ a << 4) ^ (i ^ b) + (key[block_index & 3 ^ (i >> 2 & 3)] ^ a ^ 0x7B3A207F);
+                }
+                i -= 0x9E3779B9;
+            } while (i != 0);
+
+            Buffer.BlockCopy(blocks, 0, data, 0, data.Length);
+        }
 
         public void Load(byte[] data, RpfFileEntry entry)
         {
@@ -48,9 +70,19 @@ namespace CodeWalker.GameFiles
                 return; //nothing to do, not enough data...
             }
 
-            Magic = BitConverter.ToUInt32(data, 0);
-
             Endianess endianess = Endianess.LittleEndian;
+
+            Magic = BitConverter.ToUInt32(data, 0);
+            if (Magic != 0x54414441 && Magic != 0x41444154)
+            {
+                if (data.Length % 4 == 0)
+                {
+                    Decrypt_RSXXTEA(ref data, GTA5Keys.PC_AWC_KEY);
+                    Magic = BitConverter.ToUInt32(data, 0);
+                } else
+                    ErrorMessage = "Corrupted data!";
+            }
+
             switch (Magic)
             {
                 default:
@@ -63,44 +95,6 @@ namespace CodeWalker.GameFiles
                     endianess = Endianess.BigEndian;
                     break;
             }
-
-
-            /* francium - Today at 6:11 PM
-IDA decompiler code from a function that seems to be called around audio loading if not ADAT:
-  if ( a3 )
-  {
-    v3 = *a1;
-    v4 = -a2;
-    v5 = (unsigned int)(-a2 - 1);
-    v6 = 0x9E3779B9 * (52 / -a2 + 6);
-    do
-    {
-      LODWORD(v7) = -a2 - 1;
-      v8 = (v6 >> 2) & 3;
-      if ( -a2 != 1 )
-      {
-        v9 = (unsigned int)v5;
-        v10 = &a1[v5];
-        do
-        {
-          v7 = (unsigned int)(v7 - 1);
-          v11 = v9--;
-          *v10 -= ((v6 ^ v3) + (a1[v7] ^ *(_DWORD *)(a3 + 4 * (v8 ^ (unsigned __int64)(v11 & 3))) ^ 0x7B3A207F)) ^ ((4 * v3 ^ (a1[v7] >> 5)) + ((v3 >> 3) ^ 16 * a1[v7]));
-          v3 = *v10;
-          --v10;
-        }
-        while ( (_DWORD)v7 );
-      }
-      result = (v6 ^ v3) + (a1[v4 - 1] ^ *(_DWORD *)(a3 + 4 * (v8 ^ (unsigned __int64)(v7 & 3))) ^ 0x7B3A207F);
-      *a1 -= result ^ ((4 * v3 ^ (a1[v4 - 1] >> 5)) + ((v3 >> 3) ^ 16 * a1[v4 - 1]));
-      v3 = *a1;
-      v6 += 0x61C88647;
-    }
-    while ( v6 );
-  }
-  */
-
-
 
             using (MemoryStream ms = new MemoryStream(data))
             {
