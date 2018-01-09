@@ -64,6 +64,9 @@ namespace CodeWalker.GameFiles
         public static byte[] PC_LUT; // 256
 
 
+        public static byte[] PC_AWC_KEY; // 16
+
+
 
         public static void Generate(byte[] exeData, Action<string> updateStatus) //Stream exeStr)// 
         {
@@ -193,18 +196,18 @@ namespace CodeWalker.GameFiles
 
         private static void GenerateMagicData(string path = ".\\Keys")
         {
-            //byte[] b1 = File.ReadAllBytes(path + "\\gtav_aes_key.dat");
-            byte[] b2 = File.ReadAllBytes(path + "\\gtav_ng_key.dat");
-            byte[] b3 = File.ReadAllBytes(path + "\\gtav_ng_decrypt_tables.dat");
-            byte[] b4 = File.ReadAllBytes(path + "\\gtav_hash_lut.dat");
+            byte[] b1 = File.ReadAllBytes(path + "\\gtav_ng_key.dat");
+            byte[] b2 = File.ReadAllBytes(path + "\\gtav_ng_decrypt_tables.dat");
+            byte[] b3 = File.ReadAllBytes(path + "\\gtav_hash_lut.dat");
+            byte[] b4 = File.ReadAllBytes(path + "\\gtav_awc_key.dat");
 
-            int bl = b2.Length + b3.Length + b4.Length; //b1.Length + 
+            int bl = b1.Length + b2.Length + b3.Length + b4.Length;
             byte[] b = new byte[bl];
             int bp = 0;
-            //Buffer.BlockCopy(b1, 0, b, bp, b1.Length); bp += b1.Length; // 32
-            Buffer.BlockCopy(b2, 0, b, bp, b2.Length); bp += b2.Length; // 27472
-            Buffer.BlockCopy(b3, 0, b, bp, b3.Length); bp += b3.Length; // 278528
-            Buffer.BlockCopy(b4, 0, b, bp, b4.Length); bp += b4.Length; // 256
+            Buffer.BlockCopy(b1, 0, b, bp, b1.Length); bp += b1.Length; // 27472
+            Buffer.BlockCopy(b2, 0, b, bp, b2.Length); bp += b2.Length; // 278528
+            Buffer.BlockCopy(b3, 0, b, bp, b3.Length); bp += b3.Length; // 256
+            Buffer.BlockCopy(b4, 0, b, bp, b4.Length); bp += b4.Length; // 16
 
             byte[] db = null;
             using (MemoryStream dms = new MemoryStream())
@@ -225,7 +228,6 @@ namespace CodeWalker.GameFiles
             db = GTACrypto.EncryptAESData(db, PC_AES_KEY);
 
 
-            //Random rnd = new Random((int)JenkHash.GenHash("Super secret seed"));
             Random rnd = new Random((int)JenkHash.GenHash(PC_AES_KEY));
             int dbl = db.Length;
             byte[] rb1 = new byte[dbl];
@@ -261,7 +263,6 @@ namespace CodeWalker.GameFiles
             //GenerateMagicData();
 
 
-            //Random rnd = new Random((int)JenkHash.GenHash("Super secret seed"));
             Random rnd = new Random((int)JenkHash.GenHash(PC_AES_KEY));
             byte[] m = Resources.magic;
             int dbl = m.Length;
@@ -298,20 +299,20 @@ namespace CodeWalker.GameFiles
                 throw new Exception("Error inflating magic data.");
             }
 
-            //byte[] b1 = new byte[32];
-            byte[] b2 = new byte[27472];
-            byte[] b3 = new byte[278528];
-            byte[] b4 = new byte[256];
+            byte[] b1 = new byte[27472];
+            byte[] b2 = new byte[278528];
+            byte[] b3 = new byte[256];
+            byte[] b4 = new byte[16];
             int bp = 0;
-            //Buffer.BlockCopy(b, bp, b1, 0, b1.Length); bp += b1.Length; // 32
-            Buffer.BlockCopy(b, bp, b2, 0, b2.Length); bp += b2.Length; // 27472
-            Buffer.BlockCopy(b, bp, b3, 0, b3.Length); bp += b3.Length; // 278528
-            Buffer.BlockCopy(b, bp, b4, 0, b4.Length); bp += b4.Length; // 256
+            Buffer.BlockCopy(b, bp, b1, 0, b1.Length); bp += b1.Length; // 27472
+            Buffer.BlockCopy(b, bp, b2, 0, b2.Length); bp += b2.Length; // 278528
+            Buffer.BlockCopy(b, bp, b3, 0, b3.Length); bp += b3.Length; // 256
+            Buffer.BlockCopy(b, bp, b4, 0, b4.Length); bp += b4.Length; // 16
 
-            //PC_AES_KEY = b1;
-            PC_NG_KEYS = CryptoIO.ReadNgKeys(b2);
-            PC_NG_DECRYPT_TABLES = CryptoIO.ReadNgTables(b3);
-            PC_LUT = b4;
+            PC_NG_KEYS = CryptoIO.ReadNgKeys(b1);
+            PC_NG_DECRYPT_TABLES = CryptoIO.ReadNgTables(b2);
+            PC_LUT = b3;
+            PC_AWC_KEY = b4;
         }
 
 
