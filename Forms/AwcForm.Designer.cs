@@ -28,12 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AwcForm));
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.PlayerTabPage = new System.Windows.Forms.TabPage();
+            this.VolumeLabel = new System.Windows.Forms.Label();
+            this.chbAutoJump = new System.Windows.Forms.CheckBox();
             this.PrevButton = new System.Windows.Forms.Button();
             this.NextButton = new System.Windows.Forms.Button();
-            this.VolumeButton = new System.Windows.Forms.Button();
             this.PlayButton = new System.Windows.Forms.Button();
             this.PlayListView = new System.Windows.Forms.ListView();
             this.PlaylistNameHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -43,7 +45,7 @@
             this.PositionTrackBar = new System.Windows.Forms.TrackBar();
             this.DetailsTabPage = new System.Windows.Forms.TabPage();
             this.DetailsPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
-            this.label1 = new System.Windows.Forms.Label();
+            this.Timer = new System.Windows.Forms.Timer(this.components);
             this.MainTabControl.SuspendLayout();
             this.PlayerTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.VolumeTrackBar)).BeginInit();
@@ -64,10 +66,10 @@
             // 
             // PlayerTabPage
             // 
-            this.PlayerTabPage.Controls.Add(this.label1);
+            this.PlayerTabPage.Controls.Add(this.VolumeLabel);
+            this.PlayerTabPage.Controls.Add(this.chbAutoJump);
             this.PlayerTabPage.Controls.Add(this.PrevButton);
             this.PlayerTabPage.Controls.Add(this.NextButton);
-            this.PlayerTabPage.Controls.Add(this.VolumeButton);
             this.PlayerTabPage.Controls.Add(this.PlayButton);
             this.PlayerTabPage.Controls.Add(this.PlayListView);
             this.PlayerTabPage.Controls.Add(this.VolumeTrackBar);
@@ -79,6 +81,26 @@
             this.PlayerTabPage.TabIndex = 0;
             this.PlayerTabPage.Text = "Player";
             this.PlayerTabPage.UseVisualStyleBackColor = true;
+            // 
+            // VolumeLabel
+            // 
+            this.VolumeLabel.AutoSize = true;
+            this.VolumeLabel.Location = new System.Drawing.Point(414, 305);
+            this.VolumeLabel.Name = "VolumeLabel";
+            this.VolumeLabel.Size = new System.Drawing.Size(42, 13);
+            this.VolumeLabel.TabIndex = 9;
+            this.VolumeLabel.Text = "Volume";
+            // 
+            // chbAutoJump
+            // 
+            this.chbAutoJump.AutoSize = true;
+            this.chbAutoJump.Enabled = false;
+            this.chbAutoJump.Location = new System.Drawing.Point(17, 305);
+            this.chbAutoJump.Name = "chbAutoJump";
+            this.chbAutoJump.Size = new System.Drawing.Size(108, 17);
+            this.chbAutoJump.TabIndex = 8;
+            this.chbAutoJump.Text = "Auto-jump to next";
+            this.chbAutoJump.UseVisualStyleBackColor = true;
             // 
             // PrevButton
             // 
@@ -101,17 +123,6 @@
             this.NextButton.Text = ">>";
             this.NextButton.UseVisualStyleBackColor = true;
             this.NextButton.Click += new System.EventHandler(this.NextButton_Click);
-            // 
-            // VolumeButton
-            // 
-            this.VolumeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.VolumeButton.Location = new System.Drawing.Point(426, 301);
-            this.VolumeButton.Name = "VolumeButton";
-            this.VolumeButton.Size = new System.Drawing.Size(33, 23);
-            this.VolumeButton.TabIndex = 5;
-            this.VolumeButton.Text = "Vol";
-            this.VolumeButton.UseVisualStyleBackColor = true;
-            this.VolumeButton.Click += new System.EventHandler(this.VolumeButton_Click);
             // 
             // PlayButton
             // 
@@ -136,11 +147,13 @@
             this.PlayListView.FullRowSelect = true;
             this.PlayListView.HideSelection = false;
             this.PlayListView.Location = new System.Drawing.Point(6, 6);
+            this.PlayListView.MultiSelect = false;
             this.PlayListView.Name = "PlayListView";
-            this.PlayListView.Size = new System.Drawing.Size(556, 216);
+            this.PlayListView.Size = new System.Drawing.Size(556, 235);
             this.PlayListView.TabIndex = 0;
             this.PlayListView.UseCompatibleStateImageBehavior = false;
             this.PlayListView.View = System.Windows.Forms.View.Details;
+            this.PlayListView.DoubleClick += new System.EventHandler(this.PlayListView_DoubleClick);
             // 
             // PlaylistNameHeader
             // 
@@ -176,7 +189,7 @@
             this.PositionTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.PositionTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.PositionTrackBar.LargeChange = 50;
+            this.PositionTrackBar.LargeChange = 1000;
             this.PositionTrackBar.Location = new System.Drawing.Point(6, 263);
             this.PositionTrackBar.Maximum = 1000;
             this.PositionTrackBar.Name = "PositionTrackBar";
@@ -205,14 +218,10 @@
             this.DetailsPropertyGrid.Size = new System.Drawing.Size(562, 326);
             this.DetailsPropertyGrid.TabIndex = 0;
             // 
-            // label1
+            // Timer
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(44, 238);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(248, 13);
-            this.label1.TabIndex = 7;
-            this.label1.Text = "NOTE: Work in progress... Audio does not play yet!";
+            this.Timer.Enabled = true;
+            this.Timer.Tick += new System.EventHandler(this.Timer_Tick);
             // 
             // AwcForm
             // 
@@ -223,6 +232,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "AwcForm";
             this.Text = "AWC Player - CodeWalker by dexyfex";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AwcForm_FormClosing);
             this.MainTabControl.ResumeLayout(false);
             this.PlayerTabPage.ResumeLayout(false);
             this.PlayerTabPage.PerformLayout();
@@ -245,10 +255,11 @@
         private System.Windows.Forms.ColumnHeader PlaylistLengthHeader;
         private System.Windows.Forms.Button PrevButton;
         private System.Windows.Forms.Button NextButton;
-        private System.Windows.Forms.Button VolumeButton;
         private System.Windows.Forms.Button PlayButton;
         private System.Windows.Forms.TrackBar VolumeTrackBar;
         private System.Windows.Forms.TrackBar PositionTrackBar;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Timer Timer;
+        private System.Windows.Forms.CheckBox chbAutoJump;
+        private System.Windows.Forms.Label VolumeLabel;
     }
 }
