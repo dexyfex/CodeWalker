@@ -59,6 +59,7 @@
             this.ViewListMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ViewDetailsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsBinSearchMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsRpfBrowserMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.ToolsOptionsMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -72,6 +73,8 @@
             this.LocationTextBox = new CodeWalker.WinForms.ToolStripSpringTextBox();
             this.GoButton = new System.Windows.Forms.ToolStripButton();
             this.RefreshButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
+            this.EditModeButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.SearchTextBox = new System.Windows.Forms.ToolStripTextBox();
             this.SearchButton = new System.Windows.Forms.ToolStripSplitButton();
@@ -97,6 +100,9 @@
             this.ListContextExtractUncompressedMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextExtractAllMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.ListContextNewMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ListContextNewFolderMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ListContextNewRpfArchiveMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportRawMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportSeparator = new System.Windows.Forms.ToolStripSeparator();
@@ -121,7 +127,6 @@
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-            this.ToolsBinSearchMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -395,6 +400,13 @@
             this.ToolsMenu.Size = new System.Drawing.Size(47, 20);
             this.ToolsMenu.Text = "Tools";
             // 
+            // ToolsBinSearchMenu
+            // 
+            this.ToolsBinSearchMenu.Name = "ToolsBinSearchMenu";
+            this.ToolsBinSearchMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsBinSearchMenu.Text = "Binary Search...";
+            this.ToolsBinSearchMenu.Click += new System.EventHandler(this.ToolsBinSearchMenu_Click);
+            // 
             // ToolsRpfBrowserMenu
             // 
             this.ToolsRpfBrowserMenu.Name = "ToolsRpfBrowserMenu";
@@ -424,6 +436,8 @@
             this.LocationTextBox,
             this.GoButton,
             this.RefreshButton,
+            this.toolStripSeparator10,
+            this.EditModeButton,
             this.toolStripSeparator1,
             this.SearchTextBox,
             this.SearchButton});
@@ -496,7 +510,7 @@
             // LocationTextBox
             // 
             this.LocationTextBox.Name = "LocationTextBox";
-            this.LocationTextBox.Size = new System.Drawing.Size(510, 25);
+            this.LocationTextBox.Size = new System.Drawing.Size(423, 25);
             this.LocationTextBox.Enter += new System.EventHandler(this.LocationTextBox_Enter);
             this.LocationTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.LocationTextBox_KeyPress);
             // 
@@ -521,6 +535,22 @@
             this.RefreshButton.Size = new System.Drawing.Size(23, 22);
             this.RefreshButton.Text = "Refresh All";
             this.RefreshButton.Click += new System.EventHandler(this.RefreshButton_Click);
+            // 
+            // toolStripSeparator10
+            // 
+            this.toolStripSeparator10.Name = "toolStripSeparator10";
+            this.toolStripSeparator10.Size = new System.Drawing.Size(6, 25);
+            // 
+            // EditModeButton
+            // 
+            this.EditModeButton.Enabled = false;
+            this.EditModeButton.Image = ((System.Drawing.Image)(resources.GetObject("EditModeButton.Image")));
+            this.EditModeButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.EditModeButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.EditModeButton.Name = "EditModeButton";
+            this.EditModeButton.Size = new System.Drawing.Size(81, 22);
+            this.EditModeButton.Text = "Edit mode";
+            this.EditModeButton.Click += new System.EventHandler(this.EditModeButton_Click);
             // 
             // toolStripSeparator1
             // 
@@ -676,6 +706,7 @@
             this.MainListView.UseCompatibleStateImageBehavior = false;
             this.MainListView.View = System.Windows.Forms.View.Details;
             this.MainListView.VirtualMode = true;
+            this.MainListView.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.MainListView_AfterLabelEdit);
             this.MainListView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.MainListView_ColumnClick);
             this.MainListView.ItemActivate += new System.EventHandler(this.MainListView_ItemActivate);
             this.MainListView.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.MainListView_RetrieveVirtualItem);
@@ -720,6 +751,7 @@
             this.ListContextExtractUncompressedMenu,
             this.ListContextExtractAllMenu,
             this.toolStripSeparator5,
+            this.ListContextNewMenu,
             this.ListContextImportXmlMenu,
             this.ListContextImportRawMenu,
             this.ListContextImportSeparator,
@@ -735,7 +767,7 @@
             this.ListContextEditSeparator,
             this.ListContextSelectAllMenu});
             this.ListContextMenu.Name = "MainContextMenu";
-            this.ListContextMenu.Size = new System.Drawing.Size(208, 392);
+            this.ListContextMenu.Size = new System.Drawing.Size(208, 414);
             // 
             // ListContextViewMenu
             // 
@@ -798,6 +830,29 @@
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(204, 6);
+            // 
+            // ListContextNewMenu
+            // 
+            this.ListContextNewMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ListContextNewFolderMenu,
+            this.ListContextNewRpfArchiveMenu});
+            this.ListContextNewMenu.Name = "ListContextNewMenu";
+            this.ListContextNewMenu.Size = new System.Drawing.Size(207, 22);
+            this.ListContextNewMenu.Text = "New";
+            // 
+            // ListContextNewFolderMenu
+            // 
+            this.ListContextNewFolderMenu.Name = "ListContextNewFolderMenu";
+            this.ListContextNewFolderMenu.Size = new System.Drawing.Size(146, 22);
+            this.ListContextNewFolderMenu.Text = "Folder...";
+            this.ListContextNewFolderMenu.Click += new System.EventHandler(this.ListContextNewFolderMenu_Click);
+            // 
+            // ListContextNewRpfArchiveMenu
+            // 
+            this.ListContextNewRpfArchiveMenu.Name = "ListContextNewRpfArchiveMenu";
+            this.ListContextNewRpfArchiveMenu.Size = new System.Drawing.Size(146, 22);
+            this.ListContextNewRpfArchiveMenu.Text = "RPF Archive...";
+            this.ListContextNewRpfArchiveMenu.Click += new System.EventHandler(this.ListContextNewRpfArchiveMenu_Click);
             // 
             // ListContextImportXmlMenu
             // 
@@ -958,12 +1013,9 @@
             this.TreeContextCollapseAllMenu.Text = "Collapse All";
             this.TreeContextCollapseAllMenu.Click += new System.EventHandler(this.TreeContextCollapseAllMenu_Click);
             // 
-            // ToolsBinSearchMenu
+            // OpenFileDialog
             // 
-            this.ToolsBinSearchMenu.Name = "ToolsBinSearchMenu";
-            this.ToolsBinSearchMenu.Size = new System.Drawing.Size(161, 22);
-            this.ToolsBinSearchMenu.Text = "Binary Search...";
-            this.ToolsBinSearchMenu.Click += new System.EventHandler(this.ToolsBinSearchMenu_Click);
+            this.OpenFileDialog.Multiselect = true;
             // 
             // ExploreForm
             // 
@@ -1090,5 +1142,10 @@
         private System.Windows.Forms.ToolStripSeparator ListContextOpenFileLocationSeparator;
         private System.Windows.Forms.ToolStripMenuItem ListContextExtractUncompressedMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolsBinSearchMenu;
+        private System.Windows.Forms.ToolStripMenuItem ListContextNewMenu;
+        private System.Windows.Forms.ToolStripMenuItem ListContextNewFolderMenu;
+        private System.Windows.Forms.ToolStripMenuItem ListContextNewRpfArchiveMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
+        private System.Windows.Forms.ToolStripButton EditModeButton;
     }
 }

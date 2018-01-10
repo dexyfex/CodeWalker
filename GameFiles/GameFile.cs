@@ -21,7 +21,7 @@ namespace CodeWalker.GameFiles
         {
             RpfFileEntry = entry;
             Type = type;
-            MemoryUsage = (entry != null) ? entry.FileSize : 0;
+            MemoryUsage = (entry != null) ? entry.GetFileSize() : 0;
             if (entry is RpfResourceFileEntry)
             {
                 var resent = entry as RpfResourceFileEntry;
