@@ -414,9 +414,9 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public class AwcFormatChunk
     {
         public uint Samples { get; set; }
-        public int UnkMinusOne { get; set; }
+        public int LoopPoint { get; set; }
         public ushort SamplesPerSecond { get; set; }
-        public ushort Unk1 { get; set; }
+        public short Headroom { get; set; }
         public ushort Unk2 { get; set; }
         public ushort Unk3 { get; set; }
         public ushort Unk4 { get; set; }
@@ -426,9 +426,9 @@ namespace CodeWalker.GameFiles
         public AwcFormatChunk(DataReader r)
         {
             Samples = r.ReadUInt32();
-            UnkMinusOne = r.ReadInt32();
+            LoopPoint = r.ReadInt32();
             SamplesPerSecond = r.ReadUInt16();
-            Unk1 = r.ReadUInt16();
+            Headroom = r.ReadInt16();
             Unk2 = r.ReadUInt16();
             Unk3 = r.ReadUInt16();
             Unk4 = r.ReadUInt16();
@@ -443,7 +443,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Unk1.ToString() + ", " + Unk6.ToString() + ": " + Samples.ToString() + " samples, " + SamplesPerSecond.ToString() + " samples/sec";
+            return Headroom.ToString() + ", " + Unk6.ToString() + ": " + Samples.ToString() + " samples, " + SamplesPerSecond.ToString() + " samples/sec";
         }
     }
 
@@ -503,14 +503,20 @@ namespace CodeWalker.GameFiles
                 return fmt + ((hz > 0) ? (", " + hz.ToString() + " Hz") : "");
             }
         }
+
+        public float Length
+        {
+            get
+            {
+                return Format == null ? 0 : (float)Format.Samples / Format.SamplesPerSecond;                
+            }
+        }
+
         public string LengthStr
         {
             get
             {
-                if (Format == null) return "0:00";
-                float sec = (float)Format.Samples / Format.SamplesPerSecond;
-                TimeSpan ts = TimeSpan.FromSeconds(sec);
-                return ts.ToString("m\\:ss");
+                return TimeSpan.FromSeconds(Length).ToString("m\\:ss");
             }
         }
 
@@ -534,8 +540,8 @@ namespace CodeWalker.GameFiles
 
         public Stream GetWavStream()
         {
-            MemoryStream ms = new MemoryStream();
-            BinaryWriter w = new BinaryWriter(ms);
+            MemoryStream stream = new MemoryStream();
+            BinaryWriter w = new BinaryWriter(stream);
 
 
             //see http://icculus.org/SDL_sound/downloads/external_documentation/wavecomp.htm
@@ -543,70 +549,38 @@ namespace CodeWalker.GameFiles
             //see https://msdn.microsoft.com/en-us/library/windows/desktop/ff538799(v=vs.85).aspx
 
 
-            int sampleCount = SampleCount;
             int samplesPerSec = SamplesPerSecond;
-            //short sampleSize = (short)((BitsPerSample / 8) * Channels);//2
-            //int avgBytesPerSec = sampleSize * samplesPerSec;
-            short blockAlign = 512;
 
-            short samplesPerBlock = (short)((((blockAlign - (7 * Channels)) * 8) / (BitsPerSample * Channels)) + 2);
-            int avgBytesPerSec = ((samplesPerSec / samplesPerBlock) * blockAlign);
+            Channels = 1;
+            BitsPerSample = 16;
+            int byteRate = samplesPerSec * Channels * BitsPerSample / 8;
+            short blockAlign = (short)(Channels * BitsPerSample / 8);
 
-            w.Write("RIFF".ToCharArray());
-            w.Write(0); //file size written later...
-            w.Write("WAVE".ToCharArray());
-            w.Write("fmt ".ToCharArray());
-            w.Write(50); //(PCM:16) //header size
-            w.Write((short)2); //pcm format tag 1=PCM, 2=ADPCM
-            w.Write(Channels);
-            w.Write(samplesPerSec);
-            w.Write(avgBytesPerSec);
-            w.Write(blockAlign);// sampleSize);
-            w.Write(BitsPerSample);
-            w.Write((short)32);//extra byte count for WAVEFORMATEX
+            // RIFF chunk
+            var fileSize = 4 + 24 + 8 + Data.Length;
+            w.Write("RIFF".ToCharArray()); // 0x00 - "RIFF" magic
+            w.Write(fileSize); // 0x04 - file size
+            w.Write("WAVE".ToCharArray()); // 0x08 - "WAVE" magic
 
-            w.Write(samplesPerBlock);
-            w.Write((short)7);//num coefficients
-            w.Write((short)256); //coeff 0
-            w.Write((short)0);
-            w.Write((short)512); //coeff 1
-            w.Write((short)-256);
-            w.Write((short)0); //coeff 2
-            w.Write((short)0);
-            w.Write((short)192); //coeff 3
-            w.Write((short)64);
-            w.Write((short)240); //coeff 4
-            w.Write((short)0);
-            w.Write((short)460); //coeff 5
-            w.Write((short)-208);
-            w.Write((short)392); //coeff 6
-            w.Write((short)-232);
+            // fmt sub-chunk
+            w.Write("fmt ".ToCharArray()); // 0x0C - "fmt " magic
+            w.Write(16); // 0x10 - header size (16 bytes)
+            w.Write((short)1); // 0x14 - audio format (1=PCM)
+            w.Write(Channels); // 0x16 - number of channels
+            w.Write(samplesPerSec); // 0x18
+            w.Write(byteRate); // 0x1C
+            w.Write(blockAlign);// sampleSize); // 0x20
+            w.Write(BitsPerSample); // 0x22
 
+            // data sub-chunk
             w.Write("data".ToCharArray());
-            w.Write(0); //data size written later...
-
-            if (sampleCount != 0)
-            {
-
-                //var sc = sampleCount * sampleSize;
-                var datalen = Data.Length;
-                w.Write(Data);
-            }
-            else
-            {
-                w.Write(Data);
-            }
-
-            ms.Position = 4;
-            w.Write((int)ms.Length - 8);
-
-            ms.Position = 74;// 40;
-            w.Write((int)ms.Length - 78);// 44);
+            w.Write(Data.Length);
+            w.Write(Data);            
 
             w.Flush();
 
-            ms.Position = 0;
-            return ms;
+            stream.Position = 0;
+            return stream;
         }
 
 

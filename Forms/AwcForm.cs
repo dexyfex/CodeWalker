@@ -2,15 +2,8 @@
 using SharpDX.Multimedia;
 using SharpDX.XAudio2;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace CodeWalker.Forms
@@ -18,6 +11,11 @@ namespace CodeWalker.Forms
     public partial class AwcForm : Form
     {
         public AwcFile Awc { get; set; }
+
+        private XAudio2 xAudio2;
+        private MasteringVoice masteringVoice;
+        private AudioBuffer audioBuffer;
+        private SourceVoice sourceVoice;
 
         private string fileName;
         public string FileName
@@ -31,35 +29,34 @@ namespace CodeWalker.Forms
         }
         public string FilePath { get; set; }
 
-        private bool Playing = false;
+        private enum PlayerState { Stopped, Playing, Paused };
+        private PlayerState playerState = PlayerState.Stopped;
 
+        private Stopwatch playtime;
+        private float trackLength;
 
         public AwcForm()
         {
             InitializeComponent();
+
+            playtime = new Stopwatch();
         }
-
-
 
         private void UpdateFormTitle()
         {
             Text = fileName + " - AWC Player - CodeWalker by dexyfex";
         }
 
-
         public void LoadAwc(AwcFile awc)
         {
             Awc = awc;
             DetailsPropertyGrid.SelectedObject = awc;
-
-            //MainTabControl.SelectedTab = DetailsTabPage;//remove this
 
             fileName = awc?.Name;
             if (string.IsNullOrEmpty(fileName))
             {
                 fileName = awc?.FileEntry?.Name;
             }
-
 
             PlayListView.Items.Clear();
             if (awc.Audios != null)
@@ -76,78 +73,128 @@ namespace CodeWalker.Forms
             UpdateFormTitle();
         }
 
+        private void Stop()
+        {
+            if (playerState != PlayerState.Stopped)
+            {
+                sourceVoice.DestroyVoice();
+                sourceVoice.Dispose();
+                audioBuffer.Stream.Dispose();
+                SetPlayerState(PlayerState.Stopped);
+            }
+        }
+
+        private void SetPlayerState(PlayerState newState)
+        {
+            if (playerState != newState)
+            {
+                switch (newState)
+                {
+                    case PlayerState.Playing:
+                        if (playerState == PlayerState.Stopped)
+                            playtime.Reset();
+                        playtime.Start();
+                        break;
+                    default:
+                        playtime.Stop();
+                        break;
+                }                
+
+                playerState = newState;
+            }
+        }
+
+        private void InitializeAudio(AwcAudio audio)
+        {
+            trackLength = audio.Length;            
+
+            if (xAudio2 == null)
+            {
+                xAudio2 = new XAudio2();
+                masteringVoice = new MasteringVoice(xAudio2);
+            }
+
+            Stream wavStream = audio.GetWavStream();
+            SoundStream soundStream = new SoundStream(wavStream);
+            audioBuffer = new AudioBuffer
+            {
+                Stream = soundStream.ToDataStream(),
+                AudioBytes = (int)soundStream.Length,
+                Flags = BufferFlags.EndOfStream
+            };
+            soundStream.Close();
+            wavStream.Close();
+
+            sourceVoice = new SourceVoice(xAudio2, soundStream.Format, true);
+            sourceVoice.SubmitSourceBuffer(audioBuffer, soundStream.DecodedPacketsInfo);
+            sourceVoice.SetVolume((float)VolumeTrackBar.Value / 100);
+        }
 
         private void Play()
         {
-            if (PlayListView.SelectedItems.Count != 1) return;
+            Stop();
 
-            var item = PlayListView.SelectedItems[0];
-            var audio = item.Tag as AwcAudio;
+            if (PlayListView.SelectedItems.Count == 1)
+            {
+                var item = PlayListView.SelectedItems[0];
+                var audio = item.Tag as AwcAudio;
 
-            if (audio == null) return;
+                if (audio != null)
+                {
+                    InitializeAudio(audio);
+                    sourceVoice.Start();
+                    SetPlayerState(PlayerState.Playing);
+                }
+            }
+        }
 
+        private void PlayPrevious()
+        {
+            Stop();
+            if (PlayListView.SelectedIndices.Count > 0)
+            {
+                var nextIndex = PlayListView.SelectedIndices[0] - 1;
+                if (nextIndex >= 0)
+                {
+                    PlayListView.Items[nextIndex].Selected = true;
+                    PlayListView.Items[nextIndex].Focused = true;
+                    Play();
+                }
+            }
+        }
 
-
-            //see https://github.com/sharpdx/SharpDX-Samples/blob/master/Desktop/XAudio2/PlaySound/Program.cs
-            //see https://github.com/sharpdx/SharpDX-Samples/blob/master/Desktop/XAudio2/AudioPlayerApp/AudioPlayer.cs
-
-            //var mstrm = new MemoryStream(audio.Data);
-            //var sstrm = new SoundStream(mstrm);
-            //SourceVoice sv=new SourceVoice()
-            var mstrm = audio.GetWavStream();
-
-            ////var mdata = ((MemoryStream)mstrm).GetBuffer();
-            ////File.WriteAllBytes("C:\\test2.wav", mdata);
-            ////return;
-
-            //var sstrm = new SoundStream(mstrm);
-            //var waveFormat = sstrm.Format;
-            //var buffer = new AudioBuffer
-            //{
-            //    Stream = sstrm.ToDataStream(),
-            //    AudioBytes = (int)sstrm.Length,
-            //    Flags = BufferFlags.EndOfStream
-            //};
-            //sstrm.Close();
-
-
-            //var xaudio2 = new XAudio2();//cache this...
-            //var masteringVoice = new MasteringVoice(xaudio2);//cache this...
-            //var sourceVoice = new SourceVoice(xaudio2, waveFormat, true);
-            ////sourceVoice.BufferEnd += (context) => Console.WriteLine(" => event received: end of buffer");
-            //sourceVoice.SubmitSourceBuffer(buffer, sstrm.DecodedPacketsInfo);
-            //sourceVoice.Start();
-            //while (sourceVoice.State.BuffersQueued > 0) // && !IsKeyPressed(ConsoleKey.Escape))
-            //{
-            //    Thread.Sleep(10);
-            //}
-            //sourceVoice.DestroyVoice();
-            //sourceVoice.Dispose();
-            //buffer.Stream.Dispose();
-
-            //masteringVoice.Dispose();//on form exit?
-            //xaudio2.Dispose();//on form exit?
-
-
-
-            Playing = true;
+        private void PlayNext()
+        {
+            Stop();
+            if (PlayListView.SelectedIndices.Count > 0)
+            {
+                var nextIndex = PlayListView.SelectedIndices[0] + 1;
+                if (nextIndex < PlayListView.Items.Count)
+                {
+                    PlayListView.Items[nextIndex].Selected = true;
+                    PlayListView.Items[nextIndex].Focused = true;
+                    Play();
+                }
+            }
         }
 
         private void Pause()
         {
-
-            Playing = false;
+            if (playerState == PlayerState.Playing)
+            {                
+                sourceVoice.Stop();
+                SetPlayerState(PlayerState.Paused);
+            }
         }
 
-        private void Prev()
+        private void Resume()
         {
+            if (playerState == PlayerState.Paused)
+            {
+                sourceVoice.Start();
+                SetPlayerState(PlayerState.Playing);
+            }
         }
-
-        private void Next()
-        {
-        }
-
-
 
         private void PositionTrackBar_Scroll(object sender, EventArgs e)
         {
@@ -156,41 +203,66 @@ namespace CodeWalker.Forms
 
         private void PlayButton_Click(object sender, EventArgs e)
         {
-            if (Playing) Pause();
-            else Play();
+            switch (playerState)
+            {
+                case PlayerState.Stopped:
+                    Play();
+                    break;
+                case PlayerState.Playing:
+                    Pause();
+                    break;
+                case PlayerState.Paused:
+                    Resume();
+                    break;
+            }
         }
 
         private void PrevButton_Click(object sender, EventArgs e)
         {
-            Prev();
+            PlayPrevious();
         }
 
         private void NextButton_Click(object sender, EventArgs e)
         {
-            Next();
-        }
-
-        private void VolumeButton_Click(object sender, EventArgs e)
-        {
-
+            PlayNext();
         }
 
         private void VolumeTrackBar_Scroll(object sender, EventArgs e)
         {
-
+            if (playerState == PlayerState.Playing)
+                sourceVoice.SetVolume((float)VolumeTrackBar.Value / 100);
         }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (playerState != PlayerState.Stopped)
+            {
+                int playedMs = (int)playtime.Elapsed.TotalMilliseconds;
+                int totalMs = (int)(trackLength * 1000);
+                PositionTrackBar.Maximum = totalMs;
+                PositionTrackBar.Value = playedMs < totalMs ? playedMs : totalMs;
+            }
+            else
+            {
+                PositionTrackBar.Value = 0;
+            }
+        }
+
+        private void PlayListView_DoubleClick(object sender, EventArgs e)
+        {
+            if (playerState == PlayerState.Playing)
+                Stop();
+            Play();
+        }
+
+        private void AwcForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Stop();
+            if (xAudio2 != null)
+            {
+                masteringVoice.Dispose();
+                xAudio2.Dispose();
+            }
+        }        
     }
-
-
-
-
-
-
-    public class AudioPlayer
-    {
-
-    }
-
-
-
 }
