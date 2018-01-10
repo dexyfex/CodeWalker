@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace CodeWalker
 {
@@ -2034,7 +2035,98 @@ namespace CodeWalker
         {
             if (!EditMode) return;
             if (CurrentFolder?.IsSearchResults ?? false) return;
-            MessageBox.Show("Import XML TODO...");
+
+            RpfDirectoryEntry parentrpffldr = CurrentFolder.RpfFolder;
+            if (parentrpffldr == null)
+            {
+                MessageBox.Show("No parent RPF folder selected! This shouldn't happen. Refresh the view and try again.");
+                return;
+            }
+
+            OpenFileDialog.Filter = "XML Files|*.xml";
+            if (OpenFileDialog.ShowDialog(this) != DialogResult.OK)
+            {
+                return;//canceled
+            }
+
+            try
+            {
+                var fpaths = OpenFileDialog.FileNames;
+                foreach (var fpath in fpaths)
+                {
+                    if (!File.Exists(fpath))
+                    {
+                        continue;//this shouldn't happen...
+                    }
+
+                    var fi = new FileInfo(fpath);
+                    var fname = fi.Name;
+                    var fnamel = fname.ToLowerInvariant();
+
+                    if (!fnamel.EndsWith(".xml"))
+                    {
+                        MessageBox.Show(fname + ": Not an XML file!", "Cannot import XML");
+                        continue;
+                    }
+                    if (fnamel.EndsWith(".pso.xml"))
+                    {
+                        MessageBox.Show(fname + ": PSO XML import not yet supported.", "Cannot import XML");
+                        continue;
+                    }
+                    if (fnamel.EndsWith(".rbf.xml"))
+                    {
+                        MessageBox.Show(fname + ": RBF XML import not yet supported.", "Cannot import XML");
+                        continue;
+                    }
+
+                    fname = fname.Substring(0, fname.Length - 4);
+                    fnamel = fnamel.Substring(0, fnamel.Length - 4);
+
+                    var doc = new XmlDocument();
+                    string text = File.ReadAllText(fpath);
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        doc.LoadXml(text);
+                    }
+
+                    var meta = XmlMeta.GetMeta(doc);
+
+
+                    if ((meta.DataBlocks?.Data == null) || (meta.DataBlocks.Count == 0))
+                    {
+                        MessageBox.Show(fname + ": Schema not supported.", "Cannot import XML");
+                        continue;
+                    }
+
+
+                    byte[] data = ResourceBuilder.Build(meta, 2); //meta is RSC V:2
+
+
+                    foreach (var exfile in parentrpffldr.Files)
+                    {
+                        if (exfile.NameLower == fnamel)
+                        {
+                            //file already exists. delete the existing one first!
+                            //this should probably be optimised to just replace the existing one...
+                            //TODO: investigate along with ReplaceSelected()
+                            RpfFile.DeleteEntry(exfile);
+                            break;
+                        }
+                    }
+
+                    RpfFile.CreateFile(parentrpffldr, fname, data);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Unable to import file");
+                return;
+            }
+
+            CurrentFolder.ListItems = null;
+            RefreshMainListView();
+
         }
         private void ImportRaw()
         {
@@ -2048,6 +2140,7 @@ namespace CodeWalker
                 return;
             }
 
+            OpenFileDialog.Filter = string.Empty;
             if (OpenFileDialog.ShowDialog(this) != DialogResult.OK)
             {
                 return;//canceled
@@ -2073,6 +2166,9 @@ namespace CodeWalker
                         continue;
                     }
 
+                    byte[] data = File.ReadAllBytes(fpath);
+
+
                     foreach (var exfile in parentrpffldr.Files)
                     {
                         if (exfile.NameLower == fnamel)
@@ -2084,10 +2180,6 @@ namespace CodeWalker
                             break;
                         }
                     }
-
-
-                    byte[] data = File.ReadAllBytes(fpath);
-
 
                     RpfFile.CreateFile(parentrpffldr, fname, data);
 
