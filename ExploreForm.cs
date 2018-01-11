@@ -405,6 +405,7 @@ namespace CodeWalker
             //called after the CurrentFolder and CurrentFiles have changed. 
 
             UpdateNavigateUI();
+            EnsureEditModeWarning();
 
             if (!HistoryNavigating) //only do this if not currently navigating forward or back
             {
@@ -1600,9 +1601,22 @@ namespace CodeWalker
             EditModeButton.Checked = enable;
             MainListView.LabelEdit = enable;
 
+            EnsureEditModeWarning();
         }
 
+        private void EnsureEditModeWarning()
+        {
+            bool show = EditMode && !CurrentFolder.Path.ToLowerInvariant().StartsWith("mods");
+            int gap = 3;
+            int bot = MainListView.Bottom;
 
+            EditModeBaseWarningPanel.Top = gap;
+            EditModeModsWarningPanel.Top = gap;
+            EditModeModsWarningPanel.Visible = false;
+
+            MainListView.Top = show ? EditModeBaseWarningPanel.Bottom + gap : gap;
+            MainListView.Height = bot - MainListView.Top;
+        }
 
 
 
