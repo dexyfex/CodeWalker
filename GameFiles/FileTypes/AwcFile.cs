@@ -30,7 +30,7 @@ namespace CodeWalker.GameFiles
         public uint[] AudioIds { get; set; }
         public AwcAudio[] Audios { get; set; }
 
-        public void Decrypt_RSXXTEA(ref byte[] data, uint[] key)
+        static public void Decrypt_RSXXTEA(byte[] data, uint[] key)
         {
             // Rockstar's modified version of XXTEA
             uint[] blocks = new uint[data.Length / 4];
@@ -77,7 +77,7 @@ namespace CodeWalker.GameFiles
             {
                 if (data.Length % 4 == 0)
                 {
-                    Decrypt_RSXXTEA(ref data, GTA5Keys.PC_AWC_KEY);
+                    Decrypt_RSXXTEA(data, GTA5Keys.PC_AWC_KEY);
                     Magic = BitConverter.ToUInt32(data, 0);
                 } else
                     ErrorMessage = "Corrupted data!";
@@ -417,11 +417,16 @@ namespace CodeWalker.GameFiles
         public int LoopPoint { get; set; }
         public ushort SamplesPerSecond { get; set; }
         public short Headroom { get; set; }
-        public ushort Unk2 { get; set; }
-        public ushort Unk3 { get; set; }
-        public ushort Unk4 { get; set; }
-        public byte Unk5 { get; set; }
-        public byte Unk6 { get; set; }
+        public ushort LoopBegin { get; set; }
+        public ushort LoopEnd { get; set; }
+        public ushort PlayEnd { get; set; }
+        public byte PlayBegin { get; set; }
+
+        public enum CodecFormat {
+            PCM = 0,
+            ADPCM = 4
+        }
+        public CodecFormat Codec { get; set; }
 
         public AwcFormatChunk(DataReader r)
         {
@@ -429,11 +434,11 @@ namespace CodeWalker.GameFiles
             LoopPoint = r.ReadInt32();
             SamplesPerSecond = r.ReadUInt16();
             Headroom = r.ReadInt16();
-            Unk2 = r.ReadUInt16();
-            Unk3 = r.ReadUInt16();
-            Unk4 = r.ReadUInt16();
-            Unk5 = r.ReadByte();
-            Unk6 = r.ReadByte();
+            LoopBegin = r.ReadUInt16();
+            LoopEnd = r.ReadUInt16();
+            PlayEnd = r.ReadUInt16();
+            PlayBegin = r.ReadByte();
+            Codec = (CodecFormat)r.ReadByte();
 
             //Apparently sometimes this struct is longer? TODO: fix??
             //r.ReadUInt16();
@@ -443,7 +448,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Headroom.ToString() + ", " + Unk6.ToString() + ": " + Samples.ToString() + " samples, " + SamplesPerSecond.ToString() + " samples/sec";
+            return Headroom.ToString() + ", " + Codec.ToString() + ": " + Samples.ToString() + " samples, " + SamplesPerSecond.ToString() + " samples/sec";
         }
     }
 
@@ -459,7 +464,7 @@ namespace CodeWalker.GameFiles
 
 
         public short Channels = 1;
-        public short BitsPerSample = 4;//16;
+        public short BitsPerSample = 16;
         public int SamplesPerSecond
         {
             get
@@ -489,18 +494,23 @@ namespace CodeWalker.GameFiles
             {
                 if (Format == null) return "Unknown";
 
-                string fmt = "ADPCM";
-                switch (Format.Unk6)
+                string codec;
+                switch (Format.Codec)
                 {
-                    case 4:
+                    case AwcFormatChunk.CodecFormat.PCM:
+                        codec = "PCM";
+                        break;
+                    case AwcFormatChunk.CodecFormat.ADPCM:
+                        codec = "ADPCM";
                         break;
                     default:
+                        codec = "Unknown";
                         break;
                 }
 
-                var hz = Format?.SamplesPerSecond ?? 0;
+                var hz = Format.SamplesPerSecond;
 
-                return fmt + ((hz > 0) ? (", " + hz.ToString() + " Hz") : "");
+                return codec + ((hz > 0) ? (", " + hz.ToString() + " Hz") : "");
             }
         }
 
@@ -520,7 +530,6 @@ namespace CodeWalker.GameFiles
             }
         }
 
-
         public AwcAudio(DataReader r, AwcStreamInfo s, AwcFormatChunk f, AwcChunkInfo d)
         {
             StreamInfo = s;
@@ -536,55 +545,130 @@ namespace CodeWalker.GameFiles
             return "0x" + hash + ": " + Format?.ToString() ?? "AwcAudio";
         }
 
+        public byte[] DecodeADPCM(byte[] data, int sampleCount)
+        {
+            byte[] dataPCM = new byte[data.Length * 4];
+            int predictor = 0, step_index = 0, step = 0;
+            int readingOffset = 0, writingOffset = 0, bytesInBlock = 0;
 
+            int[] ima_index_table = {
+                -1, -1, -1, -1, 2, 4, 6, 8,
+                -1, -1, -1, -1, 2, 4, 6, 8
+            };
+
+            short[] ima_step_table = {
+                7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
+                19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
+                50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
+                130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
+                337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
+                876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
+                2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
+                5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
+                15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
+            };
+
+            int clip(int value, int min, int max)
+            {
+                if (value < min)
+                    return min;
+                if (value > max)
+                    return max;
+                return value;
+            }
+
+            void parseNibble(byte nibble)
+            {
+                step_index = clip(step_index + ima_index_table[nibble], 0, 88);
+
+                int diff = step >> 3;
+                if ((nibble & 4) > 0) diff += step;
+                if ((nibble & 2) > 0) diff += step >> 1;
+                if ((nibble & 1) > 0) diff += step >> 2;
+                if ((nibble & 8) > 0) predictor -= diff;
+                else predictor += diff;
+
+                step = ima_step_table[step_index];
+
+                int samplePCM = clip(predictor, -32768, 32767);
+                dataPCM[writingOffset] = (byte)(samplePCM & 0xFF);
+                dataPCM[writingOffset + 1] = (byte)((samplePCM >> 8) & 0xFF);
+                writingOffset += 2;
+            }
+
+            while ((readingOffset < data.Length) && (sampleCount > 0))
+            {
+                if (bytesInBlock == 0)
+                {
+                    step_index = clip(data[readingOffset], 0, 88);
+                    predictor = BitConverter.ToInt16(data, readingOffset + 2);
+                    step = ima_step_table[step_index];
+                    bytesInBlock = 2044;
+                    readingOffset += 4;
+                }
+                else
+                {
+                    parseNibble((byte)(data[readingOffset] & 0x0F));
+                    parseNibble((byte)((data[readingOffset] >> 4) & 0x0F));
+                    bytesInBlock--;
+                    sampleCount -= 2;
+                    readingOffset++;
+                }
+            }
+
+            return dataPCM;
+        }
 
         public Stream GetWavStream()
         {
+            byte[] dataPCM = null;
+            int bitsPerSample = BitsPerSample;
+
+            switch (Format.Codec)
+            {
+                case AwcFormatChunk.CodecFormat.PCM:
+                    dataPCM = Data;
+                    break;
+                case AwcFormatChunk.CodecFormat.ADPCM:
+                    dataPCM = new byte[Data.Length];
+                    Buffer.BlockCopy(Data, 0, dataPCM, 0, Data.Length);
+                    AwcFile.Decrypt_RSXXTEA(dataPCM, GTA5Keys.PC_AWC_KEY);
+                    dataPCM = DecodeADPCM(dataPCM, SampleCount);
+                    bitsPerSample = 16;
+                    break;
+            }
+
+            int byteRate = SamplesPerSecond * Channels * bitsPerSample / 8;
+            short blockAlign = (short)(Channels * bitsPerSample / 8);
+
             MemoryStream stream = new MemoryStream();
             BinaryWriter w = new BinaryWriter(stream);
-
-
-            //see http://icculus.org/SDL_sound/downloads/external_documentation/wavecomp.htm
-            //see https://github.com/naudio/NAudio/blob/master/NAudio/Wave/WaveFormats/AdpcmWaveFormat.cs
-            //see https://msdn.microsoft.com/en-us/library/windows/desktop/ff538799(v=vs.85).aspx
-
-
-            int samplesPerSec = SamplesPerSecond;
-
-            Channels = 1;
-            BitsPerSample = 16;
-            int byteRate = samplesPerSec * Channels * BitsPerSample / 8;
-            short blockAlign = (short)(Channels * BitsPerSample / 8);
+            int wavLength = 12 + 24 + 8 + Data.Length;
 
             // RIFF chunk
-            var fileSize = 4 + 24 + 8 + Data.Length;
-            w.Write("RIFF".ToCharArray()); // 0x00 - "RIFF" magic
-            w.Write(fileSize); // 0x04 - file size
-            w.Write("WAVE".ToCharArray()); // 0x08 - "WAVE" magic
+            w.Write("RIFF".ToCharArray());
+            w.Write((int)(wavLength - 8));
+            w.Write("WAVE".ToCharArray());
 
-            // fmt sub-chunk
-            w.Write("fmt ".ToCharArray()); // 0x0C - "fmt " magic
-            w.Write(16); // 0x10 - header size (16 bytes)
-            w.Write((short)1); // 0x14 - audio format (1=PCM)
-            w.Write(Channels); // 0x16 - number of channels
-            w.Write(samplesPerSec); // 0x18
-            w.Write(byteRate); // 0x1C
-            w.Write(blockAlign);// sampleSize); // 0x20
-            w.Write(BitsPerSample); // 0x22
+            // fmt sub-chunk     
+            w.Write("fmt ".ToCharArray());
+            w.Write((int)16); // fmt size
+            w.Write((short)1); // 1 = WAVE_FORMAT_PCM
+            w.Write((short)Channels);
+            w.Write((int)SamplesPerSecond);
+            w.Write((int)byteRate);
+            w.Write((short)blockAlign);
+            w.Write((short)bitsPerSample);
 
             // data sub-chunk
             w.Write("data".ToCharArray());
-            w.Write(Data.Length);
-            w.Write(Data);            
+            w.Write((int)dataPCM.Length);
+            w.Write(dataPCM);
 
             w.Flush();
-
             stream.Position = 0;
             return stream;
         }
-
-
-
     }
 
     [TC(typeof(EXP))] public class AwcAudioAnimClipDict

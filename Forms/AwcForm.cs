@@ -12,10 +12,11 @@ namespace CodeWalker.Forms
     {
         public AwcFile Awc { get; set; }
 
+        private AwcAudio currentAudio;
         private XAudio2 xAudio2;
         private MasteringVoice masteringVoice;
         private AudioBuffer audioBuffer;
-        private SourceVoice sourceVoice;
+        private SourceVoice sourceVoice;        
 
         private string fileName;
         public string FileName
@@ -33,7 +34,9 @@ namespace CodeWalker.Forms
         private PlayerState playerState = PlayerState.Stopped;
 
         private Stopwatch playtime;
+        private int playBeginMs;
         private float trackLength;
+        private bool trackFinished;
 
         public AwcForm()
         {
@@ -57,8 +60,10 @@ namespace CodeWalker.Forms
             {
                 fileName = awc?.FileEntry?.Name;
             }
-
+            
             PlayListView.Items.Clear();
+
+            float totalLength = 0;
             if (awc.Audios != null)
             {
                 foreach (var audio in awc.Audios)
@@ -66,10 +71,13 @@ namespace CodeWalker.Forms
                     var item = PlayListView.Items.Add(audio.Name);
                     item.SubItems.Add(audio.Type);
                     item.SubItems.Add(audio.LengthStr);
+                    item.SubItems.Add(TextUtil.GetBytesReadable(audio.Data.Length));
                     item.Tag = audio;
+                    totalLength += audio.Length;
                 }
             }
 
+            LabelInfo.Text = awc.Audios.Length.ToString() + " track(s), Length: " + TimeSpan.FromSeconds((float)totalLength).ToString("m\\:ss");
             UpdateFormTitle();
         }
 
@@ -94,18 +102,33 @@ namespace CodeWalker.Forms
                         if (playerState == PlayerState.Stopped)
                             playtime.Reset();
                         playtime.Start();
+
+                        PlayButton.Text = "\u275A\u275A";
+                        StopButton.Enabled = true;
+                        LabelTime.Visible = true;
                         break;
-                    default:
+                    case PlayerState.Paused:
                         playtime.Stop();
+                        PlayButton.Text = "\u25B6";
+                        StopButton.Enabled = true;
+                        LabelTime.Visible = true;
+                        break;
+                    case PlayerState.Stopped:
+                        playtime.Stop();
+                        PlayButton.Text = "\u25B6";
+                        LabelTime.Visible = false;
+                        StopButton.Enabled = true;
                         break;
                 }                
 
                 playerState = newState;
+                UpdateUI();
             }
         }
 
-        private void InitializeAudio(AwcAudio audio)
+        private void InitializeAudio(AwcAudio audio, float playBegin = 0)
         {
+            currentAudio = audio;
             trackLength = audio.Length;            
 
             if (xAudio2 == null)
@@ -122,11 +145,24 @@ namespace CodeWalker.Forms
                 AudioBytes = (int)soundStream.Length,
                 Flags = BufferFlags.EndOfStream
             };
+            if (playBegin > 0)
+            {
+                audioBuffer.PlayBegin = (int)(soundStream.Format.SampleRate * playBegin) / 128 * 128;
+                if (playtime.IsRunning)
+                    playtime.Restart();
+                else
+                    playtime.Reset();
+                playBeginMs = (int)(playBegin * 1000);
+            }
+            else
+                playBeginMs = 0;
             soundStream.Close();
             wavStream.Close();
 
-            sourceVoice = new SourceVoice(xAudio2, soundStream.Format, true);
+            trackFinished = false;
+            sourceVoice = new SourceVoice(xAudio2, soundStream.Format, true);            
             sourceVoice.SubmitSourceBuffer(audioBuffer, soundStream.DecodedPacketsInfo);
+            sourceVoice.BufferEnd += (context) => trackFinished = true;
             sourceVoice.SetVolume((float)VolumeTrackBar.Value / 100);
         }
 
@@ -199,6 +235,9 @@ namespace CodeWalker.Forms
         private void PositionTrackBar_Scroll(object sender, EventArgs e)
         {
 
+            sourceVoice.Stop();
+            InitializeAudio(currentAudio, PositionTrackBar.Value / 1000);
+            sourceVoice.Start();
         }
 
         private void PlayButton_Click(object sender, EventArgs e)
@@ -233,19 +272,35 @@ namespace CodeWalker.Forms
                 sourceVoice.SetVolume((float)VolumeTrackBar.Value / 100);
         }
 
-        private void Timer_Tick(object sender, EventArgs e)
+        private void UpdateUI()
         {
+            if (playerState != PlayerState.Stopped && trackFinished)
+            {
+                if (chbAutoJump.Checked)
+                    PlayNext();
+                else
+                    Stop();
+            }
+
             if (playerState != PlayerState.Stopped)
             {
-                int playedMs = (int)playtime.Elapsed.TotalMilliseconds;
+                int playedMs = (int)playtime.Elapsed.TotalMilliseconds + playBeginMs;
                 int totalMs = (int)(trackLength * 1000);
                 PositionTrackBar.Maximum = totalMs;
                 PositionTrackBar.Value = playedMs < totalMs ? playedMs : totalMs;
+
+                LabelTime.Text = TimeSpan.FromSeconds(playedMs / 1000).ToString("m\\:ss")
+                    + " / " + TimeSpan.FromSeconds(totalMs / 1000).ToString("m\\:ss");
             }
             else
             {
                 PositionTrackBar.Value = 0;
             }
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            UpdateUI();
         }
 
         private void PlayListView_DoubleClick(object sender, EventArgs e)
@@ -263,6 +318,25 @@ namespace CodeWalker.Forms
                 masteringVoice.Dispose();
                 xAudio2.Dispose();
             }
-        }        
+        }
+
+        private void ExportAsWav_Click(object sender, EventArgs e)
+        {
+            if (PlayListView.SelectedItems.Count == 1)
+            {
+                var item = PlayListView.SelectedItems[0];
+                var audio = item.Tag as AwcAudio;
+
+                saveFileDialog.FileName = audio.Name + ".wav";
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {                    
+                    Stream wavStream = audio.GetWavStream();
+                    FileStream stream = File.Create(saveFileDialog.FileName);
+                    wavStream.CopyTo(stream);
+                    stream.Close();
+                    wavStream.Close();
+                }
+            }
+        }
     }
 }
