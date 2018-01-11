@@ -1132,11 +1132,21 @@ namespace CodeWalker
         private byte[] GetFileData(MainListItem file)
         {
             byte[] data = null;
-            if (file.File != null)
+            if (file.Folder != null)
+            {
+                var entry = file.Folder.RpfFile?.ParentFileEntry;
+                if (entry != null)
+                {
+                    data = entry.File.ExtractFile(entry);//extract an RPF from another.
+                }
+            }
+            else if (file.File != null)
             {
                 //load file from RPF
-                if (file.File.File == null) return null; //no RPF file? go no further
-                data = file.File.File.ExtractFile(file.File);
+                if (file.File.File != null) //need the reference to the RPF archive
+                {
+                    data = file.File.File.ExtractFile(file.File);
+                }
             }
             else if (!string.IsNullOrEmpty(file.FullPath))
             {
@@ -1515,22 +1525,27 @@ namespace CodeWalker
             bool isitem = false;
             bool isfile = false;
             bool isfolder = false;
+            bool isarchive = false;
             bool isfilesys = false;
             bool issearch = CurrentFolder?.IsSearchResults ?? false;
             bool canview = false;
             bool canexportxml = false;
+            bool canextract = false;
             bool canimport = EditMode && (CurrentFolder?.RpfFolder != null) && !issearch;
             bool canedit = false;
 
             if (item != null)
             {
+                var entry = item.GetRpfEntry();
+                isitem = true;
+                isfilesys = (entry == null);
+                isarchive = (item.Folder?.RpfFile != null);
                 isfolder = (item.Folder != null);
-                isfilesys = (item.File == null) && (item.Folder == null);
+                isfile = !isfolder;
                 canview = CanViewFile(item);
                 canexportxml = CanExportXml(item);
-                isitem = true;
-                isfile = !isfolder;
                 canedit = EditMode && !issearch;
+                canextract = isfile || (isarchive && !isfilesys);
             }
 
 
@@ -1538,7 +1553,7 @@ namespace CodeWalker
             ListContextViewHexMenu.Enabled = isfile;
 
             ListContextExportXmlMenu.Enabled = canexportxml;
-            ListContextExtractRawMenu.Enabled = isfile;
+            ListContextExtractRawMenu.Enabled = canextract;
             ListContextExtractUncompressedMenu.Enabled = isfile;
 
             ListContextNewMenu.Visible = EditMode;
@@ -1601,6 +1616,50 @@ namespace CodeWalker
             }
             return true;
         }
+
+
+
+
+
+        private bool EnsureRpfValidEncryption()
+        {
+            if (CurrentFolder.RpfFolder == null) return false;
+
+            var rpf = CurrentFolder.RpfFolder.File;
+
+            if (rpf == null) return false;
+
+            bool needsupd = false;
+            var f = rpf;
+            List<RpfFile> files = new List<RpfFile>();
+            while (f != null)
+            {
+                if (f.Encryption != RpfEncryption.OPEN)
+                {
+                    var msg = "Archive " + f.Name + " is currently set to " + f.Encryption.ToString() + " encryption.\nAre you sure you want to change this archive to OPEN encryption?\nLoading by the game will require OpenIV.asi.";
+                    if (MessageBox.Show(msg, "Change RPF encryption type", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    {
+                        return false;
+                    }
+                    needsupd = true;
+                }
+                if (needsupd)
+                {
+                    files.Add(f);
+                }
+                f = f.Parent;
+            }
+
+            //change encryption types, starting from the root rpf.
+            files.Reverse();
+            foreach (var file in files)
+            {
+                RpfFile.SetEncryptionType(file, RpfEncryption.OPEN);
+            }
+
+            return true;
+        }
+
 
 
 
@@ -1731,7 +1790,8 @@ namespace CodeWalker
                 var idx = MainListView.SelectedIndices[0];
                 if ((idx < 0) || (idx >= CurrentFiles.Count)) return;
                 var file = CurrentFiles[idx];
-                if (file.Folder == null)
+
+                if ((file.Folder == null) || (file.Folder.RpfFile != null))
                 {
                     byte[] data = GetFileData(file);
                     if (data == null)
@@ -1744,7 +1804,7 @@ namespace CodeWalker
                     RpfResourceFileEntry rrfe = file.File as RpfResourceFileEntry;
                     if (rrfe != null) //add resource header if this is a resource file.
                     {
-                        data = ResourceBuilder.Compress(data);
+                        data = ResourceBuilder.Compress(data); //not completely ideal to recompress it...
                         data = ResourceBuilder.AddResourceHeader(rrfe, data);
                     }
 
@@ -1777,7 +1837,7 @@ namespace CodeWalker
                     var idx = MainListView.SelectedIndices[i];
                     if ((idx < 0) || (idx >= CurrentFiles.Count)) continue;
                     var file = CurrentFiles[idx];
-                    if (file.Folder == null)
+                    if ((file.Folder == null) || (file.Folder.RpfFile != null))
                     {
                         var path = folderpath + file.Name;
                         var data = GetFileData(file);
@@ -1791,7 +1851,7 @@ namespace CodeWalker
                             RpfResourceFileEntry rrfe = file.File as RpfResourceFileEntry;
                             if (rrfe != null) //add resource header if this is a resource file.
                             {
-                                data = ResourceBuilder.Compress(data);
+                                data = ResourceBuilder.Compress(data); //not completely ideal to recompress it...
                                 data = ResourceBuilder.AddResourceHeader(rrfe, data);
                             }
 
@@ -1893,7 +1953,7 @@ namespace CodeWalker
 
             foreach (var file in CurrentFiles)
             {
-                if (file.Folder == null)
+                if ((file.Folder == null) || (file.Folder.RpfFile != null))
                 {
                     var path = folderpath + file.Name;
                     var data = GetFileData(file);
@@ -1950,6 +2010,8 @@ namespace CodeWalker
             {
                 if (CurrentFolder.RpfFolder != null)
                 {
+                    if (!EnsureRpfValidEncryption()) return;
+
                     //create new directory entry in the RPF.
 
                     newdir = RpfFile.CreateDirectory(CurrentFolder.RpfFolder, fname);
@@ -2007,6 +2069,8 @@ namespace CodeWalker
             {
                 if (CurrentFolder.RpfFolder != null)
                 {
+                    if (!EnsureRpfValidEncryption()) return;
+
                     //adding a new RPF as a child of another
                     newrpf = RpfFile.CreateNew(CurrentFolder.RpfFolder, fname, encryption);
                 }
@@ -2042,6 +2106,9 @@ namespace CodeWalker
                 MessageBox.Show("No parent RPF folder selected! This shouldn't happen. Refresh the view and try again.");
                 return;
             }
+
+            if (!EnsureRpfValidEncryption()) return;
+
 
             OpenFileDialog.Filter = "XML Files|*.xml";
             if (OpenFileDialog.ShowDialog(this) != DialogResult.OK)
@@ -2140,6 +2207,9 @@ namespace CodeWalker
                 return;
             }
 
+            if (!EnsureRpfValidEncryption()) return;
+
+
             OpenFileDialog.Filter = string.Empty;
             if (OpenFileDialog.ShowDialog(this) != DialogResult.OK)
             {
@@ -2181,7 +2251,31 @@ namespace CodeWalker
                         }
                     }
 
-                    RpfFile.CreateFile(parentrpffldr, fname, data);
+                    var entry = RpfFile.CreateFile(parentrpffldr, fname, data);
+
+
+                    var newrpf = parentrpffldr.File?.FindChildArchive(entry);
+                    if (newrpf != null)
+                    {
+                        //an RPF file was imported. add its structure to the UI!
+                        var rootpath = GetRootPath();
+                        var tnf = CreateRpfTreeFolder(newrpf, newrpf.Path, rootpath + newrpf.Path);
+                        if (CurrentFolder.Children != null) //make sure any existing (replaced!) one is removed first!
+                        {
+                            foreach (var child in CurrentFolder.Children)
+                            {
+                                if (child.Path == tnf.Path)
+                                {
+                                    CurrentFolder.Children.Remove(child);
+                                    child.TreeNode.Remove();
+                                    break;
+                                }
+                            }
+                        }
+                        CurrentFolder.AddChildToHierarchy(tnf);
+                        RecurseMainTreeViewRPF(tnf, AllRpfs);
+                        RecurseAddMainTreeViewNodes(tnf, CurrentFolder.TreeNode);
+                    }
 
                 }
             }
@@ -2281,6 +2375,8 @@ namespace CodeWalker
                 }
                 if (entry != null)
                 {
+                    if (!EnsureRpfValidEncryption()) return;
+
                     //renaming an entry in an RPF
                     RpfFile.RenameEntry(entry, newname);
                 }
@@ -2327,6 +2423,9 @@ namespace CodeWalker
             if (MainListView.SelectedIndices.Count != 1) return;
             MessageBox.Show("ReplaceSelected TODO...");
             //delete the selected items, and replace with... choose
+
+            //if (!EnsureRpfEncryptionType()) return;
+
         }
         private void DeleteSelected()
         {
@@ -2368,6 +2467,8 @@ namespace CodeWalker
                 if (parent.RpfFolder != null)
                 {
                     //delete an item in an RPF.
+                    if (!EnsureRpfValidEncryption()) return;
+
                     RpfEntry entry = item.GetRpfEntry();
 
                     RpfFile.DeleteEntry(entry);
@@ -3251,6 +3352,7 @@ namespace CodeWalker
                 {
                     FileSize = fld.RpfFile.FileSize;
                     FileSizeText = TextUtil.GetBytesReadable(FileSize);
+                    Attributes += fld.RpfFile.Encryption.ToString() + " encryption";
                 }
                 else
                 {
