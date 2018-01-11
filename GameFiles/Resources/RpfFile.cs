@@ -885,15 +885,6 @@ namespace CodeWalker.GameFiles
             //entries may have been updated, so need to do this after ensuring header space
             var entriesdata = GetHeaderEntriesData();
 
-            //now there's enough space, it's safe to write the header data...
-            bw.BaseStream.Position = StartPos;
-
-            bw.Write(Version);
-            bw.Write(EntryCount);
-            bw.Write(NamesLength);
-            bw.Write((uint)Encryption);
-
-
             //FileSize = ... //need to make sure this is updated for NG encryption...
             switch (Encryption)
             {
@@ -916,6 +907,13 @@ namespace CodeWalker.GameFiles
                     break;
             }
 
+            //now there's enough space, it's safe to write the header data...
+            bw.BaseStream.Position = StartPos;
+
+            bw.Write(Version);
+            bw.Write(EntryCount);
+            bw.Write(NamesLength);
+            bw.Write((uint)Encryption);
             bw.Write(entriesdata);
             bw.Write(namesdata);
 
@@ -1337,7 +1335,7 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        private RpfFile FindChildArchive(RpfFileEntry f)
+        public RpfFile FindChildArchive(RpfFileEntry f)
         {
             RpfFile c = null;
             if (Children != null)
@@ -1442,8 +1440,8 @@ namespace CodeWalker.GameFiles
         {
             //create a new directory inside the given parent dir
 
-            string namel = name.ToLowerInvariant();
             RpfFile parent = dir.File;
+            string namel = name.ToLowerInvariant();
             string fpath = parent.GetPhysicalFilePath();
             string rpath = dir.Path + "\\" + namel;
 
@@ -1486,8 +1484,9 @@ namespace CodeWalker.GameFiles
         public static RpfFileEntry CreateFile(RpfDirectoryEntry dir, string name, byte[] data)
         {
             RpfFile parent = dir.File;
+            string namel = name.ToLowerInvariant();
             string fpath = parent.GetPhysicalFilePath();
-            string rpath = dir.Path + "\\" + name;
+            string rpath = dir.Path + "\\" + namel;
             if (!File.Exists(fpath))
             {
                 throw new Exception("Root RPF file " + fpath + " does not exist!");
@@ -1497,8 +1496,15 @@ namespace CodeWalker.GameFiles
             RpfFileEntry entry = null;
             uint len = (uint)data.Length;
 
-            //check if this is RSC7 data, import as a resource if it is...
-            if ((len >= 16) && (BitConverter.ToUInt32(data, 0) == 0x37435352))
+
+            bool isrpf = false;
+            uint hdr = 0;
+            if (len >= 16)
+            {
+                hdr = BitConverter.ToUInt32(data, 0);
+            }
+
+            if (hdr == 0x37435352) //'RSC7'
             {
                 //RSC header is present... import as resource
                 var rentry = new RpfResourceFileEntry();
@@ -1519,16 +1525,20 @@ namespace CodeWalker.GameFiles
                 entry = rentry;
             }
 
+            if (namel.EndsWith(".rpf") && (hdr == 0x52504637)) //'RPF7'
+            {
+                isrpf = true;
+            }
 
             if (entry == null)
             {
                 //no RSC7 header present, import as a binary file.
-                var compressed = CompressBytes(data);
+                var compressed = isrpf ? data : CompressBytes(data);
                 var bentry = new RpfBinaryFileEntry();
                 bentry.EncryptionType = 0;//TODO: binary encryption
                 bentry.IsEncrypted = false;
                 bentry.FileUncompressedSize = (uint)data.Length;
-                bentry.FileSize = (uint)compressed.Length;
+                bentry.FileSize = isrpf ? 0 : (uint)compressed.Length;
                 if (bentry.FileSize > 0xFFFFFF)
                 {
                     bentry.FileSize = 0;
@@ -1576,6 +1586,25 @@ namespace CodeWalker.GameFiles
                 }
             }
 
+
+            if (isrpf)
+            {
+                //importing a raw RPF archive. create the new RpfFile object, and read its headers etc.
+                RpfFile file = new RpfFile(name, rpath, data.LongLength);
+                file.Parent = parent;
+                file.ParentFileEntry = entry as RpfBinaryFileEntry;
+                file.StartPos = parent.StartPos + (entry.FileOffset * 512);
+                parent.Children.Add(file);
+
+                using (var fstream = File.OpenRead(fpath))
+                {
+                    using (var br = new BinaryReader(fstream))
+                    {
+                        fstream.Position = file.StartPos;
+                        file.ScanStructure(br, null, null);
+                    }
+                }
+            }
 
             return entry;
         }
@@ -1689,6 +1718,19 @@ namespace CodeWalker.GameFiles
 
         }
 
+
+        public static void SetEncryptionType(RpfFile file, RpfEncryption encryption)
+        {
+            file.Encryption = encryption;
+            string fpath = file.GetPhysicalFilePath();
+            using (var fstream = File.Open(fpath, FileMode.Open, FileAccess.ReadWrite))
+            {
+                using (var bw = new BinaryWriter(fstream))
+                {
+                    file.WriteHeader(bw);
+                }
+            }
+        }
 
 
 

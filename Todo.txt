@@ -102,7 +102,10 @@ done:
 
 [v.29]
 entitySets - like mapDataGroups but for interiors..... in Mlo data
-delete key - delete item!
+World view - delete key - delete item!
+RPF Explorer Edit mode
+AWC audio player (dav90 WIP)
+Invert mouse option
 
 
 [v.28]
