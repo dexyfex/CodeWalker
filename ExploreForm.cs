@@ -1199,6 +1199,7 @@ namespace CodeWalker
                 case FileTypeAction.ViewYmap:
                 case FileTypeAction.ViewYtyp:
                 case FileTypeAction.ViewJPso:
+                case FileTypeAction.ViewCut:
                     return true;
             }
             return false;
@@ -1532,6 +1533,7 @@ namespace CodeWalker
             bool canexportxml = false;
             bool canextract = false;
             bool canimport = EditMode && (CurrentFolder?.RpfFolder != null) && !issearch;
+            bool cancreate = EditMode && !issearch;
             bool canedit = false;
 
             if (item != null)
@@ -1556,10 +1558,10 @@ namespace CodeWalker
             ListContextExtractRawMenu.Enabled = canextract;
             ListContextExtractUncompressedMenu.Enabled = isfile;
 
-            ListContextNewMenu.Visible = EditMode;
+            ListContextNewMenu.Visible = cancreate;
             ListContextImportRawMenu.Visible = canimport;
             ListContextImportXmlMenu.Visible = canimport;
-            ListContextImportSeparator.Visible = EditMode;
+            ListContextImportSeparator.Visible = cancreate;
 
             ListContextCopyMenu.Enabled = isfile;
             ListContextCopyPathMenu.Enabled = isitem;
@@ -2260,8 +2262,9 @@ namespace CodeWalker
                         //an RPF file was imported. add its structure to the UI!
                         var rootpath = GetRootPath();
                         var tnf = CreateRpfTreeFolder(newrpf, newrpf.Path, rootpath + newrpf.Path);
-                        if (CurrentFolder.Children != null) //make sure any existing (replaced!) one is removed first!
+                        if (CurrentFolder.Children != null)
                         {
+                            //make sure any existing (replaced!) one is removed first!
                             foreach (var child in CurrentFolder.Children)
                             {
                                 if (child.Path == tnf.Path)
