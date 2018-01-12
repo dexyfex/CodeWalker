@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(YtdForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.FileMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.FileSaveAllMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ViewMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
@@ -47,13 +48,21 @@
             this.SelTextureNameTextBox = new System.Windows.Forms.TextBox();
             this.TextureTabControl = new System.Windows.Forms.TabControl();
             this.TextureTabPage = new System.Windows.Forms.TabPage();
+            this.label1 = new System.Windows.Forms.Label();
+            this.SelTextureZoomCombo = new System.Windows.Forms.ComboBox();
+            this.SelTexturePanel = new System.Windows.Forms.Panel();
+            this.SelTexturePictureBox = new System.Windows.Forms.PictureBox();
             this.SelTextureMipLabel = new System.Windows.Forms.Label();
             this.SelTextureDimensionsLabel = new System.Windows.Forms.Label();
             this.SelTextureMipTrackBar = new System.Windows.Forms.TrackBar();
             this.label4 = new System.Windows.Forms.Label();
-            this.SelTexturePictureBox = new System.Windows.Forms.PictureBox();
             this.DetailsTabPage = new System.Windows.Forms.TabPage();
             this.DetailsPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
+            this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.FileSaveAsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSaveAsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSaveAllMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.MainToolbar.SuspendLayout();
@@ -63,8 +72,9 @@
             this.MainSplitContainer.SuspendLayout();
             this.TextureTabControl.SuspendLayout();
             this.TextureTabPage.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SelTextureMipTrackBar)).BeginInit();
+            this.SelTexturePanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SelTexturePictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SelTextureMipTrackBar)).BeginInit();
             this.DetailsTabPage.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -82,10 +92,22 @@
             // 
             // FileMenu
             // 
-            this.FileMenu.Enabled = false;
+            this.FileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.FileSaveAsMenu,
+            this.FileSaveAllMenu});
             this.FileMenu.Name = "FileMenu";
             this.FileMenu.Size = new System.Drawing.Size(37, 20);
             this.FileMenu.Text = "File";
+            // 
+            // FileSaveAllMenu
+            // 
+            this.FileSaveAllMenu.Image = ((System.Drawing.Image)(resources.GetObject("FileSaveAllMenu.Image")));
+            this.FileSaveAllMenu.Name = "FileSaveAllMenu";
+            this.FileSaveAllMenu.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.S)));
+            this.FileSaveAllMenu.Size = new System.Drawing.Size(196, 22);
+            this.FileSaveAllMenu.Text = "Save All...";
+            this.FileSaveAllMenu.Click += new System.EventHandler(this.FileSaveAllMenu_Click);
             // 
             // EditMenu
             // 
@@ -136,12 +158,15 @@
             // SaveButton
             // 
             this.SaveButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.SaveButton.Enabled = false;
+            this.SaveButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolbarSaveAsMenu,
+            this.ToolbarSaveAllMenu});
             this.SaveButton.Image = ((System.Drawing.Image)(resources.GetObject("SaveButton.Image")));
             this.SaveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SaveButton.Name = "SaveButton";
             this.SaveButton.Size = new System.Drawing.Size(32, 22);
             this.SaveButton.Text = "Save YTD...";
+            this.SaveButton.ButtonClick += new System.EventHandler(this.SaveButton_ButtonClick);
             // 
             // MainToolbar
             // 
@@ -241,11 +266,13 @@
             // 
             // TextureTabPage
             // 
+            this.TextureTabPage.Controls.Add(this.label1);
+            this.TextureTabPage.Controls.Add(this.SelTextureZoomCombo);
+            this.TextureTabPage.Controls.Add(this.SelTexturePanel);
             this.TextureTabPage.Controls.Add(this.SelTextureMipLabel);
             this.TextureTabPage.Controls.Add(this.SelTextureDimensionsLabel);
             this.TextureTabPage.Controls.Add(this.SelTextureMipTrackBar);
             this.TextureTabPage.Controls.Add(this.label4);
-            this.TextureTabPage.Controls.Add(this.SelTexturePictureBox);
             this.TextureTabPage.Location = new System.Drawing.Point(4, 22);
             this.TextureTabPage.Name = "TextureTabPage";
             this.TextureTabPage.Padding = new System.Windows.Forms.Padding(3);
@@ -253,6 +280,57 @@
             this.TextureTabPage.TabIndex = 0;
             this.TextureTabPage.Text = "Texture";
             this.TextureTabPage.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(452, 426);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(37, 13);
+            this.label1.TabIndex = 54;
+            this.label1.Text = "Zoom:";
+            // 
+            // SelTextureZoomCombo
+            // 
+            this.SelTextureZoomCombo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.SelTextureZoomCombo.FormattingEnabled = true;
+            this.SelTextureZoomCombo.Items.AddRange(new object[] {
+            "Fill",
+            "100%",
+            "200%"});
+            this.SelTextureZoomCombo.Location = new System.Drawing.Point(495, 423);
+            this.SelTextureZoomCombo.Name = "SelTextureZoomCombo";
+            this.SelTextureZoomCombo.Size = new System.Drawing.Size(69, 21);
+            this.SelTextureZoomCombo.TabIndex = 53;
+            this.SelTextureZoomCombo.Text = "Fill";
+            this.SelTextureZoomCombo.TextChanged += new System.EventHandler(this.SelTextureZoomCombo_TextChanged);
+            // 
+            // SelTexturePanel
+            // 
+            this.SelTexturePanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.SelTexturePanel.AutoScroll = true;
+            this.SelTexturePanel.BackColor = System.Drawing.Color.DarkGray;
+            this.SelTexturePanel.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("SelTexturePanel.BackgroundImage")));
+            this.SelTexturePanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.SelTexturePanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.SelTexturePanel.Controls.Add(this.SelTexturePictureBox);
+            this.SelTexturePanel.Location = new System.Drawing.Point(6, 6);
+            this.SelTexturePanel.Name = "SelTexturePanel";
+            this.SelTexturePanel.Size = new System.Drawing.Size(559, 408);
+            this.SelTexturePanel.TabIndex = 52;
+            // 
+            // SelTexturePictureBox
+            // 
+            this.SelTexturePictureBox.BackColor = System.Drawing.Color.Transparent;
+            this.SelTexturePictureBox.Location = new System.Drawing.Point(0, 0);
+            this.SelTexturePictureBox.Name = "SelTexturePictureBox";
+            this.SelTexturePictureBox.Size = new System.Drawing.Size(133, 96);
+            this.SelTexturePictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.SelTexturePictureBox.TabIndex = 45;
+            this.SelTexturePictureBox.TabStop = false;
             // 
             // SelTextureMipLabel
             // 
@@ -298,20 +376,6 @@
             this.label4.TabIndex = 47;
             this.label4.Text = "Mip:";
             // 
-            // SelTexturePictureBox
-            // 
-            this.SelTexturePictureBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SelTexturePictureBox.BackColor = System.Drawing.Color.DarkGray;
-            this.SelTexturePictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.SelTexturePictureBox.Location = new System.Drawing.Point(6, 6);
-            this.SelTexturePictureBox.Name = "SelTexturePictureBox";
-            this.SelTexturePictureBox.Size = new System.Drawing.Size(558, 408);
-            this.SelTexturePictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.SelTexturePictureBox.TabIndex = 45;
-            this.SelTexturePictureBox.TabStop = false;
-            // 
             // DetailsTabPage
             // 
             this.DetailsTabPage.Controls.Add(this.DetailsPropertyGrid);
@@ -333,6 +397,35 @@
             this.DetailsPropertyGrid.Name = "DetailsPropertyGrid";
             this.DetailsPropertyGrid.Size = new System.Drawing.Size(558, 445);
             this.DetailsPropertyGrid.TabIndex = 0;
+            // 
+            // SaveFileDialog
+            // 
+            this.SaveFileDialog.Filter = "DDS files|*.dds|All files|*.*";
+            // 
+            // FileSaveAsMenu
+            // 
+            this.FileSaveAsMenu.Image = ((System.Drawing.Image)(resources.GetObject("FileSaveAsMenu.Image")));
+            this.FileSaveAsMenu.Name = "FileSaveAsMenu";
+            this.FileSaveAsMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.FileSaveAsMenu.Size = new System.Drawing.Size(196, 22);
+            this.FileSaveAsMenu.Text = "Save As...";
+            this.FileSaveAsMenu.Click += new System.EventHandler(this.FileSaveAsMenu_Click);
+            // 
+            // ToolbarSaveAsMenu
+            // 
+            this.ToolbarSaveAsMenu.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSaveAsMenu.Image")));
+            this.ToolbarSaveAsMenu.Name = "ToolbarSaveAsMenu";
+            this.ToolbarSaveAsMenu.Size = new System.Drawing.Size(152, 22);
+            this.ToolbarSaveAsMenu.Text = "Save as...";
+            this.ToolbarSaveAsMenu.Click += new System.EventHandler(this.ToolbarSaveAsMenu_Click);
+            // 
+            // ToolbarSaveAllMenu
+            // 
+            this.ToolbarSaveAllMenu.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSaveAllMenu.Image")));
+            this.ToolbarSaveAllMenu.Name = "ToolbarSaveAllMenu";
+            this.ToolbarSaveAllMenu.Size = new System.Drawing.Size(152, 22);
+            this.ToolbarSaveAllMenu.Text = "Save All...";
+            this.ToolbarSaveAllMenu.Click += new System.EventHandler(this.ToolbarSaveAllMenu_Click);
             // 
             // YtdForm
             // 
@@ -361,8 +454,10 @@
             this.TextureTabControl.ResumeLayout(false);
             this.TextureTabPage.ResumeLayout(false);
             this.TextureTabPage.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SelTextureMipTrackBar)).EndInit();
+            this.SelTexturePanel.ResumeLayout(false);
+            this.SelTexturePanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SelTexturePictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SelTextureMipTrackBar)).EndInit();
             this.DetailsTabPage.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -396,5 +491,14 @@
         private System.Windows.Forms.ListView TexturesListView;
         private System.Windows.Forms.ColumnHeader TextureNameColumnHeader;
         private System.Windows.Forms.ColumnHeader TextureSizeColumnHeader;
+        private System.Windows.Forms.Panel SelTexturePanel;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox SelTextureZoomCombo;
+        private System.Windows.Forms.ToolStripMenuItem FileSaveAllMenu;
+        private System.Windows.Forms.SaveFileDialog SaveFileDialog;
+        private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
+        private System.Windows.Forms.ToolStripMenuItem FileSaveAsMenu;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarSaveAsMenu;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarSaveAllMenu;
     }
 }

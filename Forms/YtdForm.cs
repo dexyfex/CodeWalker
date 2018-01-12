@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -19,6 +20,9 @@ namespace CodeWalker.Forms
         private string fileName;
         private YtdFile Ytd { get; set; }
         private TextureDictionary TexDict { get; set; }
+        private Texture CurrentTexture = null;
+        private float CurrentZoom = 0.0f; //1.0 = 100%, 0.0 = stretch
+
 
         public YtdForm()
         {
@@ -90,6 +94,9 @@ namespace CodeWalker.Forms
 
         private void ShowTextureMip(Texture tex, int mip, bool mipchange)
         {
+            CurrentTexture = tex;
+            UpdateSaveAs();
+
             if (tex == null)
             {
                 SelTexturePictureBox.Image = null;
@@ -157,6 +164,7 @@ namespace CodeWalker.Forms
                 SelTexturePictureBox.Image = null;
             }
 
+            UpdateZoom();
         }
 
 
@@ -170,6 +178,92 @@ namespace CodeWalker.Forms
         {
             StatusLabel.Text = text;
         }
+
+        private void UpdateZoom()
+        {
+            //update the image controls for the current zoom level
+
+            var img = SelTexturePictureBox.Image;
+
+            if (CurrentZoom <= 0.0f)
+            {
+                //stretch image to fit the area available.
+                SelTexturePanel.AutoScroll = false;
+                SelTexturePictureBox.SizeMode = PictureBoxSizeMode.Zoom;
+                SelTexturePictureBox.Width = SelTexturePanel.Width - 2;
+                SelTexturePictureBox.Height = SelTexturePanel.Height - 2;
+                SelTexturePictureBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            }
+            else
+            {
+                //zoom to the given pixel ratio...
+                var w = (int)(img.Width * CurrentZoom);
+                var h = (int)(img.Height * CurrentZoom);
+                SelTexturePictureBox.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+                SelTexturePictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
+                SelTexturePictureBox.Width = w;
+                SelTexturePictureBox.Height = h;
+                SelTexturePanel.AutoScroll = true;
+            }
+
+        }
+
+
+
+
+
+        private void UpdateSaveAs()
+        {
+            if (CurrentTexture == null)
+            {
+                FileSaveAsMenu.Text = "Save As...";
+                ToolbarSaveAsMenu.Text = "Save As...";
+                FileSaveAsMenu.Enabled = false;
+                ToolbarSaveAsMenu.Enabled = false;
+            }
+            else
+            {
+                string fname = CurrentTexture.Name + ".dds";
+                string sas = "Save " + fname + " As...";
+                FileSaveAsMenu.Text = sas;
+                ToolbarSaveAsMenu.Text = sas;
+                FileSaveAsMenu.Enabled = true;
+                ToolbarSaveAsMenu.Enabled = true;
+            }
+        }
+
+
+        private void SaveAs()
+        {
+            if (CurrentTexture == null) return;
+            string fname = CurrentTexture.Name + ".dds";
+            SaveFileDialog.FileName = fname;
+            if (SaveFileDialog.ShowDialog() != DialogResult.OK) return;
+            string fpath = SaveFileDialog.FileName;
+            byte[] dds = DDSIO.GetDDSFile(CurrentTexture);
+            File.WriteAllBytes(fpath, dds);
+        }
+
+        private void SaveAll()
+        {
+            if (TexDict?.Textures?.data_items == null) return;
+            if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return;
+            var folder = FolderBrowserDialog.SelectedPath;
+            foreach (var tex in TexDict.Textures.data_items)
+            {
+                byte[] dds = DDSIO.GetDDSFile(tex);
+                string bpath = folder + "\\" + tex.Name;
+                string fpath = bpath + ".dds";
+                int c = 1;
+                while (File.Exists(fpath))
+                {
+                    fpath = bpath + "_Copy" + c.ToString() + ".dds";
+                    c++;
+                }
+                File.WriteAllBytes(fpath, dds);
+            }
+        }
+
 
 
         private void TexturesListView_SelectedIndexChanged(object sender, EventArgs e)
@@ -191,6 +285,48 @@ namespace CodeWalker.Forms
             }
             SelTextureMipLabel.Text = SelTextureMipTrackBar.Value.ToString();
             ShowTextureMip(tex, SelTextureMipTrackBar.Value, true);
+        }
+
+        private void SelTextureZoomCombo_TextChanged(object sender, EventArgs e)
+        {
+            string s = SelTextureZoomCombo.Text;
+            if (s.EndsWith("%")) s = s.Substring(0, s.Length - 1);
+
+            float f;
+            if (!float.TryParse(s, out f))
+            {
+                CurrentZoom = 0.0f;
+            }
+            else
+            {
+                CurrentZoom = Math.Min(Math.Max(f, 0.0f), 5000.0f) * 0.01f;
+            }
+            UpdateZoom();
+        }
+
+        private void FileSaveAllMenu_Click(object sender, EventArgs e)
+        {
+            SaveAll();
+        }
+
+        private void FileSaveAsMenu_Click(object sender, EventArgs e)
+        {
+            SaveAs();
+        }
+
+        private void SaveButton_ButtonClick(object sender, EventArgs e)
+        {
+            SaveAs();
+        }
+
+        private void ToolbarSaveAsMenu_Click(object sender, EventArgs e)
+        {
+            SaveAs();
+        }
+
+        private void ToolbarSaveAllMenu_Click(object sender, EventArgs e)
+        {
+            SaveAll();
         }
     }
 }
