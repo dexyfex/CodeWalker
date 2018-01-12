@@ -422,6 +422,48 @@ namespace CodeWalker
 
 
 
+
+
+
+
+
+    public static class Prompt
+    {
+        //handy utility to get a string from the user...
+        public static string ShowDialog(IWin32Window owner, string text, string caption, string defaultvalue = "")
+        {
+            Form prompt = new Form()
+            {
+                Width = 450,
+                Height = 150,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                Text = caption,
+                StartPosition = FormStartPosition.CenterParent,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+            var textLabel = new Label() { Left = 30, Top = 20, Width = 370, Height = 20, Text = text, };
+            var textBox = new TextBox() { Left = 30, Top = 40, Width = 370, Text = defaultvalue };
+            var cancel = new Button() { Text = "Cancel", Left = 230, Width = 80, Top = 70, DialogResult = DialogResult.Cancel };
+            var confirmation = new Button() { Text = "Ok", Left = 320, Width = 80, Top = 70, DialogResult = DialogResult.OK };
+            cancel.Click += (sender, e) => { prompt.Close(); };
+            confirmation.Click += (sender, e) => { prompt.Close(); };
+            prompt.Controls.Add(textBox);
+            prompt.Controls.Add(confirmation);
+            prompt.Controls.Add(cancel);
+            prompt.Controls.Add(textLabel);
+            prompt.AcceptButton = confirmation;
+
+            return prompt.ShowDialog(owner) == DialogResult.OK ? textBox.Text : "";
+        }
+    }
+
+
+
+
+
+
+
     //unused
     //public class AccurateTimer
     //{

@@ -1536,6 +1536,7 @@ namespace CodeWalker
             bool canimport = EditMode && (CurrentFolder?.RpfFolder != null) && !issearch;
             bool cancreate = EditMode && !issearch;
             bool canedit = false;
+            bool candefrag = false;
 
             if (item != null)
             {
@@ -1549,6 +1550,7 @@ namespace CodeWalker
                 canexportxml = CanExportXml(item);
                 canedit = EditMode && !issearch;
                 canextract = isfile || (isarchive && !isfilesys);
+                candefrag = isarchive && canedit;
             }
 
 
@@ -1574,6 +1576,9 @@ namespace CodeWalker
             ListContextReplaceMenu.Visible = canedit;
             ListContextDeleteMenu.Visible = canedit;
             ListContextEditSeparator.Visible = canedit;
+
+            ListContextDefragmentMenu.Visible = candefrag;
+            ListContextDefragmentSeparator.Visible = candefrag;
 
             ListContextMenu.Show(Cursor.Position);
 
@@ -1606,7 +1611,9 @@ namespace CodeWalker
 
         private void EnsureEditModeWarning()
         {
-            bool show = EditMode && !CurrentFolder.Path.ToLowerInvariant().StartsWith("mods");
+            bool mods = CurrentFolder.Path.ToLowerInvariant().StartsWith("mods");
+            bool srch = CurrentFolder?.IsSearchResults ?? false;
+            bool show = EditMode && !mods && !srch;
             int gap = 3;
             int bot = MainListView.Bottom;
 
@@ -1643,6 +1650,10 @@ namespace CodeWalker
 
             var rpf = CurrentFolder.RpfFolder.File;
 
+            return EnsureRpfValidEncryption(rpf);
+        }
+        private bool EnsureRpfValidEncryption(RpfFile rpf)
+        {
             if (rpf == null) return false;
 
             bool needsupd = false;
@@ -1675,7 +1686,6 @@ namespace CodeWalker
 
             return true;
         }
-
 
 
 
@@ -2360,6 +2370,7 @@ namespace CodeWalker
         private void RenameSelected()
         {
             if (!EditMode) return;
+            if (CurrentFolder?.IsSearchResults ?? false) return;
             if (MainListView.SelectedIndices.Count != 1) return;
             var idx = MainListView.SelectedIndices[0];
             if ((CurrentFiles != null) && (CurrentFiles.Count > idx))
@@ -2480,6 +2491,15 @@ namespace CodeWalker
         {
             try
             {
+                if (item.Folder?.RpfFile != null)
+                {
+                    //confirm deletion of RPF archives, just to be friendly.
+                    if (MessageBox.Show("Are you sure you want to delete this archive?\n" + item.Path, "Confirm delete archive", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    {
+                        return;
+                    }
+                }
+
                 var parent = item.Parent;
                 if (parent.RpfFolder != null)
                 {
@@ -2517,6 +2537,86 @@ namespace CodeWalker
                 MessageBox.Show("Error deleting " + item.Path + ": " + ex.Message, "Unable to delete " + item.Name);
                 return;
             }
+        }
+        private void DefragmentSelected()
+        {
+            if (!EditMode) return;
+            if (CurrentFolder?.IsSearchResults ?? false) return;
+            if (MainListView.SelectedIndices.Count != 1)
+            {
+                MessageBox.Show("Can only defragment one item at a time. Please have only one item selected.");
+                return;
+            }
+            var idx = MainListView.SelectedIndices[0];
+            if ((CurrentFiles == null) || (CurrentFiles.Count <= idx))
+            {
+                return;
+            }
+
+            var item = CurrentFiles[idx];
+            var rpf = item.Folder?.RpfFile;
+            if (rpf == null)
+            {
+                MessageBox.Show("Can only defragment RPF archives!");
+                return;
+            }
+
+            Form form = new Form() {
+                Width = 450,
+                Height = 250,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                Text = "Defragment RPF Archive - CodeWalker by dexyfex",
+                StartPosition = FormStartPosition.CenterParent,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+            var addCtrl = new Func<Control, Control>(c => { form.Controls.Add(c); return c; });
+            var addLabel = new Func<int, string, Control>((y, t) => {
+                return addCtrl(new Label() { Left = 30, Top = y, Width = 370, Height = 20, Text = t });
+            });
+            var rpfNameLabel = addLabel(20, "Archive: " + rpf.Path);
+            var curSizeLabel = addLabel(40, string.Empty);
+            var newSizeLabel = addLabel(60, string.Empty);
+            var redSizeLabel = addLabel(80, string.Empty);
+            var statusLabel = addLabel(110, string.Empty);
+            var progressBar = addCtrl(new ProgressBar() { Left = 30, Top = 130, Width = 370, Height = 20, Minimum = 0, Maximum = 1000, MarqueeAnimationSpeed = 50 }) as ProgressBar;
+            var beginButton = addCtrl(new Button() { Text = "Begin Defragment", Left = 30, Top = 170, Width = 120 }) as Button;
+            var closeButton = addCtrl(new Button() { Text = "Close", Left = 320, Top = 170, Width = 80 }) as Button;
+            var inProgress = false;
+            var updateProgress = new Action<string, float>((s, p) => { form.Invoke(new Action(() => {
+                statusLabel.Text = s;
+                progressBar.Value = Math.Max(0, Math.Min((int)(p * 1000), 1000));//p in range 0..1
+            }));});
+            var updateSizeLabels = new Action<bool>((init) => {
+                var curSize = rpf.FileSize;
+                var newSize = rpf.GetDefragmentedFileSize();
+                var redSize = curSize - newSize;
+                curSizeLabel.Text = "Archive current size: " + TextUtil.GetBytesReadable(curSize);
+                newSizeLabel.Text = "Defragmented size: " + TextUtil.GetBytesReadable(newSize);
+                redSizeLabel.Text = "Size reduction: " + TextUtil.GetBytesReadable(redSize);
+                if (init) statusLabel.Text = (redSize <= 0) ? "Defragmentation not required." : "Ready to defragment.";
+            });
+            var enableUi = new Action<bool>(enable => { form.Invoke(new Action(() => {
+                beginButton.Enabled = enable;
+                closeButton.Enabled = enable;
+            }));});
+            var defragment = new Action(() => { Task.Run(() => {
+                if (inProgress) return;
+                if (!EnsureRpfValidEncryption(rpf)) return;
+                inProgress = true;
+                enableUi(false);
+                RpfFile.Defragment(rpf, updateProgress);
+                updateProgress("Defragment complete.", 1.0f);
+                enableUi(true);
+                form.Invoke(new Action(() => { updateSizeLabels(false); }));
+                inProgress = false;
+            });});
+            updateSizeLabels(true);
+            beginButton.Click += (sender, e) => { defragment(); };
+            closeButton.Click += (sender, e) => { form.Close(); };
+            form.FormClosing += (s, e) => { e.Cancel = inProgress; };
+            form.ShowDialog(this);
+            RefreshMainListView();
         }
         private void SelectAll()
         {
@@ -3005,6 +3105,11 @@ namespace CodeWalker
         private void ListContextDeleteMenu_Click(object sender, EventArgs e)
         {
             DeleteSelected();
+        }
+
+        private void ListContextDefragmentMenu_Click(object sender, EventArgs e)
+        {
+            DefragmentSelected();
         }
 
         private void ListContextSelectAllMenu_Click(object sender, EventArgs e)
@@ -3512,33 +3617,4 @@ namespace CodeWalker
 
 
 
-    public static class Prompt
-    {
-        public static string ShowDialog(IWin32Window owner, string text, string caption, string defaultvalue = "")
-        {
-            Form prompt = new Form()
-            {
-                Width = 450,
-                Height = 150,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
-                Text = caption,
-                StartPosition = FormStartPosition.CenterParent,
-                MaximizeBox = false,
-                MinimizeBox = false
-            };
-            Label textLabel = new Label() { Left = 30, Top = 20, Width = 370, Height = 20, Text = text, };
-            TextBox textBox = new TextBox() { Left = 30, Top = 40, Width = 370, Text = defaultvalue };
-            Button cancel = new Button() { Text = "Cancel", Left = 230, Width = 80, Top = 70, DialogResult = DialogResult.Cancel };
-            Button confirmation = new Button() { Text = "Ok", Left = 320, Width = 80, Top = 70, DialogResult = DialogResult.OK };
-            cancel.Click += (sender, e) => { prompt.Close(); };
-            confirmation.Click += (sender, e) => { prompt.Close(); };
-            prompt.Controls.Add(textBox);
-            prompt.Controls.Add(confirmation);
-            prompt.Controls.Add(cancel);
-            prompt.Controls.Add(textLabel);
-            prompt.AcceptButton = confirmation;
-
-            return prompt.ShowDialog(owner) == DialogResult.OK ? textBox.Text : "";
-        }
-    }
 }

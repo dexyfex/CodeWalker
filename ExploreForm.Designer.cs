@@ -133,6 +133,8 @@
             this.EditModeModsWarningPanel = new System.Windows.Forms.Panel();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.ListContextDefragmentMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ListContextDefragmentSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -173,7 +175,7 @@
             // 
             this.FileExitMenu.Name = "FileExitMenu";
             this.FileExitMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.FileExitMenu.Size = new System.Drawing.Size(134, 22);
+            this.FileExitMenu.Size = new System.Drawing.Size(152, 22);
             this.FileExitMenu.Text = "Exit";
             this.FileExitMenu.Click += new System.EventHandler(this.FileExitMenu_Click);
             // 
@@ -777,9 +779,11 @@
             this.ListContextReplaceMenu,
             this.ListContextDeleteMenu,
             this.ListContextEditSeparator,
+            this.ListContextDefragmentMenu,
+            this.ListContextDefragmentSeparator,
             this.ListContextSelectAllMenu});
             this.ListContextMenu.Name = "MainContextMenu";
-            this.ListContextMenu.Size = new System.Drawing.Size(208, 414);
+            this.ListContextMenu.Size = new System.Drawing.Size(208, 464);
             // 
             // ListContextViewMenu
             // 
@@ -1095,6 +1099,18 @@
             this.label2.TabIndex = 0;
             this.label2.Text = "You are editing files in the mods folder";
             // 
+            // ListContextDefragmentMenu
+            // 
+            this.ListContextDefragmentMenu.Name = "ListContextDefragmentMenu";
+            this.ListContextDefragmentMenu.Size = new System.Drawing.Size(207, 22);
+            this.ListContextDefragmentMenu.Text = "Defragment Archive...";
+            this.ListContextDefragmentMenu.Click += new System.EventHandler(this.ListContextDefragmentMenu_Click);
+            // 
+            // ListContextDefragmentSeparator
+            // 
+            this.ListContextDefragmentSeparator.Name = "ListContextDefragmentSeparator";
+            this.ListContextDefragmentSeparator.Size = new System.Drawing.Size(204, 6);
+            // 
             // ExploreForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1237,5 +1253,7 @@
         private System.Windows.Forms.Panel EditModeModsWarningPanel;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ToolStripMenuItem ListContextDefragmentMenu;
+        private System.Windows.Forms.ToolStripSeparator ListContextDefragmentSeparator;
     }
 }

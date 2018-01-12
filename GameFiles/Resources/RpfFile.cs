@@ -1216,7 +1216,7 @@ namespace CodeWalker.GameFiles
             var child = FindChildArchive(f);
             if (child != null)
             {
-                child.StartPos = newstart;
+                child.UpdateStartPos(newstart);
             }
 
         }
@@ -1351,6 +1351,42 @@ namespace CodeWalker.GameFiles
             }
             return c;
         }
+
+
+        public long GetDefragmentedFileSize()
+        {
+            //this represents the size the file would be when fully defragmented.
+            uint blockcount = GetHeaderBlockCount();
+
+            foreach (var entry in AllEntries)
+            {
+                var fentry = entry as RpfFileEntry;
+                if (fentry != null)
+                {
+                    blockcount += GetBlockCount(fentry.GetFileSize());
+                }
+            }
+
+            return (long)blockcount * 512;
+        }
+
+
+        private void UpdateStartPos(long newpos)
+        {
+            StartPos = newpos;
+
+            if (Children != null)
+            {
+                //make sure children also get their StartPos updated!
+                foreach (var child in Children)
+                {
+                    if (child.ParentFileEntry == null) continue;//shouldn't really happen...
+                    var cpos = StartPos + (long)child.ParentFileEntry.FileOffset * 512;
+                    child.UpdateStartPos(newpos);
+                }
+            }
+        }
+
 
 
 
@@ -1728,6 +1764,92 @@ namespace CodeWalker.GameFiles
                 using (var bw = new BinaryWriter(fstream))
                 {
                     file.WriteHeader(bw);
+                }
+            }
+        }
+
+
+        public static void Defragment(RpfFile file, Action<string, float> progress)
+        {
+            if (file?.AllEntries == null) return;
+
+            string fpath = file.GetPhysicalFilePath();
+            using (var fstream = File.Open(fpath, FileMode.Open, FileAccess.ReadWrite))
+            {
+                using (var bw = new BinaryWriter(fstream))
+                {
+                    uint destblock = file.GetHeaderBlockCount();
+
+                    const int BUFFER_SIZE = 16384;//what buffer size is best for HDD copy?
+                    var buffer = new byte[BUFFER_SIZE];
+
+                    var allfiles = new List<RpfFileEntry>();
+                    for (int i = 0; i < file.AllEntries.Count; i++)
+                    {
+                        var entry = file.AllEntries[i] as RpfFileEntry;
+                        if (entry != null) allfiles.Add(entry);
+                    }
+                    //make sure we process everything in the current order that they are in the archive
+                    allfiles.Sort((a, b) => { return a.FileOffset.CompareTo(b.FileOffset); });
+
+                    for (int i = 0; i < allfiles.Count; i++)
+                    {
+                        var entry = allfiles[i];
+                        float prog = (float)i / allfiles.Count;
+                        string txt = "Relocating " + entry.Name + "...";
+                        progress(txt, prog);
+
+                        var sourceblock = entry.FileOffset;
+                        var blockcount = GetBlockCount(entry.GetFileSize());
+
+                        if (sourceblock > destblock) //should only be moving things toward the start
+                        {
+                            var source = file.StartPos + (long)sourceblock * 512;
+                            var dest = file.StartPos + (long)destblock * 512;
+                            var remlength = (long)blockcount * 512;
+                            while (remlength > 0)
+                            {
+                                fstream.Position = source;
+                                int n = fstream.Read(buffer, 0, (int)Math.Min(remlength, BUFFER_SIZE));
+                                fstream.Position = dest;
+                                fstream.Write(buffer, 0, n);
+                                source += n;
+                                dest += n;
+                                remlength -= n;
+                            }
+                            entry.FileOffset = destblock;
+
+                            var entryrpf = file.FindChildArchive(entry);
+                            if (entryrpf != null)
+                            {
+                                entryrpf.UpdateStartPos(file.StartPos + (long)entry.FileOffset * 512);
+                            }
+                        }
+                        else if (sourceblock != destblock)
+                        { }//shouldn't get here...
+
+                        destblock += blockcount;
+                    }
+
+                    file.FileSize = (long)destblock * 512;
+
+                    file.WriteHeader(bw);
+
+                    if (file.ParentFileEntry != null)
+                    {
+                        //make sure to also update the parent archive file entry, if there is one
+                        file.ParentFileEntry.FileUncompressedSize = (uint)file.FileSize;
+                        file.ParentFileEntry.FileSize = 0;
+                        if (file.Parent != null)
+                        {
+                            file.Parent.WriteHeader(bw);
+                        }
+                    }
+                    if (file.Parent == null)
+                    {
+                        //this is a root archive, so update the file's length to the new size.
+                        fstream.SetLength(file.FileSize);
+                    }
                 }
             }
         }
