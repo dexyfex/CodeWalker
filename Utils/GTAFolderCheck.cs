@@ -87,5 +87,8 @@ namespace CodeWalker
 
             return false;
         }
+
+        public static string GetCurrentGTAFolderWithTrailingSlash() =>CurrentGTAFolder.EndsWith(@"\") ? CurrentGTAFolder : CurrentGTAFolder + @"\";
+
     }
 }

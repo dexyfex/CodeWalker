@@ -578,9 +578,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="icons\icon_glokon_debug_32x32.png" />
-    <Content Include="icons\icon_glokon_normal_32x32.png" />
-    <Content Include="icons\icon_google_marker_64x64.png" />
+    <Content Include="icons\icon_glokon_debug_32x32.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="icons\icon_glokon_normal_32x32.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="icons\icon_google_marker_64x64.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Materials.txt" />
     <Content Include="Notice.txt" />
     <Content Include="Readme.txt" />
