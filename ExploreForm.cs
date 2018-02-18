@@ -59,7 +59,8 @@ namespace CodeWalker
 
             InitFileTypes();
 
-            if (!EnsureGTAFolder())
+            /*if (!EnsureGTAFolder())*/
+            if(!GTAFolder.UpdateGTAFolder(true))
             {
                 Close();
                 return;
