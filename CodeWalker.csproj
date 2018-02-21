@@ -92,32 +92,32 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FastColoredTextBox, Version=2.16.21.0, Culture=neutral, PublicKeyToken=fb8aa12b994ef61b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\FastColoredTextBox.dll</HintPath>
+      <HintPath>packages\FCTB.2.16.21.0\lib\FastColoredTextBox.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="SharpDX, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\..\references\Codewalker Refs\SharpDX.dll</HintPath>
+      <HintPath>packages\SharpDX.4.0.1\lib\net45\SharpDX.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.D3DCompiler, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\..\references\Codewalker Refs\SharpDX.D3DCompiler.dll</HintPath>
+      <HintPath>packages\SharpDX.D3DCompiler.4.0.1\lib\net45\SharpDX.D3DCompiler.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Direct2D1, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\..\references\Codewalker Refs\SharpDX.Direct2D1.dll</HintPath>
+      <HintPath>packages\SharpDX.Direct2D1.4.0.1\lib\net45\SharpDX.Direct2D1.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Direct3D11, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\..\references\Codewalker Refs\SharpDX.Direct3D11.dll</HintPath>
+      <HintPath>packages\SharpDX.Direct3D11.4.0.1\lib\net45\SharpDX.Direct3D11.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.DXGI, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\..\references\Codewalker Refs\SharpDX.DXGI.dll</HintPath>
+      <HintPath>packages\SharpDX.DXGI.4.0.1\lib\net45\SharpDX.DXGI.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Mathematics, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\..\references\Codewalker Refs\SharpDX.Mathematics.dll</HintPath>
+      <HintPath>packages\SharpDX.Mathematics.4.0.1\lib\net45\SharpDX.Mathematics.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.XAudio2, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\..\references\Codewalker Refs\SharpDX.XAudio2.dll</HintPath>
+      <HintPath>packages\SharpDX.XAudio2.4.0.1\lib\net45\SharpDX.XAudio2.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.XInput, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\..\references\Codewalker Refs\SharpDX.XInput.dll</HintPath>
+      <HintPath>packages\SharpDX.XInput.4.0.1\lib\net45\SharpDX.XInput.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -395,7 +395,6 @@
     </Compile>
     <Compile Include="Utils\Cache.cs" />
     <Compile Include="Utils\DDSIO.cs" />
-    <Compile Include="Utils\GTAFolderCheck.cs" />
     <Compile Include="Utils\InputUtils.cs" />
     <Compile Include="Utils\MapUtils.cs" />
     <Compile Include="Utils\Matrices.cs" />
@@ -480,7 +479,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FxcForm.resx">
       <DependentUpon>FxcForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\GxtForm.resx">
       <DependentUpon>GxtForm.cs</DependentUpon>
@@ -578,15 +576,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="icons\icon_glokon_debug_32x32.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="icons\icon_glokon_normal_32x32.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="icons\icon_google_marker_64x64.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="icons\icon_glokon_debug_32x32.png" />
+    <Content Include="icons\icon_glokon_normal_32x32.png" />
+    <Content Include="icons\icon_google_marker_64x64.png" />
     <Content Include="Materials.txt" />
     <Content Include="Notice.txt" />
     <Content Include="Readme.txt" />
