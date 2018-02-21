@@ -59,7 +59,9 @@ namespace CodeWalker
 
             InitFileTypes();
 
-            /*if (!EnsureGTAFolder())*/
+            // This is probably not necessary now that the GTA folder is checked 
+            // in the Program.cs when the game is initiated, but we will leave it 
+            // here for now to make sure 
             if(!GTAFolder.UpdateGTAFolder(true))
             {
                 Close();

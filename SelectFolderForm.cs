@@ -26,6 +26,7 @@ namespace CodeWalker
         private void SelectFolderForm_Load(object sender, EventArgs e)
         {
             FolderTextBox.Text = Settings.Default.GTAFolder;
+            RememberFolderCheckbox.Checked = Settings.Default.RememberGTAFolder;
         }
 
         private void FolderBrowseButton_Click(object sender, EventArgs e)
@@ -62,6 +63,11 @@ namespace CodeWalker
             }
             Result = DialogResult.OK;
             Close();
+        }
+
+        private void RememberFolderCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            Settings.Default.RememberGTAFolder = RememberFolderCheckbox.Checked;
         }
     }
 }
