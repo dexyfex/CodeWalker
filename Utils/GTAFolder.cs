@@ -49,6 +49,7 @@ namespace CodeWalker
                 return true;
             }
 
+            string origFolder = CurrentGTAFolder;
             string folder = CurrentGTAFolder;
             SelectFolderForm f = new SelectFolderForm();
             f.ShowDialog();
@@ -61,7 +62,10 @@ namespace CodeWalker
             if(ValidateGTAFolder(folder, out failReason))
             {
                 SetGTAFolder(folder);
-                MessageBox.Show($"Successfully set GTA Folder to \"{folder}\"", "Set GTA Folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if(folder != origFolder)
+                {
+                    MessageBox.Show($"Successfully changed GTA Folder to \"{folder}\"", "Set GTA Folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
                 return true;
             } else
             {

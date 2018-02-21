@@ -26,12 +26,12 @@ namespace CodeWalker
 
         private void ExtractShadersForm_Load(object sender, EventArgs e)
         {
-            FolderTextBox.Text = Settings.Default.GTAFolder;
+            FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
             OutputFolderTextBox.Text = Settings.Default.ExtractedShadersFolder;
 
             try
             {
-                GTA5Keys.LoadFromPath(Settings.Default.GTAFolder);
+                GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder);
                 KeysLoaded = true;
                 UpdateExtractStatus("Ready to extract.");
             }
@@ -41,10 +41,7 @@ namespace CodeWalker
             }
         }
 
-        private void FolderTextBox_TextChanged(object sender, EventArgs e)
-        {
-            Settings.Default.GTAFolder = FolderTextBox.Text;
-        }
+        private void FolderTextBox_TextChanged(object sender, EventArgs e){}
 
         private void OutputFolderTextBox_TextChanged(object sender, EventArgs e)
         {
@@ -53,12 +50,8 @@ namespace CodeWalker
 
         private void FolderBrowseButton_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog.SelectedPath = Settings.Default.GTAFolder;
-            DialogResult res = FolderBrowserDialog.ShowDialog();
-            if (res == DialogResult.OK)
-            {
-                FolderTextBox.Text = FolderBrowserDialog.SelectedPath;
-            }
+            GTAFolder.UpdateGTAFolder(false);
+            FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
         }
 
         private void OutputFolderBrowseButton_Click(object sender, EventArgs e)

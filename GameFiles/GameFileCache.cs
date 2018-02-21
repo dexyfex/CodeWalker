@@ -121,7 +121,7 @@ namespace CodeWalker.GameFiles
                 RpfMan = new RpfManager();
                 RpfMan.ExcludePaths = GetExcludePaths();
                 RpfMan.EnableMods = EnableMods;
-                RpfMan.Init(Settings.Default.GTAFolder, UpdateStatus, ErrorLog);//, true);
+                RpfMan.Init(GTAFolder.CurrentGTAFolder, UpdateStatus, ErrorLog);//, true);
 
                 //RE test area!
                 //DecodeRelFiles();

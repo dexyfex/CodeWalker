@@ -25,7 +25,7 @@ namespace CodeWalker
 
         private void SelectFolderForm_Load(object sender, EventArgs e)
         {
-            FolderTextBox.Text = Settings.Default.GTAFolder;
+            FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
             RememberFolderCheckbox.Checked = Settings.Default.RememberGTAFolder;
         }
 

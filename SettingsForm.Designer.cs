@@ -32,6 +32,7 @@
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.ControlsTabPage = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.MouseInvertCheckBox = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -79,8 +80,6 @@
             this.DoneButton = new System.Windows.Forms.Button();
             this.SaveButton = new System.Windows.Forms.Button();
             this.ResetButton = new System.Windows.Forms.Button();
-            this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-            this.MouseInvertCheckBox = new System.Windows.Forms.CheckBox();
             this.MainTabControl.SuspendLayout();
             this.ControlsTabPage.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -139,6 +138,17 @@
             this.groupBox2.TabIndex = 10;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Mouse settings";
+            // 
+            // MouseInvertCheckBox
+            // 
+            this.MouseInvertCheckBox.AutoSize = true;
+            this.MouseInvertCheckBox.Location = new System.Drawing.Point(240, 55);
+            this.MouseInvertCheckBox.Name = "MouseInvertCheckBox";
+            this.MouseInvertCheckBox.Size = new System.Drawing.Size(118, 17);
+            this.MouseInvertCheckBox.TabIndex = 9;
+            this.MouseInvertCheckBox.Text = "Invert mouse Y axis";
+            this.MouseInvertCheckBox.UseVisualStyleBackColor = true;
+            this.MouseInvertCheckBox.CheckedChanged += new System.EventHandler(this.MouseInvertCheckBox_CheckedChanged);
             // 
             // label4
             // 
@@ -739,9 +749,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.FolderTextBox.Location = new System.Drawing.Point(110, 28);
             this.FolderTextBox.Name = "FolderTextBox";
+            this.FolderTextBox.ReadOnly = true;
             this.FolderTextBox.Size = new System.Drawing.Size(303, 20);
             this.FolderTextBox.TabIndex = 48;
-            this.FolderTextBox.TextChanged += new System.EventHandler(this.FolderTextBox_TextChanged);
             // 
             // label5
             // 
@@ -784,17 +794,6 @@
             this.ResetButton.Text = "Reset all settings";
             this.ResetButton.UseVisualStyleBackColor = true;
             this.ResetButton.Click += new System.EventHandler(this.ResetButton_Click);
-            // 
-            // MouseInvertCheckBox
-            // 
-            this.MouseInvertCheckBox.AutoSize = true;
-            this.MouseInvertCheckBox.Location = new System.Drawing.Point(240, 55);
-            this.MouseInvertCheckBox.Name = "MouseInvertCheckBox";
-            this.MouseInvertCheckBox.Size = new System.Drawing.Size(118, 17);
-            this.MouseInvertCheckBox.TabIndex = 9;
-            this.MouseInvertCheckBox.Text = "Invert mouse Y axis";
-            this.MouseInvertCheckBox.UseVisualStyleBackColor = true;
-            this.MouseInvertCheckBox.CheckedChanged += new System.EventHandler(this.MouseInvertCheckBox_CheckedChanged);
             // 
             // SettingsForm
             // 
@@ -857,7 +856,6 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button FolderBrowseButton;
         private System.Windows.Forms.TextBox FolderTextBox;
-        private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown ShadowCascadesUpDown;
         private System.Windows.Forms.Label label7;

@@ -127,6 +127,7 @@
             // 
             this.FolderTextBox.Location = new System.Drawing.Point(93, 12);
             this.FolderTextBox.Name = "FolderTextBox";
+            this.FolderTextBox.ReadOnly = true;
             this.FolderTextBox.Size = new System.Drawing.Size(251, 20);
             this.FolderTextBox.TabIndex = 64;
             this.FolderTextBox.TextChanged += new System.EventHandler(this.FolderTextBox_TextChanged);

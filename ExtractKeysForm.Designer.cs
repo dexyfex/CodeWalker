@@ -77,9 +77,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.FolderTextBox.Location = new System.Drawing.Point(98, 25);
             this.FolderTextBox.Name = "FolderTextBox";
+            this.FolderTextBox.ReadOnly = true;
             this.FolderTextBox.Size = new System.Drawing.Size(345, 20);
             this.FolderTextBox.TabIndex = 57;
-            this.FolderTextBox.TextChanged += new System.EventHandler(this.FolderTextBox_TextChanged);
             // 
             // StatusLabel
             // 

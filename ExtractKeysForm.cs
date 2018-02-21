@@ -26,11 +26,11 @@ namespace CodeWalker
 
         private void ExtractKeysForm_Load(object sender, EventArgs e)
         {
-            FolderTextBox.Text = Settings.Default.GTAFolder;
+            FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
 
             try
             {
-                GTA5Keys.LoadFromPath(Settings.Default.GTAFolder);
+                GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder);
                 KeysLoaded = true;
                 UpdateStatus("Keys loaded. Nothing to do here!");
             }
@@ -41,20 +41,11 @@ namespace CodeWalker
             }
         }
 
-        private void FolderTextBox_TextChanged(object sender, EventArgs e)
-        {
-            Settings.Default.GTAFolder = FolderTextBox.Text;
-            ExeTextBox.Text = FolderTextBox.Text + "\\" + "GTA5.exe";
-        }
-
         private void FolderBrowseButton_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog.SelectedPath = Settings.Default.GTAFolder;
-            DialogResult res = FolderBrowserDialog.ShowDialog();
-            if (res == DialogResult.OK)
-            {
-                FolderTextBox.Text = FolderBrowserDialog.SelectedPath;
-            }
+            GTAFolder.UpdateGTAFolder(false);
+            FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
+            ExeTextBox.Text = GTAFolder.CurrentGTAFolder + @"\GTA5.exe";
         }
 
         private void ExeBrowseButton_Click(object sender, EventArgs e)
