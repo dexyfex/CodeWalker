@@ -51,16 +51,12 @@ namespace CodeWalker
 
         private void OkButton_Click(object sender, EventArgs e)
         {
-            if (!Directory.Exists(SelectedFolder))
+            if(!GTAFolder.ValidateGTAFolder(SelectedFolder, out string failReason))
             {
-                MessageBox.Show("The folder \"" + SelectedFolder + "\" does not exist, or cannot be accessed. Please select another.");
+                MessageBox.Show("The selected folder could not be used:\n\n" + failReason, "Invalid GTA Folder", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            if (!File.Exists(SelectedFolder + "\\gta5.exe"))
-            {
-                MessageBox.Show("GTA5.exe not found in folder:\n" + SelectedFolder);
-                return;
-            }
+
             Result = DialogResult.OK;
             Close();
         }
