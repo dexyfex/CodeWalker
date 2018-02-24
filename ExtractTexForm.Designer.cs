@@ -118,9 +118,9 @@
             // 
             this.FolderTextBox.Location = new System.Drawing.Point(90, 6);
             this.FolderTextBox.Name = "FolderTextBox";
+            this.FolderTextBox.ReadOnly = true;
             this.FolderTextBox.Size = new System.Drawing.Size(251, 20);
             this.FolderTextBox.TabIndex = 55;
-            this.FolderTextBox.TextChanged += new System.EventHandler(this.FolderTextBox_TextChanged);
             // 
             // AbortButton
             // 

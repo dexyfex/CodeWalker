@@ -390,6 +390,7 @@
       <DependentUpon>TextInputForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\DDSIO.cs" />
+    <Compile Include="Utils\GTAFolder.cs" />
     <Compile Include="Utils\InputUtils.cs" />
     <Compile Include="Utils\MapUtils.cs" />
     <Compile Include="Utils\TextureLoader.cs" />

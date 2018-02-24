@@ -130,7 +130,7 @@ namespace CodeWalker.Forms
         {
             if (string.IsNullOrEmpty(FileName)) saveAs = true;
             if (string.IsNullOrEmpty(FilePath)) saveAs = true;
-            else if ((FilePath.ToLowerInvariant().StartsWith(Settings.Default.GTAFolder.ToLowerInvariant()))) saveAs = true;
+            else if ((FilePath.ToLowerInvariant().StartsWith(GTAFolder.CurrentGTAFolder.ToLowerInvariant()))) saveAs = true;
             if (!File.Exists(FilePath)) saveAs = true;
 
             var fn = FilePath;

@@ -27,7 +27,7 @@ namespace CodeWalker
 
         private void ExtractTexForm_Load(object sender, EventArgs e)
         {
-            FolderTextBox.Text = Settings.Default.GTAFolder;
+            FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
             OutputFolderTextBox.Text = Settings.Default.ExtractedTexturesFolder;
 
             try
@@ -42,11 +42,6 @@ namespace CodeWalker
             }
         }
 
-        private void FolderTextBox_TextChanged(object sender, EventArgs e)
-        {
-            Settings.Default.GTAFolder = FolderTextBox.Text;
-        }
-
         private void OutputFolderTextBox_TextChanged(object sender, EventArgs e)
         {
             Settings.Default.ExtractedTexturesFolder = OutputFolderTextBox.Text;
@@ -54,12 +49,8 @@ namespace CodeWalker
 
         private void FolderBrowseButton_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog.SelectedPath = Settings.Default.GTAFolder;
-            DialogResult res = FolderBrowserDialog.ShowDialog();
-            if (res == DialogResult.OK)
-            {
-                FolderTextBox.Text = FolderBrowserDialog.SelectedPath;
-            }
+            GTAFolder.UpdateGTAFolder(false);
+            FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
         }
 
         private void OutputFolderBrowseButton_Click(object sender, EventArgs e)

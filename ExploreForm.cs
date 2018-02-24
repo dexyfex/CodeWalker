@@ -59,7 +59,10 @@ namespace CodeWalker
 
             InitFileTypes();
 
-            if (!EnsureGTAFolder())
+            // This is probably not necessary now that the GTA folder is checked 
+            // in the Program.cs when the game is initiated, but we will leave it 
+            // here for now to make sure 
+            if(!GTAFolder.UpdateGTAFolder(true))
             {
                 Close();
                 return;
@@ -241,45 +244,7 @@ namespace CodeWalker
             }
         }
 
-        private bool EnsureGTAFolder()
-        {
-            string fldr = Settings.Default.GTAFolder;
-            if (string.IsNullOrEmpty(fldr) || !Directory.Exists(fldr))
-            {
-                if (!ChangeGTAFolder())
-                {
-                    return false;
-                }
-                fldr = Settings.Default.GTAFolder;
-            }
-            if (!Directory.Exists(fldr))
-            {
-                MessageBox.Show("The specified folder does not exist:\n" + fldr);
-                return false;
-            }
-            if (!File.Exists(fldr + "\\gta5.exe"))
-            {
-                MessageBox.Show("GTA5.exe not found in folder:\n" + fldr);
-                return false;
-            }
-            Settings.Default.GTAFolder = fldr; //seems ok, save it for later
-            return true;
-        }
-        private bool ChangeGTAFolder()
-        {
-            SelectFolderForm f = new SelectFolderForm();
-            f.ShowDialog();
-            if (f.Result == DialogResult.OK)
-            {
-                Settings.Default.GTAFolder = f.SelectedFolder;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
+        
 
         public void UpdateStatus(string text)
         {
@@ -310,13 +275,6 @@ namespace CodeWalker
                 }
             }
             catch { }
-        }
-
-
-        public static string GetRootPath()
-        {
-            var path = Settings.Default.GTAFolder;
-            return path.EndsWith("\\") ? path : path + "\\";
         }
 
 
@@ -596,15 +554,14 @@ namespace CodeWalker
 
             ClearMainTreeView();
 
-            var path = Settings.Default.GTAFolder;
-            var replpath = path.EndsWith("\\") ? path : path + "\\";
+            string fullPath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
 
-            string[] allfiles = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+            string[] allfiles = Directory.GetFiles(GTAFolder.CurrentGTAFolder, "*", SearchOption.AllDirectories);
 
             Dictionary<string, MainTreeFolder> nodes = new Dictionary<string, MainTreeFolder>();
 
             MainTreeFolder root = new MainTreeFolder();
-            root.FullPath = GetRootPath();
+            root.FullPath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
             root.Path = "";
             root.Name = "GTA V";
             RootFolder = root;
@@ -613,7 +570,7 @@ namespace CodeWalker
 
             foreach (var filepath in allfiles)
             {
-                var relpath = filepath.Replace(replpath, "");
+                var relpath = filepath.Replace(fullPath, "");
                 var filepathl = filepath.ToLowerInvariant();
 
                 UpdateStatus("Scanning " + relpath + "...");
@@ -629,7 +586,7 @@ namespace CodeWalker
                     var exists = nodes.TryGetValue(parentpath, out node);
                     if (!exists)
                     {
-                        node = CreateRootDirTreeFolder(parentname, parentpath, replpath + parentpath);
+                        node = CreateRootDirTreeFolder(parentname, parentpath, fullPath + parentpath);
                         nodes[parentpath] = node;
                     }
                     if (parentnode == null)
@@ -703,7 +660,7 @@ namespace CodeWalker
         }
         private void RecurseMainTreeViewRPF(MainTreeFolder f, List<RpfFile> allRpfs)
         {
-            var rootpath = GetRootPath();
+            var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
 
             var fld = f.RpfFolder;
             if (fld != null)
@@ -2026,7 +1983,7 @@ namespace CodeWalker
 
 
             string relpath = (CurrentFolder.Path ?? "") + "\\" + fname;
-            var rootpath = GetRootPath();
+            var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
             string fullpath = rootpath + relpath;
 
             RpfDirectoryEntry newdir = null;
@@ -2103,7 +2060,7 @@ namespace CodeWalker
                 else
                 {
                     //adding a new RPF in the filesystem
-                    newrpf = RpfFile.CreateNew(Settings.Default.GTAFolder, relpath, encryption);
+                    newrpf = RpfFile.CreateNew(GTAFolder.CurrentGTAFolder, relpath, encryption);
                 }
             }
             catch (Exception ex)
@@ -2115,7 +2072,7 @@ namespace CodeWalker
 
             if (newrpf != null)
             {
-                var node = CreateRpfTreeFolder(newrpf, newrpf.Path, GetRootPath() + newrpf.Path);
+                var node = CreateRpfTreeFolder(newrpf, newrpf.Path, GTAFolder.GetCurrentGTAFolderWithTrailingSlash() + newrpf.Path);
                 RecurseMainTreeViewRPF(node, AllRpfs);
                 AddNewFolderTreeNode(node);
             }
@@ -2284,7 +2241,7 @@ namespace CodeWalker
                     if (newrpf != null)
                     {
                         //an RPF file was imported. add its structure to the UI!
-                        var rootpath = GetRootPath();
+                        var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
                         var tnf = CreateRpfTreeFolder(newrpf, newrpf.Path, rootpath + newrpf.Path);
                         if (CurrentFolder.Children != null)
                         {
@@ -2324,7 +2281,7 @@ namespace CodeWalker
         {
             if (MainListView.SelectedIndices.Count == 0)
             {
-                Clipboard.SetText(CurrentFolder?.FullPath ?? GetRootPath());
+                Clipboard.SetText(CurrentFolder?.FullPath ?? GTAFolder.GetCurrentGTAFolderWithTrailingSlash());
             }
             else if (MainListView.SelectedIndices.Count == 1)
             {
@@ -2985,7 +2942,7 @@ namespace CodeWalker
         private void TreeContextWinExplorerMenu_Click(object sender, EventArgs e)
         {
             var folder = MainTreeView.SelectedNode?.Tag as MainTreeFolder;
-            var path = folder?.FullPath ?? GetRootPath();
+            var path = folder?.FullPath ?? GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
             ShowInExplorer(path);
         }
 
@@ -3288,7 +3245,7 @@ namespace CodeWalker
             if (ListItems == null)
             {
                 ListItems = new List<MainListItem>();
-                var rootpath = ExploreForm.GetRootPath();
+                var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
 
                 if (Children != null)
                 {
@@ -3350,7 +3307,7 @@ namespace CodeWalker
                 resultcount++;
             }
 
-            var rootpath = ExploreForm.GetRootPath();
+            var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
 
             if (Files != null)
             {

@@ -36,7 +36,7 @@ namespace CodeWalker
                 {
                     Task.Run(() =>
                     {
-                        GTA5Keys.LoadFromPath(Settings.Default.GTAFolder, Settings.Default.Key);
+                        GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
                         GameFileCache gfc = new GameFileCache();
                         gfc.DoFullStringIndex = true;
                         gfc.Init(UpdateStatus, UpdateStatus);

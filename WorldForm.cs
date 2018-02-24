@@ -226,38 +226,11 @@ namespace CodeWalker
 
             MouseWheel += WorldForm_MouseWheel;
 
-            string fldr = Settings.Default.GTAFolder;
-            if (string.IsNullOrEmpty(fldr) || !Directory.Exists(fldr))
+            if (!GTAFolder.UpdateGTAFolder(true))
             {
-                SelectFolderForm f = new SelectFolderForm();
-                f.ShowDialog();
-                if (f.Result == DialogResult.OK)
-                {
-                    fldr = f.SelectedFolder;
-                }
-                else
-                {
-                    //MessageBox.Show("No GTAV folder was chosen. CodeWalker will now exit.");
-                    Close();
-                    return;
-                }
-            }
-
-            if (!Directory.Exists(fldr))
-            {
-                MessageBox.Show("The specified folder does not exist:\n" + fldr);
                 Close();
                 return;
             }
-            if (!File.Exists(fldr + "\\gta5.exe"))
-            {
-                MessageBox.Show("GTA5.exe not found in folder:\n" + fldr);
-                Close();
-                return;
-            }
-
-            Settings.Default.GTAFolder = fldr; //seems ok, save it for later
-
 
             Widget.Position = new Vector3(1.0f, 10.0f, 100.0f);
             Widget.Rotation = Quaternion.Identity;
@@ -3889,7 +3862,7 @@ namespace CodeWalker
 
             try
             {
-                GTA5Keys.LoadFromPath(Settings.Default.GTAFolder, Settings.Default.Key);
+                GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
 
                 //save the key for later if it's not saved already. not really ideal to have this in this thread
                 if (string.IsNullOrEmpty(Settings.Default.Key) && (GTA5Keys.PC_AES_KEY != null))
