@@ -27,7 +27,7 @@
 
 //shamelessly stolen
 
-using CodeWalker.Properties;
+using CodeWalker.Core.Properties;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -160,15 +160,12 @@ namespace CodeWalker.GameFiles
             updateStatus?.Invoke("Searching for AES key...");
             PC_AES_KEY = HashSearch.SearchHash(exeStr, GTA5KeyHashes.PC_AES_KEY_HASH, 0x20);
 
-            Settings.Default.Key = Convert.ToBase64String(PC_AES_KEY);
-            Settings.Default.Save();
-
             updateStatus?.Invoke("Complete.");
         }
 
 
 
-        public static void LoadFromPath(string path = ".\\Keys")
+        public static void LoadFromPath(string path = ".\\Keys", string key = null)
         {
             //PC_AES_KEY = File.ReadAllBytes(path + "\\gtav_aes_key.dat");
             //PC_NG_KEYS = CryptoIO.ReadNgKeys(path + "\\gtav_ng_key.dat");
@@ -178,7 +175,7 @@ namespace CodeWalker.GameFiles
             //PC_LUT = File.ReadAllBytes(path + "\\gtav_hash_lut.dat");
 
             //GenerateMagicData(path);
-            UseMagicData(path);
+            UseMagicData(path, key);
         }
 
         public static void SaveToPath(string path = ".\\Keys")
@@ -248,17 +245,17 @@ namespace CodeWalker.GameFiles
 
         }
 
-        private static void UseMagicData(string path)
+        private static void UseMagicData(string path, string key)
         {
 
-            if (string.IsNullOrEmpty(Settings.Default.Key))
+            if (string.IsNullOrEmpty(key))
             {
                 byte[] exedata = File.ReadAllBytes(path + "\\gta5.exe");
                 GenerateV2(exedata, null);
             }
             else
             {
-                PC_AES_KEY = Convert.FromBase64String(Settings.Default.Key);
+                PC_AES_KEY = Convert.FromBase64String(key);
             }
             //GenerateMagicData();
 

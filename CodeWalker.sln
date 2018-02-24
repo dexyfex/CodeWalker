@@ -1,16 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.13
+VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeWalker", "CodeWalker.csproj", "{3BB16320-99BF-4E30-9065-CA0877A36BF4}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0D14B076-0ABF-434E-AB9F-36E7800D8887} = {0D14B076-0ABF-434E-AB9F-36E7800D8887}
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759} = {DE50D3A6-B49E-47A0-ABE6-101473A00759}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CodeWalkerShaders", "Shaders\CodeWalkerShaders.vcxproj", "{0D14B076-0ABF-434E-AB9F-36E7800D8887}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeWalker.WinForms", "CodeWalker.WinForms\CodeWalker.WinForms.csproj", "{9702C58D-F52F-45CF-9456-9CE5AF40F5C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeWalker.Core", "CodeWalker.Core\CodeWalker.Core.csproj", "{DE50D3A6-B49E-47A0-ABE6-101473A00759}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,8 +61,23 @@ Global
 		{9702C58D-F52F-45CF-9456-9CE5AF40F5C3}.Release|x64.Build.0 = Release|Any CPU
 		{9702C58D-F52F-45CF-9456-9CE5AF40F5C3}.Release|x86.ActiveCfg = Release|Any CPU
 		{9702C58D-F52F-45CF-9456-9CE5AF40F5C3}.Release|x86.Build.0 = Release|Any CPU
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759}.Debug|x64.Build.0 = Debug|Any CPU
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759}.Debug|x86.Build.0 = Debug|Any CPU
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759}.Release|x64.ActiveCfg = Release|Any CPU
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759}.Release|x64.Build.0 = Release|Any CPU
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759}.Release|x86.ActiveCfg = Release|Any CPU
+		{DE50D3A6-B49E-47A0-ABE6-101473A00759}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5D6153C2-98D1-4C3D-9232-4C2BEEAEC8E0}
 	EndGlobalSection
 EndGlobal

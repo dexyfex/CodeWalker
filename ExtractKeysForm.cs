@@ -30,7 +30,7 @@ namespace CodeWalker
 
             try
             {
-                GTA5Keys.LoadFromPath(Settings.Default.GTAFolder);
+                GTA5Keys.LoadFromPath(Settings.Default.GTAFolder, Settings.Default.Key);
                 KeysLoaded = true;
                 UpdateStatus("Keys loaded. Nothing to do here!");
             }
@@ -127,6 +127,8 @@ namespace CodeWalker
 
                     UpdateStatus("Saving found keys...");
 
+                    Settings.Default.Key = Convert.ToBase64String(GTA5Keys.PC_AES_KEY);
+                    Settings.Default.Save();
                     //GTA5Keys.SaveToPath();
 
                     UpdateStatus("Keys extracted successfully.");

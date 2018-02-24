@@ -280,7 +280,6 @@
     <Compile Include="GameFiles\FileTypes\CacheDatFile.cs" />
     <Compile Include="GameFiles\Resources\Bounds.cs" />
     <Compile Include="GameFiles\Resources\Clip.cs" />
-    <Compile Include="GameFiles\Resources\Data.cs" />
     <Compile Include="GameFiles\Resources\Drawable.cs" />
     <Compile Include="GameFiles\Resources\Frag.cs" />
     <Compile Include="GameFiles\FileTypes\FxcFile.cs" />
@@ -293,9 +292,6 @@
     <Compile Include="GameFiles\Resources\Texture.cs" />
     <Compile Include="GameFiles\Resources\VehicleRecord.cs" />
     <Compile Include="GameFiles\Resources\WaypointRecord.cs" />
-    <Compile Include="GameFiles\Utils\GTAKeys.cs" />
-    <Compile Include="GameFiles\Utils\GTACrypto.cs" />
-    <Compile Include="GameFiles\Utils\Jenk.cs" />
     <Compile Include="GameFiles\MetaTypes\Meta.cs" />
     <Compile Include="GameFiles\MetaTypes\MetaTypes.cs" />
     <Compile Include="GameFiles\MetaTypes\MetaNames.cs" />
@@ -393,15 +389,10 @@
     <Compile Include="TextInputForm.Designer.cs">
       <DependentUpon>TextInputForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Utils\Cache.cs" />
     <Compile Include="Utils\DDSIO.cs" />
     <Compile Include="Utils\InputUtils.cs" />
     <Compile Include="Utils\MapUtils.cs" />
-    <Compile Include="Utils\Matrices.cs" />
-    <Compile Include="Utils\Quaternions.cs" />
     <Compile Include="Utils\TextureLoader.cs" />
-    <Compile Include="Utils\Vectors.cs" />
-    <Compile Include="Utils\Xml.cs" />
     <Compile Include="ProjectForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -431,7 +422,6 @@
     <Compile Include="BinarySearchForm.Designer.cs">
       <DependentUpon>BinarySearchForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Utils\Utils.cs" />
     <Compile Include="WorldForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -570,7 +560,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="Resources\magic.dat" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -599,6 +588,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="CodeWalker.Core\CodeWalker.Core.csproj">
+      <Project>{de50d3a6-b49e-47a0-abe6-101473a00759}</Project>
+      <Name>CodeWalker.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="CodeWalker.WinForms\CodeWalker.WinForms.csproj">
       <Project>{9702c58d-f52f-45cf-9456-9ce5af40f5c3}</Project>
       <Name>CodeWalker.WinForms</Name>

@@ -297,57 +297,23 @@ namespace CodeWalker.World
             Planes[5] = Plane.Normalize(new Plane((vp.M14 - vp.M13), (vp.M24 - vp.M23), (vp.M34 - vp.M33), (vp.M44 - vp.M43)));
         }
 
-        public bool ContainsSphere(ref Vector3 c, float cls, float r)
-        {
-            //cls = c length squared, for optimization
-            if (cls < (r * r))
-            {
-                return true; //frustrum center is in the sphere
-            }
-            float nr = -r;
-            for (int i = 0; i < 6; i++)
-            {
-                if (Plane.DotCoordinate(Planes[i], c) < nr)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        public bool ContainsSphereNoClip(ref Vector3 c, float cls, float r)
-        {
-            //cls = c length squared, for optimization
-            if (cls < (r * r))
-            {
-                return true; //frustrum center is in the sphere
-            }
-            float nr = -r;
-            for (int i = 0; i < 5; i++)
-            {
-                if (Plane.DotCoordinate(Planes[i], c) < nr)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        public bool ContainsSphereNoFrontClip(ref Vector3 c, float cls, float r)
-        {
-            //cls = c length squared, for optimization
-            if (cls < (r * r))
-            {
-                return true; //frustrum center is in the sphere
-            }
-            float nr = -r;
-            for (int i = 0; i < 6; i++)
-            {
-                if ((i != 4) && (Plane.DotCoordinate(Planes[i], c) < nr))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
+        //public bool ContainsSphere(ref Vector3 c, float cls, float r)
+        //{
+        //    //cls = c length squared, for optimization
+        //    if (cls < (r * r))
+        //    {
+        //        return true; //frustrum center is in the sphere
+        //    }
+        //    float nr = -r;
+        //    for (int i = 0; i < 6; i++)
+        //    {
+        //        if (Plane.DotCoordinate(Planes[i], c) < nr)
+        //        {
+        //            return false;
+        //        }
+        //    }
+        //    return true;
+        //}
         public bool ContainsSphereNoClipNoOpt(ref Vector3 c, float r)
         {
             float nr = -r;

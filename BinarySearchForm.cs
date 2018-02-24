@@ -41,7 +41,7 @@ namespace CodeWalker
             {
                 Task.Run(() =>
                 {
-                    GTA5Keys.LoadFromPath(Settings.Default.GTAFolder);
+                    GTA5Keys.LoadFromPath(Settings.Default.GTAFolder, Settings.Default.Key);
                     RpfMan = new RpfManager();
                     RpfMan.Init(Settings.Default.GTAFolder, UpdateStatus, UpdateStatus, false, false);
                     RPFScanComplete();
