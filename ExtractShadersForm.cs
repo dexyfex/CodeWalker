@@ -31,7 +31,7 @@ namespace CodeWalker
 
             try
             {
-                GTA5Keys.LoadFromPath(Settings.Default.GTAFolder, Settings.Default.Key);
+                GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
                 KeysLoaded = true;
                 UpdateExtractStatus("Ready to extract.");
             }
@@ -163,6 +163,7 @@ namespace CodeWalker
                                     if (asm)
                                     {
                                         string asmfile = filebase + ".hlsl";
+                                        FxcParser.ParseShader(shader);
                                         File.WriteAllText(asmfile, shader.Disassembly);
                                     }
                                 }

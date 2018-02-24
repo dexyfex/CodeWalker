@@ -1,5 +1,4 @@
-﻿using SharpDX.D3DCompiler;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -104,8 +103,9 @@ namespace CodeWalker.GameFiles
                 for (int s = 1; s < sc0; s++)
                 {
                     bool exbyteflag1 = (gindex==5); //GS seems to be in diff format??
+                    bool vsgsps = (gindex == 1) || (gindex == 2) || (gindex == 5);
                     FxcShader shader = new FxcShader();
-                    if (!shader.Read(br, exbyteflag1))
+                    if (!shader.Read(br, exbyteflag1, vsgsps))
                     {
                         LastError += shader.LastError;
                         //gindex = 6; //get outta the loop?
@@ -537,13 +537,14 @@ namespace CodeWalker.GameFiles
         public FxcShaderBufferRef[] Buffers { get; set; }//CBuffers
         public byte VersionMajor { get; set; }
         public byte VersionMinor { get; set; }
+        public string VersionString { get; set; }
         public byte[] ByteCode { get; set; }
-        public ShaderBytecode ByteCodeObj { get; set; }
-        public ShaderProfile ShaderProfile { get; set; }
+        //public ShaderBytecode ByteCodeObj { get; set; }
+        //public ShaderProfile ShaderProfile { get; set; }
         public string Disassembly { get; set; }
         public string LastError { get; set; }
 
-        public bool Read(BinaryReader br, bool exbyteflag)
+        public bool Read(BinaryReader br, bool exbyteflag, bool vsgsps)
         {
             Offset = br.BaseStream.Position;
 
@@ -592,38 +593,37 @@ namespace CodeWalker.GameFiles
 
                 ByteCode = br.ReadBytes((int)datalength);
 
-
-                try
+                if (vsgsps)
                 {
-                    ByteCodeObj = new ShaderBytecode(ByteCode);
-
-                    ShaderProfile = ByteCodeObj.GetVersion();
-
-
-                    switch (ShaderProfile.Version)
-                    {
-                        case ShaderVersion.VertexShader:
-                        case ShaderVersion.PixelShader:
-                        case ShaderVersion.GeometryShader:
-                            VersionMajor = br.ReadByte();//4,5 //appears to be shader model version
-                            VersionMinor = br.ReadByte(); //perhaps shader minor version
-                            break;
-                        default:
-                            VersionMajor = (byte)ShaderProfile.Major;
-                            VersionMinor = (byte)ShaderProfile.Minor;
-                            break;
-                    }
-
-
-                    //do disassembly last, so any errors won't cause the file read to break
-                    Disassembly = ByteCodeObj.Disassemble();
-
+                    VersionMajor = br.ReadByte();//4,5 //appears to be shader model version
+                    VersionMinor = br.ReadByte(); //perhaps shader minor version
                 }
-                catch (Exception ex)
-                {
-                    LastError += ex.ToString() + "\r\n";
-                    return false;
-                }
+
+                //try
+                //{
+                //    ByteCodeObj = new ShaderBytecode(ByteCode);
+                //    ShaderProfile = ByteCodeObj.GetVersion();
+                //    switch (ShaderProfile.Version)
+                //    {
+                //        case ShaderVersion.VertexShader:
+                //        case ShaderVersion.PixelShader:
+                //        case ShaderVersion.GeometryShader:
+                //            VersionMajor = br.ReadByte();//4,5 //appears to be shader model version
+                //            VersionMinor = br.ReadByte(); //perhaps shader minor version
+                //            break;
+                //        default:
+                //            VersionMajor = (byte)ShaderProfile.Major;
+                //            VersionMinor = (byte)ShaderProfile.Minor;
+                //            break;
+                //    }
+                //    //do disassembly last, so any errors won't cause the file read to break
+                //    Disassembly = ByteCodeObj.Disassemble();
+                //}
+                //catch (Exception ex)
+                //{
+                //    LastError += ex.ToString() + "\r\n";
+                //    return false;
+                //}
             }
             else
             {

@@ -40,7 +40,7 @@ namespace CodeWalker
         private MainTreeFolder SearchResults;
 
         private List<RpfFile> AllRpfs { get; set; }
-        private GameFileCache FileCache { get; set; } = new GameFileCache();
+        private GameFileCache FileCache { get; set; } = GameFileCacheFactory.Create();
         private object FileCacheSyncRoot = new object();
 
         private bool EditMode = false;
@@ -73,7 +73,7 @@ namespace CodeWalker
             {
                 try
                 {
-                    GTA5Keys.LoadFromPath(Settings.Default.GTAFolder, Settings.Default.Key);
+                    GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
                 }
                 catch
                 {

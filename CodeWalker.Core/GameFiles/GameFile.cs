@@ -72,4 +72,22 @@ namespace CodeWalker.GameFiles
         Gtxd = 16,
     }
 
+
+
+
+
+    public struct GameFileCacheKey
+    {
+        public uint Hash { get; set; }
+        public GameFileType Type { get; set; }
+
+        public GameFileCacheKey(uint hash, GameFileType type)
+        {
+            Hash = hash;
+            Type = type;
+        }
+    }
+
+
+
 }

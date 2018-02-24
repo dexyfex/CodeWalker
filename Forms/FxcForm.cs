@@ -100,6 +100,7 @@ namespace CodeWalker.Forms
             else
             {
                 ShaderPanel.Enabled = true;
+                FxcParser.ParseShader(s);
                 if (!string.IsNullOrEmpty(s.LastError))
                 {
                     StringBuilder sb = new StringBuilder();

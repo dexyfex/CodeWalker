@@ -1,5 +1,4 @@
-﻿using CodeWalker.Properties;
-using SharpDX;
+﻿using SharpDX;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,7 +21,7 @@ namespace CodeWalker.GameFiles
         private ConcurrentStack<GameFile> requestQueue = new ConcurrentStack<GameFile>();
 
         ////dynamic cache
-        private Cache<GameFileCacheKey, GameFile> mainCache = new Cache<GameFileCacheKey, GameFile>(Settings.Default.CacheSize, Settings.Default.CacheTime);//2GB
+        private Cache<GameFileCacheKey, GameFile> mainCache;
         public volatile bool IsInited = false;
 
         private volatile bool archetypesLoaded = false;
@@ -86,6 +85,18 @@ namespace CodeWalker.GameFiles
 
         private bool PreloadedMode = false;
 
+        private string GTAFolder;
+        private string ExcludeFolders;
+
+        public GameFileCache(long size, double cacheTime, string folder, string dlc, bool mods, string excludeFolders)
+        {
+            mainCache = new Cache<GameFileCacheKey, GameFile>(size, cacheTime);//2GB is good as default
+            SelectedDlc = dlc;
+            EnableDlc = !string.IsNullOrEmpty(SelectedDlc);
+            EnableMods = mods;
+            GTAFolder = folder;
+            ExcludeFolders = excludeFolders;
+        }
 
 
         public void Clear()
@@ -110,18 +121,14 @@ namespace CodeWalker.GameFiles
 
             if (RpfMan == null)
             {
-
-
-                SelectedDlc = Settings.Default.DLC;
                 EnableDlc = !string.IsNullOrEmpty(SelectedDlc);
-                EnableMods = Settings.Default.EnableMods;
 
 
 
                 RpfMan = new RpfManager();
                 RpfMan.ExcludePaths = GetExcludePaths();
                 RpfMan.EnableMods = EnableMods;
-                RpfMan.Init(GTAFolder.CurrentGTAFolder, UpdateStatus, ErrorLog);//, true);
+                RpfMan.Init(GTAFolder, UpdateStatus, ErrorLog);//, true);
 
                 //RE test area!
                 //DecodeRelFiles();
@@ -2078,7 +2085,7 @@ namespace CodeWalker.GameFiles
 
         private string[] GetExcludePaths()
         {
-            string[] exclpaths = Settings.Default.ExcludeFolders.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] exclpaths = ExcludeFolders.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
             if (exclpaths.Length > 0)
             {
                 for (int i = 0; i < exclpaths.Length; i++)
@@ -2645,18 +2652,6 @@ namespace CodeWalker.GameFiles
 
         }
 
-    }
-
-    public struct GameFileCacheKey
-    {
-        public uint Hash { get; set; }
-        public GameFileType Type { get; set; }
-
-        public GameFileCacheKey(uint hash, GameFileType type)
-        {
-            Hash = hash;
-            Type = type;
-        }
     }
 
 

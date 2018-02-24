@@ -27,7 +27,7 @@ namespace CodeWalker.Rendering
 
         public ShaderManager shaders;
 
-        public Camera camera = new Camera();
+        public Camera camera;
 
         private double currentRealTime = 0;
         private float currentElapsedTime = 0;
@@ -154,9 +154,12 @@ namespace CodeWalker.Rendering
             gameFileCache = cache;
             if (gameFileCache == null)
             {
-                gameFileCache = new GameFileCache();
+                gameFileCache = GameFileCacheFactory.Create();
             }
             renderableCache = new RenderableCache();
+
+            var s = Settings.Default;
+            camera = new Camera(s.CameraSmoothing, s.CameraSensitivity, s.CameraFieldOfView);
         }
 
 

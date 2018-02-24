@@ -86,7 +86,7 @@ namespace CodeWalker
             }
             else
             {
-                GameFileCache = new GameFileCache();
+                GameFileCache = GameFileCacheFactory.Create();
                 new Thread(new ThreadStart(() => {
                     GameFileCache.Init(UpdateStatus, UpdateStatus);
                     RpfMan = GameFileCache.RpfMan;

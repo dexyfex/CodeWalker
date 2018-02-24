@@ -1,5 +1,4 @@
-﻿using CodeWalker.Properties;
-using SharpDX;
+﻿using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +11,8 @@ namespace CodeWalker.World
     {
         public Vector3 TargetRotation = Vector3.Zero;
         public Vector3 CurrentRotation = Vector3.Zero;
-        public float Smoothness = Settings.Default.CameraSmoothing;// 10.0f;//0.15f;
-        public float Sensitivity = Settings.Default.CameraSensitivity;// 0.005f;
+        public float Smoothness;// 10.0f;//0.15f;
+        public float Sensitivity;// 0.005f;
         public float TargetDistance = 1.0f;
         public float CurrentDistance = 1.0f;
         public float ZoomCurrentTime = 0.0f;
@@ -22,7 +21,7 @@ namespace CodeWalker.World
         public float ZoomSpeed = 0.1f;
         public float Width = 1920.0f;
         public float Height = 1080.0f;
-        public float FieldOfView = Settings.Default.CameraFieldOfView;// 1.0f;
+        public float FieldOfView;// 1.0f;
         public float FieldOfViewFactor = 0.5f / (float)Math.Tan(/*FieldOfView*/ 1.0f * 0.5f);
         public float AspectRatio = 1920.0f / 1080.0f;
         public float ZNear = 0.5f;
@@ -52,6 +51,15 @@ namespace CodeWalker.World
         private float MouseX = 0;
         private float MouseY = 0;
         private object syncRoot = new object();
+
+
+        public Camera(float smoothness, float sensitivity, float fov)
+        {
+            Smoothness = smoothness;
+            Sensitivity = sensitivity;
+            FieldOfView = fov;
+            FieldOfViewFactor = 0.5f / (float)Math.Tan(FieldOfView * 0.5f);
+        }
 
 
         public void SetMousePosition(int x, int y)

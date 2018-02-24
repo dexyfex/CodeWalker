@@ -6,7 +6,7 @@ using SharpDX;
 
 namespace CodeWalker.GameFiles
 {
-    class XmlMeta
+    public class XmlMeta
     {
         public static Meta GetMeta(XmlDocument doc)
         {

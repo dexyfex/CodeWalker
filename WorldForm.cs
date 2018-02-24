@@ -60,7 +60,7 @@ namespace CodeWalker
 
 
         public GameFileCache GameFileCache { get { return gameFileCache; } }
-        GameFileCache gameFileCache = new GameFileCache();
+        GameFileCache gameFileCache = GameFileCacheFactory.Create();
 
 
         WorldControlMode ControlMode = WorldControlMode.Free;

@@ -86,6 +86,7 @@ namespace CodeWalker
             {
                 CurrentGTAFolder = folder;
                 Settings.Default.GTAFolder = folder;
+                Settings.Default.Save();
                 return true;
             }
 
