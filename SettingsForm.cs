@@ -71,7 +71,7 @@ namespace CodeWalker
         }
         private void LoadAdvancedSettings()
         {
-            FolderTextBox.Text = Settings.Default.GTAFolder;
+            FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
             ExcludeFoldersTextBox.Text = Settings.Default.ExcludeFolders;
             ShadowCascadesUpDown.Value = Settings.Default.ShadowCascades;
             CacheSizeUpDown.Value = Math.Min(Math.Max(Settings.Default.CacheSize / 1048576, CacheSizeUpDown.Minimum), CacheSizeUpDown.Maximum);
@@ -270,21 +270,10 @@ namespace CodeWalker
             }
         }
 
-
-
-        private void FolderTextBox_TextChanged(object sender, EventArgs e)
-        {
-            Settings.Default.GTAFolder = FolderTextBox.Text;
-        }
-
         private void FolderBrowseButton_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog.SelectedPath = Settings.Default.GTAFolder;
-            DialogResult res = FolderBrowserDialog.ShowDialog();
-            if (res == DialogResult.OK)
-            {
-                FolderTextBox.Text = FolderBrowserDialog.SelectedPath;
-            }
+            GTAFolder.UpdateGTAFolder(false);
+            FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
         }
 
         private void ExcludeFoldersTextBox_TextChanged(object sender, EventArgs e)

@@ -137,38 +137,11 @@ namespace CodeWalker.Forms
 
             MouseWheel += ModelForm_MouseWheel;
 
-            string fldr = Settings.Default.GTAFolder;
-            if (string.IsNullOrEmpty(fldr) || !Directory.Exists(fldr))
+            if (!GTAFolder.UpdateGTAFolder(true))
             {
-                SelectFolderForm f = new SelectFolderForm();
-                f.ShowDialog();
-                if (f.Result == DialogResult.OK)
-                {
-                    fldr = f.SelectedFolder;
-                }
-                else
-                {
-                    Close();
-                    return;
-                }
-            }
-            if (!Directory.Exists(fldr))
-            {
-                MessageBox.Show("The specified folder does not exist:\n" + fldr);
                 Close();
                 return;
             }
-            if (!File.Exists(fldr + "\\gta5.exe"))
-            {
-                MessageBox.Show("GTA5.exe not found in folder:\n" + fldr);
-                Close();
-                return;
-            }
-
-            Settings.Default.GTAFolder = fldr; //seems ok, save it for later
-
-
-
 
             MetaName[] texsamplers = RenderableGeometry.GetTextureSamplerList();
             foreach (var texsampler in texsamplers)

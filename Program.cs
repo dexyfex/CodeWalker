@@ -36,11 +36,18 @@ namespace CodeWalker
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+
+            // Always check the GTA folder first thing
+            if (!GTAFolder.UpdateGTAFolder(Properties.Settings.Default.RememberGTAFolder))
+            {
+                MessageBox.Show("Could not load CodeWalker because no valid GTA 5 folder was selected. CodeWalker will now exit.", "GTA 5 Folder Not Found", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                return;
+            }
 #if !DEBUG
             try
             {
 #endif
-                if (menumode)
+            if (menumode)
                 {
                     Application.Run(new MenuForm());
                 }

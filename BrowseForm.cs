@@ -55,7 +55,7 @@ namespace CodeWalker
                 }
             }
 
-            FolderTextBox.Text = Settings.Default.GTAFolder;
+            FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
             DataHexLineCombo.Text = "16";
 
             DataTextBox.SetTabStopWidth(3);
@@ -64,7 +64,7 @@ namespace CodeWalker
 
             try
             {
-                GTA5Keys.LoadFromPath(Settings.Default.GTAFolder);
+                GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder);
                 KeysLoaded = true;
                 UpdateStatus("Ready to scan...");
             }
@@ -82,19 +82,10 @@ namespace CodeWalker
             }
         }
 
-        private void FolderTextBox_TextChanged(object sender, EventArgs e)
-        {
-            Settings.Default.GTAFolder = FolderTextBox.Text;
-        }
-
         private void FolderBrowseButton_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog.SelectedPath = Settings.Default.GTAFolder;
-            DialogResult res = FolderBrowserDialog.ShowDialog();
-            if (res == DialogResult.OK)
-            {
-                FolderTextBox.Text = FolderBrowserDialog.SelectedPath;
-            }
+            GTAFolder.UpdateGTAFolder(false);
+            FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
         }
 
         private void ScanButton_Click(object sender, EventArgs e)
