@@ -507,7 +507,7 @@
     <Content Include="icons\icon_google_marker_64x64.png" />
     <Content Include="Materials.txt" />
     <Content Include="Notice.txt" />
-    <Content Include="Readme.txt" />
+    <None Include="README.md" />
     <None Include="Resources\CW.ico" />
     <None Include="Resources\CW16.ico" />
     <Content Include="Todo.txt" />
