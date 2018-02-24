@@ -1117,7 +1117,7 @@ namespace CodeWalker.GameFiles
                     emax = Vector3.Max(emax, batch.AABBMax);
 
                     smin = Vector3.Min(smin, (batch.AABBMin - batch.Batch.lodDist)); // + lodoffset
-                    smax = Vector3.Min(smax, (batch.AABBMax + batch.Batch.lodDist)); // - lodoffset
+                    smax = Vector3.Max(smax, (batch.AABBMax + batch.Batch.lodDist)); // - lodoffset
                 }
             }
 
