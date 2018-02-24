@@ -101,6 +101,8 @@ done:
 
 
 [v.29]
+CodeWalker.Core library
+Improved GTA folder management
 entitySets - like mapDataGroups but for interiors..... in Mlo data
 World view - delete key - delete item!
 RPF Explorer Edit mode
