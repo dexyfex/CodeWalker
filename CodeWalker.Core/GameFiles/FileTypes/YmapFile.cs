@@ -29,6 +29,7 @@ namespace CodeWalker.GameFiles
 
         public Unk_975711773[] CBoxOccluders { get; set; }
         public Unk_2741784237[] COccludeModels { get; set; }
+        public rage__fwGrassInstanceListDef[] GrassInstanceList { get; set; }
 
 
         public string[] Strings { get; set; }
@@ -571,6 +572,26 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public void BuildInstances()
+        {
+            if (GrassInstanceBatches == null)
+            {
+                GrassInstanceList = null;
+                return;
+            }
+
+            if (PropInstanceBatches == null)
+            { }
+
+            int count = GrassInstanceBatches.Length;
+            GrassInstanceList = new rage__fwGrassInstanceListDef[count];
+            for (int i = 0; i < count; i++)
+            {
+                GrassInstanceList[i] = GrassInstanceBatches[i].Batch;
+            }
+
+        }
+
         public byte[] Save()
         {
             //direct save to a raw, compressed ymap file (openIV-compatible format)
@@ -909,6 +930,46 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public void AddGrassBatch(YmapGrassInstanceBatch newbatch)
+        {
+            List<YmapGrassInstanceBatch> batches = new List<YmapGrassInstanceBatch>();
+            if (GrassInstanceBatches != null) batches.AddRange(GrassInstanceBatches);
+            newbatch.Ymap = this;
+            batches.Add(newbatch);
+            GrassInstanceBatches = batches.ToArray();
+
+            HasChanged = true;
+        }
+
+        public bool RemoveGrassBatch(YmapGrassInstanceBatch batch)
+        {
+            if (batch == null) return false;
+
+            List<YmapGrassInstanceBatch> batches = new List<YmapGrassInstanceBatch>();
+
+            if (GrassInstanceBatches != null)
+            {
+                for (int i = 0; i < GrassInstanceBatches.Length; i++)
+                {
+                    var gb = GrassInstanceBatches[i];
+                    if (gb != batch)
+                    {
+                        batches.Add(gb);
+                    }
+                }
+                if (batches.Count == GrassInstanceBatches.Length)
+                {
+                    return false; //nothing removed... wasn't present?
+                }
+            }
+
+
+            GrassInstanceBatches = batches.ToArray();
+
+            HasChanged = true;
+
+            return true;
+        }
 
 
 
@@ -1049,14 +1110,14 @@ namespace CodeWalker.GameFiles
 
             if (GrassInstanceBatches != null)
             {
-                var lodoffset = Vector3.Zero;// new Vector3(0, 0, 100);  //IDK WHY -neos7  //dexy: i guess it's not completely necessary...
+                //var lodoffset = Vector3.Zero;// new Vector3(0, 0, 100);  //IDK WHY -neos7  //dexy: i guess it's not completely necessary... //blame neos
                 foreach (var batch in GrassInstanceBatches) //thanks to Neos7
                 {
                     emin = Vector3.Min(emin, batch.AABBMin);
                     emax = Vector3.Max(emax, batch.AABBMax);
 
-                    smin = Vector3.Min(smin, (batch.AABBMin - batch.Batch.lodDist) + lodoffset);
-                    smax = Vector3.Min(smax, (batch.AABBMax + batch.Batch.lodDist) - lodoffset);
+                    smin = Vector3.Min(smin, (batch.AABBMin - batch.Batch.lodDist)); // + lodoffset
+                    smax = Vector3.Max(smax, (batch.AABBMax + batch.Batch.lodDist)); // - lodoffset
                 }
             }
 

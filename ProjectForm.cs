@@ -1300,6 +1300,19 @@ namespace CodeWalker
                     ccgnode.Tag = cargen;
                 }
             }
+            if ((ymap.GrassInstanceBatches != null) && (ymap.GrassInstanceBatches.Length > 0))
+            {
+                var grassbatchesnodes = node.Nodes.Add("Grass Batches (" + ymap.GrassInstanceBatches.Length.ToString() + ")");
+                grassbatchesnodes.Name = "GrassBatches";
+                grassbatchesnodes.Tag = ymap;
+                var grassbatches = ymap.GrassInstanceBatches;
+                for (int i = 0; i < grassbatches.Length; i++)
+                {
+                    var batch = grassbatches[i];
+                    var gbnode = grassbatchesnodes.Nodes.Add(batch.ToString());
+                    gbnode.Tag = batch;
+                }
+            }
 
         }
 
