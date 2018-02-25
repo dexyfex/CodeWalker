@@ -101,6 +101,7 @@ done:
 
 
 [v.29]
+Snap to ground, snap to grid
 CodeWalker.Core library
 Improved GTA folder management
 entitySets - like mapDataGroups but for interiors..... in Mlo data
