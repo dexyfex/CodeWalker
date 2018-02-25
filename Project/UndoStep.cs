@@ -47,7 +47,7 @@ namespace CodeWalker.Project
             for (int i = 0; i < Items.Length; i++)
             {
                 var refpos = Items[i].WidgetPosition;
-                Items[i].SetPosition(refpos + dp, refpos, false);
+                Items[i].SetPosition(refpos + dp, false);
             }
             sel.MultipleSelectionCenter = p; //center used for widget pos...
 

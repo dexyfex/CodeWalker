@@ -640,7 +640,7 @@ namespace CodeWalker
 
 
 
-        public void SetPosition(Vector3 newpos, Vector3 oldpos, bool editPivot)
+        public void SetPosition(Vector3 newpos, bool editPivot)
         {
             if (MultipleSelection)
             {

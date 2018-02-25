@@ -263,8 +263,8 @@ namespace CodeWalker.World
         public Vector3 DraggedAxisSideDir { get; set; }
         public Vector3 DragStartPosition { get; set; }
         public bool IsDragging { get; set; }
-        private bool WasDragging = false;
-        private Vector3 DragStartVec; //projected onto the plane/axis being dragged
+        public bool WasDragging = false;
+        public Vector3 DragStartVec; //projected onto the plane/axis being dragged
 
         public float Size { get; set; } = 90.0f;
 

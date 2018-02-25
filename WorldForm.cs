@@ -171,6 +171,10 @@ namespace CodeWalker
         Quaternion UndoStartRotation;
         Vector3 UndoStartScale;
 
+        WorldSnapMode SnapMode = WorldSnapMode.None;
+        WorldSnapMode SnapModePrev = WorldSnapMode.Ground;//also the default snap mode
+        float SnapGridSize = 1.0f;
+
         YmapEntityDef CopiedEntity = null;
         YmapCarGen CopiedCarGen = null;
         YndNode CopiedPathNode = null;
@@ -1461,9 +1465,52 @@ namespace CodeWalker
             Widget.Update(camera);
         }
 
+
+
+        private Vector3 GetGroundPoint(Vector3 p)
+        {
+            float uplimit = 3.0f;
+            float downlimit = 20.0f;
+            Ray ray = new Ray(p, new Vector3(0, 0, -1.0f));
+            ray.Position.Z += 0.1f;
+            SpaceRayIntersectResult hit = space.RayIntersect(ray, downlimit);
+            if (hit.Hit)
+            {
+                return hit.Position;
+            }
+            ray.Position.Z += uplimit;
+            hit = space.RayIntersect(ray, downlimit);
+            if (hit.Hit)
+            {
+                return hit.Position;
+            }
+            return p;
+        }
+        private Vector3 SnapPosition(Vector3 p)
+        {
+            Vector3 gpos = (p / SnapGridSize).Round() * SnapGridSize;
+            switch (SnapMode)
+            {
+                case WorldSnapMode.Grid:
+                    p = gpos;
+                    break;
+                case WorldSnapMode.Ground:
+                    p = GetGroundPoint(p);
+                    break;
+                case WorldSnapMode.Hybrid:
+                    p = GetGroundPoint(gpos);
+                    break;
+            }
+            return p;
+        }
+
+
         private void Widget_OnPositionChange(Vector3 newpos, Vector3 oldpos)
         {
             //called during UpdateWidgets()
+
+            newpos = SnapPosition(newpos);
+
             if (newpos == oldpos) return;
 
             if (SelectedItem.MultipleSelection)
@@ -1473,18 +1520,19 @@ namespace CodeWalker
                 }
                 else
                 {
-                    var dpos = newpos - oldpos;
+                    var dpos = newpos - SelectedItem.MultipleSelectionCenter;// oldpos;
+                    if (dpos == Vector3.Zero) return; //nothing moved.. (probably due to snap)
                     for (int i = 0; i < SelectedItems.Count; i++)
                     {
                         var refpos = SelectedItems[i].WidgetPosition;
-                        SelectedItems[i].SetPosition(refpos + dpos, refpos, false);
+                        SelectedItems[i].SetPosition(refpos + dpos, false);
                     }
                     SelectedItem.MultipleSelectionCenter = newpos;
                 }
             }
             else
             {
-                SelectedItem.SetPosition(newpos, oldpos, EditEntityPivot);                
+                SelectedItem.SetPosition(newpos, EditEntityPivot);                
             }
             if (ProjectForm != null)
             {
@@ -5317,6 +5365,49 @@ namespace CodeWalker
         }
 
 
+        private void SetSnapMode(WorldSnapMode mode)
+        {
+            foreach (var child in ToolbarSnapButton.DropDownItems)
+            {
+                var childi = child as ToolStripMenuItem;
+                if (childi != null)
+                {
+                    childi.Checked = false;
+                }
+            }
+
+            ToolbarSnapButton.Checked = (mode != WorldSnapMode.None);
+
+            ToolStripMenuItem selItem = null;
+
+            switch (mode)
+            {
+                case WorldSnapMode.Ground:
+                    selItem = ToolbarSnapToGroundButton;
+                    break;
+                case WorldSnapMode.Grid:
+                    selItem = ToolbarSnapToGridButton;
+                    break;
+                case WorldSnapMode.Hybrid:
+                    selItem = ToolbarSnapToGroundGridButton;
+                    break;
+            }
+
+            if (selItem != null)
+            {
+                selItem.Checked = true;
+                ToolbarSnapButton.Image = selItem.Image;
+                ToolbarSnapButton.Text = selItem.Text;
+                ToolbarSnapButton.ToolTipText = selItem.ToolTipText;
+            }
+
+            if (mode != WorldSnapMode.None)
+            {
+                SnapModePrev = mode;
+            }
+            SnapMode = mode;
+        }
+
 
         private void SetCameraMode(string modestr)
         {
@@ -5508,6 +5599,7 @@ namespace CodeWalker
                 {
                     MarkUndoEnd(GrabbedWidget);
                     GrabbedWidget.IsDragging = false;
+                    GrabbedWidget.Position = SelectedItem.WidgetPosition;//in case of any snapping, make sure widget is in correct position at the end
                     GrabbedWidget = null;
                 }
                 if ((e.Location == MouseDownPoint) && (MousedMarker == null))
@@ -6867,6 +6959,33 @@ namespace CodeWalker
             SetWidgetSpace("World space");
         }
 
+        private void ToolbarSnapButton_ButtonClick(object sender, EventArgs e)
+        {
+            if (SnapMode == WorldSnapMode.None)
+            {
+                SetSnapMode(SnapModePrev);
+            }
+            else
+            {
+                SetSnapMode(WorldSnapMode.None);
+            }
+        }
+
+        private void ToolbarSnapToGroundButton_Click(object sender, EventArgs e)
+        {
+            SetSnapMode(WorldSnapMode.Ground);
+        }
+
+        private void ToolbarSnapToGridButton_Click(object sender, EventArgs e)
+        {
+            SetSnapMode(WorldSnapMode.Grid);
+        }
+
+        private void ToolbarSnapToGroundGridButton_Click(object sender, EventArgs e)
+        {
+            SetSnapMode(WorldSnapMode.Hybrid);
+        }
+
         private void ToolbarUndoButton_ButtonClick(object sender, EventArgs e)
         {
             Undo();
@@ -7040,6 +7159,11 @@ namespace CodeWalker
         {
             e.Handled = true;
         }
+
+        private void SnapGridSizeUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            SnapGridSize = (float)SnapGridSizeUpDown.Value;
+        }
     }
 
 
@@ -7053,6 +7177,12 @@ namespace CodeWalker
         Jetpack = 10,
     }
 
-
+    public enum WorldSnapMode
+    {
+        None = 0,
+        Grid = 1,
+        Ground = 2,
+        Hybrid = 3,
+    }
 
 }

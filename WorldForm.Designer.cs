@@ -278,6 +278,12 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
+            this.ToolbarSnapButton = new CodeWalker.WinForms.ToolStripSplitButtonFix();
+            this.ToolbarSnapToGroundButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSnapToGridButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSnapToGroundGridButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.label26 = new System.Windows.Forms.Label();
+            this.SnapGridSizeUpDown = new System.Windows.Forms.NumericUpDown();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -318,6 +324,7 @@ namespace CodeWalker
             this.ToolsMenu.SuspendLayout();
             this.Toolbar.SuspendLayout();
             this.ToolbarPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // StatusStrip
@@ -1747,6 +1754,8 @@ namespace CodeWalker
             // 
             // tabPage9
             // 
+            this.tabPage9.Controls.Add(this.SnapGridSizeUpDown);
+            this.tabPage9.Controls.Add(this.label26);
             this.tabPage9.Controls.Add(this.SkeletonsCheckBox);
             this.tabPage9.Controls.Add(this.AudioOuterBoundsCheckBox);
             this.tabPage9.Controls.Add(this.PopZonesCheckBox);
@@ -1782,7 +1791,7 @@ namespace CodeWalker
             this.SkeletonsCheckBox.Location = new System.Drawing.Point(10, 411);
             this.SkeletonsCheckBox.Name = "SkeletonsCheckBox";
             this.SkeletonsCheckBox.Size = new System.Drawing.Size(101, 17);
-            this.SkeletonsCheckBox.TabIndex = 53;
+            this.SkeletonsCheckBox.TabIndex = 55;
             this.SkeletonsCheckBox.Text = "Show skeletons";
             this.SkeletonsCheckBox.UseVisualStyleBackColor = true;
             this.SkeletonsCheckBox.CheckedChanged += new System.EventHandler(this.SkeletonsCheckBox_CheckedChanged);
@@ -1795,7 +1804,7 @@ namespace CodeWalker
             this.AudioOuterBoundsCheckBox.Location = new System.Drawing.Point(10, 457);
             this.AudioOuterBoundsCheckBox.Name = "AudioOuterBoundsCheckBox";
             this.AudioOuterBoundsCheckBox.Size = new System.Drawing.Size(147, 17);
-            this.AudioOuterBoundsCheckBox.TabIndex = 55;
+            this.AudioOuterBoundsCheckBox.TabIndex = 57;
             this.AudioOuterBoundsCheckBox.Text = "Show audio outer bounds";
             this.AudioOuterBoundsCheckBox.UseVisualStyleBackColor = true;
             this.AudioOuterBoundsCheckBox.CheckedChanged += new System.EventHandler(this.AudioOuterBoundsCheckBox_CheckedChanged);
@@ -1806,7 +1815,7 @@ namespace CodeWalker
             this.PopZonesCheckBox.Location = new System.Drawing.Point(10, 388);
             this.PopZonesCheckBox.Name = "PopZonesCheckBox";
             this.PopZonesCheckBox.Size = new System.Drawing.Size(136, 17);
-            this.PopZonesCheckBox.TabIndex = 52;
+            this.PopZonesCheckBox.TabIndex = 54;
             this.PopZonesCheckBox.Text = "Show population zones";
             this.PopZonesCheckBox.UseVisualStyleBackColor = true;
             this.PopZonesCheckBox.CheckedChanged += new System.EventHandler(this.PopZonesCheckBox_CheckedChanged);
@@ -1817,7 +1826,7 @@ namespace CodeWalker
             this.NavMeshesCheckBox.Location = new System.Drawing.Point(10, 365);
             this.NavMeshesCheckBox.Name = "NavMeshesCheckBox";
             this.NavMeshesCheckBox.Size = new System.Drawing.Size(113, 17);
-            this.NavMeshesCheckBox.TabIndex = 51;
+            this.NavMeshesCheckBox.TabIndex = 53;
             this.NavMeshesCheckBox.Text = "Show nav meshes";
             this.NavMeshesCheckBox.UseVisualStyleBackColor = true;
             this.NavMeshesCheckBox.CheckedChanged += new System.EventHandler(this.NavMeshesCheckBox_CheckedChanged);
@@ -1828,7 +1837,7 @@ namespace CodeWalker
             this.TrainPathsCheckBox.Location = new System.Drawing.Point(10, 342);
             this.TrainPathsCheckBox.Name = "TrainPathsCheckBox";
             this.TrainPathsCheckBox.Size = new System.Drawing.Size(105, 17);
-            this.TrainPathsCheckBox.TabIndex = 50;
+            this.TrainPathsCheckBox.TabIndex = 52;
             this.TrainPathsCheckBox.Text = "Show train paths";
             this.TrainPathsCheckBox.UseVisualStyleBackColor = true;
             this.TrainPathsCheckBox.CheckedChanged += new System.EventHandler(this.TrainPathsCheckBox_CheckedChanged);
@@ -1839,7 +1848,7 @@ namespace CodeWalker
             this.PathsDepthClipCheckBox.Location = new System.Drawing.Point(10, 434);
             this.PathsDepthClipCheckBox.Name = "PathsDepthClipCheckBox";
             this.PathsDepthClipCheckBox.Size = new System.Drawing.Size(102, 17);
-            this.PathsDepthClipCheckBox.TabIndex = 54;
+            this.PathsDepthClipCheckBox.TabIndex = 56;
             this.PathsDepthClipCheckBox.Text = "Paths depth clip";
             this.PathsDepthClipCheckBox.UseVisualStyleBackColor = true;
             this.PathsDepthClipCheckBox.CheckedChanged += new System.EventHandler(this.PathsDepthClipCheckBox_CheckedChanged);
@@ -1852,7 +1861,7 @@ namespace CodeWalker
             this.PathBoundsCheckBox.Location = new System.Drawing.Point(98, 319);
             this.PathBoundsCheckBox.Name = "PathBoundsCheckBox";
             this.PathBoundsCheckBox.Size = new System.Drawing.Size(86, 17);
-            this.PathBoundsCheckBox.TabIndex = 49;
+            this.PathBoundsCheckBox.TabIndex = 51;
             this.PathBoundsCheckBox.Text = "Path bounds";
             this.PathBoundsCheckBox.UseVisualStyleBackColor = true;
             this.PathBoundsCheckBox.CheckedChanged += new System.EventHandler(this.PathBoundsCheckBox_CheckedChanged);
@@ -1949,7 +1958,7 @@ namespace CodeWalker
             this.PathsCheckBox.Location = new System.Drawing.Point(10, 319);
             this.PathsCheckBox.Name = "PathsCheckBox";
             this.PathsCheckBox.Size = new System.Drawing.Size(82, 17);
-            this.PathsCheckBox.TabIndex = 48;
+            this.PathsCheckBox.TabIndex = 50;
             this.PathsCheckBox.Text = "Show paths";
             this.PathsCheckBox.UseVisualStyleBackColor = true;
             this.PathsCheckBox.CheckedChanged += new System.EventHandler(this.PathsCheckBox_CheckedChanged);
@@ -2615,6 +2624,7 @@ namespace CodeWalker
             this.ToolbarRotateButton,
             this.ToolbarScaleButton,
             this.ToolbarTransformSpaceButton,
+            this.ToolbarSnapButton,
             this.toolStripSeparator2,
             this.ToolbarUndoButton,
             this.ToolbarRedoButton,
@@ -2631,7 +2641,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(522, 25);
+            this.Toolbar.Size = new System.Drawing.Size(554, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -2793,7 +2803,7 @@ namespace CodeWalker
             this.ToolbarSelectButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ToolbarSelectButton.Name = "ToolbarSelectButton";
             this.ToolbarSelectButton.Size = new System.Drawing.Size(32, 22);
-            this.ToolbarSelectButton.Text = "toolStripSplitButton1";
+            this.ToolbarSelectButton.Text = "Select objects / Exit edit mode";
             this.ToolbarSelectButton.ToolTipText = "Select objects / Exit edit mode (C, Q)";
             this.ToolbarSelectButton.ButtonClick += new System.EventHandler(this.ToolbarSelectButton_ButtonClick);
             // 
@@ -2961,7 +2971,7 @@ namespace CodeWalker
             this.ToolbarObjectSpaceButton.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ToolbarObjectSpaceButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarObjectSpaceButton.Image")));
             this.ToolbarObjectSpaceButton.Name = "ToolbarObjectSpaceButton";
-            this.ToolbarObjectSpaceButton.Size = new System.Drawing.Size(142, 22);
+            this.ToolbarObjectSpaceButton.Size = new System.Drawing.Size(152, 22);
             this.ToolbarObjectSpaceButton.Text = "Object space";
             this.ToolbarObjectSpaceButton.Click += new System.EventHandler(this.ToolbarObjectSpaceButton_Click);
             // 
@@ -2969,7 +2979,7 @@ namespace CodeWalker
             // 
             this.ToolbarWorldSpaceButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarWorldSpaceButton.Image")));
             this.ToolbarWorldSpaceButton.Name = "ToolbarWorldSpaceButton";
-            this.ToolbarWorldSpaceButton.Size = new System.Drawing.Size(142, 22);
+            this.ToolbarWorldSpaceButton.Size = new System.Drawing.Size(152, 22);
             this.ToolbarWorldSpaceButton.Text = "World space";
             this.ToolbarWorldSpaceButton.Click += new System.EventHandler(this.ToolbarWorldSpaceButton_Click);
             // 
@@ -3152,9 +3162,81 @@ namespace CodeWalker
             this.ToolbarPanel.Controls.Add(this.Toolbar);
             this.ToolbarPanel.Location = new System.Drawing.Point(12, 12);
             this.ToolbarPanel.Name = "ToolbarPanel";
-            this.ToolbarPanel.Size = new System.Drawing.Size(525, 26);
+            this.ToolbarPanel.Size = new System.Drawing.Size(557, 26);
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
+            // 
+            // ToolbarSnapButton
+            // 
+            this.ToolbarSnapButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolbarSnapButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolbarSnapToGroundButton,
+            this.ToolbarSnapToGridButton,
+            this.ToolbarSnapToGroundGridButton});
+            this.ToolbarSnapButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapButton.Image")));
+            this.ToolbarSnapButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolbarSnapButton.Name = "ToolbarSnapButton";
+            this.ToolbarSnapButton.Size = new System.Drawing.Size(32, 22);
+            this.ToolbarSnapButton.Text = "Snap to Ground";
+            this.ToolbarSnapButton.ToolTipText = "Snap to Ground";
+            this.ToolbarSnapButton.ButtonClick += new System.EventHandler(this.ToolbarSnapButton_ButtonClick);
+            // 
+            // ToolbarSnapToGroundButton
+            // 
+            this.ToolbarSnapToGroundButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapToGroundButton.Image")));
+            this.ToolbarSnapToGroundButton.Name = "ToolbarSnapToGroundButton";
+            this.ToolbarSnapToGroundButton.Size = new System.Drawing.Size(205, 22);
+            this.ToolbarSnapToGroundButton.Text = "Snap to Ground";
+            this.ToolbarSnapToGroundButton.Click += new System.EventHandler(this.ToolbarSnapToGroundButton_Click);
+            // 
+            // ToolbarSnapToGridButton
+            // 
+            this.ToolbarSnapToGridButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapToGridButton.Image")));
+            this.ToolbarSnapToGridButton.Name = "ToolbarSnapToGridButton";
+            this.ToolbarSnapToGridButton.Size = new System.Drawing.Size(205, 22);
+            this.ToolbarSnapToGridButton.Text = "Snap to Grid";
+            this.ToolbarSnapToGridButton.Click += new System.EventHandler(this.ToolbarSnapToGridButton_Click);
+            // 
+            // ToolbarSnapToGroundGridButton
+            // 
+            this.ToolbarSnapToGroundGridButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapToGroundGridButton.Image")));
+            this.ToolbarSnapToGroundGridButton.Name = "ToolbarSnapToGroundGridButton";
+            this.ToolbarSnapToGroundGridButton.Size = new System.Drawing.Size(205, 22);
+            this.ToolbarSnapToGroundGridButton.Text = "Snap to Grid and Ground";
+            this.ToolbarSnapToGroundGridButton.Click += new System.EventHandler(this.ToolbarSnapToGroundGridButton_Click);
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(4, 293);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(76, 13);
+            this.label26.TabIndex = 48;
+            this.label26.Text = "Snap grid size:";
+            // 
+            // SnapGridSizeUpDown
+            // 
+            this.SnapGridSizeUpDown.DecimalPlaces = 2;
+            this.SnapGridSizeUpDown.Location = new System.Drawing.Point(86, 291);
+            this.SnapGridSizeUpDown.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.SnapGridSizeUpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.SnapGridSizeUpDown.Name = "SnapGridSizeUpDown";
+            this.SnapGridSizeUpDown.Size = new System.Drawing.Size(108, 20);
+            this.SnapGridSizeUpDown.TabIndex = 49;
+            this.SnapGridSizeUpDown.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            131072});
+            this.SnapGridSizeUpDown.ValueChanged += new System.EventHandler(this.SnapGridSizeUpDown_ValueChanged);
             // 
             // WorldForm
             // 
@@ -3236,6 +3318,7 @@ namespace CodeWalker
             this.Toolbar.PerformLayout();
             this.ToolbarPanel.ResumeLayout(false);
             this.ToolbarPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -3489,5 +3572,11 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectAudioButton;
         private System.Windows.Forms.CheckBox AudioOuterBoundsCheckBox;
         private System.Windows.Forms.CheckBox SkeletonsCheckBox;
+        private ToolStripSplitButtonFix ToolbarSnapButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarSnapToGroundButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarSnapToGridButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarSnapToGroundGridButton;
+        private System.Windows.Forms.NumericUpDown SnapGridSizeUpDown;
+        private System.Windows.Forms.Label label26;
     }
 }

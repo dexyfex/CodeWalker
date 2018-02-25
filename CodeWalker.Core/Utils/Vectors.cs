@@ -16,6 +16,11 @@ namespace CodeWalker
         }
 
 
+        public static Vector3 Round(this Vector3 v)
+        {
+            return new Vector3((float)Math.Round(v.X), (float)Math.Round(v.Y), (float)Math.Round(v.Z));
+        }
+
         public static Vector4 Floor(this Vector4 v)
         {
             return new Vector4((float)Math.Floor(v.X), (float)Math.Floor(v.Y), (float)Math.Floor(v.Z), (float)Math.Floor(v.W));
