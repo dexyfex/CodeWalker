@@ -2419,6 +2419,8 @@ namespace CodeWalker.Rendering
             }
 
 
+            var yptTexDict = (drawable.Owner as YptFile)?.PtfxList?.TextureDictionary;
+
             bool alltexsloaded = true;
             int missingtexcount = 0;
             for (int mi = 0; mi < rndbl.HDModels.Length; mi++)
@@ -2443,7 +2445,12 @@ namespace CodeWalker.Rendering
                             if ((ttex == null) && (tex != null))
                             {
                                 //TextureRef means this RenderableTexture needs to be loaded from texture dict...
-                                if (texDict != 0)
+                                if (yptTexDict != null) //for ypt files, first try the embedded tex dict..
+                                {
+                                    var dtex = yptTexDict.Lookup(tex.NameHash);
+                                    rdtex = renderableCache.GetRenderableTexture(dtex);
+                                }
+                                else if (texDict != 0)
                                 {
                                     YtdFile ytd = gameFileCache.GetYtd(texDict);
                                     if ((ytd != null) && (ytd.Loaded) && (ytd.TextureDict != null))
