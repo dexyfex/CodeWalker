@@ -1382,7 +1382,7 @@ namespace CodeWalker.GameFiles
                 {
                     if (child.ParentFileEntry == null) continue;//shouldn't really happen...
                     var cpos = StartPos + (long)child.ParentFileEntry.FileOffset * 512;
-                    child.UpdateStartPos(newpos);
+                    child.UpdateStartPos(cpos);
                 }
             }
         }
@@ -1517,10 +1517,26 @@ namespace CodeWalker.GameFiles
             return entry;
         }
 
-        public static RpfFileEntry CreateFile(RpfDirectoryEntry dir, string name, byte[] data)
+        public static RpfFileEntry CreateFile(RpfDirectoryEntry dir, string name, byte[] data, bool overwrite = true)
         {
-            RpfFile parent = dir.File;
             string namel = name.ToLowerInvariant();
+            if (overwrite)
+            {
+                foreach (var exfile in dir.Files)
+                {
+                    if (exfile.NameLower == namel)
+                    {
+                        //file already exists. delete the existing one first!
+                        //this should probably be optimised to just replace the existing one...
+                        //TODO: investigate along with ExploreForm.ReplaceSelected()
+                        DeleteEntry(exfile);
+                        break;
+                    }
+                }
+            }
+            //else fail if already exists..? items with the same name allowed?
+
+            RpfFile parent = dir.File;
             string fpath = parent.GetPhysicalFilePath();
             string rpath = dir.Path + "\\" + namel;
             if (!File.Exists(fpath))
@@ -1754,6 +1770,43 @@ namespace CodeWalker.GameFiles
 
         }
 
+
+        public static bool EnsureValidEncryption(RpfFile file, Func<RpfFile, bool> confirm)
+        {
+            if (file == null) return false;
+
+            //currently assumes OPEN is the valid encryption type.
+            //TODO: support other encryption types!
+
+            bool needsupd = false;
+            var f = file;
+            List<RpfFile> files = new List<RpfFile>();
+            while (f != null)
+            {
+                if (f.Encryption != RpfEncryption.OPEN)
+                {
+                    if (!confirm(f))
+                    {
+                        return false;
+                    }
+                    needsupd = true;
+                }
+                if (needsupd)
+                {
+                    files.Add(f);
+                }
+                f = f.Parent;
+            }
+
+            //change encryption types, starting from the root rpf.
+            files.Reverse();
+            foreach (var cfile in files)
+            {
+                SetEncryptionType(cfile, RpfEncryption.OPEN);
+            }
+
+            return true;
+        }
 
         public static void SetEncryptionType(RpfFile file, RpfEncryption encryption)
         {

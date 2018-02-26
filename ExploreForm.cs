@@ -925,7 +925,32 @@ namespace CodeWalker
 
             MainListView.VirtualListSize = CurrentFiles.Count;
         }
+        private void EnsureImportedRpf(RpfFileEntry entry, RpfDirectoryEntry parentrpffldr)
+        {
+            if ((entry == null) || (parentrpffldr == null)) return;
+            var newrpf = parentrpffldr.File?.FindChildArchive(entry);
+            if (newrpf == null) return;
 
+            //an RPF file was imported. add its structure to the UI!
+            var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
+            var tnf = CreateRpfTreeFolder(newrpf, newrpf.Path, rootpath + newrpf.Path);
+            if (CurrentFolder.Children != null)
+            {
+                //make sure any existing (replaced!) one is removed first!
+                foreach (var child in CurrentFolder.Children)
+                {
+                    if (child.Path == tnf.Path)
+                    {
+                        CurrentFolder.Children.Remove(child);
+                        child.TreeNode.Remove();
+                        break;
+                    }
+                }
+            }
+            CurrentFolder.AddChildToHierarchy(tnf);
+            RecurseMainTreeViewRPF(tnf, AllRpfs);
+            RecurseAddMainTreeViewNodes(tnf, CurrentFolder.TreeNode);
+        }
 
         private void RefreshMainListView()
         {
@@ -1097,22 +1122,40 @@ namespace CodeWalker
                 {
                     data = entry.File.ExtractFile(entry);//extract an RPF from another.
                 }
+                else if (!string.IsNullOrEmpty(file.FullPath) && (file.Folder.RpfFile != null))
+                {
+                    data = File.ReadAllBytes(file.FullPath); //load RPF file from filesystem
+                }
             }
-            else if (file.File != null)
+            else if (file.File != null) //load file from RPF
             {
-                //load file from RPF
                 if (file.File.File != null) //need the reference to the RPF archive
                 {
                     data = file.File.File.ExtractFile(file.File);
                 }
+                else
+                { }
             }
             else if (!string.IsNullOrEmpty(file.FullPath))
             {
-                //load file from filesystem
-                data = File.ReadAllBytes(file.FullPath);
+                data = File.ReadAllBytes(file.FullPath); //load file from filesystem
+            }
+            else
+            { }
+            return data;
+        }
+        private byte[] GetFileDataCompressResources(MainListItem file)
+        {
+            byte[] data = GetFileData(file);
+            RpfResourceFileEntry rrfe = file.File as RpfResourceFileEntry;
+            if (rrfe != null) //add resource header if this is a resource file.
+            {
+                data = ResourceBuilder.Compress(data); //not completely ideal to recompress it...
+                data = ResourceBuilder.AddResourceHeader(rrfe, data);
             }
             return data;
         }
+
 
         private bool CanViewFile(MainListItem item)
         {
@@ -1601,47 +1644,21 @@ namespace CodeWalker
 
 
 
-        private bool EnsureRpfValidEncryption()
+        private bool EnsureRpfValidEncryption(RpfFile file = null)
         {
-            if (CurrentFolder.RpfFolder == null) return false;
+            if ((file == null) && (CurrentFolder.RpfFolder == null)) return false;
 
-            var rpf = CurrentFolder.RpfFolder.File;
+            var rpf = file ?? CurrentFolder.RpfFolder.File;
 
-            return EnsureRpfValidEncryption(rpf);
-        }
-        private bool EnsureRpfValidEncryption(RpfFile rpf)
-        {
             if (rpf == null) return false;
 
-            bool needsupd = false;
-            var f = rpf;
-            List<RpfFile> files = new List<RpfFile>();
-            while (f != null)
+            var confirm = new Func<RpfFile, bool>((f) => 
             {
-                if (f.Encryption != RpfEncryption.OPEN)
-                {
-                    var msg = "Archive " + f.Name + " is currently set to " + f.Encryption.ToString() + " encryption.\nAre you sure you want to change this archive to OPEN encryption?\nLoading by the game will require OpenIV.asi.";
-                    if (MessageBox.Show(msg, "Change RPF encryption type", MessageBoxButtons.YesNo) != DialogResult.Yes)
-                    {
-                        return false;
-                    }
-                    needsupd = true;
-                }
-                if (needsupd)
-                {
-                    files.Add(f);
-                }
-                f = f.Parent;
-            }
+                var msg = "Archive " + f.Name + " is currently set to " + f.Encryption.ToString() + " encryption.\nAre you sure you want to change this archive to OPEN encryption?\nLoading by the game will require OpenIV.asi.";
+                return (MessageBox.Show(msg, "Change RPF encryption type", MessageBoxButtons.YesNo) == DialogResult.Yes);
+            });
 
-            //change encryption types, starting from the root rpf.
-            files.Reverse();
-            foreach (var file in files)
-            {
-                RpfFile.SetEncryptionType(file, RpfEncryption.OPEN);
-            }
-
-            return true;
+            return RpfFile.EnsureValidEncryption(rpf, confirm);
         }
 
 
@@ -1776,21 +1793,12 @@ namespace CodeWalker
 
                 if ((file.Folder == null) || (file.Folder.RpfFile != null))
                 {
-                    byte[] data = GetFileData(file);
+                    byte[] data = GetFileDataCompressResources(file);
                     if (data == null)
                     {
                         MessageBox.Show("Unable to extract file: " + file.Path);
                         return;
                     }
-
-
-                    RpfResourceFileEntry rrfe = file.File as RpfResourceFileEntry;
-                    if (rrfe != null) //add resource header if this is a resource file.
-                    {
-                        data = ResourceBuilder.Compress(data); //not completely ideal to recompress it...
-                        data = ResourceBuilder.AddResourceHeader(rrfe, data);
-                    }
-
 
                     SaveFileDialog.FileName = file.Name;
                     if (SaveFileDialog.ShowDialog() == DialogResult.OK)
@@ -1823,19 +1831,13 @@ namespace CodeWalker
                     if ((file.Folder == null) || (file.Folder.RpfFile != null))
                     {
                         var path = folderpath + file.Name;
-                        var data = GetFileData(file);
-                        if (data == null)
-                        {
-                            errors.AppendLine("Unable to extract file: " + file.Path);
-                            continue;
-                        }
                         try
                         {
-                            RpfResourceFileEntry rrfe = file.File as RpfResourceFileEntry;
-                            if (rrfe != null) //add resource header if this is a resource file.
+                            var data = GetFileDataCompressResources(file);
+                            if (data == null)
                             {
-                                data = ResourceBuilder.Compress(data); //not completely ideal to recompress it...
-                                data = ResourceBuilder.AddResourceHeader(rrfe, data);
+                                errors.AppendLine("Unable to extract file: " + file.Path);
+                                continue;
                             }
 
                             File.WriteAllBytes(path, data);
@@ -1939,19 +1941,13 @@ namespace CodeWalker
                 if ((file.Folder == null) || (file.Folder.RpfFile != null))
                 {
                     var path = folderpath + file.Name;
-                    var data = GetFileData(file);
-                    if (data == null)
-                    {
-                        errors.AppendLine("Unable to extract file: " + file.Path);
-                        continue;
-                    }
                     try
                     {
-                        RpfResourceFileEntry rrfe = file.File as RpfResourceFileEntry;
-                        if (rrfe != null) //add resource header if this is a resource file.
+                        var data = GetFileDataCompressResources(file);
+                        if (data == null)
                         {
-                            data = ResourceBuilder.Compress(data);
-                            data = ResourceBuilder.AddResourceHeader(rrfe, data);
+                            errors.AppendLine("Unable to extract file: " + file.Path);
+                            continue;
                         }
 
                         File.WriteAllBytes(path, data);
@@ -2099,10 +2095,10 @@ namespace CodeWalker
                 return;//canceled
             }
 
-            try
+            var fpaths = OpenFileDialog.FileNames;
+            foreach (var fpath in fpaths)
             {
-                var fpaths = OpenFileDialog.FileNames;
-                foreach (var fpath in fpaths)
+                try
                 {
                     if (!File.Exists(fpath))
                     {
@@ -2152,26 +2148,13 @@ namespace CodeWalker
                     byte[] data = ResourceBuilder.Build(meta, 2); //meta is RSC V:2
 
 
-                    foreach (var exfile in parentrpffldr.Files)
-                    {
-                        if (exfile.NameLower == fnamel)
-                        {
-                            //file already exists. delete the existing one first!
-                            //this should probably be optimised to just replace the existing one...
-                            //TODO: investigate along with ReplaceSelected()
-                            RpfFile.DeleteEntry(exfile);
-                            break;
-                        }
-                    }
-
                     RpfFile.CreateFile(parentrpffldr, fname, data);
 
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Unable to import file");
-                return;
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Unable to import file");
+                }
             }
 
             CurrentFolder.ListItems = null;
@@ -2183,15 +2166,7 @@ namespace CodeWalker
             if (!EditMode) return;
             if (CurrentFolder?.IsSearchResults ?? false) return;
 
-            RpfDirectoryEntry parentrpffldr = CurrentFolder.RpfFolder;
-            if (parentrpffldr == null)
-            {
-                MessageBox.Show("No parent RPF folder selected! This shouldn't happen. Refresh the view and try again.");
-                return;
-            }
-
             if (!EnsureRpfValidEncryption()) return;
-
 
             OpenFileDialog.Filter = string.Empty;
             if (OpenFileDialog.ShowDialog(this) != DialogResult.OK)
@@ -2199,10 +2174,30 @@ namespace CodeWalker
                 return;//canceled
             }
 
-            try
+            var fpaths = OpenFileDialog.FileNames;
+
+            ImportRaw(fpaths, false);//already checked encryption before the file dialog...
+        }
+        private void ImportRaw(string[] fpaths, bool checkEncryption = true)
+        {
+            if (!EditMode) return;
+            if (CurrentFolder?.IsSearchResults ?? false) return;
+
+            RpfDirectoryEntry parentrpffldr = CurrentFolder.RpfFolder;
+            if (parentrpffldr == null)
             {
-                var fpaths = OpenFileDialog.FileNames;
-                foreach (var fpath in fpaths)
+                MessageBox.Show("No parent RPF folder selected! This shouldn't happen. Refresh the view and try again.");
+                return;
+            }
+
+            if (checkEncryption)
+            {
+                if (!EnsureRpfValidEncryption()) return;
+            }
+
+            foreach (var fpath in fpaths)
+            {
+                try
                 {
                     if (!File.Exists(fpath))
                     {
@@ -2211,7 +2206,6 @@ namespace CodeWalker
 
                     var fi = new FileInfo(fpath);
                     var fname = fi.Name;
-                    var fnamel = fname.ToLowerInvariant();
 
                     if (fi.Length > 0x3FFFFFFF)
                     {
@@ -2219,54 +2213,20 @@ namespace CodeWalker
                         continue;
                     }
 
+                    Cursor = Cursors.WaitCursor;
+
                     byte[] data = File.ReadAllBytes(fpath);
-
-
-                    foreach (var exfile in parentrpffldr.Files)
-                    {
-                        if (exfile.NameLower == fnamel)
-                        {
-                            //file already exists. delete the existing one first!
-                            //this should probably be optimised to just replace the existing one...
-                            //TODO: investigate along with ReplaceSelected()
-                            RpfFile.DeleteEntry(exfile);
-                            break;
-                        }
-                    }
 
                     var entry = RpfFile.CreateFile(parentrpffldr, fname, data);
 
+                    EnsureImportedRpf(entry, parentrpffldr); //make sure structure is created if an RPF was imported
 
-                    var newrpf = parentrpffldr.File?.FindChildArchive(entry);
-                    if (newrpf != null)
-                    {
-                        //an RPF file was imported. add its structure to the UI!
-                        var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
-                        var tnf = CreateRpfTreeFolder(newrpf, newrpf.Path, rootpath + newrpf.Path);
-                        if (CurrentFolder.Children != null)
-                        {
-                            //make sure any existing (replaced!) one is removed first!
-                            foreach (var child in CurrentFolder.Children)
-                            {
-                                if (child.Path == tnf.Path)
-                                {
-                                    CurrentFolder.Children.Remove(child);
-                                    child.TreeNode.Remove();
-                                    break;
-                                }
-                            }
-                        }
-                        CurrentFolder.AddChildToHierarchy(tnf);
-                        RecurseMainTreeViewRPF(tnf, AllRpfs);
-                        RecurseAddMainTreeViewNodes(tnf, CurrentFolder.TreeNode);
-                    }
-
+                    Cursor = Cursors.Default;
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Unable to import file");
-                return;
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Unable to import file");
+                }
             }
 
             CurrentFolder.ListItems = null;
@@ -2641,9 +2601,52 @@ namespace CodeWalker
         }
 
 
+
+
+
+        private string GetDropFolder()
+        {
+            return Path.Combine(Path.GetTempPath(), "CodeWalkerDrop");
+        }
+        private string CreateDropFolder()
+        {
+            string drop = GetDropFolder();
+            if (!Directory.Exists(drop))
+            {
+                Directory.CreateDirectory(drop);
+            }
+            string dir = Path.Combine(drop, Guid.NewGuid().ToString());
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            return dir;
+        }
+        private void CleanupDropFolder()
+        {
+            string drop = GetDropFolder();
+            if (Directory.Exists(drop))
+            {
+                try
+                {
+                    Directory.Delete(drop, true); //so broken :[
+                }
+                catch { } //not much we can do here...
+            }
+        }
+
+
+
+
+
         private void ExploreForm_Load(object sender, EventArgs e)
         {
             Init();
+        }
+
+        private void ExploreForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            CleanupDropFolder();
         }
 
         private void MainTreeView_AfterSelect(object sender, TreeViewEventArgs e)
@@ -2819,6 +2822,94 @@ namespace CodeWalker
             if ((CurrentFiles != null) && (CurrentFiles.Count > e.Item) && (!string.IsNullOrEmpty(e.Label)))
             {
                 RenameItem(CurrentFiles[e.Item], e.Label);
+            }
+        }
+
+        private void MainListView_ItemDrag(object sender, ItemDragEventArgs e)
+        {
+            if (MainListView.SelectedIndices.Count <= 0) return;
+
+            var dir = CreateDropFolder();
+            var filenames = new List<string>();
+            var errors = new List<string>();
+
+            Cursor = Cursors.WaitCursor;
+
+            for (int i = 0; i < MainListView.SelectedIndices.Count; i++)
+            {
+                var idx = MainListView.SelectedIndices[i];
+                if ((idx < 0) || (idx >= CurrentFiles.Count)) continue;
+                var file = CurrentFiles[idx];
+                if ((file.Folder == null) || (file.Folder.RpfFile != null))
+                {
+                    if (file.FileSize > 0x6400000) //100MB
+                    {
+                        errors.Add(file.Name + " is greater than 100MB, drag-drop for large files is disabled.");
+                        continue;
+                    }
+                    try
+                    {
+                        var data = GetFileDataCompressResources(file);
+                        var filename = Path.Combine(dir, file.Name);
+                        File.WriteAllBytes(filename, data);
+                        filenames.Add(filename);
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add(ex.ToString());
+                    }
+                }
+            }
+
+            Cursor = Cursors.Default;
+
+            if (filenames.Count > 0)
+            {
+                DataObject dataobj = new DataObject(DataFormats.FileDrop, filenames.ToArray());
+                DoDragDrop(dataobj, DragDropEffects.Copy);
+            }
+            else
+            {
+                if (errors.Count > 0)
+                {
+                    MessageBox.Show("Errors encountered while dragging:\n" + string.Join("\n", errors.ToArray()));
+                }
+            }
+
+        }
+
+        private void MainListView_DragLeave(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MainListView_DragEnter(object sender, DragEventArgs e)
+        {
+            if (!EditMode) return;
+            if (CurrentFolder?.IsSearchResults ?? false) return;
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = e.Data.GetData(DataFormats.FileDrop) as string[];
+                if ((files != null) && (files.Length > 0))
+                {
+                    if (!files[0].StartsWith(GetDropFolder(), StringComparison.InvariantCultureIgnoreCase)) //don't dry to drop on ourselves...
+                    {
+                        e.Effect = DragDropEffects.Copy;
+                    }
+                }
+            }
+        }
+
+        private void MainListView_DragDrop(object sender, DragEventArgs e)
+        {
+            if (!EditMode) return;
+            if (CurrentFolder?.IsSearchResults ?? false) return;
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = e.Data.GetData(DataFormats.FileDrop) as string[];
+                if ((files == null) || (files.Length <= 0)) return;
+                if (files[0].StartsWith(GetDropFolder(), StringComparison.InvariantCultureIgnoreCase)) return; //don't dry to drop on ourselves...
+                ImportRaw(files);
             }
         }
 
