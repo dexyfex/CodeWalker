@@ -128,6 +128,9 @@ namespace CodeWalker.Rendering
             bool hasbones = false;
             Skeleton skeleton = drawable.Skeleton;
             Matrix[] modeltransforms = null;
+            Matrix[] fragtransforms = null;
+            Vector4 fragoffset = Vector4.Zero;
+            int fragtransformid = 0;
             List<Bone> bones = null;
             bool usepose = false;
             if (skeleton != null)
@@ -160,9 +163,24 @@ namespace CodeWalker.Rendering
                         }
                         usepose = true;
                     }
+
+                    var phys = fd.OwnerFragmentPhys;
+                    if (phys != null)
+                    {
+                        if (phys.OwnerFragPhysLod != null)
+                        {
+                            fragtransforms = phys.OwnerFragPhysLod.FragTransforms?.Data;
+                            fragtransformid = phys.OwnerFragPhysIndex;
+                            fragoffset = phys.OwnerFragPhysLod.Unknown_30h;
+                            fragoffset.W = 0.0f;
+                        }
+                    }
+                    else if (frag != null)
+                    {
+                    }
                 }
 
-                hastransforms = (modeltransforms != null);
+                hastransforms = (modeltransforms != null) || (fragtransforms != null);
                 hasbones = ((skeleton.Bones != null) && (skeleton.Bones.Data != null));
                 bones = hasbones ? skeleton.Bones.Data : null;
             }
@@ -180,12 +198,23 @@ namespace CodeWalker.Rendering
                 model.UseTransform = hastransforms;
                 if (hastransforms)
                 {
+
                     int boneidx = (int)((model.Unk28h >> 24) & 0xFF);
 
                     Matrix trans = (boneidx < modeltransforms.Length) ? modeltransforms[boneidx] : Matrix.Identity;
                     Bone bone = (hasbones && (boneidx < bones.Count)) ? bones[boneidx] : null;
 
-                    if (!usepose) //when using the skeleton's matrices, they need to be transformed by parent
+                    if ((fragtransforms != null))// && (fragtransformid < fragtransforms.Length))
+                    {
+                        if (fragtransformid < fragtransforms.Length)
+                        {
+                            trans = fragtransforms[fragtransformid];
+                            trans.Row4 += fragoffset;
+                        }
+                        else
+                        { }
+                    }
+                    else if (!usepose) //when using the skeleton's matrices, they need to be transformed by parent
                     {
                         trans.Column4 = Vector4.UnitW;
                         ushort[] pinds = skeleton.ParentIndices;

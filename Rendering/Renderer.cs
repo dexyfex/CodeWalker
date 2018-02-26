@@ -2028,7 +2028,7 @@ namespace CodeWalker.Rendering
                         var pch = pl1.Children.data_items[i];
                         if ((pch.Drawable1 != null) && (pch.Drawable1.AllModels.Length != 0))
                         {
-                            //RenderDrawable(pch.Drawable1, arch, ent, -camera.Position, hash);
+                            RenderDrawable(pch.Drawable1, arch, ent, txdhash);
                         }
                     }
                 }

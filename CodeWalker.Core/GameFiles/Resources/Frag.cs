@@ -2300,9 +2300,9 @@ namespace CodeWalker.GameFiles
         public ulong Archetype1Pointer { get; set; }
         public ulong Archetype2Pointer { get; set; }
         public ulong BoundPointer { get; set; }
-        public ulong Unknown_F0h_Pointer { get; set; }
+        public ulong InertiaTensorsPointer { get; set; }
         public ulong Unknown_F8h_Pointer { get; set; }
-        public ulong Unknown_100h_Pointer { get; set; }
+        public ulong FragTransformsPointer { get; set; }
         public ulong Unknown_108h_Pointer { get; set; }
         public ulong Unknown_110h_Pointer { get; set; }
         public byte Count1 { get; set; }
@@ -2327,9 +2327,9 @@ namespace CodeWalker.GameFiles
         public FragPhysArchetype Archetype1 { get; set; }
         public FragPhysArchetype Archetype2 { get; set; }
         public Bounds Bound { get; set; }
-        public SharpDX.Vector4[] Unknown_F0h_Data { get; set; }
+        public SharpDX.Vector4[] InertiaTensors { get; set; }
         public SharpDX.Vector4[] Unknown_F8h_Data { get; set; }
-        public FragPhysUnknown_F_002 Unknown_100h_Data { get; set; }
+        public FragPhysUnknown_F_002 FragTransforms { get; set; }
         public byte[] Unknown_108h_Data { get; set; }
         public byte[] Unknown_110h_Data { get; set; }
 
@@ -2365,9 +2365,9 @@ namespace CodeWalker.GameFiles
             this.Archetype1Pointer = reader.ReadUInt64();
             this.Archetype2Pointer = reader.ReadUInt64();
             this.BoundPointer = reader.ReadUInt64();
-            this.Unknown_F0h_Pointer = reader.ReadUInt64();
+            this.InertiaTensorsPointer = reader.ReadUInt64();
             this.Unknown_F8h_Pointer = reader.ReadUInt64();
-            this.Unknown_100h_Pointer = reader.ReadUInt64();
+            this.FragTransformsPointer = reader.ReadUInt64();
             this.Unknown_108h_Pointer = reader.ReadUInt64();
             this.Unknown_110h_Pointer = reader.ReadUInt64();
             this.Count1 = reader.ReadByte();
@@ -2422,12 +2422,12 @@ namespace CodeWalker.GameFiles
             //    this.Unknown_F8h_Pointer, // offset
             //    this.ChildrenCount
             //);
-            this.Unknown_F0h_Data = reader.ReadStructsAt<SharpDX.Vector4>(this.Unknown_F0h_Pointer, this.ChildrenCount);
+            this.InertiaTensors = reader.ReadStructsAt<SharpDX.Vector4>(this.InertiaTensorsPointer, this.ChildrenCount);
             this.Unknown_F8h_Data = reader.ReadStructsAt<SharpDX.Vector4>(this.Unknown_F8h_Pointer, this.ChildrenCount);
 
 
-            this.Unknown_100h_Data = reader.ReadBlockAt<FragPhysUnknown_F_002>(
-                this.Unknown_100h_Pointer // offset
+            this.FragTransforms = reader.ReadBlockAt<FragPhysUnknown_F_002>(
+                this.FragTransformsPointer // offset
             );
             //this.Unknown_108h_Data = reader.ReadBlockAt<ResourceSimpleArray<byte_r>>(
             //    this.Unknown_108h_Pointer, // offset
@@ -2441,6 +2441,17 @@ namespace CodeWalker.GameFiles
             this.Unknown_108h_Data = reader.ReadBytesAt(this.Unknown_108h_Pointer, this.Count1);
             this.Unknown_110h_Data = reader.ReadBytesAt(this.Unknown_110h_Pointer, this.Count2);
 
+
+
+            if ((Children != null) && (Children.data_items != null))
+            {
+                for (int i = 0; i < Children.data_items.Length; i++)
+                {
+                    var child = Children.data_items[i];
+                    child.OwnerFragPhysLod = this;
+                    child.OwnerFragPhysIndex = i;
+                }
+            }
         }
 
         /// <summary>
@@ -2459,7 +2470,7 @@ namespace CodeWalker.GameFiles
             this.BoundPointer = (ulong)(this.Bound != null ? this.Bound.FilePosition : 0);
             //this.Unknown_F0h_Pointer = (ulong)(this.Unknown_F0h_Data != null ? this.Unknown_F0h_Data.Position : 0);
             //this.Unknown_F8h_Pointer = (ulong)(this.Unknown_F8h_Data != null ? this.Unknown_F8h_Data.Position : 0);
-            this.Unknown_100h_Pointer = (ulong)(this.Unknown_100h_Data != null ? this.Unknown_100h_Data.FilePosition : 0);
+            this.FragTransformsPointer = (ulong)(this.FragTransforms != null ? this.FragTransforms.FilePosition : 0);
             //this.Unknown_108h_Pointer = (ulong)(this.Unknown_108h_Data != null ? this.Unknown_108h_Data.Position : 0);
             //this.Unknown_110h_Pointer = (ulong)(this.Unknown_110h_Data != null ? this.Unknown_110h_Data.Position : 0);
 
@@ -2494,9 +2505,9 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Archetype1Pointer);
             writer.Write(this.Archetype2Pointer);
             writer.Write(this.BoundPointer);
-            writer.Write(this.Unknown_F0h_Pointer);
+            writer.Write(this.InertiaTensorsPointer);
             writer.Write(this.Unknown_F8h_Pointer);
-            writer.Write(this.Unknown_100h_Pointer);
+            writer.Write(this.FragTransformsPointer);
             writer.Write(this.Unknown_108h_Pointer);
             writer.Write(this.Unknown_110h_Pointer);
             writer.Write(this.Count1);
@@ -2528,7 +2539,7 @@ namespace CodeWalker.GameFiles
             if (Bound != null) list.Add(Bound);
             //if (Unknown_F0h_Data != null) list.Add(Unknown_F0h_Data);
             //if (Unknown_F8h_Data != null) list.Add(Unknown_F8h_Data);
-            if (Unknown_100h_Data != null) list.Add(Unknown_100h_Data);
+            if (FragTransforms != null) list.Add(FragTransforms);
             //if (Unknown_108h_Data != null) list.Add(Unknown_108h_Data);
             //if (Unknown_110h_Data != null) list.Add(Unknown_110h_Data);
             if (GroupNames != null) list.Add(GroupNames);
@@ -3336,9 +3347,9 @@ namespace CodeWalker.GameFiles
         // structure data
         public uint VFT { get; set; }
         public uint Unknown_04h { get; set; } // 0x00000001
-        public uint Unknown_08h { get; set; }
-        public uint Unknown_0Ch { get; set; }
-        public uint Unknown_10h { get; set; }
+        public float Unknown_08h { get; set; }
+        public float Unknown_0Ch { get; set; }
+        public float Unknown_10h { get; set; }
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000000
         public uint Unknown_1Ch { get; set; } // 0x00000000
@@ -3401,6 +3412,11 @@ namespace CodeWalker.GameFiles
         public FragDrawable Drawable2 { get; set; }
         public FragPhysEvtSet EvtSet { get; set; }
 
+
+
+        public FragPhysicsLOD OwnerFragPhysLod { get; set; }
+        public int OwnerFragPhysIndex { get; set; }
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
@@ -3409,9 +3425,9 @@ namespace CodeWalker.GameFiles
             // read structure data
             this.VFT = reader.ReadUInt32();
             this.Unknown_04h = reader.ReadUInt32();
-            this.Unknown_08h = reader.ReadUInt32();
-            this.Unknown_0Ch = reader.ReadUInt32();
-            this.Unknown_10h = reader.ReadUInt32();
+            this.Unknown_08h = reader.ReadSingle();
+            this.Unknown_0Ch = reader.ReadSingle();
+            this.Unknown_10h = reader.ReadSingle();
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
