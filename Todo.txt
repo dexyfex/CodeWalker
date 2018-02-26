@@ -101,6 +101,8 @@ done:
 
 
 [v.29]
+RPF Explorer drag & drop
+Show vehicle wheels
 Snap to ground, snap to grid
 CodeWalker.Core library
 Improved GTA folder management
