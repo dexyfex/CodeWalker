@@ -284,16 +284,6 @@ namespace CodeWalker
             if (f == CurrentFolder) return; //already there!
             if (f.IsSearchResults)
             {
-                foreach (TreeNode tn in MainTreeView.Nodes)
-                {
-                    var tnf = tn.Tag as MainTreeFolder;
-                    if ((tnf != null) && (tnf.IsSearchResults))
-                    {
-                        MainTreeView.Nodes.Remove(tn); //remove existing search result node
-                        break;
-                    }
-                }
-
                 AddMainTreeViewRoot(f); //add the current search result node
 
                 TreeNode sr = FindTreeNode(f, null);
@@ -301,6 +291,17 @@ namespace CodeWalker
                 {
                     MainTreeView.SelectedNode = sr; //navigate to the new search results node
                 }
+
+                foreach (TreeNode tn in MainTreeView.Nodes)
+                {
+                    var tnf = tn.Tag as MainTreeFolder;
+                    if ((tn != sr) && (tnf != null) && (tnf.IsSearchResults))
+                    {
+                        MainTreeView.Nodes.Remove(tn); //remove existing search result node
+                        break;
+                    }
+                }
+
                 return;
             }
             List<MainTreeFolder> hierarchy = new List<MainTreeFolder>();
