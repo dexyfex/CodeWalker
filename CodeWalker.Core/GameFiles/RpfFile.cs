@@ -1717,7 +1717,7 @@ namespace CodeWalker.GameFiles
         {
             //delete this entry from the RPF header.
             //also remove any references to this item in its parent directory...
-            //if this is a directory entry, make sure it is empty first
+            //if this is a directory entry, this will delete the contents first
 
             RpfFile parent = entry.File;
             string fpath = parent.GetPhysicalFilePath();
@@ -1731,11 +1731,15 @@ namespace CodeWalker.GameFiles
 
             if (entryasdir != null)
             {
-                var dircount = entryasdir.Directories?.Count ?? 0;
-                var filecount = entryasdir.Files?.Count ?? 0;
-                if ((dircount + filecount) > 0)
+                var deldirs = entryasdir.Directories.ToArray();
+                var delfiles = entryasdir.Files.ToArray();
+                foreach(var deldir in deldirs)
                 {
-                    throw new Exception("RPF directory is not empty! Please delete its contents first.");
+                    DeleteEntry(deldir);
+                }
+                foreach (var delfile in delfiles)
+                {
+                    DeleteEntry(delfile);
                 }
             }
 
