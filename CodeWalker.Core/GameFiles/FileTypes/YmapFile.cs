@@ -29,7 +29,6 @@ namespace CodeWalker.GameFiles
 
         public Unk_975711773[] CBoxOccluders { get; set; }
         public Unk_2741784237[] COccludeModels { get; set; }
-        public rage__fwGrassInstanceListDef[] GrassInstanceList { get; set; }
 
 
         public string[] Strings { get; set; }
@@ -576,7 +575,6 @@ namespace CodeWalker.GameFiles
         {
             if (GrassInstanceBatches == null)
             {
-                GrassInstanceList = null;
                 return;
             }
 
@@ -584,17 +582,18 @@ namespace CodeWalker.GameFiles
             { }
 
             int count = GrassInstanceBatches.Length;
-            GrassInstanceList = new rage__fwGrassInstanceListDef[count];
             for (int i = 0; i < count; i++)
             {
-                var b = GrassInstanceBatches[i];
+                var g = GrassInstanceBatches[i];
+                var b = g.Batch;
 
                 var aabb = new rage__spdAABB();
-                aabb.min = new Vector4(b.AABBMin, 0);
-                aabb.max = new Vector4(b.AABBMax, 0);
+                aabb.min = new Vector4(g.AABBMin, 0);
+                aabb.max = new Vector4(g.AABBMax, 0);
 
-                GrassInstanceList[i] = b.Batch;
-                GrassInstanceList[i].BatchAABB = aabb;
+                b.BatchAABB = aabb;
+
+                GrassInstanceBatches[i].Batch = b;
             }
         }
 
