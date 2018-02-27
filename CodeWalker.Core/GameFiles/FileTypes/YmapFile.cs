@@ -1050,6 +1050,10 @@ namespace CodeWalker.GameFiles
             {
                 contentFlags = SetBit(contentFlags, 6); //64
             }
+            if ((GrassInstanceBatches != null) && (GrassInstanceBatches.Length > 0))
+            {
+                contentFlags = SetBit(contentFlags, 10); //64
+            }
 
 
             bool change = false;
