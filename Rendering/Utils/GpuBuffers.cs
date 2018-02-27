@@ -34,9 +34,13 @@ namespace CodeWalker.Rendering
         }
         public void Update(DeviceContext context)
         {
-            var dataBox = context.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
-            Utilities.Write(dataBox.DataPointer, ref Vars);
-            context.UnmapSubresource(Buffer, 0);
+            try
+            {
+                var dataBox = context.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
+                Utilities.Write(dataBox.DataPointer, ref Vars);
+                context.UnmapSubresource(Buffer, 0);
+            }
+            catch { } //not much we can do about this except ignore it..
         }
         public void SetVSCBuffer(DeviceContext context, int slot)
         {
