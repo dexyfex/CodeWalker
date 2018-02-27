@@ -557,7 +557,7 @@ namespace CodeWalker
 
             string fullPath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
 
-            string[] allfiles = Directory.GetFiles(GTAFolder.CurrentGTAFolder, "*", SearchOption.AllDirectories);
+            string[] allpaths = Directory.GetFileSystemEntries(GTAFolder.CurrentGTAFolder, "*", SearchOption.AllDirectories);
 
             Dictionary<string, MainTreeFolder> nodes = new Dictionary<string, MainTreeFolder>();
 
@@ -569,16 +569,18 @@ namespace CodeWalker
 
             UpdateStatus("Scanning...");
 
-            foreach (var filepath in allfiles)
+            foreach (var path in allpaths)
             {
-                var relpath = filepath.Replace(fullPath, "");
-                var filepathl = filepath.ToLowerInvariant();
+                var relpath = path.Replace(fullPath, "");
+                var filepathl = path.ToLowerInvariant();
+
+                var isFile = File.Exists(path); //could be a folder
 
                 UpdateStatus("Scanning " + relpath + "...");
 
                 MainTreeFolder parentnode = null, prevnode = null, node = null;
                 var prevnodepath = "";
-                var idx = relpath.LastIndexOf('\\');
+                var idx = isFile ? relpath.LastIndexOf('\\') : relpath.Length;
                 while (idx > 0) //create the folder tree nodes and build up the hierarchy
                 {
                     var parentpath = relpath.Substring(0, idx);
@@ -608,34 +610,37 @@ namespace CodeWalker
                     }
                 }
 
-                if (filepathl.EndsWith(".rpf")) //add RPF nodes
+                if (isFile)
                 {
-                    RpfFile rpf = new RpfFile(filepath, relpath);
-
-                    rpf.ScanStructure(UpdateStatus, UpdateErrorLog);
-
-                    node = CreateRpfTreeFolder(rpf, relpath, filepath);
-
-                    RecurseMainTreeViewRPF(node, allRpfs);
-
-                    if (parentnode != null)
+                    if (filepathl.EndsWith(".rpf")) //add RPF nodes
                     {
-                        parentnode.AddChild(node);
+                        RpfFile rpf = new RpfFile(path, relpath);
+
+                        rpf.ScanStructure(UpdateStatus, UpdateErrorLog);
+
+                        node = CreateRpfTreeFolder(rpf, relpath, path);
+
+                        RecurseMainTreeViewRPF(node, allRpfs);
+
+                        if (parentnode != null)
+                        {
+                            parentnode.AddChild(node);
+                        }
+                        else
+                        {
+                            root.AddChild(node);
+                        }
                     }
                     else
                     {
-                        root.AddChild(node);
-                    }
-                }
-                else
-                {
-                    if (parentnode != null)
-                    {
-                        parentnode.AddFile(filepath);
-                    }
-                    else
-                    {
-                        root.AddFile(filepath);
+                        if (parentnode != null)
+                        {
+                            parentnode.AddFile(path);
+                        }
+                        else
+                        {
+                            root.AddFile(path);
+                        }
                     }
                 }
             }
