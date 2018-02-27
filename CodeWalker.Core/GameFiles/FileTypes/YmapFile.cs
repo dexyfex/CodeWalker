@@ -587,9 +587,15 @@ namespace CodeWalker.GameFiles
             GrassInstanceList = new rage__fwGrassInstanceListDef[count];
             for (int i = 0; i < count; i++)
             {
-                GrassInstanceList[i] = GrassInstanceBatches[i].Batch;
-            }
+                var b = GrassInstanceBatches[i];
 
+                var aabb = new rage__spdAABB();
+                aabb.min = new Vector4(b.AABBMin, 0);
+                aabb.max = new Vector4(b.AABBMax, 0);
+
+                GrassInstanceList[i] = b.Batch;
+                GrassInstanceList[i].BatchAABB = aabb;
+            }
         }
 
         public byte[] Save()
@@ -600,10 +606,9 @@ namespace CodeWalker.GameFiles
             //since Ymap object contents have been modified, need to recreate the arrays which are what is saved.
             BuildCEntityDefs(); //technically this isn't required anymore since the CEntityDefs is no longer used for saving.
             BuildCCarGens();
-
+            BuildInstances();
 
             //TODO:
-            //BuildInstances();
             //BuildLodLights();
             //BuildDistantLodLights();
             //BuildTimecycleModifiers(); //already being saved - update them..
@@ -660,14 +665,37 @@ namespace CodeWalker.GameFiles
             if (mapdata.containerLods.Count1 != 0) LogSaveWarning("containerLods were not saved. (TODO!)");
             if (mapdata.occludeModels.Count1 != 0) LogSaveWarning("occludeModels were not saved. (TODO!)");
             if (mapdata.boxOccluders.Count1 != 0) LogSaveWarning("boxOccluders were not saved. (TODO!)");
-            if (mapdata.instancedData.GrassInstanceList.Count1 != 0) LogSaveWarning("instancedData.GrassInstanceList was not saved. (TODO!)");
             if (mapdata.instancedData.PropInstanceList.Count1 != 0) LogSaveWarning("instancedData.PropInstanceList was not saved. (TODO!)");
             if (mapdata.LODLightsSOA.direction.Count1 != 0) LogSaveWarning("LODLightsSOA was not saved. (TODO!)");
             if (mapdata.DistantLODLightsSOA.position.Count1 != 0) LogSaveWarning("DistantLODLightsSOA was not saved. (TODO!)");
             mapdata.containerLods = new Array_Structure();
             mapdata.occludeModels = new Array_Structure();
             mapdata.boxOccluders = new Array_Structure();
-            mapdata.instancedData = new rage__fwInstancedMapData();
+
+            if ((GrassInstanceBatches != null) && (GrassInstanceBatches.Length > 0))
+            {
+                var instancedData = new rage__fwInstancedMapData();
+                rage__fwGrassInstanceListDef[] batches = new rage__fwGrassInstanceListDef[GrassInstanceBatches.Length];
+                for (int i = 0; i < GrassInstanceBatches.Length; i++)
+                {
+                    var batch = GrassInstanceBatches[i];
+
+                    if (batch != null)
+                    {
+                        var b = batch.Batch;
+                        b.InstanceList = mb.AddItemArrayPtr(MetaName.rage__fwGrassInstanceListDef__InstanceData, batch.Instances);
+                        batches[i] = b;
+                    }
+                }
+
+                instancedData.GrassInstanceList = mb.AddItemArrayPtr(MetaName.rage__fwGrassInstanceListDef, batches);
+                mapdata.instancedData = instancedData;
+            }
+            else
+            {
+                mapdata.instancedData = new rage__fwInstancedMapData();
+            }
+
             mapdata.LODLightsSOA = new CLODLight();
             mapdata.DistantLODLightsSOA = new CDistantLODLight();
 
@@ -691,6 +719,12 @@ namespace CodeWalker.GameFiles
 
 
             //make sure all the relevant structure and enum infos are present.
+            if ((GrassInstanceBatches != null) && (GrassInstanceBatches.Length > 0))
+            {
+                mb.AddStructureInfo(MetaName.rage__spdAABB);
+                mb.AddStructureInfo(MetaName.rage__fwGrassInstanceListDef__InstanceData);
+                mb.AddStructureInfo(MetaName.rage__fwGrassInstanceListDef);
+            }
             mb.AddStructureInfo(MetaName.rage__fwInstancedMapData);
             mb.AddStructureInfo(MetaName.CLODLight);
             mb.AddStructureInfo(MetaName.CDistantLODLight);
