@@ -741,6 +741,7 @@ namespace CodeWalker
                     var rn = MainTreeView.Nodes.Add(f.Path, f.Name, 0, 0); //ROOT imageIndex
                     rn.ToolTipText = f.FullPath;
                     rn.Tag = f;
+                    f.TreeNode = rn;
                 }
             }
             catch { }
@@ -1978,7 +1979,8 @@ namespace CodeWalker
             if (!IsFilenameOk(fname)) return; //new name contains invalid char(s). don't do anything
 
 
-            string relpath = (CurrentFolder.Path ?? "") + "\\" + fname;
+            string cpath = (string.IsNullOrEmpty(CurrentFolder.Path) ? "" : CurrentFolder.Path + "\\");
+            string relpath = cpath + fname.ToLowerInvariant();
             var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
             string fullpath = rootpath + relpath;
 
@@ -2037,7 +2039,8 @@ namespace CodeWalker
             {
                 fname = fname + ".rpf";//make sure it ends with .rpf
             }
-            string relpath = (CurrentFolder.Path ?? "") + "\\" + fname.ToLowerInvariant();
+            string cpath = (string.IsNullOrEmpty(CurrentFolder.Path) ? "" : CurrentFolder.Path + "\\");
+            string relpath = cpath + fname.ToLowerInvariant();
 
 
             RpfEncryption encryption = RpfEncryption.OPEN;//TODO: select encryption mode
