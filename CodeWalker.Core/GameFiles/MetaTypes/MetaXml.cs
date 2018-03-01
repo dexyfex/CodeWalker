@@ -189,15 +189,9 @@ namespace CodeWalker.GameFiles
 
                         break;
                     case MetaStructureEntryDataType.ArrayOfBytes:
-                        OpenTag(sb, cind, ename, false);
-                        var byteArrLen = (int)entry.ReferenceKey;
-                        for (int n = 0; n < byteArrLen; n++)
-                        {
-                            var bidx = eoffset + n;
-                            byte b = ((bidx >= 0) && (bidx < data.Length)) ? data[bidx] : (byte)0;
-                            sb.Append(b.ToString("X").PadLeft(2, '0'));
-                        }
-                        CloseTag(sb, 0, ename);
+
+                        WriteParsedArrayOfBytesNode(sb, cind, data, ename, eoffset, entry, arrEntry);
+
                         break;
                     case MetaStructureEntryDataType.ArrayOfChars:
                         OpenTag(sb, cind, ename, false);
@@ -429,6 +423,82 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        private static void WriteParsedArrayOfBytesNode(StringBuilder sb, int indent, byte[] data, string ename, int eoffset, MetaStructureEntryInfo_s entry, MetaStructureEntryInfo_s arrEntry)
+        {
+            OpenTag(sb, indent, ename, false);
+
+            var byteArrLen = ((int)entry.ReferenceKey);
+
+            switch (arrEntry.DataType)
+            {
+                default:
+                case MetaStructureEntryDataType.SignedByte:
+                    for (int n = 0; n < byteArrLen; n++)
+                    {
+                        var bidx = eoffset + n;
+                        byte b = ((bidx >= 0) && (bidx < data.Length)) ? data[bidx] : (byte)0;
+                        sb.Append(b.ToString("X").PadLeft(2, '0'));
+                    }
+                    break;
+
+                case MetaStructureEntryDataType.UnsignedByte:
+                    for (int n = 0; n < byteArrLen; n++)
+                    {
+                        var bidx = eoffset + n;
+                        byte b = ((bidx >= 0) && (bidx < data.Length)) ? data[bidx] : (byte)0;
+                        sb.Append(b.ToString());
+                        if (n < byteArrLen - 1) sb.Append(" ");
+                    }
+                    break;
+                case MetaStructureEntryDataType.SignedShort:
+                    for (int n = 0; n < byteArrLen; n++)
+                    {
+                        var bidx = eoffset + n * 2;
+                        short b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToInt16(data, bidx) : (short)0;
+                        sb.Append(b.ToString());
+                        if (n < byteArrLen - 1) sb.Append(" ");
+                    }
+                    break;
+                case MetaStructureEntryDataType.UnsignedShort:
+                    for (int n = 0; n < byteArrLen; n++)
+                    {
+                        var bidx = eoffset + n * 2;
+                        ushort b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToUInt16(data, bidx) : (ushort)0;
+                        sb.Append(b.ToString());
+                        if (n < byteArrLen - 1) sb.Append(" ");
+                    }
+                    break;
+                case MetaStructureEntryDataType.SignedInt:
+                    for (int n = 0; n < byteArrLen; n++)
+                    {
+                        var bidx = eoffset + n * 4;
+                        int b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToInt32(data, bidx) : (int)0;
+                        sb.Append(b.ToString());
+                        if (n < byteArrLen - 1) sb.Append(" ");
+                    }
+                    break;
+                case MetaStructureEntryDataType.UnsignedInt:
+                    for (int n = 0; n < byteArrLen; n++)
+                    {
+                        var bidx = eoffset + n * 4;
+                        uint b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToUInt32(data, bidx) : (uint)0;
+                        sb.Append(b.ToString());
+                        if (n < byteArrLen - 1) sb.Append(" ");
+                    }
+                    break;
+                case MetaStructureEntryDataType.Float:
+                    for (int n = 0; n < byteArrLen; n++)
+                    {
+                        var bidx = eoffset + n * 4;
+                        float b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToSingle(data, bidx) : (float)0;
+                        sb.Append(FloatUtil.ToString(b));
+                        if (n < byteArrLen - 1) sb.Append(" ");
+                    }
+                    break;
+            }
+
+            CloseTag(sb, 0, ename);
+        }
 
 
 
