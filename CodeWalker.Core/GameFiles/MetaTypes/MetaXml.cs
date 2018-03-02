@@ -432,12 +432,20 @@ namespace CodeWalker.GameFiles
             switch (arrEntry.DataType)
             {
                 default:
-                case MetaStructureEntryDataType.SignedByte:
                     for (int n = 0; n < byteArrLen; n++)
                     {
                         var bidx = eoffset + n;
                         byte b = ((bidx >= 0) && (bidx < data.Length)) ? data[bidx] : (byte)0;
                         sb.Append(b.ToString("X").PadLeft(2, '0'));
+                    }
+                    break;
+                case MetaStructureEntryDataType.SignedByte:
+                    for (int n = 0; n < byteArrLen; n++)
+                    {
+                        var bidx = eoffset + n;
+                        sbyte b = ((bidx >= 0) && (bidx < data.Length)) ? (sbyte)data[bidx] : (sbyte)0;
+                        sb.Append(b.ToString()); //sb.Append(b.ToString("X").PadLeft(2, '0')); to show HEX values
+                        if (n < byteArrLen - 1) sb.Append(" ");
                     }
                     break;
 

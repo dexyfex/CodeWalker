@@ -301,12 +301,20 @@ namespace CodeWalker.GameFiles
             switch (arrEntry.DataType)
             {
                 default:
-                case MetaStructureEntryDataType.SignedByte:
                     split = Split(node.InnerText, 2);
                     for (int j = 0; j < split.Length; j++)
                     {
                         byte val = Convert.ToByte(split[j], 16);
                         data[offset] = val;
+                        offset += sizeof(byte);
+                    }
+                    break;
+                case MetaStructureEntryDataType.SignedByte:
+                    split = node.InnerText.Split(); //split = Split(node.InnerText, 2); to read as unsplitted HEX
+                    for (int j = 0; j < split.Length; j++)
+                    {
+                        sbyte val = Convert.ToSByte(split[j], 10);
+                        data[offset] = (byte)val;
                         offset += sizeof(sbyte);
                     }
                     break;
