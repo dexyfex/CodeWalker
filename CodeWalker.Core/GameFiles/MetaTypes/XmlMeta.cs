@@ -77,6 +77,11 @@ namespace CodeWalker.GameFiles
                             }
 
                         case MetaStructureEntryDataType.ArrayOfBytes:
+                            {
+                                GetParsedArrayOfBytes(cnode, data, entry, arrEntry);
+                                break;
+                            }
+                            
                         case MetaStructureEntryDataType.ArrayOfChars:
                             {
                                 int offset = entry.DataOffset;
@@ -286,6 +291,88 @@ namespace CodeWalker.GameFiles
             }
 
             return null;
+        }
+
+        private static void GetParsedArrayOfBytes(XmlNode node, byte[] data, MetaStructureEntryInfo_s entry, MetaStructureEntryInfo_s arrEntry)
+        {
+            int offset = entry.DataOffset;
+            string[] split;
+
+            switch (arrEntry.DataType)
+            {
+                default:
+                    split = Split(node.InnerText, 2);
+                    for (int j = 0; j < split.Length; j++)
+                    {
+                        byte val = Convert.ToByte(split[j], 16);
+                        data[offset] = val;
+                        offset += sizeof(byte);
+                    }
+                    break;
+                case MetaStructureEntryDataType.SignedByte:
+                    split = node.InnerText.Split(); //split = Split(node.InnerText, 2); to read as unsplitted HEX
+                    for (int j = 0; j < split.Length; j++)
+                    {
+                        sbyte val = Convert.ToSByte(split[j], 10);
+                        data[offset] = (byte)val;
+                        offset += sizeof(sbyte);
+                    }
+                    break;
+                case MetaStructureEntryDataType.UnsignedByte:
+                    split = node.InnerText.Split();
+                    for (int j = 0; j < split.Length; j++)
+                    {
+                        byte val = Convert.ToByte(split[j], 10);
+                        data[offset] = val;
+                        offset += sizeof(byte);
+                    }
+                    break;
+                case MetaStructureEntryDataType.SignedShort:
+                    split = node.InnerText.Split();
+                    for (int j = 0; j < split.Length; j++)
+                    {
+                        short val = Convert.ToInt16(split[j], 10);
+                        Write(val, data, offset);
+                        offset += sizeof(short);
+                    }
+                    break;
+                case MetaStructureEntryDataType.UnsignedShort:
+                    split = node.InnerText.Split();
+                    for (int j = 0; j < split.Length; j++)
+                    {
+                        ushort val = Convert.ToUInt16(split[j], 10);
+                        Write(val, data, offset);
+                        offset += sizeof(ushort);
+                    }
+                    break;
+                case MetaStructureEntryDataType.SignedInt:
+                    split = node.InnerText.Split();
+                    for (int j = 0; j < split.Length; j++)
+                    {
+                        int val = Convert.ToInt32(split[j], 10);
+                        Write(val, data, offset);
+                        offset += sizeof(int);
+                    }
+                    break;
+                case MetaStructureEntryDataType.UnsignedInt:
+                    split = node.InnerText.Split();
+                    for (int j = 0; j < split.Length; j++)
+                    {
+                        uint val = Convert.ToUInt32(split[j], 10);
+                        Write(val, data, offset);
+                        offset += sizeof(uint);
+                    }
+                    break;
+                case MetaStructureEntryDataType.Float:
+                    split = node.InnerText.Split();
+                    for (int j = 0; j < split.Length; j++)
+                    {
+                        float val = FloatUtil.Parse(split[j]);
+                        Write(val, data, offset);
+                        offset += sizeof(float);
+                    }
+                    break;
+            }
         }
 
         private static void TraverseArray(XmlNode node, MetaBuilder mb, MetaStructureEntryInfo_s arrEntry, int offset, ArrayResults results)

@@ -3401,7 +3401,24 @@ namespace CodeWalker.GameFiles
 
 
 
+        //from dav90's PSO_RBF_XMLExport_V5.7
+        AutoJunctionAdjustments = 1352439928,
+        vLocation = 929088795,
+        fCycleOffset = 1883372816,
+        fCycleDuration = 3328650398,
 
+        registerAs = 1419376801,
+
+        CreditItems = 1705522053,
+        LineType = 660169259,
+        cTextId1 = 4188319879,
+        cTextId2 = 2913343627,
+        JOB_BIG = 1035407208,
+
+        flee_left = 204999120,
+        flee_right = 1266046331,
+        flee_forward = 1547194093,
+        flee_back = 1622623046,
 
 
 
