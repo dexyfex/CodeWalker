@@ -189,5 +189,8 @@
     <Setting Name="ProjectWindowTheme" Type="System.String" Scope="User">
       <Value Profile="(Default)">Blue</Value>
     </Setting>
+    <Setting Name="ExplorerWindowTheme" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Windows</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

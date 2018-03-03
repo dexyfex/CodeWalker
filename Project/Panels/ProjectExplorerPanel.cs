@@ -27,24 +27,6 @@ namespace CodeWalker.Project.Panels
             InitializeComponent();
         }
 
-        public override void SetTheme(ThemeBase theme)
-        {
-            base.SetTheme(theme);
-            if (theme is VS2015DarkTheme)
-            {
-                ProjectTreeView.BackColor = theme.ColorPalette.MainWindowActive.Background;
-                ProjectTreeView.ForeColor = Color.White;
-                ProjectTreeView.LineColor = Color.White;
-            }
-            else
-            {
-                ProjectTreeView.BackColor = SystemColors.Window;
-                ProjectTreeView.ForeColor = SystemColors.WindowText;
-                ProjectTreeView.LineColor = Color.Black;
-            }
-        }
-
-
 
         public void LoadProjectTree(ProjectFile projectFile)
         {

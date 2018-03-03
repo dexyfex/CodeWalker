@@ -58,6 +58,12 @@
             this.ViewSmallIconsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ViewListMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ViewDetailsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
+            this.ViewThemeMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ViewThemeWindowsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ViewThemeBlueMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ViewThemeLightMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ViewThemeDarkMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsBinSearchMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsRpfBrowserMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -80,7 +86,7 @@
             this.SearchButton = new System.Windows.Forms.ToolStripSplitButton();
             this.SearchGlobalButton = new System.Windows.Forms.ToolStripMenuItem();
             this.SearchFilterButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.StatusBar = new System.Windows.Forms.StatusStrip();
+            this.MainStatusBar = new System.Windows.Forms.StatusStrip();
             this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.FileImageList16 = new System.Windows.Forms.ImageList(this.components);
             this.MainSplitContainer = new System.Windows.Forms.SplitContainer();
@@ -135,9 +141,10 @@
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.VSExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
-            this.StatusBar.SuspendLayout();
+            this.MainStatusBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).BeginInit();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
@@ -366,7 +373,9 @@
             this.ViewLargeIconsMenu,
             this.ViewSmallIconsMenu,
             this.ViewListMenu,
-            this.ViewDetailsMenu});
+            this.ViewDetailsMenu,
+            this.toolStripSeparator11,
+            this.ViewThemeMenu});
             this.ViewMenu.Name = "ViewMenu";
             this.ViewMenu.Size = new System.Drawing.Size(44, 20);
             this.ViewMenu.Text = "View";
@@ -374,21 +383,21 @@
             // ViewLargeIconsMenu
             // 
             this.ViewLargeIconsMenu.Name = "ViewLargeIconsMenu";
-            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(152, 22);
             this.ViewLargeIconsMenu.Text = "Large Icons";
             this.ViewLargeIconsMenu.Click += new System.EventHandler(this.ViewLargeIconsMenu_Click);
             // 
             // ViewSmallIconsMenu
             // 
             this.ViewSmallIconsMenu.Name = "ViewSmallIconsMenu";
-            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(152, 22);
             this.ViewSmallIconsMenu.Text = "Small Icons";
             this.ViewSmallIconsMenu.Click += new System.EventHandler(this.ViewSmallIconsMenu_Click);
             // 
             // ViewListMenu
             // 
             this.ViewListMenu.Name = "ViewListMenu";
-            this.ViewListMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewListMenu.Size = new System.Drawing.Size(152, 22);
             this.ViewListMenu.Text = "List";
             this.ViewListMenu.Click += new System.EventHandler(this.ViewListMenu_Click);
             // 
@@ -397,9 +406,55 @@
             this.ViewDetailsMenu.Checked = true;
             this.ViewDetailsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ViewDetailsMenu.Name = "ViewDetailsMenu";
-            this.ViewDetailsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewDetailsMenu.Size = new System.Drawing.Size(152, 22);
             this.ViewDetailsMenu.Text = "Details";
             this.ViewDetailsMenu.Click += new System.EventHandler(this.ViewDetailsMenu_Click);
+            // 
+            // toolStripSeparator11
+            // 
+            this.toolStripSeparator11.Name = "toolStripSeparator11";
+            this.toolStripSeparator11.Size = new System.Drawing.Size(149, 6);
+            // 
+            // ViewThemeMenu
+            // 
+            this.ViewThemeMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ViewThemeWindowsMenu,
+            this.ViewThemeBlueMenu,
+            this.ViewThemeLightMenu,
+            this.ViewThemeDarkMenu});
+            this.ViewThemeMenu.Name = "ViewThemeMenu";
+            this.ViewThemeMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewThemeMenu.Text = "Theme";
+            // 
+            // ViewThemeWindowsMenu
+            // 
+            this.ViewThemeWindowsMenu.Checked = true;
+            this.ViewThemeWindowsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ViewThemeWindowsMenu.Name = "ViewThemeWindowsMenu";
+            this.ViewThemeWindowsMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewThemeWindowsMenu.Text = "Windows";
+            this.ViewThemeWindowsMenu.Click += new System.EventHandler(this.ViewThemeWindowsMenu_Click);
+            // 
+            // ViewThemeBlueMenu
+            // 
+            this.ViewThemeBlueMenu.Name = "ViewThemeBlueMenu";
+            this.ViewThemeBlueMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewThemeBlueMenu.Text = "Blue";
+            this.ViewThemeBlueMenu.Click += new System.EventHandler(this.ViewThemeBlueMenu_Click);
+            // 
+            // ViewThemeLightMenu
+            // 
+            this.ViewThemeLightMenu.Name = "ViewThemeLightMenu";
+            this.ViewThemeLightMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewThemeLightMenu.Text = "Light";
+            this.ViewThemeLightMenu.Click += new System.EventHandler(this.ViewThemeLightMenu_Click);
+            // 
+            // ViewThemeDarkMenu
+            // 
+            this.ViewThemeDarkMenu.Name = "ViewThemeDarkMenu";
+            this.ViewThemeDarkMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewThemeDarkMenu.Text = "Dark";
+            this.ViewThemeDarkMenu.Click += new System.EventHandler(this.ViewThemeDarkMenu_Click);
             // 
             // ToolsMenu
             // 
@@ -609,15 +664,15 @@
             this.SearchFilterButton.Text = "Filter";
             this.SearchFilterButton.Click += new System.EventHandler(this.SearchFilterButton_Click);
             // 
-            // StatusBar
+            // MainStatusBar
             // 
-            this.StatusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MainStatusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.StatusLabel});
-            this.StatusBar.Location = new System.Drawing.Point(0, 565);
-            this.StatusBar.Name = "StatusBar";
-            this.StatusBar.Size = new System.Drawing.Size(876, 22);
-            this.StatusBar.TabIndex = 2;
-            this.StatusBar.Text = "statusStrip1";
+            this.MainStatusBar.Location = new System.Drawing.Point(0, 565);
+            this.MainStatusBar.Name = "MainStatusBar";
+            this.MainStatusBar.Size = new System.Drawing.Size(876, 22);
+            this.MainStatusBar.TabIndex = 2;
+            this.MainStatusBar.Text = "MainStatusBar";
             // 
             // StatusLabel
             // 
@@ -1115,13 +1170,17 @@
             // 
             this.OpenFileDialog.Multiselect = true;
             // 
+            // VSExtender
+            // 
+            this.VSExtender.DefaultRenderer = null;
+            // 
             // ExploreForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(876, 587);
             this.Controls.Add(this.MainSplitContainer);
-            this.Controls.Add(this.StatusBar);
+            this.Controls.Add(this.MainStatusBar);
             this.Controls.Add(this.MainToolbar);
             this.Controls.Add(this.MainMenu);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -1134,8 +1193,8 @@
             this.MainMenu.PerformLayout();
             this.MainToolbar.ResumeLayout(false);
             this.MainToolbar.PerformLayout();
-            this.StatusBar.ResumeLayout(false);
-            this.StatusBar.PerformLayout();
+            this.MainStatusBar.ResumeLayout(false);
+            this.MainStatusBar.PerformLayout();
             this.MainSplitContainer.Panel1.ResumeLayout(false);
             this.MainSplitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).EndInit();
@@ -1160,7 +1219,7 @@
         private System.Windows.Forms.ToolStripMenuItem EditMenu;
         private System.Windows.Forms.ToolStripMenuItem ViewMenu;
         private System.Windows.Forms.ToolStrip MainToolbar;
-        private System.Windows.Forms.StatusStrip StatusBar;
+        private System.Windows.Forms.StatusStrip MainStatusBar;
         private System.Windows.Forms.ToolStripStatusLabel StatusLabel;
         private System.Windows.Forms.ImageList FileImageList16;
         private System.Windows.Forms.ToolStripSplitButton BackButton;
@@ -1260,5 +1319,12 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ToolStripMenuItem ListContextDefragmentMenu;
         private System.Windows.Forms.ToolStripSeparator ListContextDefragmentSeparator;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
+        private System.Windows.Forms.ToolStripMenuItem ViewThemeMenu;
+        private System.Windows.Forms.ToolStripMenuItem ViewThemeBlueMenu;
+        private System.Windows.Forms.ToolStripMenuItem ViewThemeLightMenu;
+        private System.Windows.Forms.ToolStripMenuItem ViewThemeDarkMenu;
+        private WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender VSExtender;
+        private System.Windows.Forms.ToolStripMenuItem ViewThemeWindowsMenu;
     }
 }

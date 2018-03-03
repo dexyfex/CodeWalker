@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace CodeWalker
 {
@@ -45,13 +46,83 @@ namespace CodeWalker
 
         private bool EditMode = false;
 
+        public ThemeBase Theme { get; private set; }
+
 
         public ExploreForm()
         {
             InitializeComponent();
 
+            SetTheme(Settings.Default.ExplorerWindowTheme, false);
+
             ShowMainListViewPathColumn(false);
         }
+
+        private void SetTheme(string themestr, bool changing = true)
+        {
+            //string configFile = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "DockPanel.temp.config");
+            //MainDockPanel.SaveAsXml(configFile);
+            //CloseAllContents();
+
+            foreach (ToolStripMenuItem menu in ViewThemeMenu.DropDownItems)
+            {
+                menu.Checked = false;
+            }
+
+            Theme = null;
+            var version = VisualStudioToolStripExtender.VsVersion.Vs2015;
+
+            switch (themestr)
+            {
+                default:
+                case "Windows":
+                    //Theme = new VS2005Theme();
+                    ViewThemeWindowsMenu.Checked = true;
+                    version = VisualStudioToolStripExtender.VsVersion.Unknown;
+                    if (changing)
+                    {
+                        MessageBox.Show("Please reopen RPF Explorer to change back to Windows theme.");
+                    }
+                    break;
+                case "Blue":
+                    Theme = new VS2015BlueTheme();
+                    ViewThemeBlueMenu.Checked = true;
+                    break;
+                case "Light":
+                    Theme = new VS2015LightTheme();
+                    ViewThemeLightMenu.Checked = true;
+                    break;
+                case "Dark":
+                    Theme = new VS2015DarkTheme();
+                    ViewThemeDarkMenu.Checked = true;
+                    break;
+            }
+
+            if (changing)
+            {
+                Settings.Default.ExplorerWindowTheme = themestr;
+                Settings.Default.Save();
+            }
+
+
+            //Theme.Extender.FloatWindowFactory = new ExplorerFloatWindowFactory();
+            //MainDockPanel.Theme = Theme;
+
+            if (Theme != null)
+            {
+                VSExtender.SetStyle(MainMenu, version, Theme);
+                VSExtender.SetStyle(MainToolbar, version, Theme);
+                VSExtender.SetStyle(MainStatusBar, version, Theme);
+
+                FormTheme.SetTheme(this, Theme);
+
+                MainSplitContainer.BackColor = Theme.ColorPalette.MainWindowActive.Background;
+            }
+
+
+            //if (File.Exists(configFile)) MainDockPanel.LoadFromXml(configFile, m_deserializeDockContent);
+        }
+
 
         private void Init()
         {
@@ -3402,6 +3473,26 @@ namespace CodeWalker
         private void ViewDetailsMenu_Click(object sender, EventArgs e)
         {
             SetView(System.Windows.Forms.View.Details);
+        }
+
+        private void ViewThemeWindowsMenu_Click(object sender, EventArgs e)
+        {
+            SetTheme("Windows");
+        }
+
+        private void ViewThemeBlueMenu_Click(object sender, EventArgs e)
+        {
+            SetTheme("Blue");
+        }
+
+        private void ViewThemeLightMenu_Click(object sender, EventArgs e)
+        {
+            SetTheme("Light");
+        }
+
+        private void ViewThemeDarkMenu_Click(object sender, EventArgs e)
+        {
+            SetTheme("Dark");
         }
 
         private void ToolsOptionsMenu_Click(object sender, EventArgs e)

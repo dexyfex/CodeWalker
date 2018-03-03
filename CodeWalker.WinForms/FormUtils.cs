@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using WeifenLuo.WinFormsUI.Docking;
 using Point = System.Drawing.Point;
 
 namespace CodeWalker
@@ -258,6 +261,78 @@ namespace CodeWalker
         }
     }
 
+
+
+
+    public static class FormTheme
+    {
+        public static void SetTheme(Control form, ThemeBase theme)
+        {
+            form.BackColor = SystemColors.Control;
+            form.ForeColor = SystemColors.ControlText;
+            var txtback = SystemColors.Window;
+            var wndback = SystemColors.Window;
+            var disback = SystemColors.Control;
+            var disfore = form.ForeColor;
+            var btnback = Color.Transparent;
+
+            if (theme is VS2015DarkTheme)
+            {
+                form.BackColor = theme.ColorPalette.MainWindowActive.Background;
+                form.ForeColor = Color.White;
+                txtback = Color.FromArgb(40, 40, 40);// form.BackColor;
+                wndback = theme.ColorPalette.MainWindowActive.Background;
+                disback = form.BackColor;// Color.FromArgb(32,32,32);
+                disfore = Color.DarkGray;
+                btnback = form.BackColor;
+            }
+
+            var allcontrols = new List<Control>();
+            RecurseControls(form, allcontrols);
+
+            foreach (var c in allcontrols)
+            {
+                if (c is TabPage)
+                {
+                    c.ForeColor = form.ForeColor;
+                    c.BackColor = wndback;
+                }
+                else if ((c is CheckedListBox) || (c is ListBox) || (c is ListView))
+                {
+                    c.ForeColor = form.ForeColor;
+                    c.BackColor = wndback;
+                }
+                else if ((c is TextBox))
+                {
+                    var txtbox = c as TextBox;
+                    c.ForeColor = txtbox.ReadOnly ? disfore : form.ForeColor;
+                    c.BackColor = txtbox.ReadOnly ? disback : txtback;
+                }
+                else if ((c is Button) || (c is GroupBox))
+                {
+                    c.ForeColor = form.ForeColor;
+                    c.BackColor = btnback;
+                }
+                else if (c is TreeView)
+                {
+                    c.ForeColor = form.ForeColor;
+                    c.BackColor = wndback;
+                    (c as TreeView).LineColor = form.ForeColor;
+                }
+
+            }
+
+        }
+        private static void RecurseControls(Control c, List<Control> l)
+        {
+            foreach (Control cc in c.Controls)
+            {
+                l.Add(cc);
+                RecurseControls(cc, l);
+            }
+        }
+
+    }
 
 
 

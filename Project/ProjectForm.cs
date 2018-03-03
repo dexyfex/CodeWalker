@@ -178,8 +178,11 @@ namespace CodeWalker.Project
                     break;
             }
 
-            Settings.Default.ProjectWindowTheme = themestr;
-            Settings.Default.Save();
+            if (changing)
+            {
+                Settings.Default.ProjectWindowTheme = themestr;
+                Settings.Default.Save();
+            }
 
 
             Theme.Extender.FloatWindowFactory = new ProjectFloatWindowFactory();
