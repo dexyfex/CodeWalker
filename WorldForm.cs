@@ -163,7 +163,7 @@ namespace CodeWalker
         bool ShowWidget = true;
 
 
-        ProjectForm2 ProjectForm = null;
+        ProjectForm ProjectForm = null;
 
         Stack<UndoStep> UndoSteps = new Stack<UndoStep>();
         Stack<UndoStep> RedoSteps = new Stack<UndoStep>();
@@ -3761,7 +3761,7 @@ namespace CodeWalker
         {
             if (ProjectForm == null)
             {
-                ProjectForm = new ProjectForm2(this);
+                ProjectForm = new ProjectForm(this);
                 ProjectForm.Show(this);
             }
             else

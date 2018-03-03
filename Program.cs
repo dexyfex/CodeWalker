@@ -62,7 +62,7 @@ namespace CodeWalker
                 }
                 else if (projectmode)
                 {
-                    Application.Run(new Project.ProjectForm2());
+                    Application.Run(new Project.ProjectForm());
                 }
                 else
                 {

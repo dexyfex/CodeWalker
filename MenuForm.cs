@@ -137,7 +137,7 @@ namespace CodeWalker
 
         private void ProjectButton_Click(object sender, EventArgs e)
         {
-            ProjectForm f = new ProjectForm(null);
+            Project.ProjectForm f = new Project.ProjectForm(null);
             f.Show(this);
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace CodeWalker
 {
-    partial class ProjectForm
+    partial class ProjectFormOLD
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProjectForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProjectFormOLD));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.ProjectTreeView = new System.Windows.Forms.TreeView();
             this.MainTabControl = new System.Windows.Forms.TabControl();

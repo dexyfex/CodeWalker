@@ -14,12 +14,12 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditYmapEntityPanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm;
+        public ProjectForm ProjectForm;
         public YmapEntityDef CurrentEntity { get; set; }
 
         private bool populatingui = false;
 
-        public EditYmapEntityPanel(ProjectForm2 owner)
+        public EditYmapEntityPanel(ProjectForm owner)
         {
             ProjectForm = owner;
             InitializeComponent();

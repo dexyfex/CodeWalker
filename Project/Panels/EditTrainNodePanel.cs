@@ -15,12 +15,12 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditTrainNodePanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm;
+        public ProjectForm ProjectForm;
         public TrainTrackNode TrainNode { get; set; }
 
         private bool populatingui = false;
 
-        public EditTrainNodePanel(ProjectForm2 projectForm)
+        public EditTrainNodePanel(ProjectForm projectForm)
         {
             ProjectForm = projectForm;
             InitializeComponent();

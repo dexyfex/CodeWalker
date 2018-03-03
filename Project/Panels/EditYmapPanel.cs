@@ -16,13 +16,13 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditYmapPanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm;
+        public ProjectForm ProjectForm;
         public YmapFile Ymap { get; set; }
 
         private bool populatingui = false;
         private bool waschanged = false;
 
-        public EditYmapPanel(ProjectForm2 projectForm)
+        public EditYmapPanel(ProjectForm projectForm)
         {
             ProjectForm = projectForm;
             InitializeComponent();

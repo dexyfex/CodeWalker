@@ -14,13 +14,13 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditScenarioYmtPanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm;
+        public ProjectForm ProjectForm;
         public YmtFile CurrentScenario { get; set; }
 
         private bool populatingui = false;
         private bool waschanged = false;
 
-        public EditScenarioYmtPanel(ProjectForm2 projectForm)
+        public EditScenarioYmtPanel(ProjectForm projectForm)
         {
             ProjectForm = projectForm;
             InitializeComponent();

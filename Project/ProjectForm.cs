@@ -18,7 +18,7 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace CodeWalker.Project
 {
-    public partial class ProjectForm2 : Form
+    public partial class ProjectForm : Form
     {
         public WorldForm WorldForm { get; private set; }
         public ThemeBase Theme { get; private set; }
@@ -72,7 +72,7 @@ namespace CodeWalker.Project
         private bool ShowProjectItemInProcess = false;
 
 
-        public ProjectForm2(WorldForm worldForm = null)
+        public ProjectForm(WorldForm worldForm = null)
         {
             WorldForm = worldForm;
 

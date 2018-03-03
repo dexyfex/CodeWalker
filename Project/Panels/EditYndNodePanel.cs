@@ -14,14 +14,14 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditYndNodePanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm;
+        public ProjectForm ProjectForm;
         public YndNode CurrentPathNode { get; set; }
         public YndLink CurrentPathLink { get; set; }
         public YndFile CurrentYndFile { get; set; }
 
         private bool populatingui = false;
 
-        public EditYndNodePanel(ProjectForm2 projectForm)
+        public EditYndNodePanel(ProjectForm projectForm)
         {
             ProjectForm = projectForm;
             InitializeComponent();

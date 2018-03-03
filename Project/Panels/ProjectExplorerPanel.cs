@@ -16,12 +16,12 @@ namespace CodeWalker.Project.Panels
 {
     public partial class ProjectExplorerPanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm { get; set; }
+        public ProjectForm ProjectForm { get; set; }
         public ProjectFile CurrentProjectFile { get; set; }
 
         private bool inDoubleClick = false; //used in disabling double-click to expand tree nodes
 
-        public ProjectExplorerPanel(ProjectForm2 projectForm)
+        public ProjectExplorerPanel(ProjectForm projectForm)
         {
             ProjectForm = projectForm;
             InitializeComponent();

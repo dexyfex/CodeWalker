@@ -13,13 +13,13 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditTrainTrackPanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm;
+        public ProjectForm ProjectForm;
         public TrainTrack Track { get; set; }
 
         //private bool populatingui = false;
         private bool waschanged = false;
 
-        public EditTrainTrackPanel(ProjectForm2 projectForm)
+        public EditTrainTrackPanel(ProjectForm projectForm)
         {
             ProjectForm = projectForm;
             InitializeComponent();

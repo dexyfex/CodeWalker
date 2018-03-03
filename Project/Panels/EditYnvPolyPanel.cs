@@ -13,12 +13,12 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditYnvPolyPanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm;
+        public ProjectForm ProjectForm;
         public YnvPoly YnvPoly { get; set; }
 
         //private bool populatingui = false;
 
-        public EditYnvPolyPanel(ProjectForm2 projectForm)
+        public EditYnvPolyPanel(ProjectForm projectForm)
         {
             ProjectForm = projectForm;
             InitializeComponent();

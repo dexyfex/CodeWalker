@@ -14,10 +14,10 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditProjectManifestPanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm { get; set; }
+        public ProjectForm ProjectForm { get; set; }
         public ProjectFile CurrentProjectFile { get; set; }
 
-        public EditProjectManifestPanel(ProjectForm2 projectForm)
+        public EditProjectManifestPanel(ProjectForm projectForm)
         {
             ProjectForm = projectForm;
             InitializeComponent();

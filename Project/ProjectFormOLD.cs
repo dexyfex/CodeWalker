@@ -18,7 +18,7 @@ using System.Windows.Forms;
 
 namespace CodeWalker
 {
-    public partial class ProjectForm : Form
+    public partial class ProjectFormOLD : Form
     {
         WorldForm WorldForm;
         GameFileCache GameFileCache;
@@ -69,7 +69,7 @@ namespace CodeWalker
         }
 
 
-        public ProjectForm(WorldForm worldForm)
+        public ProjectFormOLD(WorldForm worldForm)
         {
             InitializeComponent();
 

@@ -14,12 +14,12 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditYmapCarGenPanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm;
+        public ProjectForm ProjectForm;
         public YmapCarGen CurrentCarGen { get; set; }
 
         private bool populatingui = false;
 
-        public EditYmapCarGenPanel(ProjectForm2 owner)
+        public EditYmapCarGenPanel(ProjectForm owner)
         {
             ProjectForm = owner;
             InitializeComponent();

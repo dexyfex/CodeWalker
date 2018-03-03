@@ -13,13 +13,13 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditYtypPanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm;
+        public ProjectForm ProjectForm;
         public YtypFile Ytyp { get; set; }
 
         //private bool populatingui = false;
         private bool waschanged = false;
 
-        public EditYtypPanel(ProjectForm2 projectForm)
+        public EditYtypPanel(ProjectForm projectForm)
         {
             ProjectForm = projectForm;
             InitializeComponent();

@@ -12,10 +12,10 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditProjectPanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm;
+        public ProjectForm ProjectForm;
         public ProjectFile Project { get; set; }
 
-        public EditProjectPanel(ProjectForm2 owner)
+        public EditProjectPanel(ProjectForm owner)
         {
             ProjectForm = owner;
             InitializeComponent();

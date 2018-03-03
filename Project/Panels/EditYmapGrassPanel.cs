@@ -13,12 +13,12 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditYmapGrassPanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm;
+        public ProjectForm ProjectForm;
         public YmapGrassInstanceBatch CurrentBatch { get; set; }
 
         //private bool populatingui = false;
 
-        public EditYmapGrassPanel(ProjectForm2 owner)
+        public EditYmapGrassPanel(ProjectForm owner)
         {
             ProjectForm = owner;
             InitializeComponent();

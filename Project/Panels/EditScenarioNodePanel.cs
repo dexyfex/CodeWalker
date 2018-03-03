@@ -15,14 +15,14 @@ namespace CodeWalker.Project.Panels
 {
     public partial class EditScenarioNodePanel : ProjectPanel
     {
-        public ProjectForm2 ProjectForm;
+        public ProjectForm ProjectForm;
         public ScenarioNode CurrentScenarioNode { get; set; }
         public YmtFile CurrentScenario { get; set; }
         public MCScenarioChainingEdge CurrentScenarioChainEdge { get; set; }
 
         private bool populatingui = false;
 
-        public EditScenarioNodePanel(ProjectForm2 projectForm)
+        public EditScenarioNodePanel(ProjectForm projectForm)
         {
             ProjectForm = projectForm;
             InitializeComponent();

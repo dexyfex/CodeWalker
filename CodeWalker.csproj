@@ -395,11 +395,11 @@
       <DependentUpon>WelcomePanel.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\ProjectFile.cs" />
-    <Compile Include="Project\ProjectForm2.cs">
+    <Compile Include="Project\ProjectForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Project\ProjectForm2.Designer.cs">
-      <DependentUpon>ProjectForm2.cs</DependentUpon>
+    <Compile Include="Project\ProjectForm.Designer.cs">
+      <DependentUpon>ProjectForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\UndoStep.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -457,11 +457,11 @@
     <Compile Include="Utils\MapUtils.cs" />
     <Compile Include="GameFiles\TextureFormats.cs" />
     <Compile Include="Utils\TextureLoader.cs" />
-    <Compile Include="ProjectForm.cs">
+    <Compile Include="Project\ProjectFormOLD.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ProjectForm.Designer.cs">
-      <DependentUpon>ProjectForm.cs</DependentUpon>
+    <Compile Include="Project\ProjectFormOLD.Designer.cs">
+      <DependentUpon>ProjectFormOLD.cs</DependentUpon>
     </Compile>
     <Compile Include="WorldInfoForm.cs">
       <SubType>Form</SubType>
@@ -617,8 +617,8 @@
     <EmbeddedResource Include="Project\Panels\WelcomePanel.resx">
       <DependentUpon>WelcomePanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Project\ProjectForm2.resx">
-      <DependentUpon>ProjectForm2.cs</DependentUpon>
+    <EmbeddedResource Include="Project\ProjectForm.resx">
+      <DependentUpon>ProjectForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -636,8 +636,8 @@
     <EmbeddedResource Include="SelectFolderForm.resx">
       <DependentUpon>SelectFolderForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ProjectForm.resx">
-      <DependentUpon>ProjectForm.cs</DependentUpon>
+    <EmbeddedResource Include="Project\ProjectFormOLD.resx">
+      <DependentUpon>ProjectFormOLD.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
