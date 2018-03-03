@@ -1444,6 +1444,151 @@ namespace CodeWalker.Project
             return CurrentCarGen == cargen;
         }
 
+        private void ImportMenyooXml()
+        {
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            var xmlpath = ShowOpenDialog("XML Files|*.xml", string.Empty);
+
+            if (string.IsNullOrEmpty(xmlpath)) return;
+
+
+            var xmlstr = string.Empty;
+            try
+            {
+                xmlstr = File.ReadAllText(xmlpath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading file!\n" + ex.ToString());
+            }
+
+            if (string.IsNullOrEmpty(xmlstr)) return;
+
+            var finf = new FileInfo(xmlpath);
+
+            MenyooXml menyooXml = new MenyooXml();
+            menyooXml.FilePath = xmlpath;
+            menyooXml.FileName = finf.Name;
+            menyooXml.Name = Path.GetFileNameWithoutExtension(finf.Name);
+            menyooXml.Init(xmlstr);
+
+
+
+            string fname = menyooXml.Name + ".ymap";
+            lock (ProjectSyncRoot)
+            {
+                YmapFile ymap = CurrentProjectFile.AddYmapFile(fname);
+                if (ymap != null)
+                {
+                    ymap.Loaded = true;
+                    ymap.HasChanged = true; //new ymap, flag as not saved
+                    ymap._CMapData.contentFlags = 65; //stream flags value
+                }
+                CurrentYmapFile = ymap;
+            }
+
+            CurrentProjectFile.HasChanged = true;
+
+
+            int pedcount = 0;
+            int carcount = 0;
+            int entcount = 0;
+            int unkcount = 0;
+
+            foreach (var placement in menyooXml.Placements)
+            {
+                if (placement.Type == 1)
+                {
+                    pedcount++;
+                }
+                else if (placement.Type == 2)
+                {
+                    CCarGen ccg = new CCarGen();
+                    var rotq = Quaternion.Invert(new Quaternion(placement.Rotation));
+                    Vector3 cdir = rotq.Multiply(new Vector3(0, 5, 0));
+                    ccg.flags = 3680;
+                    ccg.orientX = cdir.X;
+                    ccg.orientY = cdir.Y;
+                    ccg.perpendicularLength = 2.6f;
+                    ccg.position = placement.Position;
+                    ccg.carModel = placement.ModelHash;
+
+                    YmapCarGen cg = new YmapCarGen(CurrentYmapFile, ccg);
+
+                    if (WorldForm != null)
+                    {
+                        lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                        {
+                            CurrentYmapFile.AddCarGen(cg);
+                        }
+                    }
+                    else
+                    {
+                        CurrentYmapFile.AddCarGen(cg);
+                    }
+
+                    carcount++;
+                }
+                else if (placement.Type == 3) //standard entity
+                {
+                    CEntityDef cent = new CEntityDef();
+                    cent.archetypeName = placement.ModelHash;
+                    cent.position = placement.Position;
+                    cent.rotation = placement.Rotation;
+                    cent.scaleXY = 1.0f;
+                    cent.scaleZ = 1.0f;
+                    cent.flags = placement.Dynamic ? 32u : 0;// 1572872; //?
+                    cent.parentIndex = -1;
+                    cent.lodDist = placement.LodDistance;
+                    cent.lodLevel = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
+                    cent.priorityLevel = Unk_648413703.PRI_REQUIRED;
+                    cent.ambientOcclusionMultiplier = 255;
+                    cent.artificialAmbientOcclusion = 255;
+
+                    YmapEntityDef ent = new YmapEntityDef(CurrentYmapFile, 0, ref cent);
+
+                    ent.SetArchetype(GameFileCache.GetArchetype(cent.archetypeName));
+
+                    if (WorldForm != null)
+                    {
+                        lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                        {
+                            CurrentYmapFile.AddEntity(ent);
+                        }
+                    }
+                    else
+                    {
+                        CurrentYmapFile.AddEntity(ent);
+                    }
+
+                    entcount++;
+                }
+                else
+                {
+                    unkcount++;
+                }
+            }
+
+            lock (ProjectSyncRoot)
+            {
+                CurrentYmapFile.CalcFlags();
+                CurrentYmapFile.CalcExtents();
+            }
+
+            LoadProjectTree();
+
+
+            ShowProjectItem(CurrentYmapFile, false);
+
+
+            MessageBox.Show(entcount.ToString() + " entities imported. \n" + carcount.ToString() + " car generators imported. \n" + pedcount.ToString() + " peds ignored. \n" + unkcount.ToString() + " others ignored.");
+
+        }
+
 
 
         public void NewYtyp()
@@ -4559,113 +4704,6 @@ namespace CodeWalker.Project
             SetTheme("Dark");
         }
 
-        private void ToolsManifestGeneratorMenu_Click(object sender, EventArgs e)
-        {
-            ShowEditProjectManifestPanel(false);
-        }
-        private void ToolsImportMenyooXmlMenu_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("TODO: rebuild this!");
-        }
-
-        private void RenderShowGtavMapMenu_Click(object sender, EventArgs e)
-        {
-            RenderShowGtavMapMenu.Checked = !RenderShowGtavMapMenu.Checked;
-            hidegtavmap = !RenderShowGtavMapMenu.Checked;
-        }
-        private void RenderShowProjectItemsMenu_Click(object sender, EventArgs e)
-        {
-            RenderShowProjectItemsMenu.Checked = !RenderShowProjectItemsMenu.Checked;
-            renderitems = RenderShowProjectItemsMenu.Checked;
-        }
-
-        private void ToolbarNewButton_ButtonClick(object sender, EventArgs e)
-        {
-            if (CurrentProjectFile == null)
-            {
-                NewProject();
-            }
-            else
-            {
-                NewYmap();
-            }
-        }
-        private void ToolbarNewProjectMenu_Click(object sender, EventArgs e)
-        {
-            NewProject();
-        }
-        private void ToolbarNewYmapMenu_Click(object sender, EventArgs e)
-        {
-            NewYmap();
-        }
-        private void ToolbarNewYtypMenu_Click(object sender, EventArgs e)
-        {
-            NewYtyp();
-        }
-        private void ToolbarNewYndMenu_Click(object sender, EventArgs e)
-        {
-            NewYnd();
-        }
-        private void ToolbarNewYnvMenu_Click(object sender, EventArgs e)
-        {
-            NewYnv();
-        }
-        private void ToolbarNewTrainsMenu_Click(object sender, EventArgs e)
-        {
-            NewTrainTrack();
-        }
-        private void ToolbarNewScenarioMenu_Click(object sender, EventArgs e)
-        {
-            NewScenario();
-        }
-        private void ToolbarOpenButton_ButtonClick(object sender, EventArgs e)
-        {
-            if (CurrentProjectFile == null)
-            {
-                OpenProject();
-            }
-            else
-            {
-                OpenYmap();
-            }
-        }
-        private void ToolbarOpenProjectMenu_Click(object sender, EventArgs e)
-        {
-            OpenProject();
-        }
-        private void ToolbarOpenYmapMenu_Click(object sender, EventArgs e)
-        {
-            OpenYmap();
-        }
-        private void ToolbarOpenYtypMenu_Click(object sender, EventArgs e)
-        {
-            OpenYtyp();
-        }
-        private void ToolbarOpenYndMenu_Click(object sender, EventArgs e)
-        {
-            OpenYnd();
-        }
-        private void ToolbarOpenYnvMenu_Click(object sender, EventArgs e)
-        {
-            OpenYnv();
-        }
-        private void ToolbarOpenTrainsMenu_Click(object sender, EventArgs e)
-        {
-            OpenTrainTrack();
-        }
-        private void ToolbarOpenScenarioMenu_Click(object sender, EventArgs e)
-        {
-            OpenScenario();
-        }
-        private void ToolbarSaveButton_Click(object sender, EventArgs e)
-        {
-            Save();
-        }
-        private void ToolbarSaveAllButton_Click(object sender, EventArgs e)
-        {
-            SaveAll();
-        }
-
         private void YmapNewEntityMenu_Click(object sender, EventArgs e)
         {
             NewEntity();
@@ -4767,6 +4805,113 @@ namespace CodeWalker.Project
         private void ScenarioRemoveFromProjectMenu_Click(object sender, EventArgs e)
         {
             RemoveScenarioFromProject();
+        }
+
+        private void ToolsManifestGeneratorMenu_Click(object sender, EventArgs e)
+        {
+            ShowEditProjectManifestPanel(false);
+        }
+        private void ToolsImportMenyooXmlMenu_Click(object sender, EventArgs e)
+        {
+            ImportMenyooXml();
+        }
+
+        private void RenderShowGtavMapMenu_Click(object sender, EventArgs e)
+        {
+            RenderShowGtavMapMenu.Checked = !RenderShowGtavMapMenu.Checked;
+            hidegtavmap = !RenderShowGtavMapMenu.Checked;
+        }
+        private void RenderShowProjectItemsMenu_Click(object sender, EventArgs e)
+        {
+            RenderShowProjectItemsMenu.Checked = !RenderShowProjectItemsMenu.Checked;
+            renderitems = RenderShowProjectItemsMenu.Checked;
+        }
+
+        private void ToolbarNewButton_ButtonClick(object sender, EventArgs e)
+        {
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            else
+            {
+                NewYmap();
+            }
+        }
+        private void ToolbarNewProjectMenu_Click(object sender, EventArgs e)
+        {
+            NewProject();
+        }
+        private void ToolbarNewYmapMenu_Click(object sender, EventArgs e)
+        {
+            NewYmap();
+        }
+        private void ToolbarNewYtypMenu_Click(object sender, EventArgs e)
+        {
+            NewYtyp();
+        }
+        private void ToolbarNewYndMenu_Click(object sender, EventArgs e)
+        {
+            NewYnd();
+        }
+        private void ToolbarNewYnvMenu_Click(object sender, EventArgs e)
+        {
+            NewYnv();
+        }
+        private void ToolbarNewTrainsMenu_Click(object sender, EventArgs e)
+        {
+            NewTrainTrack();
+        }
+        private void ToolbarNewScenarioMenu_Click(object sender, EventArgs e)
+        {
+            NewScenario();
+        }
+        private void ToolbarOpenButton_ButtonClick(object sender, EventArgs e)
+        {
+            if (CurrentProjectFile == null)
+            {
+                OpenProject();
+            }
+            else
+            {
+                OpenYmap();
+            }
+        }
+        private void ToolbarOpenProjectMenu_Click(object sender, EventArgs e)
+        {
+            OpenProject();
+        }
+        private void ToolbarOpenYmapMenu_Click(object sender, EventArgs e)
+        {
+            OpenYmap();
+        }
+        private void ToolbarOpenYtypMenu_Click(object sender, EventArgs e)
+        {
+            OpenYtyp();
+        }
+        private void ToolbarOpenYndMenu_Click(object sender, EventArgs e)
+        {
+            OpenYnd();
+        }
+        private void ToolbarOpenYnvMenu_Click(object sender, EventArgs e)
+        {
+            OpenYnv();
+        }
+        private void ToolbarOpenTrainsMenu_Click(object sender, EventArgs e)
+        {
+            OpenTrainTrack();
+        }
+        private void ToolbarOpenScenarioMenu_Click(object sender, EventArgs e)
+        {
+            OpenScenario();
+        }
+        private void ToolbarSaveButton_Click(object sender, EventArgs e)
+        {
+            Save();
+        }
+        private void ToolbarSaveAllButton_Click(object sender, EventArgs e)
+        {
+            SaveAll();
         }
     }
 }
