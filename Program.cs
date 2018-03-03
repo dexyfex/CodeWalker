@@ -17,6 +17,7 @@ namespace CodeWalker
 
             bool menumode = false;
             bool explorermode = false;
+            bool projectmode = false;
             if ((args != null) && (args.Length > 0))
             {
                 foreach (string arg in args)
@@ -29,6 +30,10 @@ namespace CodeWalker
                     if (argl == "explorer")
                     {
                         explorermode = true;
+                    }
+                    if (argl == "project")
+                    {
+                        projectmode = true;
                     }
                 }
             }
@@ -47,13 +52,17 @@ namespace CodeWalker
             try
             {
 #endif
-            if (menumode)
+                if (menumode)
                 {
                     Application.Run(new MenuForm());
                 }
                 else if (explorermode)
                 {
                     Application.Run(new ExploreForm());
+                }
+                else if (projectmode)
+                {
+                    Application.Run(new Project.ProjectForm2());
                 }
                 else
                 {

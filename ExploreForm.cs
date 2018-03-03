@@ -1433,7 +1433,7 @@ namespace CodeWalker
         private void ViewModel(string name, string path, byte[] data, RpfFileEntry e)
         {
             var nl = e?.NameLower ?? "";
-            var fe = new FileInfo(nl).Extension;
+            var fe = Path.GetExtension(nl);
             ModelForm f = new ModelForm(this);
             f.Show();
             switch (fe)

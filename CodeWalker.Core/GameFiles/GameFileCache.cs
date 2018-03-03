@@ -232,7 +232,7 @@ namespace CodeWalker.GameFiles
             var dlclistxml = RpfMan.GetFileXml(dlclistpath);
 
             DlcPaths.Clear();
-            if (dlclistxml == null)
+            if ((dlclistxml == null) || (dlclistxml.DocumentElement == null))
             {
                 ErrorLog("InitDlcList: Couldn't load " + dlclistpath + ".");
             }

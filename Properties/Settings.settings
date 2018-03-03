@@ -186,5 +186,8 @@
     <Setting Name="RememberGTAFolder" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="ProjectWindowTheme" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Blue</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

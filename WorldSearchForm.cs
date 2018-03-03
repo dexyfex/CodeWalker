@@ -201,7 +201,7 @@ namespace CodeWalker
             sb.AppendLine("Name, AssetName, YtypFile");
             foreach (var arch in ArchetypeResults)
             {
-                sb.AppendLine(string.Format("{0}, {1}, {2}", arch.Name, arch.AssetName, arch.Ytyp?.FileEntry?.Path ?? ""));
+                sb.AppendLine(string.Format("{0}, {1}, {2}", arch.Name, arch.AssetName, arch.Ytyp?.RpfFileEntry?.Path ?? ""));
             }
 
             File.WriteAllText(fname, sb.ToString());
@@ -212,7 +212,7 @@ namespace CodeWalker
             if (e.ItemIndex < ArchetypeResults.Count)
             {
                 var arch = ArchetypeResults[e.ItemIndex];
-                var li = new ListViewItem(new[] { arch.Name, arch.Ytyp?.FileEntry?.Path ?? "" });
+                var li = new ListViewItem(new[] { arch.Name, arch.Ytyp?.RpfFileEntry?.Path ?? "" });
                 li.Tag = arch;
                 e.Item = li;
             }
@@ -239,7 +239,7 @@ namespace CodeWalker
                     var arch = ArchetypeResults[li];
                     ArchetypeResultPanel.Enabled = true;
                     ArchetypeResultNameTextBox.Text = arch.Name;
-                    ArchetypeResultYtypTextBox.Text = arch.Ytyp?.FileEntry?.Path ?? "";
+                    ArchetypeResultYtypTextBox.Text = arch.Ytyp?.RpfFileEntry?.Path ?? "";
                     ArchetypeResultPropertyGrid.SelectedObject = arch;
                 }
             }

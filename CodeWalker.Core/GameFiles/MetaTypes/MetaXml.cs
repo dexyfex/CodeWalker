@@ -77,7 +77,7 @@ namespace CodeWalker.GameFiles
         }
         public static string GetXml(YtypFile ytyp, out string filename)
         {
-            var fn = (ytyp?.FileEntry?.Name) ?? "";
+            var fn = (ytyp?.RpfFileEntry?.Name) ?? "";
             if (ytyp.Meta != null) { filename = fn + ".xml"; return GetXml(ytyp.Meta); }
             else if (ytyp.Pso != null) { filename = fn + ".pso.xml"; return PsoXml.GetXml(ytyp.Pso); }
             else if (ytyp.Rbf != null) { filename = fn + ".rbf.xml"; return RbfXml.GetXml(ytyp.Rbf); }

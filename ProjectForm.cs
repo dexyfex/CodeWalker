@@ -951,10 +951,10 @@ namespace CodeWalker
                             var ytyp = ent.Archetype?.Ytyp;
                             if (ytyp != null)
                             {
-                                var ytypname = ytyp.FileEntry?.NameLower;
+                                var ytypname = ytyp.RpfFileEntry?.NameLower;
                                 if (string.IsNullOrEmpty(ytypname))
                                 {
-                                    ytypname = ytyp.FileEntry?.Name?.ToLowerInvariant();
+                                    ytypname = ytyp.RpfFileEntry?.Name?.ToLowerInvariant();
                                     if (ytypname == null) ytypname = "";
                                 }
                                 if (ytypname.EndsWith(".ytyp"))

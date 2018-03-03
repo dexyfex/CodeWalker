@@ -194,4 +194,28 @@ namespace CodeWalker
 
 
 
+
+
+    public static class BitUtil
+    {
+        public static bool IsBitSet(uint value, int bit)
+        {
+            return (((value >> bit) & 1) > 0);
+        }
+        public static uint SetBit(uint value, int bit)
+        {
+            return (value | (1u << bit));
+        }
+        public static uint ClearBit(uint value, int bit)
+        {
+            return (value & (~(1u << bit)));
+        }
+        public static uint UpdateBit(uint value, int bit, bool flag)
+        {
+            if (flag) return SetBit(value, bit);
+            else return ClearBit(value, bit);
+        }
+    }
+
+
 }

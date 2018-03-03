@@ -16,6 +16,7 @@ namespace CodeWalker.Project
         public string Name { get; set; } //friendly name for this project
         public int Version { get; set; }
         public List<string> YmapFilenames { get; set; } = new List<string>();
+        public List<string> YtypFilenames { get; set; } = new List<string>();
         public List<string> YndFilenames { get; set; } = new List<string>();
         public List<string> YnvFilenames { get; set; } = new List<string>();
         public List<string> TrainsFilenames { get; set; } = new List<string>();
@@ -27,6 +28,7 @@ namespace CodeWalker.Project
         public bool HasChanged { get; set; } //flag for use by the UI
 
         public List<YmapFile> YmapFiles { get; set; } = new List<YmapFile>();
+        public List<YtypFile> YtypFiles { get; set; } = new List<YtypFile>();
         public List<YndFile> YndFiles { get; set; } = new List<YndFile>();
         public List<YnvFile> YnvFiles { get; set; } = new List<YnvFile>();
         public List<TrainTrack> TrainsFiles { get; set; } = new List<TrainTrack>();
@@ -47,6 +49,12 @@ namespace CodeWalker.Project
             foreach (string ymapfilename in YmapFilenames)
             {
                 Xml.AddChildWithInnerText(doc, ymapselem, "Item", ymapfilename);
+            }
+
+            var ytypselem = Xml.AddChild(doc, projelem, "YtypFilenames");
+            foreach (string ytypfilename in YtypFilenames)
+            {
+                Xml.AddChildWithInnerText(doc, ytypselem, "Item", ytypfilename);
             }
 
             var yndselem = Xml.AddChild(doc, projelem, "YndFilenames");
@@ -105,6 +113,21 @@ namespace CodeWalker.Project
                 }
             }
 
+
+            YtypFilenames.Clear();
+            YtypFiles.Clear();
+            var ytypselem = Xml.GetChild(projelem, "YtypFilenames");
+            if (ytypselem != null)
+            {
+                foreach (var node in ytypselem.SelectNodes("Item"))
+                {
+                    XmlElement ytypel = node as XmlElement;
+                    if (ytypel != null)
+                    {
+                        AddYtypFile(ytypel.InnerText);
+                    }
+                }
+            }
 
 
             YndFilenames.Clear();
@@ -181,6 +204,10 @@ namespace CodeWalker.Project
             for (int i = 0; i < YmapFilenames.Count; i++)
             {
                 YmapFilenames[i] = GetUpdatedFilePath(YmapFilenames[i], oldprojpath);
+            }
+            for (int i = 0; i < YtypFilenames.Count; i++)
+            {
+                YtypFilenames[i] = GetUpdatedFilePath(YtypFilenames[i], oldprojpath);
             }
             for (int i = 0; i < YndFilenames.Count; i++)
             {
@@ -264,7 +291,7 @@ namespace CodeWalker.Project
         {
             YmapFile ymap = new YmapFile();
             ymap.RpfFileEntry = new RpfResourceFileEntry();
-            ymap.RpfFileEntry.Name = new FileInfo(filename).Name;
+            ymap.RpfFileEntry.Name = Path.GetFileName(filename);
             ymap.FilePath = GetFullFilePath(filename);
             ymap.Name = ymap.RpfFileEntry.Name;
             JenkIndex.Ensure(ymap.Name);
@@ -330,11 +357,81 @@ namespace CodeWalker.Project
         }
 
 
+        public YtypFile AddYtypFile(string filename)
+        {
+            YtypFile ytyp = new YtypFile();
+            ytyp.RpfFileEntry = new RpfResourceFileEntry();
+            ytyp.RpfFileEntry.Name = Path.GetFileName(filename);
+            ytyp.FilePath = GetFullFilePath(filename);
+            ytyp.Name = ytyp.RpfFileEntry.Name;
+            JenkIndex.Ensure(ytyp.Name);
+            JenkIndex.Ensure(Path.GetFileNameWithoutExtension(ytyp.Name));
+            JenkIndex.Ensure(filename);
+            if (!AddYtypFile(ytyp)) return null;
+            return ytyp;
+        }
+        public bool AddYtypFile(YtypFile ytyp)
+        {
+            string relpath = GetRelativePath(ytyp.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = ytyp.Name;
+            if (YtypFilenames.Contains(relpath)) return false;
+            YtypFilenames.Add(relpath);
+            YtypFiles.Add(ytyp);
+            return true;
+        }
+        public void RemoveYtypFile(YtypFile ytyp)
+        {
+            if (ytyp == null) return;
+            var relpath = GetRelativePath(ytyp.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = ytyp.Name;
+            YtypFiles.Remove(ytyp);
+            YtypFilenames.Remove(relpath);
+            HasChanged = true;
+        }
+        public bool ContainsYtyp(string filename)
+        {
+            bool found = false;
+            filename = filename.ToLowerInvariant();
+            foreach (var ytypfn in YtypFilenames)
+            {
+                if (ytypfn == filename)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            return found;
+        }
+        public bool ContainsYtyp(YtypFile ytyp)
+        {
+            foreach (var f in YtypFiles)
+            {
+                if (f == ytyp) return true;
+            }
+            return false;
+        }
+        public bool RenameYtyp(string oldfilename, string newfilename)
+        {
+            oldfilename = oldfilename.ToLowerInvariant();
+            newfilename = newfilename.ToLowerInvariant();
+            for (int i = 0; i < YtypFilenames.Count; i++)
+            {
+                if (YtypFilenames[i] == oldfilename)
+                {
+                    YtypFilenames[i] = newfilename;
+                    HasChanged = true;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
         public YndFile AddYndFile(string filename)
         {
             YndFile ynd = new YndFile();
             ynd.RpfFileEntry = new RpfResourceFileEntry();
-            ynd.RpfFileEntry.Name = new FileInfo(filename).Name;
+            ynd.RpfFileEntry.Name = Path.GetFileName(filename);
             ynd.FilePath = GetFullFilePath(filename);
             ynd.Name = ynd.RpfFileEntry.Name;
             if (!AddYndFile(ynd)) return null;
@@ -401,7 +498,7 @@ namespace CodeWalker.Project
         {
             YnvFile ynv = new YnvFile();
             ynv.RpfFileEntry = new RpfResourceFileEntry();
-            ynv.RpfFileEntry.Name = new FileInfo(filename).Name;
+            ynv.RpfFileEntry.Name = Path.GetFileName(filename);
             ynv.FilePath = GetFullFilePath(filename);
             ynv.Name = ynv.RpfFileEntry.Name;
             if (!AddYnvFile(ynv)) return null;
@@ -468,7 +565,7 @@ namespace CodeWalker.Project
         {
             TrainTrack track = new TrainTrack();
             track.RpfFileEntry = new RpfResourceFileEntry();
-            track.RpfFileEntry.Name = new FileInfo(filename).Name;
+            track.RpfFileEntry.Name = Path.GetFileName(filename);
             track.FilePath = GetFullFilePath(filename);
             track.Name = track.RpfFileEntry.Name;
             if (!AddTrainsFile(track)) return null;
@@ -535,7 +632,7 @@ namespace CodeWalker.Project
         {
             YmtFile scenario = new YmtFile();
             scenario.RpfFileEntry = new RpfResourceFileEntry();
-            scenario.RpfFileEntry.Name = new FileInfo(filename).Name;
+            scenario.RpfFileEntry.Name = Path.GetFileName(filename);
             scenario.FilePath = GetFullFilePath(filename);
             scenario.Name = scenario.RpfFileEntry.Name;
             scenario.ContentType = YmtFileContentType.ScenarioPointRegion;
