@@ -2256,10 +2256,8 @@ namespace CodeWalker.Rendering
 
 
 
-        public void RenderCar(Vector3 pos, Quaternion ori, MetaHash modelHash, MetaHash modelSetHash)
+        public void RenderCar(Vector3 pos, Quaternion ori, MetaHash modelHash, MetaHash modelSetHash, bool valign = false)
         {
-            SelectedCarGenEntity.SetPosition(pos);
-            SelectedCarGenEntity.SetOrientation(ori);
 
             uint carhash = modelHash;
             if ((carhash == 0) && (modelSetHash != 0))
@@ -2280,6 +2278,15 @@ namespace CodeWalker.Rendering
             YftFile caryft = gameFileCache.GetYft(carhash);
             if ((caryft != null) && (caryft.Loaded) && (caryft.Fragment != null))
             {
+                if (valign)
+                {
+                    float minz = caryft.Fragment.PhysicsLODGroup?.PhysicsLOD1?.Bound?.BoundingBoxMin.Z ?? 0.0f;
+                    pos.Z -= minz;
+                }
+
+                SelectedCarGenEntity.SetPosition(pos);
+                SelectedCarGenEntity.SetOrientation(ori);
+
                 RenderFragment(null, SelectedCarGenEntity, caryft.Fragment, carhash);
             }
         }

@@ -1327,7 +1327,7 @@ namespace CodeWalker
                         }
                     }
 
-                    Renderer.RenderCar(sn.Position, sn.Orientation, 0, vhash);
+                    Renderer.RenderCar(sn.Position, sn.Orientation, 0, vhash, true);
                 }
 
             }

@@ -49,15 +49,15 @@ namespace CodeWalker.GameFiles
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000000
         public uint Unknown_1Ch { get; set; } // 0x00000000
-        public uint Unknown_20h { get; set; }
-        public uint Unknown_24h { get; set; }
-        public uint Unknown_28h { get; set; }
-        public uint Unknown_2Ch { get; set; }
+        public float Unknown_20h { get; set; }
+        public float Unknown_24h { get; set; }
+        public float Unknown_28h { get; set; }
+        public float Unknown_2Ch { get; set; }
         public ulong DrawablePointer { get; set; }
         public ulong Unknown_28h_Pointer { get; set; }
         public ulong Unknown_30h_Pointer { get; set; }
         public uint Count0 { get; set; }
-        public uint Unknown_4Ch { get; set; }
+        public uint Unknown_4Ch { get; set; } //pointer? 
         public uint Unknown_50h { get; set; } // 0x00000000
         public uint Unknown_54h { get; set; } // 0x00000000
         public ulong NamePointer { get; set; }
@@ -83,10 +83,10 @@ namespace CodeWalker.GameFiles
         public uint Unknown_BCh { get; set; }
         public uint Unknown_C0h { get; set; }
         public uint Unknown_C4h { get; set; }
-        public uint Unknown_C8h { get; set; }
-        public uint Unknown_CCh { get; set; }
-        public uint Unknown_D0h { get; set; }
-        public uint Unknown_D4h { get; set; }
+        public uint Unknown_C8h { get; set; }//pointer?
+        public float Unknown_CCh { get; set; }
+        public float Unknown_D0h { get; set; }
+        public float Unknown_D4h { get; set; }
         public byte Unknown_D8h { get; set; }
         public byte Count3 { get; set; }
         public ushort Unknown_DAh { get; set; }
@@ -130,10 +130,10 @@ namespace CodeWalker.GameFiles
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt32();
-            this.Unknown_24h = reader.ReadUInt32();
-            this.Unknown_28h = reader.ReadUInt32();
-            this.Unknown_2Ch = reader.ReadUInt32();
+            this.Unknown_20h = reader.ReadSingle();
+            this.Unknown_24h = reader.ReadSingle();
+            this.Unknown_28h = reader.ReadSingle();
+            this.Unknown_2Ch = reader.ReadSingle();
             this.DrawablePointer = reader.ReadUInt64();
             this.Unknown_28h_Pointer = reader.ReadUInt64();
             this.Unknown_30h_Pointer = reader.ReadUInt64();
@@ -165,9 +165,9 @@ namespace CodeWalker.GameFiles
             this.Unknown_C0h = reader.ReadUInt32();
             this.Unknown_C4h = reader.ReadUInt32();
             this.Unknown_C8h = reader.ReadUInt32();
-            this.Unknown_CCh = reader.ReadUInt32();
-            this.Unknown_D0h = reader.ReadUInt32();
-            this.Unknown_D4h = reader.ReadUInt32();
+            this.Unknown_CCh = reader.ReadSingle();
+            this.Unknown_D0h = reader.ReadSingle();
+            this.Unknown_D4h = reader.ReadSingle();
             this.Unknown_D8h = reader.ReadByte();
             this.Count3 = reader.ReadByte();
             this.Unknown_DAh = reader.ReadUInt16();
