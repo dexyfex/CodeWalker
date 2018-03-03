@@ -280,7 +280,7 @@ namespace CodeWalker
             {
                 form.BackColor = theme.ColorPalette.MainWindowActive.Background;
                 form.ForeColor = Color.White;
-                txtback = Color.FromArgb(40, 40, 40);// form.BackColor;
+                txtback = Color.FromArgb(72, 75, 82);// form.BackColor;
                 wndback = theme.ColorPalette.MainWindowActive.Background;
                 disback = form.BackColor;// Color.FromArgb(32,32,32);
                 disfore = Color.DarkGray;
@@ -297,7 +297,12 @@ namespace CodeWalker
                     c.ForeColor = form.ForeColor;
                     c.BackColor = wndback;
                 }
-                else if ((c is CheckedListBox) || (c is ListBox) || (c is ListView))
+                else if ((c is CheckedListBox) || (c is ListBox))
+                {
+                    c.ForeColor = form.ForeColor;
+                    c.BackColor = txtback;
+                }
+                else if ((c is ListView))
                 {
                     c.ForeColor = form.ForeColor;
                     c.BackColor = wndback;
