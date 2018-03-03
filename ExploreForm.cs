@@ -2758,9 +2758,13 @@ namespace CodeWalker
 
             MainListView.View = v;
 
-            foreach (ToolStripMenuItem menu in ViewMenu.DropDownItems)
+            foreach (var item in ViewMenu.DropDownItems)
             {
-                menu.Checked = false;
+                var menu = item as ToolStripMenuItem;
+                if (menu != null)
+                {
+                    menu.Checked = false;
+                }
             }
 
             switch (v)
