@@ -59,7 +59,15 @@ namespace CodeWalker.GameFiles
             }
             else if (entry.NameLower.EndsWith(".meta"))
             {
+                //required for update\x64\dlcpacks\mpheist\dlc.rpf\common\data\gtxd.meta and update\x64\dlcpacks\mpluxe\dlc.rpf\common\data\gtxd.meta
+                string bom = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
                 string xml = Encoding.UTF8.GetString(data);
+
+                if (xml.StartsWith(bom, StringComparison.Ordinal))
+                {
+                    xml = xml.Remove(0, bom.Length);
+                }
+
                 LoadMapParentTxds(xml);
                 Loaded = true;
             }
