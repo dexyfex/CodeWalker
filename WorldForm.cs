@@ -5506,6 +5506,11 @@ namespace CodeWalker
                 case MouseButtons.Right: MouseRButtonDown = true; break;
             }
 
+            if (!ToolsPanelShowButton.Focused)
+            {
+                ToolsPanelShowButton.Focus(); //make sure no textboxes etc are focused!
+            }
+
             MouseDownPoint = e.Location;
             MouseLastPoint = MouseDownPoint;
 

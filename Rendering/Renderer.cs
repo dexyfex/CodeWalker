@@ -2030,6 +2030,14 @@ namespace CodeWalker.Rendering
                         {
                             RenderDrawable(pch.Drawable1, arch, ent, txdhash);
                         }
+                        else
+                        { }
+                        if ((pch.Drawable2 != null) && (pch.Drawable2.AllModels.Length != 0))
+                        {
+                            RenderDrawable(pch.Drawable2, arch, ent, txdhash);
+                        }
+                        else
+                        { }
                     }
                 }
             }

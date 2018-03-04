@@ -881,7 +881,7 @@ namespace CodeWalker.GameFiles
 
         public bool IsReadOnly
         {
-            get { throw new NotImplementedException(); }
+            get { return false; }
         }
 
         public bool Remove(T item)
@@ -1071,7 +1071,7 @@ namespace CodeWalker.GameFiles
 
         public bool IsReadOnly
         {
-            get { throw new NotImplementedException(); }
+            get { return false; }
         }
 
         public bool Remove(T item)
@@ -1220,7 +1220,7 @@ namespace CodeWalker.GameFiles
 
         public bool IsReadOnly
         {
-            get { throw new NotImplementedException(); }
+            get { return false; }
         }
 
         public bool Remove(T item)
