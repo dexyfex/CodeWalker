@@ -23,6 +23,7 @@ namespace CodeWalker.GameFiles
 
         public static void Clear()
         {
+            EnumDict.Clear();
             StructDict.Clear();
         }
 
@@ -42,6 +43,7 @@ namespace CodeWalker.GameFiles
                         MetaEnumInfo oldei = EnumDict[mei.EnumKey];
                         if (!CompareMetaEnumInfos(oldei, mei))
                         {
+                            //throw new Exception("Mismatching MetaEnumInfos!");
                         }
                     }
                 }
@@ -60,6 +62,7 @@ namespace CodeWalker.GameFiles
                         MetaStructureInfo oldsi = StructDict[msi.StructureKey];
                         if (!CompareMetaStructureInfos(oldsi, msi))
                         {
+                            //throw new Exception("Mismatching MetaStructureInfos!");
                         }
                     }
                 }
@@ -207,44 +210,87 @@ namespace CodeWalker.GameFiles
 
             foreach (var si in meta.StructureInfos)
             {
-                sb.AppendFormat("return new MetaStructureInfo(MetaName.{0}, {1}, {2}, {3},", si.StructureNameHash, si.StructureKey, si.Unknown_8h, si.StructureSize);
-                sb.AppendLine();
-                for (int i = 0; i < si.Entries.Length; i++)
-                {
-                    var e = si.Entries[i];
-                    string refkey = "0";
-                    if (e.ReferenceKey != 0)
-                    {
-                        refkey = "MetaName." + e.ReferenceKey.ToString();
-                    }
-                    sb.AppendFormat("new MetaStructureEntryInfo_s(MetaName.{0}, {1}, MetaStructureEntryDataType.{2}, {3}, {4}, {5})", e.EntryNameHash, e.DataOffset, e.DataType, e.Unknown_9h, e.ReferenceTypeIndex, refkey);
-                    if (i < si.Entries.Length - 1) sb.Append(",");
-                    sb.AppendLine();
-                }
-                sb.AppendFormat(");");
-                sb.AppendLine();
+                AddStructureInfoString(si, sb);
             }
 
             sb.AppendLine();
 
             foreach (var ei in meta.EnumInfos)
             {
-                sb.AppendFormat("return new MetaEnumInfo(MetaName.{0}, {1},", ei.EnumNameHash, ei.EnumKey);
-                sb.AppendLine();
-                for (int i = 0; i < ei.Entries.Length; i++)
-                {
-                    var e = ei.Entries[i];
-                    sb.AppendFormat("new MetaEnumEntryInfo_s(MetaName.{0}, {1})", e.EntryNameHash, e.EntryValue);
-                    if (i < ei.Entries.Length - 1) sb.Append(",");
-                    sb.AppendLine();
-                }
-                sb.AppendFormat(");");
-                sb.AppendLine();
+                AddEnumInfoString(ei, sb);
             }
-
 
             string str = sb.ToString();
             return str;
+        }
+        public static string GetTypesInitString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var si in StructDict.Values)
+            {
+                AddStructureInfoString(si, sb);
+            }
+
+            sb.AppendLine();
+
+            foreach (var ei in EnumDict.Values)
+            {
+                AddEnumInfoString(ei, sb);
+            }
+
+            string str = sb.ToString();
+            return str;
+        }
+        private static void AddStructureInfoString(MetaStructureInfo si, StringBuilder sb)
+        {
+            var ns = GetMetaNameString(si.StructureNameHash);
+            sb.AppendFormat("case " + ns + ":");
+            sb.AppendLine();
+            sb.AppendFormat("return new MetaStructureInfo({0}, {1}, {2}, {3},", ns, si.StructureKey, si.Unknown_8h, si.StructureSize);
+            sb.AppendLine();
+            for (int i = 0; i < si.Entries.Length; i++)
+            {
+                var e = si.Entries[i];
+                string refkey = "0";
+                if (e.ReferenceKey != 0)
+                {
+                    refkey = GetMetaNameString(e.ReferenceKey);
+                }
+                sb.AppendFormat(" new MetaStructureEntryInfo_s({0}, {1}, MetaStructureEntryDataType.{2}, {3}, {4}, {5})", GetMetaNameString(e.EntryNameHash), e.DataOffset, e.DataType, e.Unknown_9h, e.ReferenceTypeIndex, refkey);
+                if (i < si.Entries.Length - 1) sb.Append(",");
+                sb.AppendLine();
+            }
+            sb.AppendFormat(");");
+            sb.AppendLine();
+        }
+        private static void AddEnumInfoString(MetaEnumInfo ei, StringBuilder sb)
+        {
+            var ns = GetMetaNameString(ei.EnumNameHash);
+            sb.AppendFormat("case " + ns + ":");
+            sb.AppendLine();
+            sb.AppendFormat("return new MetaEnumInfo({0}, {1},", ns, ei.EnumKey);
+            sb.AppendLine();
+            for (int i = 0; i < ei.Entries.Length; i++)
+            {
+                var e = ei.Entries[i];
+                sb.AppendFormat(" new MetaEnumEntryInfo_s({0}, {1})", GetMetaNameString(e.EntryNameHash), e.EntryValue);
+                if (i < ei.Entries.Length - 1) sb.Append(",");
+                sb.AppendLine();
+            }
+            sb.AppendFormat(");");
+            sb.AppendLine();
+        }
+        private static string GetMetaNameString(MetaName n)
+        {
+            if (Enum.IsDefined(typeof(MetaName), n))
+            {
+                return "MetaName." + n.ToString();
+            }
+            else
+            {
+                return "(MetaName)" + n.ToString();
+            }
         }
 
 
@@ -253,552 +299,942 @@ namespace CodeWalker.GameFiles
             //to generate structinfos
             switch (name)
             {
-
-                /* YMAP types */
-                case MetaName.VECTOR3:
-                    return new MetaStructureInfo(MetaName.VECTOR3, 2751397072, 512, 12,
-                    new MetaStructureEntryInfo_s(MetaName.x, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.y, 4, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.z, 8, MetaStructureEntryDataType.Float, 0, 0, 0)
-                    );
-                case MetaName.rage__fwInstancedMapData:
-                    return new MetaStructureInfo(MetaName.rage__fwInstancedMapData, 1836780118, 768, 48,
-                    new MetaStructureEntryInfo_s(MetaName.ImapLink, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwPropInstanceListDef),
-                    new MetaStructureEntryInfo_s(MetaName.PropInstanceList, 16, MetaStructureEntryDataType.Array, 0, 1, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwGrassInstanceListDef),
-                    new MetaStructureEntryInfo_s(MetaName.GrassInstanceList, 32, MetaStructureEntryDataType.Array, 0, 3, 0)
-                    );
-                case MetaName.rage__fwGrassInstanceListDef:
-                    return new MetaStructureInfo(MetaName.rage__fwGrassInstanceListDef, 941808164, 1024, 96,
-                    new MetaStructureEntryInfo_s(MetaName.BatchAABB, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdAABB),
-                    new MetaStructureEntryInfo_s(MetaName.ScaleRange, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.archetypeName, 48, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.lodDist, 52, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.LodFadeStartDist, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.LodInstFadeRange, 60, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.OrientToTerrain, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwGrassInstanceListDef__InstanceData),
-                    new MetaStructureEntryInfo_s(MetaName.InstanceList, 72, MetaStructureEntryDataType.Array, 36, 7, 0)
-                    );
-                case MetaName.rage__fwGrassInstanceListDef__InstanceData:
-                    return new MetaStructureInfo(MetaName.rage__fwGrassInstanceListDef__InstanceData, 2740378365, 256, 16,
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Position, 0, MetaStructureEntryDataType.ArrayOfBytes, 0, 0, (MetaName)3),
-                    new MetaStructureEntryInfo_s(MetaName.NormalX, 6, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.NormalY, 7, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Color, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, (MetaName)3),
-                    new MetaStructureEntryInfo_s(MetaName.Scale, 11, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Ao, 12, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Pad, 13, MetaStructureEntryDataType.ArrayOfBytes, 0, 8, (MetaName)3)
-                    );
-                case MetaName.rage__spdAABB:
-                    return new MetaStructureInfo(MetaName.rage__spdAABB, 1158138379, 1024, 32,
-                    new MetaStructureEntryInfo_s(MetaName.min, 0, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.max, 16, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
-                    );
-                case MetaName.CLODLight:
-                    return new MetaStructureInfo(MetaName.CLODLight, 2325189228, 768, 136,
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.VECTOR3),
-                    new MetaStructureEntryInfo_s(MetaName.direction, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.falloff, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.falloffExponent, 40, MetaStructureEntryDataType.Array, 0, 4, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.timeAndStateFlags, 56, MetaStructureEntryDataType.Array, 0, 6, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.hash, 72, MetaStructureEntryDataType.Array, 0, 8, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.coneInnerAngle, 88, MetaStructureEntryDataType.Array, 0, 10, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.coneOuterAngleOrCapExt, 104, MetaStructureEntryDataType.Array, 0, 12, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.coronaIntensity, 120, MetaStructureEntryDataType.Array, 0, 14, 0)
-                    );
-                case MetaName.CDistantLODLight:
-                    return new MetaStructureInfo(MetaName.CDistantLODLight, 2820908419, 768, 48,
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.VECTOR3),
-                    new MetaStructureEntryInfo_s(MetaName.position, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.RGBI, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
-                    new MetaStructureEntryInfo_s(MetaName.numStreetLights, 40, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.category, 42, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0)
-                    );
-                case MetaName.CBlockDesc:
-                    return new MetaStructureInfo(MetaName.CBlockDesc, 2015795449, 768, 72,
-                    new MetaStructureEntryInfo_s(MetaName.version, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 4, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.exportedBy, 24, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.owner, 40, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.time, 56, MetaStructureEntryDataType.CharPointer, 0, 0, 0)
-                    );
-                case MetaName.CMapData:
-                    return new MetaStructureInfo(MetaName.CMapData, 3448101671, 1024, 512,
-                    new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.parent, 12, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.contentFlags, 20, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.streamingExtentsMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.streamingExtentsMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.entitiesExtentsMin, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.entitiesExtentsMax, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.entities, 96, MetaStructureEntryDataType.Array, 0, 8, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)372253349),
-                    new MetaStructureEntryInfo_s(MetaName.containerLods, 112, MetaStructureEntryDataType.Array, 0, 10, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)975711773/*.SectionUNKNOWN7*/),
-                    new MetaStructureEntryInfo_s(MetaName.boxOccluders, 128, MetaStructureEntryDataType.Array, 4, 12, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)2741784237/*.SectionUNKNOWN5*/),
-                    new MetaStructureEntryInfo_s(MetaName.occludeModels, 144, MetaStructureEntryDataType.Array, 4, 14, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.physicsDictionaries, 160, MetaStructureEntryDataType.Array, 0, 16, 0),
-                    new MetaStructureEntryInfo_s(MetaName.instancedData, 176, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwInstancedMapData),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CTimeCycleModifier),
-                    new MetaStructureEntryInfo_s(MetaName.timeCycleModifiers, 224, MetaStructureEntryDataType.Array, 0, 19, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCarGen),
-                    new MetaStructureEntryInfo_s(MetaName.carGenerators, 240, MetaStructureEntryDataType.Array, 0, 21, 0),
-                    new MetaStructureEntryInfo_s(MetaName.LODLightsSOA, 256, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CLODLight),
-                    new MetaStructureEntryInfo_s(MetaName.DistantLODLightsSOA, 392, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CDistantLODLight),
-                    new MetaStructureEntryInfo_s(MetaName.block, 440, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CBlockDesc)
-                    );
-                case MetaName.CEntityDef:
-                    return new MetaStructureInfo(MetaName.CEntityDef, 1825799514, 1024, 128,
-                    new MetaStructureEntryInfo_s(MetaName.archetypeName, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.guid, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.rotation, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.scaleXY, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.scaleZ, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1264241711),
-                    new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)648413703),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.tintValue, 120, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CMloInstanceDef:
-                    return new MetaStructureInfo(MetaName.CMloInstanceDef, 2151576752, 1024, 160,
-                    new MetaStructureEntryInfo_s(MetaName.archetypeName, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.guid, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.rotation, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.scaleXY, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.scaleZ, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1264241711),
-                    new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)648413703),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.tintValue, 120, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.groupId, 128, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.floorId, 132, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.defaultEntitySets, 136, MetaStructureEntryDataType.Array, 0, 20, 0),
-                    new MetaStructureEntryInfo_s(MetaName.numExitPortals, 152, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.MLOInstflags, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CMloPortalDef:
-                    return new MetaStructureInfo(MetaName.CMloPortalDef, 1110221513, 768, 64,
-                    new MetaStructureEntryInfo_s(MetaName.roomFrom, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.roomTo, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.mirrorPriority, 20, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.opacity, 24, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.audioOcclusion, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.corners, 32, MetaStructureEntryDataType.Array, 0, 6, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.attachedObjects, 48, MetaStructureEntryDataType.Array, 0, 8, 0)
-                    );
-                case MetaName.CMapTypes:
-                    return new MetaStructureInfo(MetaName.CMapTypes, 2608875220, 768, 80,
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.extensions, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.archetypes, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
-                    new MetaStructureEntryInfo_s(MetaName.name, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.dependencies, 48, MetaStructureEntryDataType.Array, 0, 5, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompositeEntityType),
-                    new MetaStructureEntryInfo_s(MetaName.compositeEntityTypes, 64, MetaStructureEntryDataType.Array, 0, 7, 0)
-                    );
-                case MetaName.CBaseArchetypeDef:
-                    return new MetaStructureInfo(MetaName.CBaseArchetypeDef, 2411387556, 1024, 144,
-                    new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1991964615),
-                    new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0)
-                    );
-                case MetaName.CExtensionDefParticleEffect:
-                    return new MetaStructureInfo(MetaName.CExtensionDefParticleEffect, 466596385, 1024, 96,
-                    new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.fxName, 48, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.fxType, 64, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.boneTag, 68, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Scale_, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.probability, 76, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 80, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.color, 84, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CMloArchetypeDef:
-                    return new MetaStructureInfo(MetaName.CMloArchetypeDef, 937664754, 1024, 240,
-                    new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1991964615),
-                    new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
-                    new MetaStructureEntryInfo_s(MetaName.mloFlags, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.entities, 152, MetaStructureEntryDataType.Array, 0, 18, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloRoomDef),
-                    new MetaStructureEntryInfo_s(MetaName.rooms, 168, MetaStructureEntryDataType.Array, 0, 20, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloPortalDef),
-                    new MetaStructureEntryInfo_s(MetaName.portals, 184, MetaStructureEntryDataType.Array, 0, 22, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloEntitySet),
-                    new MetaStructureEntryInfo_s(MetaName.entitySets, 200, MetaStructureEntryDataType.Array, 0, 24, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloTimeCycleModifier),
-                    new MetaStructureEntryInfo_s(MetaName.timeCycleModifiers, 216, MetaStructureEntryDataType.Array, 0, 26, 0)
-                    );
-                case MetaName.CMloRoomDef:
-                    return new MetaStructureInfo(MetaName.CMloRoomDef, 3885428245, 1024, 112,
-                    new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.blend, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.timecycleName, 68, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.secondaryTimecycleName, 72, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 76, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.portalCount, 80, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.floorId, 84, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)552849982, 88, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.attachedObjects, 96, MetaStructureEntryDataType.Array, 0, 10, 0)
-                    );
-                case MetaName.CTimeArchetypeDef:
-                    return new MetaStructureInfo(MetaName.CTimeArchetypeDef, 2520619910, 1024, 160,
-                    new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1991964615),
-                    new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
-                    new MetaStructureEntryInfo_s(MetaName.timeFlags, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-
-                case MetaName.CTimeCycleModifier:
-                    return new MetaStructureInfo(MetaName.CTimeCycleModifier, 2683420777, 1024, 64,
-                    new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.minExtents, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.maxExtents, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.percentage, 48, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.range, 52, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.startHour, 56, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.endHour, 60, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CCarGen:
-                    return new MetaStructureInfo(MetaName.CCarGen, 2345238261, 1024, 80,
-                    new MetaStructureEntryInfo_s(MetaName.position, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.orientX, 32, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.orientY, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.perpendicularLength, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.carModel, 44, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 48, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bodyColorRemap1, 52, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bodyColorRemap2, 56, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bodyColorRemap3, 60, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.bodyColorRemap4, 64, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.popGroup, 68, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.livery, 72, MetaStructureEntryDataType.SignedByte, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefLightEffect:
-                    return new MetaStructureInfo(MetaName.CExtensionDefLightEffect, 2436199897, 1024, 48,
-                    new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CLightAttrDef),
-                    new MetaStructureEntryInfo_s(MetaName.instances, 32, MetaStructureEntryDataType.Array, 0, 2, 0)
-                    );
-                case MetaName.CLightAttrDef:
-                    return new MetaStructureInfo(MetaName.CLightAttrDef, 2363260268, 768, 160,
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.posn, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 0, (MetaName)3),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.colour, 20, MetaStructureEntryDataType.ArrayOfBytes, 0, 2, (MetaName)3),
-                    new MetaStructureEntryInfo_s(MetaName.flashiness, 23, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.intensity, 24, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.boneTag, 32, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.lightType, 34, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.groupId, 35, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.timeFlags, 36, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.falloff, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.falloffExponent, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.cullingPlane, 48, MetaStructureEntryDataType.ArrayOfBytes, 0, 13, (MetaName)4),
-                    new MetaStructureEntryInfo_s(MetaName.shadowBlur, 64, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.padding1, 65, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.padding2, 66, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.padding3, 68, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.volIntensity, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.volSizeScale, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.volOuterColour, 80, MetaStructureEntryDataType.ArrayOfBytes, 0, 21, (MetaName)3),
-                    new MetaStructureEntryInfo_s(MetaName.lightHash, 83, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.volOuterIntensity, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.coronaSize, 88, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.volOuterExponent, 92, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.lightFadeDistance, 96, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.shadowFadeDistance, 97, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.specularFadeDistance, 98, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.volumetricFadeDistance, 99, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.shadowNearClip, 100, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.coronaIntensity, 104, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.coronaZBias, 108, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.direction, 112, MetaStructureEntryDataType.ArrayOfBytes, 0, 34, (MetaName)3),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.tangent, 124, MetaStructureEntryDataType.ArrayOfBytes, 0, 36, (MetaName)3),
-                    new MetaStructureEntryInfo_s(MetaName.coneInnerAngle, 136, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.coneOuterAngle, 140, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.extents, 144, MetaStructureEntryDataType.ArrayOfBytes, 0, 40, (MetaName)3),
-                    new MetaStructureEntryInfo_s(MetaName.projectedTextureKey, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefSpawnPointOverride:
-                    return new MetaStructureInfo(MetaName.CExtensionDefSpawnPointOverride, 2551875873, 1024, 64,
-                    new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ScenarioType, 32, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.iTimeStartOverride, 36, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.iTimeEndOverride, 37, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Group, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ModelSet, 44, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.AvailabilityInMpSp, 48, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)3573596290),
-                    new MetaStructureEntryInfo_s(MetaName.Flags, 52, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)700327466),
-                    new MetaStructureEntryInfo_s(MetaName.Radius, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.TimeTillPedLeaves, 60, MetaStructureEntryDataType.Float, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefDoor:
-                    return new MetaStructureInfo(MetaName.CExtensionDefDoor, 2671601385, 1024, 48,
-                    new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.enableLimitAngle, 32, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.startsLocked, 33, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.canBreak, 34, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.limitAngle, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.doorTargetRatio, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.audioHash, 44, MetaStructureEntryDataType.Hash, 0, 0, 0)
-                    );
-                case MetaName.rage__phVerletClothCustomBounds:
-                    return new MetaStructureInfo(MetaName.rage__phVerletClothCustomBounds, 2075461750, 768, 32,
-                    new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1701774085/*.SectionUNKNOWN1*/),
-                    new MetaStructureEntryInfo_s(MetaName.CollisionData, 16, MetaStructureEntryDataType.Array, 0, 1, 0)
-                    );
-                case (MetaName)1701774085/*.SectionUNKNOWN1*/:
-                    return new MetaStructureInfo((MetaName)1701774085/*.SectionUNKNOWN1*/, 2859775340, 1024, 96,
-                    new MetaStructureEntryInfo_s(MetaName.OwnerName, 0, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Rotation, 16, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Normal, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.CapsuleRadius, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.CapsuleLen, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.CapsuleHalfHeight, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.CapsuleHalfWidth, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Flags, 80, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)3044470860)
-                    );
-
-
-
-                /* SCENARIO types */
                 case MetaName.CScenarioPointContainer:
                     return new MetaStructureInfo(MetaName.CScenarioPointContainer, 2489654897, 768, 48,
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
-                    new MetaStructureEntryInfo_s(MetaName.LoadSavePoints, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPoint),
-                    new MetaStructureEntryInfo_s(MetaName.MyPoints, 16, MetaStructureEntryDataType.Array, 0, 2, 0)
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
+                     new MetaStructureEntryInfo_s(MetaName.LoadSavePoints, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPoint),
+                     new MetaStructureEntryInfo_s(MetaName.MyPoints, 16, MetaStructureEntryDataType.Array, 0, 2, 0)
                     );
                 case (MetaName)4023740759:
                     return new MetaStructureInfo((MetaName)4023740759, 88255871, 768, 88,
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingNode),
-                    new MetaStructureEntryInfo_s(MetaName.Nodes, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingEdge),
-                    new MetaStructureEntryInfo_s(MetaName.Edges, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChain),
-                    new MetaStructureEntryInfo_s(MetaName.Chains, 32, MetaStructureEntryDataType.Array, 0, 4, 0)
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingNode),
+                     new MetaStructureEntryInfo_s(MetaName.Nodes, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingEdge),
+                     new MetaStructureEntryInfo_s(MetaName.Edges, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChain),
+                     new MetaStructureEntryInfo_s(MetaName.Chains, 32, MetaStructureEntryDataType.Array, 0, 4, 0)
                     );
                 case MetaName.rage__spdGrid2D:
                     return new MetaStructureInfo(MetaName.rage__spdGrid2D, 894636096, 768, 64,
-                    new MetaStructureEntryInfo_s((MetaName)860552138, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)3824598937, 16, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)496029782, 20, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)3374647798, 24, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)2690909759, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)3691675019, 48, MetaStructureEntryDataType.Float, 0, 0, 0)
+                     new MetaStructureEntryInfo_s((MetaName)860552138, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)3824598937, 16, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)496029782, 20, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)3374647798, 24, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)2690909759, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)3691675019, 48, MetaStructureEntryDataType.Float, 0, 0, 0)
                     );
                 case MetaName.CScenarioPointLookUps:
                     return new MetaStructureInfo(MetaName.CScenarioPointLookUps, 2669361587, 768, 96,
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.TypeNames, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.PedModelSetNames, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.VehicleModelSetNames, 32, MetaStructureEntryDataType.Array, 0, 4, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.GroupNames, 48, MetaStructureEntryDataType.Array, 0, 6, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.InteriorNames, 64, MetaStructureEntryDataType.Array, 0, 8, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.RequiredIMapNames, 80, MetaStructureEntryDataType.Array, 0, 10, 0)
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.TypeNames, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.PedModelSetNames, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.VehicleModelSetNames, 32, MetaStructureEntryDataType.Array, 0, 4, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.GroupNames, 48, MetaStructureEntryDataType.Array, 0, 6, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.InteriorNames, 64, MetaStructureEntryDataType.Array, 0, 8, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.RequiredIMapNames, 80, MetaStructureEntryDataType.Array, 0, 10, 0)
                     );
                 case MetaName.CScenarioPointRegion:
                     return new MetaStructureInfo(MetaName.CScenarioPointRegion, 3501351821, 768, 376,
-                    new MetaStructureEntryInfo_s(MetaName.VersionNumber, 0, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Points, 8, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointContainer),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioEntityOverride),
-                    new MetaStructureEntryInfo_s(MetaName.EntityOverrides, 72, MetaStructureEntryDataType.Array, 0, 2, 0),
-                    new MetaStructureEntryInfo_s((MetaName)3696045377, 96, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)4023740759),
-                    new MetaStructureEntryInfo_s(MetaName.AccelGrid, 184, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdGrid2D),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)3844724227, 248, MetaStructureEntryDataType.Array, 0, 6, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointCluster),
-                    new MetaStructureEntryInfo_s(MetaName.Clusters, 264, MetaStructureEntryDataType.Array, 0, 8, 0),
-                    new MetaStructureEntryInfo_s(MetaName.LookUps, 280, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointLookUps)
+                     new MetaStructureEntryInfo_s(MetaName.VersionNumber, 0, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Points, 8, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointContainer),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioEntityOverride),
+                     new MetaStructureEntryInfo_s(MetaName.EntityOverrides, 72, MetaStructureEntryDataType.Array, 0, 2, 0),
+                     new MetaStructureEntryInfo_s((MetaName)3696045377, 96, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)4023740759),
+                     new MetaStructureEntryInfo_s(MetaName.AccelGrid, 184, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdGrid2D),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)3844724227, 248, MetaStructureEntryDataType.Array, 0, 6, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointCluster),
+                     new MetaStructureEntryInfo_s(MetaName.Clusters, 264, MetaStructureEntryDataType.Array, 0, 8, 0),
+                     new MetaStructureEntryInfo_s(MetaName.LookUps, 280, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointLookUps)
                     );
                 case MetaName.CScenarioPoint:
                     return new MetaStructureInfo(MetaName.CScenarioPoint, 402442150, 1024, 64,
-                    new MetaStructureEntryInfo_s(MetaName.iType, 21, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ModelSetId, 22, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.iInterior, 23, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.iRequiredIMapId, 24, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.iProbability, 25, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.uAvailableInMpSp, 26, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.iTimeStartOverride, 27, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.iTimeEndOverride, 28, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.iRadius, 29, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.iTimeTillPedLeaves, 30, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.iScenarioGroup, 32, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Flags, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)700327466),
-                    new MetaStructureEntryInfo_s(MetaName.vPositionAndDirection, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
+                     new MetaStructureEntryInfo_s(MetaName.iType, 21, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ModelSetId, 22, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iInterior, 23, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iRequiredIMapId, 24, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iProbability, 25, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.uAvailableInMpSp, 26, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iTimeStartOverride, 27, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iTimeEndOverride, 28, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iRadius, 29, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iTimeTillPedLeaves, 30, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iScenarioGroup, 32, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Flags, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)700327466),
+                     new MetaStructureEntryInfo_s(MetaName.vPositionAndDirection, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
                     );
                 case MetaName.CScenarioEntityOverride:
                     return new MetaStructureInfo(MetaName.CScenarioEntityOverride, 1271200492, 1024, 80,
-                    new MetaStructureEntryInfo_s(MetaName.EntityPosition, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.EntityType, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
-                    new MetaStructureEntryInfo_s(MetaName.ScenarioPoints, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
-                    new MetaStructureEntryInfo_s((MetaName)538733109, 64, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)1035513142, 65, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                     new MetaStructureEntryInfo_s(MetaName.EntityPosition, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.EntityType, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
+                     new MetaStructureEntryInfo_s(MetaName.ScenarioPoints, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
+                     new MetaStructureEntryInfo_s((MetaName)538733109, 64, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)1035513142, 65, MetaStructureEntryDataType.Boolean, 0, 0, 0)
                     );
                 case MetaName.CExtensionDefSpawnPoint:
                     return new MetaStructureInfo(MetaName.CExtensionDefSpawnPoint, 3077340721, 1024, 96,
-                    new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.spawnType, 48, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.pedType, 52, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.group, 56, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.interior, 60, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.requiredImap, 64, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.availableInMpSp, 68, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)3573596290),
-                    new MetaStructureEntryInfo_s(MetaName.probability, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.timeTillPedLeaves, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.radius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.start, 84, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.end, 85, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.flags, 88, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)700327466),
-                    new MetaStructureEntryInfo_s(MetaName.highPri, 92, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.extendedRange, 93, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.shortRange, 94, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.spawnType, 48, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.pedType, 52, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.group, 56, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.interior, 60, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.requiredImap, 64, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.availableInMpSp, 68, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)3573596290),
+                     new MetaStructureEntryInfo_s(MetaName.probability, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.timeTillPedLeaves, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.radius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.start, 84, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.end, 85, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 88, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)700327466),
+                     new MetaStructureEntryInfo_s(MetaName.highPri, 92, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.extendedRange, 93, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.shortRange, 94, MetaStructureEntryDataType.Boolean, 0, 0, 0)
                     );
                 case MetaName.CScenarioChainingNode:
                     return new MetaStructureInfo(MetaName.CScenarioChainingNode, 1811784424, 1024, 32,
-                    new MetaStructureEntryInfo_s(MetaName.Position, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)2602393771, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ScenarioType, 20, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)407126079, 24, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)1308720135, 25, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                     new MetaStructureEntryInfo_s(MetaName.Position, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)2602393771, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ScenarioType, 20, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)407126079, 24, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)1308720135, 25, MetaStructureEntryDataType.Boolean, 0, 0, 0)
                     );
                 case MetaName.CScenarioChainingEdge:
                     return new MetaStructureInfo(MetaName.CScenarioChainingEdge, 2004985940, 256, 8,
-                    new MetaStructureEntryInfo_s(MetaName.NodeIndexFrom, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.NodeIndexTo, 2, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.Action, 4, MetaStructureEntryDataType.ByteEnum, 0, 0, (MetaName)3609807418),
-                    new MetaStructureEntryInfo_s(MetaName.NavMode, 5, MetaStructureEntryDataType.ByteEnum, 0, 0, (MetaName)3971773454),
-                    new MetaStructureEntryInfo_s(MetaName.NavSpeed, 6, MetaStructureEntryDataType.ByteEnum, 0, 0, (MetaName)941086046)
+                     new MetaStructureEntryInfo_s(MetaName.NodeIndexFrom, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.NodeIndexTo, 2, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Action, 4, MetaStructureEntryDataType.ByteEnum, 0, 0, (MetaName)3609807418),
+                     new MetaStructureEntryInfo_s(MetaName.NavMode, 5, MetaStructureEntryDataType.ByteEnum, 0, 0, (MetaName)3971773454),
+                     new MetaStructureEntryInfo_s(MetaName.NavSpeed, 6, MetaStructureEntryDataType.ByteEnum, 0, 0, (MetaName)941086046)
                     );
                 case MetaName.CScenarioChain:
                     return new MetaStructureInfo(MetaName.CScenarioChain, 2751910366, 768, 40,
-                    new MetaStructureEntryInfo_s((MetaName)1156691834, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                    new MetaStructureEntryInfo_s(MetaName.EdgeIds, 8, MetaStructureEntryDataType.Array, 0, 1, 0)
+                     new MetaStructureEntryInfo_s((MetaName)1156691834, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.EdgeIds, 8, MetaStructureEntryDataType.Array, 0, 1, 0)
                     );
                 case MetaName.rage__spdSphere:
                     return new MetaStructureInfo(MetaName.rage__spdSphere, 1189037266, 1024, 16,
-                    new MetaStructureEntryInfo_s(MetaName.centerAndRadius, 0, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
+                     new MetaStructureEntryInfo_s(MetaName.centerAndRadius, 0, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
                     );
                 case MetaName.CScenarioPointCluster:
                     return new MetaStructureInfo(MetaName.CScenarioPointCluster, 3622480419, 1024, 80,
-                    new MetaStructureEntryInfo_s(MetaName.Points, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointContainer),
-                    new MetaStructureEntryInfo_s(MetaName.ClusterSphere, 48, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdSphere),
-                    new MetaStructureEntryInfo_s((MetaName)1095875445, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                    new MetaStructureEntryInfo_s((MetaName)3129415068, 68, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                     new MetaStructureEntryInfo_s(MetaName.Points, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointContainer),
+                     new MetaStructureEntryInfo_s(MetaName.ClusterSphere, 48, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdSphere),
+                     new MetaStructureEntryInfo_s((MetaName)1095875445, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)3129415068, 68, MetaStructureEntryDataType.Boolean, 0, 0, 0)
                     );
-
-
+                case MetaName.CStreamingRequestRecord:
+                    return new MetaStructureInfo(MetaName.CStreamingRequestRecord, 3825587854, 768, 40,
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CStreamingRequestFrame),
+                     new MetaStructureEntryInfo_s(MetaName.Frames, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1358189812),
+                     new MetaStructureEntryInfo_s(MetaName.CommonSets, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
+                     new MetaStructureEntryInfo_s(MetaName.NewStyle, 32, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                    );
+                case MetaName.CStreamingRequestFrame:
+                    return new MetaStructureInfo(MetaName.CStreamingRequestFrame, 1112444512, 1024, 112,
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.AddList, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.RemoveList, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)896120921, 32, MetaStructureEntryDataType.Array, 0, 4, 0),
+                     new MetaStructureEntryInfo_s(MetaName.CamPos, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.CamDir, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)1762439591, 80, MetaStructureEntryDataType.Array, 0, 8, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Flags, 96, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
+                //case MetaName.CStreamingRequestFrame:
+                //    return new MetaStructureInfo(MetaName.CStreamingRequestFrame, 3672937465, 1024, 96,
+                //     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.AddList, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.RemoveList, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.CamPos, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.CamDir, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s((MetaName)1762439591, 64, MetaStructureEntryDataType.Array, 0, 6, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.Flags, 80, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                //    );
+                case (MetaName)1358189812:
+                    return new MetaStructureInfo((MetaName)1358189812, 3710200606, 768, 16,
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Requests, 0, MetaStructureEntryDataType.Array, 0, 0, 0)
+                    );
+                case MetaName.CMapTypes:
+                    return new MetaStructureInfo(MetaName.CMapTypes, 2608875220, 768, 80,
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.extensions, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.archetypes, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
+                     new MetaStructureEntryInfo_s(MetaName.name, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.dependencies, 48, MetaStructureEntryDataType.Array, 0, 5, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompositeEntityType),
+                     new MetaStructureEntryInfo_s(MetaName.compositeEntityTypes, 64, MetaStructureEntryDataType.Array, 0, 7, 0)
+                    );
+                case MetaName.CBaseArchetypeDef:
+                    return new MetaStructureInfo(MetaName.CBaseArchetypeDef, 2411387556, 1024, 144,
+                     new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1991964615),
+                     new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0)
+                    );
+                //case MetaName.CBaseArchetypeDef:
+                //    return new MetaStructureInfo(MetaName.CBaseArchetypeDef, 2352343492, 1024, 128,
+                //     new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s(MetaName.extensions, 112, MetaStructureEntryDataType.Array, 0, 13, 0)
+                //    );
+                case MetaName.CCreatureMetaData:
+                    return new MetaStructureInfo(MetaName.CCreatureMetaData, 2181653572, 768, 56,
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CShaderVariableComponent),
+                     new MetaStructureEntryInfo_s(MetaName.shaderVariableComponents, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropExpressionData),
+                     new MetaStructureEntryInfo_s(MetaName.pedPropExpressions, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedCompExpressionData),
+                     new MetaStructureEntryInfo_s(MetaName.pedCompExpressions, 40, MetaStructureEntryDataType.Array, 0, 4, 0)
+                    );
+                case MetaName.CShaderVariableComponent:
+                    return new MetaStructureInfo(MetaName.CShaderVariableComponent, 3085831725, 768, 72,
+                     new MetaStructureEntryInfo_s(MetaName.pedcompID, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.maskID, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.shaderVariableHashString, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.tracks, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ids, 40, MetaStructureEntryDataType.Array, 0, 5, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.components, 56, MetaStructureEntryDataType.Array, 0, 7, 0)
+                    );
+                case MetaName.CPedPropExpressionData:
+                    return new MetaStructureInfo(MetaName.CPedPropExpressionData, 1355135810, 768, 88,
+                     new MetaStructureEntryInfo_s(MetaName.pedPropID, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.pedPropVarIndex, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.pedPropExpressionIndex, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.tracks, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ids, 40, MetaStructureEntryDataType.Array, 0, 5, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.types, 56, MetaStructureEntryDataType.Array, 0, 7, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.components, 72, MetaStructureEntryDataType.Array, 0, 9, 0)
+                    );
+                case MetaName.CPedCompExpressionData:
+                    return new MetaStructureInfo(MetaName.CPedCompExpressionData, 3458164745, 768, 88,
+                     new MetaStructureEntryInfo_s(MetaName.pedCompID, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.pedCompVarIndex, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.pedCompExpressionIndex, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.tracks, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ids, 40, MetaStructureEntryDataType.Array, 0, 5, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.types, 56, MetaStructureEntryDataType.Array, 0, 7, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.components, 72, MetaStructureEntryDataType.Array, 0, 9, 0)
+                    );
+                case MetaName.rage__fwInstancedMapData:
+                    return new MetaStructureInfo(MetaName.rage__fwInstancedMapData, 1836780118, 768, 48,
+                     new MetaStructureEntryInfo_s(MetaName.ImapLink, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwPropInstanceListDef),
+                     new MetaStructureEntryInfo_s(MetaName.PropInstanceList, 16, MetaStructureEntryDataType.Array, 0, 1, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwGrassInstanceListDef),
+                     new MetaStructureEntryInfo_s(MetaName.GrassInstanceList, 32, MetaStructureEntryDataType.Array, 0, 3, 0)
+                    );
+                case MetaName.CLODLight:
+                    return new MetaStructureInfo(MetaName.CLODLight, 2325189228, 768, 136,
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.VECTOR3),
+                     new MetaStructureEntryInfo_s(MetaName.direction, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.falloff, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.falloffExponent, 40, MetaStructureEntryDataType.Array, 0, 4, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.timeAndStateFlags, 56, MetaStructureEntryDataType.Array, 0, 6, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.hash, 72, MetaStructureEntryDataType.Array, 0, 8, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.coneInnerAngle, 88, MetaStructureEntryDataType.Array, 0, 10, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.coneOuterAngleOrCapExt, 104, MetaStructureEntryDataType.Array, 0, 12, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.coronaIntensity, 120, MetaStructureEntryDataType.Array, 0, 14, 0)
+                    );
+                case MetaName.CDistantLODLight:
+                    return new MetaStructureInfo(MetaName.CDistantLODLight, 2820908419, 768, 48,
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.VECTOR3),
+                     new MetaStructureEntryInfo_s(MetaName.position, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.RGBI, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
+                     new MetaStructureEntryInfo_s(MetaName.numStreetLights, 40, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.category, 42, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0)
+                    );
+                case MetaName.CBlockDesc:
+                    return new MetaStructureInfo(MetaName.CBlockDesc, 2015795449, 768, 72,
+                     new MetaStructureEntryInfo_s(MetaName.version, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 4, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.exportedBy, 24, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.owner, 40, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.time, 56, MetaStructureEntryDataType.CharPointer, 0, 0, 0)
+                    );
+                case MetaName.CMapData:
+                    return new MetaStructureInfo(MetaName.CMapData, 3448101671, 1024, 512,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.parent, 12, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.contentFlags, 20, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.streamingExtentsMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.streamingExtentsMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.entitiesExtentsMin, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.entitiesExtentsMax, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.entities, 96, MetaStructureEntryDataType.Array, 0, 8, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)372253349),
+                     new MetaStructureEntryInfo_s(MetaName.containerLods, 112, MetaStructureEntryDataType.Array, 0, 10, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)975711773),
+                     new MetaStructureEntryInfo_s(MetaName.boxOccluders, 128, MetaStructureEntryDataType.Array, 4, 12, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)2741784237),
+                     new MetaStructureEntryInfo_s(MetaName.occludeModels, 144, MetaStructureEntryDataType.Array, 4, 14, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.physicsDictionaries, 160, MetaStructureEntryDataType.Array, 0, 16, 0),
+                     new MetaStructureEntryInfo_s(MetaName.instancedData, 176, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwInstancedMapData),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CTimeCycleModifier),
+                     new MetaStructureEntryInfo_s(MetaName.timeCycleModifiers, 224, MetaStructureEntryDataType.Array, 0, 19, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCarGen),
+                     new MetaStructureEntryInfo_s(MetaName.carGenerators, 240, MetaStructureEntryDataType.Array, 0, 21, 0),
+                     new MetaStructureEntryInfo_s(MetaName.LODLightsSOA, 256, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CLODLight),
+                     new MetaStructureEntryInfo_s(MetaName.DistantLODLightsSOA, 392, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CDistantLODLight),
+                     new MetaStructureEntryInfo_s(MetaName.block, 440, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CBlockDesc)
+                    );
+                case MetaName.CEntityDef:
+                    return new MetaStructureInfo(MetaName.CEntityDef, 1825799514, 1024, 128,
+                     new MetaStructureEntryInfo_s(MetaName.archetypeName, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.guid, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.rotation, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.scaleXY, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.scaleZ, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1264241711),
+                     new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)648413703),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.tintValue, 120, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
+                case MetaName.CTimeCycleModifier:
+                    return new MetaStructureInfo(MetaName.CTimeCycleModifier, 2683420777, 1024, 64,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.minExtents, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.maxExtents, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.percentage, 48, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.range, 52, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.startHour, 56, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.endHour, 60, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
+                case MetaName.CTimeArchetypeDef:
+                    return new MetaStructureInfo(MetaName.CTimeArchetypeDef, 2520619910, 1024, 160,
+                     new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1991964615),
+                     new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
+                     new MetaStructureEntryInfo_s(MetaName.timeFlags, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
+                case MetaName.CExtensionDefLightEffect:
+                    return new MetaStructureInfo(MetaName.CExtensionDefLightEffect, 2436199897, 1024, 48,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CLightAttrDef),
+                     new MetaStructureEntryInfo_s(MetaName.instances, 32, MetaStructureEntryDataType.Array, 0, 2, 0)
+                    );
+                case MetaName.CLightAttrDef:
+                    return new MetaStructureInfo(MetaName.CLightAttrDef, 2363260268, 768, 160,
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.posn, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 0, (MetaName)3),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.colour, 20, MetaStructureEntryDataType.ArrayOfBytes, 0, 2, (MetaName)3),
+                     new MetaStructureEntryInfo_s(MetaName.flashiness, 23, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.intensity, 24, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.boneTag, 32, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.lightType, 34, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.groupId, 35, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.timeFlags, 36, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.falloff, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.falloffExponent, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.cullingPlane, 48, MetaStructureEntryDataType.ArrayOfBytes, 0, 13, (MetaName)4),
+                     new MetaStructureEntryInfo_s(MetaName.shadowBlur, 64, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.padding1, 65, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.padding2, 66, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.padding3, 68, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.volIntensity, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.volSizeScale, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.volOuterColour, 80, MetaStructureEntryDataType.ArrayOfBytes, 0, 21, (MetaName)3),
+                     new MetaStructureEntryInfo_s(MetaName.lightHash, 83, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.volOuterIntensity, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.coronaSize, 88, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.volOuterExponent, 92, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.lightFadeDistance, 96, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.shadowFadeDistance, 97, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.specularFadeDistance, 98, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.volumetricFadeDistance, 99, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.shadowNearClip, 100, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.coronaIntensity, 104, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.coronaZBias, 108, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.direction, 112, MetaStructureEntryDataType.ArrayOfBytes, 0, 34, (MetaName)3),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.tangent, 124, MetaStructureEntryDataType.ArrayOfBytes, 0, 36, (MetaName)3),
+                     new MetaStructureEntryInfo_s(MetaName.coneInnerAngle, 136, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.coneOuterAngle, 140, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.extents, 144, MetaStructureEntryDataType.ArrayOfBytes, 0, 40, (MetaName)3),
+                     new MetaStructureEntryInfo_s(MetaName.projectedTextureKey, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
+                case MetaName.CMloInstanceDef:
+                    return new MetaStructureInfo(MetaName.CMloInstanceDef, 2151576752, 1024, 160,
+                     new MetaStructureEntryInfo_s(MetaName.archetypeName, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.guid, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.rotation, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.scaleXY, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.scaleZ, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1264241711),
+                     new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)648413703),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.tintValue, 120, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.groupId, 128, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.floorId, 132, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.defaultEntitySets, 136, MetaStructureEntryDataType.Array, 0, 20, 0),
+                     new MetaStructureEntryInfo_s(MetaName.numExitPortals, 152, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.MLOInstflags, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
+                case (MetaName)975711773:
+                    return new MetaStructureInfo((MetaName)975711773, 1831736438, 256, 16,
+                     new MetaStructureEntryInfo_s(MetaName.iCenterX, 0, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iCenterY, 2, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iCenterZ, 4, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iCosZ, 6, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iLength, 8, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iWidth, 10, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iHeight, 12, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iSinZ, 14, MetaStructureEntryDataType.SignedShort, 0, 0, 0)
+                    );
+                case (MetaName)2741784237:
+                    return new MetaStructureInfo((MetaName)2741784237, 1172796107, 1024, 64,
+                     new MetaStructureEntryInfo_s(MetaName.bmin, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bmax, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.dataSize, 32, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.verts, 40, MetaStructureEntryDataType.DataBlockPointer, 4, 3, (MetaName)2),
+                     new MetaStructureEntryInfo_s((MetaName)853977995, 48, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)2337695078, 50, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 52, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
+                case MetaName.CMloArchetypeDef:
+                    return new MetaStructureInfo(MetaName.CMloArchetypeDef, 937664754, 1024, 240,
+                     new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1991964615),
+                     new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
+                     new MetaStructureEntryInfo_s(MetaName.mloFlags, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.entities, 152, MetaStructureEntryDataType.Array, 0, 18, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloRoomDef),
+                     new MetaStructureEntryInfo_s(MetaName.rooms, 168, MetaStructureEntryDataType.Array, 0, 20, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloPortalDef),
+                     new MetaStructureEntryInfo_s(MetaName.portals, 184, MetaStructureEntryDataType.Array, 0, 22, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloEntitySet),
+                     new MetaStructureEntryInfo_s(MetaName.entitySets, 200, MetaStructureEntryDataType.Array, 0, 24, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloTimeCycleModifier),
+                     new MetaStructureEntryInfo_s(MetaName.timeCycleModifiers, 216, MetaStructureEntryDataType.Array, 0, 26, 0)
+                    );
+                case MetaName.CMloRoomDef:
+                    return new MetaStructureInfo(MetaName.CMloRoomDef, 3885428245, 1024, 112,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.blend, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.timecycleName, 68, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.secondaryTimecycleName, 72, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 76, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.portalCount, 80, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.floorId, 84, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)552849982, 88, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.attachedObjects, 96, MetaStructureEntryDataType.Array, 0, 10, 0)
+                    );
+                case MetaName.CMloPortalDef:
+                    return new MetaStructureInfo(MetaName.CMloPortalDef, 1110221513, 768, 64,
+                     new MetaStructureEntryInfo_s(MetaName.roomFrom, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.roomTo, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.mirrorPriority, 20, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.opacity, 24, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.audioOcclusion, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.corners, 32, MetaStructureEntryDataType.Array, 0, 6, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.attachedObjects, 48, MetaStructureEntryDataType.Array, 0, 8, 0)
+                    );
+                case MetaName.CMloTimeCycleModifier:
+                    return new MetaStructureInfo(MetaName.CMloTimeCycleModifier, 838874674, 1024, 48,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.sphere, 16, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.percentage, 32, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.range, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.startHour, 40, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.endHour, 44, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
+                case MetaName.CExtensionDefParticleEffect:
+                    return new MetaStructureInfo(MetaName.CExtensionDefParticleEffect, 466596385, 1024, 96,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.fxName, 48, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.fxType, 64, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.boneTag, 68, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.scale, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.probability, 76, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 80, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.color, 84, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
+                case MetaName.CCompositeEntityType:
+                    return new MetaStructureInfo(MetaName.CCompositeEntityType, 659539004, 1024, 304,
+                     new MetaStructureEntryInfo_s(MetaName.Name, 0, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                     new MetaStructureEntryInfo_s(MetaName.lodDist, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 68, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 72, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bbMin, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bbMax, 96, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bsCentre, 112, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bsRadius, 128, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.StartModel, 136, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                     new MetaStructureEntryInfo_s(MetaName.EndModel, 200, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                     new MetaStructureEntryInfo_s(MetaName.StartImapFile, 264, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.EndImapFile, 268, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.PtFxAssetName, 272, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1980345114),
+                     new MetaStructureEntryInfo_s(MetaName.Animations, 280, MetaStructureEntryDataType.Array, 0, 13, 0)
+                    );
+                case (MetaName)1980345114:
+                    return new MetaStructureInfo((MetaName)1980345114, 4110496011, 768, 216,
+                     new MetaStructureEntryInfo_s(MetaName.AnimDict, 0, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                     new MetaStructureEntryInfo_s(MetaName.AnimName, 64, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                     new MetaStructureEntryInfo_s(MetaName.AnimatedModel, 128, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                     new MetaStructureEntryInfo_s(MetaName.punchInPhase, 192, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.punchOutPhase, 196, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)3430328684),
+                     new MetaStructureEntryInfo_s(MetaName.effectsData, 200, MetaStructureEntryDataType.Array, 0, 5, 0)
+                    );
+                case (MetaName)3430328684:
+                    return new MetaStructureInfo((MetaName)3430328684, 1724963966, 1024, 160,
+                     new MetaStructureEntryInfo_s(MetaName.fxType, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.fxOffsetPos, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.fxOffsetRot, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.boneTag, 48, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.startPhase, 52, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.endPhase, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ptFxIsTriggered, 60, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ptFxTag, 61, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                     new MetaStructureEntryInfo_s(MetaName.ptFxScale, 128, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ptFxProbability, 132, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ptFxHasTint, 136, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ptFxTintR, 137, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ptFxTintG, 138, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ptFxTintB, 139, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ptFxSize, 144, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0)
+                    );
+                case MetaName.CExtensionDefAudioCollisionSettings:
+                    return new MetaStructureInfo(MetaName.CExtensionDefAudioCollisionSettings, 2701897500, 1024, 48,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.settings, 32, MetaStructureEntryDataType.Hash, 0, 0, 0)
+                    );
+                case MetaName.CExtensionDefAudioEmitter:
+                    return new MetaStructureInfo(MetaName.CExtensionDefAudioEmitter, 15929839, 1024, 64,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.effectHash, 48, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
+                case MetaName.CExtensionDefExplosionEffect:
+                    return new MetaStructureInfo(MetaName.CExtensionDefExplosionEffect, 2840366784, 1024, 80,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.explosionName, 48, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.boneTag, 64, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.explosionTag, 68, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.explosionType, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 76, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
+                case MetaName.CExtensionDefLadder:
+                    return new MetaStructureInfo(MetaName.CExtensionDefLadder, 1978210597, 1024, 96,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bottom, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.top, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.normal, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.materialType, 80, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1294270217),
+                     new MetaStructureEntryInfo_s(MetaName.template, 84, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.canGetOffAtTop, 88, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.canGetOffAtBottom, 89, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                    );
+                case MetaName.CExtensionDefBuoyancy:
+                    return new MetaStructureInfo(MetaName.CExtensionDefBuoyancy, 2383039928, 1024, 32,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0)
+                    );
+                case MetaName.CExtensionDefExpression:
+                    return new MetaStructureInfo(MetaName.CExtensionDefExpression, 24441706, 1024, 48,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)1095612811, 32, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.expressionName, 36, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)2766477159, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)1562817888, 44, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                    );
+                case MetaName.CExtensionDefLightShaft:
+                    return new MetaStructureInfo(MetaName.CExtensionDefLightShaft, 2526429398, 1024, 176,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.cornerA, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.cornerB, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.cornerC, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.cornerD, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.direction, 96, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.directionAmount, 112, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.length, 116, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)1616789093, 120, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)120454521, 124, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)1297365553, 128, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)75548206, 132, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)40301253, 136, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)475013030, 140, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.color, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.intensity, 148, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flashiness, 152, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.densityType, 160, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1931949281),
+                     new MetaStructureEntryInfo_s(MetaName.volumeType, 164, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)2266515059),
+                     new MetaStructureEntryInfo_s(MetaName.softness, 168, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)59101696, 172, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                    );
+                case MetaName.VECTOR3:
+                    return new MetaStructureInfo(MetaName.VECTOR3, 2751397072, 512, 12,
+                     new MetaStructureEntryInfo_s(MetaName.x, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.y, 4, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.z, 8, MetaStructureEntryDataType.Float, 0, 0, 0)
+                    );
+                case (MetaName)2858946626:
+                    return new MetaStructureInfo((MetaName)2858946626, 1792487819, 768, 40,
+                     new MetaStructureEntryInfo_s((MetaName)2598445407, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)94549140),
+                     new MetaStructureEntryInfo_s((MetaName)3902803273, 8, MetaStructureEntryDataType.Array, 0, 1, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CAnchorProps),
+                     new MetaStructureEntryInfo_s(MetaName.aAnchors, 24, MetaStructureEntryDataType.Array, 0, 3, 0)
+                    );
+                case (MetaName)376833625:
+                    return new MetaStructureInfo((MetaName)376833625, 4030871161, 768, 112,
+                     new MetaStructureEntryInfo_s((MetaName)1235281004, 0, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)4086467184, 1, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)911147899, 2, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)315291935, 3, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)2996560424, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, MetaName.PsoPOINTER),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)3538495220),
+                     new MetaStructureEntryInfo_s((MetaName)3796409423, 16, MetaStructureEntryDataType.Array, 0, 6, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)253191135),
+                     new MetaStructureEntryInfo_s((MetaName)2131007641, 32, MetaStructureEntryDataType.Array, 0, 8, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CComponentInfo),
+                     new MetaStructureEntryInfo_s(MetaName.compInfos, 48, MetaStructureEntryDataType.Array, 0, 10, 0),
+                     new MetaStructureEntryInfo_s(MetaName.propInfo, 64, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)2858946626),
+                     new MetaStructureEntryInfo_s(MetaName.dlcName, 104, MetaStructureEntryDataType.Hash, 0, 0, 0)
+                    );
+                case (MetaName)3538495220:
+                    return new MetaStructureInfo((MetaName)3538495220, 2024084511, 768, 24,
+                     new MetaStructureEntryInfo_s((MetaName)3371516811, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1535046754),
+                     new MetaStructureEntryInfo_s((MetaName)1756136273, 8, MetaStructureEntryDataType.Array, 0, 1, 0)
+                    );
+                case (MetaName)2236980467:
+                    return new MetaStructureInfo((MetaName)2236980467, 508935687, 0, 24,
+                     new MetaStructureEntryInfo_s((MetaName)2828247905, 0, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                    );
+                case (MetaName)1535046754:
+                    return new MetaStructureInfo((MetaName)1535046754, 124073662, 768, 48,
+                     new MetaStructureEntryInfo_s(MetaName.propMask, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)2806194106, 1, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1036962405),
+                     new MetaStructureEntryInfo_s(MetaName.aTexData, 8, MetaStructureEntryDataType.Array, 0, 2, 0),
+                     new MetaStructureEntryInfo_s(MetaName.clothData, 24, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)2236980467)
+                    );
+                case (MetaName)1036962405:
+                    return new MetaStructureInfo((MetaName)1036962405, 4272717794, 0, 3,
+                     new MetaStructureEntryInfo_s(MetaName.texId, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.distribution, 1, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
+                    );
+                case MetaName.CComponentInfo:
+                    return new MetaStructureInfo(MetaName.CComponentInfo, 3693847250, 512, 48,
+                     new MetaStructureEntryInfo_s((MetaName)802196719, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)4233133352, 4, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)128864925, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 2, (MetaName)5),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.inclusions, 32, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
+                     new MetaStructureEntryInfo_s(MetaName.exclusions, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
+                     new MetaStructureEntryInfo_s((MetaName)1613922652, 40, MetaStructureEntryDataType.ShortFlags, 0, 16, (MetaName)884254308),
+                     new MetaStructureEntryInfo_s((MetaName)2114993291, 42, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)3509540765, 44, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)4196345791, 45, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
+                    );
+                case (MetaName)94549140:
+                    return new MetaStructureInfo((MetaName)94549140, 2029738350, 768, 56,
+                     new MetaStructureEntryInfo_s(MetaName.audioId, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.expressionMods, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, (MetaName)5),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)254518642),
+                     new MetaStructureEntryInfo_s(MetaName.texData, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
+                     new MetaStructureEntryInfo_s(MetaName.renderFlags, 40, MetaStructureEntryDataType.IntFlags1, 0, 3, (MetaName)4212977111),
+                     new MetaStructureEntryInfo_s(MetaName.propFlags, 44, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 48, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.anchorId, 50, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.propId, 51, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)2894625425, 52, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
+                    );
+                case (MetaName)254518642:
+                    return new MetaStructureInfo((MetaName)254518642, 2767296137, 512, 12,
+                     new MetaStructureEntryInfo_s(MetaName.inclusions, 0, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
+                     new MetaStructureEntryInfo_s(MetaName.exclusions, 4, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
+                     new MetaStructureEntryInfo_s(MetaName.texId, 8, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.inclusionId, 9, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.exclusionId, 10, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.distribution, 11, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
+                    );
+                case MetaName.CAnchorProps:
+                    return new MetaStructureInfo(MetaName.CAnchorProps, 403574180, 768, 24,
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.props, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.anchor, 16, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)2834549053)
+                    );
+                case (MetaName)253191135:
+                    return new MetaStructureInfo((MetaName)253191135, 3120284999, 512, 48,
+                     new MetaStructureEntryInfo_s(MetaName.name, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)173599222, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, MetaName.PsoPOINTER),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)2991454271, 16, MetaStructureEntryDataType.ArrayOfBytes, 0, 3, MetaName.PsoPOINTER),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)3598106198, 28, MetaStructureEntryDataType.ArrayOfBytes, 0, 5, (MetaName)6),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)2095974912, 34, MetaStructureEntryDataType.ArrayOfBytes, 0, 7, (MetaName)6),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)672172037, 40, MetaStructureEntryDataType.ArrayOfBytes, 0, 9, (MetaName)6)
+                    );
+                case MetaName.CExtensionDefDoor:
+                    return new MetaStructureInfo(MetaName.CExtensionDefDoor, 2671601385, 1024, 48,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.enableLimitAngle, 32, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.startsLocked, 33, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.canBreak, 34, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.limitAngle, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.doorTargetRatio, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.audioHash, 44, MetaStructureEntryDataType.Hash, 0, 0, 0)
+                    );
+                case MetaName.CMloEntitySet:
+                    return new MetaStructureInfo(MetaName.CMloEntitySet, 4180211587, 768, 48,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.locations, 16, MetaStructureEntryDataType.Array, 0, 1, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.entities, 32, MetaStructureEntryDataType.Array, 0, 3, 0)
+                    );
+                case MetaName.CExtensionDefSpawnPointOverride:
+                    return new MetaStructureInfo(MetaName.CExtensionDefSpawnPointOverride, 2551875873, 1024, 64,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ScenarioType, 32, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iTimeStartOverride, 36, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.iTimeEndOverride, 37, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Group, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ModelSet, 44, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.AvailabilityInMpSp, 48, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)3573596290),
+                     new MetaStructureEntryInfo_s(MetaName.Flags, 52, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)700327466),
+                     new MetaStructureEntryInfo_s(MetaName.Radius, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.TimeTillPedLeaves, 60, MetaStructureEntryDataType.Float, 0, 0, 0)
+                    );
+                case MetaName.CExtensionDefWindDisturbance:
+                    return new MetaStructureInfo(MetaName.CExtensionDefWindDisturbance, 3971538917, 1024, 96,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.disturbanceType, 48, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.boneTag, 52, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.size, 64, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.strength, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 84, MetaStructureEntryDataType.SignedInt, 0, 0, 0)
+                    );
+                case MetaName.CCarGen:
+                    return new MetaStructureInfo(MetaName.CCarGen, 2345238261, 1024, 80,
+                     new MetaStructureEntryInfo_s(MetaName.position, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.orientX, 32, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.orientY, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.perpendicularLength, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.carModel, 44, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 48, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bodyColorRemap1, 52, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bodyColorRemap2, 56, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bodyColorRemap3, 60, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bodyColorRemap4, 64, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.popGroup, 68, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.livery, 72, MetaStructureEntryDataType.SignedByte, 0, 0, 0)
+                    );
+                case MetaName.rage__spdAABB:
+                    return new MetaStructureInfo(MetaName.rage__spdAABB, 1158138379, 1024, 32,
+                     new MetaStructureEntryInfo_s(MetaName.min, 0, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.max, 16, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
+                    );
+                case MetaName.rage__fwGrassInstanceListDef:
+                    return new MetaStructureInfo(MetaName.rage__fwGrassInstanceListDef, 941808164, 1024, 96,
+                     new MetaStructureEntryInfo_s(MetaName.BatchAABB, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdAABB),
+                     new MetaStructureEntryInfo_s(MetaName.ScaleRange, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.archetypeName, 48, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.lodDist, 52, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.LodFadeStartDist, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.LodInstFadeRange, 60, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.OrientToTerrain, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwGrassInstanceListDef__InstanceData),
+                     new MetaStructureEntryInfo_s(MetaName.InstanceList, 72, MetaStructureEntryDataType.Array, 36, 7, 0)
+                    );
+                case MetaName.rage__fwGrassInstanceListDef__InstanceData:
+                    return new MetaStructureInfo(MetaName.rage__fwGrassInstanceListDef__InstanceData, 2740378365, 256, 16,
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Position, 0, MetaStructureEntryDataType.ArrayOfBytes, 0, 0, (MetaName)3),
+                     new MetaStructureEntryInfo_s(MetaName.NormalX, 6, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.NormalY, 7, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Color, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, (MetaName)3),
+                     new MetaStructureEntryInfo_s(MetaName.Scale, 11, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Ao, 12, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Pad, 13, MetaStructureEntryDataType.ArrayOfBytes, 0, 8, (MetaName)3)
+                    );
+                case MetaName.CExtensionDefProcObject:
+                    return new MetaStructureInfo(MetaName.CExtensionDefProcObject, 3965391891, 1024, 80,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.radiusInner, 32, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.radiusOuter, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.spacing, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.minScale, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.maxScale, 48, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)3913056845, 52, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)147400493, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)2591582364, 60, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)3889902555, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.objectHash, 68, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 72, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                    );
+                case MetaName.rage__phVerletClothCustomBounds:
+                    return new MetaStructureInfo(MetaName.rage__phVerletClothCustomBounds, 2075461750, 768, 32,
+                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1701774085),
+                     new MetaStructureEntryInfo_s(MetaName.CollisionData, 16, MetaStructureEntryDataType.Array, 0, 1, 0)
+                    );
+                case (MetaName)1701774085:/*.SectionUNKNOWN1*/
+                    return new MetaStructureInfo((MetaName)1701774085, 2859775340, 1024, 96,
+                     new MetaStructureEntryInfo_s(MetaName.OwnerName, 0, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Rotation, 16, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Normal, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.CapsuleRadius, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.CapsuleLen, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.CapsuleHalfHeight, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.CapsuleHalfWidth, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.Flags, 80, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)3044470860)
+                    );
 
                 default:
                     return null;
@@ -809,109 +1245,168 @@ namespace CodeWalker.GameFiles
             //to generate enuminfos
             switch (name)
             {
-                case (MetaName)1264241711:
-                    return new MetaEnumInfo((MetaName)1264241711, 1856311430,
-                    new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_HD, 0),
-                    new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_LOD, 1),
-                    new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD1, 2),
-                    new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD2, 3),
-                    new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD3, 4),
-                    new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_ORPHANHD, 5),
-                    new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD4, 6)
-                    );
-                case (MetaName)648413703:
-                    return new MetaEnumInfo((MetaName)648413703, 2200357711,
-                    new MetaEnumEntryInfo_s(MetaName.PRI_REQUIRED, 0),
-                    new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_HIGH, 1),
-                    new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_MEDIUM, 2),
-                    new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_LOW, 3)
+                case (MetaName)700327466:
+                    return new MetaEnumInfo((MetaName)700327466, 2814596095,
+                     new MetaEnumEntryInfo_s(MetaName.IgnoreMaxInRange, 0),
+                     new MetaEnumEntryInfo_s(MetaName.NoSpawn, 1),
+                     new MetaEnumEntryInfo_s(MetaName.StationaryReactions, 2),
+                     new MetaEnumEntryInfo_s((MetaName)3257836369, 3),
+                     new MetaEnumEntryInfo_s((MetaName)2165609255, 4),
+                     new MetaEnumEntryInfo_s(MetaName.ActivateVehicleSiren, 5),
+                     new MetaEnumEntryInfo_s(MetaName.AggressiveVehicleDriving, 6),
+                     new MetaEnumEntryInfo_s((MetaName)2004780781, 7),
+                     new MetaEnumEntryInfo_s((MetaName)536864854, 8),
+                     new MetaEnumEntryInfo_s((MetaName)3441065168, 9),
+                     new MetaEnumEntryInfo_s(MetaName.AerialVehiclePoint, 10),
+                     new MetaEnumEntryInfo_s(MetaName.TerritorialScenario, 11),
+                     new MetaEnumEntryInfo_s((MetaName)3690227693, 12),
+                     new MetaEnumEntryInfo_s((MetaName)1601179199, 13),
+                     new MetaEnumEntryInfo_s((MetaName)2583152330, 14),
+                     new MetaEnumEntryInfo_s((MetaName)3490317520, 15),
+                     new MetaEnumEntryInfo_s(MetaName.InWater, 16),
+                     new MetaEnumEntryInfo_s((MetaName)1269249358, 17),
+                     new MetaEnumEntryInfo_s(MetaName.OpenDoor, 18),
+                     new MetaEnumEntryInfo_s(MetaName.PreciseUseTime, 19),
+                     new MetaEnumEntryInfo_s((MetaName)2247631388, 20),
+                     new MetaEnumEntryInfo_s((MetaName)4100708934, 21),
+                     new MetaEnumEntryInfo_s(MetaName.ExtendedRange, 22),
+                     new MetaEnumEntryInfo_s(MetaName.ShortRange, 23),
+                     new MetaEnumEntryInfo_s(MetaName.HighPriority, 24),
+                     new MetaEnumEntryInfo_s(MetaName.IgnoreLoitering, 25),
+                     new MetaEnumEntryInfo_s(MetaName.UseSearchlight, 26),
+                     new MetaEnumEntryInfo_s(MetaName.ResetNoCollisionOnCleanUp, 27),
+                     new MetaEnumEntryInfo_s((MetaName)3304563391, 28),
+                     new MetaEnumEntryInfo_s((MetaName)1111379709, 29),
+                     new MetaEnumEntryInfo_s(MetaName.IgnoreWeatherRestrictions, 30)
                     );
                 case (MetaName)3573596290:
                     return new MetaEnumInfo((MetaName)3573596290, 671739257,
-                    new MetaEnumEntryInfo_s(MetaName.kBoth, 0),
-                    new MetaEnumEntryInfo_s(MetaName.kOnlySp, 1),
-                    new MetaEnumEntryInfo_s(MetaName.kOnlyMp, 2)
+                     new MetaEnumEntryInfo_s(MetaName.kBoth, 0),
+                     new MetaEnumEntryInfo_s(MetaName.kOnlySp, 1),
+                     new MetaEnumEntryInfo_s(MetaName.kOnlyMp, 2)
                     );
-                case (MetaName)700327466:
-                    return new MetaEnumInfo((MetaName)700327466, 2814596095,
-                    new MetaEnumEntryInfo_s(MetaName.IgnoreMaxInRange, 0),
-                    new MetaEnumEntryInfo_s(MetaName.NoSpawn, 1),
-                    new MetaEnumEntryInfo_s(MetaName.StationaryReactions, 2),
-                    new MetaEnumEntryInfo_s((MetaName)3257836369, 3),
-                    new MetaEnumEntryInfo_s((MetaName)2165609255, 4),
-                    new MetaEnumEntryInfo_s(MetaName.ActivateVehicleSiren, 5),
-                    new MetaEnumEntryInfo_s(MetaName.AggressiveVehicleDriving, 6),
-                    new MetaEnumEntryInfo_s((MetaName)2004780781, 7),
-                    new MetaEnumEntryInfo_s((MetaName)536864854, 8),
-                    new MetaEnumEntryInfo_s((MetaName)3441065168, 9),
-                    new MetaEnumEntryInfo_s(MetaName.AerialVehiclePoint, 10),
-                    new MetaEnumEntryInfo_s(MetaName.TerritorialScenario, 11),
-                    new MetaEnumEntryInfo_s((MetaName)3690227693, 12),
-                    new MetaEnumEntryInfo_s((MetaName)1601179199, 13),
-                    new MetaEnumEntryInfo_s((MetaName)2583152330, 14),
-                    new MetaEnumEntryInfo_s((MetaName)3490317520, 15),
-                    new MetaEnumEntryInfo_s(MetaName.InWater, 16),
-                    new MetaEnumEntryInfo_s((MetaName)1269249358, 17),
-                    new MetaEnumEntryInfo_s(MetaName.OpenDoor, 18),
-                    new MetaEnumEntryInfo_s(MetaName.PreciseUseTime, 19),
-                    new MetaEnumEntryInfo_s((MetaName)2247631388, 20),
-                    new MetaEnumEntryInfo_s((MetaName)4100708934, 21),
-                    new MetaEnumEntryInfo_s(MetaName.ExtendedRange, 22),
-                    new MetaEnumEntryInfo_s(MetaName.ShortRange, 23),
-                    new MetaEnumEntryInfo_s(MetaName.HighPriority, 24),
-                    new MetaEnumEntryInfo_s(MetaName.IgnoreLoitering, 25),
-                    new MetaEnumEntryInfo_s(MetaName.UseSearchlight, 26),
-                    new MetaEnumEntryInfo_s(MetaName.ResetNoCollisionOnCleanUp, 27),
-                    new MetaEnumEntryInfo_s((MetaName)3304563391, 28),
-                    new MetaEnumEntryInfo_s((MetaName)1111379709, 29),
-                    new MetaEnumEntryInfo_s(MetaName.IgnoreWeatherRestrictions, 30)
-                    );
-                case (MetaName)3044470860:
-                    return new MetaEnumInfo((MetaName)3044470860, 1585854303,
-                    new MetaEnumEntryInfo_s((MetaName)997866013, 0)
-                    );
-
-
                 case (MetaName)3609807418:
                     return new MetaEnumInfo((MetaName)3609807418, 3326075799,
-                    new MetaEnumEntryInfo_s(MetaName.Move, 0),
-                    new MetaEnumEntryInfo_s((MetaName)7865678, 1),
-                    new MetaEnumEntryInfo_s(MetaName.MoveFollowMaster, 2)
+                     new MetaEnumEntryInfo_s(MetaName.Move, 0),
+                     new MetaEnumEntryInfo_s((MetaName)7865678, 1),
+                     new MetaEnumEntryInfo_s(MetaName.MoveFollowMaster, 2)
                     );
                 case (MetaName)3971773454:
                     return new MetaEnumInfo((MetaName)3971773454, 3016128742,
-                    new MetaEnumEntryInfo_s(MetaName.Direct, 0),
-                    new MetaEnumEntryInfo_s(MetaName.NavMesh, 1),
-                    new MetaEnumEntryInfo_s(MetaName.Roads, 2)
+                     new MetaEnumEntryInfo_s(MetaName.Direct, 0),
+                     new MetaEnumEntryInfo_s(MetaName.NavMesh, 1),
+                     new MetaEnumEntryInfo_s(MetaName.Roads, 2)
                     );
                 case (MetaName)941086046:
                     return new MetaEnumInfo((MetaName)941086046, 1112851290,
-                    new MetaEnumEntryInfo_s((MetaName)3279574318, 0),
-                    new MetaEnumEntryInfo_s((MetaName)2212923970, 1),
-                    new MetaEnumEntryInfo_s((MetaName)4022799658, 2),
-                    new MetaEnumEntryInfo_s((MetaName)1425672334, 3),
-                    new MetaEnumEntryInfo_s((MetaName)957720931, 4),
-                    new MetaEnumEntryInfo_s((MetaName)3795195414, 5),
-                    new MetaEnumEntryInfo_s((MetaName)2834622009, 6),
-                    new MetaEnumEntryInfo_s((MetaName)1876554076, 7),
-                    new MetaEnumEntryInfo_s((MetaName)698543797, 8),
-                    new MetaEnumEntryInfo_s((MetaName)1544199634, 9),
-                    new MetaEnumEntryInfo_s((MetaName)2725613303, 10),
-                    new MetaEnumEntryInfo_s((MetaName)4033265820, 11),
-                    new MetaEnumEntryInfo_s((MetaName)3054809929, 12),
-                    new MetaEnumEntryInfo_s((MetaName)3911005380, 13),
-                    new MetaEnumEntryInfo_s((MetaName)3717649022, 14),
-                    new MetaEnumEntryInfo_s((MetaName)3356026130, 15)
+                     new MetaEnumEntryInfo_s((MetaName)3279574318, 0),
+                     new MetaEnumEntryInfo_s((MetaName)2212923970, 1),
+                     new MetaEnumEntryInfo_s((MetaName)4022799658, 2),
+                     new MetaEnumEntryInfo_s((MetaName)1425672334, 3),
+                     new MetaEnumEntryInfo_s((MetaName)957720931, 4),
+                     new MetaEnumEntryInfo_s((MetaName)3795195414, 5),
+                     new MetaEnumEntryInfo_s((MetaName)2834622009, 6),
+                     new MetaEnumEntryInfo_s((MetaName)1876554076, 7),
+                     new MetaEnumEntryInfo_s((MetaName)698543797, 8),
+                     new MetaEnumEntryInfo_s((MetaName)1544199634, 9),
+                     new MetaEnumEntryInfo_s((MetaName)2725613303, 10),
+                     new MetaEnumEntryInfo_s((MetaName)4033265820, 11),
+                     new MetaEnumEntryInfo_s((MetaName)3054809929, 12),
+                     new MetaEnumEntryInfo_s((MetaName)3911005380, 13),
+                     new MetaEnumEntryInfo_s((MetaName)3717649022, 14),
+                     new MetaEnumEntryInfo_s((MetaName)3356026130, 15)
                     );
                 case (MetaName)1991964615:
                     return new MetaEnumInfo((MetaName)1991964615, 1866031916,
-                    new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_UNINITIALIZED, 0),
-                    new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_FRAGMENT, 1),
-                    new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_DRAWABLE, 2),
-                    new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_DRAWABLEDICTIONARY, 3),
-                    new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_ASSETLESS, 4)
+                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_UNINITIALIZED, 0),
+                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_FRAGMENT, 1),
+                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_DRAWABLE, 2),
+                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_DRAWABLEDICTIONARY, 3),
+                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_ASSETLESS, 4)
                     );
-
+                case (MetaName)1264241711:
+                    return new MetaEnumInfo((MetaName)1264241711, 1856311430,
+                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_HD, 0),
+                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_LOD, 1),
+                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD1, 2),
+                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD2, 3),
+                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD3, 4),
+                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_ORPHANHD, 5),
+                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD4, 6)
+                    );
+                case (MetaName)648413703:
+                    return new MetaEnumInfo((MetaName)648413703, 2200357711,
+                     new MetaEnumEntryInfo_s(MetaName.PRI_REQUIRED, 0),
+                     new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_HIGH, 1),
+                     new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_MEDIUM, 2),
+                     new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_LOW, 3)
+                    );
+                case (MetaName)1294270217:
+                    return new MetaEnumInfo((MetaName)1294270217, 3514570158,
+                     new MetaEnumEntryInfo_s(MetaName.METAL_SOLID_LADDER, 0),
+                     new MetaEnumEntryInfo_s(MetaName.METAL_LIGHT_LADDER, 1),
+                     new MetaEnumEntryInfo_s((MetaName)3202617440, 2)
+                    );
+                case (MetaName)1931949281:
+                    return new MetaEnumInfo((MetaName)1931949281, 3539601182,
+                     new MetaEnumEntryInfo_s((MetaName)676250331, 0),
+                     new MetaEnumEntryInfo_s((MetaName)2399586564, 1),
+                     new MetaEnumEntryInfo_s((MetaName)2057886646, 2),
+                     new MetaEnumEntryInfo_s((MetaName)1816804348, 3),
+                     new MetaEnumEntryInfo_s((MetaName)152140774, 4),
+                     new MetaEnumEntryInfo_s((MetaName)2088805984, 5),
+                     new MetaEnumEntryInfo_s((MetaName)1098824079, 6),
+                     new MetaEnumEntryInfo_s((MetaName)1492299290, 7)
+                    );
+                case (MetaName)2266515059:
+                    return new MetaEnumInfo((MetaName)2266515059, 4287472345,
+                     new MetaEnumEntryInfo_s((MetaName)665241531, 0),
+                     new MetaEnumEntryInfo_s((MetaName)462992848, 1)
+                    );
+                case (MetaName)884254308:
+                    return new MetaEnumInfo((MetaName)884254308, 3472084374,
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_INVALID, -1),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_HEAD, 0),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_BERD, 1),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_HAIR, 2),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_UPPR, 3),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_LOWR, 4),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_HAND, 5),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_FEET, 6),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_TEEF, 7),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_ACCS, 8),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_TASK, 9),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_DECL, 10),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_JBIB, 11),
+                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_MAX, 12)
+                    );
+                case (MetaName)4212977111:
+                    return new MetaEnumInfo((MetaName)4212977111, 1551913633,
+                     new MetaEnumEntryInfo_s((MetaName)3757767268, 0),
+                     new MetaEnumEntryInfo_s((MetaName)3735238938, 1),
+                     new MetaEnumEntryInfo_s((MetaName)3395845123, 2)
+                    );
+                case (MetaName)2834549053:
+                    return new MetaEnumInfo((MetaName)2834549053, 1309372691,
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_HEAD, 0),
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_EYES, 1),
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_EARS, 2),
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_MOUTH, 3),
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_LEFT_HAND, 4),
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_RIGHT_HAND, 5),
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_LEFT_WRIST, 6),
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_RIGHT_WRIST, 7),
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_HIP, 8),
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_LEFT_FOOT, 9),
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_RIGHT_FOOT, 10),
+                     new MetaEnumEntryInfo_s((MetaName)604819740, 11),
+                     new MetaEnumEntryInfo_s((MetaName)2358626934, 12),
+                     new MetaEnumEntryInfo_s(MetaName.NUM_ANCHORS, 13)
+                    );
+                case (MetaName)3044470860:
+                    return new MetaEnumInfo((MetaName)3044470860, 1585854303,
+                     new MetaEnumEntryInfo_s((MetaName)997866013, 0)
+                    );
 
                 default:
                     return null;

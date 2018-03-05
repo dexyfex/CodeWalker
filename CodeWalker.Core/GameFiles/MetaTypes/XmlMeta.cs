@@ -549,9 +549,10 @@ namespace CodeWalker.GameFiles
 
                 for (int i = 0; i < split.Length; i++)
                 {
-                    if (!string.IsNullOrEmpty(split[i]))
+                    var ts = split[i]?.Trim();
+                    if (!string.IsNullOrEmpty(ts))
                     {
-                        var val = Convert.ToSingle(split[i]);
+                        var val = FloatUtil.Parse(ts);// Convert.ToSingle(split[i]);
                         data.Add(val);
                     }
                 }
@@ -564,21 +565,42 @@ namespace CodeWalker.GameFiles
         {
             var items = new List<Vector4>();
 
-            foreach (XmlNode cnode in node.ChildNodes)
+
+            var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
+
+
+            float x = 0f;
+            float y = 0f;
+            float z = 0f;
+            float w = 0f;
+
+            for (int i = 0; i < split.Length; i++)
             {
-
-                var split = Regex.Split(node.InnerText, @",\s");
-
-                float x = FloatUtil.Parse(split[0]);
-                float y = FloatUtil.Parse(split[1]);
-                float z = FloatUtil.Parse(split[2]);
-                float w = 0f;
-
-                var val = new Vector4(x, y, z, w);
-
-                items.Add(val);
-                break;
+                var s = split[i]?.Trim();
+                if (string.IsNullOrEmpty(s)) continue;
+                var split2 = Regex.Split(s, @"[\s\t]");
+                int c = 0;
+                x = 0f; y = 0f; z = 0f;
+                for (int n = 0; n < split2.Length; n++)
+                {
+                    var ts = split2[n]?.Trim();
+                    if (string.IsNullOrEmpty(ts)) continue;
+                    var f = FloatUtil.Parse(ts);
+                    switch (c)
+                    {
+                        case 0: x = f; break;
+                        case 1: y = f; break;
+                        case 2: z = f; break;
+                    }
+                    c++;
+                }
+                if (c >= 3)
+                {
+                    var val = new Vector4(x, y, z, w);
+                    items.Add(val);
+                }
             }
+
 
             return mb.AddPaddedVector3ArrayPtr(items.ToArray());
         }

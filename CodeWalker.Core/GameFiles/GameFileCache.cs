@@ -139,6 +139,7 @@ namespace CodeWalker.GameFiles
                 InitDlc();
 
 
+                //TestMetas();
                 //TestYcds();
                 //TestYmaps();
                 //TestPlacements();
@@ -2106,6 +2107,56 @@ namespace CodeWalker.GameFiles
 
 
 
+        public void TestMetas()
+        {
+            //find all RSC meta files and generate the MetaTypes init code
+
+            MetaTypes.Clear();
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    try
+                    {
+                        var n = entry.NameLower;
+                        if (n.EndsWith(".ymap"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            YmapFile ymapfile = RpfMan.GetFile<YmapFile>(entry);
+                            if ((ymapfile != null) && (ymapfile.Meta != null))
+                            {
+                                MetaTypes.EnsureMetaTypes(ymapfile.Meta);
+                            }
+                        }
+                        else if (n.EndsWith(".ytyp"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            YtypFile ytypfile = RpfMan.GetFile<YtypFile>(entry);
+                            if ((ytypfile != null) && (ytypfile.Meta != null))
+                            {
+                                MetaTypes.EnsureMetaTypes(ytypfile.Meta);
+                            }
+                        }
+                        else if (n.EndsWith(".ymt"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            YmtFile ymtfile = RpfMan.GetFile<YmtFile>(entry);
+                            if ((ymtfile != null) && (ymtfile.Meta != null))
+                            {
+                                MetaTypes.EnsureMetaTypes(ymtfile.Meta);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                    }
+                }
+            }
+
+            string str = MetaTypes.GetTypesInitString();
+
+        }
         public void TestYcds()
         {
             foreach (RpfFile file in AllRpfs)
