@@ -53,7 +53,7 @@ namespace CodeWalker
         bool rendermaps = false;
         bool renderworld = false;
         int startupviewmode = 0; //0=world, 1=ymap, 2=model
-        string modelname = "dt1_tc_dufo_core";//"dt1_11_fount_decal";//
+        string modelname = "dt1_tc_dufo_core";//"dt1_11_fount_decal";//"v_22_overlays";//
         string[] ymaplist;
 
         Vector3 prevworldpos = new Vector3(0, 0, 100); //also the start pos

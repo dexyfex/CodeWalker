@@ -386,6 +386,7 @@ namespace CodeWalker.Rendering
         public Vector4 WindOverrideParams { get; set; } = Vector4.One;
         public Vector4 globalAnimUV0 { get; set; } = Vector4.Zero;
         public Vector4 globalAnimUV1 { get; set; } = Vector4.Zero;
+        public Vector4 DirtDecalMask { get; set; } = Vector4.Zero;
         public bool SpecOnly { get; set; } = false;
         public float WaveOffset { get; set; } = 0; //for terrainfoam
         public float WaterHeight { get; set; } = 0; //for terrainfoam
@@ -582,6 +583,9 @@ namespace CodeWalker.Rendering
                                 break;
                             case MetaName.HeightOpacity:
                                 HeightOpacity = ((Vector4)param.Data).X;
+                                break;
+                            case MetaName.DirtDecalMask:
+                                DirtDecalMask = ((Vector4)param.Data);
                                 break;
                         }
 

@@ -36,6 +36,7 @@ cbuffer PSGeomVars : register(b2)
     float specularFresnel;
     float wetnessMultiplier;
     uint SpecOnly;
+	float4 TextureAlphaMask;
 }
 
 
@@ -77,6 +78,12 @@ float4 main(VS_OUTPUT input) : SV_TARGET
         if ((IsDecal == 0) && (c.a <= 0.33)) discard;
         if ((IsDecal == 1) && (c.a <= 0.0)) discard;
         if(IsDecal==0) c.a = 1;
+		if (IsDecal == 2)
+		{
+			float4 mask = TextureAlphaMask * c;
+			c.a = saturate(mask.r + mask.g + mask.b + mask.a);
+			c.rgb = 0;
+		}
         c.a = saturate(c.a*AlphaScale);
     }
     if (EnableTint > 0)

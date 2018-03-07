@@ -73,6 +73,7 @@ namespace CodeWalker.Rendering
         public float specularFresnel;
         public float wetnessMultiplier;
         public uint SpecOnly;
+        public Vector4 TextureAlphaMask;
     }
     public struct BasicShaderInstGlobalMatrix
     {
@@ -588,8 +589,11 @@ namespace CodeWalker.Rendering
             uint tintflag = 0;
             if (usetint) tintflag = 1;
 
+            Vector4 textureAlphaMask = Vector4.Zero;
+            uint decalflag = DecalMode ? 1u : 0u;
             uint windflag = geom.EnableWind ? 1u : 0u;
             uint emflag = geom.IsEmissive ? 1u : 0u;
+            uint pstintflag = tintflag;
             var shaderName = geom.DrawableGeom.Shader.Name;
             var shaderFile = geom.DrawableGeom.Shader.FileName;
             switch (shaderFile.Hash)
@@ -606,9 +610,12 @@ namespace CodeWalker.Rendering
                 case 2706821972://{mirror_decal.sps}
                     //if (RenderMode == WorldRenderMode.Default) usediff = false;
                     break;
+                case 2655725442://{decal_dirt.sps}
+                    textureAlphaMask = geom.DirtDecalMask;
+                    decalflag = 2;
+                    break;
             }
 
-            uint pstintflag = tintflag;
             if (VSEntityVars.Vars.IsInstanced>0)
             {
                 pstintflag = 1;
@@ -631,7 +638,7 @@ namespace CodeWalker.Rendering
             PSGeomVars.Vars.EnableNormalMap = usebump ? 1u : 0u;
             PSGeomVars.Vars.EnableSpecMap = usespec ? 1u : 0u;
             PSGeomVars.Vars.EnableDetailMap = usedetl ? 1u : 0u;
-            PSGeomVars.Vars.IsDecal = DecalMode ? 1u : 0u;
+            PSGeomVars.Vars.IsDecal = decalflag;
             PSGeomVars.Vars.IsEmissive = emflag;
             PSGeomVars.Vars.IsDistMap = isdistmap ? 1u : 0u;
             PSGeomVars.Vars.bumpiness = geom.bumpiness;
@@ -645,6 +652,7 @@ namespace CodeWalker.Rendering
             PSGeomVars.Vars.specularFresnel = geom.specularFresnel;
             PSGeomVars.Vars.wetnessMultiplier = geom.wetnessMultiplier;
             PSGeomVars.Vars.SpecOnly = geom.SpecOnly ? 1u : 0u;
+            PSGeomVars.Vars.TextureAlphaMask = textureAlphaMask;
             PSGeomVars.Update(context);
             PSGeomVars.SetPSCBuffer(context, 2);
 
@@ -752,6 +760,7 @@ namespace CodeWalker.Rendering
             PSGeomVars.Vars.specularFresnel = 1.0f;
             PSGeomVars.Vars.wetnessMultiplier = 0.0f;
             PSGeomVars.Vars.SpecOnly = 0;
+            PSGeomVars.Vars.TextureAlphaMask = Vector4.Zero;
             PSGeomVars.Update(context);
             PSGeomVars.SetPSCBuffer(context, 2);
 
