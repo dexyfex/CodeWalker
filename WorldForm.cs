@@ -1232,6 +1232,7 @@ namespace CodeWalker
             const uint cgrn = 4278255360;// (uint)new Color4(0.0f, 1.0f, 0.0f, 1.0f).ToRgba();
             const uint cblu = 4294901760;// (uint)new Color4(0.0f, 0.0f, 1.0f, 1.0f).ToRgba();
             const uint caqu = 4294967040;// (uint)new Color4(0.0f, 1.0f, 1.0f, 1.0f).ToRgba();
+            //const uint cyel = 4278255615;//
 
             if (MouseRayCollisionEnabled && MouseRayCollisionVisible)
             {
@@ -1363,12 +1364,17 @@ namespace CodeWalker
                     VertexTypePC p2 = new VertexTypePC();
                     if (mloa.portals != null)
                     {
-                        p1.Colour = caqu;
-                        p2.Colour = caqu;
                         for (int ip = 0; ip < mloa.portals.Length; ip++)
                         {
                             var portal = mloa.portals[ip];
                             if (portal.Corners == null) continue;
+                            p1.Colour = caqu;
+                            p2.Colour = caqu;
+                            if ((portal._Data.flags & 4) > 0)
+                            {
+                                p1.Colour = cblu;
+                                p2.Colour = cblu;
+                            }
                             for (int ic = 0; ic < portal.Corners.Length; ic++)
                             {
                                 int il = ((ic==0)? portal.Corners.Length : ic) - 1;
