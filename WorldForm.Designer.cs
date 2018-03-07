@@ -145,6 +145,8 @@ namespace CodeWalker
             this.WaitForChildrenCheckBox = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
             this.tabPage9 = new System.Windows.Forms.TabPage();
+            this.SnapGridSizeUpDown = new System.Windows.Forms.NumericUpDown();
+            this.label26 = new System.Windows.Forms.Label();
             this.SkeletonsCheckBox = new System.Windows.Forms.CheckBox();
             this.AudioOuterBoundsCheckBox = new System.Windows.Forms.CheckBox();
             this.PopZonesCheckBox = new System.Windows.Forms.CheckBox();
@@ -258,6 +260,10 @@ namespace CodeWalker
             this.ToolbarTransformSpaceButton = new System.Windows.Forms.ToolStripSplitButton();
             this.ToolbarObjectSpaceButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarWorldSpaceButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSnapButton = new CodeWalker.WinForms.ToolStripSplitButtonFix();
+            this.ToolbarSnapToGroundButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSnapToGridButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSnapToGroundGridButton = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.ToolbarUndoButton = new System.Windows.Forms.ToolStripSplitButton();
             this.ToolbarUndoListButton = new System.Windows.Forms.ToolStripMenuItem();
@@ -278,12 +284,6 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
-            this.ToolbarSnapButton = new CodeWalker.WinForms.ToolStripSplitButtonFix();
-            this.ToolbarSnapToGroundButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSnapToGridButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSnapToGroundGridButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.label26 = new System.Windows.Forms.Label();
-            this.SnapGridSizeUpDown = new System.Windows.Forms.NumericUpDown();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -314,6 +314,7 @@ namespace CodeWalker
             ((System.ComponentModel.ISupportInitialize)(this.FieldOfViewTrackBar)).BeginInit();
             this.tabPage14.SuspendLayout();
             this.tabPage9.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BoundsRangeTrackBar)).BeginInit();
             this.tabPage10.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CloudParamTrackBar)).BeginInit();
@@ -324,7 +325,6 @@ namespace CodeWalker
             this.ToolsMenu.SuspendLayout();
             this.Toolbar.SuspendLayout();
             this.ToolbarPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // StatusStrip
@@ -1785,6 +1785,39 @@ namespace CodeWalker
             this.tabPage9.Text = "Helpers";
             this.tabPage9.UseVisualStyleBackColor = true;
             // 
+            // SnapGridSizeUpDown
+            // 
+            this.SnapGridSizeUpDown.DecimalPlaces = 2;
+            this.SnapGridSizeUpDown.Location = new System.Drawing.Point(86, 291);
+            this.SnapGridSizeUpDown.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.SnapGridSizeUpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.SnapGridSizeUpDown.Name = "SnapGridSizeUpDown";
+            this.SnapGridSizeUpDown.Size = new System.Drawing.Size(108, 20);
+            this.SnapGridSizeUpDown.TabIndex = 49;
+            this.SnapGridSizeUpDown.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            131072});
+            this.SnapGridSizeUpDown.ValueChanged += new System.EventHandler(this.SnapGridSizeUpDown_ValueChanged);
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(4, 293);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(76, 13);
+            this.label26.TabIndex = 48;
+            this.label26.Text = "Snap grid size:";
+            // 
             // SkeletonsCheckBox
             // 
             this.SkeletonsCheckBox.AutoSize = true;
@@ -2641,7 +2674,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(554, 25);
+            this.Toolbar.Size = new System.Drawing.Size(585, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -2897,7 +2930,7 @@ namespace CodeWalker
             // 
             this.ToolbarSelectMloInstanceButton.Name = "ToolbarSelectMloInstanceButton";
             this.ToolbarSelectMloInstanceButton.Size = new System.Drawing.Size(181, 22);
-            this.ToolbarSelectMloInstanceButton.Text = "Mlo Instance";
+            this.ToolbarSelectMloInstanceButton.Text = "Interior Instance";
             this.ToolbarSelectMloInstanceButton.Click += new System.EventHandler(this.ToolbarSelectMloInstanceButton_Click);
             // 
             // ToolbarSelectScenarioButton
@@ -2971,7 +3004,7 @@ namespace CodeWalker
             this.ToolbarObjectSpaceButton.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ToolbarObjectSpaceButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarObjectSpaceButton.Image")));
             this.ToolbarObjectSpaceButton.Name = "ToolbarObjectSpaceButton";
-            this.ToolbarObjectSpaceButton.Size = new System.Drawing.Size(152, 22);
+            this.ToolbarObjectSpaceButton.Size = new System.Drawing.Size(142, 22);
             this.ToolbarObjectSpaceButton.Text = "Object space";
             this.ToolbarObjectSpaceButton.Click += new System.EventHandler(this.ToolbarObjectSpaceButton_Click);
             // 
@@ -2979,9 +3012,48 @@ namespace CodeWalker
             // 
             this.ToolbarWorldSpaceButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarWorldSpaceButton.Image")));
             this.ToolbarWorldSpaceButton.Name = "ToolbarWorldSpaceButton";
-            this.ToolbarWorldSpaceButton.Size = new System.Drawing.Size(152, 22);
+            this.ToolbarWorldSpaceButton.Size = new System.Drawing.Size(142, 22);
             this.ToolbarWorldSpaceButton.Text = "World space";
             this.ToolbarWorldSpaceButton.Click += new System.EventHandler(this.ToolbarWorldSpaceButton_Click);
+            // 
+            // ToolbarSnapButton
+            // 
+            this.ToolbarSnapButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolbarSnapButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolbarSnapToGroundButton,
+            this.ToolbarSnapToGridButton,
+            this.ToolbarSnapToGroundGridButton});
+            this.ToolbarSnapButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapButton.Image")));
+            this.ToolbarSnapButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolbarSnapButton.Name = "ToolbarSnapButton";
+            this.ToolbarSnapButton.Size = new System.Drawing.Size(32, 22);
+            this.ToolbarSnapButton.Text = "Snap to Ground";
+            this.ToolbarSnapButton.ToolTipText = "Snap to Ground";
+            this.ToolbarSnapButton.ButtonClick += new System.EventHandler(this.ToolbarSnapButton_ButtonClick);
+            // 
+            // ToolbarSnapToGroundButton
+            // 
+            this.ToolbarSnapToGroundButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapToGroundButton.Image")));
+            this.ToolbarSnapToGroundButton.Name = "ToolbarSnapToGroundButton";
+            this.ToolbarSnapToGroundButton.Size = new System.Drawing.Size(205, 22);
+            this.ToolbarSnapToGroundButton.Text = "Snap to Ground";
+            this.ToolbarSnapToGroundButton.Click += new System.EventHandler(this.ToolbarSnapToGroundButton_Click);
+            // 
+            // ToolbarSnapToGridButton
+            // 
+            this.ToolbarSnapToGridButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapToGridButton.Image")));
+            this.ToolbarSnapToGridButton.Name = "ToolbarSnapToGridButton";
+            this.ToolbarSnapToGridButton.Size = new System.Drawing.Size(205, 22);
+            this.ToolbarSnapToGridButton.Text = "Snap to Grid";
+            this.ToolbarSnapToGridButton.Click += new System.EventHandler(this.ToolbarSnapToGridButton_Click);
+            // 
+            // ToolbarSnapToGroundGridButton
+            // 
+            this.ToolbarSnapToGroundGridButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapToGroundGridButton.Image")));
+            this.ToolbarSnapToGroundGridButton.Name = "ToolbarSnapToGroundGridButton";
+            this.ToolbarSnapToGroundGridButton.Size = new System.Drawing.Size(205, 22);
+            this.ToolbarSnapToGroundGridButton.Text = "Snap to Grid and Ground";
+            this.ToolbarSnapToGroundGridButton.Click += new System.EventHandler(this.ToolbarSnapToGroundGridButton_Click);
             // 
             // toolStripSeparator2
             // 
@@ -3166,78 +3238,6 @@ namespace CodeWalker
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
             // 
-            // ToolbarSnapButton
-            // 
-            this.ToolbarSnapButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarSnapButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolbarSnapToGroundButton,
-            this.ToolbarSnapToGridButton,
-            this.ToolbarSnapToGroundGridButton});
-            this.ToolbarSnapButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapButton.Image")));
-            this.ToolbarSnapButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarSnapButton.Name = "ToolbarSnapButton";
-            this.ToolbarSnapButton.Size = new System.Drawing.Size(32, 22);
-            this.ToolbarSnapButton.Text = "Snap to Ground";
-            this.ToolbarSnapButton.ToolTipText = "Snap to Ground";
-            this.ToolbarSnapButton.ButtonClick += new System.EventHandler(this.ToolbarSnapButton_ButtonClick);
-            // 
-            // ToolbarSnapToGroundButton
-            // 
-            this.ToolbarSnapToGroundButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapToGroundButton.Image")));
-            this.ToolbarSnapToGroundButton.Name = "ToolbarSnapToGroundButton";
-            this.ToolbarSnapToGroundButton.Size = new System.Drawing.Size(205, 22);
-            this.ToolbarSnapToGroundButton.Text = "Snap to Ground";
-            this.ToolbarSnapToGroundButton.Click += new System.EventHandler(this.ToolbarSnapToGroundButton_Click);
-            // 
-            // ToolbarSnapToGridButton
-            // 
-            this.ToolbarSnapToGridButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapToGridButton.Image")));
-            this.ToolbarSnapToGridButton.Name = "ToolbarSnapToGridButton";
-            this.ToolbarSnapToGridButton.Size = new System.Drawing.Size(205, 22);
-            this.ToolbarSnapToGridButton.Text = "Snap to Grid";
-            this.ToolbarSnapToGridButton.Click += new System.EventHandler(this.ToolbarSnapToGridButton_Click);
-            // 
-            // ToolbarSnapToGroundGridButton
-            // 
-            this.ToolbarSnapToGroundGridButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapToGroundGridButton.Image")));
-            this.ToolbarSnapToGroundGridButton.Name = "ToolbarSnapToGroundGridButton";
-            this.ToolbarSnapToGroundGridButton.Size = new System.Drawing.Size(205, 22);
-            this.ToolbarSnapToGroundGridButton.Text = "Snap to Grid and Ground";
-            this.ToolbarSnapToGroundGridButton.Click += new System.EventHandler(this.ToolbarSnapToGroundGridButton_Click);
-            // 
-            // label26
-            // 
-            this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(4, 293);
-            this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(76, 13);
-            this.label26.TabIndex = 48;
-            this.label26.Text = "Snap grid size:";
-            // 
-            // SnapGridSizeUpDown
-            // 
-            this.SnapGridSizeUpDown.DecimalPlaces = 2;
-            this.SnapGridSizeUpDown.Location = new System.Drawing.Point(86, 291);
-            this.SnapGridSizeUpDown.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.SnapGridSizeUpDown.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.SnapGridSizeUpDown.Name = "SnapGridSizeUpDown";
-            this.SnapGridSizeUpDown.Size = new System.Drawing.Size(108, 20);
-            this.SnapGridSizeUpDown.TabIndex = 49;
-            this.SnapGridSizeUpDown.Value = new decimal(new int[] {
-            100,
-            0,
-            0,
-            131072});
-            this.SnapGridSizeUpDown.ValueChanged += new System.EventHandler(this.SnapGridSizeUpDown_ValueChanged);
-            // 
             // WorldForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3303,6 +3303,7 @@ namespace CodeWalker
             this.tabPage14.PerformLayout();
             this.tabPage9.ResumeLayout(false);
             this.tabPage9.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BoundsRangeTrackBar)).EndInit();
             this.tabPage10.ResumeLayout(false);
             this.tabPage10.PerformLayout();
@@ -3318,7 +3319,6 @@ namespace CodeWalker
             this.Toolbar.PerformLayout();
             this.ToolbarPanel.ResumeLayout(false);
             this.ToolbarPanel.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

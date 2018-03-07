@@ -3441,7 +3441,7 @@ namespace CodeWalker.GameFiles
         timecycleName = 2724323497,
         secondaryTimecycleName = 3255324828,
         portalCount = 1105339827,
-        //exteriorVisibiltyDepth = 552849982, //not correct = spelling error?
+        exteriorVisibiltyDepth = 552849982, //not correct = spelling error?
         attachedObjects = 2382704940,
         roomFrom = 4101034749,
         roomTo = 2607060513,

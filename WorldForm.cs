@@ -1231,6 +1231,7 @@ namespace CodeWalker
 
             const uint cgrn = 4278255360;// (uint)new Color4(0.0f, 1.0f, 0.0f, 1.0f).ToRgba();
             const uint cblu = 4294901760;// (uint)new Color4(0.0f, 0.0f, 1.0f, 1.0f).ToRgba();
+            const uint caqu = 4294967040;// (uint)new Color4(0.0f, 1.0f, 1.0f, 1.0f).ToRgba();
 
             if (MouseRayCollisionEnabled && MouseRayCollisionVisible)
             {
@@ -1353,6 +1354,58 @@ namespace CodeWalker
             {
                 bbmin = selectionItem.AABB.Minimum;
                 bbmax = selectionItem.AABB.Maximum;
+                var mlo = selectionItem.MloEntityDef;
+                var mlop = mlo.Position;
+                var mloa = mlo.Archetype as MloArchetype;
+                if (mloa != null)
+                {
+                    VertexTypePC p1 = new VertexTypePC();
+                    VertexTypePC p2 = new VertexTypePC();
+                    if (mloa.portals != null)
+                    {
+                        p1.Colour = caqu;
+                        p2.Colour = caqu;
+                        for (int ip = 0; ip < mloa.portals.Length; ip++)
+                        {
+                            var portal = mloa.portals[ip];
+                            if (portal.Corners == null) continue;
+                            for (int ic = 0; ic < portal.Corners.Length; ic++)
+                            {
+                                int il = ((ic==0)? portal.Corners.Length : ic) - 1;
+                                p1.Position = mlop + mlo.Orientation.Multiply(portal.Corners[il].XYZ());
+                                p2.Position = mlop + mlo.Orientation.Multiply(portal.Corners[ic].XYZ());
+                                Renderer.SelectionLineVerts.Add(p1);
+                                Renderer.SelectionLineVerts.Add(p2);
+                            }
+                        }
+                    }
+                    if (mloa.rooms != null)
+                    {
+                        MapBox wbox = new MapBox();
+                        wbox.Scale = Vector3.One;
+                        for (int ir = 0; ir < mloa.rooms.Length; ir++)
+                        {
+                            var room = mloa.rooms[ir];
+
+                            wbox.CamRelPos = mlop - camera.Position;
+                            wbox.BBMin = room._Data.bbMin;// + offset;
+                            wbox.BBMax = room._Data.bbMax;// + offset;
+                            wbox.Orientation = mlo.Orientation;
+                            if ((ir == 0) || (room.RoomName == "limbo"))
+                            {
+                                bbmin = room._Data.bbMin;
+                                bbmax = room._Data.bbMax;
+                                //////Renderer.BoundingBoxes.Add(wbox);
+                            }
+                            else
+                            {
+                                wbox.BBMin = room.BBMin_CW; //hack method to use CW calculated room AABBs, 
+                                wbox.BBMax = room.BBMax_CW; //R* ones are right size, but wrong position??
+                                Renderer.WhiteBoxes.Add(wbox);
+                            }
+                        }
+                    }
+                }
             }
             if ((selectionItem.GrassBatch != null) || (selectionItem.ArchetypeExtension != null) || (selectionItem.EntityExtension != null) || (selectionItem.CollisionBounds != null))
             {
@@ -1393,7 +1446,6 @@ namespace CodeWalker
                     Renderer.WhiteBoxes.Add(wbox);
                 }
             }
-
 
             if (mode == BoundsShaderMode.Box)
             {
@@ -2455,6 +2507,7 @@ namespace CodeWalker
                 for (int i = 0; i < ymap.MloEntities.Length; i++)
                 {
                     var ent = ymap.MloEntities[i];
+                    if (SelectedItem.MloEntityDef == ent) continue;
                     MapBox mb = new MapBox();
                     mb.CamRelPos = ent.Position - camera.Position;
                     mb.BBMin = /*ent?.BBMin ??*/ new Vector3(-1.5f);

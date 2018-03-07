@@ -840,7 +840,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.flags, 76, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.portalCount, 80, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.floorId, 84, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)552849982, 88, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.exteriorVisibiltyDepth, 88, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.attachedObjects, 96, MetaStructureEntryDataType.Array, 0, 10, 0)
                     );
@@ -2411,7 +2411,7 @@ namespace CodeWalker.GameFiles
         public uint flags { get; set; } //76   76: UnsignedInt: 0: flags
         public uint portalCount { get; set; } //80   80: UnsignedInt: 0: portalCount//1105339827
         public int floorId { get; set; } //84   84: SignedInt: 0: floorId//2187650609
-        public int Unk_552849982 { get; set; } //88   88: SignedInt: 0: exteriorVisibiltyDepth//552849982
+        public int exteriorVisibiltyDepth { get; set; } //88   88: SignedInt: 0: exteriorVisibiltyDepth//552849982
         public uint Unused6 { get; set; }//92
         public Array_uint attachedObjects { get; set; } //96   96: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
     }
@@ -2421,6 +2421,14 @@ namespace CodeWalker.GameFiles
         public CMloRoomDef Data { get { return _Data; } }
         public string RoomName { get; set; }
         public uint[] AttachedObjects { get; set; }
+
+        public Vector3 BBCenter { get { return (_Data.bbMax + _Data.bbMin) * 0.5f; } }
+        public Vector3 BBSize { get { return (_Data.bbMax - _Data.bbMin); } }
+        public Vector3 BBMin { get { return (_Data.bbMin); } }
+        public Vector3 BBMax { get { return (_Data.bbMax); } }
+        public Vector3 BBMin_CW { get; set; }
+        public Vector3 BBMax_CW { get; set; }
+
 
         public MCMloRoomDef() { }
         public MCMloRoomDef(Meta meta, CMloRoomDef data)
@@ -2494,6 +2502,21 @@ namespace CodeWalker.GameFiles
         public CMloPortalDef Data { get { return _Data; } }
         public Vector4[] Corners { get; set; }
         public uint[] AttachedObjects { get; set; }
+
+        public Vector3 Center
+        {
+            get
+            {
+                if ((Corners == null)||(Corners.Length==0)) return Vector3.Zero;
+                var v = Vector3.Zero;
+                for (int i = 0; i < Corners.Length; i++)
+                {
+                    v += Corners[i].XYZ();
+                }
+                v *= (1.0f / Corners.Length);
+                return v;
+            }
+        }
 
         public MCMloPortalDef() { }
         public MCMloPortalDef(Meta meta, CMloPortalDef data)

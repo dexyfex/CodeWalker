@@ -101,6 +101,7 @@ done:
 
 
 [v.29]
+Improved selected MLO instance display - portals, limbo room
 New Project Window
 RPF Explorer drag & drop
 Show vehicle wheels
