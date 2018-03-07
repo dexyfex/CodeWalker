@@ -108,6 +108,7 @@ Snap to ground, snap to grid
 CodeWalker.Core library
 Improved GTA folder management
 Improved selected MLO instance display - portals, limbo room
+Improved interiors rendering - decal_dirt
 entitySets - like mapDataGroups but for interiors..... in Mlo data
 World view - delete key - delete item!
 RPF Explorer Edit mode
