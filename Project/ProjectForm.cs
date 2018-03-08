@@ -4220,7 +4220,7 @@ namespace CodeWalker.Project
         {
             byte[] data = File.ReadAllBytes(filename);
 
-            ymt.LoadRSC(data);
+            ymt.Load(data);
         }
 
 

@@ -9,12 +9,9 @@ using System.Threading.Tasks;
 namespace CodeWalker.GameFiles
 {
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class YtypFile : PackedFile
+    public class YtypFile : GameFile, PackedFile
     {
 
-        public RpfFileEntry RpfFileEntry { get; set; }
-        public string FilePath { get; set; }
-        public string Name { get; set; }
 
         public Meta Meta { get; set; }
         public PsoFile Pso { get; set; }
@@ -40,9 +37,27 @@ namespace CodeWalker.GameFiles
 
 
 
+        public YtypFile() : base(null, GameFileType.Ytyp)
+        {
+        }
+        public YtypFile(RpfFileEntry entry) : base(entry, GameFileType.Ytyp)
+        {
+        }
+
+
         public override string ToString()
         {
             return (RpfFileEntry != null) ? RpfFileEntry.Name : string.Empty;
+        }
+
+
+        public void Load(byte[] data)
+        {
+            //direct load from a raw, compressed ytyp file (openIV-compatible format)
+
+            RpfFile.LoadResourceFile(this, data, 2);
+
+            Loaded = true;
         }
 
         public void Load(byte[] data, RpfFileEntry entry)
@@ -226,61 +241,7 @@ namespace CodeWalker.GameFiles
 
         }
 
-        public void Load(byte[] data) //REFACTOR THIS WITH YMAP!!
-        {
-            //direct load from a raw, compressed ymap file (openIV-compatible format)
 
-            RpfResourceFileEntry resentry = new RpfResourceFileEntry();
-
-            //hopefully this format has an RSC7 header...
-            uint rsc7 = BitConverter.ToUInt32(data, 0);
-            if (rsc7 == 0x37435352) //RSC7 header present!
-            {
-                int version = BitConverter.ToInt32(data, 4);
-                resentry.SystemFlags = BitConverter.ToUInt32(data, 8);
-                resentry.GraphicsFlags = BitConverter.ToUInt32(data, 12);
-                if (data.Length > 16)
-                {
-                    int newlen = data.Length - 16; //trim the header from the data passed to the next step.
-                    byte[] newdata = new byte[newlen];
-                    Buffer.BlockCopy(data, 16, newdata, 0, newlen);
-                    data = newdata;
-                }
-                else
-                {
-                    data = null; //shouldn't happen... empty..
-                }
-            }
-            else
-            {
-                //direct load from file without the rpf header..
-                //assume it's in resource meta format
-                resentry.SystemFlags = RpfResourceFileEntry.GetFlagsFromSize(data.Length, 0);
-                resentry.GraphicsFlags = RpfResourceFileEntry.GetFlagsFromSize(0, 2); //graphics type 2 for ymap
-            }
-
-            var oldresentry = RpfFileEntry as RpfResourceFileEntry;
-            if (oldresentry != null) //update the existing entry with the new one
-            {
-                oldresentry.SystemFlags = resentry.SystemFlags;
-                oldresentry.GraphicsFlags = resentry.GraphicsFlags;
-                resentry.Name = oldresentry.Name;
-                resentry.NameHash = oldresentry.NameHash;
-                resentry.NameLower = oldresentry.NameLower;
-                resentry.ShortNameHash = oldresentry.ShortNameHash;
-            }
-            else
-            {
-                RpfFileEntry = resentry; //just stick it in there for later...
-            }
-
-            data = ResourceBuilder.Decompress(data);
-
-
-            Load(data, resentry);
-
-            //Loaded = true;
-        }
 
     }
 

@@ -610,17 +610,20 @@ namespace CodeWalker.GameFiles
             {
                 if (entry == null)
                 {
-                    entry = CreateResourceFileEntry(data, 0);
+                    entry = CreateResourceFileEntry(ref data, 0);
                 }
                 file = new T();
                 file.Load(data, entry);
             }
             return file;
         }
+
+
+
         public static T GetResourceFile<T>(byte[] data) where T : class, PackedFile, new()
         {
             T file = null;
-            RpfFileEntry entry = CreateResourceFileEntry(data, 0);
+            RpfFileEntry entry = CreateResourceFileEntry(ref data, 0);
             if ((data != null) && (entry != null))
             {
                 file = new T();
@@ -628,27 +631,55 @@ namespace CodeWalker.GameFiles
             }
             return file;
         }
+        public static void LoadResourceFile<T>(T file, byte[] data, uint ver) where T : class, PackedFile
+        {
+            //direct load from a raw, compressed resource file (openIV-compatible format)
 
+            RpfResourceFileEntry resentry = CreateResourceFileEntry(ref data, ver);
 
+            if (file is GameFile)
+            {
+                GameFile gfile = file as GameFile;
 
-        public static RpfResourceFileEntry CreateResourceFileEntry(byte[] data, uint ver)
+                var oldresentry = gfile.RpfFileEntry as RpfResourceFileEntry;
+                if (oldresentry != null) //update the existing entry with the new one
+                {
+                    oldresentry.SystemFlags = resentry.SystemFlags;
+                    oldresentry.GraphicsFlags = resentry.GraphicsFlags;
+                    resentry.Name = oldresentry.Name;
+                    resentry.NameHash = oldresentry.NameHash;
+                    resentry.NameLower = oldresentry.NameLower;
+                    resentry.ShortNameHash = oldresentry.ShortNameHash;
+                }
+                else
+                {
+                    gfile.RpfFileEntry = resentry; //just stick it in there for later...
+                }
+            }
+
+            data = ResourceBuilder.Decompress(data);
+
+            file.Load(data, resentry);
+
+        }
+        public static RpfResourceFileEntry CreateResourceFileEntry(ref byte[] data, uint ver)
         {
             var resentry = new RpfResourceFileEntry();
 
-            //hopefully this format has an RSC7 header...
+            //hopefully this data has an RSC7 header...
             uint rsc7 = BitConverter.ToUInt32(data, 0);
             if (rsc7 == 0x37435352) //RSC7 header present!
             {
                 int version = BitConverter.ToInt32(data, 4);//use this instead of what was given...
                 resentry.SystemFlags = BitConverter.ToUInt32(data, 8);
                 resentry.GraphicsFlags = BitConverter.ToUInt32(data, 12);
-                //if (data.Length > 16)
-                //{
-                //    int newlen = data.Length - 16; //trim the header from the data passed to the next step.
-                //    byte[] newdata = new byte[newlen];
-                //    Buffer.BlockCopy(data, 16, newdata, 0, newlen);
-                //    data = newdata;
-                //}
+                if (data.Length > 16)
+                {
+                    int newlen = data.Length - 16; //trim the header from the data passed to the next step.
+                    byte[] newdata = new byte[newlen];
+                    Buffer.BlockCopy(data, 16, newdata, 0, newlen);
+                    data = newdata;
+                }
                 //else
                 //{
                 //    data = null; //shouldn't happen... empty..
@@ -659,7 +690,7 @@ namespace CodeWalker.GameFiles
                 //direct load from file without the rpf header..
                 //assume it's in resource meta format
                 resentry.SystemFlags = RpfResourceFileEntry.GetFlagsFromSize(data.Length, 0);
-                resentry.GraphicsFlags = RpfResourceFileEntry.GetFlagsFromSize(0, ver); //graphics type 2 for ymap
+                resentry.GraphicsFlags = RpfResourceFileEntry.GetFlagsFromSize(0, ver);
             }
 
             resentry.Name = "";

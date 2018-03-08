@@ -3775,7 +3775,7 @@ namespace CodeWalker
         {
             byte[] data = File.ReadAllBytes(filename);
 
-            ymt.LoadRSC(data);
+            ymt.Load(data);
         }
 
         private void LoadScenarioTreeNodes(YmtFile ymt, TreeNode node)
