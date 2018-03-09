@@ -258,6 +258,23 @@ namespace CodeWalker.Project.Panels
         }
         private void LoadYnvTreeNodes(YnvFile ynv, TreeNode node)//TODO!
         {
+            if (ynv == null) return;
+
+            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Polygons
+
+            node.Nodes.Clear();
+
+
+            TreeNode n;
+            n = node.Nodes.Add("Edit Polygon");
+            n.Name = "EditPoly";
+            n.Tag = ynv; //this tag should get updated with the selected poly!
+
+            n = node.Nodes.Add("Edit Portal");
+            n.Name = "EditPortal";
+            n.Tag = ynv; //this tag should get updated with the selected portal!
+
+
         }
         private void LoadTrainTrackTreeNodes(TrainTrack track, TreeNode node)
         {
@@ -440,8 +457,29 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
-        public void SetYnvHasChanged(YnvFile ynv, bool changed)//TODO!
+        public void SetYnvHasChanged(YnvFile ynv, bool changed)
         {
+            if (ProjectTreeView.Nodes.Count > 0)
+            {
+                var pnode = ProjectTreeView.Nodes[0];
+                var ynnode = GetChildTreeNode(pnode, "Ynv");
+                if (ynnode == null) return;
+                string changestr = changed ? "*" : "";
+                for (int i = 0; i < ynnode.Nodes.Count; i++)
+                {
+                    var ynode = ynnode.Nodes[i];
+                    if (ynode.Tag == ynv)
+                    {
+                        string name = ynv.Name;
+                        if (ynv.RpfFileEntry != null)
+                        {
+                            name = ynv.RpfFileEntry.Name;
+                        }
+                        ynode.Text = changestr + name;
+                        break;
+                    }
+                }
+            }
         }
         public void SetTrainTrackHasChanged(TrainTrack track, bool changed)
         {
@@ -591,14 +629,16 @@ namespace CodeWalker.Project.Panels
         {
             if (p == null) return null;
             TreeNode ynvnode = FindYnvTreeNode(p.Ynv);
-            var polysnode = GetChildTreeNode(ynvnode, "Polygons");
-            if (polysnode == null) return null;
-            for (int i = 0; i < polysnode.Nodes.Count; i++)
-            {
-                TreeNode pnode = polysnode.Nodes[i];
-                if (pnode.Tag == p) return pnode;
-            }
-            return null;
+            var polynode = GetChildTreeNode(ynvnode, "EditPoly");
+            if (polynode == null) return null;
+            polynode.Tag = p;
+            return polynode;
+            //for (int i = 0; i < polysnode.Nodes.Count; i++)
+            //{
+            //    TreeNode pnode = polysnode.Nodes[i];
+            //    if (pnode.Tag == p) return pnode;
+            //}
+            //return null;
         }
         public TreeNode FindTrainTrackTreeNode(TrainTrack track)
         {
@@ -666,7 +706,14 @@ namespace CodeWalker.Project.Panels
             TreeNode entnode = FindEntityTreeNode(ent);
             if (entnode != null)
             {
-                ProjectTreeView.SelectedNode = entnode;
+                if (ProjectTreeView.SelectedNode == entnode)
+                {
+                    OnItemSelected?.Invoke(ent);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = entnode;
+                }
             }
         }
         public void TrySelectCarGenTreeNode(YmapCarGen cargen)
@@ -674,7 +721,14 @@ namespace CodeWalker.Project.Panels
             TreeNode cargennode = FindCarGenTreeNode(cargen);
             if (cargennode != null)
             {
-                ProjectTreeView.SelectedNode = cargennode;
+                if (ProjectTreeView.SelectedNode == cargennode)
+                {
+                    OnItemSelected?.Invoke(cargen);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = cargennode;
+                }
             }
         }
         public void TrySelectPathNodeTreeNode(YndNode node)
@@ -686,7 +740,14 @@ namespace CodeWalker.Project.Panels
             }
             if (tnode != null)
             {
-                ProjectTreeView.SelectedNode = tnode;
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(node);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
             }
         }
         public void TrySelectNavPolyTreeNode(YnvPoly poly)
@@ -698,7 +759,14 @@ namespace CodeWalker.Project.Panels
             }
             if (tnode != null)
             {
-                ProjectTreeView.SelectedNode = tnode;
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(poly);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
             }
         }
         public void TrySelectTrainNodeTreeNode(TrainTrackNode node)
@@ -710,7 +778,14 @@ namespace CodeWalker.Project.Panels
             }
             if (tnode != null)
             {
-                ProjectTreeView.SelectedNode = tnode;
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(node);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
             }
         }
         public void TrySelectScenarioTreeNode(YmtFile scenario)
@@ -718,7 +793,14 @@ namespace CodeWalker.Project.Panels
             TreeNode tnode = FindScenarioTreeNode(scenario);
             if (tnode != null)
             {
-                ProjectTreeView.SelectedNode = tnode;
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(scenario);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
             }
         }
         public void TrySelectScenarioNodeTreeNode(ScenarioNode node)
@@ -730,7 +812,14 @@ namespace CodeWalker.Project.Panels
             }
             if (tnode != null)
             {
-                ProjectTreeView.SelectedNode = tnode;
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(node);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
             }
         }
 

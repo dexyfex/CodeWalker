@@ -1985,14 +1985,136 @@ namespace CodeWalker.Project
 
 
 
-        public void NewYnv()//TODO!
+        public void NewYnv()
         {
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            if (CurrentProjectFile == null) return;
+
+            int testi = 1;
+            string fname = string.Empty;
+            bool filenameok = false;
+            while (!filenameok)
+            {
+                fname = "navmesh" + testi.ToString() + ".ynv";
+                filenameok = !CurrentProjectFile.ContainsYnv(fname);
+                testi++;
+            }
+
+            lock (projectsyncroot)
+            {
+                YnvFile ynv = CurrentProjectFile.AddYnvFile(fname);
+                if (ynv != null)
+                {
+                    ynv.Loaded = true;
+                    ynv.HasChanged = true; //new ynd, flag as not saved
+
+                    //TODO: set new ynv default values...
+                    ynv.Nav = new NavMesh();
+                }
+            }
+
+            CurrentProjectFile.HasChanged = true;
+
+            LoadProjectTree();
         }
-        public void OpenYnv()//TODO!
+        public void OpenYnv()
         {
+            string[] files = ShowOpenDialogMulti("Ynv files|*.ynv", string.Empty);
+            if (files == null)
+            {
+                return;
+            }
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            foreach (string file in files)
+            {
+                if (!File.Exists(file)) continue;
+
+                var ynv = CurrentProjectFile.AddYnvFile(file);
+
+                if (ynv != null)
+                {
+                    SetProjectHasChanged(true);
+
+                    LoadYnvFromFile(ynv, file);
+
+                    LoadProjectTree();
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
+                }
+
+            }
         }
-        public void SaveYnv(bool saveas = false)//TODO!
+        public void SaveYnv(bool saveas = false)
         {
+            if ((CurrentYnvFile == null) && (CurrentNavPoly != null)) CurrentYnvFile = CurrentNavPoly.Ynv;
+            if (CurrentYnvFile == null) return;
+            string ynvname = CurrentYnvFile.Name;
+            string filepath = CurrentYnvFile.FilePath;
+            if (string.IsNullOrEmpty(filepath))
+            {
+                filepath = ynvname;
+            }
+            string origfile = filepath;
+            if (!File.Exists(filepath))
+            {
+                saveas = true;
+            }
+
+
+            byte[] data;
+            lock (projectsyncroot) //need to sync writes to ynv objects...
+            {
+                saveas = saveas || string.IsNullOrEmpty(filepath);
+                if (saveas)
+                {
+                    filepath = ShowSaveDialog("Ynv files|*.ynv", filepath);
+                    if (string.IsNullOrEmpty(filepath))
+                    { return; }
+
+                    string newname = Path.GetFileNameWithoutExtension(filepath);
+                    JenkIndex.Ensure(newname);
+                    CurrentYnvFile.FilePath = filepath;
+                    CurrentYnvFile.RpfFileEntry.Name = new FileInfo(filepath).Name;
+                    CurrentYnvFile.Name = CurrentYnvFile.RpfFileEntry.Name;
+                }
+
+
+                data = CurrentYnvFile.Save();
+            }
+
+
+            if (data != null)
+            {
+                File.WriteAllBytes(filepath, data);
+            }
+
+            SetYnvHasChanged(false);
+
+            if (saveas)
+            {
+                //ShowEditYnvPanel(false);
+                if (CurrentProjectFile != null)
+                {
+                    string origpath = CurrentProjectFile.GetRelativePath(origfile);
+                    string newpath = CurrentProjectFile.GetRelativePath(CurrentYnvFile.FilePath);
+                    if (!CurrentProjectFile.RenameYnv(origpath, newpath))
+                    { //couldn't rename it in the project? happens when project not saved yet...
+                        //MessageBox.Show("Couldn't rename ynv in project! This shouldn't happen - check the project file XML.");
+                    }
+                }
+                SetProjectHasChanged(true);
+                SetCurrentSaveItem();
+            }
         }
         public void AddYnvToProject(YnvFile ynv)
         {
@@ -2040,7 +2162,7 @@ namespace CodeWalker.Project
         }
         public bool IsCurrentNavPoly(YnvPoly poly)
         {
-            return false;// poly == CurrentNavPoly;
+            return poly == CurrentNavPoly;
         }
 
 
@@ -4196,8 +4318,16 @@ namespace CodeWalker.Project
                 //note: this is actually necessary to properly populate junctions data........
             }
         }
-        private void LoadYnvFromFile(YnvFile ynv, string filename)//TODO!
+        private void LoadYnvFromFile(YnvFile ynv, string filename)
         {
+            byte[] data = File.ReadAllBytes(filename);
+
+            ynv.Load(data);
+
+            if (WorldForm != null)
+            {
+                WorldForm.UpdateNavYnvGraphics(ynv, true); //polys don't get drawn until something changes otherwise
+            }
         }
         private void LoadTrainTrackFromFile(TrainTrack track, string filename)
         {

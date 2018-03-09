@@ -17,6 +17,7 @@ namespace CodeWalker.GameFiles
         public List<YnvPoly> Polys { get; set; }
 
 
+        public EditorVertex[] PathVertices { get; set; }
         public EditorVertex[] TriangleVerts { get; set; }
         public Vector4[] NodePositions { get; set; }
 
@@ -33,7 +34,13 @@ namespace CodeWalker.GameFiles
             {
                 return (int)(Nav?.AreaID ?? 0);
             }
+            set
+            {
+                if (Nav != null) Nav.AreaID = (uint)value;
+            }
         }
+        public int CellX { get { return AreaID % 100; } set { AreaID = (CellY * 100) + value; } }
+        public int CellY { get { return AreaID / 100; } set { AreaID = (value * 100) + CellX; } }
 
 
 
@@ -43,6 +50,15 @@ namespace CodeWalker.GameFiles
         }
         public YnvFile(RpfFileEntry entry) : base(entry, GameFileType.Ynv)
         {
+        }
+
+        public void Load(byte[] data)
+        {
+            //direct load from a raw, compressed ynv file (openIV-compatible format)
+
+            RpfFile.LoadResourceFile(this, data, 2);
+
+            Loaded = true;
         }
 
         public void Load(byte[] data, RpfFileEntry entry)
@@ -135,8 +151,68 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public byte[] Save()
+        {
+            BuildStructs();
+
+            byte[] data = ResourceBuilder.Build(Nav, 2); //ynv is version 2...
+
+            return data;
+        }
+
+        public void BuildStructs()
+        {
+            Vector3 posoffset = Nav.SectorTree?.AABBMin.XYZ() ?? Vector3.Zero;
+            Vector3 aabbsize = Nav.AABBSize;
+            Vector3 aabbsizeinv = 1.0f / aabbsize;
+
+            var vertlist = new List<NavMeshVertex>();
+            if (Vertices != null)
+            {
+                for (int i = 0; i < Vertices.Count; i++)
+                {
+                    var ov = (Vertices[i] - posoffset) * aabbsizeinv;
+                    vertlist.Add(NavMeshVertex.Create(ov));
+                }
+            }
+            if (Nav.Vertices == null)
+            {
+                Nav.Vertices = new NavMeshList<NavMeshVertex>();
+                Nav.Vertices.VFT = 1080158456;
+            }
+            Nav.Vertices.RebuildList(vertlist);
+
+            if (Nav.Indices == null)
+            {
+                Nav.Indices = new NavMeshList<ushort>();
+                Nav.Indices.VFT = 1080158424;
+            }
+            Nav.Indices.RebuildList(Indices);
+
+            var polylist = new List<NavMeshPoly>();
+            if (Polys != null)
+            {
+                for (int i = 0; i < Polys.Count; i++)
+                {
+                    polylist.Add(Polys[i].RawData);
+                }
+            }
+            if (Nav.Polys == null)
+            {
+                Nav.Polys = new NavMeshList<NavMeshPoly>();
+                Nav.Polys.VFT = 1080158408;
+            }
+            Nav.Polys.RebuildList(polylist);
 
 
+            if (Nav.AdjPolys == null)
+            {
+                Nav.AdjPolys = new NavMeshList<NavMeshAdjPoly>();
+                Nav.AdjPolys.VFT = 1080158440;
+            }
+            //Nav.AdjPolys.RebuildList(...)
+
+        }
 
 
 
@@ -175,6 +251,62 @@ namespace CodeWalker.GameFiles
                 np[i] = new Vector4(posoffset + pv * aabbsize, 1.0f);
             }
             NodePositions = np;
+
+
+
+            int lcnt = Nav.PortalLinks?.Length ?? 0;
+            if (lcnt <= 0)
+            {
+                PathVertices = null;
+                return;
+            }
+
+            //var lv = new EditorVertex[lcnt];
+            //for (int i = 0; i < lcnt; i++)
+            //{
+            //    var pl = Nav.PortalLinks[i];
+            //    if (pl >= np.Length) lv[i] = new EditorVertex();
+            //    else
+            //    {
+            //        lv[i].Position = np[pl].XYZ();
+            //        lv[i].Colour = 0xFF0000FF;
+            //    }
+            //}
+            //PathVertices = lv;
+
+            EditorVertex v = new EditorVertex();
+            v.Colour = 0xFF0000FF;
+            var lv = new List<EditorVertex>();
+            //int cind = 0;
+            var plinks = Nav.PortalLinks;
+            for (int i = 0; i < cnt; i++)
+            {
+                var portal = Nav.Portals[i];
+
+                //var plcnt = 2;
+
+                v.Position = posoffset + portal.Position1.ToVector3() * aabbsize;
+                lv.Add(v);
+                v.Position = posoffset + portal.Position2.ToVector3() * aabbsize;
+                lv.Add(v);
+
+
+                //var plcnt = portal.LinkCount;
+                //if (plcnt < 2) continue;
+                //var plink = (cind < plinks.Length) ? plinks[cind] : 0xFFFF;
+                //var ppos = (plink < np.Length) ? np[plink].XYZ() : Vector3.Zero;
+                //for (int pl = 1; pl < plcnt; pl++)
+                //{
+                //    var ind2 = cind + pl;
+                //    var plink2 = (ind2 < plinks.Length) ? plinks[ind2] : 0xFFFF;
+                //    var ppos2 = (plink2 < np.Length) ? np[plink2].XYZ() : Vector3.Zero;
+                //    v.Position = ppos; lv.Add(v);
+                //    v.Position = ppos2; lv.Add(v);
+                //}
+                //cind += plcnt;
+            }
+            PathVertices = lv.ToArray();
+
         }
 
         public void UpdateTriangleVertices()
@@ -259,7 +391,7 @@ namespace CodeWalker.GameFiles
 
         public EditorVertex[] GetPathVertices()
         {
-            return null;
+            return PathVertices;
         }
         public EditorVertex[] GetTriangleVertices()
         {
@@ -280,46 +412,52 @@ namespace CodeWalker.GameFiles
         public YnvFile Ynv { get; set; }
         public NavMeshPoly RawData { get { return _RawData; } set { _RawData = value; } }
 
-        public ushort AreaID { get { return _RawData.AreaID; } }
-        public bool B00_AvoidUnk        { get { return (_RawData.Unknown_00h & 1) > 0; } }
-        public bool B01_AvoidUnk        { get { return (_RawData.Unknown_00h & 2) > 0; } }
-        public bool B02_IsFootpath      { get { return (_RawData.Unknown_00h & 4) > 0; } }
-        public bool B03_IsUnderground   { get { return (_RawData.Unknown_00h & 8) > 0; } }
-        //public bool B04_Unused          { get { return (_RawData.Unknown_00h & 16) > 0; } }
-        //public bool B05_Unused          { get { return (_RawData.Unknown_00h & 32) > 0; } }
-        public bool B06_SteepSlope      { get { return (_RawData.Unknown_00h & 64) > 0; } }
-        public bool B07_IsWater         { get { return (_RawData.Unknown_00h & 128) > 0; } }
-        public bool B08_UndergroundUnk1 { get { return (_RawData.Unknown_24h.Value & 1) > 0; } }
-        public bool B09_UndergroundUnk2 { get { return (_RawData.Unknown_24h.Value & 2) > 0; } }
-        public bool B10_UndergroundUnk3 { get { return (_RawData.Unknown_24h.Value & 4) > 0; } }
-        public bool B11_UndergroundUnk4 { get { return (_RawData.Unknown_24h.Value & 8) > 0; } }
-        //public bool B12_Unused          { get { return (_RawData.Unknown_24h.Value & 16) > 0; } }
-        public bool B13_HasPathNode     { get { return (_RawData.Unknown_24h.Value & 32) > 0; } }
-        public bool B14_IsInterior      { get { return (_RawData.Unknown_24h.Value & 64) > 0; } }
-        public bool B15_InteractionUnk  { get { return (_RawData.Unknown_24h.Value & 128) > 0; } }
-        //public bool B16_Unused          { get { return (_RawData.Unknown_24h.Value & 256) > 0; } }
-        public bool B17_IsFlatGround    { get { return (_RawData.Unknown_24h.Value & 512) > 0; } }
-        public bool B18_IsRoad          { get { return (_RawData.Unknown_24h.Value & 1024) > 0; } }
-        public bool B19_IsCellEdge      { get { return (_RawData.Unknown_24h.Value & 2048) > 0; } }
-        public bool B20_IsTrainTrack    { get { return (_RawData.Unknown_24h.Value & 4096) > 0; } }
-        public bool B21_IsShallowWater  { get { return (_RawData.Unknown_24h.Value & 8192) > 0; } }
-        public bool B22_FootpathUnk1    { get { return (_RawData.Unknown_24h.Value & 16384) > 0; } }
-        public bool B23_FootpathUnk2    { get { return (_RawData.Unknown_24h.Value & 32768) > 0; } }
-        public bool B24_FootpathMall    { get { return (_RawData.Unknown_24h.Value & 65536) > 0; } }
-        public bool B25_SlopeSouth      { get { return (_RawData.Unknown_28h.Value & 65536) > 0; } }
-        public bool B26_SlopeSouthEast  { get { return (_RawData.Unknown_28h.Value & 131072) > 0; } }
-        public bool B27_SlopeEast       { get { return (_RawData.Unknown_28h.Value & 262144) > 0; } }
-        public bool B28_SlopeNorthEast  { get { return (_RawData.Unknown_28h.Value & 524288) > 0; } }
-        public bool B29_SlopeNorth      { get { return (_RawData.Unknown_28h.Value & 1048576) > 0; } }
-        public bool B30_SlopeNorthWest  { get { return (_RawData.Unknown_28h.Value & 2097152) > 0; } }
-        public bool B31_SlopeWest       { get { return (_RawData.Unknown_28h.Value & 4194304) > 0; } }
-        public bool B32_SlopeSouthWest  { get { return (_RawData.Unknown_28h.Value & 8388608) > 0; } }
-        public bool B33_PortalUnk1      { get { return (_RawData.PartUnk2 & 1) > 0; } }
-        public bool B34_PortalUnk2      { get { return (_RawData.PartUnk2 & 2) > 0; } }
-        public bool B35_PortalUnk3      { get { return (_RawData.PartUnk2 & 4) > 0; } }
-        public bool B36_PortalUnk4      { get { return (_RawData.PartUnk2 & 8) > 0; } }
-        public byte HeuristicXUnk { get { return (byte)_RawData.Unknown_28h_8a; } }
-        public byte HeuristicYUnk { get { return (byte)_RawData.Unknown_28h_8b; } }
+        public ushort AreaID { get { return _RawData.AreaID; } set { _RawData.AreaID = value; } }
+        public ushort PartID { get { return _RawData.PartID; } set { _RawData.PartID = value; } }
+        public ushort PortalID { get { return _RawData.PortalID; } set { _RawData.PortalID = value; } }
+        public byte Flags1 { get { return (byte)(_RawData.Unknown_00h & 0xFF); } set { _RawData.Unknown_00h = (ushort)((_RawData.Unknown_00h & 0xFF00) | (value & 0xFF)); } }
+        public byte Flags2 { get { return (byte)((_RawData.Unknown_24h.Value >> 0) & 0xFF); } set { _RawData.Unknown_24h = ((_RawData.Unknown_24h.Value & 0xFFFFFF00u) | ((value & 0xFFu) << 0)); } }
+        public byte Flags3 { get { return (byte)((_RawData.Unknown_24h.Value >> 9) & 0xFF); } set { _RawData.Unknown_24h = ((_RawData.Unknown_24h.Value & 0xFFFE01FFu) | ((value & 0xFFu) << 9)); } }
+        public byte Flags4 { get { return (byte)((_RawData.Unknown_28h.Value >> 16) & 0xFF); } set { _RawData.Unknown_28h = ((_RawData.Unknown_28h.Value & 0x0000FFFFu) | ((value & 0xFFu) << 16)); } }
+        public bool B00_AvoidUnk        { get { return (_RawData.Unknown_00h & 1) > 0; } set { _RawData.Unknown_00h = (ushort)BitUtil.UpdateBit(_RawData.Unknown_00h, 0, value); } }
+        public bool B01_AvoidUnk        { get { return (_RawData.Unknown_00h & 2) > 0; } set { _RawData.Unknown_00h = (ushort)BitUtil.UpdateBit(_RawData.Unknown_00h, 1, value); } }
+        public bool B02_IsFootpath      { get { return (_RawData.Unknown_00h & 4) > 0; } set { _RawData.Unknown_00h = (ushort)BitUtil.UpdateBit(_RawData.Unknown_00h, 2, value); } }
+        public bool B03_IsUnderground   { get { return (_RawData.Unknown_00h & 8) > 0; } set { _RawData.Unknown_00h = (ushort)BitUtil.UpdateBit(_RawData.Unknown_00h, 3, value); } }
+        //public bool B04_Unused          { get { return (_RawData.Unknown_00h & 16) > 0; } set { _RawData.Unknown_00h = (ushort)BitUtil.UpdateBit(_RawData.Unknown_00h, 4, value); } }
+        //public bool B05_Unused          { get { return (_RawData.Unknown_00h & 32) > 0; } set { _RawData.Unknown_00h = (ushort)BitUtil.UpdateBit(_RawData.Unknown_00h, 5, value); } }
+        public bool B06_SteepSlope      { get { return (_RawData.Unknown_00h & 64) > 0; } set { _RawData.Unknown_00h = (ushort)BitUtil.UpdateBit(_RawData.Unknown_00h, 6, value); } }
+        public bool B07_IsWater         { get { return (_RawData.Unknown_00h & 128) > 0; } set { _RawData.Unknown_00h = (ushort)BitUtil.UpdateBit(_RawData.Unknown_00h, 7, value); } }
+        public bool B08_UndergroundUnk0 { get { return (_RawData.Unknown_24h.Value & 1) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 0, value); } }
+        public bool B09_UndergroundUnk1 { get { return (_RawData.Unknown_24h.Value & 2) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 1, value); } }
+        public bool B10_UndergroundUnk2 { get { return (_RawData.Unknown_24h.Value & 4) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 2, value); } }
+        public bool B11_UndergroundUnk3 { get { return (_RawData.Unknown_24h.Value & 8) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 3, value); } }
+        //public bool B12_Unused          { get { return (_RawData.Unknown_24h.Value & 16) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 4, value); } }
+        public bool B13_HasPathNode     { get { return (_RawData.Unknown_24h.Value & 32) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 5, value); } }
+        public bool B14_IsInterior      { get { return (_RawData.Unknown_24h.Value & 64) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 6, value); } }
+        public bool B15_InteractionUnk  { get { return (_RawData.Unknown_24h.Value & 128) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 7, value); } }
+        //public bool B16_Unused          { get { return (_RawData.Unknown_24h.Value & 256) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 8, value); } }
+        public bool B17_IsFlatGround    { get { return (_RawData.Unknown_24h.Value & 512) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 9, value); } }
+        public bool B18_IsRoad          { get { return (_RawData.Unknown_24h.Value & 1024) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 10, value); } }
+        public bool B19_IsCellEdge      { get { return (_RawData.Unknown_24h.Value & 2048) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 11, value); } }
+        public bool B20_IsTrainTrack    { get { return (_RawData.Unknown_24h.Value & 4096) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 12, value); } }
+        public bool B21_IsShallowWater  { get { return (_RawData.Unknown_24h.Value & 8192) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 13, value); } }
+        public bool B22_FootpathUnk1    { get { return (_RawData.Unknown_24h.Value & 16384) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 14, value); } }
+        public bool B23_FootpathUnk2    { get { return (_RawData.Unknown_24h.Value & 32768) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 15, value); } }
+        public bool B24_FootpathMall    { get { return (_RawData.Unknown_24h.Value & 65536) > 0; } set { _RawData.Unknown_24h = BitUtil.UpdateBit(_RawData.Unknown_24h.Value, 16, value); } }
+        public bool B25_SlopeSouth      { get { return (_RawData.Unknown_28h.Value & 65536) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 16, value); } }
+        public bool B26_SlopeSouthEast  { get { return (_RawData.Unknown_28h.Value & 131072) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 17, value); } }
+        public bool B27_SlopeEast       { get { return (_RawData.Unknown_28h.Value & 262144) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 18, value); } }
+        public bool B28_SlopeNorthEast  { get { return (_RawData.Unknown_28h.Value & 524288) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 19, value); } }
+        public bool B29_SlopeNorth      { get { return (_RawData.Unknown_28h.Value & 1048576) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 20, value); } }
+        public bool B30_SlopeNorthWest  { get { return (_RawData.Unknown_28h.Value & 2097152) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 21, value); } }
+        public bool B31_SlopeWest       { get { return (_RawData.Unknown_28h.Value & 4194304) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 22, value); } }
+        public bool B32_SlopeSouthWest  { get { return (_RawData.Unknown_28h.Value & 8388608) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 23, value); } }
+        //public bool B33_PortalUnk1      { get { return (_RawData.PartUnk2 & 1) > 0; } }
+        //public bool B34_PortalUnk2      { get { return (_RawData.PartUnk2 & 2) > 0; } }
+        //public bool B35_PortalUnk3      { get { return (_RawData.PartUnk2 & 4) > 0; } }
+        //public bool B36_PortalUnk4      { get { return (_RawData.PartUnk2 & 8) > 0; } }
+        public byte UnkX { get { return _RawData.Unknown_28h_8a; } set { _RawData.Unknown_28h_8a = value; } }
+        public byte UnkY { get { return _RawData.Unknown_28h_8b; } set { _RawData.Unknown_28h_8b = value; } }
 
 
         public Vector3 Position { get; set; }
@@ -346,6 +484,7 @@ namespace CodeWalker.GameFiles
             ////if ((u0 & 32) > 0) colour.Green += 1.0f;//not used?
             if ((u0 & 64) > 0) colour.Red += 0.25f; //steep slope
             if ((u0 & 128) > 0) colour.Blue += 0.25f; //water
+            //if (u0 >= 256) colour.Green += 1.0f;//other bits unused...
 
             var u2 = _RawData.Unknown_24h.Value;
             //colour.Green = (u2 & 15) / 15.0f; //maybe underground amount..?

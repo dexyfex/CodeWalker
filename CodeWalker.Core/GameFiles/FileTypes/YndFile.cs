@@ -63,7 +63,7 @@ namespace CodeWalker.GameFiles
         {
             //direct load from a raw, compressed ynd file (openIV-compatible format)
 
-            RpfFile.LoadResourceFile(this, data, 2);
+            RpfFile.LoadResourceFile(this, data, 1);
 
             Loaded = true;
             LoadQueued = true;

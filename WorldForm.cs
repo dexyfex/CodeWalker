@@ -796,7 +796,7 @@ namespace CodeWalker
 
             if (ProjectForm != null)
             {
-                //ProjectForm.GetVisibleYnvs(camera, rendernavmeshynvs);
+                ProjectForm.GetVisibleYnvs(camera, rendernavmeshynvs);
             }
 
             Renderer.RenderNavMeshes(rendernavmeshynvs);

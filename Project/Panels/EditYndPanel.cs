@@ -110,6 +110,7 @@ namespace CodeWalker.Project.Panels
                     ProjectForm.SetYndHasChanged(true);
                 }
             }
+            UpdateFormTitleYndChanged();
         }
 
         private void YndAreaIDXUpDown_ValueChanged(object sender, EventArgs e)
@@ -136,6 +137,7 @@ namespace CodeWalker.Project.Panels
                     ProjectForm.SetYndHasChanged(true);
                 }
             }
+            UpdateFormTitleYndChanged();
         }
 
         private void YndPedNodesUpDown_ValueChanged(object sender, EventArgs e)
@@ -152,6 +154,7 @@ namespace CodeWalker.Project.Panels
                     ProjectForm.SetYndHasChanged(true);
                 }
             }
+            UpdateFormTitleYndChanged();
         }
     }
 }

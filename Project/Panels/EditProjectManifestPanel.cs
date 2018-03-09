@@ -57,14 +57,34 @@ namespace CodeWalker.Project.Panels
 
         private void GenerateProjectManifest()
         {
-            StringBuilder sb = new StringBuilder();
-            Dictionary<string, YtypFile> deps = new Dictionary<string, YtypFile>();
+            var sb = new StringBuilder();
+            var mapdeps = new Dictionary<string, YtypFile>();
+            var typdeps = new Dictionary<string, Dictionary<string, YtypFile>>();
 
             sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
             sb.AppendLine("<CPackFileMetaData>");
             sb.AppendLine("  <MapDataGroups/>");
             sb.AppendLine("  <HDTxdBindingArray/>");
             sb.AppendLine("  <imapDependencies/>");
+
+
+            var getYtypName = new Func<YtypFile, string>((ytyp) =>
+            {
+                var ytypname = ytyp?.RpfFileEntry?.NameLower;
+                if (ytyp != null)
+                {
+                    if (string.IsNullOrEmpty(ytypname))
+                    {
+                        ytypname = ytyp.RpfFileEntry?.Name?.ToLowerInvariant();
+                        if (ytypname == null) ytypname = "";
+                    }
+                    if (ytypname.EndsWith(".ytyp"))
+                    {
+                        ytypname = ytypname.Substring(0, ytypname.Length - 5);
+                    }
+                }
+                return ytypname;
+            });
 
 
             if ((CurrentProjectFile != null) && (CurrentProjectFile.YmapFiles.Count > 0))
@@ -82,26 +102,40 @@ namespace CodeWalker.Project.Panels
                         ymapname = ymapname.Substring(0, ymapname.Length - 5);
                     }
 
-                    deps.Clear();
+                    mapdeps.Clear();
                     if (ymap.AllEntities != null)
                     {
                         foreach (var ent in ymap.AllEntities)
                         {
                             var ytyp = ent.Archetype?.Ytyp;
+                            var ytypname = getYtypName(ytyp);
                             if (ytyp != null)
                             {
-                                var ytypname = ytyp.RpfFileEntry?.NameLower;
-                                if (string.IsNullOrEmpty(ytypname))
-                                {
-                                    ytypname = ytyp.RpfFileEntry?.Name?.ToLowerInvariant();
-                                    if (ytypname == null) ytypname = "";
-                                }
-                                if (ytypname.EndsWith(".ytyp"))
-                                {
-                                    ytypname = ytypname.Substring(0, ytypname.Length - 5);
-                                }
-                                deps[ytypname] = ytyp;
+                                mapdeps[ytypname] = ytyp;
                             }
+
+                            if (ent.IsMlo)
+                            {
+                                if (ent.MloInstance?.Entities != null)
+                                {
+                                    Dictionary<string, YtypFile> typdepdict;
+                                    if (!typdeps.TryGetValue(ytypname, out typdepdict))
+                                    {
+                                        typdepdict = new Dictionary<string, YtypFile>();
+                                        typdeps[ytypname] = typdepdict;
+                                    }
+                                    foreach (var ient in ent.MloInstance.Entities)
+                                    {
+                                        var iytyp = ient.Archetype?.Ytyp;
+                                        var iytypname = getYtypName(iytyp);
+                                        if ((iytyp != null) && (iytypname != ytypname))
+                                        {
+                                            typdepdict[iytypname] = iytyp;
+                                        }
+                                    }
+                                }
+                            }
+
                         }
                     }
 
@@ -109,7 +143,7 @@ namespace CodeWalker.Project.Panels
                     sb.AppendLine("      <imapName>" + ymapname + "</imapName>");
                     sb.AppendLine("      <manifestFlags/>");
                     sb.AppendLine("      <itypDepArray>");
-                    foreach (var kvp in deps)
+                    foreach (var kvp in mapdeps)
                     {
                         sb.AppendLine("        <Item>" + kvp.Key + "</Item>");
                     }
@@ -123,7 +157,29 @@ namespace CodeWalker.Project.Panels
                 sb.AppendLine("  <imapDependencies_2/>");
             }
 
-            sb.AppendLine("  <itypDependencies_2/>");
+            if (typdeps.Count > 0)
+            {
+                sb.AppendLine("  <itypDependencies_2>");
+                foreach (var kvp1 in typdeps)
+                {
+                    sb.AppendLine("    <Item>");
+                    sb.AppendLine("      <itypName>" + kvp1.Key + "</itypName>");
+                    sb.AppendLine("      <manifestFlags>INTERIOR_DATA</manifestFlags>");
+                    sb.AppendLine("      <itypDepArray>");
+                    foreach (var kvp2 in kvp1.Value)
+                    {
+                        sb.AppendLine("        <Item>" + kvp2.Key + "</Item>");
+                    }
+                    sb.AppendLine("      </itypDepArray>");
+                    sb.AppendLine("    </Item>");
+                }
+                sb.AppendLine("  </itypDependencies_2>");
+            }
+            else
+            {
+                sb.AppendLine("  <itypDependencies_2/>");
+            }
+
             sb.AppendLine("  <Interiors/>");
             sb.AppendLine("</CPackFileMetaData>");
 

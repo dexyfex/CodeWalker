@@ -594,7 +594,7 @@ namespace CodeWalker.Forms
             FileName = ynv.Name;
             Ynv = ynv;
 
-            //UpdateModelsUI(ypt.Particles.Drawable);
+            UpdateNavmeshUI(ynv);
         }
 
 
@@ -832,7 +832,7 @@ namespace CodeWalker.Forms
         }
         private void UpdateNavmeshUI(YnvFile ynv)
         {
-            DetailsPropertyGrid.SelectedObject = ynv.Nav;
+            DetailsPropertyGrid.SelectedObject = ynv;
         }
 
 

@@ -287,6 +287,42 @@ namespace CodeWalker.GameFiles
                 }
                 return vals;
             }
+            set
+            {
+                Count = (uint)value.Length;
+                v00 = (Count > 0) ? value[0] : 0;
+                v01 = (Count > 1) ? value[1] : 0;
+                v02 = (Count > 2) ? value[2] : 0;
+                v03 = (Count > 3) ? value[3] : 0;
+                v04 = (Count > 4) ? value[4] : 0;
+                v05 = (Count > 5) ? value[5] : 0;
+                v06 = (Count > 6) ? value[6] : 0;
+                v07 = (Count > 7) ? value[7] : 0;
+                v08 = (Count > 8) ? value[8] : 0;
+                v09 = (Count > 9) ? value[9] : 0;
+                v10 = (Count > 10) ? value[10] : 0;
+                v11 = (Count > 11) ? value[11] : 0;
+                v12 = (Count > 12) ? value[12] : 0;
+                v13 = (Count > 13) ? value[13] : 0;
+                v14 = (Count > 14) ? value[14] : 0;
+                v15 = (Count > 15) ? value[15] : 0;
+                v16 = (Count > 16) ? value[16] : 0;
+                v17 = (Count > 17) ? value[17] : 0;
+                v18 = (Count > 18) ? value[18] : 0;
+                v19 = (Count > 19) ? value[19] : 0;
+                v20 = (Count > 20) ? value[20] : 0;
+                v21 = (Count > 21) ? value[21] : 0;
+                v22 = (Count > 22) ? value[22] : 0;
+                v23 = (Count > 23) ? value[23] : 0;
+                v24 = (Count > 24) ? value[24] : 0;
+                v25 = (Count > 25) ? value[25] : 0;
+                v26 = (Count > 26) ? value[26] : 0;
+                v27 = (Count > 27) ? value[27] : 0;
+                v28 = (Count > 28) ? value[28] : 0;
+                v29 = (Count > 29) ? value[29] : 0;
+                v30 = (Count > 30) ? value[30] : 0;
+                v31 = (Count > 31) ? value[31] : 0;
+            }
         }
 
 
@@ -319,7 +355,8 @@ namespace CodeWalker.GameFiles
         public uint[] ListOffsets { get; set; }
 
         private ResourceSystemStructBlock<uint> ListOffsetsBlock = null;
-
+        public int ItemSize { get { return System.Runtime.InteropServices.Marshal.SizeOf<T>(); } }
+        //public int BytesPerPart { get; private set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -336,6 +373,11 @@ namespace CodeWalker.GameFiles
 
             ListParts = reader.ReadBlockAt<ResourceSimpleArray<NavMeshListPart<T>>>(ListPartsPointer, ListPartsCount);
             ListOffsets = reader.ReadUintsAt(ListOffsetsPointer, ListPartsCount);
+
+            //if (ListParts.Count > 0)
+            //{
+            //    BytesPerPart = (int)ListParts[0].Count * ItemSize;
+            //}
 
         }
 
@@ -391,6 +433,40 @@ namespace CodeWalker.GameFiles
             return list;
         }
 
+
+        public void RebuildList(List<T> items)
+        {
+
+            //max bytes per part: 16384
+            int maxpartbytes = 16384; //0x4000
+            int itembytes = ItemSize;
+            int itemsperpart = maxpartbytes / itembytes;
+            int currentitem = 0;
+
+            var parts = new ResourceSimpleArray<NavMeshListPart<T>>();
+            var partitems = new List<T>();
+            var offsets = new List<uint>();
+
+            while (currentitem < items.Count)
+            {
+                partitems.Clear();
+                int lastitem = currentitem + itemsperpart;
+                if (lastitem > items.Count) lastitem = items.Count;
+                for (int i = currentitem; i < lastitem; i++)
+                {
+                    partitems.Add(items[i]);
+                }
+                var part = new NavMeshListPart<T>();
+                part.Items = partitems.ToArray();
+                part.Unknown_0Ch = 0;
+                parts.Add(part);
+                offsets.Add((uint)currentitem);
+                currentitem = lastitem;
+            }
+            ListParts = parts;
+            ListOffsets = offsets.ToArray();
+
+        }
 
 
         public override string ToString()
@@ -478,6 +554,13 @@ namespace CodeWalker.GameFiles
             Z = (ushort)(v.Z * usmax);
         }
 
+        public static NavMeshVertex Create(Vector3 v)
+        {
+            var nmv = new NavMeshVertex();
+            nmv.FromVector3(v);
+            return nmv;
+        }
+
         public override string ToString()
         {
             return X.ToString() + ", " + Y.ToString() + ", " + Z.ToString();
@@ -514,7 +597,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Unknown_0h.Bin + " | " + Unknown_4h.Bin + " | " + 
+            return //Unknown_0h.Bin + " | " + Unknown_4h.Bin + " | " + 
                    Unknown_0h.ToString() + " | " + Unknown_4h.ToString();
         }
     }
@@ -565,13 +648,13 @@ namespace CodeWalker.GameFiles
         public int IndexCount { get { return (IndexFlags >> 5); } }
 
         //public int PartUnk1 { get { return (PartFlags >> 0) & 0xF; } } //always 0
-        public int PartID { get { return (PartFlags >> 4) & 0xFF; } }
-        public int PartUnk2 { get { return (PartFlags >> 12) & 0xF; } }
+        public ushort PartID { get { return (ushort)((PartFlags >> 4) & 0xFF); } set { PartFlags = (ushort)((PartFlags & 0xF00F) | ((value & 0xFF) << 4)); } }
+        public byte PartUnk2 { get { return (byte)((PartFlags >> 12) & 0xF); } set { PartFlags = (ushort)((PartFlags & 0x0FFF) | ((value & 0xF) << 12)); } }
 
 
-        public uint Unknown_28h_16 { get { return ((Unknown_28h.Value & 65535)); } }
-        public uint Unknown_28h_8a { get { return ((Unknown_28h.Value >> 0) & 255); } }
-        public uint Unknown_28h_8b { get { return ((Unknown_28h.Value >> 8) & 255); } }
+        public ushort Unknown_28h_16 { get { return (ushort)((Unknown_28h.Value & 0xFFFF)); } set { Unknown_28h = (Unknown_28h.Value & 0xFFFF0000) | (value & 0xFFFFu); } }
+        public byte Unknown_28h_8a { get { return (byte)((Unknown_28h.Value >> 0) & 0xFF); } set { Unknown_28h = (Unknown_28h.Value & 0xFFFFFF00) | ((value & 0xFFu)<<0); } }
+        public byte Unknown_28h_8b { get { return (byte)((Unknown_28h.Value >> 8) & 0xFF); } set { Unknown_28h = (Unknown_28h.Value & 0xFFFF00FF) | ((value & 0xFFu)<<8); } }
 
 
         public override string ToString()
@@ -686,7 +769,7 @@ namespace CodeWalker.GameFiles
             get { return 32; }
         }
 
-        public uint UnkOffset { get; set; }
+        public uint UnkDataStartID { get; set; }
         public uint Unused_04h { get; set; } // 0x00000000
         public ulong PolyIDsPointer { get; set; }
         public ulong UnkDataPointer { get; set; }
@@ -702,7 +785,7 @@ namespace CodeWalker.GameFiles
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            UnkOffset = reader.ReadUInt32();
+            UnkDataStartID = reader.ReadUInt32();
             Unused_04h = reader.ReadUInt32();
             PolyIDsPointer = reader.ReadUInt64();
             UnkDataPointer = reader.ReadUInt64();
@@ -723,7 +806,7 @@ namespace CodeWalker.GameFiles
             UnkDataCount = (ushort)(UnkData?.Length ?? 0);
 
 
-            writer.Write(UnkOffset);
+            writer.Write(UnkDataStartID);
             writer.Write(Unused_04h);
             writer.Write(PolyIDsPointer);
             writer.Write(UnkDataPointer);
@@ -753,7 +836,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "(Polys: " + PolyIDsCount.ToString() + ", UnkOffset: " + UnkOffset.ToString() + ", UnkCount: " + UnkDataCount.ToString() + ")";
+            return "(Polys: " + PolyIDsCount.ToString() + ", UnkOffset: " + UnkDataStartID.ToString() + ", UnkCount: " + UnkDataCount.ToString() + ")";
         }
     }
 
@@ -783,17 +866,22 @@ namespace CodeWalker.GameFiles
         public ushort Unknown_16h { get; set; }
         public ushort Unknown_18h { get; set; }
         public ushort Unknown_1Ah { get; set; }
-        //public NavMeshAABB AABB1 { get; set; }
-        //public NavMeshAABB AABB2 { get; set; }
+        //public NavMeshAABB AABB { get; set; }
+
+        public uint Type1 { get { return Unknown_00h & 0xFF; } }
+        public uint Type2 { get { return (Unknown_00h >> 8) & 0xF; } }
+        public uint Type3 { get { return (Unknown_00h >> 12) & 0xF; } }
+        public uint Type4 { get { return (Unknown_00h >> 16) & 0xFFFF; } }
 
         public override string ToString()
         {
-            return Unknown_00h.ToString() + ", " + 
+            return //Unknown_00h.ToString() + ", " + Unknown_01h.ToString() + ", " + Unknown_02h.ToString() + ", " +
+                   Type1.ToString() + ", " + Type2.ToString() + ", " + Type3.ToString() + ", " + Type4.ToString() + ", " +
                    Position1.ToString() + ", " + Position2.ToString() + ", " +
                    Unknown_10h.ToString() + ", " + Unknown_12h.ToString() + ", " +
                    Unknown_14h.ToString() + ", " + Unknown_16h.ToString() + ", " +
                    Unknown_18h.ToString() + ", " + Unknown_1Ah.ToString();
-                   //AABB1.ToString() + ", " + AABB2.ToString();
+                    //AABB.ToString();
         }
     }
 
@@ -802,6 +890,7 @@ namespace CodeWalker.GameFiles
 
     [Flags] public enum NavMeshFlags : uint
     {
+        None = 0,
         Vertices = 1,
         Portals = 2,
         Vehicle = 4,
