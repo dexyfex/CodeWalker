@@ -101,6 +101,7 @@ done:
 
 
 [v.29]
+Nav poly editing (YNV)
 New Project Window
 RPF Explorer drag & drop
 Show vehicle wheels
