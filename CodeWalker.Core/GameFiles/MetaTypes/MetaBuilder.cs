@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SharpDX;
 
 namespace CodeWalker.GameFiles
 {
@@ -151,7 +152,7 @@ namespace CodeWalker.GameFiles
             return new Array_Structure(ptr);
         }
 
-        public Array_Vector3 AddPaddedVector3ArrayPtr(SharpDX.Vector4[] items)
+        public Array_Vector3 AddPaddedVector3ArrayPtr(Vector4[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_Vector3();
             var ptr = AddItemArray(MetaName.VECTOR4, items); //padded to vec4...

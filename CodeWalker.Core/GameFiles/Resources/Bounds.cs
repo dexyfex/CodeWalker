@@ -115,16 +115,16 @@ namespace CodeWalker.GameFiles
         public float BoundingSphereRadius { get; set; }
         public uint Unknown_18h { get; set; }
         public uint Unknown_1Ch { get; set; }
-        public SharpDX.Vector3 BoundingBoxMax { get; set; }
+        public Vector3 BoundingBoxMax { get; set; }
         public float Margin { get; set; }
-        public SharpDX.Vector3 BoundingBoxMin { get; set; }
+        public Vector3 BoundingBoxMin { get; set; }
         public uint Unknown_3Ch { get; set; }
-        public SharpDX.Vector3 BoundingBoxCenter { get; set; }
+        public Vector3 BoundingBoxCenter { get; set; }
         public byte MaterialIndex { get; set; }
         public byte ProceduralId { get; set; }
         public byte RoomId_and_PedDensity { get; set; } //5bits for RoomID and then 3bits for PedDensity
         public byte Unknown_4Fh { get; set; } //flags? (bit5 related to Unknown_5Ch, should be a flag called "Has PolyFlags")<-- i don't remember why i wrote this lol
-        public SharpDX.Vector3 Center { get; set; }
+        public Vector3 Center { get; set; }
         public byte PolyFlags { get; set; }
         public byte MaterialColorIndex { get; set; }
         public ushort Unknown_5Eh { get; set; }
@@ -163,16 +163,16 @@ namespace CodeWalker.GameFiles
             this.BoundingSphereRadius = reader.ReadSingle();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.BoundingBoxMax = reader.ReadStruct<SharpDX.Vector3>();
+            this.BoundingBoxMax = reader.ReadStruct<Vector3>();
             this.Margin = reader.ReadSingle();
-            this.BoundingBoxMin = reader.ReadStruct<SharpDX.Vector3>();
+            this.BoundingBoxMin = reader.ReadStruct<Vector3>();
             this.Unknown_3Ch = reader.ReadUInt32();
-            this.BoundingBoxCenter = reader.ReadStruct<SharpDX.Vector3>();
+            this.BoundingBoxCenter = reader.ReadStruct<Vector3>();
             this.MaterialIndex = reader.ReadByte();
             this.ProceduralId = reader.ReadByte();
             this.RoomId_and_PedDensity = reader.ReadByte();
             this.Unknown_4Fh = reader.ReadByte();
-            this.Center = reader.ReadStruct<SharpDX.Vector3>();
+            this.Center = reader.ReadStruct<Vector3>();
             this.PolyFlags = reader.ReadByte();
             this.MaterialColorIndex = reader.ReadByte();
             this.Unknown_5Eh = reader.ReadUInt16();
@@ -867,8 +867,8 @@ namespace CodeWalker.GameFiles
         //public ResourceSimpleArray<AABB_r> ChildrenBoundingBoxes { get; set; }
         //public ResourceSimpleArray<BoundComposite_Unknown_B_002> Unknown_90h_Data { get; set; }
         //public ResourceSimpleArray<BoundComposite_Unknown_B_002> Unknown_98h_Data { get; set; }
-        public SharpDX.Matrix[] ChildrenTransformation1 { get; set; }
-        public SharpDX.Matrix[] ChildrenTransformation2 { get; set; }
+        public Matrix[] ChildrenTransformation1 { get; set; }
+        public Matrix[] ChildrenTransformation2 { get; set; }
         public AABB_s[] ChildrenBoundingBoxes { get; set; }
         public BoundComposite_Unknown_B_002_s[] Unknown_90h_Data { get; set; }
         public BoundComposite_Unknown_B_002_s[] Unknown_98h_Data { get; set; }
@@ -930,8 +930,8 @@ namespace CodeWalker.GameFiles
             //);
 
 
-            this.ChildrenTransformation1 = reader.ReadStructsAt<SharpDX.Matrix>(this.ChildrenTransformation1Pointer, this.ChildrenCount1);
-            this.ChildrenTransformation2 = reader.ReadStructsAt<SharpDX.Matrix>(this.ChildrenTransformation2Pointer, this.ChildrenCount1);
+            this.ChildrenTransformation1 = reader.ReadStructsAt<Matrix>(this.ChildrenTransformation1Pointer, this.ChildrenCount1);
+            this.ChildrenTransformation2 = reader.ReadStructsAt<Matrix>(this.ChildrenTransformation2Pointer, this.ChildrenCount1);
             this.ChildrenBoundingBoxes = reader.ReadStructsAt<AABB_s>(this.ChildrenBoundingBoxesPointer, this.ChildrenCount1);
             this.Unknown_90h_Data = reader.ReadStructsAt<BoundComposite_Unknown_B_002_s>(this.Unknown_90h_Pointer, this.ChildrenCount1);
             this.Unknown_98h_Data = reader.ReadStructsAt<BoundComposite_Unknown_B_002_s>(this.Unknown_98h_Pointer, this.ChildrenCount1);
@@ -1098,11 +1098,11 @@ namespace CodeWalker.GameFiles
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000000
         public uint Unknown_1Ch { get; set; } // 0x00000000
-        public SharpDX.Vector4 BoundingBoxMin { get; set; }
-        public SharpDX.Vector4 BoundingBoxMax { get; set; }
-        public SharpDX.Vector4 BoundingBoxCenter { get; set; }
-        public SharpDX.Vector4 QuantumInverse { get; set; }
-        public SharpDX.Vector4 Quantum { get; set; } // bounding box dimension / 2^16
+        public Vector4 BoundingBoxMin { get; set; }
+        public Vector4 BoundingBoxMax { get; set; }
+        public Vector4 BoundingBoxCenter { get; set; }
+        public Vector4 QuantumInverse { get; set; }
+        public Vector4 Quantum { get; set; } // bounding box dimension / 2^16
         //public ResourceSimpleList64<BVHTreeInfo> Trees { get; set; }
         public ResourceSimpleList64Ptr TreesPtr { get; set; }
         public BVHTreeInfo_s[] Trees { get; set; }
@@ -1130,11 +1130,11 @@ namespace CodeWalker.GameFiles
             //this.BoundingBoxCenter = reader.ReadBlock<Vector4_r>();
             //this.QuantumInverse = reader.ReadBlock<Vector4_r>();
             //this.Quantum = reader.ReadBlock<Vector4_r>();
-            this.BoundingBoxMin = reader.ReadStruct<SharpDX.Vector4>();
-            this.BoundingBoxMax = reader.ReadStruct<SharpDX.Vector4>();
-            this.BoundingBoxCenter = reader.ReadStruct<SharpDX.Vector4>();
-            this.QuantumInverse = reader.ReadStruct<SharpDX.Vector4>();
-            this.Quantum = reader.ReadStruct<SharpDX.Vector4>();
+            this.BoundingBoxMin = reader.ReadStruct<Vector4>();
+            this.BoundingBoxMax = reader.ReadStruct<Vector4>();
+            this.BoundingBoxCenter = reader.ReadStruct<Vector4>();
+            this.QuantumInverse = reader.ReadStruct<Vector4>();
+            this.Quantum = reader.ReadStruct<Vector4>();
 
             //this.Trees = reader.ReadBlock<ResourceSimpleList64<BVHTreeInfo>>();
             this.TreesPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();

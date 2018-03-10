@@ -23,6 +23,7 @@
 //shamelessly stolen and mangled
 
 
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -1111,12 +1112,12 @@ namespace CodeWalker.GameFiles
         public ResourceSimpleList64Ptr Unknown_C0hPtr { get; set; }
         public ResourceSimpleList64Ptr Unknown_D0hPtr { get; set; }
         public ResourceSimpleList64Ptr Unknown_E0hPtr { get; set; }
-        public SharpDX.Vector4[] Unknown_50h { get; set; }
+        public Vector4[] Unknown_50h { get; set; }
         public ushort[] Unknown_60h { get; set; }
         public ushort[] Unknown_70h { get; set; }
         public ushort[] Unknown_80h { get; set; }
         public ushort[] Unknown_90h { get; set; }
-        public SharpDX.Vector4[] Unknown_A0h { get; set; }
+        public Vector4[] Unknown_A0h { get; set; }
         public ushort[] Unknown_B0h { get; set; }
         public ushort[] Unknown_C0h { get; set; }
         public ushort[] Unknown_D0h { get; set; }
@@ -1206,12 +1207,12 @@ namespace CodeWalker.GameFiles
             this.Unknown_C0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
             this.Unknown_D0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
             this.Unknown_E0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_50h = reader.ReadStructsAt<SharpDX.Vector4>(Unknown_50hPtr.EntriesPointer, Unknown_50hPtr.EntriesCount);
+            this.Unknown_50h = reader.ReadStructsAt<Vector4>(Unknown_50hPtr.EntriesPointer, Unknown_50hPtr.EntriesCount);
             this.Unknown_60h = reader.ReadUshortsAt(Unknown_60hPtr.EntriesPointer, Unknown_60hPtr.EntriesCount);
             this.Unknown_70h = reader.ReadUshortsAt(Unknown_70hPtr.EntriesPointer, Unknown_70hPtr.EntriesCount);
             this.Unknown_80h = reader.ReadUshortsAt(Unknown_80hPtr.EntriesPointer, Unknown_80hPtr.EntriesCount);
             this.Unknown_90h = reader.ReadUshortsAt(Unknown_90hPtr.EntriesPointer, Unknown_90hPtr.EntriesCount);
-            this.Unknown_A0h = reader.ReadStructsAt<SharpDX.Vector4>(Unknown_A0hPtr.EntriesPointer, Unknown_A0hPtr.EntriesCount);
+            this.Unknown_A0h = reader.ReadStructsAt<Vector4>(Unknown_A0hPtr.EntriesPointer, Unknown_A0hPtr.EntriesCount);
             this.Unknown_B0h = reader.ReadUshortsAt(Unknown_B0hPtr.EntriesPointer, Unknown_B0hPtr.EntriesCount);
             this.Unknown_C0h = reader.ReadUshortsAt(Unknown_C0hPtr.EntriesPointer, Unknown_C0hPtr.EntriesCount);
             this.Unknown_D0h = reader.ReadUshortsAt(Unknown_D0hPtr.EntriesPointer, Unknown_D0hPtr.EntriesCount);
@@ -1382,14 +1383,14 @@ namespace CodeWalker.GameFiles
         public uint Unknown_68h { get; set; } // 0x00000000
         public uint Unknown_6Ch { get; set; } // 0x00000000
         public ResourceSimpleList64Ptr Unknown_70hPtr { get; set; }
-        public SharpDX.Vector4[] Unknown_70h { get; set; }
+        public Vector4[] Unknown_70h { get; set; }
         //public uint Unknown_70h { get; set; } // 0x00000000
         //public uint Unknown_74h { get; set; } // 0x00000000
         //public uint Unknown_78h { get; set; } // 0x00000000
         //public uint Unknown_7Ch { get; set; } // 0x00000000
         //public ResourceSimpleList64<Vector4_r> Unknown_80h { get; set; }
         public ResourceSimpleList64Ptr Unknown_80hPtr { get; set; }
-        public SharpDX.Vector4[] Unknown_80h { get; set; }
+        public Vector4[] Unknown_80h { get; set; }
         public uint Unknown_90h { get; set; } // 0x00000000
         public uint Unknown_94h { get; set; } // 0x00000000
         public uint Unknown_98h { get; set; } // 0x00000000
@@ -1422,8 +1423,8 @@ namespace CodeWalker.GameFiles
         //public ResourceSimpleList64<Vector4_r> Unknown_110h { get; set; }
         public ResourceSimpleList64Ptr Unknown_100hPtr { get; set; }
         public ResourceSimpleList64Ptr Unknown_110hPtr { get; set; }
-        public SharpDX.Vector4[] Unknown_100h { get; set; }
-        public SharpDX.Vector4[] Unknown_110h { get; set; }
+        public Vector4[] Unknown_100h { get; set; }
+        public Vector4[] Unknown_110h { get; set; }
         public uint Unknown_120h { get; set; } // 0x00000000
         public uint Unknown_124h { get; set; } // 0x00000000
         public uint Unknown_128h { get; set; } // 0x00000000
@@ -1486,14 +1487,14 @@ namespace CodeWalker.GameFiles
             this.Unknown_68h = reader.ReadUInt32();
             this.Unknown_6Ch = reader.ReadUInt32();
             this.Unknown_70hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_70h = reader.ReadStructsAt<SharpDX.Vector4>(Unknown_70hPtr.EntriesPointer, Unknown_70hPtr.EntriesCount);
+            this.Unknown_70h = reader.ReadStructsAt<Vector4>(Unknown_70hPtr.EntriesPointer, Unknown_70hPtr.EntriesCount);
             //this.Unknown_70h = reader.ReadUInt32();
             //this.Unknown_74h = reader.ReadUInt32();
             //this.Unknown_78h = reader.ReadUInt32();
             //this.Unknown_7Ch = reader.ReadUInt32();
             //this.Unknown_80h = reader.ReadBlock<ResourceSimpleList64<Vector4_r>>();
             this.Unknown_80hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_80h = reader.ReadStructsAt<SharpDX.Vector4>(Unknown_80hPtr.EntriesPointer, Unknown_80hPtr.EntriesCount);
+            this.Unknown_80h = reader.ReadStructsAt<Vector4>(Unknown_80hPtr.EntriesPointer, Unknown_80hPtr.EntriesCount);
             this.Unknown_90h = reader.ReadUInt32();
             this.Unknown_94h = reader.ReadUInt32();
             this.Unknown_98h = reader.ReadUInt32();
@@ -1526,8 +1527,8 @@ namespace CodeWalker.GameFiles
             //this.Unknown_110h = reader.ReadBlock<ResourceSimpleList64<Vector4_r>>();
             this.Unknown_100hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
             this.Unknown_110hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_100h = reader.ReadStructsAt<SharpDX.Vector4>(Unknown_100hPtr.EntriesPointer, Unknown_100hPtr.EntriesCount);
-            this.Unknown_110h = reader.ReadStructsAt<SharpDX.Vector4>(Unknown_110hPtr.EntriesPointer, Unknown_110hPtr.EntriesCount);
+            this.Unknown_100h = reader.ReadStructsAt<Vector4>(Unknown_100hPtr.EntriesPointer, Unknown_100hPtr.EntriesCount);
+            this.Unknown_110h = reader.ReadStructsAt<Vector4>(Unknown_110hPtr.EntriesPointer, Unknown_110hPtr.EntriesCount);
             this.Unknown_120h = reader.ReadUInt32();
             this.Unknown_124h = reader.ReadUInt32();
             this.Unknown_128h = reader.ReadUInt32();
@@ -1802,7 +1803,7 @@ namespace CodeWalker.GameFiles
         // structure data
         public uint Unknown_0A8h { get; set; }
         public uint Unknown_0ACh { get; set; }
-        public SharpDX.Matrix Unknown_0B0h { get; set; }
+        public Matrix Unknown_0B0h { get; set; }
         public ulong BoundPointer { get; set; }
         public ulong Unknown_0F8h_Pointer { get; set; }
         public ushort Count1 { get; set; }
@@ -1831,7 +1832,7 @@ namespace CodeWalker.GameFiles
         //public ResourceSimpleArray<ulong_r> Unknown_F8h_Data { get; set; }
         public ulong[] Unknown_F8h_Data { get; set; }
         //public ResourceSimpleArray<Matrix4_r> Unknown_108h_Data { get; set; }
-        public SharpDX.Matrix[] Unknown_108h_Data { get; set; }
+        public Matrix[] Unknown_108h_Data { get; set; }
         public string Name { get; set; }
 
         public FragType OwnerFragment { get; set; } //for handy use
@@ -1848,7 +1849,7 @@ namespace CodeWalker.GameFiles
             // read structure data
             this.Unknown_0A8h = reader.ReadUInt32();
             this.Unknown_0ACh = reader.ReadUInt32();
-            this.Unknown_0B0h = reader.ReadStruct<SharpDX.Matrix>();
+            this.Unknown_0B0h = reader.ReadStruct<Matrix>();
             this.BoundPointer = reader.ReadUInt64();
             this.Unknown_0F8h_Pointer = reader.ReadUInt64();
             this.Count1 = reader.ReadUInt16();
@@ -1886,7 +1887,7 @@ namespace CodeWalker.GameFiles
             //    this.Unknown_108h_Pointer, // offset
             //    this.Count2
             //);
-            this.Unknown_108h_Data = reader.ReadStructsAt<SharpDX.Matrix>(this.Unknown_108h_Pointer, this.Count2);
+            this.Unknown_108h_Data = reader.ReadStructsAt<Matrix>(this.Unknown_108h_Pointer, this.Count2);
 
             this.Name = reader.ReadStringAt(//BlockAt<string_r>(
                 this.NamePointer // offset
@@ -2285,15 +2286,15 @@ namespace CodeWalker.GameFiles
         public uint Unknown_1Ch { get; set; }
         public ulong ArticulatedBodyTypePointer { get; set; }
         public ulong Unknown_28h_Pointer { get; set; }
-        public SharpDX.Vector4 Unknown_30h { get; set; }
-        public SharpDX.Vector4 Unknown_40h { get; set; }
-        public SharpDX.Vector4 Unknown_50h { get; set; }
-        public SharpDX.Vector4 Unknown_60h { get; set; }
-        public SharpDX.Vector4 Unknown_70h { get; set; }
-        public SharpDX.Vector4 Unknown_80h { get; set; }
-        public SharpDX.Vector4 Unknown_90h { get; set; }
-        public SharpDX.Vector4 Unknown_A0h { get; set; }
-        public SharpDX.Vector4 Unknown_B0h { get; set; }
+        public Vector4 Unknown_30h { get; set; }
+        public Vector4 Unknown_40h { get; set; }
+        public Vector4 Unknown_50h { get; set; }
+        public Vector4 Unknown_60h { get; set; }
+        public Vector4 Unknown_70h { get; set; }
+        public Vector4 Unknown_80h { get; set; }
+        public Vector4 Unknown_90h { get; set; }
+        public Vector4 Unknown_A0h { get; set; }
+        public Vector4 Unknown_B0h { get; set; }
         public ulong GroupNamesPointer { get; set; }
         public ulong GroupsPointer { get; set; }
         public ulong ChildrenPointer { get; set; }
@@ -2327,8 +2328,8 @@ namespace CodeWalker.GameFiles
         public FragPhysArchetype Archetype1 { get; set; }
         public FragPhysArchetype Archetype2 { get; set; }
         public Bounds Bound { get; set; }
-        public SharpDX.Vector4[] InertiaTensors { get; set; }
-        public SharpDX.Vector4[] Unknown_F8h_Data { get; set; }
+        public Vector4[] InertiaTensors { get; set; }
+        public Vector4[] Unknown_F8h_Data { get; set; }
         public FragPhysUnknown_F_002 FragTransforms { get; set; }
         public byte[] Unknown_108h_Data { get; set; }
         public byte[] Unknown_110h_Data { get; set; }
@@ -2350,15 +2351,15 @@ namespace CodeWalker.GameFiles
             this.Unknown_1Ch = reader.ReadUInt32();
             this.ArticulatedBodyTypePointer = reader.ReadUInt64();
             this.Unknown_28h_Pointer = reader.ReadUInt64();
-            this.Unknown_30h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_40h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_50h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_60h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_70h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_80h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_90h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_A0h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_B0h = reader.ReadStruct<SharpDX.Vector4>();
+            this.Unknown_30h = reader.ReadStruct<Vector4>();
+            this.Unknown_40h = reader.ReadStruct<Vector4>();
+            this.Unknown_50h = reader.ReadStruct<Vector4>();
+            this.Unknown_60h = reader.ReadStruct<Vector4>();
+            this.Unknown_70h = reader.ReadStruct<Vector4>();
+            this.Unknown_80h = reader.ReadStruct<Vector4>();
+            this.Unknown_90h = reader.ReadStruct<Vector4>();
+            this.Unknown_A0h = reader.ReadStruct<Vector4>();
+            this.Unknown_B0h = reader.ReadStruct<Vector4>();
             this.GroupNamesPointer = reader.ReadUInt64();
             this.GroupsPointer = reader.ReadUInt64();
             this.ChildrenPointer = reader.ReadUInt64();
@@ -2422,8 +2423,8 @@ namespace CodeWalker.GameFiles
             //    this.Unknown_F8h_Pointer, // offset
             //    this.ChildrenCount
             //);
-            this.InertiaTensors = reader.ReadStructsAt<SharpDX.Vector4>(this.InertiaTensorsPointer, this.ChildrenCount);
-            this.Unknown_F8h_Data = reader.ReadStructsAt<SharpDX.Vector4>(this.Unknown_F8h_Pointer, this.ChildrenCount);
+            this.InertiaTensors = reader.ReadStructsAt<Vector4>(this.InertiaTensorsPointer, this.ChildrenCount);
+            this.Unknown_F8h_Data = reader.ReadStructsAt<Vector4>(this.Unknown_F8h_Pointer, this.ChildrenCount);
 
 
             this.FragTransforms = reader.ReadBlockAt<FragPhysUnknown_F_002>(
@@ -2602,7 +2603,7 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public ResourcePointerArray64<FragPhysJointType> JointTypes { get; set; }
-        public SharpDX.Vector4[] p2data { get; set; }
+        public Vector4[] p2data { get; set; }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -2664,7 +2665,7 @@ namespace CodeWalker.GameFiles
             //    this.p2, // offset
             //    this.c1
             //);
-            this.p2data = reader.ReadStructsAt<SharpDX.Vector4>(this.p2, this.c1);
+            this.p2data = reader.ReadStructsAt<Vector4>(this.p2, this.c1);
 
         }
 
@@ -3146,7 +3147,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_18h { get; set; } // 0x00000000
         public uint Unknown_1Ch { get; set; } // 0x00000000
         //public ResourceSimpleArray<Matrix4_r> Data { get; set; }
-        public SharpDX.Matrix[] Data { get; set; }
+        public Matrix[] Data { get; set; }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -3165,7 +3166,7 @@ namespace CodeWalker.GameFiles
             //this.Data = reader.ReadBlock<ResourceSimpleArray<Matrix4_r>>(
             //  cnt
             //  );
-            this.Data = reader.ReadStructsAt<SharpDX.Matrix>((ulong)reader.Position, cnt);
+            this.Data = reader.ReadStructsAt<Matrix>((ulong)reader.Position, cnt);
 
         }
 
@@ -3224,14 +3225,14 @@ namespace CodeWalker.GameFiles
         public float Unknown_54h { get; set; } // 1.0f
         public uint Unknown_58h { get; set; } // 0x00000000
         public uint Unknown_5Ch { get; set; } // 0x00000000
-        public SharpDX.Vector4 Unknown_60h { get; set; }
-        public SharpDX.Vector4 Unknown_70h { get; set; }
-        public SharpDX.Vector4 Unknown_80h { get; set; } // 0.0 0.0 0.0 NaN
-        public SharpDX.Vector4 Unknown_90h { get; set; } // 0.0 0.0 0.0 NaN
-        public SharpDX.Vector4 Unknown_A0h { get; set; } // 0.0 0.0 0.0 NaN
-        public SharpDX.Vector4 Unknown_B0h { get; set; } // 0.0 0.0 0.0 NaN
-        public SharpDX.Vector4 Unknown_C0h { get; set; } // 0.0 0.0 0.0 NaN
-        public SharpDX.Vector4 Unknown_D0h { get; set; } // 0.0 0.0 0.0 NaN
+        public Vector4 Unknown_60h { get; set; }
+        public Vector4 Unknown_70h { get; set; }
+        public Vector4 Unknown_80h { get; set; } // 0.0 0.0 0.0 NaN
+        public Vector4 Unknown_90h { get; set; } // 0.0 0.0 0.0 NaN
+        public Vector4 Unknown_A0h { get; set; } // 0.0 0.0 0.0 NaN
+        public Vector4 Unknown_B0h { get; set; } // 0.0 0.0 0.0 NaN
+        public Vector4 Unknown_C0h { get; set; } // 0.0 0.0 0.0 NaN
+        public Vector4 Unknown_D0h { get; set; } // 0.0 0.0 0.0 NaN
 
         // reference data
         public string Name { get; set; }
@@ -3265,14 +3266,14 @@ namespace CodeWalker.GameFiles
             this.Unknown_54h = reader.ReadSingle();
             this.Unknown_58h = reader.ReadUInt32();
             this.Unknown_5Ch = reader.ReadUInt32();
-            this.Unknown_60h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_70h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_80h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_90h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_A0h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_B0h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_C0h = reader.ReadStruct<SharpDX.Vector4>();
-            this.Unknown_D0h = reader.ReadStruct<SharpDX.Vector4>();
+            this.Unknown_60h = reader.ReadStruct<Vector4>();
+            this.Unknown_70h = reader.ReadStruct<Vector4>();
+            this.Unknown_80h = reader.ReadStruct<Vector4>();
+            this.Unknown_90h = reader.ReadStruct<Vector4>();
+            this.Unknown_A0h = reader.ReadStruct<Vector4>();
+            this.Unknown_B0h = reader.ReadStruct<Vector4>();
+            this.Unknown_C0h = reader.ReadStruct<Vector4>();
+            this.Unknown_D0h = reader.ReadStruct<Vector4>();
 
             // read reference data
             this.Name = reader.ReadStringAt(//BlockAt<string_r>(

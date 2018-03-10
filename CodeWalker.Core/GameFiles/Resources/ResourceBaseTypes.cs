@@ -23,6 +23,7 @@
 //shamelessly stolen and mangled
 
 
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -121,9 +122,9 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct Matrix3_s
     {
-        public SharpDX.Vector4 Row1 { get; set; }
-        public SharpDX.Vector4 Row2 { get; set; }
-        public SharpDX.Vector4 Row3 { get; set; }
+        public Vector4 Row1 { get; set; }
+        public Vector4 Row2 { get; set; }
+        public Vector4 Row3 { get; set; }
 
         // structure data
         //public float Unknown_01 { get; set; }
@@ -142,8 +143,8 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct AABB_s
     {
-        public SharpDX.Vector4 Min { get; set; }
-        public SharpDX.Vector4 Max { get; set; }
+        public Vector4 Min { get; set; }
+        public Vector4 Max { get; set; }
     }
 
 

@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -392,10 +391,10 @@ namespace CodeWalker.Forms
                 gridVerts.Clear();
 
                 float s = gridSize * gridCount * 0.5f;
-                uint cblack = (uint)SharpDX.Color.Black.ToRgba();
-                uint cgray = (uint)SharpDX.Color.DimGray.ToRgba();
-                uint cred = (uint)SharpDX.Color.DarkRed.ToRgba();
-                uint cgrn = (uint)SharpDX.Color.DarkGreen.ToRgba();
+                uint cblack = (uint)Color.Black.ToRgba();
+                uint cgray = (uint)Color.DimGray.ToRgba();
+                uint cred = (uint)Color.DarkRed.ToRgba();
+                uint cgrn = (uint)Color.DarkGreen.ToRgba();
                 int interval = 10;
 
                 for (int i = 0; i <= gridCount; i++)

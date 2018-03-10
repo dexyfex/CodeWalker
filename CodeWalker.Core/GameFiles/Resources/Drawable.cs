@@ -343,7 +343,7 @@ namespace CodeWalker.GameFiles
                         //p.Data = reader.ReadBlockAt<Vector4_r>(
                         //    p.DataPointer // offset
                         //);
-                        p.Data = reader.ReadStructAt<SharpDX.Vector4>(
+                        p.Data = reader.ReadStructAt<Vector4>(
                             (long)p.DataPointer // offset
                         );
 
@@ -369,7 +369,7 @@ namespace CodeWalker.GameFiles
                         //     p.DataPointer, // offset
                         //      p.DataType
                         // );
-                        p.Data = reader.ReadStructsAt<SharpDX.Vector4>(p.DataPointer, p.DataType);
+                        p.Data = reader.ReadStructsAt<Vector4>(p.DataPointer, p.DataType);
 
                         break;
                 }
@@ -499,8 +499,8 @@ namespace CodeWalker.GameFiles
         //public ResourceSimpleArray<ushort_r> ParentIndices { get; set; }
         //public ResourceSimpleArray<ushort_r> Unknown_40h_Data { get; set; }
 
-        public SharpDX.Matrix[] TransformationsInverted { get; set; }
-        public SharpDX.Matrix[] Transformations { get; set; }
+        public Matrix[] TransformationsInverted { get; set; }
+        public Matrix[] Transformations { get; set; }
         public ushort[] ParentIndices { get; set; }
         public ushort[] Unknown_40h_Data { get; set; }
 
@@ -562,8 +562,8 @@ namespace CodeWalker.GameFiles
             //    this.Unknown_40h_Pointer, // offset
             //    this.Count4
             //);
-            this.TransformationsInverted = reader.ReadStructsAt<SharpDX.Matrix>(this.TransformationsInvertedPointer, this.BonesCount);
-            this.Transformations = reader.ReadStructsAt<SharpDX.Matrix>(this.TransformationsPointer, this.BonesCount);
+            this.TransformationsInverted = reader.ReadStructsAt<Matrix>(this.TransformationsInvertedPointer, this.BonesCount);
+            this.Transformations = reader.ReadStructsAt<Matrix>(this.TransformationsPointer, this.BonesCount);
             this.ParentIndices = reader.ReadUshortsAt(this.ParentIndicesPointer, this.BonesCount);
             this.Unknown_40h_Data = reader.ReadUshortsAt(this.Unknown_40h_Pointer, this.Count4);
 
@@ -1005,9 +1005,9 @@ namespace CodeWalker.GameFiles
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000000
         public uint Unknown_1Ch { get; set; } // 0x00000000
-        public SharpDX.Vector3 Min { get; set; }
+        public Vector3 Min { get; set; }
         public uint Unknown_2Ch { get; set; } // 0x00000000
-        public SharpDX.Vector3 Max { get; set; }
+        public Vector3 Max { get; set; }
         public uint Unknown_3Ch { get; set; } // 0x00000000
     }
 
@@ -2092,10 +2092,10 @@ namespace CodeWalker.GameFiles
         // structure data
         public ulong ShaderGroupPointer { get; set; }
         public ulong SkeletonPointer { get; set; }
-        public SharpDX.Vector3 BoundingCenter { get; set; }
+        public Vector3 BoundingCenter { get; set; }
         public float BoundingSphereRadius { get; set; }
-        public SharpDX.Vector4 BoundingBoxMin { get; set; }
-        public SharpDX.Vector4 BoundingBoxMax { get; set; }
+        public Vector4 BoundingBoxMin { get; set; }
+        public Vector4 BoundingBoxMax { get; set; }
         public ulong DrawableModelsHighPointer { get; set; }
         public ulong DrawableModelsMediumPointer { get; set; }
         public ulong DrawableModelsLowPointer { get; set; }
@@ -2162,10 +2162,10 @@ namespace CodeWalker.GameFiles
             // read structure data
             this.ShaderGroupPointer = reader.ReadUInt64();
             this.SkeletonPointer = reader.ReadUInt64();
-            this.BoundingCenter = reader.ReadStruct<SharpDX.Vector3>();
+            this.BoundingCenter = reader.ReadStruct<Vector3>();
             this.BoundingSphereRadius = reader.ReadSingle();
-            this.BoundingBoxMin = reader.ReadStruct<SharpDX.Vector4>();
-            this.BoundingBoxMax = reader.ReadStruct<SharpDX.Vector4>();
+            this.BoundingBoxMin = reader.ReadStruct<Vector4>();
+            this.BoundingBoxMax = reader.ReadStruct<Vector4>();
             this.DrawableModelsHighPointer = reader.ReadUInt64();
             this.DrawableModelsMediumPointer = reader.ReadUInt64();
             this.DrawableModelsLowPointer = reader.ReadUInt64();
