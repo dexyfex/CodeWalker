@@ -356,7 +356,6 @@ namespace CodeWalker.GameFiles
 
         private ResourceSystemStructBlock<uint> ListOffsetsBlock = null;
         public int ItemSize { get { return System.Runtime.InteropServices.Marshal.SizeOf<T>(); } }
-        //public int BytesPerPart { get; private set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -373,11 +372,6 @@ namespace CodeWalker.GameFiles
 
             ListParts = reader.ReadBlockAt<ResourceSimpleArray<NavMeshListPart<T>>>(ListPartsPointer, ListPartsCount);
             ListOffsets = reader.ReadUintsAt(ListOffsetsPointer, ListPartsCount);
-
-            //if (ListParts.Count > 0)
-            //{
-            //    BytesPerPart = (int)ListParts[0].Count * ItemSize;
-            //}
 
         }
 
@@ -649,7 +643,7 @@ namespace CodeWalker.GameFiles
 
         //public int PartUnk1 { get { return (PartFlags >> 0) & 0xF; } } //always 0
         public ushort PartID { get { return (ushort)((PartFlags >> 4) & 0xFF); } set { PartFlags = (ushort)((PartFlags & 0xF00F) | ((value & 0xFF) << 4)); } }
-        public byte PartUnk2 { get { return (byte)((PartFlags >> 12) & 0xF); } set { PartFlags = (ushort)((PartFlags & 0x0FFF) | ((value & 0xF) << 12)); } }
+        public byte PortalUnk { get { return (byte)((PartFlags >> 12) & 0xF); } set { PartFlags = (ushort)((PartFlags & 0x0FFF) | ((value & 0xF) << 12)); } }
 
 
         public ushort Unknown_28h_16 { get { return (ushort)((Unknown_28h.Value & 0xFFFF)); } set { Unknown_28h = (Unknown_28h.Value & 0xFFFF0000) | (value & 0xFFFFu); } }
@@ -670,7 +664,7 @@ namespace CodeWalker.GameFiles
                 Unknown_28h.Hex + ", " + 
                 //PartFlags.ToString() + ", " + //PartUnk1.ToString() + ", " + 
                 PartID.ToString() + ", " + 
-                PartUnk2.ToString() + ", " +
+                PortalUnk.ToString() + ", " +
                 PortalID.ToString();
         }
     }
@@ -857,31 +851,31 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshPortal
     {
-        public uint Unknown_00h { get; set; }
+        public uint TypeFlags { get; set; }
         public NavMeshVertex Position1 { get; set; }
         public NavMeshVertex Position2 { get; set; }
-        public ushort Unknown_10h { get; set; }
-        public ushort Unknown_12h { get; set; }
-        public ushort Unknown_14h { get; set; }
-        public ushort Unknown_16h { get; set; }
-        public ushort Unknown_18h { get; set; }
-        public ushort Unknown_1Ah { get; set; }
-        //public NavMeshAABB AABB { get; set; }
+        public ushort PolyID1a { get; set; }
+        public ushort PolyID1b { get; set; }
+        public ushort PolyID2a { get; set; }
+        public ushort PolyID2b { get; set; }
+        public uint AreaFlags { get; set; }
 
-        public uint Type1 { get { return Unknown_00h & 0xFF; } }
-        public uint Type2 { get { return (Unknown_00h >> 8) & 0xF; } }
-        public uint Type3 { get { return (Unknown_00h >> 12) & 0xF; } }
-        public uint Type4 { get { return (Unknown_00h >> 16) & 0xFFFF; } }
+        public uint Type1 { get { return TypeFlags & 0xFF; } }
+        public uint Type2 { get { return (TypeFlags >> 8) & 0xF; } }
+        public uint Type3 { get { return (TypeFlags >> 12) & 0xF; } }
+        public uint Type4 { get { return (TypeFlags >> 16) & 0xFFFF; } }
+
+        public ushort AreaID1 { get { return (ushort)(AreaFlags & 0x3FFF); } }
+        public ushort AreaID2 { get { return (ushort)((AreaFlags >> 14) & 0x3FFF); } }
+        public byte AreaUnk { get { return (byte)((AreaFlags >> 28) & 0xF); } }
 
         public override string ToString()
         {
-            return //Unknown_00h.ToString() + ", " + Unknown_01h.ToString() + ", " + Unknown_02h.ToString() + ", " +
+            return AreaID1.ToString() + ", " + AreaID2.ToString() + ", " + AreaUnk.ToString() + ", " +
+                   PolyID1a.ToString() + ", " + PolyID1b.ToString() + ", " +
+                   PolyID2a.ToString() + ", " + PolyID2b.ToString() + ", " +
                    Type1.ToString() + ", " + Type2.ToString() + ", " + Type3.ToString() + ", " + Type4.ToString() + ", " +
-                   Position1.ToString() + ", " + Position2.ToString() + ", " +
-                   Unknown_10h.ToString() + ", " + Unknown_12h.ToString() + ", " +
-                   Unknown_14h.ToString() + ", " + Unknown_16h.ToString() + ", " +
-                   Unknown_18h.ToString() + ", " + Unknown_1Ah.ToString();
-                    //AABB.ToString();
+                   "(" + Position1.ToString() + " | " + Position2.ToString() + ")";
         }
     }
 

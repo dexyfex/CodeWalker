@@ -14,6 +14,7 @@ namespace CodeWalker.GameFiles
 
         public List<Vector3> Vertices { get; set; }
         public List<ushort> Indices { get; set; }
+        public List<NavMeshAdjPoly> AdjPolys { get; set; }
         public List<YnvPoly> Polys { get; set; }
 
 
@@ -97,6 +98,10 @@ namespace CodeWalker.GameFiles
                 {
                     Indices = Nav.Indices.GetFullList();
                 }
+                if (Nav.AdjPolys != null)
+                {
+                    AdjPolys = Nav.AdjPolys.GetFullList();
+                }
                 if (Nav.Polys != null)
                 {
                     var polys = Nav.Polys.GetFullList();
@@ -171,24 +176,9 @@ namespace CodeWalker.GameFiles
             {
                 for (int i = 0; i < Vertices.Count; i++)
                 {
-                    var ov = (Vertices[i] - posoffset) * aabbsizeinv;
-                    vertlist.Add(NavMeshVertex.Create(ov));
+                    vertlist.Add(NavMeshVertex.Create((Vertices[i] - posoffset) * aabbsizeinv));
                 }
             }
-            if (Nav.Vertices == null)
-            {
-                Nav.Vertices = new NavMeshList<NavMeshVertex>();
-                Nav.Vertices.VFT = 1080158456;
-            }
-            Nav.Vertices.RebuildList(vertlist);
-
-            if (Nav.Indices == null)
-            {
-                Nav.Indices = new NavMeshList<ushort>();
-                Nav.Indices.VFT = 1080158424;
-            }
-            Nav.Indices.RebuildList(Indices);
-
             var polylist = new List<NavMeshPoly>();
             if (Polys != null)
             {
@@ -197,20 +187,51 @@ namespace CodeWalker.GameFiles
                     polylist.Add(Polys[i].RawData);
                 }
             }
-            if (Nav.Polys == null)
+
+
+            if (Nav.Vertices == null)
             {
-                Nav.Polys = new NavMeshList<NavMeshPoly>();
-                Nav.Polys.VFT = 1080158408;
+                Nav.Vertices = new NavMeshList<NavMeshVertex>();
+                Nav.Vertices.VFT = 1080158456;
             }
-            Nav.Polys.RebuildList(polylist);
-
-
+            if (Nav.Indices == null)
+            {
+                Nav.Indices = new NavMeshList<ushort>();
+                Nav.Indices.VFT = 1080158424;
+            }
             if (Nav.AdjPolys == null)
             {
                 Nav.AdjPolys = new NavMeshList<NavMeshAdjPoly>();
                 Nav.AdjPolys.VFT = 1080158440;
             }
-            //Nav.AdjPolys.RebuildList(...)
+            if (Nav.Polys == null)
+            {
+                Nav.Polys = new NavMeshList<NavMeshPoly>();
+                Nav.Polys.VFT = 1080158408;
+            }
+
+
+            Nav.Vertices.RebuildList(vertlist);
+
+            Nav.Indices.RebuildList(Indices);
+
+            Nav.AdjPolys.RebuildList(AdjPolys);
+
+            Nav.Polys.RebuildList(polylist);
+
+
+
+            for (int i = 0; i < Nav.Polys.ListParts.Count; i++) //reassign part id's on all the polys...
+            {
+                var listpart = Nav.Polys.ListParts[i];
+                var partitems = listpart?.Items;
+                if (partitems == null) continue;
+                ushort iu = (ushort)i;
+                for (int j = 0; j < partitems.Length; j++)
+                {
+                    partitems[j].PartID = iu;
+                }
+            }
 
         }
 
@@ -415,6 +436,7 @@ namespace CodeWalker.GameFiles
         public ushort AreaID { get { return _RawData.AreaID; } set { _RawData.AreaID = value; } }
         public ushort PartID { get { return _RawData.PartID; } set { _RawData.PartID = value; } }
         public ushort PortalID { get { return _RawData.PortalID; } set { _RawData.PortalID = value; } }
+        public byte PortalUnk { get { return _RawData.PortalUnk; } set { _RawData.PortalUnk = value; } }
         public byte Flags1 { get { return (byte)(_RawData.Unknown_00h & 0xFF); } set { _RawData.Unknown_00h = (ushort)((_RawData.Unknown_00h & 0xFF00) | (value & 0xFF)); } }
         public byte Flags2 { get { return (byte)((_RawData.Unknown_24h.Value >> 0) & 0xFF); } set { _RawData.Unknown_24h = ((_RawData.Unknown_24h.Value & 0xFFFFFF00u) | ((value & 0xFFu) << 0)); } }
         public byte Flags3 { get { return (byte)((_RawData.Unknown_24h.Value >> 9) & 0xFF); } set { _RawData.Unknown_24h = ((_RawData.Unknown_24h.Value & 0xFFFE01FFu) | ((value & 0xFFu) << 9)); } }
@@ -452,10 +474,10 @@ namespace CodeWalker.GameFiles
         public bool B30_SlopeNorthWest  { get { return (_RawData.Unknown_28h.Value & 2097152) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 21, value); } }
         public bool B31_SlopeWest       { get { return (_RawData.Unknown_28h.Value & 4194304) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 22, value); } }
         public bool B32_SlopeSouthWest  { get { return (_RawData.Unknown_28h.Value & 8388608) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 23, value); } }
-        //public bool B33_PortalUnk1      { get { return (_RawData.PartUnk2 & 1) > 0; } }
-        //public bool B34_PortalUnk2      { get { return (_RawData.PartUnk2 & 2) > 0; } }
-        //public bool B35_PortalUnk3      { get { return (_RawData.PartUnk2 & 4) > 0; } }
-        //public bool B36_PortalUnk4      { get { return (_RawData.PartUnk2 & 8) > 0; } }
+        //public bool B33_PortalUnk1      { get { return (_RawData.PortalUnk & 1) > 0; } }
+        //public bool B34_PortalUnk2      { get { return (_RawData.PortalUnk & 2) > 0; } }
+        //public bool B35_PortalUnk3      { get { return (_RawData.PortalUnk & 4) > 0; } }
+        //public bool B36_PortalUnk4      { get { return (_RawData.PortalUnk & 8) > 0; } }
         public byte UnkX { get { return _RawData.Unknown_28h_8a; } set { _RawData.Unknown_28h_8a = value; } }
         public byte UnkY { get { return _RawData.Unknown_28h_8b; } set { _RawData.Unknown_28h_8b = value; } }
 
@@ -520,7 +542,7 @@ namespace CodeWalker.GameFiles
             //if ((u5 & 8388608) > 0) colour.Red += 1.0f; //slope facing -X,-Y   (southwest)
             //if (u5 >= 16777216) { } //other bits unused
 
-            var u1 = _RawData.PartUnk2;
+            var u1 = _RawData.PortalUnk;
             //if ((u1 & 1) > 0) colour.Red += 1.0f; //portal - don't interact?
             //if ((u1 & 2) > 0) colour.Green += 1.0f; //portal - ladder/fence interaction?
             //if ((u1 & 4) > 0) colour.Blue += 1.0f; //portal - fence interaction / go away from?

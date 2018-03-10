@@ -46,11 +46,14 @@
             this.label4 = new System.Windows.Forms.Label();
             this.DeletePolyButton = new System.Windows.Forms.Button();
             this.AddToProjectButton = new System.Windows.Forms.Button();
+            this.PortalUnkUpDown = new System.Windows.Forms.NumericUpDown();
+            this.label6 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.AreaIDUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PartIDUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PortalIDUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.UnkXUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.UnkYUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PortalUnkUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // AreaIDUpDown
@@ -63,7 +66,7 @@
             0});
             this.AreaIDUpDown.Name = "AreaIDUpDown";
             this.AreaIDUpDown.Size = new System.Drawing.Size(71, 20);
-            this.AreaIDUpDown.TabIndex = 35;
+            this.AreaIDUpDown.TabIndex = 2;
             this.AreaIDUpDown.ValueChanged += new System.EventHandler(this.AreaIDUpDown_ValueChanged);
             // 
             // label92
@@ -72,7 +75,7 @@
             this.label92.Location = new System.Drawing.Point(7, 14);
             this.label92.Name = "label92";
             this.label92.Size = new System.Drawing.Size(46, 13);
-            this.label92.TabIndex = 34;
+            this.label92.TabIndex = 1;
             this.label92.Text = "Area ID:";
             // 
             // PartIDUpDown
@@ -85,7 +88,7 @@
             0});
             this.PartIDUpDown.Name = "PartIDUpDown";
             this.PartIDUpDown.Size = new System.Drawing.Size(71, 20);
-            this.PartIDUpDown.TabIndex = 37;
+            this.PartIDUpDown.TabIndex = 4;
             this.PartIDUpDown.ValueChanged += new System.EventHandler(this.PartIDUpDown_ValueChanged);
             // 
             // label1
@@ -94,7 +97,7 @@
             this.label1.Location = new System.Drawing.Point(144, 14);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(43, 13);
-            this.label1.TabIndex = 36;
+            this.label1.TabIndex = 3;
             this.label1.Text = "Part ID:";
             // 
             // PortalIDUpDown
@@ -107,7 +110,7 @@
             0});
             this.PortalIDUpDown.Name = "PortalIDUpDown";
             this.PortalIDUpDown.Size = new System.Drawing.Size(71, 20);
-            this.PortalIDUpDown.TabIndex = 39;
+            this.PortalIDUpDown.TabIndex = 6;
             this.PortalIDUpDown.ValueChanged += new System.EventHandler(this.PortalIDUpDown_ValueChanged);
             // 
             // label2
@@ -116,7 +119,7 @@
             this.label2.Location = new System.Drawing.Point(281, 14);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(51, 13);
-            this.label2.TabIndex = 38;
+            this.label2.TabIndex = 5;
             this.label2.Text = "Portal ID:";
             // 
             // FlagsCheckedListBox1
@@ -135,7 +138,7 @@
             this.FlagsCheckedListBox1.Location = new System.Drawing.Point(10, 68);
             this.FlagsCheckedListBox1.Name = "FlagsCheckedListBox1";
             this.FlagsCheckedListBox1.Size = new System.Drawing.Size(131, 124);
-            this.FlagsCheckedListBox1.TabIndex = 40;
+            this.FlagsCheckedListBox1.TabIndex = 10;
             this.FlagsCheckedListBox1.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.FlagsCheckedListBox1_ItemCheck);
             // 
             // FlagsCheckedListBox2
@@ -154,7 +157,7 @@
             this.FlagsCheckedListBox2.Location = new System.Drawing.Point(147, 68);
             this.FlagsCheckedListBox2.Name = "FlagsCheckedListBox2";
             this.FlagsCheckedListBox2.Size = new System.Drawing.Size(131, 124);
-            this.FlagsCheckedListBox2.TabIndex = 42;
+            this.FlagsCheckedListBox2.TabIndex = 11;
             this.FlagsCheckedListBox2.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.FlagsCheckedListBox2_ItemCheck);
             // 
             // FlagsCheckedListBox3
@@ -173,7 +176,7 @@
             this.FlagsCheckedListBox3.Location = new System.Drawing.Point(284, 68);
             this.FlagsCheckedListBox3.Name = "FlagsCheckedListBox3";
             this.FlagsCheckedListBox3.Size = new System.Drawing.Size(131, 124);
-            this.FlagsCheckedListBox3.TabIndex = 44;
+            this.FlagsCheckedListBox3.TabIndex = 12;
             this.FlagsCheckedListBox3.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.FlagsCheckedListBox3_ItemCheck);
             // 
             // label5
@@ -182,7 +185,7 @@
             this.label5.Location = new System.Drawing.Point(7, 52);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(35, 13);
-            this.label5.TabIndex = 45;
+            this.label5.TabIndex = 9;
             this.label5.Text = "Flags:";
             // 
             // FlagsCheckedListBox4
@@ -201,7 +204,7 @@
             this.FlagsCheckedListBox4.Location = new System.Drawing.Point(421, 68);
             this.FlagsCheckedListBox4.Name = "FlagsCheckedListBox4";
             this.FlagsCheckedListBox4.Size = new System.Drawing.Size(131, 124);
-            this.FlagsCheckedListBox4.TabIndex = 46;
+            this.FlagsCheckedListBox4.TabIndex = 13;
             this.FlagsCheckedListBox4.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.FlagsCheckedListBox4_ItemCheck);
             // 
             // UnkXUpDown
@@ -214,7 +217,7 @@
             0});
             this.UnkXUpDown.Name = "UnkXUpDown";
             this.UnkXUpDown.Size = new System.Drawing.Size(59, 20);
-            this.UnkXUpDown.TabIndex = 48;
+            this.UnkXUpDown.TabIndex = 15;
             this.UnkXUpDown.ValueChanged += new System.EventHandler(this.UnkXUpDown_ValueChanged);
             // 
             // label3
@@ -223,7 +226,7 @@
             this.label3.Location = new System.Drawing.Point(13, 215);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(63, 13);
-            this.label3.TabIndex = 47;
+            this.label3.TabIndex = 14;
             this.label3.Text = "UnknownX:";
             // 
             // UnkYUpDown
@@ -236,7 +239,7 @@
             0});
             this.UnkYUpDown.Name = "UnkYUpDown";
             this.UnkYUpDown.Size = new System.Drawing.Size(59, 20);
-            this.UnkYUpDown.TabIndex = 50;
+            this.UnkYUpDown.TabIndex = 17;
             this.UnkYUpDown.ValueChanged += new System.EventHandler(this.UnkYUpDown_ValueChanged);
             // 
             // label4
@@ -245,7 +248,7 @@
             this.label4.Location = new System.Drawing.Point(150, 215);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(63, 13);
-            this.label4.TabIndex = 49;
+            this.label4.TabIndex = 16;
             this.label4.Text = "UnknownY:";
             // 
             // DeletePolyButton
@@ -254,7 +257,7 @@
             this.DeletePolyButton.Location = new System.Drawing.Point(123, 263);
             this.DeletePolyButton.Name = "DeletePolyButton";
             this.DeletePolyButton.Size = new System.Drawing.Size(90, 23);
-            this.DeletePolyButton.TabIndex = 52;
+            this.DeletePolyButton.TabIndex = 19;
             this.DeletePolyButton.Text = "Delete Polygon";
             this.DeletePolyButton.UseVisualStyleBackColor = true;
             this.DeletePolyButton.Click += new System.EventHandler(this.DeletePolyButton_Click);
@@ -265,16 +268,40 @@
             this.AddToProjectButton.Location = new System.Drawing.Point(27, 263);
             this.AddToProjectButton.Name = "AddToProjectButton";
             this.AddToProjectButton.Size = new System.Drawing.Size(90, 23);
-            this.AddToProjectButton.TabIndex = 51;
+            this.AddToProjectButton.TabIndex = 18;
             this.AddToProjectButton.Text = "Add to Project";
             this.AddToProjectButton.UseVisualStyleBackColor = true;
             this.AddToProjectButton.Click += new System.EventHandler(this.AddToProjectButton_Click);
+            // 
+            // PortalUnkUpDown
+            // 
+            this.PortalUnkUpDown.Location = new System.Drawing.Point(495, 12);
+            this.PortalUnkUpDown.Maximum = new decimal(new int[] {
+            15,
+            0,
+            0,
+            0});
+            this.PortalUnkUpDown.Name = "PortalUnkUpDown";
+            this.PortalUnkUpDown.Size = new System.Drawing.Size(57, 20);
+            this.PortalUnkUpDown.TabIndex = 8;
+            this.PortalUnkUpDown.ValueChanged += new System.EventHandler(this.PortalUnkUpDown_ValueChanged);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(431, 14);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(58, 13);
+            this.label6.TabIndex = 7;
+            this.label6.Text = "Portal unk:";
             // 
             // EditYnvPolyPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(562, 404);
+            this.Controls.Add(this.PortalUnkUpDown);
+            this.Controls.Add(this.label6);
             this.Controls.Add(this.DeletePolyButton);
             this.Controls.Add(this.AddToProjectButton);
             this.Controls.Add(this.UnkYUpDown);
@@ -300,6 +327,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.PortalIDUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.UnkXUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.UnkYUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PortalUnkUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -324,5 +352,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button DeletePolyButton;
         private System.Windows.Forms.Button AddToProjectButton;
+        private System.Windows.Forms.NumericUpDown PortalUnkUpDown;
+        private System.Windows.Forms.Label label6;
     }
 }

@@ -1720,11 +1720,22 @@ namespace CodeWalker
             return space.NodeGrid.GetYndNode(areaid, nodeid);
         }
 
-        public void UpdateNavYnvGraphics(YnvFile ynv, bool fullupdate)//TODO!
+        public void UpdateNavYnvGraphics(YnvFile ynv, bool fullupdate)
         {
+
+            ynv.UpdateTriangleVertices();
+            //ynv.BuildBVH();//TODO!
+
+            lock (Renderer.RenderSyncRoot)
+            {
+                Renderer.Invalidate(ynv);
+            }
         }
-        public void UpdateNavPolyGraphics(YnvPoly poly, bool fullupdate)//TODO!
+        public void UpdateNavPolyGraphics(YnvPoly poly, bool fullupdate)
         {
+            if (poly == null) return;
+            //poly.Ynv.UpdateBvhForPoly(poly);//TODO!
+            UpdateNavYnvGraphics(poly.Ynv, fullupdate);
         }
 
         public void UpdateTrainTrackGraphics(TrainTrack tt, bool fullupdate)
