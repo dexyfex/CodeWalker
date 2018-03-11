@@ -573,7 +573,7 @@ namespace CodeWalker.Forms
             FileName = ybn.Name;
             Ybn = ybn;
 
-            UpdateBoundsUI(ybn.Bounds);
+            UpdateBoundsUI(ybn);
         }
         public void LoadParticles(YptFile ypt)
         {
@@ -825,7 +825,7 @@ namespace CodeWalker.Forms
 
             ToolsPanel.Visible = true; //show the panel by default for dictionaries...
         }
-        private void UpdateBoundsUI(Bounds bounds)
+        private void UpdateBoundsUI(YbnFile bounds)
         {
             DetailsPropertyGrid.SelectedObject = bounds;
         }

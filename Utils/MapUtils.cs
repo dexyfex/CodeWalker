@@ -185,6 +185,8 @@ namespace CodeWalker
         public WaterQuad WaterQuad { get; set; }
         public Bounds CollisionBounds { get; set; }
         public YnvPoly NavPoly { get; set; }
+        public YnvPoint NavPoint { get; set; }
+        public YnvPortal NavPortal { get; set; }
         public YndNode PathNode { get; set; }
         public YndLink PathLink { get; set; }
         public TrainTrackNode TrainTrackNode { get; set; }
@@ -218,6 +220,8 @@ namespace CodeWalker
                     (WaterQuad != null) ||
                     (CollisionBounds != null) ||
                     (NavPoly != null) ||
+                    (NavPoint != null) ||
+                    (NavPortal != null) ||
                     (PathNode != null) ||
                     (TrainTrackNode != null) ||
                     (DistantLodLights != null) ||
@@ -248,6 +252,8 @@ namespace CodeWalker
                 || (WaterQuad != mhit.WaterQuad)
                 || (CollisionBounds != mhit.CollisionBounds)
                 || (NavPoly != mhit.NavPoly)
+                || (NavPoint != mhit.NavPoint)
+                || (NavPortal != mhit.NavPortal)
                 || (PathNode != mhit.PathNode)
                 || (TrainTrackNode != mhit.TrainTrackNode)
                 || (ScenarioNode != mhit.ScenarioNode)
@@ -268,6 +274,8 @@ namespace CodeWalker
                 || (WaterQuad != null)
                 || (CollisionBounds != null)
                 || (NavPoly != null)
+                || (NavPoint != null)
+                || (NavPortal != null)
                 || (PathNode != null)
                 || (PathLink != null)
                 || (TrainTrackNode != null)
@@ -290,6 +298,8 @@ namespace CodeWalker
             WaterQuad = null;
             CollisionBounds = null;
             NavPoly = null;
+            NavPoint = null;
+            NavPortal = null;
             PathNode = null;
             PathLink = null;
             TrainTrackNode = null;
@@ -351,6 +361,14 @@ namespace CodeWalker
             if (NavPoly != null)
             {
                 name = "NavPoly " + NavPoly.ToString();
+            }
+            if (NavPoint != null)
+            {
+                name = "NavPoint " + NavPoint.ToString();
+            }
+            if (NavPortal != null)
+            {
+                name = "NavPortal " + NavPortal.ToString();
             }
             if (PathNode != null)
             {
@@ -418,6 +436,14 @@ namespace CodeWalker
             {
                 name = "NavPoly " + NavPoly.ToString();
             }
+            if (NavPoint != null)
+            {
+                name = "NavPoint " + NavPoint.ToString();
+            }
+            if (NavPortal != null)
+            {
+                name = "NavPortal " + NavPortal.ToString();
+            }
             if (PathNode != null)
             {
                 name = "PathNode " + PathNode.AreaID.ToString() + "." + PathNode.NodeID.ToString();// + FloatUtil.GetVector3String(PathNode.Position);
@@ -461,6 +487,14 @@ namespace CodeWalker
                 {
                     res = true;
                 }
+                else if (NavPoint != null)
+                {
+                    res = true;
+                }
+                else if (NavPortal != null)
+                {
+                    res = true;
+                }
                 else if (PathNode != null)
                 {
                     res = true;
@@ -500,6 +534,14 @@ namespace CodeWalker
                 {
                     return NavPoly.Position;
                 }
+                else if (NavPoint != null)
+                {
+                    return NavPoint.Position;
+                }
+                else if (NavPortal != null)
+                {
+                    return NavPortal.Position;
+                }
                 else if (PathNode != null)
                 {
                     return PathNode.Position;
@@ -536,6 +578,14 @@ namespace CodeWalker
                     return CarGenerator.Orientation;
                 }
                 else if (NavPoly != null)
+                {
+                    return Quaternion.Identity;
+                }
+                else if (NavPoint != null)
+                {
+                    return NavPoint.Orientation;
+                }
+                else if (NavPortal != null)
                 {
                     return Quaternion.Identity;
                 }
@@ -578,6 +628,14 @@ namespace CodeWalker
                 {
                     return WidgetAxis.XYZ;
                 }
+                else if (NavPoint != null)
+                {
+                    return WidgetAxis.Z;
+                }
+                else if (NavPortal != null)
+                {
+                    return WidgetAxis.None;
+                }
                 else if (PathNode != null)
                 {
                     return WidgetAxis.None;
@@ -614,6 +672,14 @@ namespace CodeWalker
                     return new Vector3(CarGenerator.CCarGen.perpendicularLength);
                 }
                 else if (NavPoly != null)
+                {
+                    return Vector3.One;
+                }
+                else if (NavPoint != null)
+                {
+                    return Vector3.One;
+                }
+                else if (NavPortal != null)
                 {
                     return Vector3.One;
                 }
@@ -667,12 +733,20 @@ namespace CodeWalker
             }
             else if (NavPoly != null)
             {
-                //NavPoly.SetPosition(newpos);
+                NavPoly.SetPosition(newpos);
 
                 //if (projectForm != null)
                 //{
                 //    projectForm.OnWorldNavPolyModified(NavPoly);
                 //}
+            }
+            else if (NavPoint != null)
+            {
+                NavPoint.SetPosition(newpos);
+            }
+            else if (NavPortal != null)
+            {
+                NavPortal.SetPosition(newpos);
             }
             else if (TrainTrackNode != null)
             {
@@ -708,6 +782,10 @@ namespace CodeWalker
             else if (ScenarioNode != null)
             {
                 ScenarioNode.SetOrientation(newrot);
+            }
+            else if (NavPoint != null)
+            {
+                NavPoint.SetOrientation(newrot);
             }
             else if (Audio != null)
             {

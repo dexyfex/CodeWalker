@@ -16,6 +16,8 @@ namespace CodeWalker.GameFiles
         public List<ushort> Indices { get; set; }
         public List<NavMeshAdjPoly> AdjPolys { get; set; }
         public List<YnvPoly> Polys { get; set; }
+        public List<YnvPortal> Portals { get; set; }
+        public List<YnvPoint> Points { get; set; }
 
 
         public EditorVertex[] PathVertices { get; set; }
@@ -27,6 +29,7 @@ namespace CodeWalker.GameFiles
         public bool HasChanged { get; set; } = false;
         public List<string> SaveWarnings = null;
 
+        public PathBVH BVH { get; set; }
 
 
         public int AreaID
@@ -79,13 +82,13 @@ namespace CodeWalker.GameFiles
             Nav = rd.ReadBlock<NavMesh>();
 
 
-            if ((Nav != null) && (Nav.SectorTree != null))
+            if (Nav != null)
             {
+                Vector3 posoffset = Nav.SectorTree?.AABBMin.XYZ() ?? Vector3.Zero;
+                Vector3 aabbsize = Nav.AABBSize;
+
                 if (Nav.Vertices != null)
                 {
-                    Vector3 posoffset = Nav.SectorTree.AABBMin.XYZ();
-                    Vector3 aabbsize = Nav.AABBSize;
-
                     var verts = Nav.Vertices.GetFullList();
                     Vertices = new List<Vector3>(verts.Count);
                     for (int i = 0; i < verts.Count; i++)
@@ -111,35 +114,59 @@ namespace CodeWalker.GameFiles
                         YnvPoly poly = new YnvPoly();
                         poly.Init(this, polys[i]);
                         poly.Index = i;
+                        poly.CalculatePosition(); //calc poly center for display purposes..
                         Polys.Add(poly);
-
-
-                        //calc poly center.
-                        if ((Indices == null) || (Vertices == null))
-                        { continue; }
-                        var vc = Vertices.Count;
-                        var ic = poly._RawData.IndexCount;
-                        var startid = poly._RawData.IndexID;
-                        var endid = startid + ic;
-                        if (startid >= Indices.Count)
-                        { continue; }
-                        if (endid > Indices.Count)
-                        { continue; }
-                        Vector3 pcenter = Vector3.Zero;
-                        float pcount = 0.0f;
-                        for (int id = startid; id < endid; id++)
-                        {
-                            var ind = Indices[id];
-                            if(ind>=vc)
-                            { continue; }
-
-                            pcenter += Vertices[ind];
-                            pcount += 1.0f;
-                        }
-                        poly.Position = pcenter * (1.0f / pcount);
-
-
                     }
+                }
+                if (Nav.Portals != null)
+                {
+                    var portals = Nav.Portals;
+                    Portals = new List<YnvPortal>(portals.Length);
+                    for (int i = 0; i < portals.Length; i++)
+                    {
+                        YnvPortal portal = new YnvPortal();
+                        portal.Init(this, portals[i]);
+                        portal.Index = i;
+                        portal.Position1 = posoffset + portal._RawData.Position1.ToVector3() * aabbsize;
+                        portal.Position2 = posoffset + portal._RawData.Position2.ToVector3() * aabbsize;
+                        Portals.Add(portal);
+                    }
+                }
+
+
+                ////### add points to the list and calculate positions...
+                var treestack = new Stack<NavMeshSector>();
+                var pointi = 0;
+                if (Nav.SectorTree != null)
+                {
+                    treestack.Push(Nav.SectorTree);
+                }
+                while (treestack.Count > 0)
+                {
+                    var sector = treestack.Pop();
+                    if (sector.Data != null)
+                    {
+                        var points = sector.Data.Points;
+                        if (points != null)
+                        {
+                            if (Points == null)
+                            {
+                                Points = new List<YnvPoint>();
+                            }
+                            for (int i = 0; i < points.Length; i++)
+                            {
+                                YnvPoint point = new YnvPoint();
+                                point.Init(this, points[i]);
+                                point.Index = pointi; pointi++;
+                                point.Position = posoffset + point._RawData.Position * aabbsize;
+                                Points.Add(point);
+                            }
+                        }
+                    }
+                    if (sector.SubTree1 != null) treestack.Push(sector.SubTree1);
+                    if (sector.SubTree2 != null) treestack.Push(sector.SubTree2);
+                    if (sector.SubTree3 != null) treestack.Push(sector.SubTree3);
+                    if (sector.SubTree4 != null) treestack.Push(sector.SubTree4);
                 }
 
             }
@@ -149,6 +176,8 @@ namespace CodeWalker.GameFiles
             UpdateAllNodePositions();
 
             UpdateTriangleVertices();
+
+            BuildBVH();
 
 
             Loaded = true;
@@ -251,91 +280,51 @@ namespace CodeWalker.GameFiles
         public void UpdateAllNodePositions()
         {
             if (Nav == null) return;
-            if (Nav.Portals == null) return;
 
-            int cnt = Nav.Portals?.Length ?? 0;
-            if (cnt <= 0)
-            {
-                NodePositions = null;
-                return;
-            }
 
             Vector3 posoffset = Nav.SectorTree.AABBMin.XYZ();
             Vector3 aabbsize = Nav.AABBSize;
 
-            var np = new Vector4[cnt];
-            for (int i = 0; i < cnt; i++)
-            {
-                var portal = Nav.Portals[i];
-                var pv = portal.Position1.ToVector3();
-                //var pv = portal.Position2.ToVector3();
-                np[i] = new Vector4(posoffset + pv * aabbsize, 1.0f);
-            }
-            NodePositions = np;
-
-
-
-            int lcnt = Nav.PortalLinks?.Length ?? 0;
-            if (lcnt <= 0)
-            {
-                PathVertices = null;
-                return;
-            }
-
-            //var lv = new EditorVertex[lcnt];
-            //for (int i = 0; i < lcnt; i++)
-            //{
-            //    var pl = Nav.PortalLinks[i];
-            //    if (pl >= np.Length) lv[i] = new EditorVertex();
-            //    else
-            //    {
-            //        lv[i].Position = np[pl].XYZ();
-            //        lv[i].Colour = 0xFF0000FF;
-            //    }
-            //}
-            //PathVertices = lv;
-
             EditorVertex v = new EditorVertex();
             v.Colour = 0xFF0000FF;
             var lv = new List<EditorVertex>();
-            //int cind = 0;
-            var plinks = Nav.PortalLinks;
-            for (int i = 0; i < cnt; i++)
+            var nv = new List<Vector4>();
+
+
+            ////### add portal positions to the node list, also add links to the link vertex array
+            int cnt = Portals?.Count ?? 0;
+            if (cnt > 0)
             {
-                var portal = Nav.Portals[i];
-
-                //var plcnt = 2;
-
-                v.Position = posoffset + portal.Position1.ToVector3() * aabbsize;
-                lv.Add(v);
-                v.Position = posoffset + portal.Position2.ToVector3() * aabbsize;
-                lv.Add(v);
-
-
-                //var plcnt = portal.LinkCount;
-                //if (plcnt < 2) continue;
-                //var plink = (cind < plinks.Length) ? plinks[cind] : 0xFFFF;
-                //var ppos = (plink < np.Length) ? np[plink].XYZ() : Vector3.Zero;
-                //for (int pl = 1; pl < plcnt; pl++)
-                //{
-                //    var ind2 = cind + pl;
-                //    var plink2 = (ind2 < plinks.Length) ? plinks[ind2] : 0xFFFF;
-                //    var ppos2 = (plink2 < np.Length) ? np[plink2].XYZ() : Vector3.Zero;
-                //    v.Position = ppos; lv.Add(v);
-                //    v.Position = ppos2; lv.Add(v);
-                //}
-                //cind += plcnt;
+                for (int i = 0; i < cnt; i++)
+                {
+                    var portal = Portals[i];
+                    nv.Add(new Vector4(portal.Position1, 1.0f));
+                    v.Position = portal.Position1; lv.Add(v);
+                    v.Position = portal.Position2; lv.Add(v);
+                }
             }
-            PathVertices = lv.ToArray();
+
+
+            ////### add point positions to the node list
+            cnt = Points?.Count ?? 0;
+            if (cnt >= 0)
+            {
+                for (int i = 0; i < cnt; i++)
+                {
+                    var point = Points[i];
+                    nv.Add(new Vector4(point.Position, 1.0f));
+                }
+            }
+
+
+            NodePositions = (nv.Count > 0) ? nv.ToArray() : null;
+            PathVertices = (lv.Count > 0) ? lv.ToArray() : null;
+
 
         }
 
         public void UpdateTriangleVertices()
         {
-            if (Nav == null) return;
-            if (Nav.Polys == null) return;
-            if (Nav.Vertices == null) return;
-
             //need position and colour for each vertex.
             //render as a triangle list... (no indices needed)
 
@@ -406,6 +395,16 @@ namespace CodeWalker.GameFiles
 
             TriangleVerts = rverts.ToArray();
 
+        }
+
+
+
+        public void BuildBVH()
+        {
+            var nodes = new List<BasePathNode>();
+            if (Portals != null) nodes.AddRange(Portals);
+            if (Points != null) nodes.AddRange(Points);
+            BVH = new PathBVH(nodes, 10, 10);
         }
 
 
@@ -493,6 +492,12 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public void SetPosition(Vector3 pos)
+        {
+            Vector3 delta = pos - Position;
+            Position = pos;
+            //TODO: update vertex positions!!!
+        }
 
         public Color4 GetColour()
         {
@@ -556,11 +561,129 @@ namespace CodeWalker.GameFiles
         }
 
 
+
+        public void CalculatePosition()
+        {
+            //calc poly center for display purposes.
+            var indices = Ynv.Indices;
+            var vertices = Ynv.Vertices;
+            if ((indices == null) || (vertices == null))
+            { return; }
+            var vc = vertices.Count;
+            var ic = _RawData.IndexCount;
+            var startid = _RawData.IndexID;
+            var endid = startid + ic;
+            if (startid >= indices.Count)
+            { return; }
+            if (endid > indices.Count)
+            { return; }
+            Vector3 pcenter = Vector3.Zero;
+            float pcount = 0.0f;
+            for (int id = startid; id < endid; id++)
+            {
+                var ind = indices[id];
+                if (ind >= vc)
+                { continue; }
+
+                pcenter += vertices[ind];
+                pcount += 1.0f;
+            }
+            Position = pcenter * (1.0f / pcount);
+        }
+
+
+
         public override string ToString()
         {
             return AreaID.ToString() + ", " + Index.ToString();
         }
     }
 
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class YnvPortal : BasePathNode
+    {
+        public NavMeshPortal _RawData;
+
+        public YnvFile Ynv { get; set; }
+        public NavMeshPortal RawData { get { return _RawData; } set { _RawData = value; } }
+
+        public Vector3 Position { get { return Position1; } set { Position1 = value; } }
+        public Vector3 Position1 { get; set; }
+        public Vector3 Position2 { get; set; }
+        public int Index { get; set; }
+
+
+        public void Init(YnvFile ynv, NavMeshPortal portal)
+        {
+            Ynv = ynv;
+            RawData = portal;
+        }
+
+        public void SetPosition(Vector3 pos)
+        {
+            Position = pos;
+            //TODO: update _RawData positions!
+        }
+
+        public override string ToString()
+        {
+            return Index.ToString();
+        }
+    }
+
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class YnvPoint : BasePathNode
+    {
+        public NavMeshPoint _RawData;
+
+        public YnvFile Ynv { get; set; }
+        public NavMeshPoint RawData { get { return _RawData; } set { _RawData = value; } }
+
+        public Vector3 Position { get; set; }
+        public float Direction
+        {
+            get
+            {
+                return (float)Math.PI * 2.0f * _RawData.Angle / 255.0f;
+            }
+            set
+            {
+                _RawData.Angle = (byte)(value * 255.0f / ((float)Math.PI * 2.0f));
+            }
+        }
+        public Quaternion Orientation
+        {
+            get { return Quaternion.RotationAxis(Vector3.UnitZ, Direction); }
+            set
+            {
+                Vector3 dir = value.Multiply(Vector3.UnitX);
+                float dira = (float)Math.Atan2(dir.Y, dir.X);
+                Direction = dira;
+            }
+        }
+
+        public int Index { get; set; }
+        public byte Flags { get { return _RawData.Flags; } set { _RawData.Flags = value; } }
+
+        public void Init(YnvFile ynv, NavMeshPoint point)
+        {
+            Ynv = ynv;
+            RawData = point;
+        }
+
+        public void SetPosition(Vector3 pos)
+        {
+            Position = pos;
+            //TODO! update _RawData.Position!!!
+        }
+        public void SetOrientation(Quaternion orientation)
+        {
+            Orientation = orientation;
+        }
+
+        public override string ToString()
+        {
+            return Index.ToString() + ": " + Flags.ToString();
+        }
+
+    }
 
 }

@@ -792,7 +792,7 @@ namespace CodeWalker
         {
 
             rendernavmeshynvs.Clear();
-            space.GetVisibleYnvs(camera, rendernavmeshynvs);
+            space.GetVisibleYnvs(camera, collisionmeshrange, rendernavmeshynvs);
 
             if (ProjectForm != null)
             {
@@ -1117,7 +1117,9 @@ namespace CodeWalker
                     change = change || (LastMouseHit.CollisionBounds != PrevMouseHit.CollisionBounds);
                     break;
                 case MapSelectionMode.NavMesh:
-                    change = change || (LastMouseHit.NavPoly != PrevMouseHit.NavPoly);
+                    change = change || (LastMouseHit.NavPoly != PrevMouseHit.NavPoly)
+                                    || (LastMouseHit.NavPoint != PrevMouseHit.NavPoint)
+                                    || (LastMouseHit.NavPortal != PrevMouseHit.NavPortal);
                     break;
                 case MapSelectionMode.Path:
                     change = change || (LastMouseHit.PathNode != PrevMouseHit.PathNode);
@@ -1144,9 +1146,9 @@ namespace CodeWalker
             { return; }
 
 
-            if (SelectionMode == MapSelectionMode.NavMesh)
+            if ((SelectionMode == MapSelectionMode.NavMesh) && (CurMouseHit.NavPoly != null))
             {
-                return;//navmesh mode isn't needing a selection box..
+                return;//navmesh poly isn't needing a selection box..
             }
 
 
@@ -1196,6 +1198,10 @@ namespace CodeWalker
                 {
                     ori = sp.Orientation;
                 }
+            }
+            if (CurMouseHit.NavPoint != null)
+            {
+                ori = CurMouseHit.NavPoint.Orientation;
             }
             if (CurMouseHit.Audio != null)
             {
@@ -1423,6 +1429,21 @@ namespace CodeWalker
             {
                 Renderer.RenderSelectionNavPoly(selectionItem.NavPoly);
                 //return;//don't render a selection box for nav mesh?
+            }
+            if (selectionItem.NavPoint != null)
+            {
+                var navp = selectionItem.NavPoint;
+                camrel = navp.Position - camera.Position;
+
+                //render direction arrow for NavPoint
+                ori = navp.Orientation;
+                float arrowlen = 2.0f;
+                float arrowrad = 0.25f;
+                Renderer.RenderSelectionArrowOutline(navp.Position, -Vector3.UnitY, Vector3.UnitZ, ori, arrowlen, arrowrad, cgrn);
+            }
+            if (selectionItem.NavPortal != null)
+            {
+                camrel = selectionItem.NavPortal.Position - camera.Position;
             }
 
             if (selectionItem.Audio != null)
@@ -1724,7 +1745,7 @@ namespace CodeWalker
         {
 
             ynv.UpdateTriangleVertices();
-            //ynv.BuildBVH();//TODO!
+            ynv.BuildBVH();
 
             lock (Renderer.RenderSyncRoot)
             {
@@ -2658,6 +2679,11 @@ namespace CodeWalker
                     Renderer.BoundingBoxes.Add(mb);
                 }
 
+                if (ynv.BVH != null)
+                {
+                    UpdateMouseHits(ynv.BVH, ref mray);
+                }
+                //if ((CurMouseHit.NavPoint != null) || (CurMouseHit.NavPortal != null)) continue;
                 if ((ynv.Nav != null) && (ynv.Vertices != null) && (ynv.Indices != null) && (ynv.Polys != null))
                 {
                     UpdateMouseHits(ynv, ynv.Nav.SectorTree, ynv.Nav.SectorTree, ref mray);
@@ -2825,6 +2851,8 @@ namespace CodeWalker
                             {
                                 var cellaabb = poly._RawData.CellAABB;
                                 CurMouseHit.NavPoly = poly;
+                                CurMouseHit.NavPoint = null;
+                                CurMouseHit.NavPortal = null;
                                 CurMouseHit.HitDist = hitdist;
                                 CurMouseHit.AABB = new BoundingBox(cellaabb.Min, cellaabb.Max);
                                 break;//no need to test further tris in this poly
@@ -3119,6 +3147,9 @@ namespace CodeWalker
                             CurMouseHit.PathNode = n as YndNode;
                             CurMouseHit.TrainTrackNode = n as TrainTrackNode;
                             CurMouseHit.ScenarioNode = n as ScenarioNode;
+                            CurMouseHit.NavPoint = n as YnvPoint;
+                            CurMouseHit.NavPortal = n as YnvPortal;
+                            CurMouseHit.NavPoly = null;
                             CurMouseHit.HitDist = hitdist;
                             CurMouseHit.CamRel = (n.Position - camera.Position);
                             CurMouseHit.AABB = nbox;
@@ -3364,6 +3395,38 @@ namespace CodeWalker
                 SelectItem(ms);
             }
         }
+        public void SelectNavPoint(YnvPoint point)
+        {
+            if (point == null)
+            {
+                SelectItem(null);
+            }
+            else
+            {
+                float nrad = 0.5f;
+
+                MapSelection ms = new MapSelection();
+                ms.NavPoint = point;
+                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
+                SelectItem(ms);
+            }
+        }
+        public void SelectNavPortal(YnvPortal portal)
+        {
+            if (portal == null)
+            {
+                SelectItem(null);
+            }
+            else
+            {
+                float nrad = 0.5f;
+
+                MapSelection ms = new MapSelection();
+                ms.NavPortal = portal;
+                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
+                SelectItem(ms);
+            }
+        }
         public void SelectPathNode(YndNode node)
         {
             if (node == null)
@@ -3579,6 +3642,24 @@ namespace CodeWalker
                 //ToolbarCopyButton.Enabled = true;
                 //ToolbarDeleteItemButton.Enabled = true;
                 //ToolbarDeleteItemButton.Text = "Delete nav poly";
+            }
+            else if (item.NavPoint != null)
+            {
+                SelectionEntityTabPage.Text = "NavPoint";
+                SelEntityPropertyGrid.SelectedObject = item.NavPoint;
+                ynv = item.NavPoint.Ynv;
+                //ToolbarCopyButton.Enabled = true;
+                //ToolbarDeleteItemButton.Enabled = true;
+                //ToolbarDeleteItemButton.Text = "Delete nav point";
+            }
+            else if (item.NavPortal != null)
+            {
+                SelectionEntityTabPage.Text = "NavPortal";
+                SelEntityPropertyGrid.SelectedObject = item.NavPortal;
+                ynv = item.NavPortal.Ynv;
+                //ToolbarCopyButton.Enabled = true;
+                //ToolbarDeleteItemButton.Enabled = true;
+                //ToolbarDeleteItemButton.Text = "Delete nav portal";
             }
             else if (item.TrainTrackNode != null)
             {

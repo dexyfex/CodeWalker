@@ -83,7 +83,7 @@ namespace CodeWalker.Rendering
 
         private Camera Camera;
         public ShaderGlobalLights GlobalLights = new ShaderGlobalLights();
-        public bool PathsDepthClip = false;//true;//
+        public bool PathsDepthClip = true;//false;//
 
         private GameFileCache GameFileCache;
         private RenderableCache RenderableCache;

@@ -124,6 +124,16 @@ namespace CodeWalker
                 SelectionEntityTabPage.Text = "Nav Poly";
                 SelEntityPropertyGrid.SelectedObject = item.NavPoly;
             }
+            else if (item.NavPoint != null)
+            {
+                SelectionEntityTabPage.Text = "Nav Point";
+                SelEntityPropertyGrid.SelectedObject = item.NavPoint;
+            }
+            else if (item.NavPortal != null)
+            {
+                SelectionEntityTabPage.Text = "Nav Portal";
+                SelEntityPropertyGrid.SelectedObject = item.NavPortal;
+            }
             else if (item.PathNode != null)
             {
                 SelectionEntityTabPage.Text = "Path Node";

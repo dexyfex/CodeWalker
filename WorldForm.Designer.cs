@@ -1540,9 +1540,9 @@ namespace CodeWalker
             this.label12.AutoSize = true;
             this.label12.Location = new System.Drawing.Point(4, 178);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(106, 13);
+            this.label12.Size = new System.Drawing.Size(129, 13);
             this.label12.TabIndex = 51;
-            this.label12.Text = "Collision mesh range:";
+            this.label12.Text = "Collision/nav mesh range:";
             // 
             // CollisionMeshRangeTrackBar
             // 
@@ -1551,6 +1551,7 @@ namespace CodeWalker
             this.CollisionMeshRangeTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.CollisionMeshRangeTrackBar.LargeChange = 1;
             this.CollisionMeshRangeTrackBar.Location = new System.Drawing.Point(6, 194);
+            this.CollisionMeshRangeTrackBar.Maximum = 15;
             this.CollisionMeshRangeTrackBar.Minimum = 1;
             this.CollisionMeshRangeTrackBar.Name = "CollisionMeshRangeTrackBar";
             this.CollisionMeshRangeTrackBar.Size = new System.Drawing.Size(188, 45);
@@ -1878,6 +1879,8 @@ namespace CodeWalker
             // PathsDepthClipCheckBox
             // 
             this.PathsDepthClipCheckBox.AutoSize = true;
+            this.PathsDepthClipCheckBox.Checked = true;
+            this.PathsDepthClipCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.PathsDepthClipCheckBox.Location = new System.Drawing.Point(10, 434);
             this.PathsDepthClipCheckBox.Name = "PathsDepthClipCheckBox";
             this.PathsDepthClipCheckBox.Size = new System.Drawing.Size(102, 17);
@@ -2674,7 +2677,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(585, 25);
+            this.Toolbar.Size = new System.Drawing.Size(554, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 

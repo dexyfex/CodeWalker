@@ -36,6 +36,7 @@ VS_OUTPUT main(uint id : SV_VertexID)
 
 	float3 opos = pos - CameraPos.xyz;
 	float4 cpos = mul(float4(opos, 1), ViewProj);
+	cpos.z -= 0.01; //bias paths depth slightly to bring it in front of normal geometry...
 	output.Position = cpos;
 	output.Colour.rgb = col.rgb * LightColour.a; //apply intensity
 	output.Colour.a = col.a;

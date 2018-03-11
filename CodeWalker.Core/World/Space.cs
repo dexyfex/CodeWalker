@@ -1164,7 +1164,7 @@ namespace CodeWalker.World
         }
 
 
-        public void GetVisibleYnvs(Camera cam, List<YnvFile> ynvs)
+        public void GetVisibleYnvs(Camera cam, int gridrange, List<YnvFile> ynvs)
         {
             if (!Inited) return;
             if (Grid == null) return;
@@ -1173,7 +1173,6 @@ namespace CodeWalker.World
             ynvs.Clear();
 
 
-            int gridrange = 30;
             var pos = NavGrid.GetCellPos(cam.Position);
             int minx = Math.Min(Math.Max(pos.X - gridrange, 0), NavGrid.CellCountX-1);
             int maxx = Math.Min(Math.Max(pos.X + gridrange, 0), NavGrid.CellCountX-1);

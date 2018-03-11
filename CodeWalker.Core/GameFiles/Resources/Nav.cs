@@ -608,14 +608,14 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public uint AdjAreaIDInd { get { return (Value >> 0) & 0x1F; } }
+        public uint AreaIDInd { get { return (Value >> 0) & 0x1F; } }
         public uint PolyID { get { return (Value >> 5) & 0x3FFF; } }
         public uint Unk2 { get { return (Value >> 19) & 0x3; } }
-        public uint Unk3 { get { return (Value >> 21); } }
+        public uint Unk3 { get { return (Value >> 21) & 0x7FF; } }
 
         public override string ToString()
         {
-            return AdjAreaIDInd.ToString() + ", " + PolyID.ToString() + ", " + Unk2.ToString() + ", " + Unk3.ToString();
+            return AreaIDInd.ToString() + ", " + PolyID.ToString() + ", " + Unk2.ToString() + ", " + Unk3.ToString();
         }
     }
 
@@ -766,29 +766,29 @@ namespace CodeWalker.GameFiles
         public uint UnkDataStartID { get; set; }
         public uint Unused_04h { get; set; } // 0x00000000
         public ulong PolyIDsPointer { get; set; }
-        public ulong UnkDataPointer { get; set; }
+        public ulong PointsPointer { get; set; }
         public ushort PolyIDsCount { get; set; }
-        public ushort UnkDataCount { get; set; }
+        public ushort PointsCount { get; set; }
         public uint Unused_1Ch { get; set; } // 0x00000000
 
         public ushort[] PolyIDs { get; set; }
-        public NavMeshSectorDataUnk[] UnkData { get; set; }
+        public NavMeshPoint[] Points { get; set; }
 
         private ResourceSystemStructBlock<ushort> PolyIDsBlock = null;
-        private ResourceSystemStructBlock<NavMeshSectorDataUnk> UnkDataBlock = null;
+        private ResourceSystemStructBlock<NavMeshPoint> PointsBlock = null;
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             UnkDataStartID = reader.ReadUInt32();
             Unused_04h = reader.ReadUInt32();
             PolyIDsPointer = reader.ReadUInt64();
-            UnkDataPointer = reader.ReadUInt64();
+            PointsPointer = reader.ReadUInt64();
             PolyIDsCount = reader.ReadUInt16();
-            UnkDataCount = reader.ReadUInt16();
+            PointsCount = reader.ReadUInt16();
             Unused_1Ch = reader.ReadUInt32();
 
             PolyIDs = reader.ReadUshortsAt(PolyIDsPointer, PolyIDsCount);
-            UnkData = reader.ReadStructsAt<NavMeshSectorDataUnk>(UnkDataPointer, UnkDataCount);
+            Points = reader.ReadStructsAt<NavMeshPoint>(PointsPointer, PointsCount);
 
         }
 
@@ -796,16 +796,16 @@ namespace CodeWalker.GameFiles
         {
             PolyIDsPointer = (ulong)(PolyIDsBlock?.FilePosition ?? 0);
             PolyIDsCount = (ushort)(PolyIDs?.Length ?? 0);
-            UnkDataPointer = (ulong)(UnkDataBlock?.FilePosition ?? 0);
-            UnkDataCount = (ushort)(UnkData?.Length ?? 0);
+            PointsPointer = (ulong)(PointsBlock?.FilePosition ?? 0);
+            PointsCount = (ushort)(Points?.Length ?? 0);
 
 
             writer.Write(UnkDataStartID);
             writer.Write(Unused_04h);
             writer.Write(PolyIDsPointer);
-            writer.Write(UnkDataPointer);
+            writer.Write(PointsPointer);
             writer.Write(PolyIDsCount);
-            writer.Write(UnkDataCount);
+            writer.Write(PointsCount);
             writer.Write(Unused_1Ch);
         }
 
@@ -818,10 +818,10 @@ namespace CodeWalker.GameFiles
                 PolyIDsBlock = new ResourceSystemStructBlock<ushort>(PolyIDs);
                 list.Add(PolyIDsBlock);
             }
-            if ((UnkData != null) && (UnkData.Length > 0))
+            if ((Points != null) && (Points.Length > 0))
             {
-                UnkDataBlock = new ResourceSystemStructBlock<NavMeshSectorDataUnk>(UnkData);
-                list.Add(UnkDataBlock);
+                PointsBlock = new ResourceSystemStructBlock<NavMeshPoint>(Points);
+                list.Add(PointsBlock);
             }
 
 
@@ -830,21 +830,33 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "(Polys: " + PolyIDsCount.ToString() + ", UnkOffset: " + UnkDataStartID.ToString() + ", UnkCount: " + UnkDataCount.ToString() + ")";
+            return "(Polys: " + PolyIDsCount.ToString() + ", UnkOffset: " + UnkDataStartID.ToString() + ", UnkCount: " + PointsCount.ToString() + ")";
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshSectorDataUnk
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshPoint
     {
-        public ushort Unknown_0h { get; set; }
-        public ushort Unknown_2h { get; set; }
-        public ushort Unknown_4h { get; set; }
-        public ushort Unknown_6h { get; set; }
+        public ushort X { get; set; }
+        public ushort Y { get; set; }
+        public ushort Z { get; set; }
+        public byte Angle { get; set; }
+        public byte Flags { get; set; }
+
+
+        public Vector3 Position { get { return ToVector3(); } }
+
+        public Vector3 ToVector3()
+        {
+            const float usmax = ushort.MaxValue;
+            return new Vector3(X / usmax, Y / usmax, Z / usmax);
+        }
 
         public override string ToString()
         {
-            return Unknown_0h.ToString() + ", " + Unknown_2h.ToString() + ", " + Unknown_4h.ToString() + ", " + Unknown_6h.ToString();
+            return Flags.ToString() + ": " + Angle.ToString() + ", " + Position.ToString();
         }
+
+
     }
 
 
