@@ -1442,6 +1442,7 @@ namespace CodeWalker
         private void ViewHex(string name, string path, byte[] data)
         {
             HexForm f = new HexForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadData(name, path, data);
         }
@@ -1449,6 +1450,7 @@ namespace CodeWalker
         {
             string xml = Encoding.UTF8.GetString(data);
             XmlForm f = new XmlForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadXml(name, path, xml);
         }
@@ -1456,6 +1458,7 @@ namespace CodeWalker
         {
             string txt = Encoding.UTF8.GetString(data);
             TextForm f = new TextForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadText(name, path, txt);
         }
@@ -1463,6 +1466,7 @@ namespace CodeWalker
         {
             var ytd = RpfFile.GetFile<YtdFile>(e, data);
             YtdForm f = new YtdForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadYtd(ytd);
         }
@@ -1470,6 +1474,7 @@ namespace CodeWalker
         {
             var ymt = RpfFile.GetFile<YmtFile>(e, data);
             MetaForm f = new MetaForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadMeta(ymt);
         }
@@ -1477,6 +1482,7 @@ namespace CodeWalker
         {
             var ymf = RpfFile.GetFile<YmfFile>(e, data);
             MetaForm f = new MetaForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadMeta(ymf);
         }
@@ -1484,6 +1490,7 @@ namespace CodeWalker
         {
             var ymap = RpfFile.GetFile<YmapFile>(e, data);
             MetaForm f = new MetaForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadMeta(ymap);
         }
@@ -1491,6 +1498,7 @@ namespace CodeWalker
         {
             var ytyp = RpfFile.GetFile<YtypFile>(e, data);
             MetaForm f = new MetaForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadMeta(ytyp);
         }
@@ -1498,6 +1506,7 @@ namespace CodeWalker
         {
             var pso = RpfFile.GetFile<JPsoFile>(e, data);
             MetaForm f = new MetaForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadMeta(pso);
         }
@@ -1506,6 +1515,7 @@ namespace CodeWalker
             var nl = e?.NameLower ?? "";
             var fe = Path.GetExtension(nl);
             ModelForm f = new ModelForm(this);
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             switch (fe)
             {
@@ -1539,6 +1549,7 @@ namespace CodeWalker
         {
             var cut = RpfFile.GetFile<CutFile>(e, data);
             MetaForm f = new MetaForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadMeta(cut);
         }
@@ -1546,6 +1557,7 @@ namespace CodeWalker
         {
             var awc = RpfFile.GetFile<AwcFile>(e, data);
             AwcForm f = new AwcForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadAwc(awc);
         }
@@ -1553,6 +1565,7 @@ namespace CodeWalker
         {
             var gxt = RpfFile.GetFile<Gxt2File>(e, data);
             GxtForm f = new GxtForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadGxt2(gxt);
         }
@@ -1560,6 +1573,7 @@ namespace CodeWalker
         {
             var rel = RpfFile.GetFile<RelFile>(e, data);
             RelForm f = new RelForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadRel(rel);
         }
@@ -1567,6 +1581,7 @@ namespace CodeWalker
         {
             var fxc = RpfFile.GetFile<FxcFile>(e, data);
             FxcForm f = new FxcForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadFxc(fxc);
         }
@@ -1574,6 +1589,7 @@ namespace CodeWalker
         {
             var ywr = RpfFile.GetFile<YwrFile>(e, data);
             YwrForm f = new YwrForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadYwr(ywr);
         }
@@ -1581,6 +1597,7 @@ namespace CodeWalker
         {
             var yvr = RpfFile.GetFile<YvrFile>(e, data);
             YvrForm f = new YvrForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadYvr(yvr);
         }
@@ -1588,6 +1605,7 @@ namespace CodeWalker
         {
             var ycd = RpfFile.GetFile<YcdFile>(e, data);
             YcdForm f = new YcdForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadYcd(ycd);
         }
@@ -1595,6 +1613,7 @@ namespace CodeWalker
         {
             var cachedat = RpfFile.GetFile<CacheDatFile>(e, data);
             MetaForm f = new MetaForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show();
             f.LoadMeta(cachedat);
         }
@@ -2071,7 +2090,7 @@ namespace CodeWalker
             if (CurrentFolder == null) return;//shouldn't happen
             if (CurrentFolder?.IsSearchResults ?? false) return;
 
-            string fname = Prompt.ShowDialog(this, "Enter a name for the new folder:", "Create folder", "folder");
+            string fname = Prompt.ShowDialog(this, "Enter a name for the new folder:", "Create folder", Theme, "folder");
             if (string.IsNullOrEmpty(fname))
             {
                 return;//no name was provided.
@@ -2128,7 +2147,7 @@ namespace CodeWalker
             if (CurrentFolder == null) return;//shouldn't happen
             if (CurrentFolder?.IsSearchResults ?? false) return;
 
-            string fname = Prompt.ShowDialog(this, "Enter a name for the new archive:", "Create RPF7 archive", "new");
+            string fname = Prompt.ShowDialog(this, "Enter a name for the new archive:", "Create RPF7 archive", Theme, "new");
             if (string.IsNullOrEmpty(fname))
             {
                 return;//no name was provided.
@@ -2466,7 +2485,7 @@ namespace CodeWalker
             if ((CurrentFiles != null) && (CurrentFiles.Count > idx))
             {
                 var item = CurrentFiles[idx];
-                string newname = Prompt.ShowDialog(this, "Enter the new name for this item:", "Rename item", item.Name);
+                string newname = Prompt.ShowDialog(this, "Enter the new name for this item:", "Rename item", Theme, item.Name);
                 if (!string.IsNullOrEmpty(newname))
                 {
                     RenameItem(item, newname);
