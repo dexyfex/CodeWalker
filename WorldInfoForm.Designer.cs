@@ -294,7 +294,7 @@ namespace CodeWalker
             this.SelDrawableTexturesTreeView.HideSelection = false;
             this.SelDrawableTexturesTreeView.Location = new System.Drawing.Point(0, 0);
             this.SelDrawableTexturesTreeView.Name = "SelDrawableTexturesTreeView";
-            this.SelDrawableTexturesTreeView.Size = new System.Drawing.Size(308, 454);
+            this.SelDrawableTexturesTreeView.Size = new System.Drawing.Size(300, 454);
             this.SelDrawableTexturesTreeView.TabIndex = 2;
             this.SelDrawableTexturesTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SelDrawableTexturesTreeView_AfterSelect);
             // 
@@ -335,7 +335,7 @@ namespace CodeWalker
             this.SelTextureDimensionsLabel.AutoSize = true;
             this.SelTextureDimensionsLabel.Location = new System.Drawing.Point(334, 400);
             this.SelTextureDimensionsLabel.Name = "SelTextureDimensionsLabel";
-            this.SelTextureDimensionsLabel.Size = new System.Drawing.Size(11, 15);
+            this.SelTextureDimensionsLabel.Size = new System.Drawing.Size(10, 13);
             this.SelTextureDimensionsLabel.TabIndex = 37;
             this.SelTextureDimensionsLabel.Text = "-";
             // 
@@ -358,7 +358,7 @@ namespace CodeWalker
             this.SelTextureMipLabel.AutoSize = true;
             this.SelTextureMipLabel.Location = new System.Drawing.Point(40, 400);
             this.SelTextureMipLabel.Name = "SelTextureMipLabel";
-            this.SelTextureMipLabel.Size = new System.Drawing.Size(14, 15);
+            this.SelTextureMipLabel.Size = new System.Drawing.Size(13, 13);
             this.SelTextureMipLabel.TabIndex = 35;
             this.SelTextureMipLabel.Text = "0";
             // 
@@ -368,7 +368,7 @@ namespace CodeWalker
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(7, 400);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(31, 15);
+            this.label3.Size = new System.Drawing.Size(27, 13);
             this.label3.TabIndex = 34;
             this.label3.Text = "Mip:";
             // 
@@ -377,7 +377,7 @@ namespace CodeWalker
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(207, 9);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(64, 15);
+            this.label2.Size = new System.Drawing.Size(57, 13);
             this.label2.TabIndex = 33;
             this.label2.Text = "Dictionary:";
             // 
@@ -489,9 +489,9 @@ namespace CodeWalker
             // 
             this.MouseSelectCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.MouseSelectCheckBox.AutoSize = true;
-            this.MouseSelectCheckBox.Location = new System.Drawing.Point(580, 14);
+            this.MouseSelectCheckBox.Location = new System.Drawing.Point(598, 14);
             this.MouseSelectCheckBox.Name = "MouseSelectCheckBox";
-            this.MouseSelectCheckBox.Size = new System.Drawing.Size(161, 19);
+            this.MouseSelectCheckBox.Size = new System.Drawing.Size(143, 17);
             this.MouseSelectCheckBox.TabIndex = 26;
             this.MouseSelectCheckBox.Text = "Mouse select (right click)";
             this.MouseSelectCheckBox.UseVisualStyleBackColor = true;
@@ -511,7 +511,7 @@ namespace CodeWalker
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(12, 15);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(44, 15);
+            this.label1.Size = new System.Drawing.Size(38, 13);
             this.label1.TabIndex = 30;
             this.label1.Text = "Name:";
             // 
@@ -521,7 +521,7 @@ namespace CodeWalker
             this.label25.AutoSize = true;
             this.label25.Location = new System.Drawing.Point(408, 15);
             this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(42, 15);
+            this.label25.Size = new System.Drawing.Size(37, 13);
             this.label25.TabIndex = 32;
             this.label25.Text = "Mode:";
             // 

@@ -587,7 +587,7 @@ namespace CodeWalker
                 }
                 else if (NavPortal != null)
                 {
-                    return Quaternion.Identity;
+                    return NavPortal.Orientation;
                 }
                 else if (PathNode != null)
                 {
@@ -634,7 +634,7 @@ namespace CodeWalker
                 }
                 else if (NavPortal != null)
                 {
-                    return WidgetAxis.None;
+                    return WidgetAxis.Z;
                 }
                 else if (PathNode != null)
                 {
@@ -786,6 +786,10 @@ namespace CodeWalker
             else if (NavPoint != null)
             {
                 NavPoint.SetOrientation(newrot);
+            }
+            else if (NavPortal != null)
+            {
+                NavPortal.SetOrientation(newrot);
             }
             else if (Audio != null)
             {

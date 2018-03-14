@@ -180,6 +180,8 @@ namespace CodeWalker
         YmapCarGen CopiedCarGen = null;
         YndNode CopiedPathNode = null;
         YnvPoly CopiedNavPoly = null;
+        YnvPoint CopiedNavPoint = null;
+        YnvPortal CopiedNavPortal = null;
         TrainTrackNode CopiedTrainNode = null;
         ScenarioNode CopiedScenarioNode = null;
 
@@ -210,7 +212,7 @@ namespace CodeWalker
             InitializeComponent();
 
             SetTheme(Settings.Default.WorldWindowTheme, false);
-            
+
             Renderer = new Renderer(this, gameFileCache);
             camera = Renderer.camera;
             timecycle = Renderer.timecycle;
@@ -230,6 +232,7 @@ namespace CodeWalker
                 Close();
                 return;
             }
+
 
             MouseWheel += WorldForm_MouseWheel;
 
@@ -1244,6 +1247,10 @@ namespace CodeWalker
             {
                 ori = CurMouseHit.NavPoint.Orientation;
             }
+            if (CurMouseHit.NavPortal != null)
+            {
+                ori = CurMouseHit.NavPortal.Orientation;
+            }
             if (CurMouseHit.Audio != null)
             {
                 ori = CurMouseHit.Audio.Orientation;
@@ -1484,9 +1491,15 @@ namespace CodeWalker
             }
             if (selectionItem.NavPortal != null)
             {
-                camrel = selectionItem.NavPortal.Position - camera.Position;
-            }
+                var navp = selectionItem.NavPortal;
+                camrel = navp.Position - camera.Position;
 
+                //render direction arrow for NavPortal
+                ori = navp.Orientation;
+                float arrowlen = 2.0f;
+                float arrowrad = 0.25f;
+                Renderer.RenderSelectionArrowOutline(navp.Position, Vector3.UnitY, Vector3.UnitZ, ori, arrowlen, arrowrad, cgrn);
+            }
             if (selectionItem.Audio != null)
             {
                 var au = selectionItem.Audio;
@@ -1784,7 +1797,7 @@ namespace CodeWalker
 
         public void UpdateNavYnvGraphics(YnvFile ynv, bool fullupdate)
         {
-
+            ynv.UpdateAllNodePositions();
             ynv.UpdateTriangleVertices();
             ynv.BuildBVH();
 
@@ -1798,6 +1811,18 @@ namespace CodeWalker
             if (poly == null) return;
             //poly.Ynv.UpdateBvhForPoly(poly);//TODO!
             UpdateNavYnvGraphics(poly.Ynv, fullupdate);
+        }
+        public void UpdateNavPointGraphics(YnvPoint point, bool fullupdate)
+        {
+            if (point == null) return;
+            //poly.Ynv.UpdateBvhForPoint(point);//TODO!
+            UpdateNavYnvGraphics(point.Ynv, fullupdate);
+        }
+        public void UpdateNavPortalGraphics(YnvPortal portal, bool fullupdate)
+        {
+            if (portal == null) return;
+            //poly.Ynv.UpdateBvhForPortal(portal);//TODO!
+            UpdateNavYnvGraphics(portal.Ynv, fullupdate);
         }
 
         public void UpdateTrainTrackGraphics(TrainTrack tt, bool fullupdate)
@@ -4582,19 +4607,23 @@ namespace CodeWalker
 
 
 
-
+        private bool CanMarkUndo()
+        {
+            if (SelectedItem.MultipleSelection) return true;
+            if (SelectedItem.EntityDef != null) return true;
+            if (SelectedItem.CarGenerator != null) return true;
+            if (SelectedItem.PathNode != null) return true;
+            //if (SelectedItem.NavPoly != null) return true;
+            if (SelectedItem.NavPoint != null) return true;
+            if (SelectedItem.NavPortal != null) return true;
+            if (SelectedItem.TrainTrackNode != null) return true;
+            if (SelectedItem.ScenarioNode != null) return true;
+            if (SelectedItem.Audio != null) return true;
+            return false;
+        }
         private void MarkUndoStart(Widget w)
         {
-            bool canundo = false;
-            if (SelectedItem.MultipleSelection) canundo = true;
-            if (SelectedItem.EntityDef != null) canundo = true;
-            if (SelectedItem.CarGenerator != null) canundo = true;
-            if (SelectedItem.PathNode != null) canundo = true;
-            //if (SelectedItem.NavPoly != null) hasval = true;
-            if (SelectedItem.TrainTrackNode != null) canundo = true;
-            if (SelectedItem.ScenarioNode != null) canundo = true;
-            if (SelectedItem.Audio != null) canundo = true;
-            if (!canundo) return;
+            if (!CanMarkUndo()) return;
             if (Widget is TransformWidget)
             {
                 UndoStartPosition = Widget.Position;
@@ -4604,19 +4633,13 @@ namespace CodeWalker
         }
         private void MarkUndoEnd(Widget w)
         {
-            bool canundo = false;
-            if (SelectedItem.MultipleSelection) canundo = true;
-            if (SelectedItem.EntityDef != null) canundo = true;
-            if (SelectedItem.CarGenerator != null) canundo = true;
-            if (SelectedItem.PathNode != null) canundo = true;
-            //if (SelectedItem.NavPoly != null) hasval = true;
-            if (SelectedItem.TrainTrackNode != null) canundo = true;
-            if (SelectedItem.ScenarioNode != null) canundo = true;
-            if (SelectedItem.Audio != null) canundo = true;
-            if (!canundo) return;
+            if (!CanMarkUndo()) return;
             var ent = SelectedItem.EntityDef;
             var cargen = SelectedItem.CarGenerator;
             var pathnode = SelectedItem.PathNode;
+            var navpoly = SelectedItem.NavPoly;
+            var navpoint = SelectedItem.NavPoint;
+            var navportal = SelectedItem.NavPortal;
             var trainnode = SelectedItem.TrainTrackNode;
             var scenarionode = SelectedItem.ScenarioNode;
             var audio = SelectedItem.Audio;
@@ -4665,6 +4688,26 @@ namespace CodeWalker
                     switch (tw.Mode)
                     {
                         case WidgetMode.Position: s = new PathNodePositionUndoStep(pathnode, UndoStartPosition, this); break;
+                    }
+                }
+                else if (navpoly != null)
+                {
+                    //todo...
+                }
+                else if (navpoint != null)
+                {
+                    switch (tw.Mode)
+                    {
+                        case WidgetMode.Position: s = new NavPointPositionUndoStep(navpoint, UndoStartPosition, this); break;
+                        case WidgetMode.Rotation: s = new NavPointRotationUndoStep(navpoint, UndoStartRotation, this); break;
+                    }
+                }
+                else if (navportal != null)
+                {
+                    switch (tw.Mode)
+                    {
+                        case WidgetMode.Position: s = new NavPortalPositionUndoStep(navportal, UndoStartPosition, this); break;
+                        case WidgetMode.Rotation: s = new NavPortalRotationUndoStep(navportal, UndoStartRotation, this); break;
                     }
                 }
                 else if (trainnode != null)
@@ -4986,9 +5029,9 @@ namespace CodeWalker
                 case MapSelectionMode.Entity: AddEntity(); break;
                 case MapSelectionMode.CarGenerator: AddCarGen(); break;
                 case MapSelectionMode.Path: AddPathNode(); break;
-                case MapSelectionMode.NavMesh: AddNavPoly(); break;
+                case MapSelectionMode.NavMesh: AddNavPoly(); break;//how to add points/portals? project window
                 case MapSelectionMode.TrainTrack: AddTrainNode(); break;
-                case MapSelectionMode.Scenario: AddScenarioNode(); break;
+                case MapSelectionMode.Scenario: AddScenarioNode(); break; //how to add different node types? project window
             }
         }
         private void DeleteItem()
@@ -4997,6 +5040,8 @@ namespace CodeWalker
             else if (SelectedItem.CarGenerator != null) DeleteCarGen();
             else if (SelectedItem.PathNode != null) DeletePathNode();
             else if (SelectedItem.NavPoly != null) DeleteNavPoly();
+            else if (SelectedItem.NavPoint != null) DeleteNavPoint();
+            else if (SelectedItem.NavPortal != null) DeleteNavPortal();
             else if (SelectedItem.TrainTrackNode != null) DeleteTrainNode();
             else if (SelectedItem.ScenarioNode != null) DeleteScenarioNode();
         }
@@ -5006,6 +5051,8 @@ namespace CodeWalker
             else if (SelectedItem.CarGenerator != null) CopyCarGen();
             else if (SelectedItem.PathNode != null) CopyPathNode();
             else if (SelectedItem.NavPoly != null) CopyNavPoly();
+            else if (SelectedItem.NavPoint != null) CopyNavPoint();
+            else if (SelectedItem.NavPortal != null) CopyNavPortal();
             else if (SelectedItem.TrainTrackNode != null) CopyTrainNode();
             else if (SelectedItem.ScenarioNode != null) CopyScenarioNode();
         }
@@ -5015,6 +5062,8 @@ namespace CodeWalker
             else if (CopiedCarGen != null) PasteCarGen();
             else if (CopiedPathNode != null) PastePathNode();
             else if (CopiedNavPoly != null) PasteNavPoly();
+            else if (CopiedNavPoint != null) PasteNavPoint();
+            else if (CopiedNavPortal != null) PasteNavPortal();
             else if (CopiedTrainNode != null) PasteTrainNode();
             else if (CopiedScenarioNode != null) PasteScenarioNode();
         }
@@ -5024,6 +5073,8 @@ namespace CodeWalker
             else if (SelectedItem.CarGenerator != null) CloneCarGen();
             else if (SelectedItem.PathNode != null) ClonePathNode();
             else if (SelectedItem.NavPoly != null) CloneNavPoly();
+            else if (SelectedItem.NavPoint != null) CloneNavPoint();
+            else if (SelectedItem.NavPortal != null) CloneNavPortal();
             else if (SelectedItem.TrainTrackNode != null) CloneTrainNode();
             else if (SelectedItem.ScenarioNode != null) CloneScenarioNode();
         }
@@ -5244,6 +5295,114 @@ namespace CodeWalker
             if (SelectedItem.NavPoly == null) return;
             if (ProjectForm == null) return;
             ProjectForm.NewNavPoly(SelectedItem.NavPoly, true);
+        }
+
+        private void AddNavPoint()
+        {
+            if (ProjectForm == null) return;
+            ProjectForm.NewNavPoint();
+        }
+        private void DeleteNavPoint()
+        {
+            var navpoint = SelectedItem.NavPoint;
+            if (navpoint == null) return;
+
+            if ((ProjectForm != null) && (ProjectForm.IsCurrentNavPoint(navpoint)))
+            {
+                if (!ProjectForm.DeleteNavPoint())
+                {
+                    //MessageBox.Show("Unable to delete this nav point from the current project. Make sure the nav point's ynv exists in the current project.");
+                }
+                else
+                {
+                    SelectItem(null);
+                }
+            }
+            else
+            {
+                //project not open, or nav point not selected there, just remove the point from the ynv...
+                var ynv = navpoint.Ynv;
+                if (!ynv.RemovePoint(navpoint))
+                {
+                    MessageBox.Show("Unable to remove nav point. NavMesh editing TODO!");
+                }
+                else
+                {
+                    UpdateNavPointGraphics(navpoint, false);
+                    SelectItem(null);
+                }
+            }
+        }
+        private void CopyNavPoint()
+        {
+            CopiedNavPoint = SelectedItem.NavPoint;
+            ToolbarPasteButton.Enabled = (CopiedNavPoint != null) && ToolbarAddItemButton.Enabled;
+        }
+        private void PasteNavPoint()
+        {
+            if (CopiedNavPoint == null) return;
+            if (ProjectForm == null) return;
+            ProjectForm.NewNavPoint(CopiedNavPoint);
+        }
+        private void CloneNavPoint()
+        {
+            if (SelectedItem.NavPoint == null) return;
+            if (ProjectForm == null) return;
+            ProjectForm.NewNavPoint(SelectedItem.NavPoint, true);
+        }
+
+        private void AddNavPortal()
+        {
+            if (ProjectForm == null) return;
+            ProjectForm.NewNavPortal();
+        }
+        private void DeleteNavPortal()
+        {
+            var navportal = SelectedItem.NavPortal;
+            if (navportal == null) return;
+
+            if ((ProjectForm != null) && (ProjectForm.IsCurrentNavPortal(navportal)))
+            {
+                if (!ProjectForm.DeleteNavPortal())
+                {
+                    //MessageBox.Show("Unable to delete this nav portal from the current project. Make sure the nav portal's ynv exists in the current project.");
+                }
+                else
+                {
+                    SelectItem(null);
+                }
+            }
+            else
+            {
+                //project not open, or nav portal not selected there, just remove the portal from the ynv...
+                var ynv = navportal.Ynv;
+                if (!ynv.RemovePortal(navportal))
+                {
+                    MessageBox.Show("Unable to remove nav portal. NavMesh editing TODO!");
+                }
+                else
+                {
+                    UpdateNavPortalGraphics(navportal, false);
+                    SelectItem(null);
+                }
+            }
+        }
+        private void CopyNavPortal()
+        {
+            CopiedNavPortal = SelectedItem.NavPortal;
+            ToolbarPasteButton.Enabled = (CopiedNavPortal != null) && ToolbarAddItemButton.Enabled;
+        }
+        private void PasteNavPortal()
+        {
+            if (CopiedNavPortal == null) return;
+            if (ProjectForm == null) return;
+            ProjectForm.NewNavPortal(CopiedNavPortal);
+        }
+        private void CloneNavPortal()
+        {
+            if (SelectedItem.NavPortal == null) return;
+            if (ProjectForm == null) return;
+            ProjectForm.NewNavPortal(SelectedItem.NavPortal, true);
         }
 
         private void AddTrainNode()

@@ -53,6 +53,10 @@ namespace CodeWalker
             }
         }
 
+
+
+
+
         private void UpdateStatus(string text)
         {
             try

@@ -41,9 +41,11 @@
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.SearchRPFTabPage = new System.Windows.Forms.TabPage();
+            this.SearchFileSystemTab = new System.Windows.Forms.TabPage();
+            this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
+            this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.FileSearchPanel = new System.Windows.Forms.Panel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.RpfSearchOnlyTextBox = new System.Windows.Forms.TextBox();
-            this.RpfSearchOnlyCheckBox = new System.Windows.Forms.CheckBox();
             this.RpfSearchSaveResultsButton = new System.Windows.Forms.Button();
             this.RpfSearchIgnoreTextBox = new System.Windows.Forms.TextBox();
             this.RpfSearchIgnoreCheckBox = new System.Windows.Forms.CheckBox();
@@ -58,28 +60,26 @@
             this.RpfSearchButton = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.RpfSearchTextBox = new System.Windows.Forms.TextBox();
-            this.ExportCompressCheckBox = new System.Windows.Forms.CheckBox();
-            this.ExportButton = new System.Windows.Forms.Button();
-            this.FileInfoLabel = new System.Windows.Forms.Label();
+            this.RpfSearchOnlyTextBox = new System.Windows.Forms.TextBox();
+            this.RpfSearchOnlyCheckBox = new System.Windows.Forms.CheckBox();
             this.ShowLargeFileContentsCheckBox = new System.Windows.Forms.CheckBox();
             this.DataHexLineCombo = new System.Windows.Forms.ComboBox();
             this.DataTextRadio = new System.Windows.Forms.RadioButton();
             this.DataHexRadio = new System.Windows.Forms.RadioButton();
             this.DataTextBox = new System.Windows.Forms.TextBox();
-            this.SearchFileSystemTab = new System.Windows.Forms.TabPage();
-            this.FileSearchPanel = new System.Windows.Forms.Panel();
-            this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
-            this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.FileInfoLabel = new System.Windows.Forms.Label();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.ExportCompressCheckBox = new System.Windows.Forms.CheckBox();
+            this.ExportButton = new System.Windows.Forms.Button();
             this.MainTabControl.SuspendLayout();
             this.SearchRPFTabPage.SuspendLayout();
+            this.SearchFileSystemTab.SuspendLayout();
+            this.MainStatusStrip.SuspendLayout();
+            this.FileSearchPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            this.SearchFileSystemTab.SuspendLayout();
-            this.FileSearchPanel.SuspendLayout();
-            this.MainStatusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // FileSearchTextRadio
@@ -87,7 +87,7 @@
             this.FileSearchTextRadio.AutoSize = true;
             this.FileSearchTextRadio.Location = new System.Drawing.Point(162, 30);
             this.FileSearchTextRadio.Name = "FileSearchTextRadio";
-            this.FileSearchTextRadio.Size = new System.Drawing.Size(48, 19);
+            this.FileSearchTextRadio.Size = new System.Drawing.Size(46, 17);
             this.FileSearchTextRadio.TabIndex = 45;
             this.FileSearchTextRadio.Text = "Text";
             this.FileSearchTextRadio.UseVisualStyleBackColor = true;
@@ -98,7 +98,7 @@
             this.FileSearchHexRadio.Checked = true;
             this.FileSearchHexRadio.Location = new System.Drawing.Point(112, 30);
             this.FileSearchHexRadio.Name = "FileSearchHexRadio";
-            this.FileSearchHexRadio.Size = new System.Drawing.Size(47, 19);
+            this.FileSearchHexRadio.Size = new System.Drawing.Size(44, 17);
             this.FileSearchHexRadio.TabIndex = 44;
             this.FileSearchHexRadio.TabStop = true;
             this.FileSearchHexRadio.Text = "Hex";
@@ -160,7 +160,7 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(3, 6);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(83, 15);
+            this.label2.Size = new System.Drawing.Size(73, 13);
             this.label2.TabIndex = 38;
             this.label2.Text = "Search folder:";
             // 
@@ -195,6 +195,51 @@
             this.SearchRPFTabPage.TabIndex = 0;
             this.SearchRPFTabPage.Text = "Search RPF contents";
             this.SearchRPFTabPage.UseVisualStyleBackColor = true;
+            // 
+            // SearchFileSystemTab
+            // 
+            this.SearchFileSystemTab.Controls.Add(this.FileSearchPanel);
+            this.SearchFileSystemTab.Controls.Add(this.FileSearchResultsTextBox);
+            this.SearchFileSystemTab.Location = new System.Drawing.Point(4, 22);
+            this.SearchFileSystemTab.Name = "SearchFileSystemTab";
+            this.SearchFileSystemTab.Padding = new System.Windows.Forms.Padding(3);
+            this.SearchFileSystemTab.Size = new System.Drawing.Size(849, 499);
+            this.SearchFileSystemTab.TabIndex = 1;
+            this.SearchFileSystemTab.Text = "Search file system";
+            this.SearchFileSystemTab.UseVisualStyleBackColor = true;
+            // 
+            // MainStatusStrip
+            // 
+            this.MainStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.StatusLabel});
+            this.MainStatusStrip.Location = new System.Drawing.Point(0, 533);
+            this.MainStatusStrip.Name = "MainStatusStrip";
+            this.MainStatusStrip.Size = new System.Drawing.Size(852, 22);
+            this.MainStatusStrip.TabIndex = 47;
+            this.MainStatusStrip.Text = "statusStrip1";
+            // 
+            // StatusLabel
+            // 
+            this.StatusLabel.Name = "StatusLabel";
+            this.StatusLabel.Size = new System.Drawing.Size(837, 17);
+            this.StatusLabel.Spring = true;
+            this.StatusLabel.Text = "Initialising...";
+            this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // FileSearchPanel
+            // 
+            this.FileSearchPanel.Controls.Add(this.FileSearchFolderTextBox);
+            this.FileSearchPanel.Controls.Add(this.FileSearchFolderBrowseButton);
+            this.FileSearchPanel.Controls.Add(this.FileSearchTextRadio);
+            this.FileSearchPanel.Controls.Add(this.FileSearchTextBox);
+            this.FileSearchPanel.Controls.Add(this.FileSearchButton);
+            this.FileSearchPanel.Controls.Add(this.FileSearchHexRadio);
+            this.FileSearchPanel.Controls.Add(this.FileSearchAbortButton);
+            this.FileSearchPanel.Controls.Add(this.label2);
+            this.FileSearchPanel.Location = new System.Drawing.Point(3, 6);
+            this.FileSearchPanel.Name = "FileSearchPanel";
+            this.FileSearchPanel.Size = new System.Drawing.Size(536, 66);
+            this.FileSearchPanel.TabIndex = 46;
             // 
             // splitContainer1
             // 
@@ -234,28 +279,6 @@
             this.splitContainer1.SplitterDistance = 270;
             this.splitContainer1.TabIndex = 1;
             // 
-            // RpfSearchOnlyTextBox
-            // 
-            this.RpfSearchOnlyTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.RpfSearchOnlyTextBox.Enabled = false;
-            this.RpfSearchOnlyTextBox.Location = new System.Drawing.Point(68, 92);
-            this.RpfSearchOnlyTextBox.Name = "RpfSearchOnlyTextBox";
-            this.RpfSearchOnlyTextBox.Size = new System.Drawing.Size(198, 20);
-            this.RpfSearchOnlyTextBox.TabIndex = 66;
-            this.RpfSearchOnlyTextBox.Text = ".ysc, .rel";
-            // 
-            // RpfSearchOnlyCheckBox
-            // 
-            this.RpfSearchOnlyCheckBox.AutoSize = true;
-            this.RpfSearchOnlyCheckBox.Location = new System.Drawing.Point(9, 94);
-            this.RpfSearchOnlyCheckBox.Name = "RpfSearchOnlyCheckBox";
-            this.RpfSearchOnlyCheckBox.Size = new System.Drawing.Size(53, 19);
-            this.RpfSearchOnlyCheckBox.TabIndex = 65;
-            this.RpfSearchOnlyCheckBox.Text = "Only:";
-            this.RpfSearchOnlyCheckBox.UseVisualStyleBackColor = true;
-            this.RpfSearchOnlyCheckBox.CheckedChanged += new System.EventHandler(this.RpfSearchOnlyCheckBox_CheckedChanged);
-            // 
             // RpfSearchSaveResultsButton
             // 
             this.RpfSearchSaveResultsButton.Enabled = false;
@@ -284,7 +307,7 @@
             this.RpfSearchIgnoreCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.RpfSearchIgnoreCheckBox.Location = new System.Drawing.Point(9, 70);
             this.RpfSearchIgnoreCheckBox.Name = "RpfSearchIgnoreCheckBox";
-            this.RpfSearchIgnoreCheckBox.Size = new System.Drawing.Size(64, 19);
+            this.RpfSearchIgnoreCheckBox.Size = new System.Drawing.Size(59, 17);
             this.RpfSearchIgnoreCheckBox.TabIndex = 58;
             this.RpfSearchIgnoreCheckBox.Text = "Ignore:";
             this.RpfSearchIgnoreCheckBox.UseVisualStyleBackColor = true;
@@ -297,7 +320,7 @@
             this.RpfSearchBothDirectionsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.RpfSearchBothDirectionsCheckBox.Location = new System.Drawing.Point(109, 48);
             this.RpfSearchBothDirectionsCheckBox.Name = "RpfSearchBothDirectionsCheckBox";
-            this.RpfSearchBothDirectionsCheckBox.Size = new System.Drawing.Size(107, 19);
+            this.RpfSearchBothDirectionsCheckBox.Size = new System.Drawing.Size(96, 17);
             this.RpfSearchBothDirectionsCheckBox.TabIndex = 57;
             this.RpfSearchBothDirectionsCheckBox.Text = "Both directions";
             this.RpfSearchBothDirectionsCheckBox.UseVisualStyleBackColor = true;
@@ -307,7 +330,7 @@
             this.RpfSearchCaseSensitiveCheckBox.AutoSize = true;
             this.RpfSearchCaseSensitiveCheckBox.Location = new System.Drawing.Point(9, 48);
             this.RpfSearchCaseSensitiveCheckBox.Name = "RpfSearchCaseSensitiveCheckBox";
-            this.RpfSearchCaseSensitiveCheckBox.Size = new System.Drawing.Size(105, 19);
+            this.RpfSearchCaseSensitiveCheckBox.Size = new System.Drawing.Size(94, 17);
             this.RpfSearchCaseSensitiveCheckBox.TabIndex = 56;
             this.RpfSearchCaseSensitiveCheckBox.Text = "Case-sensitive";
             this.RpfSearchCaseSensitiveCheckBox.UseVisualStyleBackColor = true;
@@ -317,7 +340,7 @@
             this.RpfSearchHexRadioButton.AutoSize = true;
             this.RpfSearchHexRadioButton.Location = new System.Drawing.Point(158, 5);
             this.RpfSearchHexRadioButton.Name = "RpfSearchHexRadioButton";
-            this.RpfSearchHexRadioButton.Size = new System.Drawing.Size(47, 19);
+            this.RpfSearchHexRadioButton.Size = new System.Drawing.Size(44, 17);
             this.RpfSearchHexRadioButton.TabIndex = 55;
             this.RpfSearchHexRadioButton.Text = "Hex";
             this.RpfSearchHexRadioButton.UseVisualStyleBackColor = true;
@@ -328,7 +351,7 @@
             this.RpfSearchTextRadioButton.Checked = true;
             this.RpfSearchTextRadioButton.Location = new System.Drawing.Point(106, 5);
             this.RpfSearchTextRadioButton.Name = "RpfSearchTextRadioButton";
-            this.RpfSearchTextRadioButton.Size = new System.Drawing.Size(48, 19);
+            this.RpfSearchTextRadioButton.Size = new System.Drawing.Size(46, 17);
             this.RpfSearchTextRadioButton.TabIndex = 54;
             this.RpfSearchTextRadioButton.TabStop = true;
             this.RpfSearchTextRadioButton.Text = "Text";
@@ -390,7 +413,7 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(7, 7);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(104, 15);
+            this.label3.Size = new System.Drawing.Size(91, 13);
             this.label3.TabIndex = 64;
             this.label3.Text = "Search in files for:";
             // 
@@ -403,43 +426,34 @@
             this.RpfSearchTextBox.Size = new System.Drawing.Size(263, 20);
             this.RpfSearchTextBox.TabIndex = 53;
             // 
-            // ExportCompressCheckBox
+            // RpfSearchOnlyTextBox
             // 
-            this.ExportCompressCheckBox.AutoSize = true;
-            this.ExportCompressCheckBox.Location = new System.Drawing.Point(87, 35);
-            this.ExportCompressCheckBox.Name = "ExportCompressCheckBox";
-            this.ExportCompressCheckBox.Size = new System.Drawing.Size(119, 19);
-            this.ExportCompressCheckBox.TabIndex = 112;
-            this.ExportCompressCheckBox.Text = "Compress export";
-            this.ExportCompressCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // ExportButton
-            // 
-            this.ExportButton.Location = new System.Drawing.Point(6, 31);
-            this.ExportButton.Name = "ExportButton";
-            this.ExportButton.Size = new System.Drawing.Size(75, 23);
-            this.ExportButton.TabIndex = 111;
-            this.ExportButton.Text = "Export...";
-            this.ExportButton.UseVisualStyleBackColor = true;
-            this.ExportButton.Click += new System.EventHandler(this.ExportButton_Click);
-            // 
-            // FileInfoLabel
-            // 
-            this.FileInfoLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.RpfSearchOnlyTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.FileInfoLabel.AutoEllipsis = true;
-            this.FileInfoLabel.Location = new System.Drawing.Point(3, 7);
-            this.FileInfoLabel.Name = "FileInfoLabel";
-            this.FileInfoLabel.Size = new System.Drawing.Size(549, 16);
-            this.FileInfoLabel.TabIndex = 110;
-            this.FileInfoLabel.Text = "[Nothing selected]";
+            this.RpfSearchOnlyTextBox.Enabled = false;
+            this.RpfSearchOnlyTextBox.Location = new System.Drawing.Point(68, 92);
+            this.RpfSearchOnlyTextBox.Name = "RpfSearchOnlyTextBox";
+            this.RpfSearchOnlyTextBox.Size = new System.Drawing.Size(198, 20);
+            this.RpfSearchOnlyTextBox.TabIndex = 66;
+            this.RpfSearchOnlyTextBox.Text = ".ysc, .rel";
+            // 
+            // RpfSearchOnlyCheckBox
+            // 
+            this.RpfSearchOnlyCheckBox.AutoSize = true;
+            this.RpfSearchOnlyCheckBox.Location = new System.Drawing.Point(9, 94);
+            this.RpfSearchOnlyCheckBox.Name = "RpfSearchOnlyCheckBox";
+            this.RpfSearchOnlyCheckBox.Size = new System.Drawing.Size(50, 17);
+            this.RpfSearchOnlyCheckBox.TabIndex = 65;
+            this.RpfSearchOnlyCheckBox.Text = "Only:";
+            this.RpfSearchOnlyCheckBox.UseVisualStyleBackColor = true;
+            this.RpfSearchOnlyCheckBox.CheckedChanged += new System.EventHandler(this.RpfSearchOnlyCheckBox_CheckedChanged);
             // 
             // ShowLargeFileContentsCheckBox
             // 
             this.ShowLargeFileContentsCheckBox.AutoSize = true;
             this.ShowLargeFileContentsCheckBox.Location = new System.Drawing.Point(392, 62);
             this.ShowLargeFileContentsCheckBox.Name = "ShowLargeFileContentsCheckBox";
-            this.ShowLargeFileContentsCheckBox.Size = new System.Drawing.Size(156, 19);
+            this.ShowLargeFileContentsCheckBox.Size = new System.Drawing.Size(139, 17);
             this.ShowLargeFileContentsCheckBox.TabIndex = 109;
             this.ShowLargeFileContentsCheckBox.Text = "Show large file contents";
             this.ShowLargeFileContentsCheckBox.UseVisualStyleBackColor = true;
@@ -464,7 +478,7 @@
             this.DataTextRadio.AutoSize = true;
             this.DataTextRadio.Location = new System.Drawing.Point(135, 61);
             this.DataTextRadio.Name = "DataTextRadio";
-            this.DataTextRadio.Size = new System.Drawing.Size(48, 19);
+            this.DataTextRadio.Size = new System.Drawing.Size(46, 17);
             this.DataTextRadio.TabIndex = 107;
             this.DataTextRadio.Text = "Text";
             this.DataTextRadio.UseVisualStyleBackColor = true;
@@ -475,7 +489,7 @@
             this.DataHexRadio.Checked = true;
             this.DataHexRadio.Location = new System.Drawing.Point(6, 61);
             this.DataHexRadio.Name = "DataHexRadio";
-            this.DataHexRadio.Size = new System.Drawing.Size(47, 19);
+            this.DataHexRadio.Size = new System.Drawing.Size(44, 17);
             this.DataHexRadio.TabIndex = 105;
             this.DataHexRadio.TabStop = true;
             this.DataHexRadio.Text = "Hex";
@@ -498,54 +512,40 @@
             this.DataTextBox.Text = "[Please select a search result]";
             this.DataTextBox.WordWrap = false;
             // 
-            // SearchFileSystemTab
+            // FileInfoLabel
             // 
-            this.SearchFileSystemTab.Controls.Add(this.FileSearchPanel);
-            this.SearchFileSystemTab.Controls.Add(this.FileSearchResultsTextBox);
-            this.SearchFileSystemTab.Location = new System.Drawing.Point(4, 22);
-            this.SearchFileSystemTab.Name = "SearchFileSystemTab";
-            this.SearchFileSystemTab.Padding = new System.Windows.Forms.Padding(3);
-            this.SearchFileSystemTab.Size = new System.Drawing.Size(838, 499);
-            this.SearchFileSystemTab.TabIndex = 1;
-            this.SearchFileSystemTab.Text = "Search file system";
-            this.SearchFileSystemTab.UseVisualStyleBackColor = true;
-            // 
-            // FileSearchPanel
-            // 
-            this.FileSearchPanel.Controls.Add(this.FileSearchFolderTextBox);
-            this.FileSearchPanel.Controls.Add(this.FileSearchFolderBrowseButton);
-            this.FileSearchPanel.Controls.Add(this.FileSearchTextRadio);
-            this.FileSearchPanel.Controls.Add(this.FileSearchTextBox);
-            this.FileSearchPanel.Controls.Add(this.FileSearchButton);
-            this.FileSearchPanel.Controls.Add(this.FileSearchHexRadio);
-            this.FileSearchPanel.Controls.Add(this.FileSearchAbortButton);
-            this.FileSearchPanel.Controls.Add(this.label2);
-            this.FileSearchPanel.Location = new System.Drawing.Point(3, 6);
-            this.FileSearchPanel.Name = "FileSearchPanel";
-            this.FileSearchPanel.Size = new System.Drawing.Size(536, 66);
-            this.FileSearchPanel.TabIndex = 46;
-            // 
-            // MainStatusStrip
-            // 
-            this.MainStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.StatusLabel});
-            this.MainStatusStrip.Location = new System.Drawing.Point(0, 533);
-            this.MainStatusStrip.Name = "MainStatusStrip";
-            this.MainStatusStrip.Size = new System.Drawing.Size(852, 22);
-            this.MainStatusStrip.TabIndex = 47;
-            this.MainStatusStrip.Text = "statusStrip1";
-            // 
-            // StatusLabel
-            // 
-            this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(806, 17);
-            this.StatusLabel.Spring = true;
-            this.StatusLabel.Text = "Initialising...";
-            this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.FileInfoLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.FileInfoLabel.AutoEllipsis = true;
+            this.FileInfoLabel.Location = new System.Drawing.Point(3, 7);
+            this.FileInfoLabel.Name = "FileInfoLabel";
+            this.FileInfoLabel.Size = new System.Drawing.Size(549, 16);
+            this.FileInfoLabel.TabIndex = 110;
+            this.FileInfoLabel.Text = "[Nothing selected]";
             // 
             // SaveFileDialog
             // 
             this.SaveFileDialog.AddExtension = false;
+            // 
+            // ExportCompressCheckBox
+            // 
+            this.ExportCompressCheckBox.AutoSize = true;
+            this.ExportCompressCheckBox.Location = new System.Drawing.Point(87, 35);
+            this.ExportCompressCheckBox.Name = "ExportCompressCheckBox";
+            this.ExportCompressCheckBox.Size = new System.Drawing.Size(104, 17);
+            this.ExportCompressCheckBox.TabIndex = 112;
+            this.ExportCompressCheckBox.Text = "Compress export";
+            this.ExportCompressCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // ExportButton
+            // 
+            this.ExportButton.Location = new System.Drawing.Point(6, 31);
+            this.ExportButton.Name = "ExportButton";
+            this.ExportButton.Size = new System.Drawing.Size(75, 23);
+            this.ExportButton.TabIndex = 111;
+            this.ExportButton.Text = "Export...";
+            this.ExportButton.UseVisualStyleBackColor = true;
+            this.ExportButton.Click += new System.EventHandler(this.ExportButton_Click);
             // 
             // BinarySearchForm
             // 
@@ -560,18 +560,18 @@
             this.Load += new System.EventHandler(this.BinarySearchForm_Load);
             this.MainTabControl.ResumeLayout(false);
             this.SearchRPFTabPage.ResumeLayout(false);
+            this.SearchFileSystemTab.ResumeLayout(false);
+            this.SearchFileSystemTab.PerformLayout();
+            this.MainStatusStrip.ResumeLayout(false);
+            this.MainStatusStrip.PerformLayout();
+            this.FileSearchPanel.ResumeLayout(false);
+            this.FileSearchPanel.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            this.SearchFileSystemTab.ResumeLayout(false);
-            this.SearchFileSystemTab.PerformLayout();
-            this.FileSearchPanel.ResumeLayout(false);
-            this.FileSearchPanel.PerformLayout();
-            this.MainStatusStrip.ResumeLayout(false);
-            this.MainStatusStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -592,6 +592,7 @@
         private System.Windows.Forms.TabControl MainTabControl;
         private System.Windows.Forms.TabPage SearchRPFTabPage;
         private System.Windows.Forms.TabPage SearchFileSystemTab;
+        private System.Windows.Forms.StatusStrip MainStatusStrip;
         private System.Windows.Forms.ToolStripStatusLabel StatusLabel;
         private System.Windows.Forms.Panel FileSearchPanel;
         private System.Windows.Forms.SplitContainer splitContainer1;
@@ -620,6 +621,5 @@
         private System.Windows.Forms.SaveFileDialog SaveFileDialog;
         private System.Windows.Forms.CheckBox ExportCompressCheckBox;
         private System.Windows.Forms.Button ExportButton;
-        public System.Windows.Forms.StatusStrip MainStatusStrip;
     }
 }

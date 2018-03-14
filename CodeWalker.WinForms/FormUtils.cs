@@ -244,7 +244,7 @@ namespace CodeWalker
                 Text = caption,
                 StartPosition = FormStartPosition.CenterParent,
                 MaximizeBox = false,
-                MinimizeBox = false             
+                MinimizeBox = false
             };
             FormTheme.SetTheme(prompt, theme);
             var textLabel = new Label() { Left = 30, Top = 20, Width = 370, Height = 20, Text = text, };
@@ -333,7 +333,7 @@ namespace CodeWalker
                 else if ((c is Button) || (c is GroupBox))
                 {
                     c.ForeColor = form.ForeColor;
-                    c.BackColor = btnback;                  
+                    c.BackColor = btnback;
                 }
                 else if (c is TreeView)
                 {
