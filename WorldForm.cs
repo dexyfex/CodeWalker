@@ -4607,10 +4607,6 @@ namespace CodeWalker
             //called by the SettingsForm when it's closed.
             SettingsForm = null;
         }
-
-
-
-
         private bool CanMarkUndo()
         {
             if (SelectedItem.MultipleSelection) return true;
