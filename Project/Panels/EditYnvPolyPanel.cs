@@ -48,7 +48,7 @@ namespace CodeWalker.Project.Panels
                 AreaIDUpDown.Value = 0;
                 PartIDUpDown.Value = 0;
                 PortalIDUpDown.Value = 0;
-                PortalUnkUpDown.Value = 0;
+                PortalTypeUpDown.Value = 0;
                 SetCheckedListBoxValues(FlagsCheckedListBox1, 0);
                 SetCheckedListBoxValues(FlagsCheckedListBox2, 0);
                 SetCheckedListBoxValues(FlagsCheckedListBox3, 0);
@@ -64,8 +64,8 @@ namespace CodeWalker.Project.Panels
                 AddToProjectButton.Enabled = !DeletePolyButton.Enabled;
                 AreaIDUpDown.Value = YnvPoly.AreaID;
                 PartIDUpDown.Value = YnvPoly.PartID;
-                PortalIDUpDown.Value = YnvPoly.PortalID;
-                PortalUnkUpDown.Value = YnvPoly.PortalUnk;
+                PortalIDUpDown.Value = YnvPoly.PortalLinkID;
+                PortalTypeUpDown.Value = YnvPoly.PortalType;
                 SetCheckedListBoxValues(FlagsCheckedListBox1, YnvPoly.Flags1);
                 SetCheckedListBoxValues(FlagsCheckedListBox2, YnvPoly.Flags2);
                 SetCheckedListBoxValues(FlagsCheckedListBox3, YnvPoly.Flags3);
@@ -144,24 +144,24 @@ namespace CodeWalker.Project.Panels
             ushort portalid = (ushort)PortalIDUpDown.Value;
             lock (ProjectForm.ProjectSyncRoot)
             {
-                if (YnvPoly.PortalID != portalid)
+                if (YnvPoly.PortalLinkID != portalid)
                 {
-                    YnvPoly.PortalID = portalid;
+                    YnvPoly.PortalLinkID = portalid;
                     ProjectForm.SetYnvHasChanged(true);
                 }
             }
         }
 
-        private void PortalUnkUpDown_ValueChanged(object sender, EventArgs e)
+        private void PortalTypeUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (YnvPoly == null) return;
-            byte portalunk = (byte)PortalUnkUpDown.Value;
+            byte portalunk = (byte)PortalTypeUpDown.Value;
             lock (ProjectForm.ProjectSyncRoot)
             {
-                if (YnvPoly.PortalUnk != portalunk)
+                if (YnvPoly.PortalType != portalunk)
                 {
-                    YnvPoly.PortalUnk = portalunk;
+                    YnvPoly.PortalType = portalunk;
                     ProjectForm.SetYnvHasChanged(true);
                 }
             }

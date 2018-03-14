@@ -41,13 +41,13 @@
             this.YnvPolyCountLabel = new System.Windows.Forms.Label();
             this.YnvPortalCountLabel = new System.Windows.Forms.Label();
             this.YnvPortalLinkCountLabel = new System.Windows.Forms.Label();
-            this.YnvSectorUnkCountLabel = new System.Windows.Forms.Label();
+            this.YnvPointCountLabel = new System.Windows.Forms.Label();
             this.YnvByteCountLabel = new System.Windows.Forms.Label();
             this.YnvFlagsGroupBox = new System.Windows.Forms.GroupBox();
-            this.YnvFlagsVerticesCheckBox = new System.Windows.Forms.CheckBox();
-            this.YnvFlagsPortalsCheckBox = new System.Windows.Forms.CheckBox();
-            this.YnvFlagsVehicleCheckBox = new System.Windows.Forms.CheckBox();
             this.YnvFlagsUnknownCheckBox = new System.Windows.Forms.CheckBox();
+            this.YnvFlagsVehicleCheckBox = new System.Windows.Forms.CheckBox();
+            this.YnvFlagsPortalsCheckBox = new System.Windows.Forms.CheckBox();
+            this.YnvFlagsVerticesCheckBox = new System.Windows.Forms.CheckBox();
             this.YnvVersionUnkHashTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -177,14 +177,14 @@
             this.YnvPortalLinkCountLabel.TabIndex = 42;
             this.YnvPortalLinkCountLabel.Text = "Portal link count: 0";
             // 
-            // YnvSectorUnkCountLabel
+            // YnvPointCountLabel
             // 
-            this.YnvSectorUnkCountLabel.AutoSize = true;
-            this.YnvSectorUnkCountLabel.Location = new System.Drawing.Point(358, 127);
-            this.YnvSectorUnkCountLabel.Name = "YnvSectorUnkCountLabel";
-            this.YnvSectorUnkCountLabel.Size = new System.Drawing.Size(101, 13);
-            this.YnvSectorUnkCountLabel.TabIndex = 43;
-            this.YnvSectorUnkCountLabel.Text = "Sector unk count: 0";
+            this.YnvPointCountLabel.AutoSize = true;
+            this.YnvPointCountLabel.Location = new System.Drawing.Point(358, 127);
+            this.YnvPointCountLabel.Name = "YnvPointCountLabel";
+            this.YnvPointCountLabel.Size = new System.Drawing.Size(73, 13);
+            this.YnvPointCountLabel.TabIndex = 43;
+            this.YnvPointCountLabel.Text = "Point count: 0";
             // 
             // YnvByteCountLabel
             // 
@@ -208,27 +208,16 @@
             this.YnvFlagsGroupBox.TabStop = false;
             this.YnvFlagsGroupBox.Text = "Content flags";
             // 
-            // YnvFlagsVerticesCheckBox
+            // YnvFlagsUnknownCheckBox
             // 
-            this.YnvFlagsVerticesCheckBox.AutoSize = true;
-            this.YnvFlagsVerticesCheckBox.Location = new System.Drawing.Point(12, 19);
-            this.YnvFlagsVerticesCheckBox.Name = "YnvFlagsVerticesCheckBox";
-            this.YnvFlagsVerticesCheckBox.Size = new System.Drawing.Size(64, 17);
-            this.YnvFlagsVerticesCheckBox.TabIndex = 0;
-            this.YnvFlagsVerticesCheckBox.Text = "Vertices";
-            this.YnvFlagsVerticesCheckBox.UseVisualStyleBackColor = true;
-            this.YnvFlagsVerticesCheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsVerticesCheckBox_CheckedChanged);
-            // 
-            // YnvFlagsPortalsCheckBox
-            // 
-            this.YnvFlagsPortalsCheckBox.AutoSize = true;
-            this.YnvFlagsPortalsCheckBox.Location = new System.Drawing.Point(12, 42);
-            this.YnvFlagsPortalsCheckBox.Name = "YnvFlagsPortalsCheckBox";
-            this.YnvFlagsPortalsCheckBox.Size = new System.Drawing.Size(58, 17);
-            this.YnvFlagsPortalsCheckBox.TabIndex = 1;
-            this.YnvFlagsPortalsCheckBox.Text = "Portals";
-            this.YnvFlagsPortalsCheckBox.UseVisualStyleBackColor = true;
-            this.YnvFlagsPortalsCheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsPortalsCheckBox_CheckedChanged);
+            this.YnvFlagsUnknownCheckBox.AutoSize = true;
+            this.YnvFlagsUnknownCheckBox.Location = new System.Drawing.Point(12, 88);
+            this.YnvFlagsUnknownCheckBox.Name = "YnvFlagsUnknownCheckBox";
+            this.YnvFlagsUnknownCheckBox.Size = new System.Drawing.Size(78, 17);
+            this.YnvFlagsUnknownCheckBox.TabIndex = 3;
+            this.YnvFlagsUnknownCheckBox.Text = "[Unknown]";
+            this.YnvFlagsUnknownCheckBox.UseVisualStyleBackColor = true;
+            this.YnvFlagsUnknownCheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsUnknownCheckBox_CheckedChanged);
             // 
             // YnvFlagsVehicleCheckBox
             // 
@@ -241,16 +230,27 @@
             this.YnvFlagsVehicleCheckBox.UseVisualStyleBackColor = true;
             this.YnvFlagsVehicleCheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsVehicleCheckBox_CheckedChanged);
             // 
-            // YnvFlagsUnknownCheckBox
+            // YnvFlagsPortalsCheckBox
             // 
-            this.YnvFlagsUnknownCheckBox.AutoSize = true;
-            this.YnvFlagsUnknownCheckBox.Location = new System.Drawing.Point(12, 88);
-            this.YnvFlagsUnknownCheckBox.Name = "YnvFlagsUnknownCheckBox";
-            this.YnvFlagsUnknownCheckBox.Size = new System.Drawing.Size(78, 17);
-            this.YnvFlagsUnknownCheckBox.TabIndex = 3;
-            this.YnvFlagsUnknownCheckBox.Text = "[Unknown]";
-            this.YnvFlagsUnknownCheckBox.UseVisualStyleBackColor = true;
-            this.YnvFlagsUnknownCheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsUnknownCheckBox_CheckedChanged);
+            this.YnvFlagsPortalsCheckBox.AutoSize = true;
+            this.YnvFlagsPortalsCheckBox.Location = new System.Drawing.Point(12, 42);
+            this.YnvFlagsPortalsCheckBox.Name = "YnvFlagsPortalsCheckBox";
+            this.YnvFlagsPortalsCheckBox.Size = new System.Drawing.Size(58, 17);
+            this.YnvFlagsPortalsCheckBox.TabIndex = 1;
+            this.YnvFlagsPortalsCheckBox.Text = "Portals";
+            this.YnvFlagsPortalsCheckBox.UseVisualStyleBackColor = true;
+            this.YnvFlagsPortalsCheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsPortalsCheckBox_CheckedChanged);
+            // 
+            // YnvFlagsVerticesCheckBox
+            // 
+            this.YnvFlagsVerticesCheckBox.AutoSize = true;
+            this.YnvFlagsVerticesCheckBox.Location = new System.Drawing.Point(12, 19);
+            this.YnvFlagsVerticesCheckBox.Name = "YnvFlagsVerticesCheckBox";
+            this.YnvFlagsVerticesCheckBox.Size = new System.Drawing.Size(64, 17);
+            this.YnvFlagsVerticesCheckBox.TabIndex = 0;
+            this.YnvFlagsVerticesCheckBox.Text = "Vertices";
+            this.YnvFlagsVerticesCheckBox.UseVisualStyleBackColor = true;
+            this.YnvFlagsVerticesCheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsVerticesCheckBox_CheckedChanged);
             // 
             // YnvVersionUnkHashTextBox
             // 
@@ -357,7 +357,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.YnvFlagsGroupBox);
             this.Controls.Add(this.YnvByteCountLabel);
-            this.Controls.Add(this.YnvSectorUnkCountLabel);
+            this.Controls.Add(this.YnvPointCountLabel);
             this.Controls.Add(this.YnvPortalLinkCountLabel);
             this.Controls.Add(this.YnvPortalCountLabel);
             this.Controls.Add(this.YnvPolyCountLabel);
@@ -396,7 +396,7 @@
         private System.Windows.Forms.Label YnvPolyCountLabel;
         private System.Windows.Forms.Label YnvPortalCountLabel;
         private System.Windows.Forms.Label YnvPortalLinkCountLabel;
-        private System.Windows.Forms.Label YnvSectorUnkCountLabel;
+        private System.Windows.Forms.Label YnvPointCountLabel;
         private System.Windows.Forms.Label YnvByteCountLabel;
         private System.Windows.Forms.GroupBox YnvFlagsGroupBox;
         private System.Windows.Forms.CheckBox YnvFlagsUnknownCheckBox;

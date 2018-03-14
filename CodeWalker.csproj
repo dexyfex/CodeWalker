@@ -364,11 +364,23 @@
     <Compile Include="Project\Panels\EditYnvPanel.Designer.cs">
       <DependentUpon>EditYnvPanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Project\Panels\EditYnvPointPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYnvPointPanel.Designer.cs">
+      <DependentUpon>EditYnvPointPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\Panels\EditYnvPolyPanel.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Project\Panels\EditYnvPolyPanel.Designer.cs">
       <DependentUpon>EditYnvPolyPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditYnvPortalPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYnvPortalPanel.Designer.cs">
+      <DependentUpon>EditYnvPortalPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\Panels\EditYtypPanel.cs">
       <SubType>Form</SubType>
@@ -602,8 +614,14 @@
     <EmbeddedResource Include="Project\Panels\EditYnvPanel.resx">
       <DependentUpon>EditYnvPanel.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYnvPointPanel.resx">
+      <DependentUpon>EditYnvPointPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYnvPolyPanel.resx">
       <DependentUpon>EditYnvPolyPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYnvPortalPanel.resx">
+      <DependentUpon>EditYnvPortalPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYtypPanel.resx">
       <DependentUpon>EditYtypPanel.cs</DependentUpon>
