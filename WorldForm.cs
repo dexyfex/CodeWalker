@@ -15,6 +15,7 @@ using CodeWalker.Project;
 using CodeWalker.Rendering;
 using CodeWalker.GameFiles;
 using CodeWalker.Properties;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace CodeWalker
 {
@@ -204,10 +205,13 @@ namespace CodeWalker
 
         bool initedOk = false;
 
+        public ThemeBase Theme { get; private set; }
 
         public WorldForm()
         {
             InitializeComponent();
+
+            SetTheme(Settings.Default.WorldWindowTheme, false);
 
             Renderer = new Renderer(this, gameFileCache);
             camera = Renderer.camera;
@@ -290,6 +294,8 @@ namespace CodeWalker
 
             DlcLevelComboBox.SelectedIndex = 0; //show "<Loading...>" until DLC list is loaded
 
+            ThemeComboBox.SelectedItem = Settings.Default.WorldWindowTheme;
+
             UpdateToolbarShortcutsText();
 
 
@@ -299,7 +305,47 @@ namespace CodeWalker
             Renderer.Start();
         }
 
+        private void SetTheme(string themestr, bool changing = true)
+        {
+            Theme = null;
+            var version = VisualStudioToolStripExtender.VsVersion.Vs2015;
 
+            switch (themestr)
+            {
+                default:
+                case "Windows":
+                    //Theme = new VS2005Theme();
+                    version = VisualStudioToolStripExtender.VsVersion.Unknown;
+                    if (changing)
+                    {
+                        MessageBox.Show("Please restart Codewalker to change to the windows theme.");
+                    }
+                    break;
+                case "Blue":
+                    Theme = new VS2015BlueTheme();
+                    break;
+                case "Light":
+                    Theme = new VS2015LightTheme();
+                    break;
+                case "Dark":
+                    Theme = new VS2015DarkTheme();
+                    break;
+            }
+
+            if (changing)
+            {
+                Settings.Default.WorldWindowTheme = themestr;
+                Settings.Default.Save();
+            }
+
+            if (Theme != null)
+            {
+                VSExtender.SetStyle(StatusStrip, version, Theme);
+                VSExtender.SetStyle(Toolbar, version, Theme);
+
+                FormTheme.SetTheme(this, Theme);
+            }
+        }
 
         private MapIcon AddIcon(string name, string filename, int texw, int texh, float centerx, float centery, float scale)
         {
@@ -3905,6 +3951,7 @@ namespace CodeWalker
             if (InfoForm == null)
             {
                 InfoForm = new WorldInfoForm(this);
+                FormTheme.SetTheme(InfoForm, Theme);
                 InfoForm.SetSelection(SelectedItem, SelectedItems);
                 InfoForm.SetSelectionMode(SelectionModeStr, MouseSelectEnabled);
                 InfoForm.Show(this);
@@ -3960,6 +4007,7 @@ namespace CodeWalker
             if (SearchForm == null)
             {
                 SearchForm = new WorldSearchForm(this);
+                FormTheme.SetTheme(SearchForm, Theme);
                 SearchForm.Show(this);
             }
             else
@@ -4538,6 +4586,7 @@ namespace CodeWalker
             if (SettingsForm == null)
             {
                 SettingsForm = new SettingsForm(this);
+                FormTheme.SetTheme(SettingsForm, Theme);
                 SettingsForm.Show(this);
             }
             else
@@ -6605,6 +6654,7 @@ namespace CodeWalker
         private void AboutButton_Click(object sender, EventArgs e)
         {
             AboutForm f = new AboutForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show(this);
         }
 
@@ -6616,6 +6666,7 @@ namespace CodeWalker
         private void ToolsMenuRPFBrowser_Click(object sender, EventArgs e)
         {
             BrowseForm f = new BrowseForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show(this);
         }
 
@@ -6643,42 +6694,49 @@ namespace CodeWalker
         private void ToolsMenuBinarySearch_Click(object sender, EventArgs e)
         {
             BinarySearchForm f = new BinarySearchForm(gameFileCache);
+            FormTheme.SetTheme(f, Theme);
             f.Show(this);
         }
 
         private void ToolsMenuJenkGen_Click(object sender, EventArgs e)
         {
             JenkGenForm f = new JenkGenForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show(this);
         }
 
         private void ToolsMenuJenkInd_Click(object sender, EventArgs e)
         {
             JenkIndForm f = new JenkIndForm(gameFileCache);
+            FormTheme.SetTheme(f, Theme);
             f.Show(this);
         }
 
         private void ToolsMenuExtractScripts_Click(object sender, EventArgs e)
         {
             ExtractScriptsForm f = new ExtractScriptsForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show(this);
         }
 
         private void ToolsMenuExtractTextures_Click(object sender, EventArgs e)
         {
             ExtractTexForm f = new ExtractTexForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show(this);
         }
 
         private void ToolsMenuExtractRawFiles_Click(object sender, EventArgs e)
         {
             ExtractRawForm f = new ExtractRawForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show(this);
         }
 
         private void ToolsMenuExtractShaders_Click(object sender, EventArgs e)
         {
             ExtractShadersForm f = new ExtractShadersForm();
+            FormTheme.SetTheme(f, Theme);
             f.Show(this);
         }
 
@@ -7477,6 +7535,11 @@ namespace CodeWalker
         private void SnapGridSizeUpDown_ValueChanged(object sender, EventArgs e)
         {
             SnapGridSize = (float)SnapGridSizeUpDown.Value;
+        }
+
+        private void ThemeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetTheme(ThemeComboBox.Text);
         }
     }
 
