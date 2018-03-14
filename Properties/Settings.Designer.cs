@@ -734,5 +734,20 @@ namespace CodeWalker.Properties {
                 this["ExplorerWindowTheme"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Windows")]
+        public string WorldWindowTheme
+        {
+            get
+            {
+                return ((string)(this["WorldWindowTheme"]));
+            }
+            set
+            {
+                this["WorldWindowTheme"] = value;
+            }
+        }
     }
 }

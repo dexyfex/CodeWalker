@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CodeWalker.WinForms;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -233,7 +234,7 @@ namespace CodeWalker
     public static class Prompt
     {
         //handy utility to get a string from the user...
-        public static string ShowDialog(IWin32Window owner, string text, string caption, string defaultvalue = "")
+        public static string ShowDialog(IWin32Window owner, string text, string caption, ThemeBase theme, string defaultvalue = "")
         {
             Form prompt = new Form()
             {
@@ -245,6 +246,7 @@ namespace CodeWalker
                 MaximizeBox = false,
                 MinimizeBox = false
             };
+            FormTheme.SetTheme(prompt, theme);
             var textLabel = new Label() { Left = 30, Top = 20, Width = 370, Height = 20, Text = text, };
             var textBox = new TextBox() { Left = 30, Top = 40, Width = 370, Text = defaultvalue };
             var cancel = new Button() { Text = "Cancel", Left = 230, Width = 80, Top = 70, DialogResult = DialogResult.Cancel };
@@ -275,6 +277,10 @@ namespace CodeWalker
             var disback = SystemColors.Control;
             var disfore = form.ForeColor;
             var btnback = Color.Transparent;
+            var fStyle = FlatStyle.System;
+            var panelC = SystemColors.Control;
+            var dropdwn = SystemColors.Control;
+            var dropdwntxt = form.ForeColor;
 
             if (theme is VS2015DarkTheme)
             {
@@ -285,6 +291,17 @@ namespace CodeWalker
                 disback = form.BackColor;// Color.FromArgb(32,32,32);
                 disfore = Color.DarkGray;
                 btnback = form.BackColor;
+                fStyle = FlatStyle.Flat;
+                panelC = form.BackColor;
+                dropdwn = form.BackColor;
+                dropdwntxt = form.ForeColor;
+            }
+
+            if (theme is VS2015BlueTheme)
+            {
+                panelC = theme.ColorPalette.MainWindowActive.Background;
+                dropdwn = panelC;
+                dropdwntxt = Color.White;
             }
 
             var allcontrols = new List<Control>();
@@ -324,7 +341,67 @@ namespace CodeWalker
                     c.BackColor = wndback;
                     (c as TreeView).LineColor = form.ForeColor;
                 }
+                else if (c is Panel)
+                {
+                    c.BackColor = panelC;
+                }
+                else if (c is TrackBar)
+                {
+                    c.BackColor = form.BackColor;
+                }
+                else if (c is ReadOnlyPropertyGrid)
+                {
+                    var rpd = (ReadOnlyPropertyGrid)c;
+                    rpd.ViewBackColor = txtback;
+                    rpd.ViewForeColor = form.ForeColor;
+                }
+                else if (c is PropertyGridFix)
+                {
+                    var rpd = (PropertyGridFix)c;
+                    rpd.ViewBackColor = form.BackColor;
+                    rpd.ViewForeColor = form.ForeColor;
+                }
+                else if (c is ComboBox)
+                {
+                    var cb = (ComboBox)c;
 
+                    cb.BackColor = dropdwn;
+                    cb.FlatStyle = fStyle;
+                    cb.ForeColor = dropdwntxt;
+                }
+                else if (c is ContextMenuStrip)
+                {
+                    c.BackColor = form.BackColor;
+                    c.ForeColor = form.ForeColor;
+                }
+                else if (c is StatusStrip)
+                {
+                    var ss = (StatusStrip)c;
+                    VisualStudioToolStripExtender ve = new VisualStudioToolStripExtender();
+                    var version = VisualStudioToolStripExtender.VsVersion.Vs2015;
+                    ve.SetStyle(ss, version, theme);
+                }
+                else if (c is MenuStrip)
+                {
+                    var ms = (MenuStrip)c;
+                    VisualStudioToolStripExtender ve = new VisualStudioToolStripExtender();
+                    var version = VisualStudioToolStripExtender.VsVersion.Vs2015;
+                    ve.SetStyle(ms, version, theme);
+                }
+                else if (c is ToolStrip)
+                {
+                    var ts = (ToolStrip)c;
+                    VisualStudioToolStripExtender ve = new VisualStudioToolStripExtender();
+                    var version = VisualStudioToolStripExtender.VsVersion.Vs2015;
+                    ve.SetStyle(ts, version, theme);
+                }
+                else if (c is ToolStripFix)
+                {
+                    var tsf = (ToolStripFix)c;
+                    VisualStudioToolStripExtender ve = new VisualStudioToolStripExtender();
+                    var version = VisualStudioToolStripExtender.VsVersion.Vs2015;
+                    ve.SetStyle(tsf, version, theme);
+                }
             }
 
         }

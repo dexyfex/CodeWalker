@@ -70,7 +70,6 @@ namespace CodeWalker
             }
 
             Theme = null;
-            var version = VisualStudioToolStripExtender.VsVersion.Vs2015;
 
             switch (themestr)
             {
@@ -78,7 +77,7 @@ namespace CodeWalker
                 case "Windows":
                     //Theme = new VS2005Theme();
                     ViewThemeWindowsMenu.Checked = true;
-                    version = VisualStudioToolStripExtender.VsVersion.Unknown;
+                    var version = VisualStudioToolStripExtender.VsVersion.Unknown;
                     if (changing)
                     {
                         MessageBox.Show("Please reopen RPF Explorer to change back to Windows theme.");
@@ -110,10 +109,6 @@ namespace CodeWalker
 
             if (Theme != null)
             {
-                VSExtender.SetStyle(MainMenu, version, Theme);
-                VSExtender.SetStyle(MainToolbar, version, Theme);
-                VSExtender.SetStyle(MainStatusBar, version, Theme);
-
                 FormTheme.SetTheme(this, Theme);
 
                 MainSplitContainer.BackColor = Theme.ColorPalette.MainWindowActive.Background;
@@ -2071,7 +2066,7 @@ namespace CodeWalker
             if (CurrentFolder == null) return;//shouldn't happen
             if (CurrentFolder?.IsSearchResults ?? false) return;
 
-            string fname = Prompt.ShowDialog(this, "Enter a name for the new folder:", "Create folder", "folder");
+            string fname = Prompt.ShowDialog(this, "Enter a name for the new folder:", "Create folder", Theme, "folder");
             if (string.IsNullOrEmpty(fname))
             {
                 return;//no name was provided.
@@ -2128,7 +2123,7 @@ namespace CodeWalker
             if (CurrentFolder == null) return;//shouldn't happen
             if (CurrentFolder?.IsSearchResults ?? false) return;
 
-            string fname = Prompt.ShowDialog(this, "Enter a name for the new archive:", "Create RPF7 archive", "new");
+            string fname = Prompt.ShowDialog(this, "Enter a name for the new archive:", "Create RPF7 archive", Theme, "new");
             if (string.IsNullOrEmpty(fname))
             {
                 return;//no name was provided.
@@ -2466,7 +2461,7 @@ namespace CodeWalker
             if ((CurrentFiles != null) && (CurrentFiles.Count > idx))
             {
                 var item = CurrentFiles[idx];
-                string newname = Prompt.ShowDialog(this, "Enter the new name for this item:", "Rename item", item.Name);
+                string newname = Prompt.ShowDialog(this, "Enter the new name for this item:", "Rename item", Theme, item.Name);
                 if (!string.IsNullOrEmpty(newname))
                 {
                     RenameItem(item, newname);
