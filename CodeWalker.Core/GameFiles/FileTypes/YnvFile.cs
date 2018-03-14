@@ -116,14 +116,6 @@ namespace CodeWalker.GameFiles
                         poly.Index = i;
                         poly.CalculatePosition(); //calc poly center for display purposes..
                         Polys.Add(poly);
-
-                        if (poly.PortalType > 0)
-                        {
-                            if (poly.PortalType != 2) //seems to be what portal links need to understand..
-                            { }
-
-                        }
-
                     }
                 }
                 if (Nav.Portals != null)
@@ -135,8 +127,8 @@ namespace CodeWalker.GameFiles
                         YnvPortal portal = new YnvPortal();
                         portal.Init(this, portals[i]);
                         portal.Index = i;
-                        portal.PositionFrom = posoffset + portal._RawData.PositionFrom.ToVector3() * aabbsize;
-                        portal.PositionTo = posoffset + portal._RawData.PositionTo.ToVector3() * aabbsize;
+                        portal.Position1 = posoffset + portal._RawData.Position1.ToVector3() * aabbsize;
+                        portal.Position2 = posoffset + portal._RawData.Position2.ToVector3() * aabbsize;
                         Portals.Add(portal);
                     }
                 }
@@ -202,7 +194,7 @@ namespace CodeWalker.GameFiles
             return data;
         }
 
-        private void BuildStructs()
+        public void BuildStructs()
         {
             Vector3 posoffset = Nav.SectorTree?.AABBMin.XYZ() ?? Vector3.Zero;
             Vector3 aabbsize = Nav.AABBSize;
@@ -221,30 +213,7 @@ namespace CodeWalker.GameFiles
             {
                 for (int i = 0; i < Polys.Count; i++)
                 {
-                    Polys[i].Index = i;
                     polylist.Add(Polys[i].RawData);
-                }
-            }
-            var portallist = new List<NavMeshPortal>();
-            if (Portals != null)
-            {
-                for (int i = 0; i < Portals.Count; i++)
-                {
-                    var portal = Portals[i];
-                    var pdata = portal.RawData;
-                    pdata.PositionFrom = NavMeshVertex.Create((portal.PositionFrom - posoffset) * aabbsizeinv);
-                    pdata.PositionTo = NavMeshVertex.Create((portal.PositionTo - posoffset) * aabbsizeinv);
-                    portallist.Add(pdata);
-                }
-            }
-
-            if (Points != null)
-            {
-                for (int i = 0; i < Points.Count; i++)
-                {
-                    var point = Points[i];
-                    var pdata = point.RawData;
-                    pdata.Position = point.Position;
                 }
             }
 
@@ -279,9 +248,6 @@ namespace CodeWalker.GameFiles
 
             Nav.Polys.RebuildList(polylist);
 
-            Nav.Portals = (portallist.Count > 0) ? portallist.ToArray() : null;
-            Nav.PortalsCount = (uint)(Nav.Portals?.Length ?? 0);
-            //TODO: update portal links data.....
 
 
             for (int i = 0; i < Nav.Polys.ListParts.Count; i++) //reassign part id's on all the polys...
@@ -296,123 +262,13 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-
-
-            //Build Sector Tree
-            int depth = 0;
-            if ((Nav.ContentFlags & NavMeshFlags.Vehicle) == 0) depth = 2;
-            //vehicle navmesh has a single level, static has 3..
-
-            NavMeshSector orig = Nav.SectorTree;
-            NavMeshSector root = new NavMeshSector();
-            root.SetAABBs(orig.AABBMin.XYZ(), orig.AABBMax.XYZ());
-
-            uint pointindex = 0;
-
-            BuildSectorTree(root, depth, ref pointindex);
-
-            Nav.SectorTree = root;
-
         }
 
-        private void BuildSectorTree(NavMeshSector node, int depth, ref uint pointindex)
-        {
-            Vector3 min = node.AABBMin.XYZ();
-            Vector3 max = node.AABBMax.XYZ();
-            Vector3 cen = (min + max) * 0.5f;
 
-            if (depth <= 0)
-            {
-                //go through polys and points and create new lists for this node
-                NavMeshSectorData data = new NavMeshSectorData();
-                node.Data = data;
 
-                data.PointsStartID = pointindex;
-
-                if (Polys != null)
-                {
-                    List<ushort> polyids = new List<ushort>();
-                    for (int i = 0; i < Polys.Count; i++)
-                    {
-                        var poly = Polys[i];
-                        var b = poly._RawData.CellAABB;
-                        if (BoxOverlaps(b, node.CellAABB))
-                        {
-                            polyids.Add((ushort)poly.Index);
-                        }
-                    }
-                    if (polyids.Count > 0)
-                    {
-                        data.PolyIDs = polyids.ToArray();
-                    }
-                }
-
-                if (Points != null)
-                {
-                    List<NavMeshPoint> points = new List<NavMeshPoint>();
-                    for (int i = 0; i < Points.Count; i++)
-                    {
-                        var point = Points[i];
-                        if (IsInBox(point.Position, min, max))
-                        {
-                            points.Add(point.RawData);
-                        }
-                    }
-                    if (points.Count > 0)
-                    {
-                        data.Points = points.ToArray();
-                        pointindex += (uint)points.Count;
-                    }
-                }
-
-            }
-            else
-            {
-                //recurse quadtree... clockwise from +XY (top right)
-                int cdepth = depth - 1;
-                node.SubTree1 = new NavMeshSector();
-                node.SubTree2 = new NavMeshSector();
-                node.SubTree3 = new NavMeshSector();
-                node.SubTree4 = new NavMeshSector();
-                node.SubTree1.SetAABBs(new Vector3(cen.X, cen.Y, cen.Z), new Vector3(max.X, max.Y, max.Z)); //for some reason Z values seem to get arranged like this...
-                node.SubTree2.SetAABBs(new Vector3(cen.X, min.Y, 0.0f), new Vector3(max.X, cen.Y, 0.0f));
-                node.SubTree3.SetAABBs(new Vector3(min.X, min.Y, min.Z), new Vector3(cen.X, cen.Y, cen.Z));
-                node.SubTree4.SetAABBs(new Vector3(min.X, cen.Y, 0.0f), new Vector3(cen.X, max.Y, 0.0f));
-                BuildSectorTree(node.SubTree1, cdepth, ref pointindex);
-                BuildSectorTree(node.SubTree2, cdepth, ref pointindex);
-                BuildSectorTree(node.SubTree3, cdepth, ref pointindex);
-                BuildSectorTree(node.SubTree4, cdepth, ref pointindex);
-            }
-        }
-
-        private bool IsInBox(Vector3 p, Vector3 min, Vector3 max)
-        {
-            return (p.X >= min.X) && (p.X < max.X) &&
-                   (p.Y >= min.Y) && (p.Y < max.Y);// && 
-                   //(p.Z >= min.Z) && (p.Z < max.Z);
-        }
-        private bool BoxOverlaps(Vector3 bmin, Vector3 bmax, Vector3 min, Vector3 max)
-        {
-            return (bmax.X >= min.X) && (bmin.X <= max.X) &&
-                   (bmax.Y >= min.Y) && (bmin.Y <= max.Y);// && 
-                   //(bmax.Z >= min.Z) && (bmin.Z <= max.Z);
-        }
-        private bool BoxOverlaps(NavMeshAABB a, NavMeshAABB b)
-        {
-            return (a.MaxX >= b.MinX) && (a.MinX <= b.MaxX) &&
-                   (a.MaxY >= b.MinY) && (a.MinY <= b.MaxY);
-        }
 
 
         public bool RemovePoly(YnvPoly poly)
-        {
-            return false;
-        }
-        public bool RemovePoint(YnvPoint point)
-        {
-            return false;
-        }
-        public bool RemovePortal(YnvPortal portal)
         {
             return false;
         }
@@ -442,9 +298,9 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < cnt; i++)
                 {
                     var portal = Portals[i];
-                    nv.Add(new Vector4(portal.PositionFrom, 1.0f));
-                    v.Position = portal.PositionFrom; lv.Add(v);
-                    v.Position = portal.PositionTo; lv.Add(v);
+                    nv.Add(new Vector4(portal.Position1, 1.0f));
+                    v.Position = portal.Position1; lv.Add(v);
+                    v.Position = portal.Position2; lv.Add(v);
                 }
             }
 
@@ -578,8 +434,8 @@ namespace CodeWalker.GameFiles
 
         public ushort AreaID { get { return _RawData.AreaID; } set { _RawData.AreaID = value; } }
         public ushort PartID { get { return _RawData.PartID; } set { _RawData.PartID = value; } }
-        public ushort PortalLinkID { get { return _RawData.PortalLinkID; } set { _RawData.PortalLinkID = value; } }
-        public byte PortalType { get { return _RawData.PortalType; } set { _RawData.PortalType = value; } }
+        public ushort PortalID { get { return _RawData.PortalID; } set { _RawData.PortalID = value; } }
+        public byte PortalUnk { get { return _RawData.PortalUnk; } set { _RawData.PortalUnk = value; } }
         public byte Flags1 { get { return (byte)(_RawData.Unknown_00h & 0xFF); } set { _RawData.Unknown_00h = (ushort)((_RawData.Unknown_00h & 0xFF00) | (value & 0xFF)); } }
         public byte Flags2 { get { return (byte)((_RawData.Unknown_24h.Value >> 0) & 0xFF); } set { _RawData.Unknown_24h = ((_RawData.Unknown_24h.Value & 0xFFFFFF00u) | ((value & 0xFFu) << 0)); } }
         public byte Flags3 { get { return (byte)((_RawData.Unknown_24h.Value >> 9) & 0xFF); } set { _RawData.Unknown_24h = ((_RawData.Unknown_24h.Value & 0xFFFE01FFu) | ((value & 0xFFu) << 9)); } }
@@ -617,6 +473,10 @@ namespace CodeWalker.GameFiles
         public bool B30_SlopeNorthWest  { get { return (_RawData.Unknown_28h.Value & 2097152) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 21, value); } }
         public bool B31_SlopeWest       { get { return (_RawData.Unknown_28h.Value & 4194304) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 22, value); } }
         public bool B32_SlopeSouthWest  { get { return (_RawData.Unknown_28h.Value & 8388608) > 0; } set { _RawData.Unknown_28h = BitUtil.UpdateBit(_RawData.Unknown_28h.Value, 23, value); } }
+        //public bool B33_PortalUnk1      { get { return (_RawData.PortalUnk & 1) > 0; } }
+        //public bool B34_PortalUnk2      { get { return (_RawData.PortalUnk & 2) > 0; } }
+        //public bool B35_PortalUnk3      { get { return (_RawData.PortalUnk & 4) > 0; } }
+        //public bool B36_PortalUnk4      { get { return (_RawData.PortalUnk & 8) > 0; } }
         public byte UnkX { get { return _RawData.Unknown_28h_8a; } set { _RawData.Unknown_28h_8a = value; } }
         public byte UnkY { get { return _RawData.Unknown_28h_8b; } set { _RawData.Unknown_28h_8b = value; } }
 
@@ -687,16 +547,12 @@ namespace CodeWalker.GameFiles
             //if ((u5 & 8388608) > 0) colour.Red += 1.0f; //slope facing -X,-Y   (southwest)
             //if (u5 >= 16777216) { } //other bits unused
 
-            var u1 = _RawData.PortalType;
+            var u1 = _RawData.PortalUnk;
             //if ((u1 & 1) > 0) colour.Red += 1.0f; //portal - don't interact?
             //if ((u1 & 2) > 0) colour.Green += 1.0f; //portal - ladder/fence interaction?
             //if ((u1 & 4) > 0) colour.Blue += 1.0f; //portal - fence interaction / go away from?
             //if ((u1 & 8) > 0) colour.Red += 1.0f;//something file-specific? portal index related?
 
-
-            //colour.Red = (PortalID) / 65535.0f; //portal ID testing... portalID only valid when portalType > 0!
-            //colour.Green = (PortalID%5)/4.0f;
-            //colour.Blue = ((PortalID/5)%5)/4.0f;
 
 
             colour.Alpha = 0.75f;
@@ -750,43 +606,10 @@ namespace CodeWalker.GameFiles
         public YnvFile Ynv { get; set; }
         public NavMeshPortal RawData { get { return _RawData; } set { _RawData = value; } }
 
-        public Vector3 Position { get { return PositionFrom; } set { PositionFrom = value; } }
-        public Vector3 PositionFrom { get; set; }
-        public Vector3 PositionTo { get; set; }
-
-        public byte Angle { get { return _RawData.Angle; } set { _RawData.Angle = value; } }
-        public float Direction
-        {
-            get
-            {
-                return (float)Math.PI * 2.0f * Angle / 255.0f;
-            }
-            set
-            {
-                Angle = (byte)(value * 255.0f / ((float)Math.PI * 2.0f));
-            }
-        }
-        public Quaternion Orientation
-        {
-            get { return Quaternion.RotationAxis(Vector3.UnitZ, Direction); }
-            set
-            {
-                Vector3 dir = value.Multiply(Vector3.UnitX);
-                float dira = (float)Math.Atan2(dir.Y, dir.X);
-                Direction = dira;
-            }
-        }
-
+        public Vector3 Position { get { return Position1; } set { Position1 = value; } }
+        public Vector3 Position1 { get; set; }
+        public Vector3 Position2 { get; set; }
         public int Index { get; set; }
-        public byte Type { get { return _RawData.Type; } set { _RawData.Type = value; } }
-        public ushort AreaIDFrom { get { return _RawData.AreaIDFrom; } set { _RawData.AreaIDFrom = value; } }
-        public ushort AreaIDTo { get { return _RawData.AreaIDTo; } set { _RawData.AreaIDTo = value; } }
-        public ushort PolyIDFrom1 { get { return _RawData.PolyIDFrom1; } set { _RawData.PolyIDFrom1 = value; } }
-        public ushort PolyIDFrom2 { get { return _RawData.PolyIDFrom2; } set { _RawData.PolyIDFrom2 = value; } }
-        public ushort PolyIDTo1 { get { return _RawData.PolyIDTo1; } set { _RawData.PolyIDTo1 = value; } }
-        public ushort PolyIDTo2 { get { return _RawData.PolyIDTo2; } set { _RawData.PolyIDTo2 = value; } }
-        public ushort Unk1 { get { return _RawData.FlagsUnk; } set { _RawData.FlagsUnk = value; } }
-        public byte Unk2 { get { return _RawData.AreaUnk; } set { _RawData.AreaUnk = value; } }
 
 
         public void Init(YnvFile ynv, NavMeshPortal portal)
@@ -797,14 +620,8 @@ namespace CodeWalker.GameFiles
 
         public void SetPosition(Vector3 pos)
         {
-            var delta = pos - PositionFrom;
-            PositionFrom = pos;
-            PositionTo += delta;
+            Position = pos;
             //TODO: update _RawData positions!
-        }
-        public void SetOrientation(Quaternion orientation)
-        {
-            Orientation = orientation;
         }
 
         public override string ToString()
@@ -821,16 +638,15 @@ namespace CodeWalker.GameFiles
         public NavMeshPoint RawData { get { return _RawData; } set { _RawData = value; } }
 
         public Vector3 Position { get; set; }
-        public byte Angle { get { return _RawData.Angle; } set { _RawData.Angle = value; } }
         public float Direction
         {
             get
             {
-                return (float)Math.PI * 2.0f * Angle / 255.0f;
+                return (float)Math.PI * 2.0f * _RawData.Angle / 255.0f;
             }
             set
             {
-                Angle = (byte)(value * 255.0f / ((float)Math.PI * 2.0f));
+                _RawData.Angle = (byte)(value * 255.0f / ((float)Math.PI * 2.0f));
             }
         }
         public Quaternion Orientation
@@ -845,7 +661,7 @@ namespace CodeWalker.GameFiles
         }
 
         public int Index { get; set; }
-        public byte Type { get { return _RawData.Type; } set { _RawData.Type = value; } }
+        public byte Flags { get { return _RawData.Flags; } set { _RawData.Flags = value; } }
 
         public void Init(YnvFile ynv, NavMeshPoint point)
         {
@@ -865,7 +681,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Index.ToString() + ": " + Type.ToString();
+            return Index.ToString() + ": " + Flags.ToString();
         }
 
     }
