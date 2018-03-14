@@ -101,9 +101,8 @@ done:
 
 
 [v.29]
-Nav poly editing (YNV)
+Nav mesh editing (YNV) - polys, points, portals
 New Project Window
-RPF Explorer drag & drop
 Show vehicle wheels
 Snap to ground, snap to grid
 CodeWalker.Core library
@@ -113,6 +112,7 @@ Improved interiors rendering - decal_dirt
 entitySets - like mapDataGroups but for interiors..... in Mlo data
 World view - delete key - delete item!
 RPF Explorer Edit mode
+RPF Explorer drag & drop
 AWC audio player (dav90 WIP)
 Invert mouse option
 

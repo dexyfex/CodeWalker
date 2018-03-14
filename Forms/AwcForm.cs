@@ -235,9 +235,9 @@ namespace CodeWalker.Forms
         private void PositionTrackBar_Scroll(object sender, EventArgs e)
         {
 
-            sourceVoice.Stop();
-            InitializeAudio(currentAudio, PositionTrackBar.Value / 1000);
-            sourceVoice.Start();
+            //sourceVoice.Stop();
+            //InitializeAudio(currentAudio, PositionTrackBar.Value / 1000);
+            //sourceVoice.Start();
         }
 
         private void PlayButton_Click(object sender, EventArgs e)

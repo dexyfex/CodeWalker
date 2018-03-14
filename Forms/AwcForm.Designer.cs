@@ -32,6 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AwcForm));
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.PlayerTabPage = new System.Windows.Forms.TabPage();
+            this.label1 = new System.Windows.Forms.Label();
             this.LabelInfo = new System.Windows.Forms.Label();
             this.LabelTime = new System.Windows.Forms.Label();
             this.StopButton = new System.Windows.Forms.Button();
@@ -44,6 +45,7 @@
             this.PlaylistNameHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.PlaylistTypeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.PlaylistLengthHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.PlaylistSizeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.ExportAsWav = new System.Windows.Forms.ToolStripMenuItem();
             this.VolumeTrackBar = new System.Windows.Forms.TrackBar();
@@ -52,7 +54,6 @@
             this.DetailsPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
             this.Timer = new System.Windows.Forms.Timer(this.components);
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
-            this.PlaylistSizeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.MainTabControl.SuspendLayout();
             this.PlayerTabPage.SuspendLayout();
             this.contextMenuStrip.SuspendLayout();
@@ -74,6 +75,7 @@
             // 
             // PlayerTabPage
             // 
+            this.PlayerTabPage.Controls.Add(this.label1);
             this.PlayerTabPage.Controls.Add(this.LabelInfo);
             this.PlayerTabPage.Controls.Add(this.LabelTime);
             this.PlayerTabPage.Controls.Add(this.StopButton);
@@ -93,8 +95,19 @@
             this.PlayerTabPage.Text = "Player";
             this.PlayerTabPage.UseVisualStyleBackColor = true;
             // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(244, 247);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(316, 13);
+            this.label1.TabIndex = 13;
+            this.label1.Text = "WARNING: Work in progress! Some audio may not play correctly!";
+            // 
             // LabelInfo
             // 
+            this.LabelInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.LabelInfo.AutoSize = true;
             this.LabelInfo.Location = new System.Drawing.Point(8, 247);
             this.LabelInfo.Name = "LabelInfo";
@@ -112,7 +125,7 @@
             // 
             // StopButton
             // 
-            this.StopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.StopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.StopButton.Enabled = false;
             this.StopButton.Location = new System.Drawing.Point(211, 304);
             this.StopButton.Name = "StopButton";
@@ -127,7 +140,7 @@
             this.VolumeLabel.AutoSize = true;
             this.VolumeLabel.Location = new System.Drawing.Point(405, 308);
             this.VolumeLabel.Name = "VolumeLabel";
-            this.VolumeLabel.Size = new System.Drawing.Size(60, 13);
+            this.VolumeLabel.Size = new System.Drawing.Size(56, 13);
             this.VolumeLabel.TabIndex = 9;
             this.VolumeLabel.Text = "🕩 Volume";
             // 
@@ -144,7 +157,7 @@
             // 
             // PrevButton
             // 
-            this.PrevButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.PrevButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.PrevButton.Location = new System.Drawing.Point(137, 304);
             this.PrevButton.Name = "PrevButton";
             this.PrevButton.Size = new System.Drawing.Size(31, 23);
@@ -155,7 +168,7 @@
             // 
             // NextButton
             // 
-            this.NextButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.NextButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.NextButton.Location = new System.Drawing.Point(248, 304);
             this.NextButton.Name = "NextButton";
             this.NextButton.Size = new System.Drawing.Size(31, 23);
@@ -166,7 +179,7 @@
             // 
             // PlayButton
             // 
-            this.PlayButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.PlayButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.PlayButton.Location = new System.Drawing.Point(174, 304);
             this.PlayButton.Name = "PlayButton";
             this.PlayButton.Size = new System.Drawing.Size(31, 23);
@@ -213,17 +226,23 @@
             this.PlaylistLengthHeader.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.PlaylistLengthHeader.Width = 80;
             // 
+            // PlaylistSizeHeader
+            // 
+            this.PlaylistSizeHeader.Text = "Size";
+            this.PlaylistSizeHeader.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.PlaylistSizeHeader.Width = 80;
+            // 
             // contextMenuStrip
             // 
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ExportAsWav});
             this.contextMenuStrip.Name = "contextMenuStrip1";
-            this.contextMenuStrip.Size = new System.Drawing.Size(153, 48);
+            this.contextMenuStrip.Size = new System.Drawing.Size(149, 26);
             // 
             // ExportAsWav
             // 
             this.ExportAsWav.Name = "ExportAsWav";
-            this.ExportAsWav.Size = new System.Drawing.Size(152, 22);
+            this.ExportAsWav.Size = new System.Drawing.Size(148, 22);
             this.ExportAsWav.Text = "Export as .wav";
             this.ExportAsWav.Click += new System.EventHandler(this.ExportAsWav_Click);
             // 
@@ -286,12 +305,6 @@
             this.saveFileDialog.DefaultExt = "wav";
             this.saveFileDialog.Filter = "Wave files (*.wav)|*.wav";
             // 
-            // PlaylistSizeHeader
-            // 
-            this.PlaylistSizeHeader.Text = "Size";
-            this.PlaylistSizeHeader.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.PlaylistSizeHeader.Width = 80;
-            // 
             // AwcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -339,5 +352,6 @@
         private System.Windows.Forms.ToolStripMenuItem ExportAsWav;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
         private System.Windows.Forms.ColumnHeader PlaylistSizeHeader;
+        private System.Windows.Forms.Label label1;
     }
 }

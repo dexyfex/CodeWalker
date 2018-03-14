@@ -542,7 +542,7 @@ namespace CodeWalker.Rendering
                 //ClearDepth(context); //draw over everything else
 
                 context.OutputMerger.BlendState = bsDefault;
-                context.OutputMerger.DepthStencilState = PathsDepthClip ? dsEnabled : dsDisableAll;// dsEnabled; //
+                context.OutputMerger.DepthStencilState = PathsDepthClip ? dsDisableWrite : dsDisableAll;// dsEnabled; //
                 context.Rasterizer.State = rsSolid;
 
                 Paths.RenderBatches(context, RenderPathBatches, camera, GlobalLights);
