@@ -71,7 +71,6 @@ namespace CodeWalker.Rendering
                 //#endif
                 Device dev = null;
                 SwapChain sc = null;
-                Exception exc = null;
 
                 bool success = false;
                 try
@@ -79,7 +78,7 @@ namespace CodeWalker.Rendering
                     Device.CreateWithSwapChain(DriverType.Hardware, flags, levels, scd, out dev, out sc);
                     success = true;
                 }
-                catch(Exception ex) { exc = ex; }
+                catch { }
 
                 if (!success)
                 {
@@ -91,17 +90,12 @@ namespace CodeWalker.Rendering
                         Device.CreateWithSwapChain(DriverType.Hardware, flags, levels, scd, out dev, out sc);
                         success = true;
                     }
-                    catch (Exception ex) { exc = ex; }
+                    catch { }
                 }
 
                 if (!success)
                 {
-                    var msg = "CodeWalker was unable to initialise the graphics device. Please ensure your system meets the minimum requirements and that your graphics drivers and DirectX are up to date.";
-                    if (exc != null)
-                    {
-                        msg += "\n\nException info: " + exc.ToString();
-                    }
-                    throw new Exception(msg);
+                    throw new Exception("CodeWalker was unable to initialise the graphics device. Please ensure your system meets the minimum requirements and that your graphics drivers and DirectX are up to date.");
                 }
 
                 device = dev;
@@ -136,7 +130,7 @@ namespace CodeWalker.Rendering
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Unable to initialise DirectX11.\n" + ex.Message, "CodeWalker - Error!");
+                MessageBox.Show("Unable to initialise DirectX11.\n" + ex.ToString());
                 return false;
             }
         }

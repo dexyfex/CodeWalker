@@ -1834,8 +1834,6 @@ namespace CodeWalker.GameFiles
                             var mloa = arch as MloArchetype;
                             if (mloa != null)
                             {
-                                Vector3 mlobbmin = Vector3.Zero;
-                                Vector3 mlobbmax = Vector3.Zero;
                                 Vector3[] c = new Vector3[8];
                                 var rooms = mloa.rooms;
                                 if (rooms != null)
@@ -1878,12 +1876,8 @@ namespace CodeWalker.GameFiles
                                         }
                                         room.BBMin_CW = min;
                                         room.BBMax_CW = max;
-                                        mlobbmin = Vector3.Min(mlobbmin, min);
-                                        mlobbmax = Vector3.Max(mlobbmax, max);
                                     }
                                 }
-                                mloa.BBMin = mlobbmin;
-                                mloa.BBMax = mlobbmax;
                             }
                         }
                     }

@@ -62,7 +62,6 @@ namespace CodeWalker.Project
         {
 
             Dictionary<YndFile, int> pathYnds = new Dictionary<YndFile, int>();
-            Dictionary<YnvFile, int> navYnvs = new Dictionary<YnvFile, int>();
             Dictionary<TrainTrack, int> trainTracks = new Dictionary<TrainTrack, int>();
             Dictionary<YmtFile, int> scenarioYmts = new Dictionary<YmtFile, int>();
 
@@ -73,18 +72,6 @@ namespace CodeWalker.Project
                     if (item.PathNode != null)
                     {
                         pathYnds[item.PathNode.Ynd] = 1;
-                    }
-                    if (item.NavPoly != null)
-                    {
-                        navYnvs[item.NavPoly.Ynv] = 1;
-                    }
-                    if (item.NavPoint != null)
-                    {
-                        navYnvs[item.NavPoint.Ynv] = 1;
-                    }
-                    if (item.NavPortal != null)
-                    {
-                        navYnvs[item.NavPortal.Ynv] = 1;
                     }
                     if (item.TrainTrackNode != null)
                     {
@@ -100,10 +87,6 @@ namespace CodeWalker.Project
             foreach (var kvp in pathYnds)
             {
                 wf.UpdatePathYndGraphics(kvp.Key, true);
-            }
-            foreach (var kvp in navYnvs)
-            {
-                wf.UpdateNavYnvGraphics(kvp.Key, true);
             }
             foreach (var kvp in trainTracks)
             {
@@ -506,222 +489,6 @@ namespace CodeWalker.Project
             return "PathNode " + (PathNode?._RawData.ToString() ?? "") + ": Position";
         }
     }
-
-
-
-    public class NavPointPositionUndoStep : UndoStep
-    {
-        public YnvPoint Point { get; set; }
-        public Vector3 StartPosition { get; set; }
-        public Vector3 EndPosition { get; set; }
-
-        public NavPointPositionUndoStep(YnvPoint point, Vector3 startpos, WorldForm wf)
-        {
-            Point = point;
-            StartPosition = startpos;
-            EndPosition = point?.Position ?? Vector3.Zero;
-
-            UpdateGraphics(wf); //forces the update of the path graphics when it's moved...
-        }
-
-        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
-        {
-            Point?.SetPosition(p);
-
-            if (Point != sel.NavPoint)
-            {
-                wf.SelectNavPoint(Point);
-            }
-            wf.SetWidgetPosition(p);
-
-
-            UpdateGraphics(wf);
-        }
-
-        private void UpdateGraphics(WorldForm wf)
-        {
-            if (Point != null)
-            {
-                //Ynv graphics needs to be updated.....
-                wf.UpdateNavYnvGraphics(Point.Ynv, false);
-            }
-        }
-
-
-        public override void Undo(WorldForm wf, ref MapSelection sel)
-        {
-            Update(wf, ref sel, StartPosition);
-        }
-
-        public override void Redo(WorldForm wf, ref MapSelection sel)
-        {
-            Update(wf, ref sel, EndPosition);
-        }
-
-        public override string ToString()
-        {
-            return "NavPoint " + (Point?.ToString() ?? "") + ": Position";
-        }
-    }
-
-    public class NavPointRotationUndoStep : UndoStep
-    {
-        public YnvPoint Point { get; set; }
-        public Quaternion StartRotation { get; set; }
-        public Quaternion EndRotation { get; set; }
-
-        public NavPointRotationUndoStep(YnvPoint point, Quaternion startrot, WorldForm wf)
-        {
-            Point = point;
-            StartRotation = startrot;
-            EndRotation = point?.Orientation ?? Quaternion.Identity;
-
-            //UpdateGraphics(wf);
-        }
-
-
-        private void Update(WorldForm wf, ref MapSelection sel, Quaternion q)
-        {
-            Point?.SetOrientation(q);
-
-            if (Point != sel.NavPoint) wf.SelectNavPoint(Point);
-            wf.SetWidgetRotation(q);
-
-            //UpdateGraphics(wf);
-        }
-
-        private void UpdateGraphics(WorldForm wf)
-        {
-            ////this function shouldn't actually be needed for rotating...
-            //if (Point != null)
-            //{
-            //    //Ynv graphics needs to be updated.....
-            //    wf.UpdateNavYnvGraphics(Point.Ynv, false);
-            //}
-        }
-
-        public override void Undo(WorldForm wf, ref MapSelection sel)
-        {
-            Update(wf, ref sel, StartRotation);
-        }
-
-        public override void Redo(WorldForm wf, ref MapSelection sel)
-        {
-            Update(wf, ref sel, EndRotation);
-        }
-
-        public override string ToString()
-        {
-            return "NavPoint " + (Point?.ToString() ?? "") + ": Rotation";
-        }
-    }
-
-    public class NavPortalPositionUndoStep : UndoStep
-    {
-        public YnvPortal Portal { get; set; }
-        public Vector3 StartPosition { get; set; }
-        public Vector3 EndPosition { get; set; }
-
-        public NavPortalPositionUndoStep(YnvPortal portal, Vector3 startpos, WorldForm wf)
-        {
-            Portal = portal;
-            StartPosition = startpos;
-            EndPosition = portal?.Position ?? Vector3.Zero;
-
-            UpdateGraphics(wf); //forces the update of the path graphics when it's moved...
-        }
-
-        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
-        {
-            Portal?.SetPosition(p);
-
-            if (Portal != sel.NavPortal)
-            {
-                wf.SelectNavPortal(Portal);
-            }
-            wf.SetWidgetPosition(p);
-
-
-            UpdateGraphics(wf);
-        }
-
-        private void UpdateGraphics(WorldForm wf)
-        {
-            if (Portal != null)
-            {
-                //Ynv graphics needs to be updated.....
-                wf.UpdateNavYnvGraphics(Portal.Ynv, false);
-            }
-        }
-
-
-        public override void Undo(WorldForm wf, ref MapSelection sel)
-        {
-            Update(wf, ref sel, StartPosition);
-        }
-
-        public override void Redo(WorldForm wf, ref MapSelection sel)
-        {
-            Update(wf, ref sel, EndPosition);
-        }
-
-        public override string ToString()
-        {
-            return "NavPortal " + (Portal?.ToString() ?? "") + ": Position";
-        }
-    }
-    public class NavPortalRotationUndoStep : UndoStep
-    {
-        public YnvPortal Portal { get; set; }
-        public Quaternion StartRotation { get; set; }
-        public Quaternion EndRotation { get; set; }
-
-        public NavPortalRotationUndoStep(YnvPortal portal, Quaternion startrot, WorldForm wf)
-        {
-            Portal = portal;
-            StartRotation = startrot;
-            EndRotation = portal?.Orientation ?? Quaternion.Identity;
-
-            //UpdateGraphics(wf);
-        }
-
-
-        private void Update(WorldForm wf, ref MapSelection sel, Quaternion q)
-        {
-            Portal?.SetOrientation(q);
-
-            if (Portal != sel.NavPortal) wf.SelectNavPortal(Portal);
-            wf.SetWidgetRotation(q);
-
-            //UpdateGraphics(wf);
-        }
-
-        private void UpdateGraphics(WorldForm wf)
-        {
-            ////this function shouldn't actually be needed for rotating...
-            //if (Point != null)
-            //{
-            //    //Ynv graphics needs to be updated.....
-            //    wf.UpdateNavYnvGraphics(Point.Ynv, false);
-            //}
-        }
-
-        public override void Undo(WorldForm wf, ref MapSelection sel)
-        {
-            Update(wf, ref sel, StartRotation);
-        }
-
-        public override void Redo(WorldForm wf, ref MapSelection sel)
-        {
-            Update(wf, ref sel, EndRotation);
-        }
-
-        public override string ToString()
-        {
-            return "NavPortal " + (Portal?.ToString() ?? "") + ": Rotation";
-        }
-    }
-
 
 
     public class TrainTrackNodePositionUndoStep : UndoStep

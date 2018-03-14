@@ -50,8 +50,6 @@ namespace CodeWalker.Project
 
         private YnvFile CurrentYnvFile;
         private YnvPoly CurrentNavPoly;
-        private YnvPoint CurrentNavPoint;
-        private YnvPortal CurrentNavPortal;
 
         private TrainTrack CurrentTrainTrack;
         private TrainTrackNode CurrentTrainNode;
@@ -375,20 +373,6 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetYnvPoly(CurrentNavPoly); }, //updateFunc
                 (panel) => { return panel.YnvPoly == CurrentNavPoly; }); //findFunc
         }
-        private void ShowEditYnvPointPanel(bool promote)
-        {
-            ShowPanel(promote,
-                () => { return new EditYnvPointPanel(this); }, //createFunc
-                (panel) => { panel.SetYnvPoint(CurrentNavPoint); }, //updateFunc
-                (panel) => { return panel.YnvPoint == CurrentNavPoint; }); //findFunc
-        }
-        private void ShowEditYnvPortalPanel(bool promote)
-        {
-            ShowPanel(promote,
-                () => { return new EditYnvPortalPanel(this); }, //createFunc
-                (panel) => { panel.SetYnvPortal(CurrentNavPortal); }, //updateFunc
-                (panel) => { return panel.YnvPortal == CurrentNavPortal; }); //findFunc
-        }
         private void ShowEditTrainTrackPanel(bool promote)
         {
             ShowPanel(promote,
@@ -452,14 +436,6 @@ namespace CodeWalker.Project
             {
                 ShowEditYnvPolyPanel(promote);
             }
-            else if (CurrentNavPoint != null)
-            {
-                ShowEditYnvPointPanel(promote);
-            }
-            else if (CurrentNavPortal != null)
-            {
-                ShowEditYnvPortalPanel(promote);
-            }
             else if (CurrentYnvFile != null)
             {
                 ShowEditYnvPanel(promote);
@@ -509,8 +485,6 @@ namespace CodeWalker.Project
             CurrentPathNode = item as YndNode;
             CurrentYnvFile = item as YnvFile;
             CurrentNavPoly = item as YnvPoly;
-            CurrentNavPoint = item as YnvPoint;
-            CurrentNavPortal = item as YnvPortal;
             CurrentTrainTrack = item as TrainTrack;
             CurrentTrainNode = item as TrainTrackNode;
             CurrentScenario = item as YmtFile;
@@ -536,14 +510,6 @@ namespace CodeWalker.Project
             if (CurrentNavPoly != null)
             {
                 CurrentYnvFile = CurrentNavPoly.Ynv;
-            }
-            if (CurrentNavPoint != null)
-            {
-                CurrentYnvFile = CurrentNavPoint.Ynv;
-            }
-            if (CurrentNavPortal != null)
-            {
-                CurrentYnvFile = CurrentNavPortal.Ynv;
             }
             if (CurrentTrainNode != null)
             {
@@ -2199,30 +2165,6 @@ namespace CodeWalker.Project
             return poly == CurrentNavPoly;
         }
 
-        public void NewNavPoint(YnvPoint copy = null, bool copyposition = false)//TODO!
-        {
-        }
-        public bool DeleteNavPoint()//TODO!
-        {
-            return false;
-        }
-        public bool IsCurrentNavPoint(YnvPoint point)
-        {
-            return point == CurrentNavPoint;
-        }
-
-        public void NewNavPortal(YnvPortal copy = null, bool copyposition = false)//TODO!
-        {
-        }
-        public bool DeleteNavPortal()//TODO!
-        {
-            return false;
-        }
-        public bool IsCurrentNavPortal(YnvPortal portal)
-        {
-            return portal == CurrentNavPortal;
-        }
-
 
 
         public void NewTrainTrack()
@@ -3817,14 +3759,12 @@ namespace CodeWalker.Project
                     var pathnode = sel.PathNode;
                     var pathlink = sel.PathLink;
                     var navpoly = sel.NavPoly;
-                    var navpoint = sel.NavPoint;
-                    var navportal = sel.NavPortal;
                     var trainnode = sel.TrainTrackNode;
                     var scenariond = sel.ScenarioNode;
                     var scenarioedge = sel.ScenarioEdge;
                     YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap;
                     YndFile ynd = pathnode?.Ynd;
-                    YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
+                    YnvFile ynv = navpoly?.Ynv;
                     TrainTrack traintrack = trainnode?.Track;
                     YmtFile scenario = scenariond?.Ymt ?? scenarioedge?.Region?.Ymt;
                     bool showcurrent = false;
@@ -3852,14 +3792,6 @@ namespace CodeWalker.Project
                         if (navpoly != CurrentNavPoly)
                         {
                             ProjectExplorer?.TrySelectNavPolyTreeNode(navpoly);
-                        }
-                        if (navpoint != CurrentNavPoint)
-                        {
-                            ProjectExplorer?.TrySelectNavPointTreeNode(navpoint);
-                        }
-                        if (navportal != CurrentNavPortal)
-                        {
-                            ProjectExplorer?.TrySelectNavPortalTreeNode(navportal);
                         }
                     }
                     else if (TrainTrackExistsInProject(traintrack))
@@ -3893,8 +3825,6 @@ namespace CodeWalker.Project
                     CurrentPathLink = pathlink;
                     CurrentYnvFile = ynv;
                     CurrentNavPoly = navpoly;
-                    CurrentNavPoint = navpoint;
-                    CurrentNavPortal = navportal;
                     CurrentTrainTrack = traintrack;
                     CurrentTrainNode = trainnode;
                     CurrentScenario = scenario;
@@ -3932,14 +3862,6 @@ namespace CodeWalker.Project
             else if (sel.NavPoly != null)
             {
                 OnWorldNavPolyModified(sel.NavPoly);
-            }
-            else if (sel.NavPoint != null)
-            {
-                OnWorldNavPointModified(sel.NavPoint);
-            }
-            else if (sel.NavPortal != null)
-            {
-                OnWorldNavPortalModified(sel.NavPortal);
             }
             else if (sel.TrainTrackNode != null)
             {
@@ -4133,98 +4055,6 @@ namespace CodeWalker.Project
                         //////UpdateNavPolyTreeNode(poly);
 
                         if (poly.Ynv != null)
-                        {
-                            SetYnvHasChanged(true);
-                        }
-                    }
-
-                }
-            }
-            catch { }
-        }
-        private void OnWorldNavPointModified(YnvPoint point)
-        {
-            try
-            {
-                if (InvokeRequired)
-                {
-                    BeginInvoke(new Action(() => { OnWorldNavPointModified(point); }));
-                }
-                else
-                {
-                    if (point?.Ynv == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!YnvExistsInProject(point.Ynv))
-                    {
-                        point.Ynv.HasChanged = true;
-                        AddYnvToProject(point.Ynv);
-                        ProjectExplorer?.TrySelectNavPointTreeNode(point);
-                    }
-
-                    if (point != CurrentNavPoint)
-                    {
-                        CurrentNavPoint = point;
-                        ProjectExplorer?.TrySelectNavPointTreeNode(point);
-                    }
-
-                    if (point == CurrentNavPoint)
-                    {
-                        ShowEditYnvPointPanel(false);
-
-                        //////UpdateNavPointTreeNode(poly);
-
-                        if (point.Ynv != null)
-                        {
-                            SetYnvHasChanged(true);
-                        }
-                    }
-
-                }
-            }
-            catch { }
-        }
-        private void OnWorldNavPortalModified(YnvPortal portal)
-        {
-            try
-            {
-                if (InvokeRequired)
-                {
-                    BeginInvoke(new Action(() => { OnWorldNavPortalModified(portal); }));
-                }
-                else
-                {
-                    if (portal?.Ynv == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!YnvExistsInProject(portal.Ynv))
-                    {
-                        portal.Ynv.HasChanged = true;
-                        AddYnvToProject(portal.Ynv);
-                        ProjectExplorer?.TrySelectNavPortalTreeNode(portal);
-                    }
-
-                    if (portal != CurrentNavPortal)
-                    {
-                        CurrentNavPortal = portal;
-                        ProjectExplorer?.TrySelectNavPortalTreeNode(portal);
-                    }
-
-                    if (portal == CurrentNavPortal)
-                    {
-                        ShowEditYnvPortalPanel(false);
-
-                        //////UpdateNavPortalTreeNode(poly);
-
-                        if (portal.Ynv != null)
                         {
                             SetYnvHasChanged(true);
                         }

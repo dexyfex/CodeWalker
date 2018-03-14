@@ -46,14 +46,14 @@
             this.label4 = new System.Windows.Forms.Label();
             this.DeletePolyButton = new System.Windows.Forms.Button();
             this.AddToProjectButton = new System.Windows.Forms.Button();
-            this.PortalTypeUpDown = new System.Windows.Forms.NumericUpDown();
+            this.PortalUnkUpDown = new System.Windows.Forms.NumericUpDown();
             this.label6 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.AreaIDUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PartIDUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PortalIDUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.UnkXUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.UnkYUpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.PortalTypeUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PortalUnkUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // AreaIDUpDown
@@ -102,7 +102,7 @@
             // 
             // PortalIDUpDown
             // 
-            this.PortalIDUpDown.Location = new System.Drawing.Point(346, 12);
+            this.PortalIDUpDown.Location = new System.Drawing.Point(338, 12);
             this.PortalIDUpDown.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -116,11 +116,11 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(280, 14);
+            this.label2.Location = new System.Drawing.Point(281, 14);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(60, 13);
+            this.label2.Size = new System.Drawing.Size(51, 13);
             this.label2.TabIndex = 5;
-            this.label2.Text = "Portal Link:";
+            this.label2.Text = "Portal ID:";
             // 
             // FlagsCheckedListBox1
             // 
@@ -273,34 +273,34 @@
             this.AddToProjectButton.UseVisualStyleBackColor = true;
             this.AddToProjectButton.Click += new System.EventHandler(this.AddToProjectButton_Click);
             // 
-            // PortalTypeUpDown
+            // PortalUnkUpDown
             // 
-            this.PortalTypeUpDown.Location = new System.Drawing.Point(495, 12);
-            this.PortalTypeUpDown.Maximum = new decimal(new int[] {
+            this.PortalUnkUpDown.Location = new System.Drawing.Point(495, 12);
+            this.PortalUnkUpDown.Maximum = new decimal(new int[] {
             15,
             0,
             0,
             0});
-            this.PortalTypeUpDown.Name = "PortalTypeUpDown";
-            this.PortalTypeUpDown.Size = new System.Drawing.Size(57, 20);
-            this.PortalTypeUpDown.TabIndex = 8;
-            this.PortalTypeUpDown.ValueChanged += new System.EventHandler(this.PortalTypeUpDown_ValueChanged);
+            this.PortalUnkUpDown.Name = "PortalUnkUpDown";
+            this.PortalUnkUpDown.Size = new System.Drawing.Size(57, 20);
+            this.PortalUnkUpDown.TabIndex = 8;
+            this.PortalUnkUpDown.ValueChanged += new System.EventHandler(this.PortalUnkUpDown_ValueChanged);
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(429, 14);
+            this.label6.Location = new System.Drawing.Point(431, 14);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(60, 13);
+            this.label6.Size = new System.Drawing.Size(58, 13);
             this.label6.TabIndex = 7;
-            this.label6.Text = "Portal type:";
+            this.label6.Text = "Portal unk:";
             // 
             // EditYnvPolyPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(562, 404);
-            this.Controls.Add(this.PortalTypeUpDown);
+            this.Controls.Add(this.PortalUnkUpDown);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.DeletePolyButton);
             this.Controls.Add(this.AddToProjectButton);
@@ -327,7 +327,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.PortalIDUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.UnkXUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.UnkYUpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.PortalTypeUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PortalUnkUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -352,7 +352,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button DeletePolyButton;
         private System.Windows.Forms.Button AddToProjectButton;
-        private System.Windows.Forms.NumericUpDown PortalTypeUpDown;
+        private System.Windows.Forms.NumericUpDown PortalUnkUpDown;
         private System.Windows.Forms.Label label6;
     }
 }

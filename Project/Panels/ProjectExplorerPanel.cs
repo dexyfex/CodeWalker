@@ -274,10 +274,6 @@ namespace CodeWalker.Project.Panels
             n.Name = "EditPortal";
             n.Tag = ynv; //this tag should get updated with the selected portal!
 
-            n = node.Nodes.Add("Edit Point");
-            n.Name = "EditPoint";
-            n.Tag = ynv; //this tag should get updated with the selected point!
-
 
         }
         private void LoadTrainTrackTreeNodes(TrainTrack track, TreeNode node)
@@ -644,36 +640,6 @@ namespace CodeWalker.Project.Panels
             //}
             //return null;
         }
-        public TreeNode FindNavPointTreeNode(YnvPoint p)
-        {
-            if (p == null) return null;
-            TreeNode ynvnode = FindYnvTreeNode(p.Ynv);
-            var pointnode = GetChildTreeNode(ynvnode, "EditPoint");
-            if (pointnode == null) return null;
-            pointnode.Tag = p;
-            return pointnode;
-            //for (int i = 0; i < pointsnode.Nodes.Count; i++)
-            //{
-            //    TreeNode pnode = pointsnode.Nodes[i];
-            //    if (pnode.Tag == p) return pnode;
-            //}
-            //return null;
-        }
-        public TreeNode FindNavPortalTreeNode(YnvPortal p)
-        {
-            if (p == null) return null;
-            TreeNode ynvnode = FindYnvTreeNode(p.Ynv);
-            var portalnode = GetChildTreeNode(ynvnode, "EditPortal");
-            if (portalnode == null) return null;
-            portalnode.Tag = p;
-            return portalnode;
-            //for (int i = 0; i < portalsnode.Nodes.Count; i++)
-            //{
-            //    TreeNode pnode = portalsnode.Nodes[i];
-            //    if (pnode.Tag == p) return pnode;
-            //}
-            //return null;
-        }
         public TreeNode FindTrainTrackTreeNode(TrainTrack track)
         {
             if (ProjectTreeView.Nodes.Count <= 0) return null;
@@ -796,44 +762,6 @@ namespace CodeWalker.Project.Panels
                 if (ProjectTreeView.SelectedNode == tnode)
                 {
                     OnItemSelected?.Invoke(poly);
-                }
-                else
-                {
-                    ProjectTreeView.SelectedNode = tnode;
-                }
-            }
-        }
-        public void TrySelectNavPointTreeNode(YnvPoint point)
-        {
-            TreeNode tnode = FindNavPointTreeNode(point);
-            if (tnode == null)
-            {
-                tnode = FindYnvTreeNode(point?.Ynv);
-            }
-            if (tnode != null)
-            {
-                if (ProjectTreeView.SelectedNode == tnode)
-                {
-                    OnItemSelected?.Invoke(point);
-                }
-                else
-                {
-                    ProjectTreeView.SelectedNode = tnode;
-                }
-            }
-        }
-        public void TrySelectNavPortalTreeNode(YnvPortal portal)
-        {
-            TreeNode tnode = FindNavPortalTreeNode(portal);
-            if (tnode == null)
-            {
-                tnode = FindYnvTreeNode(portal?.Ynv);
-            }
-            if (tnode != null)
-            {
-                if (ProjectTreeView.SelectedNode == tnode)
-                {
-                    OnItemSelected?.Invoke(portal);
                 }
                 else
                 {

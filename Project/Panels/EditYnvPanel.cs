@@ -72,7 +72,7 @@ namespace CodeWalker.Project.Panels
                 YnvPolyCountLabel.Text = "Poly count: -";
                 YnvPortalCountLabel.Text = "Portal count: -";
                 YnvPortalLinkCountLabel.Text = "Portal link count: -";
-                YnvPointCountLabel.Text = "Sector unk count: -";
+                YnvSectorUnkCountLabel.Text = "Sector unk count: -";
                 YnvByteCountLabel.Text = "Byte count: -";
                 YnvVersionUnkHashTextBox.Text = string.Empty;
             }
@@ -95,7 +95,7 @@ namespace CodeWalker.Project.Panels
                 YnvPolyCountLabel.Text = "Poly count: " + nv.PolysCount.ToString();
                 YnvPortalCountLabel.Text = "Portal count: " + nv.PortalsCount.ToString();
                 YnvPortalLinkCountLabel.Text = "Portal link count: " + nv.PortalLinksCount.ToString();
-                YnvPointCountLabel.Text = "Point count: " + nv.PointsCount.ToString();
+                YnvSectorUnkCountLabel.Text = "Sector unk count: " + nv.SectorUnkCount.ToString();
                 YnvByteCountLabel.Text = "Byte count: " + nv.TotalBytes.ToString();
                 YnvVersionUnkHashTextBox.Text = nv.VersionUnk2.ToString();
                 YnvAdjAreaIDsTextBox.Text = GetAdjAreaIDsString(nv.AdjAreaIDs.Values);
