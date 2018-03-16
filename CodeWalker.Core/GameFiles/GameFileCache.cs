@@ -2709,10 +2709,10 @@ namespace CodeWalker.GameFiles
                             }
                             sbh.AppendLine();
                         }
-                        if (rel.Unk05Hashes != null)
+                        if (rel.WaveTracksHashes != null)
                         {
-                            sbh.AppendLine(rfe.Path + ": " + rel.Unk05Hashes.Length.ToString() + " Hashes1:");
-                            foreach (var unk in rel.Unk05Hashes)
+                            sbh.AppendLine(rfe.Path + ": " + rel.WaveTracksHashes.Length.ToString() + " Hashes1:");
+                            foreach (var unk in rel.WaveTracksHashes)
                             {
                                 sbh.Append(unk.Hash.ToString("X8"));
                                 string strval;
@@ -2725,10 +2725,10 @@ namespace CodeWalker.GameFiles
                             }
                             sbh.AppendLine();
                         }
-                        if (rel.ContainerHashes != null)
+                        if (rel.WaveContainersHashes != null)
                         {
-                            sbh.AppendLine(rfe.Path + ": " + rel.ContainerHashes.Length.ToString() + " Hashes2:");
-                            foreach (var unk in rel.ContainerHashes)
+                            sbh.AppendLine(rfe.Path + ": " + rel.WaveContainersHashes.Length.ToString() + " Hashes2:");
+                            foreach (var unk in rel.WaveContainersHashes)
                             {
                                 sbh.Append(unk.Hash.ToString("X8"));
                                 string strval;

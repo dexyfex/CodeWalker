@@ -48,7 +48,7 @@ namespace CodeWalker.Forms
             fileName = rel?.Name;
             if (string.IsNullOrEmpty(fileName))
             {
-                fileName = rel?.FileEntry?.Name;
+                fileName = rel?.RpfFileEntry?.Name;
             }
 
             UpdateFormTitle();

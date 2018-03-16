@@ -21,6 +21,7 @@ namespace CodeWalker.Project
         public List<string> YnvFilenames { get; set; } = new List<string>();
         public List<string> TrainsFilenames { get; set; } = new List<string>();
         public List<string> ScenarioFilenames { get; set; } = new List<string>();
+        public List<string> AudioRelFilenames { get; set; } = new List<string>();
 
         //fields not stored
         public string Filename { get; set; } //filename without path
@@ -33,6 +34,7 @@ namespace CodeWalker.Project
         public List<YnvFile> YnvFiles { get; set; } = new List<YnvFile>();
         public List<TrainTrack> TrainsFiles { get; set; } = new List<TrainTrack>();
         public List<YmtFile> ScenarioFiles { get; set; } = new List<YmtFile>();
+        public List<RelFile> AudioRelFiles { get; set; } = new List<RelFile>();
 
 
 
@@ -79,6 +81,12 @@ namespace CodeWalker.Project
             foreach (string scenariofilename in ScenarioFilenames)
             {
                 Xml.AddChildWithInnerText(doc, scenarioselem, "Item", scenariofilename);
+            }
+
+            var audiorelselem = Xml.AddChild(doc, projelem, "AudioRelFilenames");
+            foreach (string audiorelfilename in AudioRelFilenames)
+            {
+                Xml.AddChildWithInnerText(doc, audiorelselem, "Item", audiorelfilename);
             }
 
             doc.Save(Filepath);
@@ -196,6 +204,22 @@ namespace CodeWalker.Project
             }
 
 
+
+            AudioRelFilenames.Clear();
+            AudioRelFiles.Clear();
+            var audiorelselem = Xml.GetChild(projelem, "AudioRelFilenames");
+            if (audiorelselem != null)
+            {
+                foreach (var node in audiorelselem.SelectNodes("Item"))
+                {
+                    XmlElement audiorelel = node as XmlElement;
+                    if (audiorelel != null)
+                    {
+                        AddAudioRelFile(audiorelel.InnerText);
+                    }
+                }
+            }
+
         }
 
 
@@ -224,6 +248,10 @@ namespace CodeWalker.Project
             for (int i = 0; i < ScenarioFilenames.Count; i++)
             {
                 ScenarioFilenames[i] = GetUpdatedFilePath(ScenarioFilenames[i], oldprojpath);
+            }
+            for (int i = 0; i < AudioRelFilenames.Count; i++)
+            {
+                AudioRelFilenames[i] = GetUpdatedFilePath(AudioRelFilenames[i], oldprojpath);
             }
         }
 
@@ -689,6 +717,73 @@ namespace CodeWalker.Project
                 if (ScenarioFilenames[i] == oldfilename)
                 {
                     ScenarioFilenames[i] = newfilename;
+                    HasChanged = true;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        public RelFile AddAudioRelFile(string filename)
+        {
+            RelFile relfile = new RelFile();
+            relfile.RpfFileEntry = new RpfResourceFileEntry();
+            relfile.RpfFileEntry.Name = Path.GetFileName(filename);
+            relfile.FilePath = GetFullFilePath(filename);
+            relfile.Name = relfile.RpfFileEntry.Name;
+            if (!AddAudioRelFile(relfile)) return null;
+            return relfile;
+        }
+        public bool AddAudioRelFile(RelFile rel)
+        {
+            string relpath = GetRelativePath(rel.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = rel.Name;
+            if (AudioRelFilenames.Contains(relpath)) return false;
+            AudioRelFilenames.Add(relpath);
+            AudioRelFiles.Add(rel);
+            return true;
+        }
+        public void RemoveAudioRelFile(RelFile rel)
+        {
+            if (rel == null) return;
+            var relpath = GetRelativePath(rel.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = rel.Name;
+            AudioRelFiles.Remove(rel);
+            AudioRelFilenames.Remove(relpath);
+            HasChanged = true;
+        }
+        public bool ContainsAudioRel(string filename)
+        {
+            bool found = false;
+            filename = filename.ToLowerInvariant();
+            foreach (var audiorelfn in AudioRelFilenames)
+            {
+                if (audiorelfn == filename)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            return found;
+        }
+        public bool ContainsAudioRel(RelFile rel)
+        {
+            foreach (var f in AudioRelFiles)
+            {
+                if (f == rel) return true;
+            }
+            return false;
+        }
+        public bool RenameAudioRel(string oldfilename, string newfilename)
+        {
+            oldfilename = oldfilename.ToLowerInvariant();
+            newfilename = newfilename.ToLowerInvariant();
+            for (int i = 0; i < AudioRelFilenames.Count; i++)
+            {
+                if (AudioRelFilenames[i] == oldfilename)
+                {
+                    AudioRelFilenames[i] = newfilename;
                     HasChanged = true;
                     return true;
                 }

@@ -173,6 +173,27 @@ namespace CodeWalker.Project.Panels
                 scenariosnode.Expand();
             }
 
+            if (CurrentProjectFile.AudioRelFiles.Count > 0)
+            {
+                var audiorelsnode = projnode.Nodes.Add("Audio Rel Files");
+                audiorelsnode.Name = "AudioRels";
+
+                foreach (var audiorelfile in CurrentProjectFile.AudioRelFiles)
+                {
+                    var acstr = audiorelfile.HasChanged ? "*" : "";
+                    string name = audiorelfile.Name;
+                    if (audiorelfile.RpfFileEntry != null)
+                    {
+                        name = audiorelfile.RpfFileEntry.Name;
+                    }
+                    var audiorelnode = audiorelsnode.Nodes.Add(acstr + name);
+                    audiorelnode.Tag = audiorelfile;
+
+                    LoadAudioRelTreeNodes(audiorelfile, audiorelnode);
+                }
+                audiorelsnode.Expand();
+            }
+
             projnode.Expand();
 
         }
@@ -377,6 +398,69 @@ namespace CodeWalker.Project.Panels
             //}
 
         }
+        private void LoadAudioRelTreeNodes(RelFile rel, TreeNode node)
+        {
+            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Zones, Emitters
+
+            node.Nodes.Clear();
+
+
+            TreeNode n;
+            n = node.Nodes.Add("Edit Zone");
+            n.Name = "EditZone";
+            n.Tag = rel; //this tag should get updated with the selected zone!
+
+            n = node.Nodes.Add("Edit Emitter");
+            n.Name = "EditEmitter";
+            n.Tag = rel; //this tag should get updated with the selected emitter!
+
+
+
+            var zonelists = new List<Dat151AmbientZoneList>();
+            var emitterlists = new List<Dat151AmbientEmitterList>();
+
+            foreach (var reldata in rel.RelDatas)
+            {
+                if (reldata is Dat151AmbientZoneList)
+                {
+                    zonelists.Add(reldata as Dat151AmbientZoneList);
+                }
+                if (reldata is Dat151AmbientEmitterList)
+                {
+                    emitterlists.Add(reldata as Dat151AmbientEmitterList);
+                }
+            }
+
+
+
+            if (zonelists.Count > 0)
+            {
+                var zonelistsnode = node.Nodes.Add("Zone Lists (" + zonelists.Count.ToString() + ")");
+                zonelistsnode.Name = "ZoneLists";
+                zonelistsnode.Tag = rel;
+                for (int i = 0; i < zonelists.Count; i++)
+                {
+                    var zonelist = zonelists[i];
+                    var tnode = zonelistsnode.Nodes.Add(zonelist.ToString());
+                    tnode.Tag = zonelist;
+                }
+            }
+
+            if (emitterlists.Count > 0)
+            {
+                var emitterlistsnode = node.Nodes.Add("Emitter Lists (" + emitterlists.Count.ToString() + ")");
+                emitterlistsnode.Name = "EmitterLists";
+                emitterlistsnode.Tag = rel;
+                for (int i = 0; i < emitterlists.Count; i++)
+                {
+                    var emitterlist = emitterlists[i];
+                    var tnode = emitterlistsnode.Nodes.Add(emitterlist.ToString());
+                    tnode.Tag = emitterlist;
+                }
+            }
+
+
+        }
 
 
 
@@ -528,6 +612,30 @@ namespace CodeWalker.Project.Panels
                             name = scenario.RpfFileEntry.Name;
                         }
                         snode.Text = changestr + name;
+                        break;
+                    }
+                }
+            }
+        }
+        public void SetAudioRelHasChanged(RelFile rel, bool changed)
+        {
+            if (ProjectTreeView.Nodes.Count > 0)
+            {
+                var pnode = ProjectTreeView.Nodes[0];
+                var acnode = GetChildTreeNode(pnode, "AudioRels");
+                if (acnode == null) return;
+                string changestr = changed ? "*" : "";
+                for (int i = 0; i < acnode.Nodes.Count; i++)
+                {
+                    var anode = acnode.Nodes[i];
+                    if (anode.Tag == rel)
+                    {
+                        string name = rel.Name;
+                        if (rel.RpfFileEntry != null)
+                        {
+                            name = rel.RpfFileEntry.Name;
+                        }
+                        anode.Text = changestr + name;
                         break;
                     }
                 }
@@ -726,6 +834,63 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
+        public TreeNode FindAudioRelTreeNode(RelFile rel)
+        {
+            if (ProjectTreeView.Nodes.Count <= 0) return null;
+            var projnode = ProjectTreeView.Nodes[0];
+            var scenariosnode = GetChildTreeNode(projnode, "AudioRels");
+            if (scenariosnode == null) return null;
+            for (int i = 0; i < scenariosnode.Nodes.Count; i++)
+            {
+                var ymtnode = scenariosnode.Nodes[i];
+                if (ymtnode.Tag == rel) return ymtnode;
+            }
+            return null;
+        }
+        public TreeNode FindAudioZoneTreeNode(AudioPlacement zone)
+        {
+            if (zone == null) return null;
+            TreeNode relnode = FindAudioRelTreeNode(zone.RelFile);
+            var zonenode = GetChildTreeNode(relnode, "EditZone");
+            if (zonenode == null) return null;
+            zonenode.Tag = zone;
+            return zonenode;
+        }
+        public TreeNode FindAudioEmitterTreeNode(AudioPlacement emitter)
+        {
+            if (emitter == null) return null;
+            TreeNode relnode = FindAudioRelTreeNode(emitter.RelFile);
+            var zonenode = GetChildTreeNode(relnode, "EditEmitter");
+            if (zonenode == null) return null;
+            zonenode.Tag = emitter;
+            return zonenode;
+        }
+        public TreeNode FindAudioZoneListTreeNode(Dat151AmbientZoneList list)
+        {
+            if (list == null) return null;
+            TreeNode relnode = FindAudioRelTreeNode(list.Rel);
+            var zonelistsnode = GetChildTreeNode(relnode, "ZoneLists");
+            if (zonelistsnode == null) return null;
+            for (int i = 0; i < zonelistsnode.Nodes.Count; i++)
+            {
+                TreeNode lnode = zonelistsnode.Nodes[i];
+                if (lnode.Tag == list) return lnode;
+            }
+            return null;
+        }
+        public TreeNode FindAudioEmitterListTreeNode(Dat151AmbientEmitterList list)
+        {
+            if (list == null) return null;
+            TreeNode relnode = FindAudioRelTreeNode(list.Rel);
+            var emitterlistsnode = GetChildTreeNode(relnode, "EmitterLists");
+            if (emitterlistsnode == null) return null;
+            for (int i = 0; i < emitterlistsnode.Nodes.Count; i++)
+            {
+                TreeNode enode = emitterlistsnode.Nodes[i];
+                if (enode.Tag == list) return enode;
+            }
+            return null;
+        }
 
 
 
@@ -894,6 +1059,97 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
+        public void TrySelectAudioRelTreeNode(RelFile rel)
+        {
+            TreeNode tnode = FindAudioRelTreeNode(rel);
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(rel);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
+            }
+        }
+        public void TrySelectAudioZoneTreeNode(AudioPlacement zone)
+        {
+            TreeNode tnode = FindAudioZoneTreeNode(zone);
+            if (tnode == null)
+            {
+                tnode = FindAudioRelTreeNode(zone?.RelFile);
+            }
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(zone);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
+            }
+        }
+        public void TrySelectAudioEmitterTreeNode(AudioPlacement emitter)
+        {
+            TreeNode tnode = FindAudioEmitterTreeNode(emitter);
+            if (tnode == null)
+            {
+                tnode = FindAudioRelTreeNode(emitter?.RelFile);
+            }
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(emitter);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
+            }
+        }
+        public void TrySelectAudioZoneListTreeNode(Dat151AmbientZoneList list)
+        {
+            TreeNode tnode = FindAudioZoneListTreeNode(list);
+            if (tnode == null)
+            {
+                tnode = FindAudioRelTreeNode(list?.Rel);
+            }
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(list);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
+            }
+        }
+        public void TrySelectAudioEmitterListTreeNode(Dat151AmbientEmitterList list)
+        {
+            TreeNode tnode = FindAudioEmitterListTreeNode(list);
+            if (tnode == null)
+            {
+                tnode = FindAudioRelTreeNode(list?.Rel);
+            }
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(list);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
+            }
+        }
 
         public void UpdateCarGenTreeNode(YmapCarGen cargen)
         {
@@ -916,7 +1172,6 @@ namespace CodeWalker.Project.Panels
             var tn = FindNavPolyTreeNode(poly);
             if (tn != null)
             {
-                tn.Text = poly._RawData.ToString();
             }
         }
         public void UpdateTrainNodeTreeNode(TrainTrackNode node)
@@ -935,6 +1190,37 @@ namespace CodeWalker.Project.Panels
                 tn.Text = node.MedTypeName + ": " + node.StringText;
             }
         }
+        public void UpdateAudioZoneTreeNode(AudioPlacement zone)
+        {
+            var tn = FindAudioZoneTreeNode(zone);
+            if (tn != null)
+            {
+            }
+        }
+        public void UpdateAudioEmitterTreeNode(AudioPlacement emitter)
+        {
+            var tn = FindAudioEmitterTreeNode(emitter);
+            if (tn != null)
+            {
+            }
+        }
+        public void UpdateAudioZoneListTreeNode(Dat151AmbientZoneList list)
+        {
+            var tn = FindAudioZoneListTreeNode(list);
+            if (tn != null)
+            {
+                tn.Text = list.ToString();
+            }
+        }
+        public void UpdateAudioEmitterListTreeNode(Dat151AmbientEmitterList list)
+        {
+            var tn = FindAudioEmitterListTreeNode(list);
+            if (tn != null)
+            {
+                tn.Text = list.ToString();
+            }
+        }
+
 
         public void RemoveEntityTreeNode(YmapEntityDef ent)
         {
@@ -978,6 +1264,42 @@ namespace CodeWalker.Project.Panels
             if ((tn != null) && (tn.Parent != null))
             {
                 tn.Parent.Text = "Points (" + (node.Ymt?.ScenarioRegion?.Nodes?.Count ?? 0).ToString() + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveAudioZoneListTreeNode(Dat151AmbientZoneList list)
+        {
+            var tn = FindAudioZoneListTreeNode(list);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                var zonelists = new List<Dat151AmbientZoneList>();
+                foreach (var reldata in list.Rel.RelDatas)
+                {
+                    if (reldata is Dat151AmbientZoneList)
+                    {
+                        zonelists.Add(reldata as Dat151AmbientZoneList);
+                    }
+                }
+
+                tn.Parent.Text = "Zone Lists (" + zonelists.Count.ToString() + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveAudioEmitterListTreeNode(Dat151AmbientEmitterList list)
+        {
+            var tn = FindAudioEmitterListTreeNode(list);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                var emitterlists = new List<Dat151AmbientEmitterList>();
+                foreach (var reldata in list.Rel.RelDatas)
+                {
+                    if (reldata is Dat151AmbientEmitterList)
+                    {
+                        emitterlists.Add(reldata as Dat151AmbientEmitterList);
+                    }
+                }
+
+                tn.Parent.Text = "Emitter Lists (" + emitterlists.Count.ToString() + ")";
                 tn.Parent.Nodes.Remove(tn);
             }
         }

@@ -183,6 +183,7 @@ namespace CodeWalker
         YnvPortal CopiedNavPortal = null;
         TrainTrackNode CopiedTrainNode = null;
         ScenarioNode CopiedScenarioNode = null;
+        AudioPlacement CopiedAudio = null;
 
         public bool EditEntityPivot { get; set; } = false;
 
@@ -3611,6 +3612,7 @@ namespace CodeWalker
             YndFile ynd = null;
             TrainTrack traintr = null;
             YmtFile scenario = null;
+            RelFile audiofile = null;
             ToolbarCopyButton.Enabled = false;
             ToolbarDeleteItemButton.Enabled = false;
             ToolbarDeleteItemButton.Text = "Delete";
@@ -3707,6 +3709,7 @@ namespace CodeWalker
             {
                 SelectionEntityTabPage.Text = item.Audio.ShortTypeName;
                 SelEntityPropertyGrid.SelectedObject = item.Audio;
+                audiofile = item.Audio.RelFile;
             }
             else
             {
@@ -3779,6 +3782,10 @@ namespace CodeWalker
             if (scenario != null)
             {
                 EnableScenarioUI(true, scenario.Name);
+            }
+            if (audiofile != null)
+            {
+                EnableAudioUI(true, audiofile.Name);
             }
 
         }
@@ -4877,6 +4884,10 @@ namespace CodeWalker
                 ToolbarPasteButton.Enabled = (CopiedScenarioNode != null) && enable;
             }
         }
+        public void EnableAudioUI(bool enable, string filename) //TODO
+        {
+
+        }
 
 
         private void New()
@@ -4922,6 +4933,11 @@ namespace CodeWalker
             ShowProjectForm();
             ProjectForm.NewScenario();
         }
+        private void NewAudioRel()
+        {
+            ShowProjectForm();
+            ProjectForm.NewAudioFile();
+        }
         private void Open()
         {
             ShowProjectForm();
@@ -4965,6 +4981,11 @@ namespace CodeWalker
             ShowProjectForm();
             ProjectForm.OpenScenario();
         }
+        private void OpenAudioRel()
+        {
+            ShowProjectForm();
+            ProjectForm.OpenAudioFile();
+        }
         private void Save()
         {
             if (ProjectForm == null) return;
@@ -4987,6 +5008,7 @@ namespace CodeWalker
                 case MapSelectionMode.NavMesh: AddNavPoly(); break;//how to add points/portals? project window
                 case MapSelectionMode.TrainTrack: AddTrainNode(); break;
                 case MapSelectionMode.Scenario: AddScenarioNode(); break; //how to add different node types? project window
+                case MapSelectionMode.Audio: AddAudioZone(); break; //how to add emitters as well? project window
             }
         }
         private void DeleteItem()
@@ -4999,6 +5021,8 @@ namespace CodeWalker
             else if (SelectedItem.NavPortal != null) DeleteNavPortal();
             else if (SelectedItem.TrainTrackNode != null) DeleteTrainNode();
             else if (SelectedItem.ScenarioNode != null) DeleteScenarioNode();
+            else if (SelectedItem.Audio?.AudioZone != null) DeleteAudioZone();
+            else if (SelectedItem.Audio?.AudioEmitter != null) DeleteAudioEmitter();
         }
         private void CopyItem()
         {
@@ -5010,6 +5034,8 @@ namespace CodeWalker
             else if (SelectedItem.NavPortal != null) CopyNavPortal();
             else if (SelectedItem.TrainTrackNode != null) CopyTrainNode();
             else if (SelectedItem.ScenarioNode != null) CopyScenarioNode();
+            else if (SelectedItem.Audio?.AudioZone != null) CopyAudioZone();
+            else if (SelectedItem.Audio?.AudioEmitter != null) CopyAudioEmitter();
         }
         private void PasteItem()
         {
@@ -5021,6 +5047,8 @@ namespace CodeWalker
             else if (CopiedNavPortal != null) PasteNavPortal();
             else if (CopiedTrainNode != null) PasteTrainNode();
             else if (CopiedScenarioNode != null) PasteScenarioNode();
+            else if (CopiedAudio?.AudioZone != null) PasteAudioZone();
+            else if (CopiedAudio?.AudioEmitter != null) PasteAudioEmitter();
         }
         private void CloneItem()
         {
@@ -5032,6 +5060,8 @@ namespace CodeWalker
             else if (SelectedItem.NavPortal != null) CloneNavPortal();
             else if (SelectedItem.TrainTrackNode != null) CloneTrainNode();
             else if (SelectedItem.ScenarioNode != null) CloneScenarioNode();
+            else if (SelectedItem.Audio?.AudioZone != null) CloneAudioZone();
+            else if (SelectedItem.Audio?.AudioEmitter != null) CloneAudioEmitter();
         }
 
         private void AddEntity()
@@ -5467,6 +5497,113 @@ namespace CodeWalker
             if (ProjectForm == null) return;
             ProjectForm.NewScenarioNode(SelectedItem.ScenarioNode, true);
         }
+
+        private void AddAudioZone()
+        {
+            if (ProjectForm == null) return;
+            ProjectForm.NewAudioZone();
+        }
+        private void DeleteAudioZone()
+        {
+            var audio = SelectedItem.Audio;
+            if (audio == null) return;
+
+            if ((ProjectForm != null) && (ProjectForm.IsCurrentAudioZone(audio)))
+            {
+                if (!ProjectForm.DeleteAudioZone())
+                {
+                    //MessageBox.Show("Unable to delete this audio zone from the current project. Make sure the zone's .rel file exists in the current project.");
+                }
+                else
+                {
+                    SelectItem(null);
+                }
+            }
+            else
+            {
+                //project not open, or zone not selected there, just remove the zone from the rel...
+                var rel = audio.RelFile;
+                if (!rel.RemoveRelData(audio.AudioZone))
+                {
+                    MessageBox.Show("Unable to remove audio zone. Audio zone editing TODO!");
+                }
+                else
+                {
+                    SelectItem(null);
+                }
+            }
+        }
+        private void CopyAudioZone()
+        {
+            CopiedAudio = SelectedItem.Audio;
+            ToolbarPasteButton.Enabled = (CopiedAudio != null) && ToolbarAddItemButton.Enabled;
+        }
+        private void PasteAudioZone()
+        {
+            if (CopiedAudio == null) return;
+            if (ProjectForm == null) return;
+            ProjectForm.NewAudioZone(CopiedAudio);
+        }
+        private void CloneAudioZone()
+        {
+            if (SelectedItem.Audio == null) return;
+            if (ProjectForm == null) return;
+            ProjectForm.NewAudioZone(SelectedItem.Audio, true);
+        }
+
+        private void AddAudioEmitter()
+        {
+            if (ProjectForm == null) return;
+            ProjectForm.NewAudioEmitter();
+        }
+        private void DeleteAudioEmitter()
+        {
+            var audio = SelectedItem.Audio;
+            if (audio == null) return;
+
+            if ((ProjectForm != null) && (ProjectForm.IsCurrentAudioEmitter(audio)))
+            {
+                if (!ProjectForm.DeleteAudioEmitter())
+                {
+                    //MessageBox.Show("Unable to delete this audio emitter from the current project. Make sure the emitter's .rel file exists in the current project.");
+                }
+                else
+                {
+                    SelectItem(null);
+                }
+            }
+            else
+            {
+                //project not open, or zone not selected there, just remove the zone from the rel...
+                var rel = audio.RelFile;
+                if (!rel.RemoveRelData(audio.AudioEmitter))
+                {
+                    MessageBox.Show("Unable to remove audio emitter. Audio zone editing TODO!");
+                }
+                else
+                {
+                    SelectItem(null);
+                }
+            }
+        }
+        private void CopyAudioEmitter()
+        {
+            CopiedAudio = SelectedItem.Audio;
+            ToolbarPasteButton.Enabled = (CopiedAudio != null) && ToolbarAddItemButton.Enabled;
+        }
+        private void PasteAudioEmitter()
+        {
+            if (CopiedAudio == null) return;
+            if (ProjectForm == null) return;
+            ProjectForm.NewAudioEmitter(CopiedAudio);
+        }
+        private void CloneAudioEmitter()
+        {
+            if (SelectedItem.Audio == null) return;
+            if (ProjectForm == null) return;
+            ProjectForm.NewAudioEmitter(SelectedItem.Audio, true);
+        }
+
 
 
         private void SetMouseSelect(bool enable)

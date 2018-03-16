@@ -60,6 +60,12 @@ namespace CodeWalker.Project
         private ScenarioNode CurrentScenarioNode;
         private MCScenarioChainingEdge CurrentScenarioChainEdge;
 
+        private RelFile CurrentAudioFile;
+        private AudioPlacement CurrentAudioZone;
+        private AudioPlacement CurrentAudioEmitter;
+        private Dat151AmbientZoneList CurrentAudioZoneList;
+        private Dat151AmbientEmitterList CurrentAudioEmitterList;
+
         private bool renderitems = true;
         private bool hidegtavmap = false;
 
@@ -417,6 +423,21 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetScenarioNode(CurrentScenarioNode); }, //updateFunc
                 (panel) => { return panel.CurrentScenarioNode == CurrentScenarioNode; }); //findFunc
         }
+        private void ShowEditAudioFilePanel(bool promote) //TODO
+        {
+        }
+        private void ShowEditAudioZonePanel(bool promote) //TODO
+        {
+        }
+        private void ShowEditAudioEmitterPanel(bool promote) //TODO
+        {
+        }
+        private void ShowEditAudioZoneListPanel(bool promote) //TODO
+        {
+        }
+        private void ShowEditAudioEmitterListPanel(bool promote) //TODO
+        {
+        }
 
         private void ShowCurrentProjectItem(bool promote)
         {
@@ -480,6 +501,27 @@ namespace CodeWalker.Project
             {
                 ShowEditScenarioYmtPanel(promote);
             }
+            if (CurrentAudioZone != null)
+            {
+                ShowEditAudioZonePanel(promote);
+            }
+            else if (CurrentAudioEmitter != null)
+            {
+                ShowEditAudioEmitterPanel(promote);
+            }
+            else if (CurrentAudioZoneList != null)
+            {
+                ShowEditAudioZoneListPanel(promote);
+            }
+            else if (CurrentAudioEmitterList != null)
+            {
+                ShowEditAudioEmitterListPanel(promote);
+            }
+            else if (CurrentAudioFile != null)
+            {
+                ShowEditAudioFilePanel(promote);
+            }
+
         }
         public void ShowProjectItem(object item, bool promote)
         {
@@ -516,6 +558,11 @@ namespace CodeWalker.Project
             CurrentScenario = item as YmtFile;
             CurrentScenarioNode = item as ScenarioNode;
             CurrentScenarioChainEdge = item as MCScenarioChainingEdge;
+            CurrentAudioFile = item as RelFile;
+            CurrentAudioZone = item as AudioPlacement; if (CurrentAudioZone?.AudioZone == null) CurrentAudioZone = null;
+            CurrentAudioEmitter = item as AudioPlacement; if (CurrentAudioEmitter?.AudioEmitter == null) CurrentAudioEmitter = null;
+            CurrentAudioZoneList = item as Dat151AmbientZoneList;
+            CurrentAudioEmitterList = item as Dat151AmbientEmitterList;
 
             if (CurrentEntity != null)
             {
@@ -560,6 +607,22 @@ namespace CodeWalker.Project
             if (CurrentScenarioChainEdge != null)
             {
                 CurrentScenario = CurrentScenarioChainEdge.Region?.Ymt;
+            }
+            if (CurrentAudioZone != null)
+            {
+                CurrentAudioFile = CurrentAudioZone.RelFile;
+            }
+            if (CurrentAudioEmitter != null)
+            {
+                CurrentAudioFile = CurrentAudioEmitter.RelFile;
+            }
+            if (CurrentAudioZoneList != null)
+            {
+                CurrentAudioFile = CurrentAudioZoneList.Rel;
+            }
+            if (CurrentAudioEmitterList != null)
+            {
+                CurrentAudioFile = CurrentAudioEmitterList.Rel;
             }
 
             RefreshUI();
@@ -1389,7 +1452,11 @@ namespace CodeWalker.Project
                 ccg.flags = 3680;
                 ccg.orientX = 5.0f;
                 ccg.perpendicularLength = 2.6f;
-                //TODO: set default values for cargen
+                ccg.bodyColorRemap1 = -1;
+                ccg.bodyColorRemap2 = -1;
+                ccg.bodyColorRemap3 = -1;
+                ccg.bodyColorRemap4 = -1;
+                ccg.livery = -1;
             }
 
             if (!copyPosition || (copy == null))
@@ -3621,6 +3688,113 @@ namespace CodeWalker.Project
 
 
 
+
+
+
+        public void NewAudioFile() //TODO
+        {
+        }
+        public void OpenAudioFile() //TODO
+        {
+        }
+        public void SaveAudioFile(bool saveas = false) //TODO
+        {
+        }
+        public void AddAudioFileToProject(RelFile rel)
+        {
+            if (rel == null) return;
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            if (AudioFileExistsInProject(rel)) return;
+            if (CurrentProjectFile.AddAudioRelFile(rel))
+            {
+                rel.HasChanged = true;
+                CurrentProjectFile.HasChanged = true;
+                LoadProjectTree();
+            }
+            CurrentAudioFile = rel;
+            RefreshUI();
+            if (CurrentAudioZone != null)
+            {
+                ProjectExplorer?.TrySelectAudioZoneTreeNode(CurrentAudioZone);
+            }
+            else if (CurrentAudioEmitter != null)
+            {
+                ProjectExplorer?.TrySelectAudioEmitterTreeNode(CurrentAudioEmitter);
+            }
+        }
+        public void RemoveAudioFileFromProject()
+        {
+            if (CurrentAudioFile == null) return;
+            if (CurrentProjectFile == null) return;
+            CurrentProjectFile.RemoveAudioRelFile(CurrentAudioFile);
+            CurrentAudioFile = null;
+            LoadProjectTree();
+            RefreshUI();
+        }
+        public bool AudioFileExistsInProject(RelFile rel)
+        {
+            if (rel == null) return false;
+            if (CurrentProjectFile == null) return false;
+            return CurrentProjectFile.ContainsAudioRel(rel);
+        }
+
+        public void NewAudioZone(AudioPlacement copy = null, bool copyPosition = false) //TODO
+        {
+        }
+        public bool DeleteAudioZone() //TODO
+        {
+            return false;
+        }
+        public bool IsCurrentAudioZone(AudioPlacement zone)
+        {
+            return zone == CurrentAudioZone;
+        }
+
+        public void NewAudioEmitter(AudioPlacement copy = null, bool copyPosition = false) //TODO
+        {
+        }
+        public bool DeleteAudioEmitter() //TODO
+        {
+            return false;
+        }
+        public bool IsCurrentAudioEmitter(AudioPlacement emitter)
+        {
+            return emitter == CurrentAudioEmitter;
+        }
+
+        public void NewAudioZoneList() //TODO
+        {
+        }
+        public bool DeleteAudioZoneList() //TODO
+        {
+            return false;
+        }
+        public bool IsCurrentAudioZoneList(Dat151AmbientZoneList list)
+        {
+            return list == CurrentAudioZoneList;
+        }
+
+        public void NewAudioEmitterList() //TODO
+        {
+        }
+        public bool DeleteAudioEmitterList() //TODO
+        {
+            return false;
+        }
+        public bool IsCurrentAudioEmitterList(Dat151AmbientEmitterList list)
+        {
+            return list == CurrentAudioEmitterList;
+        }
+
+
+
+
+
+
+
         public void GetVisibleYmaps(Camera camera, Dictionary<MetaHash, YmapFile> ymaps)
         {
             if (hidegtavmap)
@@ -3822,11 +3996,13 @@ namespace CodeWalker.Project
                     var trainnode = sel.TrainTrackNode;
                     var scenariond = sel.ScenarioNode;
                     var scenarioedge = sel.ScenarioEdge;
+                    var audiopl = sel.Audio;
                     YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap;
                     YndFile ynd = pathnode?.Ynd;
                     YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
                     TrainTrack traintrack = trainnode?.Track;
                     YmtFile scenario = scenariond?.Ymt ?? scenarioedge?.Region?.Ymt;
+                    RelFile audiofile = audiopl?.RelFile;
                     bool showcurrent = false;
 
                     if (YmapExistsInProject(ymap))
@@ -3876,6 +4052,17 @@ namespace CodeWalker.Project
                             ProjectExplorer?.TrySelectScenarioNodeTreeNode(scenariond);
                         }
                     }
+                    else if (AudioFileExistsInProject(audiofile))
+                    {
+                        if ((audiopl?.AudioZone != null) && (audiopl != CurrentAudioZone))
+                        {
+                            ProjectExplorer?.TrySelectAudioZoneTreeNode(audiopl);
+                        }
+                        if ((audiopl?.AudioEmitter != null) && (audiopl != CurrentAudioEmitter))
+                        {
+                            ProjectExplorer?.TrySelectAudioEmitterTreeNode(audiopl);
+                        }
+                    }
                     else
                     {
                         ProjectExplorer?.DeselectNode();
@@ -3900,6 +4087,11 @@ namespace CodeWalker.Project
                     CurrentScenario = scenario;
                     CurrentScenarioNode = scenariond;
                     CurrentScenarioChainEdge = scenarioedge;
+                    CurrentAudioFile = audiofile;
+                    CurrentAudioZone = (audiopl?.AudioZone != null) ? audiopl : null;
+                    CurrentAudioEmitter = (audiopl?.AudioEmitter != null) ? audiopl : null;
+                    CurrentAudioZoneList = null;
+                    CurrentAudioEmitterList = null;
                     RefreshUI();
                     if (showcurrent)
                     {
@@ -3948,6 +4140,10 @@ namespace CodeWalker.Project
             else if (sel.ScenarioNode != null)
             {
                 OnWorldScenarioNodeModified(sel.ScenarioNode);
+            }
+            else if (sel.Audio != null)
+            {
+                OnWorldAudioPlacementModified(sel.Audio);
             }
         }
 
@@ -4321,23 +4517,73 @@ namespace CodeWalker.Project
             }
             catch { }
         }
-
-
-
-
-
-
-        public Vector3 GetSpawnPos(float dist)
+        private void OnWorldAudioPlacementModified(AudioPlacement audio)
         {
-            Vector3 pos = Vector3.Zero;
-            if (WorldForm != null)
+            try
             {
-                Vector3 campos = WorldForm.GetCameraPosition();
-                Vector3 camdir = WorldForm.GetCameraViewDir();
-                pos = campos + camdir * dist;
+                if (InvokeRequired)
+                {
+                    BeginInvoke(new Action(() => { OnWorldAudioPlacementModified(audio); }));
+                }
+                else
+                {
+                    if (audio?.RelFile == null) return;
+
+                    if (CurrentProjectFile == null)
+                    {
+                        NewProject();
+                    }
+
+                    if (!AudioFileExistsInProject(audio.RelFile))
+                    {
+                        audio.RelFile.HasChanged = true;
+                        AddAudioFileToProject(audio.RelFile);
+                        if (audio.AudioZone != null)
+                        {
+                            ProjectExplorer?.TrySelectAudioZoneTreeNode(audio);
+                        }
+                        if (audio.AudioEmitter != null)
+                        {
+                            ProjectExplorer?.TrySelectAudioEmitterTreeNode(audio);
+                        }
+                    }
+
+                    if ((audio.AudioZone != null) && (audio != CurrentAudioZone))
+                    {
+                        CurrentAudioZone = audio;
+                        ProjectExplorer?.TrySelectAudioZoneTreeNode(audio);
+                    }
+                    if ((audio.AudioEmitter != null) && (audio != CurrentAudioEmitter))
+                    {
+                        CurrentAudioEmitter = audio;
+                        ProjectExplorer?.TrySelectAudioEmitterTreeNode(audio);
+                    }
+                    if (audio == CurrentAudioZone)
+                    {
+                        ShowEditAudioZonePanel(false);
+                        if (audio.RelFile != null)
+                        {
+                            SetAudioFileHasChanged(true);
+                        }
+                    }
+                    else if (audio == CurrentAudioEmitter)
+                    {
+                        ShowEditAudioEmitterPanel(false);
+                        if (audio.RelFile != null)
+                        {
+                            SetAudioFileHasChanged(true);
+                        }
+                    }
+
+                }
             }
-            return pos;
+            catch { }
         }
+
+
+
+
+
 
 
 
@@ -4429,7 +4675,38 @@ namespace CodeWalker.Project
 
             PromoteIfPreviewPanelActive();
         }
+        public void SetAudioFileHasChanged(bool changed)
+        {
+            if (CurrentAudioFile == null) return;
 
+            bool changechange = changed != CurrentAudioFile.HasChanged;
+            if (!changechange) return;
+
+            CurrentAudioFile.HasChanged = changed;
+
+            ProjectExplorer?.SetAudioRelHasChanged(CurrentAudioFile, changed);
+
+            PromoteIfPreviewPanelActive();
+        }
+
+
+
+
+
+
+
+
+        public Vector3 GetSpawnPos(float dist)
+        {
+            Vector3 pos = Vector3.Zero;
+            if (WorldForm != null)
+            {
+                Vector3 campos = WorldForm.GetCameraPosition();
+                Vector3 camdir = WorldForm.GetCameraViewDir();
+                pos = campos + camdir * dist;
+            }
+            return pos;
+        }
 
         public RpfFileEntry FindParentYmapEntry(uint hash)
         {
@@ -4451,8 +4728,6 @@ namespace CodeWalker.Project
 
             return null;
         }
-
-
 
 
 
@@ -4522,6 +4797,9 @@ namespace CodeWalker.Project
 
             ymt.Load(data);
         }
+        private void LoadAudioRelFromFile(RelFile rel, string filename) //TODO
+        {
+        }
 
 
 
@@ -4567,6 +4845,7 @@ namespace CodeWalker.Project
             RefreshYnvUI();
             RefreshTrainTrackUI();
             RefreshScenarioUI();
+            RefreshAudioUI();
             SetCurrentSaveItem();
             //ShowEditYmapPanel(false);
             //ShowEditYmapEntityPanel(false);
@@ -4762,6 +5041,9 @@ namespace CodeWalker.Project
                 WorldForm.EnableScenarioUI(enable, CurrentScenario?.Name ?? "");
             }
         }
+        private void RefreshAudioUI() //TODO
+        {
+        }
 
 
         private void SetCurrentSaveItem()
@@ -4790,6 +5072,10 @@ namespace CodeWalker.Project
             else if (CurrentScenario != null)
             {
                 filename = CurrentScenario.RpfFileEntry?.Name;
+            }
+            else if (CurrentAudioFile != null)
+            {
+                filename = CurrentAudioFile.RpfFileEntry?.Name;
             }
 
             bool enable = !string.IsNullOrEmpty(filename);

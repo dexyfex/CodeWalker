@@ -48,12 +48,9 @@ SOFTWARE.
 
 namespace CodeWalker.GameFiles
 {
-    [TC(typeof(EXP))] public class RelFile : PackedFile
+    [TC(typeof(EXP))] public class RelFile : GameFile, PackedFile
     {
-        public RpfFileEntry FileEntry { get; set; }
-        public string Name { get; set; }
-
-        public uint Type { get; set; }
+        public uint RelType { get; set; }
         public uint DataLength { get; set; }
         public byte[] DataBlock { get; set; }
         public uint DataUnkVal { get; set; }
@@ -65,12 +62,12 @@ namespace CodeWalker.GameFiles
         public uint IndexStringFlags { get; set; }
         public RelIndexHash[] IndexHashes { get; set; }
         public RelIndexString[] IndexStrings { get; set; }
-        public uint Unk05Count { get; set; }
-        public uint[] Unk05Arr { get; set; }
-        public MetaHash[] Unk05Hashes { get; set; }
-        public uint ContainerCount { get; set; }
-        public uint[] ContainerUnkArr { get; set; }
-        public MetaHash[] ContainerHashes { get; set; }
+        public uint WaveTracksCount { get; set; }
+        public uint[] WaveTracksOffsets { get; set; }
+        public MetaHash[] WaveTracksHashes { get; set; }
+        public uint WaveContainersCount { get; set; }
+        public uint[] WaveContainersOffsets { get; set; }
+        public MetaHash[] WaveContainersHashes { get; set; }
 
         public RelData[] RelDatas { get; set; }
         public RelData[] RelDatasSorted { get; set; }
@@ -79,24 +76,29 @@ namespace CodeWalker.GameFiles
         public Dictionary<uint, RelData> RelDataDict { get; set; } = new Dictionary<uint, RelData>();
 
 
-        public RelFile()
+        //fields used by the editor:
+        public bool HasChanged { get; set; } = false;
+        public List<string> SaveWarnings = null;
+
+
+        public RelFile() : base(null, GameFileType.Rel)
         {
         }
-        public RelFile(RpfFileEntry entry)
+        public RelFile(RpfFileEntry entry) : base(entry, GameFileType.Rel)
         {
-            FileEntry = entry;
+            RpfFileEntry = entry;
         }
 
         public void Load(byte[] data, RpfFileEntry entry)
         {
-            FileEntry = entry;
+            RpfFileEntry = entry;
             Name = entry.Name;
 
             MemoryStream ms = new MemoryStream(data);
             BinaryReader br = new BinaryReader(ms);
             StringBuilder sb = new StringBuilder();
 
-            Type = br.ReadUInt32(); //type/version?
+            RelType = br.ReadUInt32(); //type/version?
 
             DataLength = br.ReadUInt32(); //length of data block
             DataBlock = br.ReadBytes((int)DataLength); //main data block...
@@ -105,12 +107,12 @@ namespace CodeWalker.GameFiles
             NameTableCount = br.ReadUInt32();
             if (NameTableCount > 0)
             {
-                uint[] d02 = new uint[NameTableCount]; //string offsets
+                uint[] ntoffsets = new uint[NameTableCount]; //string offsets
                 for (uint i = 0; i < NameTableCount; i++)
                 {
-                    d02[i] = br.ReadUInt32();
+                    ntoffsets[i] = br.ReadUInt32();
                 }
-                NameTableOffsets = d02;
+                NameTableOffsets = ntoffsets;
                 string[] names = new string[NameTableCount];
                 for (uint i = 0; i < NameTableCount; i++)
                 {
@@ -133,7 +135,7 @@ namespace CodeWalker.GameFiles
             if (IndexCount > 0)
             {
                 //checking NameTableLength here doesn't make sense!
-                if ((Type == 4) && (NameTableLength == 4))//audioconfig.dat4.rel
+                if ((RelType == 4) && (NameTableLength == 4))//audioconfig.dat4.rel
                 {
                     IndexStringFlags = br.ReadUInt32(); //what is this?  2524
                     RelIndexString[] indexstrs = new RelIndexString[IndexCount];
@@ -146,11 +148,11 @@ namespace CodeWalker.GameFiles
                             char c = (char)br.ReadByte();
                             if (c != 0) sb.Append(c);
                         }
-                        RelIndexString cunk01 = new RelIndexString();
-                        cunk01.Name = sb.ToString();
-                        cunk01.Offset = br.ReadUInt32();
-                        cunk01.Length = br.ReadUInt32();
-                        indexstrs[i] = cunk01;
+                        RelIndexString ristr = new RelIndexString();
+                        ristr.Name = sb.ToString();
+                        ristr.Offset = br.ReadUInt32();
+                        ristr.Length = br.ReadUInt32();
+                        indexstrs[i] = ristr;
                     }
                     IndexStrings = indexstrs;
                 }
@@ -159,51 +161,51 @@ namespace CodeWalker.GameFiles
                     RelIndexHash[] indexhashes = new RelIndexHash[IndexCount];
                     for (uint i = 0; i < IndexCount; i++)
                     {
-                        RelIndexHash unk01 = new RelIndexHash();
-                        unk01.Name = new MetaHash(br.ReadUInt32());
-                        unk01.Offset = br.ReadUInt32();
-                        unk01.Length = br.ReadUInt32();
-                        indexhashes[i] = unk01;
+                        RelIndexHash rihash = new RelIndexHash();
+                        rihash.Name = new MetaHash(br.ReadUInt32());
+                        rihash.Offset = br.ReadUInt32();
+                        rihash.Length = br.ReadUInt32();
+                        indexhashes[i] = rihash;
                     }
                     IndexHashes = indexhashes;
                 }
             }
 
 
-            Unk05Count = br.ReadUInt32();
-            if (Unk05Count != 0)
+            WaveTracksCount = br.ReadUInt32();
+            if (WaveTracksCount != 0)
             {
-                uint[] d05 = new uint[Unk05Count];
-                MetaHash[] d05h = new MetaHash[Unk05Count];
-                for (uint i = 0; i < Unk05Count; i++)
+                uint[] wtoffsets = new uint[WaveTracksCount];
+                MetaHash[] wthashes = new MetaHash[WaveTracksCount];
+                for (uint i = 0; i < WaveTracksCount; i++)
                 {
-                    d05[i] = br.ReadUInt32();
+                    wtoffsets[i] = br.ReadUInt32();
 
                     var pos = ms.Position;
-                    ms.Position = d05[i];
-                    d05h[i] = new MetaHash(br.ReadUInt32());
+                    ms.Position = wtoffsets[i];
+                    wthashes[i] = new MetaHash(br.ReadUInt32());
                     ms.Position = pos;
                 }
-                Unk05Arr = d05;
-                Unk05Hashes = d05h;
+                WaveTracksOffsets = wtoffsets;
+                WaveTracksHashes = wthashes;
             }
 
-            ContainerCount = br.ReadUInt32();
-            if (ContainerCount != 0)
+            WaveContainersCount = br.ReadUInt32();
+            if (WaveContainersCount != 0)
             {
-                uint[] cunks = new uint[ContainerCount];
-                MetaHash[] chashes = new MetaHash[ContainerCount];
-                for (uint i = 0; i < ContainerCount; i++)
+                uint[] wcoffsets = new uint[WaveContainersCount];
+                MetaHash[] wchashes = new MetaHash[WaveContainersCount];
+                for (uint i = 0; i < WaveContainersCount; i++)
                 {
-                    cunks[i] = br.ReadUInt32();
+                    wcoffsets[i] = br.ReadUInt32();
 
                     var pos = ms.Position;
-                    ms.Position = cunks[i];
-                    chashes[i] = new MetaHash(br.ReadUInt32());
+                    ms.Position = wcoffsets[i];
+                    wchashes[i] = new MetaHash(br.ReadUInt32());
                     ms.Position = pos;
                 }
-                ContainerUnkArr = cunks;
-                ContainerHashes = chashes;
+                WaveContainersOffsets = wcoffsets;
+                WaveContainersHashes = wchashes;
             }
 
             if (ms.Position != ms.Length)
@@ -400,7 +402,7 @@ namespace CodeWalker.GameFiles
             byte[] data = br.ReadBytes((int)length);
 
 
-            RelData d = new RelData(); //use this base object to construct the derived one...
+            RelData d = new RelData(this); //use this base object to construct the derived one...
             d.Name = name;
             d.NameHash = hash;
             d.DataOffset = offset;
@@ -412,7 +414,7 @@ namespace CodeWalker.GameFiles
             {
                 d.ReadType(dbr);
 
-                switch (Type)
+                switch (RelType)
                 {
                     case 4:   //speech.dat4.rel, audioconfig.dat4.rel
                         return ReadData4(d, dbr);
@@ -1098,6 +1100,18 @@ namespace CodeWalker.GameFiles
 
 
 
+
+
+        public void AddRelData(RelData d) //TODO!!!
+        {
+        }
+        public bool RemoveRelData(RelData d) //TODO!!!
+        {
+            return false;
+        }
+
+
+
         public override string ToString()
         {
             return Name;
@@ -1140,7 +1154,9 @@ namespace CodeWalker.GameFiles
         public byte[] Data { get; set; }
         public byte TypeID { get; set; }
 
-        public RelData() { }
+        public RelFile Rel { get; set; }
+
+        public RelData(RelFile rel) { Rel = rel; }
         public RelData(RelData d)
         {
             NameHash = d.NameHash;
@@ -1149,6 +1165,7 @@ namespace CodeWalker.GameFiles
             DataLength = d.DataLength;
             Data = d.Data;
             TypeID = d.TypeID;
+            Rel = d.Rel;
         }
 
         public void ReadType(BinaryReader br)
@@ -2479,7 +2496,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public Dat151RelData() { }
+        public Dat151RelData(RelFile rel) : base(rel) { }
         public Dat151RelData(RelData d, BinaryReader br) : base(d)
         {
             Type = (Dat151RelType)TypeID;

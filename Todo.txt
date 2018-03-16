@@ -56,7 +56,6 @@ load/convert/save map editor / menyoo xml files, fiveM json files, etc...
 ---[Rendering stuff]---
 
 
-model view - improve .ynv rendering (portals etc)
 model view - YPT particles - animate particles? do more work on format?
 
 mapDataGroups - how to isolate one of the grouped ymaps? eg destruction etc.
