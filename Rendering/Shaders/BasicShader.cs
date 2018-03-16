@@ -238,6 +238,7 @@ namespace CodeWalker.Rendering
             layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTX_3.GetLayout()));
             layouts.Add(VertexType.PNCTTTTX, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTTX.GetLayout()));
             layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vspncctttxbytes, VertexTypePNCCTTTX.GetLayout()));
+            layouts.Add(VertexType.PCCNCTTTX, new InputLayout(device, vspncctttxbytes, VertexTypePCCNCTTTX.GetLayout()));
 
 
             layouts.Add(VertexType.PCCNCTT, new InputLayout(device, vspnccttbytes, VertexTypePCCNCTT.GetLayout()));
@@ -401,6 +402,7 @@ namespace CodeWalker.Rendering
                     break;
 
                 case VertexType.PNCCTTTX://not used?
+                case VertexType.PCCNCTTTX:
                     vs = basicvspncctttx;
                     break;
 

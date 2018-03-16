@@ -866,6 +866,34 @@ namespace CodeWalker.Rendering
 
 
 
+    public struct VertexTypePCCNCTTTX //id: 1510566300, stride: 76, flags: 16863, types: 8598872888530528662, refs: 38
+    {
+        public Vector3 Component1;
+        public uint Component2;
+        public uint Component3;
+        public Vector3 Component4;
+        public uint Component5;
+        public Vector2 Component6;
+        public Vector2 Component7;
+        public Vector2 Component8;
+        public Vector4 Component9;
+
+        public static InputElement[] GetLayout()
+        {
+            return new[]
+            {
+                new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("NORMAL", 0, Format.R32G32B32_Float, 20, 0),
+                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 32, 0),
+                new InputElement("TEXCOORD", 0, Format.R32G32_Float, 36, 0),
+                new InputElement("TEXCOORD", 1, Format.R32G32_Float, 44, 0),
+                new InputElement("TEXCOORD", 2, Format.R32G32_Float, 52, 0),
+                new InputElement("TANGENT", 0, Format.R32G32B32A32_Float, 60, 0),
+            };
+        }
+    }
 
 
 
@@ -1408,6 +1436,26 @@ namespace CodeWalker.Rendering
        public Vector2 Component5;
        public Vector2 Component6;
     }
+
+
+
+    //new (xmas 2017?)
+    
+    public struct VertexType16863 //id: 1510566300, stride: 76, flags: 16863, types: 8598872888530528662, refs: 38
+    {
+       public Vector3 Component1;
+       public uint Component2;
+       public uint Component3;
+       public Vector3 Component4;
+       public uint Component5;
+       public Vector2 Component6;
+       public Vector2 Component7;
+       public Vector2 Component8;
+       public Vector4 Component9;
+    }
+
+
+
 
 
      */

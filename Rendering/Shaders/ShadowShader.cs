@@ -115,6 +115,7 @@ namespace CodeWalker.Rendering
             layouts.Add(VertexType.PCCNCTTT, new InputLayout(device, vsbytes, VertexTypePCCNCTTT.GetLayout()));
             layouts.Add(VertexType.PNCTT, new InputLayout(device, vsbytes, VertexTypePNCTT.GetLayout()));
             layouts.Add(VertexType.PNCTTT, new InputLayout(device, vsbytes, VertexTypePNCTTT.GetLayout()));
+            layouts.Add(VertexType.PCCNCTTTX, new InputLayout(device, vsbytes, VertexTypePCCNCTTTX.GetLayout()));
 
 
 

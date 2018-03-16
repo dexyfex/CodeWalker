@@ -1207,6 +1207,9 @@ namespace CodeWalker.Rendering
                     case 3631243954://{vehicle_blurredrotor.sps}
                     case 457610770://{vehicle_nosplash.sps}
                     case 3621563260://{vehicle_nowater.sps}
+                    case 430888562://{vehicle_paint8.sps}
+                    case 4118002252://{vehicle_paint9.sps}
+                    case 158342452://{vehicle_detail.sps}
                         b = BasicBatches;
                         break;
                     case 1041778472://{vehicle_decal.sps}

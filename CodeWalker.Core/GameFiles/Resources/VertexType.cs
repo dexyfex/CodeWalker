@@ -48,6 +48,7 @@ namespace CodeWalker.GameFiles
         PCCNCTTT = 479,
         PNCTT = 217,
         PNCTTT = 473,
+        PCCNCTTTX = 16863,
     }
 
 
