@@ -21,7 +21,6 @@ namespace CodeWalker.Forms
         private YtdFile Ytd { get; set; }
         private TextureDictionary TexDict { get; set; }
         private Texture CurrentTexture = null;
-        private float CurrentZoom = 0.0f; //1.0 = 100%, 0.0 = stretch
 
         private new Point MouseDown;
         private Boolean MouseIsHovering = false;
@@ -31,7 +30,6 @@ namespace CodeWalker.Forms
         {
             InitializeComponent();
         }
-
 
         public void LoadYtd(YtdFile ytd)
         {
@@ -45,6 +43,7 @@ namespace CodeWalker.Forms
 
             LoadTexDict(ytd.TextureDict, fileName);
         }
+
         public void LoadTexDict(TextureDictionary texdict, string filename)
         {
             TexDict = texdict;
@@ -93,8 +92,6 @@ namespace CodeWalker.Forms
             return texs.Length.ToString() + " texture" + ((texs.Length != 1) ? "s" : "");
         }
 
-
-
         private void ShowTextureMip(Texture tex, int mip, bool mipchange)
         {
             CurrentTexture = tex;
@@ -113,7 +110,6 @@ namespace CodeWalker.Forms
                 return;
             }
 
-
             if (mipchange)
             {
                 if (mip >= tex.Levels) mip = tex.Levels - 1;
@@ -125,7 +121,6 @@ namespace CodeWalker.Forms
 
             SelTextureNameTextBox.Text = tex.Name;
             DetailsPropertyGrid.SelectedObject = tex;
-
 
             try
             {
@@ -169,8 +164,6 @@ namespace CodeWalker.Forms
 
             UpdateZoom();
         }
-
-
 
         private void UpdateFormTitle()
         {
