@@ -533,12 +533,6 @@ namespace CodeWalker.Forms
                     Renderer.RenderCollisionMesh(Ybn.Bounds, null);
                 }
             }
-            else if (Ypt != null)
-            {
-                if (Ypt.Loaded)
-                {
-                }
-            }
             else if (Ynv != null)
             {
                 if (Ynv.Loaded)
@@ -1511,6 +1505,32 @@ namespace CodeWalker.Forms
         private void StatusBarCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             StatusStrip.Visible = StatusBarCheckBox.Checked;
+        }
+
+        private void TextureViewerButton_Click(object sender, EventArgs e)
+        {
+            TextureDictionary td = null;
+
+            if ((Ydr != null) && (Ydr.Loaded))
+            {
+                td = Ydr.Drawable?.ShaderGroup?.TextureDictionary;
+            }
+            else if ((Yft != null) && (Yft.Loaded))
+            {
+                td = Yft.Fragment?.Drawable?.ShaderGroup?.TextureDictionary;
+            }
+
+            if (td != null)
+            {
+                YtdForm f = new YtdForm();
+                f.Show();
+                f.LoadTexDict(td, fileName);
+                //f.LoadYtd(ytd);
+            }
+            else
+            {
+                MessageBox.Show("Couldn't find embedded texture dict.");
+            }
         }
     }
 }

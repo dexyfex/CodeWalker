@@ -73,6 +73,7 @@
             this.ToolsPanelHideButton = new System.Windows.Forms.Button();
             this.ToolsDragPanel = new System.Windows.Forms.Panel();
             this.ToolsPanelShowButton = new System.Windows.Forms.Button();
+            this.TextureViewerButton = new System.Windows.Forms.Button();
             this.StatusStrip.SuspendLayout();
             this.ConsolePanel.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
@@ -207,6 +208,7 @@
             // 
             // ToolsTexturesTabPage
             // 
+            this.ToolsTexturesTabPage.Controls.Add(this.TextureViewerButton);
             this.ToolsTexturesTabPage.Controls.Add(this.TexturesTreeView);
             this.ToolsTexturesTabPage.Location = new System.Drawing.Point(4, 22);
             this.ToolsTexturesTabPage.Name = "ToolsTexturesTabPage";
@@ -221,10 +223,10 @@
             this.TexturesTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.TexturesTreeView.Location = new System.Drawing.Point(0, 3);
+            this.TexturesTreeView.Location = new System.Drawing.Point(0, 34);
             this.TexturesTreeView.Name = "TexturesTreeView";
             this.TexturesTreeView.ShowRootLines = false;
-            this.TexturesTreeView.Size = new System.Drawing.Size(205, 497);
+            this.TexturesTreeView.Size = new System.Drawing.Size(205, 466);
             this.TexturesTreeView.TabIndex = 1;
             // 
             // ToolsDetailsTabPage
@@ -600,6 +602,16 @@
             this.ToolsPanelShowButton.UseVisualStyleBackColor = true;
             this.ToolsPanelShowButton.Click += new System.EventHandler(this.ToolsPanelShowButton_Click);
             // 
+            // TextureViewerButton
+            // 
+            this.TextureViewerButton.Location = new System.Drawing.Point(6, 6);
+            this.TextureViewerButton.Name = "TextureViewerButton";
+            this.TextureViewerButton.Size = new System.Drawing.Size(113, 23);
+            this.TextureViewerButton.TabIndex = 2;
+            this.TextureViewerButton.Text = "Open texture viewer";
+            this.TextureViewerButton.UseVisualStyleBackColor = true;
+            this.TextureViewerButton.Click += new System.EventHandler(this.TextureViewerButton_Click);
+            // 
             // ModelForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -683,5 +695,6 @@
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.TrackBar TimeOfDayTrackBar;
         private System.Windows.Forms.CheckBox SkeletonsCheckBox;
+        private System.Windows.Forms.Button TextureViewerButton;
     }
 }
