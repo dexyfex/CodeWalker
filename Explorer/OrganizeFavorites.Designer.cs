@@ -34,12 +34,13 @@
             this.RemoveFavoriteButton = new System.Windows.Forms.Button();
             this.ClearAllFavoritesButton = new System.Windows.Forms.Button();
             this.FavoritesTreeView = new System.Windows.Forms.TreeView();
+            this.CancelButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // SaveButton
             // 
             this.SaveButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.SaveButton.Location = new System.Drawing.Point(417, 439);
+            this.SaveButton.Location = new System.Drawing.Point(324, 439);
             this.SaveButton.Name = "SaveButton";
             this.SaveButton.Size = new System.Drawing.Size(75, 23);
             this.SaveButton.TabIndex = 1;
@@ -50,7 +51,7 @@
             // RemoveFavoriteButton
             // 
             this.RemoveFavoriteButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.RemoveFavoriteButton.Location = new System.Drawing.Point(322, 439);
+            this.RemoveFavoriteButton.Location = new System.Drawing.Point(226, 439);
             this.RemoveFavoriteButton.Name = "RemoveFavoriteButton";
             this.RemoveFavoriteButton.Size = new System.Drawing.Size(75, 23);
             this.RemoveFavoriteButton.TabIndex = 2;
@@ -61,7 +62,7 @@
             // ClearAllFavoritesButton
             // 
             this.ClearAllFavoritesButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ClearAllFavoritesButton.Location = new System.Drawing.Point(224, 439);
+            this.ClearAllFavoritesButton.Location = new System.Drawing.Point(130, 439);
             this.ClearAllFavoritesButton.Name = "ClearAllFavoritesButton";
             this.ClearAllFavoritesButton.Size = new System.Drawing.Size(75, 23);
             this.ClearAllFavoritesButton.TabIndex = 3;
@@ -84,11 +85,22 @@
             this.FavoritesTreeView.Size = new System.Drawing.Size(480, 406);
             this.FavoritesTreeView.TabIndex = 4;
             // 
+            // CancelButton
+            // 
+            this.CancelButton.Location = new System.Drawing.Point(419, 439);
+            this.CancelButton.Name = "CancelButton";
+            this.CancelButton.Size = new System.Drawing.Size(75, 23);
+            this.CancelButton.TabIndex = 5;
+            this.CancelButton.Text = "Cancel";
+            this.CancelButton.UseVisualStyleBackColor = true;
+            this.CancelButton.Click += new System.EventHandler(this.CancelButton_Click);
+            // 
             // OrganizeFavorites
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(504, 474);
+            this.Controls.Add(this.CancelButton);
             this.Controls.Add(this.FavoritesTreeView);
             this.Controls.Add(this.ClearAllFavoritesButton);
             this.Controls.Add(this.RemoveFavoriteButton);
@@ -108,5 +120,6 @@
         private System.Windows.Forms.Button RemoveFavoriteButton;
         private System.Windows.Forms.Button ClearAllFavoritesButton;
         private System.Windows.Forms.TreeView FavoritesTreeView;
+        private System.Windows.Forms.Button CancelButton;
     }
 }

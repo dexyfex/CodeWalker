@@ -47,7 +47,7 @@ namespace CodeWalker.Explorer
 
         private void RemoveFavoriteButton_Click(object sender, EventArgs e)
         {
-            if (FavoritesTreeView.SelectedNode.Index == 0) return;
+            if (FavoritesTreeView.SelectedNode == FavoritesTreeView.Nodes[0]) return;
             string FavoriteToDelete = FavoritesTreeView.SelectedNode.Text;
             FavoritesTreeView.SelectedNode.Remove();
 
@@ -64,6 +64,11 @@ namespace CodeWalker.Explorer
         {
             xDoc.Save(@"C:\Users\Skyler\Documents\GitHub\CodeWalker\Resources\Favorites.xml");
             ExploreForm.LoadFavorites();
+            Close();
+        }
+
+        private void CancelButton_Click(object sender, EventArgs e)
+        {
             Close();
         }
     }
