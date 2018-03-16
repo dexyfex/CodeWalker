@@ -89,7 +89,7 @@ namespace CodeWalker.Forms
         Dictionary<DrawableBase, bool> DrawableDrawFlags = new Dictionary<DrawableBase, bool>();
 
 
-        bool enableGrid = true;
+        bool enableGrid = false;
         float gridSize = 1.0f;
         int gridCount = 40;
         List<VertexTypePC> gridVerts = new List<VertexTypePC>();
@@ -119,8 +119,13 @@ namespace CodeWalker.Forms
             Renderer.rendercollisionmeshes = false;
             Renderer.renderclouds = false;
             Renderer.rendermoon = false;
-            Renderer.renderskeletons = true;
+            Renderer.renderskeletons = false;
             Renderer.SelectionFlagsTestAll = true;
+
+            //var timeofday = 13.6f;
+            //Renderer.SetTimeOfDay(timeofday);
+            //TimeOfDayTrackBar.Value = (int)(timeofday * 60.0f);
+            //UpdateTimeOfDayLabel();
         }
 
         private void Init()
@@ -188,6 +193,8 @@ namespace CodeWalker.Forms
             camera.CurrentDistance = 2.0f;
             camera.TargetRotation.Y = 0.2f;
             camera.CurrentRotation.Y = 0.2f;
+            camera.TargetRotation.X = 0.5f * (float)Math.PI;
+            camera.CurrentRotation.X = 0.5f * (float)Math.PI;
 
             LoadSettings();
 
@@ -359,6 +366,19 @@ namespace CodeWalker.Forms
 
 
 
+
+
+        private void MoveCameraToView(Vector3 pos, float rad)
+        {
+            //move the camera to a default place where the given sphere is fully visible.
+
+            rad = Math.Max(0.5f, rad);
+
+            camera.FollowEntity.Position = pos;
+            camera.TargetDistance = rad * 1.6f;
+            camera.CurrentDistance = rad * 1.6f;
+
+        }
 
 
 
@@ -544,6 +564,11 @@ namespace CodeWalker.Forms
             FileName = ydr.Name;
             Ydr = ydr;
 
+            if (ydr.Drawable != null)
+            {
+                MoveCameraToView(ydr.Drawable.BoundingCenter, ydr.Drawable.BoundingSphereRadius);
+            }
+
             UpdateModelsUI(ydr.Drawable);
         }
         public void LoadModels(YddFile ydd)
@@ -564,6 +589,12 @@ namespace CodeWalker.Forms
             FileName = yft.Name;
             Yft = yft;
 
+            var dr = yft.Fragment?.Drawable;
+            if (dr != null)
+            {
+                MoveCameraToView(dr.BoundingCenter, dr.BoundingSphereRadius);
+            }
+
             UpdateModelsUI(yft.Fragment.Drawable);
         }
         public void LoadModel(YbnFile ybn)
@@ -572,6 +603,11 @@ namespace CodeWalker.Forms
 
             FileName = ybn.Name;
             Ybn = ybn;
+
+            if (Ybn.Bounds != null)
+            {
+                MoveCameraToView(Ybn.Bounds.BoundingBoxCenter, Ybn.Bounds.BoundingSphereRadius);
+            }
 
             UpdateBoundsUI(ybn);
         }
@@ -592,6 +628,14 @@ namespace CodeWalker.Forms
 
             FileName = ynv.Name;
             Ynv = ynv;
+
+            if (ynv.Nav.SectorTree != null)
+            {
+                var st = ynv.Nav.SectorTree;
+                var cen = (st.AABBMin + st.AABBMax).XYZ() * 0.5f;
+                var rad = (st.AABBMax - st.AABBMin).XYZ().Length() * 0.5f;
+                MoveCameraToView(cen, rad);
+            }
 
             UpdateNavmeshUI(ynv);
         }
@@ -664,7 +708,7 @@ namespace CodeWalker.Forms
 
             var s = Settings.Default;
 
-            float moveSpeed = 10.0f;
+            float moveSpeed = 2.0f;
 
 
             Input.Update(elapsed);

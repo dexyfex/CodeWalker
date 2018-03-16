@@ -287,8 +287,6 @@
             // SkeletonsCheckBox
             // 
             this.SkeletonsCheckBox.AutoSize = true;
-            this.SkeletonsCheckBox.Checked = true;
-            this.SkeletonsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.SkeletonsCheckBox.Location = new System.Drawing.Point(19, 444);
             this.SkeletonsCheckBox.Name = "SkeletonsCheckBox";
             this.SkeletonsCheckBox.Size = new System.Drawing.Size(103, 17);
@@ -355,8 +353,6 @@
             // GridCheckBox
             // 
             this.GridCheckBox.AutoSize = true;
-            this.GridCheckBox.Checked = true;
-            this.GridCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.GridCheckBox.Location = new System.Drawing.Point(19, 353);
             this.GridCheckBox.Name = "GridCheckBox";
             this.GridCheckBox.Size = new System.Drawing.Size(45, 17);
