@@ -150,11 +150,17 @@
     <Compile Include="BrowseForm.Designer.cs">
       <DependentUpon>BrowseForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExploreForm.cs">
+    <Compile Include="Explorer\ExploreForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExploreForm.Designer.cs">
+    <Compile Include="Explorer\ExploreForm.Designer.cs">
       <DependentUpon>ExploreForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Explorer\OrganizeFavorites.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Explorer\OrganizeFavorites.Designer.cs">
+      <DependentUpon>OrganizeFavorites.cs</DependentUpon>
     </Compile>
     <Compile Include="ExtractKeysForm.cs">
       <SubType>Form</SubType>
@@ -509,8 +515,11 @@
     <EmbeddedResource Include="BrowseForm.resx">
       <DependentUpon>BrowseForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExploreForm.resx">
+    <EmbeddedResource Include="Explorer\ExploreForm.resx">
       <DependentUpon>ExploreForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Explorer\OrganizeFavorites.resx">
+      <DependentUpon>OrganizeFavorites.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ExtractKeysForm.resx">
       <DependentUpon>ExtractKeysForm.cs</DependentUpon>
@@ -696,6 +705,9 @@
     <None Include="README.md" />
     <None Include="Resources\CW.ico" />
     <None Include="Resources\CW16.ico" />
+    <Content Include="Resources\Favorites.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Todo.txt" />
   </ItemGroup>
   <ItemGroup>
