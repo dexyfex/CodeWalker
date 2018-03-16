@@ -21,14 +21,15 @@ namespace CodeWalker.Forms
         private YtdFile Ytd { get; set; }
         private TextureDictionary TexDict { get; set; }
         private Texture CurrentTexture = null;
-        private float CurrentZoom = 0.0f; //1.0 = 100%, 0.0 = stretch
 
+        private new Point MouseDown;
+        private Boolean MouseIsHovering = false;
+        private Boolean CanZoom = true;
 
         public YtdForm()
         {
             InitializeComponent();
         }
-
 
         public void LoadYtd(YtdFile ytd)
         {
@@ -42,6 +43,7 @@ namespace CodeWalker.Forms
 
             LoadTexDict(ytd.TextureDict, fileName);
         }
+
         public void LoadTexDict(TextureDictionary texdict, string filename)
         {
             TexDict = texdict;
@@ -90,8 +92,6 @@ namespace CodeWalker.Forms
             return texs.Length.ToString() + " texture" + ((texs.Length != 1) ? "s" : "");
         }
 
-
-
         private void ShowTextureMip(Texture tex, int mip, bool mipchange)
         {
             CurrentTexture = tex;
@@ -110,7 +110,6 @@ namespace CodeWalker.Forms
                 return;
             }
 
-
             if (mipchange)
             {
                 if (mip >= tex.Levels) mip = tex.Levels - 1;
@@ -122,7 +121,6 @@ namespace CodeWalker.Forms
 
             SelTextureNameTextBox.Text = tex.Name;
             DetailsPropertyGrid.SelectedObject = tex;
-
 
             try
             {
@@ -167,8 +165,6 @@ namespace CodeWalker.Forms
             UpdateZoom();
         }
 
-
-
         private void UpdateFormTitle()
         {
             Text = fileName + " - Texture Dictionary - CodeWalker by dexyfex";
@@ -179,38 +175,59 @@ namespace CodeWalker.Forms
             StatusLabel.Text = text;
         }
 
-        private void UpdateZoom()
+        public void Pan(MouseEventArgs mouse)
         {
-            //update the image controls for the current zoom level
-
-            var img = SelTexturePictureBox.Image;
-
-            if (CurrentZoom <= 0.0f)
+            if (mouse.Button == MouseButtons.Left)
             {
-                //stretch image to fit the area available.
-                SelTexturePanel.AutoScroll = false;
-                SelTexturePictureBox.SizeMode = PictureBoxSizeMode.Zoom;
-                SelTexturePictureBox.Width = SelTexturePanel.Width - 2;
-                SelTexturePictureBox.Height = SelTexturePanel.Height - 2;
-                SelTexturePictureBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            }
-            else
-            {
-                //zoom to the given pixel ratio...
-                var w = (int)(img.Width * CurrentZoom);
-                var h = (int)(img.Height * CurrentZoom);
-                SelTexturePictureBox.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-                SelTexturePictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
-                SelTexturePictureBox.Width = w;
-                SelTexturePictureBox.Height = h;
-                SelTexturePanel.AutoScroll = true;
-            }
+                Point mousePosNow = mouse.Location;
 
+                int deltaX = mousePosNow.X - MouseDown.X;
+                int deltaY = mousePosNow.Y - MouseDown.Y;
+
+                int newX = SelTexturePictureBox.Location.X + deltaX;
+                int newY = SelTexturePictureBox.Location.Y + deltaY;
+
+                SelTexturePictureBox.Location = new Point(newX, newY);
+            }
         }
 
+        public void Zoom(MouseEventArgs mouse)
+        {
+            if (MouseIsHovering == true)
+            {
+                int newWidth = SelTexturePictureBox.Image.Width;
+                int newHeight = SelTexturePictureBox.Image.Height;
+                int newX = SelTexturePictureBox.Location.X;
+                int newY = SelTexturePictureBox.Location.Y;
 
+                if (mouse.Delta > 0f)
+                {
+                    newWidth = SelTexturePictureBox.Size.Width + (SelTexturePictureBox.Size.Width / 10);
+                    newHeight = SelTexturePictureBox.Size.Height + (SelTexturePictureBox.Size.Height / 10);
+                    newX = SelTexturePictureBox.Location.X - ((SelTexturePictureBox.Size.Width / 10) / 2);
+                    newY = SelTexturePictureBox.Location.Y - ((SelTexturePictureBox.Size.Height / 10) / 2);
+                }
 
+                else if (mouse.Delta < 0f)
+                {
+                    newWidth = SelTexturePictureBox.Size.Width - (SelTexturePictureBox.Size.Width / 10);
+                    newHeight = SelTexturePictureBox.Size.Height - (SelTexturePictureBox.Size.Height / 10);
+                    newX = SelTexturePictureBox.Location.X + ((SelTexturePictureBox.Size.Width / 10) / 2);
+                    newY = SelTexturePictureBox.Location.Y + ((SelTexturePictureBox.Size.Height / 10) / 2);
+                }
 
+                SelTexturePictureBox.Size = new Size(newWidth, newHeight);
+                SelTexturePictureBox.Location = new Point(newX, newY);
+            }
+        }
+
+        private void UpdateZoom()
+        {
+            SelTexturePictureBox.SizeMode = PictureBoxSizeMode.Zoom;
+            SelTexturePictureBox.Width = SelTexturePanel.Width - 2;
+            SelTexturePictureBox.Height = SelTexturePanel.Height - 2;
+            SelTexturePictureBox.Location = SelTexturePanel.Location;
+        }
 
         private void UpdateSaveAs()
         {
@@ -231,7 +248,6 @@ namespace CodeWalker.Forms
                 ToolbarSaveAsMenu.Enabled = true;
             }
         }
-
 
         private void SaveAs()
         {
@@ -264,8 +280,6 @@ namespace CodeWalker.Forms
             }
         }
 
-
-
         private void TexturesListView_SelectedIndexChanged(object sender, EventArgs e)
         {
             Texture tex = null;
@@ -285,23 +299,6 @@ namespace CodeWalker.Forms
             }
             SelTextureMipLabel.Text = SelTextureMipTrackBar.Value.ToString();
             ShowTextureMip(tex, SelTextureMipTrackBar.Value, true);
-        }
-
-        private void SelTextureZoomCombo_TextChanged(object sender, EventArgs e)
-        {
-            string s = SelTextureZoomCombo.Text;
-            if (s.EndsWith("%")) s = s.Substring(0, s.Length - 1);
-
-            float f;
-            if (!float.TryParse(s, out f))
-            {
-                CurrentZoom = 0.0f;
-            }
-            else
-            {
-                CurrentZoom = Math.Min(Math.Max(f, 0.0f), 5000.0f) * 0.01f;
-            }
-            UpdateZoom();
         }
 
         private void FileSaveAllMenu_Click(object sender, EventArgs e)
@@ -327,6 +324,46 @@ namespace CodeWalker.Forms
         private void ToolbarSaveAllMenu_Click(object sender, EventArgs e)
         {
             SaveAll();
+        }
+
+        protected override void OnMouseWheel(MouseEventArgs e)
+        {
+            if (CanZoom == true)
+            {
+                Zoom(e);
+            }
+        }
+
+        private void SelTexturePictureBox_MouseMove(object sender, MouseEventArgs e)
+        {
+            Pan(e);
+        }
+
+        private void SelTexturePictureBox_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                MouseDown = e.Location;
+                CanZoom = false;
+                Cursor.Current = Cursors.SizeAll;
+            }
+        }
+
+        private void SelTexturePictureBox_MouseUp(object sender, MouseEventArgs e)
+        {
+            CanZoom = true;
+
+            Cursor.Current = Cursors.Arrow;
+        }
+
+        private void SelTexturePanel_MouseLeave(object sender, EventArgs e)
+        {
+            MouseIsHovering = false;
+        }
+
+        private void SelTexturePictureBox_MouseEnter(object sender, EventArgs e)
+        {
+            MouseIsHovering = true;
         }
     }
 }
