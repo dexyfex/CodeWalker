@@ -3323,27 +3323,40 @@ namespace CodeWalker
 
             favoritesToolStripMenuItem.DropDownItems.Add("-");
 
-            XmlDocument xDoc = new XmlDocument();
-            xDoc.Load(@"C:\Users\Skyler\Documents\GitHub\CodeWalker\Resources\Favorites.xml");
-            XmlNodeList FavoriteNodes = xDoc.DocumentElement.SelectNodes("Favorite");
-            foreach (XmlNode FavNode in FavoriteNodes)
+            try
             {
-                AddFavoriteItem(FavNode.InnerText);
+                XmlDocument xDoc = new XmlDocument();
+                xDoc.Load(Application.StartupPath + @"\Resources\Favorites.xml");
+                XmlNodeList FavoriteNodes = xDoc.DocumentElement.SelectNodes("Favorite");
+                foreach (XmlNode FavNode in FavoriteNodes)
+                {
+                    AddFavoriteItem(FavNode.InnerText);
+                }
             }
-
+            catch
+            {
+                MessageBox.Show("Favorites.xml is missing from " + Application.StartupPath + @"\Resources", "Error");
+            }
         }
 
         private void addToFavToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (LocationTextBox.Text != "")
             {
-                XmlDocument xDoc = new XmlDocument();
-                xDoc.Load(Application.StartupPath + @"Resources\Favorites.xml");
-                XmlNode FavToAdd = xDoc.CreateElement("Favorite");
-                FavToAdd.InnerText = LocationTextBox.Text;
-                xDoc.DocumentElement.AppendChild(FavToAdd);
-                xDoc.Save(Application.StartupPath + @"Resources\Favorites.xml");
-                LoadFavorites();
+                try
+                {
+                    XmlDocument xDoc = new XmlDocument();
+                    xDoc.Load(Application.StartupPath + @"\Resources\Favorites.xml");
+                    XmlNode FavToAdd = xDoc.CreateElement("Favorite");
+                    FavToAdd.InnerText = LocationTextBox.Text;
+                    xDoc.DocumentElement.AppendChild(FavToAdd);
+                    xDoc.Save(Application.StartupPath + @"\Resources\Favorites.xml");
+                    LoadFavorites();
+                }
+                catch
+                {
+                    MessageBox.Show("Favorites.xml is missing from " + Application.StartupPath + @"\Resources", "Error");
+                }
             }
             else
             {

@@ -28,15 +28,22 @@ namespace CodeWalker.Explorer
         
         private void Init()
         {
-            xDoc.Load(Application.StartupPath + @"Resources\Favorites.xml");
-            FavoriteNodes = xDoc.DocumentElement.SelectNodes("Favorite");
-            Root = xDoc.DocumentElement;
-            foreach (XmlNode FavNode in FavoriteNodes)
+            try
             {
-                FavoritesTreeView.Nodes[0].Nodes.Add(FavNode.InnerText);
-            }
+                xDoc.Load(Application.StartupPath + @"\Resources\Favorites.xml");
+                FavoriteNodes = xDoc.DocumentElement.SelectNodes("Favorite");
+                Root = xDoc.DocumentElement;
+                foreach (XmlNode FavNode in FavoriteNodes)
+                {
+                    FavoritesTreeView.Nodes[0].Nodes.Add(FavNode.InnerText);
+                }
 
-            FavoritesTreeView.ExpandAll();
+                FavoritesTreeView.ExpandAll();
+            }
+            catch
+            {
+                MessageBox.Show("Favorites.xml is missing from " + Application.StartupPath + @"\Resources", "Error");
+            }
         }
 
         private void ClearAllFavoritesButton_Click(object sender, EventArgs e)
@@ -62,7 +69,7 @@ namespace CodeWalker.Explorer
 
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            xDoc.Save(@"C:\Users\Skyler\Documents\GitHub\CodeWalker\Resources\Favorites.xml");
+            xDoc.Save(Application.StartupPath + @"\Resources\Favorites.xml");
             ExploreForm.LoadFavorites();
             Close();
         }
