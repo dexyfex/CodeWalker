@@ -2,6 +2,7 @@
 using CodeWalker.GameFiles;
 using CodeWalker.Properties;
 using CodeWalker.World;
+using CodeWalker.Explorer;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -139,6 +140,7 @@ namespace CodeWalker
                 return;
             }
 
+            LoadFavorites();
 
             Task.Run(() =>
             {
@@ -451,6 +453,7 @@ namespace CodeWalker
             RefreshButton.Enabled = true;
             SearchButton.Enabled = true;
             EditModeButton.Enabled = true;
+            favoritesToolStripMenuItem.Enabled = true;
         }
 
         public void GoUp(MainTreeFolder toFolder = null)
@@ -3287,6 +3290,85 @@ namespace CodeWalker
                 TreeViewEventArgs tve = new TreeViewEventArgs(MainTreeView.SelectedNode);
                 MainTreeView_AfterSelect(MainTreeView, tve); //for some reason, this event doesn't get raised when the selected node changes here
             }
+        }
+
+        private void AddFavoriteItem(string text)
+        {
+            ToolStripMenuItem item = new ToolStripMenuItem();
+            item.Text = text;
+            item.Click += new EventHandler(FavoritesItem_Click);
+
+            favoritesToolStripMenuItem.DropDownItems.Insert(favoritesToolStripMenuItem.DropDownItems.Count, item);
+        }
+
+        private void FavoritesItem_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem FavItem = sender as ToolStripMenuItem;
+            Navigate(FavItem.Text);
+        }
+
+        public void LoadFavorites()
+        {
+            favoritesToolStripMenuItem.DropDownItems.Clear();
+
+            ToolStripMenuItem AddToFavItem = new ToolStripMenuItem();
+            AddToFavItem.Text = "Add To Favorites";
+            AddToFavItem.Click += new EventHandler(addToFavToolStripMenuItem_Click);
+            favoritesToolStripMenuItem.DropDownItems.Add(AddToFavItem);
+
+            ToolStripMenuItem OrganizeFavItem = new ToolStripMenuItem();
+            OrganizeFavItem.Text = "Organize Favorites";
+            OrganizeFavItem.Click += new EventHandler(organizeFavoritesMenuItem_Click);
+            favoritesToolStripMenuItem.DropDownItems.Add(OrganizeFavItem);
+
+            favoritesToolStripMenuItem.DropDownItems.Add("-");
+
+            try
+            {
+                XmlDocument xDoc = new XmlDocument();
+                xDoc.Load(Application.StartupPath + @"\Resources\Favorites.xml");
+                XmlNodeList FavoriteNodes = xDoc.DocumentElement.SelectNodes("Favorite");
+                foreach (XmlNode FavNode in FavoriteNodes)
+                {
+                    AddFavoriteItem(FavNode.InnerText);
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Favorites.xml is missing from " + Application.StartupPath + @"\Resources", "Error");
+            }
+        }
+
+        private void addToFavToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (LocationTextBox.Text != "")
+            {
+                try
+                {
+                    XmlDocument xDoc = new XmlDocument();
+                    xDoc.Load(Application.StartupPath + @"\Resources\Favorites.xml");
+                    XmlNode FavToAdd = xDoc.CreateElement("Favorite");
+                    FavToAdd.InnerText = LocationTextBox.Text;
+                    xDoc.DocumentElement.AppendChild(FavToAdd);
+                    xDoc.Save(Application.StartupPath + @"\Resources\Favorites.xml");
+                    LoadFavorites();
+                }
+                catch
+                {
+                    MessageBox.Show("Favorites.xml is missing from " + Application.StartupPath + @"\Resources", "Error");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Must be out of root folder to add a favorite.", "Error");
+            }
+        }
+
+        private void organizeFavoritesMenuItem_Click(object sender, EventArgs e)
+        {
+            Form f = new OrganizeFavorites(this);
+            FormTheme.SetTheme(f, Theme);
+            f.Show();
         }
 
         private void ListContextViewMenu_Click(object sender, EventArgs e)
