@@ -28,7 +28,7 @@ namespace CodeWalker.Explorer
         
         private void Init()
         {
-            xDoc.Load(@"C:\Users\Skyler\Documents\GitHub\CodeWalker\Resources\Favorites.xml");
+            xDoc.Load(Application.StartupPath + @"Resources\Favorites.xml");
             FavoriteNodes = xDoc.DocumentElement.SelectNodes("Favorite");
             Root = xDoc.DocumentElement;
             foreach (XmlNode FavNode in FavoriteNodes)

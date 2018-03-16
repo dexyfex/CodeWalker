@@ -3338,11 +3338,11 @@ namespace CodeWalker
             if (LocationTextBox.Text != "")
             {
                 XmlDocument xDoc = new XmlDocument();
-                xDoc.Load(@"C:\Users\Skyler\Documents\GitHub\CodeWalker\Resources\Favorites.xml");
+                xDoc.Load(Application.StartupPath + @"Resources\Favorites.xml");
                 XmlNode FavToAdd = xDoc.CreateElement("Favorite");
                 FavToAdd.InnerText = LocationTextBox.Text;
                 xDoc.DocumentElement.AppendChild(FavToAdd);
-                xDoc.Save(@"C:\Users\Skyler\Documents\GitHub\CodeWalker\Resources\Favorites.xml");
+                xDoc.Save(Application.StartupPath + @"Resources\Favorites.xml");
                 LoadFavorites();
             }
             else
