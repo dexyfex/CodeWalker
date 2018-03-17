@@ -54,6 +54,12 @@
     <Compile Include="MenuStripFix.Designer.cs">
       <DependentUpon>MenuStripFix.cs</DependentUpon>
     </Compile>
+    <Compile Include="PanelFix.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelFix.Designer.cs">
+      <DependentUpon>PanelFix.cs</DependentUpon>
+    </Compile>
     <Compile Include="ProjectPanel.cs">
       <SubType>Form</SubType>
     </Compile>
