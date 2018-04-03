@@ -1406,7 +1406,7 @@ namespace CodeWalker.Rendering
                 if (poly == null) continue;
                 byte matind = ((bgeom.PolygonMaterialIndices != null) && (i < bgeom.PolygonMaterialIndices.Length)) ? bgeom.PolygonMaterialIndices[i] : (byte)0;
                 BoundMaterial_s mat = ((bgeom.Materials != null) && (matind < bgeom.Materials.Length)) ? bgeom.Materials[matind] : new BoundMaterial_s();
-                Color4 color = BoundsMaterialTypes.GetMaterialColour(mat.Type);
+                Color color = BoundsMaterialTypes.GetMaterialColour(mat.Type);
                 Vector3 p1, p2, p3, p4, a1, n1;//, n2, n3, p5, p7, p8;
                 Vector3 norm = Vector3.Zero;
                 uint colour = (uint)color.ToRgba();
