@@ -14,7 +14,7 @@ namespace CodeWalker.GameFiles
 
         public List<Vector3> Vertices { get; set; }
         public List<ushort> Indices { get; set; }
-        public List<NavMeshAdjPoly> AdjPolys { get; set; }
+        public List<NavMeshEdge> Edges { get; set; }
         public List<YnvPoly> Polys { get; set; }
         public List<YnvPortal> Portals { get; set; }
         public List<YnvPoint> Points { get; set; }
@@ -101,9 +101,9 @@ namespace CodeWalker.GameFiles
                 {
                     Indices = Nav.Indices.GetFullList();
                 }
-                if (Nav.AdjPolys != null)
+                if (Nav.Edges != null)
                 {
-                    AdjPolys = Nav.AdjPolys.GetFullList();
+                    Edges = Nav.Edges.GetFullList();
                 }
                 if (Nav.Polys != null)
                 {
@@ -114,7 +114,6 @@ namespace CodeWalker.GameFiles
                         YnvPoly poly = new YnvPoly();
                         poly.Init(this, polys[i]);
                         poly.Index = i;
-                        poly.CalculatePosition(); //calc poly center for display purposes..
                         Polys.Add(poly);
 
                         if (poly.PortalType > 0)
@@ -209,23 +208,46 @@ namespace CodeWalker.GameFiles
             Vector3 aabbsizeinv = 1.0f / aabbsize;
 
             var vertlist = new List<NavMeshVertex>();
-            if (Vertices != null)
-            {
-                for (int i = 0; i < Vertices.Count; i++)
-                {
-                    vertlist.Add(NavMeshVertex.Create((Vertices[i] - posoffset) * aabbsizeinv));
-                }
-            }
+            var indslist = new List<ushort>();
+            var edgelist = new List<NavMeshEdge>();
             var polylist = new List<NavMeshPoly>();
-            if (Polys != null)
+            var portallist = new List<NavMeshPortal>();
+
+            var vertdict = new Dictionary<Vector3, ushort>();
+            var blankedgepart1 = new NavMeshEdgePart() { Value = 0x0FFFE1 };//1, -, 1, 0 
+            var blankedgepart2 = new NavMeshEdgePart() { Value = 0x2FFFE1 };//1, -, 1, 1
+            var blankedge = new NavMeshEdge() { Unknown_0h = blankedgepart1, Unknown_4h = blankedgepart2 };
+
+            if (Polys != null) //rebuild vertices, indices, edges and polys lists from poly data.
             {
                 for (int i = 0; i < Polys.Count; i++)
                 {
-                    Polys[i].Index = i;
-                    polylist.Add(Polys[i].RawData);
+                    var poly = Polys[i];
+                    var vc = poly.Vertices?.Length ?? 0;
+                    for (int n = 0; n < vc; n++)
+                    {
+                        Vector3 v = poly.Vertices[n];
+                        NavMeshEdge e = ((poly.Edges != null) && (n < poly.Edges.Length)) ? poly.Edges[n] : blankedge;
+                        ushort ind;
+                        if (!vertdict.TryGetValue(v, out ind))
+                        {
+                            ind = (ushort)vertlist.Count;
+                            vertdict[v] = ind;
+                            vertlist.Add(NavMeshVertex.Create((v - posoffset) * aabbsizeinv));
+                        }
+                        if ((poly.Indices != null) && (n < poly.Indices.Length))
+                        {
+                            poly.Indices[n] = ind;
+                        }
+                        indslist.Add(ind);
+                        edgelist.Add(e);
+                    }
+                    poly._RawData.IndexCount = vc;
+                    poly.Index = i;//this should be redundant...
+                    polylist.Add(poly.RawData);
                 }
             }
-            var portallist = new List<NavMeshPortal>();
+
             if (Portals != null)
             {
                 for (int i = 0; i < Portals.Count; i++)
@@ -238,7 +260,7 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            if (Points != null)
+            if (Points != null) //points will be built into the sector tree
             {
                 for (int i = 0; i < Points.Count; i++)
                 {
@@ -259,10 +281,10 @@ namespace CodeWalker.GameFiles
                 Nav.Indices = new NavMeshList<ushort>();
                 Nav.Indices.VFT = 1080158424;
             }
-            if (Nav.AdjPolys == null)
+            if (Nav.Edges == null)
             {
-                Nav.AdjPolys = new NavMeshList<NavMeshAdjPoly>();
-                Nav.AdjPolys.VFT = 1080158440;
+                Nav.Edges = new NavMeshList<NavMeshEdge>();
+                Nav.Edges.VFT = 1080158440;
             }
             if (Nav.Polys == null)
             {
@@ -273,9 +295,9 @@ namespace CodeWalker.GameFiles
 
             Nav.Vertices.RebuildList(vertlist);
 
-            Nav.Indices.RebuildList(Indices);
+            Nav.Indices.RebuildList(indslist);
 
-            Nav.AdjPolys.RebuildList(AdjPolys);
+            Nav.Edges.RebuildList(edgelist);
 
             Nav.Polys.RebuildList(polylist);
 
@@ -474,67 +496,39 @@ namespace CodeWalker.GameFiles
 
             //go through the nav mesh polys and generate verts to render...
 
-            if ((Vertices == null) || (Vertices.Count == 0)) return;
-            if ((Indices == null) || (Indices.Count == 0)) return;
             if ((Polys == null) || (Polys.Count == 0)) return;
 
 
             int vc = Vertices.Count;
 
             List<EditorVertex> rverts = new List<EditorVertex>();
+            EditorVertex p0 = new EditorVertex();
+            EditorVertex p1 = new EditorVertex();
+            EditorVertex p2 = new EditorVertex();
             foreach (var ypoly in Polys)
             {
-                var poly = ypoly.RawData;
+                if ((ypoly.Vertices == null) || (ypoly.Vertices.Length < 3))
+                { continue; }
+
                 var colour = ypoly.GetColour();
                 var colourval = (uint)colour.ToRgba();
 
-                var ic = poly.IndexCount;
-                var startid = poly.IndexID;
-                var endid = startid + ic;
-                if (startid >= Indices.Count)
-                { continue; }
-                if (endid > Indices.Count)
-                { continue; }
-
-
-                if(ic<3)
-                { continue; }//not enough verts to make a triangle...
-
-                if (ic > 15)
-                { }
-
-
-                EditorVertex p0 = new EditorVertex();
-                EditorVertex p1 = new EditorVertex();
-                EditorVertex p2 = new EditorVertex();
                 p0.Colour = colourval;
                 p1.Colour = colourval;
                 p2.Colour = colourval;
 
-                var startind = Indices[startid];
-                if (startind >= vc)
-                { continue; }
-
-                p0.Position = Vertices[startind];
+                p0.Position = ypoly.Vertices[0];
 
                 //build triangles for the poly.
-                int tricount = ic - 2;
+                int tricount = ypoly.Vertices.Length - 2;
                 for (int t = 0; t < tricount; t++)
                 {
-                    int tid = startid + t;
-                    int ind1 = Indices[tid + 1];
-                    int ind2 = Indices[tid + 2];
-                    if ((ind1 >= vc) || (ind2 >= vc))
-                    { continue; }
-
-                    p1.Position = Vertices[ind1];
-                    p2.Position = Vertices[ind2];
-
+                    p1.Position = ypoly.Vertices[t + 1];
+                    p2.Position = ypoly.Vertices[t + 2];
                     rverts.Add(p0);
                     rverts.Add(p1);
                     rverts.Add(p2);
                 }
-
             }
 
             TriangleVerts = rverts.ToArray();
@@ -624,13 +618,57 @@ namespace CodeWalker.GameFiles
         public Vector3 Position { get; set; }
         public int Index { get; set; }
 
+        public ushort[] Indices { get; set; }
+        public Vector3[] Vertices { get; set; }
+        public NavMeshEdge[] Edges { get; set; }
+
 
         public void Init(YnvFile ynv, NavMeshPoly poly)
         {
             Ynv = ynv;
             RawData = poly;
 
+            LoadIndices();
+            CalculatePosition(); //calc poly center for display purposes..
         }
+
+
+        public void LoadIndices()
+        {
+            //load indices, vertices and edges
+            var indices = Ynv.Indices;
+            var vertices = Ynv.Vertices;
+            var edges = Ynv.Edges;
+            if ((indices == null) || (vertices == null) || (edges == null))
+            { return; }
+            var vc = vertices.Count;
+            var ic = _RawData.IndexCount;
+            var startid = _RawData.IndexID;
+            var endid = startid + ic;
+            if (startid >= indices.Count)
+            { return; }
+            if (endid > indices.Count)
+            { return; }
+            if (endid > edges.Count)
+            { return; }
+
+            Indices = new ushort[ic];
+            Vertices = new Vector3[ic];
+            Edges = new NavMeshEdge[ic];
+
+            int i = 0;
+            for (int id = startid; id < endid; id++)
+            {
+                var ind = indices[id];
+
+                Indices[i] = ind;
+                Vertices[i] = (ind < vc) ? vertices[ind] : Vector3.Zero;
+                Edges[i] = edges[id];
+
+                i++;
+            }
+        }
+
 
         public void SetPosition(Vector3 pos)
         {
@@ -709,30 +747,15 @@ namespace CodeWalker.GameFiles
         public void CalculatePosition()
         {
             //calc poly center for display purposes.
-            var indices = Ynv.Indices;
-            var vertices = Ynv.Vertices;
-            if ((indices == null) || (vertices == null))
-            { return; }
-            var vc = vertices.Count;
-            var ic = _RawData.IndexCount;
-            var startid = _RawData.IndexID;
-            var endid = startid + ic;
-            if (startid >= indices.Count)
-            { return; }
-            if (endid > indices.Count)
-            { return; }
             Vector3 pcenter = Vector3.Zero;
-            float pcount = 0.0f;
-            for (int id = startid; id < endid; id++)
+            if (Vertices != null)
             {
-                var ind = indices[id];
-                if (ind >= vc)
-                { continue; }
-
-                pcenter += vertices[ind];
-                pcount += 1.0f;
+                for (int i = 0; i < Vertices.Length; i++)
+                {
+                    pcenter += Vertices[i];
+                }
             }
-            Position = pcenter * (1.0f / pcount);
+            Position = pcenter * (1.0f / ((float)Vertices?.Length));
         }
 
 

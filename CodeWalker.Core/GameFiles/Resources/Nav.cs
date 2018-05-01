@@ -54,8 +54,8 @@ namespace CodeWalker.GameFiles
         public uint Unused_078h { get; set; } // 0x00000000
         public uint Unused_07Ch { get; set; } // 0x00000000
         public ulong IndicesPointer { get; set; }
-        public ulong AdjPolysPointer { get; set; }
-        public uint AdjPolysIndicesCount { get; set; }
+        public ulong EdgesPointer { get; set; }
+        public uint EdgesIndicesCount { get; set; }
         public NavMeshUintArray AdjAreaIDs { get; set; }
         public ulong PolysPointer { get; set; }
         public ulong SectorTreePointer { get; set; }
@@ -79,7 +79,7 @@ namespace CodeWalker.GameFiles
 
         public NavMeshList<NavMeshVertex> Vertices { get; set; }
         public NavMeshList<ushort> Indices { get; set; }
-        public NavMeshList<NavMeshAdjPoly> AdjPolys { get; set; }
+        public NavMeshList<NavMeshEdge> Edges { get; set; }
         public NavMeshList<NavMeshPoly> Polys { get; set; }
         public NavMeshSector SectorTree { get; set; }
         public NavMeshPortal[] Portals { get; set; }
@@ -109,8 +109,8 @@ namespace CodeWalker.GameFiles
             Unused_078h = reader.ReadUInt32();
             Unused_07Ch = reader.ReadUInt32();
             IndicesPointer = reader.ReadUInt64();
-            AdjPolysPointer = reader.ReadUInt64();
-            AdjPolysIndicesCount = reader.ReadUInt32();
+            EdgesPointer = reader.ReadUInt64();
+            EdgesIndicesCount = reader.ReadUInt32();
             AdjAreaIDs = reader.ReadStruct<NavMeshUintArray>();
             PolysPointer = reader.ReadUInt64();
             SectorTreePointer = reader.ReadUInt64();
@@ -135,7 +135,7 @@ namespace CodeWalker.GameFiles
 
             Vertices = reader.ReadBlockAt<NavMeshList<NavMeshVertex>>(VerticesPointer);
             Indices = reader.ReadBlockAt<NavMeshList<ushort>>(IndicesPointer);
-            AdjPolys = reader.ReadBlockAt<NavMeshList<NavMeshAdjPoly>>(AdjPolysPointer);
+            Edges = reader.ReadBlockAt<NavMeshList<NavMeshEdge>>(EdgesPointer);
             Polys = reader.ReadBlockAt<NavMeshList<NavMeshPoly>>(PolysPointer);
             SectorTree = reader.ReadBlockAt<NavMeshSector>(SectorTreePointer);
             Portals = reader.ReadStructsAt<NavMeshPortal>(PortalsPointer, PortalsCount);
@@ -150,7 +150,7 @@ namespace CodeWalker.GameFiles
 
             VerticesPointer = (ulong)(Vertices != null ? Vertices.FilePosition : 0);
             IndicesPointer = (ulong)(Indices != null ? Indices.FilePosition : 0);
-            AdjPolysPointer = (ulong)(AdjPolys != null ? AdjPolys.FilePosition : 0);
+            EdgesPointer = (ulong)(Edges != null ? Edges.FilePosition : 0);
             PolysPointer = (ulong)(Polys != null ? Polys.FilePosition : 0);
             SectorTreePointer = (ulong)(SectorTree != null ? SectorTree.FilePosition : 0);
             PortalsPointer = (ulong)(PortalsBlock?.FilePosition ?? 0);
@@ -169,8 +169,8 @@ namespace CodeWalker.GameFiles
             writer.Write(Unused_078h);
             writer.Write(Unused_07Ch);
             writer.Write(IndicesPointer);
-            writer.Write(AdjPolysPointer);
-            writer.Write(AdjPolysIndicesCount);
+            writer.Write(EdgesPointer);
+            writer.Write(EdgesIndicesCount);
             writer.WriteStruct(AdjAreaIDs);
             writer.Write(PolysPointer);
             writer.Write(SectorTreePointer);
@@ -198,7 +198,7 @@ namespace CodeWalker.GameFiles
             var list = new List<IResourceBlock>(base.GetReferences());
             if (Vertices != null) list.Add(Vertices);
             if (Indices != null) list.Add(Indices);
-            if (AdjPolys != null) list.Add(AdjPolys);
+            if (Edges != null) list.Add(Edges);
             if (Polys != null) list.Add(Polys);
             if (SectorTree != null) list.Add(SectorTree);
 
@@ -592,10 +592,10 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshAdjPoly
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshEdge
     {
-        public NavMeshAdjPolyPart Unknown_0h { get; set; }
-        public NavMeshAdjPolyPart Unknown_4h { get; set; }
+        public NavMeshEdgePart Unknown_0h { get; set; }
+        public NavMeshEdgePart Unknown_4h { get; set; }
 
         public override string ToString()
         {
@@ -604,7 +604,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshAdjPolyPart
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshEdgePart
     {
         public uint Value { get; set; }
 
@@ -623,7 +623,8 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return AreaIDInd.ToString() + ", " + PolyID.ToString() + ", " + Unk2.ToString() + ", " + Unk3.ToString();
+            string pid = (PolyID == 0x3FFF) ? "-" : PolyID.ToString();
+            return AreaIDInd.ToString() + ", " + pid + ", " + Unk2.ToString() + ", " + Unk3.ToString();
         }
     }
 
@@ -647,7 +648,7 @@ namespace CodeWalker.GameFiles
 
 
         //public int IndexUnk { get { return (IndexFlags >> 0) & 31; } } //always 0
-        public int IndexCount { get { return (IndexFlags >> 5); } }
+        public int IndexCount { get { return (IndexFlags >> 5); } set { IndexFlags = (ushort)((IndexFlags & 31) | ((value & 0x7FF) << 5)); } }
 
         //public int PartUnk1 { get { return (PartFlags >> 0) & 0xF; } } //always 0
         public ushort PartID { get { return (ushort)((PartFlags >> 4) & 0xFF); } set { PartFlags = (ushort)((PartFlags & 0xF00F) | ((value & 0xFF) << 4)); } }
