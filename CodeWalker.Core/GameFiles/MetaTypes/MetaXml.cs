@@ -1646,7 +1646,12 @@ namespace CodeWalker.GameFiles
 
         public static string FormatHash(MetaHash h) //for use with WriteItemArray
         {
-            return h.ToString();
+            var str = JenkIndex.TryGetString(h);
+            if (!string.IsNullOrEmpty(str)) return str;
+            str = GlobalText.TryGetString(h);
+            if (!string.IsNullOrEmpty(str)) return str;
+            return HashString(h);// "hash_" + h.Hex;
+            //return h.ToString();
         }
         public static string FormatVector2(Vector2 v) //for use with WriteItemArray
         {

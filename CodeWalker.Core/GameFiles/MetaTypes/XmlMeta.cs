@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml;
 using SharpDX;
@@ -182,7 +183,7 @@ namespace CodeWalker.GameFiles
 
                                 mb.AddEnumInfo(_infos.EnumNameHash);
 
-                                int val = GetEnumInt(entry.ReferenceKey, cnode.InnerText);
+                                int val = GetEnumInt(entry.ReferenceKey, cnode.InnerText, entry.DataType);
                                 Write(val, data, entry.DataOffset);
                                 break;
                             }
@@ -193,7 +194,7 @@ namespace CodeWalker.GameFiles
 
                                 mb.AddEnumInfo(_infos.EnumNameHash);
 
-                                int val = GetEnumInt(entry.ReferenceKey, cnode.InnerText);
+                                int val = GetEnumInt(entry.ReferenceKey, cnode.InnerText, entry.DataType);
                                 Write((short)val, data, entry.DataOffset);
                                 break;
                             }
@@ -296,11 +297,16 @@ namespace CodeWalker.GameFiles
         private static void GetParsedArrayOfBytes(XmlNode node, byte[] data, MetaStructureEntryInfo_s entry, MetaStructureEntryInfo_s arrEntry)
         {
             int offset = entry.DataOffset;
-            string[] split;
+
+            var ns = NumberStyles.Any;
+            var ic = CultureInfo.InvariantCulture;
+            var sa = new[] { ' ' };
+            var so = StringSplitOptions.RemoveEmptyEntries;
+            var split = node.InnerText.Trim().Split(sa, so); //split = Split(node.InnerText, 2); to read as unsplitted HEX
 
             switch (arrEntry.DataType)
             {
-                default:
+                default: //expecting hex string.
                     split = Split(node.InnerText, 2);
                     for (int j = 0; j < split.Length; j++)
                     {
@@ -309,67 +315,81 @@ namespace CodeWalker.GameFiles
                         offset += sizeof(byte);
                     }
                     break;
-                case MetaStructureEntryDataType.SignedByte:
-                    split = node.InnerText.Split(); //split = Split(node.InnerText, 2); to read as unsplitted HEX
+                case MetaStructureEntryDataType.SignedByte: //expecting space-separated array.
                     for (int j = 0; j < split.Length; j++)
                     {
-                        sbyte val = Convert.ToSByte(split[j], 10);
-                        data[offset] = (byte)val;
-                        offset += sizeof(sbyte);
+                        sbyte val;// = Convert.ToSByte(split[j], 10);
+                        if (sbyte.TryParse(split[j].Trim(), ns, ic, out val))
+                        {
+                            data[offset] = (byte)val;
+                            offset += sizeof(sbyte);
+                        }
                     }
                     break;
-                case MetaStructureEntryDataType.UnsignedByte:
-                    split = node.InnerText.Split();
+                case MetaStructureEntryDataType.UnsignedByte: //expecting space-separated array.
                     for (int j = 0; j < split.Length; j++)
                     {
-                        byte val = Convert.ToByte(split[j], 10);
-                        data[offset] = val;
-                        offset += sizeof(byte);
+                        byte val;// = Convert.ToByte(split[j], 10);
+                        if (byte.TryParse(split[j].Trim(), ns, ic, out val))
+                        {
+                            data[offset] = val;
+                            offset += sizeof(byte);
+                        }
                     }
                     break;
-                case MetaStructureEntryDataType.SignedShort:
-                    split = node.InnerText.Split();
+                case MetaStructureEntryDataType.SignedShort: //expecting space-separated array.
                     for (int j = 0; j < split.Length; j++)
                     {
-                        short val = Convert.ToInt16(split[j], 10);
-                        Write(val, data, offset);
-                        offset += sizeof(short);
+                        short val;// = Convert.ToInt16(split[j], 10);
+                        if (short.TryParse(split[j].Trim(), ns, ic, out val))
+                        {
+                            Write(val, data, offset);
+                            offset += sizeof(short);
+                        }
                     }
                     break;
-                case MetaStructureEntryDataType.UnsignedShort:
-                    split = node.InnerText.Split();
+                case MetaStructureEntryDataType.UnsignedShort: //expecting space-separated array.
                     for (int j = 0; j < split.Length; j++)
                     {
-                        ushort val = Convert.ToUInt16(split[j], 10);
-                        Write(val, data, offset);
-                        offset += sizeof(ushort);
+                        ushort val;// = Convert.ToUInt16(split[j], 10);
+                        if (ushort.TryParse(split[j].Trim(), ns, ic, out val))
+                        {
+                            Write(val, data, offset);
+                            offset += sizeof(ushort);
+                        }
                     }
                     break;
-                case MetaStructureEntryDataType.SignedInt:
-                    split = node.InnerText.Split();
+                case MetaStructureEntryDataType.SignedInt: //expecting space-separated array.
                     for (int j = 0; j < split.Length; j++)
                     {
-                        int val = Convert.ToInt32(split[j], 10);
-                        Write(val, data, offset);
-                        offset += sizeof(int);
+                        int val;// = Convert.ToInt32(split[j], 10);
+                        if (int.TryParse(split[j].Trim(), ns, ic, out val))
+                        {
+                            Write(val, data, offset);
+                            offset += sizeof(int);
+                        }
                     }
                     break;
-                case MetaStructureEntryDataType.UnsignedInt:
-                    split = node.InnerText.Split();
+                case MetaStructureEntryDataType.UnsignedInt: //expecting space-separated array.
                     for (int j = 0; j < split.Length; j++)
                     {
-                        uint val = Convert.ToUInt32(split[j], 10);
-                        Write(val, data, offset);
-                        offset += sizeof(uint);
+                        uint val;// = Convert.ToUInt32(split[j], 10);
+                        if (uint.TryParse(split[j].Trim(), ns, ic, out val))
+                        {
+                            Write(val, data, offset);
+                            offset += sizeof(uint);
+                        }
                     }
                     break;
-                case MetaStructureEntryDataType.Float:
-                    split = node.InnerText.Split();
+                case MetaStructureEntryDataType.Float: //expecting space-separated array.
                     for (int j = 0; j < split.Length; j++)
                     {
-                        float val = FloatUtil.Parse(split[j]);
-                        Write(val, data, offset);
-                        offset += sizeof(float);
+                        float val;// = FloatUtil.Parse(split[j]);
+                        if (FloatUtil.TryParse(split[j].Trim(), out val))
+                        {
+                            Write(val, data, offset);
+                            offset += sizeof(float);
+                        }
                     }
                     break;
             }
@@ -685,12 +705,8 @@ namespace CodeWalker.GameFiles
             return chunks.ToArray();
         }
 
-        private static int GetEnumInt(MetaName type, string enumString)
+        private static int GetEnumInt(MetaName type, string enumString, MetaStructureEntryDataType dataType)
         {
-
-            //BUG: needs to handle multiple flags!!!
-
-            var enumName = (MetaName)(uint)GetHash(enumString);
             var infos = MetaTypes.GetEnumInfo(type);
 
             if (infos == null)
@@ -698,13 +714,47 @@ namespace CodeWalker.GameFiles
                 return 0;
             }
 
-            for (int j = 0; j < infos.Entries.Length; j++)
-            {
-                var entry = infos.Entries[j];
 
-                if (entry.EntryNameHash == enumName)
+            bool isFlags = (dataType == MetaStructureEntryDataType.IntFlags1) ||
+                           (dataType == MetaStructureEntryDataType.IntFlags2);// ||
+                           //(dataType == MetaStructureEntryDataType.ShortFlags);
+
+            if (isFlags)
+            {
+                //flags enum. (multiple values, comma-separated)
+                var split = enumString.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                int enumVal = 0;
+
+                for (int i = 0; i < split.Length; i++)
                 {
-                    return entry.EntryValue;
+                    var enumName = (MetaName)(uint)GetHash(split[i].Trim());
+
+                    for (int j = 0; j < infos.Entries.Length; j++)
+                    {
+                        var entry = infos.Entries[j];
+                        if (entry.EntryNameHash == enumName)
+                        {
+                            enumVal += (1 << entry.EntryValue);
+                        }
+                    }
+                }
+
+                return enumVal;
+            }
+            else
+            {
+                //single value enum.
+
+                var enumName = (MetaName)(uint)GetHash(enumString);
+
+                for (int j = 0; j < infos.Entries.Length; j++)
+                {
+                    var entry = infos.Entries[j];
+
+                    if (entry.EntryNameHash == enumName)
+                    {
+                        return entry.EntryValue;
+                    }
                 }
             }
 
