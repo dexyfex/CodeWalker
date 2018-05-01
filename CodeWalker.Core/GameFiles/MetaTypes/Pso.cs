@@ -23,6 +23,95 @@
 //shamelessly stolen and mangled
 
 
+
+
+
+
+/*
+
+Regarding saving PSO files:
+
+[for checksum - use whole file]
+Brick - Today
+uint32_t joaat_checksum(const void* memory, const size_t length)
+{
+    uint32_t hash = 0x3FAC7125;
+
+    for (size_t i = 0; i < length; ++i)
+    {
+        hash += static_cast<const int8_t*>(memory)[i];
+        hash += hash << 10;
+        hash ^= hash >> 6;
+    }
+
+    hash += hash << 3;
+    hash ^= hash >> 11;
+    hash += hash << 15;
+
+    return hash;
+}
+
+
+[before doing checksum for file:]
+      v12->Checksum = 0;
+      v12->FileSize = 0;
+      v12->Magic = 'SKHC';
+      v12->Size = 0x14000000;
+      v22 = v12;
+      LOBYTE(v12->Platform) = platformChar[0];
+
+
+
+
+
+
+
+Brick - Today
+This is a table i made a while ago for the pso types btw
+| Index | Type   | Size | Align | Name       | Serialization
+| 0     | Simple | 1    | 1     | bool       |
+| 1     | Simple | 1    | 1     | s8         |
+| 2     | Simple | 1    | 1     | u8         |
+| 3     | Simple | 2    | 2     | s16        |
+| 4     | Simple | 2    | 2     | u16        |
+| 5     | Simple | 4    | 4     | s32        |
+| 6     | Simple | 4    | 4     | u32        |
+| 7     | Simple | 4    | 4     | f32        |
+| 8     | Vector | 8    | 4     | vec2       |
+| 9     | Vector | 16   | 16    | vec3       |
+| 10    | Vector | 16   | 16    | vec4       |
+| 11    | String | 0    | 0     | string     |
+| 12    | Struct | 0    | 0     | struct     |
+| 13    | Array  | 0    | 0     | array      |
+| 14    | Enum   | 0    | 0     | enum       |
+| 15    | Bitset | 0    | 0     | bitset     |
+| 16    | Map    | 0    | 0     | map        |
+| 17    | Matrix | 64   | 16    | matrix43   | shuffled
+| 18    | Matrix | 64   | 16    | matrix44   | shuffled
+| 19    | Vector | 16   | 16    | vec4       | x, y, x, x
+| 20    | Vector | 16   | 16    | vec4       | x, y, z, x
+| 21    | Vector | 16   | 16    | vec4       | x, y, z, w
+| 22    | Matrix | 48   | 16    | matrix34   |
+| 23    | Matrix | 64   | 16    | matrix43   |
+| 24    | Matrix | 64   | 16    | matrix44   |
+| 25    | Simple | 16   | 16    | f32_vec4   | fill all with f32
+| 26    | Simple | 16   | 16    | bool_int4  | fill all with 0x00000000 or 0xFFFFFFFF depending on bool
+| 27    | Vector | 16   | 16    | bool4_int4 | fill each with 0x00000000 or 0xFFFFFFFF depending on bools
+| 28    | Simple | 8    | 8     | s32_i64    | sign extended s32
+| 29    | Simple | 8    | 8     | s32_u64    | sign extended s32
+| 30    | Simple | 2    | 2     | f16        | f64 converted to f16
+| 31    | Simple | 8    | 8     | s64        |
+| 32    | Simple | 8    | 8     | u64        |
+| 33    | Simple | 8    | 8     | f64        |
+
+
+
+ */
+
+
+
+
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

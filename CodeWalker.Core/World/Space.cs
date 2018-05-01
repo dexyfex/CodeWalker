@@ -420,17 +420,17 @@ namespace CodeWalker.World
             {
                 AddRpfYnds(rpffile, yndentries);
             }
-            foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load nodes from current dlc rpfs
-            {
-                foreach (var rpffile in dlcrpf.Children)
-                {
-                    AddRpfYnds(rpffile, yndentries);
-                }
-            }
             var updrpf = rpfman.FindRpfFile("update\\update.rpf"); //load nodes from patch area...
             if (updrpf != null)
             {
                 foreach (var rpffile in updrpf.Children)
+                {
+                    AddRpfYnds(rpffile, yndentries);
+                }
+            }
+            foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load nodes from current dlc rpfs
+            {
+                foreach (var rpffile in dlcrpf.Children)
                 {
                     AddRpfYnds(rpffile, yndentries);
                 }

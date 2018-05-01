@@ -538,6 +538,7 @@ namespace CodeWalker.GameFiles
         CExtensionDefSpawnPointOverride = 2716862120,
         CExtensionDefWindDisturbance = 569228403,
         CFiringPatternInfo = 4139644871,
+        CFiringPatternInfoManager = 3698419088,
         CGrabHelper__Tunables = 1898505781,
         Chances = 3434267272,
         changeSetName = 3618800523,
@@ -1605,6 +1606,7 @@ namespace CodeWalker.GameFiles
         VEHICLE_LAYOUTS_FILE = 2004032454,
         VEHICLE_METADATA_FILE = 4125139733,
         VEHICLE_POPULATION_FILE = 4010054647,
+        VEHICLE_RESPONSE_DEFAULT = 3986150789,
         VEHICLE_RESPONSE_ARMY_BASE = 317362887,
         VEHICLE_RESPONSE_COUNTRYSIDE = 2467847847,
         VEHICLE_SHOP_DLC_FILE = 3203173146,
@@ -1621,6 +1623,13 @@ namespace CodeWalker.GameFiles
         VFXINTERIORINFO_FILE = 354822867,
         VFXPEDINFO_FILE = 962370952,
         VFXREGIONINFO_FILE = 3633596549,
+        vfxregioninfo_default = 526963733,
+        vfxregioninfo_desert = 1202232026,
+        vfxregioninfo_beach = 4239901007,
+        vfxregioninfo_slum = 4267832995,
+        vfxregioninfo_woodland = 1397181648,
+        vfxregioninfo_mountain = 3282595980,
+        vfxregioninfo_countryside = 2691334223,
         vfxTagHashName = 1944993828,
         VFXVEHICLEINFO_FILE = 1918258814,
         vfxVehicleInfos = 1829968483,
@@ -3528,9 +3537,15 @@ namespace CodeWalker.GameFiles
         spName = 4254542050,
 
 
-        //from rubidium
+        //from rubidium / dav90 PSO XML / zonebind
         mpName = 2031203854,
         zoneName = 257000,
+        vfxRegion = 3384955624,
+        vehDirtMin = 1831590592,
+        vehDirtMax = 625824556,
+        vehDirtGrowScale = 2919812941,
+        pedDirtMin = 1861946207,
+        pedDirtMax = 3150688023,
 
 
 

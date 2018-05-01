@@ -687,6 +687,9 @@ namespace CodeWalker.GameFiles
 
         private static int GetEnumInt(MetaName type, string enumString)
         {
+
+            //BUG: needs to handle multiple flags!!!
+
             var enumName = (MetaName)(uint)GetHash(enumString);
             var infos = MetaTypes.GetEnumInfo(type);
 

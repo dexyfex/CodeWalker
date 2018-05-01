@@ -626,6 +626,7 @@ namespace CodeWalker.GameFiles
             RpfFileEntry entry = CreateResourceFileEntry(ref data, 0);
             if ((data != null) && (entry != null))
             {
+                data = ResourceBuilder.Decompress(data);
                 file = new T();
                 file.Load(data, entry);
             }
