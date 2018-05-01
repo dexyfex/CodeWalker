@@ -643,16 +643,16 @@ namespace CodeWalker.GameFiles
         public NavMeshAABB CellAABB { get; set; }
         public FlagsUint Unknown_24h { get; set; }
         public FlagsUint Unknown_28h { get; set; }
-        public ushort PartFlags { get; set; }
-        public ushort PortalLinkID { get; set; }
+        public uint PartFlags { get; set; }
 
 
         //public int IndexUnk { get { return (IndexFlags >> 0) & 31; } } //always 0
         public int IndexCount { get { return (IndexFlags >> 5); } set { IndexFlags = (ushort)((IndexFlags & 31) | ((value & 0x7FF) << 5)); } }
 
         //public int PartUnk1 { get { return (PartFlags >> 0) & 0xF; } } //always 0
-        public ushort PartID { get { return (ushort)((PartFlags >> 4) & 0xFF); } set { PartFlags = (ushort)((PartFlags & 0xF00F) | ((value & 0xFF) << 4)); } }
-        public byte PortalType { get { return (byte)((PartFlags >> 12) & 0xF); } set { PartFlags = (ushort)((PartFlags & 0x0FFF) | ((value & 0xF) << 12)); } }
+        public ushort PartID { get { return (ushort)((PartFlags >> 4) & 0xFF); } set { PartFlags = ((PartFlags & 0xFFFFF00F) | (((uint)value & 0xFF) << 4)); } }
+        public byte PortalLinkCount { get { return (byte)((PartFlags >> 12) & 0x7); } set { PartFlags = ((PartFlags & 0xFFFF8FFF) | (((uint)value & 0x7) << 12)); } }
+        public uint PortalLinkID { get { return ((PartFlags >> 15) & 0x1FFFF); } set { PartFlags = ((PartFlags & 0x7FFF) | ((value & 0x1FFFF) << 15)); } }
 
 
         public ushort Unknown_28h_16 { get { return (ushort)((Unknown_28h.Value & 0xFFFF)); } set { Unknown_28h = (Unknown_28h.Value & 0xFFFF0000) | (value & 0xFFFFu); } }
@@ -673,7 +673,7 @@ namespace CodeWalker.GameFiles
                 Unknown_28h.Hex + ", " + 
                 //PartFlags.ToString() + ", " + //PartUnk1.ToString() + ", " + 
                 PartID.ToString() + ", " + 
-                PortalType.ToString() + ", " +
+                PortalLinkCount.ToString() + ", " +
                 PortalLinkID.ToString();
         }
     }

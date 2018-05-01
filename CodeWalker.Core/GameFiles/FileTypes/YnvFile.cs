@@ -115,14 +115,6 @@ namespace CodeWalker.GameFiles
                         poly.Init(this, polys[i]);
                         poly.Index = i;
                         Polys.Add(poly);
-
-                        if (poly.PortalType > 0)
-                        {
-                            if (poly.PortalType != 2) //seems to be what portal links need to understand..
-                            { }
-
-                        }
-
                     }
                 }
                 if (Nav.Portals != null)
@@ -212,6 +204,7 @@ namespace CodeWalker.GameFiles
             var edgelist = new List<NavMeshEdge>();
             var polylist = new List<NavMeshPoly>();
             var portallist = new List<NavMeshPortal>();
+            var portallinks = new List<ushort>();
 
             var vertdict = new Dictionary<Vector3, ushort>();
             var blankedgepart1 = new NavMeshEdgePart() { Value = 0x0FFFE1 };//1, -, 1, 0 
@@ -243,6 +236,12 @@ namespace CodeWalker.GameFiles
                         edgelist.Add(e);
                     }
                     poly._RawData.IndexCount = vc;
+                    poly._RawData.PortalLinkID = (uint)portallinks.Count;//these shouldn't be directly editable!
+                    poly._RawData.PortalLinkCount = (byte)(poly.PortalLinks?.Length ?? 0);
+                    if (poly.PortalLinks != null)
+                    {
+                        portallinks.AddRange(poly.PortalLinks);
+                    }
                     poly.Index = i;//this should be redundant...
                     polylist.Add(poly.RawData);
                 }
@@ -303,7 +302,8 @@ namespace CodeWalker.GameFiles
 
             Nav.Portals = (portallist.Count > 0) ? portallist.ToArray() : null;
             Nav.PortalsCount = (uint)(Nav.Portals?.Length ?? 0);
-            //TODO: update portal links data.....
+            Nav.PortalLinks = (portallinks.Count > 0) ? portallinks.ToArray() : null;
+            Nav.PortalLinksCount = (uint)(Nav.PortalLinks?.Length ?? 0);
 
 
             for (int i = 0; i < Nav.Polys.ListParts.Count; i++) //reassign part id's on all the polys...
@@ -572,8 +572,8 @@ namespace CodeWalker.GameFiles
 
         public ushort AreaID { get { return _RawData.AreaID; } set { _RawData.AreaID = value; } }
         public ushort PartID { get { return _RawData.PartID; } set { _RawData.PartID = value; } }
-        public ushort PortalLinkID { get { return _RawData.PortalLinkID; } set { _RawData.PortalLinkID = value; } }
-        public byte PortalType { get { return _RawData.PortalType; } set { _RawData.PortalType = value; } }
+        public uint PortalLinkID { get { return _RawData.PortalLinkID; } set { _RawData.PortalLinkID = value; } }
+        public byte PortalLinkCount { get { return _RawData.PortalLinkCount; } set { _RawData.PortalLinkCount = value; } }
         public byte Flags1 { get { return (byte)(_RawData.Unknown_00h & 0xFF); } set { _RawData.Unknown_00h = (ushort)((_RawData.Unknown_00h & 0xFF00) | (value & 0xFF)); } }
         public byte Flags2 { get { return (byte)((_RawData.Unknown_24h.Value >> 0) & 0xFF); } set { _RawData.Unknown_24h = ((_RawData.Unknown_24h.Value & 0xFFFFFF00u) | ((value & 0xFFu) << 0)); } }
         public byte Flags3 { get { return (byte)((_RawData.Unknown_24h.Value >> 9) & 0xFF); } set { _RawData.Unknown_24h = ((_RawData.Unknown_24h.Value & 0xFFFE01FFu) | ((value & 0xFFu) << 9)); } }
@@ -621,6 +621,7 @@ namespace CodeWalker.GameFiles
         public ushort[] Indices { get; set; }
         public Vector3[] Vertices { get; set; }
         public NavMeshEdge[] Edges { get; set; }
+        public ushort[] PortalLinks { get; set; }
 
 
         public void Init(YnvFile ynv, NavMeshPoly poly)
@@ -629,6 +630,7 @@ namespace CodeWalker.GameFiles
             RawData = poly;
 
             LoadIndices();
+            LoadPortalLinks();
             CalculatePosition(); //calc poly center for display purposes..
         }
 
@@ -667,6 +669,30 @@ namespace CodeWalker.GameFiles
 
                 i++;
             }
+        }
+
+        public void LoadPortalLinks()
+        {
+            if (PortalLinkCount == 0)
+            { return; }
+            var links = Ynv.Nav?.PortalLinks;
+            if (links == null)
+            { return; }
+
+            var ll = links.Length;
+
+            PortalLinks = new ushort[PortalLinkCount];
+
+            int offset = (int)PortalLinkID;
+            for (int i = 0; i < PortalLinkCount; i++)
+            {
+                int idx = offset + i;
+                PortalLinks[i] = (idx < ll) ? links[idx] : (ushort)0;
+            }
+
+            if (PortalLinkCount != 2)
+            { }//debug
+
         }
 
 
@@ -725,7 +751,7 @@ namespace CodeWalker.GameFiles
             //if ((u5 & 8388608) > 0) colour.Red += 1.0f; //slope facing -X,-Y   (southwest)
             //if (u5 >= 16777216) { } //other bits unused
 
-            var u1 = _RawData.PortalType;
+            var u1 = _RawData.PortalLinkCount;
             //if ((u1 & 1) > 0) colour.Red += 1.0f; //portal - don't interact?
             //if ((u1 & 2) > 0) colour.Green += 1.0f; //portal - ladder/fence interaction?
             //if ((u1 & 4) > 0) colour.Blue += 1.0f; //portal - fence interaction / go away from?
