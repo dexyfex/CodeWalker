@@ -735,6 +735,7 @@ namespace CodeWalker.GameFiles
                         if (entry.EntryNameHash == enumName)
                         {
                             enumVal += (1 << entry.EntryValue);
+                            break;
                         }
                     }
                 }
