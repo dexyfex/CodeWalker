@@ -1871,6 +1871,17 @@ namespace CodeWalker.Project
         {
             if ((CurrentYndFile == null) && (CurrentPathNode != null)) CurrentYndFile = CurrentPathNode.Ynd;
             if (CurrentYndFile == null) return;
+
+            // Check that vehicle nodes and ped nodes add up to total nodes
+            if(CurrentYndFile.NodeDictionary != null && (CurrentYndFile.NodeDictionary.NodesCountPed + CurrentYndFile.NodeDictionary.NodesCountVehicle != CurrentYndFile.NodeDictionary.NodesCount))
+            {
+                var result = MessageBox.Show($"YND Area {CurrentYndFile.AreaID}: The total number of nodes ({CurrentYndFile.NodeDictionary.NodesCount}) does not match the total number of ped ({CurrentYndFile.NodeDictionary.NodesCountPed}) and vehicle ({CurrentYndFile.NodeDictionary.NodesCountVehicle}) nodes. You should manually adjust the number of nodes on the YND screen.\n\nDo you want to continue saving the YND file? Some of your nodes may not work in game.", $"Node count mismatch in Area {CurrentYndFile.AreaID}", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                if(result == DialogResult.Cancel)
+                {
+                    return;
+                }
+            }
+
             string yndname = CurrentYndFile.Name;
             string filepath = CurrentYndFile.FilePath;
             if (string.IsNullOrEmpty(filepath))
