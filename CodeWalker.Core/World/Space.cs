@@ -2043,7 +2043,10 @@ namespace CodeWalker.World
         }
 
 
-
+        public Vector3 GetCellRel(Vector3 p)//float value in cell coords
+        {
+            return (p - new Vector3(CornerX, CornerY, 0)) * CellSizeInv;
+        }
         public Vector2I GetCellPos(Vector3 p)
         {
             Vector3 ind = (p - new Vector3(CornerX, CornerY, 0)) * CellSizeInv;
@@ -2069,7 +2072,15 @@ namespace CodeWalker.World
         }
 
 
-
+        public Vector3 GetCellMin(SpaceNavGridCell cell)
+        {
+            Vector3 c = new Vector3(cell.X, cell.Y, 0);
+            return new Vector3(CornerX, CornerY, 0) + (c * CellSize);
+        }
+        public Vector3 GetCellMax(SpaceNavGridCell cell)
+        {
+            return GetCellMin(cell) + new Vector3(CellSize, CellSize, 0.0f);
+        }
 
     }
     public class SpaceNavGridCell

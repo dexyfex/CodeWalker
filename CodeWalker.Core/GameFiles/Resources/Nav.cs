@@ -158,6 +158,39 @@ namespace CodeWalker.GameFiles
 
 
 
+            //uint totbytes = 0;
+            //Stack<NavMeshSector> sectorstack = new Stack<NavMeshSector>();
+            //if (SectorTree != null) sectorstack.Push(SectorTree);
+            //while (sectorstack.Count > 0)
+            //{
+            //    var sector = sectorstack.Pop();
+            //    if (sector.SubTree1 != null) sectorstack.Push(sector.SubTree1);
+            //    if (sector.SubTree2 != null) sectorstack.Push(sector.SubTree2);
+            //    if (sector.SubTree3 != null) sectorstack.Push(sector.SubTree3);
+            //    if (sector.SubTree4 != null) sectorstack.Push(sector.SubTree4);
+            //    if (sector.Data != null)
+            //    {
+            //        var sdata = sector.Data;
+            //        totbytes += (uint)(sdata.PolyIDsBlock?.BlockLength ?? 0);
+            //        totbytes += (uint)(sdata.PointsBlock?.BlockLength ?? 0);
+            //    }
+            //}
+            //totbytes += PadSize(VerticesCount * (uint)Vertices.ItemSize);
+            //totbytes += PadSize(EdgesIndicesCount * (uint)Indices.ItemSize);
+            //totbytes += PadSize(EdgesIndicesCount * (uint)Edges.ItemSize);
+            //totbytes += PadSize(PolysCount * (uint)Polys.ItemSize);
+            ////totbytes += (uint)BlockLength;
+            //totbytes += (uint)Vertices.ListParts.BlockLength;//Vertices.ListPartsCount * 16;
+            //totbytes += (uint)Indices.ListParts.BlockLength;//Indices.ListPartsCount * 16;
+            //totbytes += (uint)Edges.ListParts.BlockLength;//Edges.ListPartsCount * 16;
+            //totbytes += (uint)Polys.ListParts.BlockLength;//Polys.ListPartsCount * 16;
+            //totbytes += (uint)(PortalsBlock?.BlockLength ?? 0);//PortalsCount * 28;
+            //totbytes += (uint)(PortalLinksBlock?.BlockLength ?? 0);//PortalLinksCount * 2;
+            //int remaining = ((int)TotalBytes) - ((int)totbytes);
+            //if (totbytes != TotalBytes)
+            //{ }
+
+
             writer.Write((uint)ContentFlags);
             writer.Write(VersionUnk1);
             writer.Write(Unused_018h);
@@ -192,6 +225,12 @@ namespace CodeWalker.GameFiles
             writer.Write(Unused_16Ch);
         }
 
+        private uint PadSize(uint s)
+        {
+            const uint align = 16;
+            if ((s % align) != 0) s += (align - (s % align));
+            return s;
+        }
 
         public override IResourceBlock[] GetReferences()
         {
@@ -218,6 +257,15 @@ namespace CodeWalker.GameFiles
 
 
             return list.ToArray();
+        }
+
+
+
+        public void SetDefaults(bool vehicle)
+        {
+            VersionUnk1 = 0x00010011;
+            VersionUnk2 = vehicle ? 0 : 0x85CB3561;
+            Transform = Matrix.Identity;
         }
 
 
@@ -325,6 +373,50 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public uint Get(uint i)
+        {
+            switch (i)
+            {
+                default:
+                case 0: return v00;
+                case 1: return v01;
+                case 2: return v02;
+                case 3: return v03;
+                case 4: return v04;
+                case 5: return v05;
+                case 6: return v06;
+                case 7: return v07;
+                case 8: return v08;
+                case 9: return v09;
+                case 10: return v10;
+                case 11: return v11;
+                case 12: return v12;
+                case 13: return v13;
+                case 14: return v14;
+                case 15: return v15;
+                case 16: return v16;
+                case 17: return v17;
+                case 18: return v18;
+                case 19: return v19;
+                case 20: return v20;
+                case 21: return v21;
+                case 22: return v22;
+                case 23: return v23;
+                case 24: return v24;
+                case 25: return v25;
+                case 26: return v26;
+                case 27: return v27;
+                case 28: return v28;
+                case 29: return v29;
+                case 30: return v30;
+                case 31: return v31;
+            }
+        }
+
+        public void Set(uint[] arr)
+        {
+            Values = arr;
+        }
 
         public override string ToString()
         {
@@ -459,7 +551,7 @@ namespace CodeWalker.GameFiles
             }
             ListParts = parts;
             ListOffsets = offsets.ToArray();
-
+            ItemCount = (uint)items.Count;
         }
 
 
@@ -594,13 +686,15 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshEdge
     {
-        public NavMeshEdgePart Unknown_0h { get; set; }
-        public NavMeshEdgePart Unknown_4h { get; set; }
+        public NavMeshEdgePart _Poly1;
+        public NavMeshEdgePart _Poly2;
+        public NavMeshEdgePart Poly1 { get { return _Poly1; } set { _Poly1 = value; } }
+        public NavMeshEdgePart Poly2 { get { return _Poly2; } set { _Poly2 = value; } }
 
         public override string ToString()
         {
-            return //Unknown_0h.Bin + " | " + Unknown_4h.Bin + " | " + 
-                   Unknown_0h.ToString() + " | " + Unknown_4h.ToString();
+            return //Poly1.Bin + " | " + Poly2.Bin + " | " + 
+                   _Poly1.ToString() + " | " + _Poly2.ToString();
         }
     }
 
@@ -616,10 +710,10 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public uint AreaIDInd { get { return (Value >> 0) & 0x1F; } }
-        public uint PolyID { get { return (Value >> 5) & 0x3FFF; } }
-        public uint Unk2 { get { return (Value >> 19) & 0x3; } }
-        public uint Unk3 { get { return (Value >> 21) & 0x7FF; } }
+        public uint AreaIDInd { get { return (Value >> 0) & 0x1F; } set { Value = (Value & 0xFFFFFFE0) | (value & 0x1F); } }
+        public uint PolyID { get { return (Value >> 5) & 0x3FFF; } set { Value = (Value & 0xFFF8001F) | ((value & 0x3FFF) << 5); } }
+        public uint Unk2 { get { return (Value >> 19) & 0x3; } set { Value = (Value & 0xFFE7FFFF) | ((value & 0x3) << 19); } }
+        public uint Unk3 { get { return (Value >> 21) & 0x7FF; } set { Value = (Value & 0x001FFFFF) | ((value & 0x7FF) << 21); } }
 
         public override string ToString()
         {
@@ -791,8 +885,8 @@ namespace CodeWalker.GameFiles
         public ushort[] PolyIDs { get; set; }
         public NavMeshPoint[] Points { get; set; }
 
-        private ResourceSystemStructBlock<ushort> PolyIDsBlock = null;
-        private ResourceSystemStructBlock<NavMeshPoint> PointsBlock = null;
+        public ResourceSystemStructBlock<ushort> PolyIDsBlock = null;
+        public ResourceSystemStructBlock<NavMeshPoint> PointsBlock = null;
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
