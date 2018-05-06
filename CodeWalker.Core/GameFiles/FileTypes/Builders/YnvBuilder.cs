@@ -11,6 +11,30 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
 {
     public class YnvBuilder
     {
+        /*
+         * 
+         * YnvBuilder by dexyfex
+         * 
+         * This class allows for conversion of navmesh data in a generic format into .ynv files.
+         * The usage is to call AddPoly() with an array of vertex positions for each polygon.
+         * Polygons should be wound in an anticlockwise direction.
+         * The returned YnvPoly object needs to have its Edges array set by the importer.
+         * YnvPoly.Edges is an array of YnvEdge, with one edge for each vertex in the poly. 
+         * The first edge should join the first and second vertices, and the last edge should
+         * join the last and first vertices.
+         * The YnvEdge Poly1 and Poly2 both need to be set to the same value, which is the 
+         * corresponding YnvPoly object that was returned by AddPoly.
+         * Flags values on the polygons and edges also need to be set by the importer.
+         * 
+         * Once the polygons and edges have all been added, the Build() method should be called,
+         * which will return a list of YnvFile objects. Call the Save() method on each of those
+         * to get the byte array for the .ynv file. The correct filename is given by the
+         * YnvFile.Name property.
+         * Note that the .ynv building process will split polygons that cross .ynv area borders,
+         * and assign all the new polygons into the correct .ynv's.
+         * 
+         */
+
 
 
         private List<YnvPoly> PolyList = new List<YnvPoly>();
@@ -413,21 +437,23 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
                         {
                             if (edge.Poly1.AreaID != poly.AreaID)
                             {
-                                //edge._RawData._Poly2.Unk3 = 4;// edge._RawData._Poly2.Unk3 | 4;
+                                edge._RawData._Poly1.Unk2 = 0;//crash without this
+                                edge._RawData._Poly2.Unk2 = 0;//crash without this
+                                edge._RawData._Poly2.Unk3 = 4;////// edge._RawData._Poly2.Unk3 | 4;
+                                border = true;
 
-                                //DEBUG don't join edges
-                                edge.Poly1 = null;
-                                edge.Poly2 = null;
-                                edge.AreaID1 = 0x3FFF;
-                                edge.AreaID2 = 0x3FFF;
-                                edge._RawData._Poly1.PolyID = 0x3FFF;
-                                edge._RawData._Poly2.PolyID = 0x3FFF;
-                                edge._RawData._Poly1.Unk2 = 1;
-                                edge._RawData._Poly2.Unk2 = 1;
-                                edge._RawData._Poly1.Unk3 = 0;
-                                edge._RawData._Poly2.Unk3 = 0;
+                                ////DEBUG don't join edges
+                                //edge.Poly1 = null;
+                                //edge.Poly2 = null;
+                                //edge.AreaID1 = 0x3FFF;
+                                //edge.AreaID2 = 0x3FFF;
+                                //edge._RawData._Poly1.PolyID = 0x3FFF;
+                                //edge._RawData._Poly2.PolyID = 0x3FFF;
+                                //edge._RawData._Poly1.Unk2 = 1;
+                                //edge._RawData._Poly2.Unk2 = 1;
+                                //edge._RawData._Poly1.Unk3 = 0;
+                                //edge._RawData._Poly2.Unk3 = 0;
 
-                                //border = true;
                             }
                         }
                     }

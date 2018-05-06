@@ -48,6 +48,16 @@ namespace CodeWalker.GameFiles
 
 
 
+        //getters for property grids viewing of the lists
+        public Vector3[] AllVertices { get { return Vertices?.ToArray(); } }
+        public ushort[] AllIndices { get { return Indices?.ToArray(); } }
+        public YnvEdge[] AllEdges { get { return Edges?.ToArray(); } }
+        public YnvPoly[] AllPolys { get { return Polys?.ToArray(); } }
+        public YnvPortal[] AllPortals { get { return Portals?.ToArray(); } }
+        public YnvPoint[] AllPoints { get { return Points?.ToArray(); } }
+
+
+
 
         public YnvFile() : base(null, GameFileType.Ynv)
         {
@@ -216,6 +226,15 @@ namespace CodeWalker.GameFiles
             var vertdict = new Dictionary<Vector3, ushort>();
             var areadict = new Dictionary<uint, uint>();
             var arealist = new List<uint>();
+            var areaid = Nav.AreaID;
+            EnsureEdgeAreaID(areaid, areadict, arealist);
+            EnsureEdgeAreaID(0x3FFF, areadict, arealist);
+            EnsureEdgeAreaID(areaid - 100, areadict, arealist);
+            EnsureEdgeAreaID(areaid - 1, areadict, arealist);
+            EnsureEdgeAreaID(areaid + 1, areadict, arealist);
+            EnsureEdgeAreaID(areaid + 100, areadict, arealist);
+
+
 
             if (Polys != null) //rebuild vertices, indices, edges and polys lists from poly data.
             {
