@@ -253,7 +253,7 @@ namespace CodeWalker.GameFiles
                         {
                             ind = (ushort)vertlist.Count;
                             vertdict[v] = ind;
-                            vertlist.Add(NavMeshVertex.Create((v - posoffset) * aabbsizeinv));
+                            vertlist.Add(NavMeshVertex.Create(Vector3.Clamp((v - posoffset) * aabbsizeinv, Vector3.Zero, Vector3.One)));
                         }
                         if ((poly.Indices != null) && (n < poly.Indices.Length))
                         {

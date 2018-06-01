@@ -386,6 +386,10 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
                     ynv.Nav.SectorTree.AABBMax = new Vector4(NavGrid.GetCellMax(cell), 0.0f);
                     ynv.AreaID = cell.X + cell.Y * 100;
                     ynv.Polys = new List<YnvPoly>();
+                    ynv.HasChanged = true;//mark it for the project window
+                    ynv.RpfFileEntry = new RpfResourceFileEntry();
+                    ynv.RpfFileEntry.Name = ynv.Name + ".ynv";
+                    ynv.RpfFileEntry.Path = string.Empty;
                     cell.Ynv = ynv;
                     YnvFiles.Add(ynv);
                 }

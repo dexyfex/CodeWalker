@@ -42,6 +42,7 @@ namespace CodeWalker
         PopZones popzones = new PopZones();
         AudioZones audiozones = new AudioZones();
 
+        public Space Space { get { return space; } }
 
         bool MouseLButtonDown = false;
         bool MouseRButtonDown = false;

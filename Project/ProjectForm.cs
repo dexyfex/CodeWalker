@@ -318,6 +318,13 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
                 (panel) => { return true; }); //findFunc
         }
+        private void ShowGenerateNavMeshPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new GenerateNavMeshPanel(this); }, //createFunc
+                (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
+                (panel) => { return true; }); //findFunc
+        }
         private void ShowEditYmapPanel(bool promote)
         {
             ShowPanel(promote,
@@ -5410,6 +5417,10 @@ namespace CodeWalker.Project
         private void ToolsManifestGeneratorMenu_Click(object sender, EventArgs e)
         {
             ShowEditProjectManifestPanel(false);
+        }
+        private void ToolsNavMeshGeneratorMenu_Click(object sender, EventArgs e)
+        {
+            ShowGenerateNavMeshPanel(false);
         }
         private void ToolsImportMenyooXmlMenu_Click(object sender, EventArgs e)
         {
