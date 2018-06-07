@@ -380,6 +380,11 @@ namespace CodeWalker.Rendering
             renderableCache.Invalidate(path);
         }
 
+        public void Invalidate(YmapGrassInstanceBatch batch)
+        {
+            renderableCache.Invalidate(batch);
+        }
+
 
         public void UpdateSelectionDrawFlags(DrawableModel model, DrawableGeometry geom, bool rem)
         {

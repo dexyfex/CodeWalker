@@ -695,6 +695,10 @@ namespace CodeWalker.Rendering
         {
             var gb = batch.Key;
 
+            // sanity check
+            if (batch.GrassInstanceBuffer == null)
+                return;
+
             VSEntityVars.Vars.CamRel = new Vector4(gb.CamRel, 0.0f);
             VSEntityVars.Vars.Orientation = Quaternion.Identity;
             VSEntityVars.Vars.Scale = Vector3.One;

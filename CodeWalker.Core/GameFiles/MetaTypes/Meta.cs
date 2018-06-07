@@ -935,6 +935,10 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public struct ArrayOfUshorts3 //array of 3 ushorts
     {
         public ushort u0, u1, u2;
+        public Vector3 XYZ()
+        {
+            return new Vector3(u0, u1, u2);
+        }
         public override string ToString()
         {
             return u0.ToString() + ", " + u1.ToString() + ", " + u2.ToString();

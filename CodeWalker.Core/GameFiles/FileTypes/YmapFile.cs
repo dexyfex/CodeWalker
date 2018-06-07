@@ -7,6 +7,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using CodeWalker.Core.Utils;
+using CodeWalker.World;
 
 namespace CodeWalker.GameFiles
 {
@@ -925,6 +927,7 @@ namespace CodeWalker.GameFiles
             GrassInstanceBatches = batches.ToArray();
 
             HasChanged = true;
+            UpdateGrassPhysDict(true);
         }
 
         public bool RemoveGrassBatch(YmapGrassInstanceBatch batch)
@@ -949,6 +952,10 @@ namespace CodeWalker.GameFiles
                 }
             }
 
+            if (batches.Count <= 0)
+            {
+                UpdateGrassPhysDict(false);
+            }
 
             GrassInstanceBatches = batches.ToArray();
 
@@ -1136,6 +1143,27 @@ namespace CodeWalker.GameFiles
             return change;
         }
 
+
+        private void UpdateGrassPhysDict(bool add)
+        {
+            var physDict = physicsDictionaries?.ToList() ?? new List<MetaHash>();
+            var vproc1 = JenkHash.GenHash("v_proc1");
+            var vproc2 = JenkHash.GenHash("v_proc2"); // I think you need vproc2 as well.
+            var change = false;
+            if (!physDict.Contains(vproc1))
+            {
+                change = true;
+                if (add) physDict.Add(vproc1);
+                else physDict.Remove(vproc1);
+            }
+            if (!physDict.Contains(vproc2))
+            {
+                change = true;
+                if (add) physDict.Add(vproc2);
+                else physDict.Remove(vproc2);
+            }
+            if (change) physicsDictionaries = physDict.ToArray();
+        }
 
 
         private static uint SetBit(uint value, int bit)
@@ -1493,6 +1521,8 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class YmapGrassInstanceBatch
     {
+        private const float BatchVertMultiplier = 0.00001525878f;
+
         public Archetype Archetype { get; set; } //cached by GameFileCache on loading...
         public rage__fwGrassInstanceListDef Batch { get; set; }
         public rage__fwGrassInstanceListDef__InstanceData[] Instances { get; set; }
@@ -1504,9 +1534,472 @@ namespace CodeWalker.GameFiles
         public float Distance; //used for rendering
         public YmapFile Ymap { get; set; }
 
+        public bool BrushEnabled;
+        public bool HasChanged;
+
         public override string ToString()
         {
             return Batch.ToString();
+        }
+
+        public void UpdateInstanceCount()
+        {
+            var b = Batch;
+            var ins = b.InstanceList;
+            ins.Count1 = (ushort)Instances.Length;
+            b.InstanceList = ins;
+            Batch = b;
+        }
+
+        public bool EraseInstancesAtMouse(
+            YmapGrassInstanceBatch batch,
+            SpaceRayIntersectResult mouseRay,
+            float radius)
+        {
+            // some inits
+            var instances = batch.Instances;
+
+            var delInstances = new List<rage__fwGrassInstanceListDef__InstanceData>();
+
+            rage__spdAABB batchAABB = batch.Batch.BatchAABB;
+            var oldInstanceBounds = new BoundingBox
+            (
+                batchAABB.min.XYZ(),
+                batchAABB.max.XYZ()
+            );
+            var deleteSphere = new BoundingSphere(mouseRay.Position, radius);
+
+            // check each instance to see if it's in the delete sphere
+            // thankfully we've just avoided an O(n^2) op using this bounds stuff (doesn't mean it's super fast though,
+            // but it's not super slow either, even at like 50,000 instances)
+            foreach (var instance in instances)
+            {
+                var grassPos = new Vector3
+                {
+                    X = instance.Position.u0,
+                    Y = instance.Position.u1,
+                    Z = instance.Position.u2
+                };
+                // get the world pos
+                var worldPos = oldInstanceBounds.Minimum + oldInstanceBounds.Size() * (grassPos * BatchVertMultiplier);
+
+                // create a boundary around the instance.
+                var instanceBounds = new BoundingBox(worldPos - (Vector3.One * 1.5f), worldPos + (Vector3.One * 1.5f));
+
+                // check if the sphere contains the boundary.
+                var bb = new BoundingBox(instanceBounds.Minimum, instanceBounds.Maximum);
+                var ct = deleteSphere.Contains(ref bb);
+                if (ct == ContainmentType.Contains || ct == ContainmentType.Intersects)
+                {
+                    delInstances.Add(instance); // Add a copy of this instance
+                }
+            }
+            if (delInstances.Count <= 0)
+                return false;
+
+            // now we need to recalculate the bounds.
+            var insList = instances.ToList();
+            foreach (var inst in delInstances)
+            {
+                if (insList.Contains(inst))
+                {
+                    insList.Remove(inst);
+                }
+            }
+            GetNewGrassBounds(insList, oldInstanceBounds, out var min, out var max);
+            var newBounds = new BoundingBox(min, max);
+
+            // recalc instances
+            var b = RecalcBatch(newBounds, batch);
+            batch.Batch = b;
+            insList = RecalculateInstances(insList, oldInstanceBounds, newBounds);
+            batch.Instances = insList.ToArray();
+
+            return true;
+        }
+
+        public void CreateInstancesAtMouse(
+            YmapGrassInstanceBatch batch,
+            SpaceRayIntersectResult mouseRay,
+            float radius,
+            int amount,
+            Func<Vector3, SpaceRayIntersectResult> spawnRayFunc,
+            Color color,
+            int ao,
+            int scale,
+            Vector3 pad,
+            bool randomScale)
+        {
+            var spawnPosition = mouseRay.Position;
+            var positions = new List<Vector3>();
+            var normals = new List<Vector3>();
+
+            // Get rand positions.
+            GetSpawns(spawnPosition, spawnRayFunc, positions, normals, radius, amount);
+            if (positions.Count <= 0) return;
+
+            // get the instance list
+            var instances =
+                batch.Instances?.ToList() ?? new List<rage__fwGrassInstanceListDef__InstanceData>();
+            var batchAABB = batch.Batch.BatchAABB;
+
+            // make sure to store the old instance bounds for the original
+            // grass instances
+            var oldInstanceBounds = new BoundingBox(batchAABB.min.XYZ(), batchAABB.max.XYZ());
+
+            // Begin the spawn bounds.
+            var grassBound = positions.Count <= 0
+                ? new BoundingBox(Vector3.Zero, Vector3.Zero)
+                : new BoundingBox(positions[0] - (Vector3.One * 1.5f), positions[0] + (Vector3.One * 1.5f));
+            grassBound = EncapsulatePositions(positions, grassBound);
+
+            // Calculate the new spawn bounds.
+            var newInstanceBounds = new BoundingBox(oldInstanceBounds.Minimum, oldInstanceBounds.Maximum);
+            newInstanceBounds = instances.Count > 0
+                ? newInstanceBounds.Encapsulate(grassBound)
+                : new BoundingBox(grassBound.Minimum, grassBound.Maximum);
+
+            // now we need to recalculate the position of each instance
+            instances = RecalculateInstances(instances, oldInstanceBounds, newInstanceBounds);
+
+            // Add new instances at each spawn position with
+            // the parameters in the brush.
+            SpawnInstances(positions, normals, instances, newInstanceBounds, color, ao, scale, pad, randomScale);
+
+            // then recalc the bounds of the grass batch
+            var b = RecalcBatch(newInstanceBounds, batch);
+
+            // plug our values back in and refresh the ymap.
+            batch.Batch = b;
+
+            // Give back the new intsances
+            batch.Instances = instances.ToArray();
+        }
+
+        // bhv approach recommended by dexy.
+        public YmapGrassInstanceBatch[] OptimizeInstances(YmapGrassInstanceBatch batch, float minRadius)
+        {
+            // this function will return an array of grass instance batches
+            // that are split up into sectors (groups) with a specific size.
+            // say for instance we have 30,000 instances spread across a large
+            // distance. We will split those instances into a grid-like group
+            // and return the groups as an array of batches.
+            var oldInstanceBounds = new BoundingBox(batch.Batch.BatchAABB.min.XYZ(), batch.Batch.BatchAABB.max.XYZ());
+
+            if (oldInstanceBounds.Radius() < minRadius)
+            {
+                return null;
+            }
+
+            // Get our optimized grassInstances
+            var split = SplitGrassRecursive(batch.Instances.ToList(), oldInstanceBounds, minRadius);
+
+            // Initiate a new batch list.
+            var newBatches = new List<YmapGrassInstanceBatch>();
+
+            foreach (var grassList in split)
+            {
+                // Create a new batch
+                var newBatch = new YmapGrassInstanceBatch
+                {
+                    Archetype = batch.Archetype,
+                    Ymap = batch.Ymap
+                };
+
+                // Get the boundary of the grassInstances
+                GetNewGrassBounds(grassList, oldInstanceBounds, out var min, out var max);
+                var newInstanceBounds = new BoundingBox(min, max);
+
+                // Recalculate the batch boundaries.
+                var b = RecalcBatch(newInstanceBounds, newBatch);
+                newBatch.Batch = b;
+
+                var ins = RecalculateInstances(grassList, oldInstanceBounds, newInstanceBounds);
+                newBatch.Instances = ins.ToArray();
+                newBatches.Add(newBatch);
+            }
+
+            return newBatches.ToArray();
+        }
+
+        private List<List<rage__fwGrassInstanceListDef__InstanceData>> SplitGrassRecursive(
+            IReadOnlyList<rage__fwGrassInstanceListDef__InstanceData> grassInstances,
+            BoundingBox batchAABB,
+            float minRadius = 15F
+        )
+        {
+            var ret = new List<List<rage__fwGrassInstanceListDef__InstanceData>>();
+            var oldPoints = SplitGrass(grassInstances, batchAABB);
+            while (true)
+            {
+                var stop = true;
+                var newPoints = new List<List<rage__fwGrassInstanceListDef__InstanceData>>();
+                foreach (var mb in oldPoints)
+                {
+                    // for some reason we got a null group?
+                    if (mb == null)
+                        continue;
+
+                    // Get the bounds of the grassInstances list
+                    GetNewGrassBounds(mb, batchAABB, out var min, out var max);
+                    var radius = (max - min).Length() * 0.5F; // get the radius
+
+                    // check if the radius of the grassInstances
+                    if (radius <= minRadius)
+                    {
+                        // this point list is within the minimum 
+                        // radius.
+                        ret.Add(mb);
+                        continue; // we don't need to continue.
+                    }
+
+                    // since we're here let's keep going
+                    stop = false;
+
+                    // split the grassInstances again
+                    var s = SplitGrass(mb, batchAABB);
+
+                    // add it into the new grassInstances list.
+                    newPoints.AddRange(s);
+                }
+
+                // set the old grassInstances to the new grassInstances.
+                oldPoints = newPoints.ToArray();
+
+                // if we're done, and all grassInstances are within the desired size
+                // then end the loop.
+                if (stop) break;
+            }
+            return ret;
+        }
+
+        private List<rage__fwGrassInstanceListDef__InstanceData>[] SplitGrass(
+            IReadOnlyList<rage__fwGrassInstanceListDef__InstanceData> points, 
+            BoundingBox batchAABB)
+        {
+            var pointGroup = new List<rage__fwGrassInstanceListDef__InstanceData>[2];
+
+            // Calculate the bounds of these grassInstances.
+            GetNewGrassBounds(points, batchAABB, out var min, out var max);
+            var m = new BoundingBox(min, max);
+
+            // Get the center and size
+            var mm = new Vector3
+            {
+                X = Math.Abs(m.Minimum.X - m.Maximum.X),
+                Y = Math.Abs(m.Minimum.Y - m.Maximum.Y),
+                Z = Math.Abs(m.Minimum.Z - m.Maximum.Z)
+            };
+
+            // x is the greatest axis...
+            if (mm.X > mm.Y && mm.X > mm.Z)
+            {
+                // Calculate both boundaries.
+                var lhs = new BoundingBox(m.Minimum, m.Maximum - new Vector3(mm.X * 0.5F, 0, 0));
+                var rhs = new BoundingBox(m.Minimum + new Vector3(mm.X * 0.5F, 0, 0), m.Maximum);
+
+                // Set the grassInstances accordingly.
+                pointGroup[0] = points
+                    .Where(p => lhs.Contains(GetGrassWorldPos(p.Position, batchAABB)) == ContainmentType.Contains).ToList();
+                pointGroup[1] = points
+                    .Where(p => rhs.Contains(GetGrassWorldPos(p.Position, batchAABB)) == ContainmentType.Contains).ToList();
+            }
+            // y is the greatest axis...
+            else if (mm.Y > mm.X && mm.Y > mm.Z)
+            {
+                // Calculate both boundaries.
+                var lhs = new BoundingBox(m.Minimum, m.Maximum - new Vector3(0, mm.Y * 0.5F, 0));
+                var rhs = new BoundingBox(m.Minimum + new Vector3(0, mm.Y * 0.5F, 0), m.Maximum);
+
+                // Set the grassInstances accordingly.
+                pointGroup[0] = points
+                    .Where(p => lhs.Contains(GetGrassWorldPos(p.Position, batchAABB)) == ContainmentType.Contains).ToList();
+                pointGroup[1] = points
+                    .Where(p => rhs.Contains(GetGrassWorldPos(p.Position, batchAABB)) == ContainmentType.Contains).ToList();
+            }
+            // z is the greatest axis...
+            else if (mm.Z > mm.X && mm.Z > mm.Y)
+            {
+                // Calculate both boundaries.
+                var lhs = new BoundingBox(m.Minimum, m.Maximum - new Vector3(0, 0, mm.Z * 0.5F));
+                var rhs = new BoundingBox(m.Minimum + new Vector3(0, 0, mm.Z * 0.5F), m.Maximum);
+
+                // Set the grassInstances accordingly.
+                pointGroup[0] = points
+                    .Where(p => lhs.Contains(GetGrassWorldPos(p.Position, batchAABB)) == ContainmentType.Contains).ToList();
+                pointGroup[1] = points
+                    .Where(p => rhs.Contains(GetGrassWorldPos(p.Position, batchAABB)) == ContainmentType.Contains).ToList();
+            }
+            return pointGroup;
+        }
+
+        private static void GetNewGrassBounds(IReadOnlyList<rage__fwGrassInstanceListDef__InstanceData> newGrass, BoundingBox oldAABB,
+            out Vector3 min, out Vector3 max)
+        {
+            if (newGrass.Count <= 0)
+            {
+                min = Vector3.Zero;
+                max = Vector3.Zero;
+                return;
+            }
+            var grassWorldPos = GetGrassWorldPos(newGrass[0].Position, oldAABB);
+            var bounds = new BoundingBox(grassWorldPos - (Vector3.One * 1.5f), grassWorldPos + (Vector3.One * 1.5f));
+            foreach (var point in newGrass)
+            {
+                var worldPos = GetGrassWorldPos(point.Position, oldAABB);
+                var tempBounds = new BoundingBox(worldPos - (Vector3.One * 1.5f), worldPos + (Vector3.One * 1.5f));
+                bounds = bounds.Encapsulate(tempBounds);
+            }
+            min = bounds.Minimum;
+            max = bounds.Maximum;
+        }
+
+        private void SpawnInstances(
+            IReadOnlyList<Vector3> positions,
+            IReadOnlyList<Vector3> normals,
+            ICollection<rage__fwGrassInstanceListDef__InstanceData> instanceList,
+            BoundingBox instanceBounds,
+            Color color,
+            int ao,
+            int scale,
+            Vector3 pad,
+            bool randomScale)
+        {
+            for (var i = 0; i < positions.Count; i++)
+            {
+                var pos = positions[i];
+                // create the new instance.
+                var newInstance = CreateNewInstance(normals[i], color, ao, scale, pad, randomScale);
+
+                // get the grass position of the new instance and add it to the 
+                // instance list
+                var grassPosition = GetGrassPos(pos, instanceBounds);
+                newInstance.Position = grassPosition;
+                instanceList.Add(newInstance);
+            }
+        }
+
+        private rage__fwGrassInstanceListDef__InstanceData CreateNewInstance(Vector3 normal, Color color, int ao, int scale, Vector3 pad,
+            bool randomScale = false)
+        {
+            //Vector3 pad = FloatUtil.ParseVector3String(PadTextBox.Text);
+            //int scale = (int)ScaleNumericUpDown.Value;
+            var rand = new Random();
+            if (randomScale)
+                scale = rand.Next(scale / 2, scale);
+            var newInstance = new rage__fwGrassInstanceListDef__InstanceData
+            {
+                Ao = (byte)ao,
+                Scale = (byte)scale,
+                Color = new ArrayOfBytes3 { b0 = color.R, b1 = color.G, b2 = color.B },
+                Pad = new ArrayOfBytes3 { b0 = (byte)pad.X, b1 = (byte)pad.Y, b2 = (byte)pad.Z },
+                NormalX = (byte)((normal.X + 1) * 0.5F * 255F),
+                NormalY = (byte)((normal.Y + 1) * 0.5F * 255F)
+            };
+            return newInstance;
+        }
+
+        private rage__fwGrassInstanceListDef RecalcBatch(BoundingBox newInstanceBounds, YmapGrassInstanceBatch batch)
+        {
+            batch.AABBMax = newInstanceBounds.Maximum;
+            batch.AABBMin = newInstanceBounds.Minimum;
+            batch.Position = newInstanceBounds.Center();
+            batch.Radius = newInstanceBounds.Radius();
+            var b = batch.Batch;
+            b.BatchAABB = new rage__spdAABB
+            {
+                min =
+                    new Vector4(newInstanceBounds.Minimum,
+                        0), // Let's pass the new stuff into the batchabb as well just because.
+                max = new Vector4(newInstanceBounds.Maximum, 0)
+            };
+            return b;
+        }
+
+        private void GetSpawns(
+            Vector3 origin, Func<Vector3,
+                SpaceRayIntersectResult> spawnRayFunc,
+            ICollection<Vector3> positions,
+            ICollection<Vector3> normals,
+            float radius,
+            int resolution = 28)
+        {
+            var rand = new Random();
+            for (var i = 0; i < resolution; i++)
+            {
+                var randX = (float)rand.NextDouble(-radius, radius);
+                var randY = (float)rand.NextDouble(-radius, radius);
+                var posOffset = origin + new Vector3(randX, randY, 2f);
+                var spaceRay = spawnRayFunc.Invoke(posOffset);
+                if (!spaceRay.Hit) continue;
+                normals.Add(spaceRay.Normal);
+                positions.Add(spaceRay.Position);
+            }
+        }
+
+        private static List<rage__fwGrassInstanceListDef__InstanceData> RecalculateInstances(
+            List<rage__fwGrassInstanceListDef__InstanceData> instances,
+            BoundingBox oldInstanceBounds,
+            BoundingBox newInstanceBounds)
+        {
+            var refreshList = new List<rage__fwGrassInstanceListDef__InstanceData>();
+            foreach (var inst in instances)
+            {
+                // Copy instance
+                var copy =
+                    new rage__fwGrassInstanceListDef__InstanceData
+                    {
+                        Position = inst.Position,
+                        Ao = inst.Ao,
+                        Color = inst.Color,
+                        NormalX = inst.NormalX,
+                        NormalY = inst.NormalY,
+                        Pad = inst.Pad,
+                        Scale = inst.Scale
+                    };
+                // get the position from where we would be in the old bounds, and move it to
+                // the position it needs to be in the new bounds.
+                var oldPos = GetGrassWorldPos(copy.Position, oldInstanceBounds);
+                //var oldPos = oldInstanceBounds.min + oldInstanceBounds.Size * (grassPos * BatchVertMultiplier);
+                copy.Position = GetGrassPos(oldPos, newInstanceBounds);
+                refreshList.Add(copy);
+            }
+            instances = refreshList.ToList();
+            return instances;
+        }
+
+        private static BoundingBox EncapsulatePositions(IEnumerable<Vector3> positions, BoundingBox bounds)
+        {
+            foreach (var pos in positions)
+            {
+                var posBounds = new BoundingBox(pos - (Vector3.One * 1.5f), pos + (Vector3.One * 1.5f));
+                bounds = bounds.Encapsulate(posBounds);
+            }
+            return bounds;
+        }
+
+        private static ArrayOfUshorts3 GetGrassPos(Vector3 worldPos, BoundingBox batchAABB)
+        {
+            var offset = worldPos - batchAABB.Minimum;
+            var size = batchAABB.Size();
+            var percentage =
+                new Vector3(
+                    offset.X / size.X,
+                    offset.Y / size.Y,
+                    offset.Z / size.Z
+                );
+            var instancePos = percentage / BatchVertMultiplier;
+            return new ArrayOfUshorts3
+            {
+                u0 = (ushort)instancePos.X,
+                u1 = (ushort)instancePos.Y,
+                u2 = (ushort)instancePos.Z
+            };
+        }
+
+        private static Vector3 GetGrassWorldPos(ArrayOfUshorts3 grassPos, BoundingBox batchAABB)
+        {
+            return batchAABB.Minimum + batchAABB.Size() * (grassPos.XYZ() * BatchVertMultiplier);
         }
     }
 
@@ -1547,7 +2040,6 @@ namespace CodeWalker.GameFiles
 
         }
     }
-
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class YmapTimeCycleModifier
