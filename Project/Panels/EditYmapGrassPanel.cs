@@ -1,21 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
 using CodeWalker.GameFiles;
-using CodeWalker.Utils;
 using CodeWalker.World;
 using SharpDX;
 
-// THINGS TODO
-// - COMPLETED -- Better gizmo for grass brush (like a circle with a little line in the middle sticking upwards)
+// TODO
+// - COMPLETED -- Optimization feature.
 // - COMPLETED -- Remove grass instances using CTRL + SHIFT + LMB
 
+// - Better gizmo for grass brush (like a circle with a little line in the middle sticking upwards)
 // - Maybe some kind of auto coloring system? I've noticed that mostly all grass in GTA inherits it's color from the surface it's on.
 // - Grass area fill (generate grass on ydr based on colision materials?)
+// - Need to have a way to erase instances from other batches in the current batches ymap.
+//   if we optimize our instances, we'd have to go through each batch to erase, this is very monotonous.
 
-// As far as everything else goes, the brush works just fine. No issues so far besides the UpdateGraphics() method. (causes flicker sometimes)
-
+// BUG
+// - I've added a "zoom" kind of feature when hitting the goto button, but when the bounds of the 
+// grass batch are 0, the zoom of the camera is set to 0, which causes the end-user to have to scroll
+// out a lot in order to use any movement controls. I will need to clamp that to a minimum value.
 
 namespace CodeWalker.Project.Panels
 {
@@ -64,6 +67,9 @@ namespace CodeWalker.Project.Panels
             OrientToTerrainNumericUpDown.Value = (decimal)CurrentBatch.Batch.OrientToTerrain;
             OptmizationThresholdNumericUpDown.Value = 15;
             BrushModeCheckBox.Checked = CurrentBatch.BrushEnabled;
+            RadiusNumericUpDown.Value = (decimal)CurrentBatch.BrushRadius;
+            ExtentsMinTextBox.Text = FloatUtil.GetVector3String(CurrentBatch.AABBMin);
+            ExtentsMaxTextBox.Text = FloatUtil.GetVector3String(CurrentBatch.AABBMax);
         }
 
         private void UpdateFormTitle()
@@ -110,6 +116,12 @@ namespace CodeWalker.Project.Panels
         {
             if (CurrentBatch == null) return;
             CurrentBatch.BrushEnabled = BrushModeCheckBox.Checked;
+        }
+
+        private void RadiusNumericUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            if (CurrentBatch == null) return;
+            CurrentBatch.BrushRadius = (float)RadiusNumericUpDown.Value;
         }
         #endregion
 
@@ -273,15 +285,6 @@ namespace CodeWalker.Project.Panels
         private SpaceRayIntersectResult SpawnRayFunc(Vector3 spawnPos)
         {
             var res = ProjectForm.WorldForm.Raycast(new Ray(spawnPos, -Vector3.UnitZ));
-            
-            //if (res.HitBounds != null) // shouldn't happen but just in case..
-            //{
-            //    var mat = BoundsMaterialTypes.GetMaterial(res.HitBounds.MaterialIndex);
-            //    if (mat.Name != "DEFAULT")
-            //    {
-            //        var c = mat.Colour;
-            //    }
-            //}
             return res;
         }
 

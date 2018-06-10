@@ -30,5 +30,10 @@ namespace CodeWalker.Core.Utils
             var extents = (box.Maximum - box.Minimum) * 0.5F;
             return extents.Length();
         }
+
+        public static BoundingBox Expand(this BoundingBox b, float amount)
+        {
+            return new BoundingBox(b.Minimum - Vector3.One * amount, b.Maximum + Vector3.One * amount);
+        }
     }
 }

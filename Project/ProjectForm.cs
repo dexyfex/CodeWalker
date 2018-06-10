@@ -704,6 +704,25 @@ namespace CodeWalker.Project
 
         //######## Public methods
 
+        // Possibly future proofing for procedural prop instances
+        public bool CanPaintInstances()
+        {
+            if (CurrentGrassBatch != null)
+            {
+                if (CurrentGrassBatch.BrushEnabled)
+                    return true;
+            }
+
+            return false;
+        }
+        public float GetInstanceBrushRadius()
+        {
+            if (CurrentGrassBatch != null)
+                return CurrentGrassBatch.BrushRadius;
+
+            return 0f;
+        }
+
         public void NewProject()
         {
             if (CurrentProjectFile != null)

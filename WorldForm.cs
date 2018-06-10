@@ -78,6 +78,7 @@ namespace CodeWalker
 
         int ControlBrushTimer = 0;
         bool ControlBrushEnabled;
+        float ControlBrushRadius;
 
         Entity camEntity = new Entity();
         PedEntity pedEntity = new PedEntity();
@@ -1256,7 +1257,7 @@ namespace CodeWalker
                 if (MouseRayCollision.Hit)
                 {
                     var arup = GetPerpVec(MouseRayCollision.Normal);
-                    Renderer.RenderSelectionArrowOutline(MouseRayCollision.Position, MouseRayCollision.Normal, arup, Quaternion.Identity, 2.0f, 0.15f, cgrn);
+                    Renderer.RenderBrushRadiusOutline(MouseRayCollision.Position, MouseRayCollision.Normal, arup, ProjectForm.GetInstanceBrushRadius(), cgrn);
                 }
             }
 
@@ -2116,9 +2117,8 @@ namespace CodeWalker
             //reset variables for beginning the mouse hit test
             CurMouseHit.Clear();
 
-
-            //MouseRayCollisionEnabled = Input.CtrlPressed; //temporary...!
-            if (Input.CtrlPressed)
+            // Get whether or not we can brush from the project form.
+            if (Input.CtrlPressed && ProjectForm != null && ProjectForm.CanPaintInstances())
             {
                 ControlBrushEnabled = true;
                 MouseRayCollisionEnabled = true;
@@ -2140,6 +2140,7 @@ namespace CodeWalker
 
 
         }
+        
         public SpaceRayIntersectResult GetSpaceMouseRay()
         {
             SpaceRayIntersectResult ret = new SpaceRayIntersectResult();
@@ -4352,7 +4353,8 @@ namespace CodeWalker
         public void GoToPosition(Vector3 p, Vector3 bound)
         {
             camera.FollowEntity.Position = p;
-            camera.TargetDistance = bound.Length();
+            var bl = bound.Length();
+            camera.TargetDistance = bl > 1f ? bl : 1f;
         }
 
         private MapMarker AddMarker(Vector3 pos, string name, bool addtotxtbox = false)
