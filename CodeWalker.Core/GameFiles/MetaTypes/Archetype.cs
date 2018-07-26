@@ -128,6 +128,9 @@ namespace CodeWalker.GameFiles
     {
         public override MetaName Type => MetaName.CMloArchetypeDef;
 
+        public CMloArchetypeDef _BaseMloArchetypeDef;
+        public CMloArchetypeDef BaseMloArchetypeDef { get { return _BaseMloArchetypeDef; } set { _BaseMloArchetypeDef = value; } }
+
         public CMloArchetypeDefData _MloArchetypeDef;
         public CMloArchetypeDefData MloArchetypeDef { get { return _MloArchetypeDef; } set { _MloArchetypeDef = value; } }
 
@@ -141,6 +144,7 @@ namespace CodeWalker.GameFiles
         {
             Ytyp = ytyp;
             InitVars(ref arch._BaseArchetypeDef);
+            BaseMloArchetypeDef = arch;
             MloArchetypeDef = arch.MloArchetypeDef;
         }
 

@@ -241,7 +241,121 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public void AddArchetype(Archetype arch)
+        {
+            List<Archetype> allArchs = new List<Archetype>();
 
+            if (AllArchetypes != null)
+                allArchs.AddRange(AllArchetypes);
+
+            allArchs.Add(arch);
+
+            AllArchetypes = allArchs.ToArray();
+        }
+
+        public void RemoveArchetype(Archetype arch)
+        {
+            List<Archetype> allArchs = new List<Archetype>();
+
+            if (AllArchetypes != null)
+                allArchs.AddRange(AllArchetypes);
+
+            if (allArchs.Contains(arch))
+                allArchs.Remove(arch);
+
+            AllArchetypes = allArchs.ToArray();
+        }
+
+        public byte[] Save()
+        {
+            MetaBuilder mb = new MetaBuilder();
+
+            var mdb = mb.EnsureBlock(MetaName.CMapTypes);
+
+            CMapTypes mapTypes = CMapTypes;
+
+            if((AllArchetypes != null) && (AllArchetypes.Length > 0))
+            {
+                MetaPOINTER[] archPtrs = new MetaPOINTER[AllArchetypes.Length];
+
+                for(int i=0; i<AllArchetypes.Length; i++)
+                {
+                    var arch = AllArchetypes[i];
+                    arch._BaseArchetypeDef.extensions = mb.AddWrapperArrayPtr(arch.Extensions);
+                }
+
+                for (int i = 0; i < archPtrs.Length; i++)
+                {
+                    var arch = AllArchetypes[i];
+
+                    if (arch is MloArchetype)
+                    {
+                        var mloArch = arch as MloArchetype;
+
+                        mloArch._BaseMloArchetypeDef._MloArchetypeDef.entities           = mb.AddWrapperArrayPtr(mloArch.entities);
+                        mloArch._BaseMloArchetypeDef._MloArchetypeDef.rooms              = mb.AddWrapperArray(mloArch.rooms);
+                        mloArch._BaseMloArchetypeDef._MloArchetypeDef.portals            = mb.AddWrapperArray(mloArch.portals);
+                        mloArch._BaseMloArchetypeDef._MloArchetypeDef.entitySets         = mb.AddWrapperArray(mloArch.entitySets);
+                        mloArch._BaseMloArchetypeDef._MloArchetypeDef.timeCycleModifiers = mb.AddItemArrayPtr(MetaName.CTimeCycleModifier, mloArch.timeCycleModifiers);
+
+                        archPtrs[i] = mb.AddItemPtr(MetaName.CMloArchetypeDef, mloArch.BaseMloArchetypeDef);
+
+                    }
+                    else if (arch is TimeArchetype)
+                    {
+                        var timeArch = arch as TimeArchetype;
+                        archPtrs[i] = mb.AddItemPtr(MetaName.CTimeArchetypeDef, timeArch.TimeArchetypeDef);
+
+                    }
+                    else
+                    {
+                        archPtrs[i] = mb.AddItemPtr(MetaName.CBaseArchetypeDef, arch.BaseArchetypeDef);
+                    }
+                }
+
+                mapTypes.archetypes = mb.AddPointerArray(archPtrs);
+            }
+
+            if((CompositeEntityTypes != null) && (CompositeEntityTypes.Length > 0))
+            {
+                MetaPOINTER[] cetPtrs = new MetaPOINTER[CompositeEntityTypes.Length] ;
+
+                for (int i = 0; i < cetPtrs.Length; i++)
+                {
+                    var cet    = CompositeEntityTypes[i];
+                    cetPtrs[i] = mb.AddItemPtr(MetaName.CCompositeEntityType, cet);
+                }
+
+                mapTypes.compositeEntityTypes = mb.AddItemArrayPtr(MetaName.CCompositeEntityType, cetPtrs);
+            }
+
+            mb.AddItem(MetaName.CMapTypes, mapTypes);
+
+            mb.AddStructureInfo(MetaName.CMapTypes);
+            mb.AddStructureInfo(MetaName.CBaseArchetypeDef);
+            mb.AddStructureInfo(MetaName.CMloArchetypeDef);
+            mb.AddStructureInfo(MetaName.CTimeArchetypeDef);
+            mb.AddStructureInfo(MetaName.CMloRoomDef);
+            mb.AddStructureInfo(MetaName.CMloPortalDef);
+            mb.AddStructureInfo(MetaName.CMloEntitySet);
+            mb.AddStructureInfo(MetaName.CCompositeEntityType);
+
+            mb.AddEnumInfo((MetaName)1991964615);
+            mb.AddEnumInfo((MetaName)1294270217);
+            mb.AddEnumInfo((MetaName)1264241711);
+            mb.AddEnumInfo((MetaName)648413703);
+            mb.AddEnumInfo((MetaName)3573596290);
+            mb.AddEnumInfo((MetaName)700327466);
+            mb.AddEnumInfo((MetaName)193194928);
+            mb.AddEnumInfo((MetaName)2266515059);
+
+            Meta = mb.GetMeta();
+
+            byte[] data = ResourceBuilder.Build(Meta, 2); //ymap is version 2...
+
+            return data;
+
+        }
 
     }
 
