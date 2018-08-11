@@ -968,12 +968,12 @@ namespace CodeWalker.GameFiles
         public float Unknown_50h { get; set; } // -pi
         public float Unknown_54h { get; set; } // pi
         public float Unknown_58h { get; set; } // 1.0
-        public float Unknown_5Ch { get; set; }
-        public float Unknown_60h { get; set; }
-        public float Unknown_64h { get; set; }
-        public float Unknown_68h { get; set; }
-        public float Unknown_6Ch { get; set; }
-        public float Unknown_70h { get; set; }
+        public float MinX { get; set; }
+        public float MinY { get; set; }
+        public float MinZ { get; set; }
+        public float MaxX { get; set; }
+        public float MaxY { get; set; }
+        public float MaxZ { get; set; }
         public float Unknown_74h { get; set; } // pi
         public float Unknown_78h { get; set; } // -pi
         public float Unknown_7Ch { get; set; } // pi
