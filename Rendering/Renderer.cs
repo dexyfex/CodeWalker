@@ -98,7 +98,7 @@ namespace CodeWalker.Rendering
         public bool renderinteriors = true;
         public bool renderproxies = false;
         public bool renderchildents = false;//when rendering single ymap, render root only or not...
-
+        public bool renderentities = true;
         public bool rendergrass = true;
         public bool renderdistlodlights = true;
 
@@ -1537,39 +1537,42 @@ namespace CodeWalker.Rendering
             //if an entity is not fully loaded, set a flag for its parent, then traverse to root
             //until found an entity that is fully loaded.
             //on a second loop, build a final render list based on the flags.
-
-            for (int i = 0; i < renderworldentities.Count; i++)
+            if(renderentities)
             {
-                var ent = renderworldentities[i];
-                var arch = ent.Archetype;
-                var pent = ent.Parent;
-                var drawable = gameFileCache.TryGetDrawable(arch);
-                Renderable rndbl = TryGetRenderable(arch, drawable);
-                if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
+
+                for (int i = 0; i < renderworldentities.Count; i++)
                 {
-                    RenderableEntity rent = new RenderableEntity();
-                    rent.Entity = ent;
-                    rent.Renderable = rndbl;
-                    renderworldrenderables.Add(rent);
-                }
-                else if (waitforchildrentoload)
-                {
-                    //todo: render parent if children loading.......
+                    var ent = renderworldentities[i];
+                    var arch = ent.Archetype;
+                    var pent = ent.Parent;
+                    var drawable = gameFileCache.TryGetDrawable(arch);
+                    Renderable rndbl = TryGetRenderable(arch, drawable);
+                    if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
+                    {
+                        RenderableEntity rent = new RenderableEntity();
+                        rent.Entity = ent;
+                        rent.Renderable = rndbl;
+                        renderworldrenderables.Add(rent);
+                    }
+                    else if (waitforchildrentoload)
+                    {
+                        //todo: render parent if children loading.......
+                    }
+
+                    if (ent.IsMlo && rendercollisionmeshes && renderinteriors)
+                    {
+                        RenderInteriorCollisionMesh(ent);
+                    }
                 }
 
-                if (ent.IsMlo && rendercollisionmeshes && renderinteriors)
+                for (int i = 0; i < renderworldrenderables.Count; i++)
                 {
-                    RenderInteriorCollisionMesh(ent);
+                    var rent = renderworldrenderables[i];
+                    var ent = rent.Entity;
+                    var arch = ent.Archetype;
+
+                    RenderArchetype(arch, ent, rent.Renderable, false);
                 }
-            }
-
-            for (int i = 0; i < renderworldrenderables.Count; i++)
-            {
-                var rent = renderworldrenderables[i];
-                var ent = rent.Entity;
-                var arch = ent.Archetype;
-
-                RenderArchetype(arch, ent, rent.Renderable, false);
             }
 
 
