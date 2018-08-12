@@ -1537,34 +1537,34 @@ namespace CodeWalker.Rendering
             //if an entity is not fully loaded, set a flag for its parent, then traverse to root
             //until found an entity that is fully loaded.
             //on a second loop, build a final render list based on the flags.
-            if(renderentities)
+
+            for (int i = 0; i < renderworldentities.Count; i++)
             {
-
-                for (int i = 0; i < renderworldentities.Count; i++)
+                var ent = renderworldentities[i];
+                var arch = ent.Archetype;
+                var pent = ent.Parent;
+                var drawable = gameFileCache.TryGetDrawable(arch);
+                Renderable rndbl = TryGetRenderable(arch, drawable);
+                if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
                 {
-                    var ent = renderworldentities[i];
-                    var arch = ent.Archetype;
-                    var pent = ent.Parent;
-                    var drawable = gameFileCache.TryGetDrawable(arch);
-                    Renderable rndbl = TryGetRenderable(arch, drawable);
-                    if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
-                    {
-                        RenderableEntity rent = new RenderableEntity();
-                        rent.Entity = ent;
-                        rent.Renderable = rndbl;
-                        renderworldrenderables.Add(rent);
-                    }
-                    else if (waitforchildrentoload)
-                    {
-                        //todo: render parent if children loading.......
-                    }
-
-                    if (ent.IsMlo && rendercollisionmeshes && renderinteriors)
-                    {
-                        RenderInteriorCollisionMesh(ent);
-                    }
+                    RenderableEntity rent = new RenderableEntity();
+                    rent.Entity = ent;
+                    rent.Renderable = rndbl;
+                    renderworldrenderables.Add(rent);
+                }
+                else if (waitforchildrentoload)
+                {
+                    //todo: render parent if children loading.......
                 }
 
+                if (ent.IsMlo && rendercollisionmeshes && renderinteriors)
+                {
+                    RenderInteriorCollisionMesh(ent);
+                }
+            }
+
+            if(renderentities)
+            {
                 for (int i = 0; i < renderworldrenderables.Count; i++)
                 {
                     var rent = renderworldrenderables[i];
