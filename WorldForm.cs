@@ -7624,6 +7624,11 @@ namespace CodeWalker
         {
             SnapGridSize = (float)SnapGridSizeUpDown.Value;
         }
+
+        private void RenderEntitiesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderentities = RenderEntitiesCheckBox.Checked;
+        }
     }
 
     public enum WorldControlMode
