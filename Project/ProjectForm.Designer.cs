@@ -78,6 +78,7 @@
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.YmapNewEntityMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.YmapNewCarGenMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YmapNewGrassBatchMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.YmapAddToProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.YmapRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -522,6 +523,7 @@
             this.toolStripSeparator11,
             this.YmapNewEntityMenu,
             this.YmapNewCarGenMenu,
+            this.YmapNewGrassBatchMenu,
             this.toolStripSeparator12,
             this.YmapAddToProjectMenu,
             this.YmapRemoveFromProjectMenu});
@@ -557,6 +559,14 @@
             this.YmapNewCarGenMenu.Size = new System.Drawing.Size(199, 22);
             this.YmapNewCarGenMenu.Text = "New Car Generator";
             this.YmapNewCarGenMenu.Click += new System.EventHandler(this.YmapNewCarGenMenu_Click);
+            // 
+            // YmapNewGrassBatchMenu
+            // 
+            this.YmapNewGrassBatchMenu.Enabled = false;
+            this.YmapNewGrassBatchMenu.Name = "YmapNewGrassBatchMenu";
+            this.YmapNewGrassBatchMenu.Size = new System.Drawing.Size(199, 22);
+            this.YmapNewGrassBatchMenu.Text = "New Grass Batch";
+            this.YmapNewGrassBatchMenu.Click += new System.EventHandler(this.YmapNewGrassBatchMenu_Click);
             // 
             // toolStripSeparator12
             // 
@@ -1324,6 +1334,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator22;
         private System.Windows.Forms.ToolStripMenuItem ScenarioAddToProjectMenu;
         private System.Windows.Forms.ToolStripMenuItem ScenarioRemoveFromProjectMenu;
+        private System.Windows.Forms.ToolStripMenuItem YmapNewGrassBatchMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolsNavMeshGeneratorMenu;
     }
 }

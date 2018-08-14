@@ -138,6 +138,18 @@ namespace CodeWalker.Project.Panels
 
                         }
                     }
+                    if (ymap.GrassInstanceBatches != null)
+                    {
+                        foreach (var batch in ymap.GrassInstanceBatches)
+                        {
+                            var ytyp = batch.Archetype?.Ytyp;
+                            var ytypname = getYtypName(ytyp);
+                            if (ytyp != null)
+                            {
+                                mapdeps[ytypname] = ytyp;
+                            }
+                        }
+                    }
 
                     sb.AppendLine("    <Item>");
                     sb.AppendLine("      <imapName>" + ymapname + "</imapName>");

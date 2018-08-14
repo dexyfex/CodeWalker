@@ -195,6 +195,14 @@ namespace CodeWalker.Rendering
             }
         }
 
+        public void Invalidate(YmapGrassInstanceBatch batch)
+        {
+            lock (updateSyncRoot)
+            {
+                instbatches.Invalidate(batch);
+            }
+        }
+
 
     }
 

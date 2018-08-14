@@ -104,7 +104,6 @@ namespace CodeWalker.Project
                     RpfMan = GameFileCache.RpfMan;
                 })).Start();
             }
-
         }
 
         private void UpdateStatus(string text)
@@ -712,6 +711,25 @@ namespace CodeWalker.Project
 
         //######## Public methods
 
+        // Possibly future proofing for procedural prop instances
+        public bool CanPaintInstances()
+        {
+            if (CurrentGrassBatch != null)
+            {
+                if (CurrentGrassBatch.BrushEnabled)
+                    return true;
+            }
+
+            return false;
+        }
+        public float GetInstanceBrushRadius()
+        {
+            if (CurrentGrassBatch != null)
+                return CurrentGrassBatch.BrushRadius;
+
+            return 0f;
+        }
+
         public void NewProject()
         {
             if (CurrentProjectFile != null)
@@ -1277,6 +1295,10 @@ namespace CodeWalker.Project
             {
                 ProjectExplorer?.TrySelectCarGenTreeNode(CurrentCarGen);
             }
+            else if (CurrentGrassBatch != null)
+            {
+                ProjectExplorer?.TrySelectGrassBatchTreeNode(CurrentGrassBatch);
+            }
         }
         public void RemoveYmapFromProject()
         {
@@ -1440,6 +1462,155 @@ namespace CodeWalker.Project
         public bool IsCurrentEntity(YmapEntityDef ent)
         {
             return CurrentEntity == ent;
+        }
+
+        public void NewGrassBatch(YmapGrassInstanceBatch copy = null)
+        {
+            if (CurrentYmapFile == null) return;
+
+            rage__fwGrassInstanceListDef fwBatch = new rage__fwGrassInstanceListDef();
+            rage__fwGrassInstanceListDef__InstanceData[] instances = new rage__fwGrassInstanceListDef__InstanceData[0];
+
+            if (copy != null)
+            {
+                fwBatch = copy.Batch;
+                instances = copy.Instances;
+            }
+            else
+            {
+                fwBatch.archetypeName = new MetaHash(JenkHash.GenHash("proc_grasses01"));
+                fwBatch.lodDist = 120;
+                fwBatch.LodFadeStartDist = 15;
+                fwBatch.LodInstFadeRange = 0.75f;
+                fwBatch.OrientToTerrain = 1.0f;
+                fwBatch.ScaleRange = new Vector3(0.3f, 0.2f, 0.7f);
+            }
+
+            YmapGrassInstanceBatch batch = new YmapGrassInstanceBatch
+            {
+                AABBMin = fwBatch.BatchAABB.min.XYZ(),
+                AABBMax = fwBatch.BatchAABB.max.XYZ(),
+                Archetype = GameFileCache.GetArchetype(fwBatch.archetypeName),
+                Batch = fwBatch,
+                Instances = instances
+            };
+
+            batch.Position = (batch.AABBMin + batch.AABBMax) * 0.5f;
+            batch.Radius = (batch.AABBMax - batch.AABBMin).Length() * 0.5f;
+            batch.Ymap = CurrentYmapFile;
+            
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    CurrentYmapFile.AddGrassBatch(batch);
+                }
+            }
+            else
+            {
+                CurrentYmapFile.AddGrassBatch(batch);
+            }
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectGrassBatchTreeNode(batch);
+            CurrentGrassBatch = batch;
+            ShowEditYmapGrassBatchPanel(false);
+        }
+        public void AddGrassBatchToProject()
+        {
+            if (CurrentGrassBatch == null) return;
+
+            CurrentYmapFile = CurrentGrassBatch.Ymap;
+            if (!YmapExistsInProject(CurrentYmapFile))
+            {
+                var grassBatch = CurrentGrassBatch;
+                CurrentYmapFile.HasChanged = true;
+                AddYmapToProject(CurrentYmapFile);
+
+                CurrentGrassBatch = grassBatch; //bug fix for some reason the treeview selects the project node here.
+                CurrentYmapFile = grassBatch.Ymap;
+                ProjectExplorer?.TrySelectGrassBatchTreeNode(grassBatch);
+            }
+        }
+        public bool DeleteGrassBatch()
+        {
+            if (CurrentYmapFile == null) return false;
+            if (CurrentGrassBatch == null) return false;
+            if (CurrentGrassBatch.Ymap != CurrentYmapFile) return false;
+            if (CurrentYmapFile.GrassInstanceBatches == null) return false; //nothing to delete..
+
+            if (MessageBox.Show("Are you sure you want to delete this grass batch?\n" + CurrentGrassBatch.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentYmapFile.RemoveGrassBatch(CurrentGrassBatch);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentYmapFile.RemoveGrassBatch(CurrentGrassBatch);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unable to delete the grass batch. This shouldn't happen!");
+            }
+
+            var delbatch = CurrentGrassBatch;
+
+            ProjectExplorer?.RemoveGrassBatchTreeNode(CurrentGrassBatch);
+            ProjectExplorer?.SetYmapHasChanged(CurrentYmapFile, true);
+
+            ClosePanel((EditYmapGrassPanel p) => { return p.Tag == delbatch; });
+
+            CurrentGrassBatch = null;
+
+            return true;
+        }
+        public void PaintGrass(SpaceRayIntersectResult mouseRay, bool erase)
+        {
+            try
+            {
+                if (InvokeRequired)
+                {
+                    Invoke(new Action(() => { PaintGrass(mouseRay, erase); }));
+                    return;
+                }
+
+                if (!mouseRay.Hit || !mouseRay.TestComplete) return;
+                if (CurrentGrassBatch == null || (!CurrentGrassBatch.BrushEnabled)) return; // brush isn't enabled right now
+                EditYmapGrassPanel panel = FindPanel<EditYmapGrassPanel>(x => x.CurrentBatch == CurrentGrassBatch);
+                if (panel == null) return; // no panels with this batch
+
+                // TODO: Maybe move these functions into the batch instead of the grass panel?
+                // although, the panel does have the brush settings.
+                if (!erase)
+                    panel.CreateInstancesAtMouse(mouseRay);
+                else panel.EraseInstancesAtMouse(mouseRay);
+            }
+            catch { }
+        }
+        public bool GrassBatchExistsInProject(YmapGrassInstanceBatch batch)
+        {
+            if (CurrentProjectFile?.YmapFiles == null) return false;
+            if (CurrentProjectFile.YmapFiles.Count <= 0) return false;
+            foreach (var ymapFile in CurrentProjectFile.YmapFiles)
+            {
+                if (ymapFile.GrassInstanceBatches == null) continue;
+                foreach (var b in ymapFile.GrassInstanceBatches)
+                {
+                    if (batch == b)
+                        return true;
+                }
+            }
+            return false;
         }
 
         public void NewCarGen(YmapCarGen copy = null, bool copyPosition = false)
@@ -3827,9 +3998,11 @@ namespace CodeWalker.Project
                     for (int i = 0; i < CurrentProjectFile.YmapFiles.Count; i++)
                     {
                         var ymap = CurrentProjectFile.YmapFiles[i];
+                        // make sure we're not hiding ymaps that have been added by the end-user.
+                        var isnew = ymap.RpfFileEntry.ShortNameHash == 0;
                         if (ymap.Loaded)
                         {
-                            ymaps[ymap._CMapData.name] = ymap;
+                            ymaps[isnew ? JenkHash.GenHash(ymap.Name) : ymap.RpfFileEntry.ShortNameHash] = ymap;
                         }
                     }
                 }
@@ -4033,6 +4206,11 @@ namespace CodeWalker.Project
                         {
                             ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
                         }
+                        if (grassbatch != CurrentGrassBatch)
+                        {
+                            ProjectExplorer?.TrySelectGrassBatchTreeNode(grassbatch);
+                        }
+
                     }
                     else if (YndExistsInProject(ynd))
                     {
@@ -4706,7 +4884,19 @@ namespace CodeWalker.Project
 
             PromoteIfPreviewPanelActive();
         }
+        public void SetGrassBatchHasChanged(bool changed)
+        {
+            if (CurrentGrassBatch == null) return;
 
+            bool changechange = changed != CurrentGrassBatch.HasChanged;
+            if (!changechange) return;
+
+            CurrentGrassBatch.HasChanged = true;
+
+            ProjectExplorer?.SetGrassBatchHasChanged(CurrentGrassBatch, changed);
+
+            PromoteIfPreviewPanelActive();
+        }
 
 
 
@@ -4884,6 +5074,7 @@ namespace CodeWalker.Project
 
             YmapNewEntityMenu.Enabled = enable && inproj;
             YmapNewCarGenMenu.Enabled = enable && inproj;
+            YmapNewGrassBatchMenu.Enabled = enable && inproj;
 
             if (CurrentYmapFile != null)
             {
@@ -5110,7 +5301,7 @@ namespace CodeWalker.Project
                 FileSaveItemAsMenu.Text = "Save As...";
                 ToolbarSaveButton.Text = "Save";
             }
-            
+
             FileSaveItemMenu.Tag = filename;
             FileSaveItemAsMenu.Tag = filename;
 
@@ -5318,6 +5509,10 @@ namespace CodeWalker.Project
         private void YmapNewCarGenMenu_Click(object sender, EventArgs e)
         {
             NewCarGen();
+        }
+        private void YmapNewGrassBatchMenu_Click(object sender, EventArgs e)
+        {
+            NewGrassBatch();
         }
         private void YmapAddToProjectMenu_Click(object sender, EventArgs e)
         {

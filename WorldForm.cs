@@ -76,6 +76,11 @@ namespace CodeWalker
 
         bool ControlFireToggle = false;
 
+
+        int ControlBrushTimer = 0;
+        bool ControlBrushEnabled;
+        float ControlBrushRadius;
+
         Entity camEntity = new Entity();
         PedEntity pedEntity = new PedEntity();
 
@@ -99,7 +104,7 @@ namespace CodeWalker
 
 
 
-
+        
 
 
 
@@ -487,7 +492,7 @@ namespace CodeWalker
             }
 
 
-            if (ControlMode == WorldControlMode.Free)
+            if (ControlMode == WorldControlMode.Free || ControlBrushEnabled)
             {
                 if (Input.ShiftPressed)
                 {
@@ -1253,7 +1258,7 @@ namespace CodeWalker
                 if (MouseRayCollision.Hit)
                 {
                     var arup = GetPerpVec(MouseRayCollision.Normal);
-                    Renderer.RenderSelectionArrowOutline(MouseRayCollision.Position, MouseRayCollision.Normal, arup, Quaternion.Identity, 2.0f, 0.15f, cgrn);
+                    Renderer.RenderBrushRadiusOutline(MouseRayCollision.Position, MouseRayCollision.Normal, arup, ProjectForm.GetInstanceBrushRadius(), cgrn);
                 }
             }
 
@@ -1825,6 +1830,14 @@ namespace CodeWalker
             }
         }
 
+        public void UpdateGrassBatchGraphics(YmapGrassInstanceBatch grassBatch)
+        {
+            lock (Renderer.RenderSyncRoot)
+            {
+                Renderer.Invalidate(grassBatch);
+            }
+        }
+
 
         public Vector3 GetCameraPosition()
         {
@@ -2050,8 +2063,8 @@ namespace CodeWalker
 
             if (mode == ControlMode) return;
 
-            bool wasfree = (ControlMode == WorldControlMode.Free);
-            bool isfree = (mode == WorldControlMode.Free);
+            bool wasfree = (ControlMode == WorldControlMode.Free || ControlBrushEnabled);
+            bool isfree = (mode == WorldControlMode.Free || ControlBrushEnabled);
 
             if (isfree && !wasfree)
             {
@@ -2105,17 +2118,17 @@ namespace CodeWalker
             //reset variables for beginning the mouse hit test
             CurMouseHit.Clear();
 
-
-            MouseRayCollisionEnabled = Input.CtrlPressed; //temporary...!
-            if (MouseRayCollisionEnabled)
+            // Get whether or not we can brush from the project form.
+            if (Input.CtrlPressed && ProjectForm != null && ProjectForm.CanPaintInstances())
             {
-                if (space.Inited && space.Grid != null)
-                {
-                    Ray mray = new Ray();
-                    mray.Position = camera.MouseRay.Position + camera.Position;
-                    mray.Direction = camera.MouseRay.Direction;
-                    MouseRayCollision = space.RayIntersect(mray);
-                }
+                ControlBrushEnabled = true;
+                MouseRayCollisionEnabled = true;
+                MouseRayCollision = GetSpaceMouseRay();
+            }
+            else if (MouseRayCollisionEnabled)
+            {
+                ControlBrushEnabled = false;
+                MouseRayCollisionEnabled = false;
             }
 
 
@@ -2128,6 +2141,25 @@ namespace CodeWalker
 
 
         }
+        
+        public SpaceRayIntersectResult GetSpaceMouseRay()
+        {
+            SpaceRayIntersectResult ret = new SpaceRayIntersectResult();
+            if (space.Inited && space.Grid != null)
+            {
+                Ray mray = new Ray();
+                mray.Position = camera.MouseRay.Position + camera.Position;
+                mray.Direction = camera.MouseRay.Direction;
+                return space.RayIntersect(mray);
+            }
+            return ret;
+        }
+
+        public SpaceRayIntersectResult Raycast(Ray ray)
+        {
+            return space.RayIntersect(ray);
+        }
+
         private void UpdateMouseHitsFromRenderer()
         {
             foreach (var rd in Renderer.RenderedDrawables)
@@ -4319,6 +4351,12 @@ namespace CodeWalker
         {
             camera.FollowEntity.Position = p;
         }
+        public void GoToPosition(Vector3 p, Vector3 bound)
+        {
+            camera.FollowEntity.Position = p;
+            var bl = bound.Length();
+            camera.TargetDistance = bl > 1f ? bl : 1f;
+        }
 
         private MapMarker AddMarker(Vector3 pos, string name, bool addtotxtbox = false)
         {
@@ -5899,7 +5937,7 @@ namespace CodeWalker
             MouseDownPoint = e.Location;
             MouseLastPoint = MouseDownPoint;
 
-            if (ControlMode == WorldControlMode.Free)
+            if (ControlMode == WorldControlMode.Free && !ControlBrushEnabled)
             {
                 if (MouseLButtonDown)
                 {
@@ -5998,6 +6036,7 @@ namespace CodeWalker
                     SelectedMarker = null;
                     HideMarkerSelectionInfo();
                 }
+                ControlBrushTimer = 0;
             }
 
         }
@@ -6012,47 +6051,11 @@ namespace CodeWalker
                 dy = -dy;
             }
 
-            if (ControlMode == WorldControlMode.Free)
+            if (ControlMode == WorldControlMode.Free && !ControlBrushEnabled)
             {
                 if (MouseLButtonDown)
                 {
-                    if (GrabbedMarker == null)
-                    {
-                        if (GrabbedWidget == null)
-                        {
-                            if (MapViewEnabled == false)
-                            {
-                                camera.MouseRotate(dx, dy);
-                            }
-                            else
-                            {
-                                //need to move the camera entity XY with mouse in mapview mode...
-                                MapViewDragX += dx;
-                                MapViewDragY += dy;
-                            }
-                        }
-                        else
-                        {
-                            //grabbed widget will move itself in Update() when IsDragging==true
-                        }
-                    }
-                    else
-                    {
-                        //move the grabbed marker...
-                        //float uptx = (CurrentMap != null) ? CurrentMap.UnitsPerTexelX : 1.0f;
-                        //float upty = (CurrentMap != null) ? CurrentMap.UnitsPerTexelY : 1.0f;
-                        //Vector3 wpos = GrabbedMarker.WorldPos;
-                        //wpos.X += dx * uptx;
-                        //wpos.Y += dy * upty;
-                        //GrabbedMarker.WorldPos = wpos;
-                        //UpdateMarkerTexturePos(GrabbedMarker);
-                        //if (GrabbedMarker == LocatorMarker)
-                        //{
-                        //    LocateTextBox.Text = LocatorMarker.ToString();
-                        //    WorldCoordTextBox.Text = LocatorMarker.Get2DWorldPosString();
-                        //    TextureCoordTextBox.Text = LocatorMarker.Get2DTexturePosString();
-                        //}
-                    }
+                    RotateCam(dx, dy);
                 }
                 if (MouseRButtonDown)
                 {
@@ -6076,10 +6079,30 @@ namespace CodeWalker
                     }
                 }
 
-                MouseX = e.X;
-                MouseY = e.Y;
-                MouseLastPoint = e.Location;
+                UpdateMousePosition(e);
 
+            }
+            else if (ControlBrushEnabled)
+            {
+                if (MouseRButtonDown)
+                {
+                    RotateCam(dx, dy);
+                }
+
+                UpdateMousePosition(e);
+
+                ControlBrushTimer++;
+                if (ControlBrushTimer > (Input.ShiftPressed ? 5 : 10))
+                {
+                    lock (Renderer.RenderSyncRoot)
+                    {
+                        if (ProjectForm != null && MouseLButtonDown)
+                        {
+                            ProjectForm.PaintGrass(MouseRayCollision, Input.ShiftPressed);
+                        }
+                        ControlBrushTimer = 0;
+                    }
+                }
             }
             else
             {
@@ -6121,11 +6144,59 @@ namespace CodeWalker
             }
         }
 
+        private void UpdateMousePosition(MouseEventArgs e)
+        {
+            MouseX = e.X;
+            MouseY = e.Y;
+            MouseLastPoint = e.Location;
+        }
+
+        private void RotateCam(int dx, int dy)
+        {
+            if (GrabbedMarker == null)
+            {
+                if (GrabbedWidget == null)
+                {
+                    if (MapViewEnabled == false)
+                    {
+                        camera.MouseRotate(dx, dy);
+                    }
+                    else
+                    {
+                        //need to move the camera entity XY with mouse in mapview mode...
+                        MapViewDragX += dx;
+                        MapViewDragY += dy;
+                    }
+                }
+                else
+                {
+                    //grabbed widget will move itself in Update() when IsDragging==true
+                }
+            }
+            else
+            {
+                //move the grabbed marker...
+                //float uptx = (CurrentMap != null) ? CurrentMap.UnitsPerTexelX : 1.0f;
+                //float upty = (CurrentMap != null) ? CurrentMap.UnitsPerTexelY : 1.0f;
+                //Vector3 wpos = GrabbedMarker.WorldPos;
+                //wpos.X += dx * uptx;
+                //wpos.Y += dy * upty;
+                //GrabbedMarker.WorldPos = wpos;
+                //UpdateMarkerTexturePos(GrabbedMarker);
+                //if (GrabbedMarker == LocatorMarker)
+                //{
+                //    LocateTextBox.Text = LocatorMarker.ToString();
+                //    WorldCoordTextBox.Text = LocatorMarker.Get2DWorldPosString();
+                //    TextureCoordTextBox.Text = LocatorMarker.Get2DTexturePosString();
+                //}
+            }
+        }
+
         private void WorldForm_MouseWheel(object sender, MouseEventArgs e)
         {
             if (e.Delta != 0)
             {
-                if (ControlMode == WorldControlMode.Free)
+                if (ControlMode == WorldControlMode.Free || ControlBrushEnabled)
                 {
                     camera.MouseZoom(e.Delta);
                 }
@@ -6255,7 +6326,7 @@ namespace CodeWalker
                 }
             }
 
-            if (ControlMode != WorldControlMode.Free)
+            if (ControlMode != WorldControlMode.Free || ControlBrushEnabled)
             {
                 e.Handled = true;
             }
@@ -7554,8 +7625,12 @@ namespace CodeWalker
         {
             SnapGridSize = (float)SnapGridSizeUpDown.Value;
         }
-    }
 
+        private void RenderEntitiesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderentities = RenderEntitiesCheckBox.Checked;
+        }
+    }
 
     public enum WorldControlMode
     {
