@@ -380,6 +380,11 @@ namespace CodeWalker.Rendering
             renderableCache.Invalidate(path);
         }
 
+        public void Invalidate(YmapGrassInstanceBatch batch)
+        {
+            renderableCache.Invalidate(batch);
+        }
+
 
         public void UpdateSelectionDrawFlags(DrawableModel model, DrawableGeometry geom, bool rem)
         {
@@ -677,6 +682,33 @@ namespace CodeWalker.Rendering
             RenderSelectionArrowOutline(pos, Vector3.UnitY, Vector3.UnitX, ori, size, rad, cgrn);
             RenderSelectionArrowOutline(pos, Vector3.UnitZ, Vector3.UnitY, ori, size, rad, cblu);
 
+        }
+
+        public void RenderBrushRadiusOutline(Vector3 position, Vector3 dir, Vector3 up, float radius, uint col)
+        {
+            const int Reso = 36;
+            const float MaxDeg = 360f;
+            const float DegToRad = 0.0174533f;
+            const float Ang = MaxDeg / Reso;
+
+            var axis = Vector3.Cross(dir, up);
+            var c = new VertexTypePC[Reso];
+
+            for (var i = 0; i < Reso; i++)
+            {
+                var rDir = Quaternion.RotationAxis(dir, (i * Ang) * DegToRad).Multiply(axis);
+                c[i].Position = position + (rDir * radius);
+                c[i].Colour = col;
+            }
+
+            for (var i = 0; i < c.Length; i++)
+            {
+                SelectionLineVerts.Add(c[i]);
+                SelectionLineVerts.Add(c[(i + 1) % c.Length]);
+            }
+
+            SelectionLineVerts.Add(new VertexTypePC{Colour = col, Position = position});
+            SelectionLineVerts.Add(new VertexTypePC { Colour = col, Position = position + dir * 2f});
         }
 
         public void RenderSelectionArrowOutline(Vector3 pos, Vector3 dir, Vector3 up, Quaternion ori, float len, float rad, uint colour)

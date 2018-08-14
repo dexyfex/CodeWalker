@@ -641,6 +641,20 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
+        public void SetGrassBatchHasChanged(YmapGrassInstanceBatch batch, bool changed)
+        {
+            if (ProjectTreeView.Nodes.Count > 0)
+            {
+                var gbnode = FindGrassTreeNode(batch);
+                if (gbnode == null) return;
+                string changestr = changed ? "*" : "";
+                if (gbnode.Tag == batch)
+                {
+                    string name = batch.ToString();
+                    gbnode.Text = changestr + name;
+                }
+            }
+        }
 
 
 
@@ -698,6 +712,21 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
+        public TreeNode FindGrassTreeNode(YmapGrassInstanceBatch batch)
+        {
+            if (batch == null) return null;
+            TreeNode ymapnode = FindYmapTreeNode(batch.Ymap);
+            if (ymapnode == null) return null;
+            var batchnode = GetChildTreeNode(ymapnode, "GrassBatches");
+            if (batchnode == null) return null;
+            for (int i = 0; i < batchnode.Nodes.Count; i++)
+            {
+                TreeNode grassnode = batchnode.Nodes[i];
+                if (grassnode.Tag == batch) return grassnode;
+            }
+            return null;
+        }
+
         public TreeNode FindYndTreeNode(YndFile ynd)
         {
             if (ProjectTreeView.Nodes.Count <= 0) return null;
@@ -927,6 +956,21 @@ namespace CodeWalker.Project.Panels
                 else
                 {
                     ProjectTreeView.SelectedNode = cargennode;
+                }
+            }
+        }
+        public void TrySelectGrassBatchTreeNode(YmapGrassInstanceBatch grassBatch)
+        {
+            TreeNode grassNode = FindGrassTreeNode(grassBatch);
+            if (grassNode != null)
+            {
+                if (ProjectTreeView.SelectedNode == grassNode)
+                {
+                    OnItemSelected?.Invoke(grassNode);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = grassNode;
                 }
             }
         }
@@ -1237,6 +1281,16 @@ namespace CodeWalker.Project.Panels
             if ((tn != null) && (tn.Parent != null))
             {
                 tn.Parent.Text = "Car Generators (" + cargen.Ymap.CarGenerators.Length.ToString() + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+
+        public void RemoveGrassBatchTreeNode(YmapGrassInstanceBatch batch)
+        {
+            var tn = FindGrassTreeNode(batch);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                tn.Parent.Text = "Grass Batches (" + batch.Ymap.GrassInstanceBatches.Length.ToString() + ")";
                 tn.Parent.Nodes.Remove(tn);
             }
         }

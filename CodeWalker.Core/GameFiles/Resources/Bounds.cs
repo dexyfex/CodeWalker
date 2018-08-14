@@ -1443,6 +1443,13 @@ namespace CodeWalker.GameFiles
             return Materials[type.Index];
         }
 
+        public static BoundsMaterialData GetMaterial(byte index)
+        {
+            if (Materials == null) return null;
+            if ((int)index >= Materials.Count) return null;
+            return Materials[index];
+        }
+
         public static string GetMaterialName(BoundsMaterialType type)
         {
             var m = GetMaterial(type);
