@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -3368,6 +3367,21 @@ namespace CodeWalker
                 SelectItem(ms);
             }
         }
+
+        public void SelectGrassBatch(YmapGrassInstanceBatch batch)
+        {
+            if (batch == null)
+            {
+                SelectItem(null);
+            }
+            else
+            {
+                MapSelection ms = new MapSelection();
+                ms.GrassBatch = batch;
+                ms.AABB = new BoundingBox(batch.AABBMin, batch.AABBMax);
+                SelectItem(ms);
+            }
+        }
         public void SelectNavPoly(YnvPoly poly)
         {
             if (poly == null)
@@ -3915,6 +3929,7 @@ namespace CodeWalker
             {
                 ProjectForm = new ProjectForm(this);
                 ProjectForm.Show(this);
+                ProjectForm.OnWorldSelectionChanged(SelectedItem); // so that the project form isn't stuck on the welcome window.
             }
             else
             {
@@ -5065,9 +5080,20 @@ namespace CodeWalker
             {
                 //project not open, or entity not selected there, just remove the entity from the ymap...
                 var ymap = ent.Ymap;
+                var mlo = ent.MloParent?.MloInstance;
                 if (ymap == null)
                 {
-                    MessageBox.Show("Sorry, deleting interior entities is not currently supported.");
+                    if (mlo != null)
+                    {
+                        if (!mlo.DeleteEntity(ent))
+                        {
+                            MessageBox.Show("Unable to remove entity.");
+                        }
+                        else
+                        {
+                            SelectItem(null);
+                        }
+                    }
                 }
                 else if (!ymap.RemoveEntity(ent))
                 {
@@ -5088,7 +5114,14 @@ namespace CodeWalker
         {
             if (CopiedEntity == null) return;
             if (ProjectForm == null) return;
-            ProjectForm.NewEntity(CopiedEntity);
+            if (CopiedEntity.MloEntityDef != null)
+            {
+                ProjectForm.NewMloEntity(CopiedEntity, true);
+            }
+            else
+            {
+                ProjectForm.NewEntity(CopiedEntity, true);
+            }
         }
         private void CloneEntity()
         {
@@ -7623,6 +7656,11 @@ namespace CodeWalker
         private void SnapGridSizeUpDown_ValueChanged(object sender, EventArgs e)
         {
             SnapGridSize = (float)SnapGridSizeUpDown.Value;
+        }
+
+        private void RenderEntitiesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderentities = RenderEntitiesCheckBox.Checked;
         }
     }
 

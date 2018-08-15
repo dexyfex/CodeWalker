@@ -250,6 +250,42 @@ namespace CodeWalker.Project.Panels
         }
         private void LoadYtypTreeNodes(YtypFile ytyp, TreeNode node)//TODO!
         {
+            if (ytyp == null) return;
+
+            if (!string.IsNullOrEmpty(node.Name)) return;
+
+            node.Nodes.Clear();
+
+            if ((ytyp.AllArchetypes != null) && (ytyp.AllArchetypes.Length > 0))
+            {
+                var archetypesnode = node.Nodes.Add("Archetypes (" + ytyp.AllArchetypes.Length.ToString() + ")");
+                archetypesnode.Name = "Archetypes";
+                archetypesnode.Tag = ytyp;
+                var archetypes = ytyp.AllArchetypes;
+                for (int i = 0; i < archetypes.Length; i++)
+                {
+                    var yarch = archetypes[i];
+                    var tarch = archetypesnode.Nodes.Add(yarch.Name ?? "null_archetype");
+                    tarch.Tag = yarch;
+
+                    if (yarch is MloArchetype mlo)
+                    {
+                        if (mlo.entities.Length > 0)
+                        {
+                            var entitiesnode = tarch.Nodes.Add("Entities (" + mlo.entities.Length.ToString() + ")");
+                            entitiesnode.Name = "Entities";
+                            entitiesnode.Tag = mlo;
+                            var entities = mlo.entities;
+                            for (int j = 0; j < entities.Length; j++)
+                            {
+                                var yent = mlo.entities[j];
+                                var tent = entitiesnode.Nodes.Add(yent.ToString());
+                                tent.Tag = yent;
+                            }
+                        }
+                    }
+                }
+            }
         }
         private void LoadYndTreeNodes(YndFile ynd, TreeNode node)
         {
@@ -726,7 +762,57 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
+        public TreeNode FindYtypTreeNode(YtypFile ytyp)
+        {
+            if (ProjectTreeView.Nodes.Count <= 0) return null;
+            var projnode = ProjectTreeView.Nodes[0];
+            var ytypsnode = GetChildTreeNode(projnode, "Ytyp");
+            if (ytypsnode == null) return null;
+            for (int i = 0; i < ytypsnode.Nodes.Count; i++)
+            {
+                var ytypnode = ytypsnode.Nodes[i];
+                if (ytypnode.Tag == ytyp) return ytypnode;
+            }
+            return null;
+        }
 
+        public TreeNode FindArchetypeTreeNode(Archetype archetype)
+        {
+            if (archetype == null) return null;
+            TreeNode ytypnode = FindYtypTreeNode(archetype.Ytyp);
+            if (ytypnode == null) return null;
+            var archetypenode = GetChildTreeNode(ytypnode, "Archetypes");
+            if (archetypenode == null) return null;
+            for (int i = 0; i < archetypenode.Nodes.Count; i++)
+            {
+                TreeNode archnode = archetypenode.Nodes[i];
+                if (archnode.Tag == archetype) return archnode;
+            }
+            return null;
+        }
+        public TreeNode FindMloEntityTreeNode(MCEntityDef ent)
+        {
+            if (ent == null) return null;
+            TreeNode ytypnode = FindYtypTreeNode(ent.MloArchetype.Ytyp);
+            if (ytypnode == null) return null;
+            var archetypesnode = GetChildTreeNode(ytypnode, "Archetypes");
+            for (int i = 0; i < archetypesnode.Nodes.Count; i++)
+            {
+                if (archetypesnode.Nodes[i].Tag == ent.MloArchetype)
+                {
+                    var mloarchetypenode = archetypesnode.Nodes[i];
+                    TreeNode entitiesnode = GetChildTreeNode(mloarchetypenode, "Entities");
+                    for (int j = 0; j < entitiesnode.Nodes.Count; j++)
+                    {
+                        TreeNode entnode = entitiesnode.Nodes[j];
+                        if ((MCEntityDef)entnode.Tag == ent)
+                            return entnode;
+                    }
+                    break;
+                }
+            }
+            return null;
+        }
         public TreeNode FindYndTreeNode(YndFile ynd)
         {
             if (ProjectTreeView.Nodes.Count <= 0) return null;
@@ -974,6 +1060,36 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
+        public void TrySelectMloEntityTreeNode(MCEntityDef ent)
+        {
+            TreeNode entnode = FindMloEntityTreeNode(ent);
+            if (entnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == entnode)
+                {
+                    OnItemSelected?.Invoke(entnode);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = entnode;
+                }
+            }
+        }
+        public void TrySelectArchetypeTreeNode(Archetype archetype)
+        {
+            TreeNode archetypenode = FindArchetypeTreeNode(archetype);
+            if (archetypenode != null)
+            {
+                if (ProjectTreeView.SelectedNode == archetypenode)
+                {
+                    OnItemSelected?.Invoke(archetypenode);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = archetypenode;
+                }
+            }
+        }
         public void TrySelectPathNodeTreeNode(YndNode node)
         {
             TreeNode tnode = FindPathNodeTreeNode(node);
@@ -1195,6 +1311,16 @@ namespace CodeWalker.Project.Panels
             }
         }
 
+
+
+        public void UpdateArchetypeListTreeNode(Archetype archetype)
+        {
+            var tn = FindArchetypeTreeNode(archetype);
+            if (tn != null)
+            {
+                tn.Text = archetype._BaseArchetypeDef.ToString();
+            }
+        }
         public void UpdateCarGenTreeNode(YmapCarGen cargen)
         {
             var tn = FindCarGenTreeNode(cargen);
@@ -1266,6 +1392,7 @@ namespace CodeWalker.Project.Panels
         }
 
 
+
         public void RemoveEntityTreeNode(YmapEntityDef ent)
         {
             var tn = FindEntityTreeNode(ent);
@@ -1275,6 +1402,7 @@ namespace CodeWalker.Project.Panels
                 tn.Parent.Nodes.Remove(tn);
             }
         }
+
         public void RemoveCarGenTreeNode(YmapCarGen cargen)
         {
             var tn = FindCarGenTreeNode(cargen);
@@ -1291,6 +1419,24 @@ namespace CodeWalker.Project.Panels
             if ((tn != null) && (tn.Parent != null))
             {
                 tn.Parent.Text = "Grass Batches (" + batch.Ymap.GrassInstanceBatches.Length.ToString() + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveArchetypeTreeNode(Archetype archetype)
+        {
+            var tn = FindArchetypeTreeNode(archetype);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                tn.Parent.Text = "Archetypes (" + archetype.Ytyp.AllArchetypes.Length.ToString() + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveMloEntityTreeNode(MCEntityDef ent)
+        {
+            var tn = FindMloEntityTreeNode(ent);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                tn.Parent.Text = "Entities (" + ent.MloArchetype.entities.Length.ToString() + ")";
                 tn.Parent.Nodes.Remove(tn);
             }
         }

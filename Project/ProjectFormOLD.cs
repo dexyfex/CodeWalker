@@ -1282,7 +1282,7 @@ namespace CodeWalker
                 for (int i = 0; i < ents.Length; i++)
                 {
                     var ent = ents[i];
-                    var edef = ent.CEntityDef;
+                    var edef = ent._CEntityDef;
                     var enode = entsnode.Nodes.Add(edef.archetypeName.ToString());
                     enode.Tag = ent;
                 }

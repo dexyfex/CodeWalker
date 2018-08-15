@@ -45,7 +45,6 @@
             this.FileOpenProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.FileOpenYmapMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.FileOpenYtypMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.FileOpenYndMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.FileOpenYnvMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.FileOpenTrainsMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -73,6 +72,10 @@
             this.ViewThemeBlueMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ViewThemeLightMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ViewThemeDarkMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsManifestGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.ToolsImportMenyooXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.YmapMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.YmapNameMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
@@ -85,6 +88,8 @@
             this.YtypMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.YtypNameMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
+            this.YtypMloToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtypMloNewEntityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.YtypNewArchetypeMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
             this.YtypAddToProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -122,10 +127,6 @@
             this.toolStripSeparator22 = new System.Windows.Forms.ToolStripSeparator();
             this.ScenarioAddToProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ScenarioRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsManifestGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolsImportMenyooXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.RenderMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.RenderShowGtavMapMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.RenderShowProjectItemsMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -165,13 +166,13 @@
             this.FileMenu,
             this.EditMenu,
             this.ViewMenu,
+            this.ToolsMenu,
             this.YmapMenu,
             this.YtypMenu,
             this.YndMenu,
             this.YnvMenu,
             this.TrainsMenu,
             this.ScenarioMenu,
-            this.ToolsMenu,
             this.RenderMenu});
             this.MainMenu.Location = new System.Drawing.Point(0, 0);
             this.MainMenu.Name = "MainMenu";
@@ -270,7 +271,6 @@
             this.FileOpenProjectMenu,
             this.toolStripSeparator9,
             this.FileOpenYmapMenu,
-            this.FileOpenYtypMenu,
             this.FileOpenYndMenu,
             this.FileOpenYnvMenu,
             this.FileOpenTrainsMenu,
@@ -282,54 +282,47 @@
             // FileOpenProjectMenu
             // 
             this.FileOpenProjectMenu.Name = "FileOpenProjectMenu";
-            this.FileOpenProjectMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenProjectMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenProjectMenu.Text = "Project...";
             this.FileOpenProjectMenu.Click += new System.EventHandler(this.FileOpenProjectMenu_Click);
             // 
             // toolStripSeparator9
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
-            this.toolStripSeparator9.Size = new System.Drawing.Size(146, 6);
+            this.toolStripSeparator9.Size = new System.Drawing.Size(149, 6);
             // 
             // FileOpenYmapMenu
             // 
             this.FileOpenYmapMenu.Name = "FileOpenYmapMenu";
-            this.FileOpenYmapMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenYmapMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenYmapMenu.Text = "Ymap File...";
             this.FileOpenYmapMenu.Click += new System.EventHandler(this.FileOpenYmapMenu_Click);
-            // 
-            // FileOpenYtypMenu
-            // 
-            this.FileOpenYtypMenu.Name = "FileOpenYtypMenu";
-            this.FileOpenYtypMenu.Size = new System.Drawing.Size(149, 22);
-            this.FileOpenYtypMenu.Text = "Ytyp File...";
-            this.FileOpenYtypMenu.Click += new System.EventHandler(this.FileOpenYtypMenu_Click);
             // 
             // FileOpenYndMenu
             // 
             this.FileOpenYndMenu.Name = "FileOpenYndMenu";
-            this.FileOpenYndMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenYndMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenYndMenu.Text = "Ynd File...";
             this.FileOpenYndMenu.Click += new System.EventHandler(this.FileOpenYndMenu_Click);
             // 
             // FileOpenYnvMenu
             // 
             this.FileOpenYnvMenu.Name = "FileOpenYnvMenu";
-            this.FileOpenYnvMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenYnvMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenYnvMenu.Text = "Ynv File...";
             this.FileOpenYnvMenu.Click += new System.EventHandler(this.FileOpenYnvMenu_Click);
             // 
             // FileOpenTrainsMenu
             // 
             this.FileOpenTrainsMenu.Name = "FileOpenTrainsMenu";
-            this.FileOpenTrainsMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenTrainsMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenTrainsMenu.Text = "Trains File...";
             this.FileOpenTrainsMenu.Click += new System.EventHandler(this.FileOpenTrainsMenu_Click);
             // 
             // FileOpenScenarioMenu
             // 
             this.FileOpenScenarioMenu.Name = "FileOpenScenarioMenu";
-            this.FileOpenScenarioMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenScenarioMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenScenarioMenu.Text = "Scenario File...";
             this.FileOpenScenarioMenu.Click += new System.EventHandler(this.FileOpenScenarioMenu_Click);
             // 
@@ -515,6 +508,35 @@
             this.ViewThemeDarkMenu.Text = "Dark";
             this.ViewThemeDarkMenu.Click += new System.EventHandler(this.ViewThemeDarkMenu_Click);
             // 
+            // ToolsMenu
+            // 
+            this.ToolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolsManifestGeneratorMenu,
+            this.toolStripSeparator2,
+            this.ToolsImportMenyooXmlMenu});
+            this.ToolsMenu.Name = "ToolsMenu";
+            this.ToolsMenu.Size = new System.Drawing.Size(47, 20);
+            this.ToolsMenu.Text = "Tools";
+            // 
+            // ToolsManifestGeneratorMenu
+            // 
+            this.ToolsManifestGeneratorMenu.Name = "ToolsManifestGeneratorMenu";
+            this.ToolsManifestGeneratorMenu.Size = new System.Drawing.Size(193, 22);
+            this.ToolsManifestGeneratorMenu.Text = "Manifest Generator...";
+            this.ToolsManifestGeneratorMenu.Click += new System.EventHandler(this.ToolsManifestGeneratorMenu_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(190, 6);
+            // 
+            // ToolsImportMenyooXmlMenu
+            // 
+            this.ToolsImportMenyooXmlMenu.Name = "ToolsImportMenyooXmlMenu";
+            this.ToolsImportMenyooXmlMenu.Size = new System.Drawing.Size(193, 22);
+            this.ToolsImportMenyooXmlMenu.Text = "Import Menyoo XML...";
+            this.ToolsImportMenyooXmlMenu.Click += new System.EventHandler(this.ToolsImportMenyooXmlMenu_Click);
+            // 
             // YmapMenu
             // 
             this.YmapMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -593,6 +615,7 @@
             this.YtypMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.YtypNameMenu,
             this.toolStripSeparator13,
+            this.YtypMloToolStripMenuItem,
             this.YtypNewArchetypeMenu,
             this.toolStripSeparator15,
             this.YtypAddToProjectMenu,
@@ -613,6 +636,21 @@
             // 
             this.toolStripSeparator13.Name = "toolStripSeparator13";
             this.toolStripSeparator13.Size = new System.Drawing.Size(189, 6);
+            // 
+            // YtypMloToolStripMenuItem
+            // 
+            this.YtypMloToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.YtypMloNewEntityToolStripMenuItem});
+            this.YtypMloToolStripMenuItem.Name = "YtypMloToolStripMenuItem";
+            this.YtypMloToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.YtypMloToolStripMenuItem.Text = "Mlo";
+            // 
+            // YtypMloNewEntityToolStripMenuItem
+            // 
+            this.YtypMloNewEntityToolStripMenuItem.Name = "YtypMloNewEntityToolStripMenuItem";
+            this.YtypMloNewEntityToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
+            this.YtypMloNewEntityToolStripMenuItem.Text = "New Entity";
+            this.YtypMloNewEntityToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewEntityToolStripMenuItem_Click);
             // 
             // YtypNewArchetypeMenu
             // 
@@ -907,35 +945,6 @@
             this.ScenarioRemoveFromProjectMenu.Size = new System.Drawing.Size(228, 22);
             this.ScenarioRemoveFromProjectMenu.Text = "Remove from Project";
             this.ScenarioRemoveFromProjectMenu.Click += new System.EventHandler(this.ScenarioRemoveFromProjectMenu_Click);
-            // 
-            // ToolsMenu
-            // 
-            this.ToolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolsManifestGeneratorMenu,
-            this.toolStripSeparator2,
-            this.ToolsImportMenyooXmlMenu});
-            this.ToolsMenu.Name = "ToolsMenu";
-            this.ToolsMenu.Size = new System.Drawing.Size(47, 20);
-            this.ToolsMenu.Text = "Tools";
-            // 
-            // ToolsManifestGeneratorMenu
-            // 
-            this.ToolsManifestGeneratorMenu.Name = "ToolsManifestGeneratorMenu";
-            this.ToolsManifestGeneratorMenu.Size = new System.Drawing.Size(193, 22);
-            this.ToolsManifestGeneratorMenu.Text = "Manifest Generator...";
-            this.ToolsManifestGeneratorMenu.Click += new System.EventHandler(this.ToolsManifestGeneratorMenu_Click);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(190, 6);
-            // 
-            // ToolsImportMenyooXmlMenu
-            // 
-            this.ToolsImportMenyooXmlMenu.Name = "ToolsImportMenyooXmlMenu";
-            this.ToolsImportMenyooXmlMenu.Size = new System.Drawing.Size(193, 22);
-            this.ToolsImportMenyooXmlMenu.Text = "Import Menyoo XML...";
-            this.ToolsImportMenyooXmlMenu.Click += new System.EventHandler(this.ToolsImportMenyooXmlMenu_Click);
             // 
             // RenderMenu
             // 
@@ -1241,7 +1250,6 @@
         private System.Windows.Forms.ToolStripMenuItem FileOpenTrainsMenu;
         private System.Windows.Forms.ToolStripMenuItem FileOpenScenarioMenu;
         private System.Windows.Forms.ToolStripMenuItem FileNewYtypMenu;
-        private System.Windows.Forms.ToolStripMenuItem FileOpenYtypMenu;
         private System.Windows.Forms.SaveFileDialog SaveFileDialog;
         private System.Windows.Forms.OpenFileDialog OpenFileDialog;
         private System.Windows.Forms.ToolStrip MainToolbar;
@@ -1325,5 +1333,7 @@
         private System.Windows.Forms.ToolStripMenuItem ScenarioAddToProjectMenu;
         private System.Windows.Forms.ToolStripMenuItem ScenarioRemoveFromProjectMenu;
         private System.Windows.Forms.ToolStripMenuItem YmapNewGrassBatchMenu;
+        private System.Windows.Forms.ToolStripMenuItem YtypMloToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem YtypMloNewEntityToolStripMenuItem;
     }
 }

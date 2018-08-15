@@ -98,7 +98,7 @@ namespace CodeWalker.Rendering
         public bool renderinteriors = true;
         public bool renderproxies = false;
         public bool renderchildents = false;//when rendering single ymap, render root only or not...
-
+        public bool renderentities = true;
         public bool rendergrass = true;
         public bool renderdistlodlights = true;
 
@@ -1595,13 +1595,16 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            for (int i = 0; i < renderworldrenderables.Count; i++)
+            if(renderentities)
             {
-                var rent = renderworldrenderables[i];
-                var ent = rent.Entity;
-                var arch = ent.Archetype;
+                for (int i = 0; i < renderworldrenderables.Count; i++)
+                {
+                    var rent = renderworldrenderables[i];
+                    var ent = rent.Entity;
+                    var arch = ent.Archetype;
 
-                RenderArchetype(arch, ent, rent.Renderable, false);
+                    RenderArchetype(arch, ent, rent.Renderable, false);
+                }
             }
 
 
