@@ -1198,6 +1198,7 @@ namespace CodeWalker.GameFiles
         public Vector3 MloRefPosition { get; set; }
         public Quaternion MloRefOrientation { get; set; }
         public MetaWrapper[] Extensions { get; set; }
+        public MCEntityDef MloEntityDef { get; set; }
 
         public int Index { get; set; }
         public bool IsVisible; //used for rendering
@@ -1297,7 +1298,11 @@ namespace CodeWalker.GameFiles
                     {
                         MloInstance = new MloInstanceData();
                     }
-                    MloInstance.CreateYmapEntities(this, mloa);
+                    if (mloa != null)
+                    {
+                        mloa.EntityDef = this;
+                        MloInstance.CreateYmapEntities(this, mloa);
+                    }
 
                     if (BSRadius == 0.0f)
                     {
@@ -1311,42 +1316,18 @@ namespace CodeWalker.GameFiles
 
         public void SetPosition(Vector3 pos)
         {
+            Position = pos;
             if (MloParent != null)
             {
-                //TODO: SetPosition for interior entities!
-                Position = pos;
-                var inst = MloParent.MloInstance;
-                if (inst != null)
-                {
-                    //transform world position into mlo space
-                    //MloRefPosition = ...
-                    //MloRefOrientation = ...
-                }
+                _CEntityDef.position = Quaternion.Normalize(Quaternion.Invert(MloParent.Orientation)).Multiply(pos - MloParent.Position);
+                MloRefPosition = _CEntityDef.position;
+                UpdateBB();
+                UpdateMloArchetype();
             }
             else
             {
-                Position = pos;
                 _CEntityDef.position = pos;
-
-                if (Archetype != null)
-                {
-                    BSCenter = Orientation.Multiply(Archetype.BSCenter) * Scale;
-                }
-                if ((Archetype != null) && (Orientation == Quaternion.Identity))
-                {
-                    BBMin = (Archetype.BBMin * Scale) + Position;
-                    BBMax = (Archetype.BBMax * Scale) + Position;
-                }
-                else
-                {
-                    BBMin = Position - (BSRadius);
-                    BBMax = Position + (BSRadius);
-                    ////not ideal: should transform all 8 corners!
-                }
-
-
-
-                UpdateWidgetPosition();
+                UpdateBB();
             }
 
 
@@ -1356,19 +1337,49 @@ namespace CodeWalker.GameFiles
                 MloInstance.UpdateEntities();
             }
 
+            UpdateWidgetPosition();
+        }
+
+        private void UpdateBB()
+        {
+            if (Archetype != null)
+            {
+                BSCenter = Orientation.Multiply(Archetype.BSCenter) * Scale;
+            }
+            if ((Archetype != null) && (Orientation == Quaternion.Identity))
+            {
+                BBMin = (Archetype.BBMin * Scale) + Position;
+                BBMax = (Archetype.BBMax * Scale) + Position;
+            }
+            else
+            {
+                BBMin = Position - (BSRadius);
+                BBMax = Position + (BSRadius);
+                ////not ideal: should transform all 8 corners!
+            }
         }
 
         public void SetOrientation(Quaternion ori)
         {
-            Quaternion inv = Quaternion.Normalize(Quaternion.Invert(ori));
-            Orientation = ori;
-            _CEntityDef.rotation = new Vector4(inv.X, inv.Y, inv.Z, inv.W);
+            if (MloParent != null)
+            {
+                var mloInv = Quaternion.Normalize(Quaternion.Invert(MloParent.Orientation));
+                Quaternion rel = Quaternion.Normalize(Quaternion.Multiply(mloInv, ori));
+                Quaternion inv = Quaternion.Normalize(Quaternion.Invert(rel));
+                Orientation = ori;
+                _CEntityDef.rotation = inv.ToVector4();
+            }
+            else
+            {
+                Quaternion inv = Quaternion.Normalize(Quaternion.Invert(ori));
+                Orientation = ori;
+                _CEntityDef.rotation = inv.ToVector4();
+            }
 
             if (MloInstance != null)
             {
                 MloInstance.SetOrientation(ori);
             }
-
 
             if (Archetype != null)
             {
@@ -1382,7 +1393,7 @@ namespace CodeWalker.GameFiles
         {
             Quaternion ori = Quaternion.Normalize(Quaternion.Invert(inv));
             Orientation = ori;
-            _CEntityDef.rotation = new Vector4(inv.X, inv.Y, inv.Z, inv.W);
+            _CEntityDef.rotation = inv.ToVector4();
 
             if (MloInstance != null)
             {
@@ -1404,14 +1415,29 @@ namespace CodeWalker.GameFiles
             Scale = new Vector3(s.X, s.X, s.Z);
             _CEntityDef.scaleXY = s.X;
             _CEntityDef.scaleZ = s.Z;
+            if (MloEntityDef != null)
+            {
+                MloEntityDef._Data.scaleXY = s.X;
+                MloEntityDef._Data.scaleZ = s.Z;
+            }
             if (Archetype != null)
             {
                 float smax = Math.Max(Scale.X, Scale.Z);
                 BSRadius = Archetype.BSRadius * smax;
             }
+
             SetPosition(Position);//update the BB
         }
 
+        private void UpdateMloArchetype()
+        {
+            if (!(MloParent.Archetype is MloArchetype mloArchetype)) return;
+            if (Index >= mloArchetype.entities.Length) return;
+
+            MCEntityDef entity = mloArchetype.entities[Index];
+            entity._Data.position = _CEntityDef.position;
+            entity._Data.rotation = _CEntityDef.rotation;
+        }
 
 
         public void SetPivotPosition(Vector3 pos)
@@ -1787,7 +1813,7 @@ namespace CodeWalker.GameFiles
         }
 
         private List<rage__fwGrassInstanceListDef__InstanceData>[] SplitGrass(
-            IReadOnlyList<rage__fwGrassInstanceListDef__InstanceData> points, 
+            IReadOnlyList<rage__fwGrassInstanceListDef__InstanceData> points,
             BoundingBox batchAABB)
         {
             var pointGroup = new List<rage__fwGrassInstanceListDef__InstanceData>[2];
