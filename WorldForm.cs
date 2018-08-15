@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -2333,7 +2332,7 @@ namespace CodeWalker
                         if (mraytrn.Intersects(ref bbox, out hitdist))
                         {
                             if ((j == 0) && (gbbcount > 1)) continue;//ignore a model hit
-                            //bool firsthit = (mousehit.EntityDef == null);
+                            //bool firsthit = (mousehit.YmapEntityDef == null);
                             if (hitdist > 0.0f) //firsthit || //ignore when inside the box
                             {
                                 bool nearer = ((hitdist < CurMouseHit.HitDist) && (hitdist < ghitdist));
@@ -2436,14 +2435,14 @@ namespace CodeWalker
             //        bbox.Maximum = gbox.AABB_Min.XYZ();
             //        if (mraytrn.Intersects(ref bbox, out hitdist)) //test geom box
             //        {
-            //            bool firsthit = (mousehit.EntityDef == null);
+            //            bool firsthit = (mousehit.YmapEntityDef == null);
             //            if (firsthit || (hitdist > 0.0f)) //ignore when inside the box..
             //            {
             //                bool nearer = (hitdist < mousehit.HitDist);  //closer than the last..
             //                if (nearer)
             //                {
             //                    mousehit.HitDist = (hitdist > 0.0f) ? hitdist : mousehit.HitDist;
-            //                    mousehit.EntityDef = entity;
+            //                    mousehit.YmapEntityDef = entity;
             //                    mousehit.Archetype = arche;
             //                    mousehit.Drawable = drawable;
             //                    mousehit.CamRel = camrel;
@@ -3368,6 +3367,21 @@ namespace CodeWalker
                 SelectItem(ms);
             }
         }
+
+        public void SelectGrassBatch(YmapGrassInstanceBatch batch)
+        {
+            if (batch == null)
+            {
+                SelectItem(null);
+            }
+            else
+            {
+                MapSelection ms = new MapSelection();
+                ms.GrassBatch = batch;
+                ms.AABB = new BoundingBox(batch.AABBMin, batch.AABBMax);
+                SelectItem(ms);
+            }
+        }
         public void SelectNavPoly(YnvPoly poly)
         {
             if (poly == null)
@@ -3559,7 +3573,7 @@ namespace CodeWalker
         private void SetSelectionUI(MapSelection item)
         {
             SelectionNameTextBox.Text = item.GetNameString("Nothing selected");
-            //SelEntityPropertyGrid.SelectedObject = item.EntityDef;
+            //SelEntityPropertyGrid.SelectedObject = item.YmapEntityDef;
             SelArchetypePropertyGrid.SelectedObject = item.Archetype;
             SelDrawablePropertyGrid.SelectedObject = item.Drawable;
 
@@ -3717,7 +3731,7 @@ namespace CodeWalker
             }
 
 
-            //var ent = SelectedItem.EntityDef;
+            //var ent = SelectedItem.YmapEntityDef;
             //ToolbarDeleteEntityButton.Enabled = false;
             ////ToolbarAddEntityButton.Enabled = false;
             //ToolbarCopyButton.Enabled = (ent != null);
@@ -3915,6 +3929,7 @@ namespace CodeWalker
             {
                 ProjectForm = new ProjectForm(this);
                 ProjectForm.Show(this);
+                ProjectForm.OnWorldSelectionChanged(SelectedItem); // so that the project form isn't stuck on the welcome window.
             }
             else
             {
@@ -5065,9 +5080,20 @@ namespace CodeWalker
             {
                 //project not open, or entity not selected there, just remove the entity from the ymap...
                 var ymap = ent.Ymap;
+                var mlo = ent.MloParent?.MloInstance;
                 if (ymap == null)
                 {
-                    MessageBox.Show("Sorry, deleting interior entities is not currently supported.");
+                    if (mlo != null)
+                    {
+                        if (!mlo.DeleteEntity(ent))
+                        {
+                            MessageBox.Show("Unable to remove entity.");
+                        }
+                        else
+                        {
+                            SelectItem(null);
+                        }
+                    }
                 }
                 else if (!ymap.RemoveEntity(ent))
                 {
@@ -5088,7 +5114,14 @@ namespace CodeWalker
         {
             if (CopiedEntity == null) return;
             if (ProjectForm == null) return;
-            ProjectForm.NewEntity(CopiedEntity);
+            if (CopiedEntity.MloEntityDef != null)
+            {
+                ProjectForm.NewMloEntity(CopiedEntity, true);
+            }
+            else
+            {
+                ProjectForm.NewEntity(CopiedEntity, true);
+            }
         }
         private void CloneEntity()
         {

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace CodeWalker.Project
@@ -53,10 +54,20 @@ namespace CodeWalker.Project
                 Xml.AddChildWithInnerText(doc, ymapselem, "Item", ymapfilename);
             }
 
-            var ytypselem = Xml.AddChild(doc, projelem, "YtypFilenames");
-            foreach (string ytypfilename in YtypFilenames)
+            if (YtypFiles.Count > 0)
             {
-                Xml.AddChildWithInnerText(doc, ytypselem, "Item", ytypfilename);
+                var res = MessageBox.Show(@"Your ytyp files will not be serialized. Do you want to save them instead?", @"YTYP Files", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (res == DialogResult.Yes)
+                {
+                    foreach (YtypFile y in YtypFiles)
+                    {
+                        var bytes = y.Save();
+                        var path = Path.GetDirectoryName(Filepath);
+                        if (string.IsNullOrEmpty(path)) continue;
+                        File.WriteAllBytes(Path.Combine(path, y.Name.EndsWith(".ytyp") ? y.Name : y.Name + ".ytyp"), bytes);
+
+                    }
+                }
             }
 
             var yndselem = Xml.AddChild(doc, projelem, "YndFilenames");
@@ -122,20 +133,20 @@ namespace CodeWalker.Project
             }
 
 
-            YtypFilenames.Clear();
-            YtypFiles.Clear();
-            var ytypselem = Xml.GetChild(projelem, "YtypFilenames");
-            if (ytypselem != null)
-            {
-                foreach (var node in ytypselem.SelectNodes("Item"))
-                {
-                    XmlElement ytypel = node as XmlElement;
-                    if (ytypel != null)
-                    {
-                        AddYtypFile(ytypel.InnerText);
-                    }
-                }
-            }
+            //YtypFilenames.Clear();
+            //YtypFiles.Clear();
+            //var ytypselem = Xml.GetChild(projelem, "YtypFilenames");
+            //if (ytypselem != null)
+            //{
+            //    foreach (var node in ytypselem.SelectNodes("Item"))
+            //    {
+            //        XmlElement ytypel = node as XmlElement;
+            //        if (ytypel != null)
+            //        {
+            //            AddYtypFile(ytypel.InnerText);
+            //        }
+            //    }
+            //}
 
 
             YndFilenames.Clear();

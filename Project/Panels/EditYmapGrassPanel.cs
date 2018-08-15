@@ -42,6 +42,7 @@ namespace CodeWalker.Project.Panels
             Tag = batch;
             UpdateFormTitle();
             UpdateControls();
+            ProjectForm.WorldForm?.SelectGrassBatch(batch);
         }
 
         private void UpdateControls()
@@ -197,6 +198,13 @@ namespace CodeWalker.Project.Panels
         private void OptimizeBatchButton_Click(object sender, EventArgs e)
         {
             if (CurrentBatch.Instances == null || CurrentBatch.Instances.Length <= 0) return;
+            var d = MessageBox.Show(
+                @"You are about to split the selected batch into multiple parts. Are you sure you want to do this?",
+                @"Instance Optimizer", MessageBoxButtons.YesNo);
+
+            if (d == DialogResult.No)
+                return;
+
             lock (ProjectForm.WorldForm.RenderSyncRoot)
             {
                 var newBatches = CurrentBatch?.OptimizeInstances(CurrentBatch, (float)OptmizationThresholdNumericUpDown.Value);

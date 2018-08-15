@@ -2610,7 +2610,7 @@ namespace CodeWalker.GameFiles
                 Entities = new MCEntityDef[ents.Length];
                 for (int i = 0; i < ents.Length; i++)
                 {
-                    Entities[i] = new MCEntityDef(meta, ents[i]);
+                    Entities[i] = new MCEntityDef(meta, ref ents[i]);
                 }
             }
         }
@@ -2750,22 +2750,36 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public class MCEntityDef : MetaWrapper
     {
         public CEntityDef _Data;
-        public CEntityDef Data { get { return _Data; } }
+        public CEntityDef Data { get { return _Data; } set { _Data = value; } }
         public MetaWrapper[] Extensions { get; set; }
 
 
-        public MCEntityDef() { }
+        public MloArchetype MloArchetype { get; set; } // for browsing/reference purposes
+        public YmapEntityDef EntityInstance { get; set; } // for instance/selection stuff and browsing 
+
         public MCEntityDef(MCEntityDef copy)
         {
-            if (copy != null)
-            {
-                _Data = copy.Data;
-            }
+            if (copy != null) _Data = copy.Data;
         }
-        public MCEntityDef(Meta meta, CEntityDef d)
+        public MCEntityDef(Meta meta, ref CEntityDef d)
         {
             _Data = d;
             Extensions = MetaTypes.GetExtensions(meta, _Data.extensions);
+        }
+        public MCEntityDef(ref CEntityDef d, MloArchetype arch)
+        {
+            _Data = d;
+            MloArchetype = arch;
+        }
+        public MCEntityDef(ref CEntityDef d, MloArchetype arch, YmapEntityDef inst)
+        {
+            _Data = d;
+            MloArchetype = arch;
+            if (inst != null)
+            {
+                EntityInstance = inst;
+                Extensions = inst.Extensions;
+            }
         }
 
         public override void Load(Meta meta, MetaPOINTER ptr)
