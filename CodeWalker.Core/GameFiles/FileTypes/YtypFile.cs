@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
 {
@@ -22,7 +25,9 @@ namespace CodeWalker.GameFiles
         public CMapTypes CMapTypes { get { return _CMapTypes; } set { _CMapTypes = value; } }
 
         public Archetype[] AllArchetypes { get; set; }
+
         public MetaWrapper[] Extensions { get; set; }
+
         public CCompositeEntityType[] CompositeEntityTypes { get; set; }
 
 
@@ -76,7 +81,7 @@ namespace CodeWalker.GameFiles
                     switch (arch)
                     {
                         case TimeArchetype t:
-                            ptrs[i] = mb.AddItemPtr(MetaName.CTimeArchetypeDef, t.TimeArchetypeDef);
+                            ptrs[i] = mb.AddItemPtr(MetaName.CTimeArchetypeDef, t._TimeArchetypeDef);
                             break;
                         case MloArchetype m:
                             try
@@ -94,7 +99,7 @@ namespace CodeWalker.GameFiles
                             ptrs[i] = mb.AddItemPtr(MetaName.CMloArchetypeDef, m._MloArchetypeDef);
                             break;
                         case Archetype a:
-                            ptrs[i] = mb.AddItemPtr(MetaName.CBaseArchetypeDef, a.BaseArchetypeDef);
+                            ptrs[i] = mb.AddItemPtr(MetaName.CBaseArchetypeDef, a._BaseArchetypeDef);
                             break;
                     }
                 }
@@ -156,7 +161,7 @@ namespace CodeWalker.GameFiles
             //direct load from a raw, compressed ytyp file (openIV-compatible format)
 
             RpfFile.LoadResourceFile(this, data, 2);
-            
+
             Loaded = true;
         }
 
@@ -346,10 +351,8 @@ namespace CodeWalker.GameFiles
         public void AddArchetype(Archetype archetype)
         {
             if (AllArchetypes == null)
-            {
-                AllArchetypes = new[] { archetype };
-                return;
-            }
+                AllArchetypes = new Archetype[0];
+
             List<Archetype> archetypes = AllArchetypes.ToList();
             archetype.Ytyp = this;
             archetypes.Add(archetype);
@@ -369,20 +372,13 @@ namespace CodeWalker.GameFiles
 
         public bool RemoveArchetype(Archetype archetype)
         {
-            try
+            List<Archetype> archetypes = AllArchetypes.ToList();
+            if (archetypes.Remove(archetype))
             {
-                List<Archetype> archetypes = AllArchetypes.ToList();
-                if (archetypes.Remove(archetype))
-                {
-                    AllArchetypes = archetypes.ToArray();
-                    return true;
-                }
-                return false;
+                AllArchetypes = archetypes.ToArray();
+                return true;
             }
-            catch
-            {
-                return false;
-            }
+            return false;
         }
     }
 

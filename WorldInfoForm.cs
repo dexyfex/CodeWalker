@@ -66,7 +66,7 @@ namespace CodeWalker
             SelectionItems = multiItems;
 
             SelectionNameTextBox.Text = item.GetNameString("Nothing selected");
-            //SelEntityPropertyGrid.SelectedObject = item.YmapEntityDef;
+            //SelEntityPropertyGrid.SelectedObject = item.EntityDef;
             SelArchetypePropertyGrid.SelectedObject = item.Archetype;
             SelDrawablePropertyGrid.SelectedObject = item.Drawable;
             SelDrawableModelPropertyGrid.SelectedObject = null;

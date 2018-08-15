@@ -1373,7 +1373,7 @@ namespace CodeWalker.GameFiles
             {
                 Quaternion inv = Quaternion.Normalize(Quaternion.Invert(ori));
                 Orientation = ori;
-                _CEntityDef.rotation = new Vector4(inv.X, inv.Y, inv.Z, inv.W);
+                _CEntityDef.rotation = inv.ToVector4();
             }
 
             if (MloInstance != null)
@@ -1393,7 +1393,7 @@ namespace CodeWalker.GameFiles
         {
             Quaternion ori = Quaternion.Normalize(Quaternion.Invert(inv));
             Orientation = ori;
-            _CEntityDef.rotation = new Vector4(inv.X, inv.Y, inv.Z, inv.W);
+            _CEntityDef.rotation = inv.ToVector4();
 
             if (MloInstance != null)
             {

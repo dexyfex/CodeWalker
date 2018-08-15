@@ -694,6 +694,12 @@ namespace CodeWalker.Project.Panels
 
 
 
+
+
+
+
+
+
         private TreeNode GetChildTreeNode(TreeNode node, string name)
         {
             if (node == null) return null;
@@ -1003,14 +1009,11 @@ namespace CodeWalker.Project.Panels
 
 
 
+
         public void DeselectNode()
         {
             ProjectTreeView.SelectedNode = null;
         }
-
-
-
-
         public void TrySelectEntityTreeNode(YmapEntityDef ent)
         {
             TreeNode entnode = FindEntityTreeNode(ent);
@@ -1500,6 +1503,8 @@ namespace CodeWalker.Project.Panels
 
 
 
+
+
         public event ProjectExplorerItemSelectHandler OnItemSelected;
         public event ProjectExplorerItemActivateHandler OnItemActivated;
 
@@ -1516,6 +1521,7 @@ namespace CodeWalker.Project.Panels
                 OnItemActivated?.Invoke(ProjectTreeView.SelectedNode.Tag);
             }
         }
+
         private void ProjectTreeView_BeforeCollapse(object sender, TreeViewCancelEventArgs e)
         {
             //if (e.Node.Tag != CurrentProjectFile) return; //disabling doubleclick expand/collapse only for project node

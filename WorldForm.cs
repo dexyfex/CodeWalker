@@ -2332,7 +2332,7 @@ namespace CodeWalker
                         if (mraytrn.Intersects(ref bbox, out hitdist))
                         {
                             if ((j == 0) && (gbbcount > 1)) continue;//ignore a model hit
-                            //bool firsthit = (mousehit.YmapEntityDef == null);
+                            //bool firsthit = (mousehit.EntityDef == null);
                             if (hitdist > 0.0f) //firsthit || //ignore when inside the box
                             {
                                 bool nearer = ((hitdist < CurMouseHit.HitDist) && (hitdist < ghitdist));
@@ -2435,14 +2435,14 @@ namespace CodeWalker
             //        bbox.Maximum = gbox.AABB_Min.XYZ();
             //        if (mraytrn.Intersects(ref bbox, out hitdist)) //test geom box
             //        {
-            //            bool firsthit = (mousehit.YmapEntityDef == null);
+            //            bool firsthit = (mousehit.EntityDef == null);
             //            if (firsthit || (hitdist > 0.0f)) //ignore when inside the box..
             //            {
             //                bool nearer = (hitdist < mousehit.HitDist);  //closer than the last..
             //                if (nearer)
             //                {
             //                    mousehit.HitDist = (hitdist > 0.0f) ? hitdist : mousehit.HitDist;
-            //                    mousehit.YmapEntityDef = entity;
+            //                    mousehit.EntityDef = entity;
             //                    mousehit.Archetype = arche;
             //                    mousehit.Drawable = drawable;
             //                    mousehit.CamRel = camrel;
@@ -3573,7 +3573,7 @@ namespace CodeWalker
         private void SetSelectionUI(MapSelection item)
         {
             SelectionNameTextBox.Text = item.GetNameString("Nothing selected");
-            //SelEntityPropertyGrid.SelectedObject = item.YmapEntityDef;
+            //SelEntityPropertyGrid.SelectedObject = item.EntityDef;
             SelArchetypePropertyGrid.SelectedObject = item.Archetype;
             SelDrawablePropertyGrid.SelectedObject = item.Drawable;
 
@@ -3731,7 +3731,7 @@ namespace CodeWalker
             }
 
 
-            //var ent = SelectedItem.YmapEntityDef;
+            //var ent = SelectedItem.EntityDef;
             //ToolbarDeleteEntityButton.Enabled = false;
             ////ToolbarAddEntityButton.Enabled = false;
             //ToolbarCopyButton.Enabled = (ent != null);

@@ -313,13 +313,6 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
                 (panel) => { return true; }); //findFunc
         }
-        private void ShowEditProjectYtypPanel(bool promote)
-        {
-            ShowPanel(promote,
-                () => { return new EditProjectYtypPanel(this); }, //createFunc
-                (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
-                (panel) => { return true; }); //findFunc
-        }
         private void ShowEditYmapPanel(bool promote)
         {
             ShowPanel(promote,
@@ -2194,21 +2187,26 @@ namespace CodeWalker.Project
             MCEntityDef ment = new MCEntityDef(ref cent, mloArch);
 
             YmapEntityDef outEnt;
-            if (WorldForm != null)
+            try
             {
-                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                if (WorldForm != null)
                 {
-                    // Add the entity to the mlo instance and archetype.
+                    lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                    {
+                        // Add the entity to the mlo instance and archetype.
+                        outEnt = mloInstance.CreateEntity(mloInstance.Owner, mloArch, ment, createindex, roomIndex);
+                    }
+                }
+                else
+                {
                     outEnt = mloInstance.CreateEntity(mloInstance.Owner, mloArch, ment, createindex, roomIndex);
                 }
             }
-            else
+            catch(Exception e)
             {
-                outEnt = mloInstance.CreateEntity(mloInstance.Owner, mloArch, ment, createindex, roomIndex);
+                MessageBox.Show(this, e.Message, "Create MLO Entity Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
-
-            // Something failed?
-            if (outEnt == null) return;
 
 
             mloInstance.AddEntity(outEnt);
@@ -2231,18 +2229,6 @@ namespace CodeWalker.Project
             {
                 MessageBox.Show("This entity's numChildren is not 0 - deleting entities with children is not currently supported by CodeWalker.");
                 return true;
-            }
-
-            int idx = CurrentEntity.Index;
-            for (int i = idx + 1; i < mloArchetype.entities.Length; i++)
-            {
-                var ent = mloArchetype.entities[i].EntityInstance;
-                if (ent == null) continue; // should not happen but just in case...
-                if (ent._CEntityDef.numChildren != 0)
-                {
-                    MessageBox.Show("There are other entities present in this mlo entity that have children. Deleting this entity is not currently supported by CodeWalker.");
-                    return true;
-                }
             }
 
             if (MessageBox.Show("Are you sure you want to delete this entity?\n" + CurrentEntity._CEntityDef.archetypeName.ToString() + "\n" + CurrentEntity.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
@@ -6022,10 +6008,6 @@ namespace CodeWalker.Project
             RemoveScenarioFromProject();
         }
 
-        private void YtypGeneratorToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ShowEditProjectYtypPanel(false);
-        }
         private void ToolsManifestGeneratorMenu_Click(object sender, EventArgs e)
         {
             ShowEditProjectManifestPanel(false);

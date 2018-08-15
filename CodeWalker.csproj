@@ -292,12 +292,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Project\MenyooXml.cs" />
-    <Compile Include="Project\Panels\EditProjectYtypPanel.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Project\Panels\EditProjectYtypPanel.Designer.cs">
-      <DependentUpon>EditProjectYtypPanel.cs</DependentUpon>
-    </Compile>
     <Compile Include="Project\Panels\EditProjectPanel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -589,9 +583,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MenuForm.resx">
       <DependentUpon>MenuForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Project\Panels\EditProjectYtypPanel.resx">
-      <DependentUpon>EditProjectYtypPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditProjectPanel.resx">
       <DependentUpon>EditProjectPanel.cs</DependentUpon>

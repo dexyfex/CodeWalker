@@ -1,8 +1,10 @@
 ﻿using SharpDX;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Windows.Forms;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
 {
@@ -12,7 +14,7 @@ namespace CodeWalker.GameFiles
         public virtual MetaName Type => MetaName.CBaseArchetypeDef;
 
         public CBaseArchetypeDef _BaseArchetypeDef;
-        public CBaseArchetypeDef BaseArchetypeDef { get { return _BaseArchetypeDef; } set { _BaseArchetypeDef = value; } }
+        public CBaseArchetypeDef BaseArchetypeDef => _BaseArchetypeDef; // for browsing.
 
         public MetaHash Hash { get; set; }
         public YtypFile Ytyp { get; set; }
@@ -47,7 +49,7 @@ namespace CodeWalker.GameFiles
 
         protected void InitVars(ref CBaseArchetypeDef arch)
         {
-            BaseArchetypeDef = arch;
+            _BaseArchetypeDef = arch;
             Hash = arch.assetName;
             if (Hash.Hash == 0) Hash = arch.name;
             DrawableDict = arch.drawableDictionary;
@@ -81,13 +83,8 @@ namespace CodeWalker.GameFiles
     public class TimeArchetype : Archetype
     {
         public override MetaName Type => MetaName.CTimeArchetypeDef;
-
         public CTimeArchetypeDef _TimeArchetypeDef;
-        public CTimeArchetypeDef TimeArchetypeDef { get { return _TimeArchetypeDef; } set { _TimeArchetypeDef = value; } }
-
-        public CTimeArchetypeDefData _TimeArchetypeDefData;
-        public CTimeArchetypeDefData TimeArchetypeDefData { get { return _TimeArchetypeDefData; } set { _TimeArchetypeDefData = value; } }
-
+        public CTimeArchetypeDef TimeArchetypeDef => _TimeArchetypeDef; // for browsing.
 
         public uint TimeFlags { get; set; }
         public bool[] ActiveHours { get; set; }
@@ -99,11 +96,9 @@ namespace CodeWalker.GameFiles
         {
             Ytyp = ytyp;
             InitVars(ref arch._BaseArchetypeDef);
+            _TimeArchetypeDef = arch;
 
-            TimeArchetypeDef = arch;
-            TimeArchetypeDefData = arch.TimeArchetypeDef;
-
-            TimeFlags = _TimeArchetypeDefData.timeFlags;
+            TimeFlags = arch.TimeArchetypeDef.timeFlags;
             ActiveHours = new bool[24];
             ActiveHoursText = new string[24];
             for (int i = 0; i < 24; i++)
@@ -131,11 +126,10 @@ namespace CodeWalker.GameFiles
     {
         public override MetaName Type => MetaName.CMloArchetypeDef;
 
-        public CMloArchetypeDefData _MloArchetypeDefData;
-        public CMloArchetypeDefData MloArchetypeDefData { get { return _MloArchetypeDefData; } set { _MloArchetypeDefData = value; } }
 
+        public CMloArchetypeDef MloArchetypeDef => _MloArchetypeDef; // for browsing.
         public CMloArchetypeDef _MloArchetypeDef;
-        public CMloArchetypeDef MloArchetypeDef { get { return _MloArchetypeDef; } set { _MloArchetypeDef = value; } }
+        public CMloArchetypeDefData _MloArchetypeDefData;
 
         public MCEntityDef[] entities { get; set; }
         public MCMloRoomDef[] rooms { get; set; }
@@ -150,26 +144,25 @@ namespace CodeWalker.GameFiles
         {
             Ytyp = ytyp;
             InitVars(ref arch._BaseArchetypeDef);
-            MloArchetypeDef = arch;
-            MloArchetypeDefData = arch.MloArchetypeDef;
+            _MloArchetypeDef = arch;
+            _MloArchetypeDefData = arch.MloArchetypeDef;
         }
 
-        public void AddEntity(YmapEntityDef ent, int roomIndex)
+        public bool AddEntity(YmapEntityDef ent, int roomIndex)
         {
             if (InstancedEntities == null)
                 InstancedEntities = new List<YmapEntityDef>();
 
             if (InstancedEntities.Contains(ent))
-                return;
+            {
+                throw new ArgumentException($"Entity {ent.Name} is already contained in {Name}.");
+            }
 
             InstancedEntities.Add(ent);
 
-            MCEntityDef entDef = entities.FirstOrDefault(x => x.EntityInstance == ent);
-            if (entDef != null) return;
             if (roomIndex > rooms.Length)
             {
-                MessageBox.Show($@"Room index {roomIndex} does not exist in {Name}.");
-                return;
+                throw new ArgumentOutOfRangeException($"Room index {roomIndex} exceeds the amount of rooms in {Name}.");
             }
 
             MCEntityDef mcEntityDef;
@@ -191,6 +184,7 @@ namespace CodeWalker.GameFiles
             var attachedObjs = rooms[roomIndex].AttachedObjects?.ToList() ?? new List<uint>();
             attachedObjs.Add((uint)ent.Index);
             rooms[roomIndex].AttachedObjects = attachedObjs.ToArray();
+            return true;
         }
 
         public bool RemoveEntity(YmapEntityDef ent)
