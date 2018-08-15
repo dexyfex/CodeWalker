@@ -109,6 +109,7 @@ namespace CodeWalker
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.OptionsTabControl = new System.Windows.Forms.TabControl();
             this.tabPage8 = new System.Windows.Forms.TabPage();
+            this.RenderEntitiesCheckBox = new System.Windows.Forms.CheckBox();
             this.AdvancedSettingsButton = new System.Windows.Forms.Button();
             this.ControlSettingsButton = new System.Windows.Forms.Button();
             this.MapViewDetailLabel = new System.Windows.Forms.Label();
@@ -1295,6 +1296,7 @@ namespace CodeWalker
             // 
             // tabPage8
             // 
+            this.tabPage8.Controls.Add(this.RenderEntitiesCheckBox);
             this.tabPage8.Controls.Add(this.AdvancedSettingsButton);
             this.tabPage8.Controls.Add(this.ControlSettingsButton);
             this.tabPage8.Controls.Add(this.MapViewDetailLabel);
@@ -1326,6 +1328,19 @@ namespace CodeWalker
             this.tabPage8.TabIndex = 0;
             this.tabPage8.Text = "General";
             this.tabPage8.UseVisualStyleBackColor = true;
+            // 
+            // EntitiesCheckBox
+            // 
+            this.RenderEntitiesCheckBox.AutoSize = true;
+            this.RenderEntitiesCheckBox.Checked = true;
+            this.RenderEntitiesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.RenderEntitiesCheckBox.Location = new System.Drawing.Point(10, 32);
+            this.RenderEntitiesCheckBox.Name = "EntitiesCheckBox";
+            this.RenderEntitiesCheckBox.Size = new System.Drawing.Size(89, 17);
+            this.RenderEntitiesCheckBox.TabIndex = 67;
+            this.RenderEntitiesCheckBox.Text = "Show entities";
+            this.RenderEntitiesCheckBox.UseVisualStyleBackColor = true;
+            this.RenderEntitiesCheckBox.CheckedChanged += new System.EventHandler(this.RenderEntitiesCheckBox_CheckedChanged);
             // 
             // AdvancedSettingsButton
             // 
@@ -1411,7 +1426,7 @@ namespace CodeWalker
             this.WaterQuadsCheckBox.AutoSize = true;
             this.WaterQuadsCheckBox.Checked = true;
             this.WaterQuadsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.WaterQuadsCheckBox.Location = new System.Drawing.Point(10, 104);
+            this.WaterQuadsCheckBox.Location = new System.Drawing.Point(10, 129);
             this.WaterQuadsCheckBox.Name = "WaterQuadsCheckBox";
             this.WaterQuadsCheckBox.Size = new System.Drawing.Size(114, 17);
             this.WaterQuadsCheckBox.TabIndex = 39;
@@ -1440,7 +1455,7 @@ namespace CodeWalker
             // TimedEntitiesAlwaysOnCheckBox
             // 
             this.TimedEntitiesAlwaysOnCheckBox.AutoSize = true;
-            this.TimedEntitiesAlwaysOnCheckBox.Location = new System.Drawing.Point(131, 58);
+            this.TimedEntitiesAlwaysOnCheckBox.Location = new System.Drawing.Point(131, 83);
             this.TimedEntitiesAlwaysOnCheckBox.Name = "TimedEntitiesAlwaysOnCheckBox";
             this.TimedEntitiesAlwaysOnCheckBox.Size = new System.Drawing.Size(58, 17);
             this.TimedEntitiesAlwaysOnCheckBox.TabIndex = 37;
@@ -1453,7 +1468,7 @@ namespace CodeWalker
             this.GrassCheckBox.AutoSize = true;
             this.GrassCheckBox.Checked = true;
             this.GrassCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.GrassCheckBox.Location = new System.Drawing.Point(10, 35);
+            this.GrassCheckBox.Location = new System.Drawing.Point(10, 57);
             this.GrassCheckBox.Name = "GrassCheckBox";
             this.GrassCheckBox.Size = new System.Drawing.Size(81, 17);
             this.GrassCheckBox.TabIndex = 35;
@@ -1466,7 +1481,7 @@ namespace CodeWalker
             this.InteriorsCheckBox.AutoSize = true;
             this.InteriorsCheckBox.Checked = true;
             this.InteriorsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.InteriorsCheckBox.Location = new System.Drawing.Point(10, 81);
+            this.InteriorsCheckBox.Location = new System.Drawing.Point(10, 106);
             this.InteriorsCheckBox.Name = "InteriorsCheckBox";
             this.InteriorsCheckBox.Size = new System.Drawing.Size(92, 17);
             this.InteriorsCheckBox.TabIndex = 38;
@@ -1586,7 +1601,7 @@ namespace CodeWalker
             this.TimedEntitiesCheckBox.AutoSize = true;
             this.TimedEntitiesCheckBox.Checked = true;
             this.TimedEntitiesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.TimedEntitiesCheckBox.Location = new System.Drawing.Point(10, 58);
+            this.TimedEntitiesCheckBox.Location = new System.Drawing.Point(10, 83);
             this.TimedEntitiesCheckBox.Name = "TimedEntitiesCheckBox";
             this.TimedEntitiesCheckBox.Size = new System.Drawing.Size(117, 17);
             this.TimedEntitiesCheckBox.TabIndex = 36;
@@ -3581,5 +3596,6 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarSnapToGroundGridButton;
         private System.Windows.Forms.NumericUpDown SnapGridSizeUpDown;
         private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.CheckBox RenderEntitiesCheckBox;
     }
 }

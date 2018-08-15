@@ -718,16 +718,16 @@ namespace CodeWalker.GameFiles
         //public float TranslationX { get; set; }
         //public float TranslationY { get; set; }
         //public float TranslationZ { get; set; }
-        public uint Unknown_1Ch { get; set; } // 0x00000000
-        public float Unknown_20h { get; set; } // 1.0
-        public float Unknown_24h { get; set; } // 1.0
-        public float Unknown_28h { get; set; } // 1.0
-        public float Unknown_2Ch { get; set; } // 1.0
-        public ushort Unknown_30h { get; set; } //limb end index? IK chain?
+        public uint Unknown_1Ch { get; set; } // 0x00000000 RHW?
+        public float ScaleX { get; set; } // 1.0
+        public float ScaleY { get; set; } // 1.0
+        public float ScaleZ { get; set; } // 1.0
+        public float Unknown_2Ch { get; set; } // 1.0  RHW?
+        public ushort NextSiblingIndex { get; set; } //limb end index? IK chain?
         public short ParentIndex { get; set; }
         public uint Unknown_34h { get; set; } // 0x00000000
         public ulong NamePointer { get; set; }
-        public ushort Unknown_40h { get; set; }
+        public ushort Flags { get; set; }
         public ushort Unknown_42h { get; set; }
         public ushort Id { get; set; }
         public ushort Unknown_46h { get; set; }
@@ -756,15 +756,15 @@ namespace CodeWalker.GameFiles
             //this.TranslationY = reader.ReadSingle();
             //this.TranslationZ = reader.ReadSingle();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadSingle();
-            this.Unknown_24h = reader.ReadSingle();
-            this.Unknown_28h = reader.ReadSingle();
+            this.ScaleX = reader.ReadSingle();
+            this.ScaleY = reader.ReadSingle();
+            this.ScaleZ = reader.ReadSingle();
             this.Unknown_2Ch = reader.ReadSingle();
-            this.Unknown_30h = reader.ReadUInt16();
+            this.NextSiblingIndex = reader.ReadUInt16();
             this.ParentIndex = reader.ReadInt16();
             this.Unknown_34h = reader.ReadUInt32();
             this.NamePointer = reader.ReadUInt64();
-            this.Unknown_40h = reader.ReadUInt16();
+            this.Flags = reader.ReadUInt16();
             this.Unknown_42h = reader.ReadUInt16();
             this.Id = reader.ReadUInt16();
             this.Unknown_46h = reader.ReadUInt16();
@@ -796,15 +796,15 @@ namespace CodeWalker.GameFiles
             //writer.Write(this.TranslationY);
             //writer.Write(this.TranslationZ);
             writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_28h);
+            writer.Write(this.ScaleX);
+            writer.Write(this.ScaleY);
+            writer.Write(this.ScaleZ);
             writer.Write(this.Unknown_2Ch);
-            writer.Write(this.Unknown_30h);
+            writer.Write(this.NextSiblingIndex);
             writer.Write(this.ParentIndex);
             writer.Write(this.Unknown_34h);
             writer.Write(this.NamePointer);
-            writer.Write(this.Unknown_40h);
+            writer.Write(this.Flags);
             writer.Write(this.Unknown_42h);
             writer.Write(this.Id);
             writer.Write(this.Unknown_46h);
@@ -968,12 +968,8 @@ namespace CodeWalker.GameFiles
         public float Unknown_50h { get; set; } // -pi
         public float Unknown_54h { get; set; } // pi
         public float Unknown_58h { get; set; } // 1.0
-        public float Unknown_5Ch { get; set; }
-        public float Unknown_60h { get; set; }
-        public float Unknown_64h { get; set; }
-        public float Unknown_68h { get; set; }
-        public float Unknown_6Ch { get; set; }
-        public float Unknown_70h { get; set; }
+        public Vector3 Min { get; set; }
+        public Vector3 Max { get; set; }
         public float Unknown_74h { get; set; } // pi
         public float Unknown_78h { get; set; } // -pi
         public float Unknown_7Ch { get; set; } // pi
