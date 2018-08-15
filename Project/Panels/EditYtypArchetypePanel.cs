@@ -184,6 +184,10 @@ namespace CodeWalker.Project.Panels
             var hash = JenkHash.GenHash(ArchetypeNameTextBox.Text);
             CurrentArchetype._BaseArchetypeDef.name = hash;
             UpdateFormTitle();
+
+            TreeNode tn = ProjectForm.ProjectExplorer?.FindArchetypeTreeNode(CurrentArchetype);
+            if (tn != null)
+                tn.Text = ArchetypeNameTextBox.Text ?? "0"; // using the text box text because the name may not be in the gfc.
         }
 
         private void AssetNameTextBox_TextChanged(object sender, EventArgs e)
