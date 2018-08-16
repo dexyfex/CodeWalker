@@ -23,7 +23,8 @@ namespace CodeWalker.Project.Panels
         public void SetEntity(YmapEntityDef entity)
         {
             CurrentEntity = entity;
-            CurrentMCEntity = CurrentEntity?.MloEntityDef;
+            MloInstanceData instance = entity?.MloParent?.MloInstance;
+            CurrentMCEntity = instance?.TryGetArchetypeEntity(entity);
             Tag = entity;
             LoadEntity();
             UpdateFormTitle();
@@ -173,7 +174,7 @@ namespace CodeWalker.Project.Panels
             }
             else
             {
-                tn = ProjectForm.ProjectExplorer?.FindMloEntityTreeNode(CurrentEntity.MloEntityDef);
+                tn = ProjectForm.ProjectExplorer?.FindMloEntityTreeNode(CurrentMCEntity);
                 if (tn != null)
                 {
                     tn.Text = name;

@@ -583,7 +583,11 @@ namespace CodeWalker.Project
 
             if (CurrentMloEntity != null)
             {
-                CurrentEntity = CurrentMloEntity.EntityInstance;
+                MloInstanceData instance = CurrentMloEntity.MloArchetype?.EntityDef?.MloInstance;
+
+                CurrentEntity = instance?.TryGetYmapEntity(CurrentMloEntity);
+
+                CurrentYmapFile = instance?.Owner?.Ymap;
 
                 CurrentArchetype = CurrentEntity?.MloParent?.Archetype;
             }
@@ -1418,12 +1422,20 @@ namespace CodeWalker.Project
 
                     if (!YtypExistsInProject(CurrentYtypFile))
                     {
-                        YmapEntityDef ent = CurrentEntity;
-                        CurrentYtypFile.HasChanged = true;
-                        AddYtypToProject(CurrentYtypFile);
-                        CurrentEntity = ent;
-                        CurrentYtypFile = ent.MloParent.Archetype.Ytyp;
-                        ProjectExplorer?.TrySelectMloEntityTreeNode(CurrentEntity.MloEntityDef);
+                        if (CurrentEntity.MloParent?.MloInstance != null)
+                        {
+                            var inst = CurrentEntity.MloParent.MloInstance;
+                            var mcEntity = inst.TryGetArchetypeEntity(CurrentEntity);
+                            if (mcEntity != null)
+                            {
+                                YmapEntityDef ent = CurrentEntity;
+                                CurrentYtypFile.HasChanged = true;
+                                AddYtypToProject(CurrentYtypFile);
+                                CurrentEntity = ent;
+                                CurrentYtypFile = ent.MloParent.Archetype.Ytyp;
+                                ProjectExplorer?.TrySelectMloEntityTreeNode(mcEntity);
+                            }
+                        }
                     }
                     return;
                 }
@@ -2218,7 +2230,7 @@ namespace CodeWalker.Project
             outEnt.SetArchetype(GameFileCache.GetArchetype(cent.archetypeName));
 
             LoadProjectTree();
-            ProjectExplorer?.TrySelectMloEntityTreeNode(outEnt.MloEntityDef);
+            ProjectExplorer?.TrySelectMloEntityTreeNode(mloInstance.TryGetArchetypeEntity(outEnt));
             CurrentEntity = outEnt;
             CurrentYtypFile = CurrentEntity.MloParent?.Archetype?.Ytyp;
         }
@@ -2228,7 +2240,7 @@ namespace CodeWalker.Project
             if (CurrentEntity.MloParent.Archetype.Ytyp != CurrentYtypFile) return false;
             if (!(CurrentEntity.MloParent.Archetype is MloArchetype mloArchetype)) return false;
             if (mloArchetype.entities == null) return false; //nothing to delete..
-            if (mloArchetype.InstancedEntities == null) return false; //nothing to delete..
+            //if (mloArchetype.InstancedEntities == null) return false; //nothing to delete..
 
             if (CurrentEntity._CEntityDef.numChildren != 0)
             {
@@ -2240,31 +2252,38 @@ namespace CodeWalker.Project
             {
                 return true;
             }
+            MloInstanceData mloInstance = CurrentEntity.MloParent.MloInstance;
+            if (mloInstance == null) return false;
 
-            bool res = false;
-            if (WorldForm != null)
+            var ent = CurrentEntity;
+
+            // remove the tree node.
+            ProjectExplorer?.RemoveMloEntityTreeNode(mloInstance.TryGetArchetypeEntity(CurrentEntity));
+
+            try
             {
-                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                if (WorldForm != null)
                 {
-                    //res = mloArchetype.RemoveEntity(CurrentEntity);
-                    res = CurrentEntity.MloParent.MloInstance.DeleteEntity(CurrentEntity);
-                    //WorldForm.SelectItem(null, null, null);
+                    lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                    {
+                        mloInstance.DeleteEntity(ent);
+                        //WorldForm.SelectItem(null, null, null);
+                    }
+                }
+                else
+                {
+                    mloInstance.DeleteEntity(ent);
                 }
             }
-            else
+            catch (Exception e) // various failures could happen so we'll use a trycatch for when an exception is thrown.
             {
-                //res = mloArchetype.RemoveEntity(CurrentEntity);
-                res = CurrentEntity.MloParent.MloInstance.DeleteEntity(CurrentEntity);
-            }
-            if (!res)
-            {
-                MessageBox.Show("Entity.Index didn't match the index of the entity in the ymap. This shouldn't happen, check LOD linkages!");
+                MessageBox.Show(this, "Cannot delete entity: " + Environment.NewLine + e.Message);
+                return false;
             }
 
-            var delent = CurrentEntity;
+            var delent = ent;
             var delytyp = delent.MloParent.Archetype.Ytyp;
 
-            ProjectExplorer?.RemoveMloEntityTreeNode(delent.MloEntityDef);
             ProjectExplorer?.SetYtypHasChanged(delytyp, true);
 
             ClosePanel((EditYmapEntityPanel p) => { return p.Tag == delent; });
@@ -4529,7 +4548,7 @@ namespace CodeWalker.Project
                     var audiopl = sel.Audio;
                     Archetype arch = mlo?.Archetype ?? ent?.MloParent?.Archetype ?? ent?.Archetype;
                     YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp;
-                    YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
+                    YmapFile ymap = ent?.Ymap ?? ent?.MloParent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
                     YndFile ynd = pathnode?.Ynd;
                     YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
                     TrainTrack traintrack = trainnode?.Track;
@@ -4557,7 +4576,11 @@ namespace CodeWalker.Project
                     {
                         if (ent != CurrentEntity)
                         {
-                            ProjectExplorer?.TrySelectMloEntityTreeNode(ent.MloEntityDef);
+                            MloInstanceData mloInstance = ent.MloParent?.MloInstance;
+                            if (mloInstance != null)
+                            {
+                                ProjectExplorer?.TrySelectMloEntityTreeNode(mloInstance.TryGetArchetypeEntity(ent));
+                            }
                         }
                         else if (arch != CurrentArchetype)
                         {
@@ -4742,17 +4765,25 @@ namespace CodeWalker.Project
                     }
                     else if (ent.MloParent != null && ent.Ymap == null)
                     {
-                        if (!YtypExistsInProject(ent.MloParent.Archetype.Ytyp))
+                        MloInstanceData mloInstance = ent.MloParent?.MloInstance;
+                        if (mloInstance != null)
                         {
-                            ent.MloParent.Archetype.Ytyp.HasChanged = true;
-                            AddYtypToProject(ent.MloParent.Archetype.Ytyp);
-                            ProjectExplorer?.TrySelectMloEntityTreeNode(ent.MloEntityDef);
-                        }
+                            var mcEntity = mloInstance.TryGetArchetypeEntity(ent);
+                            if (mcEntity != null)
+                            {
+                                if (!YtypExistsInProject(ent.MloParent.Archetype.Ytyp))
+                                {
+                                    ent.MloParent.Archetype.Ytyp.HasChanged = true;
+                                    AddYtypToProject(ent.MloParent.Archetype.Ytyp);
+                                    ProjectExplorer?.TrySelectMloEntityTreeNode(mcEntity);
+                                }
 
-                        if (ent != CurrentEntity)
-                        {
-                            CurrentEntity = ent;
-                            ProjectExplorer?.TrySelectMloEntityTreeNode(ent.MloEntityDef);
+                                if (ent != CurrentEntity)
+                                {
+                                    CurrentEntity = ent;
+                                    ProjectExplorer?.TrySelectMloEntityTreeNode(mcEntity);
+                                }
+                            }
                         }
 
                         if (ent == CurrentEntity)

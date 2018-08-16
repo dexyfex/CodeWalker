@@ -5078,20 +5078,23 @@ namespace CodeWalker
             }
             else
             {
-                //project not open, or entity not selected there, just remove the entity from the ymap...
+                //project not open, or entity not selected there, just remove the entity from the ymap/nlo...
                 var ymap = ent.Ymap;
-                var mlo = ent.MloParent?.MloInstance;
+                var instance = ent.MloParent?.MloInstance;
                 if (ymap == null)
                 {
-                    if (mlo != null)
+                    if (instance != null)
                     {
-                        if (!mlo.DeleteEntity(ent))
+                        try
                         {
-                            MessageBox.Show("Unable to remove entity.");
+                            if (!instance.DeleteEntity(ent))
+                            {
+                                SelectItem(null);
+                            }
                         }
-                        else
+                        catch (Exception e) // various failures can happen here.
                         {
-                            SelectItem(null);
+                            MessageBox.Show("Unable to remove entity..." + Environment.NewLine + e.Message);
                         }
                     }
                 }
@@ -5114,7 +5117,9 @@ namespace CodeWalker
         {
             if (CopiedEntity == null) return;
             if (ProjectForm == null) return;
-            if (CopiedEntity.MloEntityDef != null)
+            MloInstanceData instance = CopiedEntity.MloParent?.MloInstance;
+            MCEntityDef entdef = instance?.TryGetArchetypeEntity(CopiedEntity);
+            if (entdef != null)
             {
                 ProjectForm.NewMloEntity(CopiedEntity, true);
             }

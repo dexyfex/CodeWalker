@@ -842,6 +842,11 @@ namespace CodeWalker.GameFiles
 
             var res = true;
 
+            if (ent.IsMlo && ent.Archetype is MloArchetype mlo)
+            {
+                mlo.EntityDef = null; // Release the entity def reference from the archetype.
+            }
+
             int idx = ent.Index;
             List<YmapEntityDef> newAllEntities = new List<YmapEntityDef>();
             List<YmapEntityDef> newRootEntities = new List<YmapEntityDef>();
@@ -1198,7 +1203,6 @@ namespace CodeWalker.GameFiles
         public Vector3 MloRefPosition { get; set; }
         public Quaternion MloRefOrientation { get; set; }
         public MetaWrapper[] Extensions { get; set; }
-        public MCEntityDef MloEntityDef { get; set; }
 
         public int Index { get; set; }
         public bool IsVisible; //used for rendering
@@ -1415,10 +1419,16 @@ namespace CodeWalker.GameFiles
             Scale = new Vector3(s.X, s.X, s.Z);
             _CEntityDef.scaleXY = s.X;
             _CEntityDef.scaleZ = s.Z;
-            if (MloEntityDef != null)
+
+            MloInstanceData mloInstance = MloParent?.MloInstance;
+            if (mloInstance != null)
             {
-                MloEntityDef._Data.scaleXY = s.X;
-                MloEntityDef._Data.scaleZ = s.Z;
+                var mcEntity = mloInstance.TryGetArchetypeEntity(this);
+                if (mcEntity != null)
+                {
+                    mcEntity._Data.scaleXY = s.X;
+                    mcEntity._Data.scaleZ = s.Z;
+                }
             }
             if (Archetype != null)
             {

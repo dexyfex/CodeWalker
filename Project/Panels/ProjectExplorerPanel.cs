@@ -248,7 +248,7 @@ namespace CodeWalker.Project.Panels
             }
 
         }
-        private void LoadYtypTreeNodes(YtypFile ytyp, TreeNode node)//TODO!
+        private void LoadYtypTreeNodes(YtypFile ytyp, TreeNode node)
         {
             if (ytyp == null) return;
 
@@ -1313,7 +1313,7 @@ namespace CodeWalker.Project.Panels
 
 
 
-        public void UpdateArchetypeListTreeNode(Archetype archetype)
+        public void UpdateArchetypeTreeNode(Archetype archetype)
         {
             var tn = FindArchetypeTreeNode(archetype);
             if (tn != null)

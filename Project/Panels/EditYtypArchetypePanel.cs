@@ -21,6 +21,11 @@ namespace CodeWalker.Project.Panels
 
         public Archetype CurrentArchetype { get; set; }
 
+        private void EditYtypArchetypePanel_Load(object sender, EventArgs e)
+        {
+            AssetTypeComboBox.Items.AddRange(Enum.GetNames(typeof(Unk_1991964615)));
+        }
+
         public void SetArchetype(Archetype archetype)
         {
             CurrentArchetype = archetype;
@@ -53,13 +58,6 @@ namespace CodeWalker.Project.Panels
                 BBMaxTextBox.Text = FloatUtil.GetVector3String(CurrentArchetype._BaseArchetypeDef.bbMax);
                 BSCenterTextBox.Text = FloatUtil.GetVector3String(CurrentArchetype._BaseArchetypeDef.bsCentre);
                 BSRadiusTextBox.Text = CurrentArchetype._BaseArchetypeDef.bsRadius.ToString(CultureInfo.InvariantCulture);
-
-                if (!(CurrentArchetype is MloArchetype))
-                {
-                    // Not editable, let's remove the page.
-                    var page = TabControl.TabPages["MloDef"];
-                    if (page != null) TabControl.TabPages.Remove(page);
-                }
             }
         }
 
@@ -123,13 +121,12 @@ namespace CodeWalker.Project.Panels
 
         private void TextureDictTextBox_TextChanged(object sender, EventArgs e)
         {
+            // Check that the form is not null before locking...
+            if (ProjectForm == null)
+                return;
+
             lock (ProjectForm.ProjectSyncRoot)
             {
-                if (ProjectForm == null)
-                {
-                    return;
-                }
-
                 // Embedded...
                 if (TextureDictTextBox.Text == ArchetypeNameTextBox.Text)
                 {
@@ -215,10 +212,6 @@ namespace CodeWalker.Project.Panels
         private void SpecialAttributeNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
             CurrentArchetype._BaseArchetypeDef.specialAttribute = (uint)SpecialAttributeNumericUpDown.Value;
-        }
-
-        private void EditYtypArchetypePanel_Load(object sender, EventArgs e)
-        {
         }
 
         private void BBMinTextBox_TextChanged(object sender, EventArgs e)

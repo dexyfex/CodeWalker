@@ -2755,7 +2755,6 @@ namespace CodeWalker.GameFiles
 
 
         public MloArchetype MloArchetype { get; set; } // for browsing/reference purposes
-        public YmapEntityDef EntityInstance { get; set; } // for instance/selection stuff and browsing 
 
         public MCEntityDef(MCEntityDef copy)
         {
@@ -2770,16 +2769,6 @@ namespace CodeWalker.GameFiles
         {
             _Data = d;
             MloArchetype = arch;
-        }
-        public MCEntityDef(ref CEntityDef d, MloArchetype arch, YmapEntityDef inst)
-        {
-            _Data = d;
-            MloArchetype = arch;
-            if (inst != null)
-            {
-                EntityInstance = inst;
-                Extensions = inst.Extensions;
-            }
         }
 
         public override void Load(Meta meta, MetaPOINTER ptr)
