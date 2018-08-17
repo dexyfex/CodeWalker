@@ -196,6 +196,11 @@ namespace CodeWalker.Project.Panels
                     {
                         CurrentEntity.SetArchetype(arch);
 
+                        if (CurrentEntity.IsMlo)
+                        {
+                            CurrentEntity.MloInstance.InitYmapEntityArchetypes(ProjectForm.GameFileCache);
+                        }
+
                         ProjectItemChanged();
                     }
                 }

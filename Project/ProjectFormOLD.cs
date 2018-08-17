@@ -1262,7 +1262,7 @@ namespace CodeWalker
 
             ymap.Load(data);
 
-            GameFileCache.InitYmapEntityArchetypes(ymap); //this needs to be done after calling YmapFile.Load()
+            ymap.InitYmapEntityArchetypes(GameFileCache); //this needs to be done after calling YmapFile.Load()
         }
 
         private void LoadYmapTreeNodes(YmapFile ymap, TreeNode node)

@@ -842,11 +842,6 @@ namespace CodeWalker.GameFiles
 
             var res = true;
 
-            if (ent.IsMlo && ent.Archetype is MloArchetype mlo)
-            {
-                mlo.EntityDef = null; // Release the entity def reference from the archetype.
-            }
-
             int idx = ent.Index;
             List<YmapEntityDef> newAllEntities = new List<YmapEntityDef>();
             List<YmapEntityDef> newRootEntities = new List<YmapEntityDef>();
@@ -1170,6 +1165,41 @@ namespace CodeWalker.GameFiles
             if (change) physicsDictionaries = physDict.ToArray();
         }
 
+        public void InitYmapEntityArchetypes(GameFileCache gfc)
+        {
+            if (AllEntities != null)
+            {
+                for (int i = 0; i < AllEntities.Length; i++)
+                {
+                    var ent = AllEntities[i];
+                    var arch = gfc.GetArchetype(ent.CEntityDef.archetypeName);
+                    ent.SetArchetype(arch);
+                    if (ent.IsMlo) ent.MloInstance.InitYmapEntityArchetypes(gfc);
+                }
+            }
+            if (GrassInstanceBatches != null)
+            {
+                for (int i = 0; i < GrassInstanceBatches.Length; i++)
+                {
+                    var batch = GrassInstanceBatches[i];
+                    batch.Archetype = gfc.GetArchetype(batch.Batch.archetypeName);
+                }
+            }
+
+            if (TimeCycleModifiers != null)
+            {
+                for (int i = 0; i < TimeCycleModifiers.Length; i++)
+                {
+                    var tcm = TimeCycleModifiers[i];
+                    World.TimecycleMod wtcm;
+                    if (gfc.TimeCycleModsDict.TryGetValue(tcm.CTimeCycleModifier.name.Hash, out wtcm))
+                    {
+                        tcm.TimeCycleModData = wtcm;
+                    }
+                }
+            }
+
+        }
 
         private static uint SetBit(uint value, int bit)
         {
@@ -1304,7 +1334,16 @@ namespace CodeWalker.GameFiles
                     }
                     if (mloa != null)
                     {
-                        mloa.EntityDef = this;
+                        if (!IsMlo)
+                        {
+                            IsMlo = true;
+                            MloInstance._Instance = new CMloInstanceDef { CEntityDef = _CEntityDef };
+
+                            List<YmapEntityDef> mloEntities = Ymap.MloEntities?.ToList() ?? new List<YmapEntityDef>();
+                            mloEntities.Add(this);
+                            Ymap.MloEntities = mloEntities.ToArray();
+                        }
+
                         MloInstance.CreateYmapEntities(this, mloa);
                     }
 
@@ -1313,9 +1352,21 @@ namespace CodeWalker.GameFiles
                         BSRadius = CEntityDef.lodDist;//need something so it doesn't get culled...
                     }
                 }
+                else if (IsMlo) // archetype is no longer an mlo
+                {
+                    IsMlo = false;
+                    MloInstance = null;
 
+                    if (Ymap.MloEntities != null)
+                    {
+                        List<YmapEntityDef> mloEntities = Ymap.MloEntities.ToList();
+                        if (mloEntities.Remove(this))
+                        {
+                            Ymap.MloEntities = mloEntities.ToArray();
+                        }
+                    }
+                }
             }
-
         }
 
         public void SetPosition(Vector3 pos)

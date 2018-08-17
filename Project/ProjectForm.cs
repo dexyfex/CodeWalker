@@ -77,6 +77,7 @@ namespace CodeWalker.Project
         private Dictionary<int, YnvFile> visibleynvs = new Dictionary<int, YnvFile>();
         private Dictionary<string, TrainTrack> visibletrains = new Dictionary<string, TrainTrack>();
         private Dictionary<string, YmtFile> visiblescenarios = new Dictionary<string, YmtFile>();
+        private Dictionary<uint, YmapEntityDef> visiblemloentities = new Dictionary<uint, YmapEntityDef>();
 
         private bool ShowProjectItemInProcess = false;
 
@@ -583,11 +584,14 @@ namespace CodeWalker.Project
 
             if (CurrentMloEntity != null)
             {
-                MloInstanceData instance = CurrentMloEntity.MloArchetype?.EntityDef?.MloInstance;
+                MloInstanceData instance = TryGetMloInstance(CurrentMloEntity.MloArchetype);
 
-                CurrentEntity = instance?.TryGetYmapEntity(CurrentMloEntity);
+                if (instance != null)
+                {
+                    CurrentEntity = instance.TryGetYmapEntity(CurrentMloEntity);
 
-                CurrentYmapFile = instance?.Owner?.Ymap;
+                    CurrentYmapFile = instance.Owner?.Ymap;
+                }
 
                 CurrentArchetype = CurrentEntity?.MloParent?.Archetype;
             }
@@ -2122,11 +2126,6 @@ namespace CodeWalker.Project
         }
         public void NewMloEntity(YmapEntityDef copy = null, bool copyTransform = false)
         {
-            //if (CurrentEntity == null)
-            //{
-            //    return;
-            //}
-
             if (CurrentArchetype == null || !(CurrentArchetype is MloArchetype mloArch))
             {
                 var arch = CurrentEntity?.MloParent.Archetype;
@@ -2140,7 +2139,9 @@ namespace CodeWalker.Project
                 CurrentArchetype = mloArch;
             }
 
-            if (mloArch.EntityDef?.MloInstance == null) return;
+            MloInstanceData mloInstance = TryGetMloInstance(mloArch);
+            if (mloInstance == null) return;
+
             if (mloArch.rooms.Length <= 0)
             {
                 MessageBox.Show($@"Mlo {mloArch.Name} has no rooms! Cannot create entity.");
@@ -2162,8 +2163,7 @@ namespace CodeWalker.Project
                         } rooms.");
                 return;
             }
-
-            MloInstanceData mloInstance = mloArch.EntityDef.MloInstance;
+            
             float spawndist = 5.0f; //use archetype BSradius if starting with a copy...
             if (copy != null)
             {
@@ -2200,7 +2200,7 @@ namespace CodeWalker.Project
             cent.position = pos;
             cent.rotation = rot.ToVector4();
 
-            var createindex = mloArch.entities.Length - 1;
+            var createindex = mloArch.entities.Length;
             MCEntityDef ment = new MCEntityDef(ref cent, mloArch);
 
             YmapEntityDef outEnt;
@@ -4362,6 +4362,18 @@ namespace CodeWalker.Project
                             ymaps[isnew ? JenkHash.GenHash(ymap.Name) : ymap.RpfFileEntry.ShortNameHash] = ymap;
                         }
                     }
+
+                    visiblemloentities.Clear();
+                    foreach (var kvp in ymaps)
+                    {
+                        var ymap = kvp.Value;
+                        if (ymap.MloEntities == null) continue;
+                        foreach (var mloDef in ymap.MloEntities)
+                        {
+                            if (mloDef.Archetype == null) continue; // archetype was changed from an mlo to a regular archetype
+                            visiblemloentities[mloDef.Archetype._BaseArchetypeDef.name] = mloDef;
+                        }
+                    }
                 }
             }
         }
@@ -4522,6 +4534,18 @@ namespace CodeWalker.Project
 
         }
 
+        public MloInstanceData TryGetMloInstance(MloArchetype arch)
+        {
+            lock (projectsyncroot)
+            {
+                if (arch == null) return null;
+                MetaHash name = arch._BaseArchetypeDef.name;
+                if (name == 0) return null;
+                if (!visiblemloentities.ContainsKey(name)) return null;
+                return visiblemloentities[name]?.MloInstance;
+            }
+        }
+
 
         public void OnWorldSelectionChanged(MapSelection sel)
         {
@@ -4548,7 +4572,7 @@ namespace CodeWalker.Project
                     var audiopl = sel.Audio;
                     Archetype arch = mlo?.Archetype ?? ent?.MloParent?.Archetype ?? ent?.Archetype;
                     YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp;
-                    YmapFile ymap = ent?.Ymap ?? ent?.MloParent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
+                    YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
                     YndFile ynd = pathnode?.Ynd;
                     YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
                     TrainTrack traintrack = trainnode?.Track;
@@ -5379,7 +5403,7 @@ namespace CodeWalker.Project
 
             ymap.Load(data);
 
-            GameFileCache.InitYmapEntityArchetypes(ymap); //this needs to be done after calling YmapFile.Load()
+            ymap.InitYmapEntityArchetypes(GameFileCache); //this needs to be done after calling YmapFile.Load()
         }
         private void LoadYtypFromFile(YtypFile ytyp, string filename)
         {
