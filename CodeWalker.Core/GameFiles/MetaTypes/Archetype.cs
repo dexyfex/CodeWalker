@@ -148,7 +148,7 @@ namespace CodeWalker.GameFiles
 
         public bool AddEntity(YmapEntityDef ent, int roomIndex)
         {
-            
+            if (ent == null) return false;
 
             // entity already exists in our array. so we'll just add
             // it to the instanced entities list and continue.
@@ -327,9 +327,7 @@ namespace CodeWalker.GameFiles
             var entlist = new List<YmapEntityDef>();
             for (int i = 0; i < ec; i++)
             {
-                // Creates a ymap entity then adds it to the mlo archetype. If it already exists in the mlo
-                // archetype it will not be added.
-                YmapEntityDef e = CreateYmapEntity(owner, mloa, mloa.entities[i], i, 0);
+                YmapEntityDef e = CreateYmapEntity(owner, mloa.entities[i], i);
                 entlist.Add(e);
             }
 
@@ -480,14 +478,7 @@ namespace CodeWalker.GameFiles
             throw new InvalidCastException("The owner of this archetype's archetype definition is not an MloArchetype.");
         }
 
-        public YmapEntityDef CreateYmapEntity(YmapEntityDef owner, MloArchetype mloa, MCEntityDef ment, int index, int roomIndex)
-        {
-            YmapEntityDef e = CreateYmapEntity(owner, ment, index);
-            mloa.AddEntity(e, roomIndex);
-            return e;
-        }
-
-        private YmapEntityDef CreateYmapEntity(YmapEntityDef owner, MCEntityDef ment, int index)
+        public YmapEntityDef CreateYmapEntity(YmapEntityDef owner, MCEntityDef ment, int index)
         {
             YmapEntityDef e = new YmapEntityDef(null, index, ref ment._Data);
             e.Extensions = ment.Extensions;
