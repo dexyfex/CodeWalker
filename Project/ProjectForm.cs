@@ -2290,6 +2290,7 @@ namespace CodeWalker.Project
 
             ClosePanel((EditYmapEntityPanel p) => { return p.Tag == delent; });
             CurrentEntity = null;
+            WorldForm.SelectItem(null);
 
             return true;
         }

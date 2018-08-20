@@ -1414,7 +1414,7 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public void SetOrientation(Quaternion ori)
+        public void SetOrientation(Quaternion ori, bool inverse = false)
         {
             if (MloParent != null)
             {
@@ -1426,7 +1426,8 @@ namespace CodeWalker.GameFiles
             }
             else
             {
-                Quaternion inv = Quaternion.Normalize(Quaternion.Invert(ori));
+                Quaternion inv = inverse ? ori : Quaternion.Normalize(Quaternion.Invert(ori));
+                ori = inverse ? Quaternion.Normalize(Quaternion.Invert(ori)) : ori;
                 Orientation = ori;
                 _CEntityDef.rotation = inv.ToVector4();
             }
