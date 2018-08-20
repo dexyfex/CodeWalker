@@ -350,7 +350,7 @@ namespace CodeWalker.Project.Panels
                     }
                     else
                     {
-                        CurrentEntity.SetOrientationInv(q);
+                        CurrentEntity.SetOrientation(Quaternion.Normalize(Quaternion.Invert(q)));
                     }
 
                     ProjectItemChanged();

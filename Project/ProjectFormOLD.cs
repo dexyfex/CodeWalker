@@ -7542,7 +7542,7 @@ namespace CodeWalker
                 if (CurrentEntity._CEntityDef.rotation != v)
                 {
                     Quaternion q = new Quaternion(v);
-                    CurrentEntity.SetOrientationInv(q);
+                    CurrentEntity.SetOrientation(Quaternion.Normalize(Quaternion.Invert(q)));
                     SetYmapHasChanged(true);
                     if (WorldForm != null)
                     {

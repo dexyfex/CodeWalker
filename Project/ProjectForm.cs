@@ -2211,12 +2211,12 @@ namespace CodeWalker.Project
                     lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                     {
                         // Add the entity to the mlo instance and archetype.
-                        outEnt = mloInstance.CreateEntity(mloInstance.Owner, mloArch, ment, createindex, roomIndex);
+                        outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, mloArch, ment, createindex, roomIndex);
                     }
                 }
                 else
                 {
-                    outEnt = mloInstance.CreateEntity(mloInstance.Owner, mloArch, ment, createindex, roomIndex);
+                    outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, mloArch, ment, createindex, roomIndex);
                 }
             }
             catch(Exception e)

@@ -164,15 +164,7 @@ namespace CodeWalker.GameFiles
                 throw new ArgumentOutOfRangeException($"Room index {roomIndex} exceeds the amount of rooms in {Name}.");
             }
 
-            MCEntityDef mcEntityDef;
-            if (ymcent != null)
-            {
-                mcEntityDef = ymcent;
-            }
-            else
-            {
-                mcEntityDef = new MCEntityDef(ref ent._CEntityDef, this/*, ent*/);
-            }
+            var mcEntityDef = new MCEntityDef(ref ent._CEntityDef, this);
 
             // Add the new entity def to the entities list.
             AddEntity(ent, mcEntityDef);
@@ -335,9 +327,9 @@ namespace CodeWalker.GameFiles
             var entlist = new List<YmapEntityDef>();
             for (int i = 0; i < ec; i++)
             {
-                // Create the entity in the mlo, if it already exists it will not
-                // be added to the mlo's entity list but it will be added to InstancedEntities.
-                YmapEntityDef e = CreateEntity(owner, mloa, mloa.entities[i], i, 0);
+                // Creates a ymap entity then adds it to the mlo archetype. If it already exists in the mlo
+                // archetype it will not be added.
+                YmapEntityDef e = CreateYmapEntity(owner, mloa, mloa.entities[i], i, 0);
                 entlist.Add(e);
             }
 
@@ -488,16 +480,16 @@ namespace CodeWalker.GameFiles
             throw new InvalidCastException("The owner of this archetype's archetype definition is not an MloArchetype.");
         }
 
-        public YmapEntityDef CreateEntity(YmapEntityDef mlo, MloArchetype mloa, MCEntityDef ment, int index, int roomIndex)
+        public YmapEntityDef CreateYmapEntity(YmapEntityDef owner, MloArchetype mloa, MCEntityDef ment, int index, int roomIndex)
         {
-            YmapEntityDef e = CreateYmapEntity(mlo, ment, index);
+            YmapEntityDef e = CreateYmapEntity(owner, ment, index);
             mloa.AddEntity(e, roomIndex);
             return e;
         }
 
-        private YmapEntityDef CreateYmapEntity(YmapEntityDef owner, MCEntityDef ment, int i)
+        private YmapEntityDef CreateYmapEntity(YmapEntityDef owner, MCEntityDef ment, int index)
         {
-            YmapEntityDef e = new YmapEntityDef(null, i, ref ment._Data);
+            YmapEntityDef e = new YmapEntityDef(null, index, ref ment._Data);
             e.Extensions = ment.Extensions;
             e.MloRefPosition = e.Position;
             e.MloRefOrientation = e.Orientation;

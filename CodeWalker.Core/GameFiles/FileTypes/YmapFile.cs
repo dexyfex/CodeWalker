@@ -1444,26 +1444,6 @@ namespace CodeWalker.GameFiles
             UpdateWidgetPosition();
             UpdateWidgetOrientation();
         }
-        public void SetOrientationInv(Quaternion inv)
-        {
-            Quaternion ori = Quaternion.Normalize(Quaternion.Invert(inv));
-            Orientation = ori;
-            _CEntityDef.rotation = inv.ToVector4();
-
-            if (MloInstance != null)
-            {
-                MloInstance.SetOrientation(ori);
-            }
-
-
-            if (Archetype != null)
-            {
-                BSCenter = Orientation.Multiply(Archetype.BSCenter) * Scale;
-            }
-
-            UpdateWidgetPosition();
-            UpdateWidgetOrientation();
-        }
 
         public void SetScale(Vector3 s)
         {
