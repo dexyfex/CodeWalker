@@ -2428,7 +2428,9 @@ namespace CodeWalker.GameFiles
         public Vector3 BBMax { get { return (_Data.bbMax); } }
         public Vector3 BBMin_CW { get; set; }
         public Vector3 BBMax_CW { get; set; }
-
+        
+        public MloArchetype Archetype { get; set; }
+        public int Index { get; set; }
 
         public MCMloRoomDef() { }
         public MCMloRoomDef(Meta meta, CMloRoomDef data)
@@ -2754,7 +2756,7 @@ namespace CodeWalker.GameFiles
         public MetaWrapper[] Extensions { get; set; }
 
 
-        public MloArchetype MloArchetype { get; set; } // for browsing/reference purposes
+        public MloArchetype Archetype { get; set; } // for browsing/reference purposes
 
         public MCEntityDef(MCEntityDef copy)
         {
@@ -2768,7 +2770,7 @@ namespace CodeWalker.GameFiles
         public MCEntityDef(ref CEntityDef d, MloArchetype arch)
         {
             _Data = d;
-            MloArchetype = arch;
+            Archetype = arch;
         }
 
         public override void Load(Meta meta, MetaPOINTER ptr)

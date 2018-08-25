@@ -44,6 +44,7 @@ namespace CodeWalker.Project
         private YtypFile CurrentYtypFile;
         private Archetype CurrentArchetype;
         private MCEntityDef CurrentMloEntity;
+        private MCMloRoomDef CurrentMloRoom;
 
         private YndFile CurrentYndFile;
         private YndNode CurrentPathNode;
@@ -431,6 +432,13 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetScenarioNode(CurrentScenarioNode); }, //updateFunc
                 (panel) => { return panel.CurrentScenarioNode == CurrentScenarioNode; }); //findFunc
         }
+        private void ShowEditYtypArchetypeMloRoomPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYtypArchetypeMloRoomPanel(this); }, //createFunc
+                (panel) => { panel.SetRoom(CurrentMloRoom); }, //updateFunc
+                (panel) => { return panel.CurrentRoom == CurrentMloRoom; }); //findFunc
+        }
         private void ShowEditAudioFilePanel(bool promote) //TODO
         {
         }
@@ -452,6 +460,10 @@ namespace CodeWalker.Project
             if (CurrentMloEntity != null)
             {
                 ShowEditYmapEntityPanel(promote);
+            }
+            else if (CurrentMloRoom != null)
+            {
+                ShowEditYtypArchetypeMloRoomPanel(promote);
             }
             else if (CurrentEntity != null)
             {
@@ -581,10 +593,11 @@ namespace CodeWalker.Project
             CurrentAudioEmitter = item as AudioPlacement; if (CurrentAudioEmitter?.AudioEmitter == null) CurrentAudioEmitter = null;
             CurrentAudioZoneList = item as Dat151AmbientZoneList;
             CurrentAudioEmitterList = item as Dat151AmbientEmitterList;
+            CurrentMloRoom = item as MCMloRoomDef;
 
             if (CurrentMloEntity != null)
             {
-                MloInstanceData instance = TryGetMloInstance(CurrentMloEntity.MloArchetype);
+                MloInstanceData instance = TryGetMloInstance(CurrentMloEntity.Archetype);
 
                 if (instance != null)
                 {
@@ -2126,9 +2139,9 @@ namespace CodeWalker.Project
         }
         public void NewMloEntity(YmapEntityDef copy = null, bool copyTransform = false)
         {
-            if (CurrentArchetype == null || !(CurrentArchetype is MloArchetype mloArch))
+            if ((CurrentArchetype == null) || !(CurrentArchetype is MloArchetype mloArch))
             {
-                var arch = CurrentEntity?.MloParent.Archetype;
+                var arch = CurrentEntity?.MloParent.Archetype ?? CurrentMloRoom?.Archetype;
                 if (arch == null)
                     return;
 
@@ -2137,6 +2150,12 @@ namespace CodeWalker.Project
                     return;
 
                 CurrentArchetype = mloArch;
+            }
+
+            if (CurrentMloRoom == null) CurrentMloRoom = mloArch?.GetEntityRoom(CurrentMloEntity);
+            if (CurrentMloRoom == null)
+            {
+                return;
             }
 
             MloInstanceData mloInstance = TryGetMloInstance(mloArch);
@@ -2148,9 +2167,8 @@ namespace CodeWalker.Project
                 return;
             }
 
-            var roomIndexString = Prompt.ShowDialog(this, "Enter a room index.", "Room Index", mloArch.rooms.Length > 1 ? "1" : "0");
-            if (roomIndexString == string.Empty) return;
-            if (!int.TryParse(roomIndexString, out int roomIndex))
+            int roomIndex = CurrentMloRoom.Index;
+            if (roomIndex < 0)
             {
                 MessageBox.Show(@"Invalid room index.");
                 return;
@@ -2258,9 +2276,8 @@ namespace CodeWalker.Project
             if (mloInstance == null) return false;
 
             var ent = CurrentEntity;
-
-            // remove the tree node.
-            ProjectExplorer?.RemoveMloEntityTreeNode(mloInstance.TryGetArchetypeEntity(CurrentEntity));
+            var mcEnt = mloInstance.TryGetArchetypeEntity(ent);
+            ProjectExplorer?.RemoveMloEntityTreeNode(mcEnt);
 
             try
             {
@@ -4561,6 +4578,7 @@ namespace CodeWalker.Project
                 else
                 {
                     var mlo = sel.MloEntityDef;
+                    var room = sel.MloRoomDef;
                     var ent = sel.EntityDef;
                     var cargen = sel.CarGenerator;
                     var grassbatch = sel.GrassBatch;
@@ -4574,7 +4592,7 @@ namespace CodeWalker.Project
                     var scenarioedge = sel.ScenarioEdge;
                     var audiopl = sel.Audio;
                     Archetype arch = mlo?.Archetype ?? ent?.MloParent?.Archetype ?? ent?.Archetype;
-                    YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp;
+                    YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.Archetype?.Ytyp;
                     YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
                     YndFile ynd = pathnode?.Ynd;
                     YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
@@ -4601,17 +4619,22 @@ namespace CodeWalker.Project
                     }
                     else if (YtypExistsInProject(ytyp))
                     {
+                        if (arch != CurrentArchetype)
+                        {
+                            ProjectExplorer?.TrySelectArchetypeTreeNode(mlo?.Archetype);
+                        }
                         if (ent != CurrentEntity)
                         {
                             MloInstanceData mloInstance = ent.MloParent?.MloInstance;
                             if (mloInstance != null)
                             {
-                                ProjectExplorer?.TrySelectMloEntityTreeNode(mloInstance.TryGetArchetypeEntity(ent));
+                                MCEntityDef entityDef = mloInstance.TryGetArchetypeEntity(ent);
+                                ProjectExplorer?.TrySelectMloEntityTreeNode(entityDef);
                             }
                         }
-                        else if (arch != CurrentArchetype)
+                        if (room != CurrentMloRoom)
                         {
-                            ProjectExplorer?.TrySelectArchetypeTreeNode(mlo.Archetype);
+                            ProjectExplorer?.TrySelectMloRoomTreeNode(room);
                         }
                     }
                     else if (YndExistsInProject(ynd))
@@ -4668,6 +4691,7 @@ namespace CodeWalker.Project
                         showcurrent = true;
                     }
 
+                    CurrentMloRoom = room;
                     CurrentYmapFile = ymap;
                     CurrentYtypFile = ytyp;
                     CurrentArchetype = arch;
@@ -5579,7 +5603,7 @@ namespace CodeWalker.Project
         {
             bool enable = (CurrentYtypFile != null);
             bool inproj = YtypExistsInProject(CurrentYtypFile);
-            bool ismlo = (CurrentEntity != null) && (CurrentEntity.MloParent != null) || (CurrentArchetype is MloArchetype);
+            bool ismlo = ((CurrentEntity != null) && (CurrentEntity.MloParent != null) || (CurrentMloRoom != null)) || (CurrentArchetype is MloArchetype);
 
             YtypNewArchetypeMenu.Enabled = enable && inproj;
             YtypMloToolStripMenuItem.Enabled = enable && inproj && ismlo;

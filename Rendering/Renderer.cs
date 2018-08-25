@@ -1745,24 +1745,55 @@ namespace CodeWalker.Rendering
 
                     if (renderinteriors && ent.IsMlo) //render Mlo child entities...
                     {
-                        if ((ent.MloInstance != null) && (ent.MloInstance.Entities != null))
+                        if ((ent.MloInstance != null))
                         {
-                            for (int j = 0; j < ent.MloInstance.Entities.Length; j++)
+                            if (ent.MloInstance.Entities != null)
                             {
-                                var intent = ent.MloInstance.Entities[j];
-                                if (intent.Archetype == null) continue; //missing archetype...
-                                if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
-
-                                intent.IsVisible = true;
-
-                                var iebscent = intent.Position + intent.BSCenter - camera.Position;
-                                float iebsrad = intent.BSRadius;
-                                if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
+                                for (int j = 0; j < ent.MloInstance.Entities.Length; j++)
                                 {
-                                    continue; //frustum cull interior ents
-                                }
+                                    var intent = ent.MloInstance.Entities[j];
+                                    if (intent.Archetype == null) continue; //missing archetype...
+                                    if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
 
-                                renderworldentities.Add(intent);
+                                    intent.IsVisible = true;
+
+                                    var iebscent = intent.Position + intent.BSCenter - camera.Position;
+                                    float iebsrad = intent.BSRadius;
+                                    if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
+                                    {
+                                        continue; //frustum cull interior ents
+                                    }
+
+                                    renderworldentities.Add(intent);
+                                }
+                            }
+                            if (ent.MloInstance.EntitySets != null)
+                            {
+                                foreach (var entitysets in ent.MloInstance.EntitySets)
+                                {
+                                    var entityset = entitysets.Value;
+                                    if (!entityset.Visible) continue;
+
+                                    var entities = entityset.Entities;
+                                    for (int i = 0; i < entities.Count; i++)
+                                    {
+                                        var intent = entities[i];
+                                        if (intent.Archetype == null) continue; //missing archetype...
+                                        if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
+
+                                        intent.IsVisible = true;
+
+                                        var iebscent = intent.Position + intent.BSCenter - camera.Position;
+                                        float iebsrad = intent.BSRadius;
+                                        if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
+                                        {
+                                            continue; //frustum cull interior ents
+                                        }
+
+                                        renderworldentities.Add(intent);
+
+                                    }
+                                }
                             }
                         }
                     }

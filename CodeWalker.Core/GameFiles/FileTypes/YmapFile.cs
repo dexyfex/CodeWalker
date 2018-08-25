@@ -1229,7 +1229,7 @@ namespace CodeWalker.GameFiles
         public bool IsMlo { get; set; }
         public MloInstanceData MloInstance { get; set; }
         public YmapEntityDef MloParent { get; set; }
-        public MCMloEntitySet MloEntitySet { get; set; }
+        public MloInstanceEntitySet MloEntitySet { get; set; }
         public Vector3 MloRefPosition { get; set; }
         public Quaternion MloRefOrientation { get; set; }
         public MetaWrapper[] Extensions { get; set; }

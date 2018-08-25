@@ -31,16 +31,16 @@ namespace CodeWalker.GameFiles
 
 
 
-        public string Name
+        public string Name 
         {
-            get
+            get 
             {
                 return _BaseArchetypeDef.name.ToString();
             }
         }
-        public string AssetName
+        public string AssetName 
         {
-            get
+            get 
             {
                 return _BaseArchetypeDef.assetName.ToString();
             }
@@ -263,7 +263,7 @@ namespace CodeWalker.GameFiles
                 entities = new MCEntityDef[centities.Length];
                 for (int i = 0; i < centities.Length; i++)
                 {
-                    entities[i] = new MCEntityDef(meta, ref centities[i]) { MloArchetype = this };
+                    entities[i] = new MCEntityDef(meta, ref centities[i]) { Archetype = this };
                 }
             }
 
@@ -273,7 +273,7 @@ namespace CodeWalker.GameFiles
                 rooms = new MCMloRoomDef[crooms.Length];
                 for (int i = 0; i < crooms.Length; i++)
                 {
-                    rooms[i] = new MCMloRoomDef(meta, crooms[i]);
+                    rooms[i] = new MCMloRoomDef(meta, crooms[i]) { Archetype = this, Index = i };
                 }
             }
 
@@ -302,9 +302,39 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public MCMloRoomDef GetEntityRoom(MCEntityDef ent)
+        {
+            int objectIndex = -1;
+            for (int i = 0; i < entities.Length; i++)
+            {
+                MCEntityDef e = entities[i];
+                if (e == ent)
+                {
+                    objectIndex = i;
+                    break;
+                }
+            }
+            if (objectIndex == -1) return null;
+
+            MCMloRoomDef room = null;
+            for (int i = 0; i < rooms.Length; i++)
+            {
+                MCMloRoomDef r = rooms[i];
+                for (int j = 0; j < r.AttachedObjects.Length; j++)
+                {
+                    uint ind = r.AttachedObjects[j];
+                    if (ind == objectIndex)
+                    {
+                        room = r;
+                        break;
+                    }
+                }
+                if (room != null) break;
+            }
+
+            return room;
+        }
     }
-
-
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class MloInstanceData
@@ -315,7 +345,12 @@ namespace CodeWalker.GameFiles
         public uint[] defaultEntitySets { get; set; }
 
         public YmapEntityDef[] Entities { get; set; }
+        public Dictionary<MetaHash, MloInstanceEntitySet> EntitySets { get; set; }
 
+        public MloInstanceData()
+        {
+            EntitySets = new Dictionary<MetaHash, MloInstanceEntitySet>();
+        }
 
         public void CreateYmapEntities(YmapEntityDef owner, MloArchetype mloa)
         {
@@ -341,20 +376,29 @@ namespace CodeWalker.GameFiles
                     var entitySet = entitySets[i];
                     if (entitySet.Entities != null)
                     {
+                        EntitySets[entitySet._Data.name] = new MloInstanceEntitySet(entitySet, this);
+                        MloInstanceEntitySet instset = EntitySets[entitySet._Data.name];
                         for (int j = 0; j < entitySet.Entities.Length; j++)
                         {
                             YmapEntityDef e = CreateYmapEntity(owner, entitySet.Entities[j], lasti);
-                            e.MloEntitySet = entitySet;
-                            entlist.Add(e);
+                            EntitySets[entitySet._Data.name].Entities.Add(e);
+                            e.MloEntitySet = instset;
                             lasti++;
                         }
                     }
                 }
             }
 
-            if (defaultEntitySets != null)
+            if ((defaultEntitySets != null) && (entitySets != null))
             {
-                // todo: need to add support for this!!
+                for (var i = 0; i < defaultEntitySets.Length; i++)
+                {
+                    uint index = defaultEntitySets[i];
+                    if (index >= entitySets.Length) continue;
+                    MCMloEntitySet set = entitySets[index];
+                    MloInstanceEntitySet instset = EntitySets[set._Data.name];
+                    instset.Visible = true;
+                }
             }
 
             Entities = entlist.ToArray();
@@ -362,6 +406,7 @@ namespace CodeWalker.GameFiles
 
         public void InitYmapEntityArchetypes(GameFileCache gfc)
         {
+            if (Owner == null) return;
             var arch = Owner.Archetype;
 
             if (Entities != null)
@@ -376,62 +421,85 @@ namespace CodeWalker.GameFiles
                     { } //can't find archetype - des stuff eg {des_prologue_door}
                 }
 
+                UpdateBBs(arch);
+            }
 
-                //update archetype room AABB's.. bad to have this here? where else to put it?
-                var mloa = arch as MloArchetype;
-                if (mloa != null)
+            if (EntitySets != null)
+            {
+                foreach (var entitySet in EntitySets)
                 {
-                    Vector3 mlobbmin = Vector3.Zero;
-                    Vector3 mlobbmax = Vector3.Zero;
-                    Vector3[] c = new Vector3[8];
-                    var rooms = mloa.rooms;
-                    if (rooms != null)
+                    var entities = entitySet.Value.Entities;
+                    if (entities == null) continue;
+
+                    for (int i = 0; i < entities.Count; i++)
                     {
-                        for (int j = 0; j < rooms.Length; j++)
+                        var ient = entities[i];
+                        var iarch = gfc.GetArchetype(ient.CEntityDef.archetypeName);
+                        ient.SetArchetype(iarch);
+
+                        if (iarch == null)
+                        { } //can't find archetype - des stuff eg {des_prologue_door}
+                    }
+                }
+            }
+        }
+
+        public void UpdateBBs(Archetype arch)
+        {
+            //update archetype room AABB's.. bad to have this here? where else to put it?
+            var mloa = arch as MloArchetype;
+            if (mloa != null)
+            {
+                Vector3 mlobbmin = Vector3.Zero;
+                Vector3 mlobbmax = Vector3.Zero;
+                Vector3[] c = new Vector3[8];
+                var rooms = mloa.rooms;
+                if (rooms != null)
+                {
+                    for (int j = 0; j < rooms.Length; j++)
+                    {
+                        var room = rooms[j];
+                        if ((room.AttachedObjects == null) || (room.AttachedObjects.Length == 0)) continue;
+                        Vector3 min = new Vector3(float.MaxValue);
+                        Vector3 max = new Vector3(float.MinValue);
+                        for (int k = 0; k < room.AttachedObjects.Length; k++)
                         {
-                            var room = rooms[j];
-                            if ((room.AttachedObjects == null) || (room.AttachedObjects.Length == 0)) continue;
-                            Vector3 min = new Vector3(float.MaxValue);
-                            Vector3 max = new Vector3(float.MinValue);
-                            for (int k = 0; k < room.AttachedObjects.Length; k++)
+                            var objid = room.AttachedObjects[k];
+                            if (objid < Entities.Length)
                             {
-                                var objid = room.AttachedObjects[k];
-                                if (objid < Entities.Length)
+                                var rooment = Entities[objid];
+                                if ((rooment != null) && (rooment.Archetype != null))
                                 {
-                                    var rooment = Entities[objid];
-                                    if ((rooment != null) && (rooment.Archetype != null))
+                                    var earch = rooment.Archetype;
+                                    var pos = rooment._CEntityDef.position;
+                                    var ori = rooment.Orientation;
+                                    Vector3 abmin = earch.BBMin * rooment.Scale; //entity box
+                                    Vector3 abmax = earch.BBMax * rooment.Scale;
+                                    c[0] = abmin;
+                                    c[1] = new Vector3(abmin.X, abmin.Y, abmax.Z);
+                                    c[2] = new Vector3(abmin.X, abmax.Y, abmin.Z);
+                                    c[3] = new Vector3(abmin.X, abmax.Y, abmax.Z);
+                                    c[4] = new Vector3(abmax.X, abmin.Y, abmin.Z);
+                                    c[5] = new Vector3(abmax.X, abmin.Y, abmax.Z);
+                                    c[6] = new Vector3(abmax.X, abmax.Y, abmin.Z);
+                                    c[7] = abmax;
+                                    for (int n = 0; n < 8; n++)
                                     {
-                                        var earch = rooment.Archetype;
-                                        var pos = rooment._CEntityDef.position;
-                                        var ori = rooment.Orientation;
-                                        Vector3 abmin = earch.BBMin * rooment.Scale; //entity box
-                                        Vector3 abmax = earch.BBMax * rooment.Scale;
-                                        c[0] = abmin;
-                                        c[1] = new Vector3(abmin.X, abmin.Y, abmax.Z);
-                                        c[2] = new Vector3(abmin.X, abmax.Y, abmin.Z);
-                                        c[3] = new Vector3(abmin.X, abmax.Y, abmax.Z);
-                                        c[4] = new Vector3(abmax.X, abmin.Y, abmin.Z);
-                                        c[5] = new Vector3(abmax.X, abmin.Y, abmax.Z);
-                                        c[6] = new Vector3(abmax.X, abmax.Y, abmin.Z);
-                                        c[7] = abmax;
-                                        for (int n = 0; n < 8; n++)
-                                        {
-                                            Vector3 corn = ori.Multiply(c[n]) + pos;
-                                            min = Vector3.Min(min, corn);
-                                            max = Vector3.Max(max, corn);
-                                        }
+                                        Vector3 corn = ori.Multiply(c[n]) + pos;
+                                        min = Vector3.Min(min, corn);
+                                        max = Vector3.Max(max, corn);
                                     }
                                 }
                             }
-                            room.BBMin_CW = min;
-                            room.BBMax_CW = max;
-                            mlobbmin = Vector3.Min(mlobbmin, min);
-                            mlobbmax = Vector3.Max(mlobbmax, max);
                         }
+                        room.BBMin_CW = min;
+                        room.BBMax_CW = max;
+                        mlobbmin = Vector3.Min(mlobbmin, min);
+                        mlobbmax = Vector3.Max(mlobbmax, max);
                     }
-                    mloa.BBMin = mlobbmin;
-                    mloa.BBMax = mlobbmax;
                 }
+                mloa.BBMin = mlobbmin;
+                mloa.BBMax = mlobbmax;
             }
         }
 
@@ -470,6 +538,9 @@ namespace CodeWalker.GameFiles
             {
                 if (arch.RemoveEntity(ent))
                 {
+                    if (ent.MloEntitySet != null)
+                        if (!ent.MloEntitySet.Entities.Remove(ent))
+                            return false;
                     // Delete was successful...
                     Entities = newentities;
                     return true;
@@ -559,8 +630,29 @@ namespace CodeWalker.GameFiles
             Entities = entities.ToArray();
         }
 
+    }
 
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class MloInstanceEntitySet
+    {
+        public MloInstanceEntitySet(MCMloEntitySet entSet, MloInstanceData instance)
+        {
+            EntitySet = entSet;
+            Entities = new List<YmapEntityDef>();
+            Instance = instance;
+        }
 
+        public MCMloEntitySet EntitySet { get; set; }
+        public List<YmapEntityDef> Entities { get; set; }
+        public MloInstanceData Instance { get; set; }
+
+        public uint[] Locations
+        {
+            get { return EntitySet?.Locations; }
+            set { if (EntitySet != null) EntitySet.Locations = value; }
+        }
+
+        public bool Visible { get; set; }
     }
 
 

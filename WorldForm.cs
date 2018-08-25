@@ -3382,6 +3382,22 @@ namespace CodeWalker
                 SelectItem(ms);
             }
         }
+        public void SelectMloRoom(MCMloRoomDef room, MloInstanceData instance)
+        {
+            if (room == null)
+            {
+                SelectItem(null);
+            }
+            else if (instance != null)
+            {
+                MapSelection ms = new MapSelection();
+                ms.MloRoomDef = room;
+                Vector3 min = instance.Owner.Position + instance.Owner.Orientation.Multiply(room.BBMin_CW);
+                Vector3 max = instance.Owner.Position + instance.Owner.Orientation.Multiply(room.BBMax_CW);
+                ms.AABB = new BoundingBox(min, max);
+                SelectItem(ms);
+            }
+        }
         public void SelectNavPoly(YnvPoly poly)
         {
             if (poly == null)

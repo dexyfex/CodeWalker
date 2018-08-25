@@ -58,6 +58,28 @@ namespace CodeWalker.Project.Panels
                 BBMaxTextBox.Text = FloatUtil.GetVector3String(CurrentArchetype._BaseArchetypeDef.bbMax);
                 BSCenterTextBox.Text = FloatUtil.GetVector3String(CurrentArchetype._BaseArchetypeDef.bsCentre);
                 BSRadiusTextBox.Text = CurrentArchetype._BaseArchetypeDef.bsRadius.ToString(CultureInfo.InvariantCulture);
+
+                EntitySetsListBox.Items.Clear();
+                if (CurrentArchetype is MloArchetype MloArchetype)
+                {
+                    if (!TabControl.TabPages.Contains(MloArchetypeTabPage))
+                    {
+                        TabControl.TabPages.Add(MloArchetypeTabPage);
+                    }
+
+                    MloInstanceData mloinstance = ProjectForm.TryGetMloInstance(MloArchetype);
+                    if (mloinstance != null)
+                    {
+                        EntitySetsListBox.Enabled = true;
+                        foreach (var sets in mloinstance.EntitySets)
+                        {
+                            MloInstanceEntitySet set = sets.Value;
+                            EntitySetsListBox.Items.Add(set.EntitySet.ToString(), set.Visible);
+                        }
+                    }
+                    else EntitySetsListBox.Enabled = false;
+                }
+                else TabControl.TabPages.Remove(MloArchetypeTabPage);
             }
         }
 
@@ -79,7 +101,7 @@ namespace CodeWalker.Project.Panels
                 if (CurrentArchetype._BaseArchetypeDef.flags != flags)
                 {
                     CurrentArchetype._BaseArchetypeDef.flags = flags;
-                    ProjectForm.SetYmapHasChanged(true);
+                    ProjectForm.SetYtypHasChanged(true);
                 }
             }
         }
@@ -114,7 +136,7 @@ namespace CodeWalker.Project.Panels
                 if (CurrentArchetype._BaseArchetypeDef.flags != flags)
                 {
                     CurrentArchetype._BaseArchetypeDef.flags = flags;
-                    ProjectForm.SetYmapHasChanged(true);
+                    ProjectForm.SetYtypHasChanged(true);
                 }
             }
         }
@@ -136,14 +158,20 @@ namespace CodeWalker.Project.Panels
                 }
 
                 var hash = JenkHash.GenHash(TextureDictTextBox.Text);
-                var ytd = ProjectForm.GameFileCache.GetYtd(hash);
-                if (ytd == null)
+
+                if (CurrentArchetype._BaseArchetypeDef.textureDictionary != hash)
                 {
-                    TextureDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
-                    return;
+                    var ytd = ProjectForm.GameFileCache.GetYtd(hash);
+                    if (ytd == null)
+                    {
+                        TextureDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
+                        ProjectForm.SetYtypHasChanged(true);
+                        return;
+                    }
+                    TextureDictHashLabel.Text = "Hash: " + hash.ToString();
+                    CurrentArchetype._BaseArchetypeDef.textureDictionary = hash;
+                    ProjectForm.SetYtypHasChanged(true);
                 }
-                TextureDictHashLabel.Text = "Hash: " + hash.ToString();
-                CurrentArchetype._BaseArchetypeDef.textureDictionary = hash;
             }
         }
 
@@ -165,82 +193,139 @@ namespace CodeWalker.Project.Panels
                 }
 
                 var hash = JenkHash.GenHash(PhysicsDictionaryTextBox.Text);
-                var ytd = ProjectForm.GameFileCache.GetYbn(hash);
-                if (ytd == null)
+
+                if (CurrentArchetype._BaseArchetypeDef.physicsDictionary != hash)
                 {
-                    PhysicsDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
-                    return;
+                    var ytd = ProjectForm.GameFileCache.GetYbn(hash);
+                    if (ytd == null)
+                    {
+                        PhysicsDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
+                        ProjectForm.SetYtypHasChanged(true);
+                        return;
+                    }
+                    PhysicsDictHashLabel.Text = "Hash: " + hash.ToString();
+
+                    CurrentArchetype._BaseArchetypeDef.physicsDictionary = hash;
+                    ProjectForm.SetYtypHasChanged(true);
                 }
-                PhysicsDictHashLabel.Text = "Hash: " + hash.ToString();
-                CurrentArchetype._BaseArchetypeDef.physicsDictionary = hash;
             }
         }
 
         private void ArchetypeNameTextBox_TextChanged(object sender, EventArgs e)
         {
             var hash = JenkHash.GenHash(ArchetypeNameTextBox.Text);
-            CurrentArchetype._BaseArchetypeDef.name = hash;
-            UpdateFormTitle();
 
-            TreeNode tn = ProjectForm.ProjectExplorer?.FindArchetypeTreeNode(CurrentArchetype);
-            if (tn != null)
-                tn.Text = ArchetypeNameTextBox.Text ?? "0"; // using the text box text because the name may not be in the gfc.
+            if (CurrentArchetype._BaseArchetypeDef.name != hash)
+            {
+                CurrentArchetype._BaseArchetypeDef.name = hash;
+                UpdateFormTitle();
+
+                TreeNode tn = ProjectForm.ProjectExplorer?.FindArchetypeTreeNode(CurrentArchetype);
+                if (tn != null)
+                    tn.Text = ArchetypeNameTextBox.Text ?? "0"; // using the text box text because the name may not be in the gfc.
+
+                ProjectForm.SetYtypHasChanged(true);
+            }
         }
 
         private void AssetNameTextBox_TextChanged(object sender, EventArgs e)
         {
             var hash = JenkHash.GenHash(AssetNameTextBox.Text);
-            CurrentArchetype._BaseArchetypeDef.assetName = hash;
+
+            if (CurrentArchetype._BaseArchetypeDef.assetName != hash)
+            {
+                CurrentArchetype._BaseArchetypeDef.assetName = hash;
+                ProjectForm.SetYtypHasChanged(true);
+            }
         }
 
         private void ClipDictionaryTextBox_TextChanged(object sender, EventArgs e)
         {
             var hash = JenkHash.GenHash(ClipDictionaryTextBox.Text);
-            CurrentArchetype._BaseArchetypeDef.clipDictionary = hash;
+
+            if (CurrentArchetype._BaseArchetypeDef.clipDictionary != hash)
+            {
+                CurrentArchetype._BaseArchetypeDef.clipDictionary = hash;
+                ProjectForm.SetYtypHasChanged(true);
+            }
         }
 
         private void LodDistNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            CurrentArchetype._BaseArchetypeDef.lodDist = (float)LodDistNumericUpDown.Value;
+            var loddist = (float)LodDistNumericUpDown.Value;
+            if (!MathUtil.NearEqual(loddist, CurrentArchetype._BaseArchetypeDef.lodDist))
+            {
+                CurrentArchetype._BaseArchetypeDef.lodDist = loddist;
+                ProjectForm.SetYtypHasChanged(true);
+            }
         }
 
         private void HDTextureDistNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            CurrentArchetype._BaseArchetypeDef.hdTextureDist = (float)HDTextureDistNumericUpDown.Value;
+            var hddist = (float)HDTextureDistNumericUpDown.Value;
+            if (!MathUtil.NearEqual(hddist, CurrentArchetype._BaseArchetypeDef.hdTextureDist))
+            {
+                CurrentArchetype._BaseArchetypeDef.hdTextureDist = hddist;
+                ProjectForm.SetYtypHasChanged(true);
+            }
         }
 
         private void SpecialAttributeNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            CurrentArchetype._BaseArchetypeDef.specialAttribute = (uint)SpecialAttributeNumericUpDown.Value;
+            var att = (uint)SpecialAttributeNumericUpDown.Value;
+            if (CurrentArchetype._BaseArchetypeDef.specialAttribute != att)
+            {
+                CurrentArchetype._BaseArchetypeDef.specialAttribute = att;
+                ProjectForm.SetYtypHasChanged(true);
+            }
         }
 
         private void BBMinTextBox_TextChanged(object sender, EventArgs e)
         {
             Vector3 min = FloatUtil.ParseVector3String(BBMinTextBox.Text);
-            CurrentArchetype._BaseArchetypeDef.bbMin = min;
+            if (CurrentArchetype._BaseArchetypeDef.bbMin != min)
+            {
+                CurrentArchetype._BaseArchetypeDef.bbMin = min;
+                ProjectForm.SetYtypHasChanged(true);
+            }
         }
 
         private void BBMaxTextBox_TextChanged(object sender, EventArgs e)
         {
             Vector3 max = FloatUtil.ParseVector3String(BBMaxTextBox.Text);
-            CurrentArchetype._BaseArchetypeDef.bbMax = max;
+
+            if (CurrentArchetype._BaseArchetypeDef.bbMax != max)
+            {
+                CurrentArchetype._BaseArchetypeDef.bbMax = max;
+                ProjectForm.SetYtypHasChanged(true);
+            }
         }
 
         private void BSCenterTextBox_TextChanged(object sender, EventArgs e)
         {
             Vector3 c = FloatUtil.ParseVector3String(BSCenterTextBox.Text);
-            CurrentArchetype._BaseArchetypeDef.bsCentre = c;
+
+            if (CurrentArchetype._BaseArchetypeDef.bsCentre != c)
+            {
+                CurrentArchetype._BaseArchetypeDef.bsCentre = c;
+                ProjectForm.SetYtypHasChanged(true);
+            }
         }
 
         private void BSRadiusTextBox_TextChanged(object sender, EventArgs e)
         {
             if (float.TryParse(BSRadiusTextBox.Text, out float f))
             {
-                CurrentArchetype._BaseArchetypeDef.bsRadius = f;
+                if (!MathUtil.NearEqual(CurrentArchetype._BaseArchetypeDef.bsRadius, f))
+                {
+                    CurrentArchetype._BaseArchetypeDef.bsRadius = f;
+                    ProjectForm.SetYtypHasChanged(true);
+                }
             }
             else
             {
                 CurrentArchetype._BaseArchetypeDef.bsRadius = 0f;
+                ProjectForm.SetYtypHasChanged(true);
             }
         }
 
@@ -248,6 +333,21 @@ namespace CodeWalker.Project.Panels
         {
             ProjectForm.SetProjectItem(CurrentArchetype);
             ProjectForm.DeleteArchetype();
+        }
+
+        private void EntitySetsListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (CurrentArchetype is MloArchetype MloArchetype)
+            {
+                var inst = ProjectForm.TryGetMloInstance(MloArchetype);
+                if (inst != null)
+                {
+                    MloInstanceEntitySet mloInstanceEntitySet = inst.EntitySets[MloArchetype.entitySets[e.Index]._Data.name];
+                    mloInstanceEntitySet.Visible = e.NewValue == CheckState.Checked;
+                    return;
+                }
+            }
+            e.NewValue = CheckState.Unchecked;
         }
     }
 }

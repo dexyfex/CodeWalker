@@ -328,6 +328,12 @@
     <Compile Include="Project\Panels\EditYmapCarGenPanel.Designer.cs">
       <DependentUpon>EditYmapCarGenPanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypeMloRoomPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypeMloRoomPanel.Designer.cs">
+      <DependentUpon>EditYtypArchetypeMloRoomPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\Panels\EditYmapEntityPanel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -601,6 +607,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYmapCarGenPanel.resx">
       <DependentUpon>EditYmapCarGenPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYtypArchetypeMloRoomPanel.resx">
+      <DependentUpon>EditYtypArchetypeMloRoomPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYmapEntityPanel.resx">
       <DependentUpon>EditYmapEntityPanel.cs</DependentUpon>
