@@ -2428,7 +2428,9 @@ namespace CodeWalker.GameFiles
         public Vector3 BBMax { get { return (_Data.bbMax); } }
         public Vector3 BBMin_CW { get; set; }
         public Vector3 BBMax_CW { get; set; }
-
+        
+        public MloArchetype Archetype { get; set; }
+        public int Index { get; set; }
 
         public MCMloRoomDef() { }
         public MCMloRoomDef(Meta meta, CMloRoomDef data)
@@ -2610,7 +2612,7 @@ namespace CodeWalker.GameFiles
                 Entities = new MCEntityDef[ents.Length];
                 for (int i = 0; i < ents.Length; i++)
                 {
-                    Entities[i] = new MCEntityDef(meta, ents[i]);
+                    Entities[i] = new MCEntityDef(meta, ref ents[i]);
                 }
             }
         }
@@ -2750,22 +2752,25 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public class MCEntityDef : MetaWrapper
     {
         public CEntityDef _Data;
-        public CEntityDef Data { get { return _Data; } }
+        public CEntityDef Data { get { return _Data; } set { _Data = value; } }
         public MetaWrapper[] Extensions { get; set; }
 
 
-        public MCEntityDef() { }
+        public MloArchetype Archetype { get; set; } // for browsing/reference purposes
+
         public MCEntityDef(MCEntityDef copy)
         {
-            if (copy != null)
-            {
-                _Data = copy.Data;
-            }
+            if (copy != null) _Data = copy.Data;
         }
-        public MCEntityDef(Meta meta, CEntityDef d)
+        public MCEntityDef(Meta meta, ref CEntityDef d)
         {
             _Data = d;
             Extensions = MetaTypes.GetExtensions(meta, _Data.extensions);
+        }
+        public MCEntityDef(ref CEntityDef d, MloArchetype arch)
+        {
+            _Data = d;
+            Archetype = arch;
         }
 
         public override void Load(Meta meta, MetaPOINTER ptr)

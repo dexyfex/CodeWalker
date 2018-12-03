@@ -1804,116 +1804,6 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public void InitYmapEntityArchetypes(YmapFile file)
-        {
-            if (file == null) return;
-            if (file.AllEntities != null)
-            {
-                for (int i = 0; i < file.AllEntities.Length; i++)
-                {
-                    var ent = file.AllEntities[i];
-                    var arch = GetArchetype(ent.CEntityDef.archetypeName);
-                    ent.SetArchetype(arch);
-
-                    if (ent.MloInstance != null)
-                    {
-                        var entities = ent.MloInstance.Entities;
-                        if (entities != null)
-                        {
-                            for (int j = 0; j < entities.Length; j++)
-                            {
-                                var ient = entities[j];
-                                var iarch = GetArchetype(ient.CEntityDef.archetypeName);
-                                ient.SetArchetype(iarch);
-                                if (iarch == null)
-                                { } //can't find archetype - des stuff eg {des_prologue_door}
-                            }
-
-
-                            //update archetype room AABB's.. bad to have this here? where else to put it?
-                            var mloa = arch as MloArchetype;
-                            if (mloa != null)
-                            {
-                                Vector3 mlobbmin = Vector3.Zero;
-                                Vector3 mlobbmax = Vector3.Zero;
-                                Vector3[] c = new Vector3[8];
-                                var rooms = mloa.rooms;
-                                if (rooms != null)
-                                {
-                                    for (int j = 0; j < rooms.Length; j++)
-                                    {
-                                        var room = rooms[j];
-                                        if ((room.AttachedObjects == null) || (room.AttachedObjects.Length == 0)) continue;
-                                        Vector3 min = new Vector3(float.MaxValue);
-                                        Vector3 max = new Vector3(float.MinValue);
-                                        for (int k = 0; k < room.AttachedObjects.Length; k++)
-                                        {
-                                            var objid = room.AttachedObjects[k];
-                                            if (objid < entities.Length)
-                                            {
-                                                var rooment = entities[objid];
-                                                if ((rooment != null) && (rooment.Archetype != null))
-                                                {
-                                                    var earch = rooment.Archetype;
-                                                    var pos = rooment._CEntityDef.position;
-                                                    var ori = rooment.Orientation;
-                                                    Vector3 abmin = earch.BBMin * rooment.Scale; //entity box
-                                                    Vector3 abmax = earch.BBMax * rooment.Scale;
-                                                    c[0] = abmin;
-                                                    c[1] = new Vector3(abmin.X, abmin.Y, abmax.Z);
-                                                    c[2] = new Vector3(abmin.X, abmax.Y, abmin.Z);
-                                                    c[3] = new Vector3(abmin.X, abmax.Y, abmax.Z);
-                                                    c[4] = new Vector3(abmax.X, abmin.Y, abmin.Z);
-                                                    c[5] = new Vector3(abmax.X, abmin.Y, abmax.Z);
-                                                    c[6] = new Vector3(abmax.X, abmax.Y, abmin.Z);
-                                                    c[7] = abmax;
-                                                    for (int n = 0; n < 8; n++)
-                                                    {
-                                                        Vector3 corn = ori.Multiply(c[n]) + pos;
-                                                        min = Vector3.Min(min, corn);
-                                                        max = Vector3.Max(max, corn);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        room.BBMin_CW = min;
-                                        room.BBMax_CW = max;
-                                        mlobbmin = Vector3.Min(mlobbmin, min);
-                                        mlobbmax = Vector3.Max(mlobbmax, max);
-                                    }
-                                }
-                                mloa.BBMin = mlobbmin;
-                                mloa.BBMax = mlobbmax;
-                            }
-                        }
-                    }
-
-
-                }
-            }
-            if (file.GrassInstanceBatches != null)
-            {
-                for (int i = 0; i < file.GrassInstanceBatches.Length; i++)
-                {
-                    var batch = file.GrassInstanceBatches[i];
-                    batch.Archetype = GetArchetype(batch.Batch.archetypeName);
-                }
-            }
-
-            if (file.TimeCycleModifiers != null)
-            {
-                for (int i = 0; i < file.TimeCycleModifiers.Length; i++)
-                {
-                    var tcm = file.TimeCycleModifiers[i];
-                    World.TimecycleMod wtcm;
-                    if (TimeCycleModsDict.TryGetValue(tcm.CTimeCycleModifier.name.Hash, out wtcm))
-                    {
-                        tcm.TimeCycleModData = wtcm;
-                    }
-                }
-            }
-
-        }
 
 
 
@@ -1955,8 +1845,9 @@ namespace CodeWalker.GameFiles
                         if (req.Loaded) AddTextureLookups(req as YtdFile);
                         break;
                     case GameFileType.Ymap:
-                        req.Loaded = LoadFile(req as YmapFile);
-                        if (req.Loaded) InitYmapEntityArchetypes(req as YmapFile);
+                        YmapFile y = req as YmapFile;
+                        req.Loaded = LoadFile(y);
+                        if (req.Loaded) y.InitYmapEntityArchetypes(this);
                         break;
                     case GameFileType.Yft:
                         req.Loaded = LoadFile(req as YftFile);

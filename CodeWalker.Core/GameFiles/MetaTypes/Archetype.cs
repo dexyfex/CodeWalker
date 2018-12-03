@@ -14,7 +14,7 @@ namespace CodeWalker.GameFiles
         public virtual MetaName Type => MetaName.CBaseArchetypeDef;
 
         public CBaseArchetypeDef _BaseArchetypeDef;
-        public CBaseArchetypeDef BaseArchetypeDef { get { return _BaseArchetypeDef; } set { _BaseArchetypeDef = value; } }
+        public CBaseArchetypeDef BaseArchetypeDef => _BaseArchetypeDef; // for browsing.
 
         public MetaHash Hash { get; set; }
         public YtypFile Ytyp { get; set; }
@@ -31,16 +31,16 @@ namespace CodeWalker.GameFiles
 
 
 
-        public string Name
+        public string Name 
         {
-            get
+            get 
             {
                 return _BaseArchetypeDef.name.ToString();
             }
         }
-        public string AssetName
+        public string AssetName 
         {
-            get
+            get 
             {
                 return _BaseArchetypeDef.assetName.ToString();
             }
@@ -49,7 +49,7 @@ namespace CodeWalker.GameFiles
 
         protected void InitVars(ref CBaseArchetypeDef arch)
         {
-            BaseArchetypeDef = arch;
+            _BaseArchetypeDef = arch;
             Hash = arch.assetName;
             if (Hash.Hash == 0) Hash = arch.name;
             DrawableDict = arch.drawableDictionary;
@@ -83,10 +83,8 @@ namespace CodeWalker.GameFiles
     public class TimeArchetype : Archetype
     {
         public override MetaName Type => MetaName.CTimeArchetypeDef;
-
-        public CTimeArchetypeDefData _TimeArchetypeDef;
-        public CTimeArchetypeDefData TimeArchetypeDef { get { return _TimeArchetypeDef; } set { _TimeArchetypeDef = value; } }
-
+        public CTimeArchetypeDef _TimeArchetypeDef;
+        public CTimeArchetypeDef TimeArchetypeDef => _TimeArchetypeDef; // for browsing.
 
         public uint TimeFlags { get; set; }
         public bool[] ActiveHours { get; set; }
@@ -98,9 +96,9 @@ namespace CodeWalker.GameFiles
         {
             Ytyp = ytyp;
             InitVars(ref arch._BaseArchetypeDef);
-            TimeArchetypeDef = arch.TimeArchetypeDef;
+            _TimeArchetypeDef = arch;
 
-            TimeFlags = _TimeArchetypeDef.timeFlags;
+            TimeFlags = arch.TimeArchetypeDef.timeFlags;
             ActiveHours = new bool[24];
             ActiveHoursText = new string[24];
             for (int i = 0; i < 24; i++)
@@ -128,11 +126,10 @@ namespace CodeWalker.GameFiles
     {
         public override MetaName Type => MetaName.CMloArchetypeDef;
 
-        public CMloArchetypeDef _BaseMloArchetypeDef;
-        public CMloArchetypeDef BaseMloArchetypeDef { get { return _BaseMloArchetypeDef; } set { _BaseMloArchetypeDef = value; } }
 
-        public CMloArchetypeDefData _MloArchetypeDef;
-        public CMloArchetypeDefData MloArchetypeDef { get { return _MloArchetypeDef; } set { _MloArchetypeDef = value; } }
+        public CMloArchetypeDef MloArchetypeDef => _MloArchetypeDef; // for browsing.
+        public CMloArchetypeDef _MloArchetypeDef;
+        public CMloArchetypeDefData _MloArchetypeDefData;
 
         public MCEntityDef[] entities { get; set; }
         public MCMloRoomDef[] rooms { get; set; }
@@ -140,37 +137,147 @@ namespace CodeWalker.GameFiles
         public MCMloEntitySet[] entitySets { get; set; }
         public CMloTimeCycleModifier[] timeCycleModifiers { get; set; }
 
+
         public void Init(YtypFile ytyp, ref CMloArchetypeDef arch)
         {
             Ytyp = ytyp;
             InitVars(ref arch._BaseArchetypeDef);
-            BaseMloArchetypeDef = arch;
-            MloArchetypeDef = arch.MloArchetypeDef;
+            _MloArchetypeDef = arch;
+            _MloArchetypeDefData = arch.MloArchetypeDef;
+        }
+
+        public bool AddEntity(YmapEntityDef ent, int roomIndex)
+        {
+            if (ent == null) return false;
+
+            // entity already exists in our array. so we'll just add
+            // it to the instanced entities list and continue.
+            MloInstanceData mloInstance = ent.MloParent?.MloInstance;
+            MCEntityDef ymcent = mloInstance?.TryGetArchetypeEntity(ent);
+            if (ymcent != null)
+            {
+                return true;
+            }
+
+            if (roomIndex > rooms.Length)
+            {
+                throw new ArgumentOutOfRangeException($"Room index {roomIndex} exceeds the amount of rooms in {Name}.");
+            }
+
+            var mcEntityDef = new MCEntityDef(ref ent._CEntityDef, this);
+
+            // Add the new entity def to the entities list.
+            AddEntity(ent, mcEntityDef);
+
+            // Update the attached objects in the room index specified.
+            AttachEntityToRoom(ent, roomIndex);
+            return true;
+        }
+
+        // attaches the specified ymap entity index to the room at roomIndex. 
+        private void AttachEntityToRoom(YmapEntityDef ent, int roomIndex)
+        {
+            if (roomIndex > rooms.Length)
+            {
+                return; // the room index is bigger than the rooms we have...
+            }
+            var attachedObjs = rooms[roomIndex].AttachedObjects?.ToList() ?? new List<uint>();
+            attachedObjs.Add((uint)ent.Index);
+            rooms[roomIndex].AttachedObjects = attachedObjs.ToArray();
+        }
+
+        // Adds an entity to the entities array and then set's the index of the
+        // ymap entity to the index of the new MCEntityDef.
+        private void AddEntity(YmapEntityDef ent, MCEntityDef mcEntityDef)
+        {
+            if (ent == null || mcEntityDef == null) return; // no entity?...
+            // initialize the array.
+            if (entities == null) entities = new MCEntityDef[0];
+
+            List<MCEntityDef> entList = entities.ToList();
+            entList.Add(mcEntityDef);
+            ent.Index = entList.IndexOf(mcEntityDef);
+            entities = entList.ToArray();
+        }
+
+        public bool RemoveEntity(YmapEntityDef ent)
+        {
+            if (ent.Index >= entities.Length) return false;
+
+            MCEntityDef delent = entities[ent.Index];
+            MloInstanceData inst = ent.MloParent?.MloInstance;
+            if (inst == null) return false;
+
+            if (delent != null)
+            {
+                MCEntityDef[] newentities = new MCEntityDef[entities.Length - 1];
+                bool didDel = false;
+                int index = 0;
+                int delIndex = 0;
+                for (int i = 0; i < entities.Length; i++)
+                {
+                    if (entities[i] == delent)
+                    {
+                        delIndex = i;
+                        didDel = true;
+                        continue;
+                    }
+
+                    newentities[index] = entities[i];
+                    YmapEntityDef ymapEntityDef = inst.TryGetYmapEntity(newentities[index]);
+                    if (ymapEntityDef != null) ymapEntityDef.Index = index;
+                    index++;
+                }
+                entities = newentities;
+
+                if (didDel) FixRoomIndexes(delIndex);
+                return didDel;
+            }
+
+            return false;
+        }
+
+        private void FixRoomIndexes(int deletedIndex)
+        {
+            foreach (var room in rooms)
+            {
+                List<uint> newAttachedObjects = new List<uint>();
+                if (room.AttachedObjects == null)
+                    continue;
+                foreach (var objIndex in room.AttachedObjects)
+                {
+                    if (objIndex == deletedIndex) continue;
+                    if (objIndex > deletedIndex)
+                        newAttachedObjects.Add(objIndex - 1); // move the index back so it matches the index in the entitiy array.
+                    else newAttachedObjects.Add(objIndex); // else just add the index to the attached objects.
+                }
+                room.AttachedObjects = newAttachedObjects.ToArray();
+            }
         }
 
         public void LoadChildren(Meta meta)
         {
-            var centities = MetaTypes.ConvertDataArray<CEntityDef>(meta, MetaName.CEntityDef, _MloArchetypeDef.entities);
+            var centities = MetaTypes.ConvertDataArray<CEntityDef>(meta, MetaName.CEntityDef, _MloArchetypeDefData.entities);
             if (centities != null)
             {
                 entities = new MCEntityDef[centities.Length];
                 for (int i = 0; i < centities.Length; i++)
                 {
-                    entities[i] = new MCEntityDef(meta, centities[i]);
+                    entities[i] = new MCEntityDef(meta, ref centities[i]) { Archetype = this };
                 }
             }
 
-            var crooms = MetaTypes.ConvertDataArray<CMloRoomDef>(meta, MetaName.CMloRoomDef, _MloArchetypeDef.rooms);
+            var crooms = MetaTypes.ConvertDataArray<CMloRoomDef>(meta, MetaName.CMloRoomDef, _MloArchetypeDefData.rooms);
             if (crooms != null)
             {
                 rooms = new MCMloRoomDef[crooms.Length];
                 for (int i = 0; i < crooms.Length; i++)
                 {
-                    rooms[i] = new MCMloRoomDef(meta, crooms[i]);
+                    rooms[i] = new MCMloRoomDef(meta, crooms[i]) { Archetype = this, Index = i };
                 }
             }
 
-            var cportals = MetaTypes.ConvertDataArray<CMloPortalDef>(meta, MetaName.CMloPortalDef, _MloArchetypeDef.portals);
+            var cportals = MetaTypes.ConvertDataArray<CMloPortalDef>(meta, MetaName.CMloPortalDef, _MloArchetypeDefData.portals);
             if (cportals != null)
             {
                 portals = new MCMloPortalDef[cportals.Length];
@@ -180,7 +287,7 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            var centitySets = MetaTypes.ConvertDataArray<CMloEntitySet>(meta, MetaName.CMloEntitySet, _MloArchetypeDef.entitySets);
+            var centitySets = MetaTypes.ConvertDataArray<CMloEntitySet>(meta, MetaName.CMloEntitySet, _MloArchetypeDefData.entitySets);
             if (centitySets != null)
             {
                 entitySets = new MCMloEntitySet[centitySets.Length];
@@ -191,13 +298,43 @@ namespace CodeWalker.GameFiles
             }
 
 
-            timeCycleModifiers = MetaTypes.ConvertDataArray<CMloTimeCycleModifier>(meta, MetaName.CMloTimeCycleModifier, _MloArchetypeDef.timeCycleModifiers);
+            timeCycleModifiers = MetaTypes.ConvertDataArray<CMloTimeCycleModifier>(meta, MetaName.CMloTimeCycleModifier, _MloArchetypeDefData.timeCycleModifiers);
 
         }
 
+        public MCMloRoomDef GetEntityRoom(MCEntityDef ent)
+        {
+            int objectIndex = -1;
+            for (int i = 0; i < entities.Length; i++)
+            {
+                MCEntityDef e = entities[i];
+                if (e == ent)
+                {
+                    objectIndex = i;
+                    break;
+                }
+            }
+            if (objectIndex == -1) return null;
+
+            MCMloRoomDef room = null;
+            for (int i = 0; i < rooms.Length; i++)
+            {
+                MCMloRoomDef r = rooms[i];
+                for (int j = 0; j < r.AttachedObjects.Length; j++)
+                {
+                    uint ind = r.AttachedObjects[j];
+                    if (ind == objectIndex)
+                    {
+                        room = r;
+                        break;
+                    }
+                }
+                if (room != null) break;
+            }
+
+            return room;
+        }
     }
-
-
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class MloInstanceData
@@ -208,7 +345,12 @@ namespace CodeWalker.GameFiles
         public uint[] defaultEntitySets { get; set; }
 
         public YmapEntityDef[] Entities { get; set; }
+        public Dictionary<MetaHash, MloInstanceEntitySet> EntitySets { get; set; }
 
+        public MloInstanceData()
+        {
+            EntitySets = new Dictionary<MetaHash, MloInstanceEntitySet>();
+        }
 
         public void CreateYmapEntities(YmapEntityDef owner, MloArchetype mloa)
         {
@@ -234,27 +376,182 @@ namespace CodeWalker.GameFiles
                     var entitySet = entitySets[i];
                     if (entitySet.Entities != null)
                     {
+                        EntitySets[entitySet._Data.name] = new MloInstanceEntitySet(entitySet, this);
+                        MloInstanceEntitySet instset = EntitySets[entitySet._Data.name];
                         for (int j = 0; j < entitySet.Entities.Length; j++)
                         {
                             YmapEntityDef e = CreateYmapEntity(owner, entitySet.Entities[j], lasti);
-                            e.MloEntitySet = entitySet;
-                            entlist.Add(e);
+                            EntitySets[entitySet._Data.name].Entities.Add(e);
+                            e.MloEntitySet = instset;
                             lasti++;
                         }
                     }
                 }
             }
 
-            if (defaultEntitySets != null)
+            if ((defaultEntitySets != null) && (entitySets != null))
             {
+                for (var i = 0; i < defaultEntitySets.Length; i++)
+                {
+                    uint index = defaultEntitySets[i];
+                    if (index >= entitySets.Length) continue;
+                    MCMloEntitySet set = entitySets[index];
+                    MloInstanceEntitySet instset = EntitySets[set._Data.name];
+                    instset.Visible = true;
+                }
             }
 
             Entities = entlist.ToArray();
         }
 
-        private YmapEntityDef CreateYmapEntity(YmapEntityDef owner, MCEntityDef ment, int i)
+        public void InitYmapEntityArchetypes(GameFileCache gfc)
         {
-            YmapEntityDef e = new YmapEntityDef(null, i, ref ment._Data);
+            if (Owner == null) return;
+            var arch = Owner.Archetype;
+
+            if (Entities != null)
+            {
+                for (int j = 0; j < Entities.Length; j++)
+                {
+                    var ient = Entities[j];
+                    var iarch = gfc.GetArchetype(ient.CEntityDef.archetypeName);
+                    ient.SetArchetype(iarch);
+
+                    if (iarch == null)
+                    { } //can't find archetype - des stuff eg {des_prologue_door}
+                }
+
+                UpdateBBs(arch);
+            }
+
+            if (EntitySets != null)
+            {
+                foreach (var entitySet in EntitySets)
+                {
+                    var entities = entitySet.Value.Entities;
+                    if (entities == null) continue;
+
+                    for (int i = 0; i < entities.Count; i++)
+                    {
+                        var ient = entities[i];
+                        var iarch = gfc.GetArchetype(ient.CEntityDef.archetypeName);
+                        ient.SetArchetype(iarch);
+
+                        if (iarch == null)
+                        { } //can't find archetype - des stuff eg {des_prologue_door}
+                    }
+                }
+            }
+        }
+
+        public void UpdateBBs(Archetype arch)
+        {
+            //update archetype room AABB's.. bad to have this here? where else to put it?
+            var mloa = arch as MloArchetype;
+            if (mloa != null)
+            {
+                Vector3 mlobbmin = Vector3.Zero;
+                Vector3 mlobbmax = Vector3.Zero;
+                Vector3[] c = new Vector3[8];
+                var rooms = mloa.rooms;
+                if (rooms != null)
+                {
+                    for (int j = 0; j < rooms.Length; j++)
+                    {
+                        var room = rooms[j];
+                        if ((room.AttachedObjects == null) || (room.AttachedObjects.Length == 0)) continue;
+                        Vector3 min = new Vector3(float.MaxValue);
+                        Vector3 max = new Vector3(float.MinValue);
+                        for (int k = 0; k < room.AttachedObjects.Length; k++)
+                        {
+                            var objid = room.AttachedObjects[k];
+                            if (objid < Entities.Length)
+                            {
+                                var rooment = Entities[objid];
+                                if ((rooment != null) && (rooment.Archetype != null))
+                                {
+                                    var earch = rooment.Archetype;
+                                    var pos = rooment._CEntityDef.position;
+                                    var ori = rooment.Orientation;
+                                    Vector3 abmin = earch.BBMin * rooment.Scale; //entity box
+                                    Vector3 abmax = earch.BBMax * rooment.Scale;
+                                    c[0] = abmin;
+                                    c[1] = new Vector3(abmin.X, abmin.Y, abmax.Z);
+                                    c[2] = new Vector3(abmin.X, abmax.Y, abmin.Z);
+                                    c[3] = new Vector3(abmin.X, abmax.Y, abmax.Z);
+                                    c[4] = new Vector3(abmax.X, abmin.Y, abmin.Z);
+                                    c[5] = new Vector3(abmax.X, abmin.Y, abmax.Z);
+                                    c[6] = new Vector3(abmax.X, abmax.Y, abmin.Z);
+                                    c[7] = abmax;
+                                    for (int n = 0; n < 8; n++)
+                                    {
+                                        Vector3 corn = ori.Multiply(c[n]) + pos;
+                                        min = Vector3.Min(min, corn);
+                                        max = Vector3.Max(max, corn);
+                                    }
+                                }
+                            }
+                        }
+                        room.BBMin_CW = min;
+                        room.BBMax_CW = max;
+                        mlobbmin = Vector3.Min(mlobbmin, min);
+                        mlobbmax = Vector3.Max(mlobbmax, max);
+                    }
+                }
+                mloa.BBMin = mlobbmin;
+                mloa.BBMax = mlobbmax;
+            }
+        }
+
+        public bool DeleteEntity(YmapEntityDef ent)
+        {
+            if (Entities == null)
+            {
+                throw new NullReferenceException("The Entities list returned null in our MloInstanceData. This could be an issue with initialization. The MloInstance probably doesn't exist.");
+            }
+
+            if (ent.Index >= Entities.Length)
+            {
+                throw new ArgumentOutOfRangeException("The index of the entity was greater than the amount of entities that exist in this MloInstance. Likely an issue with initializion.");
+            }
+
+            int index = 0;
+            YmapEntityDef[] newentities = new YmapEntityDef[Entities.Length - 1];
+            YmapEntityDef delentity = Entities[ent.Index];
+            bool del = false;
+
+            for (int i = 0; i < Entities.Length; i++)
+            {
+                if (Entities[i] == delentity)
+                {
+                    del = true;
+                    continue;
+                }
+                newentities[index] = Entities[i];
+                newentities[index].Index = index;
+                index++;
+            }
+            if (!del)
+                throw new ArgumentException("The entity specified was not found in this MloInstance. It cannot be deleted.");
+
+            if (Owner.Archetype is MloArchetype arch)
+            {
+                if (arch.RemoveEntity(ent))
+                {
+                    if (ent.MloEntitySet != null)
+                        if (!ent.MloEntitySet.Entities.Remove(ent))
+                            return false;
+                    // Delete was successful...
+                    Entities = newentities;
+                    return true;
+                }
+            }
+            throw new InvalidCastException("The owner of this archetype's archetype definition is not an MloArchetype.");
+        }
+
+        public YmapEntityDef CreateYmapEntity(YmapEntityDef owner, MCEntityDef ment, int index)
+        {
+            YmapEntityDef e = new YmapEntityDef(null, index, ref ment._Data);
             e.Extensions = ment.Extensions;
             e.MloRefPosition = e.Position;
             e.MloRefOrientation = e.Orientation;
@@ -263,9 +560,31 @@ namespace CodeWalker.GameFiles
             e.Orientation = Quaternion.Multiply(owner.Orientation, e.MloRefOrientation);
             e.UpdateWidgetPosition();
             e.UpdateWidgetOrientation();
+
             return e;
         }
 
+        public MCEntityDef TryGetArchetypeEntity(YmapEntityDef ymapEntity)
+        {
+            if (ymapEntity == null) return null;
+            if (Owner?.Archetype == null) return null;
+            if (!(Owner.Archetype is MloArchetype mloa)) return null;
+            if (ymapEntity.Index >= mloa.entities.Length) return null;
+
+            var entity = mloa.entities[ymapEntity.Index];
+            return entity;
+        }
+
+        public YmapEntityDef TryGetYmapEntity(MCEntityDef mcEntity)
+        {
+            if (mcEntity == null) return null;
+            if (Owner?.Archetype == null) return null;
+            if (!(Owner.Archetype is MloArchetype mloa)) return null;
+
+            var index = Array.FindIndex(mloa.entities, x => x == mcEntity);
+            if (index == -1 || index >= Entities.Length) return null;
+            return Entities[index];
+        }
 
         public void SetPosition(Vector3 pos)
         {
@@ -289,16 +608,51 @@ namespace CodeWalker.GameFiles
             for (int i = 0; i < Entities.Length; i++)
             {
                 YmapEntityDef e = Entities[i];
-                e.Position = Owner.Position + Owner.Orientation.Multiply(e.MloRefPosition);
-                e.Orientation = Quaternion.Multiply(Owner.Orientation, e.MloRefOrientation);
-                e.UpdateWidgetPosition();
-                e.UpdateWidgetOrientation();
+                UpdateEntity(e);
             }
 
         }
 
+        public void UpdateEntity(YmapEntityDef e)
+        {
+            e.Position = Owner.Position + Owner.Orientation.Multiply(e.MloRefPosition);
+            e.Orientation = Quaternion.Multiply(Owner.Orientation, e.MloRefOrientation);
+            e.UpdateWidgetPosition();
+            e.UpdateWidgetOrientation();
+        }
 
+        public void AddEntity(YmapEntityDef e)
+        {
+            if (e == null) return;
+            if (Entities == null) Entities = new YmapEntityDef[0];
+            var entities = Entities.ToList();
+            entities.Add(e);
+            Entities = entities.ToArray();
+        }
 
+    }
+
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class MloInstanceEntitySet
+    {
+        public MloInstanceEntitySet(MCMloEntitySet entSet, MloInstanceData instance)
+        {
+            EntitySet = entSet;
+            Entities = new List<YmapEntityDef>();
+            Instance = instance;
+        }
+
+        public MCMloEntitySet EntitySet { get; set; }
+        public List<YmapEntityDef> Entities { get; set; }
+        public MloInstanceData Instance { get; set; }
+
+        public uint[] Locations
+        {
+            get { return EntitySet?.Locations; }
+            set { if (EntitySet != null) EntitySet.Locations = value; }
+        }
+
+        public bool Visible { get; set; }
     }
 
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -3369,6 +3368,37 @@ namespace CodeWalker
                 SelectItem(ms);
             }
         }
+
+        public void SelectGrassBatch(YmapGrassInstanceBatch batch)
+        {
+            if (batch == null)
+            {
+                SelectItem(null);
+            }
+            else
+            {
+                MapSelection ms = new MapSelection();
+                ms.GrassBatch = batch;
+                ms.AABB = new BoundingBox(batch.AABBMin, batch.AABBMax);
+                SelectItem(ms);
+            }
+        }
+        public void SelectMloRoom(MCMloRoomDef room, MloInstanceData instance)
+        {
+            if (room == null)
+            {
+                SelectItem(null);
+            }
+            else if (instance != null)
+            {
+                MapSelection ms = new MapSelection();
+                ms.MloRoomDef = room;
+                Vector3 min = instance.Owner.Position + instance.Owner.Orientation.Multiply(room.BBMin_CW);
+                Vector3 max = instance.Owner.Position + instance.Owner.Orientation.Multiply(room.BBMax_CW);
+                ms.AABB = new BoundingBox(min, max);
+                SelectItem(ms);
+            }
+        }
         public void SelectNavPoly(YnvPoly poly)
         {
             if (poly == null)
@@ -3916,6 +3946,7 @@ namespace CodeWalker
             {
                 ProjectForm = new ProjectForm(this);
                 ProjectForm.Show(this);
+                ProjectForm.OnWorldSelectionChanged(SelectedItem); // so that the project form isn't stuck on the welcome window.
             }
             else
             {
@@ -5064,11 +5095,25 @@ namespace CodeWalker
             }
             else
             {
-                //project not open, or entity not selected there, just remove the entity from the ymap...
+                //project not open, or entity not selected there, just remove the entity from the ymap/nlo...
                 var ymap = ent.Ymap;
+                var instance = ent.MloParent?.MloInstance;
                 if (ymap == null)
                 {
-                    MessageBox.Show("Sorry, deleting interior entities is not currently supported.");
+                    if (instance != null)
+                    {
+                        try
+                        {
+                            if (!instance.DeleteEntity(ent))
+                            {
+                                SelectItem(null);
+                            }
+                        }
+                        catch (Exception e) // various failures can happen here.
+                        {
+                            MessageBox.Show("Unable to remove entity..." + Environment.NewLine + e.Message);
+                        }
+                    }
                 }
                 else if (!ymap.RemoveEntity(ent))
                 {
@@ -5089,7 +5134,16 @@ namespace CodeWalker
         {
             if (CopiedEntity == null) return;
             if (ProjectForm == null) return;
-            ProjectForm.NewEntity(CopiedEntity);
+            MloInstanceData instance = CopiedEntity.MloParent?.MloInstance;
+            MCEntityDef entdef = instance?.TryGetArchetypeEntity(CopiedEntity);
+            if (entdef != null)
+            {
+                ProjectForm.NewMloEntity(CopiedEntity, true);
+            }
+            else
+            {
+                ProjectForm.NewEntity(CopiedEntity, true);
+            }
         }
         private void CloneEntity()
         {
