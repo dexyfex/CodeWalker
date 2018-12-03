@@ -325,7 +325,8 @@ namespace CodeWalker.Project.Panels
 
             private List<int> CornersB = new List<int>();
             private List<int> CornersT = new List<int>();
-
+            private List<Vector3> VerticesB = new List<Vector3>();
+            private List<Vector3> VerticesT = new List<Vector3>();
 
             public void BeginGrid(int vertexCountX, int vertexCountY)
             {
@@ -529,6 +530,7 @@ namespace CodeWalker.Project.Panels
 
 
 
+                            {
                             //if (dnx > 0) //can move along +X
                             //{
                             //    AssignVertices(ref vplane, plthresh, i, dnx, dny, dpy, 2, poly);
@@ -553,7 +555,7 @@ namespace CodeWalker.Project.Panels
                             //{
                             //    polys.Add(poly);
                             //}
-
+                            }
 
 
 
@@ -705,15 +707,6 @@ namespace CodeWalker.Project.Panels
             {
                 int pid = poly.Index;
                 int qi = i;
-                //int maxdnx = Math.Min(dnx, 40);
-                //int maxdpy = 50;// dpy;//
-                //int maxdny = 50;// dny;//
-                //int cdpy = dpy;
-                //int cdny = dny;
-                //int vertexCountP = 0;
-                //int vertexCountN = 0;
-                //int lastqx = 0;
-                //int lastqi = i;
                 CornersB.Clear();
                 CornersT.Clear();
 
@@ -745,8 +738,8 @@ namespace CodeWalker.Project.Panels
                 int ony = 0;
                 int ldyb = 0;
                 int ldyt = 0;
-                int corndxb = 0;
-                int corndxt = 0;
+                //int corndxb = 0;
+                //int corndxt = 0;
 
                 for (int x = 0; x < 50; x++)
                 {
@@ -833,8 +826,8 @@ namespace CodeWalker.Project.Panels
                     int nextsyb = nextyb - ony - dyb;
                     int nextsyt = nextyt + ony - dyt;
 
-                    corndxb++;
-                    corndxt++;
+                    //corndxb++;
+                    //corndxt++;
 
                     bool iscornerb = false;
 
@@ -869,7 +862,7 @@ namespace CodeWalker.Project.Panels
                         if (nextsyb > syb) nextsyb = syb;
                     }
 
-
+                    if (iscornerb) { }
 
 
 
@@ -890,6 +883,93 @@ namespace CodeWalker.Project.Panels
 
             }
 
+
+            private void AssignVertices3(ref Plane vpl, float plt, int i, int dir, GenPoly poly)
+            {
+                int pid = poly.Index;
+                int qi = i;
+                CornersB.Clear();
+                CornersT.Clear();
+                VerticesB.Clear();
+                VerticesT.Clear();
+
+
+                int dirpy, dirny, dirpx;
+                switch (dir) //lookup perpendicular directions
+                {
+                    default:
+                    case 0: dirpy = 3; dirny = 1; dirpx = 2; break;
+                    case 1: dirpy = 0; dirny = 2; dirpx = 3; break;
+                    case 2: dirpy = 1; dirny = 3; dirpx = 0; break;
+                    case 3: dirpy = 2; dirny = 0; dirpx = 1; break;
+                }
+
+                int ti = i;
+                while (CanPolyIncludeNext(ref vpl, plt, ti, dirpx, out ti))
+                {
+                    qi = ti; //make sure to start at the leftmost point...
+                }
+
+
+                //find the bottom and top leftmost points to start the first col, and fill the col
+                int qib = qi;
+                int qit = qi;
+                int dyb = 0;
+                int dyt = 0;
+                while (CanPolyIncludeNext(ref vpl, plt, qib, dirpy, out ti))
+                {
+                    Vertices[ti].PolyID = pid;
+                    qib = ti;
+                    dyb++;
+                }
+                while (CanPolyIncludeNext(ref vpl, plt, qit, dirny, out ti))
+                {
+                    Vertices[ti].PolyID = pid;
+                    qit = ti;
+                    dyt++;
+                }
+                int dy = dyb + dyt; //total distance between bottom and top
+
+                CornersB.Add(qib);
+                CornersT.Add(qit);
+
+
+
+                //find bottom and top slopes
+                float slopeb = FindSlope(ref vpl, plt, qib, dir, dirpy, dirny, dyb > 0 ? dyb : 100);
+                float slopet = FindSlope(ref vpl, plt, qit, dir, dirny, dirpy, dyt > 0 ? dyt : 100);
+                int syob = MaxOffsetFromSlope(slopeb);
+                int syot = MaxOffsetFromSlope(slopet);
+
+                //find the next bottom and top indexes, step by the max offset
+                int nqib = qib;
+                int nqit = qit;
+                int ndyb = 0;
+                int ndyt = 0;
+
+
+
+
+            }
+
+
+
+            private int FindNextID(ref Plane vpl, float plt, int i, int dirnx, int dirny, int dirpy, float slope, out int dx, out int dy)
+            {
+                //find the next vertex along the slope in the given direction
+
+                int ti = i;
+                int qi = i;
+
+                bool cgx = CanPolyIncludeNext(ref vpl, plt, i, dirnx, out ti);
+
+
+
+
+                dx = 0;
+                dy = 0;
+                return i;
+            }
 
 
             private int MaxOffsetFromSlope(float s)
@@ -916,6 +996,11 @@ namespace CodeWalker.Project.Panels
             }
             private bool CanPolyIncludeNext(ref Plane vplane, float plthresh, int i, int dir, out int ni)
             {
+                if ((i < 0) || (i >= Vertices.Length))
+                {
+                    ni = -1;
+                    return false;
+                }
                 bool ct;
                 switch (dir)
                 {
@@ -1005,13 +1090,8 @@ namespace CodeWalker.Project.Panels
                 int ti = i;
                 int qi = i;
                 float slope = maxslope;
-                //int diry = (maxslope > 0) ? dirny : dirpy;
-                //int incy = (maxslope > 0) ? 1 : -1;
-                int sy = (int)Math.Abs(slope);
-
 
                 bool cgx = CanPolyIncludeNext(ref vpl, plt, i, dirnx, out ti);
-
 
                 if (cgx && (slope >= 0)) //new slope should be >=0
                 {
