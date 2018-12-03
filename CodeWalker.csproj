@@ -487,12 +487,6 @@
     <Compile Include="Utils\MapUtils.cs" />
     <Compile Include="GameFiles\TextureFormats.cs" />
     <Compile Include="Utils\TextureLoader.cs" />
-    <Compile Include="Project\ProjectFormOLD.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Project\ProjectFormOLD.Designer.cs">
-      <DependentUpon>ProjectFormOLD.cs</DependentUpon>
-    </Compile>
     <Compile Include="WorldInfoForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -680,9 +674,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SelectFolderForm.resx">
       <DependentUpon>SelectFolderForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Project\ProjectFormOLD.resx">
-      <DependentUpon>ProjectFormOLD.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
