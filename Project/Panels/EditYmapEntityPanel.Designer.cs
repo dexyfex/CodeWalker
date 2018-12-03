@@ -71,6 +71,7 @@
             this.EntityNumChildrenTextBox = new System.Windows.Forms.TextBox();
             this.label25 = new System.Windows.Forms.Label();
             this.EntityExtensionsTabPage = new System.Windows.Forms.TabPage();
+            this.label1 = new System.Windows.Forms.Label();
             this.EntityPivotTabPage = new System.Windows.Forms.TabPage();
             this.label95 = new System.Windows.Forms.Label();
             this.EntityPivotEditCheckBox = new System.Windows.Forms.CheckBox();
@@ -79,7 +80,6 @@
             this.EntityPivotRotationNormalizeButton = new System.Windows.Forms.Button();
             this.label94 = new System.Windows.Forms.Label();
             this.EntityPivotRotationTextBox = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.EntityTabControl.SuspendLayout();
             this.EntityGeneralTabPage.SuspendLayout();
             this.EntityLodTabPage.SuspendLayout();
@@ -575,6 +575,15 @@
             this.EntityExtensionsTabPage.Text = "Extensions";
             this.EntityExtensionsTabPage.UseVisualStyleBackColor = true;
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(27, 27);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(157, 13);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "Entity extensions editing TODO!";
+            // 
             // EntityPivotTabPage
             // 
             this.EntityPivotTabPage.Controls.Add(this.label95);
@@ -659,15 +668,6 @@
             this.EntityPivotRotationTextBox.Size = new System.Drawing.Size(382, 20);
             this.EntityPivotRotationTextBox.TabIndex = 25;
             this.EntityPivotRotationTextBox.TextChanged += new System.EventHandler(this.EntityPivotRotationTextBox_TextChanged);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(27, 27);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(157, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Entity extensions editing TODO!";
             // 
             // EditYmapEntityPanel
             // 

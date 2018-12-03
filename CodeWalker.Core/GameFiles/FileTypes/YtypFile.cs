@@ -21,8 +21,8 @@ namespace CodeWalker.GameFiles
         public uint NameHash { get; set; }
         public string[] Strings { get; set; }
 
-
-        public CMapTypes CMapTypes { get; set; }
+        public CMapTypes _CMapTypes;
+        public CMapTypes CMapTypes { get { return _CMapTypes; } set { _CMapTypes = value; } }
 
         public Archetype[] AllArchetypes { get; set; }
 
@@ -50,6 +50,111 @@ namespace CodeWalker.GameFiles
             return (RpfFileEntry != null) ? RpfFileEntry.Name : string.Empty;
         }
 
+        public byte[] Save()
+        {
+            MetaBuilder mb = new MetaBuilder();
+
+            var mdb = mb.EnsureBlock(MetaName.CMapTypes);
+
+            CMapTypes mapTypes = _CMapTypes;
+
+            if (Extensions == null || Extensions.Length <= 0)
+                mapTypes.extensions = new Array_StructurePointer();
+            else
+                mapTypes.extensions = mb.AddWrapperArrayPtr(Extensions);
+
+            if ((AllArchetypes != null) && (AllArchetypes.Length > 0))
+            {
+                for (int i = 0; i < AllArchetypes.Length; i++)
+                {
+                    var arch = AllArchetypes[i]; //save the extensions first..
+                    if (arch._BaseArchetypeDef.extensions.Count1 > 0)
+                    {
+                        arch._BaseArchetypeDef.extensions = mb.AddWrapperArrayPtr(arch.Extensions);
+                    }
+                }
+
+                MetaPOINTER[] ptrs = new MetaPOINTER[AllArchetypes.Length];
+                for (int i = 0; i < AllArchetypes.Length; i++)
+                {
+                    var arch = AllArchetypes[i];
+                    switch (arch)
+                    {
+                        case TimeArchetype t:
+                            ptrs[i] = mb.AddItemPtr(MetaName.CTimeArchetypeDef, t._TimeArchetypeDef);
+                            break;
+                        case MloArchetype m:
+                            try
+                            {
+                                m._MloArchetypeDef._MloArchetypeDef.entities = mb.AddWrapperArrayPtr(m.entities);
+                                m._MloArchetypeDef._MloArchetypeDef.rooms = mb.AddWrapperArray(m.rooms);
+                                m._MloArchetypeDef._MloArchetypeDef.portals = mb.AddWrapperArray(m.portals);
+                                m._MloArchetypeDef._MloArchetypeDef.entitySets = mb.AddWrapperArray(m.entitySets);
+                                m._MloArchetypeDef._MloArchetypeDef.timeCycleModifiers = mb.AddItemArrayPtr(MetaName.CTimeCycleModifier, m.timeCycleModifiers);
+                            }
+                            catch/* (Exception e)*/
+                            {
+                                //todo: log save error.
+                            }
+                            ptrs[i] = mb.AddItemPtr(MetaName.CMloArchetypeDef, m._MloArchetypeDef);
+                            break;
+                        case Archetype a:
+                            ptrs[i] = mb.AddItemPtr(MetaName.CBaseArchetypeDef, a._BaseArchetypeDef);
+                            break;
+                    }
+                }
+                mapTypes.archetypes = mb.AddPointerArray(ptrs);
+            }
+            else
+            {
+                mapTypes.archetypes = new Array_StructurePointer();
+            }
+
+            if (CompositeEntityTypes != null && CompositeEntityTypes.Length > 0)
+            {
+                var cptrs = new MetaPOINTER[CompositeEntityTypes.Length];
+
+                for (int i = 0; i < cptrs.Length; i++)
+                {
+                    var cet = CompositeEntityTypes[i];
+                    cptrs[i] = mb.AddItemPtr(MetaName.CCompositeEntityType, cet);
+                }
+                mapTypes.compositeEntityTypes = mb.AddItemArrayPtr(MetaName.CCompositeEntityType, cptrs);
+            }
+
+            mapTypes.name = NameHash;
+            mapTypes.dependencies = new Array_uint(); // is this never used? possibly a todo?
+
+            mb.AddStructureInfo(MetaName.CMapTypes);
+            mb.AddStructureInfo(MetaName.CBaseArchetypeDef);
+            mb.AddStructureInfo(MetaName.CMloArchetypeDef);
+            mb.AddStructureInfo(MetaName.CTimeArchetypeDef);
+            mb.AddStructureInfo(MetaName.CCompositeEntityType);
+            mb.AddStructureInfo(MetaName.CMloRoomDef);
+            mb.AddStructureInfo(MetaName.CMloPortalDef);
+            mb.AddStructureInfo(MetaName.CMloEntitySet);
+
+            if ((AllArchetypes != null && AllArchetypes.Length > 0))
+            {
+                mb.AddEnumInfo((MetaName)1991964615); // ASSET_TYPE_
+            }
+
+            if ((AllArchetypes != null) && (AllArchetypes.Any(x => x is MloArchetype m && m.entities.Length > 0)))
+            {
+                mb.AddStructureInfo(MetaName.CEntityDef);
+                mb.AddEnumInfo((MetaName)1264241711); //LODTYPES_
+                mb.AddEnumInfo((MetaName)648413703);  //PRI_
+            }
+
+            mb.AddItem(MetaName.CMapTypes, mapTypes);
+
+            Meta meta = mb.GetMeta();
+            byte[] data = ResourceBuilder.Build(meta, 2);
+
+            HasChanged = false;
+
+            return data;
+        }
 
         public void Load(byte[] data)
         {
@@ -94,12 +199,12 @@ namespace CodeWalker.GameFiles
             Meta = rd.ReadBlock<Meta>();
 
 
-            CMapTypes = MetaTypes.GetTypedData<CMapTypes>(Meta, MetaName.CMapTypes);
+            _CMapTypes = MetaTypes.GetTypedData<CMapTypes>(Meta, MetaName.CMapTypes);
 
 
             List<Archetype> allarchs = new List<Archetype>();
 
-            var ptrs = MetaTypes.GetPointerArray(Meta, CMapTypes.archetypes);
+            var ptrs = MetaTypes.GetPointerArray(Meta, _CMapTypes.archetypes);
             if (ptrs != null)
             {
                 for (int i = 0; i < ptrs.Length; i++)
@@ -151,7 +256,8 @@ namespace CodeWalker.GameFiles
             AllArchetypes = allarchs.ToArray();
 
 
-            Extensions = MetaTypes.GetExtensions(Meta, CMapTypes.extensions);
+            Extensions = MetaTypes.GetExtensions(Meta, _CMapTypes.extensions);
+
             if (Extensions != null)
             { }
 
@@ -163,11 +269,11 @@ namespace CodeWalker.GameFiles
             //CEntityDefs = MetaTypes.GetTypedDataArray<CEntityDef>(Meta, MetaName.CEntityDef);
 
 
-            CompositeEntityTypes = MetaTypes.ConvertDataArray<CCompositeEntityType>(Meta, MetaName.CCompositeEntityType, CMapTypes.compositeEntityTypes);
+            CompositeEntityTypes = MetaTypes.ConvertDataArray<CCompositeEntityType>(Meta, MetaName.CCompositeEntityType, _CMapTypes.compositeEntityTypes);
             if (CompositeEntityTypes != null)
             { }
 
-            NameHash = CMapTypes.name;
+            NameHash = _CMapTypes.name;
             if (NameHash == 0)
             {
                 int ind = entry.NameLower.LastIndexOf('.');
@@ -241,122 +347,39 @@ namespace CodeWalker.GameFiles
 
         }
 
-        public void AddArchetype(Archetype arch)
+
+        public void AddArchetype(Archetype archetype)
         {
-            List<Archetype> allArchs = new List<Archetype>();
+            if (AllArchetypes == null)
+                AllArchetypes = new Archetype[0];
 
-            if (AllArchetypes != null)
-                allArchs.AddRange(AllArchetypes);
-
-            allArchs.Add(arch);
-
-            AllArchetypes = allArchs.ToArray();
+            List<Archetype> archetypes = AllArchetypes.ToList();
+            archetype.Ytyp = this;
+            archetypes.Add(archetype);
+            AllArchetypes = archetypes.ToArray();
         }
 
-        public void RemoveArchetype(Archetype arch)
+        public Archetype AddArchetype()
         {
-            List<Archetype> allArchs = new List<Archetype>();
-
-            if (AllArchetypes != null)
-                allArchs.AddRange(AllArchetypes);
-
-            if (allArchs.Contains(arch))
-                allArchs.Remove(arch);
-
-            AllArchetypes = allArchs.ToArray();
+            var a = new Archetype();
+            a._BaseArchetypeDef.assetType = Unk_1991964615.ASSET_TYPE_DRAWABLE;
+            a._BaseArchetypeDef.lodDist = 60;
+            a._BaseArchetypeDef.hdTextureDist = 15;
+            a.Ytyp = this;
+            AddArchetype(a);
+            return a;
         }
 
-        public byte[] Save()
+        public bool RemoveArchetype(Archetype archetype)
         {
-            MetaBuilder mb = new MetaBuilder();
-
-            var mdb = mb.EnsureBlock(MetaName.CMapTypes);
-
-            CMapTypes mapTypes = CMapTypes;
-
-            if((AllArchetypes != null) && (AllArchetypes.Length > 0))
+            List<Archetype> archetypes = AllArchetypes.ToList();
+            if (archetypes.Remove(archetype))
             {
-                MetaPOINTER[] archPtrs = new MetaPOINTER[AllArchetypes.Length];
-
-                for(int i=0; i<AllArchetypes.Length; i++)
-                {
-                    var arch = AllArchetypes[i];
-                    arch._BaseArchetypeDef.extensions = mb.AddWrapperArrayPtr(arch.Extensions);
-                }
-
-                for (int i = 0; i < archPtrs.Length; i++)
-                {
-                    var arch = AllArchetypes[i];
-
-                    if (arch is MloArchetype)
-                    {
-                        var mloArch = arch as MloArchetype;
-
-                        mloArch._BaseMloArchetypeDef._MloArchetypeDef.entities           = mb.AddWrapperArrayPtr(mloArch.entities);
-                        mloArch._BaseMloArchetypeDef._MloArchetypeDef.rooms              = mb.AddWrapperArray(mloArch.rooms);
-                        mloArch._BaseMloArchetypeDef._MloArchetypeDef.portals            = mb.AddWrapperArray(mloArch.portals);
-                        mloArch._BaseMloArchetypeDef._MloArchetypeDef.entitySets         = mb.AddWrapperArray(mloArch.entitySets);
-                        mloArch._BaseMloArchetypeDef._MloArchetypeDef.timeCycleModifiers = mb.AddItemArrayPtr(MetaName.CTimeCycleModifier, mloArch.timeCycleModifiers);
-
-                        archPtrs[i] = mb.AddItemPtr(MetaName.CMloArchetypeDef, mloArch.BaseMloArchetypeDef);
-
-                    }
-                    else if (arch is TimeArchetype)
-                    {
-                        var timeArch = arch as TimeArchetype;
-                        archPtrs[i] = mb.AddItemPtr(MetaName.CTimeArchetypeDef, timeArch.TimeArchetypeDef);
-
-                    }
-                    else
-                    {
-                        archPtrs[i] = mb.AddItemPtr(MetaName.CBaseArchetypeDef, arch.BaseArchetypeDef);
-                    }
-                }
-
-                mapTypes.archetypes = mb.AddPointerArray(archPtrs);
+                AllArchetypes = archetypes.ToArray();
+                return true;
             }
-
-            if((CompositeEntityTypes != null) && (CompositeEntityTypes.Length > 0))
-            {
-                MetaPOINTER[] cetPtrs = new MetaPOINTER[CompositeEntityTypes.Length] ;
-
-                for (int i = 0; i < cetPtrs.Length; i++)
-                {
-                    var cet    = CompositeEntityTypes[i];
-                    cetPtrs[i] = mb.AddItemPtr(MetaName.CCompositeEntityType, cet);
-                }
-
-                mapTypes.compositeEntityTypes = mb.AddItemArrayPtr(MetaName.CCompositeEntityType, cetPtrs);
-            }
-
-            mb.AddItem(MetaName.CMapTypes, mapTypes);
-
-            mb.AddStructureInfo(MetaName.CMapTypes);
-            mb.AddStructureInfo(MetaName.CBaseArchetypeDef);
-            mb.AddStructureInfo(MetaName.CMloArchetypeDef);
-            mb.AddStructureInfo(MetaName.CTimeArchetypeDef);
-            mb.AddStructureInfo(MetaName.CMloRoomDef);
-            mb.AddStructureInfo(MetaName.CMloPortalDef);
-            mb.AddStructureInfo(MetaName.CMloEntitySet);
-            mb.AddStructureInfo(MetaName.CCompositeEntityType);
-
-            mb.AddEnumInfo((MetaName)1991964615);
-            mb.AddEnumInfo((MetaName)1294270217);
-            mb.AddEnumInfo((MetaName)1264241711);
-            mb.AddEnumInfo((MetaName)648413703);
-            mb.AddEnumInfo((MetaName)3573596290);
-            mb.AddEnumInfo((MetaName)700327466);
-            mb.AddEnumInfo((MetaName)193194928);
-            mb.AddEnumInfo((MetaName)2266515059);
-
-            Meta = mb.GetMeta();
-
-            byte[] data = ResourceBuilder.Build(Meta, 2); //ymap is version 2...
-
-            return data;
-
+            return false;
         }
-
     }
 
 

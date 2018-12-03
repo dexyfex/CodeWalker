@@ -1262,7 +1262,7 @@ namespace CodeWalker
 
             ymap.Load(data);
 
-            GameFileCache.InitYmapEntityArchetypes(ymap); //this needs to be done after calling YmapFile.Load()
+            ymap.InitYmapEntityArchetypes(GameFileCache); //this needs to be done after calling YmapFile.Load()
         }
 
         private void LoadYmapTreeNodes(YmapFile ymap, TreeNode node)
@@ -1282,7 +1282,7 @@ namespace CodeWalker
                 for (int i = 0; i < ents.Length; i++)
                 {
                     var ent = ents[i];
-                    var edef = ent.CEntityDef;
+                    var edef = ent._CEntityDef;
                     var enode = entsnode.Nodes.Add(edef.archetypeName.ToString());
                     enode.Tag = ent;
                 }
@@ -7542,7 +7542,7 @@ namespace CodeWalker
                 if (CurrentEntity._CEntityDef.rotation != v)
                 {
                     Quaternion q = new Quaternion(v);
-                    CurrentEntity.SetOrientationInv(q);
+                    CurrentEntity.SetOrientation(q, true);
                     SetYmapHasChanged(true);
                     if (WorldForm != null)
                     {

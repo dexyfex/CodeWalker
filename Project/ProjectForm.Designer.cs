@@ -155,6 +155,8 @@
             this.ToolbarSaveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.YtypMloToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtypMloNewEntityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.SuspendLayout();
@@ -282,54 +284,54 @@
             // FileOpenProjectMenu
             // 
             this.FileOpenProjectMenu.Name = "FileOpenProjectMenu";
-            this.FileOpenProjectMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenProjectMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenProjectMenu.Text = "Project...";
             this.FileOpenProjectMenu.Click += new System.EventHandler(this.FileOpenProjectMenu_Click);
             // 
             // toolStripSeparator9
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
-            this.toolStripSeparator9.Size = new System.Drawing.Size(146, 6);
+            this.toolStripSeparator9.Size = new System.Drawing.Size(149, 6);
             // 
             // FileOpenYmapMenu
             // 
             this.FileOpenYmapMenu.Name = "FileOpenYmapMenu";
-            this.FileOpenYmapMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenYmapMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenYmapMenu.Text = "Ymap File...";
             this.FileOpenYmapMenu.Click += new System.EventHandler(this.FileOpenYmapMenu_Click);
             // 
             // FileOpenYtypMenu
             // 
             this.FileOpenYtypMenu.Name = "FileOpenYtypMenu";
-            this.FileOpenYtypMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenYtypMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenYtypMenu.Text = "Ytyp File...";
             this.FileOpenYtypMenu.Click += new System.EventHandler(this.FileOpenYtypMenu_Click);
             // 
             // FileOpenYndMenu
             // 
             this.FileOpenYndMenu.Name = "FileOpenYndMenu";
-            this.FileOpenYndMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenYndMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenYndMenu.Text = "Ynd File...";
             this.FileOpenYndMenu.Click += new System.EventHandler(this.FileOpenYndMenu_Click);
             // 
             // FileOpenYnvMenu
             // 
             this.FileOpenYnvMenu.Name = "FileOpenYnvMenu";
-            this.FileOpenYnvMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenYnvMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenYnvMenu.Text = "Ynv File...";
             this.FileOpenYnvMenu.Click += new System.EventHandler(this.FileOpenYnvMenu_Click);
             // 
             // FileOpenTrainsMenu
             // 
             this.FileOpenTrainsMenu.Name = "FileOpenTrainsMenu";
-            this.FileOpenTrainsMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenTrainsMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenTrainsMenu.Text = "Trains File...";
             this.FileOpenTrainsMenu.Click += new System.EventHandler(this.FileOpenTrainsMenu_Click);
             // 
             // FileOpenScenarioMenu
             // 
             this.FileOpenScenarioMenu.Name = "FileOpenScenarioMenu";
-            this.FileOpenScenarioMenu.Size = new System.Drawing.Size(149, 22);
+            this.FileOpenScenarioMenu.Size = new System.Drawing.Size(152, 22);
             this.FileOpenScenarioMenu.Text = "Scenario File...";
             this.FileOpenScenarioMenu.Click += new System.EventHandler(this.FileOpenScenarioMenu_Click);
             // 
@@ -594,6 +596,7 @@
             this.YtypNameMenu,
             this.toolStripSeparator13,
             this.YtypNewArchetypeMenu,
+            this.YtypMloToolStripMenuItem,
             this.toolStripSeparator15,
             this.YtypAddToProjectMenu,
             this.YtypRemoveFromProjectMenu});
@@ -1174,6 +1177,22 @@
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
             // 
+            // YtypMloToolStripMenuItem
+            // 
+            this.YtypMloToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.YtypMloNewEntityToolStripMenuItem});
+            this.YtypMloToolStripMenuItem.Enabled = false;
+            this.YtypMloToolStripMenuItem.Name = "YtypMloToolStripMenuItem";
+            this.YtypMloToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.YtypMloToolStripMenuItem.Text = "Mlo";
+            // 
+            // YtypMloNewEntityToolStripMenuItem
+            // 
+            this.YtypMloNewEntityToolStripMenuItem.Name = "YtypMloNewEntityToolStripMenuItem";
+            this.YtypMloNewEntityToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.YtypMloNewEntityToolStripMenuItem.Text = "New Entity";
+            this.YtypMloNewEntityToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewEntityToolStripMenuItem_Click);
+            // 
             // ProjectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1325,5 +1344,7 @@
         private System.Windows.Forms.ToolStripMenuItem ScenarioAddToProjectMenu;
         private System.Windows.Forms.ToolStripMenuItem ScenarioRemoveFromProjectMenu;
         private System.Windows.Forms.ToolStripMenuItem YmapNewGrassBatchMenu;
+        private System.Windows.Forms.ToolStripMenuItem YtypMloToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem YtypMloNewEntityToolStripMenuItem;
     }
 }

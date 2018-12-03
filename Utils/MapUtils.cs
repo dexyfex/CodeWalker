@@ -182,6 +182,7 @@ namespace CodeWalker
         public YmapGrassInstanceBatch GrassBatch { get; set; }
         public YmapDistantLODLights DistantLodLights { get; set; }
         public YmapEntityDef MloEntityDef { get; set; }
+        public MCMloRoomDef MloRoomDef { get; set; }
         public WaterQuad WaterQuad { get; set; }
         public Bounds CollisionBounds { get; set; }
         public YnvPoly NavPoly { get; set; }
@@ -227,7 +228,8 @@ namespace CodeWalker
                     (DistantLodLights != null) ||
                     (MloEntityDef != null) ||
                     (ScenarioNode != null) ||
-                    (Audio != null);
+                    (Audio != null) ||
+                    (MloRoomDef != null);
             }
         }
 
@@ -257,7 +259,8 @@ namespace CodeWalker
                 || (PathNode != mhit.PathNode)
                 || (TrainTrackNode != mhit.TrainTrackNode)
                 || (ScenarioNode != mhit.ScenarioNode)
-                || (Audio != mhit.Audio);
+                || (Audio != mhit.Audio)
+                || (MloRoomDef != mhit.MloRoomDef);
         }
         public bool CheckForChanges()
         {
@@ -280,7 +283,8 @@ namespace CodeWalker
                 || (PathLink != null)
                 || (TrainTrackNode != null)
                 || (ScenarioNode != null)
-                || (Audio != null);
+                || (Audio != null)
+                || (MloRoomDef != null);
         }
 
 
@@ -386,6 +390,10 @@ namespace CodeWalker
             {
                 name = Audio.ShortTypeName + " " + Audio.GetNameString();// FloatUtil.GetVector3String(Audio.InnerPos);
             }
+            if (MloRoomDef != null)
+            {
+                name = "MloRoomDef " + MloRoomDef.RoomName;
+            }
             return name;
         }
 
@@ -459,6 +467,10 @@ namespace CodeWalker
             if (Audio != null)
             {
                 name = Audio.ShortTypeName + " " + Audio.GetNameString();//  + FloatUtil.GetVector3String(Audio.InnerPos);
+            }
+            if (MloRoomDef != null)
+            {
+                name = "MloRoomDef " + MloRoomDef.RoomName;
             }
             return name;
         }
