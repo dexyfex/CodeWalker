@@ -78,7 +78,7 @@ namespace CodeWalker
 
         int ControlBrushTimer = 0;
         bool ControlBrushEnabled;
-        float ControlBrushRadius;
+        //float ControlBrushRadius;
 
         Entity camEntity = new Entity();
         PedEntity pedEntity = new PedEntity();

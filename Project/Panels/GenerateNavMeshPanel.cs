@@ -944,8 +944,8 @@ namespace CodeWalker.Project.Panels
                 //find the next bottom and top indexes, step by the max offset
                 int nqib = qib;
                 int nqit = qit;
-                int ndyb = 0;
-                int ndyt = 0;
+                //int ndyb = 0;
+                //int ndyt = 0;
 
 
 
