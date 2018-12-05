@@ -139,6 +139,7 @@ namespace CodeWalker.GameFiles
                 InitDlc();
 
 
+                //TestAudioYmts();
                 //TestMetas();
                 //TestYcds();
                 //TestYmaps();
@@ -2165,6 +2166,77 @@ namespace CodeWalker.GameFiles
 
 
 
+        public void TestAudioYmts()
+        {
+
+            StringBuilder sb = new StringBuilder();
+
+            Dictionary<uint, int> allids = new Dictionary<uint, int>();
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    try
+                    {
+                        var n = entry.NameLower;
+                        if (n.EndsWith(".ymt"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            //YmtFile ymtfile = RpfMan.GetFile<YmtFile>(entry);
+                            //if ((ymtfile != null))
+                            //{
+                            //}
+
+                            var sn = entry.GetShortName();
+                            uint un;
+                            if (uint.TryParse(sn, out un))
+                            {
+                                if (allids.ContainsKey(un))
+                                {
+                                    allids[un] = allids[un] + 1;
+                                }
+                                else
+                                {
+                                    allids[un] = 1;
+                                    //ushort s1 = (ushort)(un & 0x1FFFu);
+                                    //ushort s2 = (ushort)((un >> 13) & 0x1FFFu);
+                                    uint s1 = un % 80000;
+                                    uint s2 = (un / 80000);
+                                    float f1 = s1 / 5000.0f;
+                                    float f2 = s2 / 5000.0f;
+                                    sb.AppendFormat("{0}, {1}, 0, {2}\r\n", f1, f2, sn);
+                                }
+                            }
+
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                    }
+                }
+            }
+
+            var skeys = allids.Keys.ToList();
+            skeys.Sort();
+
+            var hkeys = new List<string>();
+            foreach (var skey in skeys)
+            {
+                FlagsUint fu = new FlagsUint(skey);
+                //hkeys.Add(skey.ToString("X"));
+                hkeys.Add(fu.Bin);
+            }
+
+            string nstr = string.Join("\r\n", hkeys.ToArray());
+            string pstr = sb.ToString();
+            if (pstr.Length > 0)
+            { }
+
+
+        }
         public void TestMetas()
         {
             //find all RSC meta files and generate the MetaTypes init code
