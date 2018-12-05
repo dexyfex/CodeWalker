@@ -59,6 +59,7 @@ namespace CodeWalker.Project
                 Xml.AddChildWithInnerText(doc, ytypselem, "Item", ytypfilename);
             }
 
+
             var yndselem = Xml.AddChild(doc, projelem, "YndFilenames");
             foreach (string yndfilename in YndFilenames)
             {

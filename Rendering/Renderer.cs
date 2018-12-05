@@ -98,7 +98,7 @@ namespace CodeWalker.Rendering
         public bool renderinteriors = true;
         public bool renderproxies = false;
         public bool renderchildents = false;//when rendering single ymap, render root only or not...
-
+        public bool renderentities = true;
         public bool rendergrass = true;
         public bool renderdistlodlights = true;
 
@@ -378,6 +378,11 @@ namespace CodeWalker.Rendering
         {
             //used to update path graphics.
             renderableCache.Invalidate(path);
+        }
+
+        public void Invalidate(YmapGrassInstanceBatch batch)
+        {
+            renderableCache.Invalidate(batch);
         }
 
 
@@ -679,6 +684,33 @@ namespace CodeWalker.Rendering
 
         }
 
+        public void RenderBrushRadiusOutline(Vector3 position, Vector3 dir, Vector3 up, float radius, uint col)
+        {
+            const int Reso = 36;
+            const float MaxDeg = 360f;
+            const float DegToRad = 0.0174533f;
+            const float Ang = MaxDeg / Reso;
+
+            var axis = Vector3.Cross(dir, up);
+            var c = new VertexTypePC[Reso];
+
+            for (var i = 0; i < Reso; i++)
+            {
+                var rDir = Quaternion.RotationAxis(dir, (i * Ang) * DegToRad).Multiply(axis);
+                c[i].Position = position + (rDir * radius);
+                c[i].Colour = col;
+            }
+
+            for (var i = 0; i < c.Length; i++)
+            {
+                SelectionLineVerts.Add(c[i]);
+                SelectionLineVerts.Add(c[(i + 1) % c.Length]);
+            }
+
+            SelectionLineVerts.Add(new VertexTypePC{Colour = col, Position = position});
+            SelectionLineVerts.Add(new VertexTypePC { Colour = col, Position = position + dir * 2f});
+        }
+
         public void RenderSelectionArrowOutline(Vector3 pos, Vector3 dir, Vector3 up, Quaternion ori, float len, float rad, uint colour)
         {
             Vector3 ax = Vector3.Cross(dir, up);
@@ -757,7 +789,7 @@ namespace CodeWalker.Rendering
         public void RenderSelectionNavPoly(YnvPoly poly)
         {
             ////draw poly triangles
-            var pcolour = new Color4(0.6f, 0.95f, 0.6f, 1.0f);
+            var pcolour = new Color4(1.0f, 1.0f, 1.0f, 0.2f);
             var colourval = (uint)pcolour.ToRgba();
             var ynv = poly.Ynv;
             var ic = poly._RawData.IndexCount;
@@ -790,6 +822,71 @@ namespace CodeWalker.Rendering
                 SelectionTriVerts.Add(v2);
                 SelectionTriVerts.Add(v1);
             }
+        }
+
+        public void RenderSelectionNavPolyOutline(YnvPoly poly, uint colourval)
+        {
+            //var colourval = (uint)colour.ToRgba();
+            var ynv = poly.Ynv;
+            var ic = poly._RawData.IndexCount;
+            var startid = poly._RawData.IndexID;
+            var endid = startid + ic;
+            var lastid = endid - 1;
+            var vc = ynv.Vertices.Count;
+            var startind = ynv.Indices[startid];
+
+            ////draw poly outline
+            VertexTypePC v = new VertexTypePC();
+            v.Colour = colourval;
+            VertexTypePC v0 = new VertexTypePC();
+            for (int id = startid; id < endid; id++)
+            {
+                var ind = ynv.Indices[id];
+                if (ind >= vc)
+                { continue; }
+
+                v.Position = ynv.Vertices[ind];
+                SelectionLineVerts.Add(v);
+                if (id == startid)
+                {
+                    v0 = v;
+                }
+                else
+                {
+                    SelectionLineVerts.Add(v);
+                }
+                if (id == lastid)
+                {
+                    SelectionLineVerts.Add(v0);
+                }
+            }
+
+
+            ////draw poly triangles
+            //VertexTypePC v0 = new VertexTypePC();
+            //VertexTypePC v1 = new VertexTypePC();
+            //VertexTypePC v2 = new VertexTypePC();
+            //v0.Position = ynv.Vertices[startind];
+            //v0.Colour = colourval;
+            //v1.Colour = colourval;
+            //v2.Colour = colourval;
+            //int tricount = ic - 2;
+            //for (int t = 0; t < tricount; t++)
+            //{
+            //    int tid = startid + t;
+            //    int ind1 = ynv.Indices[tid + 1];
+            //    int ind2 = ynv.Indices[tid + 2];
+            //    if ((ind1 >= vc) || (ind2 >= vc))
+            //    { continue; }
+            //    v1.Position = ynv.Vertices[ind1];
+            //    v2.Position = ynv.Vertices[ind2];
+            //    Renderer.SelectionTriVerts.Add(v0);
+            //    Renderer.SelectionTriVerts.Add(v1);
+            //    Renderer.SelectionTriVerts.Add(v2);
+            //    Renderer.SelectionTriVerts.Add(v0);
+            //    Renderer.SelectionTriVerts.Add(v2);
+            //    Renderer.SelectionTriVerts.Add(v1);
+            //}
         }
 
         public void RenderSelectionGeometry(MapSelectionMode mode)
@@ -1498,13 +1595,16 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            for (int i = 0; i < renderworldrenderables.Count; i++)
+            if(renderentities)
             {
-                var rent = renderworldrenderables[i];
-                var ent = rent.Entity;
-                var arch = ent.Archetype;
+                for (int i = 0; i < renderworldrenderables.Count; i++)
+                {
+                    var rent = renderworldrenderables[i];
+                    var ent = rent.Entity;
+                    var arch = ent.Archetype;
 
-                RenderArchetype(arch, ent, rent.Renderable, false);
+                    RenderArchetype(arch, ent, rent.Renderable, false);
+                }
             }
 
 
@@ -1645,24 +1745,55 @@ namespace CodeWalker.Rendering
 
                     if (renderinteriors && ent.IsMlo) //render Mlo child entities...
                     {
-                        if ((ent.MloInstance != null) && (ent.MloInstance.Entities != null))
+                        if ((ent.MloInstance != null))
                         {
-                            for (int j = 0; j < ent.MloInstance.Entities.Length; j++)
+                            if (ent.MloInstance.Entities != null)
                             {
-                                var intent = ent.MloInstance.Entities[j];
-                                if (intent.Archetype == null) continue; //missing archetype...
-                                if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
-
-                                intent.IsVisible = true;
-
-                                var iebscent = intent.Position + intent.BSCenter - camera.Position;
-                                float iebsrad = intent.BSRadius;
-                                if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
+                                for (int j = 0; j < ent.MloInstance.Entities.Length; j++)
                                 {
-                                    continue; //frustum cull interior ents
-                                }
+                                    var intent = ent.MloInstance.Entities[j];
+                                    if (intent.Archetype == null) continue; //missing archetype...
+                                    if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
 
-                                renderworldentities.Add(intent);
+                                    intent.IsVisible = true;
+
+                                    var iebscent = intent.Position + intent.BSCenter - camera.Position;
+                                    float iebsrad = intent.BSRadius;
+                                    if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
+                                    {
+                                        continue; //frustum cull interior ents
+                                    }
+
+                                    renderworldentities.Add(intent);
+                                }
+                            }
+                            if (ent.MloInstance.EntitySets != null)
+                            {
+                                foreach (var entitysets in ent.MloInstance.EntitySets)
+                                {
+                                    var entityset = entitysets.Value;
+                                    if (!entityset.Visible) continue;
+
+                                    var entities = entityset.Entities;
+                                    for (int i = 0; i < entities.Count; i++)
+                                    {
+                                        var intent = entities[i];
+                                        if (intent.Archetype == null) continue; //missing archetype...
+                                        if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
+
+                                        intent.IsVisible = true;
+
+                                        var iebscent = intent.Position + intent.BSCenter - camera.Position;
+                                        float iebsrad = intent.BSRadius;
+                                        if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
+                                        {
+                                            continue; //frustum cull interior ents
+                                        }
+
+                                        renderworldentities.Add(intent);
+
+                                    }
+                                }
                             }
                         }
                     }

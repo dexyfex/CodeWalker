@@ -420,17 +420,17 @@ namespace CodeWalker.World
             {
                 AddRpfYnds(rpffile, yndentries);
             }
-            foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load nodes from current dlc rpfs
-            {
-                foreach (var rpffile in dlcrpf.Children)
-                {
-                    AddRpfYnds(rpffile, yndentries);
-                }
-            }
             var updrpf = rpfman.FindRpfFile("update\\update.rpf"); //load nodes from patch area...
             if (updrpf != null)
             {
                 foreach (var rpffile in updrpf.Children)
+                {
+                    AddRpfYnds(rpffile, yndentries);
+                }
+            }
+            foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load nodes from current dlc rpfs
+            {
+                foreach (var rpffile in dlcrpf.Children)
                 {
                     AddRpfYnds(rpffile, yndentries);
                 }
@@ -1199,7 +1199,7 @@ namespace CodeWalker.World
         }
 
 
-        public SpaceRayIntersectResult RayIntersect(Ray ray, float maxdist = float.MaxValue)
+        public SpaceRayIntersectResult RayIntersect(Ray ray, float maxdist = float.MaxValue, bool[] layers = null)
         {
             var res = new SpaceRayIntersectResult();
             if (GameFileCache == null) return res;
@@ -1225,6 +1225,7 @@ namespace CodeWalker.World
             float polyhittestdist = 0;
             bool hit = false;
             BoundPolygon hitpoly = null;
+            BoundMaterial_s hitmat = new BoundMaterial_s();
             Vector3 hitnorm = Vector3.Zero;
             Vector3 hitpos = Vector3.Zero;
             while (cell != null)
@@ -1233,6 +1234,12 @@ namespace CodeWalker.World
                 {
                     foreach (var bound in cell.BoundsList)
                     {
+                        uint l = bound.Layer;
+                        if ((layers != null) && (l < 3))
+                        {
+                            if (!layers[l]) continue;
+                        }
+
                         box.Minimum = bound.Min;
                         box.Maximum = bound.Max;
                         float boxhitdisttest;
@@ -1395,6 +1402,10 @@ namespace CodeWalker.World
                                                                 hit = true;
                                                                 hitnorm = n1;
                                                                 hitpoly = polygon;
+
+                                                                byte matind = ((bgeom.PolygonMaterialIndices != null) && (p < bgeom.PolygonMaterialIndices.Length)) ? bgeom.PolygonMaterialIndices[p] : (byte)0;
+                                                                BoundMaterial_s mat = ((bgeom.Materials != null) && (matind < bgeom.Materials.Length)) ? bgeom.Materials[matind] : new BoundMaterial_s();
+                                                                hitmat = mat;
                                                             }
                                                             polytestcount++;
                                                         }
@@ -1474,6 +1485,7 @@ namespace CodeWalker.World
             res.Hit = hit;
             res.HitDist = itemhitdist;
             res.HitPolygon = hitpoly;
+            res.Material = hitmat;
             res.Position = hitpos;
             res.Normal = hitnorm;
 
@@ -1731,7 +1743,7 @@ namespace CodeWalker.World
         public const int CellCount = 500; //cells along a side, total cell count is this squared
         public const int LastCell = CellCount - 1; //the last cell index in the array
         public const float WorldSize = 10000.0f; //max world grid size +/- 10000 units
-        public const float CellSize = 2.0f * WorldSize / (float)CellCount;//20.0f; //size of a cell
+        public const float CellSize = 2.0f * WorldSize / (float)CellCount;//40.0f; //size of a cell
         public const float CellSizeInv = 1.0f / CellSize; //inverse of the cell size.
         public const float CellSizeHalf = CellSize * 0.5f; //half the cell size
 
@@ -2013,7 +2025,7 @@ namespace CodeWalker.World
         public float CellSizeInv; //inverse of the cell size.
         public int CellCountX = 100;
         public int CellCountY = 100;
-        public float CornerX = -6000.0f;
+        public float CornerX = -6000.0f;//max = -6000+(100*150) = 9000
         public float CornerY = -6000.0f;
 
         public SpaceNavGrid()
@@ -2043,7 +2055,10 @@ namespace CodeWalker.World
         }
 
 
-
+        public Vector3 GetCellRel(Vector3 p)//float value in cell coords
+        {
+            return (p - new Vector3(CornerX, CornerY, 0)) * CellSizeInv;
+        }
         public Vector2I GetCellPos(Vector3 p)
         {
             Vector3 ind = (p - new Vector3(CornerX, CornerY, 0)) * CellSizeInv;
@@ -2069,7 +2084,15 @@ namespace CodeWalker.World
         }
 
 
-
+        public Vector3 GetCellMin(SpaceNavGridCell cell)
+        {
+            Vector3 c = new Vector3(cell.X, cell.Y, 0);
+            return new Vector3(CornerX, CornerY, 0) + (c * CellSize);
+        }
+        public Vector3 GetCellMax(SpaceNavGridCell cell)
+        {
+            return GetCellMin(cell) + new Vector3(CellSize, CellSize, 0.0f);
+        }
 
     }
     public class SpaceNavGridCell
@@ -2106,6 +2129,7 @@ namespace CodeWalker.World
         public int TestedNodeCount;
         public int TestedPolyCount;
         public bool TestComplete;
+        public BoundMaterial_s Material;
     }
     public struct SpaceSphereIntersectResult
     {

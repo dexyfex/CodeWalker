@@ -1283,7 +1283,7 @@ namespace CodeWalker.GameFiles
         public string HeatsTyre { get; set; }
         public string Material { get; set; }
 
-        public Color4 Colour { get; set; }
+        public Color Colour { get; set; }
 
         public override string ToString()
         {
@@ -1293,14 +1293,19 @@ namespace CodeWalker.GameFiles
 
     public static class BoundsMaterialTypes
     {
-        private static Dictionary<string, Color4> ColourDict;
+        private static Dictionary<string, Color> ColourDict;
         private static List<BoundsMaterialData> Materials;
 
         public static void Init(GameFileCache gameFileCache)
         {
             var rpfman = gameFileCache.RpfMan;
 
-            InitColours();
+            var dic = new Dictionary<string,Color>();
+            string filename2 = "common.rpf\\data\\effects\\materialfx.dat";
+            string txt2 = rpfman.GetFileUTF8Text(filename2);
+            AddMaterialfxDat(txt2, dic);
+
+            ColourDict = dic;
 
             var list = new List<BoundsMaterialData>();
             string filename = "common.rpf\\data\\materials\\materials.dat";
@@ -1314,25 +1319,47 @@ namespace CodeWalker.GameFiles
             Materials = list;
         }
 
-        private static void InitColours()
+        //Only gets the colors
+        private static void AddMaterialfxDat(string txt, Dictionary<string, Color> dic)
         {
-            var dict = new Dictionary<string, Color4>();
-            string txt = File.ReadAllText("Materials.txt");
-            string[] lines = txt.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            for (int i = 0; i < lines.Length; i++)
+            dic.Clear();
+            if (txt == null) return;
+
+            string[] lines = txt.Split('\n');
+            string startLine = "MTLFX_TABLE_START";
+            string endLine = "MTLFX_TABLE_END";
+
+            for (int i = 1; i < lines.Length; i++)
             {
                 var line = lines[i];
-                if (line.Length < 10) continue;
+
                 if (line[0] == '#') continue;
+                if (line.StartsWith(startLine)) continue;
+                if (line.StartsWith(endLine)) break;
+
                 string[] parts = line.Split(new[] { '\t', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length != 2) continue;
-                string name = parts[0].Trim();
-                string cstr = parts[1].Trim();
-                uint cval = Convert.ToUInt32(cstr, 16);
-                Color4 c = new Color4(cval);
-                dict[name] = c;
+
+                if (parts.Length < 5) continue; // FXGroup R G B ...
+
+                int cp = 0;
+                Color c = new Color();
+                c.A = 0xFF;
+                string fxgroup = string.Empty;
+                for (int p = 0; p < parts.Length; p++)
+                {
+                    string part = parts[p].Trim();
+                    if (string.IsNullOrWhiteSpace(part)) continue;
+                    switch (cp)
+                    {
+                        case 0: fxgroup = part; break;
+                        case 1: c.R = byte.Parse(part); break;
+                        case 2: c.G = byte.Parse(part); break;
+                        case 3: c.B = byte.Parse(part); break;
+                    }
+                    cp++;
+                }
+                dic.Add(fxgroup, c);
             }
-            ColourDict = dict;
         }
 
         private static void AddMaterialsDat(string txt, List<BoundsMaterialData> list)
@@ -1384,14 +1411,14 @@ namespace CodeWalker.GameFiles
                 if (cp != 23)
                 { }
 
-                Color4 c;
-                if ((ColourDict != null) && (ColourDict.TryGetValue(d.Name, out c)))
+                Color c;
+                if ((ColourDict != null) && (ColourDict.TryGetValue(d.FXGroup, out c)))
                 {
                     d.Colour = c;
                 }
                 else
                 {
-                    d.Colour = new Color4(0xFFCCCCCC);
+                    d.Colour = new Color(0xFFCCCCCC);
                 }
 
 
@@ -1416,6 +1443,13 @@ namespace CodeWalker.GameFiles
             return Materials[type.Index];
         }
 
+        public static BoundsMaterialData GetMaterial(byte index)
+        {
+            if (Materials == null) return null;
+            if ((int)index >= Materials.Count) return null;
+            return Materials[index];
+        }
+
         public static string GetMaterialName(BoundsMaterialType type)
         {
             var m = GetMaterial(type);
@@ -1423,10 +1457,10 @@ namespace CodeWalker.GameFiles
             return m.Name;
         }
 
-        public static Color4 GetMaterialColour(BoundsMaterialType type)
+        public static Color GetMaterialColour(BoundsMaterialType type)
         {
             var m = GetMaterial(type);
-            if (m == null) return new Color4(0xFFCCCCCC);
+            if (m == null) return new Color(0xFFCCCCCC);
             return m.Colour;
         }
     }

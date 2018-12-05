@@ -4,17 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CodeWalker.GameFiles;
 
 namespace CodeWalker
 {
     public static class Vectors
     {
-
         public static Vector3 XYZ(this Vector4 v)
         {
             return new Vector3(v.X, v.Y, v.Z);
         }
-
 
         public static Vector3 Round(this Vector3 v)
         {
@@ -26,6 +25,10 @@ namespace CodeWalker
             return new Vector4((float)Math.Floor(v.X), (float)Math.Floor(v.Y), (float)Math.Floor(v.Z), (float)Math.Floor(v.W));
         }
 
+        public static Quaternion ToQuaternion(this Vector4 v)
+        {
+            return new Quaternion(v);
+        }
     }
 
 

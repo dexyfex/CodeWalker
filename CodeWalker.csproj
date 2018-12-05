@@ -328,6 +328,12 @@
     <Compile Include="Project\Panels\EditYmapCarGenPanel.Designer.cs">
       <DependentUpon>EditYmapCarGenPanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypeMloRoomPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypeMloRoomPanel.Designer.cs">
+      <DependentUpon>EditYtypArchetypeMloRoomPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\Panels\EditYmapEntityPanel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -382,11 +388,23 @@
     <Compile Include="Project\Panels\EditYnvPortalPanel.Designer.cs">
       <DependentUpon>EditYnvPortalPanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypePanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypePanel.Designer.cs">
+      <DependentUpon>EditYtypArchetypePanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\Panels\EditYtypPanel.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Project\Panels\EditYtypPanel.Designer.cs">
       <DependentUpon>EditYtypPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\GenerateNavMeshPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\GenerateNavMeshPanel.Designer.cs">
+      <DependentUpon>GenerateNavMeshPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\Panels\ProjectExplorerPanel.cs">
       <SubType>Form</SubType>
@@ -469,12 +487,6 @@
     <Compile Include="Utils\MapUtils.cs" />
     <Compile Include="GameFiles\TextureFormats.cs" />
     <Compile Include="Utils\TextureLoader.cs" />
-    <Compile Include="Project\ProjectFormOLD.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Project\ProjectFormOLD.Designer.cs">
-      <DependentUpon>ProjectFormOLD.cs</DependentUpon>
-    </Compile>
     <Compile Include="WorldInfoForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -596,6 +608,9 @@
     <EmbeddedResource Include="Project\Panels\EditYmapCarGenPanel.resx">
       <DependentUpon>EditYmapCarGenPanel.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYtypArchetypeMloRoomPanel.resx">
+      <DependentUpon>EditYtypArchetypeMloRoomPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYmapEntityPanel.resx">
       <DependentUpon>EditYmapEntityPanel.cs</DependentUpon>
     </EmbeddedResource>
@@ -623,8 +638,14 @@
     <EmbeddedResource Include="Project\Panels\EditYnvPortalPanel.resx">
       <DependentUpon>EditYnvPortalPanel.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYtypArchetypePanel.resx">
+      <DependentUpon>EditYtypArchetypePanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYtypPanel.resx">
       <DependentUpon>EditYtypPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\GenerateNavMeshPanel.resx">
+      <DependentUpon>GenerateNavMeshPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\ProjectExplorerPanel.resx">
       <DependentUpon>ProjectExplorerPanel.cs</DependentUpon>
@@ -653,9 +674,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SelectFolderForm.resx">
       <DependentUpon>SelectFolderForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Project\ProjectFormOLD.resx">
-      <DependentUpon>ProjectFormOLD.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>

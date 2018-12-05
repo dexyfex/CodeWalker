@@ -99,6 +99,12 @@ Audio stuff - do more work on .rel format  (see https://github.com/CamxxCore/Rag
 done:
 
 
+[v.30]
+Bug fixes for XML/Meta conversion
+Collision meshes now using R* colours
+Vehicle rendering improvements
+
+
 [v.29]
 Nav mesh editing (YNV) - polys, points, portals
 New Project Window

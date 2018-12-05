@@ -48,6 +48,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GameFiles\FileTypes\AwcFile.cs" />
+    <Compile Include="GameFiles\FileTypes\Builders\YndBuilder.cs" />
+    <Compile Include="GameFiles\FileTypes\Builders\YnvBuilder.cs" />
     <Compile Include="GameFiles\FileTypes\CacheDatFile.cs" />
     <Compile Include="GameFiles\FileTypes\CutFile.cs" />
     <Compile Include="GameFiles\FileTypes\DlcContentFile.cs" />
@@ -112,6 +114,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utils\BoundingBoxes.cs" />
     <Compile Include="Utils\Cache.cs" />
     <Compile Include="Utils\Matrices.cs" />
     <Compile Include="Utils\Quaternions.cs" />

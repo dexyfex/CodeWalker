@@ -1,13 +1,6 @@
 ﻿using CodeWalker.GameFiles;
 using SharpDX;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CodeWalker.Project.Panels
@@ -16,6 +9,7 @@ namespace CodeWalker.Project.Panels
     {
         public ProjectForm ProjectForm;
         public YmapEntityDef CurrentEntity { get; set; }
+        public MCEntityDef CurrentMCEntity { get; set; }
 
         private bool populatingui = false;
 
@@ -29,6 +23,8 @@ namespace CodeWalker.Project.Panels
         public void SetEntity(YmapEntityDef entity)
         {
             CurrentEntity = entity;
+            MloInstanceData instance = entity?.MloParent?.MloInstance;
+            CurrentMCEntity = instance?.TryGetArchetypeEntity(entity);
             Tag = entity;
             LoadEntity();
             UpdateFormTitle();
@@ -94,10 +90,10 @@ namespace CodeWalker.Project.Panels
             else
             {
                 populatingui = true;
-                var e = CurrentEntity.CEntityDef;
+                var e = CurrentEntity._CEntityDef;
                 var po = CurrentEntity.PivotOrientation;
                 //EntityPanel.Enabled = true;
-                EntityAddToProjectButton.Enabled = !ProjectForm.YmapExistsInProject(CurrentEntity.Ymap);
+                EntityAddToProjectButton.Enabled = CurrentEntity.Ymap != null ? !ProjectForm.YmapExistsInProject(CurrentEntity.Ymap) : !ProjectForm.YtypExistsInProject(CurrentEntity.MloParent?.Archetype?.Ytyp);
                 EntityDeleteButton.Enabled = !EntityAddToProjectButton.Enabled;
                 EntityArchetypeTextBox.Text = e.archetypeName.ToString();
                 EntityArchetypeHashLabel.Text = "Hash: " + e.archetypeName.Hash.ToString();
@@ -176,18 +172,50 @@ namespace CodeWalker.Project.Panels
             {
                 tn.Text = name;
             }
+            else
+            {
+                tn = ProjectForm.ProjectExplorer?.FindMloEntityTreeNode(CurrentMCEntity);
+                if (tn != null)
+                {
+                    tn.Text = name;
+                }
+            }
 
             if (CurrentEntity != null)
             {
                 lock (ProjectForm.ProjectSyncRoot)
                 {
                     CurrentEntity._CEntityDef.archetypeName = new MetaHash(hash);
+
+                    if (CurrentMCEntity != null)
+                    {
+                        CurrentMCEntity._Data.archetypeName = new MetaHash(hash);
+                    }
+
                     if (CurrentEntity.Archetype != arch)
                     {
                         CurrentEntity.SetArchetype(arch);
-                        ProjectForm.SetYmapHasChanged(true);
+
+                        if (CurrentEntity.IsMlo)
+                        {
+                            CurrentEntity.MloInstance.InitYmapEntityArchetypes(ProjectForm.GameFileCache);
+                        }
+
+                        ProjectItemChanged();
                     }
                 }
+            }
+        }
+
+        private void ProjectItemChanged()
+        {
+            if (CurrentEntity.Ymap != null)
+            {
+                ProjectForm.SetYmapHasChanged(true);
+            }
+            else if (CurrentEntity.MloParent?.Archetype?.Ytyp != null)
+            {
+                ProjectForm.SetYtypHasChanged(true);
             }
         }
 
@@ -209,7 +237,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.flags != flags)
                 {
                     CurrentEntity._CEntityDef.flags = flags;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.flags = flags;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -244,7 +274,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.flags != flags)
                 {
                     CurrentEntity._CEntityDef.flags = flags;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.flags = flags;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -260,7 +292,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.guid != guid)
                 {
                     CurrentEntity._CEntityDef.guid = guid;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.guid = guid;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -274,14 +308,16 @@ namespace CodeWalker.Project.Panels
             {
                 if (CurrentEntity.MloParent != null)
                 {
-                    //TODO: positioning for interior entities!
+                    v = CurrentEntity.MloParent.Position + CurrentEntity.MloParent.Orientation.Multiply(v);
+                    CurrentEntity.SetPosition(v);
+                    ProjectItemChanged();
                 }
                 else
                 {
                     if (CurrentEntity.Position != v)
                     {
                         CurrentEntity.SetPosition(v);
-                        ProjectForm.SetYmapHasChanged(true);
+                        ProjectItemChanged();
                         var wf = ProjectForm.WorldForm;
                         if (wf != null)
                         {
@@ -304,17 +340,24 @@ namespace CodeWalker.Project.Panels
             {
                 if (CurrentEntity._CEntityDef.rotation != v)
                 {
-                    Quaternion q = new Quaternion(v);
-                    CurrentEntity.SetOrientationInv(q);
-                    ProjectForm.SetYmapHasChanged(true);
+                    Quaternion q = v.ToQuaternion();
                     var wf = ProjectForm.WorldForm;
-                    if (wf != null)
+
+                    if (CurrentEntity.MloParent != null)
                     {
-                        wf.BeginInvoke(new Action(() =>
-                        {
-                            wf.SetWidgetRotation(CurrentEntity.WidgetOrientation, true);
-                        }));
+                        var world = Quaternion.Normalize(Quaternion.Multiply(q, CurrentEntity.MloParent.Orientation));
+                        CurrentEntity.SetOrientation(world);
                     }
+                    else
+                    {
+                        CurrentEntity.SetOrientation(q, true);
+                    }
+
+                    ProjectItemChanged();
+                    wf?.BeginInvoke(new Action(() =>
+                    {
+                        wf.SetWidgetRotation(CurrentEntity.WidgetOrientation, true);
+                    }));
                 }
             }
         }
@@ -331,7 +374,7 @@ namespace CodeWalker.Project.Panels
                 {
                     Vector3 newscale = new Vector3(sxy, sxy, CurrentEntity.Scale.Z);
                     CurrentEntity.SetScale(newscale);
-                    ProjectForm.SetYmapHasChanged(true);
+                    ProjectItemChanged();
                     var wf = ProjectForm.WorldForm;
                     if (wf != null)
                     {
@@ -356,7 +399,7 @@ namespace CodeWalker.Project.Panels
                 {
                     Vector3 newscale = new Vector3(CurrentEntity.Scale.X, CurrentEntity.Scale.Y, sz);
                     CurrentEntity.SetScale(newscale);
-                    ProjectForm.SetYmapHasChanged(true);
+                    ProjectItemChanged();
                     var wf = ProjectForm.WorldForm;
                     if (wf != null)
                     {
@@ -380,7 +423,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.parentIndex != pind)
                 {
                     CurrentEntity._CEntityDef.parentIndex = pind; //Needs more work for LOD linking!
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.parentIndex = pind;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -396,7 +441,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.lodDist != lodDist)
                 {
                     CurrentEntity._CEntityDef.lodDist = lodDist;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.lodDist = lodDist;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -412,7 +459,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.childLodDist != childLodDist)
                 {
                     CurrentEntity._CEntityDef.childLodDist = childLodDist;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.childLodDist = childLodDist;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -427,7 +476,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.lodLevel != lodLevel)
                 {
                     CurrentEntity._CEntityDef.lodLevel = lodLevel;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.lodLevel = lodLevel;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -443,7 +494,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.numChildren != numChildren)
                 {
                     CurrentEntity._CEntityDef.numChildren = numChildren;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.numChildren = numChildren;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -458,7 +511,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.priorityLevel != priorityLevel)
                 {
                     CurrentEntity._CEntityDef.priorityLevel = priorityLevel;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.priorityLevel = priorityLevel;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -474,7 +529,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.ambientOcclusionMultiplier != aomult)
                 {
                     CurrentEntity._CEntityDef.ambientOcclusionMultiplier = aomult;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.ambientOcclusionMultiplier = aomult;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -490,7 +547,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.artificialAmbientOcclusion != artao)
                 {
                     CurrentEntity._CEntityDef.artificialAmbientOcclusion = artao;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.artificialAmbientOcclusion = artao;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -506,7 +565,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.tintValue != tintValue)
                 {
                     CurrentEntity._CEntityDef.tintValue = tintValue;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.tintValue = tintValue;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -515,7 +576,7 @@ namespace CodeWalker.Project.Panels
         {
             if (CurrentEntity == null) return;
             if (ProjectForm.WorldForm == null) return;
-            ProjectForm.WorldForm.GoToPosition(CurrentEntity.Position);
+            ProjectForm.WorldForm.GoToPosition(CurrentEntity.Position, Vector3.One * CurrentEntity.BSRadius);
         }
 
         private void EntityNormalizeRotationButton_Click(object sender, EventArgs e)

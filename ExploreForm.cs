@@ -2201,7 +2201,9 @@ namespace CodeWalker
             var fpaths = OpenFileDialog.FileNames;
             foreach (var fpath in fpaths)
             {
+#if !DEBUG
                 try
+#endif
                 {
                     if (!File.Exists(fpath))
                     {
@@ -2254,10 +2256,13 @@ namespace CodeWalker
                     RpfFile.CreateFile(parentrpffldr, fname, data);
 
                 }
+#if !DEBUG
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message, "Unable to import file");
                 }
+#endif
+
             }
 
             CurrentFolder.ListItems = null;
