@@ -1744,7 +1744,7 @@ namespace CodeWalker
             {
                 space.BuildYndVerts(ynd);
             }
-            lock (Renderer.RenderSyncRoot)
+            //lock (Renderer.RenderSyncRoot)
             {
                 Renderer.Invalidate(ynd);
             }
@@ -1766,7 +1766,7 @@ namespace CodeWalker
             ynv.UpdateTriangleVertices();
             ynv.BuildBVH();
 
-            lock (Renderer.RenderSyncRoot)
+            //lock (Renderer.RenderSyncRoot)
             {
                 Renderer.Invalidate(ynv);
             }
@@ -1802,7 +1802,7 @@ namespace CodeWalker
             //{
             //    //space.BuildYndVerts(ynd);
             //}
-            lock (Renderer.RenderSyncRoot)
+            //lock (Renderer.RenderSyncRoot)
             {
                 Renderer.Invalidate(tt);
             }
@@ -1823,7 +1823,7 @@ namespace CodeWalker
 
             scenario.BuildVertices();
 
-            lock (Renderer.RenderSyncRoot)
+            //lock (Renderer.RenderSyncRoot)
             {
                 Renderer.Invalidate(scenario);
             }
@@ -1831,7 +1831,7 @@ namespace CodeWalker
 
         public void UpdateGrassBatchGraphics(YmapGrassInstanceBatch grassBatch)
         {
-            lock (Renderer.RenderSyncRoot)
+            //lock (Renderer.RenderSyncRoot)
             {
                 Renderer.Invalidate(grassBatch);
             }
@@ -6148,7 +6148,7 @@ namespace CodeWalker
                 ControlBrushTimer++;
                 if (ControlBrushTimer > (Input.ShiftPressed ? 5 : 10))
                 {
-                    lock (Renderer.RenderSyncRoot)
+                    //lock (Renderer.RenderSyncRoot)
                     {
                         if (ProjectForm != null && MouseLButtonDown)
                         {
