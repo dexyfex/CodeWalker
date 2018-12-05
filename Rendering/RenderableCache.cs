@@ -339,12 +339,9 @@ namespace CodeWalker.Rendering
             }
             while (itemsToInvalidate.TryPop(out item))
             {
-                //if (!item.IsLoaded) continue;//can't invalidate item that's not currently loaded
                 try
                 {
-                    Interlocked.Add(ref CacheUse, -item.DataSize);
-                    //item.Unload();
-                    item.Load(device);
+                    item.Load(device); //invalidated items just need to get reloaded. (they are already unloaded and re-inited)
                     Interlocked.Add(ref CacheUse, item.DataSize);
                 }
                 catch //(Exception ex)
@@ -387,9 +384,11 @@ namespace CodeWalker.Rendering
             {
                 if (cacheitems.TryGetValue(key, out item))
                 {
-                    itemsToInvalidate.Push(item);
                     item.Unload();
                     item.Init(key);
+                    item.LoadQueued = true;
+                    itemsToInvalidate.Push(item);
+                    Interlocked.Add(ref CacheUse, -item.DataSize);
                 }
             }
             while (itemsToUnload.TryPop(out item))
@@ -430,24 +429,6 @@ namespace CodeWalker.Rendering
             if (key == null) return;
 
             keysToInvalidate.Push(key);
-
-            //TVal item = null;
-            //if (!cacheitems.TryGetValue(key, out item)) return;
-            //if (item == null) return;
-
-            //if ((item.Key != null) && (cacheitems.ContainsKey(item.Key)))
-            //{
-
-            //    cacheitems.Remove(item.Key);
-
-            //    item.Unload();
-            //    item.LoadQueued = false;
-            //    CacheUse -= item.DataSize;
-            //    //Interlocked.Add(ref CacheUse, -item.DataSize);
-            //    Interlocked.Exchange(ref item.LastUseTime, DateTime.UtcNow.AddHours(-1).ToBinary());
-
-            //    loadeditems.Remove(item);//slow...
-            //}
 
         }
 
