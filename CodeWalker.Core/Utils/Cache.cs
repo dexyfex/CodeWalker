@@ -16,6 +16,14 @@ namespace CodeWalker
         private LinkedList<TVal> loadedList = new LinkedList<TVal>();
         private Dictionary<TKey, LinkedListNode<TVal>> loadedListDict = new Dictionary<TKey, LinkedListNode<TVal>>();
 
+        public int Count
+        {
+            get
+            {
+                return loadedList.Count;
+            }
+        }
+
         public Cache()
         {
         }

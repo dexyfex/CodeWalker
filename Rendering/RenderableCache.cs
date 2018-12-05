@@ -26,8 +26,39 @@ namespace CodeWalker.Rendering
         {
             get
             {
-                //return (GeometryCacheUse + TextureCacheUse + BoundCompCacheUse + InstanceCacheUse);
-                return (renderables.CacheUse + textures.CacheUse + boundcomps.CacheUse + instbatches.CacheUse);
+                return renderables.CacheUse
+                    + textures.CacheUse 
+                    + boundcomps.CacheUse 
+                    + instbatches.CacheUse 
+                    + distlodlights.CacheUse 
+                    + pathbatches.CacheUse 
+                    + waterquads.CacheUse;
+            }
+        }
+        public int TotalItemCount
+        {
+            get
+            {
+                return renderables.CurrentLoadedCount
+                    + textures.CurrentLoadedCount
+                    + boundcomps.CurrentLoadedCount
+                    + instbatches.CurrentLoadedCount
+                    + distlodlights.CurrentLoadedCount
+                    + pathbatches.CurrentLoadedCount
+                    + waterquads.CurrentLoadedCount;
+            }
+        }
+        public int TotalQueueLength
+        {
+            get
+            {
+                return renderables.QueueLength
+                    + textures.QueueLength
+                    + boundcomps.QueueLength
+                    + instbatches.QueueLength
+                    + distlodlights.QueueLength
+                    + pathbatches.QueueLength
+                    + waterquads.QueueLength;
             }
         }
         public int LoadedRenderableCount
@@ -189,15 +220,14 @@ namespace CodeWalker.Rendering
 
         public void Invalidate(BasePathData path)
         {
-            lock (updateSyncRoot)
+            //lock (updateSyncRoot)
             {
                 pathbatches.Invalidate(path);
             }
         }
-
         public void Invalidate(YmapGrassInstanceBatch batch)
         {
-            lock (updateSyncRoot)
+            //lock (updateSyncRoot)
             {
                 instbatches.Invalidate(batch);
             }
@@ -225,8 +255,10 @@ namespace CodeWalker.Rendering
     {
         private ConcurrentStack<TVal> itemsToLoad = new ConcurrentStack<TVal>();
         private ConcurrentStack<TVal> itemsToUnload = new ConcurrentStack<TVal>();
-        private LinkedList<TVal> loadeditems = new LinkedList<TVal>();
-        private Dictionary<TKey, TVal> cacheitems = new Dictionary<TKey, TVal>();
+        private ConcurrentStack<TVal> itemsToInvalidate = new ConcurrentStack<TVal>();
+        private ConcurrentStack<TKey> keysToInvalidate = new ConcurrentStack<TKey>();
+        private LinkedList<TVal> loadeditems = new LinkedList<TVal>();//only use from content thread!
+        private Dictionary<TKey, TVal> cacheitems = new Dictionary<TKey, TVal>();//only use from render thread!
         public long CacheLimit;
         public long CacheUse = 0;
         public double CacheTime;
@@ -240,6 +272,13 @@ namespace CodeWalker.Rendering
             LastFrameTime = DateTime.UtcNow.ToBinary();
         }
 
+        public int QueueLength
+        {
+            get
+            {
+                return itemsToLoad.Count;
+            }
+        }
         public int CurrentLoadedCount
         {
             get
@@ -257,17 +296,16 @@ namespace CodeWalker.Rendering
 
         public void Clear()
         {
-            TVal item;
-            while (itemsToLoad.TryPop(out item))
-            { }
+            itemsToLoad.Clear();
             foreach (TVal rnd in loadeditems)
             {
                 rnd.Unload();
             }
             loadeditems.Clear();
             cacheitems.Clear();
-            while (itemsToUnload.TryPop(out item))
-            { }
+            itemsToUnload.Clear();
+            itemsToInvalidate.Clear();
+            keysToInvalidate.Clear();
         }
 
 
@@ -279,7 +317,7 @@ namespace CodeWalker.Rendering
             {
                 if (item.IsLoaded) continue; //don't load it again...
                 LoadedCount++;
-                long gcachefree = CacheLimit - CacheUse;
+                long gcachefree = CacheLimit - Interlocked.Read(ref CacheUse);// CacheUse;
                 if (gcachefree > item.DataSize)
                 {
                     try
@@ -298,6 +336,21 @@ namespace CodeWalker.Rendering
                     item.LoadQueued = false; //can try load it again later..
                 }
                 if (LoadedCount >= maxitemsperloop) break;
+            }
+            while (itemsToInvalidate.TryPop(out item))
+            {
+                //if (!item.IsLoaded) continue;//can't invalidate item that's not currently loaded
+                try
+                {
+                    Interlocked.Add(ref CacheUse, -item.DataSize);
+                    //item.Unload();
+                    item.Load(device);
+                    Interlocked.Add(ref CacheUse, item.DataSize);
+                }
+                catch //(Exception ex)
+                {
+                    //todo: error handling...
+                }
             }
             return LoadedCount;
         }
@@ -329,6 +382,16 @@ namespace CodeWalker.Rendering
         {
             LastFrameTime = DateTime.UtcNow.ToBinary();
             TVal item;
+            TKey key;
+            while (keysToInvalidate.TryPop(out key))
+            {
+                if (cacheitems.TryGetValue(key, out item))
+                {
+                    itemsToInvalidate.Push(item);
+                    item.Unload();
+                    item.Init(key);
+                }
+            }
             while (itemsToUnload.TryPop(out item))
             {
                 if ((item.Key != null) && (cacheitems.ContainsKey(item.Key)))
@@ -365,22 +428,26 @@ namespace CodeWalker.Rendering
         public void Invalidate(TKey key)
         {
             if (key == null) return;
-            TVal item = null;
-            if (!cacheitems.TryGetValue(key, out item)) return;
-            if (item == null) return;
 
-            if ((item.Key != null) && (cacheitems.ContainsKey(item.Key)))
-            {
+            keysToInvalidate.Push(key);
 
-                cacheitems.Remove(item.Key);
+            //TVal item = null;
+            //if (!cacheitems.TryGetValue(key, out item)) return;
+            //if (item == null) return;
 
-                item.Unload();
-                item.LoadQueued = false;
-                Interlocked.Add(ref CacheUse, -item.DataSize);
-                Interlocked.Exchange(ref item.LastUseTime, DateTime.UtcNow.AddHours(-1).ToBinary());
+            //if ((item.Key != null) && (cacheitems.ContainsKey(item.Key)))
+            //{
 
-                loadeditems.Remove(item);//slow...
-            }
+            //    cacheitems.Remove(item.Key);
+
+            //    item.Unload();
+            //    item.LoadQueued = false;
+            //    CacheUse -= item.DataSize;
+            //    //Interlocked.Add(ref CacheUse, -item.DataSize);
+            //    Interlocked.Exchange(ref item.LastUseTime, DateTime.UtcNow.AddHours(-1).ToBinary());
+
+            //    loadeditems.Remove(item);//slow...
+            //}
 
         }
 

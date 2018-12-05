@@ -17,6 +17,7 @@ namespace CodeWalker.Rendering
         private DXForm Form;
         private GameFileCache gameFileCache;
         private RenderableCache renderableCache;
+        public RenderableCache RenderableCache { get { return renderableCache; } }
 
         private DXManager dxman = new DXManager();
         public DXManager DXMan { get { return dxman; } }

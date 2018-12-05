@@ -21,7 +21,7 @@ namespace CodeWalker
     {
         public Form Form { get { return this; } } //for DXForm/DXManager use
 
-        private Renderer Renderer = null;
+        public Renderer Renderer = null;
         public object RenderSyncRoot { get { return Renderer.RenderSyncRoot; } }
 
         volatile bool formopen = false;
@@ -7683,6 +7683,12 @@ namespace CodeWalker
         private void RenderEntitiesCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Renderer.renderentities = RenderEntitiesCheckBox.Checked;
+        }
+
+        private void StatsLabel_DoubleClick(object sender, EventArgs e)
+        {
+            var statsForm = new StatisticsForm(this);
+            statsForm.Show(this);
         }
     }
 

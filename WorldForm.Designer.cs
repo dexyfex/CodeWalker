@@ -345,7 +345,7 @@ namespace CodeWalker
             this.StatusLabel.BackColor = System.Drawing.SystemColors.Control;
             this.StatusLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(878, 17);
+            this.StatusLabel.Size = new System.Drawing.Size(847, 17);
             this.StatusLabel.Spring = true;
             this.StatusLabel.Text = "Initialising";
             this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -360,9 +360,11 @@ namespace CodeWalker
             // StatsLabel
             // 
             this.StatsLabel.BackColor = System.Drawing.SystemColors.Control;
+            this.StatsLabel.DoubleClickEnabled = true;
             this.StatsLabel.Name = "StatsLabel";
             this.StatsLabel.Size = new System.Drawing.Size(75, 17);
             this.StatsLabel.Text = "0 geometries";
+            this.StatsLabel.DoubleClick += new System.EventHandler(this.StatsLabel_DoubleClick);
             // 
             // ModelComboBox
             // 
@@ -1329,13 +1331,13 @@ namespace CodeWalker
             this.tabPage8.Text = "General";
             this.tabPage8.UseVisualStyleBackColor = true;
             // 
-            // EntitiesCheckBox
+            // RenderEntitiesCheckBox
             // 
             this.RenderEntitiesCheckBox.AutoSize = true;
             this.RenderEntitiesCheckBox.Checked = true;
             this.RenderEntitiesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.RenderEntitiesCheckBox.Location = new System.Drawing.Point(10, 32);
-            this.RenderEntitiesCheckBox.Name = "EntitiesCheckBox";
+            this.RenderEntitiesCheckBox.Name = "RenderEntitiesCheckBox";
             this.RenderEntitiesCheckBox.Size = new System.Drawing.Size(89, 17);
             this.RenderEntitiesCheckBox.TabIndex = 67;
             this.RenderEntitiesCheckBox.Text = "Show entities";

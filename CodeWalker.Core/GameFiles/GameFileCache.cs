@@ -15,7 +15,6 @@ namespace CodeWalker.GameFiles
         public RpfManager RpfMan;
         private Action<string> UpdateStatus;
         private Action<string> ErrorLog;
-        public long CurrentMemoryUsage = 0;
         public int MaxItemsPerLoop = 1; //to keep things flowing...
 
         private ConcurrentStack<GameFile> requestQueue = new ConcurrentStack<GameFile>();
@@ -87,6 +86,32 @@ namespace CodeWalker.GameFiles
 
         private string GTAFolder;
         private string ExcludeFolders;
+
+
+
+        public int QueueLength
+        {
+            get
+            {
+                return requestQueue.Count;
+            }
+        }
+        public int ItemCount
+        {
+            get
+            {
+                return mainCache.Count;
+            }
+        }
+        public long MemoryUsage
+        {
+            get
+            {
+                return mainCache.CurrentMemoryUsage;
+            }
+        }
+
+
 
         public GameFileCache(long size, double cacheTime, string folder, string dlc, bool mods, string excludeFolders)
         {
