@@ -936,6 +936,10 @@ namespace CodeWalker.Rendering
         public rage__fwGrassInstanceListDef__InstanceData[] GrassInstanceData { get; set; }
         public GpuSBuffer<rage__fwGrassInstanceListDef__InstanceData> GrassInstanceBuffer { get; set; }
         public int InstanceCount { get; set; }
+        public Vector3 AABBMin { get; set; }
+        public Vector3 AABBMax { get; set; }
+        public Vector3 Position { get; set; }
+        public Vector3 CamRel { get; set; }
 
         public override void Init(YmapGrassInstanceBatch batch)
         {
@@ -955,6 +959,12 @@ namespace CodeWalker.Rendering
 
         public override void Load(Device device)
         {
+            if (Key != null)
+            {
+                AABBMin = Key.AABBMin;
+                AABBMax = Key.AABBMax;
+                Position = Key.Position;
+            }
             if ((GrassInstanceData != null) && (GrassInstanceData.Length > 0))
             {
                 GrassInstanceBuffer = new GpuSBuffer<rage__fwGrassInstanceListDef__InstanceData>(device, GrassInstanceData);

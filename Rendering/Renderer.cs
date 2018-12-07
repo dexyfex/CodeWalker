@@ -2081,6 +2081,8 @@ namespace CodeWalker.Rendering
                 if (!(rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))) continue; //not loaded yet
                 if ((instb == null) || !instb.IsLoaded) continue;
 
+                instb.CamRel = instb.Position - camera.Position;//to gracefully handle batch size changes
+
                 RenderableInstanceBatchInst binst = new RenderableInstanceBatchInst();
                 binst.Batch = instb;
                 binst.Renderable = rndbl;

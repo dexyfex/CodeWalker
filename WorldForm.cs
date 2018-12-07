@@ -1431,10 +1431,16 @@ namespace CodeWalker
                     }
                 }
             }
-            if ((selectionItem.GrassBatch != null) || (selectionItem.ArchetypeExtension != null) || (selectionItem.EntityExtension != null) || (selectionItem.CollisionBounds != null))
+            if ((selectionItem.ArchetypeExtension != null) || (selectionItem.EntityExtension != null) || (selectionItem.CollisionBounds != null))
             {
                 bbmin = selectionItem.AABB.Minimum;
                 bbmax = selectionItem.AABB.Maximum;
+                scale = Vector3.One;
+            }
+            if (selectionItem.GrassBatch != null)
+            {
+                bbmin = selectionItem.GrassBatch.AABBMin;
+                bbmax = selectionItem.GrassBatch.AABBMax;
                 scale = Vector3.One;
             }
             if (selectionItem.NavPoly != null)
@@ -3368,7 +3374,6 @@ namespace CodeWalker
                 SelectItem(ms);
             }
         }
-
         public void SelectGrassBatch(YmapGrassInstanceBatch batch)
         {
             if (batch == null)

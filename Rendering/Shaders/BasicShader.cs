@@ -699,7 +699,7 @@ namespace CodeWalker.Rendering
             if (batch.GrassInstanceBuffer == null)
                 return;
 
-            VSEntityVars.Vars.CamRel = new Vector4(gb.CamRel, 0.0f);
+            VSEntityVars.Vars.CamRel = new Vector4(batch.CamRel, 0.0f);
             VSEntityVars.Vars.Orientation = Quaternion.Identity;
             VSEntityVars.Vars.Scale = Vector3.One;
             VSEntityVars.Vars.HasSkeleton = 0;
@@ -711,13 +711,13 @@ namespace CodeWalker.Rendering
 
             InstGlobalVars.SetVSCBuffer(context, 5);
 
-            InstLocalVars.Vars.vecBatchAabbMin = gb.AABBMin;
-            InstLocalVars.Vars.vecBatchAabbDelta = gb.AABBMax - gb.AABBMin;
-            InstLocalVars.Vars.vecPlayerPos = new Vector4(gb.Position - gb.CamRel, 1.0f);
+            InstLocalVars.Vars.vecBatchAabbMin = batch.AABBMin;
+            InstLocalVars.Vars.vecBatchAabbDelta = batch.AABBMax - batch.AABBMin;
+            InstLocalVars.Vars.vecPlayerPos = new Vector4(batch.Position - batch.CamRel, 1.0f);
             InstLocalVars.Vars._vecCollParams = new Vector2(2.0f, -3.0f);//range, offset
             InstLocalVars.Vars.fadeAlphaDistUmTimer = new Vector4(0.0f);
             InstLocalVars.Vars.uMovementParams = new Vector4(0.0f);
-            InstLocalVars.Vars._fakedGrassNormal = new Vector4(Vector3.Normalize(-gb.CamRel), 0.0f);
+            InstLocalVars.Vars._fakedGrassNormal = new Vector4(Vector3.Normalize(-batch.CamRel), 0.0f);
             InstLocalVars.Vars.gScaleRange = gb.Batch.ScaleRange;
             InstLocalVars.Vars.gWindBendingGlobals = new Vector4(WindVector.X, WindVector.Y, 1.0f, 1.0f);
             InstLocalVars.Vars.gWindBendScaleVar = new Vector2(WindVector.Z, WindVector.W);
