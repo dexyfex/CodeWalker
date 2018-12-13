@@ -29,8 +29,8 @@ namespace CodeWalker.GameFiles
         public CTimeCycleModifier[] CTimeCycleModifiers { get; set; }
         public MetaHash[] physicsDictionaries { get; set; }
 
-        public Unk_975711773[] CBoxOccluders { get; set; }
-        public Unk_2741784237[] COccludeModels { get; set; }
+        public BoxOccluder[] CBoxOccluders { get; set; }
+        public OccludeModel[] COccludeModels { get; set; }
 
 
         public string[] Strings { get; set; }
@@ -435,7 +435,7 @@ namespace CodeWalker.GameFiles
 
         private void EnsureBoxOccluders(Meta meta)
         {
-            CBoxOccluders = MetaTypes.ConvertDataArray<Unk_975711773>(Meta, (MetaName)975711773, CMapData.boxOccluders);
+            CBoxOccluders = MetaTypes.ConvertDataArray<BoxOccluder>(Meta, MetaName.BoxOccluder, CMapData.boxOccluders);
             if (CBoxOccluders != null)
             {
                 BoxOccluders = new YmapBoxOccluder[CBoxOccluders.Length];
@@ -448,7 +448,7 @@ namespace CodeWalker.GameFiles
 
         private void EnsureOccludeModels(Meta meta)
         {
-            COccludeModels = MetaTypes.ConvertDataArray<Unk_2741784237>(Meta, (MetaName)2741784237, CMapData.occludeModels);
+            COccludeModels = MetaTypes.ConvertDataArray<OccludeModel>(Meta, MetaName.OccludeModel, CMapData.occludeModels);
             if (COccludeModels != null)
             {
                 OccludeModels = new YmapOccludeModel[COccludeModels.Length];
@@ -2214,13 +2214,13 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class YmapOccludeModel
     {
-        public Unk_2741784237 _OccludeModel;
-        public Unk_2741784237 OccludeModel { get { return _OccludeModel; } set { _OccludeModel = value; } }
+        public OccludeModel _OccludeModel;
+        public OccludeModel OccludeModel { get { return _OccludeModel; } set { _OccludeModel = value; } }
 
         public YmapFile Ymap { get; set; }
 
 
-        public YmapOccludeModel(YmapFile ymap, Unk_2741784237 model)
+        public YmapOccludeModel(YmapFile ymap, OccludeModel model)
         {
             Ymap = ymap;
             _OccludeModel = model;
@@ -2230,12 +2230,12 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class YmapBoxOccluder
     {
-        public Unk_975711773 _Box;
-        public Unk_975711773 Box { get { return _Box; } set { _Box = value; } }
+        public BoxOccluder _Box;
+        public BoxOccluder Box { get { return _Box; } set { _Box = value; } }
 
         public YmapFile Ymap { get; set; }
 
-        public YmapBoxOccluder(YmapFile ymap, Unk_975711773 box)
+        public YmapBoxOccluder(YmapFile ymap, BoxOccluder box)
         {
             Ymap = ymap;
             _Box = box;

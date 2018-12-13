@@ -570,6 +570,23 @@ namespace CodeWalker.GameFiles
         public uint Unk_Ch { get; set; } = 0x00000000;
         public PsoStructureEntryInfo[] Entries { get; set; }
 
+
+        public PsoStructureInfo()
+        { }
+        public PsoStructureInfo(MetaName nameHash, byte type, byte unk, int length, params PsoStructureEntryInfo[] entries)
+        {
+            IndexInfo = new PsoElementIndexInfo();
+            IndexInfo.NameHash = nameHash;
+            IndexInfo.Offset = 0; //todo: fix?
+
+            Type = type;
+            EntriesCount = (short)(entries?.Length ?? 0);
+            Unk = unk;
+            StructureLength = length;
+            Unk_Ch = 0;
+            Entries = entries;
+        }
+
         public override void Read(DataReader reader)
         {
             uint x = reader.ReadUInt32();
@@ -578,6 +595,9 @@ namespace CodeWalker.GameFiles
             this.Unk = (byte)((x & 0x00FF0000) >> 16);
             this.StructureLength = reader.ReadInt32();
             this.Unk_Ch = reader.ReadUInt32();
+
+            if (Unk_Ch != 0)
+            { }
 
             Entries = new PsoStructureEntryInfo[EntriesCount];
             for (int i = 0; i < EntriesCount; i++)
@@ -639,6 +659,18 @@ namespace CodeWalker.GameFiles
         public ushort DataOffset { get; set; }
         public uint ReferenceKey { get; set; } // when array -> entry index with type
 
+
+        public PsoStructureEntryInfo()
+        { }
+        public PsoStructureEntryInfo(MetaName nameHash, PsoDataType type, ushort offset, byte unk, MetaName refKey)
+        {
+            EntryNameHash = nameHash;
+            Type = type;
+            Unk_5h = unk;
+            DataOffset = offset;
+            ReferenceKey = (uint)refKey;
+        }
+
         public void Read(DataReader reader)
         {
             this.EntryNameHash = (MetaName)reader.ReadUInt32();
@@ -672,6 +704,19 @@ namespace CodeWalker.GameFiles
         public byte Type { get; private set; } = 1;
         public int EntriesCount { get; private set; }
         public PsoEnumEntryInfo[] Entries { get; set; }
+
+
+        public PsoEnumInfo()
+        { }
+        public PsoEnumInfo(MetaName nameHash, byte type, params PsoEnumEntryInfo[] entries)
+        {
+            IndexInfo = new PsoElementIndexInfo();
+            IndexInfo.NameHash = nameHash;
+            IndexInfo.Offset = 0; //todo: fix?
+
+            EntriesCount = entries?.Length ?? 0;
+            Entries = entries;
+        }
 
         public override void Read(DataReader reader)
         {
@@ -728,6 +773,15 @@ namespace CodeWalker.GameFiles
     {
         public MetaName EntryNameHash { get; set; }
         public int EntryKey { get; set; }
+
+
+        public PsoEnumEntryInfo()
+        { }
+        public PsoEnumEntryInfo(MetaName nameHash, int key)
+        {
+            EntryNameHash = nameHash;
+            EntryKey = key;
+        }
 
         public void Read(DataReader reader)
         {

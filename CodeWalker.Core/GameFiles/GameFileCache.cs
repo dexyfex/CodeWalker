@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -166,6 +167,7 @@ namespace CodeWalker.GameFiles
 
                 //TestAudioYmts();
                 //TestMetas();
+                //TestPsos();
                 //TestYcds();
                 //TestYmaps();
                 //TestPlacements();
@@ -2202,6 +2204,56 @@ namespace CodeWalker.GameFiles
 
             string str = MetaTypes.GetTypesInitString();
 
+        }
+        public void TestPsos()
+        {
+            //find all PSO meta files and generate the PsoTypes init code
+            PsoTypes.Clear();
+
+            var exceptions = new List<Exception>();
+            var allpsos = new List<string>();
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    try
+                    {
+                        var n = entry.NameLower;
+                        var fentry = entry as RpfFileEntry;
+                        var data = entry.File.ExtractFile(fentry); //kind of slow, but sure to catch all PSO files
+                        if (data != null)
+                        {
+                            using (MemoryStream ms = new MemoryStream(data))
+                            {
+                                if (PsoFile.IsPSO(ms))
+                                {
+                                    UpdateStatus(string.Format(entry.Path));
+
+                                    var pso = new PsoFile();
+                                    pso.Load(ms);
+
+                                    allpsos.Add(fentry.Path);
+
+                                    PsoTypes.EnsurePsoTypes(pso);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                        exceptions.Add(ex);
+                    }
+                }
+            }
+
+            string allpsopaths = string.Join("\r\n", allpsos);
+
+            string str = PsoTypes.GetTypesInitString();
+            if (!string.IsNullOrEmpty(str))
+            {
+            }
         }
         public void TestYcds()
         {

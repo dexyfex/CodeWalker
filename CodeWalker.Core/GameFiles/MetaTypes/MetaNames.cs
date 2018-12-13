@@ -3293,9 +3293,9 @@ namespace CodeWalker.GameFiles
         ////SectionUNKNOWN2 = 1185771007, //CCompositeEntityType
         //SectionUNKNOWN3 = 1980345114,
         ////SectionUNKNOWN4 = 2085051229,
-        //SectionUNKNOWN5 = 2741784237, //occludeModels
+        //SectionUNKNOWN5 = 2741784237, //OccludeModel
         ////SectionUNKNOWN6 = 3985044770,
-        //SectionUNKNOWN7 = 975711773, //boxOccluders
+        //SectionUNKNOWN7 = 975711773, //BoxOccluder
         //SectionUNKNOWN8 = 3430328684,//0xCC76A96C,
         VECTOR3 = 3805007828,//0xe2cbcfd4, //this hash isn't correct, but is used in CDistantLODLight
 
@@ -3407,6 +3407,25 @@ namespace CodeWalker.GameFiles
 
 
 
+        CWanted__Tunables__WantedLevel = 4209402831,
+        AFF_AVERAGE = 2722191879,
+        AFF_RICH = 1119317219,
+        TS_HIGH = 956599249,
+        StdDoorOpenPosDir = 2885011506,
+        CDataFileMgr__DataFile = 4025199407,
+        CDataFileMgr__ContentChangeSet = 2958929574,
+        DataFileType = 3864419067,
+        DataFileContents = 655728054,
+        CONTENTS_DEFAULT = 507224223,
+        InstallPartition = 2685892631,
+        PARTITION_NONE = 3712881064,
+        ExecutionConditions = 1196731409,
+        ExecutionCondition = 2539760734,
+        CTxdRelationship = 3649202799,
+        child = 54445749,
+        LODLights = 1326371921,
+        BoxOccluder = 975711773,
+        OccludeModel = 2741784237,
 
 
 
@@ -3535,6 +3554,13 @@ namespace CodeWalker.GameFiles
         CClassNameOfItemType = 440716365, //array type for (PSO) MAP fields
         zones = 2319609287,
         spName = 4254542050,
+        CInteriorBoundsFiles = 741495440,
+        PortalIdx = 1061685079,
+        RoomIdx = 3136588885,
+        LinkType = 1812903871,
+        MaxOcclusion = 3034993422,
+        IsDoor = 474556907,
+        IsGlass = 1060358829,
 
 
         //from rubidium / dav90 PSO XML / zonebind

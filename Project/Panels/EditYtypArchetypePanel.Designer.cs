@@ -547,13 +547,14 @@
             // 
             // EntitySetsListBox
             // 
-            this.EntitySetsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.EntitySetsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntitySetsListBox.CheckOnClick = true;
             this.EntitySetsListBox.FormattingEnabled = true;
             this.EntitySetsListBox.Location = new System.Drawing.Point(11, 42);
             this.EntitySetsListBox.Name = "EntitySetsListBox";
-            this.EntitySetsListBox.Size = new System.Drawing.Size(603, 214);
+            this.EntitySetsListBox.Size = new System.Drawing.Size(603, 319);
             this.EntitySetsListBox.TabIndex = 2;
             this.EntitySetsListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.EntitySetsListBox_ItemCheck);
             // 

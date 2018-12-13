@@ -629,9 +629,9 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.entities, 96, MetaStructureEntryDataType.Array, 0, 8, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)372253349),
                      new MetaStructureEntryInfo_s(MetaName.containerLods, 112, MetaStructureEntryDataType.Array, 0, 10, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)975711773),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.BoxOccluder),
                      new MetaStructureEntryInfo_s(MetaName.boxOccluders, 128, MetaStructureEntryDataType.Array, 4, 12, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)2741784237),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.OccludeModel),
                      new MetaStructureEntryInfo_s(MetaName.occludeModels, 144, MetaStructureEntryDataType.Array, 4, 14, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.physicsDictionaries, 160, MetaStructureEntryDataType.Array, 0, 16, 0),
@@ -776,8 +776,8 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.numExitPortals, 152, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.MLOInstflags, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
                     );
-                case (MetaName)975711773:
-                    return new MetaStructureInfo((MetaName)975711773, 1831736438, 256, 16,
+                case MetaName.BoxOccluder:
+                    return new MetaStructureInfo(MetaName.BoxOccluder, 1831736438, 256, 16,
                      new MetaStructureEntryInfo_s(MetaName.iCenterX, 0, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.iCenterY, 2, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.iCenterZ, 4, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
@@ -787,8 +787,8 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.iHeight, 12, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.iSinZ, 14, MetaStructureEntryDataType.SignedShort, 0, 0, 0)
                     );
-                case (MetaName)2741784237:
-                    return new MetaStructureInfo((MetaName)2741784237, 1172796107, 1024, 64,
+                case MetaName.OccludeModel:
+                    return new MetaStructureInfo(MetaName.OccludeModel, 1172796107, 1024, 64,
                      new MetaStructureEntryInfo_s(MetaName.bmin, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.bmax, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.dataSize, 32, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
@@ -2808,7 +2808,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct Unk_975711773 //16 bytes, Key:1831736438   //boxOccluders
+    [TC(typeof(EXP))] public struct BoxOccluder //16 bytes, Key:1831736438   //boxOccluders
     {
         public short iCenterX { get; set; } //0   0: SignedShort: 0: 48026296
         public short iCenterY { get; set; } //2   2: SignedShort: 0: 896907229
@@ -2820,7 +2820,7 @@ namespace CodeWalker.GameFiles
         public short iSinZ { get; set; } //14   14: SignedShort: 0: iSinZ
     }
 
-    [TC(typeof(EXP))] public struct Unk_2741784237 //64 bytes, Key:1172796107  //occludeModels
+    [TC(typeof(EXP))] public struct OccludeModel //64 bytes, Key:1172796107  //occludeModels
     {
         public Vector3 bmin { get; set; } //0   0: Float_XYZ: 0: bmin
         public float Unused0 { get; set; }//12
