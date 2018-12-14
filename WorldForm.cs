@@ -1118,6 +1118,10 @@ namespace CodeWalker
                 case MapSelectionMode.Grass:
                     change = change || (LastMouseHit.GrassBatch != PrevMouseHit.GrassBatch);
                     break;
+                case MapSelectionMode.Occlusion:
+                    change = change || (LastMouseHit.BoxOccluder != PrevMouseHit.BoxOccluder)
+                                    || (LastMouseHit.OccludeModel != PrevMouseHit.OccludeModel);
+                    break;
                 case MapSelectionMode.WaterQuad:
                     change = change || (LastMouseHit.WaterQuad != PrevMouseHit.WaterQuad);
                     break;
@@ -1188,6 +1192,14 @@ namespace CodeWalker
             if (CurMouseHit.CarGenerator != null)
             {
                 ori = CurMouseHit.CarGenerator.Orientation;
+            }
+            if (CurMouseHit.BoxOccluder != null)
+            {
+                ori = CurMouseHit.BoxOccluder.Orientation;
+            }
+            if (CurMouseHit.OccludeModel != null)
+            {
+                //ori = CurMouseHit.OccludeModel.Orientation;
             }
             if (CurMouseHit.MloEntityDef != null)
             {
@@ -1442,6 +1454,14 @@ namespace CodeWalker
                 bbmin = selectionItem.GrassBatch.AABBMin;
                 bbmax = selectionItem.GrassBatch.AABBMax;
                 scale = Vector3.One;
+            }
+            if (selectionItem.BoxOccluder != null)
+            {
+                var bo = selectionItem.BoxOccluder;
+                camrel = bo.Position - camera.Position;
+                ori = bo.Orientation;
+                bbmin = bo.BBMin;
+                bbmax = bo.BBMax;
             }
             if (selectionItem.NavPoly != null)
             {
@@ -2684,7 +2704,40 @@ namespace CodeWalker
                     }
                 }
             }
+            if ((SelectionMode == MapSelectionMode.Occlusion) && (ymap.BoxOccluders != null))
+            {
+                for (int i = 0; i < ymap.BoxOccluders.Length; i++)
+                {
+                    var bo = ymap.BoxOccluders[i];
+                    if ((bo.Position - camera.Position).Length() > dmax) continue;
 
+                    MapBox mb = new MapBox();
+                    mb.CamRelPos = bo.Position - camera.Position;
+                    mb.BBMin = bo.BBMin;
+                    mb.BBMax = bo.BBMax;
+                    mb.Orientation = bo.Orientation;
+                    mb.Scale = Vector3.One;
+                    Renderer.BoundingBoxes.Add(mb);
+
+                    Quaternion orinv = Quaternion.Invert(bo.Orientation);
+                    Ray mraytrn = new Ray();
+                    mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos);
+                    mraytrn.Direction = orinv.Multiply(mray.Direction);
+                    bbox.Minimum = mb.BBMin;
+                    bbox.Maximum = mb.BBMax;
+                    if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
+                    {
+                        CurMouseHit.BoxOccluder = bo;
+                        CurMouseHit.HitDist = hitdist;
+                        CurMouseHit.CamRel = mb.CamRelPos;
+                        CurMouseHit.AABB = bbox;
+                    }
+                }
+            }
+            if ((SelectionMode == MapSelectionMode.Occlusion) && (ymap.OccludeModels != null))
+            {
+                //TODO
+            }
 
         }
         private void UpdateMouseHits(List<WaterQuad> waterquads)
@@ -3651,6 +3704,16 @@ namespace CodeWalker
             {
                 SelectionEntityTabPage.Text = "Grass";
                 SelEntityPropertyGrid.SelectedObject = item.GrassBatch;
+            }
+            else if (item.BoxOccluder != null)
+            {
+                SelectionEntityTabPage.Text = "Box Occluder";
+                SelEntityPropertyGrid.SelectedObject = item.BoxOccluder;
+            }
+            else if (item.OccludeModel != null)
+            {
+                SelectionEntityTabPage.Text = "Occlude Model";
+                SelEntityPropertyGrid.SelectedObject = item.OccludeModel;
             }
             else if (item.WaterQuad != null)
             {
@@ -5830,6 +5893,10 @@ namespace CodeWalker
                     mode = MapSelectionMode.Audio;
                     ToolbarSelectAudioButton.Checked = true;
                     break;
+                case "Occlusion":
+                    mode = MapSelectionMode.Occlusion;
+                    ToolbarSelectOcclusionButton.Checked = true;
+                    break;
 
             }
             SelectionMode = mode;
@@ -7446,6 +7513,12 @@ namespace CodeWalker
         private void ToolbarSelectAudioButton_Click(object sender, EventArgs e)
         {
             SetSelectionMode("Audio");
+            SetMouseSelect(true);
+        }
+
+        private void ToolbarSelectOcclusionButton_Click(object sender, EventArgs e)
+        {
+            SetSelectionMode("Occlusion");
             SetMouseSelect(true);
         }
 

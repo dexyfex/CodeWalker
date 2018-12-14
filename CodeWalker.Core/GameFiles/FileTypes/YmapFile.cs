@@ -2235,10 +2235,39 @@ namespace CodeWalker.GameFiles
 
         public YmapFile Ymap { get; set; }
 
+
+        public Vector3 Position { get; set; }
+        public Vector3 Size { get; set; }
+        public Vector3 BBMin { get; set; }
+        public Vector3 BBMax { get; set; }
+        public Quaternion Orientation { get; set; }
+
+
         public YmapBoxOccluder(YmapFile ymap, BoxOccluder box)
         {
             Ymap = ymap;
             _Box = box;
+
+
+            Vector3 ymapbbmin = ymap._CMapData.entitiesExtentsMin;
+            Vector3 ymapbbmax = ymap._CMapData.entitiesExtentsMax;
+            Vector3 ymapbbrng = ymapbbmax - ymapbbmin;
+
+
+            Vector3 boxcenter = new Vector3(box.iCenterX, box.iCenterY, box.iCenterZ) / 4.0f;// / 32767.0f;
+            Vector3 boxsize = new Vector3(box.iLength, box.iWidth, box.iHeight) / 4.0f;// / 32767.0f;
+
+            Position = boxcenter;// * ymapbbrng;
+            Size = boxsize;// * ymapbbrng;
+            BBMin = Size * -0.5f;
+            BBMax = Size * 0.5f;
+
+            float cosz = box.iCosZ / 32767.0f;// ((float)short.MaxValue)
+            float sinz = box.iSinZ / 32767.0f;
+
+            float angl = (float)Math.Atan2(cosz, sinz);
+            Orientation = Quaternion.RotationYawPitchRoll(0.0f, 0.0f, angl);
+
         }
 
     }

@@ -285,6 +285,7 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
+            this.ToolbarSelectOcclusionButton = new System.Windows.Forms.ToolStripMenuItem();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -345,7 +346,7 @@ namespace CodeWalker
             this.StatusLabel.BackColor = System.Drawing.SystemColors.Control;
             this.StatusLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(847, 17);
+            this.StatusLabel.Size = new System.Drawing.Size(878, 17);
             this.StatusLabel.Spring = true;
             this.StatusLabel.Text = "Initialising";
             this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1048,7 +1049,8 @@ namespace CodeWalker
             "Distant Lod Lights",
             "Mlo Instance",
             "Scenario",
-            "Audio"});
+            "Audio",
+            "Occlusion"});
             this.SelectionModeComboBox.Location = new System.Drawing.Point(51, 30);
             this.SelectionModeComboBox.Name = "SelectionModeComboBox";
             this.SelectionModeComboBox.Size = new System.Drawing.Size(121, 21);
@@ -2694,7 +2696,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(554, 25);
+            this.Toolbar.Size = new System.Drawing.Size(585, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -2851,7 +2853,8 @@ namespace CodeWalker
             this.ToolbarSelectDistantLodLightsButton,
             this.ToolbarSelectMloInstanceButton,
             this.ToolbarSelectScenarioButton,
-            this.ToolbarSelectAudioButton});
+            this.ToolbarSelectAudioButton,
+            this.ToolbarSelectOcclusionButton});
             this.ToolbarSelectButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSelectButton.Image")));
             this.ToolbarSelectButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ToolbarSelectButton.Name = "ToolbarSelectButton";
@@ -3258,6 +3261,13 @@ namespace CodeWalker
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
             // 
+            // ToolbarSelectOcclusionButton
+            // 
+            this.ToolbarSelectOcclusionButton.Name = "ToolbarSelectOcclusionButton";
+            this.ToolbarSelectOcclusionButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectOcclusionButton.Text = "Occlusion";
+            this.ToolbarSelectOcclusionButton.Click += new System.EventHandler(this.ToolbarSelectOcclusionButton_Click);
+            // 
             // WorldForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3599,5 +3609,6 @@ namespace CodeWalker
         private System.Windows.Forms.NumericUpDown SnapGridSizeUpDown;
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox RenderEntitiesCheckBox;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarSelectOcclusionButton;
     }
 }

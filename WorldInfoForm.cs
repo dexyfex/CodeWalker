@@ -114,6 +114,16 @@ namespace CodeWalker
                 SelectionEntityTabPage.Text = "Grass";
                 SelEntityPropertyGrid.SelectedObject = item.GrassBatch;
             }
+            else if (item.BoxOccluder != null)
+            {
+                SelectionEntityTabPage.Text = "Box Occluder";
+                SelEntityPropertyGrid.SelectedObject = item.BoxOccluder;
+            }
+            else if (item.OccludeModel != null)
+            {
+                SelectionEntityTabPage.Text = "Occlude Model";
+                SelEntityPropertyGrid.SelectedObject = item.OccludeModel;
+            }
             else if (item.WaterQuad != null)
             {
                 SelectionEntityTabPage.Text = "Water Quad";
