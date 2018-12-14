@@ -455,6 +455,9 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < COccludeModels.Length; i++)
                 {
                     OccludeModels[i] = new YmapOccludeModel(this, COccludeModels[i]);
+
+                    OccludeModels[i].Load(Meta);
+
                 }
             }
         }
@@ -2212,18 +2215,59 @@ namespace CodeWalker.GameFiles
 
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class YmapOccludeModel
+    public class YmapOccludeModel : BasePathData
     {
         public OccludeModel _OccludeModel;
         public OccludeModel OccludeModel { get { return _OccludeModel; } set { _OccludeModel = value; } }
 
         public YmapFile Ymap { get; set; }
 
+        public byte[] Data { get; set; }
+        public Vector3[] Vertices { get; set; }
+        public byte[] Indices { get; set; }
 
         public YmapOccludeModel(YmapFile ymap, OccludeModel model)
         {
             Ymap = ymap;
             _OccludeModel = model;
+        }
+
+
+        public void Load(Meta meta)
+        {
+            var vptr = _OccludeModel.verts;
+            var dataSize = _OccludeModel.dataSize;
+            var indicesOffset = _OccludeModel.Unk_853977995;
+            var vertexCount = indicesOffset / 12;
+            var indexCount = (int)(dataSize - indicesOffset);// / 4;
+            Data = MetaTypes.GetByteArray(meta, vptr, dataSize);
+            Vertices = MetaTypes.ConvertDataArray<Vector3>(Data, 0, vertexCount);
+            Indices = new byte[indexCount];
+            Buffer.BlockCopy(Data, indicesOffset, Indices, 0, indexCount);
+        }
+
+
+        public EditorVertex[] GetTriangleVertices()
+        {
+            if ((Vertices == null) || (Indices == null)) return null;
+            EditorVertex[] res = new EditorVertex[Indices.Length];//changing from indexed to nonindexed triangle list
+            var colour = new Color4(1.0f, 1.0f, 1.0f, 0.2f); //todo: colours for occlude models? currently transparent white
+            var colourval = (uint)colour.ToRgba();
+            for (int i = 0; i < Indices.Length; i++)
+            {
+                res[i].Position = Vertices[Indices[i]];
+                res[i].Colour = colourval;
+            }
+            return res;
+        }
+
+        public EditorVertex[] GetPathVertices()
+        {
+            return null;
+        }
+        public Vector4[] GetNodePositions()
+        {
+            return null;
         }
     }
 
@@ -2248,17 +2292,8 @@ namespace CodeWalker.GameFiles
             Ymap = ymap;
             _Box = box;
 
-
-            Vector3 ymapbbmin = ymap._CMapData.entitiesExtentsMin;
-            Vector3 ymapbbmax = ymap._CMapData.entitiesExtentsMax;
-            Vector3 ymapbbrng = ymapbbmax - ymapbbmin;
-
-
-            Vector3 boxcenter = new Vector3(box.iCenterX, box.iCenterY, box.iCenterZ) / 4.0f;// / 32767.0f;
-            Vector3 boxsize = new Vector3(box.iLength, box.iWidth, box.iHeight) / 4.0f;// / 32767.0f;
-
-            Position = boxcenter;// * ymapbbrng;
-            Size = boxsize;// * ymapbbrng;
+            Position = new Vector3(box.iCenterX, box.iCenterY, box.iCenterZ) / 4.0f;
+            Size = new Vector3(box.iLength, box.iWidth, box.iHeight) / 4.0f;
             BBMin = Size * -0.5f;
             BBMax = Size * 0.5f;
 

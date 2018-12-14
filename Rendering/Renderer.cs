@@ -1433,6 +1433,15 @@ namespace CodeWalker.Rendering
             }
         }
 
+        public void RenderBasePath(BasePathData basepath)
+        {
+            RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(basepath);
+            if ((rnd != null) && (rnd.IsLoaded))
+            {
+                shaders.Enqueue(rnd);
+            }
+        }
+
         public void RenderScenarios(List<YmtFile> ymts)
         {
             foreach (var scenario in ymts)

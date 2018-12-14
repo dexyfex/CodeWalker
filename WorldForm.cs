@@ -2736,7 +2736,13 @@ namespace CodeWalker
             }
             if ((SelectionMode == MapSelectionMode.Occlusion) && (ymap.OccludeModels != null))
             {
-                //TODO
+                for (int i = 0; i < ymap.OccludeModels.Length; i++)
+                {
+                    var om = ymap.OccludeModels[i];
+
+                    Renderer.RenderBasePath(om);
+
+                }
             }
 
         }

@@ -1728,6 +1728,21 @@ namespace CodeWalker.GameFiles
             Buffer.BlockCopy(ptrblock.Data, (int)ptroffset, data, 0, count);
             return data;
         }
+        public static byte[] GetByteArray(Meta meta, DataBlockPointer ptr, uint count)
+        {
+            //var pointer = array.Pointer;
+            uint ptrindex = ptr.PointerDataIndex;// (pointer & 0xFFF) - 1;
+            uint ptroffset = ptr.PointerDataOffset;// ((pointer >> 12) & 0xFFFFF);
+            var ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
+            if ((ptrblock == null) || (ptrblock.Data == null))// || (ptrblock.StructureNameHash != name))
+            { return null; } //no block or wrong block? shouldn't happen!
+            //var count = array.Count1;
+            if ((ptroffset + count) > ptrblock.Data.Length)
+            { return null; }
+            byte[] data = new byte[count];
+            Buffer.BlockCopy(ptrblock.Data, (int)ptroffset, data, 0, (int)count);
+            return data;
+        }
 
 
         public static T[] GetTypedDataArray<T>(Meta meta, MetaName name) where T : struct
