@@ -1068,7 +1068,10 @@ namespace CodeWalker
             MainListView.VirtualListSize = 0;
             if (CurrentFolder != null)
             {
-                CurrentFolder.ListItems = null; //makes sure to rebuild the current files list
+                if (!CurrentFolder.IsSearchResults)
+                {
+                    CurrentFolder.ListItems = null; //makes sure to rebuild the current files list
+                }
                 CurrentFiles = CurrentFolder.GetListItems();
 
                 foreach (var file in CurrentFiles) //cache all the data for use by the list view.
