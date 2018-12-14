@@ -3426,6 +3426,8 @@ namespace CodeWalker.GameFiles
         LODLights = 1326371921,
         BoxOccluder = 975711773,
         OccludeModel = 2741784237,
+        sirenLight = 4091688452,
+        sirenCorona = 472016577,
 
 
 

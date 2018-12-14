@@ -1763,4 +1763,15 @@ namespace CodeWalker.GameFiles
     }
 
 
+
+
+    public enum MetaFormat
+    {
+        XML = 0,
+        RSC = 1,
+        PSO = 2,
+        RBF = 3,
+        CacheFile = 4,
+    }
+
 }

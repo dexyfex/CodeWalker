@@ -44,7 +44,7 @@ namespace CodeWalker
         private GameFileCache FileCache { get; set; } = GameFileCacheFactory.Create();
         private object FileCacheSyncRoot = new object();
 
-        private bool EditMode = false;
+        public bool EditMode { get; private set; } = false;
 
         public ThemeBase Theme { get; private set; }
 
@@ -905,7 +905,6 @@ namespace CodeWalker
             RecurseAddMainTreeViewNodes(f, CurrentFolder.TreeNode);
 
             CurrentFolder.AddChild(f);
-            CurrentFolder.ListItems = null;
 
             RefreshMainListView();
         }
@@ -1053,11 +1052,23 @@ namespace CodeWalker
             }
         }
 
+        public void RefreshMainListViewInvoke()
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(() => { RefreshMainListView(); }));
+            }
+            else
+            {
+                RefreshMainListView();
+            }
+        }
         private void RefreshMainListView()
         {
             MainListView.VirtualListSize = 0;
             if (CurrentFolder != null)
             {
+                CurrentFolder.ListItems = null; //makes sure to rebuild the current files list
                 CurrentFiles = CurrentFolder.GetListItems();
 
                 foreach (var file in CurrentFiles) //cache all the data for use by the list view.
@@ -1314,6 +1325,13 @@ namespace CodeWalker
             try
 #endif
             {
+                var exform = FindExistingForm(item?.File);
+                if (exform != null)
+                {
+                    exform.Focus();
+                    return;
+                }
+
                 byte[] data = null;
                 string name = "";
                 string path = "";
@@ -1469,35 +1487,35 @@ namespace CodeWalker
         private void ViewYmt(string name, string path, byte[] data, RpfFileEntry e)
         {
             var ymt = RpfFile.GetFile<YmtFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(ymt);
         }
         private void ViewYmf(string name, string path, byte[] data, RpfFileEntry e)
         {
             var ymf = RpfFile.GetFile<YmfFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(ymf);
         }
         private void ViewYmap(string name, string path, byte[] data, RpfFileEntry e)
         {
             var ymap = RpfFile.GetFile<YmapFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(ymap);
         }
         private void ViewYtyp(string name, string path, byte[] data, RpfFileEntry e)
         {
             var ytyp = RpfFile.GetFile<YtypFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(ytyp);
         }
         private void ViewJPso(string name, string path, byte[] data, RpfFileEntry e)
         {
             var pso = RpfFile.GetFile<JPsoFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(pso);
         }
@@ -1538,7 +1556,7 @@ namespace CodeWalker
         private void ViewCut(string name, string path, byte[] data, RpfFileEntry e)
         {
             var cut = RpfFile.GetFile<CutFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(cut);
         }
@@ -1594,9 +1612,26 @@ namespace CodeWalker
         private void ViewCacheDat(string name, string path, byte[] data, RpfFileEntry e)
         {
             var cachedat = RpfFile.GetFile<CacheDatFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(cachedat);
+        }
+
+
+        private Form FindExistingForm(RpfFileEntry e)
+        {
+            if (e == null) return null;
+            var allforms = Application.OpenForms;
+            var path = e.Path.ToLowerInvariant();
+            foreach (var form in allforms)
+            {
+                var metaform = form as MetaForm;
+                if (metaform?.rpfFileEntry == e) return metaform;
+                if (metaform?.rpfFileEntry?.Path?.ToLowerInvariant() == path)
+                    return metaform; //need to test the path as well since the file entry may have been replaced by a new version..!
+
+            }
+            return null;
         }
 
 
@@ -2265,7 +2300,6 @@ namespace CodeWalker
 
             }
 
-            CurrentFolder.ListItems = null;
             RefreshMainListView();
 
         }
@@ -2407,7 +2441,6 @@ namespace CodeWalker
                 }
             }
 
-            CurrentFolder.ListItems = null;
             RefreshMainListView();
         }
         private void CopySelected()

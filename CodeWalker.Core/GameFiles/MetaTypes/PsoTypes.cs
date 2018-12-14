@@ -487,18 +487,18 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.leftTailLightMultiples, PsoDataType.UByte, 122, 0, 0),
                      new PsoStructureEntryInfo(MetaName.rightTailLightMultiples, PsoDataType.UByte, 123, 0, 0),
                      new PsoStructureEntryInfo(MetaName.useRealLights, PsoDataType.Bool, 124, 0, 0),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)4091688452),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.sirenLight),
                      new PsoStructureEntryInfo((MetaName)2047330294, PsoDataType.Array, 128, 1, (MetaName)1310739)
                     );
                 case (MetaName)188820339:
                     return new PsoStructureInfo((MetaName)188820339, 0, 0, 16,
                      new PsoStructureEntryInfo(MetaName.sequencer, PsoDataType.UInt, 8, 0, 0)
                     );
-                case (MetaName)4091688452:
-                    return new PsoStructureInfo((MetaName)4091688452, 0, 0, 112,
+                case MetaName.sirenLight:
+                    return new PsoStructureInfo(MetaName.sirenLight, 0, 0, 112,
                      new PsoStructureEntryInfo(MetaName.rotation, PsoDataType.Structure, 8, 0, (MetaName)1356743507),
                      new PsoStructureEntryInfo(MetaName.flashiness, PsoDataType.Structure, 40, 0, (MetaName)1356743507),
-                     new PsoStructureEntryInfo(MetaName.corona, PsoDataType.Structure, 72, 0, (MetaName)472016577),
+                     new PsoStructureEntryInfo(MetaName.corona, PsoDataType.Structure, 72, 0, MetaName.sirenCorona),
                      new PsoStructureEntryInfo(MetaName.color, PsoDataType.UInt, 96, 1, 0),
                      new PsoStructureEntryInfo(MetaName.intensity, PsoDataType.Float, 100, 0, 0),
                      new PsoStructureEntryInfo(MetaName.lightGroup, PsoDataType.UByte, 104, 0, 0),
@@ -520,8 +520,8 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.direction, PsoDataType.Bool, 25, 0, 0),
                      new PsoStructureEntryInfo(MetaName.syncToBpm, PsoDataType.Bool, 26, 0, 0)
                     );
-                case (MetaName)472016577:
-                    return new PsoStructureInfo((MetaName)472016577, 0, 0, 24,
+                case MetaName.sirenCorona:
+                    return new PsoStructureInfo(MetaName.sirenCorona, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.intensity, PsoDataType.Float, 8, 0, 0),
                      new PsoStructureEntryInfo(MetaName.size, PsoDataType.Float, 12, 0, 0),
                      new PsoStructureEntryInfo(MetaName.pull, PsoDataType.Float, 16, 0, 0),
