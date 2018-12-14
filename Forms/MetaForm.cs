@@ -332,7 +332,9 @@ namespace CodeWalker.Forms
 
             byte[] data = null;
 
+#if !DEBUG
             try
+#endif
             {
                 switch (metaFormat)
                 {
@@ -358,11 +360,13 @@ namespace CodeWalker.Forms
                         return false;
                 }
             }
+#if !DEBUG
             catch (Exception ex)
             {
-                MessageBox.Show("Exception encountered!\r\n" + ex.Message, "Cannot convert XML");
+                MessageBox.Show("Exception encountered!\r\n" + ex.ToString(), "Cannot convert XML");
                 return false;
             }
+#endif
             if (data == null)
             {
                 MessageBox.Show("Schema not supported. (Unspecified error - data was null!)", "Cannot convert XML");
@@ -393,7 +397,7 @@ namespace CodeWalker.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error saving file to RPF! The RPF archive may be corrupted...\r\n" + ex.Message, "Really Bad Error");
+                MessageBox.Show("Error saving file to RPF! The RPF archive may be corrupted...\r\n" + ex.ToString(), "Really Bad Error");
             }
 
             return false;

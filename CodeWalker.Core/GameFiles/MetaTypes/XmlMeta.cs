@@ -179,9 +179,11 @@ namespace CodeWalker.GameFiles
                         case MetaStructureEntryDataType.IntFlags1:
                         case MetaStructureEntryDataType.IntFlags2:
                             {
-                                var _infos = MetaTypes.GetEnumInfo(entry.ReferenceKey);
-
-                                mb.AddEnumInfo(_infos.EnumNameHash);
+                                if (entry.ReferenceKey != 0)
+                                {
+                                    var _infos = MetaTypes.GetEnumInfo(entry.ReferenceKey);
+                                    mb.AddEnumInfo(_infos.EnumNameHash);
+                                }
 
                                 int val = GetEnumInt(entry.ReferenceKey, cnode.InnerText, entry.DataType);
                                 Write(val, data, entry.DataOffset);
@@ -190,9 +192,11 @@ namespace CodeWalker.GameFiles
 
                         case MetaStructureEntryDataType.ShortFlags:
                             {
-                                var _infos = MetaTypes.GetEnumInfo(entry.ReferenceKey);
-
-                                mb.AddEnumInfo(_infos.EnumNameHash);
+                                if (entry.ReferenceKey != 0)
+                                {
+                                    var _infos = MetaTypes.GetEnumInfo(entry.ReferenceKey);
+                                    mb.AddEnumInfo(_infos.EnumNameHash);
+                                }
 
                                 int val = GetEnumInt(entry.ReferenceKey, cnode.InnerText, entry.DataType);
                                 Write((short)val, data, entry.DataOffset);
