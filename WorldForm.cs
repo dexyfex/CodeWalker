@@ -2728,6 +2728,7 @@ namespace CodeWalker
                     if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
                     {
                         CurMouseHit.BoxOccluder = bo;
+                        CurMouseHit.OccludeModel = null;
                         CurMouseHit.HitDist = hitdist;
                         CurMouseHit.CamRel = mb.CamRelPos;
                         CurMouseHit.AABB = bbox;
@@ -2741,6 +2742,26 @@ namespace CodeWalker
                     var om = ymap.OccludeModels[i];
 
                     Renderer.RenderBasePath(om);
+
+                    MapBox mb = new MapBox();
+                    mb.CamRelPos = -camera.Position;
+                    mb.BBMin = om._OccludeModel.bmin;
+                    mb.BBMax = om._OccludeModel.bmax;
+                    mb.Orientation = Quaternion.Identity;// bo.Orientation;
+                    mb.Scale = Vector3.One;
+                    Renderer.BoundingBoxes.Add(mb);
+
+
+                    bbox.Minimum = mb.BBMin;
+                    bbox.Maximum = mb.BBMax;
+                    if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
+                    {
+                        CurMouseHit.BoxOccluder = null;
+                        CurMouseHit.OccludeModel = om;
+                        CurMouseHit.HitDist = hitdist;
+                        CurMouseHit.CamRel = mb.CamRelPos;
+                        CurMouseHit.AABB = bbox;
+                    }
 
                 }
             }

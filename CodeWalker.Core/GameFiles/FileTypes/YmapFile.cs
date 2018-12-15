@@ -442,6 +442,7 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < CBoxOccluders.Length; i++)
                 {
                     BoxOccluders[i] = new YmapBoxOccluder(this, CBoxOccluders[i]);
+                    BoxOccluders[i].Index = i;
                 }
             }
         }
@@ -455,7 +456,7 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < COccludeModels.Length; i++)
                 {
                     OccludeModels[i] = new YmapOccludeModel(this, COccludeModels[i]);
-
+                    OccludeModels[i].Index = i;
                     OccludeModels[i].Load(Meta);
 
                 }
@@ -2225,6 +2226,7 @@ namespace CodeWalker.GameFiles
         public byte[] Data { get; set; }
         public Vector3[] Vertices { get; set; }
         public byte[] Indices { get; set; }
+        public int Index { get; set; }
 
         public YmapOccludeModel(YmapFile ymap, OccludeModel model)
         {
@@ -2285,6 +2287,7 @@ namespace CodeWalker.GameFiles
         public Vector3 BBMin { get; set; }
         public Vector3 BBMax { get; set; }
         public Quaternion Orientation { get; set; }
+        public int Index { get; set; }
 
 
         public YmapBoxOccluder(YmapFile ymap, BoxOccluder box)

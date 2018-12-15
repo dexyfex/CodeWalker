@@ -358,11 +358,11 @@ namespace CodeWalker
             }
             else if (BoxOccluder != null)
             {
-                name = "BoxOccluder " + (BoxOccluder.Ymap?.Name ?? "");
+                name = "BoxOccluder " + (BoxOccluder.Ymap?.Name ?? "") + ": " + BoxOccluder.Index.ToString();
             }
             else if (OccludeModel != null)
             {
-                name = "OccludeModel " + (OccludeModel.Ymap?.Name ?? "");
+                name = "OccludeModel " + (OccludeModel.Ymap?.Name ?? "") + ": " + OccludeModel.Index.ToString();
             }
             else if (CollisionBounds != null)
             {
@@ -444,11 +444,11 @@ namespace CodeWalker
             }
             if (BoxOccluder != null)
             {
-                name = "BoxOccluder " + (BoxOccluder.Ymap?.Name ?? "");
+                name = "BoxOccluder " + (BoxOccluder.Ymap?.Name ?? "") + ": " + BoxOccluder.Index.ToString();
             }
             if (OccludeModel != null)
             {
-                name = "OccludeModel " + (OccludeModel.Ymap?.Name ?? "");
+                name = "OccludeModel " + (OccludeModel.Ymap?.Name ?? "") + ": " + OccludeModel.Index.ToString();
             }
             if (CarGenerator != null)
             {
