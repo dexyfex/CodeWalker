@@ -5928,6 +5928,7 @@ namespace CodeWalker
             }
             SelectionMode = mode;
             SelectionModeStr = modestr;
+            Renderer.SelectionMode = mode;
 
             if (SelectionModeComboBox.Text != modestr)
             {

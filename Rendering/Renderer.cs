@@ -110,6 +110,8 @@ namespace CodeWalker.Rendering
         private List<RenderSkeletonItem> renderskeletonlist = new List<RenderSkeletonItem>();
         private List<VertexTypePC> skeletonLineVerts = new List<VertexTypePC>();
 
+        public MapSelectionMode SelectionMode = MapSelectionMode.Entity; //to assist in rendering embedded collisions properly...
+
 
         public BoundsShaderMode boundsmode = BoundsShaderMode.None;
         public bool renderboundsclip = Settings.Default.BoundsDepthClip;
@@ -1599,7 +1601,7 @@ namespace CodeWalker.Rendering
                     //todo: render parent if children loading.......
                 }
 
-                if (ent.IsMlo && rendercollisionmeshes && renderinteriors)
+                if ((rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision)) && renderinteriors)
                 {
                     RenderInteriorCollisionMesh(ent);
                 }
@@ -2030,7 +2032,7 @@ namespace CodeWalker.Rendering
                                     RenderArchetype(intarch, intent);
                                 }
                             }
-                            if (rendercollisionmeshes)
+                            if (rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision))
                             {
                                 RenderInteriorCollisionMesh(entity);
                             }
@@ -2336,7 +2338,7 @@ namespace CodeWalker.Rendering
             float distance = (camrel + bscen).Length();
 
 
-            if (rendercollisionmeshes && rendercollisionmeshlayerdrawable)
+            if ((rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision)) && rendercollisionmeshlayerdrawable)
             {
                 Drawable sdrawable = rndbl.Key as Drawable;
                 if ((sdrawable != null) && (sdrawable.Bound != null))
