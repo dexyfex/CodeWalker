@@ -4739,514 +4739,424 @@ namespace CodeWalker.Project
         }
         public void OnWorldSelectionModified(MapSelection sel, List<MapSelection> items)
         {
-            if (sel.MultipleSelection)
-            {
-                //TODO!!
-            }
-            else if (sel.EntityDef != null)
-            {
-                OnWorldEntityModified(sel.EntityDef);
-            }
-            else if (sel.CarGenerator != null)
-            {
-                OnWorldCarGenModified(sel.CarGenerator);
-            }
-            else if (sel.PathNode != null)
-            {
-                OnWorldPathNodeModified(sel.PathNode, sel.PathLink);
-            }
-            else if (sel.NavPoly != null)
-            {
-                OnWorldNavPolyModified(sel.NavPoly);
-            }
-            else if (sel.NavPoint != null)
-            {
-                OnWorldNavPointModified(sel.NavPoint);
-            }
-            else if (sel.NavPortal != null)
-            {
-                OnWorldNavPortalModified(sel.NavPortal);
-            }
-            else if (sel.TrainTrackNode != null)
-            {
-                OnWorldTrainNodeModified(sel.TrainTrackNode);
-            }
-            else if (sel.ScenarioNode != null)
-            {
-                OnWorldScenarioNodeModified(sel.ScenarioNode);
-            }
-            else if (sel.Audio != null)
-            {
-                OnWorldAudioPlacementModified(sel.Audio);
-            }
-        }
-        private void OnWorldEntityModified(YmapEntityDef ent)
-        {
             try
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { OnWorldEntityModified(ent); }));
+                    BeginInvoke(new Action(() => { OnWorldSelectionModified(sel, items); }));
                 }
                 else
                 {
-                    if ((ent.Ymap == null) && (ent.MloParent == null))
+                    if (sel.MultipleSelection)
                     {
-                        return;//TODO: properly handle interior entities!
+                        //TODO!!
                     }
-
-                    if (CurrentProjectFile == null)
+                    else if (sel.EntityDef != null)
                     {
-                        NewProject();
+                        OnWorldEntityModified(sel.EntityDef);
                     }
-
-                    if (ent.MloParent == null && ent.Ymap != null)
+                    else if (sel.CarGenerator != null)
                     {
-                        if (!YmapExistsInProject(ent.Ymap))
+                        OnWorldCarGenModified(sel.CarGenerator);
+                    }
+                    else if (sel.PathNode != null)
+                    {
+                        OnWorldPathNodeModified(sel.PathNode, sel.PathLink);
+                    }
+                    else if (sel.NavPoly != null)
+                    {
+                        OnWorldNavPolyModified(sel.NavPoly);
+                    }
+                    else if (sel.NavPoint != null)
+                    {
+                        OnWorldNavPointModified(sel.NavPoint);
+                    }
+                    else if (sel.NavPortal != null)
+                    {
+                        OnWorldNavPortalModified(sel.NavPortal);
+                    }
+                    else if (sel.TrainTrackNode != null)
+                    {
+                        OnWorldTrainNodeModified(sel.TrainTrackNode);
+                    }
+                    else if (sel.ScenarioNode != null)
+                    {
+                        OnWorldScenarioNodeModified(sel.ScenarioNode);
+                    }
+                    else if (sel.Audio != null)
+                    {
+                        OnWorldAudioPlacementModified(sel.Audio);
+                    }
+                }
+            }
+            catch { }
+        }
+        private void OnWorldEntityModified(YmapEntityDef ent)
+        {
+            if ((ent.Ymap == null) && (ent.MloParent == null))
+            {
+                return;//TODO: properly handle interior entities!
+            }
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            if (ent.MloParent == null && ent.Ymap != null)
+            {
+                if (!YmapExistsInProject(ent.Ymap))
+                {
+                    ent.Ymap.HasChanged = true;
+                    AddYmapToProject(ent.Ymap);
+                    ProjectExplorer?.TrySelectEntityTreeNode(ent);
+                }
+
+                if (ent != CurrentEntity)
+                {
+                    CurrentEntity = ent;
+                    ProjectExplorer?.TrySelectEntityTreeNode(ent);
+                }
+
+                if (ent == CurrentEntity)
+                {
+                    ShowEditYmapEntityPanel(false);
+
+                    if (ent.Ymap != null)
+                    {
+                        SetYmapHasChanged(true);
+                    }
+                }
+            }
+            else if (ent.MloParent != null && ent.Ymap == null)
+            {
+                MloInstanceData mloInstance = ent.MloParent?.MloInstance;
+                if (mloInstance != null)
+                {
+                    var mcEntity = mloInstance.TryGetArchetypeEntity(ent);
+                    if (mcEntity != null)
+                    {
+                        if (!YtypExistsInProject(ent.MloParent.Archetype.Ytyp))
                         {
-                            ent.Ymap.HasChanged = true;
-                            AddYmapToProject(ent.Ymap);
-                            ProjectExplorer?.TrySelectEntityTreeNode(ent);
+                            ent.MloParent.Archetype.Ytyp.HasChanged = true;
+                            AddYtypToProject(ent.MloParent.Archetype.Ytyp);
+                            ProjectExplorer?.TrySelectMloEntityTreeNode(mcEntity);
                         }
 
                         if (ent != CurrentEntity)
                         {
                             CurrentEntity = ent;
-                            ProjectExplorer?.TrySelectEntityTreeNode(ent);
-                        }
-
-                        if (ent == CurrentEntity)
-                        {
-                            ShowEditYmapEntityPanel(false);
-
-                            if (ent.Ymap != null)
-                            {
-                                SetYmapHasChanged(true);
-                            }
-                        }
-                    }
-                    else if (ent.MloParent != null && ent.Ymap == null)
-                    {
-                        MloInstanceData mloInstance = ent.MloParent?.MloInstance;
-                        if (mloInstance != null)
-                        {
-                            var mcEntity = mloInstance.TryGetArchetypeEntity(ent);
-                            if (mcEntity != null)
-                            {
-                                if (!YtypExistsInProject(ent.MloParent.Archetype.Ytyp))
-                                {
-                                    ent.MloParent.Archetype.Ytyp.HasChanged = true;
-                                    AddYtypToProject(ent.MloParent.Archetype.Ytyp);
-                                    ProjectExplorer?.TrySelectMloEntityTreeNode(mcEntity);
-                                }
-
-                                if (ent != CurrentEntity)
-                                {
-                                    CurrentEntity = ent;
-                                    ProjectExplorer?.TrySelectMloEntityTreeNode(mcEntity);
-                                }
-                            }
-                        }
-
-                        if (ent == CurrentEntity)
-                        {
-                            ShowEditYmapEntityPanel(false);
-
-                            if (ent.MloParent.Archetype.Ytyp != null)
-                            {
-                                SetYtypHasChanged(true);
-                            }
+                            ProjectExplorer?.TrySelectMloEntityTreeNode(mcEntity);
                         }
                     }
                 }
+
+                if (ent == CurrentEntity)
+                {
+                    ShowEditYmapEntityPanel(false);
+
+                    if (ent.MloParent.Archetype.Ytyp != null)
+                    {
+                        SetYtypHasChanged(true);
+                    }
+                }
             }
-            catch { }
         }
         private void OnWorldCarGenModified(YmapCarGen cargen)
         {
-            try
+            if (cargen?.Ymap == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!YmapExistsInProject(cargen.Ymap))
+            {
+                cargen.Ymap.HasChanged = true;
+                AddYmapToProject(cargen.Ymap);
+                ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
+            }
+
+            if (cargen != CurrentCarGen)
+            {
+                CurrentCarGen = cargen;
+                ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
+            }
+
+            if (cargen == CurrentCarGen)
+            {
+                ShowEditYmapCarGenPanel(false);
+
+                ProjectExplorer?.UpdateCarGenTreeNode(cargen);
+
+                if (cargen.Ymap != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldCarGenModified(cargen); }));
-                }
-                else
-                {
-                    if (cargen?.Ymap == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!YmapExistsInProject(cargen.Ymap))
-                    {
-                        cargen.Ymap.HasChanged = true;
-                        AddYmapToProject(cargen.Ymap);
-                        ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
-                    }
-
-                    if (cargen != CurrentCarGen)
-                    {
-                        CurrentCarGen = cargen;
-                        ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
-                    }
-
-                    if (cargen == CurrentCarGen)
-                    {
-                        ShowEditYmapCarGenPanel(false);
-
-                        ProjectExplorer?.UpdateCarGenTreeNode(cargen);
-
-                        if (cargen.Ymap != null)
-                        {
-                            SetYmapHasChanged(true);
-                        }
-                    }
-
+                    SetYmapHasChanged(true);
                 }
             }
-            catch { }
+
         }
         private void OnWorldPathNodeModified(YndNode node, YndLink link)
         {
-            try
+            if (node?.Ynd == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!YndExistsInProject(node.Ynd))
+            {
+                node.Ynd.HasChanged = true;
+                AddYndToProject(node.Ynd);
+                ProjectExplorer?.TrySelectPathNodeTreeNode(node);
+            }
+
+            if (node != CurrentPathNode)
+            {
+                CurrentPathNode = node;
+                ProjectExplorer?.TrySelectPathNodeTreeNode(node);
+            }
+
+            //////if (link != CurrentPathLink)
+            //////{
+            //////    CurrentPathLink = link;
+            //////    ShowEditYndLinkPanel(false);
+            //////}
+
+            if (node == CurrentPathNode)
+            {
+                //////ShowEditYndPanel(false);
+                ShowEditYndNodePanel(false);
+
+                //////UpdatePathNodeTreeNode(node);
+
+                if (node.Ynd != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldPathNodeModified(node, link); }));
-                }
-                else
-                {
-                    if (node?.Ynd == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!YndExistsInProject(node.Ynd))
-                    {
-                        node.Ynd.HasChanged = true;
-                        AddYndToProject(node.Ynd);
-                        ProjectExplorer?.TrySelectPathNodeTreeNode(node);
-                    }
-
-                    if (node != CurrentPathNode)
-                    {
-                        CurrentPathNode = node;
-                        ProjectExplorer?.TrySelectPathNodeTreeNode(node);
-                    }
-
-                    //////if (link != CurrentPathLink)
-                    //////{
-                    //////    CurrentPathLink = link;
-                    //////    ShowEditYndLinkPanel(false);
-                    //////}
-
-                    if (node == CurrentPathNode)
-                    {
-                        //////ShowEditYndPanel(false);
-                        ShowEditYndNodePanel(false);
-
-                        //////UpdatePathNodeTreeNode(node);
-
-                        if (node.Ynd != null)
-                        {
-                            SetYndHasChanged(true);
-                        }
-                    }
-
+                    SetYndHasChanged(true);
                 }
             }
-            catch { }
         }
         private void OnWorldNavPolyModified(YnvPoly poly)
         {
-            try
+            if (poly?.Ynv == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!YnvExistsInProject(poly.Ynv))
+            {
+                poly.Ynv.HasChanged = true;
+                AddYnvToProject(poly.Ynv);
+                ProjectExplorer?.TrySelectNavPolyTreeNode(poly);
+            }
+
+            if (poly != CurrentNavPoly)
+            {
+                CurrentNavPoly = poly;
+                ProjectExplorer?.TrySelectNavPolyTreeNode(poly);
+            }
+
+            if (poly == CurrentNavPoly)
+            {
+                ShowEditYnvPolyPanel(false);
+
+                //////UpdateNavPolyTreeNode(poly);
+
+                if (poly.Ynv != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldNavPolyModified(poly); }));
-                }
-                else
-                {
-                    if (poly?.Ynv == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!YnvExistsInProject(poly.Ynv))
-                    {
-                        poly.Ynv.HasChanged = true;
-                        AddYnvToProject(poly.Ynv);
-                        ProjectExplorer?.TrySelectNavPolyTreeNode(poly);
-                    }
-
-                    if (poly != CurrentNavPoly)
-                    {
-                        CurrentNavPoly = poly;
-                        ProjectExplorer?.TrySelectNavPolyTreeNode(poly);
-                    }
-
-                    if (poly == CurrentNavPoly)
-                    {
-                        ShowEditYnvPolyPanel(false);
-
-                        //////UpdateNavPolyTreeNode(poly);
-
-                        if (poly.Ynv != null)
-                        {
-                            SetYnvHasChanged(true);
-                        }
-                    }
-
+                    SetYnvHasChanged(true);
                 }
             }
-            catch { }
+
         }
         private void OnWorldNavPointModified(YnvPoint point)
         {
-            try
+            if (point?.Ynv == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!YnvExistsInProject(point.Ynv))
+            {
+                point.Ynv.HasChanged = true;
+                AddYnvToProject(point.Ynv);
+                ProjectExplorer?.TrySelectNavPointTreeNode(point);
+            }
+
+            if (point != CurrentNavPoint)
+            {
+                CurrentNavPoint = point;
+                ProjectExplorer?.TrySelectNavPointTreeNode(point);
+            }
+
+            if (point == CurrentNavPoint)
+            {
+                ShowEditYnvPointPanel(false);
+
+                //////UpdateNavPointTreeNode(poly);
+
+                if (point.Ynv != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldNavPointModified(point); }));
-                }
-                else
-                {
-                    if (point?.Ynv == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!YnvExistsInProject(point.Ynv))
-                    {
-                        point.Ynv.HasChanged = true;
-                        AddYnvToProject(point.Ynv);
-                        ProjectExplorer?.TrySelectNavPointTreeNode(point);
-                    }
-
-                    if (point != CurrentNavPoint)
-                    {
-                        CurrentNavPoint = point;
-                        ProjectExplorer?.TrySelectNavPointTreeNode(point);
-                    }
-
-                    if (point == CurrentNavPoint)
-                    {
-                        ShowEditYnvPointPanel(false);
-
-                        //////UpdateNavPointTreeNode(poly);
-
-                        if (point.Ynv != null)
-                        {
-                            SetYnvHasChanged(true);
-                        }
-                    }
-
+                    SetYnvHasChanged(true);
                 }
             }
-            catch { }
+
         }
         private void OnWorldNavPortalModified(YnvPortal portal)
         {
-            try
+            if (portal?.Ynv == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!YnvExistsInProject(portal.Ynv))
+            {
+                portal.Ynv.HasChanged = true;
+                AddYnvToProject(portal.Ynv);
+                ProjectExplorer?.TrySelectNavPortalTreeNode(portal);
+            }
+
+            if (portal != CurrentNavPortal)
+            {
+                CurrentNavPortal = portal;
+                ProjectExplorer?.TrySelectNavPortalTreeNode(portal);
+            }
+
+            if (portal == CurrentNavPortal)
+            {
+                ShowEditYnvPortalPanel(false);
+
+                //////UpdateNavPortalTreeNode(poly);
+
+                if (portal.Ynv != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldNavPortalModified(portal); }));
-                }
-                else
-                {
-                    if (portal?.Ynv == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!YnvExistsInProject(portal.Ynv))
-                    {
-                        portal.Ynv.HasChanged = true;
-                        AddYnvToProject(portal.Ynv);
-                        ProjectExplorer?.TrySelectNavPortalTreeNode(portal);
-                    }
-
-                    if (portal != CurrentNavPortal)
-                    {
-                        CurrentNavPortal = portal;
-                        ProjectExplorer?.TrySelectNavPortalTreeNode(portal);
-                    }
-
-                    if (portal == CurrentNavPortal)
-                    {
-                        ShowEditYnvPortalPanel(false);
-
-                        //////UpdateNavPortalTreeNode(poly);
-
-                        if (portal.Ynv != null)
-                        {
-                            SetYnvHasChanged(true);
-                        }
-                    }
-
+                    SetYnvHasChanged(true);
                 }
             }
-            catch { }
+
         }
         private void OnWorldTrainNodeModified(TrainTrackNode node)
         {
-            try
+            if (node?.Track == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!TrainTrackExistsInProject(node.Track))
+            {
+                node.Track.HasChanged = true;
+                AddTrainTrackToProject(node.Track);
+                ProjectExplorer?.TrySelectTrainNodeTreeNode(node);
+            }
+
+            if (node != CurrentTrainNode)
+            {
+                CurrentTrainNode = node;
+                ProjectExplorer?.TrySelectTrainNodeTreeNode(node);
+            }
+
+            if (node == CurrentTrainNode)
+            {
+                ShowEditTrainNodePanel(false);
+
+                if (node.Track != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldTrainNodeModified(node); }));
-                }
-                else
-                {
-                    if (node?.Track == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!TrainTrackExistsInProject(node.Track))
-                    {
-                        node.Track.HasChanged = true;
-                        AddTrainTrackToProject(node.Track);
-                        ProjectExplorer?.TrySelectTrainNodeTreeNode(node);
-                    }
-
-                    if (node != CurrentTrainNode)
-                    {
-                        CurrentTrainNode = node;
-                        ProjectExplorer?.TrySelectTrainNodeTreeNode(node);
-                    }
-
-                    if (node == CurrentTrainNode)
-                    {
-                        ShowEditTrainNodePanel(false);
-
-                        if (node.Track != null)
-                        {
-                            SetTrainTrackHasChanged(true);
-                        }
-                    }
+                    SetTrainTrackHasChanged(true);
                 }
             }
-            catch { }
         }
         private void OnWorldScenarioNodeModified(ScenarioNode node)
         {
-            try
+            if (node?.Ymt == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!ScenarioExistsInProject(node.Ymt))
+            {
+                node.Ymt.HasChanged = true;
+                AddScenarioToProject(node.Ymt);
+                ProjectExplorer?.TrySelectScenarioNodeTreeNode(node);
+            }
+
+            if (node != CurrentScenarioNode)
+            {
+                CurrentScenarioNode = node;
+                ProjectExplorer?.TrySelectScenarioNodeTreeNode(node);
+            }
+
+            if (node == CurrentScenarioNode)
+            {
+                //ShowEditScenarioPanel(false);
+                ShowEditScenarioNodePanel(false);
+
+                if (node?.Ymt != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldScenarioNodeModified(node); }));
-                }
-                else
-                {
-                    if (node?.Ymt == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!ScenarioExistsInProject(node.Ymt))
-                    {
-                        node.Ymt.HasChanged = true;
-                        AddScenarioToProject(node.Ymt);
-                        ProjectExplorer?.TrySelectScenarioNodeTreeNode(node);
-                    }
-
-                    if (node != CurrentScenarioNode)
-                    {
-                        CurrentScenarioNode = node;
-                        ProjectExplorer?.TrySelectScenarioNodeTreeNode(node);
-                    }
-
-                    if (node == CurrentScenarioNode)
-                    {
-                        //ShowEditScenarioPanel(false);
-                        ShowEditScenarioNodePanel(false);
-
-                        if (node?.Ymt != null)
-                        {
-                            SetScenarioHasChanged(true);
-                        }
-                    }
+                    SetScenarioHasChanged(true);
                 }
             }
-            catch { }
         }
         private void OnWorldAudioPlacementModified(AudioPlacement audio)
         {
-            try
+            if (audio?.RelFile == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!AudioFileExistsInProject(audio.RelFile))
+            {
+                audio.RelFile.HasChanged = true;
+                AddAudioFileToProject(audio.RelFile);
+                if (audio.AudioZone != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldAudioPlacementModified(audio); }));
+                    ProjectExplorer?.TrySelectAudioZoneTreeNode(audio);
                 }
-                else
+                if (audio.AudioEmitter != null)
                 {
-                    if (audio?.RelFile == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!AudioFileExistsInProject(audio.RelFile))
-                    {
-                        audio.RelFile.HasChanged = true;
-                        AddAudioFileToProject(audio.RelFile);
-                        if (audio.AudioZone != null)
-                        {
-                            ProjectExplorer?.TrySelectAudioZoneTreeNode(audio);
-                        }
-                        if (audio.AudioEmitter != null)
-                        {
-                            ProjectExplorer?.TrySelectAudioEmitterTreeNode(audio);
-                        }
-                    }
-
-                    if ((audio.AudioZone != null) && (audio != CurrentAudioZone))
-                    {
-                        CurrentAudioZone = audio;
-                        ProjectExplorer?.TrySelectAudioZoneTreeNode(audio);
-                    }
-                    if ((audio.AudioEmitter != null) && (audio != CurrentAudioEmitter))
-                    {
-                        CurrentAudioEmitter = audio;
-                        ProjectExplorer?.TrySelectAudioEmitterTreeNode(audio);
-                    }
-                    if (audio == CurrentAudioZone)
-                    {
-                        ShowEditAudioZonePanel(false);
-                        if (audio.RelFile != null)
-                        {
-                            SetAudioFileHasChanged(true);
-                        }
-                    }
-                    else if (audio == CurrentAudioEmitter)
-                    {
-                        ShowEditAudioEmitterPanel(false);
-                        if (audio.RelFile != null)
-                        {
-                            SetAudioFileHasChanged(true);
-                        }
-                    }
-
+                    ProjectExplorer?.TrySelectAudioEmitterTreeNode(audio);
                 }
             }
-            catch { }
+
+            if ((audio.AudioZone != null) && (audio != CurrentAudioZone))
+            {
+                CurrentAudioZone = audio;
+                ProjectExplorer?.TrySelectAudioZoneTreeNode(audio);
+            }
+            if ((audio.AudioEmitter != null) && (audio != CurrentAudioEmitter))
+            {
+                CurrentAudioEmitter = audio;
+                ProjectExplorer?.TrySelectAudioEmitterTreeNode(audio);
+            }
+            if (audio == CurrentAudioZone)
+            {
+                ShowEditAudioZonePanel(false);
+                if (audio.RelFile != null)
+                {
+                    SetAudioFileHasChanged(true);
+                }
+            }
+            else if (audio == CurrentAudioEmitter)
+            {
+                ShowEditAudioEmitterPanel(false);
+                if (audio.RelFile != null)
+                {
+                    SetAudioFileHasChanged(true);
+                }
+            }
         }
 
 

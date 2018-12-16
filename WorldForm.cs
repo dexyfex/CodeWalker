@@ -3375,7 +3375,7 @@ namespace CodeWalker
                 if (mhit.HasValue)
                 {
                     //make sure the path link gets changed (sub-selection!)
-                    lock (Renderer.RenderSyncRoot)
+                    //lock (Renderer.RenderSyncRoot)
                     {
                         SelectedItem.PathLink = mhitv.PathLink;
                         SelectedItem.ScenarioEdge = mhitv.ScenarioEdge;
