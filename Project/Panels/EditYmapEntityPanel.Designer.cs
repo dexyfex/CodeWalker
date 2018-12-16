@@ -81,16 +81,17 @@
             this.label94 = new System.Windows.Forms.Label();
             this.EntityPivotRotationTextBox = new System.Windows.Forms.TextBox();
             this.EntityMiloTabPage = new System.Windows.Forms.TabPage();
-            this.MiloEntitySetsListBox = new System.Windows.Forms.CheckedListBox();
-            this.label2 = new System.Windows.Forms.Label();
+            this.MiloFlagsTextBox = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.MiloNumExitPortalsTextBox = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.MiloGroupIDTextBox = new System.Windows.Forms.TextBox();
             this.MiloFloorIDTextBox = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.MiloNumExitPortalsTextBox = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.MiloFlagsTextBox = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
+            this.MiloEntitySetsListBox = new System.Windows.Forms.CheckedListBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.EntityEditArchetypeButton = new System.Windows.Forms.Button();
             this.EntityTabControl.SuspendLayout();
             this.EntityGeneralTabPage.SuspendLayout();
             this.EntityLodTabPage.SuspendLayout();
@@ -117,6 +118,7 @@
             // 
             // EntityGeneralTabPage
             // 
+            this.EntityGeneralTabPage.Controls.Add(this.EntityEditArchetypeButton);
             this.EntityGeneralTabPage.Controls.Add(this.EntityFlagsCheckedListBox);
             this.EntityGeneralTabPage.Controls.Add(this.label13);
             this.EntityGeneralTabPage.Controls.Add(this.label28);
@@ -701,27 +703,39 @@
             this.EntityMiloTabPage.Text = "MLO Instance";
             this.EntityMiloTabPage.UseVisualStyleBackColor = true;
             // 
-            // MiloEntitySetsListBox
+            // MiloFlagsTextBox
             // 
-            this.MiloEntitySetsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.MiloEntitySetsListBox.CheckOnClick = true;
-            this.MiloEntitySetsListBox.FormattingEnabled = true;
-            this.MiloEntitySetsListBox.Location = new System.Drawing.Point(103, 128);
-            this.MiloEntitySetsListBox.Name = "MiloEntitySetsListBox";
-            this.MiloEntitySetsListBox.Size = new System.Drawing.Size(434, 319);
-            this.MiloEntitySetsListBox.TabIndex = 4;
-            this.MiloEntitySetsListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.MiloEntitySetsListBox_ItemCheck);
+            this.MiloFlagsTextBox.Location = new System.Drawing.Point(101, 93);
+            this.MiloFlagsTextBox.Name = "MiloFlagsTextBox";
+            this.MiloFlagsTextBox.Size = new System.Drawing.Size(154, 20);
+            this.MiloFlagsTextBox.TabIndex = 43;
+            this.MiloFlagsTextBox.TextChanged += new System.EventHandler(this.MiloFlagsTextBox_TextChanged);
             // 
-            // label2
+            // label6
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 129);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(91, 13);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "DefaultEntitySets:";
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(5, 96);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(75, 13);
+            this.label6.TabIndex = 42;
+            this.label6.Text = "MLOInstFlags:";
+            // 
+            // MiloNumExitPortalsTextBox
+            // 
+            this.MiloNumExitPortalsTextBox.Location = new System.Drawing.Point(101, 67);
+            this.MiloNumExitPortalsTextBox.Name = "MiloNumExitPortalsTextBox";
+            this.MiloNumExitPortalsTextBox.Size = new System.Drawing.Size(154, 20);
+            this.MiloNumExitPortalsTextBox.TabIndex = 41;
+            this.MiloNumExitPortalsTextBox.TextChanged += new System.EventHandler(this.MiloNumExitPortalsTextBox_TextChanged);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(5, 70);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(81, 13);
+            this.label5.TabIndex = 40;
+            this.label5.Text = "NumExitPortals:";
             // 
             // label3
             // 
@@ -757,39 +771,38 @@
             this.label4.TabIndex = 38;
             this.label4.Text = "FloorID:";
             // 
-            // MiloNumExitPortalsTextBox
+            // MiloEntitySetsListBox
             // 
-            this.MiloNumExitPortalsTextBox.Location = new System.Drawing.Point(101, 67);
-            this.MiloNumExitPortalsTextBox.Name = "MiloNumExitPortalsTextBox";
-            this.MiloNumExitPortalsTextBox.Size = new System.Drawing.Size(154, 20);
-            this.MiloNumExitPortalsTextBox.TabIndex = 41;
-            this.MiloNumExitPortalsTextBox.TextChanged += new System.EventHandler(this.MiloNumExitPortalsTextBox_TextChanged);
+            this.MiloEntitySetsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MiloEntitySetsListBox.CheckOnClick = true;
+            this.MiloEntitySetsListBox.FormattingEnabled = true;
+            this.MiloEntitySetsListBox.Location = new System.Drawing.Point(103, 128);
+            this.MiloEntitySetsListBox.Name = "MiloEntitySetsListBox";
+            this.MiloEntitySetsListBox.Size = new System.Drawing.Size(434, 319);
+            this.MiloEntitySetsListBox.TabIndex = 4;
+            this.MiloEntitySetsListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.MiloEntitySetsListBox_ItemCheck);
             // 
-            // label5
+            // label2
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(5, 70);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(81, 13);
-            this.label5.TabIndex = 40;
-            this.label5.Text = "NumExitPortals:";
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(3, 129);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(91, 13);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "DefaultEntitySets:";
             // 
-            // MiloFlagsTextBox
+            // EntityEditArchetypeButton
             // 
-            this.MiloFlagsTextBox.Location = new System.Drawing.Point(101, 93);
-            this.MiloFlagsTextBox.Name = "MiloFlagsTextBox";
-            this.MiloFlagsTextBox.Size = new System.Drawing.Size(154, 20);
-            this.MiloFlagsTextBox.TabIndex = 43;
-            this.MiloFlagsTextBox.TextChanged += new System.EventHandler(this.MiloFlagsTextBox_TextChanged);
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(5, 96);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(75, 13);
-            this.label6.TabIndex = 42;
-            this.label6.Text = "MLOInstFlags:";
+            this.EntityEditArchetypeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.EntityEditArchetypeButton.Location = new System.Drawing.Point(454, 59);
+            this.EntityEditArchetypeButton.Name = "EntityEditArchetypeButton";
+            this.EntityEditArchetypeButton.Size = new System.Drawing.Size(95, 23);
+            this.EntityEditArchetypeButton.TabIndex = 35;
+            this.EntityEditArchetypeButton.Text = "Edit Archetype...";
+            this.EntityEditArchetypeButton.UseVisualStyleBackColor = true;
+            this.EntityEditArchetypeButton.Click += new System.EventHandler(this.EntityEditArchetypeButton_Click);
             // 
             // EditYmapEntityPanel
             // 
@@ -879,5 +892,6 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox MiloFlagsTextBox;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button EntityEditArchetypeButton;
     }
 }

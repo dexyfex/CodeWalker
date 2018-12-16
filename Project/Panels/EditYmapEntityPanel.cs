@@ -801,5 +801,14 @@ namespace CodeWalker.Project.Panels
             }
             e.NewValue = CheckState.Unchecked;
         }
+
+        private void EntityEditArchetypeButton_Click(object sender, EventArgs e)
+        {
+            if (ProjectForm != null)
+            {
+                ProjectForm.SetCurrentArchetype(CurrentEntity?.Archetype);
+                ProjectForm.ShowEditArchetypePanel(true);
+            }
+        }
     }
 }

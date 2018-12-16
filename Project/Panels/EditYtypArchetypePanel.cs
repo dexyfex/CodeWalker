@@ -162,7 +162,11 @@ namespace CodeWalker.Project.Panels
                     return;
                 }
 
-                var hash = JenkHash.GenHash(TextureDictTextBox.Text);
+                var hash = 0u;
+                if (!uint.TryParse(TextureDictTextBox.Text, out hash))//don't re-hash hashes
+                {
+                    hash = JenkHash.GenHash(TextureDictTextBox.Text);
+                }
 
                 if (CurrentArchetype._BaseArchetypeDef.textureDictionary != hash)
                 {
@@ -173,10 +177,10 @@ namespace CodeWalker.Project.Panels
                         ProjectForm.SetYtypHasChanged(true);
                         return;
                     }
-                    TextureDictHashLabel.Text = "Hash: " + hash.ToString();
                     CurrentArchetype._BaseArchetypeDef.textureDictionary = hash;
                     ProjectForm.SetYtypHasChanged(true);
                 }
+                TextureDictHashLabel.Text = "Hash: " + hash.ToString();
             }
         }
 
@@ -197,7 +201,11 @@ namespace CodeWalker.Project.Panels
                     return;
                 }
 
-                var hash = JenkHash.GenHash(PhysicsDictionaryTextBox.Text);
+                var hash = 0u;
+                if (!uint.TryParse(PhysicsDictionaryTextBox.Text, out hash))//don't re-hash hashes
+                {
+                    hash = JenkHash.GenHash(PhysicsDictionaryTextBox.Text);
+                }
 
                 if (CurrentArchetype._BaseArchetypeDef.physicsDictionary != hash)
                 {
@@ -208,17 +216,20 @@ namespace CodeWalker.Project.Panels
                         ProjectForm.SetYtypHasChanged(true);
                         return;
                     }
-                    PhysicsDictHashLabel.Text = "Hash: " + hash.ToString();
-
                     CurrentArchetype._BaseArchetypeDef.physicsDictionary = hash;
                     ProjectForm.SetYtypHasChanged(true);
                 }
+                PhysicsDictHashLabel.Text = "Hash: " + hash.ToString();
             }
         }
 
         private void ArchetypeNameTextBox_TextChanged(object sender, EventArgs e)
         {
-            var hash = JenkHash.GenHash(ArchetypeNameTextBox.Text);
+            var hash = 0u;
+            if (!uint.TryParse(ArchetypeNameTextBox.Text, out hash))//don't re-hash hashes
+            {
+                hash = JenkHash.GenHash(ArchetypeNameTextBox.Text);
+            }
 
             if (CurrentArchetype._BaseArchetypeDef.name != hash)
             {
@@ -235,7 +246,11 @@ namespace CodeWalker.Project.Panels
 
         private void AssetNameTextBox_TextChanged(object sender, EventArgs e)
         {
-            var hash = JenkHash.GenHash(AssetNameTextBox.Text);
+            var hash = 0u;
+            if (!uint.TryParse(AssetNameTextBox.Text, out hash))//don't re-hash hashes
+            {
+                hash = JenkHash.GenHash(AssetNameTextBox.Text);
+            }
 
             if (CurrentArchetype._BaseArchetypeDef.assetName != hash)
             {
@@ -246,7 +261,11 @@ namespace CodeWalker.Project.Panels
 
         private void ClipDictionaryTextBox_TextChanged(object sender, EventArgs e)
         {
-            var hash = JenkHash.GenHash(ClipDictionaryTextBox.Text);
+            var hash = 0u;
+            if (!uint.TryParse(ClipDictionaryTextBox.Text, out hash))//don't re-hash hashes
+            {
+                hash = JenkHash.GenHash(ClipDictionaryTextBox.Text);
+            }
 
             if (CurrentArchetype._BaseArchetypeDef.clipDictionary != hash)
             {

@@ -231,12 +231,12 @@ namespace CodeWalker.Project
             }
             return null;
         }
-        private void ShowDefaultPanels()
+        public void ShowDefaultPanels()
         {
             ShowProjectExplorer();
             ShowWelcomePanel();
         }
-        private void ShowProjectExplorer()
+        public void ShowProjectExplorer()
         {
             if ((ProjectExplorer == null) || (ProjectExplorer.IsDisposed) || (ProjectExplorer.Disposing))
             {
@@ -251,11 +251,11 @@ namespace CodeWalker.Project
                 ProjectExplorer.Show();
             }
         }
-        private void ShowWelcomePanel()
+        public void ShowWelcomePanel()
         {
             ShowPreviewPanel(() => { return new WelcomePanel(); });
         }
-        private void ShowPreviewPanel<T>(Func<T> createFunc, Action<T> updateAction = null) where T : ProjectPanel
+        public void ShowPreviewPanel<T>(Func<T> createFunc, Action<T> updateAction = null) where T : ProjectPanel
         {
             if ((PreviewPanel != null) && (PreviewPanel is T))
             {
@@ -276,11 +276,15 @@ namespace CodeWalker.Project
                 PreviewPanel = panel;
             }
         }
-        private void ShowPanel<T>(bool promote, Func<T> createFunc, Action<T> updateAction, Func<T,bool> findFunc) where T : ProjectPanel
+        public void ShowPanel<T>(bool promote, Func<T> createFunc, Action<T> updateAction, Func<T,bool> findFunc) where T : ProjectPanel
         {
             T found = FindPanel(findFunc);
             if ((found != null) && (found != PreviewPanel))
             {
+                if (found.IsHidden)
+                {
+                    found.Show();
+                }
                 found.BringToFront();//.Show();
                 updateAction?.Invoke(found);
             }
@@ -306,159 +310,159 @@ namespace CodeWalker.Project
                 }
             }
         }
-        private void ShowEditProjectPanel(bool promote)
+        public void ShowEditProjectPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditProjectPanel(this); }, //createFunc
                 (panel) => { panel.SetProject(CurrentProjectFile); },  //updateFunc
                 (panel) => { return true; }); //findFunc
         }
-        private void ShowEditProjectManifestPanel(bool promote)
+        public void ShowEditProjectManifestPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditProjectManifestPanel(this); }, //createFunc
                 (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
                 (panel) => { return true; }); //findFunc
         }
-        private void ShowGenerateNavMeshPanel(bool promote)
+        public void ShowGenerateNavMeshPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new GenerateNavMeshPanel(this); }, //createFunc
                 (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
                 (panel) => { return true; }); //findFunc
         }
-        private void ShowEditYmapPanel(bool promote)
+        public void ShowEditYmapPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYmapPanel(this); }, //createFunc
                 (panel) => { panel.SetYmap(CurrentYmapFile); }, //updateFunc
                 (panel) => { return panel.Ymap == CurrentYmapFile; }); //findFunc
         }
-        private void ShowEditYmapEntityPanel(bool promote)
+        public void ShowEditYmapEntityPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYmapEntityPanel(this); }, //createFunc
                 (panel) => { panel.SetEntity(CurrentEntity); }, //updateFunc
                 (panel) => { return panel.CurrentEntity == CurrentEntity; }); //findFunc
         }
-        private void ShowEditYmapCarGenPanel(bool promote)
+        public void ShowEditYmapCarGenPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYmapCarGenPanel(this); }, //createFunc
                 (panel) => { panel.SetCarGen(CurrentCarGen); }, //updateFunc
                 (panel) => { return panel.CurrentCarGen == CurrentCarGen; }); //findFunc
         }
-        private void ShowEditYmapGrassBatchPanel(bool promote)
+        public void ShowEditYmapGrassBatchPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYmapGrassPanel(this); }, //createFunc
                 (panel) => { panel.SetBatch(CurrentGrassBatch); }, //updateFunc
                 (panel) => { return panel.CurrentBatch == CurrentGrassBatch; }); //findFunc
         }
-        private void ShowEditYtypPanel(bool promote)
+        public void ShowEditYtypPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYtypPanel(this); }, //createFunc
                 (panel) => { panel.SetYtyp(CurrentYtypFile); }, //updateFunc
                 (panel) => { return panel.Ytyp == CurrentYtypFile; }); //findFunc
         }
-        private void ShowEditArchetypePanel(bool promote)
+        public void ShowEditArchetypePanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYtypArchetypePanel(this); }, //createFunc
                 (panel) => { panel.SetArchetype(CurrentArchetype); }, //updateFunc
                 (panel) => { return panel.CurrentArchetype == CurrentArchetype; }); //findFunc
         }
-        private void ShowEditYndPanel(bool promote)
+        public void ShowEditYndPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYndPanel(this); }, //createFunc
                 (panel) => { panel.SetYnd(CurrentYndFile); }, //updateFunc
                 (panel) => { return panel.Ynd == CurrentYndFile; }); //findFunc
         }
-        private void ShowEditYndNodePanel(bool promote)
+        public void ShowEditYndNodePanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYndNodePanel(this); }, //createFunc
                 (panel) => { panel.SetPathNode(CurrentPathNode); }, //updateFunc
                 (panel) => { return panel.CurrentPathNode == CurrentPathNode; }); //findFunc
         }
-        private void ShowEditYnvPanel(bool promote)
+        public void ShowEditYnvPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYnvPanel(this); }, //createFunc
                 (panel) => { panel.SetYnv(CurrentYnvFile); }, //updateFunc
                 (panel) => { return panel.Ynv == CurrentYnvFile; }); //findFunc
         }
-        private void ShowEditYnvPolyPanel(bool promote)
+        public void ShowEditYnvPolyPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYnvPolyPanel(this); }, //createFunc
                 (panel) => { panel.SetYnvPoly(CurrentNavPoly); }, //updateFunc
                 (panel) => { return panel.YnvPoly == CurrentNavPoly; }); //findFunc
         }
-        private void ShowEditYnvPointPanel(bool promote)
+        public void ShowEditYnvPointPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYnvPointPanel(this); }, //createFunc
                 (panel) => { panel.SetYnvPoint(CurrentNavPoint); }, //updateFunc
                 (panel) => { return panel.YnvPoint == CurrentNavPoint; }); //findFunc
         }
-        private void ShowEditYnvPortalPanel(bool promote)
+        public void ShowEditYnvPortalPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYnvPortalPanel(this); }, //createFunc
                 (panel) => { panel.SetYnvPortal(CurrentNavPortal); }, //updateFunc
                 (panel) => { return panel.YnvPortal == CurrentNavPortal; }); //findFunc
         }
-        private void ShowEditTrainTrackPanel(bool promote)
+        public void ShowEditTrainTrackPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditTrainTrackPanel(this); }, //createFunc
                 (panel) => { panel.SetTrainTrack(CurrentTrainTrack); }, //updateFunc
                 (panel) => { return panel.Track == CurrentTrainTrack; }); //findFunc
         }
-        private void ShowEditTrainNodePanel(bool promote)
+        public void ShowEditTrainNodePanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditTrainNodePanel(this); }, //createFunc
                 (panel) => { panel.SetTrainNode(CurrentTrainNode); }, //updateFunc
                 (panel) => { return panel.TrainNode == CurrentTrainNode; }); //findFunc
         }
-        private void ShowEditScenarioYmtPanel(bool promote)
+        public void ShowEditScenarioYmtPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditScenarioYmtPanel(this); }, //createFunc
                 (panel) => { panel.SetScenarioYmt(CurrentScenario); }, //updateFunc
                 (panel) => { return panel.CurrentScenario == CurrentScenario; }); //findFunc
         }
-        private void ShowEditScenarioNodePanel(bool promote)
+        public void ShowEditScenarioNodePanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditScenarioNodePanel(this); }, //createFunc
                 (panel) => { panel.SetScenarioNode(CurrentScenarioNode); }, //updateFunc
                 (panel) => { return panel.CurrentScenarioNode == CurrentScenarioNode; }); //findFunc
         }
-        private void ShowEditYtypArchetypeMloRoomPanel(bool promote)
+        public void ShowEditYtypArchetypeMloRoomPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYtypArchetypeMloRoomPanel(this); }, //createFunc
                 (panel) => { panel.SetRoom(CurrentMloRoom); }, //updateFunc
                 (panel) => { return panel.CurrentRoom == CurrentMloRoom; }); //findFunc
         }
-        private void ShowEditAudioFilePanel(bool promote) //TODO
+        public void ShowEditAudioFilePanel(bool promote) //TODO
         {
         }
-        private void ShowEditAudioZonePanel(bool promote) //TODO
+        public void ShowEditAudioZonePanel(bool promote) //TODO
         {
         }
-        private void ShowEditAudioEmitterPanel(bool promote) //TODO
+        public void ShowEditAudioEmitterPanel(bool promote) //TODO
         {
         }
-        private void ShowEditAudioZoneListPanel(bool promote) //TODO
+        public void ShowEditAudioZoneListPanel(bool promote) //TODO
         {
         }
-        private void ShowEditAudioEmitterListPanel(bool promote) //TODO
+        public void ShowEditAudioEmitterListPanel(bool promote) //TODO
         {
         }
 
@@ -691,6 +695,14 @@ namespace CodeWalker.Project
 
             RefreshUI();
 
+        }
+        public void SetCurrentArchetype(Archetype arch)
+        {
+            CurrentArchetype = arch;
+            if (CurrentArchetype != null)
+            {
+                CurrentYtypFile = CurrentEntity?.MloParent?.Archetype?.Ytyp ?? CurrentArchetype?.Ytyp;
+            }
         }
 
         private void ClosePanel<T>(Func<T,bool> findFunc) where T : ProjectPanel

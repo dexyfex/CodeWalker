@@ -338,9 +338,9 @@
             "536870912 - Unk30",
             "1073741824 - Unk31",
             "2147483648 - Unk32"});
-            this.EntityFlagsCheckedListBox.Location = new System.Drawing.Point(422, 38);
+            this.EntityFlagsCheckedListBox.Location = new System.Drawing.Point(441, 38);
             this.EntityFlagsCheckedListBox.Name = "EntityFlagsCheckedListBox";
-            this.EntityFlagsCheckedListBox.Size = new System.Drawing.Size(201, 274);
+            this.EntityFlagsCheckedListBox.Size = new System.Drawing.Size(182, 274);
             this.EntityFlagsCheckedListBox.TabIndex = 67;
             this.EntityFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.ArchetypeFlagsCheckedListBox_ItemCheck);
             // 
