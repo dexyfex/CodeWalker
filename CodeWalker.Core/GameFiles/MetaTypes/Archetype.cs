@@ -89,7 +89,7 @@ namespace CodeWalker.GameFiles
         public uint TimeFlags { get; set; }
         public bool[] ActiveHours { get; set; }
         public string[] ActiveHoursText { get; set; }
-        public bool ExtraFlag { get; set; }
+        public bool ExtraFlag { get { return ((TimeFlags >> 24) & 1) == 1; } }
 
 
         public void Init(YtypFile ytyp, ref CTimeArchetypeDef arch)
@@ -99,18 +99,8 @@ namespace CodeWalker.GameFiles
             _TimeArchetypeDef = arch;
 
             TimeFlags = arch.TimeArchetypeDef.timeFlags;
-            ActiveHours = new bool[24];
-            ActiveHoursText = new string[24];
-            for (int i = 0; i < 24; i++)
-            {
-                bool v = ((TimeFlags >> i) & 1) == 1;
-                ActiveHours[i] = v;
 
-                int nxth = (i < 23) ? (i + 1) : 0;
-                string hrs = string.Format("{0:00}:00 - {1:00}:00", i, nxth);
-                ActiveHoursText[i] = (hrs + (v ? " - On" : " - Off"));
-            }
-            ExtraFlag = ((TimeFlags >> 24) & 1) == 1;
+            UpdateActiveHours();
         }
 
         public override bool IsActive(float hour)
@@ -120,6 +110,35 @@ namespace CodeWalker.GameFiles
             if ((h < 0) || (h > 23)) return true;
             return ActiveHours[h];
         }
+
+
+        public void UpdateActiveHours()
+        {
+            if (ActiveHours == null)
+            {
+                ActiveHours = new bool[24];
+                ActiveHoursText = new string[24];
+            }
+            for (int i = 0; i < 24; i++)
+            {
+                bool v = ((TimeFlags >> i) & 1) == 1;
+                ActiveHours[i] = v;
+
+                int nxth = (i < 23) ? (i + 1) : 0;
+                string hrs = string.Format("{0:00}:00 - {1:00}:00", i, nxth);
+                ActiveHoursText[i] = (hrs + (v ? " - On" : " - Off"));
+            }
+        }
+
+        public void SetTimeFlags(uint flags)
+        {
+            TimeFlags = flags;
+            _TimeArchetypeDef._TimeArchetypeDef.timeFlags = flags;
+
+            UpdateActiveHours();
+        }
+
+
     }
 
     public class MloArchetype : Archetype
@@ -630,6 +649,27 @@ namespace CodeWalker.GameFiles
             Entities = entities.ToArray();
         }
 
+        public void UpdateDefaultEntitySets()
+        {
+            var list = new List<uint>();
+            var mloarch = Owner?.Archetype as MloArchetype;
+
+            for (uint i = 0; i < mloarch.entitySets.Length; i++)
+            {
+                var entset = mloarch.entitySets[i];
+                MloInstanceEntitySet instset = null;
+                EntitySets.TryGetValue(entset._Data.name, out instset);
+                if (instset != null)
+                {
+                    if (instset.Visible)
+                    {
+                        list.Add(i);
+                    }
+                }
+            }
+
+            defaultEntitySets = list.ToArray();
+        }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))]

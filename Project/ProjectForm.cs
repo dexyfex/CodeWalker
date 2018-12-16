@@ -4382,11 +4382,15 @@ namespace CodeWalker.Project
                     for (int i = 0; i < CurrentProjectFile.YmapFiles.Count; i++)
                     {
                         var ymap = CurrentProjectFile.YmapFiles[i];
-                        // make sure we're not hiding ymaps that have been added by the end-user.
-                        var isnew = ymap.RpfFileEntry.ShortNameHash == 0;
                         if (ymap.Loaded)
                         {
-                            ymaps[isnew ? JenkHash.GenHash(ymap.Name) : ymap.RpfFileEntry.ShortNameHash] = ymap;
+                            // make sure we're replacing ymaps that have been added by the end-user.
+                            if (ymap.RpfFileEntry.ShortNameHash == 0)
+                            {
+                                ymap.RpfFileEntry.ShortNameHash = JenkHash.GenHash(ymap.RpfFileEntry.GetShortNameLower());
+                            }
+
+                            ymaps[ymap.RpfFileEntry.ShortNameHash] = ymap;
                         }
                     }
 

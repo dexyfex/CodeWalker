@@ -2012,6 +2012,10 @@ namespace CodeWalker.GameFiles
         }
         public string GetShortNameLower()
         {
+            if (NameLower == null)
+            {
+                NameLower = Name.ToLowerInvariant();
+            }
             int ind = NameLower.LastIndexOf('.');
             if (ind > 0)
             {

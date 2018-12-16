@@ -119,8 +119,36 @@ namespace CodeWalker.Project.Panels
                     var cv = ((e.flags & (1u << i)) > 0);
                     EntityFlagsCheckedListBox.SetItemCheckState(i, cv ? CheckState.Checked : CheckState.Unchecked);
                 }
+
+
+
+                MiloEntitySetsListBox.Items.Clear();
+                if (CurrentEntity.MloInstance != null)
+                {
+                    var milo = CurrentEntity.MloInstance._Instance;
+                    MiloGroupIDTextBox.Text = milo.groupId.ToString();
+                    MiloFloorIDTextBox.Text = milo.floorId.ToString();
+                    MiloNumExitPortalsTextBox.Text = milo.numExitPortals.ToString();
+                    MiloFlagsTextBox.Text = milo.MLOInstflags.ToString();
+                    foreach (var sets in CurrentEntity.MloInstance.EntitySets)
+                    {
+                        MloInstanceEntitySet set = sets.Value;
+                        MiloEntitySetsListBox.Items.Add(set.EntitySet.ToString(), set.Visible);
+                    }
+                }
+                else
+                {
+                    MiloGroupIDTextBox.Text = string.Empty;
+                    MiloFloorIDTextBox.Text = string.Empty;
+                    MiloNumExitPortalsTextBox.Text = string.Empty;
+                    MiloFlagsTextBox.Text = string.Empty;
+                }
+
+
                 populatingui = false;
 
+
+                UpdateTabVisibility();
 
 
                 ProjectForm.WorldForm?.SelectEntity(CurrentEntity); //hopefully the drawable is already loaded - this will try get from cache
@@ -145,6 +173,36 @@ namespace CodeWalker.Project.Panels
                 //uint tintValue { get; set; } //120   120: UnsignedInt: 0: tintValue//1015358759
             }
 
+        }
+
+        private void UpdateTabVisibility()
+        {
+
+            //avoid resetting the tabs if no change is necessary.
+            bool ok = true;
+            bool miloTabVis = false;
+            foreach (var tab in EntityTabControl.TabPages)
+            {
+                if (tab == EntityMiloTabPage) miloTabVis = true;
+            }
+
+            if ((CurrentEntity?.MloInstance != null) != miloTabVis) ok = false;
+            if (ok) return;
+
+            var seltab = EntityTabControl.SelectedTab;
+
+            EntityTabControl.TabPages.Clear();
+
+            EntityTabControl.TabPages.Add(EntityGeneralTabPage);
+            EntityTabControl.TabPages.Add(EntityLodTabPage);
+            EntityTabControl.TabPages.Add(EntityExtensionsTabPage);
+            EntityTabControl.TabPages.Add(EntityPivotTabPage);
+            if (CurrentEntity?.MloInstance != null) EntityTabControl.TabPages.Add(EntityMiloTabPage);
+
+            if (EntityTabControl.TabPages.Contains(seltab))
+            {
+                EntityTabControl.SelectedTab = seltab;
+            }
         }
 
 
@@ -664,6 +722,84 @@ namespace CodeWalker.Project.Panels
             Vector4 v = FloatUtil.ParseVector4String(EntityPivotRotationTextBox.Text);
             Quaternion q = Quaternion.Normalize(new Quaternion(v));
             EntityPivotRotationTextBox.Text = FloatUtil.GetVector4String(new Vector4(q.X, q.Y, q.Z, q.W));
+        }
+
+        private void MiloGroupIDTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentEntity?.MloInstance == null) return;
+            uint groupId = 0;
+            uint.TryParse(MiloGroupIDTextBox.Text, out groupId);
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                if (CurrentEntity.MloInstance._Instance.groupId != groupId)
+                {
+                    CurrentEntity.MloInstance._Instance.groupId = groupId;
+                    ProjectItemChanged();
+                }
+            }
+        }
+
+        private void MiloFloorIDTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentEntity?.MloInstance == null) return;
+            uint floorId = 0;
+            uint.TryParse(MiloFloorIDTextBox.Text, out floorId);
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                if (CurrentEntity.MloInstance._Instance.floorId != floorId)
+                {
+                    CurrentEntity.MloInstance._Instance.floorId = floorId;
+                    ProjectItemChanged();
+                }
+            }
+        }
+
+        private void MiloNumExitPortalsTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentEntity?.MloInstance == null) return;
+            uint num = 0;
+            uint.TryParse(MiloNumExitPortalsTextBox.Text, out num);
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                if (CurrentEntity.MloInstance._Instance.numExitPortals != num)
+                {
+                    CurrentEntity.MloInstance._Instance.numExitPortals = num;
+                    ProjectItemChanged();
+                }
+            }
+        }
+
+        private void MiloFlagsTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentEntity?.MloInstance == null) return;
+            uint flags = 0;
+            uint.TryParse(MiloFlagsTextBox.Text, out flags);
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                if (CurrentEntity.MloInstance._Instance.MLOInstflags != flags)
+                {
+                    CurrentEntity.MloInstance._Instance.MLOInstflags = flags;
+                    ProjectItemChanged();
+                }
+            }
+        }
+
+        private void MiloEntitySetsListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (populatingui) return;
+            var inst = CurrentEntity?.MloInstance;
+            var mloarch = CurrentEntity?.Archetype as MloArchetype;
+            if ((inst != null) && (mloarch != null))
+            {
+                MloInstanceEntitySet mloInstanceEntitySet = inst.EntitySets[mloarch.entitySets[e.Index]._Data.name];
+                mloInstanceEntitySet.Visible = e.NewValue == CheckState.Checked;
+                return;
+            }
+            e.NewValue = CheckState.Unchecked;
         }
     }
 }

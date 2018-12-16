@@ -64,14 +64,16 @@
             this.label1 = new System.Windows.Forms.Label();
             this.TabControl = new System.Windows.Forms.TabControl();
             this.MloArchetypeTabPage = new System.Windows.Forms.TabPage();
-            this.EntitySetsListBox = new System.Windows.Forms.CheckedListBox();
+            this.TimeArchetypeTabPage = new System.Windows.Forms.TabPage();
+            this.TimeFlagsTextBox = new System.Windows.Forms.TextBox();
+            this.TimeFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
             this.label15 = new System.Windows.Forms.Label();
             this.BaseArchetypeTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SpecialAttributeNumericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HDTextureDistNumericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.LodDistNumericUpDown)).BeginInit();
             this.TabControl.SuspendLayout();
-            this.MloArchetypeTabPage.SuspendLayout();
+            this.TimeArchetypeTabPage.SuspendLayout();
             this.SuspendLayout();
             // 
             // BaseArchetypeTabPage
@@ -526,6 +528,7 @@
             // 
             this.TabControl.Controls.Add(this.BaseArchetypeTabPage);
             this.TabControl.Controls.Add(this.MloArchetypeTabPage);
+            this.TabControl.Controls.Add(this.TimeArchetypeTabPage);
             this.TabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TabControl.Location = new System.Drawing.Point(0, 0);
             this.TabControl.Name = "TabControl";
@@ -535,8 +538,6 @@
             // 
             // MloArchetypeTabPage
             // 
-            this.MloArchetypeTabPage.Controls.Add(this.EntitySetsListBox);
-            this.MloArchetypeTabPage.Controls.Add(this.label15);
             this.MloArchetypeTabPage.Location = new System.Drawing.Point(4, 22);
             this.MloArchetypeTabPage.Name = "MloArchetypeTabPage";
             this.MloArchetypeTabPage.Padding = new System.Windows.Forms.Padding(3);
@@ -545,27 +546,79 @@
             this.MloArchetypeTabPage.Text = "Mlo Archetype Def";
             this.MloArchetypeTabPage.UseVisualStyleBackColor = true;
             // 
-            // EntitySetsListBox
+            // TimeArchetypeTabPage
             // 
-            this.EntitySetsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntitySetsListBox.CheckOnClick = true;
-            this.EntitySetsListBox.FormattingEnabled = true;
-            this.EntitySetsListBox.Location = new System.Drawing.Point(11, 42);
-            this.EntitySetsListBox.Name = "EntitySetsListBox";
-            this.EntitySetsListBox.Size = new System.Drawing.Size(603, 319);
-            this.EntitySetsListBox.TabIndex = 2;
-            this.EntitySetsListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.EntitySetsListBox_ItemCheck);
+            this.TimeArchetypeTabPage.Controls.Add(this.TimeFlagsTextBox);
+            this.TimeArchetypeTabPage.Controls.Add(this.TimeFlagsCheckedListBox);
+            this.TimeArchetypeTabPage.Controls.Add(this.label15);
+            this.TimeArchetypeTabPage.Location = new System.Drawing.Point(4, 22);
+            this.TimeArchetypeTabPage.Name = "TimeArchetypeTabPage";
+            this.TimeArchetypeTabPage.Size = new System.Drawing.Size(631, 479);
+            this.TimeArchetypeTabPage.TabIndex = 2;
+            this.TimeArchetypeTabPage.Text = "Time Archetype Def";
+            this.TimeArchetypeTabPage.UseVisualStyleBackColor = true;
+            // 
+            // TimeFlagsTextBox
+            // 
+            this.TimeFlagsTextBox.Location = new System.Drawing.Point(72, 6);
+            this.TimeFlagsTextBox.Name = "TimeFlagsTextBox";
+            this.TimeFlagsTextBox.Size = new System.Drawing.Size(147, 20);
+            this.TimeFlagsTextBox.TabIndex = 69;
+            this.TimeFlagsTextBox.TextChanged += new System.EventHandler(this.TimeFlagsTextBox_TextChanged);
+            // 
+            // TimeFlagsCheckedListBox
+            // 
+            this.TimeFlagsCheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.TimeFlagsCheckedListBox.CheckOnClick = true;
+            this.TimeFlagsCheckedListBox.FormattingEnabled = true;
+            this.TimeFlagsCheckedListBox.Items.AddRange(new object[] {
+            "1 - 00:00 - 01:00",
+            "2 - 01:00 - 02:00",
+            "4 - 02:00 - 03:00",
+            "8 - 03:00 - 04:00",
+            "16 - 04:00 - 05:00",
+            "32 - 05:00 - 06:00",
+            "64 - 06:00 - 07:00",
+            "128 - 07:00 - 08:00",
+            "256 - 08:00 - 09:00",
+            "512 - 09:00 - 10:00",
+            "1024 - 10:00 - 11:00",
+            "2048 - 11:00 - 12:00",
+            "4096 - 12:00 - 13:00",
+            "8192 - 13:00 - 14:00",
+            "16384 - 14:00 - 15:00",
+            "32768 - 15:00 - 16:00",
+            "65536 - 16:00 - 17:00",
+            "131072 - 17:00 - 18:00",
+            "262144 - 18:00 - 19:00",
+            "524288 - 19:00 - 20:00",
+            "1048576 - 20:00 - 21:00",
+            "2097152 - 21:00 - 22:00",
+            "4194304 - 22:00 - 23:00",
+            "8388608 - 23:00 - 00:00",
+            "16777216 - Unk25",
+            "33554432 - Unk26",
+            "67108864 - Unk27",
+            "134217728 - Unk28",
+            "268435456 - Unk29",
+            "536870912 - Unk30",
+            "1073741824 - Unk31",
+            "2147483648 - Unk32"});
+            this.TimeFlagsCheckedListBox.Location = new System.Drawing.Point(18, 32);
+            this.TimeFlagsCheckedListBox.Name = "TimeFlagsCheckedListBox";
+            this.TimeFlagsCheckedListBox.Size = new System.Drawing.Size(201, 424);
+            this.TimeFlagsCheckedListBox.TabIndex = 70;
+            this.TimeFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.TimeFlagsCheckedListBox_ItemCheck);
             // 
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(8, 26);
+            this.label15.Location = new System.Drawing.Point(5, 9);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(57, 13);
-            this.label15.TabIndex = 1;
-            this.label15.Text = "EntitySets:";
+            this.label15.Size = new System.Drawing.Size(61, 13);
+            this.label15.TabIndex = 68;
+            this.label15.Text = "Time Flags:";
             // 
             // EditYtypArchetypePanel
             // 
@@ -584,8 +637,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.HDTextureDistNumericUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.LodDistNumericUpDown)).EndInit();
             this.TabControl.ResumeLayout(false);
-            this.MloArchetypeTabPage.ResumeLayout(false);
-            this.MloArchetypeTabPage.PerformLayout();
+            this.TimeArchetypeTabPage.ResumeLayout(false);
+            this.TimeArchetypeTabPage.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -627,7 +680,9 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TabControl TabControl;
         private System.Windows.Forms.TabPage MloArchetypeTabPage;
-        private System.Windows.Forms.CheckedListBox EntitySetsListBox;
+        private System.Windows.Forms.TabPage TimeArchetypeTabPage;
+        private System.Windows.Forms.TextBox TimeFlagsTextBox;
+        private System.Windows.Forms.CheckedListBox TimeFlagsCheckedListBox;
         private System.Windows.Forms.Label label15;
     }
 }

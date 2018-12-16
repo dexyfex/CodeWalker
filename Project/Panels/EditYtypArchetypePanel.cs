@@ -59,7 +59,6 @@ namespace CodeWalker.Project.Panels
                 BSCenterTextBox.Text = FloatUtil.GetVector3String(CurrentArchetype._BaseArchetypeDef.bsCentre);
                 BSRadiusTextBox.Text = CurrentArchetype._BaseArchetypeDef.bsRadius.ToString(CultureInfo.InvariantCulture);
 
-                EntitySetsListBox.Items.Clear();
                 if (CurrentArchetype is MloArchetype MloArchetype)
                 {
                     if (!TabControl.TabPages.Contains(MloArchetypeTabPage))
@@ -67,19 +66,25 @@ namespace CodeWalker.Project.Panels
                         TabControl.TabPages.Add(MloArchetypeTabPage);
                     }
 
-                    MloInstanceData mloinstance = ProjectForm.TryGetMloInstance(MloArchetype);
-                    if (mloinstance != null)
-                    {
-                        EntitySetsListBox.Enabled = true;
-                        foreach (var sets in mloinstance.EntitySets)
-                        {
-                            MloInstanceEntitySet set = sets.Value;
-                            EntitySetsListBox.Items.Add(set.EntitySet.ToString(), set.Visible);
-                        }
-                    }
-                    else EntitySetsListBox.Enabled = false;
+                    //MloInstanceData mloinstance = ProjectForm.TryGetMloInstance(MloArchetype);
+                    //nothing to see here right now
                 }
                 else TabControl.TabPages.Remove(MloArchetypeTabPage);
+
+
+
+                if (CurrentArchetype is TimeArchetype TimeArchetype)
+                {
+                    if (!TabControl.TabPages.Contains(TimeArchetypeTabPage))
+                    {
+                        TabControl.TabPages.Add(TimeArchetypeTabPage);
+                    }
+
+                    TimeFlagsTextBox.Text = TimeArchetype.TimeFlags.ToString();
+
+                }
+                else TabControl.TabPages.Remove(TimeArchetypeTabPage);
+
             }
         }
 
@@ -335,19 +340,69 @@ namespace CodeWalker.Project.Panels
             ProjectForm.DeleteArchetype();
         }
 
-        private void EntitySetsListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        private void TimeFlagsTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (CurrentArchetype is MloArchetype MloArchetype)
+            if (populatingui) return;
+            if (CurrentArchetype == null) return;
+            if (CurrentArchetype is TimeArchetype TimeArchetype)
             {
-                var inst = ProjectForm.TryGetMloInstance(MloArchetype);
-                if (inst != null)
+                uint flags = 0;
+                uint.TryParse(TimeFlagsTextBox.Text, out flags);
+                populatingui = true;
+                for (int i = 0; i < TimeFlagsCheckedListBox.Items.Count; i++)
                 {
-                    MloInstanceEntitySet mloInstanceEntitySet = inst.EntitySets[MloArchetype.entitySets[e.Index]._Data.name];
-                    mloInstanceEntitySet.Visible = e.NewValue == CheckState.Checked;
-                    return;
+                    var c = ((flags & (1u << i)) > 0);
+                    TimeFlagsCheckedListBox.SetItemCheckState(i, c ? CheckState.Checked : CheckState.Unchecked);
+                }
+                populatingui = false;
+                lock (ProjectForm.ProjectSyncRoot)
+                {
+                    if (TimeArchetype.TimeFlags != flags)
+                    {
+                        TimeArchetype.SetTimeFlags(flags);
+                        ProjectForm.SetYtypHasChanged(true);
+                    }
                 }
             }
-            e.NewValue = CheckState.Unchecked;
+
+        }
+
+        private void TimeFlagsCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentArchetype == null) return;
+            if (CurrentArchetype is TimeArchetype TimeArchetype)
+            {
+                uint flags = 0;
+                for (int i = 0; i < TimeFlagsCheckedListBox.Items.Count; i++)
+                {
+                    if (e.Index == i)
+                    {
+                        if (e.NewValue == CheckState.Checked)
+                        {
+                            flags += (uint)(1 << i);
+                        }
+                    }
+                    else
+                    {
+                        if (TimeFlagsCheckedListBox.GetItemChecked(i))
+                        {
+                            flags += (uint)(1 << i);
+                        }
+                    }
+                }
+                populatingui = true;
+                TimeFlagsTextBox.Text = flags.ToString();
+                populatingui = false;
+                lock (ProjectForm.ProjectSyncRoot)
+                {
+                    if (TimeArchetype.TimeFlags != flags)
+                    {
+                        TimeArchetype.SetTimeFlags(flags);
+                        ProjectForm.SetYtypHasChanged(true);
+                    }
+                }
+            }
         }
     }
 }

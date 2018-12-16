@@ -3437,6 +3437,10 @@ namespace CodeWalker
                 ms.EntityDef = entity;
                 ms.Archetype = entity?.Archetype;
                 ms.AABB = new BoundingBox(entity.BBMin, entity.BBMax);
+                if (entity.MloInstance != null)
+                {
+                    ms.MloEntityDef = entity;
+                }
                 SelectItem(ms);
             }
         }

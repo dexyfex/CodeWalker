@@ -599,6 +599,11 @@ namespace CodeWalker.GameFiles
                     var ent = AllEntities[i];
                     if (ent.MloInstance != null)
                     {
+                        ent.MloInstance.UpdateDefaultEntitySets();
+
+                        ent.MloInstance._Instance.CEntityDef = ent.CEntityDef; //overwrite with all the updated values..
+                        ent.MloInstance._Instance.defaultEntitySets = mb.AddUintArrayPtr(ent.MloInstance.defaultEntitySets);
+
                         ptrs[i] = mb.AddItemPtr(MetaName.CMloInstanceDef, ent.MloInstance.Instance);
                     }
                     else
@@ -1003,12 +1008,16 @@ namespace CodeWalker.GameFiles
                             flags = SetBit(flags, 1); //2
                             break;
                     }
+                    if (yent.MloInstance != null)
+                    {
+                        contentFlags = SetBit(contentFlags, 3); //8  //(interior instance)
+                    }
                 }
             }
 
             if ((CMloInstanceDefs != null) && (CMloInstanceDefs.Length > 0))
             {
-                contentFlags = SetBit(contentFlags, 3); //8
+                contentFlags = SetBit(contentFlags, 3); //8  //(interior instance) //is this still necessary?
             }
             if ((physicsDictionaries != null) && (physicsDictionaries.Length > 0))
             {
