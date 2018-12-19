@@ -84,9 +84,11 @@
     <Compile Include="GameFiles\MetaTypes\MetaTypes.cs" />
     <Compile Include="GameFiles\MetaTypes\MetaXml.cs" />
     <Compile Include="GameFiles\MetaTypes\Pso.cs" />
+    <Compile Include="GameFiles\MetaTypes\PsoBuilder.cs" />
     <Compile Include="GameFiles\MetaTypes\PsoTypes.cs" />
     <Compile Include="GameFiles\MetaTypes\Rbf.cs" />
     <Compile Include="GameFiles\MetaTypes\XmlMeta.cs" />
+    <Compile Include="GameFiles\MetaTypes\XmlPso.cs" />
     <Compile Include="GameFiles\Resources\Bounds.cs" />
     <Compile Include="GameFiles\Resources\Clip.cs" />
     <Compile Include="GameFiles\Resources\Drawable.cs" />

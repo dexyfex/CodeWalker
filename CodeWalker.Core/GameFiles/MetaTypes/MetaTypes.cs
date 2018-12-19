@@ -2007,6 +2007,10 @@ namespace CodeWalker.GameFiles
         {
             return (ushort)(((x & 0xFF00) >> 8) | ((x & 0x00FF) << 8));
         }
+        public static short SwapBytes(short x)
+        {
+            return (short)SwapBytes((ushort)x);
+        }
         public static uint SwapBytes(uint x)
         {
             // swap adjacent 16-bit blocks

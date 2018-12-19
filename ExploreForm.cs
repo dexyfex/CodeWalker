@@ -2251,6 +2251,8 @@ namespace CodeWalker
                     var fi = new FileInfo(fpath);
                     var fname = fi.Name;
                     var fnamel = fname.ToLowerInvariant();
+                    var mformat = MetaFormat.RSC;
+                    var trimlength = 4;
 
                     if (!fnamel.EndsWith(".xml"))
                     {
@@ -2259,8 +2261,8 @@ namespace CodeWalker
                     }
                     if (fnamel.EndsWith(".pso.xml"))
                     {
-                        MessageBox.Show(fname + ": PSO XML import not yet supported.", "Cannot import XML");
-                        continue;
+                        mformat = MetaFormat.PSO;
+                        trimlength = 8;
                     }
                     if (fnamel.EndsWith(".rbf.xml"))
                     {
@@ -2268,8 +2270,8 @@ namespace CodeWalker
                         continue;
                     }
 
-                    fname = fname.Substring(0, fname.Length - 4);
-                    fnamel = fnamel.Substring(0, fnamel.Length - 4);
+                    fname = fname.Substring(0, fname.Length - trimlength);
+                    fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
 
                     var doc = new XmlDocument();
                     string text = File.ReadAllText(fpath);
@@ -2278,20 +2280,45 @@ namespace CodeWalker
                         doc.LoadXml(text);
                     }
 
-                    var meta = XmlMeta.GetMeta(doc);
+                    byte[] data = null;
 
-
-                    if ((meta.DataBlocks?.Data == null) || (meta.DataBlocks.Count == 0))
+                    switch (mformat)
                     {
-                        MessageBox.Show(fname + ": Schema not supported.", "Cannot import XML");
-                        continue;
+                        case MetaFormat.RSC:
+                            {
+                                var meta = XmlMeta.GetMeta(doc);
+                                if ((meta.DataBlocks?.Data == null) || (meta.DataBlocks.Count == 0))
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import Meta XML");
+                                    continue;
+                                }
+                                data = ResourceBuilder.Build(meta, 2); //meta is RSC V:2
+                                break;
+                            }
+                        case MetaFormat.PSO:
+                            {
+                                var pso = XmlPso.GetPso(doc);
+                                if ((pso.DataSection == null) || (pso.DataMapSection == null) || (pso.SchemaSection == null))
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import PSO XML");
+                                    continue;
+                                }
+                                data = pso.Save();
+                                break;
+                            }
+                        case MetaFormat.RBF:
+                            {
+                                //todo!
+                                break;
+                            }
                     }
 
 
-                    byte[] data = ResourceBuilder.Build(meta, 2); //meta is RSC V:2
+                    if (data != null)
+                    {
+                        RpfFile.CreateFile(parentrpffldr, fname, data);
+                    }
 
-
-                    RpfFile.CreateFile(parentrpffldr, fname, data);
 
                 }
 #if !DEBUG

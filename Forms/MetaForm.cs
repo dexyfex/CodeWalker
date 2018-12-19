@@ -350,8 +350,14 @@ namespace CodeWalker.Forms
                         data = ResourceBuilder.Build(meta, 2); //meta is RSC "Version":2    (it's actually a type identifier, not a version!)
                         break;
                     case MetaFormat.PSO:
-                        MessageBox.Show("Sorry, PSO import is not supported yet.", "Cannot import PSO XML");
-                        return false;
+                        var pso = XmlPso.GetPso(doc);
+                        if ((pso.DataSection == null) || (pso.DataMapSection == null) || (pso.SchemaSection == null))
+                        {
+                            MessageBox.Show("Schema not supported.", "Cannot import PSO XML");
+                            return false;
+                        }
+                        data = pso.Save();
+                        break;
                     case MetaFormat.RBF:
                         MessageBox.Show("Sorry, RBF import is not supported.", "Cannot import RBF XML");
                         return false;

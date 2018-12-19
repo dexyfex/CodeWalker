@@ -2212,16 +2212,27 @@ namespace CodeWalker.GameFiles
 
             var exceptions = new List<Exception>();
             var allpsos = new List<string>();
+            var diffpsos = new List<string>();
 
             foreach (RpfFile file in AllRpfs)
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
+#if !DEBUG
                     try
+#endif
                     {
                         var n = entry.NameLower;
+                        if (!(n.EndsWith(".pso") || 
+                              n.EndsWith(".ymt") ||
+                              n.EndsWith(".ymf") ||
+                              n.EndsWith(".ymap") ||
+                              n.EndsWith(".ytyp") ||
+                              n.EndsWith(".cut")))
+                            continue; //PSO files seem to only have these extensions
+
                         var fentry = entry as RpfFileEntry;
-                        var data = entry.File.ExtractFile(fentry); //kind of slow, but sure to catch all PSO files
+                        var data = entry.File.ExtractFile(fentry);
                         if (data != null)
                         {
                             using (MemoryStream ms = new MemoryStream(data))
@@ -2236,19 +2247,43 @@ namespace CodeWalker.GameFiles
                                     allpsos.Add(fentry.Path);
 
                                     PsoTypes.EnsurePsoTypes(pso);
+
+                                    var xml = PsoXml.GetXml(pso);
+                                    if (!string.IsNullOrEmpty(xml))
+                                    { }
+
+                                    var xdoc = new XmlDocument();
+                                    xdoc.LoadXml(xml);
+                                    var pso2 = XmlPso.GetPso(xdoc);
+                                    var pso2b = pso2.Save();
+
+                                    var pso3 = new PsoFile();
+                                    pso3.Load(pso2b);
+                                    var xml3 = PsoXml.GetXml(pso3);
+
+                                    if (xml.Length != xml3.Length)
+                                    { }
+                                    if (xml != xml3)
+                                    {
+                                        diffpsos.Add(fentry.Path);
+                                    }
+
                                 }
                             }
                         }
                     }
+#if !DEBUG
                     catch (Exception ex)
                     {
                         UpdateStatus("Error! " + ex.ToString());
                         exceptions.Add(ex);
                     }
+#endif
                 }
             }
 
             string allpsopaths = string.Join("\r\n", allpsos);
+            string diffpsopaths = string.Join("\r\n", diffpsos);
 
             string str = PsoTypes.GetTypesInitString();
             if (!string.IsNullOrEmpty(str))

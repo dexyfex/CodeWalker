@@ -621,9 +621,9 @@ namespace CodeWalker.GameFiles
         public ushort Count2 { get; set; }
         public uint Unk1 { get; set; }
 
-        public uint PointerDataId { get { return (Pointer & 0xFFF); } }
-        public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
-        public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
+        public uint PointerDataId { get { return (Pointer & 0xFFF); } set { Pointer = (Pointer & 0xFFFFF000) + (value & 0xFFF); } }
+        public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } set { PointerDataId = value + 1; } }
+        public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } set { Pointer = (Pointer & 0xFFF) + ((value << 12) & 0xFFFFF000); } }
 
 
 

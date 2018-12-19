@@ -647,11 +647,11 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.Probabilities, PsoDataType.Array, 8, 0, 0)
                     );
                 case (MetaName)2575850962:
-                    return new PsoStructureInfo((MetaName)2575850962, 0, 0, 40,
+                    return new PsoStructureInfo((MetaName)2575850962, 0, 0, 44 /*40*/,
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.UByte, 0, 0, 0),
-                     new PsoStructureEntryInfo(MetaName.indices, PsoDataType.Array, 8, 4, (MetaName)262144),
+                     new PsoStructureEntryInfo(MetaName.indices, PsoDataType.Array, 8, 4, (MetaName)393216 /*262144*/),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Bool, 0, 0, 0),
-                     new PsoStructureEntryInfo(MetaName.liveries, PsoDataType.Array, 12, 4, (MetaName)1638402)
+                     new PsoStructureEntryInfo(MetaName.liveries, PsoDataType.Array, 14 /*12*/, 4, (MetaName)1966082 /*1638402*/)
                     );
                 case (MetaName)938618322:
                     return new PsoStructureInfo((MetaName)938618322, 0, 0, 16,
@@ -16104,9 +16104,12 @@ namespace CodeWalker.GameFiles
             var blocki = (int)ptr.PointerDataId;// (ptr.Pointer & 0xFFF) - 1;
             var offset = (int)ptr.PointerDataOffset;// (ptr.Pointer >> 12) & 0xFFFFF;
 
-            var block = pso.GetBlock(blocki);
+            var block = pso.GetBlock(blocki); //nameHash = 1
             if (block == null)
             { return null; }
+
+            //if (block.NameHash != (MetaName)1)
+            //{ }
 
             var length = ptr.Count1;
             var lastbyte = offset + length;
@@ -16133,9 +16136,12 @@ namespace CodeWalker.GameFiles
             var blocki = (int)ptr.PointerDataId;// (ptr.Pointer & 0xFFF) - 1;
             var offset = (int)ptr.PointerDataOffset;// (ptr.Pointer >> 12) & 0xFFFFF;
 
-            var block = pso.GetBlock(blocki);
+            var block = pso.GetBlock(blocki); //nameHash = 1
             if (block == null)
             { return null; }
+
+            //if (block.NameHash != (MetaName)1)
+            //{ }
 
             //var length = ptr.Count1;
             //var lastbyte = offset + length;
@@ -16215,6 +16221,13 @@ namespace CodeWalker.GameFiles
 
         public ushort BlockID { get { return (ushort)(Pointer & 0xFFF); } } //1-based ID
         public uint ItemOffset { get { return ((Pointer>>12) & 0xFFFFF); } } //byte offset
+
+
+        public PsoPOINTER(int blockID, int itemOffset, uint extra)
+        {
+            Pointer = (((uint)itemOffset << 12) & 0xFFFFF000) + ((uint)blockID & 0xFFF);
+            Unk2 = extra;
+        }
 
 
         public override string ToString()

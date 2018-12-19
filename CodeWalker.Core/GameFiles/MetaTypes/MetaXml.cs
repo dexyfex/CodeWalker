@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -641,6 +642,10 @@ namespace CodeWalker.GameFiles
             var structInfo = cont.GetStructureInfo(structName);
             if (structInfo == null)
             {
+                structInfo = PsoTypes.GetStructureInfo(structName);//fallback to builtin...
+            }
+            if (structInfo == null)
+            {
                 ErrorXml(sb, indent, "Couldn't find structure info " + name + "!");
                 return;
             }
@@ -708,7 +713,10 @@ namespace CodeWalker.GameFiles
                             case 0: //int enum
                                 var intEVal = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset));
                                 var intE = enumInfo.FindEntry(intEVal);
-                                StringTag(sb, cind, ename, HashString(intE?.EntryNameHash ?? 0));
+                                var intH = HashString(intE?.EntryNameHash ?? 0);
+                                if (string.IsNullOrEmpty(intH))
+                                { }
+                                StringTag(sb, cind, ename, intH);
                                 break;
                             case 2: //byte enum
                                 var byteEVal = data[eoffset];
@@ -718,9 +726,9 @@ namespace CodeWalker.GameFiles
                         }
                         break;
                     case PsoDataType.Flags:
-                        uint fCount = (entry.ReferenceKey >> 16) & 0x0000FFFF;
-                        uint fEntry = (entry.ReferenceKey & 0xFFFF);
-                        var fEnt = structInfo.GetEntry((int)fEntry);
+                        //uint fCount = (entry.ReferenceKey >> 16) & 0x0000FFFF;
+                        uint fEntry = (entry.ReferenceKey & 0xFFF);
+                        var fEnt = (fEntry != 0xFFF) ? structInfo.GetEntry((int)fEntry) : null;
                         PsoEnumInfo flagsInfo = null;
                         if ((fEnt != null) && (fEnt.EntryNameHash == MetaName.ARRAYINFO))
                         {
@@ -728,7 +736,9 @@ namespace CodeWalker.GameFiles
                         }
                         if (flagsInfo == null)
                         {
-                            flagsInfo = cont.GetEnumInfo(entry.EntryNameHash);
+                            if (fEntry != 0xFFF)
+                            { }
+                            //flagsInfo = cont.GetEnumInfo(entry.EntryNameHash);
                         }
                         uint? flagsVal = null;
                         switch (entry.Unk_5h)
@@ -805,13 +815,14 @@ namespace CodeWalker.GameFiles
                             default:
                                 ErrorXml(sb, cind, ename + ": Unexpected Integer subtype: " + entry.Unk_5h.ToString());
                                 break;
-                            case 0: //signed int
+                            case 0: //signed int (? flags?)
                                 var int6aVal = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset));
                                 ValueTag(sb, cind, ename, int6aVal.ToString());
                                 break;
                             case 1: //unsigned int
                                 var int6bVal = MetaTypes.SwapBytes(BitConverter.ToUInt32(data, eoffset));
-                                ValueTag(sb, cind, ename, "0x" + int6bVal.ToString("X").PadLeft(8, '0'));
+                                ValueTag(sb, cind, ename, int6bVal.ToString());
+                                //ValueTag(sb, cind, ename, "0x" + int6bVal.ToString("X").PadLeft(8, '0'));
                                 break;
                         }
                         break;
@@ -833,16 +844,16 @@ namespace CodeWalker.GameFiles
                         ValueTag(sb, cind, ename, short4Val.ToString());
                         break;
                     case PsoDataType.HFloat://half float?
-                        var short1EVal = MetaTypes.SwapBytes(BitConverter.ToUInt16(data, eoffset));
+                        var short1EVal = MetaTypes.SwapBytes(BitConverter.ToInt16(data, eoffset));
                         ValueTag(sb, cind, ename, short1EVal.ToString());
                         break;
                     case PsoDataType.String:
-                        var str0 = GetStringValue(cont.Pso, entry, data, eoffset);
-                        if (str0 == null)
-                        {
-                            ErrorXml(sb, cind, ename + ": Unexpected String subtype: " + entry.Unk_5h.ToString());
-                        }
-                        else
+                        var str0 = XmlEscape(GetStringValue(cont.Pso, entry, data, eoffset));
+                        //if (str0 == null)
+                        //{
+                        //    ErrorXml(sb, cind, ename + ": Unexpected String subtype: " + entry.Unk_5h.ToString());
+                        //}
+                        //else
                         {
                             StringTag(sb, cind, ename, str0);
                         }
@@ -909,8 +920,13 @@ namespace CodeWalker.GameFiles
             var boffset = offset + block.Offset;
             var eoffset = boffset + entry.DataOffset;
             var aOffset = offset + entry.DataOffset;
+            var abOffset = aOffset + block.Offset;
             var aBlockId = blockId;
             uint aCount = (entry.ReferenceKey >> 16) & 0x0000FFFF;
+            Array_Structure arrStruc = new Array_Structure();
+            arrStruc.PointerDataId = (uint)aBlockId;
+            arrStruc.PointerDataOffset = (uint)aOffset;
+            arrStruc.Count1 = arrStruc.Count2 = (ushort)aCount;
             var aind = indent + 1;
             string arrTag = ename;
             PsoStructureEntryInfo arrEntry = estruct.GetEntry((int)(entry.ReferenceKey & 0xFFFF));
@@ -922,17 +938,24 @@ namespace CodeWalker.GameFiles
 
             var data = cont.Pso.DataSection.Data;
 
+            bool embedded = true;
             switch (entry.Unk_5h)
             {
                 default:
                     ErrorXml(sb, indent, ename + ": WIP! Unsupported Array subtype: " + entry.Unk_5h.ToString());
                     break;
                 case 0: //Array_Structure
-                    var arrStruc = MetaTypes.ConvertData<Array_Structure>(data, eoffset);
+                    arrStruc = MetaTypes.ConvertData<Array_Structure>(data, eoffset);
                     arrStruc.SwapEnd();
                     aBlockId = (int)arrStruc.PointerDataId;
                     aOffset = (int)arrStruc.PointerDataOffset;
                     aCount = arrStruc.Count1;
+                    var aBlock = cont.Pso.GetBlock(aBlockId);
+                    if (aBlock != null)
+                    {
+                        abOffset = aOffset + aBlock.Offset;
+                    }
+                    embedded = false;
                     break;
                 case 1: //Raw in-line array
                     break;
@@ -941,11 +964,20 @@ namespace CodeWalker.GameFiles
                 case 4: //pointer array? default array?
                     if (arrEntry.Unk_5h == 3) //pointers...
                     {
-                        var arrStruc4 = MetaTypes.ConvertData<Array_Structure>(data, eoffset);
-                        arrStruc4.SwapEnd();
-                        aBlockId = (int)arrStruc4.PointerDataId;
-                        aOffset = (int)arrStruc4.PointerDataOffset;
-                        aCount = arrStruc4.Count1;
+                        arrStruc = MetaTypes.ConvertData<Array_Structure>(data, eoffset);
+                        arrStruc.SwapEnd();
+                        aBlockId = (int)arrStruc.PointerDataId;
+                        aOffset = (int)arrStruc.PointerDataOffset;
+                        aCount = arrStruc.Count1;
+                        var aBlock2 = cont.Pso.GetBlock(aBlockId);
+                        if (aBlock2 != null)
+                        {
+                            abOffset = aOffset + aBlock2.Offset;
+                        }
+                        embedded = false;
+                    }
+                    else
+                    {
                     }
                     break;
                 case 129: //also raw inline array? in junctions.pso
@@ -959,10 +991,11 @@ namespace CodeWalker.GameFiles
                     break;
                 case PsoDataType.Array:
                     var rk0 = (entry.ReferenceKey >> 16) & 0x0000FFFF;
+                    //var rk1 = entry.ReferenceKey & 0x0000FFFF;
+                    //var rk3 = (arrEntry.ReferenceKey >> 16) & 0x0000FFFF;
+                    //var rk4 = arrEntry.ReferenceKey & 0x0000FFFF;
                     if (rk0 > 0)
                     {
-                        //var arrStruc5 = MetaTypes.ConvertDataArray<Array_StructurePointer>(data, eoffset, (int)rk0);
-                        //for (int n = 0; n < rk0; n++) arrStruc5[n].SwapEnd();
                         aOffset = offset + entry.DataOffset;
 
                         OpenTag(sb, indent, arrTag);
@@ -997,7 +1030,14 @@ namespace CodeWalker.GameFiles
                                 for (int n = 0; n < aCount; n++)
                                 {
                                     var ptrVal = ptrArr[n];
-                                    WriteNode(sb, aind, cont, ptrVal.BlockID, (int)ptrVal.ItemOffset, XmlTagMode.ItemAndType);
+                                    if (ptrVal.Pointer == 0)
+                                    {
+                                        SelfClosingTag(sb, aind, "Item"); //"null" entry...
+                                    }
+                                    else
+                                    {
+                                        WriteNode(sb, aind, cont, ptrVal.BlockID, (int)ptrVal.ItemOffset, XmlTagMode.ItemAndType);
+                                    }
                                 }
                                 CloseTag(sb, indent, ename);
                             }
@@ -1050,6 +1090,8 @@ namespace CodeWalker.GameFiles
                             ErrorXml(sb, indent, ename + ": Unexpected String array subtype: " + entry.Unk_5h.ToString());
                             break;
                         case 0: //hash array...
+                            if (embedded)
+                            { }
                             var arrHash = MetaTypes.ConvertData<Array_uint>(data, eoffset);
                             arrHash.SwapEnd();
                             var hashArr = PsoTypes.GetHashArray(cont.Pso, arrHash);
@@ -1064,54 +1106,70 @@ namespace CodeWalker.GameFiles
                     WriteRawArray(sb, v2Arr, indent, ename, "Vector2", FormatVector2Swap, 1);
                     break;
                 case PsoDataType.Float3:
-                    aCount = (entry.ReferenceKey >> 16) & 0x0000FFFF;
+                    if (!embedded)
+                    { }
                     arrTag += " itemType=\"Vector3\""; //this is actually aligned as vector4, the W values are crazy in places
                     var v4Arr = MetaTypes.ConvertDataArray<Vector4>(data, eoffset, (int)aCount);
                     WriteRawArray(sb, v4Arr, indent, ename, "Vector3", FormatVector4SwapXYZOnly, 1);
                     break;
                 case PsoDataType.UByte:
+                    if (embedded)
+                    { }
+                    else
+                    { } //block type 2
                     var barr = new byte[aCount];
                     if (aCount > 0)
                     {
-                        var bblock = cont.Pso.GetBlock(aBlockId);
-                        var boffs = bblock.Offset + aOffset;
-                        Buffer.BlockCopy(data, boffs, barr, 0, (int)aCount);
+                        //var bblock = cont.Pso.GetBlock(aBlockId);
+                        //var boffs = bblock.Offset + aOffset;
+                        Buffer.BlockCopy(data, abOffset /*boffs*/, barr, 0, (int)aCount);
                     }
                     WriteRawArray(sb, barr, indent, ename, "byte");
                     break;
                 case PsoDataType.Bool:
+                    if (embedded)
+                    { }
+                    else
+                    { }
                     var barr2 = new byte[aCount];
                     if (aCount > 0)
                     {
-                        var bblock = cont.Pso.GetBlock(aBlockId);
-                        var boffs = bblock.Offset + aOffset;
-                        Buffer.BlockCopy(data, boffs, barr2, 0, (int)aCount);
+                        //var bblock = cont.Pso.GetBlock(aBlockId);
+                        //var boffs = bblock.Offset + aOffset;
+                        Buffer.BlockCopy(data, abOffset /*boffs*/, barr2, 0, (int)aCount);
                     }
                     WriteRawArray(sb, barr2, indent, ename, "boolean"); //todo: true/false output
                     break;
                 case PsoDataType.Float:
-                    var arrFloat = MetaTypes.ConvertData<Array_float>(data, eoffset);
-                    arrFloat.SwapEnd();
+                    if (embedded)
+                    { }
+                    var arrFloat = new Array_float(arrStruc.Pointer, arrStruc.Count1); //block type 7
                     var floatArr = PsoTypes.GetFloatArray(cont.Pso, arrFloat);
                     WriteRawArray(sb, floatArr, indent, ename, "float");
                     break;
                 case PsoDataType.UShort:
-                    var arrShort = MetaTypes.ConvertData<Array_Structure>(data, eoffset);
-                    arrShort.SwapEnd();
-                    var shortArr = PsoTypes.GetUShortArray(cont.Pso, arrShort);
+                    if (embedded)
+                    { }
+                    var shortArr = PsoTypes.GetUShortArray(cont.Pso, arrStruc); //block type 4
                     WriteRawArray(sb, shortArr, indent, ename, "ushort");
                     break;
                 case PsoDataType.UInt:
-                    var intArr = MetaTypes.ConvertDataArray<int>(data, eoffset, (int)aCount);
+                    if (embedded)
+                    { }
+                    var arrUint = new Array_uint(arrStruc.Pointer, arrStruc.Count1); //block type 6
+                    var intArr = PsoTypes.GetUintArray(cont.Pso, arrUint);
                     WriteRawArray(sb, intArr, indent, ename, "int");
                     break;
                 case PsoDataType.SInt:
-                    var arrUint2 = MetaTypes.ConvertData<Array_uint>(data, eoffset);
-                    arrUint2.SwapEnd();
+                    if (embedded)
+                    { }
+                    var arrUint2 = new Array_uint(arrStruc.Pointer, arrStruc.Count1); //block type 5
                     var intArr2 = PsoTypes.GetUintArray(cont.Pso, arrUint2);
                     WriteRawArray(sb, intArr2, indent, ename, "int");
                     break;
                 case PsoDataType.Enum:
+                    if (embedded)
+                    { }
                     var arrEnum = MetaTypes.ConvertData<Array_uint>(data, eoffset);
                     arrEnum.SwapEnd();
                     var enumArr = PsoTypes.GetUintArray(cont.Pso, arrEnum);
@@ -1139,41 +1197,23 @@ namespace CodeWalker.GameFiles
                     var mapidx2 = (entry.ReferenceKey >> 16) & 0x0000FFFF;
                     var mapreftype1 = structInfo.Entries[mapidx2];
                     var mapreftype2 = structInfo.Entries[mapidx1];
-                    var x1 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset));//same as ref key?
-                    var x2 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset + 4));//0?
-                    var x3 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset + 8));//pointer?
-                    var x4 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset + 12));//
-                    var x5 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset + 16));//count/capacity?
-                    var x6 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset + 20));//
+                    var x1 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset));
+                    var x2 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset + 4));
+                    var sptr = MetaTypes.ConvertData<Array_Structure>(data, eoffset + 8);
+                    sptr.SwapEnd();
 
-                    //File.WriteAllText("C:\\CodeWalker.Projects\\testxml.xml", sb.ToString());
 
                     if (x1 != 0x1000000)
                     { }
                     if (x2 != 0)
                     { }
-                    if (x4 != 0)
-                    { }
-                    if (x6 != 0)
+                    if (mapreftype2.ReferenceKey != 0)
                     { }
 
-
-                    var xBlockId = x3 & 0xFFF;
-                    var xOffset = (x3 >> 12) & 0xFFFFF;
-                    var xCount1 = x5 & 0xFFFF;
-                    var xCount2 = (x5 >> 16) & 0xFFFF;
-
-                    //var x1a = x1 & 0xFFF; //block id? for another pointer?
-                    //var x1b = (x1 >> 12) & 0xFFFFF; //offset?
-                    //var x4u = (uint)x4;
-                    //var x4a = x4 & 0xFFF; //block id?
-                    //var x4b = (x4 >> 12) & 0xFFFFF; //offset?
-                    //var x2h = (MetaHash)(uint)x2;
-                    //var x6h = (MetaHash)(uint)x6;
-                    //if (x1a > 0)
-                    //{ }
-
-
+                    var xBlockId = (int)sptr.PointerDataId;// x3 & 0xFFF;
+                    var xOffset = sptr.PointerDataOffset;// (x3 >> 12) & 0xFFFFF;
+                    var xCount1 = sptr.Count1;// x5 & 0xFFFF;
+                    var xCount2 = sptr.Count2;// (x5 >> 16) & 0xFFFF;
 
                     var xBlock = cont.Pso.GetBlock(xBlockId);
                     if ((xBlock == null) && (xCount1 > 0))
@@ -1183,8 +1223,7 @@ namespace CodeWalker.GameFiles
                     else
                     {
                         if (xCount1 != xCount2)
-                        {
-                        }
+                        { }
                         if (xCount1 > 0)
                         {
                             var xStruct = cont.GetStructureInfo(xBlock.NameHash);
@@ -1218,10 +1257,10 @@ namespace CodeWalker.GameFiles
                             {
                                 ErrorXml(sb, aind, ename + ": Map Item was not a structure!");
                             }
-                            else if (iEntry.Unk_5h != 3)
-                            {
-                                ErrorXml(sb, aind, ename + ": Map Item was not a structure pointer - TODO!");
-                            }
+                            //else if (iEntry.Unk_5h != 3)
+                            //{
+                            //    ErrorXml(sb, aind, ename + ": Map Item was not a structure pointer - TODO!");
+                            //}
                             else
                             {
                                 OpenTag(sb, xind, ename);
@@ -1236,30 +1275,39 @@ namespace CodeWalker.GameFiles
                                     var kOffset = sOffset + kEntry.DataOffset;
                                     var iOffset = sOffset + iEntry.DataOffset;
                                     var kStr = GetStringValue(cont.Pso, kEntry, data, kOffset);
-                                    var iPtr = MetaTypes.ConvertData<PsoPOINTER>(data, iOffset);
-                                    iPtr.SwapEnd();
-                                    var iBlock = cont.Pso.GetBlock(iPtr.BlockID);
-                                    if (iBlock == null)
+                                    if (iEntry.ReferenceKey != 0)//(xBlock.NameHash != MetaName.ARRAYINFO)//257,258,259
                                     {
-                                        OpenTag(sb, aind, "Item type=\"" + HashString((MetaName)entry.ReferenceKey) + "\" key=\"" + kStr + "\"");
-                                        WriteNode(sb, aind, cont, iPtr.BlockID, (int)iPtr.ItemOffset, XmlTagMode.None, (MetaName)entry.ReferenceKey);
+                                        //embedded map values
+                                        var vOffset = xOffset2 + iEntry.DataOffset;
+                                        OpenTag(sb, aind, "Item type=\"" + HashString((MetaName)iEntry.ReferenceKey) + "\" key=\"" + kStr + "\"");
+                                        WriteNode(sb, aind, cont, xBlockId, vOffset, XmlTagMode.None, (MetaName)iEntry.ReferenceKey);
                                         CloseTag(sb, aind, "Item");
                                     }
                                     else
                                     {
-                                        var iStr = "Item type=\"" + HashString(iBlock.NameHash) + "\" key=\"" + kStr + "\"";
-                                        var iStruc = cont.GetStructureInfo(iBlock.NameHash);
-                                        if (iStruc?.EntriesCount == 0)
+                                        var iPtr = MetaTypes.ConvertData<PsoPOINTER>(data, iOffset);
+                                        iPtr.SwapEnd();
+                                        var iBlock = cont.Pso.GetBlock(iPtr.BlockID);
+                                        if (iBlock == null)
                                         {
-                                            //SelfClosingTag(sb, aind, iStr);
-                                            OpenTag(sb, aind, iStr);
-                                            CloseTag(sb, aind, "Item");
+                                            ErrorXml(sb, aind, ename + ": Could not find iBlock for Map entry!");
                                         }
                                         else
                                         {
-                                            OpenTag(sb, aind, iStr);
-                                            WriteNode(sb, aind, cont, iPtr.BlockID, (int)iPtr.ItemOffset, XmlTagMode.None);//, (MetaName)entry.ReferenceKey);
-                                            CloseTag(sb, aind, "Item");
+                                            var iStr = "Item type=\"" + HashString(iBlock.NameHash) + "\" key=\"" + kStr + "\"";
+                                            var iStruc = cont.GetStructureInfo(iBlock.NameHash);
+                                            if (iStruc?.EntriesCount == 0)
+                                            {
+                                                //SelfClosingTag(sb, aind, iStr);
+                                                OpenTag(sb, aind, iStr);
+                                                CloseTag(sb, aind, "Item");
+                                            }
+                                            else
+                                            {
+                                                OpenTag(sb, aind, iStr);
+                                                WriteNode(sb, aind, cont, iPtr.BlockID, (int)iPtr.ItemOffset, XmlTagMode.None);//, (MetaName)entry.ReferenceKey);
+                                                CloseTag(sb, aind, "Item");
+                                            }
                                         }
                                     }
                                     xOffset2 += xStruct.StructureLength;
@@ -1311,7 +1359,17 @@ namespace CodeWalker.GameFiles
 
         }
 
-
+        public static string XmlEscape(string unescaped)
+        {
+            if (unescaped == null) return null;
+            XmlDocument doc = new XmlDocument();
+            XmlNode node = doc.CreateElement("root");
+            node.InnerText = unescaped;
+            var escaped = node.InnerXml;
+            if (escaped != unescaped)
+            { }
+            return node.InnerXml;
+        }
 
 
         public class PsoCont

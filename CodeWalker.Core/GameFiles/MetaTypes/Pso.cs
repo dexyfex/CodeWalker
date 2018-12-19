@@ -205,6 +205,13 @@ namespace CodeWalker.GameFiles
         public PsoSTRESection STRESection { get; set; }
         public PsoCHKSSection CHKSSection { get; set; }
 
+
+        public void Load(byte[] data)
+        {
+            using (var ms = new MemoryStream(data))
+                Load(ms);
+        }
+
         public void Load(string fileName)
         {
             using (var stream = new FileStream(fileName, FileMode.Open))
@@ -268,6 +275,19 @@ namespace CodeWalker.GameFiles
             }
         }
 
+
+        public byte[] Save()
+        {
+            var ms = new MemoryStream();
+            Save(ms);
+
+            var buf = new byte[ms.Length];
+            ms.Position = 0;
+            ms.Read(buf, 0, buf.Length);
+
+            return buf;
+        }
+
         public void Save(string fileName)
         {
             using (var stream = new FileStream(fileName, FileMode.Create))
@@ -280,6 +300,11 @@ namespace CodeWalker.GameFiles
             if (DataSection != null) DataSection.Write(writer);
             if (DataMapSection != null) DataMapSection.Write(writer);
             if (SchemaSection != null) SchemaSection.Write(writer);
+            if (STRFSection != null) STRFSection.Write(writer);
+            if (STRSSection != null) STRSSection.Write(writer);
+            if (STRESection != null) STRESection.Write(writer);
+            if (PSIGSection != null) PSIGSection.Write(writer);
+            if (CHKSSection != null) CHKSSection.Write(writer);
         }
 
 
@@ -342,11 +367,13 @@ namespace CodeWalker.GameFiles
 
         public void Write(DataWriter writer)
         {
+            Length = Data.Length;
+
             writer.Write(Data);
-            writer.Position -= Data.Length;
-            writer.Write((uint)0x5053494E);
-            writer.Write((uint)(Data.Length));
-            writer.Position += Data.Length - 8;
+            writer.Position -= Length;
+            writer.Write(Ident);
+            writer.Write((uint)(Length));
+            writer.Position += Length - 8;
         }
 
         public override string ToString()
@@ -413,10 +440,10 @@ namespace CodeWalker.GameFiles
 
         public void Read(DataReader reader)
         {
-            this.NameHash = (MetaName)reader.ReadUInt32();
-            this.Offset = reader.ReadInt32();
-            this.Unknown_8h = reader.ReadInt32();
-            this.Length = reader.ReadInt32();
+            NameHash = (MetaName)reader.ReadUInt32();
+            Offset = reader.ReadInt32();
+            Unknown_8h = reader.ReadInt32();
+            Length = reader.ReadInt32();
         }
 
         public void Write(DataWriter writer)
@@ -449,7 +476,7 @@ namespace CodeWalker.GameFiles
             Length = reader.ReadInt32();
             Count = reader.ReadUInt32();
 
-            this.EntriesIdx = new PsoElementIndexInfo[Count];
+            EntriesIdx = new PsoElementIndexInfo[Count];
             for (int i = 0; i < Count; i++)
             {
                 var entry = new PsoElementIndexInfo();
@@ -457,7 +484,7 @@ namespace CodeWalker.GameFiles
                 EntriesIdx[i] = entry;
             }
 
-            this.Entries = new PsoElementInfo[Count];
+            Entries = new PsoElementInfo[Count];
             for (int i = 0; i < Count; i++)
             {
                 reader.Position = EntriesIdx[i].Offset;
@@ -506,7 +533,7 @@ namespace CodeWalker.GameFiles
 
             writer.Write(Ident);
             writer.Write((int)(12 + entriesStream.Length + indexStream.Length));
-            writer.Write((int)(Entries.Length));
+            writer.Write((uint)(Entries.Length));
 
             // write entries index data
             var buf1 = new byte[indexStream.Length];
@@ -536,8 +563,8 @@ namespace CodeWalker.GameFiles
 
         public void Read(DataReader reader)
         {
-            this.NameHash = (MetaName)reader.ReadUInt32();
-            this.Offset = reader.ReadInt32();
+            NameHash = (MetaName)reader.ReadUInt32();
+            Offset = reader.ReadInt32();
         }
 
         public void Write(DataWriter writer)
@@ -590,11 +617,11 @@ namespace CodeWalker.GameFiles
         public override void Read(DataReader reader)
         {
             uint x = reader.ReadUInt32();
-            this.Type = (byte)((x & 0xFF000000) >> 24);
-            this.EntriesCount = (short)(x & 0xFFFF);
-            this.Unk = (byte)((x & 0x00FF0000) >> 16);
-            this.StructureLength = reader.ReadInt32();
-            this.Unk_Ch = reader.ReadUInt32();
+            Type = (byte)((x & 0xFF000000) >> 24);
+            EntriesCount = (short)(x & 0xFFFF);
+            Unk = (byte)((x & 0x00FF0000) >> 16);
+            StructureLength = reader.ReadInt32();
+            Unk_Ch = reader.ReadUInt32();
 
             if (Unk_Ch != 0)
             { }
@@ -655,7 +682,7 @@ namespace CodeWalker.GameFiles
     {
         public MetaName EntryNameHash { get; set; }
         public PsoDataType Type { get; set; }
-        public byte Unk_5h { get; set; }
+        public byte Unk_5h { get; set; } //0 = default, 3 = pointer array?
         public ushort DataOffset { get; set; }
         public uint ReferenceKey { get; set; } // when array -> entry index with type
 
@@ -673,11 +700,11 @@ namespace CodeWalker.GameFiles
 
         public void Read(DataReader reader)
         {
-            this.EntryNameHash = (MetaName)reader.ReadUInt32();
-            this.Type = (PsoDataType)reader.ReadByte();
-            this.Unk_5h = reader.ReadByte();
-            this.DataOffset = reader.ReadUInt16();
-            this.ReferenceKey = reader.ReadUInt32();
+            EntryNameHash = (MetaName)reader.ReadUInt32();
+            Type = (PsoDataType)reader.ReadByte();
+            Unk_5h = reader.ReadByte();
+            DataOffset = reader.ReadUInt16();
+            ReferenceKey = reader.ReadUInt32();
         }
 
         public void Write(DataWriter writer)
@@ -721,8 +748,8 @@ namespace CodeWalker.GameFiles
         public override void Read(DataReader reader)
         {
             uint x = reader.ReadUInt32();
-            this.Type = (byte)((x & 0xFF000000) >> 24);
-            this.EntriesCount = (int)(x & 0x00FFFFFF);
+            Type = (byte)((x & 0xFF000000) >> 24);
+            EntriesCount = (int)(x & 0x00FFFFFF);
 
             Entries = new PsoEnumEntryInfo[EntriesCount];
             for (int i = 0; i < EntriesCount; i++)
@@ -762,6 +789,21 @@ namespace CodeWalker.GameFiles
             return null;
         }
 
+        public PsoEnumEntryInfo FindEntryByName(MetaName name)
+        {
+            if (Entries == null) return null;
+            for (int i = 0; i < Entries.Length; i++)
+            {
+                var entry = Entries[i];
+                if (entry.EntryNameHash == name)
+                {
+                    return entry;
+                }
+            }
+            return null;
+        }
+
+
 
         public override string ToString()
         {
@@ -785,8 +827,8 @@ namespace CodeWalker.GameFiles
 
         public void Read(DataReader reader)
         {
-            this.EntryNameHash = (MetaName)reader.ReadUInt32();
-            this.EntryKey = reader.ReadInt32();
+            EntryNameHash = (MetaName)reader.ReadUInt32();
+            EntryKey = reader.ReadInt32();
         }
 
         public void Write(DataWriter writer)
@@ -827,10 +869,25 @@ namespace CodeWalker.GameFiles
 
         public void Write(DataWriter writer)
         {
+            var strStream = new MemoryStream();
+            var strWriter = new DataWriter(strStream, Endianess.BigEndian);
+            foreach (var str in Strings)
+            {
+                strWriter.Write(str);
+            }
+
+            Length = (int)strStream.Length + 8;
 
             writer.Write(Ident);
             writer.Write(Length);
 
+            if (strStream.Length > 0)
+            {
+                var buf1 = new byte[strStream.Length];
+                strStream.Position = 0;
+                strStream.Read(buf1, 0, buf1.Length);
+                writer.Write(buf1);
+            }
 
         }
 
@@ -867,10 +924,25 @@ namespace CodeWalker.GameFiles
 
         public void Write(DataWriter writer)
         {
+            var strStream = new MemoryStream();
+            var strWriter = new DataWriter(strStream, Endianess.BigEndian);
+            foreach (var str in Strings)
+            {
+                strWriter.Write(str);
+            }
+
+            Length = (int)strStream.Length + 8;
 
             writer.Write(Ident);
             writer.Write(Length);
 
+            if (strStream.Length > 0)
+            {
+                var buf1 = new byte[strStream.Length];
+                strStream.Position = 0;
+                strStream.Read(buf1, 0, buf1.Length);
+                writer.Write(buf1);
+            }
 
         }
 
@@ -886,7 +958,6 @@ namespace CodeWalker.GameFiles
         public int Length { get; set; }
         public byte[] Data { get; set; }
 
-        //public MetaHash[] Hashes { get; set; }
         //public byte[] Decr1 { get; set; }
         //public byte[] Decr2 { get; set; }
 
@@ -899,26 +970,25 @@ namespace CodeWalker.GameFiles
             {
                 Data = reader.ReadBytes(Length - 8);
 
-                //reader.Position = 8;
-                //List<MetaHash> hashes = new List<MetaHash>();
-                //while (reader.Position < reader.Length)
-                //{
-                //    hashes.Add(reader.ReadUInt32());
-                //}
-                //Hashes = hashes.ToArray();
-
                 //Decr1 = GTACrypto.DecryptAES(Data);
                 //Decr2 = GTACrypto.DecryptNG(Data, )
 
+                //TODO: someone plz figure out that encryption
             }
         }
 
         public void Write(DataWriter writer)
         {
 
+            Length = (Data?.Length??0) + 8;
+
             writer.Write(Ident);
             writer.Write(Length);
 
+            if (Length > 8)
+            {
+                writer.Write(Data);
+            }
 
         }
 
@@ -947,10 +1017,15 @@ namespace CodeWalker.GameFiles
 
         public void Write(DataWriter writer)
         {
+            Length = (Data?.Length ?? 0) + 8;
 
             writer.Write(Ident);
             writer.Write(Length);
 
+            if (Length > 8)
+            {
+                writer.Write(Data);
+            }
 
         }
 
@@ -983,11 +1058,13 @@ namespace CodeWalker.GameFiles
 
         public void Write(DataWriter writer)
         {
+            Length = 20;
 
             writer.Write(Ident);
             writer.Write(Length);
-
-
+            writer.Write(FileSize);
+            writer.Write(Checksum);
+            writer.Write(Unk0);
         }
 
         public override string ToString()
