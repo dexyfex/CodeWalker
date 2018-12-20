@@ -490,6 +490,21 @@ namespace CodeWalker.GameFiles
 
                     DlcActiveRpfs.Add(dlcfile);
 
+                    for (int i = 1; i <= setupfile.subPackCount; i++)
+                    {
+                        var subpackPath = dlcfile.Path.Replace("\\dlc.rpf", "\\dlc" + i.ToString() + ".rpf");
+                        var subpack = RpfMan.FindRpfFile(subpackPath);
+                        if (subpack != null)
+                        {
+                            DlcActiveRpfs.Add(subpack);
+
+                            if (setupfile.DlcSubpacks == null) setupfile.DlcSubpacks = new List<RpfFile>();
+                            setupfile.DlcSubpacks.Add(subpack);
+                        }
+                    }
+
+
+
                     string dlcname = GetDlcNameFromPath(dlcfile.Path);
 
 
@@ -502,7 +517,7 @@ namespace CodeWalker.GameFiles
                         //if (rpfkvp.Value.overlay)
                         AddDlcOverlayRpf(rpfkvp.Key, umpath, setupfile, overlays);
 
-                        AddDlcActiveMapRpfFile(rpfkvp.Key, phpath);
+                        AddDlcActiveMapRpfFile(rpfkvp.Key, phpath, setupfile);
                     }
 
 
@@ -561,7 +576,7 @@ namespace CodeWalker.GameFiles
                                     //if (rpfdatafile.overlay)
                                     AddDlcOverlayRpf(dfn, rpfdatafile.filename, setupfile, overlays);
 
-                                    AddDlcActiveMapRpfFile(dfn, phpath);
+                                    AddDlcActiveMapRpfFile(dfn, phpath, setupfile);
                                 }
                                 else
                                 {
@@ -608,7 +623,7 @@ namespace CodeWalker.GameFiles
 
                                         AddDlcOverlayRpf(fpath, umpath, setupfile, overlays);
 
-                                        AddDlcActiveMapRpfFile(fpath, phpath);
+                                        AddDlcActiveMapRpfFile(fpath, phpath, setupfile);
                                     }
                                 }
                             }
@@ -627,7 +642,7 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        private void AddDlcActiveMapRpfFile(string vpath, string phpath)
+        private void AddDlcActiveMapRpfFile(string vpath, string phpath, DlcSetupFile setupfile)
         {
             vpath = vpath.ToLowerInvariant();
             phpath = phpath.ToLowerInvariant();
@@ -684,10 +699,26 @@ namespace CodeWalker.GameFiles
         {
             string devname = setupfile.deviceName.ToLowerInvariant();
             string fpath = GetDlcPlatformPath(path).ToLowerInvariant();
-            string kpath = fpath.Replace(devname + ":\\", "");
+            string kpath = fpath;//.Replace(devname + ":\\", "");
             string dlcpath = setupfile.DlcFile.Path;
             fpath = fpath.Replace(devname + ":", dlcpath);
             fpath = fpath.Replace("x64:", dlcpath + "\\x64").Replace('/', '\\');
+            if (setupfile.DlcSubpacks != null)
+            {
+                if (RpfMan.FindRpfFile(fpath) == null)
+                {
+                    foreach (var subpack in setupfile.DlcSubpacks)
+                    {
+                        dlcpath = subpack.Path;
+                        var tpath = kpath.Replace(devname + ":", dlcpath);
+                        tpath = tpath.Replace("x64:", dlcpath + "\\x64").Replace('/', '\\');
+                        if (RpfMan.FindRpfFile(tpath) != null)
+                        {
+                            return GetDlcPatchedPath(tpath);
+                        }
+                    }
+                }
+            }
             return GetDlcPatchedPath(fpath);
         }
         private string GetDlcOverlayPath(string path, DlcSetupFile setupfile)

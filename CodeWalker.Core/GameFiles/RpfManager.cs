@@ -124,7 +124,7 @@ namespace CodeWalker.GameFiles
 
         private void AddRpfFile(RpfFile file, bool isdlc, bool ismod)
         {
-            isdlc = isdlc || (file.NameLower == "dlc.rpf") || (file.NameLower == "update.rpf");
+            isdlc = isdlc || (file.NameLower == "update.rpf") || (file.NameLower.StartsWith("dlc") && file.NameLower.EndsWith(".rpf"));
             ismod = ismod || (file.Path.StartsWith("mods\\"));
 
             if (file.AllEntries != null)

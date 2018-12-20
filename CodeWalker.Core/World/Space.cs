@@ -420,19 +420,22 @@ namespace CodeWalker.World
             {
                 AddRpfYnds(rpffile, yndentries);
             }
-            var updrpf = rpfman.FindRpfFile("update\\update.rpf"); //load nodes from patch area...
-            if (updrpf != null)
+            if (GameFileCache.EnableDlc)
             {
-                foreach (var rpffile in updrpf.Children)
+                var updrpf = rpfman.FindRpfFile("update\\update.rpf"); //load nodes from patch area...
+                if (updrpf != null)
                 {
-                    AddRpfYnds(rpffile, yndentries);
+                    foreach (var rpffile in updrpf.Children)
+                    {
+                        AddRpfYnds(rpffile, yndentries);
+                    }
                 }
-            }
-            foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load nodes from current dlc rpfs
-            {
-                foreach (var rpffile in dlcrpf.Children)
+                foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load nodes from current dlc rpfs
                 {
-                    AddRpfYnds(rpffile, yndentries);
+                    foreach (var rpffile in dlcrpf.Children)
+                    {
+                        AddRpfYnds(rpffile, yndentries);
+                    }
                 }
             }
 
@@ -721,19 +724,22 @@ namespace CodeWalker.World
             {
                 AddRpfYnvs(rpffile, ynventries);
             }
-            foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load navmeshes from current dlc rpfs
+            if (GameFileCache.EnableDlc)
             {
-                foreach (var rpffile in dlcrpf.Children)
+                var updrpf = rpfman.FindRpfFile("update\\update.rpf"); //load navmeshes from patch area...
+                if (updrpf != null)
                 {
-                    AddRpfYnvs(rpffile, ynventries);
+                    foreach (var rpffile in updrpf.Children)
+                    {
+                        AddRpfYnvs(rpffile, ynventries);
+                    }
                 }
-            }
-            var updrpf = rpfman.FindRpfFile("update\\update.rpf"); //load navmeshes from patch area...
-            if (updrpf != null)
-            {
-                foreach (var rpffile in updrpf.Children)
+                foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load navmeshes from current dlc rpfs
                 {
-                    AddRpfYnvs(rpffile, ynventries);
+                    foreach (var rpffile in dlcrpf.Children)
+                    {
+                        AddRpfYnvs(rpffile, ynventries);
+                    }
                 }
             }
 
