@@ -886,19 +886,19 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 3, 0),
                      new PsoStructureEntryInfo(MetaName.clipSets, PsoDataType.Map, 8, 1, (MetaName)1),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.String, 0, 7, 0),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)331140115),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.fwClipDictionaryMetadata),
                      new PsoStructureEntryInfo(MetaName.clipDictionaryMetadatas, PsoDataType.Map, 32, 1, (MetaName)196612),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.String, 0, 7, 0),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2046450505),
-                     new PsoStructureEntryInfo((MetaName)3211922640, PsoDataType.Map, 56, 1, (MetaName)393223),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.fwMemoryGroupMetadata),
+                     new PsoStructureEntryInfo(MetaName.memoryGroupMetadatas, PsoDataType.Map, 56, 1, (MetaName)393223),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.String, 0, 7, 0),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)3219912345),
-                     new PsoStructureEntryInfo((MetaName)3532340754, PsoDataType.Map, 80, 1, (MetaName)589834),
+                     new PsoStructureEntryInfo((MetaName)3532340754, PsoDataType.Map, 80, 1, (MetaName)589834),//memory group modifiers
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.String, 0, 7, 0),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 3, 0),
-                     new PsoStructureEntryInfo((MetaName)1333660780, PsoDataType.Map, 104, 1, (MetaName)786445)
+                     new PsoStructureEntryInfo((MetaName)1333660780, PsoDataType.Map, 104, 1, (MetaName)786445)//move network flags dictionary
                     );
-                case MetaName.ARRAYINFO:
+                case MetaName.ARRAYINFO://default map node entry, with a structure pointer
                     return new PsoStructureInfo(MetaName.ARRAYINFO, 0, 2, 16,
                      new PsoStructureEntryInfo(MetaName.Key, PsoDataType.String, 0, 7, 0),
                      new PsoStructureEntryInfo(MetaName.Item, PsoDataType.Structure, 8, 3, 0)
@@ -931,7 +931,7 @@ namespace CodeWalker.GameFiles
                 case MetaName.fwClipItem:
                     return new PsoStructureInfo(MetaName.fwClipItem, 0, 0, 8   //empty struct... possibly abstract/base class
                     );
-                case (MetaName)4285341798:
+                case (MetaName)4285341798: //creature/animal clip set?
                     return new PsoStructureInfo((MetaName)4285341798, 0, 0, 72,
                      new PsoStructureEntryInfo(MetaName.fallbackId, PsoDataType.String, 8, 7, 0),
                      new PsoStructureEntryInfo(MetaName.clipDictionaryName, PsoDataType.String, 12, 7, 0),
@@ -945,48 +945,48 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo((MetaName)2283074537, PsoDataType.Bool, 64, 0, 0),
                      new PsoStructureEntryInfo((MetaName)1451470102, PsoDataType.String, 68, 7, 0)
                     );
-                case (MetaName)331140115:
-                    return new PsoStructureInfo((MetaName)331140115, 0, 0, 24,
+                case MetaName.fwClipDictionaryMetadata:
+                    return new PsoStructureInfo(MetaName.fwClipDictionaryMetadata, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Enum, 0, 0, (MetaName)1631789397),
                      new PsoStructureEntryInfo(MetaName.streamingPolicy, PsoDataType.Flags, 8, 0, (MetaName)2097152),
                      new PsoStructureEntryInfo(MetaName.memoryGroup, PsoDataType.String, 12, 7, 0),
                      new PsoStructureEntryInfo(MetaName.streamingPriority, PsoDataType.Enum, 16, 0, (MetaName)733577798)
                     );
-                case (MetaName)257:
-                    return new PsoStructureInfo((MetaName)257, 0, 2, 32,
-                     new PsoStructureEntryInfo(MetaName.Key, PsoDataType.String, 0, 7, 0),
-                     new PsoStructureEntryInfo(MetaName.Item, PsoDataType.Structure, 8, 0, (MetaName)331140115)
-                    );
-                case (MetaName)2046450505:
-                    return new PsoStructureInfo((MetaName)2046450505, 0, 0, 16,
+                case MetaName.fwMemoryGroupMetadata:
+                    return new PsoStructureInfo(MetaName.fwMemoryGroupMetadata, 0, 0, 16,
                      new PsoStructureEntryInfo((MetaName)676191063, PsoDataType.UInt, 8, 0, 0),
                      new PsoStructureEntryInfo((MetaName)1661025772, PsoDataType.UInt, 12, 0, 0)
                     );
-                case (MetaName)258:
-                    return new PsoStructureInfo((MetaName)258, 0, 2, 24,
-                     new PsoStructureEntryInfo(MetaName.Key, PsoDataType.String, 0, 7, 0),
-                     new PsoStructureEntryInfo(MetaName.Item, PsoDataType.Structure, 8, 0, (MetaName)2046450505)
-                    );
-                case (MetaName)3219912345:
+                case (MetaName)3219912345://clip sets memory group modifier?
                     return new PsoStructureInfo((MetaName)3219912345, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2356519750),
                      new PsoStructureEntryInfo((MetaName)4147768898, PsoDataType.Array, 8, 0, 0)
                     );
-                case (MetaName)259:
-                    return new PsoStructureInfo((MetaName)259, 0, 2, 32,
-                     new PsoStructureEntryInfo(MetaName.Key, PsoDataType.String, 0, 7, 0),
-                     new PsoStructureEntryInfo(MetaName.Item, PsoDataType.Structure, 8, 0, (MetaName)3219912345)
-                    );
-                case (MetaName)2356519750:
+                case (MetaName)2356519750: //clip sets memory group modifier adjustment
                     return new PsoStructureInfo((MetaName)2356519750, 0, 0, 16,
                      new PsoStructureEntryInfo((MetaName)4286534285, PsoDataType.String, 8, 7, 0),
                      new PsoStructureEntryInfo(MetaName.Amount, PsoDataType.SInt, 12, 0, 0)
                     );
-                case (MetaName)1005381910:
+                case (MetaName)1005381910: //clip sets move network flags list/group?
                     return new PsoStructureInfo((MetaName)1005381910, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.String, 0, 7, 0),
                      new PsoStructureEntryInfo(MetaName.clips, PsoDataType.Array, 8, 0, 0)
                     );
+                //case (MetaName)257://this shouldn't really be in here, because it's dynamically generated, see PsoBuilder.AddMapNodeStructureInfo
+                //    return new PsoStructureInfo((MetaName)257, 0, 2, 32,
+                //     new PsoStructureEntryInfo(MetaName.Key, PsoDataType.String, 0, 7, 0),
+                //     new PsoStructureEntryInfo(MetaName.Item, PsoDataType.Structure, 8, 0, MetaName.fwClipDictionaryMetadata)
+                //    );
+                //case (MetaName)258://this shouldn't really be in here, because it's dynamically generated, see PsoBuilder.AddMapNodeStructureInfo
+                //    return new PsoStructureInfo((MetaName)258, 0, 2, 24,
+                //     new PsoStructureEntryInfo(MetaName.Key, PsoDataType.String, 0, 7, 0),
+                //     new PsoStructureEntryInfo(MetaName.Item, PsoDataType.Structure, 8, 0, MetaName.fwMemoryGroupMetadata)
+                //    );
+                //case (MetaName)259://this shouldn't really be in here, because it's dynamically generated, see PsoBuilder.AddMapNodeStructureInfo
+                //    return new PsoStructureInfo((MetaName)259, 0, 2, 32,
+                //     new PsoStructureEntryInfo(MetaName.Key, PsoDataType.String, 0, 7, 0),
+                //     new PsoStructureEntryInfo(MetaName.Item, PsoDataType.Structure, 8, 0, (MetaName)3219912345)
+                //    );
                 case (MetaName)4209092714:
                     return new PsoStructureInfo((MetaName)4209092714, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2319197961),
@@ -14891,10 +14891,10 @@ namespace CodeWalker.GameFiles
                     );
                 case MetaName.ThermalBehaviour:
                     return new PsoEnumInfo(MetaName.ThermalBehaviour, 1,
-                     new PsoEnumEntryInfo((MetaName)3088554349, 0),
-                     new PsoEnumEntryInfo((MetaName)3827341951, 1),
+                     new PsoEnumEntryInfo(MetaName.TB_DEAD, 0),
+                     new PsoEnumEntryInfo(MetaName.TB_COLD, 1),
                      new PsoEnumEntryInfo(MetaName.TB_WARM, 2),
-                     new PsoEnumEntryInfo((MetaName)2709699671, 3)
+                     new PsoEnumEntryInfo(MetaName.TB_HOT, 3)
                     );
                 case (MetaName)4015041481:
                     return new PsoEnumInfo((MetaName)4015041481, 1,
@@ -14962,7 +14962,7 @@ namespace CodeWalker.GameFiles
                     return new PsoEnumInfo((MetaName)1498349301, 1,
                      new PsoEnumEntryInfo(MetaName.AP_LOW, 0),
                      new PsoEnumEntryInfo(MetaName.AP_MEDIUM, 1),
-                     new PsoEnumEntryInfo((MetaName)313384972, 2),
+                     new PsoEnumEntryInfo(MetaName.AP_HIGH, 2),
                      new PsoEnumEntryInfo((MetaName)2096169364, 3),
                      new PsoEnumEntryInfo((MetaName)3509068476, 4),
                      new PsoEnumEntryInfo((MetaName)611607097, 5)
@@ -14978,7 +14978,7 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo((MetaName)3866220764, 0),
                      new PsoEnumEntryInfo(MetaName.SP_Low, 1),
                      new PsoEnumEntryInfo(MetaName.SP_Medium, 2),
-                     new PsoEnumEntryInfo((MetaName)44700989, 3)
+                     new PsoEnumEntryInfo(MetaName.SP_High, 3)
                     );
                 case (MetaName)2476021071:
                     return new PsoEnumInfo((MetaName)2476021071, 1,
@@ -15051,50 +15051,50 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo(MetaName.BONETAG_R_UPPERARM, 40269),
                      new PsoEnumEntryInfo(MetaName.BONETAG_R_FOREARM, 28252),
                      new PsoEnumEntryInfo(MetaName.BONETAG_R_HAND, 57005),
-                     new PsoEnumEntryInfo((MetaName)2544970273, 58866),
-                     new PsoEnumEntryInfo((MetaName)1005591915, 64016),
-                     new PsoEnumEntryInfo((MetaName)774537696, 64017),
-                     new PsoEnumEntryInfo((MetaName)4262590177, 58867),
-                     new PsoEnumEntryInfo((MetaName)557114589, 64096),
-                     new PsoEnumEntryInfo((MetaName)308168496, 64097),
-                     new PsoEnumEntryInfo((MetaName)2082763528, 58868),
-                     new PsoEnumEntryInfo((MetaName)2175091220, 64112),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER0, 58866),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER01, 64016),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER02, 64017),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER1, 58867),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER11, 64096),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER12, 64097),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER2, 58868),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER21, 64112),
                      new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER22, 64113),
-                     new PsoEnumEntryInfo((MetaName)1358503090, 58869),
-                     new PsoEnumEntryInfo((MetaName)1281645843, 64064),
-                     new PsoEnumEntryInfo((MetaName)2136457977, 64065),
-                     new PsoEnumEntryInfo((MetaName)1589098543, 58870),
-                     new PsoEnumEntryInfo((MetaName)1518893755, 64080),
-                     new PsoEnumEntryInfo((MetaName)2295060289, 64081),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER3, 58869),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER31, 64064),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER32, 64065),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER4, 58870),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER41, 64080),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_FINGER42, 64081),
                      new PsoEnumEntryInfo(MetaName.BONETAG_L_CLAVICLE, 64729),
                      new PsoEnumEntryInfo(MetaName.BONETAG_L_UPPERARM, 45509),
                      new PsoEnumEntryInfo(MetaName.BONETAG_L_FOREARM, 61163),
                      new PsoEnumEntryInfo(MetaName.BONETAG_L_HAND, 18905),
-                     new PsoEnumEntryInfo((MetaName)3483436254, 26610),
-                     new PsoEnumEntryInfo((MetaName)3342631108, 4089),
-                     new PsoEnumEntryInfo((MetaName)2503351480, 4090),
-                     new PsoEnumEntryInfo((MetaName)986241836, 26611),
-                     new PsoEnumEntryInfo((MetaName)2527500201, 4169),
-                     new PsoEnumEntryInfo((MetaName)4250526990, 4170),
-                     new PsoEnumEntryInfo((MetaName)1293713363, 26612),
-                     new PsoEnumEntryInfo((MetaName)3526758439, 4185),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER0, 26610),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER01, 4089),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER02, 4090),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER1, 26611),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER11, 4169),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER12, 4170),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER2, 26612),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER21, 4185),
                      new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER22, 4186),
-                     new PsoEnumEntryInfo((MetaName)858967036, 26613),
-                     new PsoEnumEntryInfo((MetaName)3236167907, 4137),
-                     new PsoEnumEntryInfo((MetaName)2527702127, 4138),
-                     new PsoEnumEntryInfo((MetaName)1149791911, 26614),
-                     new PsoEnumEntryInfo((MetaName)3182656438, 4153),
-                     new PsoEnumEntryInfo((MetaName)4127878243, 4154),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER3, 26613),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER31, 4137),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER32, 4138),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER4, 26614),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER41, 4153),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_FINGER42, 4154),
                      new PsoEnumEntryInfo(MetaName.BONETAG_L_THIGH, 58271),
                      new PsoEnumEntryInfo(MetaName.BONETAG_L_CALF, 63931),
                      new PsoEnumEntryInfo(MetaName.BONETAG_L_FOOT, 14201),
-                     new PsoEnumEntryInfo((MetaName)3734897948, 2108),
-                     new PsoEnumEntryInfo((MetaName)2497263744, 7531),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_TOE, 2108),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_L_TOE1, 7531),
                      new PsoEnumEntryInfo(MetaName.BONETAG_R_THIGH, 51826),
                      new PsoEnumEntryInfo(MetaName.BONETAG_R_CALF, 36864),
                      new PsoEnumEntryInfo(MetaName.BONETAG_R_FOOT, 52301),
-                     new PsoEnumEntryInfo((MetaName)1201239981, 20781),
-                     new PsoEnumEntryInfo((MetaName)3004057651, 45631),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_TOE, 20781),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_R_TOE1, 45631),
                      new PsoEnumEntryInfo((MetaName)1914315501, 35731),
                      new PsoEnumEntryInfo((MetaName)1648548119, 5232),
                      new PsoEnumEntryInfo((MetaName)533252846, 37119),
@@ -15112,12 +15112,12 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo((MetaName)176026430, 39638),
                      new PsoEnumEntryInfo((MetaName)3870648046, 36029),
                      new PsoEnumEntryInfo((MetaName)3398180204, 6286),
-                     new PsoEnumEntryInfo((MetaName)981146734, 838),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_TAIL0, 838),
                      new PsoEnumEntryInfo(MetaName.BONETAG_TAIL1, 839),
                      new PsoEnumEntryInfo(MetaName.BONETAG_TAIL2, 840),
-                     new PsoEnumEntryInfo((MetaName)2659378300, 841),
-                     new PsoEnumEntryInfo((MetaName)1899006424, 842),
-                     new PsoEnumEntryInfo((MetaName)2199399847, 843),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_TAIL3, 841),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_TAIL4, 842),
+                     new PsoEnumEntryInfo(MetaName.BONETAG_TAIL5, 843),
                      new PsoEnumEntryInfo((MetaName)1109140959, 30992),
                      new PsoEnumEntryInfo((MetaName)803570034, 30993),
                      new PsoEnumEntryInfo((MetaName)631663860, 30994),

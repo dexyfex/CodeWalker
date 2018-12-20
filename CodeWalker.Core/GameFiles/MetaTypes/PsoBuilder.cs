@@ -317,8 +317,8 @@ namespace CodeWalker.GameFiles
 
             //switch (valType)
             //{
-            //    case (MetaName)331140115: return PsoTypes.GetStructureInfo((MetaName)257);
-            //    case (MetaName)2046450505: return PsoTypes.GetStructureInfo((MetaName)258);
+            //    case MetaName.fwClipDictionaryMetadata: return PsoTypes.GetStructureInfo((MetaName)257);
+            //    case MetaName.fwMemoryGroupMetadata: return PsoTypes.GetStructureInfo((MetaName)258);
             //    case (MetaName)3219912345: return PsoTypes.GetStructureInfo((MetaName)259);
             //    case (MetaName)0: return PsoTypes.GetStructureInfo(MetaName.ARRAYINFO);
             //    default:
@@ -327,12 +327,12 @@ namespace CodeWalker.GameFiles
             //case (MetaName)257:
             //    return new PsoStructureInfo((MetaName)257, 0, 2, 32,
             //     new PsoStructureEntryInfo(MetaName.Key, PsoDataType.String, 0, 7, 0),
-            //     new PsoStructureEntryInfo(MetaName.Item, PsoDataType.Structure, 8, 0, (MetaName)331140115)
+            //     new PsoStructureEntryInfo(MetaName.Item, PsoDataType.Structure, 8, 0, MetaName.fwClipDictionaryMetadata)
             //    );
             //case (MetaName)258:
             //    return new PsoStructureInfo((MetaName)258, 0, 2, 24,
             //        new PsoStructureEntryInfo(MetaName.Key, PsoDataType.String, 0, 7, 0),
-            //        new PsoStructureEntryInfo(MetaName.Item, PsoDataType.Structure, 8, 0, (MetaName)2046450505)
+            //        new PsoStructureEntryInfo(MetaName.Item, PsoDataType.Structure, 8, 0, MetaName.fwMemoryGroupMetadata)
             //    );
             //case (MetaName)259:
             //    return new PsoStructureInfo((MetaName)259, 0, 2, 32,
