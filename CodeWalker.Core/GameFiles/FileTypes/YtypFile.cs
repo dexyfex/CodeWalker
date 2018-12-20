@@ -90,7 +90,7 @@ namespace CodeWalker.GameFiles
                                 m._MloArchetypeDef._MloArchetypeDef.rooms = mb.AddWrapperArray(m.rooms);
                                 m._MloArchetypeDef._MloArchetypeDef.portals = mb.AddWrapperArray(m.portals);
                                 m._MloArchetypeDef._MloArchetypeDef.entitySets = mb.AddWrapperArray(m.entitySets);
-                                m._MloArchetypeDef._MloArchetypeDef.timeCycleModifiers = mb.AddItemArrayPtr(MetaName.CTimeCycleModifier, m.timeCycleModifiers);
+                                m._MloArchetypeDef._MloArchetypeDef.timeCycleModifiers = mb.AddItemArrayPtr(MetaName.CMloTimeCycleModifier, m.timeCycleModifiers);
                             }
                             catch/* (Exception e)*/
                             {
@@ -126,17 +126,20 @@ namespace CodeWalker.GameFiles
             mapTypes.dependencies = new Array_uint(); // is this never used? possibly a todo?
 
             mb.AddStructureInfo(MetaName.CMapTypes);
-            mb.AddStructureInfo(MetaName.CBaseArchetypeDef);
-            mb.AddStructureInfo(MetaName.CMloArchetypeDef);
-            mb.AddStructureInfo(MetaName.CTimeArchetypeDef);
-            mb.AddStructureInfo(MetaName.CCompositeEntityType);
-            mb.AddStructureInfo(MetaName.CMloRoomDef);
-            mb.AddStructureInfo(MetaName.CMloPortalDef);
-            mb.AddStructureInfo(MetaName.CMloEntitySet);
 
             if ((AllArchetypes != null && AllArchetypes.Length > 0))
             {
+                mb.AddStructureInfo(MetaName.CBaseArchetypeDef);
                 mb.AddEnumInfo((MetaName)1991964615); // ASSET_TYPE_
+            }
+
+            if ((AllArchetypes != null) && (AllArchetypes.Any(x => x is MloArchetype)))
+            {
+                mb.AddStructureInfo(MetaName.CMloArchetypeDef);
+                mb.AddStructureInfo(MetaName.CMloRoomDef);
+                mb.AddStructureInfo(MetaName.CMloPortalDef);
+                mb.AddStructureInfo(MetaName.CMloEntitySet);
+                mb.AddStructureInfo(MetaName.CMloTimeCycleModifier);
             }
 
             if ((AllArchetypes != null) && (AllArchetypes.Any(x => x is MloArchetype m && m.entities.Length > 0)))
@@ -145,6 +148,17 @@ namespace CodeWalker.GameFiles
                 mb.AddEnumInfo((MetaName)1264241711); //LODTYPES_
                 mb.AddEnumInfo((MetaName)648413703);  //PRI_
             }
+
+            if ((AllArchetypes != null) && (AllArchetypes.Any(x => x is TimeArchetype)))
+            {
+                mb.AddStructureInfo(MetaName.CTimeArchetypeDef);
+            }
+
+            if (CompositeEntityTypes?.Length > 0)
+            {
+                mb.AddStructureInfo(MetaName.CCompositeEntityType);
+            }
+
 
             mb.AddItem(MetaName.CMapTypes, mapTypes);
 
