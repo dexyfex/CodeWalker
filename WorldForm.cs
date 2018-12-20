@@ -1,19 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Threading;
-using System.Diagnostics;
+﻿using CodeWalker.GameFiles;
+using CodeWalker.Project;
+using CodeWalker.Properties;
+using CodeWalker.Rendering;
+using CodeWalker.World;
 using SharpDX;
 using SharpDX.XInput;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using Device = SharpDX.Direct3D11.Device;
 using DeviceContext = SharpDX.Direct3D11.DeviceContext;
-using CodeWalker.World;
-using CodeWalker.Project;
-using CodeWalker.Rendering;
-using CodeWalker.GameFiles;
-using CodeWalker.Properties;
 
 namespace CodeWalker
 {
@@ -103,7 +103,7 @@ namespace CodeWalker
 
 
 
-        
+
 
 
 
@@ -350,7 +350,7 @@ namespace CodeWalker
             }
 
             camera.FollowEntity = camEntity;
-            camEntity.Position = (startupviewmode!=2) ? prevworldpos : Vector3.Zero;
+            camEntity.Position = (startupviewmode != 2) ? prevworldpos : Vector3.Zero;
             camEntity.Orientation = Quaternion.LookAtLH(Vector3.Zero, Vector3.Up, Vector3.ForwardLH);
 
             space.AddPersistentEntity(pedEntity);
@@ -1154,7 +1154,7 @@ namespace CodeWalker
                 UpdateMousedLabel(text);
             }
 
-            if(!CurMouseHit.HasHit)
+            if (!CurMouseHit.HasHit)
             { return; }
 
 
@@ -1310,19 +1310,17 @@ namespace CodeWalker
             }
             if (selectionItem.CarGenerator != null)
             {
-                var cg = selectionItem.CarGenerator;
-                camrel = cg.Position - camera.Position;
-                ori = cg.Orientation;
-                bbmin = cg.BBMin;
-                bbmax = cg.BBMax;
-                float arrowlen = cg._CCarGen.perpendicularLength;
+                
+                var carGenerator = selectionItem.CarGenerator;
+                camrel = carGenerator.Position - camera.Position;
+                ori = carGenerator.Orientation;
+                bbmin = carGenerator.BBMin;
+                bbmax = carGenerator.BBMax;
+                float arrowlen = carGenerator._CCarGen.perpendicularLength;
                 float arrowrad = arrowlen * 0.066f;
-                Renderer.RenderSelectionArrowOutline(cg.Position, Vector3.UnitX, Vector3.UnitY, ori, arrowlen, arrowrad, cgrn);
-
-                Quaternion cgtrn = Quaternion.RotationAxis(Vector3.UnitZ, (float)Math.PI * -0.5f); //car fragments currently need to be rotated 90 deg right...
-                Quaternion cgori = Quaternion.Multiply(ori, cgtrn);
-
-                Renderer.RenderCar(cg.Position, cgori, cg._CCarGen.carModel, cg._CCarGen.popGroup);
+                Renderer.RenderSelectionArrowOutline(carGenerator.Position, Vector3.UnitX, Vector3.UnitY, ori, arrowlen, arrowrad, cgrn);
+                Renderer.RenderCar(carGenerator);
+                // Renderer.RenderCar(carGenerator.Position, ori, carGenerator._CCarGen.carModel, carGenerator._CCarGen.popGroup);
             }
             if (selectionItem.PathNode != null)
             {
@@ -1377,7 +1375,7 @@ namespace CodeWalker
                     Vector3 dup = Vector3.UnitZ;
                     var aori = Quaternion.Invert(Quaternion.RotationLookAtRH(dir, dup));
                     float arrowrad = 0.25f;
-                    float arrowlen = Math.Max(dl - arrowrad*5.0f, 0);
+                    float arrowlen = Math.Max(dl - arrowrad * 5.0f, 0);
                     Renderer.RenderSelectionArrowOutline(sn1.Position, -Vector3.UnitZ, Vector3.UnitY, aori, arrowlen, arrowrad, cblu);
                 }
             }
@@ -1407,7 +1405,7 @@ namespace CodeWalker
                             }
                             for (int ic = 0; ic < portal.Corners.Length; ic++)
                             {
-                                int il = ((ic==0)? portal.Corners.Length : ic) - 1;
+                                int il = ((ic == 0) ? portal.Corners.Length : ic) - 1;
                                 p1.Position = mlop + mlo.Orientation.Multiply(portal.Corners[il].XYZ());
                                 p2.Position = mlop + mlo.Orientation.Multiply(portal.Corners[ic].XYZ());
                                 Renderer.SelectionLineVerts.Add(p1);
@@ -1656,7 +1654,7 @@ namespace CodeWalker
             }
             else
             {
-                SelectedItem.SetPosition(newpos, EditEntityPivot);                
+                SelectedItem.SetPosition(newpos, EditEntityPivot);
             }
             if (ProjectForm != null)
             {
@@ -2166,7 +2164,7 @@ namespace CodeWalker
 
 
         }
-        
+
         public SpaceRayIntersectResult GetSpaceMouseRay()
         {
             SpaceRayIntersectResult ret = new SpaceRayIntersectResult();
@@ -2201,7 +2199,7 @@ namespace CodeWalker
             //if ((SelectionMode == MapSelectionMode.Entity) && !MouseSelectEnabled) return; //performance improvement when not selecting entities...
 
             //test the selected entity/archetype for mouse hit.
-            
+
             //first test the bounding sphere for mouse hit..
             Quaternion orinv;
             Ray mraytrn;
@@ -2244,7 +2242,7 @@ namespace CodeWalker
                 //transform the mouse ray into the entity space.
                 orinv = Quaternion.Invert(orientation);
                 mraytrn = new Ray();
-                mraytrn.Position = orinv.Multiply(camera.MouseRay.Position-camrel);
+                mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - camrel);
                 mraytrn.Direction = orinv.Multiply(camera.MouseRay.Direction);
 
                 if (SelectionMode == MapSelectionMode.EntityExtension)
@@ -2318,7 +2316,7 @@ namespace CodeWalker
 
             bool usegeomboxes = SelectByGeometry;
             var dmodels = drawable.DrawableModelsHigh;
-            if((dmodels==null)||(dmodels.data_items==null))
+            if ((dmodels == null) || (dmodels.data_items == null))
             { usegeomboxes = false; }
             if (usegeomboxes)
             {
@@ -2335,7 +2333,7 @@ namespace CodeWalker
             //transform the mouse ray into the entity space.
             orinv = Quaternion.Invert(orientation);
             mraytrn = new Ray();
-            mraytrn.Position = orinv.Multiply(camera.MouseRay.Position-camrel);
+            mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - camrel);
             mraytrn.Direction = orinv.Multiply(camera.MouseRay.Direction);
             hitdist = 0.0f;
 
@@ -2372,7 +2370,7 @@ namespace CodeWalker
                                     float r2 = b2.Length() * 0.5f;
                                     radsm = (r1 < (r2));// * 0.5f));
                                 }
-                                if ((nearer&&radsm) || radsm) usehit = true;
+                                if ((nearer && radsm) || radsm) usehit = true;
                             }
                         }
                         else if (j == 0) //no hit on model box
@@ -2414,7 +2412,7 @@ namespace CodeWalker
                             float r2 = CurMouseHit.Archetype.BSRadius;
                             radsm = (r1 <= (r2));// * 0.5f)); //prefer selecting smaller things
                         }
-                        if ((nearer&&radsm) || radsm)
+                        if ((nearer && radsm) || radsm)
                         {
                             outerhit = true;
                         }
@@ -3263,7 +3261,7 @@ namespace CodeWalker
             bool change = false;
             if (mhit != null)
             {
-                change = SelectedItem.CheckForChanges(mhitv); 
+                change = SelectedItem.CheckForChanges(mhitv);
             }
             else
             {
@@ -3863,9 +3861,9 @@ namespace CodeWalker
             //bool enableymapui = (ent != null) && (ent.Ymap != null);
             //var ymap = ent?.Ymap;
 
-            bool enableymapui = (ymap != null);
+            bool enableymapui = ymap != null;
 
-            EnableYmapUI(enableymapui, (ymap != null) ? ymap.Name : "");
+            EnableYmapUI(enableymapui, enableymapui ? ymap.Name : "");
 
             if (ynd != null)
             {
@@ -3965,7 +3963,7 @@ namespace CodeWalker
                         }
                         tgnode.Expand();
                     }
-                    
+
                 }
 
                 mnode.Expand();
@@ -4156,7 +4154,8 @@ namespace CodeWalker
                         LoadWorld();
                     }
                 }
-                Invoke(new Action(()=> {
+                Invoke(new Action(() =>
+                {
                     Cursor = Cursors.Default;
                 }));
             });
@@ -4177,7 +4176,8 @@ namespace CodeWalker
                         LoadWorld();
                     }
                 }
-                Invoke(new Action(() => {
+                Invoke(new Action(() =>
+                {
                     Cursor = Cursors.Default;
                 }));
             });
@@ -7204,7 +7204,7 @@ namespace CodeWalker
                 MessageBox.Show("Please close the Project Window before enabling or disabling mods.");
                 return;
             }
-            
+
             SetModsEnabled(EnableModsCheckBox.Checked);
         }
 
@@ -7799,6 +7799,11 @@ namespace CodeWalker
         {
             var statsForm = new StatisticsForm(this);
             statsForm.Show(this);
+        }
+
+        private void ShowCarGeneratorsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderCars = ShowCarGeneratorsCheckBox.Checked;
         }
     }
 

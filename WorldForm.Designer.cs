@@ -63,6 +63,7 @@ namespace CodeWalker
             this.label15 = new System.Windows.Forms.Label();
             this.WorldMaxLodComboBox = new System.Windows.Forms.ComboBox();
             this.ViewYmapsTabPage = new System.Windows.Forms.TabPage();
+            this.ShowCarGeneratorsCheckBox = new System.Windows.Forms.CheckBox();
             this.ShowYmapChildrenCheckBox = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.DetailTrackBar = new System.Windows.Forms.TrackBar();
@@ -254,6 +255,7 @@ namespace CodeWalker
             this.ToolbarSelectMloInstanceButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectAudioButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSelectOcclusionButton = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.ToolbarMoveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarRotateButton = new System.Windows.Forms.ToolStripButton();
@@ -285,7 +287,6 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
-            this.ToolbarSelectOcclusionButton = new System.Windows.Forms.ToolStripMenuItem();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -335,9 +336,9 @@ namespace CodeWalker
             this.StatusLabel,
             this.MousedLabel,
             this.StatsLabel});
-            this.StatusStrip.Location = new System.Drawing.Point(0, 689);
+            this.StatusStrip.Location = new System.Drawing.Point(0, 793);
             this.StatusStrip.Name = "StatusStrip";
-            this.StatusStrip.Size = new System.Drawing.Size(984, 22);
+            this.StatusStrip.Size = new System.Drawing.Size(1353, 22);
             this.StatusStrip.TabIndex = 0;
             this.StatusStrip.Text = "statusStrip1";
             // 
@@ -346,7 +347,7 @@ namespace CodeWalker
             this.StatusLabel.BackColor = System.Drawing.SystemColors.Control;
             this.StatusLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(878, 17);
+            this.StatusLabel.Size = new System.Drawing.Size(1247, 17);
             this.StatusLabel.Spring = true;
             this.StatusLabel.Text = "Initialising";
             this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -425,9 +426,9 @@ namespace CodeWalker
             this.ToolsPanel.Controls.Add(this.ToolsPanelExpandButton);
             this.ToolsPanel.Controls.Add(this.ToolsTabControl);
             this.ToolsPanel.Controls.Add(this.ToolsPanelHideButton);
-            this.ToolsPanel.Location = new System.Drawing.Point(754, 12);
+            this.ToolsPanel.Location = new System.Drawing.Point(1123, 12);
             this.ToolsPanel.Name = "ToolsPanel";
-            this.ToolsPanel.Size = new System.Drawing.Size(218, 665);
+            this.ToolsPanel.Size = new System.Drawing.Size(218, 769);
             this.ToolsPanel.TabIndex = 2;
             this.ToolsPanel.Visible = false;
             // 
@@ -438,7 +439,7 @@ namespace CodeWalker
             this.ToolsDragPanel.Cursor = System.Windows.Forms.Cursors.VSplit;
             this.ToolsDragPanel.Location = new System.Drawing.Point(0, 0);
             this.ToolsDragPanel.Name = "ToolsDragPanel";
-            this.ToolsDragPanel.Size = new System.Drawing.Size(4, 665);
+            this.ToolsDragPanel.Size = new System.Drawing.Size(4, 769);
             this.ToolsDragPanel.TabIndex = 16;
             this.ToolsDragPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ToolsDragPanel_MouseDown);
             this.ToolsDragPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ToolsDragPanel_MouseMove);
@@ -487,7 +488,7 @@ namespace CodeWalker
             this.ToolsTabControl.Location = new System.Drawing.Point(3, 30);
             this.ToolsTabControl.Name = "ToolsTabControl";
             this.ToolsTabControl.SelectedIndex = 0;
-            this.ToolsTabControl.Size = new System.Drawing.Size(213, 632);
+            this.ToolsTabControl.Size = new System.Drawing.Size(213, 736);
             this.ToolsTabControl.TabIndex = 12;
             // 
             // tabPage1
@@ -498,7 +499,7 @@ namespace CodeWalker
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(205, 606);
+            this.tabPage1.Size = new System.Drawing.Size(205, 710);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "View";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -514,7 +515,7 @@ namespace CodeWalker
             this.ViewTabControl.Location = new System.Drawing.Point(0, 32);
             this.ViewTabControl.Name = "ViewTabControl";
             this.ViewTabControl.SelectedIndex = 0;
-            this.ViewTabControl.Size = new System.Drawing.Size(202, 574);
+            this.ViewTabControl.Size = new System.Drawing.Size(202, 678);
             this.ViewTabControl.TabIndex = 12;
             // 
             // ViewWorldTabPage
@@ -537,7 +538,7 @@ namespace CodeWalker
             this.ViewWorldTabPage.Location = new System.Drawing.Point(4, 22);
             this.ViewWorldTabPage.Name = "ViewWorldTabPage";
             this.ViewWorldTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.ViewWorldTabPage.Size = new System.Drawing.Size(194, 548);
+            this.ViewWorldTabPage.Size = new System.Drawing.Size(194, 652);
             this.ViewWorldTabPage.TabIndex = 0;
             this.ViewWorldTabPage.Text = "World";
             this.ViewWorldTabPage.UseVisualStyleBackColor = true;
@@ -727,6 +728,7 @@ namespace CodeWalker
             // 
             // ViewYmapsTabPage
             // 
+            this.ViewYmapsTabPage.Controls.Add(this.ShowCarGeneratorsCheckBox);
             this.ViewYmapsTabPage.Controls.Add(this.ShowYmapChildrenCheckBox);
             this.ViewYmapsTabPage.Controls.Add(this.label2);
             this.ViewYmapsTabPage.Controls.Add(this.DetailTrackBar);
@@ -735,15 +737,25 @@ namespace CodeWalker
             this.ViewYmapsTabPage.Location = new System.Drawing.Point(4, 22);
             this.ViewYmapsTabPage.Name = "ViewYmapsTabPage";
             this.ViewYmapsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.ViewYmapsTabPage.Size = new System.Drawing.Size(194, 548);
+            this.ViewYmapsTabPage.Size = new System.Drawing.Size(194, 652);
             this.ViewYmapsTabPage.TabIndex = 1;
             this.ViewYmapsTabPage.Text = "Ymaps";
             this.ViewYmapsTabPage.UseVisualStyleBackColor = true;
             // 
+            // ShowCarGeneratorsCheckBox
+            // 
+            this.ShowCarGeneratorsCheckBox.AutoSize = true;
+            this.ShowCarGeneratorsCheckBox.Location = new System.Drawing.Point(6, 82);
+            this.ShowCarGeneratorsCheckBox.Name = "ShowCarGeneratorsCheckBox";
+            this.ShowCarGeneratorsCheckBox.Size = new System.Drawing.Size(127, 17);
+            this.ShowCarGeneratorsCheckBox.TabIndex = 37;
+            this.ShowCarGeneratorsCheckBox.Text = "Show Car Generators";
+            this.ShowCarGeneratorsCheckBox.UseVisualStyleBackColor = true;
+            this.ShowCarGeneratorsCheckBox.CheckedChanged += new System.EventHandler(this.ShowCarGeneratorsCheckBox_CheckedChanged);
+            // 
             // ShowYmapChildrenCheckBox
             // 
             this.ShowYmapChildrenCheckBox.AutoSize = true;
-            this.ShowYmapChildrenCheckBox.Enabled = false;
             this.ShowYmapChildrenCheckBox.Location = new System.Drawing.Point(6, 59);
             this.ShowYmapChildrenCheckBox.Name = "ShowYmapChildrenCheckBox";
             this.ShowYmapChildrenCheckBox.Size = new System.Drawing.Size(93, 17);
@@ -755,7 +767,7 @@ namespace CodeWalker
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 88);
+            this.label2.Location = new System.Drawing.Point(-1, 121);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(77, 13);
             this.label2.TabIndex = 8;
@@ -792,11 +804,11 @@ namespace CodeWalker
             this.YmapsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.YmapsTextBox.Location = new System.Drawing.Point(0, 104);
+            this.YmapsTextBox.Location = new System.Drawing.Point(1, 137);
             this.YmapsTextBox.Multiline = true;
             this.YmapsTextBox.Name = "YmapsTextBox";
             this.YmapsTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.YmapsTextBox.Size = new System.Drawing.Size(194, 444);
+            this.YmapsTextBox.Size = new System.Drawing.Size(194, 548);
             this.YmapsTextBox.TabIndex = 36;
             this.YmapsTextBox.Text = resources.GetString("YmapsTextBox.Text");
             this.YmapsTextBox.TextChanged += new System.EventHandler(this.YmapsTextBox_TextChanged);
@@ -807,7 +819,7 @@ namespace CodeWalker
             this.ViewModelTabPage.Controls.Add(this.ModelComboBox);
             this.ViewModelTabPage.Location = new System.Drawing.Point(4, 22);
             this.ViewModelTabPage.Name = "ViewModelTabPage";
-            this.ViewModelTabPage.Size = new System.Drawing.Size(194, 548);
+            this.ViewModelTabPage.Size = new System.Drawing.Size(194, 652);
             this.ViewModelTabPage.TabIndex = 2;
             this.ViewModelTabPage.Text = "Model";
             this.ViewModelTabPage.UseVisualStyleBackColor = true;
@@ -863,7 +875,7 @@ namespace CodeWalker
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(205, 606);
+            this.tabPage2.Size = new System.Drawing.Size(205, 710);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Markers";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -1016,7 +1028,7 @@ namespace CodeWalker
             this.tabPage3.Controls.Add(this.MouseSelectCheckBox);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(205, 606);
+            this.tabPage3.Size = new System.Drawing.Size(205, 710);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Selection";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -1279,7 +1291,7 @@ namespace CodeWalker
             this.tabPage4.Controls.Add(this.ErrorConsoleCheckBox);
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(205, 606);
+            this.tabPage4.Size = new System.Drawing.Size(205, 710);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Options";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -2475,7 +2487,7 @@ namespace CodeWalker
             // ToolsPanelShowButton
             // 
             this.ToolsPanelShowButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ToolsPanelShowButton.Location = new System.Drawing.Point(939, 15);
+            this.ToolsPanelShowButton.Location = new System.Drawing.Point(1308, 15);
             this.ToolsPanelShowButton.Name = "ToolsPanelShowButton";
             this.ToolsPanelShowButton.Size = new System.Drawing.Size(30, 23);
             this.ToolsPanelShowButton.TabIndex = 0;
@@ -2489,9 +2501,9 @@ namespace CodeWalker
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ConsolePanel.BackColor = System.Drawing.SystemColors.Control;
             this.ConsolePanel.Controls.Add(this.ConsoleTextBox);
-            this.ConsolePanel.Location = new System.Drawing.Point(12, 576);
+            this.ConsolePanel.Location = new System.Drawing.Point(12, 680);
             this.ConsolePanel.Name = "ConsolePanel";
-            this.ConsolePanel.Size = new System.Drawing.Size(736, 101);
+            this.ConsolePanel.Size = new System.Drawing.Size(1105, 101);
             this.ConsolePanel.TabIndex = 3;
             this.ConsolePanel.Visible = false;
             // 
@@ -2504,7 +2516,7 @@ namespace CodeWalker
             this.ConsoleTextBox.Multiline = true;
             this.ConsoleTextBox.Name = "ConsoleTextBox";
             this.ConsoleTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.ConsoleTextBox.Size = new System.Drawing.Size(730, 95);
+            this.ConsoleTextBox.Size = new System.Drawing.Size(1099, 95);
             this.ConsoleTextBox.TabIndex = 0;
             // 
             // StatsUpdateTimer
@@ -2696,7 +2708,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(585, 25);
+            this.Toolbar.Size = new System.Drawing.Size(554, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -2969,6 +2981,13 @@ namespace CodeWalker
             this.ToolbarSelectAudioButton.Size = new System.Drawing.Size(181, 22);
             this.ToolbarSelectAudioButton.Text = "Audio";
             this.ToolbarSelectAudioButton.Click += new System.EventHandler(this.ToolbarSelectAudioButton_Click);
+            // 
+            // ToolbarSelectOcclusionButton
+            // 
+            this.ToolbarSelectOcclusionButton.Name = "ToolbarSelectOcclusionButton";
+            this.ToolbarSelectOcclusionButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectOcclusionButton.Text = "Occlusion";
+            this.ToolbarSelectOcclusionButton.Click += new System.EventHandler(this.ToolbarSelectOcclusionButton_Click);
             // 
             // toolStripSeparator1
             // 
@@ -3261,19 +3280,12 @@ namespace CodeWalker
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
             // 
-            // ToolbarSelectOcclusionButton
-            // 
-            this.ToolbarSelectOcclusionButton.Name = "ToolbarSelectOcclusionButton";
-            this.ToolbarSelectOcclusionButton.Size = new System.Drawing.Size(181, 22);
-            this.ToolbarSelectOcclusionButton.Text = "Occlusion";
-            this.ToolbarSelectOcclusionButton.Click += new System.EventHandler(this.ToolbarSelectOcclusionButton_Click);
-            // 
             // WorldForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.MidnightBlue;
-            this.ClientSize = new System.Drawing.Size(984, 711);
+            this.ClientSize = new System.Drawing.Size(1353, 815);
             this.Controls.Add(this.ToolbarPanel);
             this.Controls.Add(this.SelectedMarkerPanel);
             this.Controls.Add(this.ConsolePanel);
@@ -3610,5 +3622,6 @@ namespace CodeWalker
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox RenderEntitiesCheckBox;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectOcclusionButton;
+        private System.Windows.Forms.CheckBox ShowCarGeneratorsCheckBox;
     }
 }

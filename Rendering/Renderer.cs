@@ -6,9 +6,7 @@ using SharpDX.Direct3D11;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace CodeWalker.Rendering
 {
@@ -101,6 +99,7 @@ namespace CodeWalker.Rendering
         public bool renderchildents = false;//when rendering single ymap, render root only or not...
         public bool renderentities = true;
         public bool rendergrass = true;
+        public bool renderCars = false;
         public bool renderdistlodlights = true;
 
         public bool rendercollisionmeshes = Settings.Default.ShowCollisionMeshes;
@@ -710,8 +709,8 @@ namespace CodeWalker.Rendering
                 SelectionLineVerts.Add(c[(i + 1) % c.Length]);
             }
 
-            SelectionLineVerts.Add(new VertexTypePC{Colour = col, Position = position});
-            SelectionLineVerts.Add(new VertexTypePC { Colour = col, Position = position + dir * 2f});
+            SelectionLineVerts.Add(new VertexTypePC { Colour = col, Position = position });
+            SelectionLineVerts.Add(new VertexTypePC { Colour = col, Position = position + dir * 2f });
         }
 
         public void RenderSelectionArrowOutline(Vector3 pos, Vector3 dir, Vector3 up, Quaternion ori, float len, float rad, uint colour)
@@ -1607,7 +1606,7 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            if(renderentities)
+            if (renderentities)
             {
                 for (int i = 0; i < renderworldrenderables.Count; i++)
                 {
@@ -1630,6 +1629,16 @@ namespace CodeWalker.Rendering
                     {
                         RenderYmapGrass(ymap);
                     }
+                }
+            }
+            if (renderCars)
+            {
+                for (int y = 0; y < VisibleYmaps.Count; y++)
+                {
+                    var ymap = VisibleYmaps[y];
+                    if (ymap.CarGenerators == null) continue;
+                    for (int i = 0; i < ymap.CarGenerators.Length; i++)
+                        RenderCar(ymap.CarGenerators[i]);
                 }
             }
             if (renderdistlodlights && timecycle.IsNightTime)
@@ -2444,7 +2453,42 @@ namespace CodeWalker.Rendering
             }
         }
 
+        public void RenderCar(YmapCarGen carGenerator, bool valign = false)
+        {
+            uint carhash = carGenerator.CCarGen.carModel;
+            Quaternion cgtrn = Quaternion.RotationAxis(Vector3.UnitZ, (float)Math.PI * -0.5f); //car fragments currently need to be rotated 90 deg right...
+            Quaternion ori = Quaternion.Multiply(carGenerator.Orientation, cgtrn);
+            var pos = carGenerator.Position;
+            if ((carhash == 0) && (carGenerator.CCarGen.popGroup != 0))
+            {
+                //find the pop group... and choose a vehicle..
+                var stypes = Scenarios.ScenarioTypes;
+                if (stypes != null)
+                {
+                    var modelset = stypes.GetVehicleModelSet(carGenerator.CCarGen.popGroup);
+                    if ((modelset != null) && (modelset.Models != null) && (modelset.Models.Length > 0))
+                    {
+                        carhash = JenkHash.GenHash(modelset.Models[0].NameLower);
+                    }
+                }
+            }
+            if (carhash == 0) carhash = 418536135; //"infernus"
 
+            YftFile caryft = gameFileCache.GetYft(carhash);
+            if ((caryft != null) && (caryft.Loaded) && (caryft.Fragment != null))
+            {
+                if (valign)
+                {
+                    float minz = caryft.Fragment.PhysicsLODGroup?.PhysicsLOD1?.Bound?.BoundingBoxMin.Z ?? 0.0f;
+                    pos.Z -= minz;
+                }
+
+                SelectedCarGenEntity.SetPosition(pos);
+                SelectedCarGenEntity.SetOrientation(ori);
+
+                RenderFragment(null, SelectedCarGenEntity, caryft.Fragment, carhash);
+            }
+        }
 
 
 
