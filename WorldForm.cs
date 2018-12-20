@@ -1310,7 +1310,6 @@ namespace CodeWalker
             }
             if (selectionItem.CarGenerator != null)
             {
-                
                 var carGenerator = selectionItem.CarGenerator;
                 camrel = carGenerator.Position - camera.Position;
                 ori = carGenerator.Orientation;
@@ -1318,9 +1317,10 @@ namespace CodeWalker
                 bbmax = carGenerator.BBMax;
                 float arrowlen = carGenerator._CCarGen.perpendicularLength;
                 float arrowrad = arrowlen * 0.066f;
+
                 Renderer.RenderSelectionArrowOutline(carGenerator.Position, Vector3.UnitX, Vector3.UnitY, ori, arrowlen, arrowrad, cgrn);
+
                 Renderer.RenderCar(carGenerator);
-                // Renderer.RenderCar(carGenerator.Position, ori, carGenerator._CCarGen.carModel, carGenerator._CCarGen.popGroup);
             }
             if (selectionItem.PathNode != null)
             {
