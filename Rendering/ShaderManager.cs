@@ -1187,11 +1187,14 @@ namespace CodeWalker.Rendering
                     case 1009159769://{vehicle_paint2.sps}
                     case 2045642561://{vehicle_paint3.sps}
                     case 1534086746://{vehicle_paint3_enveff.sps}
+                    case 4262329590://{vehicle_paint4.sps}
                     case 60950417://{vehicle_paint4_enveff.sps}
                     case 249472155://{vehicle_paint5_enveff.sps}
                     case 354168229://{vehicle_paint6_enveff.sps}
                     case 617726044://{vehicle_mesh.sps}
+                    case 1138799003://{vehicle_mesh2_enveff.sps}
                     case 2162256878://{vehicle_tire.sps}
+                    case 1337209217://{vehicle_tire_emissive.sps}
                     case 3106021319://{vehicle_interior.sps}
                     case 2837548125://{vehicle_interior2.sps}
                     case 2094873540://{vehicle_shuts.sps}
@@ -1199,21 +1202,25 @@ namespace CodeWalker.Rendering
                     case 2226589567://{vehicle_lights.sps}
                     case 364912658://{vehicle_lightsemissive.sps}
                     case 3030872505://{vehicle_emissive_opaque.sps}
+                    case 1930196358://{vehicle_emissive_alpha.sps}
                     case 146667297://{vehicle_badges.sps}
                     case 4162395624://{vehicle_dash_emissive.sps}
                     case 254152173://{vehicle_dash_emissive_opaque.sps}
                     case 3355845283://{vehicle_detail2.sps}
                     case 4097152976://{vehicle_track.sps}
+                    case 4268056926://{vehicle_track2.sps}
                     case 3631243954://{vehicle_blurredrotor.sps}
                     case 457610770://{vehicle_nosplash.sps}
                     case 3621563260://{vehicle_nowater.sps}
                     case 430888562://{vehicle_paint8.sps}
                     case 4118002252://{vehicle_paint9.sps}
                     case 158342452://{vehicle_detail.sps}
+                    case 482429992://{vehicle_track_emissive.sps}
                         b = BasicBatches;
                         break;
                     case 1041778472://{vehicle_decal.sps}
                     case 1462664157://{vehicle_decal2.sps}
+                    case 15603050://{vehicle_blurredrotor_emissive.sps}
                         b = DecalBatches;
                         break;
                     case 3096299666://{vehicle_vehglass.sps}
@@ -1222,6 +1229,9 @@ namespace CodeWalker.Rendering
                         break;
                     case 3986926894://{vehicle_cloth.sps}
                         b = ClothBatches;
+                        break;
+                    case 2617558500://{vehicle_cutout.sps}
+                        b = CutoutBatches;
                         break;
                     #endregion
                     #region TODO/unused batches

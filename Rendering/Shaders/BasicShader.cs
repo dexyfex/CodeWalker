@@ -531,6 +531,7 @@ namespace CodeWalker.Rendering
                         var itex = geom.RenderableTextures[i];
                         var ihash = geom.TextureParamHashes[i];
                         if (itex == null) continue;
+                        if (itex.Key?.NameHash == 1678728908 /*"blank"*/) continue;
                         switch (ihash)
                         {
                             case MetaName.DiffuseSampler:
@@ -559,6 +560,11 @@ namespace CodeWalker.Rendering
                                 break;
                             case MetaName.heightSampler:
                             case MetaName.EnvironmentSampler:
+                            //case MetaName.SnowSampler0:
+                            //case MetaName.SnowSampler1:
+                            //case MetaName.DiffuseSampler2:
+                            //case MetaName.DirtSampler:
+                            //case (MetaName)3157820509://normal?
                                 break;
                             case MetaName.FlowSampler:
                             case MetaName.FogSampler:
