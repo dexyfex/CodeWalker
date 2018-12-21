@@ -100,14 +100,14 @@ namespace CodeWalker.Rendering
         }
     }
 
-    public struct VertexTypePCCNCCTTX //id: 1520003478, stride: 72, flags: 16639, refs: 11178
+    public struct VertexTypePBBNCCTTX //id: 1520003478, stride: 72, flags: 16639, refs: 11178
     {
         public Vector3 Position;
+        public uint BlendWeights;
+        public uint BlendIndices;
+        public Vector3 Normal;
         public uint Colour0;
         public uint Colour1;
-        public Vector3 Normal;
-        public uint Colour2;
-        public uint Colour3;
         public Vector2 Texcoord0;
         public Vector2 Texcoord1;
         public Vector4 Tangents;
@@ -117,11 +117,11 @@ namespace CodeWalker.Rendering
             return new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
-                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, 16, 0),
                 new InputElement("NORMAL", 0, Format.R32G32B32_Float, 20, 0),
-                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 32, 0),
-                new InputElement("COLOR", 3, Format.R8G8B8A8_UNorm, 36, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 32, 0),
+                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 36, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float, 40, 0),
                 new InputElement("TEXCOORD", 1, Format.R32G32_Float, 48, 0),
                 new InputElement("TANGENT", 0, Format.R32G32B32A32_Float, 56, 0),
@@ -129,14 +129,14 @@ namespace CodeWalker.Rendering
         }
     }
 
-    public struct VertexTypePCCNCCT //id: 93940118, stride: 48, flags: 127, refs: 10396
+    public struct VertexTypePBBNCCT //id: 93940118, stride: 48, flags: 127, refs: 10396
     {
         public Vector3 Position;
+        public uint BlendWeights;
+        public uint BlendIndices;
+        public Vector3 Normal;
         public uint Colour0;
         public uint Colour1;
-        public Vector3 Normal;
-        public uint Colour2;
-        public uint Colour3;
         public Vector2 Texcoord;
 
         public static InputElement[] GetLayout()
@@ -144,11 +144,11 @@ namespace CodeWalker.Rendering
             return new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
-                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, 16, 0),
                 new InputElement("NORMAL", 0, Format.R32G32B32_Float, 20, 0),
-                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 32, 0),
-                new InputElement("COLOR", 3, Format.R8G8B8A8_UNorm, 36, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 32, 0),
+                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 36, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float, 40, 0),
             };
         }
@@ -304,14 +304,14 @@ namespace CodeWalker.Rendering
         }
     }
 
-    public struct VertexTypePCCNCCTX //id: 177826198, stride: 64, flags: 16511, refs: 1990
+    public struct VertexTypePBBNCCTX //id: 177826198, stride: 64, flags: 16511, refs: 1990
     {
         public Vector3 Position;
+        public uint BlendWeights;
+        public uint BlendIndices;
+        public Vector3 Normal;
         public uint Colour0;
         public uint Colour1;
-        public Vector3 Normal;
-        public uint Colour2;
-        public uint Colour3;
         public Vector2 Texcoord;
         public Vector4 Tangent;
 
@@ -320,11 +320,11 @@ namespace CodeWalker.Rendering
             return new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
-                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, 16, 0),
                 new InputElement("NORMAL", 0, Format.R32G32B32_Float, 20, 0),
-                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 32, 0),
-                new InputElement("COLOR", 3, Format.R8G8B8A8_UNorm, 36, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 32, 0),
+                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 36, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float, 40, 0),
                 new InputElement("TANGENT", 0, Format.R32G32B32A32_Float, 48, 0),
             };
@@ -356,13 +356,13 @@ namespace CodeWalker.Rendering
         }
     }
 
-    public struct VertexTypePCCNCTX //id: 168389014, stride: 60, flags: 16479, refs: 1736
+    public struct VertexTypePBBNCTX //id: 168389014, stride: 60, flags: 16479, refs: 1736
     {
         public Vector3 Position;
-        public uint Colour0;
-        public uint Colour1;
+        public uint BlendWeights;
+        public uint BlendIndices;
         public Vector3 Normal;
-        public uint Colour2;
+        public uint Colour0;
         public Vector2 Texcoord;
         public Vector4 Tangent;
 
@@ -371,10 +371,10 @@ namespace CodeWalker.Rendering
             return new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
-                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, 16, 0),
                 new InputElement("NORMAL", 0, Format.R32G32B32_Float, 20, 0),
-                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 32, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 32, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float, 36, 0),
                 new InputElement("TANGENT", 0, Format.R32G32B32A32_Float, 44, 0),
             };
@@ -493,13 +493,13 @@ namespace CodeWalker.Rendering
         }
     }
 
-    public struct VertexTypePCCNCT //id: 84502934, stride: 44, flags: 95, refs: 806
+    public struct VertexTypePBBNCT //id: 84502934, stride: 44, flags: 95, refs: 806
     {
         public Vector3 Position;
-        public uint Colour0;
-        public uint Colour1;
+        public uint BlendWeights;
+        public uint BlendIndices;
         public Vector3 Normal;
-        public uint Colour2;
+        public uint Colour0;
         public Vector2 Texcoord;
 
         public static InputElement[] GetLayout()
@@ -507,10 +507,10 @@ namespace CodeWalker.Rendering
             return new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
-                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, 16, 0),
                 new InputElement("NORMAL", 0, Format.R32G32B32_Float, 20, 0),
-                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 32, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 32, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float, 36, 0),
             };
         }
@@ -573,11 +573,11 @@ namespace CodeWalker.Rendering
         }
     }
 
-    public struct VertexTypePCCNCCTT //id: 1436117398, stride: 56, flags: 255, refs: 99
+    public struct VertexTypePBBNCCTT //id: 1436117398, stride: 56, flags: 255, refs: 99
     {
         public Vector3 Position;
-        public uint Colour0;
-        public uint Colour1;
+        public uint BlendWeights;
+        public uint BlendIndices;
         public Vector3 Normal;
         public uint Colour2;
         public uint Colour3;
@@ -589,11 +589,11 @@ namespace CodeWalker.Rendering
             return new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
-                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, 16, 0),
                 new InputElement("NORMAL", 0, Format.R32G32B32_Float, 20, 0),
-                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 32, 0),
-                new InputElement("COLOR", 3, Format.R8G8B8A8_UNorm, 36, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 32, 0),
+                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 36, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float, 40, 0),
                 new InputElement("TEXCOORD", 1, Format.R32G32_Float, 48, 0),
             };
@@ -646,13 +646,13 @@ namespace CodeWalker.Rendering
         }
     }
 
-    public struct VertexTypePCCCCT //id: 93915542, stride: 36, flags: 119, refs: 2
+    public struct VertexTypePBBCCT //id: 93915542, stride: 36, flags: 119, refs: 2
     {
         public Vector3 Position;
+        public uint BlendWeights;
+        public uint BlendIndices;
         public uint Colour0;
         public uint Colour1;
-        public uint Colour2;
-        public uint Colour3;
         public Vector2 Texcoord;
 
         public static InputElement[] GetLayout()
@@ -660,32 +660,32 @@ namespace CodeWalker.Rendering
             return new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
-                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
-                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 20, 0),
-                new InputElement("COLOR", 3, Format.R8G8B8A8_UNorm, 24, 0),
+                new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 20, 0),
+                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 24, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float, 28, 0),
             };
         }
     }
 
-    public struct VertexTypePCCNC //id: 616854, stride: 36, flags: 31, refs: 1
+    public struct VertexTypePBBNC //id: 616854, stride: 36, flags: 31, refs: 1
     {
         public Vector3 Position;
-        public uint Colour0;
-        public uint Colour1;
+        public uint BlendWeights;
+        public uint BlendIndices;
         public Vector3 Normal;
-        public uint Colour2;
+        public uint Colour0;
 
         public static InputElement[] GetLayout()
         {
             return new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
-                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, 16, 0),
                 new InputElement("NORMAL", 0, Format.R32G32B32_Float, 20, 0),
-                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 32, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 32, 0),
             };
         }
     }
@@ -741,13 +741,13 @@ namespace CodeWalker.Rendering
 
 
 
-    public struct VertexTypePCCNCTT //id: 1426680214, stride: 52, flags: 223, types: 8598872888530528662, refs: 1470
+    public struct VertexTypePBBNCTT //id: 1426680214, stride: 52, flags: 223, types: 8598872888530528662, refs: 1470
     {
         public Vector3 Position;
-        public uint Colour0;
-        public uint Colour1;
+        public uint BlendWeights;
+        public uint BlendIndices;
         public Vector3 Normal;
-        public uint Colour2;
+        public uint Colour0;
         public Vector2 Texcoord0;
         public Vector2 Texcoord1;
 
@@ -756,23 +756,23 @@ namespace CodeWalker.Rendering
             return new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
-                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, 16, 0),
                 new InputElement("NORMAL", 0, Format.R32G32B32_Float, 20, 0),
-                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 32, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 32, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float, 36, 0),
                 new InputElement("TEXCOORD", 1, Format.R32G32_Float, 44, 0),
             };
         }
     }
 
-    public struct VertexTypePCCNCTTX //id: 1510566294, stride: 68, flags: 16607, types: 8598872888530528662, refs: 1478 (+9)
+    public struct VertexTypePBBNCTTX //id: 1510566294, stride: 68, flags: 16607, types: 8598872888530528662, refs: 1478 (+9)
     {
         public Vector3 Position;
-        public uint Colour0;
-        public uint Colour1;
+        public uint BlendWeights;
+        public uint BlendIndices;
         public Vector3 Normal;
-        public uint Colour2;
+        public uint Colour0;
         public Vector2 Texcoord0;
         public Vector2 Texcoord1;
         public Vector4 Tangent;
@@ -782,10 +782,10 @@ namespace CodeWalker.Rendering
             return new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
-                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, 16, 0),
                 new InputElement("NORMAL", 0, Format.R32G32B32_Float, 20, 0),
-                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 32, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 32, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float, 36, 0),
                 new InputElement("TEXCOORD", 1, Format.R32G32_Float, 44, 0),
                 new InputElement("TANGENT", 0, Format.R32G32B32A32_Float, 52, 0),
@@ -793,13 +793,13 @@ namespace CodeWalker.Rendering
         }
     }
 
-    public struct VertexTypePCCNCTTT //id: 1426680220, stride: 60, flags: 479, types: 8598872888530528662, refs: 1290
+    public struct VertexTypePBBNCTTT //id: 1426680220, stride: 60, flags: 479, types: 8598872888530528662, refs: 1290
     {
         public Vector3 Position;
-        public uint Colour0;
-        public uint Colour1;
+        public uint BlendWeights;
+        public uint BlendIndices;
         public Vector3 Normal;
-        public uint Colour2;
+        public uint Colour0;
         public Vector2 Texcoord0;
         public Vector2 Texcoord1;
         public Vector2 Texcoord2;
@@ -809,10 +809,10 @@ namespace CodeWalker.Rendering
             return new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
-                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, 16, 0),
                 new InputElement("NORMAL", 0, Format.R32G32B32_Float, 20, 0),
-                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 32, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 32, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float, 36, 0),
                 new InputElement("TEXCOORD", 1, Format.R32G32_Float, 44, 0),
                 new InputElement("TEXCOORD", 2, Format.R32G32_Float, 52, 0),
@@ -866,27 +866,27 @@ namespace CodeWalker.Rendering
 
 
 
-    public struct VertexTypePCCNCTTTX //id: 1510566300, stride: 76, flags: 16863, types: 8598872888530528662, refs: 38
+    public struct VertexTypePBBNCTTTX //id: 1510566300, stride: 76, flags: 16863, types: 8598872888530528662, refs: 38
     {
-        public Vector3 Component1;
-        public uint Component2;
-        public uint Component3;
-        public Vector3 Component4;
-        public uint Component5;
-        public Vector2 Component6;
-        public Vector2 Component7;
-        public Vector2 Component8;
-        public Vector4 Component9;
+        public Vector3 Position;
+        public uint BlendWeights;
+        public uint BlendIndices;
+        public Vector3 Normal;
+        public uint Colour0;
+        public Vector2 Texcoord0;
+        public Vector2 Texcoord1;
+        public Vector2 Texcoord2;
+        public Vector4 Tangent;
 
         public static InputElement[] GetLayout()
         {
             return new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
-                new InputElement("COLOR", 1, Format.R8G8B8A8_UNorm, 16, 0),
+                new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, 16, 0),
                 new InputElement("NORMAL", 0, Format.R32G32B32_Float, 20, 0),
-                new InputElement("COLOR", 2, Format.R8G8B8A8_UNorm, 32, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 32, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float, 36, 0),
                 new InputElement("TEXCOORD", 1, Format.R32G32_Float, 44, 0),
                 new InputElement("TEXCOORD", 2, Format.R32G32_Float, 52, 0),

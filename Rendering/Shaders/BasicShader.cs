@@ -214,38 +214,43 @@ namespace CodeWalker.Rendering
             //supported layouts - requires Position, Normal, Colour, Texcoord
             layouts.Add(VertexType.Default, new InputLayout(device, vspnctbytes, VertexTypeDefault.GetLayout()));
             layouts.Add(VertexType.PNCH2, new InputLayout(device, vspnctbytes, VertexTypePNCH2.GetLayout()));
+            layouts.Add(VertexType.PNCTT, new InputLayout(device, vspnctbytes, VertexTypePNCTT.GetLayout()));
+            layouts.Add(VertexType.PNCTTT, new InputLayout(device, vspnctbytes, VertexTypePNCTTT.GetLayout()));
+            layouts.Add(VertexType.PBBNCT, new InputLayout(device, vspnctbytes, VertexTypePBBNCT.GetLayout()));
+            layouts.Add(VertexType.PBBNCTT, new InputLayout(device, vspnctbytes, VertexTypePBBNCTT.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTT, new InputLayout(device, vspnctbytes, VertexTypePBBNCTTT.GetLayout()));
 
-            layouts.Add(VertexType.PCCNCT, new InputLayout(device, vspncctbytes, VertexTypePCCNCT.GetLayout()));
-            layouts.Add(VertexType.PCCNCCT, new InputLayout(device, vspncctbytes, VertexTypePCCNCCT.GetLayout()));
             layouts.Add(VertexType.PNCCT, new InputLayout(device, vspncctbytes, VertexTypePNCCT.GetLayout()));
+            layouts.Add(VertexType.PBBNCCT, new InputLayout(device, vspncctbytes, VertexTypePBBNCCT.GetLayout()));
+
             layouts.Add(VertexType.PNCCTT, new InputLayout(device, vspnccttbytes, VertexTypePNCCTT.GetLayout()));
+
             layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vspncctttbytes, VertexTypePNCCTTTT.GetLayout()));
+
 
 
             //normalmap layouts - requires Position, Normal, Colour, Texcoord, Tangent (X)
             layouts.Add(VertexType.DefaultEx, new InputLayout(device, vspnctxbytes, VertexTypeDefaultEx.GetLayout()));
             layouts.Add(VertexType.PCCH2H4, new InputLayout(device, vspnctxbytes, VertexTypePCCH2H4.GetLayout()));
+            layouts.Add(VertexType.PBBNCTX, new InputLayout(device, vspnctxbytes, VertexTypePBBNCTX.GetLayout()));
 
-            layouts.Add(VertexType.PCCNCTX, new InputLayout(device, vspncctxbytes, VertexTypePCCNCTX.GetLayout()));
-            layouts.Add(VertexType.PCCNCCTX, new InputLayout(device, vspncctxbytes, VertexTypePCCNCCTX.GetLayout()));
             layouts.Add(VertexType.PNCCTX, new InputLayout(device, vspncctxbytes, VertexTypePNCCTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCCTX, new InputLayout(device, vspncctxbytes, VertexTypePBBNCCTX.GetLayout()));
+
             layouts.Add(VertexType.PNCTTX, new InputLayout(device, vspncttxbytes, VertexTypePNCTTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTX, new InputLayout(device, vspncttxbytes, VertexTypePBBNCTTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTTX, new InputLayout(device, vspncttxbytes, VertexTypePBBNCTTTX.GetLayout()));
+
             layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vspnccttxbytes, VertexTypePNCCTTX.GetLayout()));
             layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vspnccttxbytes, VertexTypePNCCTTX_2.GetLayout()));
-            layouts.Add(VertexType.PCCNCCTTX, new InputLayout(device, vspnccttxbytes, VertexTypePCCNCCTTX.GetLayout()));
             layouts.Add(VertexType.PNCTTTX, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTX.GetLayout()));
             layouts.Add(VertexType.PNCTTTX_2, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTX_2.GetLayout()));
             layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTX_3.GetLayout()));
             layouts.Add(VertexType.PNCTTTTX, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTTX.GetLayout()));
             layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vspncctttxbytes, VertexTypePNCCTTTX.GetLayout()));
-            layouts.Add(VertexType.PCCNCTTTX, new InputLayout(device, vspncctttxbytes, VertexTypePCCNCTTTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCCTTX, new InputLayout(device, vspnccttxbytes, VertexTypePBBNCCTTX.GetLayout()));
 
 
-            layouts.Add(VertexType.PCCNCTT, new InputLayout(device, vspnccttbytes, VertexTypePCCNCTT.GetLayout()));
-            layouts.Add(VertexType.PCCNCTTX, new InputLayout(device, vspnccttxbytes, VertexTypePCCNCTTX.GetLayout()));
-            layouts.Add(VertexType.PCCNCTTT, new InputLayout(device, vspncctttbytes, VertexTypePCCNCTTT.GetLayout()));
-            layouts.Add(VertexType.PNCTT, new InputLayout(device, vspnctbytes, VertexTypePNCTT.GetLayout()));
-            layouts.Add(VertexType.PNCTTT, new InputLayout(device, vspnctbytes, VertexTypePNCTTT.GetLayout()));
 
 
 
@@ -357,40 +362,40 @@ namespace CodeWalker.Rendering
                 case VertexType.PNCH2:
                 case VertexType.PNCTT:
                 case VertexType.PNCTTT:
+                case VertexType.PBBNCT:
+                case VertexType.PBBNCTT:
+                case VertexType.PBBNCTTT:
                     vs = basicvspnct;
                     break;
-                case VertexType.PCCNCT:
-                case VertexType.PCCNCCT:
                 case VertexType.PNCCT:
+                case VertexType.PBBNCCT:
                     vs = basicvspncct;
                     break;
                 case VertexType.PNCCTT://not used?
-                case VertexType.PCCNCTT:
                     vs = basicvspncctt;
                     break;
                 case VertexType.PNCCTTTT://not used?
-                case VertexType.PCCNCTTT:
                     vs = basicvspnccttt;
                     break;
                 case VertexType.DefaultEx:
                 case VertexType.PCCH2H4:
+                case VertexType.PBBNCTX:
                     vs = basicvspnctx;
                     break;
 
-                case VertexType.PCCNCTX:
-                case VertexType.PCCNCCTX:
+                case VertexType.PBBNCCTX:
                 case VertexType.PNCCTX:
                     vs = basicvspncctx;
                     break;
 
                 case VertexType.PNCTTX:
+                case VertexType.PBBNCTTX:
                     vs = basicvspncttx;
                     break;
 
                 case VertexType.PNCCTTX://not used?
                 case VertexType.PNCCTTX_2://not used?
-                case VertexType.PCCNCCTTX://not used?
-                case VertexType.PCCNCTTX:
+                case VertexType.PBBNCCTTX://not used?
                     vs = basicvspnccttx;
                     break;
 
@@ -398,11 +403,11 @@ namespace CodeWalker.Rendering
                 case VertexType.PNCTTTX_2:
                 case VertexType.PNCTTTX_3:
                 case VertexType.PNCTTTTX: //not using last texcoords!
+                case VertexType.PBBNCTTTX:
                     vs = basicvspnctttx;
                     break;
 
                 case VertexType.PNCCTTTX://not used?
-                case VertexType.PCCNCTTTX:
                     vs = basicvspncctttx;
                     break;
 
