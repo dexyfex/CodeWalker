@@ -389,6 +389,7 @@ namespace CodeWalker.Forms
 
             try
             {
+                if (!(exploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false)) return false;
 
                 var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
                 if (newentry != rpfFileEntry)

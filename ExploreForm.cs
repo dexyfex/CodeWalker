@@ -1783,7 +1783,7 @@ namespace CodeWalker
 
 
 
-        private bool EnsureRpfValidEncryption(RpfFile file = null)
+        public bool EnsureRpfValidEncryption(RpfFile file = null)
         {
             if ((file == null) && (CurrentFolder.RpfFolder == null)) return false;
 
