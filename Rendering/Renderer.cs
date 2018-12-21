@@ -102,6 +102,7 @@ namespace CodeWalker.Rendering
         public bool renderentities = true;
         public bool rendergrass = true;
         public bool renderdistlodlights = true;
+        public bool renderCars = false;
 
         public bool rendercollisionmeshes = Settings.Default.ShowCollisionMeshes;
         public bool rendercollisionmeshlayerdrawable = true;
@@ -1619,7 +1620,16 @@ namespace CodeWalker.Rendering
                 }
             }
 
-
+            if (renderCars)
+            {
+                for (int y = 0; y < VisibleYmaps.Count; y++)
+                {
+                    var ymap = VisibleYmaps[y];
+                    if (ymap.CarGenerators == null) continue;
+                    for (int i = 0; i < ymap.CarGenerators.Length; i++)
+                        RenderCar(ymap.CarGenerators[i]);
+                }
+            }
 
             if (rendergrass)
             {
@@ -1921,7 +1931,6 @@ namespace CodeWalker.Rendering
         {
             if (ymap == null) return;
             if (!ymap.Loaded) return;
-
             if ((ymap.AllEntities != null) && (ymap.RootEntities != null))
             {
                 if (usedynamiclod)
@@ -2408,10 +2417,8 @@ namespace CodeWalker.Rendering
 
 
 
-
-        public void RenderCar(Vector3 pos, Quaternion ori, MetaHash modelHash, MetaHash modelSetHash, bool valign = false)
+        private void _RenderCar(Vector3 pos, Quaternion ori, MetaHash modelHash, MetaHash modelSetHash, bool valign = false)
         {
-
             uint carhash = modelHash;
             if ((carhash == 0) && (modelSetHash != 0))
             {
@@ -2443,7 +2450,17 @@ namespace CodeWalker.Rendering
                 RenderFragment(null, SelectedCarGenEntity, caryft.Fragment, carhash);
             }
         }
-
+        public void RenderCar(Vector3 pos, Quaternion ori, MetaHash modelHash, MetaHash modelSetHash, bool valign = false)
+        {
+            _RenderCar(pos, ori, modelHash, modelSetHash, valign);
+        }
+        public void RenderCar(YmapCarGen cg, bool valign = false)
+        {
+            uint carhash = cg.CCarGen.carModel;
+            Quaternion cgtrn = Quaternion.RotationAxis(Vector3.UnitZ, (float)Math.PI * -0.5f); //car fragments currently need to be rotated 90 deg right...
+            Quaternion ori = Quaternion.Multiply(cg.Orientation, cgtrn);
+            _RenderCar(cg.Position, ori, cg._CCarGen.carModel, cg._CCarGen.popGroup, valign);
+        }
 
 
 

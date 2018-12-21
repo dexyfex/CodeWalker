@@ -254,6 +254,7 @@ namespace CodeWalker
             this.ToolbarSelectMloInstanceButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectAudioButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSelectOcclusionButton = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.ToolbarMoveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarRotateButton = new System.Windows.Forms.ToolStripButton();
@@ -285,7 +286,7 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
-            this.ToolbarSelectOcclusionButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ShowVehicleModelsCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -727,6 +728,7 @@ namespace CodeWalker
             // 
             // ViewYmapsTabPage
             // 
+            this.ViewYmapsTabPage.Controls.Add(this.ShowVehicleModelsCheckBox);
             this.ViewYmapsTabPage.Controls.Add(this.ShowYmapChildrenCheckBox);
             this.ViewYmapsTabPage.Controls.Add(this.label2);
             this.ViewYmapsTabPage.Controls.Add(this.DetailTrackBar);
@@ -755,7 +757,7 @@ namespace CodeWalker
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 88);
+            this.label2.Location = new System.Drawing.Point(3, 107);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(77, 13);
             this.label2.TabIndex = 8;
@@ -792,11 +794,11 @@ namespace CodeWalker
             this.YmapsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.YmapsTextBox.Location = new System.Drawing.Point(0, 104);
+            this.YmapsTextBox.Location = new System.Drawing.Point(0, 123);
             this.YmapsTextBox.Multiline = true;
             this.YmapsTextBox.Name = "YmapsTextBox";
             this.YmapsTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.YmapsTextBox.Size = new System.Drawing.Size(194, 444);
+            this.YmapsTextBox.Size = new System.Drawing.Size(194, 425);
             this.YmapsTextBox.TabIndex = 36;
             this.YmapsTextBox.Text = resources.GetString("YmapsTextBox.Text");
             this.YmapsTextBox.TextChanged += new System.EventHandler(this.YmapsTextBox_TextChanged);
@@ -2696,7 +2698,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(585, 25);
+            this.Toolbar.Size = new System.Drawing.Size(554, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -2969,6 +2971,13 @@ namespace CodeWalker
             this.ToolbarSelectAudioButton.Size = new System.Drawing.Size(181, 22);
             this.ToolbarSelectAudioButton.Text = "Audio";
             this.ToolbarSelectAudioButton.Click += new System.EventHandler(this.ToolbarSelectAudioButton_Click);
+            // 
+            // ToolbarSelectOcclusionButton
+            // 
+            this.ToolbarSelectOcclusionButton.Name = "ToolbarSelectOcclusionButton";
+            this.ToolbarSelectOcclusionButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectOcclusionButton.Text = "Occlusion";
+            this.ToolbarSelectOcclusionButton.Click += new System.EventHandler(this.ToolbarSelectOcclusionButton_Click);
             // 
             // toolStripSeparator1
             // 
@@ -3261,12 +3270,16 @@ namespace CodeWalker
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
             // 
-            // ToolbarSelectOcclusionButton
+            // ShowVehicleModelsCheckBox
             // 
-            this.ToolbarSelectOcclusionButton.Name = "ToolbarSelectOcclusionButton";
-            this.ToolbarSelectOcclusionButton.Size = new System.Drawing.Size(181, 22);
-            this.ToolbarSelectOcclusionButton.Text = "Occlusion";
-            this.ToolbarSelectOcclusionButton.Click += new System.EventHandler(this.ToolbarSelectOcclusionButton_Click);
+            this.ShowVehicleModelsCheckBox.AutoSize = true;
+            this.ShowVehicleModelsCheckBox.Location = new System.Drawing.Point(6, 83);
+            this.ShowVehicleModelsCheckBox.Name = "ShowVehicleModelsCheckBox";
+            this.ShowVehicleModelsCheckBox.Size = new System.Drawing.Size(126, 17);
+            this.ShowVehicleModelsCheckBox.TabIndex = 37;
+            this.ShowVehicleModelsCheckBox.Text = "Show vehicle models";
+            this.ShowVehicleModelsCheckBox.UseVisualStyleBackColor = true;
+            this.ShowVehicleModelsCheckBox.CheckedChanged += new System.EventHandler(this.ShowVehicleModels_CheckedChanged);
             // 
             // WorldForm
             // 
@@ -3610,5 +3623,6 @@ namespace CodeWalker
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox RenderEntitiesCheckBox;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectOcclusionButton;
+        private System.Windows.Forms.CheckBox ShowVehicleModelsCheckBox;
     }
 }
