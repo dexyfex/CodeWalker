@@ -38,13 +38,10 @@ Path editor: fix: update links in other .ynd's when deleting vanilla nodes, add 
 Path editor: remap nodes to correct area/.ynd
 
 Nav mesh editor (YNV)
-Interior entities editor (YTYP)
 Archetype extension editor (YTYP)
 Entity extension editor
 Time cycle mod editor
-Grass editor
 Distant lod lights editor
-Mlo instance editor
 Water quads editor
 Collision editor (YBN)
 Timecycle/weather XML editor
@@ -100,6 +97,11 @@ done:
 
 
 [v.30]
+Occlusion mode
+XML/PSO conversion
+Mlo instance editor
+Interior entities editor (YTYP)
+Grass editor
 Bug fixes for XML/Meta conversion
 Collision meshes now using R* colours
 Vehicle rendering improvements
