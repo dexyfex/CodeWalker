@@ -6,9 +6,7 @@ using SharpDX.Direct3D11;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace CodeWalker.Rendering
 {
@@ -144,13 +142,7 @@ namespace CodeWalker.Rendering
         public List<RenderedBoundComposite> RenderedBoundComps = new List<RenderedBoundComposite>();
         public bool RenderedDrawablesListEnable = false; //whether or not to add rendered drawables to the list
         public bool RenderedBoundCompsListEnable = false; //whether or not to add rendered bound comps to the list
-
-
-
-
-
-
-
+        public bool renderCustomCars = false;
 
         public Renderer(DXForm form, GameFileCache cache)
         {
@@ -711,8 +703,8 @@ namespace CodeWalker.Rendering
                 SelectionLineVerts.Add(c[(i + 1) % c.Length]);
             }
 
-            SelectionLineVerts.Add(new VertexTypePC{Colour = col, Position = position});
-            SelectionLineVerts.Add(new VertexTypePC { Colour = col, Position = position + dir * 2f});
+            SelectionLineVerts.Add(new VertexTypePC { Colour = col, Position = position });
+            SelectionLineVerts.Add(new VertexTypePC { Colour = col, Position = position + dir * 2f });
         }
 
         public void RenderSelectionArrowOutline(Vector3 pos, Vector3 dir, Vector3 up, Quaternion ori, float len, float rad, uint colour)
@@ -1608,7 +1600,7 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            if(renderentities)
+            if (renderentities)
             {
                 for (int i = 0; i < renderworldrenderables.Count; i++)
                 {
@@ -1625,9 +1617,12 @@ namespace CodeWalker.Rendering
                 for (int y = 0; y < VisibleYmaps.Count; y++)
                 {
                     var ymap = VisibleYmaps[y];
-                    if (ymap.CarGenerators == null) continue;
+                    if (ymap.CarGenerators == null || renderCustomCars && !ymap.Custom) continue;
                     for (int i = 0; i < ymap.CarGenerators.Length; i++)
+                    {
                         RenderCar(ymap.CarGenerators[i]);
+                    }
+
                 }
             }
 
@@ -1637,9 +1632,7 @@ namespace CodeWalker.Rendering
                 {
                     var ymap = VisibleYmaps[y];
                     if (ymap.GrassInstanceBatches != null)
-                    {
                         RenderYmapGrass(ymap);
-                    }
                 }
             }
             if (renderdistlodlights && timecycle.IsNightTime)
@@ -1973,6 +1966,9 @@ namespace CodeWalker.Rendering
             {
                 RenderYmapDistantLODLights(ymap);
             }
+            if (ymap.CarGenerators != null)
+                for (int i = 0; i < ymap.CarGenerators.Length; i++)
+                    RenderCar(ymap.CarGenerators[i]);
 
         }
         private bool RenderYmapLOD(YmapFile ymap, YmapEntityDef entity)

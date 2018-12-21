@@ -63,6 +63,7 @@ namespace CodeWalker
             this.label15 = new System.Windows.Forms.Label();
             this.WorldMaxLodComboBox = new System.Windows.Forms.ComboBox();
             this.ViewYmapsTabPage = new System.Windows.Forms.TabPage();
+            this.ShowVehicleModelsCheckBox = new System.Windows.Forms.CheckBox();
             this.ShowYmapChildrenCheckBox = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.DetailTrackBar = new System.Windows.Forms.TrackBar();
@@ -286,7 +287,7 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
-            this.ShowVehicleModelsCheckBox = new System.Windows.Forms.CheckBox();
+            this.ShowCustomVehicleModelsCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -728,6 +729,7 @@ namespace CodeWalker
             // 
             // ViewYmapsTabPage
             // 
+            this.ViewYmapsTabPage.Controls.Add(this.ShowCustomVehicleModelsCheckBox);
             this.ViewYmapsTabPage.Controls.Add(this.ShowVehicleModelsCheckBox);
             this.ViewYmapsTabPage.Controls.Add(this.ShowYmapChildrenCheckBox);
             this.ViewYmapsTabPage.Controls.Add(this.label2);
@@ -741,6 +743,17 @@ namespace CodeWalker
             this.ViewYmapsTabPage.TabIndex = 1;
             this.ViewYmapsTabPage.Text = "Ymaps";
             this.ViewYmapsTabPage.UseVisualStyleBackColor = true;
+            // 
+            // ShowVehicleModelsCheckBox
+            // 
+            this.ShowVehicleModelsCheckBox.AutoSize = true;
+            this.ShowVehicleModelsCheckBox.Location = new System.Drawing.Point(6, 83);
+            this.ShowVehicleModelsCheckBox.Name = "ShowVehicleModelsCheckBox";
+            this.ShowVehicleModelsCheckBox.Size = new System.Drawing.Size(107, 17);
+            this.ShowVehicleModelsCheckBox.TabIndex = 37;
+            this.ShowVehicleModelsCheckBox.Text = "Show car models";
+            this.ShowVehicleModelsCheckBox.UseVisualStyleBackColor = true;
+            this.ShowVehicleModelsCheckBox.CheckedChanged += new System.EventHandler(this.ShowVehicleModels_CheckedChanged);
             // 
             // ShowYmapChildrenCheckBox
             // 
@@ -3270,16 +3283,16 @@ namespace CodeWalker
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
             // 
-            // ShowVehicleModelsCheckBox
+            // ShowCustomVehicleModelsCheckBox
             // 
-            this.ShowVehicleModelsCheckBox.AutoSize = true;
-            this.ShowVehicleModelsCheckBox.Location = new System.Drawing.Point(6, 83);
-            this.ShowVehicleModelsCheckBox.Name = "ShowVehicleModelsCheckBox";
-            this.ShowVehicleModelsCheckBox.Size = new System.Drawing.Size(126, 17);
-            this.ShowVehicleModelsCheckBox.TabIndex = 37;
-            this.ShowVehicleModelsCheckBox.Text = "Show vehicle models";
-            this.ShowVehicleModelsCheckBox.UseVisualStyleBackColor = true;
-            this.ShowVehicleModelsCheckBox.CheckedChanged += new System.EventHandler(this.ShowVehicleModels_CheckedChanged);
+            this.ShowCustomVehicleModelsCheckBox.AutoSize = true;
+            this.ShowCustomVehicleModelsCheckBox.Location = new System.Drawing.Point(128, 83);
+            this.ShowCustomVehicleModelsCheckBox.Name = "ShowCustomVehicleModelsCheckBox";
+            this.ShowCustomVehicleModelsCheckBox.Size = new System.Drawing.Size(60, 17);
+            this.ShowCustomVehicleModelsCheckBox.TabIndex = 38;
+            this.ShowCustomVehicleModelsCheckBox.Text = "custom";
+            this.ShowCustomVehicleModelsCheckBox.UseVisualStyleBackColor = true;
+            this.ShowCustomVehicleModelsCheckBox.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
             // WorldForm
             // 
@@ -3624,5 +3637,6 @@ namespace CodeWalker
         private System.Windows.Forms.CheckBox RenderEntitiesCheckBox;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectOcclusionButton;
         private System.Windows.Forms.CheckBox ShowVehicleModelsCheckBox;
+        private System.Windows.Forms.CheckBox ShowCustomVehicleModelsCheckBox;
     }
 }

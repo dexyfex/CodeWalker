@@ -56,6 +56,9 @@ namespace CodeWalker.GameFiles
 
         //fields used by the editor:
         public bool HasChanged { get; set; } = false;
+        public bool Custom = false;
+
+
         public List<string> SaveWarnings = null;
 
 
@@ -2152,7 +2155,6 @@ namespace CodeWalker.GameFiles
         public Vector3 BBMax { get; set; }
 
         public YmapFile Ymap { get; set; }
-
 
         public YmapCarGen(YmapFile ymap, CCarGen cargen)
         {

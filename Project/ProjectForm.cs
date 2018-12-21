@@ -5,14 +5,9 @@ using CodeWalker.World;
 using SharpDX;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -101,7 +96,8 @@ namespace CodeWalker.Project
             else
             {
                 GameFileCache = GameFileCacheFactory.Create();
-                new Thread(new ThreadStart(() => {
+                new Thread(new ThreadStart(() =>
+                {
                     GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
                     GameFileCache.Init(UpdateStatus, UpdateError);
                     RpfMan = GameFileCache.RpfMan;
@@ -276,7 +272,7 @@ namespace CodeWalker.Project
                 PreviewPanel = panel;
             }
         }
-        public void ShowPanel<T>(bool promote, Func<T> createFunc, Action<T> updateAction, Func<T,bool> findFunc) where T : ProjectPanel
+        public void ShowPanel<T>(bool promote, Func<T> createFunc, Action<T> updateAction, Func<T, bool> findFunc) where T : ProjectPanel
         {
             T found = FindPanel(findFunc);
             if ((found != null) && (found != PreviewPanel))
@@ -705,7 +701,7 @@ namespace CodeWalker.Project
             }
         }
 
-        private void ClosePanel<T>(Func<T,bool> findFunc) where T : ProjectPanel
+        private void ClosePanel<T>(Func<T, bool> findFunc) where T : ProjectPanel
         {
             var panel = FindPanel(findFunc);
             if (PreviewPanel == panel)
@@ -1594,7 +1590,7 @@ namespace CodeWalker.Project
             batch.Position = (batch.AABBMin + batch.AABBMax) * 0.5f;
             batch.Radius = (batch.AABBMax - batch.AABBMin).Length() * 0.5f;
             batch.Ymap = CurrentYmapFile;
-            
+
             if (WorldForm != null)
             {
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
@@ -1740,7 +1736,6 @@ namespace CodeWalker.Project
 
 
             YmapCarGen cg = new YmapCarGen(CurrentYmapFile, ccg);
-
             if (WorldForm != null)
             {
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
@@ -2200,7 +2195,7 @@ namespace CodeWalker.Project
                         } rooms.");
                 return;
             }
-            
+
             float spawndist = 5.0f; //use archetype BSradius if starting with a copy...
             if (copy != null)
             {
@@ -2258,7 +2253,7 @@ namespace CodeWalker.Project
                     mloArch.AddEntity(outEnt, roomIndex);
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MessageBox.Show(this, e.Message, "Create MLO Entity Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -2447,10 +2442,10 @@ namespace CodeWalker.Project
             if (CurrentYndFile == null) return;
 
             // Check that vehicle nodes and ped nodes add up to total nodes
-            if(CurrentYndFile.NodeDictionary != null && (CurrentYndFile.NodeDictionary.NodesCountPed + CurrentYndFile.NodeDictionary.NodesCountVehicle != CurrentYndFile.NodeDictionary.NodesCount))
+            if (CurrentYndFile.NodeDictionary != null && (CurrentYndFile.NodeDictionary.NodesCountPed + CurrentYndFile.NodeDictionary.NodesCountVehicle != CurrentYndFile.NodeDictionary.NodesCount))
             {
                 var result = MessageBox.Show($"YND Area {CurrentYndFile.AreaID}: The total number of nodes ({CurrentYndFile.NodeDictionary.NodesCount}) does not match the total number of ped ({CurrentYndFile.NodeDictionary.NodesCountPed}) and vehicle ({CurrentYndFile.NodeDictionary.NodesCountVehicle}) nodes. You should manually adjust the number of nodes on the YND screen.\n\nDo you want to continue saving the YND file? Some of your nodes may not work in game.", $"Node count mismatch in Area {CurrentYndFile.AreaID}", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
-                if(result == DialogResult.Cancel)
+                if (result == DialogResult.Cancel)
                 {
                     return;
                 }
@@ -4626,6 +4621,7 @@ namespace CodeWalker.Project
 
                     if (YmapExistsInProject(ymap))
                     {
+                        ymap.Custom = true;
                         if (ent != CurrentEntity)
                         {
                             ProjectExplorer?.TrySelectEntityTreeNode(ent);
@@ -5362,7 +5358,7 @@ namespace CodeWalker.Project
             byte[] data = File.ReadAllBytes(filename);
 
             ymap.Load(data);
-
+            ymap.Custom = true;
             ymap.InitYmapEntityArchetypes(GameFileCache); //this needs to be done after calling YmapFile.Load()
         }
         private void LoadYtypFromFile(YtypFile ytyp, string filename)

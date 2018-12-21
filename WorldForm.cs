@@ -7803,6 +7803,12 @@ namespace CodeWalker
         {
             Renderer.renderCars = ShowVehicleModelsCheckBox.Checked;
         }
+
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderCustomCars = ShowCustomVehicleModelsCheckBox.Checked;
+        }
     }
 
     public enum WorldControlMode
