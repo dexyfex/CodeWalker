@@ -85,7 +85,7 @@ namespace CodeWalker.WinForms
             {
                 ignoreChange = true;
                 Text = storageUndo[storageUndo.Count - 2];
-                storageRedo.Add(Text);
+                storageRedo.Add(storageUndo[storageUndo.Count - 1]);
                 storageUndo.RemoveAt(storageUndo.Count - 1);
                 ignoreChange = false;
             }
