@@ -1319,10 +1319,13 @@ namespace CodeWalker
                 float arrowrad = arrowlen * 0.066f;
                 Renderer.RenderSelectionArrowOutline(cg.Position, Vector3.UnitX, Vector3.UnitY, ori, arrowlen, arrowrad, cgrn);
 
-                Quaternion cgtrn = Quaternion.RotationAxis(Vector3.UnitZ, (float)Math.PI * -0.5f); //car fragments currently need to be rotated 90 deg right...
-                Quaternion cgori = Quaternion.Multiply(ori, cgtrn);
+                if (!Renderer.rendercars)//only render selected car if not already rendering cars..
+                {
+                    Quaternion cgtrn = Quaternion.RotationAxis(Vector3.UnitZ, (float)Math.PI * -0.5f); //car fragments currently need to be rotated 90 deg right...
+                    Quaternion cgori = Quaternion.Multiply(ori, cgtrn);
 
-                Renderer.RenderCar(cg.Position, cgori, cg._CCarGen.carModel, cg._CCarGen.popGroup);
+                    Renderer.RenderCar(cg.Position, cgori, cg._CCarGen.carModel, cg._CCarGen.popGroup);
+                }
             }
             if (selectionItem.PathNode != null)
             {
