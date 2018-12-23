@@ -102,6 +102,7 @@ namespace CodeWalker.Rendering
         public bool renderentities = true;
         public bool rendergrass = true;
         public bool renderdistlodlights = true;
+        public bool rendercars = false;
 
         public bool rendercollisionmeshes = Settings.Default.ShowCollisionMeshes;
         public bool rendercollisionmeshlayerdrawable = true;
@@ -1620,7 +1621,17 @@ namespace CodeWalker.Rendering
             }
 
 
-
+            if (rendercars)
+            {
+                for (int y = 0; y < VisibleYmaps.Count; y++)
+                {
+                    var ymap = VisibleYmaps[y];
+                    if (ymap.CarGenerators != null)
+                    {
+                        RenderYmapCarGenerators(ymap);
+                    }
+                }
+            }
             if (rendergrass)
             {
                 for (int y = 0; y < VisibleYmaps.Count; y++)
@@ -1956,6 +1967,10 @@ namespace CodeWalker.Rendering
                 }
             }
 
+            if (rendercars && ymap.CarGenerators != null)
+            {
+                RenderYmapCarGenerators(ymap);
+            }
             if (rendergrass && (ymap.GrassInstanceBatches != null))
             {
                 RenderYmapGrass(ymap);
@@ -2147,6 +2162,34 @@ namespace CodeWalker.Rendering
             shaders.Enqueue(lights);
         }
 
+        private void RenderYmapCarGenerators(YmapFile ymap)
+        {
+
+            if (ymap.CarGenerators == null) return;
+
+            var maxdist = 200 * renderworldDetailDistMult;
+            var maxdist2 = maxdist * maxdist;
+
+            for (int i = 0; i < ymap.CarGenerators.Length; i++)
+            {
+                var cg = ymap.CarGenerators[i];
+
+                var bscent = cg.Position - camera.Position;
+                float bsrad = cg._CCarGen.perpendicularLength;
+                if (bscent.LengthSquared() > maxdist2) continue; //don't render distant cars..
+                if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref bscent, bsrad))
+                {
+                    continue; //frustum cull cars...
+                }
+
+
+                Quaternion cgtrn = Quaternion.RotationAxis(Vector3.UnitZ, (float)Math.PI * -0.5f); //car fragments currently need to be rotated 90 deg right...
+                Quaternion cgori = Quaternion.Multiply(cg.Orientation, cgtrn);
+
+                RenderCar(cg.Position, cgori, cg._CCarGen.carModel, cg._CCarGen.popGroup);
+            }
+
+        }
 
 
 

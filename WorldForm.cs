@@ -6592,6 +6592,11 @@ namespace CodeWalker
             Renderer.rendergrass = GrassCheckBox.Checked;
         }
 
+        private void CarGeneratorsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.rendercars = CarGeneratorsCheckBox.Checked;
+        }
+
         private void TimedEntitiesCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Renderer.rendertimedents = TimedEntitiesCheckBox.Checked;
