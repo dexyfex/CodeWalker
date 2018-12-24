@@ -157,7 +157,7 @@ namespace CodeWalker.GameFiles
                 RpfMan.Init(GTAFolder, UpdateStatus, ErrorLog);//, true);
 
                 //RE test area!
-                //DecodeRelFiles();
+                //TestAudioRels();
 
 
                 InitGlobal();
@@ -2115,6 +2115,168 @@ namespace CodeWalker.GameFiles
 
 
 
+        public void TestAudioRels()
+        {
+            UpdateStatus("Testing Audio REL files");
+
+            StringBuilder sb = new StringBuilder();
+            StringBuilder sbh = new StringBuilder();
+
+            foreach (RpfFile rpf in RpfMan.AllRpfs)
+            {
+                foreach (RpfEntry entry in rpf.AllEntries)
+                {
+                    var rfe = entry as RpfFileEntry;
+                    var rbfe = rfe as RpfBinaryFileEntry;
+                    if ((rfe == null) || (rbfe == null)) continue;
+
+                    if (rfe.NameLower.EndsWith(".rel"))
+                    {
+                        UpdateStatus(string.Format(entry.Path));
+
+                        RelFile rel = new RelFile(rfe);
+                        RpfMan.LoadFile(rel, rfe);
+
+                        if (rel.NameTable == null)
+                        {
+                            sb.AppendLine(rfe.Path + ": no strings found");
+                        }
+                        else
+                        {
+                            sb.AppendLine(rfe.Path + ": " + rel.NameTable.Length.ToString() + " strings found:");
+                            foreach (string str in rel.NameTable)
+                            {
+                                sb.AppendLine(str);
+                            }
+                        }
+                        if (rel.IndexStrings != null)
+                        {
+                            sb.AppendLine("Config-specific:");
+                            foreach (var unk in rel.IndexStrings)
+                            {
+                                sb.AppendLine(unk.ToString());
+                            }
+                        }
+                        if (rel.IndexHashes != null)
+                        {
+                            sbh.AppendLine(rfe.Path + ": " + rel.IndexHashes.Length.ToString() + " entries:");
+                            foreach (var unk in rel.IndexHashes)
+                            {
+                                sbh.Append(unk.Name.Hash.ToString("X8"));
+                                string strval;
+                                if (JenkIndex.Index.TryGetValue(unk.Name, out strval))
+                                {
+                                    sbh.Append(" - ");
+                                    sbh.Append(strval);
+                                }
+                                sbh.AppendLine();
+                                //sbh.AppendLine(unk.ToString());
+                            }
+                            sbh.AppendLine();
+                        }
+                        if (rel.WaveTracksHashes != null)
+                        {
+                            sbh.AppendLine(rfe.Path + ": " + rel.WaveTracksHashes.Length.ToString() + " Hashes1:");
+                            foreach (var unk in rel.WaveTracksHashes)
+                            {
+                                sbh.Append(unk.Hash.ToString("X8"));
+                                string strval;
+                                if (JenkIndex.Index.TryGetValue(unk, out strval))
+                                {
+                                    sbh.Append(" - ");
+                                    sbh.Append(strval);
+                                }
+                                sbh.AppendLine();
+                            }
+                            sbh.AppendLine();
+                        }
+                        if (rel.WaveContainersHashes != null)
+                        {
+                            sbh.AppendLine(rfe.Path + ": " + rel.WaveContainersHashes.Length.ToString() + " Hashes2:");
+                            foreach (var unk in rel.WaveContainersHashes)
+                            {
+                                sbh.Append(unk.Hash.ToString("X8"));
+                                string strval;
+                                if (JenkIndex.Index.TryGetValue(unk, out strval))
+                                {
+                                    sbh.Append(" - ");
+                                    sbh.Append(strval);
+                                }
+                                sbh.AppendLine();
+                            }
+                            sbh.AppendLine();
+                        }
+
+                        sb.AppendLine();
+
+
+
+                        byte[] data = rel.Save();
+                        if (data != null)
+                        {
+                            if (data.Length != rbfe.FileUncompressedSize)
+                            { }
+                            if (data.Length != rel.RawFileData.Length)
+                            { }
+                            for (int i = 0; i < data.Length; i++) //raw file test
+                                if (data[i] != rel.RawFileData[i])
+                                { }
+                        }
+
+
+                        RelFile rel2 = new RelFile();
+                        rel2.Load(data, rfe);//roundtrip test
+
+                        if (rel2.IndexCount != rel.IndexCount)
+                        { }
+                        if (rel2.RelDatas == null)
+                        { }
+
+                    }
+
+                }
+
+            }
+            int ctot = Dat151RelData.TotCount;
+            StringBuilder sbp = new StringBuilder();
+            foreach (string s in Dat151RelData.FoundCoords)
+            {
+                sbp.AppendLine(s);
+            }
+            string posz = sbp.ToString();
+
+            string relstrs = sb.ToString();
+            string hashstrs = sbh.ToString();
+
+
+            var wavesmap = RelFile.WavesMap;
+            if (wavesmap.Count > 0)
+            { }
+
+
+            var sb2 = new StringBuilder();
+            foreach (var kvp in wavesmap)
+            {
+                if (kvp.Key.FileType == RelDatFileType.Dat151Parameters)
+                {
+                    sb2.Append(((Dat151RelType)kvp.Key.ItemType).ToString());
+                    sb2.Append("     ");
+                    foreach (var val in kvp.Value)
+                    {
+                        sb2.Append(val.ToString());
+                        sb2.Append("   ");
+                    }
+
+                    sb2.AppendLine();
+                }
+
+            }
+
+            var dat151str = sb2.ToString();
+            if (!string.IsNullOrEmpty(dat151str))
+            { }
+
+        }
         public void TestAudioYmts()
         {
 
@@ -2757,113 +2919,6 @@ namespace CodeWalker.GameFiles
             var csv = sb.ToString();
 
 
-
-        }
-        public void DecodeRelFiles()
-        {
-            UpdateStatus("Decoding REL files");
-
-            StringBuilder sb = new StringBuilder();
-            StringBuilder sbh = new StringBuilder();
-
-            foreach (RpfFile rpf in RpfMan.AllRpfs)
-            {
-                foreach (RpfEntry entry in rpf.AllEntries)
-                {
-                    RpfFileEntry rfe = entry as RpfFileEntry;
-                    if (rfe == null) continue;
-
-                    if (rfe.NameLower.EndsWith(".rel"))
-                    {
-                        RelFile rel = new RelFile(rfe);
-                        RpfMan.LoadFile(rel, rfe);
-
-                        if (rel.NameTable == null)
-                        {
-                            sb.AppendLine(rfe.Path + ": no strings found");
-                        }
-                        else
-                        {
-                            sb.AppendLine(rfe.Path + ": " + rel.NameTable.Length.ToString() + " strings found:");
-                            foreach (string str in rel.NameTable)
-                            {
-                                sb.AppendLine(str);
-                            }
-                        }
-                        if (rel.IndexStrings != null)
-                        {
-                            sb.AppendLine("Config-specific:");
-                            foreach (var unk in rel.IndexStrings)
-                            {
-                                sb.AppendLine(unk.ToString());
-                            }
-                        }
-                        if (rel.IndexHashes != null)
-                        {
-                            sbh.AppendLine(rfe.Path + ": " + rel.IndexHashes.Length.ToString() + " entries:");
-                            foreach (var unk in rel.IndexHashes)
-                            {
-                                sbh.Append(unk.Name.Hash.ToString("X8"));
-                                string strval;
-                                if (JenkIndex.Index.TryGetValue(unk.Name, out strval))
-                                {
-                                    sbh.Append(" - ");
-                                    sbh.Append(strval);
-                                }
-                                sbh.AppendLine();
-                                //sbh.AppendLine(unk.ToString());
-                            }
-                            sbh.AppendLine();
-                        }
-                        if (rel.WaveTracksHashes != null)
-                        {
-                            sbh.AppendLine(rfe.Path + ": " + rel.WaveTracksHashes.Length.ToString() + " Hashes1:");
-                            foreach (var unk in rel.WaveTracksHashes)
-                            {
-                                sbh.Append(unk.Hash.ToString("X8"));
-                                string strval;
-                                if (JenkIndex.Index.TryGetValue(unk, out strval))
-                                {
-                                    sbh.Append(" - ");
-                                    sbh.Append(strval);
-                                }
-                                sbh.AppendLine();
-                            }
-                            sbh.AppendLine();
-                        }
-                        if (rel.WaveContainersHashes != null)
-                        {
-                            sbh.AppendLine(rfe.Path + ": " + rel.WaveContainersHashes.Length.ToString() + " Hashes2:");
-                            foreach (var unk in rel.WaveContainersHashes)
-                            {
-                                sbh.Append(unk.Hash.ToString("X8"));
-                                string strval;
-                                if (JenkIndex.Index.TryGetValue(unk, out strval))
-                                {
-                                    sbh.Append(" - ");
-                                    sbh.Append(strval);
-                                }
-                                sbh.AppendLine();
-                            }
-                            sbh.AppendLine();
-                        }
-
-                        sb.AppendLine();
-                    }
-
-                }
-
-            }
-            int ctot = Dat151RelData.TotCount;
-            StringBuilder sbp = new StringBuilder();
-            foreach (string s in Dat151RelData.FoundCoords)
-            {
-                sbp.AppendLine(s);
-            }
-            string posz = sbp.ToString();
-
-            string relstrs = sb.ToString();
-            string hashstrs = sbh.ToString();
 
         }
 

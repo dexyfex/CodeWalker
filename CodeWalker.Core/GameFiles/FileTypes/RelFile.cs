@@ -48,9 +48,23 @@ SOFTWARE.
 
 namespace CodeWalker.GameFiles
 {
+    public enum RelDatFileType : uint
+    {
+        Dat4 = 4,
+        Dat10ModularSynth = 10,
+        Dat15DynamicMixer = 15,
+        Dat16Curves = 16,
+        Dat22Categories = 22,
+        Dat54DataEntries = 54,
+        Dat149 = 149,
+        Dat150 = 150,
+        Dat151Parameters = 151
+    }
+
     [TC(typeof(EXP))] public class RelFile : GameFile, PackedFile
     {
-        public uint RelType { get; set; }
+        public byte[] RawFileData { get; set; }
+        public RelDatFileType RelType { get; set; }
         public uint DataLength { get; set; }
         public byte[] DataBlock { get; set; }
         public uint DataUnkVal { get; set; }
@@ -91,6 +105,8 @@ namespace CodeWalker.GameFiles
 
         public void Load(byte[] data, RpfFileEntry entry)
         {
+            RawFileData = data;
+
             RpfFileEntry = entry;
             Name = entry.Name;
 
@@ -98,7 +114,7 @@ namespace CodeWalker.GameFiles
             BinaryReader br = new BinaryReader(ms);
             StringBuilder sb = new StringBuilder();
 
-            RelType = br.ReadUInt32(); //type/version?
+            RelType = (RelDatFileType)br.ReadUInt32(); //type
 
             DataLength = br.ReadUInt32(); //length of data block
             DataBlock = br.ReadBytes((int)DataLength); //main data block...
@@ -134,10 +150,11 @@ namespace CodeWalker.GameFiles
             IndexCount = br.ReadUInt32(); //count of index items
             if (IndexCount > 0)
             {
-                //checking NameTableLength here doesn't make sense!
-                if ((RelType == 4) && (NameTableLength == 4))//audioconfig.dat4.rel
+                if ((RelType == RelDatFileType.Dat4) && (NameTableLength == 4))//audioconfig.dat4.rel    //checking NameTableLength here doesn't make sense!
                 {
                     IndexStringFlags = br.ReadUInt32(); //what is this?  2524
+                    if (IndexStringFlags != 2524)
+                    { }
                     RelIndexString[] indexstrs = new RelIndexString[IndexCount];
                     for (uint i = 0; i < IndexCount; i++)
                     {
@@ -217,6 +234,9 @@ namespace CodeWalker.GameFiles
 
 
             ParseDataBlock();
+
+            //BuildWavesMaps();
+
         }
 
 
@@ -229,6 +249,7 @@ namespace CodeWalker.GameFiles
             BinaryReader br = new BinaryReader(ms);
 
             DataUnkVal = br.ReadUInt32(); //3 bytes used... for? ..version? flags?
+            #region DataUnkVal unk values test
             //switch (DataUnkVal)
             //{
             //    case 5252715: //dlcbusiness_amp.dat10.rel
@@ -262,6 +283,7 @@ namespace CodeWalker.GameFiles
             //    default:
             //        break;
             //}
+            #endregion
 
 
             List<RelData> reldatas = new List<RelData>();
@@ -300,7 +322,7 @@ namespace CodeWalker.GameFiles
                     JenkIndex.Ensure(reldata.Name);
                     JenkIndex.Ensure(reldata.Name.ToLowerInvariant()); //which one to use?
                 }
-                
+
                 //if (reldata.NameHash == 0)
                 //{ }//no hits here
                 //if (RelDataDict.ContainsKey(reldata.NameHash))
@@ -342,47 +364,6 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            #region test
-            //foreach (var d in RelDatas)
-            //{
-            //    using (BinaryReader dbr = new BinaryReader(new MemoryStream(d.Data)))
-            //    {
-            //        switch (Type)
-            //        {
-            //            case 4:   //00000100  //speech.dat4.rel, audioconfig.dat4.rel
-            //                ParseData4(d, dbr);
-            //                break;
-            //            case 10:  //00001010  //amp.dat10.rel
-            //                ParseData10(d, dbr);
-            //                break;
-            //            case 15:  //00001111  //mix.dat15.rel
-            //                ParseData15(d, dbr);
-            //                break;
-            //            case 16:  //00010000  //curves.dat16.rel
-            //                ParseData16(d, dbr);
-            //                break;
-            //            case 22:  //00010110  //categories.dat22.rel
-            //                ParseData22(d, dbr);
-            //                break;
-            //            case 54:  //00110110  //sounds.dat54.rel
-            //                ParseData54(d, dbr);
-            //                break;
-            //            case 149: //10010101  //game.dat149.rel
-            //                ParseData149(d, dbr);
-            //                break;
-            //            case 150: //10010110  //game.dat150.rel
-            //                ParseData150(d, dbr);
-            //                break;
-            //            case 151: //10010111  //game.dat151.rel
-            //                ParseData151(d, dbr);
-            //                break;
-            //            default:
-            //                break;
-            //        }
-            //    }
-            //}
-            #endregion
-
         }
 
 
@@ -416,23 +397,23 @@ namespace CodeWalker.GameFiles
 
                 switch (RelType)
                 {
-                    case 4:   //speech.dat4.rel, audioconfig.dat4.rel
+                    case RelDatFileType.Dat4:   //speech.dat4.rel, audioconfig.dat4.rel
                         return ReadData4(d, dbr);
-                    case 10:  //amp.dat10.rel
+                    case RelDatFileType.Dat10ModularSynth:  //amp.dat10.rel
                         return ReadData10(d, dbr);
-                    case 15:  //mix.dat15.rel
+                    case RelDatFileType.Dat15DynamicMixer:  //mix.dat15.rel
                         return ReadData15(d, dbr);
-                    case 16:  //curves.dat16.rel
+                    case RelDatFileType.Dat16Curves:  //curves.dat16.rel
                         return ReadData16(d, dbr);
-                    case 22:  //categories.dat22.rel
+                    case RelDatFileType.Dat22Categories:  //categories.dat22.rel
                         return ReadData22(d, dbr);
-                    case 54:  //sounds.dat54.rel
+                    case RelDatFileType.Dat54DataEntries:  //sounds.dat54.rel
                         return ReadData54(d, dbr);
-                    case 149: //game.dat149.rel
+                    case RelDatFileType.Dat149: //game.dat149.rel
                         return ReadData149(d, dbr);
-                    case 150: //game.dat150.rel
+                    case RelDatFileType.Dat150: //game.dat150.rel
                         return ReadData150(d, dbr);
-                    case 151: //game.dat151.rel
+                    case RelDatFileType.Dat151Parameters: //game.dat151.rel
                         return ReadData151(d, dbr);
                     default:
                         return d; //shouldn't get here...
@@ -515,39 +496,54 @@ namespace CodeWalker.GameFiles
         }
         private RelData ReadData149(RelData d, BinaryReader br)
         {
-            //RelSound s = new RelSound(d, br);
-            //return s;
-            return d;
+            return ReadData151(d, br);//same as 151?
         }
         private RelData ReadData150(RelData d, BinaryReader br)
         {
-            return d;
+            return ReadData151(d, br);//same as 151?
         }
         private RelData ReadData151(RelData d, BinaryReader br)
         {
             switch ((Dat151RelType)d.TypeID)
             {
-                case Dat151RelType.Collision: //maybe for vehicle
+                case Dat151RelType.Collision: return new Dat151Collision(d, br); //maybe for vehicle
+                case Dat151RelType.WeaponAudioItem: return new Dat151WeaponAudioItem(d, br);
+                case Dat151RelType.StartTrackAction: return new Dat151StartTrackAction(d, br);
+                case Dat151RelType.StopTrackAction: return new Dat151StopTrackAction(d, br);
+                case Dat151RelType.Mood: return new Dat151Mood(d, br);
+                case Dat151RelType.SetMoodAction: return new Dat151SetMoodAction(d, br);
+                case Dat151RelType.PlayerAction: return new Dat151PlayerAction(d, br);
+                case Dat151RelType.StartOneShotAction: return new Dat151StartOneShotAction(d, br);
+                case Dat151RelType.StopOneShotAction: return new Dat151StopOneShotAction(d, br);
+                case Dat151RelType.FadeOutRadioAction: return new Dat151FadeOutRadioAction(d, br);
+                case Dat151RelType.FadeInRadioAction: return new Dat151FadeInRadioAction(d, br);
+                case Dat151RelType.Mod: return new Dat151Mod(d, br);
+                case Dat151RelType.Interior: return new Dat151Interior(d, br);
+                case Dat151RelType.InteriorRoom: return new Dat151InteriorRoom(d, br);
+                case Dat151RelType.Unk117: return new Dat151Unk117(d, br);
+                case Dat151RelType.Entity: return new Dat151Entity(d, br); //not sure about this
+                case Dat151RelType.Unk47: return new Dat151Unk47(d, br);
+                case Dat151RelType.Unk83: return new Dat151Unk83(d, br);
+                case Dat151RelType.RadioDjSpeechAction: return new Dat151RadioDjSpeechAction(d, br);
+                case Dat151RelType.ForceRadioTrackAction: return new Dat151ForceRadioTrackAction(d, br);
+                case Dat151RelType.Unk78: return new Dat151Unk78(d, br);
+                case Dat151RelType.RadioStationsDLC: return new Dat151RadioStationsDLC(d, br); //
+                case Dat151RelType.RadioDLC: return new Dat151RadioDLC(d, br);
+                case Dat151RelType.Unk49: return new Dat151Unk49(d, br);
+                case Dat151RelType.Unk84: return new Dat151Unk84(d, br);
+                case Dat151RelType.Unk86: return new Dat151Unk86(d, br);
+                case Dat151RelType.Unk81: return new Dat151Unk81(d, br);
+                case Dat151RelType.Unk55: return new Dat151Unk55(d, br);
+
                 case Dat151RelType.Vehicle:
                 case Dat151RelType.VehicleEngine:
-                case Dat151RelType.Entity: //not sure about this
                 case Dat151RelType.Stream: //generic audio stream?
                 case Dat151RelType.Helicopter: //maybe
                 case Dat151RelType.SpeechParams:
                 case Dat151RelType.Weapon:
-                case Dat151RelType.RadioStationsDLC: //
-                case Dat151RelType.RadioDLC:
                 case Dat151RelType.DLCMusic:
                 case Dat151RelType.PedPVG: //maybe Ped Voice Group?
-                case Dat151RelType.WeaponAudioItem:
                 case Dat151RelType.Aeroplane:
-                case Dat151RelType.Mood:
-                case Dat151RelType.StartTrackAction:
-                case Dat151RelType.StopTrackAction:
-                case Dat151RelType.SetMoodAction:
-                case Dat151RelType.PlayerAction:
-                case Dat151RelType.StartOneShotAction:
-                case Dat151RelType.StopOneShotAction:
                 case Dat151RelType.AnimalParams:
                 case Dat151RelType.VehicleScannerParams: //maybe not just vehicle
                 case Dat151RelType.Explosion:
@@ -557,10 +553,6 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.ShoreLineRiver:
                 case Dat151RelType.ShoreLineOcean:
                 case Dat151RelType.ShoreLineList:
-                case Dat151RelType.RadioDjSpeechAction:
-                case Dat151RelType.FadeOutRadioAction:
-                case Dat151RelType.FadeInRadioAction:
-                case Dat151RelType.ForceRadioTrackAction:
                 case Dat151RelType.Unk2:
                 case Dat151RelType.Unk7:
                 case Dat151RelType.Unk9:
@@ -582,17 +574,11 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.Unk40:
                 case Dat151RelType.Unk41:
                 case Dat151RelType.Unk42:
-                case Dat151RelType.Interior:
                 case Dat151RelType.Unk45:
-                case Dat151RelType.InteriorRoom:
-                case Dat151RelType.Unk47:
                 case Dat151RelType.Unk48:
-                case Dat151RelType.Unk49:
                 case Dat151RelType.Unk51:
-                case Dat151RelType.Mod:
                 case Dat151RelType.Unk53:
                 case Dat151RelType.Unk54:
-                case Dat151RelType.Unk55:
                 case Dat151RelType.Unk56:
                 case Dat151RelType.Unk59:
                 case Dat151RelType.Unk69:
@@ -602,15 +588,10 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.Unk74:
                 case Dat151RelType.Unk75:
                 case Dat151RelType.Unk77:
-                case Dat151RelType.Unk78:
                 case Dat151RelType.Unk79:
                 case Dat151RelType.Unk80:
-                case Dat151RelType.Unk81:
                 case Dat151RelType.Unk82:
-                case Dat151RelType.Unk83:
-                case Dat151RelType.Unk84:
                 case Dat151RelType.Unk85:
-                case Dat151RelType.Unk86:
                 case Dat151RelType.Unk95:
                 case Dat151RelType.Unk96:
                 case Dat151RelType.Unk99:
@@ -628,7 +609,6 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.Unk114:
                 case Dat151RelType.Unk115:
                 case Dat151RelType.Unk116:
-                case Dat151RelType.Unk117:
                 case Dat151RelType.Unk118:
                 case Dat151RelType.Unk119:
                 case Dat151RelType.Unk120:
@@ -646,457 +626,290 @@ namespace CodeWalker.GameFiles
 
 
 
-
-
-        #region first research
-
-        private void ParseData4(RelData d, BinaryReader br)
+        private void BuildWavesMaps()
         {
-            //speech.dat4.rel, audioconfig.dat4.rel
 
-            if (d.DataLength == 1)
+            var relType = RelType;
+            switch (RelType)
             {
-                byte b = br.ReadByte();
-                switch (b)
+                case RelDatFileType.Dat149:
+                case RelDatFileType.Dat150://treat these same as 151
+                case RelDatFileType.Dat151Parameters:
+                    relType = RelDatFileType.Dat151Parameters;
+                    break;
+                case RelDatFileType.Dat54DataEntries:
+                    break;
+                default:
+                    break;
+            }
+
+
+            if (WaveTracksOffsets != null)
+            {
+                foreach (var wtoffset in WaveTracksOffsets)
                 {
-                    case 0:
-                    case 25:
-                    case 28:
-                    case 34:
-                    case 89:
-                    case 94:
-                    case 178:
-                        break;
-                    default:
-                        break;
+                    var dboffset = wtoffset - 8;
+                    for (int i = 0; i < RelDatasSorted.Length; i++)
+                    {
+                        var rd = RelDatasSorted[i];
+
+                        if ((dboffset >= rd.DataOffset) && (dboffset < rd.DataOffset + rd.DataLength))
+                        {
+                            var rdoffset = rd.DataOffset;
+                            var rs = rd as RelSound;
+                            if (rs != null)
+                            {
+                                rdoffset += rs.Header.HeaderLength;
+                            }
+                            var key = new WavesMapKey()
+                            {
+                                FileType = relType,
+                                ItemType = rd.TypeID,
+                                IsContainer = false
+                            };
+                            var val = new WavesMapValue()
+                            {
+                                Item = rd,
+                                Hash = BitConverter.ToUInt32(DataBlock, (int)dboffset),
+                                Offset = dboffset - rdoffset,
+                                Count = 1
+                            };
+                            AddWavesMapItem(ref key, val);
+                            break;
+                        }
+                    }
                 }
-                return;
             }
-            if (d.DataLength == 2)
+            if (WaveContainersOffsets != null)
             {
-                byte b = br.ReadByte();
-                switch (b)
+                foreach (var wcoffset in WaveContainersOffsets)
                 {
-                    case 4:
-                    case 1:
-                    case 15:
-                    case 12:
-                    case 3:
-                    case 2:
-                    case 7:
-                    case 5:
-                    case 158:
-                    case 25:
-                    case 16:
-                    case 64:
-                    case 6:
-                    case 8:
-                    case 14:
-                    case 22:
-                    case 18:
-                    case 20:
-                    case 32:
-                    case 17:
-                    case 30:
-                    case 9:
-                    case 0:
-                    case 47:
-                    case 224:
-                    case 200:
-                    case 136:
-                    case 45:
-                    case 54:
-                    case 28:
-                    case 19:
-                    case 37:
-                    case 61:
-                    case 38:
-                    case 128:
-                    case 24:
-                    case 26:
-                    case 40:
-                    case 13:
-                    case 36:
-                    case 78:
-                    case 34:
-                    case 10:
-                    case 21:
-                    case 192:
-                    case 60:
-                    case 29:
-                    case 33:
-                    case 72:
-                    case 57:
-                    case 133:
-                    case 11:
-                        break;
-                    default:
-                        break;
+                    var dboffset = wcoffset - 8;
+                    for (int i = 0; i < RelDatasSorted.Length; i++)
+                    {
+                        var rd = RelDatasSorted[i];
+                        if ((dboffset >= rd.DataOffset) && (dboffset < rd.DataOffset + rd.DataLength))
+                        {
+                            var key = new WavesMapKey()
+                            {
+                                FileType = relType,
+                                ItemType = rd.TypeID,
+                                IsContainer = true
+                            };
+                            var val = new WavesMapValue()
+                            {
+                                Item = rd,
+                                Hash = BitConverter.ToUInt32(DataBlock, (int)dboffset),
+                                Offset = dboffset - rd.DataOffset,
+                                Count = 1
+                            };
+                            AddWavesMapItem(ref key, val);
+                            break;
+                        }
+                    }
                 }
-                return;
-            }
-            if (d.DataLength == 4)
-            {
-                uint h = br.ReadUInt32();
-                return;
             }
 
 
-            byte b00 = br.ReadByte();
-            switch (b00)
-            {
-                case 4:
-                case 1:
-                case 0:
-                case 6:
-                case 3:
-                case 2:
-                case 5:
-                case 7:
-                case 15:
-                case 10:
-                case 8:
-                case 9:
-                    break;
-
-                case 23:
-                case 12:
-                case 11:
-                case 16:
-                case 13:
-                case 36:
-                case 30:
-                case 31:
-                case 27:
-                case 20:
-                case 19:
-                case 14:
-                case 40:
-                case 46:
-                case 22:
-                case 18:
-                case 21:
-                case 45:
-                case 17:
-                case 48:
-                case 87:
-                case 38:
-                case 28:
-                case 29:
-                case 43:
-                case 69:
-                case 50:
-                case 25:
-                case 32:
-                case 35:
-                case 34:
-                    break;
-                default:
-                    break;
-            }
         }
-        private void ParseData10(RelData d, BinaryReader br)
+
+        public struct WavesMapKey
         {
-            //amp.dat10.rel
+            public RelDatFileType FileType { get; set; }
+            public uint ItemType { get; set; }
+            public bool IsContainer { get; set; }
 
-            byte b00 = br.ReadByte();
-            switch (b00)
+            public override string ToString()
             {
-                case 1:
-                case 3:
-                    break;
-                default:
-                    break;
+                var cstr = IsContainer ? "Container: " : "";
+                var fcstr = cstr + FileType.ToString() + ": ";
+                switch (FileType)
+                {
+                    case RelDatFileType.Dat54DataEntries:
+                        return fcstr + ((Dat54SoundType)ItemType).ToString();
+                    case RelDatFileType.Dat149:
+                    case RelDatFileType.Dat150:
+                    case RelDatFileType.Dat151Parameters:
+                        return fcstr + ((Dat151RelType)ItemType).ToString();
+                }
+
+                return fcstr + ItemType.ToString();
             }
         }
-        private void ParseData15(RelData d, BinaryReader br)
+        public class WavesMapValue
         {
-            //mix.dat15.rel
+            public RelData Item { get; set; }
+            public MetaHash Hash { get; set; }
+            public uint Offset { get; set; }
+            public uint Count { get; set; }
 
-            byte b00 = br.ReadByte();
-            switch (b00)
+            public override string ToString()
             {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                    break;
-                default:
-                    break;
+                return Offset.ToString() + ": " + Count.ToString();
             }
         }
-        private void ParseData16(RelData d, BinaryReader br)
+        public static Dictionary<WavesMapKey, List<WavesMapValue>> WavesMap { get; set; } = new Dictionary<WavesMapKey, List<WavesMapValue>>();
+        private static void AddWavesMapItem(ref WavesMapKey key, WavesMapValue val)
         {
-            //curves.dat16.rel
-
-            byte b00 = br.ReadByte();
-            switch (b00)
+            List<WavesMapValue> values = null;
+            if (!WavesMap.TryGetValue(key, out values))
             {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                case 10:
-                case 12:
-                case 13:
-                case 15:
-                    break;
-                default:
-                    break;
+                values = new List<WavesMapValue>();
+                WavesMap[key] = values;
             }
+            if (values != null)
+            {
+                foreach (var xval in values)
+                {
+                    if (xval.Offset == val.Offset)
+                    {
+                        xval.Count++;
+                        return;//same key, same offset, it's a match...
+                    }
+                }
+                values.Add(val);
+            }
+            else
+            { }
         }
-        private void ParseData22(RelData d, BinaryReader br)
+
+
+
+
+        public byte[] Save()
         {
-            //categories.dat22.rel
 
-            byte b00 = br.ReadByte();
-            switch (b00)
-            {
-                case 0:
-                    break;
-                default:
-                    break;
-            }
-        }
-        private void ParseData54(RelData d, BinaryReader br)
-        {
-            //sounds.dat54.rel
 
-            byte b00 = br.ReadByte();
-            switch (b00)
-            {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                case 10:
-                case 11:
-                case 12:
-                case 13:
-                case 14:
-                case 15:
-                case 16:
-                case 17:
-                case 18:
-                case 19:
-                case 20:
-                case 21:
-                case 22:
-                case 23:
-                case 24:
-                case 25:
-                case 26:
-                case 27:
-                case 28:
-                case 29:
-                case 30:
-                case 31:
-                case 32:
-                case 33:
-                case 34:
-                case 35:
-                    break;
-                default:
-                    break;
-            }
-        }
-        private void ParseData149(RelData d, BinaryReader br)
-        {
-            //game.dat149.rel
+            //build DataBlock
+            //update DataLength
+            //update NameTableCount
+            //update NameTableLength
+            //update IndexStrings/IndexHashes
+            //update IndexCount
+            //update WaveTracksOffsets (and hashes?)
+            //update WaveTracksCount
+            //update WaveContainersOffsets
+            //update WaveContainersCount
 
-            byte b00 = br.ReadByte();
-            switch (b00)
+            DataLength = (uint)(DataBlock?.Length ?? 0);
+            if (NameTable != null)
             {
-                case 3:
-                case 4:
-                case 17:
-                case 50:
-                case 57:
-                case 62:
-                case 63:
-                case 66:
-                case 76:
-                case 88:
-                case 90:
-                    break;
-                default:
-                    break;
+                NameTableCount = (uint)NameTable.Length;
+                uint ntlength = 4 + (4 * NameTableCount);
+                foreach (var name in NameTable)
+                {
+                    ntlength += (uint)name.Length + 1;
+                }
+                NameTableLength = ntlength;
             }
-        }
-        private void ParseData150(RelData d, BinaryReader br)
-        {
-            //game.dat150.rel
+            else
+            {
+                NameTableCount = 0;
+                NameTableLength = 4;
+            }
+            if ((RelType == RelDatFileType.Dat4) && (NameTableLength == 4))
+            {
+                IndexCount = (uint)(IndexStrings?.Length ?? 0);
+            }
+            else
+            {
+                IndexCount = (uint)(IndexHashes?.Length ?? 0);
+            }
+            WaveTracksCount = (uint)(WaveTracksOffsets?.Length ?? 0);
+            WaveContainersCount = (uint)(WaveContainersOffsets?.Length ?? 0);
 
-            byte b00 = br.ReadByte();
-            switch (b00)
-            {
-                case 3:
-                case 4:
-                case 6:
-                case 8:
-                case 17:
-                case 32:
-                case 37:
-                case 38:
-                case 39:
-                case 47:
-                case 50:
-                case 52:
-                case 57:
-                case 62:
-                case 63:
-                case 64:
-                case 65:
-                case 66:
-                case 76:
-                case 88:
-                case 90:
-                case 117:
-                    break;
-                default:
-                    break;
-            }
-        }
-        private void ParseData151(RelData d, BinaryReader br)
-        {
-            //game.dat151.rel
 
-            byte b00 = br.ReadByte(); //???
-            switch (b00)
+
+
+            //write the file data.
+
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter bw = new BinaryWriter(ms);
+
+
+            bw.Write((uint)RelType);
+            bw.Write(DataLength);
+            bw.Write(DataBlock);
+
+            bw.Write(NameTableLength);
+            bw.Write(NameTableCount);
+            if (NameTableCount > 0)
             {
-                case 1://new
-                case 2://new
-                case 3:
-                case 4:
-                case 5://new
-                case 6:
-                case 7://new
-                case 8://
-                case 9://new
-                case 11://new
-                case 12://new
-                case 13://new
-                case 14://new
-                case 15://new
-                case 16://new
-                case 17:
-                case 18://new
-                case 22://new
-                case 23://new
-                case 24://new
-                case 25://new
-                case 26://new
-                case 27://new
-                case 28://new
-                case 29://new
-                case 30://new
-                case 31://new
-                case 32://
-                case 33://new
-                case 35://new
-                case 36://new
-                case 37://
-                case 38://
-                case 39://
-                case 40://new
-                case 41://new
-                case 42://new
-                case 44://new
-                case 45://new
-                case 46://new
-                case 47://
-                case 48://new
-                case 49://new
-                case 50:
-                case 51://new
-                case 52://
-                case 53://new
-                case 54://new
-                case 55://new
-                case 56://new
-                case 57:
-                case 59://new
-                case 62:
-                case 63:
-                case 64:
-                case 65://
-                case 66:
-                case 67://new
-                case 68://new
-                case 69://new
-                case 70://new
-                case 71://new
-                case 72://new
-                case 73://new
-                case 74://new
-                case 75://new
-                case 76:
-                case 77://new
-                case 78://new
-                case 79://new
-                case 80://new
-                case 81://new
-                case 82://new
-                case 83://new
-                case 84://new
-                case 85://new
-                case 86://new
-                case 87://new
-                case 88:
-                case 90:
-                case 91://new
-                case 92://new
-                case 93://new
-                case 94://new
-                case 95://new
-                case 96://new
-                case 98://new
-                case 99://new
-                case 100://new
-                case 101://new
-                case 102://new
-                case 103://new
-                case 104://new
-                case 105://new
-                case 106://new
-                case 107://new
-                case 108://new
-                case 109://new
-                case 110://new
-                case 111://new
-                case 112://new
-                case 113://new
-                case 114://new
-                case 115://new
-                case 116://new
-                case 117:
-                case 118://new
-                case 119://new
-                case 120://new
-                case 121://new
-                    break;
-                default:
-                    break;
+                uint offset = 0;
+                foreach (var name in NameTable)
+                {
+                    bw.Write(offset);
+                    offset += (uint)name.Length + 1;
+                }
+                foreach (var name in NameTable)
+                {
+                    foreach (var c in name)
+                    {
+                        bw.Write(c);
+                    }
+                    bw.Write((byte)0);
+                }
+
             }
+
+            bw.Write(IndexCount);
+            if (IndexCount > 0)
+            {
+                if ((RelType == RelDatFileType.Dat4) && (NameTableLength == 4))//audioconfig.dat4.rel    //checking NameTableLength here doesn't make sense!
+                {
+                    bw.Write(IndexStringFlags); //should be 2524..? could be a length?
+                    for (uint i = 0; i < IndexCount; i++)
+                    {
+                        var ristr = IndexStrings[i];
+                        var name = ristr.Name;
+                        bw.Write((byte)name.Length);
+                        for (int j = 0; j < name.Length; j++)
+                        {
+                            bw.Write((byte)name[j]);
+                        }
+                        bw.Write(ristr.Offset);
+                        bw.Write(ristr.Length);
+                    }
+                }
+                else //for all other .rel files...
+                {
+                    for (uint i = 0; i < IndexCount; i++)
+                    {
+                        var rihash = IndexHashes[i];
+                        bw.Write(rihash.Name);
+                        bw.Write(rihash.Offset);
+                        bw.Write(rihash.Length);
+                    }
+                }
+            }
+
+            bw.Write(WaveTracksCount);
+            if (WaveTracksCount != 0)
+            {
+                for (uint i = 0; i < WaveTracksCount; i++)
+                {
+                    bw.Write(WaveTracksOffsets[i]);
+                }
+            }
+
+            bw.Write(WaveContainersCount);
+            if (WaveContainersCount != 0)
+            {
+                for (uint i = 0; i < WaveContainersCount; i++)
+                {
+                    bw.Write(WaveContainersOffsets[i]);
+                }
+            }
+
+
+            var buf = new byte[ms.Length];
+            ms.Position = 0;
+            ms.Read(buf, 0, buf.Length);
+            return buf;
+
         }
 
-        #endregion
+
 
 
 
@@ -1173,6 +986,11 @@ namespace CodeWalker.GameFiles
             TypeID = br.ReadByte();
         }
 
+        public virtual uint[] GetWaveTrackOffsets()
+        {
+            return null;
+        }
+
         public string GetNameString()
         {
             return (string.IsNullOrEmpty(Name)) ? NameHash.ToString() : Name;
@@ -1230,15 +1048,17 @@ namespace CodeWalker.GameFiles
         public ushort Unk22 { get; set; } //0x46-0x48
         public ushort Unk23 { get; set; } //0x48-0x4A
         public ushort Unk24 { get; set; } //0x4A-0x4C
-
         public ushort Unk25 { get; set; } //0x4A-0x4C
         public ushort Unk26 { get; set; } //0x4A-0x4C
+
+        public uint HeaderLength { get; set; } = 0;
 
 
         public RelSoundHeader(BinaryReader br)
         {
-            Flags = br.ReadUInt32();
+            var pos = br.BaseStream.Position;
 
+            Flags = br.ReadUInt32();
 
             //if (Flags.Value != 0xAAAAAAAA)
             if ((Flags.Value & 0xFF) != 0xAA)
@@ -1285,6 +1105,9 @@ namespace CodeWalker.GameFiles
                 if (Bit(30)) Unk25 = br.ReadUInt16(); //maybe not
                 if (Bit(31)) Unk26 = br.ReadUInt16(); //maybe not
             }
+
+            HeaderLength = (uint)(br.BaseStream.Position - pos);
+
         }
 
         private bool Bit(int b)
@@ -1322,6 +1145,11 @@ namespace CodeWalker.GameFiles
         }
     }
 
+
+
+
+
+    #region dat54
 
 
     public enum Dat54SoundType : byte
@@ -2361,7 +2189,12 @@ namespace CodeWalker.GameFiles
     }
 
 
+    #endregion
 
+
+
+
+    #region dat151
 
 
     public enum Dat151RelType : byte //not sure how correct these are?
@@ -2408,7 +2241,7 @@ namespace CodeWalker.GameFiles
         InteriorRoom = 46,
         Unk47 = 47,
         Unk48 = 48,
-        Unk49 = 49,
+        Unk49 = 49, //doors/gates?
         WeaponAudioItem = 50,
         Unk51 = 51,
         Mod = 52, //what actually is a "mod" here? a change in some audio settings maybe?
@@ -2439,7 +2272,7 @@ namespace CodeWalker.GameFiles
         Unk80 = 80,
         Unk81 = 81,
         Unk82 = 82,
-        Unk83 = 83,
+        Unk83 = 83, //something to do with animals
         Unk84 = 84,
         Unk85 = 85,
         Unk86 = 86,
@@ -2481,6 +2314,7 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public class Dat151RelData : RelData
     {
         public Dat151RelType Type { get; set; }
+        public uint NameTableOffset { get; set; }
 
 
         public static int TotCount = 0; //###############DEBUGG
@@ -2500,7 +2334,12 @@ namespace CodeWalker.GameFiles
         public Dat151RelData(RelData d, BinaryReader br) : base(d)
         {
             Type = (Dat151RelType)TypeID;
+
+            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+
+            NameTableOffset = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
         }
+
 
         public override string ToString()
         {
@@ -2531,15 +2370,11 @@ namespace CodeWalker.GameFiles
 
     [TC(typeof(EXP))] public class Dat151AmbientEmitterList : Dat151RelData
     {
-        public uint UnkOffset0 { get; set; }
         public uint EmitterCount { get; set; }
         public MetaHash[] EmitterHashes { get; set; }
 
         public Dat151AmbientEmitterList(RelData d, BinaryReader br) : base(d, br)
         {
-            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
-
-            UnkOffset0 = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
             EmitterCount = br.ReadUInt32();
             EmitterHashes = new MetaHash[EmitterCount];
             for (int i = 0; i < EmitterCount; i++)
@@ -2551,11 +2386,11 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { } //no hits here
 
+
         }
     }
     [TC(typeof(EXP))] public class Dat151AmbientZone : Dat151RelData
     {
-        public uint UnkOffset0 { get; set; }
         public FlagsUint Flags00 { get; set; }
         public Dat151ZoneShape Shape { get; set; }
         public FlagsUint Flags02 { get; set; }
@@ -2607,9 +2442,6 @@ namespace CodeWalker.GameFiles
 
         public Dat151AmbientZone(RelData d, BinaryReader br) : base(d, br)
         {
-            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
-
-            UnkOffset0 = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
             Flags00 = br.ReadUInt32();
             Shape = (Dat151ZoneShape)br.ReadUInt32();
             Flags02 = br.ReadUInt32();
@@ -2689,12 +2521,12 @@ namespace CodeWalker.GameFiles
             { }//no hit
             if (Flags05.Value != 0)
             { }//eg 0xAE64583B, 0x61083310, 0xCAE96294, 0x1C376176
+
         }
 
     }
     [TC(typeof(EXP))] public class Dat151AmbientEmitter : Dat151RelData
     {
-        public uint UnkOffset0 { get; set; }
         public FlagsUint Unk00 { get; set; }
         public FlagsUint Unk01 { get; set; }
         public FlagsUint Unk02 { get; set; }
@@ -2743,9 +2575,6 @@ namespace CodeWalker.GameFiles
 
         public Dat151AmbientEmitter(RelData d, BinaryReader br) : base(d, br)
         {
-            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
-
-            UnkOffset0 = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
             Unk00 = br.ReadUInt32();
             Unk01 = br.ReadUInt32();
             Unk02 = br.ReadUInt32();
@@ -3024,15 +2853,11 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat151AmbientZoneList : Dat151RelData
     {
-        public uint UnkOffset0 { get; set; }
         public uint ZoneCount { get; set; }
         public MetaHash[] ZoneHashes { get; set; }
 
         public Dat151AmbientZoneList(RelData d, BinaryReader br) : base(d, br)
         {
-            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
-
-            UnkOffset0 = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
             ZoneCount = br.ReadUInt32();
             ZoneHashes = new MetaHash[ZoneCount];
             for (int i = 0; i < ZoneCount; i++)
@@ -3047,5 +2872,1364 @@ namespace CodeWalker.GameFiles
         }
 
     }
+
+
+    [TC(typeof(EXP))] public struct Dat151HashPair
+    {
+        public MetaHash Hash0 { get; set; }
+        public MetaHash Hash1 { get; set; }
+
+        public Dat151HashPair(MetaHash hash0, MetaHash hash1)
+        {
+            Hash0 = hash0;
+            Hash1 = hash1;
+        }
+
+        public override string ToString()
+        {
+            return Hash0.ToString() + ": " + Hash1.ToString();
+        }
+    }
+
+    [TC(typeof(EXP))] public class Dat151WeaponAudioItem : Dat151RelData
+    {
+        public MetaHash AudioTrack0 { get; set; }
+        public uint AudioItemCount { get; set; }
+        public Dat151HashPair[] AudioItems { get; set; }
+
+        public Dat151WeaponAudioItem(RelData d, BinaryReader br) : base(d, br)
+        {
+            AudioTrack0 = br.ReadUInt32();
+            AudioItemCount = br.ReadUInt32();
+
+            Dat151HashPair[] items = new Dat151HashPair[AudioItemCount];
+            for (int i = 0; i < AudioItemCount; i++)
+            {
+                items[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
+            }
+            this.AudioItems = items;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            offsets.Add(0);
+            for (uint i = 0; i < AudioItemCount; i++)
+            {
+                offsets.Add(12 + i * 8);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151StartTrackAction : Dat151RelData
+    {
+        public uint Unk0 { get; set; }
+        public uint Unk1 { get; set; }
+        public uint Unk2 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public MetaHash AudioTrack1 { get; set; }
+        public int Unk3 { get; set; }
+        public int Unk4 { get; set; }
+        public MetaHash AudioTrack2 { get; set; }
+        public uint Unk5 { get; set; }
+        public uint Unk6 { get; set; }
+        public uint Unk7 { get; set; }
+        public uint Unk8 { get; set; }
+        public uint Unk9 { get; set; }
+        public uint ItemCount { get; set; }
+        public Dat151HashPair[] Items { get; set; }
+
+
+        public Dat151StartTrackAction(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            AudioTrack0 = br.ReadUInt32();
+            AudioTrack1 = br.ReadUInt32();
+            Unk3 = br.ReadInt32();
+            Unk4 = br.ReadInt32();
+            AudioTrack2 = br.ReadUInt32();
+            Unk5 = br.ReadUInt32();
+            Unk6 = br.ReadUInt32();
+            Unk7 = br.ReadUInt32();
+            Unk8 = br.ReadUInt32();
+            Unk9 = br.ReadUInt32();
+            ItemCount = br.ReadUInt32();
+
+            Dat151HashPair[] items = new Dat151HashPair[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
+            {
+                items[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
+            }
+            this.Items = items;
+
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+
+        public override uint[] GetWaveTrackOffsets()
+        {
+            return new uint[] { 12, 16, 28 };
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151StopTrackAction : Dat151RelData
+    {
+        public uint Unk0 { get; set; }
+        public uint Unk1 { get; set; }
+        public uint Unk2 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public MetaHash AudioTrack1 { get; set; }
+        public int Unk3 { get; set; }
+        public int Unk4 { get; set; }
+
+        public Dat151StopTrackAction(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            AudioTrack0 = br.ReadUInt32();
+            AudioTrack1 = br.ReadUInt32();
+            Unk3 = br.ReadInt32();
+            Unk4 = br.ReadInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+
+        public override uint[] GetWaveTrackOffsets()
+        {
+            return new uint[] { 12, 16 };
+        }
+
+    }
+    [TC(typeof(EXP))] public class Dat151MoodItem
+    {
+        public MetaHash AudioTrack0 { get; set; }
+        public MetaHash AudioTrack1 { get; set; }
+        public float Unk1 { get; set; }
+        public float Unk2 { get; set; }
+        public float Unk3 { get; set; }
+        public float Unk4 { get; set; }
+        public MetaHash AudioTrack2 { get; set; }
+        public MetaHash AudioTrack3 { get; set; }
+
+        public override string ToString()
+        {
+            return AudioTrack0.ToString();
+        }
+
+        public Dat151MoodItem(BinaryReader br)
+        {
+            AudioTrack0 = br.ReadUInt32();
+            AudioTrack1 = br.ReadUInt32();
+            Unk1 = br.ReadSingle();
+            Unk2 = br.ReadSingle();
+            Unk3 = br.ReadSingle();
+            Unk4 = br.ReadSingle();
+            AudioTrack2 = br.ReadUInt32();
+            AudioTrack3 = br.ReadUInt32();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Mood : Dat151RelData
+    {
+        public MetaHash Unk0 { get; set; }
+        public MetaHash Unk1 { get; set; }
+        public MetaHash Unk2 { get; set; }
+        public uint MoodItemCount { get; set; }
+        public Dat151MoodItem[] MoodItems { get; set; }
+
+        public Dat151Mood(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            MoodItemCount = br.ReadUInt32();
+            var items = new Dat151MoodItem[MoodItemCount];
+            for (int i = 0; i < MoodItemCount; i++)
+            {
+                items[i] = new Dat151MoodItem(br);
+            }
+            MoodItems = items;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < MoodItemCount; i++)
+            {
+                var offs = 16 + i * 32; //offsets for each mood item's audio tracks
+                offsets.Add(offs);
+                offsets.Add(offs + 4);
+                offsets.Add(offs + 24);
+                offsets.Add(offs + 28);
+            }
+            return offsets.ToArray();
+        }
+
+    }
+    [TC(typeof(EXP))] public class Dat151SetMoodAction : Dat151RelData
+    {
+        public uint Unk0 { get; set; }
+        public uint Unk1 { get; set; }
+        public uint Unk2 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public MetaHash AudioTrack1 { get; set; }
+        public uint Unk3 { get; set; }
+        public MetaHash AudioTrack2 { get; set; }
+        public uint Unk4 { get; set; }
+        public uint Unk5 { get; set; }
+        public uint Unk6 { get; set; }
+
+        public Dat151SetMoodAction(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            AudioTrack0 = br.ReadUInt32();
+            AudioTrack1 = br.ReadUInt32();
+            Unk3 = br.ReadUInt32();
+            AudioTrack2 = br.ReadUInt32();
+            Unk4 = br.ReadUInt32();
+            Unk5 = br.ReadUInt32();
+            Unk6 = br.ReadUInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            return new uint[] { 12, 16, 24 };
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151PlayerAction : Dat151RelData
+    {
+        public uint AudioTrackCount { get; set; }
+        public MetaHash[] AudioTracks { get; set; }
+
+        public Dat151PlayerAction(RelData d, BinaryReader br) : base(d, br)
+        {
+            AudioTrackCount = br.ReadUInt32();
+            var tracks = new MetaHash[AudioTrackCount];
+            for (int i = 0; i < AudioTrackCount; i++)
+            {
+                tracks[i] = br.ReadUInt32();
+            }
+            AudioTracks = tracks;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioTrackCount; i++)
+            {
+                var offs = 4 + i * 4; //offsets for each audio track
+                offsets.Add(offs);
+            }
+            return offsets.ToArray();
+        }
+
+    }
+    [TC(typeof(EXP))] public class Dat151StartOneShotAction : Dat151RelData
+    {
+        public uint Unk0 { get; set; }
+        public uint Unk1 { get; set; }
+        public uint Unk2 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public MetaHash AudioTrack1 { get; set; }
+        public uint Unk3 { get; set; }
+        public MetaHash Unk4 { get; set; }
+        public int Unk5 { get; set; }
+        public int Unk6 { get; set; }
+        public int Unk7 { get; set; }
+        public int Unk8 { get; set; }
+
+        public Dat151StartOneShotAction(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            AudioTrack0 = br.ReadUInt32();
+            AudioTrack1 = br.ReadUInt32();
+            Unk3 = br.ReadUInt32();
+            Unk4 = br.ReadUInt32();
+            Unk5 = br.ReadInt32();
+            Unk6 = br.ReadInt32();
+            Unk7 = br.ReadInt32();
+            Unk8 = br.ReadInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            return new uint[] { 12, 16 };
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151StopOneShotAction : Dat151RelData
+    {
+        public uint Unk0 { get; set; }
+        public uint Unk1 { get; set; }
+        public uint Unk2 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public MetaHash AudioTrack1 { get; set; }
+        public uint Unk3 { get; set; }
+
+        public Dat151StopOneShotAction(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            AudioTrack0 = br.ReadUInt32();
+            AudioTrack1 = br.ReadUInt32();
+            Unk3 = br.ReadUInt32();
+
+            if (Unk3 != 0)
+            { }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            return new uint[] { 12, 16 };
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151FadeInRadioAction : Dat151RelData
+    {
+        public uint Unk0 { get; set; }
+        public uint Unk1 { get; set; }
+        public uint Unk2 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public MetaHash AudioTrack1 { get; set; }
+        public float Unk3 { get; set; }
+        public float Unk4 { get; set; }
+
+        public Dat151FadeInRadioAction(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            AudioTrack0 = br.ReadUInt32();
+            AudioTrack1 = br.ReadUInt32();
+            Unk3 = br.ReadSingle();
+            Unk4 = br.ReadSingle();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            return new uint[] { 12, 16 };
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151FadeOutRadioAction : Dat151RelData
+    {
+        public uint Unk0 { get; set; }
+        public uint Unk1 { get; set; }
+        public uint Unk2 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public MetaHash AudioTrack1 { get; set; }
+        public float Unk3 { get; set; }
+        public float Unk4 { get; set; }
+
+        public Dat151FadeOutRadioAction(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            AudioTrack0 = br.ReadUInt32();
+            AudioTrack1 = br.ReadUInt32();
+            Unk3 = br.ReadSingle();
+            Unk4 = br.ReadSingle();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            return new uint[] { 12, 16 };
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Mod : Dat151RelData
+    {
+        public uint Unk00 { get; set; }
+        public uint Unk01 { get; set; }
+        public uint Unk02 { get; set; }
+        public uint Unk03 { get; set; }
+        public MetaHash Unk04 { get; set; }
+        public MetaHash Unk05 { get; set; }
+        public MetaHash Unk06 { get; set; }
+        public MetaHash Unk07 { get; set; }
+        public MetaHash Unk08 { get; set; }
+        public float Unk09 { get; set; }
+        public float Unk10 { get; set; }
+        public MetaHash Unk11 { get; set; }
+        public MetaHash Unk12 { get; set; }
+        public MetaHash Unk13 { get; set; }
+        public MetaHash Unk14 { get; set; }
+        public uint Unk15 { get; set; }
+        public byte AudioTracks1Count { get; set; }
+        public Dat151HashPair[] AudioTracks1 { get; set; }
+        public uint AudioTracks2Count { get; set; }
+        public MetaHash[] AudioTracks2 { get; set; }
+
+
+        public Dat151Mod(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk00 = br.ReadUInt32();
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadUInt32();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadSingle();
+            Unk10 = br.ReadSingle();
+            Unk11 = br.ReadUInt32();
+            Unk12 = br.ReadUInt32();
+            Unk13 = br.ReadUInt32();
+            Unk14 = br.ReadUInt32();
+            Unk15 = br.ReadUInt32();
+
+            byte tc1 = (byte)((Unk15) & 0xFF);
+            byte tc2 = (byte)((Unk15 >> 8) & 0xFF);
+            byte tc3 = (byte)((Unk15 >> 16) & 0xFF);
+            byte tc4 = (byte)((Unk15 >> 24) & 0xFF);
+
+            switch (tc1)//not sure what this is
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                    break;
+                default:
+                    break;
+            }
+
+            AudioTracks1Count = tc2;
+
+            if (tc3 > 0)
+            { }
+            if (tc4 > 0)
+            { }
+
+            if (AudioTracks1Count == 0)
+            {
+                var AudioTrack0 = br.ReadUInt32();
+                AudioTracks2 = new MetaHash[] { AudioTrack0 };
+            }
+            else //if (AudioTracks1Count > 0)
+            {
+                var tracks1 = new Dat151HashPair[AudioTracks1Count];
+                for (int i = 0; i < AudioTracks1Count; i++)
+                {
+                    tracks1[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
+                }
+                AudioTracks1 = tracks1;
+
+                AudioTracks2Count = br.ReadUInt32();
+
+                var tracks2 = new MetaHash[AudioTracks2Count];
+                for (int i = 0; i < AudioTracks2Count; i++)
+                {
+                    tracks2[i] = br.ReadUInt32();
+                }
+                AudioTracks2 = tracks2;
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            uint offs = 64;
+            if (AudioTracks1Count == 0)
+            {
+            }
+            else //if (AudioTracks1Count > 0)
+            {
+                for (uint i = 0; i < AudioTracks1Count; i++)
+                {
+                    offsets.Add(offs);
+                    offsets.Add(offs + 4);
+                    offs += 8;
+                }
+                offs += 4;
+                for (uint i = 0; i < AudioTracks2Count; i++)
+                {
+                    offsets.Add(offs);
+                    offs += 4;
+                }
+            }
+
+            return offsets.ToArray();
+        }
+
+    }
+    [TC(typeof(EXP))] public class Dat151Interior : Dat151RelData
+    {
+        public uint Unk0 { get; set; }
+        public uint Unk1 { get; set; }
+        public uint Unk2 { get; set; }
+        public uint AudioTracksCount { get; set; }
+        public MetaHash[] AudioTracks { get; set; }
+
+        public Dat151Interior(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            AudioTracksCount = br.ReadUInt32();
+            var tracks = new MetaHash[AudioTracksCount];
+            for (int i = 0; i < AudioTracksCount; i++)
+            {
+                tracks[i] = br.ReadUInt32();
+            }
+            AudioTracks = tracks;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioTracksCount; i++)
+            {
+                offsets.Add(16 + i * 4);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151InteriorRoom : Dat151RelData
+    {
+        public uint Unk00 { get; set; }
+        public MetaHash Unk01 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public uint Unk02 { get; set; }
+        public float Unk03 { get; set; }
+        public float Unk04 { get; set; }
+        public float Unk05 { get; set; }
+        public MetaHash Unk06 { get; set; }
+        public uint Unk07 { get; set; }
+        public uint Unk08 { get; set; }
+        public uint Unk09 { get; set; }
+        public float Unk10 { get; set; }
+        public float Unk11 { get; set; }
+        public float Unk12 { get; set; }
+        public float Unk13 { get; set; }
+        public MetaHash Unk14 { get; set; }
+
+        public Dat151InteriorRoom(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk00 = br.ReadUInt32();
+            Unk01 = br.ReadUInt32();
+            AudioTrack0 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadSingle();
+            Unk04 = br.ReadSingle();
+            Unk05 = br.ReadSingle();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadUInt32();
+            Unk10 = br.ReadSingle();
+            Unk11 = br.ReadSingle();
+            Unk12 = br.ReadSingle();
+            Unk13 = br.ReadSingle();
+            Unk14 = br.ReadUInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            return new uint[] { 8 };
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk117 : Dat151RelData
+    {
+        public MetaHash AudioTrack0 { get; set; }
+
+        public Dat151Unk117(RelData d, BinaryReader br) : base(d, br)
+        {
+            AudioTrack0 = br.ReadUInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            return new uint[] { 0 };
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Entity : Dat151RelData
+    {
+        public uint Unk00 { get; set; }
+        public uint Unk01 { get; set; }
+        public uint Unk02 { get; set; }
+        public uint Unk03 { get; set; }
+        public uint Unk04 { get; set; }
+        public uint Unk05 { get; set; }
+        public uint Unk06 { get; set; }
+        public uint Unk07 { get; set; }
+        public uint Unk08 { get; set; }
+        public uint Unk09 { get; set; }
+        public uint Unk10 { get; set; }
+        public uint Unk11 { get; set; }
+        public uint Unk12 { get; set; }
+        public uint Unk13 { get; set; }
+        public uint Unk14 { get; set; }
+        public uint Unk15 { get; set; }
+        public uint Unk16 { get; set; }
+        public uint Unk17 { get; set; }
+        public uint Unk18 { get; set; }
+        public uint Unk19 { get; set; }
+        public uint Unk20 { get; set; }
+        public uint Unk21 { get; set; }
+        public uint Unk22 { get; set; }
+        public uint Unk23 { get; set; }
+        public uint Unk24 { get; set; }
+        public uint Unk25 { get; set; }
+        public uint Unk26 { get; set; }
+        public uint Unk27 { get; set; }
+        public uint Unk28 { get; set; }
+        public uint Unk29 { get; set; }
+        public uint Unk30 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public uint Unk31 { get; set; }
+        public uint Unk32 { get; set; }
+        public MetaHash AudioTrack1 { get; set; }
+        public MetaHash AudioTrack2 { get; set; }
+        public uint Unk33 { get; set; }
+        public uint Unk34 { get; set; }
+        public uint Unk35 { get; set; }
+        public uint Unk36 { get; set; }
+        public uint Unk37 { get; set; }
+        public uint Unk38 { get; set; }
+        public uint Unk39 { get; set; }
+        public uint Unk40 { get; set; }
+        public uint Unk41 { get; set; }
+        public uint Unk42 { get; set; }
+        public uint Unk43 { get; set; }
+        public uint Unk44 { get; set; }
+        public uint Unk45 { get; set; }
+        public uint Unk46 { get; set; }
+        public uint Unk47 { get; set; }
+        public uint Unk48 { get; set; }
+        public uint Unk49 { get; set; }
+        public uint Unk50 { get; set; }
+        public uint Unk51 { get; set; }
+        public uint Unk52 { get; set; }
+        public uint Unk53 { get; set; }
+        public uint Unk54 { get; set; }
+        public uint Unk55 { get; set; }
+        public uint Unk56 { get; set; }
+        public uint Unk57 { get; set; }
+        public uint Unk58 { get; set; }
+        public uint Unk59 { get; set; }
+        public uint Unk60 { get; set; }
+        public uint Unk61 { get; set; }
+        public uint Unk62 { get; set; }
+        public uint Unk63 { get; set; }
+        public uint Unk64 { get; set; }
+        public uint Unk65 { get; set; }
+        public uint Unk66 { get; set; }
+        public uint Unk67 { get; set; }
+        public uint Unk68 { get; set; }
+        public uint Unk69 { get; set; }
+        public uint Unk70 { get; set; }
+        public uint Unk71 { get; set; }
+        public uint Unk72 { get; set; }
+        public uint Unk73 { get; set; }
+        public uint Unk74 { get; set; }
+        public uint Unk75 { get; set; }
+        public uint Unk76 { get; set; }
+        public uint Unk77 { get; set; }
+        public uint Unk78 { get; set; }
+        public uint Unk79 { get; set; }
+        public uint Unk80 { get; set; }
+        public uint Unk81 { get; set; }
+        public uint Unk82 { get; set; }
+        public uint Unk83 { get; set; }
+        public uint Unk84 { get; set; }
+        public uint Unk85 { get; set; }
+        public uint Unk86 { get; set; }
+        public uint Unk87 { get; set; }
+        public uint Unk88 { get; set; }
+        public uint Unk89 { get; set; }
+
+        public Dat151Entity(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk00 = br.ReadUInt32();
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadUInt32();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadUInt32();
+            Unk10 = br.ReadUInt32();
+            Unk11 = br.ReadUInt32();
+            Unk12 = br.ReadUInt32();
+            Unk13 = br.ReadUInt32();
+            Unk14 = br.ReadUInt32();
+            Unk15 = br.ReadUInt32();
+            Unk16 = br.ReadUInt32();
+            Unk17 = br.ReadUInt32();
+            Unk18 = br.ReadUInt32();
+            Unk19 = br.ReadUInt32();
+            Unk20 = br.ReadUInt32();
+            Unk21 = br.ReadUInt32();
+            Unk22 = br.ReadUInt32();
+            Unk23 = br.ReadUInt32();
+            Unk24 = br.ReadUInt32();
+            Unk25 = br.ReadUInt32();
+            Unk26 = br.ReadUInt32();
+            Unk27 = br.ReadUInt32();
+            Unk28 = br.ReadUInt32();
+            Unk29 = br.ReadUInt32();
+            Unk30 = br.ReadUInt32();
+            AudioTrack0 = br.ReadUInt32();
+            Unk31 = br.ReadUInt32();
+            Unk32 = br.ReadUInt32();
+            AudioTrack1 = br.ReadUInt32();
+            AudioTrack2 = br.ReadUInt32();
+            Unk33 = br.ReadUInt32();
+            Unk34 = br.ReadUInt32();
+            Unk35 = br.ReadUInt32();
+            Unk36 = br.ReadUInt32();
+            Unk37 = br.ReadUInt32();
+            Unk38 = br.ReadUInt32();
+            Unk39 = br.ReadUInt32();
+            Unk40 = br.ReadUInt32();
+            Unk41 = br.ReadUInt32();
+            Unk42 = br.ReadUInt32();
+            Unk43 = br.ReadUInt32();
+            Unk44 = br.ReadUInt32();
+            Unk45 = br.ReadUInt32();
+            Unk46 = br.ReadUInt32();
+            Unk47 = br.ReadUInt32();
+            Unk48 = br.ReadUInt32();
+            Unk49 = br.ReadUInt32();
+            Unk50 = br.ReadUInt32();
+            Unk51 = br.ReadUInt32();
+            Unk52 = br.ReadUInt32();
+            Unk53 = br.ReadUInt32();
+            Unk54 = br.ReadUInt32();
+            Unk55 = br.ReadUInt32();
+            Unk56 = br.ReadUInt32();
+            Unk57 = br.ReadUInt32();
+            Unk58 = br.ReadUInt32();
+            Unk59 = br.ReadUInt32();
+            Unk60 = br.ReadUInt32();
+            Unk61 = br.ReadUInt32();
+            Unk62 = br.ReadUInt32();
+            Unk63 = br.ReadUInt32();
+            Unk64 = br.ReadUInt32();
+            Unk65 = br.ReadUInt32();
+            Unk66 = br.ReadUInt32();
+            Unk67 = br.ReadUInt32();
+            Unk68 = br.ReadUInt32();
+            Unk69 = br.ReadUInt32();
+            Unk70 = br.ReadUInt32();
+            Unk71 = br.ReadUInt32();
+            Unk72 = br.ReadUInt32();
+            Unk73 = br.ReadUInt32();
+            Unk74 = br.ReadUInt32();
+            Unk75 = br.ReadUInt32();
+            Unk76 = br.ReadUInt32();
+            Unk77 = br.ReadUInt32();
+            Unk78 = br.ReadUInt32();
+            Unk79 = br.ReadUInt32();
+            Unk80 = br.ReadUInt32();
+            Unk81 = br.ReadUInt32();
+            Unk82 = br.ReadUInt32();
+            Unk83 = br.ReadUInt32();
+            Unk84 = br.ReadUInt32();
+            Unk85 = br.ReadUInt32();
+            Unk86 = br.ReadUInt32();
+            Unk87 = br.ReadUInt32();
+            Unk88 = br.ReadUInt32();
+            Unk89 = br.ReadUInt32();
+
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            return new uint[] { 124, 136, 140 };
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Collision : Dat151RelData
+    {
+        public uint Unk00 { get; set; }
+        public uint Unk01 { get; set; }
+        public uint Unk02 { get; set; }
+        public uint Unk03 { get; set; }
+        public uint Unk04 { get; set; }
+        public uint Unk05 { get; set; }
+        public uint Unk06 { get; set; }
+        public uint Unk07 { get; set; }
+        public uint Unk08 { get; set; }
+        public uint Unk09 { get; set; }
+        public uint Unk10 { get; set; }
+        public uint Unk11 { get; set; }
+        public uint Unk12 { get; set; }
+        public uint Unk13 { get; set; }
+        public uint Unk14 { get; set; }
+        public uint Unk15 { get; set; }
+        public uint Unk16 { get; set; }
+        public uint Unk17 { get; set; }
+        public uint Unk18 { get; set; }
+        public uint Unk19 { get; set; }
+        public uint Unk20 { get; set; }
+        public uint Unk21 { get; set; }
+        public uint Unk22 { get; set; }
+        public uint Unk23 { get; set; }
+        public uint Unk24 { get; set; }
+        public uint Unk25 { get; set; }
+        public uint Unk26 { get; set; }
+        public uint Unk27 { get; set; }
+        public uint Unk28 { get; set; }
+        public uint Unk29 { get; set; }
+        public uint Unk30 { get; set; }
+        public uint Unk31 { get; set; }
+        public uint Unk32 { get; set; }
+        public uint Unk33 { get; set; }
+        public uint Unk34 { get; set; }
+        public uint Unk35 { get; set; }
+        public uint Unk36 { get; set; }
+        public uint Unk37 { get; set; }
+        public uint Unk38 { get; set; }
+        public uint Unk39 { get; set; }
+        public uint Unk40 { get; set; }
+        public uint Unk41 { get; set; }
+        public uint Unk42 { get; set; }
+        public uint Unk43 { get; set; }
+        public uint Unk44 { get; set; }
+        public uint Unk45 { get; set; }
+        public uint Unk46 { get; set; }
+        public uint Unk47 { get; set; }
+        public uint Unk48 { get; set; }
+        public uint Unk49 { get; set; }
+        public uint Unk50 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public MetaHash AudioTrack1 { get; set; }
+
+        public Dat151Collision(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk00 = br.ReadUInt32();
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadUInt32();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadUInt32();
+            Unk10 = br.ReadUInt32();
+            Unk11 = br.ReadUInt32();
+            Unk12 = br.ReadUInt32();
+            Unk13 = br.ReadUInt32();
+            Unk14 = br.ReadUInt32();
+            Unk15 = br.ReadUInt32();
+            Unk16 = br.ReadUInt32();
+            Unk17 = br.ReadUInt32();
+            Unk18 = br.ReadUInt32();
+            Unk19 = br.ReadUInt32();
+            Unk20 = br.ReadUInt32();
+            Unk21 = br.ReadUInt32();
+            Unk22 = br.ReadUInt32();
+            Unk23 = br.ReadUInt32();
+            Unk24 = br.ReadUInt32();
+            Unk25 = br.ReadUInt32();
+            Unk26 = br.ReadUInt32();
+            Unk27 = br.ReadUInt32();
+            Unk28 = br.ReadUInt32();
+            Unk29 = br.ReadUInt32();
+            Unk30 = br.ReadUInt32();
+            Unk31 = br.ReadUInt32();
+            Unk32 = br.ReadUInt32();
+            Unk33 = br.ReadUInt32();
+            Unk34 = br.ReadUInt32();
+            Unk35 = br.ReadUInt32();
+            Unk36 = br.ReadUInt32();
+            Unk37 = br.ReadUInt32();
+            Unk38 = br.ReadUInt32();
+            Unk39 = br.ReadUInt32();
+            Unk40 = br.ReadUInt32();
+            Unk41 = br.ReadUInt32();
+            Unk42 = br.ReadUInt32();
+            Unk43 = br.ReadUInt32();
+            Unk44 = br.ReadUInt32();
+            Unk45 = br.ReadUInt32();
+            Unk46 = br.ReadUInt32();
+            Unk47 = br.ReadUInt32();
+            Unk48 = br.ReadUInt32();
+            Unk49 = br.ReadUInt32();
+            Unk50 = br.ReadUInt32();
+            if (Unk50 > 0)
+            {
+                AudioTrack0 = br.ReadUInt32();
+                AudioTrack1 = br.ReadUInt32();
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            if (Unk50 > 0) return new uint[] { 204, 208 };
+            else return null;
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk47 : Dat151RelData
+    {
+        public uint Unk0 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public float Unk1 { get; set; }
+
+        public Dat151Unk47(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            AudioTrack0 = br.ReadUInt32();
+            Unk1 = br.ReadSingle();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            return new uint[] { 4 };
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk83 : Dat151RelData //something to do with animals
+    {
+        public uint AudioItemCount { get; set; }
+        public Dat151HashPair[] AudioItems { get; set; }
+
+        public Dat151Unk83(RelData d, BinaryReader br) : base(d, br)
+        {
+            AudioItemCount = br.ReadUInt32();
+            var items = new Dat151HashPair[AudioItemCount];
+            for (uint i = 0; i < AudioItemCount; i++)
+            {
+                items[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
+            }
+            AudioItems = items;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioItemCount; i++)
+            {
+                offsets.Add(8 + i * 8);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151ForceRadioTrackAction : Dat151RelData
+    {
+        public uint Unk0 { get; set; }
+        public uint Unk1 { get; set; }
+        public uint Unk2 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public MetaHash AudioTrack1 { get; set; }
+        public uint Unk3 { get; set; }
+        public uint Unk4 { get; set; }
+        public uint Unk5 { get; set; }
+        public uint AudioTracksCount { get; set; }
+        public MetaHash[] AudioTracks { get; set; }
+
+        public Dat151ForceRadioTrackAction(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            AudioTrack0 = br.ReadUInt32();
+            AudioTrack1 = br.ReadUInt32();
+            Unk3 = br.ReadUInt32();
+            Unk4 = br.ReadUInt32();
+            Unk5 = br.ReadUInt32();
+            AudioTracksCount = br.ReadUInt32();
+            var tracks = new MetaHash[AudioTracksCount];
+            for (var i = 0; i < AudioTracksCount; i++)
+            {
+                tracks[i] = br.ReadUInt32();
+            }
+            AudioTracks = tracks;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            offsets.Add(12);
+            offsets.Add(16);
+            for (uint i = 0; i < AudioTracksCount; i++)
+            {
+                offsets.Add(36 + i * 4);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151RadioDjSpeechAction : Dat151RelData
+    {
+        public uint Unk0 { get; set; }
+        public uint Unk1 { get; set; }
+        public uint Unk2 { get; set; }
+        public MetaHash AudioTrack0 { get; set; }
+        public MetaHash AudioTrack1 { get; set; }
+        public uint Unk3 { get; set; }
+        public uint Unk4 { get; set; }
+        public uint Unk5 { get; set; }
+
+        public Dat151RadioDjSpeechAction(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            AudioTrack0 = br.ReadUInt32();
+            AudioTrack1 = br.ReadUInt32();
+            Unk3 = br.ReadUInt32();
+            Unk4 = br.ReadUInt32();
+            Unk5 = br.ReadUInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            return new uint[] { 12, 16 };
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk78 : Dat151RelData
+    {
+        public uint AudioItemCount { get; set; }
+        public Dat151HashPair[] AudioItems { get; set; }
+
+        public Dat151Unk78(RelData d, BinaryReader br) : base(d, br)
+        {
+            AudioItemCount = br.ReadUInt32();
+            var items = new Dat151HashPair[AudioItemCount];
+            for (var i = 0; i < AudioItemCount; i++)
+            {
+                items[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
+            }
+            AudioItems = items;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioItemCount; i++)
+            {
+                offsets.Add(8 + i * 8);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151RadioStationsDLC : Dat151RelData
+    {
+        public uint AudioTracksCount { get; set; }
+        public MetaHash[] AudioTracks { get; set; }
+
+        public Dat151RadioStationsDLC(RelData d, BinaryReader br) : base(d, br)
+        {
+            AudioTracksCount = br.ReadUInt32();
+            var tracks = new MetaHash[AudioTracksCount];
+            for (int i = 0; i < AudioTracksCount; i++)
+            {
+                tracks[i] = br.ReadUInt32();
+            }
+            AudioTracks = tracks;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioTracksCount; i++)
+            {
+                offsets.Add(4 + i * 4);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151RadioDLC : Dat151RelData
+    {
+        public uint Unk00 { get; set; }
+        public uint Unk01 { get; set; }
+        public uint Unk02 { get; set; }
+        public uint Unk03 { get; set; }
+        public uint Unk04 { get; set; }
+        public uint Unk05 { get; set; }
+        public uint Unk06 { get; set; }
+        public uint Unk07 { get; set; }
+        public uint Unk08 { get; set; }
+        public uint Unk09 { get; set; }
+        public uint Unk10 { get; set; }
+        public uint Unk11 { get; set; }
+        public uint AudioTracksCount { get; set; }
+        public MetaHash[] AudioTracks { get; set; }
+
+        public Dat151RadioDLC(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk00 = br.ReadUInt32();
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadUInt32();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadUInt32();
+            Unk10 = br.ReadUInt32();
+            Unk11 = br.ReadUInt32();
+            AudioTracksCount = br.ReadUInt32();
+            var tracks = new MetaHash[AudioTracksCount];
+            for (int i = 0; i < AudioTracksCount; i++)
+            {
+                tracks[i] = br.ReadUInt32();
+            }
+            AudioTracks = tracks;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioTracksCount; i++)
+            {
+                offsets.Add(52 + i * 4);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk49 : Dat151RelData //doors/gates?
+    {
+        public uint AudioItemCount { get; set; }
+        public Dat151HashPair[] AudioItems { get; set; }
+
+        public Dat151Unk49(RelData d, BinaryReader br) : base(d, br)
+        {
+            AudioItemCount = br.ReadUInt32();
+            var items = new Dat151HashPair[AudioItemCount];
+            for (var i = 0; i < AudioItemCount; i++)
+            {
+                items[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
+            }
+            AudioItems = items;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioItemCount; i++)
+            {
+                offsets.Add(8 + i * 8);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk84 : Dat151RelData
+    {
+        public uint AudioItemCount { get; set; }
+        public Dat151HashPair[] AudioItems { get; set; }
+
+        public Dat151Unk84(RelData d, BinaryReader br) : base(d, br)
+        {
+            AudioItemCount = br.ReadUInt32();
+            var items = new Dat151HashPair[AudioItemCount];
+            for (var i = 0; i < AudioItemCount; i++)
+            {
+                items[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
+            }
+            AudioItems = items;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioItemCount; i++)
+            {
+                offsets.Add(8 + i * 8);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk86 : Dat151RelData
+    {
+        public uint AudioItemCount { get; set; }
+        public Dat151HashPair[] AudioItems { get; set; }
+
+        public Dat151Unk86(RelData d, BinaryReader br) : base(d, br)
+        {
+            AudioItemCount = br.ReadUInt32();
+            var items = new Dat151HashPair[AudioItemCount];
+            for (var i = 0; i < AudioItemCount; i++)
+            {
+                items[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
+            }
+            AudioItems = items;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioItemCount; i++)
+            {
+                offsets.Add(8 + i * 8);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk81 : Dat151RelData
+    {
+        public uint AudioItemCount { get; set; }
+        public Dat151HashPair[] AudioItems { get; set; }
+
+        public Dat151Unk81(RelData d, BinaryReader br) : base(d, br)
+        {
+            AudioItemCount = br.ReadUInt32();
+            var items = new Dat151HashPair[AudioItemCount];
+            for (var i = 0; i < AudioItemCount; i++)
+            {
+                items[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
+            }
+            AudioItems = items;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioItemCount; i++)
+            {
+                offsets.Add(8 + i * 8);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk55 : Dat151RelData
+    {
+        public uint AudioItemCount { get; set; }
+        public Dat151HashPair[] AudioItems { get; set; }
+
+        public Dat151Unk55(RelData d, BinaryReader br) : base(d, br)
+        {
+            AudioItemCount = br.ReadUInt32();
+            var items = new Dat151HashPair[AudioItemCount];
+            for (var i = 0; i < AudioItemCount; i++)
+            {
+                items[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
+            }
+            AudioItems = items;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override uint[] GetWaveTrackOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioItemCount; i++)
+            {
+                offsets.Add(8 + i * 8);
+            }
+            return offsets.ToArray();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+    //[TC(typeof(EXP))] public class Dat151BlankTemplateItem : Dat151RelData
+    //{
+    //    public Dat151BlankTemplateItem(RelData d, BinaryReader br) : base(d, br)
+    //    {
+    //        var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+    //        if (bytesleft != 0)
+    //        { }
+    //    }
+    //}
+
+
+
+
+    #endregion
+
+
 
 }
