@@ -626,6 +626,48 @@ namespace CodeWalker.GameFiles
 
 
 
+
+
+
+
+
+        private void BuildWavesTracks()
+        {
+            switch(RelType)
+            {
+                case RelDatFileType.Dat149:
+                case RelDatFileType.Dat150:
+                case RelDatFileType.Dat151Parameters:
+                    break;
+                case RelDatFileType.Dat4://TODO!
+                case RelDatFileType.Dat54DataEntries://TODO!
+                default://TODO..?
+                    return;
+            }
+
+            var wtoffsets = new List<uint>();
+            foreach (var rd in RelDatasSorted)
+            {
+                var offsets = rd.GetWaveTrackOffsets();
+                if (offsets == null) continue;
+                var rdoffset = rd.DataOffset + 12;
+                for (int i = 0; i < offsets.Length; i++)
+                {
+                    wtoffsets.Add(rdoffset + offsets[i]);
+                }
+            }
+            if (wtoffsets.Count > 0)
+            {
+                WaveTracksOffsets = wtoffsets.ToArray();
+            }
+            else
+            {
+                WaveTracksOffsets = null;
+            }
+        }
+
+
+
         private void BuildWavesMaps()
         {
 
@@ -790,6 +832,8 @@ namespace CodeWalker.GameFiles
             //update WaveTracksCount
             //update WaveContainersOffsets
             //update WaveContainersCount
+
+            BuildWavesTracks();
 
             DataLength = (uint)(DataBlock?.Length ?? 0);
             if (NameTable != null)
@@ -3398,21 +3442,21 @@ namespace CodeWalker.GameFiles
         public uint Unk0 { get; set; }
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
-        public uint AudioTracksCount { get; set; }
-        public MetaHash[] AudioTracks { get; set; }
+        public uint RoomsCount { get; set; }
+        public MetaHash[] Rooms { get; set; }
 
         public Dat151Interior(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
             Unk1 = br.ReadUInt32();
             Unk2 = br.ReadUInt32();
-            AudioTracksCount = br.ReadUInt32();
-            var tracks = new MetaHash[AudioTracksCount];
-            for (int i = 0; i < AudioTracksCount; i++)
+            RoomsCount = br.ReadUInt32();
+            var rooms = new MetaHash[RoomsCount];
+            for (int i = 0; i < RoomsCount; i++)
             {
-                tracks[i] = br.ReadUInt32();
+                rooms[i] = br.ReadUInt32();
             }
-            AudioTracks = tracks;
+            Rooms = rooms;
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
@@ -3422,7 +3466,7 @@ namespace CodeWalker.GameFiles
         public override uint[] GetWaveTrackOffsets()
         {
             var offsets = new List<uint>();
-            for (uint i = 0; i < AudioTracksCount; i++)
+            for (uint i = 0; i < RoomsCount; i++)
             {
                 offsets.Add(16 + i * 4);
             }
@@ -3439,13 +3483,13 @@ namespace CodeWalker.GameFiles
         public float Unk04 { get; set; }
         public float Unk05 { get; set; }
         public MetaHash Unk06 { get; set; }
-        public uint Unk07 { get; set; }
-        public uint Unk08 { get; set; }
-        public uint Unk09 { get; set; }
+        public float Unk07 { get; set; }
+        public float Unk08 { get; set; }
+        public float Unk09 { get; set; }
         public float Unk10 { get; set; }
         public float Unk11 { get; set; }
         public float Unk12 { get; set; }
-        public float Unk13 { get; set; }
+        public MetaHash Unk13 { get; set; }
         public MetaHash Unk14 { get; set; }
 
         public Dat151InteriorRoom(RelData d, BinaryReader br) : base(d, br)
@@ -3458,13 +3502,13 @@ namespace CodeWalker.GameFiles
             Unk04 = br.ReadSingle();
             Unk05 = br.ReadSingle();
             Unk06 = br.ReadUInt32();
-            Unk07 = br.ReadUInt32();
-            Unk08 = br.ReadUInt32();
-            Unk09 = br.ReadUInt32();
+            Unk07 = br.ReadSingle();
+            Unk08 = br.ReadSingle();
+            Unk09 = br.ReadSingle();
             Unk10 = br.ReadSingle();
             Unk11 = br.ReadSingle();
             Unk12 = br.ReadSingle();
-            Unk13 = br.ReadSingle();
+            Unk13 = br.ReadUInt32();
             Unk14 = br.ReadUInt32();
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
