@@ -138,7 +138,7 @@ namespace CodeWalker
 
         bool renderaudiozones = false;
         bool renderaudioouterbounds = true;
-
+        List<AudioPlacement> renderaudzonelist = new List<AudioPlacement>();
 
         bool MapViewEnabled = false;
         int MapViewDragX = 0;
@@ -850,12 +850,15 @@ namespace CodeWalker
         {
             if (!audiozones.Inited) return;
 
-            //renderaudzonelist.Clear();
-            //renderaudzonelist.AddRange(audzones.Zones.Values);
+            renderaudzonelist.Clear();
+            for (int i = 0; i < audiozones.AllItems.Count; i++)
+            {
+                renderaudzonelist.Add(audiozones.AllItems[i]);
+            }
 
             if (ProjectForm != null)
             {
-                //ProjectForm.GetVisibleAudioZones(camera, renderaudzonelist);
+                ProjectForm.GetVisibleAudioPlacements(camera, renderaudzonelist);
             }
 
 
@@ -878,9 +881,9 @@ namespace CodeWalker
             MapBox mb = new MapBox();
             MapSphere ms = new MapSphere();
 
-            for (int i = 0; i < audiozones.AllItems.Count; i++)
+            for (int i = 0; i < renderaudzonelist.Count; i++)
             {
-                var placement = audiozones.AllItems[i];
+                var placement = renderaudzonelist[i];
                 switch (placement.Shape)
                 {
                     case Dat151ZoneShape.Box:

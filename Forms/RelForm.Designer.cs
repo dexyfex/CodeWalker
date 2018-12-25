@@ -32,8 +32,8 @@
             this.RelPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.NameTableTabPage = new System.Windows.Forms.TabPage();
-            this.DetailsTabPage = new System.Windows.Forms.TabPage();
             this.MainTextBox = new CodeWalker.WinForms.TextBoxFix();
+            this.DetailsTabPage = new System.Windows.Forms.TabPage();
             this.CloseButton = new System.Windows.Forms.Button();
             this.MainTabControl.SuspendLayout();
             this.NameTableTabPage.SuspendLayout();
@@ -56,8 +56,8 @@
             this.MainTabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.MainTabControl.Controls.Add(this.NameTableTabPage);
             this.MainTabControl.Controls.Add(this.DetailsTabPage);
+            this.MainTabControl.Controls.Add(this.NameTableTabPage);
             this.MainTabControl.Location = new System.Drawing.Point(5, 5);
             this.MainTabControl.Margin = new System.Windows.Forms.Padding(0);
             this.MainTabControl.Name = "MainTabControl";
@@ -76,17 +76,6 @@
             this.NameTableTabPage.Text = "Names";
             this.NameTableTabPage.UseVisualStyleBackColor = true;
             // 
-            // DetailsTabPage
-            // 
-            this.DetailsTabPage.Controls.Add(this.RelPropertyGrid);
-            this.DetailsTabPage.Location = new System.Drawing.Point(4, 22);
-            this.DetailsTabPage.Name = "DetailsTabPage";
-            this.DetailsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.DetailsTabPage.Size = new System.Drawing.Size(656, 368);
-            this.DetailsTabPage.TabIndex = 1;
-            this.DetailsTabPage.Text = "Details";
-            this.DetailsTabPage.UseVisualStyleBackColor = true;
-            // 
             // MainTextBox
             // 
             this.MainTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -101,6 +90,17 @@
             this.MainTextBox.Size = new System.Drawing.Size(644, 356);
             this.MainTextBox.TabIndex = 1;
             this.MainTextBox.WordWrap = false;
+            // 
+            // DetailsTabPage
+            // 
+            this.DetailsTabPage.Controls.Add(this.RelPropertyGrid);
+            this.DetailsTabPage.Location = new System.Drawing.Point(4, 22);
+            this.DetailsTabPage.Name = "DetailsTabPage";
+            this.DetailsTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.DetailsTabPage.Size = new System.Drawing.Size(656, 368);
+            this.DetailsTabPage.TabIndex = 1;
+            this.DetailsTabPage.Text = "Details";
+            this.DetailsTabPage.UseVisualStyleBackColor = true;
             // 
             // CloseButton
             // 

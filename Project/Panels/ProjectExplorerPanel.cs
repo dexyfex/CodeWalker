@@ -486,7 +486,7 @@ namespace CodeWalker.Project.Panels
                 for (int i = 0; i < zonelists.Count; i++)
                 {
                     var zonelist = zonelists[i];
-                    var tnode = zonelistsnode.Nodes.Add(zonelist.ToString());
+                    var tnode = zonelistsnode.Nodes.Add(zonelist.NameHash.ToString());
                     tnode.Tag = zonelist;
                 }
             }
@@ -499,7 +499,7 @@ namespace CodeWalker.Project.Panels
                 for (int i = 0; i < emitterlists.Count; i++)
                 {
                     var emitterlist = emitterlists[i];
-                    var tnode = emitterlistsnode.Nodes.Add(emitterlist.ToString());
+                    var tnode = emitterlistsnode.Nodes.Add(emitterlist.NameHash.ToString());
                     tnode.Tag = emitterlist;
                 }
             }
@@ -1447,7 +1447,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindAudioZoneListTreeNode(list);
             if (tn != null)
             {
-                tn.Text = list.ToString();
+                tn.Text = list.NameHash.ToString();
             }
         }
         public void UpdateAudioEmitterListTreeNode(Dat151AmbientEmitterList list)
@@ -1455,7 +1455,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindAudioEmitterListTreeNode(list);
             if (tn != null)
             {
-                tn.Text = list.ToString();
+                tn.Text = list.NameHash.ToString();
             }
         }
 

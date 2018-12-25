@@ -450,20 +450,40 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetRoom(CurrentMloRoom); }, //updateFunc
                 (panel) => { return panel.CurrentRoom == CurrentMloRoom; }); //findFunc
         }
-        public void ShowEditAudioFilePanel(bool promote) //TODO
+        public void ShowEditAudioFilePanel(bool promote)
         {
+            ShowPanel(promote,
+                () => { return new EditAudioFilePanel(this); }, //createFunc
+                (panel) => { panel.SetFile(CurrentAudioFile); }, //updateFunc
+                (panel) => { return panel.CurrentFile == CurrentAudioFile; }); //findFunc
         }
-        public void ShowEditAudioZonePanel(bool promote) //TODO
+        public void ShowEditAudioZonePanel(bool promote)
         {
+            ShowPanel(promote,
+                () => { return new EditAudioZonePanel(this); }, //createFunc
+                (panel) => { panel.SetZone(CurrentAudioZone); }, //updateFunc
+                (panel) => { return panel.CurrentZone == CurrentAudioZone; }); //findFunc
         }
-        public void ShowEditAudioEmitterPanel(bool promote) //TODO
+        public void ShowEditAudioEmitterPanel(bool promote)
         {
+            ShowPanel(promote,
+                () => { return new EditAudioEmitterPanel(this); }, //createFunc
+                (panel) => { panel.SetEmitter(CurrentAudioEmitter); }, //updateFunc
+                (panel) => { return panel.CurrentEmitter == CurrentAudioEmitter; }); //findFunc
         }
-        public void ShowEditAudioZoneListPanel(bool promote) //TODO
+        public void ShowEditAudioZoneListPanel(bool promote)
         {
+            ShowPanel(promote,
+                () => { return new EditAudioZoneListPanel(this); }, //createFunc
+                (panel) => { panel.SetZoneList(CurrentAudioZoneList); }, //updateFunc
+                (panel) => { return panel.CurrentZoneList == CurrentAudioZoneList; }); //findFunc
         }
-        public void ShowEditAudioEmitterListPanel(bool promote) //TODO
+        public void ShowEditAudioEmitterListPanel(bool promote)
         {
+            ShowPanel(promote,
+                () => { return new EditAudioEmitterListPanel(this); }, //createFunc
+                (panel) => { panel.SetEmitterList(CurrentAudioEmitterList); }, //updateFunc
+                (panel) => { return panel.CurrentEmitterList == CurrentAudioEmitterList; }); //findFunc
         }
 
         private void ShowCurrentProjectItem(bool promote)
@@ -931,6 +951,23 @@ namespace CodeWalker.Project
                 }
             }
 
+            foreach (var datrel in CurrentProjectFile.AudioRelFiles)
+            {
+                string filename = datrel.FilePath;
+                if (!File.Exists(filename))
+                {
+                    filename = cpath + "\\" + filename;
+                }
+                if (File.Exists(filename))
+                {
+                    LoadAudioRelFromFile(datrel, filename);
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't find file: " + filename);
+                }
+            }
+
 
             LoadProjectUI();
         }
@@ -1012,6 +1049,19 @@ namespace CodeWalker.Project
                     {
                         CurrentScenario = scenario;
                         SaveScenario();
+                    }
+                }
+            }
+
+            foreach (var datrel in CurrentProjectFile.AudioRelFiles)
+            {
+                if ((datrel != null) && (datrel.HasChanged))
+                {
+                    //save the current scenario file first?
+                    if (MessageBox.Show("Would you like to save " + datrel.Name + " before closing?", "Save scenario file before closing?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        CurrentAudioFile = datrel;
+                        SaveAudioFile();
                     }
                 }
             }
@@ -4276,14 +4326,131 @@ namespace CodeWalker.Project
 
 
 
-        public void NewAudioFile() //TODO
+        public void NewAudioFile()
         {
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            if (CurrentProjectFile == null) return;
+
+            int testi = 1;
+            string fname = string.Empty;
+            bool filenameok = false;
+            while (!filenameok)
+            {
+                fname = "dlc" + testi.ToString() + "_game.dat151.rel";
+                filenameok = !CurrentProjectFile.ContainsAudioRel(fname);
+                testi++;
+            }
+
+            lock (projectsyncroot)
+            {
+                RelFile rel = CurrentProjectFile.AddAudioRelFile(fname);
+                if (rel != null)
+                {
+                    //init stuff.. //TODO
+                }
+            }
+
+            CurrentProjectFile.HasChanged = true;
+
+            LoadProjectTree();
         }
-        public void OpenAudioFile() //TODO
+        public void OpenAudioFile()
         {
+            string[] files = ShowOpenDialogMulti("DatRel files|*.rel", string.Empty); //TODO: better filter?
+            if (files == null)
+            {
+                return;
+            }
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            foreach (string file in files)
+            {
+                if (!File.Exists(file)) continue;
+
+                var rel = CurrentProjectFile.AddAudioRelFile(file);
+
+                if (rel != null)
+                {
+                    SetProjectHasChanged(true);
+
+                    LoadAudioRelFromFile(rel, file);
+
+                    LoadProjectTree();
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
+                }
+
+            }
         }
-        public void SaveAudioFile(bool saveas = false) //TODO
+        public void SaveAudioFile(bool saveas = false)
         {
+            if (CurrentAudioFile == null) return;
+            string relname = CurrentAudioFile.Name;
+            string filepath = CurrentAudioFile.FilePath;
+            if (string.IsNullOrEmpty(filepath))
+            {
+                filepath = relname;
+            }
+            string origfile = filepath;
+            if (!File.Exists(filepath))
+            {
+                saveas = true;
+            }
+
+
+            byte[] data;
+            lock (projectsyncroot) //need to sync writes to scenario...
+            {
+                saveas = saveas || string.IsNullOrEmpty(filepath);
+                if (saveas)
+                {
+                    filepath = ShowSaveDialog("DatRel files|*.rel", filepath);
+                    if (string.IsNullOrEmpty(filepath))
+                    {
+                        return;
+                    }
+
+                    string newname = Path.GetFileNameWithoutExtension(filepath);
+                    JenkIndex.Ensure(newname);
+                    CurrentAudioFile.FilePath = filepath;
+                    CurrentAudioFile.RpfFileEntry.Name = new FileInfo(filepath).Name;
+                    CurrentAudioFile.Name = CurrentAudioFile.RpfFileEntry.Name;
+                }
+
+                data = CurrentAudioFile.Save();
+            }
+
+            if (data != null)
+            {
+                File.WriteAllBytes(filepath, data);
+            }
+
+            SetAudioFileHasChanged(false);
+
+            if (saveas)
+            {
+                //ShowEditAudioFilePanel(false);
+                if (CurrentProjectFile != null)
+                {
+                    string origpath = CurrentProjectFile.GetRelativePath(origfile);
+                    string newpath = CurrentProjectFile.GetRelativePath(CurrentAudioFile.FilePath);
+                    if (!CurrentProjectFile.RenameAudioRel(origpath, newpath))
+                    { //couldn't rename it in the project? happens when project not saved yet...
+                        //MessageBox.Show("Couldn't rename audio rel in project! This shouldn't happen - check the project file XML.");
+                    }
+                }
+                SetProjectHasChanged(true);
+                SetCurrentSaveItem();
+            }
         }
         public void AddAudioFileToProject(RelFile rel)
         {
@@ -4328,6 +4495,7 @@ namespace CodeWalker.Project
 
         public void NewAudioZone(AudioPlacement copy = null, bool copyPosition = false) //TODO
         {
+            MessageBox.Show("NewAudioZone TODO!");
         }
         public bool DeleteAudioZone() //TODO
         {
@@ -4340,6 +4508,7 @@ namespace CodeWalker.Project
 
         public void NewAudioEmitter(AudioPlacement copy = null, bool copyPosition = false) //TODO
         {
+            MessageBox.Show("NewAudioEmitter TODO!");
         }
         public bool DeleteAudioEmitter() //TODO
         {
@@ -4352,6 +4521,7 @@ namespace CodeWalker.Project
 
         public void NewAudioZoneList() //TODO
         {
+            MessageBox.Show("NewAudioZoneList TODO!");
         }
         public bool DeleteAudioZoneList() //TODO
         {
@@ -4364,6 +4534,7 @@ namespace CodeWalker.Project
 
         public void NewAudioEmitterList() //TODO
         {
+            MessageBox.Show("NewAudioEmitterList TODO!");
         }
         public bool DeleteAudioEmitterList() //TODO
         {
@@ -4574,6 +4745,31 @@ namespace CodeWalker.Project
                     ymts.Add(ymt);
                 }
             }
+
+        }
+        public void GetVisibleAudioPlacements(Camera camera, List<AudioPlacement> placements)
+        {
+            if (hidegtavmap)
+            {
+                placements.Clear();
+            }
+
+            if (CurrentProjectFile == null) return;
+
+            lock (projectsyncroot)
+            {
+
+                for (int i = 0; i < CurrentProjectFile.AudioRelFiles.Count; i++)
+                {
+                    var auddat = CurrentProjectFile.AudioRelFiles[i];
+                    if (auddat.Loaded)
+                    {
+                        //TODO: create AudioPlacement objects for project audio files!
+                    }
+                }
+
+            }
+
 
         }
 
@@ -5417,8 +5613,11 @@ namespace CodeWalker.Project
 
             ymt.Load(data);
         }
-        private void LoadAudioRelFromFile(RelFile rel, string filename) //TODO
+        private void LoadAudioRelFromFile(RelFile rel, string filename)
         {
+            byte[] data = File.ReadAllBytes(filename);
+
+            rel.Load(data, rel?.RpfFileEntry);
         }
 
 
@@ -5665,8 +5864,33 @@ namespace CodeWalker.Project
                 WorldForm.EnableScenarioUI(enable, CurrentScenario?.Name ?? "");
             }
         }
-        private void RefreshAudioUI() //TODO
+        private void RefreshAudioUI()
         {
+            bool enable = (CurrentAudioFile != null);
+            bool inproj = AudioFileExistsInProject(CurrentAudioFile);
+
+            AudioNewAmbientEmitterMenu.Enabled = enable && inproj;
+            AudioNewAmbientEmitterListMenu.Enabled = enable && inproj;
+            AudioNewAmbientZoneMenu.Enabled = enable && inproj;
+            AudioNewAmbientZoneListMenu.Enabled = enable && inproj;
+
+            if (CurrentAudioFile != null)
+            {
+                AudioNameMenu.Text = "(" + CurrentAudioFile.Name + ")";
+            }
+            else
+            {
+                AudioNameMenu.Text = "(No audio dat file selected)";
+            }
+
+            AudioAddToProjectMenu.Enabled = enable && !inproj;
+            AudioRemoveFromProjectMenu.Enabled = inproj;
+            AudioMenu.Visible = enable;
+
+            if (WorldForm != null)
+            {
+                WorldForm.EnableAudioUI(enable, CurrentAudioFile?.Name ?? "");
+            }
         }
 
 
@@ -6028,6 +6252,31 @@ namespace CodeWalker.Project
             RemoveScenarioFromProject();
         }
 
+        private void AudioNewAmbientEmitterMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioEmitter();
+        }
+        private void AudioNewAmbientEmitterListMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioEmitterList();
+        }
+        private void AudioNewAmbientZoneMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioZone();
+        }
+        private void AudioNewAmbientZoneListMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioZoneList();
+        }
+        private void AudioAddToProjectMenu_Click(object sender, EventArgs e)
+        {
+            AddAudioFileToProject(CurrentAudioFile);
+        }
+        private void AudioRemoveFromProjectMenu_Click(object sender, EventArgs e)
+        {
+            RemoveAudioFileFromProject();
+        }
+
         private void ToolsManifestGeneratorMenu_Click(object sender, EventArgs e)
         {
             ShowEditProjectManifestPanel(false);
@@ -6138,5 +6387,6 @@ namespace CodeWalker.Project
         {
             SaveAll();
         }
+
     }
 }

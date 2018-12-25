@@ -291,6 +291,36 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Project\MenyooXml.cs" />
+    <Compile Include="Project\Panels\EditAudioEmitterListPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioEmitterListPanel.Designer.cs">
+      <DependentUpon>EditAudioEmitterListPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioEmitterPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioEmitterPanel.Designer.cs">
+      <DependentUpon>EditAudioEmitterPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioFilePanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioFilePanel.Designer.cs">
+      <DependentUpon>EditAudioFilePanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioZoneListPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioZoneListPanel.Designer.cs">
+      <DependentUpon>EditAudioZoneListPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioZonePanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioZonePanel.Designer.cs">
+      <DependentUpon>EditAudioZonePanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\Panels\EditProjectPanel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -594,6 +624,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MenuForm.resx">
       <DependentUpon>MenuForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioEmitterListPanel.resx">
+      <DependentUpon>EditAudioEmitterListPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioEmitterPanel.resx">
+      <DependentUpon>EditAudioEmitterPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioFilePanel.resx">
+      <DependentUpon>EditAudioFilePanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioZoneListPanel.resx">
+      <DependentUpon>EditAudioZoneListPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioZonePanel.resx">
+      <DependentUpon>EditAudioZonePanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditProjectPanel.resx">
       <DependentUpon>EditProjectPanel.cs</DependentUpon>

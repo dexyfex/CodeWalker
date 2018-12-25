@@ -86,6 +86,8 @@
             this.YtypNameMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
             this.YtypNewArchetypeMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtypMloToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtypMloNewEntityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
             this.YtypAddToProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.YtypRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -156,8 +158,16 @@
             this.ToolbarSaveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.YtypMloToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.YtypMloNewEntityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.AudioMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.AudioNameMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator23 = new System.Windows.Forms.ToolStripSeparator();
+            this.AudioNewAmbientEmitterMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.AudioNewAmbientZoneMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.AudioNewAmbientEmitterListMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.AudioNewAmbientZoneListMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator24 = new System.Windows.Forms.ToolStripSeparator();
+            this.AudioAddToProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.AudioRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.SuspendLayout();
@@ -174,6 +184,7 @@
             this.YnvMenu,
             this.TrainsMenu,
             this.ScenarioMenu,
+            this.AudioMenu,
             this.ToolsMenu,
             this.RenderMenu});
             this.MainMenu.Location = new System.Drawing.Point(0, 0);
@@ -285,54 +296,54 @@
             // FileOpenProjectMenu
             // 
             this.FileOpenProjectMenu.Name = "FileOpenProjectMenu";
-            this.FileOpenProjectMenu.Size = new System.Drawing.Size(152, 22);
+            this.FileOpenProjectMenu.Size = new System.Drawing.Size(149, 22);
             this.FileOpenProjectMenu.Text = "Project...";
             this.FileOpenProjectMenu.Click += new System.EventHandler(this.FileOpenProjectMenu_Click);
             // 
             // toolStripSeparator9
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
-            this.toolStripSeparator9.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator9.Size = new System.Drawing.Size(146, 6);
             // 
             // FileOpenYmapMenu
             // 
             this.FileOpenYmapMenu.Name = "FileOpenYmapMenu";
-            this.FileOpenYmapMenu.Size = new System.Drawing.Size(152, 22);
+            this.FileOpenYmapMenu.Size = new System.Drawing.Size(149, 22);
             this.FileOpenYmapMenu.Text = "Ymap File...";
             this.FileOpenYmapMenu.Click += new System.EventHandler(this.FileOpenYmapMenu_Click);
             // 
             // FileOpenYtypMenu
             // 
             this.FileOpenYtypMenu.Name = "FileOpenYtypMenu";
-            this.FileOpenYtypMenu.Size = new System.Drawing.Size(152, 22);
+            this.FileOpenYtypMenu.Size = new System.Drawing.Size(149, 22);
             this.FileOpenYtypMenu.Text = "Ytyp File...";
             this.FileOpenYtypMenu.Click += new System.EventHandler(this.FileOpenYtypMenu_Click);
             // 
             // FileOpenYndMenu
             // 
             this.FileOpenYndMenu.Name = "FileOpenYndMenu";
-            this.FileOpenYndMenu.Size = new System.Drawing.Size(152, 22);
+            this.FileOpenYndMenu.Size = new System.Drawing.Size(149, 22);
             this.FileOpenYndMenu.Text = "Ynd File...";
             this.FileOpenYndMenu.Click += new System.EventHandler(this.FileOpenYndMenu_Click);
             // 
             // FileOpenYnvMenu
             // 
             this.FileOpenYnvMenu.Name = "FileOpenYnvMenu";
-            this.FileOpenYnvMenu.Size = new System.Drawing.Size(152, 22);
+            this.FileOpenYnvMenu.Size = new System.Drawing.Size(149, 22);
             this.FileOpenYnvMenu.Text = "Ynv File...";
             this.FileOpenYnvMenu.Click += new System.EventHandler(this.FileOpenYnvMenu_Click);
             // 
             // FileOpenTrainsMenu
             // 
             this.FileOpenTrainsMenu.Name = "FileOpenTrainsMenu";
-            this.FileOpenTrainsMenu.Size = new System.Drawing.Size(152, 22);
+            this.FileOpenTrainsMenu.Size = new System.Drawing.Size(149, 22);
             this.FileOpenTrainsMenu.Text = "Trains File...";
             this.FileOpenTrainsMenu.Click += new System.EventHandler(this.FileOpenTrainsMenu_Click);
             // 
             // FileOpenScenarioMenu
             // 
             this.FileOpenScenarioMenu.Name = "FileOpenScenarioMenu";
-            this.FileOpenScenarioMenu.Size = new System.Drawing.Size(152, 22);
+            this.FileOpenScenarioMenu.Size = new System.Drawing.Size(149, 22);
             this.FileOpenScenarioMenu.Text = "Scenario File...";
             this.FileOpenScenarioMenu.Click += new System.EventHandler(this.FileOpenScenarioMenu_Click);
             // 
@@ -625,6 +636,22 @@
             this.YtypNewArchetypeMenu.Size = new System.Drawing.Size(192, 22);
             this.YtypNewArchetypeMenu.Text = "New Archetype";
             this.YtypNewArchetypeMenu.Click += new System.EventHandler(this.YtypNewArchetypeMenu_Click);
+            // 
+            // YtypMloToolStripMenuItem
+            // 
+            this.YtypMloToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.YtypMloNewEntityToolStripMenuItem});
+            this.YtypMloToolStripMenuItem.Enabled = false;
+            this.YtypMloToolStripMenuItem.Name = "YtypMloToolStripMenuItem";
+            this.YtypMloToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.YtypMloToolStripMenuItem.Text = "Mlo";
+            // 
+            // YtypMloNewEntityToolStripMenuItem
+            // 
+            this.YtypMloNewEntityToolStripMenuItem.Name = "YtypMloNewEntityToolStripMenuItem";
+            this.YtypMloNewEntityToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
+            this.YtypMloNewEntityToolStripMenuItem.Text = "New Entity";
+            this.YtypMloNewEntityToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewEntityToolStripMenuItem_Click);
             // 
             // toolStripSeparator15
             // 
@@ -1187,21 +1214,87 @@
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
             // 
-            // YtypMloToolStripMenuItem
+            // AudioMenu
             // 
-            this.YtypMloToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.YtypMloNewEntityToolStripMenuItem});
-            this.YtypMloToolStripMenuItem.Enabled = false;
-            this.YtypMloToolStripMenuItem.Name = "YtypMloToolStripMenuItem";
-            this.YtypMloToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
-            this.YtypMloToolStripMenuItem.Text = "Mlo";
+            this.AudioMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.AudioNameMenu,
+            this.toolStripSeparator23,
+            this.AudioNewAmbientEmitterMenu,
+            this.AudioNewAmbientEmitterListMenu,
+            this.AudioNewAmbientZoneMenu,
+            this.AudioNewAmbientZoneListMenu,
+            this.toolStripSeparator24,
+            this.AudioAddToProjectMenu,
+            this.AudioRemoveFromProjectMenu});
+            this.AudioMenu.Name = "AudioMenu";
+            this.AudioMenu.Size = new System.Drawing.Size(51, 20);
+            this.AudioMenu.Text = "Audio";
+            this.AudioMenu.Visible = false;
             // 
-            // YtypMloNewEntityToolStripMenuItem
+            // AudioNameMenu
             // 
-            this.YtypMloNewEntityToolStripMenuItem.Name = "YtypMloNewEntityToolStripMenuItem";
-            this.YtypMloNewEntityToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.YtypMloNewEntityToolStripMenuItem.Text = "New Entity";
-            this.YtypMloNewEntityToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewEntityToolStripMenuItem_Click);
+            this.AudioNameMenu.Enabled = false;
+            this.AudioNameMenu.Name = "AudioNameMenu";
+            this.AudioNameMenu.Size = new System.Drawing.Size(216, 22);
+            this.AudioNameMenu.Text = "(No audio dat file selected)";
+            // 
+            // toolStripSeparator23
+            // 
+            this.toolStripSeparator23.Name = "toolStripSeparator23";
+            this.toolStripSeparator23.Size = new System.Drawing.Size(213, 6);
+            // 
+            // AudioNewAmbientEmitterMenu
+            // 
+            this.AudioNewAmbientEmitterMenu.Enabled = false;
+            this.AudioNewAmbientEmitterMenu.Name = "AudioNewAmbientEmitterMenu";
+            this.AudioNewAmbientEmitterMenu.Size = new System.Drawing.Size(216, 22);
+            this.AudioNewAmbientEmitterMenu.Text = "New Ambient Emitter";
+            this.AudioNewAmbientEmitterMenu.Click += new System.EventHandler(this.AudioNewAmbientEmitterMenu_Click);
+            // 
+            // AudioNewAmbientZoneMenu
+            // 
+            this.AudioNewAmbientZoneMenu.Enabled = false;
+            this.AudioNewAmbientZoneMenu.Name = "AudioNewAmbientZoneMenu";
+            this.AudioNewAmbientZoneMenu.Size = new System.Drawing.Size(216, 22);
+            this.AudioNewAmbientZoneMenu.Text = "New Ambient Zone";
+            this.AudioNewAmbientZoneMenu.Click += new System.EventHandler(this.AudioNewAmbientZoneMenu_Click);
+            // 
+            // AudioNewAmbientEmitterListMenu
+            // 
+            this.AudioNewAmbientEmitterListMenu.Enabled = false;
+            this.AudioNewAmbientEmitterListMenu.Name = "AudioNewAmbientEmitterListMenu";
+            this.AudioNewAmbientEmitterListMenu.Size = new System.Drawing.Size(216, 22);
+            this.AudioNewAmbientEmitterListMenu.Text = "New Ambient Emitter List";
+            this.AudioNewAmbientEmitterListMenu.Click += new System.EventHandler(this.AudioNewAmbientEmitterListMenu_Click);
+            // 
+            // AudioNewAmbientZoneListMenu
+            // 
+            this.AudioNewAmbientZoneListMenu.Enabled = false;
+            this.AudioNewAmbientZoneListMenu.Name = "AudioNewAmbientZoneListMenu";
+            this.AudioNewAmbientZoneListMenu.Size = new System.Drawing.Size(216, 22);
+            this.AudioNewAmbientZoneListMenu.Text = "New Ambient Zone List";
+            this.AudioNewAmbientZoneListMenu.Click += new System.EventHandler(this.AudioNewAmbientZoneListMenu_Click);
+            // 
+            // toolStripSeparator24
+            // 
+            this.toolStripSeparator24.Name = "toolStripSeparator24";
+            this.toolStripSeparator24.Size = new System.Drawing.Size(213, 6);
+            // 
+            // AudioAddToProjectMenu
+            // 
+            this.AudioAddToProjectMenu.Enabled = false;
+            this.AudioAddToProjectMenu.Name = "AudioAddToProjectMenu";
+            this.AudioAddToProjectMenu.Size = new System.Drawing.Size(216, 22);
+            this.AudioAddToProjectMenu.Text = "Add to Project";
+            this.AudioAddToProjectMenu.Click += new System.EventHandler(this.AudioAddToProjectMenu_Click);
+            // 
+            // AudioRemoveFromProjectMenu
+            // 
+            this.AudioRemoveFromProjectMenu.Enabled = false;
+            this.AudioRemoveFromProjectMenu.Name = "AudioRemoveFromProjectMenu";
+            this.AudioRemoveFromProjectMenu.Size = new System.Drawing.Size(216, 22);
+            this.AudioRemoveFromProjectMenu.Text = "Remove from Project";
+            this.AudioRemoveFromProjectMenu.Click += new System.EventHandler(this.AudioRemoveFromProjectMenu_Click);
             // 
             // ProjectForm
             // 
@@ -1357,5 +1450,15 @@
         private System.Windows.Forms.ToolStripMenuItem YtypMloToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem YtypMloNewEntityToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ToolsNavMeshGeneratorMenu;
+        private System.Windows.Forms.ToolStripMenuItem AudioMenu;
+        private System.Windows.Forms.ToolStripMenuItem AudioNameMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator23;
+        private System.Windows.Forms.ToolStripMenuItem AudioNewAmbientEmitterMenu;
+        private System.Windows.Forms.ToolStripMenuItem AudioNewAmbientEmitterListMenu;
+        private System.Windows.Forms.ToolStripMenuItem AudioNewAmbientZoneMenu;
+        private System.Windows.Forms.ToolStripMenuItem AudioNewAmbientZoneListMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator24;
+        private System.Windows.Forms.ToolStripMenuItem AudioAddToProjectMenu;
+        private System.Windows.Forms.ToolStripMenuItem AudioRemoveFromProjectMenu;
     }
 }

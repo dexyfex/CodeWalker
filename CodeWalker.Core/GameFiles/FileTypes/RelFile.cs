@@ -76,12 +76,12 @@ namespace CodeWalker.GameFiles
         public uint IndexStringFlags { get; set; }
         public RelIndexHash[] IndexHashes { get; set; }
         public RelIndexString[] IndexStrings { get; set; }
-        public uint WaveTracksCount { get; set; }
-        public uint[] WaveTracksOffsets { get; set; }
-        public MetaHash[] WaveTracksHashes { get; set; }
-        public uint WaveContainersCount { get; set; }
-        public uint[] WaveContainersOffsets { get; set; }
-        public MetaHash[] WaveContainersHashes { get; set; }
+        public uint HashTableCount { get; set; }
+        public uint[] HashTableOffsets { get; set; }
+        public MetaHash[] HashTable { get; set; }
+        public uint PackTableCount { get; set; }
+        public uint[] PackTableOffsets { get; set; }
+        public MetaHash[] PackTable { get; set; }
 
         public RelData[] RelDatas { get; set; }
         public RelData[] RelDatasSorted { get; set; }
@@ -106,9 +106,11 @@ namespace CodeWalker.GameFiles
         public void Load(byte[] data, RpfFileEntry entry)
         {
             RawFileData = data;
-
-            RpfFileEntry = entry;
-            Name = entry.Name;
+            if (entry != null)
+            {
+                RpfFileEntry = entry;
+                Name = entry.Name;
+            }
 
             MemoryStream ms = new MemoryStream(data);
             BinaryReader br = new BinaryReader(ms);
@@ -189,40 +191,40 @@ namespace CodeWalker.GameFiles
             }
 
 
-            WaveTracksCount = br.ReadUInt32();
-            if (WaveTracksCount != 0)
+            HashTableCount = br.ReadUInt32();
+            if (HashTableCount != 0)
             {
-                uint[] wtoffsets = new uint[WaveTracksCount];
-                MetaHash[] wthashes = new MetaHash[WaveTracksCount];
-                for (uint i = 0; i < WaveTracksCount; i++)
+                uint[] htoffsets = new uint[HashTableCount];
+                MetaHash[] hthashes = new MetaHash[HashTableCount];
+                for (uint i = 0; i < HashTableCount; i++)
                 {
-                    wtoffsets[i] = br.ReadUInt32();
+                    htoffsets[i] = br.ReadUInt32();
 
                     var pos = ms.Position;
-                    ms.Position = wtoffsets[i];
-                    wthashes[i] = new MetaHash(br.ReadUInt32());
+                    ms.Position = htoffsets[i];
+                    hthashes[i] = new MetaHash(br.ReadUInt32());
                     ms.Position = pos;
                 }
-                WaveTracksOffsets = wtoffsets;
-                WaveTracksHashes = wthashes;
+                HashTableOffsets = htoffsets;
+                HashTable = hthashes;
             }
 
-            WaveContainersCount = br.ReadUInt32();
-            if (WaveContainersCount != 0)
+            PackTableCount = br.ReadUInt32();
+            if (PackTableCount != 0)
             {
-                uint[] wcoffsets = new uint[WaveContainersCount];
-                MetaHash[] wchashes = new MetaHash[WaveContainersCount];
-                for (uint i = 0; i < WaveContainersCount; i++)
+                uint[] ptoffsets = new uint[PackTableCount];
+                MetaHash[] pthashes = new MetaHash[PackTableCount];
+                for (uint i = 0; i < PackTableCount; i++)
                 {
-                    wcoffsets[i] = br.ReadUInt32();
+                    ptoffsets[i] = br.ReadUInt32();
 
                     var pos = ms.Position;
-                    ms.Position = wcoffsets[i];
-                    wchashes[i] = new MetaHash(br.ReadUInt32());
+                    ms.Position = ptoffsets[i];
+                    pthashes[i] = new MetaHash(br.ReadUInt32());
                     ms.Position = pos;
                 }
-                WaveContainersOffsets = wcoffsets;
-                WaveContainersHashes = wchashes;
+                PackTableOffsets = ptoffsets;
+                PackTable = pthashes;
             }
 
             if (ms.Position != ms.Length)
@@ -631,6 +633,11 @@ namespace CodeWalker.GameFiles
 
 
 
+        private void BuildNameTable()
+        {
+            //TODO!
+            //need to do this before building the data block since nametable offsets are in there!
+        }
         private void BuildDataBlock()
         {
             if (RelDatas == null) return;
@@ -696,7 +703,7 @@ namespace CodeWalker.GameFiles
                 var lengthwritten = ms.Position - pos;
                 if (lengthwritten != rd.DataLength)
                 { }
-
+                rd.DataLength = (uint)lengthwritten;
 
                 lastrd = rd;
             }
@@ -745,7 +752,7 @@ namespace CodeWalker.GameFiles
             IndexHashes = hashes;
 
         }
-        private void BuildWavesTracks()
+        private void BuildHashTable()
         {
             if (RelDatasSorted == null) return;
 
@@ -761,32 +768,35 @@ namespace CodeWalker.GameFiles
                     return;
             }
 
-            var wtoffsets = new List<uint>();
+            var htoffsets = new List<uint>();
             foreach (var rd in RelDatasSorted)
             {
-                var offsets = rd.GetWaveTrackOffsets();
+                var offsets = rd.GetHashTableOffsets();
                 if (offsets == null) continue;
                 var rdoffset = rd.DataOffset + 12;
                 for (int i = 0; i < offsets.Length; i++)
                 {
-                    wtoffsets.Add(rdoffset + offsets[i]);
+                    htoffsets.Add(rdoffset + offsets[i]);
                 }
             }
-            if (wtoffsets.Count > 0)
+            if (htoffsets.Count > 0)
             {
-                WaveTracksOffsets = wtoffsets.ToArray();
+                HashTableOffsets = htoffsets.ToArray();
             }
             else
             {
-                WaveTracksOffsets = null;
+                HashTableOffsets = null;
             }
+        }
+        private void BuildPackTable()
+        {
+            //TODO
         }
 
 
-
-        private void BuildWavesMaps()
+        private void BuildHashMaps()
         {
-            //for discovering "WavesTracks" offsets
+            //for discovering "HashTable" offsets
 
             var relType = RelType;
             switch (RelType)
@@ -803,11 +813,11 @@ namespace CodeWalker.GameFiles
             }
 
 
-            if (WaveTracksOffsets != null)
+            if (HashTableOffsets != null)
             {
-                foreach (var wtoffset in WaveTracksOffsets)
+                foreach (var htoffset in HashTableOffsets)
                 {
-                    var dboffset = wtoffset - 8;
+                    var dboffset = htoffset - 8;
                     for (int i = 0; i < RelDatasSorted.Length; i++)
                     {
                         var rd = RelDatasSorted[i];
@@ -820,28 +830,28 @@ namespace CodeWalker.GameFiles
                             {
                                 rdoffset += rs.Header.HeaderLength;
                             }
-                            var key = new WavesMapKey()
+                            var key = new HashesMapKey()
                             {
                                 FileType = relType,
                                 ItemType = rd.TypeID,
                                 IsContainer = false
                             };
-                            var val = new WavesMapValue()
+                            var val = new HashesMapValue()
                             {
                                 Item = rd,
                                 Hash = BitConverter.ToUInt32(DataBlock, (int)dboffset),
                                 Offset = dboffset - rdoffset,
                                 Count = 1
                             };
-                            AddWavesMapItem(ref key, val);
+                            AddHashesMapItem(ref key, val);
                             break;
                         }
                     }
                 }
             }
-            if (WaveContainersOffsets != null)
+            if (PackTableOffsets != null)
             {
-                foreach (var wcoffset in WaveContainersOffsets)
+                foreach (var wcoffset in PackTableOffsets)
                 {
                     var dboffset = wcoffset - 8;
                     for (int i = 0; i < RelDatasSorted.Length; i++)
@@ -849,20 +859,20 @@ namespace CodeWalker.GameFiles
                         var rd = RelDatasSorted[i];
                         if ((dboffset >= rd.DataOffset) && (dboffset < rd.DataOffset + rd.DataLength))
                         {
-                            var key = new WavesMapKey()
+                            var key = new HashesMapKey()
                             {
                                 FileType = relType,
                                 ItemType = rd.TypeID,
                                 IsContainer = true
                             };
-                            var val = new WavesMapValue()
+                            var val = new HashesMapValue()
                             {
                                 Item = rd,
                                 Hash = BitConverter.ToUInt32(DataBlock, (int)dboffset),
                                 Offset = dboffset - rd.DataOffset,
                                 Count = 1
                             };
-                            AddWavesMapItem(ref key, val);
+                            AddHashesMapItem(ref key, val);
                             break;
                         }
                     }
@@ -872,7 +882,7 @@ namespace CodeWalker.GameFiles
 
         }
 
-        public struct WavesMapKey
+        public struct HashesMapKey
         {
             public RelDatFileType FileType { get; set; }
             public uint ItemType { get; set; }
@@ -895,7 +905,7 @@ namespace CodeWalker.GameFiles
                 return fcstr + ItemType.ToString();
             }
         }
-        public class WavesMapValue
+        public class HashesMapValue
         {
             public RelData Item { get; set; }
             public MetaHash Hash { get; set; }
@@ -907,14 +917,14 @@ namespace CodeWalker.GameFiles
                 return Offset.ToString() + ": " + Count.ToString();
             }
         }
-        public static Dictionary<WavesMapKey, List<WavesMapValue>> WavesMap { get; set; } = new Dictionary<WavesMapKey, List<WavesMapValue>>();
-        private static void AddWavesMapItem(ref WavesMapKey key, WavesMapValue val)
+        public static Dictionary<HashesMapKey, List<HashesMapValue>> HashesMap { get; set; } = new Dictionary<HashesMapKey, List<HashesMapValue>>();
+        private static void AddHashesMapItem(ref HashesMapKey key, HashesMapValue val)
         {
-            List<WavesMapValue> values = null;
-            if (!WavesMap.TryGetValue(key, out values))
+            List<HashesMapValue> values = null;
+            if (!HashesMap.TryGetValue(key, out values))
             {
-                values = new List<WavesMapValue>();
-                WavesMap[key] = values;
+                values = new List<HashesMapValue>();
+                HashesMap[key] = values;
             }
             if (values != null)
             {
@@ -944,14 +954,16 @@ namespace CodeWalker.GameFiles
             //update NameTableLength
             //update IndexStrings/IndexHashes
             //update IndexCount
-            //update WaveTracksOffsets (and hashes?)
-            //update WaveTracksCount
-            //update WaveContainersOffsets
-            //update WaveContainersCount
+            //update HashTableOffsets (and hashes?)
+            //update HashTableCount
+            //update PackTableOffsets
+            //update PackTableCount
 
+            BuildNameTable();
             BuildDataBlock();
             BuildIndex();
-            BuildWavesTracks();
+            BuildHashTable();
+            BuildPackTable();
 
             DataLength = (uint)(DataBlock?.Length ?? 0);
             if (NameTable != null)
@@ -977,8 +989,8 @@ namespace CodeWalker.GameFiles
             {
                 IndexCount = (uint)(IndexHashes?.Length ?? 0);
             }
-            WaveTracksCount = (uint)(WaveTracksOffsets?.Length ?? 0);
-            WaveContainersCount = (uint)(WaveContainersOffsets?.Length ?? 0);
+            HashTableCount = (uint)(HashTableOffsets?.Length ?? 0);
+            PackTableCount = (uint)(PackTableOffsets?.Length ?? 0);
 
 
 
@@ -1045,21 +1057,21 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            bw.Write(WaveTracksCount);
-            if (WaveTracksCount != 0)
+            bw.Write(HashTableCount);
+            if (HashTableCount != 0)
             {
-                for (uint i = 0; i < WaveTracksCount; i++)
+                for (uint i = 0; i < HashTableCount; i++)
                 {
-                    bw.Write(WaveTracksOffsets[i]);
+                    bw.Write(HashTableOffsets[i]);
                 }
             }
 
-            bw.Write(WaveContainersCount);
-            if (WaveContainersCount != 0)
+            bw.Write(PackTableCount);
+            if (PackTableCount != 0)
             {
-                for (uint i = 0; i < WaveContainersCount; i++)
+                for (uint i = 0; i < PackTableCount; i++)
                 {
-                    bw.Write(WaveContainersOffsets[i]);
+                    bw.Write(PackTableOffsets[i]);
                 }
             }
 
@@ -1148,7 +1160,7 @@ namespace CodeWalker.GameFiles
             TypeID = br.ReadByte();
         }
 
-        public virtual uint[] GetWaveTrackOffsets()
+        public virtual uint[] GetHashTableOffsets()
         {
             return null;
         }
@@ -2509,6 +2521,13 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public void WriteTypeAndOffset(BinaryWriter bw)
+        {
+            var val = ((NameTableOffset & 0xFFFFFF) << 8) + TypeID;
+            bw.Write(val);
+        }
+
+
         public override string ToString()
         {
             return GetBaseString() + ": " + Type.ToString();
@@ -2560,6 +2579,18 @@ namespace CodeWalker.GameFiles
 
 
         }
+        public override void Write(BinaryWriter bw)
+        {
+            //base.Write(bw);
+            WriteTypeAndOffset(bw);
+
+            bw.Write(EmitterCount);
+            for (int i = 0; i < EmitterCount; i++)
+            {
+                bw.Write(EmitterHashes[i]);
+            }
+
+        }
     }
     [TC(typeof(EXP))] public class Dat151AmbientZone : Dat151RelData
     {
@@ -2589,7 +2620,7 @@ namespace CodeWalker.GameFiles
         public FlagsUint Flags05 { get; set; }
         public byte Unk14 { get; set; }
         public byte Unk15 { get; set; }
-        public ushort HashesCount { get; set; }
+        public byte HashesCount { get; set; }
         public byte Unk16 { get; set; }
         public MetaHash[] Hashes { get; set; }
 
@@ -2603,6 +2634,11 @@ namespace CodeWalker.GameFiles
             {
                 Hash = br.ReadUInt32();
                 Value = br.ReadSingle();
+            }
+            public void Write(BinaryWriter bw)
+            {
+                bw.Write(Hash);
+                bw.Write(Value);
             }
             public override string ToString()
             {
@@ -2658,7 +2694,10 @@ namespace CodeWalker.GameFiles
             { }
 
 
+            #region testing
+
             var data = this.Data;
+
 
             long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
@@ -2694,6 +2733,90 @@ namespace CodeWalker.GameFiles
             { }//no hit
             if (Flags05.Value != 0)
             { }//eg 0xAE64583B, 0x61083310, 0xCAE96294, 0x1C376176
+
+            #endregion
+
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            //base.Write(bw);
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Flags00.Value);
+            bw.Write((uint)Shape);
+            bw.Write(Flags02.Value);
+            bw.Write(OuterPos.X);
+            bw.Write(OuterPos.Y);
+            bw.Write(OuterPos.Z);
+            bw.Write(Unused01);
+            bw.Write(OuterSize.X);
+            bw.Write(OuterSize.Y);
+            bw.Write(OuterSize.Z);
+            bw.Write(Unused02);
+            bw.Write(OuterVec1.X);
+            bw.Write(OuterVec1.Y);
+            bw.Write(OuterVec1.Z);
+            bw.Write(OuterVec1.W);
+            bw.Write(OuterVec2.X);
+            bw.Write(OuterVec2.Y);
+            bw.Write(OuterVec2.Z);
+            bw.Write(OuterVec2.W);
+            bw.Write(OuterAngle);//###
+            bw.Write(OuterVec3.X);
+            bw.Write(OuterVec3.Y);
+            bw.Write(OuterVec3.Z);
+            bw.Write(InnerPos.X);
+            bw.Write(InnerPos.Y);
+            bw.Write(InnerPos.Z);
+            bw.Write(Unused06);
+            bw.Write(InnerSize.X);
+            bw.Write(InnerSize.Y);
+            bw.Write(InnerSize.Z);
+            bw.Write(Unused07);
+            bw.Write(InnerVec1.X);
+            bw.Write(InnerVec1.Y);
+            bw.Write(InnerVec1.Z);
+            bw.Write(InnerVec1.W);
+            bw.Write(InnerVec2.X);
+            bw.Write(InnerVec2.Y);
+            bw.Write(InnerVec2.Z);
+            bw.Write(InnerVec2.W);
+            bw.Write(InnerAngle);//###
+            bw.Write(InnerVec3.X);
+            bw.Write(InnerVec3.Y);
+            bw.Write(InnerVec3.Z);
+            bw.Write(Vec11.X);
+            bw.Write(Vec11.Y);
+            bw.Write(Vec11.Z);
+            bw.Write(Vec11.W);
+            bw.Write(Vec12.X);
+            bw.Write(Vec12.Y);
+            bw.Write(Vec12.Z);
+            bw.Write(Vec12.W);
+            bw.Write(Vec13.X);
+            bw.Write(Vec13.Y);
+            bw.Write(Vec13.Z);
+            bw.Write(Vec13.W);
+
+            bw.Write(Flags05.Value);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+            bw.Write(HashesCount);
+            bw.Write(Unk16);
+            for (int i = 0; i < HashesCount; i++)
+            {
+                bw.Write(Hashes[i]);
+            }
+
+            bw.Write(ExtParamsCount);
+            for (int i = 0; i < ExtParamsCount; i++)
+            {
+                ExtParams[i].Write(bw);
+            }
+            if (ExtParamsCount != 0)
+            { }
+
+            while ((bw.BaseStream.Position & 0xF) != 0) bw.Write((byte)0); //pad out to next 16 bytes
 
         }
 
@@ -2738,6 +2861,12 @@ namespace CodeWalker.GameFiles
                 Hash = br.ReadUInt32();
                 Value = br.ReadSingle();
                 Flags = br.ReadUInt32();
+            }
+            public void Write(BinaryWriter bw)
+            {
+                bw.Write(Hash);
+                bw.Write(Value);
+                bw.Write(Flags);
             }
             public override string ToString()
             {
@@ -2795,6 +2924,8 @@ namespace CodeWalker.GameFiles
                 }
             }
 
+
+            #region testing
 
             switch (Unk12.Value)//no pattern?
             {
@@ -3021,7 +3152,58 @@ namespace CodeWalker.GameFiles
             long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
             { }
+
+
+            #endregion
+
         }
+
+        public override void Write(BinaryWriter bw)
+        {
+            //base.Write(bw);
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk00.Value);
+            bw.Write(Unk01.Value);
+            bw.Write(Unk02.Value);
+            bw.Write(Position.X);
+            bw.Write(Position.Y);
+            bw.Write(Position.Z);
+            bw.Write(Unk03.Value);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06.Value);
+            bw.Write(Unk07.Value);
+            bw.Write(Unk08.Value);
+            bw.Write(Unk09);
+            bw.Write(InnerRad);
+            bw.Write(OuterRad);
+            bw.Write(Unk12.Value);
+            bw.Write(Unk13.Value);
+            bw.Write(Unk14.Value);
+            bw.Write(Unk15.Value);
+            bw.Write(Unk16.Value);
+            bw.Write(Unk17.Value);
+            bw.Write(Unk18.Value);
+            bw.Write(Unk19.Value);
+            bw.Write(Unk20.Value);
+            bw.Write(Unk21.Value);
+            bw.Write(Unk22.Value);
+            bw.Write(Unk23.Value);
+            bw.Write(ExtParamCount);
+
+            if (ExtParamCount > 0)
+            {
+                for (int i = 0; i < ExtParamCount; i++)
+                {
+                    ExtParams[i].Write(bw);
+                }
+                //array seems to be padded to multiples of 16 bytes. (write the rest here)
+                while ((bw.BaseStream.Position & 0xF) != 0) bw.Write((byte)0); //pad out to next 16 bytes
+            }
+
+        }
+
 
     }
     [TC(typeof(EXP))] public class Dat151AmbientZoneList : Dat151RelData
@@ -3041,6 +3223,18 @@ namespace CodeWalker.GameFiles
             long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
             { } //no hits here
+
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            //base.Write(bw);
+            WriteTypeAndOffset(bw);
+
+            bw.Write(ZoneCount);
+            for (int i = 0; i < ZoneCount; i++)
+            {
+                bw.Write(ZoneHashes[i]);
+            }
 
         }
 
@@ -3068,8 +3262,18 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+            bw.Write(AudioTrack0);
+            bw.Write(AudioItemCount);
+            for (int i = 0; i < AudioItemCount; i++)
+            {
+                bw.Write(AudioItems[i].Hash0);
+                bw.Write(AudioItems[i].Hash1);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             offsets.Add(0);
@@ -3128,8 +3332,33 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
 
-        public override uint[] GetWaveTrackOffsets()
+            bw.Write(Unk0);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(AudioTrack0);
+            bw.Write(AudioTrack1);
+            bw.Write(Unk3);
+            bw.Write(Unk4);
+            bw.Write(AudioTrack2);
+            bw.Write(Unk5);
+            bw.Write(Unk6);
+            bw.Write(Unk7);
+            bw.Write(Unk8);
+            bw.Write(Unk9);
+            bw.Write(ItemCount);
+
+            for (int i = 0; i < ItemCount; i++)
+            {
+                bw.Write(Items[i].Hash0);
+                bw.Write(Items[i].Hash1);
+            }
+
+        }
+        public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 12, 16, 28 };
         }
@@ -3158,8 +3387,19 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
 
-        public override uint[] GetWaveTrackOffsets()
+            bw.Write(Unk0);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(AudioTrack0);
+            bw.Write(AudioTrack1);
+            bw.Write(Unk3);
+            bw.Write(Unk4);
+        }
+        public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 12, 16 };
         }
@@ -3192,6 +3432,17 @@ namespace CodeWalker.GameFiles
             AudioTrack2 = br.ReadUInt32();
             AudioTrack3 = br.ReadUInt32();
         }
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write(AudioTrack0);
+            bw.Write(AudioTrack1);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(Unk3);
+            bw.Write(Unk4);
+            bw.Write(AudioTrack2);
+            bw.Write(AudioTrack3);
+        }
     }
     [TC(typeof(EXP))] public class Dat151Mood : Dat151RelData
     {
@@ -3218,8 +3469,20 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
 
-        public override uint[] GetWaveTrackOffsets()
+            bw.Write(Unk0);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(MoodItemCount);
+            for (int i = 0; i < MoodItemCount; i++)
+            {
+                MoodItems[i].Write(bw);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             for (uint i = 0; i < MoodItemCount; i++)
@@ -3264,7 +3527,22 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk0);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(AudioTrack0);
+            bw.Write(AudioTrack1);
+            bw.Write(Unk3);
+            bw.Write(AudioTrack2);
+            bw.Write(Unk4);
+            bw.Write(Unk5);
+            bw.Write(Unk6);
+        }
+        public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 12, 16, 24 };
         }
@@ -3288,7 +3566,18 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(AudioTrackCount);
+            for (int i = 0; i < AudioTrackCount; i++)
+            {
+                bw.Write(AudioTracks[i]);
+            }
+
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             for (uint i = 0; i < AudioTrackCount; i++)
@@ -3332,7 +3621,23 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk0);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(AudioTrack0);
+            bw.Write(AudioTrack1);
+            bw.Write(Unk3);
+            bw.Write(Unk4);
+            bw.Write(Unk5);
+            bw.Write(Unk6);
+            bw.Write(Unk7);
+            bw.Write(Unk8);
+        }
+        public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 12, 16 };
         }
@@ -3362,7 +3667,18 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk0);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(AudioTrack0);
+            bw.Write(AudioTrack1);
+            bw.Write(Unk3);
+        }
+        public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 12, 16 };
         }
@@ -3391,7 +3707,19 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk0);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(AudioTrack0);
+            bw.Write(AudioTrack1);
+            bw.Write(Unk3);
+            bw.Write(Unk4);
+        }
+        public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 12, 16 };
         }
@@ -3420,7 +3748,19 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk0);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(AudioTrack0);
+            bw.Write(AudioTrack1);
+            bw.Write(Unk3);
+            bw.Write(Unk4);
+        }
+        public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 12, 16 };
         }
@@ -3442,8 +3782,8 @@ namespace CodeWalker.GameFiles
         public MetaHash Unk12 { get; set; }
         public MetaHash Unk13 { get; set; }
         public MetaHash Unk14 { get; set; }
-        public uint Unk15 { get; set; }
-        public byte AudioTracks1Count { get; set; }
+        public uint Unk15 { get; set; }//TODO: fix this
+        public byte AudioTracks1Count { get; set; }//TODO: fix this
         public Dat151HashPair[] AudioTracks1 { get; set; }
         public uint AudioTracks2Count { get; set; }
         public MetaHash[] AudioTracks2 { get; set; }
@@ -3520,8 +3860,48 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
 
-        public override uint[] GetWaveTrackOffsets()
+            bw.Write(Unk00);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+
+
+            if (AudioTracks1Count == 0)
+            {
+                bw.Write(AudioTracks2[0]);//hrmm
+            }
+            else //if (AudioTracks1Count > 0)
+            {
+                for (int i = 0; i < AudioTracks1Count; i++)
+                {
+                    bw.Write(AudioTracks1[i].Hash0);
+                    bw.Write(AudioTracks1[i].Hash1);
+                }
+                bw.Write(AudioTracks2Count);
+                for (int i = 0; i < AudioTracks2Count; i++)
+                {
+                    bw.Write(AudioTracks2[i]);
+                }
+            }
+
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             uint offs = 64;
@@ -3573,8 +3953,20 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
 
-        public override uint[] GetWaveTrackOffsets()
+            bw.Write(Unk0);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(RoomsCount);
+            for (int i = 0; i < RoomsCount; i++)
+            {
+                bw.Write(Rooms[i]);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             for (uint i = 0; i < RoomsCount; i++)
@@ -3626,7 +4018,28 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk00);
+            bw.Write(Unk01);
+            bw.Write(AudioTrack0);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+        }
+        public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 8 };
         }
@@ -3643,7 +4056,13 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(AudioTrack0);
+        }
+        public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 0 };
         }
@@ -3845,7 +4264,105 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk00);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+            bw.Write(Unk16);
+            bw.Write(Unk17);
+            bw.Write(Unk18);
+            bw.Write(Unk19);
+            bw.Write(Unk20);
+            bw.Write(Unk21);
+            bw.Write(Unk22);
+            bw.Write(Unk23);
+            bw.Write(Unk24);
+            bw.Write(Unk25);
+            bw.Write(Unk26);
+            bw.Write(Unk27);
+            bw.Write(Unk28);
+            bw.Write(Unk29);
+            bw.Write(Unk30);
+            bw.Write(AudioTrack0);
+            bw.Write(Unk31);
+            bw.Write(Unk32);
+            bw.Write(AudioTrack1);
+            bw.Write(AudioTrack2);
+            bw.Write(Unk33);
+            bw.Write(Unk34);
+            bw.Write(Unk35);
+            bw.Write(Unk36);
+            bw.Write(Unk37);
+            bw.Write(Unk38);
+            bw.Write(Unk39);
+            bw.Write(Unk40);
+            bw.Write(Unk41);
+            bw.Write(Unk42);
+            bw.Write(Unk43);
+            bw.Write(Unk44);
+            bw.Write(Unk45);
+            bw.Write(Unk46);
+            bw.Write(Unk47);
+            bw.Write(Unk48);
+            bw.Write(Unk49);
+            bw.Write(Unk50);
+            bw.Write(Unk51);
+            bw.Write(Unk52);
+            bw.Write(Unk53);
+            bw.Write(Unk54);
+            bw.Write(Unk55);
+            bw.Write(Unk56);
+            bw.Write(Unk57);
+            bw.Write(Unk58);
+            bw.Write(Unk59);
+            bw.Write(Unk60);
+            bw.Write(Unk61);
+            bw.Write(Unk62);
+            bw.Write(Unk63);
+            bw.Write(Unk64);
+            bw.Write(Unk65);
+            bw.Write(Unk66);
+            bw.Write(Unk67);
+            bw.Write(Unk68);
+            bw.Write(Unk69);
+            bw.Write(Unk70);
+            bw.Write(Unk71);
+            bw.Write(Unk72);
+            bw.Write(Unk73);
+            bw.Write(Unk74);
+            bw.Write(Unk75);
+            bw.Write(Unk76);
+            bw.Write(Unk77);
+            bw.Write(Unk78);
+            bw.Write(Unk79);
+            bw.Write(Unk80);
+            bw.Write(Unk81);
+            bw.Write(Unk82);
+            bw.Write(Unk83);
+            bw.Write(Unk84);
+            bw.Write(Unk85);
+            bw.Write(Unk86);
+            bw.Write(Unk87);
+            bw.Write(Unk88);
+            bw.Write(Unk89);
+        }
+        public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 124, 136, 140 };
         }
@@ -3969,7 +4486,68 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk00);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+            bw.Write(Unk16);
+            bw.Write(Unk17);
+            bw.Write(Unk18);
+            bw.Write(Unk19);
+            bw.Write(Unk20);
+            bw.Write(Unk21);
+            bw.Write(Unk22);
+            bw.Write(Unk23);
+            bw.Write(Unk24);
+            bw.Write(Unk25);
+            bw.Write(Unk26);
+            bw.Write(Unk27);
+            bw.Write(Unk28);
+            bw.Write(Unk29);
+            bw.Write(Unk30);
+            bw.Write(Unk31);
+            bw.Write(Unk32);
+            bw.Write(Unk33);
+            bw.Write(Unk34);
+            bw.Write(Unk35);
+            bw.Write(Unk36);
+            bw.Write(Unk37);
+            bw.Write(Unk38);
+            bw.Write(Unk39);
+            bw.Write(Unk40);
+            bw.Write(Unk41);
+            bw.Write(Unk42);
+            bw.Write(Unk43);
+            bw.Write(Unk44);
+            bw.Write(Unk45);
+            bw.Write(Unk46);
+            bw.Write(Unk47);
+            bw.Write(Unk48);
+            bw.Write(Unk49);
+            bw.Write(Unk50);
+            if (Unk50 > 0)
+            {
+                bw.Write(AudioTrack0);
+                bw.Write(AudioTrack1);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             if (Unk50 > 0) return new uint[] { 204, 208 };
             else return null;
@@ -3991,7 +4569,15 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk0);
+            bw.Write(AudioTrack0);
+            bw.Write(Unk1);
+        }
+        public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 4 };
         }
@@ -4015,7 +4601,18 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(AudioItemCount);
+            for (uint i = 0; i < AudioItemCount; i++)
+            {
+                bw.Write(AudioItems[i].Hash0);
+                bw.Write(AudioItems[i].Hash1);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             for (uint i = 0; i < AudioItemCount; i++)
@@ -4060,7 +4657,25 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk0);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(AudioTrack0);
+            bw.Write(AudioTrack1);
+            bw.Write(Unk3);
+            bw.Write(Unk4);
+            bw.Write(Unk5);
+            bw.Write(AudioTracksCount);
+            for (var i = 0; i < AudioTracksCount; i++)
+            {
+                bw.Write(AudioTracks[i]);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             offsets.Add(12);
@@ -4098,7 +4713,20 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk0);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(AudioTrack0);
+            bw.Write(AudioTrack1);
+            bw.Write(Unk3);
+            bw.Write(Unk4);
+            bw.Write(Unk5);
+        }
+        public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 12, 16 };
         }
@@ -4122,7 +4750,18 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(AudioItemCount);
+            for (var i = 0; i < AudioItemCount; i++)
+            {
+                bw.Write(AudioItems[i].Hash0);
+                bw.Write(AudioItems[i].Hash1);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             for (uint i = 0; i < AudioItemCount; i++)
@@ -4151,7 +4790,17 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(AudioTracksCount);
+            for (int i = 0; i < AudioTracksCount; i++)
+            {
+                bw.Write(AudioTracks[i]);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             for (uint i = 0; i < AudioTracksCount; i++)
@@ -4204,7 +4853,29 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk00);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(AudioTracksCount);
+            for (int i = 0; i < AudioTracksCount; i++)
+            {
+                bw.Write(AudioTracks[i]);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             for (uint i = 0; i < AudioTracksCount; i++)
@@ -4233,7 +4904,18 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(AudioItemCount);
+            for (var i = 0; i < AudioItemCount; i++)
+            {
+                bw.Write(AudioItems[i].Hash0);
+                bw.Write(AudioItems[i].Hash1);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             for (uint i = 0; i < AudioItemCount; i++)
@@ -4262,7 +4944,18 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(AudioItemCount);
+            for (var i = 0; i < AudioItemCount; i++)
+            {
+                bw.Write(AudioItems[i].Hash0);
+                bw.Write(AudioItems[i].Hash1);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             for (uint i = 0; i < AudioItemCount; i++)
@@ -4291,7 +4984,18 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(AudioItemCount);
+            for (var i = 0; i < AudioItemCount; i++)
+            {
+                bw.Write(AudioItems[i].Hash0);
+                bw.Write(AudioItems[i].Hash1);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             for (uint i = 0; i < AudioItemCount; i++)
@@ -4320,7 +5024,18 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(AudioItemCount);
+            for (var i = 0; i < AudioItemCount; i++)
+            {
+                bw.Write(AudioItems[i].Hash0);
+                bw.Write(AudioItems[i].Hash1);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             for (uint i = 0; i < AudioItemCount; i++)
@@ -4349,7 +5064,18 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
-        public override uint[] GetWaveTrackOffsets()
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(AudioItemCount);
+            for (var i = 0; i < AudioItemCount; i++)
+            {
+                bw.Write(AudioItems[i].Hash0);
+                bw.Write(AudioItems[i].Hash1);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
             for (uint i = 0; i < AudioItemCount; i++)
@@ -4405,6 +5131,33 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02.X);
+            bw.Write(Unk02.Y);
+            bw.Write(Unk02.Z);
+            bw.Write(Unk02.W);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+
+            bw.Write(PointsCount);
+            for (int i = 0; i < PointsCount; i++)
+            {
+                bw.Write(Points[i].X);
+                bw.Write(Points[i].Y);
+            }
+        }
     }
     [TC(typeof(EXP))] public class Dat151ShoreLineLake : Dat151RelData
     {
@@ -4439,6 +5192,29 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02.X);
+            bw.Write(Unk02.Y);
+            bw.Write(Unk02.Z);
+            bw.Write(Unk02.W);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+
+            //byte b1 = (byte)((Unk05) & 0xFF);
+            //byte b2 = (byte)((Unk05 >> 8) & 0xFF);
+            //PointsCount = b2;
+
+            for (int i = 0; i < PointsCount; i++)
+            {
+                bw.Write(Points[i].X);
+                bw.Write(Points[i].Y);
+            }
+        }
     }
     [TC(typeof(EXP))] public class Dat151ShoreLineRiver : Dat151RelData
     {
@@ -4471,6 +5247,28 @@ namespace CodeWalker.GameFiles
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
             { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02.X);
+            bw.Write(Unk02.Y);
+            bw.Write(Unk02.Z);
+            bw.Write(Unk02.W);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(PointsCount);
+
+            for (int i = 0; i < PointsCount; i++)
+            {
+                bw.Write(Points[i].X);
+                bw.Write(Points[i].Y);
+                bw.Write(Points[i].Z);
+            }
         }
     }
     [TC(typeof(EXP))] public class Dat151ShoreLineOcean : Dat151RelData
@@ -4518,6 +5316,34 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02.X);
+            bw.Write(Unk02.Y);
+            bw.Write(Unk02.Z);
+            bw.Write(Unk02.W);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+
+            bw.Write(PointsCount);
+
+            for (int i = 0; i < PointsCount; i++)
+            {
+                bw.Write(Points[i].X);
+                bw.Write(Points[i].Y);
+            }
+        }
     }
     [TC(typeof(EXP))] public class Dat151ShoreLineList : Dat151RelData
     {
@@ -4538,6 +5364,16 @@ namespace CodeWalker.GameFiles
             if (bytesleft != 0)
             { }
         }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(ShoreLineCount);
+            for (int i = 0; i < ShoreLineCount; i++)
+            {
+                bw.Write(ShoreLines[i]);
+            }
+        }
     }
 
 
@@ -4551,6 +5387,10 @@ namespace CodeWalker.GameFiles
     //        var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
     //        if (bytesleft != 0)
     //        { }
+    //    }
+    //    public override void Write(BinaryWriter bw)
+    //    {
+    //        WriteTypeAndOffset(bw);
     //    }
     //}
 
