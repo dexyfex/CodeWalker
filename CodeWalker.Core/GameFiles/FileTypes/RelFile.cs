@@ -506,6 +506,10 @@ namespace CodeWalker.GameFiles
         {
             switch ((Dat151RelType)d.TypeID)
             {
+                case Dat151RelType.AmbientEmitterList: return new Dat151AmbientEmitterList(d, br);
+                case Dat151RelType.AmbientZone: return new Dat151AmbientZone(d, br);
+                case Dat151RelType.AmbientEmitter: return new Dat151AmbientEmitter(d, br);
+                case Dat151RelType.AmbientZoneList: return new Dat151AmbientZoneList(d, br);
                 case Dat151RelType.Collision: return new Dat151Collision(d, br); //maybe for vehicle
                 case Dat151RelType.WeaponAudioItem: return new Dat151WeaponAudioItem(d, br);
                 case Dat151RelType.StartTrackAction: return new Dat151StartTrackAction(d, br);
@@ -534,6 +538,11 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.Unk86: return new Dat151Unk86(d, br);
                 case Dat151RelType.Unk81: return new Dat151Unk81(d, br);
                 case Dat151RelType.Unk55: return new Dat151Unk55(d, br);
+                case Dat151RelType.ShoreLinePool: return new Dat151ShoreLinePool(d, br);
+                case Dat151RelType.ShoreLineLake: return new Dat151ShoreLineLake(d, br);
+                case Dat151RelType.ShoreLineRiver: return new Dat151ShoreLineRiver(d, br);
+                case Dat151RelType.ShoreLineOcean: return new Dat151ShoreLineOcean(d, br);
+                case Dat151RelType.ShoreLineList: return new Dat151ShoreLineList(d, br);
 
                 case Dat151RelType.Vehicle:
                 case Dat151RelType.VehicleEngine:
@@ -548,11 +557,6 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.VehicleScannerParams: //maybe not just vehicle
                 case Dat151RelType.Explosion:
                 case Dat151RelType.VehicleEngineGranular: //maybe not just vehicle
-                case Dat151RelType.ShoreLinePool:
-                case Dat151RelType.ShoreLineLake:
-                case Dat151RelType.ShoreLineRiver:
-                case Dat151RelType.ShoreLineOcean:
-                case Dat151RelType.ShoreLineList:
                 case Dat151RelType.Unk2:
                 case Dat151RelType.Unk7:
                 case Dat151RelType.Unk9:
@@ -615,10 +619,6 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.Unk121:
                     return new Dat151RelData(d, br);
 
-                case Dat151RelType.AmbientEmitterList: return new Dat151AmbientEmitterList(d, br);
-                case Dat151RelType.AmbientZone: return new Dat151AmbientZone(d, br);
-                case Dat151RelType.AmbientEmitter: return new Dat151AmbientEmitter(d, br);
-                case Dat151RelType.AmbientZoneList: return new Dat151AmbientZoneList(d, br);
                 default:
                     return new Dat151RelData(d, br);
             }
@@ -631,9 +631,125 @@ namespace CodeWalker.GameFiles
 
 
 
+        private void BuildDataBlock()
+        {
+            if (RelDatas == null) return;
+            if (RelDatasSorted == null) return;
+
+
+            switch (RelType)
+            {
+                case RelDatFileType.Dat149:
+                case RelDatFileType.Dat150:
+                case RelDatFileType.Dat151Parameters:
+                    break;
+                case RelDatFileType.Dat4://TODO!
+                case RelDatFileType.Dat54DataEntries://TODO!
+                default://TODO..?
+                    return;
+            }
+
+
+
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter bw = new BinaryWriter(ms);
+
+            bw.Write(DataUnkVal);
+
+
+            RelData lastrd = null;//debug
+
+            for (int i = 0; i < RelDatasSorted.Length; i++)
+            {
+
+                var rd = RelDatasSorted[i];
+
+                switch ((Dat151RelType)rd.TypeID)
+                {
+                    case Dat151RelType.AmbientEmitter:
+                    case Dat151RelType.AmbientZone:
+                    case Dat151RelType.Unk101:
+                    case Dat151RelType.Unk35:
+                        while ((ms.Position & 0xF) != 0) bw.Write((byte)0); //pad up to nearest 16 bytes
+                        break;
+                    case Dat151RelType.Mood:
+                    case Dat151RelType.Unk70:
+                    case Dat151RelType.Unk29:
+                    case Dat151RelType.SpeechParams:
+                    case Dat151RelType.Unk11:
+                    case Dat151RelType.Unk41:
+                    case Dat151RelType.Unk2:
+                    case Dat151RelType.AmbientEmitterList:
+                    case Dat151RelType.Weapon:
+                    case Dat151RelType.Vehicle:
+                    case Dat151RelType.StopTrackAction:
+                        while ((ms.Position & 3) != 0) bw.Write((byte)0); //align these to nearest 4 bytes
+                        break;
+
+                }
+
+                var pos = ms.Position;
+                if (ms.Position != rd.DataOffset)
+                { }
+                rd.DataOffset = (uint)ms.Position;
+                rd.Write(bw);
+                var lengthwritten = ms.Position - pos;
+                if (lengthwritten != rd.DataLength)
+                { }
+
+
+                lastrd = rd;
+            }
+
+            var buf = new byte[ms.Length];
+            ms.Position = 0;
+            ms.Read(buf, 0, buf.Length);
+
+            if ((DataBlock?.Length ?? 0) != buf.Length)
+            { }
+
+            DataBlock = buf;
+
+        }
+        private void BuildIndex()
+        {
+            if (RelDatas == null) return;
+            if (RelDatasSorted == null) return;
+
+            switch (RelType)
+            {
+                case RelDatFileType.Dat149:
+                case RelDatFileType.Dat150:
+                case RelDatFileType.Dat151Parameters:
+                    break;
+                case RelDatFileType.Dat4://TODO!
+                case RelDatFileType.Dat54DataEntries://TODO!
+                default://TODO..?
+                    return;
+            }
+
+
+            //var sorted = RelDatasSorted.ToList();
+            //sorted.Sort((a, b) => { return ((uint)a.NameHash).CompareTo((uint)b.NameHash); });
+            //RelDatas = sorted.ToArray();
+
+            var hashes = new RelIndexHash[RelDatas.Length];
+            for (int i = 0; i < RelDatas.Length; i++)
+            {
+                var rd = RelDatas[i];
+                hashes[i] = new RelIndexHash() { Name = rd.NameHash, Offset = rd.DataOffset, Length = rd.DataLength };
+            }
+            //if (hashes.Length != IndexHashes.Length)
+            //{ }
+
+            IndexHashes = hashes;
+
+        }
         private void BuildWavesTracks()
         {
-            switch(RelType)
+            if (RelDatasSorted == null) return;
+
+            switch (RelType)
             {
                 case RelDatFileType.Dat149:
                 case RelDatFileType.Dat150:
@@ -670,6 +786,7 @@ namespace CodeWalker.GameFiles
 
         private void BuildWavesMaps()
         {
+            //for discovering "WavesTracks" offsets
 
             var relType = RelType;
             switch (RelType)
@@ -821,7 +938,6 @@ namespace CodeWalker.GameFiles
         public byte[] Save()
         {
 
-
             //build DataBlock
             //update DataLength
             //update NameTableCount
@@ -833,6 +949,8 @@ namespace CodeWalker.GameFiles
             //update WaveContainersOffsets
             //update WaveContainersCount
 
+            BuildDataBlock();
+            BuildIndex();
             BuildWavesTracks();
 
             DataLength = (uint)(DataBlock?.Length ?? 0);
@@ -1034,6 +1152,12 @@ namespace CodeWalker.GameFiles
         {
             return null;
         }
+
+        public virtual void Write(BinaryWriter bw)
+        {
+            bw.Write(Data); //fallback for default byte array data writing...
+        }
+
 
         public string GetNameString()
         {
@@ -2390,20 +2514,24 @@ namespace CodeWalker.GameFiles
             return GetBaseString() + ": " + Type.ToString();
         }
     }
-    [TC(typeof(EXP))] public class Dat151Sound : RelSound
-    {
-        public Dat151RelType Type { get; set; }
 
-        public Dat151Sound(RelData d, BinaryReader br) : base(d, br)
+    [TC(typeof(EXP))] public struct Dat151HashPair
+    {
+        public MetaHash Hash0 { get; set; }
+        public MetaHash Hash1 { get; set; }
+
+        public Dat151HashPair(MetaHash hash0, MetaHash hash1)
         {
-            Type = (Dat151RelType)TypeID;
+            Hash0 = hash0;
+            Hash1 = hash1;
         }
 
         public override string ToString()
         {
-            return GetBaseString() + ": " + Type.ToString();
+            return Hash0.ToString() + ": " + Hash1.ToString();
         }
     }
+
 
     public enum Dat151ZoneShape : uint
     {
@@ -2528,6 +2656,7 @@ namespace CodeWalker.GameFiles
             }
             if (ExtParamsCount != 0)
             { }
+
 
             var data = this.Data;
 
@@ -2915,24 +3044,6 @@ namespace CodeWalker.GameFiles
 
         }
 
-    }
-
-
-    [TC(typeof(EXP))] public struct Dat151HashPair
-    {
-        public MetaHash Hash0 { get; set; }
-        public MetaHash Hash1 { get; set; }
-
-        public Dat151HashPair(MetaHash hash0, MetaHash hash1)
-        {
-            Hash0 = hash0;
-            Hash1 = hash1;
-        }
-
-        public override string ToString()
-        {
-            return Hash0.ToString() + ": " + Hash1.ToString();
-        }
     }
 
     [TC(typeof(EXP))] public class Dat151WeaponAudioItem : Dat151RelData
@@ -4249,11 +4360,185 @@ namespace CodeWalker.GameFiles
         }
     }
 
+    [TC(typeof(EXP))] public class Dat151ShoreLinePool : Dat151RelData
+    {
+        public uint Unk01 { get; set; }
+        public Vector4 Unk02 { get; set; }
+        public int Unk03 { get; set; }
+        public int Unk04 { get; set; }
+        public int Unk05 { get; set; }
+        public int Unk06 { get; set; }
+        public int Unk07 { get; set; }
+        public int Unk08 { get; set; }
+        public int Unk09 { get; set; }
+        public int Unk10 { get; set; }
+        public int Unk11 { get; set; }
+        public float Unk12 { get; set; }
+        public int PointsCount { get; set; }
+        public Vector2[] Points { get; set; }
 
 
+        public Dat151ShoreLinePool(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadUInt32();
+            Unk02 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk03 = br.ReadInt32();
+            Unk04 = br.ReadInt32();
+            Unk05 = br.ReadInt32();
+            Unk06 = br.ReadInt32();
+            Unk07 = br.ReadInt32();
+            Unk08 = br.ReadInt32();
+            Unk09 = br.ReadInt32();
+            Unk10 = br.ReadInt32();
+            Unk11 = br.ReadInt32();
+            Unk12 = br.ReadSingle();
 
+            PointsCount = br.ReadInt32();
+            var points = new Vector2[PointsCount];
+            for (int i = 0; i < PointsCount; i++)
+            {
+                points[i] = new Vector2(br.ReadSingle(), br.ReadSingle());
+            }
+            Points = points;
 
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151ShoreLineLake : Dat151RelData
+    {
+        public uint Unk01 { get; set; }
+        public Vector4 Unk02 { get; set; }
+        public int Unk03 { get; set; }
+        public int Unk04 { get; set; }
+        public uint Unk05 { get; set; }
+        public int PointsCount { get; set; }
+        public Vector2[] Points { get; set; }
 
+        public Dat151ShoreLineLake(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadUInt32();
+            Unk02 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk03 = br.ReadInt32();
+            Unk04 = br.ReadInt32();
+            Unk05 = br.ReadUInt32();
+
+            byte b1 = (byte)((Unk05) & 0xFF);
+            byte b2 = (byte)((Unk05>>8) & 0xFF);
+            PointsCount = b2;
+
+            var points = new Vector2[PointsCount];
+            for (int i = 0; i < PointsCount; i++)
+            {
+                points[i] = new Vector2(br.ReadSingle(), br.ReadSingle());
+            }
+            Points = points;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151ShoreLineRiver : Dat151RelData
+    {
+        public uint Unk01 { get; set; }
+        public Vector4 Unk02 { get; set; }
+        public float Unk03 { get; set; }
+        public uint Unk04 { get; set; }
+        public uint Unk05 { get; set; }
+        public uint Unk06 { get; set; }
+        public uint PointsCount { get; set; }
+        public Vector3[] Points { get; set; }
+
+        public Dat151ShoreLineRiver(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadUInt32();
+            Unk02 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk03 = br.ReadSingle();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            PointsCount = br.ReadUInt32();
+
+            var points = new Vector3[PointsCount];
+            for (int i = 0; i < PointsCount; i++)
+            {
+                points[i] = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            }
+            Points = points;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151ShoreLineOcean : Dat151RelData
+    {
+        public uint Unk01 { get; set; }
+        public Vector4 Unk02 { get; set; }
+        public float Unk03 { get; set; }
+        public uint Unk04 { get; set; }
+        public MetaHash Unk05 { get; set; }
+        public float Unk06 { get; set; }
+        public float Unk07 { get; set; }
+        public float Unk08 { get; set; }
+        public float Unk09 { get; set; }
+        public float Unk10 { get; set; }
+        public float Unk11 { get; set; }
+        public float Unk12 { get; set; }
+        public uint PointsCount { get; set; }
+        public Vector2[] Points { get; set; }
+
+        public Dat151ShoreLineOcean(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadUInt32();
+            Unk02 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Unk03 = br.ReadSingle();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadSingle();
+            Unk07 = br.ReadSingle();
+            Unk08 = br.ReadSingle();
+            Unk09 = br.ReadSingle();
+            Unk10 = br.ReadSingle();
+            Unk11 = br.ReadSingle();
+            Unk12 = br.ReadSingle();
+
+            PointsCount = br.ReadUInt32();
+
+            var points = new Vector2[PointsCount];
+            for (int i = 0; i < PointsCount; i++)
+            {
+                points[i] = new Vector2(br.ReadSingle(), br.ReadSingle());
+            }
+            Points = points;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151ShoreLineList : Dat151RelData
+    {
+        public uint ShoreLineCount { get; set; }
+        public MetaHash[] ShoreLines { get; set; }
+
+        public Dat151ShoreLineList(RelData d, BinaryReader br) : base(d, br)
+        {
+            ShoreLineCount = br.ReadUInt32();
+            var shorelines = new MetaHash[ShoreLineCount];
+            for (int i = 0; i < ShoreLineCount; i++)
+            {
+                shorelines[i] = br.ReadUInt32();
+            }
+            ShoreLines = shorelines;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+    }
 
 
 

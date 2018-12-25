@@ -2216,11 +2216,14 @@ namespace CodeWalker.GameFiles
                         {
                             if (data.Length != rbfe.FileUncompressedSize)
                             { }
-                            if (data.Length != rel.RawFileData.Length)
+                            else if (data.Length != rel.RawFileData.Length)
                             { }
-                            for (int i = 0; i < data.Length; i++) //raw file test
-                                if (data[i] != rel.RawFileData[i])
-                                { }
+                            else
+                            {
+                                for (int i = 0; i < data.Length; i++) //raw file test
+                                    if (data[i] != rel.RawFileData[i])
+                                    { }
+                            }
                         }
 
 
