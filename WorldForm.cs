@@ -138,7 +138,8 @@ namespace CodeWalker
 
         bool renderaudiozones = false;
         bool renderaudioouterbounds = true;
-        List<AudioPlacement> renderaudzonelist = new List<AudioPlacement>();
+        List<RelFile> renderaudfilelist = new List<RelFile>();
+        List<AudioPlacement> renderaudplacementslist = new List<AudioPlacement>();
 
         bool MapViewEnabled = false;
         int MapViewDragX = 0;
@@ -850,16 +851,16 @@ namespace CodeWalker
         {
             if (!audiozones.Inited) return;
 
-            renderaudzonelist.Clear();
-            for (int i = 0; i < audiozones.AllItems.Count; i++)
-            {
-                renderaudzonelist.Add(audiozones.AllItems[i]);
-            }
+            renderaudfilelist.Clear();
+            renderaudfilelist.AddRange(audiozones.AllFiles);
 
             if (ProjectForm != null)
             {
-                ProjectForm.GetVisibleAudioPlacements(camera, renderaudzonelist);
+                ProjectForm.GetVisibleAudioFiles(camera, renderaudfilelist);
             }
+
+            renderaudplacementslist.Clear();
+            audiozones.GetPlacements(renderaudfilelist, renderaudplacementslist);
 
 
             //RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(audiozones);
@@ -881,9 +882,9 @@ namespace CodeWalker
             MapBox mb = new MapBox();
             MapSphere ms = new MapSphere();
 
-            for (int i = 0; i < renderaudzonelist.Count; i++)
+            for (int i = 0; i < renderaudplacementslist.Count; i++)
             {
-                var placement = renderaudzonelist[i];
+                var placement = renderaudplacementslist[i];
                 switch (placement.Shape)
                 {
                     case Dat151ZoneShape.Box:
@@ -1867,6 +1868,11 @@ namespace CodeWalker
             {
                 Renderer.Invalidate(grassBatch);
             }
+        }
+
+        public void UpdateAudioPlacementGraphics(RelFile rel)
+        {
+            audiozones.PlacementsDict.Remove(rel); //should cause a rebuild to add/remove items
         }
 
 

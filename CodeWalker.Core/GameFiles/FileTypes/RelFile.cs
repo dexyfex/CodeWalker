@@ -239,6 +239,8 @@ namespace CodeWalker.GameFiles
 
             //BuildWavesMaps();
 
+
+            Loaded = true;
         }
 
 
@@ -637,6 +639,29 @@ namespace CodeWalker.GameFiles
         {
             //TODO!
             //need to do this before building the data block since nametable offsets are in there!
+
+
+
+
+
+
+            if (NameTable != null)
+            {
+                NameTableCount = (uint)NameTable.Length;
+                uint ntlength = 4 + (4 * NameTableCount);
+                foreach (var name in NameTable)
+                {
+                    ntlength += (uint)name.Length + 1;
+                }
+                NameTableLength = ntlength;
+            }
+            else
+            {
+                NameTableCount = 0;
+                NameTableLength = 4;
+            }
+
+
         }
         private void BuildDataBlock()
         {
@@ -671,13 +696,13 @@ namespace CodeWalker.GameFiles
 
                 var rd = RelDatasSorted[i];
 
-                switch ((Dat151RelType)rd.TypeID)
+                switch ((Dat151RelType)rd.TypeID)//must be a better way of doing this!
                 {
                     case Dat151RelType.AmbientEmitter:
                     case Dat151RelType.AmbientZone:
                     case Dat151RelType.Unk101:
                     case Dat151RelType.Unk35:
-                        while ((ms.Position & 0xF) != 0) bw.Write((byte)0); //pad up to nearest 16 bytes
+                        while ((ms.Position & 0xF) != 0) bw.Write((byte)0); //align to nearest 16 bytes
                         break;
                     case Dat151RelType.Mood:
                     case Dat151RelType.Unk70:
@@ -717,6 +742,7 @@ namespace CodeWalker.GameFiles
 
             DataBlock = buf;
 
+            DataLength = (uint)(DataBlock?.Length ?? 0);
         }
         private void BuildIndex()
         {
@@ -750,7 +776,16 @@ namespace CodeWalker.GameFiles
             //{ }
 
             IndexHashes = hashes;
+            //IndexCount = (uint)hashes.Length;
 
+            if ((RelType == RelDatFileType.Dat4) && (NameTableLength == 4))
+            {
+                IndexCount = (uint)(IndexStrings?.Length ?? 0);
+            }
+            else
+            {
+                IndexCount = (uint)(IndexHashes?.Length ?? 0);
+            }
         }
         private void BuildHashTable()
         {
@@ -787,11 +822,16 @@ namespace CodeWalker.GameFiles
             {
                 HashTableOffsets = null;
             }
+
+            HashTableCount = (uint)(HashTableOffsets?.Length ?? 0);
         }
         private void BuildPackTable()
         {
             //TODO
+
+            PackTableCount = (uint)(PackTableOffsets?.Length ?? 0);
         }
+
 
 
         private void BuildHashMaps()
@@ -881,7 +921,6 @@ namespace CodeWalker.GameFiles
 
 
         }
-
         public struct HashesMapKey
         {
             public RelDatFileType FileType { get; set; }
@@ -947,50 +986,13 @@ namespace CodeWalker.GameFiles
 
         public byte[] Save()
         {
-
-            //build DataBlock
-            //update DataLength
-            //update NameTableCount
-            //update NameTableLength
-            //update IndexStrings/IndexHashes
-            //update IndexCount
-            //update HashTableOffsets (and hashes?)
-            //update HashTableCount
-            //update PackTableOffsets
-            //update PackTableCount
-
+            
             BuildNameTable();
             BuildDataBlock();
             BuildIndex();
             BuildHashTable();
             BuildPackTable();
 
-            DataLength = (uint)(DataBlock?.Length ?? 0);
-            if (NameTable != null)
-            {
-                NameTableCount = (uint)NameTable.Length;
-                uint ntlength = 4 + (4 * NameTableCount);
-                foreach (var name in NameTable)
-                {
-                    ntlength += (uint)name.Length + 1;
-                }
-                NameTableLength = ntlength;
-            }
-            else
-            {
-                NameTableCount = 0;
-                NameTableLength = 4;
-            }
-            if ((RelType == RelDatFileType.Dat4) && (NameTableLength == 4))
-            {
-                IndexCount = (uint)(IndexStrings?.Length ?? 0);
-            }
-            else
-            {
-                IndexCount = (uint)(IndexHashes?.Length ?? 0);
-            }
-            HashTableCount = (uint)(HashTableOffsets?.Length ?? 0);
-            PackTableCount = (uint)(PackTableOffsets?.Length ?? 0);
 
 
 
@@ -1089,11 +1091,49 @@ namespace CodeWalker.GameFiles
 
 
 
-        public void AddRelData(RelData d) //TODO!!!
+        public void AddRelData(RelData d)
         {
+            var newRelDatas = new List<RelData>();
+            var newRelDatasSorted = new List<RelData>();
+
+            newRelDatas.AddRange(RelDatas);
+            newRelDatasSorted.AddRange(RelDatasSorted);
+
+            newRelDatas.Add(d);
+            newRelDatasSorted.Add(d);
+
+            RelDatas = newRelDatas.ToArray();
+            RelDatasSorted = newRelDatasSorted.ToArray();
+            //RelDataDict[d.NameHash] = d;
         }
-        public bool RemoveRelData(RelData d) //TODO!!!
+        public bool RemoveRelData(RelData d)
         {
+            var newRelDatas = new List<RelData>();
+            var newRelDatasSorted = new List<RelData>();
+
+            foreach (var relData in RelDatas)
+            {
+                if (relData != d)
+                {
+                    newRelDatas.Add(relData);
+                }
+            }
+            foreach (var relData in RelDatasSorted)
+            {
+                if (relData != d)
+                {
+                    newRelDatasSorted.Add(relData);
+                }
+            }
+
+            if (newRelDatas.Count < RelDatas.Length)
+            {
+                RelDatas = newRelDatas.ToArray();
+                RelDatasSorted = newRelDatasSorted.ToArray();
+                RelDataDict.Remove(d.NameHash);
+                return true;
+            }
+
             return false;
         }
 
@@ -2594,9 +2634,9 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat151AmbientZone : Dat151RelData
     {
-        public FlagsUint Flags00 { get; set; }
+        public FlagsUint Flags0 { get; set; }
         public Dat151ZoneShape Shape { get; set; }
-        public FlagsUint Flags02 { get; set; }
+        public FlagsUint Flags1 { get; set; }
         public Vector3 OuterPos { get; set; }
         public float Unused01 { get; set; }
         public Vector3 OuterSize { get; set; }
@@ -2613,11 +2653,10 @@ namespace CodeWalker.GameFiles
         public Vector4 InnerVec2 { get; set; }
         public uint InnerAngle { get; set; }
         public Vector3 InnerVec3 { get; set; }
-        public Vector4 Vec11 { get; set; }
-        public Vector4 Vec12 { get; set; }
-        public Vector4 Vec13 { get; set; }
-
-        public FlagsUint Flags05 { get; set; }
+        public Vector4 UnkVec1 { get; set; }
+        public Vector4 UnkVec2 { get; set; }
+        public Vector4 UnkVec3 { get; set; }
+        public FlagsUint Flags2 { get; set; }
         public byte Unk14 { get; set; }
         public byte Unk15 { get; set; }
         public byte HashesCount { get; set; }
@@ -2648,11 +2687,16 @@ namespace CodeWalker.GameFiles
 
 
 
+        public Dat151AmbientZone(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.AmbientZone;
+            TypeID = (byte)Type;
+        }
         public Dat151AmbientZone(RelData d, BinaryReader br) : base(d, br)
         {
-            Flags00 = br.ReadUInt32();
+            Flags0 = br.ReadUInt32();
             Shape = (Dat151ZoneShape)br.ReadUInt32();
-            Flags02 = br.ReadUInt32();
+            Flags1 = br.ReadUInt32();
             OuterPos = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unused01 = br.ReadSingle();
             OuterSize = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
@@ -2669,11 +2713,11 @@ namespace CodeWalker.GameFiles
             InnerVec2 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             InnerAngle = br.ReadUInt32();//###
             InnerVec3 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Vec11 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Vec12 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Vec13 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkVec1 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkVec2 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkVec3 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
 
-            Flags05 = br.ReadUInt32();
+            Flags2 = br.ReadUInt32();
             Unk14 = br.ReadByte();
             Unk15 = br.ReadByte();
             HashesCount = br.ReadByte();
@@ -2725,13 +2769,13 @@ namespace CodeWalker.GameFiles
             { }//no hit
             if (Shape != 0)
             { }//eg 1, 2
-            if (Flags02.Value != 0)
+            if (Flags1.Value != 0)
             { }//no hit
             if (OuterAngle > 360)
             { }//no hit
             if (InnerAngle > 360)
             { }//no hit
-            if (Flags05.Value != 0)
+            if (Flags2.Value != 0)
             { }//eg 0xAE64583B, 0x61083310, 0xCAE96294, 0x1C376176
 
             #endregion
@@ -2742,9 +2786,9 @@ namespace CodeWalker.GameFiles
             //base.Write(bw);
             WriteTypeAndOffset(bw);
 
-            bw.Write(Flags00.Value);
+            bw.Write(Flags0.Value);
             bw.Write((uint)Shape);
-            bw.Write(Flags02.Value);
+            bw.Write(Flags1.Value);
             bw.Write(OuterPos.X);
             bw.Write(OuterPos.Y);
             bw.Write(OuterPos.Z);
@@ -2785,20 +2829,20 @@ namespace CodeWalker.GameFiles
             bw.Write(InnerVec3.X);
             bw.Write(InnerVec3.Y);
             bw.Write(InnerVec3.Z);
-            bw.Write(Vec11.X);
-            bw.Write(Vec11.Y);
-            bw.Write(Vec11.Z);
-            bw.Write(Vec11.W);
-            bw.Write(Vec12.X);
-            bw.Write(Vec12.Y);
-            bw.Write(Vec12.Z);
-            bw.Write(Vec12.W);
-            bw.Write(Vec13.X);
-            bw.Write(Vec13.Y);
-            bw.Write(Vec13.Z);
-            bw.Write(Vec13.W);
+            bw.Write(UnkVec1.X);
+            bw.Write(UnkVec1.Y);
+            bw.Write(UnkVec1.Z);
+            bw.Write(UnkVec1.W);
+            bw.Write(UnkVec2.X);
+            bw.Write(UnkVec2.Y);
+            bw.Write(UnkVec2.Z);
+            bw.Write(UnkVec2.W);
+            bw.Write(UnkVec3.X);
+            bw.Write(UnkVec3.Y);
+            bw.Write(UnkVec3.Z);
+            bw.Write(UnkVec3.W);
 
-            bw.Write(Flags05.Value);
+            bw.Write(Flags2.Value);
             bw.Write(Unk14);
             bw.Write(Unk15);
             bw.Write(HashesCount);

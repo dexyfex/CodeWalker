@@ -25,6 +25,7 @@ namespace CodeWalker.Project.Panels
         public void SetEmitterList(Dat151AmbientEmitterList list)
         {
             CurrentEmitterList = list;
+            Tag = list;
             UpdateFormTitle();
         }
 

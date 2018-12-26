@@ -27,6 +27,8 @@ namespace CodeWalker.Forms
         }
         public string FilePath { get; set; }
 
+        private RelFile CurrentFile { get; set; }
+
 
 
         public RelForm()
@@ -54,6 +56,8 @@ namespace CodeWalker.Forms
             UpdateFormTitle();
 
             RelPropertyGrid.SelectedObject = rel;
+
+            CurrentFile = rel;
 
 
             StringBuilder sb = new StringBuilder();
@@ -100,9 +104,85 @@ namespace CodeWalker.Forms
 
         }
 
+
+        private void Search()
+        {
+            SearchResultsGrid.SelectedObject = null;
+
+            if (CurrentFile?.RelDatasSorted == null) return;
+
+
+            bool textsearch = SearchTextRadio.Checked;
+            var text = SearchTextBox.Text;
+            var textl = text.ToLowerInvariant();
+
+            uint hash = 0;
+            uint hashl = 0;
+            if (!uint.TryParse(text, out hash))//don't re-hash hashes
+            {
+                hash = JenkHash.GenHash(text);
+                JenkIndex.Ensure(text);
+                hashl = JenkHash.GenHash(textl);
+                JenkIndex.Ensure(textl);
+            }
+            else
+            {
+                hashl = hash;
+            }
+
+
+            var results = new List<RelData>();
+
+            foreach (var rd in CurrentFile.RelDatasSorted)
+            {
+                if (textsearch)
+                {
+                    if (((rd.Name?.ToLowerInvariant().Contains(textl))??false) || (rd.NameHash == hash) || (rd.NameHash == hashl) ||
+                        (rd.NameHash.ToString().ToLowerInvariant().Contains(textl)))
+                    {
+                        results.Add(rd);
+                    }
+                }
+                else
+                {
+                    if ((rd.NameHash == hash)||(rd.NameHash == hashl))
+                    {
+                        SearchResultsGrid.SelectedObject = rd;
+                        return;
+                    }
+                }
+            }
+
+            if (textsearch && (results.Count > 0))
+            {
+                SearchResultsGrid.SelectedObject = results.ToArray();
+            }
+            else
+            {
+                SearchResultsGrid.SelectedObject = null;
+            }
+
+
+
+        }
+
+
         private void CloseButton_Click(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void SearchButton_Click(object sender, EventArgs e)
+        {
+            Search();
+        }
+
+        private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                Search();
+            }
         }
     }
 }

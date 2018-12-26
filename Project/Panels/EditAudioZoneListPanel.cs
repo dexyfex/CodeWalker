@@ -16,6 +16,9 @@ namespace CodeWalker.Project.Panels
         public ProjectForm ProjectForm;
         public Dat151AmbientZoneList CurrentZoneList { get; set; }
 
+        private bool populatingui = false;
+
+
         public EditAudioZoneListPanel(ProjectForm owner)
         {
             ProjectForm = owner;
@@ -25,7 +28,9 @@ namespace CodeWalker.Project.Panels
         public void SetZoneList(Dat151AmbientZoneList list)
         {
             CurrentZoneList = list;
+            Tag = list;
             UpdateFormTitle();
+            UpdateUI();
         }
 
         private void UpdateFormTitle()
@@ -33,5 +38,80 @@ namespace CodeWalker.Project.Panels
             Text = CurrentZoneList?.NameHash.ToString() ?? "";
         }
 
+        private void UpdateUI()
+        {
+
+            if (CurrentZoneList == null)
+            {
+                //AddToProjectButton.Enabled = false;
+                //DeleteButton.Enabled = false;
+
+                populatingui = true;
+                HashesTextBox.Text = string.Empty;
+                populatingui = false;
+            }
+            else
+            {
+                //AddToProjectButton.Enabled = CurrentZoneList?.Rel != null ? !ProjectForm.AudioFileExistsInProject(CurrentZoneList.Rel) : false;
+                //DeleteButton.Enabled = !AddToProjectButton.Enabled;
+
+                populatingui = true;
+                var zl = CurrentZoneList;
+
+                StringBuilder sb = new StringBuilder();
+                if (zl.ZoneHashes != null)
+                {
+                    foreach (var hash in zl.ZoneHashes)
+                    {
+                        sb.AppendLine(hash.ToString());
+                    }
+                }
+                HashesTextBox.Text = sb.ToString();
+
+
+                populatingui = false;
+
+
+            }
+
+        }
+
+
+        private void ProjectItemChanged()
+        {
+            if (CurrentZoneList?.Rel != null)
+            {
+                ProjectForm.SetAudioFileHasChanged(true);
+            }
+        }
+
+
+
+        private void HashesTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZoneList == null) return;
+
+            var hashstrs = HashesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            if (hashstrs?.Length > 0)
+            {
+                var hashlist = new List<MetaHash>();
+                foreach (var hashstr in hashstrs)
+                {
+                    uint hash = 0;
+                    if (!uint.TryParse(hashstr, out hash))//don't re-hash hashes
+                    {
+                        hash = JenkHash.GenHash(hashstr);
+                        JenkIndex.Ensure(hashstr);
+                    }
+                    hashlist.Add(hash);
+                }
+
+                CurrentZoneList.ZoneHashes = hashlist.ToArray();
+                CurrentZoneList.ZoneCount = (byte)hashlist.Count;
+
+                ProjectItemChanged();
+            }
+        }
     }
 }

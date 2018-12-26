@@ -79,6 +79,7 @@ namespace CodeWalker.Project
         private Dictionary<string, TrainTrack> visibletrains = new Dictionary<string, TrainTrack>();
         private Dictionary<string, YmtFile> visiblescenarios = new Dictionary<string, YmtFile>();
         private Dictionary<uint, YmapEntityDef> visiblemloentities = new Dictionary<uint, YmapEntityDef>();
+        private Dictionary<uint, RelFile> visibleaudiofiles = new Dictionary<uint, RelFile>();
 
         private bool ShowProjectItemInProcess = false;
 
@@ -1140,6 +1141,10 @@ namespace CodeWalker.Project
             {
                 SaveScenario();
             }
+            else if (CurrentAudioFile != null)
+            {
+                SaveAudioFile();
+            }
             else if (CurrentProjectFile != null)
             {
                 SaveProject();
@@ -1221,6 +1226,18 @@ namespace CodeWalker.Project
                     //ShowEditScenarioPanel(false);
                 }
 
+                if (CurrentProjectFile.AudioRelFiles != null)
+                {
+                    var caudf = CurrentAudioFile;
+                    foreach (var audf in CurrentProjectFile.AudioRelFiles)
+                    {
+                        CurrentAudioFile = audf;
+                        SaveAudioFile();
+                    }
+                    CurrentAudioFile = caudf;
+                    //ShowEditAudioFilePanel(false);
+                }
+
 
                 SaveProject();
             }
@@ -1250,6 +1267,10 @@ namespace CodeWalker.Project
             else if (CurrentScenario != null)
             {
                 SaveScenario(saveas);
+            }
+            else if (CurrentAudioFile != null)
+            {
+                SaveAudioFile(saveas);
             }
         }
 
@@ -4493,13 +4514,124 @@ namespace CodeWalker.Project
             return CurrentProjectFile.ContainsAudioRel(rel);
         }
 
-        public void NewAudioZone(AudioPlacement copy = null, bool copyPosition = false) //TODO
+        public void NewAudioZone(AudioPlacement copy = null, bool copyPosition = false)
         {
-            MessageBox.Show("NewAudioZone TODO!");
+            if (CurrentAudioFile == null) return;
+
+            if (copy == null)
+            {
+                copy = CurrentAudioZone;
+            }
+
+
+            var zone = new Dat151AmbientZone(CurrentAudioFile);
+            var ap = new AudioPlacement(CurrentAudioFile, zone);
+
+            bool cp = copyPosition && (copy != null);
+            Vector3 pos = cp ? copy.Position : GetSpawnPos(20.0f);
+            Quaternion ori = cp ? copy.Orientation : Quaternion.Identity;
+            ap.SetPosition(pos);
+            ap.SetOrientation(ori);
+
+            //AA800424 box, line
+            //AA800420 sphere
+            zone.Flags0 = cp ? copy.AudioZone.Flags0 : 0xAA800424;
+            zone.Flags1 = cp ? copy.AudioZone.Flags1 : 0;
+            zone.Flags2 = cp ? copy.AudioZone.Flags2 : 0;
+            zone.Shape = cp ? copy.AudioZone.Shape : Dat151ZoneShape.Box;
+            zone.InnerSize = cp ? copy.AudioZone.InnerSize : Vector3.One * 10.0f;
+            zone.InnerAngle = cp ? copy.AudioZone.InnerAngle : 0;
+            zone.InnerVec1 = cp ? copy.AudioZone.InnerVec1 : Vector4.Zero;
+            zone.InnerVec2 = cp ? copy.AudioZone.InnerVec2 : new Vector4(1, 1, 1, 0);
+            zone.InnerVec3 = cp ? copy.AudioZone.InnerVec3 : Vector3.Zero;
+            zone.OuterSize = cp ? copy.AudioZone.OuterSize : Vector3.One * 15.0f;
+            zone.OuterAngle = cp ? copy.AudioZone.OuterAngle : 0;
+            zone.OuterVec1 = cp ? copy.AudioZone.OuterVec1 : Vector4.Zero;
+            zone.OuterVec2 = cp ? copy.AudioZone.OuterVec2 : new Vector4(1, 1, 1, 0);
+            zone.OuterVec3 = cp ? copy.AudioZone.OuterVec3 : Vector3.Zero;
+            zone.UnkVec1 = cp ? copy.AudioZone.UnkVec1 : new Vector4(0, 0, 1, 0);
+            zone.UnkVec2 = cp ? copy.AudioZone.UnkVec2 : new Vector4(1, -1, -1, 0);
+            zone.UnkVec3 = cp ? copy.AudioZone.UnkVec3 : new Vector4(0, 0, -1, 0);
+            zone.Unk14 = cp ? copy.AudioZone.Unk14 : (byte)0;
+            zone.Unk15 = cp ? copy.AudioZone.Unk15 : (byte)0;
+            zone.Unk16 = cp ? copy.AudioZone.Unk16 : (byte)0;
+            zone.HashesCount = cp ? copy.AudioZone.HashesCount: (byte)0;
+            zone.Hashes = cp ? copy.AudioZone.Hashes : null;
+            zone.ExtParamsCount = cp ? copy.AudioZone.ExtParamsCount : 0;
+            zone.ExtParams = cp ? copy.AudioZone.ExtParams : null;
+            zone.Name = "zone1";
+            zone.NameHash = JenkHash.GenHash(zone.Name);
+            ap.Name = zone.Name;
+            ap.NameHash = zone.NameHash;
+
+
+
+            CurrentAudioFile.AddRelData(zone);
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectAudioZoneTreeNode(ap);
+            CurrentAudioZone = ap;
+            
+            ShowEditAudioZonePanel(false);
+
+
+            if (WorldForm != null)
+            {
+                WorldForm.UpdateAudioPlacementGraphics(CurrentAudioFile);
+            }
         }
-        public bool DeleteAudioZone() //TODO
+        public bool DeleteAudioZone()
         {
-            return false;
+            if (CurrentAudioZone?.RelFile != CurrentAudioFile) return false;
+            if (CurrentAudioFile?.RelDatas == null) return false; //nothing to delete..
+            if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
+            if (CurrentAudioZone?.AudioZone == null) return false;
+
+
+            if (MessageBox.Show("Are you sure you want to delete this audio zone?\n" + CurrentAudioZone.GetNameString() + "\n" + CurrentAudioZone.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentAudioFile.RemoveRelData(CurrentAudioZone.AudioZone);
+
+                    WorldForm.UpdateAudioPlacementGraphics(CurrentAudioFile);
+                }
+            }
+            else
+            {
+                res = CurrentAudioFile.RemoveRelData(CurrentAudioZone.AudioZone);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unspecified error occurred when removing the audio zone from the file!");
+            }
+
+            var delzone = CurrentAudioZone;
+            var delrel = CurrentAudioFile;
+
+            //ProjectExplorer?.RemoveAudioZoneTreeNode(delzone);
+            ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
+
+            ClosePanel((EditAudioZonePanel p) => { return p.Tag == delzone; });
+
+            CurrentAudioZone = null;
+
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot)
+                {
+                    WorldForm.SelectItem(null);
+                }
+            }
+
+            return true;
         }
         public bool IsCurrentAudioZone(AudioPlacement zone)
         {
@@ -4510,9 +4642,57 @@ namespace CodeWalker.Project
         {
             MessageBox.Show("NewAudioEmitter TODO!");
         }
-        public bool DeleteAudioEmitter() //TODO
+        public bool DeleteAudioEmitter()
         {
-            return false;
+            if (CurrentAudioEmitter?.RelFile != CurrentAudioFile) return false;
+            if (CurrentAudioFile?.RelDatas == null) return false; //nothing to delete..
+            if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
+            if (CurrentAudioEmitter?.AudioEmitter == null) return false;
+
+
+            if (MessageBox.Show("Are you sure you want to delete this audio emitter?\n" + CurrentAudioEmitter.GetNameString() + "\n" + CurrentAudioEmitter.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentAudioFile.RemoveRelData(CurrentAudioEmitter.AudioEmitter);
+                    
+                    WorldForm.UpdateAudioPlacementGraphics(CurrentAudioFile);
+                }
+            }
+            else
+            {
+                res = CurrentAudioFile.RemoveRelData(CurrentAudioEmitter.AudioEmitter);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unspecified error occurred when removing the audio emitter from the file!");
+            }
+
+            var delem = CurrentAudioEmitter;
+            var delrel = CurrentAudioFile;
+
+            //ProjectExplorer?.RemoveAudioEmitterTreeNode(delem);
+            ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
+
+            ClosePanel((EditAudioEmitterPanel p) => { return p.Tag == delem; });
+
+            CurrentAudioEmitter = null;
+
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot)
+                {
+                    WorldForm.SelectItem(null);
+                }
+            }
+
+            return true;
         }
         public bool IsCurrentAudioEmitter(AudioPlacement emitter)
         {
@@ -4523,9 +4703,47 @@ namespace CodeWalker.Project
         {
             MessageBox.Show("NewAudioZoneList TODO!");
         }
-        public bool DeleteAudioZoneList() //TODO
+        public bool DeleteAudioZoneList()
         {
-            return false;
+            if (CurrentAudioZoneList?.Rel != CurrentAudioFile) return false;
+            if (CurrentAudioFile?.RelDatas == null) return false; //nothing to delete..
+            if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
+
+
+            if (MessageBox.Show("Are you sure you want to delete this audio zone list?\n" + CurrentAudioZoneList.GetNameString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentAudioFile.RemoveRelData(CurrentAudioZoneList);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentAudioFile.RemoveRelData(CurrentAudioZoneList);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unspecified error occurred when removing the audio zone list from the file!");
+            }
+
+            var delzl = CurrentAudioZoneList;
+            var delrel = CurrentAudioFile;
+
+            ProjectExplorer?.RemoveAudioZoneListTreeNode(delzl);
+            ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
+
+            ClosePanel((EditAudioZoneListPanel p) => { return p.Tag == delzl; });
+
+            CurrentAudioZoneList = null;
+
+            return true;
         }
         public bool IsCurrentAudioZoneList(Dat151AmbientZoneList list)
         {
@@ -4536,9 +4754,47 @@ namespace CodeWalker.Project
         {
             MessageBox.Show("NewAudioEmitterList TODO!");
         }
-        public bool DeleteAudioEmitterList() //TODO
+        public bool DeleteAudioEmitterList()
         {
-            return false;
+            if (CurrentAudioEmitterList?.Rel != CurrentAudioFile) return false;
+            if (CurrentAudioFile?.RelDatas == null) return false; //nothing to delete..
+            if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
+
+
+            if (MessageBox.Show("Are you sure you want to delete this audio emitter list?\n" + CurrentAudioEmitterList.GetNameString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentAudioFile.RemoveRelData(CurrentAudioEmitterList);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentAudioFile.RemoveRelData(CurrentAudioEmitterList);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unspecified error occurred when removing the audio emitter list from the file!");
+            }
+
+            var delel = CurrentAudioEmitterList;
+            var delrel = CurrentAudioFile;
+
+            ProjectExplorer?.RemoveAudioEmitterListTreeNode(delel);
+            ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
+
+            ClosePanel((EditAudioEmitterListPanel p) => { return p.Tag == delel; });
+
+            CurrentAudioEmitterList = null;
+
+            return true;
         }
         public bool IsCurrentAudioEmitterList(Dat151AmbientEmitterList list)
         {
@@ -4747,27 +5003,38 @@ namespace CodeWalker.Project
             }
 
         }
-        public void GetVisibleAudioPlacements(Camera camera, List<AudioPlacement> placements)
+        public void GetVisibleAudioFiles(Camera camera, List<RelFile> rels)
         {
             if (hidegtavmap)
             {
-                placements.Clear();
+                rels.Clear();
             }
 
             if (CurrentProjectFile == null) return;
 
             lock (projectsyncroot)
             {
+                visibleaudiofiles.Clear();
+                for (int i = 0; i < rels.Count; i++)
+                {
+                    var rel = rels[i];
+                    visibleaudiofiles[rel.RpfFileEntry.NameHash] = rel;
+                }
 
                 for (int i = 0; i < CurrentProjectFile.AudioRelFiles.Count; i++)
                 {
-                    var auddat = CurrentProjectFile.AudioRelFiles[i];
-                    if (auddat.Loaded)
+                    var rel = CurrentProjectFile.AudioRelFiles[i];
+                    if (rel.Loaded)
                     {
-                        //TODO: create AudioPlacement objects for project audio files!
+                        visibleaudiofiles[rel.RpfFileEntry.NameHash] = rel;
                     }
                 }
 
+                rels.Clear();
+                foreach (var rel in visibleaudiofiles.Values)
+                {
+                    rels.Add(rel);
+                }
             }
 
 
@@ -6075,6 +6342,10 @@ namespace CodeWalker.Project
         {
             NewScenario();
         }
+        private void FileNewAudioDatMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioFile();
+        }
         private void FileOpenProjectMenu_Click(object sender, EventArgs e)
         {
             OpenProject();
@@ -6102,6 +6373,10 @@ namespace CodeWalker.Project
         private void FileOpenScenarioMenu_Click(object sender, EventArgs e)
         {
             OpenScenario();
+        }
+        private void FileOpenAudioDatMenu_Click(object sender, EventArgs e)
+        {
+            OpenAudioFile();
         }
         private void FileCloseProjectMenu_Click(object sender, EventArgs e)
         {

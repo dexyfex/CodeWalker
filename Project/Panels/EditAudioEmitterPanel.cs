@@ -25,6 +25,7 @@ namespace CodeWalker.Project.Panels
         public void SetEmitter(AudioPlacement emitter)
         {
             CurrentEmitter = emitter;
+            Tag = emitter;
             UpdateFormTitle();
         }
 

@@ -731,6 +731,7 @@ namespace CodeWalker.Project
             RelFile relfile = new RelFile();
             relfile.RpfFileEntry = new RpfResourceFileEntry();
             relfile.RpfFileEntry.Name = Path.GetFileName(filename);
+            relfile.RpfFileEntry.NameHash = JenkHash.GenHash(relfile.RpfFileEntry.Name);
             relfile.FilePath = GetFullFilePath(filename);
             relfile.Name = relfile.RpfFileEntry.Name;
             if (!AddAudioRelFile(relfile)) return null;

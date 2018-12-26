@@ -25,6 +25,7 @@ namespace CodeWalker.Project.Panels
         public void SetFile(RelFile file)
         {
             CurrentFile = file;
+            Tag = file;
             UpdateFormTitle();
         }
 

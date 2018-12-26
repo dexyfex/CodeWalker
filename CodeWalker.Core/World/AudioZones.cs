@@ -31,6 +31,8 @@ namespace CodeWalker.World
         public List<AudioPlacement> Emitters = new List<AudioPlacement>();
         public List<AudioPlacement> AllItems = new List<AudioPlacement>();
 
+        public List<RelFile> AllFiles = new List<RelFile>();
+        public Dictionary<RelFile, AudioPlacement[]> PlacementsDict = new Dictionary<RelFile, AudioPlacement[]>();
 
 
         public void Init(GameFileCache gameFileCache, Action<string> updateStatus)
@@ -67,23 +69,20 @@ namespace CodeWalker.World
                 }
             }
 
+            List<AudioPlacement> placements = new List<AudioPlacement>();
 
             foreach (var dat151entry in datrelentries.Values)
             {
                 var relfile = rpfman.GetFile<RelFile>(dat151entry);
                 if (relfile != null)
                 {
-                    foreach (var reldata in relfile.RelDatas)
-                    {
-                        if (reldata is Dat151AmbientZone)
-                        {
-                            Zones.Add(new AudioPlacement(relfile, reldata as Dat151AmbientZone));
-                        }
-                        else if (reldata is Dat151AmbientEmitter)
-                        {
-                            Emitters.Add(new AudioPlacement(relfile, reldata as Dat151AmbientEmitter));
-                        }
-                    }
+                    AllFiles.Add(relfile);
+
+                    placements.Clear();
+
+                    CreatePlacements(relfile, placements, true);
+
+                    PlacementsDict[relfile] = placements.ToArray();
                 }
             }
 
@@ -119,6 +118,49 @@ namespace CodeWalker.World
             }
         }
 
+        private void CreatePlacements(RelFile relfile, List<AudioPlacement> placements, bool addtoLists = false)
+        {
+            foreach (var reldata in relfile.RelDatas)
+            {
+                AudioPlacement placement = null;
+                if (reldata is Dat151AmbientZone)
+                {
+                    placement = new AudioPlacement(relfile, reldata as Dat151AmbientZone);
+                    if (addtoLists) Zones.Add(placement);
+                }
+                else if (reldata is Dat151AmbientEmitter)
+                {
+                    placement = new AudioPlacement(relfile, reldata as Dat151AmbientEmitter);
+                    if (addtoLists) Emitters.Add(placement);
+                }
+                if (placement != null)
+                {
+                    placements.Add(placement);
+                }
+            }
+        }
+
+
+        public void GetPlacements(List<RelFile> relfiles, List<AudioPlacement> placements)
+        {
+
+            foreach (var relfile in relfiles)
+            {
+                AudioPlacement[] fileplacements = null;
+                if (!PlacementsDict.TryGetValue(relfile, out fileplacements))
+                {
+                    List<AudioPlacement> newplacements = new List<AudioPlacement>();
+                    CreatePlacements(relfile, newplacements);
+                    fileplacements = newplacements.ToArray();
+                    PlacementsDict[relfile] = fileplacements;
+                }
+                if (fileplacements != null)
+                {
+                    placements.AddRange(fileplacements);
+                }
+            }
+
+        }
 
 
     }
@@ -157,11 +199,30 @@ namespace CodeWalker.World
         {
             RelFile = rel;
             AudioZone = zone;
-            Shape = zone.Shape;
             ShortTypeName = "AudioZone";
             FullTypeName = "Audio Zone";
+
+            UpdateFromZone();
+        }
+        public AudioPlacement(RelFile rel, Dat151AmbientEmitter emitter)
+        {
+            RelFile = rel;
+            AudioEmitter = emitter;
+            ShortTypeName = "AudioEmitter";
+            FullTypeName = "Audio Emitter";
+
+            UpdateFromEmitter();
+        }
+
+
+        public void UpdateFromZone()
+        {
+            if (AudioZone == null) return;
+            var zone = AudioZone;
+
             Name = zone.Name;
             NameHash = zone.NameHash;
+            Shape = zone.Shape;
 
             float deg2rad = (float)(Math.PI / 180.0);
 
@@ -205,16 +266,17 @@ namespace CodeWalker.World
             {
                 Position = InnerPos;
             }
+
         }
-        public AudioPlacement(RelFile rel, Dat151AmbientEmitter emitter)
+
+        public void UpdateFromEmitter()
         {
-            RelFile = rel;
-            AudioEmitter = emitter;
-            Shape = Dat151ZoneShape.Sphere;
-            ShortTypeName = "AudioEmitter";
-            FullTypeName = "Audio Emitter";
+            if (AudioEmitter == null) return;
+            var emitter = AudioEmitter;
+
             Name = emitter.Name;
             NameHash = emitter.NameHash;
+            Shape = Dat151ZoneShape.Sphere;
 
             Orientation = Quaternion.Identity;
             OrientationInv = Quaternion.Identity;
@@ -230,6 +292,7 @@ namespace CodeWalker.World
             }
             Position = InnerPos;
             HitSphereRad = InnerRad;// useouter ? OuterRad : InnerRad;
+
         }
 
 
@@ -240,16 +303,39 @@ namespace CodeWalker.World
             InnerPos = pos;
             OuterPos += delta;
             Position = useouter ? OuterPos : InnerPos;
+
+            if (AudioZone != null)
+            {
+                AudioZone.InnerPos = InnerPos;
+                AudioZone.OuterPos = OuterPos;
+            }
+            if (AudioEmitter != null)
+            {
+                AudioEmitter.Position = InnerPos;
+            }
         }
         public void SetOrientation(Quaternion ori)
         {
             Orientation = ori;
             OrientationInv = Quaternion.Invert(ori);
 
+            Vector3 t = ori.Multiply(Vector3.UnitX);
+            float angl = (float)Math.Atan2(t.Y, t.X);
+            while (angl < 0) angl += ((float)Math.PI * 2.0f);
+            float rad2deg = (float)(180.0 / Math.PI);
+            float dangl = angl * rad2deg;
+            uint uangl = (uint)dangl;
+
+
             if (InnerOri == OuterOri)
             {
                 InnerOri = Orientation;
                 OuterOri = Orientation;
+                if (AudioZone != null)
+                {
+                    AudioZone.InnerAngle = uangl;
+                    AudioZone.OuterAngle = uangl;
+                }
             }
             else
             {
@@ -259,10 +345,18 @@ namespace CodeWalker.World
                 if (useouter)
                 {
                     OuterOri = Orientation;
+                    if (AudioZone != null)
+                    {
+                        AudioZone.OuterAngle = uangl;
+                    }
                 }
                 else
                 {
                     InnerOri = Orientation;
+                    if (AudioZone != null)
+                    {
+                        AudioZone.InnerAngle = uangl;
+                    }
                 }
             }
         }

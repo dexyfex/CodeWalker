@@ -688,7 +688,7 @@ namespace CodeWalker
                 }
                 else if (Audio != null)
                 {
-                    return WidgetAxis.XYZ;
+                    return WidgetAxis.Z;
                 }
                 return WidgetAxis.None;
             }
