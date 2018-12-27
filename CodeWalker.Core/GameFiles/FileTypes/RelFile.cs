@@ -762,9 +762,20 @@ namespace CodeWalker.GameFiles
             }
 
 
-            //var sorted = RelDatasSorted.ToList();
+            //for the correct index ordering, needs to be in order of hashes, but with bits rotated right by 8 (why!?)
+            var sorted = RelDatasSorted.ToList();
             //sorted.Sort((a, b) => { return ((uint)a.NameHash).CompareTo((uint)b.NameHash); });
-            //RelDatas = sorted.ToArray();
+            sorted.Sort((a, b) => 
+            {
+                var ah = (uint)a.NameHash;
+                var bh = (uint)b.NameHash;
+                var av = (ah >> 8) | (ah << 24);
+                var bv = (bh >> 8) | (bh << 24);
+                return av.CompareTo(bv);
+            });
+            RelDatas = sorted.ToArray();
+
+
 
             var hashes = new RelIndexHash[RelDatas.Length];
             for (int i = 0; i < RelDatas.Length; i++)

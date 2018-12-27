@@ -2121,6 +2121,7 @@ namespace CodeWalker.GameFiles
 
             StringBuilder sb = new StringBuilder();
             StringBuilder sbh = new StringBuilder();
+            StringBuilder sbi = new StringBuilder();
 
             foreach (RpfFile rpf in RpfMan.AllRpfs)
             {
@@ -2222,7 +2223,7 @@ namespace CodeWalker.GameFiles
                             {
                                 for (int i = 0; i < data.Length; i++) //raw file test
                                     if (data[i] != rel.RawFileData[i])
-                                    { }
+                                    { break; }
                             }
                         }
 
@@ -2234,6 +2235,15 @@ namespace CodeWalker.GameFiles
                         { }
                         if (rel2.RelDatas == null)
                         { }
+
+
+
+                        //sbi.Clear();
+                        //foreach (var rd in rel.RelDatas)
+                        //{
+                        //    sbi.AppendLine(new FlagsUint(rd.NameHash).Bin);
+                        //}
+                        //string indexbinstr = sbi.ToString();
 
                     }
 
