@@ -31,6 +31,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditAudioZonePanel));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.label22 = new System.Windows.Forms.Label();
+            this.UnkBytesTextBox = new System.Windows.Forms.TextBox();
             this.DeleteButton = new System.Windows.Forms.Button();
             this.AddToProjectButton = new System.Windows.Forms.Button();
             this.label21 = new System.Windows.Forms.Label();
@@ -78,8 +80,6 @@
             this.label16 = new System.Windows.Forms.Label();
             this.InnerPosTextBox = new System.Windows.Forms.TextBox();
             this.GoToButton = new System.Windows.Forms.Button();
-            this.label22 = new System.Windows.Forms.Label();
-            this.UnkBytesTextBox = new System.Windows.Forms.TextBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.SuspendLayout();
@@ -154,13 +154,32 @@
             this.tabPage1.Text = "Ambient Zone";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // label22
+            // 
+            this.label22.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(327, 34);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(58, 13);
+            this.label22.TabIndex = 64;
+            this.label22.Text = "Unk bytes:";
+            // 
+            // UnkBytesTextBox
+            // 
+            this.UnkBytesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.UnkBytesTextBox.Location = new System.Drawing.Point(390, 31);
+            this.UnkBytesTextBox.Name = "UnkBytesTextBox";
+            this.UnkBytesTextBox.Size = new System.Drawing.Size(155, 20);
+            this.UnkBytesTextBox.TabIndex = 65;
+            this.UnkBytesTextBox.TextChanged += new System.EventHandler(this.UnkBytesTextBox_TextChanged);
+            // 
             // DeleteButton
             // 
             this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.DeleteButton.Location = new System.Drawing.Point(343, 3);
             this.DeleteButton.Name = "DeleteButton";
             this.DeleteButton.Size = new System.Drawing.Size(93, 23);
-            this.DeleteButton.TabIndex = 75;
+            this.DeleteButton.TabIndex = 77;
             this.DeleteButton.Text = "Delete zone";
             this.DeleteButton.UseVisualStyleBackColor = true;
             this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
@@ -171,7 +190,7 @@
             this.AddToProjectButton.Location = new System.Drawing.Point(452, 3);
             this.AddToProjectButton.Name = "AddToProjectButton";
             this.AddToProjectButton.Size = new System.Drawing.Size(93, 23);
-            this.AddToProjectButton.TabIndex = 74;
+            this.AddToProjectButton.TabIndex = 76;
             this.AddToProjectButton.Text = "Add to project";
             this.AddToProjectButton.UseVisualStyleBackColor = true;
             this.AddToProjectButton.Click += new System.EventHandler(this.AddToProjectButton_Click);
@@ -183,7 +202,7 @@
             this.label21.Location = new System.Drawing.Point(340, 106);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(44, 13);
-            this.label21.TabIndex = 68;
+            this.label21.TabIndex = 70;
             this.label21.Text = "Flags 2:";
             // 
             // Flags2TextBox
@@ -192,7 +211,7 @@
             this.Flags2TextBox.Location = new System.Drawing.Point(390, 103);
             this.Flags2TextBox.Name = "Flags2TextBox";
             this.Flags2TextBox.Size = new System.Drawing.Size(155, 20);
-            this.Flags2TextBox.TabIndex = 69;
+            this.Flags2TextBox.TabIndex = 71;
             this.Flags2TextBox.TextChanged += new System.EventHandler(this.Flags2TextBox_TextChanged);
             // 
             // label20
@@ -202,7 +221,7 @@
             this.label20.Location = new System.Drawing.Point(340, 278);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(193, 13);
-            this.label20.TabIndex = 72;
+            this.label20.TabIndex = 74;
             this.label20.Text = "Ext params:   Name (hash), Value (float)";
             // 
             // ExtParamsTextBox
@@ -213,7 +232,7 @@
             this.ExtParamsTextBox.Name = "ExtParamsTextBox";
             this.ExtParamsTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.ExtParamsTextBox.Size = new System.Drawing.Size(209, 116);
-            this.ExtParamsTextBox.TabIndex = 73;
+            this.ExtParamsTextBox.TabIndex = 75;
             this.ExtParamsTextBox.WordWrap = false;
             this.ExtParamsTextBox.TextChanged += new System.EventHandler(this.ExtParamsTextBox_TextChanged);
             // 
@@ -224,7 +243,7 @@
             this.label19.Location = new System.Drawing.Point(340, 134);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(46, 13);
-            this.label19.TabIndex = 70;
+            this.label19.TabIndex = 72;
             this.label19.Text = "Hashes:";
             // 
             // label15
@@ -292,7 +311,7 @@
             this.HashesTextBox.Name = "HashesTextBox";
             this.HashesTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.HashesTextBox.Size = new System.Drawing.Size(209, 116);
-            this.HashesTextBox.TabIndex = 71;
+            this.HashesTextBox.TabIndex = 73;
             this.HashesTextBox.WordWrap = false;
             this.HashesTextBox.TextChanged += new System.EventHandler(this.HashesTextBox_TextChanged);
             // 
@@ -303,7 +322,7 @@
             this.label14.Location = new System.Drawing.Point(340, 82);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(44, 13);
-            this.label14.TabIndex = 66;
+            this.label14.TabIndex = 68;
             this.label14.Text = "Flags 1:";
             // 
             // Flags1TextBox
@@ -312,7 +331,7 @@
             this.Flags1TextBox.Location = new System.Drawing.Point(390, 79);
             this.Flags1TextBox.Name = "Flags1TextBox";
             this.Flags1TextBox.Size = new System.Drawing.Size(155, 20);
-            this.Flags1TextBox.TabIndex = 67;
+            this.Flags1TextBox.TabIndex = 69;
             this.Flags1TextBox.TextChanged += new System.EventHandler(this.Flags1TextBox_TextChanged);
             // 
             // label13
@@ -322,7 +341,7 @@
             this.label13.Location = new System.Drawing.Point(340, 58);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(44, 13);
-            this.label13.TabIndex = 64;
+            this.label13.TabIndex = 66;
             this.label13.Text = "Flags 0:";
             // 
             // Flags0TextBox
@@ -331,7 +350,7 @@
             this.Flags0TextBox.Location = new System.Drawing.Point(390, 55);
             this.Flags0TextBox.Name = "Flags0TextBox";
             this.Flags0TextBox.Size = new System.Drawing.Size(155, 20);
-            this.Flags0TextBox.TabIndex = 65;
+            this.Flags0TextBox.TabIndex = 67;
             this.Flags0TextBox.TextChanged += new System.EventHandler(this.Flags0TextBox_TextChanged);
             // 
             // ShapeComboBox
@@ -614,25 +633,6 @@
             this.GoToButton.Text = "Go to";
             this.GoToButton.UseVisualStyleBackColor = true;
             this.GoToButton.Click += new System.EventHandler(this.GoToButton_Click);
-            // 
-            // label22
-            // 
-            this.label22.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(327, 34);
-            this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(58, 13);
-            this.label22.TabIndex = 76;
-            this.label22.Text = "Unk bytes:";
-            // 
-            // UnkBytesTextBox
-            // 
-            this.UnkBytesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.UnkBytesTextBox.Location = new System.Drawing.Point(390, 31);
-            this.UnkBytesTextBox.Name = "UnkBytesTextBox";
-            this.UnkBytesTextBox.Size = new System.Drawing.Size(155, 20);
-            this.UnkBytesTextBox.TabIndex = 77;
-            this.UnkBytesTextBox.TextChanged += new System.EventHandler(this.UnkBytesTextBox_TextChanged);
             // 
             // EditAudioZonePanel
             // 

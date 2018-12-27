@@ -58,7 +58,7 @@ namespace CodeWalker.GameFiles
         Dat54DataEntries = 54,
         Dat149 = 149,
         Dat150 = 150,
-        Dat151Parameters = 151
+        Dat151 = 151
     }
 
     [TC(typeof(EXP))] public class RelFile : GameFile, PackedFile
@@ -417,7 +417,7 @@ namespace CodeWalker.GameFiles
                         return ReadData149(d, dbr);
                     case RelDatFileType.Dat150: //game.dat150.rel
                         return ReadData150(d, dbr);
-                    case RelDatFileType.Dat151Parameters: //game.dat151.rel
+                    case RelDatFileType.Dat151: //game.dat151.rel
                         return ReadData151(d, dbr);
                     default:
                         return d; //shouldn't get here...
@@ -673,7 +673,7 @@ namespace CodeWalker.GameFiles
             {
                 case RelDatFileType.Dat149:
                 case RelDatFileType.Dat150:
-                case RelDatFileType.Dat151Parameters:
+                case RelDatFileType.Dat151:
                     break;
                 case RelDatFileType.Dat4://TODO!
                 case RelDatFileType.Dat54DataEntries://TODO!
@@ -753,7 +753,7 @@ namespace CodeWalker.GameFiles
             {
                 case RelDatFileType.Dat149:
                 case RelDatFileType.Dat150:
-                case RelDatFileType.Dat151Parameters:
+                case RelDatFileType.Dat151:
                     break;
                 case RelDatFileType.Dat4://TODO!
                 case RelDatFileType.Dat54DataEntries://TODO!
@@ -806,7 +806,7 @@ namespace CodeWalker.GameFiles
             {
                 case RelDatFileType.Dat149:
                 case RelDatFileType.Dat150:
-                case RelDatFileType.Dat151Parameters:
+                case RelDatFileType.Dat151:
                     break;
                 case RelDatFileType.Dat4://TODO!
                 case RelDatFileType.Dat54DataEntries://TODO!
@@ -854,8 +854,8 @@ namespace CodeWalker.GameFiles
             {
                 case RelDatFileType.Dat149:
                 case RelDatFileType.Dat150://treat these same as 151
-                case RelDatFileType.Dat151Parameters:
-                    relType = RelDatFileType.Dat151Parameters;
+                case RelDatFileType.Dat151:
+                    relType = RelDatFileType.Dat151;
                     break;
                 case RelDatFileType.Dat54DataEntries:
                     break;
@@ -948,7 +948,7 @@ namespace CodeWalker.GameFiles
                         return fcstr + ((Dat54SoundType)ItemType).ToString();
                     case RelDatFileType.Dat149:
                     case RelDatFileType.Dat150:
-                    case RelDatFileType.Dat151Parameters:
+                    case RelDatFileType.Dat151:
                         return fcstr + ((Dat151RelType)ItemType).ToString();
                 }
 
@@ -1107,8 +1107,8 @@ namespace CodeWalker.GameFiles
             var newRelDatas = new List<RelData>();
             var newRelDatasSorted = new List<RelData>();
 
-            newRelDatas.AddRange(RelDatas);
-            newRelDatasSorted.AddRange(RelDatasSorted);
+            if (RelDatas != null) newRelDatas.AddRange(RelDatas);
+            if (RelDatasSorted != null) newRelDatasSorted.AddRange(RelDatasSorted);
 
             newRelDatas.Add(d);
             newRelDatasSorted.Add(d);
@@ -1122,18 +1122,24 @@ namespace CodeWalker.GameFiles
             var newRelDatas = new List<RelData>();
             var newRelDatasSorted = new List<RelData>();
 
-            foreach (var relData in RelDatas)
+            if (RelDatas != null)
             {
-                if (relData != d)
+                foreach (var relData in RelDatas)
                 {
-                    newRelDatas.Add(relData);
+                    if (relData != d)
+                    {
+                        newRelDatas.Add(relData);
+                    }
                 }
             }
-            foreach (var relData in RelDatasSorted)
+            if (RelDatasSorted != null)
             {
-                if (relData != d)
+                foreach (var relData in RelDatasSorted)
                 {
-                    newRelDatasSorted.Add(relData);
+                    if (relData != d)
+                    {
+                        newRelDatasSorted.Add(relData);
+                    }
                 }
             }
 
@@ -2615,6 +2621,11 @@ namespace CodeWalker.GameFiles
         public uint EmitterCount { get; set; }
         public MetaHash[] EmitterHashes { get; set; }
 
+        public Dat151AmbientEmitterList(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.AmbientEmitterList;
+            TypeID = (byte)Type;
+        }
         public Dat151AmbientEmitterList(RelData d, BinaryReader br) : base(d, br)
         {
             EmitterCount = br.ReadUInt32();
@@ -2878,31 +2889,31 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat151AmbientEmitter : Dat151RelData
     {
-        public FlagsUint Unk00 { get; set; }
-        public FlagsUint Unk01 { get; set; }
-        public FlagsUint Unk02 { get; set; }
+        public FlagsUint Flags0 { get; set; }
+        public FlagsUint Flags1 { get; set; }
+        public FlagsUint Flags2 { get; set; }
         public Vector3 Position { get; set; }
-        public FlagsUint Unk03 { get; set; }    //0
-        public MetaHash Unk04 { get; set; }
-        public MetaHash Unk05 { get; set; }
-        public FlagsUint Unk06 { get; set; }    //0
-        public FlagsUint Unk07 { get; set; }    //0xFFFFFFFF
-        public FlagsUint Unk08 { get; set; }    //0
-        public float Unk09 { get; set; }        //1, 5, 100, ...
+        public FlagsUint Flags3 { get; set; }    //0
+        public MetaHash Hash1 { get; set; }
+        public MetaHash Hash2 { get; set; }
+        public FlagsUint Flags4 { get; set; }    //0
+        public FlagsUint Flags5 { get; set; }    //0xFFFFFFFF
+        public FlagsUint Flags6 { get; set; }    //0
+        public float Unk01 { get; set; }        //1, 5, 100, ...
         public float InnerRad { get; set; }        //0, 4,         ...     100 ... min value?
         public float OuterRad { get; set; }        //15, 16, 12, 10, 20,   300 ... max value?
-        public FlagsByte Unk12 { get; set; }
-        public FlagsByte Unk13 { get; set; }    //0,1,2,3,4,5
-        public FlagsByte Unk14 { get; set; }
-        public FlagsByte Unk15 { get; set; }    //0,1,2,3,4,5
-        public FlagsUshort Unk16 { get; set; }  //0..600
-        public FlagsUshort Unk17 { get; set; }  //0..150
-        public FlagsByte Unk18 { get; set; }    //0,1,2
-        public FlagsByte Unk19 { get; set; }    //0,1,2
-        public FlagsByte Unk20 { get; set; }    //1,2,3,4,8,255
-        public FlagsByte Unk21 { get; set; }    //1,2,3,4,5,6,8,10,255
-        public FlagsByte Unk22 { get; set; }    //0, 50, 80, 100
-        public FlagsByte Unk23 { get; set; }    //1,2,3,5
+        public FlagsByte Unk02 { get; set; }
+        public FlagsByte Unk03 { get; set; }    //0,1,2,3,4,5
+        public FlagsByte Unk04 { get; set; }
+        public FlagsByte Unk05 { get; set; }    //0,1,2,3,4,5
+        public FlagsUshort Unk06 { get; set; }  //0..600
+        public FlagsUshort Unk07 { get; set; }  //0..150
+        public FlagsByte Unk08 { get; set; }    //0,1,2
+        public FlagsByte Unk09 { get; set; }    //0,1,2
+        public FlagsByte Unk10 { get; set; }    //1,2,3,4,8,255
+        public FlagsByte Unk11 { get; set; }    //1,2,3,4,5,6,8,10,255
+        public FlagsByte Unk12 { get; set; }    //0, 50, 80, 100
+        public FlagsByte Unk13 { get; set; }    //1,2,3,5
         public ushort ExtParamCount { get; set; } //0,1,2,4
         public ExtParam[] ExtParams { get; set; }
 
@@ -2930,33 +2941,38 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public Dat151AmbientEmitter(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.AmbientEmitter;
+            TypeID = (byte)Type;
+        }
         public Dat151AmbientEmitter(RelData d, BinaryReader br) : base(d, br)
         {
-            Unk00 = br.ReadUInt32();
-            Unk01 = br.ReadUInt32();
-            Unk02 = br.ReadUInt32();
+            Flags0 = br.ReadUInt32();
+            Flags1 = br.ReadUInt32();
+            Flags2 = br.ReadUInt32();
             Position = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk03 = br.ReadUInt32();    //0
-            Unk04 = br.ReadUInt32();
-            Unk05 = br.ReadUInt32();
-            Unk06 = br.ReadUInt32();    //0
-            Unk07 = br.ReadUInt32();    //0xFFFFFFFF
-            Unk08 = br.ReadUInt32();    //0
-            Unk09 = br.ReadSingle();    //1, 5, 100, ...
+            Flags3 = br.ReadUInt32();    //0
+            Hash1 = br.ReadUInt32();
+            Hash2 = br.ReadUInt32();
+            Flags4 = br.ReadUInt32();    //0
+            Flags5 = br.ReadUInt32();    //0xFFFFFFFF
+            Flags6 = br.ReadUInt32();    //0
+            Unk01 = br.ReadSingle();    //1, 5, 100, ...
             InnerRad = br.ReadSingle();    //0, 4,         ...     100 ... min value?
             OuterRad = br.ReadSingle();    //15, 16, 12, 10, 20,   300 ... max value?
-            Unk12 = br.ReadByte();     
-            Unk13 = br.ReadByte();      //0,1,2,3,4,5
-            Unk14 = br.ReadByte();     
-            Unk15 = br.ReadByte();      //0,1,2,3,4,5
-            Unk16 = br.ReadUInt16();    //0..600
-            Unk17 = br.ReadUInt16();    //0..150
-            Unk18 = br.ReadByte();      //0,1,2
-            Unk19 = br.ReadByte();      //0,1,2
-            Unk20 = br.ReadByte();      //1,2,3,4,8,255
-            Unk21 = br.ReadByte();      //1,2,3,4,5,6,8,10,255
-            Unk22 = br.ReadByte();      //0, 50, 80, 100
-            Unk23 = br.ReadByte();      //1,2,3,5
+            Unk02 = br.ReadByte();     
+            Unk03 = br.ReadByte();      //0,1,2,3,4,5
+            Unk04 = br.ReadByte();     
+            Unk05 = br.ReadByte();      //0,1,2,3,4,5
+            Unk06 = br.ReadUInt16();    //0..600
+            Unk07 = br.ReadUInt16();    //0..150
+            Unk08 = br.ReadByte();      //0,1,2
+            Unk09 = br.ReadByte();      //0,1,2
+            Unk10 = br.ReadByte();      //1,2,3,4,8,255
+            Unk11 = br.ReadByte();      //1,2,3,4,5,6,8,10,255
+            Unk12 = br.ReadByte();      //0, 50, 80, 100
+            Unk13 = br.ReadByte();      //1,2,3,5
             ExtParamCount = br.ReadUInt16();  //0,1,2,4
 
             if (ExtParamCount > 0)
@@ -2970,7 +2986,7 @@ namespace CodeWalker.GameFiles
                 int brem = (16 - ((ExtParamCount * 12) % 16)) % 16;
                 if (brem > 0)
                 {
-                    byte[] brema = br.ReadBytes(brem);
+                    //byte[] brema = br.ReadBytes(brem);
                     //for (int i = 0; i < brem; i++)
                     //{
                     //    if (brema[i] != 0)
@@ -2982,29 +2998,12 @@ namespace CodeWalker.GameFiles
 
             #region testing
 
-            switch (Unk12.Value)//no pattern?
+            switch (Unk02.Value)//no pattern?
             {
                 default:
                     break;
             }
-            switch (Unk13.Value)
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                    break;
-                default:
-                    break;
-            }
-            switch (Unk14.Value)//no pattern?
-            {
-                default:
-                    break;
-            }
-            switch (Unk15.Value)
+            switch (Unk03.Value)
             {
                 case 0:
                 case 1:
@@ -3016,7 +3015,24 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
-            switch (Unk16.Value)
+            switch (Unk04.Value)//no pattern?
+            {
+                default:
+                    break;
+            }
+            switch (Unk05.Value)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk06.Value)
             {
                 case 0:
                 case 1:
@@ -3088,7 +3104,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
-            switch (Unk17.Value)
+            switch (Unk07.Value)
             {
                 case 0:
                 case 1:
@@ -3121,7 +3137,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
-            switch (Unk18.Value)
+            switch (Unk08.Value)
             {
                 case 0:
                 case 1:
@@ -3130,7 +3146,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
-            switch (Unk19.Value)
+            switch (Unk09.Value)
             {
                 case 0:
                 case 1:
@@ -3139,7 +3155,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
-            switch (Unk20.Value)
+            switch (Unk10.Value)
             {
                 case 1:
                 case 2:
@@ -3151,7 +3167,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
-            switch (Unk21.Value)
+            switch (Unk11.Value)
             {
                 case 1:
                 case 2:
@@ -3166,7 +3182,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
-            switch (Unk22.Value)
+            switch (Unk12.Value)
             {
                 case 0:
                 case 50:
@@ -3176,7 +3192,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
-            switch (Unk23.Value)
+            switch (Unk13.Value)
             {
                 case 1:
                 case 2:
@@ -3218,33 +3234,33 @@ namespace CodeWalker.GameFiles
             //base.Write(bw);
             WriteTypeAndOffset(bw);
 
-            bw.Write(Unk00.Value);
-            bw.Write(Unk01.Value);
-            bw.Write(Unk02.Value);
+            bw.Write(Flags0.Value);
+            bw.Write(Flags1.Value);
+            bw.Write(Flags2.Value);
             bw.Write(Position.X);
             bw.Write(Position.Y);
             bw.Write(Position.Z);
+            bw.Write(Flags3.Value);
+            bw.Write(Hash1);
+            bw.Write(Hash2);
+            bw.Write(Flags4.Value);
+            bw.Write(Flags5.Value);
+            bw.Write(Flags6.Value);
+            bw.Write(Unk01);
+            bw.Write(InnerRad);
+            bw.Write(OuterRad);
+            bw.Write(Unk02.Value);
             bw.Write(Unk03.Value);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
+            bw.Write(Unk04.Value);
+            bw.Write(Unk05.Value);
             bw.Write(Unk06.Value);
             bw.Write(Unk07.Value);
             bw.Write(Unk08.Value);
-            bw.Write(Unk09);
-            bw.Write(InnerRad);
-            bw.Write(OuterRad);
+            bw.Write(Unk09.Value);
+            bw.Write(Unk10.Value);
+            bw.Write(Unk11.Value);
             bw.Write(Unk12.Value);
             bw.Write(Unk13.Value);
-            bw.Write(Unk14.Value);
-            bw.Write(Unk15.Value);
-            bw.Write(Unk16.Value);
-            bw.Write(Unk17.Value);
-            bw.Write(Unk18.Value);
-            bw.Write(Unk19.Value);
-            bw.Write(Unk20.Value);
-            bw.Write(Unk21.Value);
-            bw.Write(Unk22.Value);
-            bw.Write(Unk23.Value);
             bw.Write(ExtParamCount);
 
             if (ExtParamCount > 0)
@@ -3266,6 +3282,11 @@ namespace CodeWalker.GameFiles
         public uint ZoneCount { get; set; }
         public MetaHash[] ZoneHashes { get; set; }
 
+        public Dat151AmbientZoneList(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.AmbientZoneList;
+            TypeID = (byte)Type;
+        }
         public Dat151AmbientZoneList(RelData d, BinaryReader br) : base(d, br)
         {
             ZoneCount = br.ReadUInt32();
@@ -3301,6 +3322,11 @@ namespace CodeWalker.GameFiles
         public uint AudioItemCount { get; set; }
         public Dat151HashPair[] AudioItems { get; set; }
 
+        public Dat151WeaponAudioItem(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.WeaponAudioItem;
+            TypeID = (byte)Type;
+        }
         public Dat151WeaponAudioItem(RelData d, BinaryReader br) : base(d, br)
         {
             AudioTrack0 = br.ReadUInt32();
@@ -3358,6 +3384,11 @@ namespace CodeWalker.GameFiles
         public Dat151HashPair[] Items { get; set; }
 
 
+        public Dat151StartTrackAction(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.StartTrackAction;
+            TypeID = (byte)Type;
+        }
         public Dat151StartTrackAction(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
@@ -3428,6 +3459,11 @@ namespace CodeWalker.GameFiles
         public int Unk3 { get; set; }
         public int Unk4 { get; set; }
 
+        public Dat151StopTrackAction(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.StopTrackAction;
+            TypeID = (byte)Type;
+        }
         public Dat151StopTrackAction(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
@@ -3476,6 +3512,9 @@ namespace CodeWalker.GameFiles
             return AudioTrack0.ToString();
         }
 
+        public Dat151MoodItem()
+        {
+        }
         public Dat151MoodItem(BinaryReader br)
         {
             AudioTrack0 = br.ReadUInt32();
@@ -3507,6 +3546,11 @@ namespace CodeWalker.GameFiles
         public uint MoodItemCount { get; set; }
         public Dat151MoodItem[] MoodItems { get; set; }
 
+        public Dat151Mood(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Mood;
+            TypeID = (byte)Type;
+        }
         public Dat151Mood(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
@@ -3565,6 +3609,11 @@ namespace CodeWalker.GameFiles
         public uint Unk5 { get; set; }
         public uint Unk6 { get; set; }
 
+        public Dat151SetMoodAction(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.SetMoodAction;
+            TypeID = (byte)Type;
+        }
         public Dat151SetMoodAction(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
@@ -3607,6 +3656,11 @@ namespace CodeWalker.GameFiles
         public uint AudioTrackCount { get; set; }
         public MetaHash[] AudioTracks { get; set; }
 
+        public Dat151PlayerAction(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.PlayerAction;
+            TypeID = (byte)Type;
+        }
         public Dat151PlayerAction(RelData d, BinaryReader br) : base(d, br)
         {
             AudioTrackCount = br.ReadUInt32();
@@ -3658,6 +3712,11 @@ namespace CodeWalker.GameFiles
         public int Unk7 { get; set; }
         public int Unk8 { get; set; }
 
+        public Dat151StartOneShotAction(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.StartOneShotAction;
+            TypeID = (byte)Type;
+        }
         public Dat151StartOneShotAction(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
@@ -3706,6 +3765,11 @@ namespace CodeWalker.GameFiles
         public MetaHash AudioTrack1 { get; set; }
         public uint Unk3 { get; set; }
 
+        public Dat151StopOneShotAction(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.StopOneShotAction;
+            TypeID = (byte)Type;
+        }
         public Dat151StopOneShotAction(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
@@ -3748,6 +3812,11 @@ namespace CodeWalker.GameFiles
         public float Unk3 { get; set; }
         public float Unk4 { get; set; }
 
+        public Dat151FadeInRadioAction(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.FadeInRadioAction;
+            TypeID = (byte)Type;
+        }
         public Dat151FadeInRadioAction(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
@@ -3789,6 +3858,11 @@ namespace CodeWalker.GameFiles
         public float Unk3 { get; set; }
         public float Unk4 { get; set; }
 
+        public Dat151FadeOutRadioAction(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.FadeOutRadioAction;
+            TypeID = (byte)Type;
+        }
         public Dat151FadeOutRadioAction(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
@@ -3844,6 +3918,11 @@ namespace CodeWalker.GameFiles
         public MetaHash[] AudioTracks2 { get; set; }
 
 
+        public Dat151Mod(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Mod;
+            TypeID = (byte)Type;
+        }
         public Dat151Mod(RelData d, BinaryReader br) : base(d, br)
         {
             Unk00 = br.ReadUInt32();
@@ -3991,6 +4070,11 @@ namespace CodeWalker.GameFiles
         public uint RoomsCount { get; set; }
         public MetaHash[] Rooms { get; set; }
 
+        public Dat151Interior(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Interior;
+            TypeID = (byte)Type;
+        }
         public Dat151Interior(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
@@ -4050,6 +4134,11 @@ namespace CodeWalker.GameFiles
         public MetaHash Unk13 { get; set; }
         public MetaHash Unk14 { get; set; }
 
+        public Dat151InteriorRoom(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.InteriorRoom;
+            TypeID = (byte)Type;
+        }
         public Dat151InteriorRoom(RelData d, BinaryReader br) : base(d, br)
         {
             Unk00 = br.ReadUInt32();
@@ -4103,6 +4192,11 @@ namespace CodeWalker.GameFiles
     {
         public MetaHash AudioTrack0 { get; set; }
 
+        public Dat151Unk117(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk117;
+            TypeID = (byte)Type;
+        }
         public Dat151Unk117(RelData d, BinaryReader br) : base(d, br)
         {
             AudioTrack0 = br.ReadUInt32();
@@ -4218,6 +4312,11 @@ namespace CodeWalker.GameFiles
         public uint Unk88 { get; set; }
         public uint Unk89 { get; set; }
 
+        public Dat151Entity(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Entity;
+            TypeID = (byte)Type;
+        }
         public Dat151Entity(RelData d, BinaryReader br) : base(d, br)
         {
             Unk00 = br.ReadUInt32();
@@ -4478,6 +4577,11 @@ namespace CodeWalker.GameFiles
         public MetaHash AudioTrack0 { get; set; }
         public MetaHash AudioTrack1 { get; set; }
 
+        public Dat151Collision(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Collision;
+            TypeID = (byte)Type;
+        }
         public Dat151Collision(RelData d, BinaryReader br) : base(d, br)
         {
             Unk00 = br.ReadUInt32();
@@ -4614,6 +4718,11 @@ namespace CodeWalker.GameFiles
         public MetaHash AudioTrack0 { get; set; }
         public float Unk1 { get; set; }
 
+        public Dat151Unk47(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk47;
+            TypeID = (byte)Type;
+        }
         public Dat151Unk47(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
@@ -4642,6 +4751,11 @@ namespace CodeWalker.GameFiles
         public uint AudioItemCount { get; set; }
         public Dat151HashPair[] AudioItems { get; set; }
 
+        public Dat151Unk83(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk83;
+            TypeID = (byte)Type;
+        }
         public Dat151Unk83(RelData d, BinaryReader br) : base(d, br)
         {
             AudioItemCount = br.ReadUInt32();
@@ -4690,6 +4804,11 @@ namespace CodeWalker.GameFiles
         public uint AudioTracksCount { get; set; }
         public MetaHash[] AudioTracks { get; set; }
 
+        public Dat151ForceRadioTrackAction(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.ForceRadioTrackAction;
+            TypeID = (byte)Type;
+        }
         public Dat151ForceRadioTrackAction(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
@@ -4753,6 +4872,11 @@ namespace CodeWalker.GameFiles
         public uint Unk4 { get; set; }
         public uint Unk5 { get; set; }
 
+        public Dat151RadioDjSpeechAction(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.RadioDjSpeechAction;
+            TypeID = (byte)Type;
+        }
         public Dat151RadioDjSpeechAction(RelData d, BinaryReader br) : base(d, br)
         {
             Unk0 = br.ReadUInt32();
@@ -4791,6 +4915,11 @@ namespace CodeWalker.GameFiles
         public uint AudioItemCount { get; set; }
         public Dat151HashPair[] AudioItems { get; set; }
 
+        public Dat151Unk78(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk78;
+            TypeID = (byte)Type;
+        }
         public Dat151Unk78(RelData d, BinaryReader br) : base(d, br)
         {
             AudioItemCount = br.ReadUInt32();
@@ -4831,6 +4960,11 @@ namespace CodeWalker.GameFiles
         public uint AudioTracksCount { get; set; }
         public MetaHash[] AudioTracks { get; set; }
 
+        public Dat151RadioStationsDLC(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.RadioStationsDLC;
+            TypeID = (byte)Type;
+        }
         public Dat151RadioStationsDLC(RelData d, BinaryReader br) : base(d, br)
         {
             AudioTracksCount = br.ReadUInt32();
@@ -4882,6 +5016,11 @@ namespace CodeWalker.GameFiles
         public uint AudioTracksCount { get; set; }
         public MetaHash[] AudioTracks { get; set; }
 
+        public Dat151RadioDLC(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.RadioDLC;
+            TypeID = (byte)Type;
+        }
         public Dat151RadioDLC(RelData d, BinaryReader br) : base(d, br)
         {
             Unk00 = br.ReadUInt32();
@@ -4945,6 +5084,11 @@ namespace CodeWalker.GameFiles
         public uint AudioItemCount { get; set; }
         public Dat151HashPair[] AudioItems { get; set; }
 
+        public Dat151Unk49(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk49;
+            TypeID = (byte)Type;
+        }
         public Dat151Unk49(RelData d, BinaryReader br) : base(d, br)
         {
             AudioItemCount = br.ReadUInt32();
@@ -4985,6 +5129,11 @@ namespace CodeWalker.GameFiles
         public uint AudioItemCount { get; set; }
         public Dat151HashPair[] AudioItems { get; set; }
 
+        public Dat151Unk84(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk84;
+            TypeID = (byte)Type;
+        }
         public Dat151Unk84(RelData d, BinaryReader br) : base(d, br)
         {
             AudioItemCount = br.ReadUInt32();
@@ -5025,6 +5174,11 @@ namespace CodeWalker.GameFiles
         public uint AudioItemCount { get; set; }
         public Dat151HashPair[] AudioItems { get; set; }
 
+        public Dat151Unk86(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk86;
+            TypeID = (byte)Type;
+        }
         public Dat151Unk86(RelData d, BinaryReader br) : base(d, br)
         {
             AudioItemCount = br.ReadUInt32();
@@ -5065,6 +5219,11 @@ namespace CodeWalker.GameFiles
         public uint AudioItemCount { get; set; }
         public Dat151HashPair[] AudioItems { get; set; }
 
+        public Dat151Unk81(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk81;
+            TypeID = (byte)Type;
+        }
         public Dat151Unk81(RelData d, BinaryReader br) : base(d, br)
         {
             AudioItemCount = br.ReadUInt32();
@@ -5105,6 +5264,11 @@ namespace CodeWalker.GameFiles
         public uint AudioItemCount { get; set; }
         public Dat151HashPair[] AudioItems { get; set; }
 
+        public Dat151Unk55(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk55;
+            TypeID = (byte)Type;
+        }
         public Dat151Unk55(RelData d, BinaryReader br) : base(d, br)
         {
             AudioItemCount = br.ReadUInt32();
@@ -5159,6 +5323,11 @@ namespace CodeWalker.GameFiles
         public Vector2[] Points { get; set; }
 
 
+        public Dat151ShoreLinePool(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.ShoreLinePool;
+            TypeID = (byte)Type;
+        }
         public Dat151ShoreLinePool(RelData d, BinaryReader br) : base(d, br)
         {
             Unk01 = br.ReadUInt32();
@@ -5224,6 +5393,11 @@ namespace CodeWalker.GameFiles
         public int PointsCount { get; set; }
         public Vector2[] Points { get; set; }
 
+        public Dat151ShoreLineLake(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.ShoreLineLake;
+            TypeID = (byte)Type;
+        }
         public Dat151ShoreLineLake(RelData d, BinaryReader br) : base(d, br)
         {
             Unk01 = br.ReadUInt32();
@@ -5282,6 +5456,11 @@ namespace CodeWalker.GameFiles
         public uint PointsCount { get; set; }
         public Vector3[] Points { get; set; }
 
+        public Dat151ShoreLineRiver(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.ShoreLineRiver;
+            TypeID = (byte)Type;
+        }
         public Dat151ShoreLineRiver(RelData d, BinaryReader br) : base(d, br)
         {
             Unk01 = br.ReadUInt32();
@@ -5343,6 +5522,11 @@ namespace CodeWalker.GameFiles
         public uint PointsCount { get; set; }
         public Vector2[] Points { get; set; }
 
+        public Dat151ShoreLineOcean(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.ShoreLineOcean;
+            TypeID = (byte)Type;
+        }
         public Dat151ShoreLineOcean(RelData d, BinaryReader br) : base(d, br)
         {
             Unk01 = br.ReadUInt32();
@@ -5405,6 +5589,11 @@ namespace CodeWalker.GameFiles
         public uint ShoreLineCount { get; set; }
         public MetaHash[] ShoreLines { get; set; }
 
+        public Dat151ShoreLineList(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.ShoreLineList;
+            TypeID = (byte)Type;
+        }
         public Dat151ShoreLineList(RelData d, BinaryReader br) : base(d, br)
         {
             ShoreLineCount = br.ReadUInt32();
@@ -5437,6 +5626,11 @@ namespace CodeWalker.GameFiles
 
     //[TC(typeof(EXP))] public class Dat151BlankTemplateItem : Dat151RelData
     //{
+    //    public Dat151BlankTemplateItem(RelFile rel) : base(rel)
+    //    {
+    //        Type = Dat151RelType.RELTYPE;
+    //        TypeID = (byte)Type;
+    //    }
     //    public Dat151BlankTemplateItem(RelData d, BinaryReader br) : base(d, br)
     //    {
     //        var bytesleft = br.BaseStream.Length - br.BaseStream.Position;

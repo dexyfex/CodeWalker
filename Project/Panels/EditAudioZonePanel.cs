@@ -171,6 +171,7 @@ namespace CodeWalker.Project.Panels
                 CurrentZone.AudioZone.NameHash = hash;
 
                 ProjectItemChanged();
+                UpdateFormTitle();
             }
 
         }

@@ -463,14 +463,14 @@ namespace CodeWalker.Project
             ShowPanel(promote,
                 () => { return new EditAudioZonePanel(this); }, //createFunc
                 (panel) => { panel.SetZone(CurrentAudioZone); }, //updateFunc
-                (panel) => { return panel.CurrentZone == CurrentAudioZone; }); //findFunc
+                (panel) => { return panel.CurrentZone?.AudioZone == CurrentAudioZone?.AudioZone; }); //findFunc
         }
         public void ShowEditAudioEmitterPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditAudioEmitterPanel(this); }, //createFunc
                 (panel) => { panel.SetEmitter(CurrentAudioEmitter); }, //updateFunc
-                (panel) => { return panel.CurrentEmitter == CurrentAudioEmitter; }); //findFunc
+                (panel) => { return panel.CurrentEmitter?.AudioEmitter == CurrentAudioEmitter?.AudioEmitter; }); //findFunc
         }
         public void ShowEditAudioZoneListPanel(bool promote)
         {
@@ -621,11 +621,22 @@ namespace CodeWalker.Project
             CurrentScenarioNode = item as ScenarioNode;
             CurrentScenarioChainEdge = item as MCScenarioChainingEdge;
             CurrentAudioFile = item as RelFile;
-            CurrentAudioZone = item as AudioPlacement; if (CurrentAudioZone?.AudioZone == null) CurrentAudioZone = null;
-            CurrentAudioEmitter = item as AudioPlacement; if (CurrentAudioEmitter?.AudioEmitter == null) CurrentAudioEmitter = null;
+            CurrentAudioZone = item as AudioPlacement;
+            CurrentAudioEmitter = item as AudioPlacement;
             CurrentAudioZoneList = item as Dat151AmbientZoneList;
             CurrentAudioEmitterList = item as Dat151AmbientEmitterList;
             CurrentMloRoom = item as MCMloRoomDef;
+
+            if (CurrentAudioZone?.AudioZone == null) CurrentAudioZone = null;
+            if (CurrentAudioEmitter?.AudioEmitter == null) CurrentAudioEmitter = null;
+
+            //need to create a temporary AudioPlacement wrapper for these, since AudioPlacements usually come from WorldForm
+            var daz = item as Dat151AmbientZone;
+            var dae = item as Dat151AmbientEmitter;
+            if (daz != null) CurrentAudioZone = new AudioPlacement(daz.Rel, daz);
+            if (dae != null) CurrentAudioEmitter = new AudioPlacement(dae.Rel, dae);
+
+
 
             if (CurrentMloEntity != null)
             {
@@ -4370,7 +4381,8 @@ namespace CodeWalker.Project
                 RelFile rel = CurrentProjectFile.AddAudioRelFile(fname);
                 if (rel != null)
                 {
-                    //init stuff.. //TODO
+                    rel.RelType = RelDatFileType.Dat151; //TODO: different types
+
                 }
             }
 
@@ -4523,15 +4535,9 @@ namespace CodeWalker.Project
                 copy = CurrentAudioZone;
             }
 
+            bool cp = copyPosition && (copy != null);
 
             var zone = new Dat151AmbientZone(CurrentAudioFile);
-            var ap = new AudioPlacement(CurrentAudioFile, zone);
-
-            bool cp = copyPosition && (copy != null);
-            Vector3 pos = cp ? copy.Position : GetSpawnPos(20.0f);
-            Quaternion ori = cp ? copy.Orientation : Quaternion.Identity;
-            ap.SetPosition(pos);
-            ap.SetOrientation(ori);
 
             //AA800424 box, line
             //AA800420 sphere
@@ -4552,8 +4558,8 @@ namespace CodeWalker.Project
             zone.UnkVec1 = cp ? copy.AudioZone.UnkVec1 : new Vector4(0, 0, 1, 0);
             zone.UnkVec2 = cp ? copy.AudioZone.UnkVec2 : new Vector4(1, -1, -1, 0);
             zone.UnkVec3 = cp ? copy.AudioZone.UnkVec3 : new Vector4(0, 0, -1, 0);
-            zone.Unk14 = cp ? copy.AudioZone.Unk14 : (byte)0;
-            zone.Unk15 = cp ? copy.AudioZone.Unk15 : (byte)0;
+            zone.Unk14 = cp ? copy.AudioZone.Unk14 : (byte)4;
+            zone.Unk15 = cp ? copy.AudioZone.Unk15 : (byte)1;
             zone.Unk16 = cp ? copy.AudioZone.Unk16 : (byte)0;
             zone.HashesCount = cp ? copy.AudioZone.HashesCount: (byte)0;
             zone.Hashes = cp ? copy.AudioZone.Hashes : null;
@@ -4561,9 +4567,15 @@ namespace CodeWalker.Project
             zone.ExtParams = cp ? copy.AudioZone.ExtParams : null;
             zone.Name = "zone1";
             zone.NameHash = JenkHash.GenHash(zone.Name);
+
+            var ap = new AudioPlacement(CurrentAudioFile, zone);
             ap.Name = zone.Name;
             ap.NameHash = zone.NameHash;
 
+            Vector3 pos = cp ? copy.Position : GetSpawnPos(20.0f);
+            Quaternion ori = cp ? copy.Orientation : Quaternion.Identity;
+            ap.SetPosition(pos);
+            ap.SetOrientation(ori);
 
 
             CurrentAudioFile.AddRelData(zone);
@@ -4616,20 +4628,20 @@ namespace CodeWalker.Project
             var delzone = CurrentAudioZone;
             var delrel = CurrentAudioFile;
 
-            //ProjectExplorer?.RemoveAudioZoneTreeNode(delzone);
+            ProjectExplorer?.RemoveAudioZoneTreeNode(delzone);
             ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
 
-            ClosePanel((EditAudioZonePanel p) => { return p.Tag == delzone; });
+            ClosePanel((EditAudioZonePanel p) => { return p.CurrentZone.AudioZone == delzone.AudioZone; });
 
             CurrentAudioZone = null;
 
-            if (WorldForm != null)
-            {
-                lock (WorldForm.RenderSyncRoot)
-                {
-                    WorldForm.SelectItem(null);
-                }
-            }
+            //if (WorldForm != null)
+            //{
+            //    lock (WorldForm.RenderSyncRoot)
+            //    {
+            //        WorldForm.SelectItem(null);
+            //    }
+            //}
 
             return true;
         }
@@ -4638,9 +4650,65 @@ namespace CodeWalker.Project
             return zone == CurrentAudioZone;
         }
 
-        public void NewAudioEmitter(AudioPlacement copy = null, bool copyPosition = false) //TODO
+        public void NewAudioEmitter(AudioPlacement copy = null, bool copyPosition = false)
         {
-            MessageBox.Show("NewAudioEmitter TODO!");
+            if (CurrentAudioFile == null) return;
+
+            if (copy == null)
+            {
+                copy = CurrentAudioEmitter;
+            }
+
+            bool cp = copyPosition && (copy != null);
+
+            var emitter = new Dat151AmbientEmitter(CurrentAudioFile);
+
+            emitter.Flags0 = cp ? copy.AudioEmitter.Flags0 : 0xAA001100;
+            emitter.Flags5 = cp ? copy.AudioEmitter.Flags5 : 0xFFFFFFFF;
+            emitter.InnerRad = cp ? copy.AudioEmitter.InnerRad : 0.0f;
+            emitter.OuterRad = cp ? copy.AudioEmitter.OuterRad : 20.0f;
+            emitter.Unk01 = cp ? copy.AudioEmitter.Unk01 : 1.0f;
+            emitter.Unk02 = cp ? copy.AudioEmitter.Unk02 : 0;
+            emitter.Unk03 = cp ? copy.AudioEmitter.Unk03 : 0;
+            emitter.Unk04 = cp ? copy.AudioEmitter.Unk04 : 160;
+            emitter.Unk05 = cp ? copy.AudioEmitter.Unk05 : 5;
+            emitter.Unk06 = cp ? copy.AudioEmitter.Unk06 : 0;
+            emitter.Unk07 = cp ? copy.AudioEmitter.Unk07 : 0;
+            emitter.Unk08 = cp ? copy.AudioEmitter.Unk08 : 0;
+            emitter.Unk09 = cp ? copy.AudioEmitter.Unk09 : 1;
+            emitter.Unk10 = cp ? copy.AudioEmitter.Unk10 : 1;
+            emitter.Unk11 = cp ? copy.AudioEmitter.Unk11 : 1;
+            emitter.Unk12 = cp ? copy.AudioEmitter.Unk12 : 100;
+            emitter.Unk13 = cp ? copy.AudioEmitter.Unk13 : 3;
+
+
+            emitter.Name = "emitter1";
+            emitter.NameHash = JenkHash.GenHash(emitter.Name);
+
+            var ap = new AudioPlacement(CurrentAudioFile, emitter);
+            ap.Name = emitter.Name;
+            ap.NameHash = emitter.NameHash;
+
+            Vector3 pos = cp ? copy.Position : GetSpawnPos(20.0f);
+            Quaternion ori = cp ? copy.Orientation : Quaternion.Identity;
+            ap.SetPosition(pos);
+            ap.SetOrientation(ori);
+
+
+            CurrentAudioFile.AddRelData(emitter);
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectAudioEmitterTreeNode(ap);
+            CurrentAudioEmitter = ap;
+
+            ShowEditAudioEmitterPanel(false);
+
+
+            if (WorldForm != null)
+            {
+                WorldForm.UpdateAudioPlacementGraphics(CurrentAudioFile);
+            }
         }
         public bool DeleteAudioEmitter()
         {
@@ -4677,20 +4745,20 @@ namespace CodeWalker.Project
             var delem = CurrentAudioEmitter;
             var delrel = CurrentAudioFile;
 
-            //ProjectExplorer?.RemoveAudioEmitterTreeNode(delem);
+            ProjectExplorer?.RemoveAudioEmitterTreeNode(delem);
             ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
-
-            ClosePanel((EditAudioEmitterPanel p) => { return p.Tag == delem; });
 
             CurrentAudioEmitter = null;
 
-            if (WorldForm != null)
-            {
-                lock (WorldForm.RenderSyncRoot)
-                {
-                    WorldForm.SelectItem(null);
-                }
-            }
+            ClosePanel((EditAudioEmitterPanel p) => { return p.CurrentEmitter.AudioEmitter == delem.AudioEmitter; });
+
+            //if (WorldForm != null)
+            //{
+            //    lock (WorldForm.RenderSyncRoot)
+            //    {
+            //        WorldForm.SelectItem(null);
+            //    }
+            //}
 
             return true;
         }
@@ -4699,9 +4767,22 @@ namespace CodeWalker.Project
             return emitter == CurrentAudioEmitter;
         }
 
-        public void NewAudioZoneList() //TODO
+        public void NewAudioZoneList()
         {
-            MessageBox.Show("NewAudioZoneList TODO!");
+            if (CurrentAudioFile == null) return;
+
+
+            var zonelist = new Dat151AmbientZoneList(CurrentAudioFile);
+
+
+            CurrentAudioFile.AddRelData(zonelist);
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectAudioZoneListTreeNode(zonelist);
+            CurrentAudioZoneList = zonelist;
+
+            ShowEditAudioZonePanel(false);
         }
         public bool DeleteAudioZoneList()
         {
@@ -4750,9 +4831,22 @@ namespace CodeWalker.Project
             return list == CurrentAudioZoneList;
         }
 
-        public void NewAudioEmitterList() //TODO
+        public void NewAudioEmitterList()
         {
-            MessageBox.Show("NewAudioEmitterList TODO!");
+            if (CurrentAudioFile == null) return;
+
+
+            var emlist = new Dat151AmbientEmitterList(CurrentAudioFile);
+
+
+            CurrentAudioFile.AddRelData(emlist);
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectAudioEmitterListTreeNode(emlist);
+            CurrentAudioEmitterList = emlist;
+
+            ShowEditAudioZonePanel(false);
         }
         public bool DeleteAudioEmitterList()
         {

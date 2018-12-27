@@ -450,22 +450,24 @@ namespace CodeWalker.Project.Panels
             node.Nodes.Clear();
 
 
-            TreeNode n;
-            n = node.Nodes.Add("Edit Zone");
-            n.Name = "EditZone";
-            n.Tag = rel; //this tag should get updated with the selected zone!
-
-            n = node.Nodes.Add("Edit Emitter");
-            n.Name = "EditEmitter";
-            n.Tag = rel; //this tag should get updated with the selected emitter!
+            if (rel.RelDatasSorted == null) return; //nothing to see here
 
 
-
+            var zones = new List<Dat151AmbientZone>();
+            var emitters = new List<Dat151AmbientEmitter>();
             var zonelists = new List<Dat151AmbientZoneList>();
             var emitterlists = new List<Dat151AmbientEmitterList>();
 
-            foreach (var reldata in rel.RelDatas)
+            foreach (var reldata in rel.RelDatasSorted)
             {
+                if (reldata is Dat151AmbientZone)
+                {
+                    zones.Add(reldata as Dat151AmbientZone);
+                }
+                if (reldata is Dat151AmbientEmitter)
+                {
+                    emitters.Add(reldata as Dat151AmbientEmitter);
+                }
                 if (reldata is Dat151AmbientZoneList)
                 {
                     zonelists.Add(reldata as Dat151AmbientZoneList);
@@ -478,10 +480,41 @@ namespace CodeWalker.Project.Panels
 
 
 
+            if (zones.Count > 0)
+            {
+                var n = node.Nodes.Add("Ambient Zones (" + zones.Count.ToString() + ")");
+                n.Name = "AmbientZones";
+                n.Tag = rel;
+
+                for (int i = 0; i < zones.Count; i++)
+                {
+                    var zone = zones[i];
+                    var tnode = n.Nodes.Add(zone.NameHash.ToString());
+                    tnode.Tag = zone;
+                }
+            }
+
+
+            if (emitters.Count > 0)
+            {
+                var n = node.Nodes.Add("Ambient Emitters (" + emitters.Count.ToString() + ")");
+                n.Name = "AmbientEmitters";
+                n.Tag = rel;
+
+                for (int i = 0; i < emitters.Count; i++)
+                {
+                    var emitter = emitters[i];
+                    var tnode = n.Nodes.Add(emitter.NameHash.ToString());
+                    tnode.Tag = emitter;
+                }
+            }
+
+
+
             if (zonelists.Count > 0)
             {
-                var zonelistsnode = node.Nodes.Add("Zone Lists (" + zonelists.Count.ToString() + ")");
-                zonelistsnode.Name = "ZoneLists";
+                var zonelistsnode = node.Nodes.Add("Ambient Zone Lists (" + zonelists.Count.ToString() + ")");
+                zonelistsnode.Name = "AmbientZoneLists";
                 zonelistsnode.Tag = rel;
                 for (int i = 0; i < zonelists.Count; i++)
                 {
@@ -493,8 +526,8 @@ namespace CodeWalker.Project.Panels
 
             if (emitterlists.Count > 0)
             {
-                var emitterlistsnode = node.Nodes.Add("Emitter Lists (" + emitterlists.Count.ToString() + ")");
-                emitterlistsnode.Name = "EmitterLists";
+                var emitterlistsnode = node.Nodes.Add("Ambient Emitter Lists (" + emitterlists.Count.ToString() + ")");
+                emitterlistsnode.Name = "AmbientEmitterLists";
                 emitterlistsnode.Tag = rel;
                 for (int i = 0; i < emitterlists.Count; i++)
                 {
@@ -1019,18 +1052,28 @@ namespace CodeWalker.Project.Panels
         {
             if (zone == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(zone.RelFile);
-            var zonenode = GetChildTreeNode(relnode, "EditZone");
+            var zonenode = GetChildTreeNode(relnode, "AmbientZones");
             if (zonenode == null) return null;
-            zonenode.Tag = zone;
+            //zonenode.Tag = zone;
+            for (int i = 0; i < zonenode.Nodes.Count; i++)
+            {
+                TreeNode znode = zonenode.Nodes[i];
+                if (znode.Tag == zone.AudioZone) return znode;
+            }
             return zonenode;
         }
         public TreeNode FindAudioEmitterTreeNode(AudioPlacement emitter)
         {
             if (emitter == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(emitter.RelFile);
-            var zonenode = GetChildTreeNode(relnode, "EditEmitter");
+            var zonenode = GetChildTreeNode(relnode, "AmbientEmitters");
             if (zonenode == null) return null;
-            zonenode.Tag = emitter;
+            //zonenode.Tag = emitter;
+            for (int i = 0; i < zonenode.Nodes.Count; i++)
+            {
+                TreeNode znode = zonenode.Nodes[i];
+                if (znode.Tag == emitter.AudioEmitter) return znode;
+            }
             return zonenode;
         }
         public TreeNode FindAudioZoneListTreeNode(Dat151AmbientZoneList list)
@@ -1050,7 +1093,7 @@ namespace CodeWalker.Project.Panels
         {
             if (list == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(list.Rel);
-            var emitterlistsnode = GetChildTreeNode(relnode, "EmitterLists");
+            var emitterlistsnode = GetChildTreeNode(relnode, "AmbientEmitterLists");
             if (emitterlistsnode == null) return null;
             for (int i = 0; i < emitterlistsnode.Nodes.Count; i++)
             {
@@ -1539,6 +1582,42 @@ namespace CodeWalker.Project.Panels
                 tn.Parent.Nodes.Remove(tn);
             }
         }
+        public void RemoveAudioZoneTreeNode(AudioPlacement zone)
+        {
+            var tn = FindAudioZoneTreeNode(zone);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                var zones = new List<Dat151AmbientZone>();
+                foreach (var reldata in zone.RelFile.RelDatas)
+                {
+                    if (reldata is Dat151AmbientZone)
+                    {
+                        zones.Add(reldata as Dat151AmbientZone);
+                    }
+                }
+
+                tn.Parent.Text = "Ambient Zones (" + zones.Count.ToString() + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveAudioEmitterTreeNode(AudioPlacement emitter)
+        {
+            var tn = FindAudioEmitterTreeNode(emitter);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                var emitters = new List<Dat151AmbientEmitter>();
+                foreach (var reldata in emitter.RelFile.RelDatas)
+                {
+                    if (reldata is Dat151AmbientEmitter)
+                    {
+                        emitters.Add(reldata as Dat151AmbientEmitter);
+                    }
+                }
+
+                tn.Parent.Text = "Ambient Emitters (" + emitters.Count.ToString() + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
         public void RemoveAudioZoneListTreeNode(Dat151AmbientZoneList list)
         {
             var tn = FindAudioZoneListTreeNode(list);
@@ -1553,7 +1632,7 @@ namespace CodeWalker.Project.Panels
                     }
                 }
 
-                tn.Parent.Text = "Zone Lists (" + zonelists.Count.ToString() + ")";
+                tn.Parent.Text = "Ambient Zone Lists (" + zonelists.Count.ToString() + ")";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
@@ -1571,7 +1650,7 @@ namespace CodeWalker.Project.Panels
                     }
                 }
 
-                tn.Parent.Text = "Emitter Lists (" + emitterlists.Count.ToString() + ")";
+                tn.Parent.Text = "Ambient Emitter Lists (" + emitterlists.Count.ToString() + ")";
                 tn.Parent.Nodes.Remove(tn);
             }
         }

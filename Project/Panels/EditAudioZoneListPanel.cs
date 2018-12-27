@@ -47,6 +47,7 @@ namespace CodeWalker.Project.Panels
                 //DeleteButton.Enabled = false;
 
                 populatingui = true;
+                NameTextBox.Text = string.Empty;
                 HashesTextBox.Text = string.Empty;
                 populatingui = false;
             }
@@ -57,6 +58,8 @@ namespace CodeWalker.Project.Panels
 
                 populatingui = true;
                 var zl = CurrentZoneList;
+
+                NameTextBox.Text = zl.NameHash.ToString();
 
                 StringBuilder sb = new StringBuilder();
                 if (zl.ZoneHashes != null)
@@ -86,6 +89,30 @@ namespace CodeWalker.Project.Panels
         }
 
 
+
+        private void NameTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZoneList == null) return;
+
+            uint hash = 0;
+            string name = NameTextBox.Text;
+            if (!uint.TryParse(name, out hash))//don't re-hash hashes
+            {
+                hash = JenkHash.GenHash(name);
+                JenkIndex.Ensure(name);
+            }
+            //NameHashLabel.Text = "Hash: " + hash.ToString();
+
+            if (CurrentZoneList.NameHash != hash)
+            {
+                CurrentZoneList.Name = NameTextBox.Text;
+                CurrentZoneList.NameHash = hash;
+
+                ProjectItemChanged();
+                UpdateFormTitle();
+            }
+        }
 
         private void HashesTextBox_TextChanged(object sender, EventArgs e)
         {

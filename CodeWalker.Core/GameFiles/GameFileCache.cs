@@ -2270,7 +2270,7 @@ namespace CodeWalker.GameFiles
             var sb2 = new StringBuilder();
             foreach (var kvp in wavesmap)
             {
-                if (kvp.Key.FileType == RelDatFileType.Dat151Parameters)
+                if (kvp.Key.FileType == RelDatFileType.Dat151)
                 {
                     sb2.Append(((Dat151RelType)kvp.Key.ItemType).ToString());
                     sb2.Append("     ");
