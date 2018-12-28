@@ -67,6 +67,8 @@ namespace CodeWalker.Project
         private AudioPlacement CurrentAudioEmitter;
         private Dat151AmbientZoneList CurrentAudioZoneList;
         private Dat151AmbientEmitterList CurrentAudioEmitterList;
+        private Dat151Interior CurrentAudioInterior;
+        private Dat151InteriorRoom CurrentAudioInteriorRoom;
 
         private bool renderitems = true;
         private bool hidegtavmap = false;
@@ -486,6 +488,20 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetEmitterList(CurrentAudioEmitterList); }, //updateFunc
                 (panel) => { return panel.CurrentEmitterList == CurrentAudioEmitterList; }); //findFunc
         }
+        public void ShowEditAudioInteriorPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditAudioInteriorPanel(this); }, //createFunc
+                (panel) => { panel.SetInterior(CurrentAudioInterior); }, //updateFunc
+                (panel) => { return panel.CurrentInterior == CurrentAudioInterior; }); //findFunc
+        }
+        public void ShowEditAudioInteriorRoomPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditAudioInteriorRoomPanel(this); }, //createFunc
+                (panel) => { panel.SetRoom(CurrentAudioInteriorRoom); }, //updateFunc
+                (panel) => { return panel.CurrentRoom == CurrentAudioInteriorRoom; }); //findFunc
+        }
 
         private void ShowCurrentProjectItem(bool promote)
         {
@@ -577,6 +593,14 @@ namespace CodeWalker.Project
             {
                 ShowEditAudioEmitterListPanel(promote);
             }
+            else if (CurrentAudioInterior != null)
+            {
+                ShowEditAudioInteriorPanel(promote);
+            }
+            else if (CurrentAudioInteriorRoom != null)
+            {
+                ShowEditAudioInteriorRoomPanel(promote);
+            }
             else if (CurrentAudioFile != null)
             {
                 ShowEditAudioFilePanel(promote);
@@ -625,6 +649,8 @@ namespace CodeWalker.Project
             CurrentAudioEmitter = item as AudioPlacement;
             CurrentAudioZoneList = item as Dat151AmbientZoneList;
             CurrentAudioEmitterList = item as Dat151AmbientEmitterList;
+            CurrentAudioInterior = item as Dat151Interior;
+            CurrentAudioInteriorRoom = item as Dat151InteriorRoom;
             CurrentMloRoom = item as MCMloRoomDef;
 
             if (CurrentAudioZone?.AudioZone == null) CurrentAudioZone = null;
@@ -723,6 +749,14 @@ namespace CodeWalker.Project
             if (CurrentAudioEmitterList != null)
             {
                 CurrentAudioFile = CurrentAudioEmitterList.Rel;
+            }
+            if (CurrentAudioInterior != null)
+            {
+                CurrentAudioFile = CurrentAudioInterior.Rel;
+            }
+            if (CurrentAudioInteriorRoom != null)
+            {
+                CurrentAudioFile = CurrentAudioInteriorRoom.Rel;
             }
 
             RefreshUI();
@@ -4774,6 +4808,8 @@ namespace CodeWalker.Project
 
             var zonelist = new Dat151AmbientZoneList(CurrentAudioFile);
 
+            zonelist.Name = "zonelist1";
+            zonelist.NameHash = JenkHash.GenHash(zonelist.Name);
 
             CurrentAudioFile.AddRelData(zonelist);
 
@@ -4838,6 +4874,9 @@ namespace CodeWalker.Project
 
             var emlist = new Dat151AmbientEmitterList(CurrentAudioFile);
 
+            emlist.Name = "emitterlist1";
+            emlist.NameHash = JenkHash.GenHash(emlist.Name);
+
 
             CurrentAudioFile.AddRelData(emlist);
 
@@ -4893,6 +4932,145 @@ namespace CodeWalker.Project
         public bool IsCurrentAudioEmitterList(Dat151AmbientEmitterList list)
         {
             return list == CurrentAudioEmitterList;
+        }
+
+        public void NewAudioInterior()
+        {
+            if (CurrentAudioFile == null) return;
+
+
+            var interior = new Dat151Interior(CurrentAudioFile);
+
+            interior.Name = "interior1";
+            interior.NameHash = JenkHash.GenHash(interior.Name);
+            interior.Unk0 = 0xAAAAA844;
+            interior.Unk1 = 0xD4855127;
+
+            CurrentAudioFile.AddRelData(interior);
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectAudioInteriorTreeNode(interior);
+            CurrentAudioInterior = interior;
+
+            ShowEditAudioInteriorPanel(false);
+        }
+        public bool DeleteAudioInterior()
+        {
+            if (CurrentAudioInterior?.Rel != CurrentAudioFile) return false;
+            if (CurrentAudioFile?.RelDatas == null) return false; //nothing to delete..
+            if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
+
+
+            if (MessageBox.Show("Are you sure you want to delete this audio interior?\n" + CurrentAudioInterior.GetNameString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentAudioFile.RemoveRelData(CurrentAudioInterior);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentAudioFile.RemoveRelData(CurrentAudioInterior);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unspecified error occurred when removing the audio interior from the file!");
+            }
+
+            var delel = CurrentAudioInterior;
+            var delrel = CurrentAudioFile;
+
+            ProjectExplorer?.RemoveAudioInteriorTreeNode(delel);
+            ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
+
+            ClosePanel((EditAudioInteriorPanel p) => { return p.Tag == delel; });
+
+            CurrentAudioInterior = null;
+
+            return true;
+        }
+        public bool IsCurrentAudioInterior(Dat151Interior interior)
+        {
+            return interior == CurrentAudioInterior;
+        }
+
+        public void NewAudioInteriorRoom()
+        {
+            if (CurrentAudioFile == null) return;
+
+
+            var room = new Dat151InteriorRoom(CurrentAudioFile);
+
+            room.Name = "room1";
+            room.NameHash = JenkHash.GenHash(room.Name);
+
+            room.Flags0 = 0xAAAAAAAA;
+            room.Unk06 = 3817852694;//??
+            room.Unk14 = 3565506855;//?
+
+
+            CurrentAudioFile.AddRelData(room);
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectAudioInteriorRoomTreeNode(room);
+            CurrentAudioInteriorRoom = room;
+
+            ShowEditAudioInteriorRoomPanel(false);
+        }
+        public bool DeleteAudioInteriorRoom()
+        {
+            if (CurrentAudioInteriorRoom?.Rel != CurrentAudioFile) return false;
+            if (CurrentAudioFile?.RelDatas == null) return false; //nothing to delete..
+            if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
+
+
+            if (MessageBox.Show("Are you sure you want to delete this audio interior room?\n" + CurrentAudioInteriorRoom.GetNameString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentAudioFile.RemoveRelData(CurrentAudioInteriorRoom);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentAudioFile.RemoveRelData(CurrentAudioInteriorRoom);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unspecified error occurred when removing the audio interior from the file!");
+            }
+
+            var delel = CurrentAudioInteriorRoom;
+            var delrel = CurrentAudioFile;
+
+            ProjectExplorer?.RemoveAudioInteriorRoomTreeNode(delel);
+            ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
+
+            ClosePanel((EditAudioInteriorRoomPanel p) => { return p.Tag == delel; });
+
+            CurrentAudioInteriorRoom = null;
+
+            return true;
+        }
+        public bool IsCurrentAudioInteriorRoom(Dat151InteriorRoom room)
+        {
+            return room == CurrentAudioInteriorRoom;
         }
 
 
@@ -6234,6 +6412,8 @@ namespace CodeWalker.Project
             AudioNewAmbientEmitterListMenu.Enabled = enable && inproj;
             AudioNewAmbientZoneMenu.Enabled = enable && inproj;
             AudioNewAmbientZoneListMenu.Enabled = enable && inproj;
+            AudioNewInteriorMenu.Enabled = enable && inproj;
+            AudioNewInteriorRoomMenu.Enabled = enable && inproj;
 
             if (CurrentAudioFile != null)
             {
@@ -6636,6 +6816,14 @@ namespace CodeWalker.Project
         private void AudioNewAmbientZoneListMenu_Click(object sender, EventArgs e)
         {
             NewAudioZoneList();
+        }
+        private void AudioNewInteriorMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioInterior();
+        }
+        private void AudioNewInteriorRoomMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioInteriorRoom();
         }
         private void AudioAddToProjectMenu_Click(object sender, EventArgs e)
         {

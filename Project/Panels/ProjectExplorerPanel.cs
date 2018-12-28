@@ -457,6 +457,8 @@ namespace CodeWalker.Project.Panels
             var emitters = new List<Dat151AmbientEmitter>();
             var zonelists = new List<Dat151AmbientZoneList>();
             var emitterlists = new List<Dat151AmbientEmitterList>();
+            var interiors = new List<Dat151Interior>();
+            var interiorrooms = new List<Dat151InteriorRoom>();
 
             foreach (var reldata in rel.RelDatasSorted)
             {
@@ -475,6 +477,14 @@ namespace CodeWalker.Project.Panels
                 if (reldata is Dat151AmbientEmitterList)
                 {
                     emitterlists.Add(reldata as Dat151AmbientEmitterList);
+                }
+                if (reldata is Dat151Interior)
+                {
+                    interiors.Add(reldata as Dat151Interior);
+                }
+                if (reldata is Dat151InteriorRoom)
+                {
+                    interiorrooms.Add(reldata as Dat151InteriorRoom);
                 }
             }
 
@@ -534,6 +544,32 @@ namespace CodeWalker.Project.Panels
                     var emitterlist = emitterlists[i];
                     var tnode = emitterlistsnode.Nodes.Add(emitterlist.NameHash.ToString());
                     tnode.Tag = emitterlist;
+                }
+            }
+
+            if (interiors.Count > 0)
+            {
+                var n = node.Nodes.Add("Interiors (" + interiors.Count.ToString() + ")");
+                n.Name = "Interiors";
+                n.Tag = rel;
+                for (int i = 0; i < interiors.Count; i++)
+                {
+                    var interior = interiors[i];
+                    var tnode = n.Nodes.Add(interior.NameHash.ToString());
+                    tnode.Tag = interior;
+                }
+            }
+
+            if (interiorrooms.Count > 0)
+            {
+                var n = node.Nodes.Add("Interior Rooms (" + interiorrooms.Count.ToString() + ")");
+                n.Name = "InteriorRooms";
+                n.Tag = rel;
+                for (int i = 0; i < interiorrooms.Count; i++)
+                {
+                    var room = interiorrooms[i];
+                    var tnode = n.Nodes.Add(room.NameHash.ToString());
+                    tnode.Tag = room;
                 }
             }
 
@@ -1102,6 +1138,32 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
+        public TreeNode FindAudioInteriorTreeNode(Dat151Interior interior)
+        {
+            if (interior == null) return null;
+            TreeNode relnode = FindAudioRelTreeNode(interior.Rel);
+            var interiorsnode = GetChildTreeNode(relnode, "Interiors");
+            if (interiorsnode == null) return null;
+            for (int i = 0; i < interiorsnode.Nodes.Count; i++)
+            {
+                TreeNode enode = interiorsnode.Nodes[i];
+                if (enode.Tag == interior) return enode;
+            }
+            return null;
+        }
+        public TreeNode FindAudioInteriorRoomTreeNode(Dat151InteriorRoom room)
+        {
+            if (room == null) return null;
+            TreeNode relnode = FindAudioRelTreeNode(room.Rel);
+            var roomsnode = GetChildTreeNode(relnode, "InteriorRooms");
+            if (roomsnode == null) return null;
+            for (int i = 0; i < roomsnode.Nodes.Count; i++)
+            {
+                TreeNode enode = roomsnode.Nodes[i];
+                if (enode.Tag == room) return enode;
+            }
+            return null;
+        }
 
 
 
@@ -1421,6 +1483,45 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
+        public void TrySelectAudioInteriorTreeNode(Dat151Interior interior)
+        {
+            TreeNode tnode = FindAudioInteriorTreeNode(interior);
+            if (tnode == null)
+            {
+                tnode = FindAudioRelTreeNode(interior?.Rel);
+            }
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(interior);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
+            }
+        }
+        public void TrySelectAudioInteriorRoomTreeNode(Dat151InteriorRoom room)
+        {
+            TreeNode tnode = FindAudioInteriorRoomTreeNode(room);
+            if (tnode == null)
+            {
+                tnode = FindAudioRelTreeNode(room?.Rel);
+            }
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(room);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
+            }
+        }
+
 
 
 
@@ -1499,6 +1600,22 @@ namespace CodeWalker.Project.Panels
             if (tn != null)
             {
                 tn.Text = list.NameHash.ToString();
+            }
+        }
+        public void UpdateAudioInteriorTreeNode(Dat151Interior interior)
+        {
+            var tn = FindAudioInteriorTreeNode(interior);
+            if (tn != null)
+            {
+                tn.Text = interior.NameHash.ToString();
+            }
+        }
+        public void UpdateAudioInteriorRoomTreeNode(Dat151InteriorRoom room)
+        {
+            var tn = FindAudioInteriorRoomTreeNode(room);
+            if (tn != null)
+            {
+                tn.Text = room.NameHash.ToString();
             }
         }
 
@@ -1651,6 +1768,42 @@ namespace CodeWalker.Project.Panels
                 }
 
                 tn.Parent.Text = "Ambient Emitter Lists (" + emitterlists.Count.ToString() + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveAudioInteriorTreeNode(Dat151Interior interior)
+        {
+            var tn = FindAudioInteriorTreeNode(interior);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                var interiors = new List<Dat151Interior>();
+                foreach (var reldata in interior.Rel.RelDatas)
+                {
+                    if (reldata is Dat151Interior)
+                    {
+                        interiors.Add(reldata as Dat151Interior);
+                    }
+                }
+
+                tn.Parent.Text = "Interiors (" + interiors.Count.ToString() + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveAudioInteriorRoomTreeNode(Dat151InteriorRoom room)
+        {
+            var tn = FindAudioInteriorRoomTreeNode(room);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                var interiors = new List<Dat151InteriorRoom>();
+                foreach (var reldata in room.Rel.RelDatas)
+                {
+                    if (reldata is Dat151InteriorRoom)
+                    {
+                        interiors.Add(reldata as Dat151InteriorRoom);
+                    }
+                }
+
+                tn.Parent.Text = "Interior Rooms (" + interiors.Count.ToString() + ")";
                 tn.Parent.Nodes.Remove(tn);
             }
         }

@@ -2986,7 +2986,7 @@ namespace CodeWalker.GameFiles
                 int brem = (16 - ((ExtParamCount * 12) % 16)) % 16;
                 if (brem > 0)
                 {
-                    //byte[] brema = br.ReadBytes(brem);
+                    byte[] brema = br.ReadBytes(brem);
                     //for (int i = 0; i < brem; i++)
                     //{
                     //    if (brema[i] != 0)
@@ -3314,6 +3314,256 @@ namespace CodeWalker.GameFiles
 
         }
 
+    }
+    [TC(typeof(EXP))] public class Dat151Interior : Dat151RelData
+    {
+        public FlagsUint Unk0 { get; set; }
+        public FlagsUint Unk1 { get; set; }
+        public FlagsUint Unk2 { get; set; }
+        public uint RoomsCount { get; set; }
+        public MetaHash[] Rooms { get; set; }
+
+        public Dat151Interior(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Interior;
+            TypeID = (byte)Type;
+        }
+        public Dat151Interior(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk0 = br.ReadUInt32();
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            RoomsCount = br.ReadUInt32();
+            var rooms = new MetaHash[RoomsCount];
+            for (int i = 0; i < RoomsCount; i++)
+            {
+                rooms[i] = br.ReadUInt32();
+            }
+            Rooms = rooms;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk0.Value);
+            bw.Write(Unk1.Value);
+            bw.Write(Unk2.Value);
+            bw.Write(RoomsCount);
+            for (int i = 0; i < RoomsCount; i++)
+            {
+                bw.Write(Rooms[i]);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < RoomsCount; i++)
+            {
+                offsets.Add(16 + i * 4);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151InteriorRoom : Dat151RelData
+    {
+        public FlagsUint Flags0 { get; set; }
+        public MetaHash Unk00 { get; set; }
+        public MetaHash Hash1 { get; set; }
+        public uint Unk02 { get; set; }
+        public float Unk03 { get; set; }
+        public float Unk04 { get; set; }
+        public float Unk05 { get; set; }
+        public MetaHash Unk06 { get; set; }
+        public float Unk07 { get; set; }
+        public float Unk08 { get; set; }
+        public float Unk09 { get; set; }
+        public float Unk10 { get; set; }
+        public float Unk11 { get; set; }
+        public float Unk12 { get; set; }
+        public MetaHash Unk13 { get; set; }
+        public MetaHash Unk14 { get; set; }
+
+        public Dat151InteriorRoom(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.InteriorRoom;
+            TypeID = (byte)Type;
+        }
+        public Dat151InteriorRoom(RelData d, BinaryReader br) : base(d, br)
+        {
+            Flags0 = br.ReadUInt32();
+            Unk00 = br.ReadUInt32();
+            Hash1 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadSingle();
+            Unk04 = br.ReadSingle();
+            Unk05 = br.ReadSingle();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadSingle();
+            Unk08 = br.ReadSingle();
+            Unk09 = br.ReadSingle();
+            Unk10 = br.ReadSingle();
+            Unk11 = br.ReadSingle();
+            Unk12 = br.ReadSingle();
+            Unk13 = br.ReadUInt32();
+            Unk14 = br.ReadUInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Flags0.Value);
+            bw.Write(Unk00);
+            bw.Write(Hash1);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+        }
+        public override uint[] GetHashTableOffsets()
+        {
+            return new uint[] { 8 };
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151RadioStationsDLC : Dat151RelData
+    {
+        public uint AudioTracksCount { get; set; }
+        public MetaHash[] AudioTracks { get; set; }
+
+        public Dat151RadioStationsDLC(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.RadioStationsDLC;
+            TypeID = (byte)Type;
+        }
+        public Dat151RadioStationsDLC(RelData d, BinaryReader br) : base(d, br)
+        {
+            AudioTracksCount = br.ReadUInt32();
+            var tracks = new MetaHash[AudioTracksCount];
+            for (int i = 0; i < AudioTracksCount; i++)
+            {
+                tracks[i] = br.ReadUInt32();
+            }
+            AudioTracks = tracks;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(AudioTracksCount);
+            for (int i = 0; i < AudioTracksCount; i++)
+            {
+                bw.Write(AudioTracks[i]);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioTracksCount; i++)
+            {
+                offsets.Add(4 + i * 4);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151RadioDLC : Dat151RelData
+    {
+        public uint Unk00 { get; set; }
+        public uint Unk01 { get; set; }
+        public uint Unk02 { get; set; }
+        public uint Unk03 { get; set; }
+        public uint Unk04 { get; set; }
+        public uint Unk05 { get; set; }
+        public uint Unk06 { get; set; }
+        public uint Unk07 { get; set; }
+        public uint Unk08 { get; set; }
+        public uint Unk09 { get; set; }
+        public uint Unk10 { get; set; }
+        public uint Unk11 { get; set; }
+        public uint AudioTracksCount { get; set; }
+        public MetaHash[] AudioTracks { get; set; }
+
+        public Dat151RadioDLC(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.RadioDLC;
+            TypeID = (byte)Type;
+        }
+        public Dat151RadioDLC(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk00 = br.ReadUInt32();
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadUInt32();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadUInt32();
+            Unk10 = br.ReadUInt32();
+            Unk11 = br.ReadUInt32();
+            AudioTracksCount = br.ReadUInt32();
+            var tracks = new MetaHash[AudioTracksCount];
+            for (int i = 0; i < AudioTracksCount; i++)
+            {
+                tracks[i] = br.ReadUInt32();
+            }
+            AudioTracks = tracks;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk00);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(AudioTracksCount);
+            for (int i = 0; i < AudioTracksCount; i++)
+            {
+                bw.Write(AudioTracks[i]);
+            }
+        }
+        public override uint[] GetHashTableOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < AudioTracksCount; i++)
+            {
+                offsets.Add(52 + i * 4);
+            }
+            return offsets.ToArray();
+        }
     }
 
     [TC(typeof(EXP))] public class Dat151WeaponAudioItem : Dat151RelData
@@ -4061,132 +4311,6 @@ namespace CodeWalker.GameFiles
             return offsets.ToArray();
         }
 
-    }
-    [TC(typeof(EXP))] public class Dat151Interior : Dat151RelData
-    {
-        public uint Unk0 { get; set; }
-        public uint Unk1 { get; set; }
-        public uint Unk2 { get; set; }
-        public uint RoomsCount { get; set; }
-        public MetaHash[] Rooms { get; set; }
-
-        public Dat151Interior(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Interior;
-            TypeID = (byte)Type;
-        }
-        public Dat151Interior(RelData d, BinaryReader br) : base(d, br)
-        {
-            Unk0 = br.ReadUInt32();
-            Unk1 = br.ReadUInt32();
-            Unk2 = br.ReadUInt32();
-            RoomsCount = br.ReadUInt32();
-            var rooms = new MetaHash[RoomsCount];
-            for (int i = 0; i < RoomsCount; i++)
-            {
-                rooms[i] = br.ReadUInt32();
-            }
-            Rooms = rooms;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            WriteTypeAndOffset(bw);
-
-            bw.Write(Unk0);
-            bw.Write(Unk1);
-            bw.Write(Unk2);
-            bw.Write(RoomsCount);
-            for (int i = 0; i < RoomsCount; i++)
-            {
-                bw.Write(Rooms[i]);
-            }
-        }
-        public override uint[] GetHashTableOffsets()
-        {
-            var offsets = new List<uint>();
-            for (uint i = 0; i < RoomsCount; i++)
-            {
-                offsets.Add(16 + i * 4);
-            }
-            return offsets.ToArray();
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151InteriorRoom : Dat151RelData
-    {
-        public uint Unk00 { get; set; }
-        public MetaHash Unk01 { get; set; }
-        public MetaHash AudioTrack0 { get; set; }
-        public uint Unk02 { get; set; }
-        public float Unk03 { get; set; }
-        public float Unk04 { get; set; }
-        public float Unk05 { get; set; }
-        public MetaHash Unk06 { get; set; }
-        public float Unk07 { get; set; }
-        public float Unk08 { get; set; }
-        public float Unk09 { get; set; }
-        public float Unk10 { get; set; }
-        public float Unk11 { get; set; }
-        public float Unk12 { get; set; }
-        public MetaHash Unk13 { get; set; }
-        public MetaHash Unk14 { get; set; }
-
-        public Dat151InteriorRoom(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.InteriorRoom;
-            TypeID = (byte)Type;
-        }
-        public Dat151InteriorRoom(RelData d, BinaryReader br) : base(d, br)
-        {
-            Unk00 = br.ReadUInt32();
-            Unk01 = br.ReadUInt32();
-            AudioTrack0 = br.ReadUInt32();
-            Unk02 = br.ReadUInt32();
-            Unk03 = br.ReadSingle();
-            Unk04 = br.ReadSingle();
-            Unk05 = br.ReadSingle();
-            Unk06 = br.ReadUInt32();
-            Unk07 = br.ReadSingle();
-            Unk08 = br.ReadSingle();
-            Unk09 = br.ReadSingle();
-            Unk10 = br.ReadSingle();
-            Unk11 = br.ReadSingle();
-            Unk12 = br.ReadSingle();
-            Unk13 = br.ReadUInt32();
-            Unk14 = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            WriteTypeAndOffset(bw);
-
-            bw.Write(Unk00);
-            bw.Write(Unk01);
-            bw.Write(AudioTrack0);
-            bw.Write(Unk02);
-            bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
-            bw.Write(Unk06);
-            bw.Write(Unk07);
-            bw.Write(Unk08);
-            bw.Write(Unk09);
-            bw.Write(Unk10);
-            bw.Write(Unk11);
-            bw.Write(Unk12);
-            bw.Write(Unk13);
-            bw.Write(Unk14);
-        }
-        public override uint[] GetHashTableOffsets()
-        {
-            return new uint[] { 8 };
-        }
     }
     [TC(typeof(EXP))] public class Dat151Unk117 : Dat151RelData
     {
@@ -4951,130 +5075,6 @@ namespace CodeWalker.GameFiles
             for (uint i = 0; i < AudioItemCount; i++)
             {
                 offsets.Add(8 + i * 8);
-            }
-            return offsets.ToArray();
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151RadioStationsDLC : Dat151RelData
-    {
-        public uint AudioTracksCount { get; set; }
-        public MetaHash[] AudioTracks { get; set; }
-
-        public Dat151RadioStationsDLC(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.RadioStationsDLC;
-            TypeID = (byte)Type;
-        }
-        public Dat151RadioStationsDLC(RelData d, BinaryReader br) : base(d, br)
-        {
-            AudioTracksCount = br.ReadUInt32();
-            var tracks = new MetaHash[AudioTracksCount];
-            for (int i = 0; i < AudioTracksCount; i++)
-            {
-                tracks[i] = br.ReadUInt32();
-            }
-            AudioTracks = tracks;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            WriteTypeAndOffset(bw);
-
-            bw.Write(AudioTracksCount);
-            for (int i = 0; i < AudioTracksCount; i++)
-            {
-                bw.Write(AudioTracks[i]);
-            }
-        }
-        public override uint[] GetHashTableOffsets()
-        {
-            var offsets = new List<uint>();
-            for (uint i = 0; i < AudioTracksCount; i++)
-            {
-                offsets.Add(4 + i * 4);
-            }
-            return offsets.ToArray();
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151RadioDLC : Dat151RelData
-    {
-        public uint Unk00 { get; set; }
-        public uint Unk01 { get; set; }
-        public uint Unk02 { get; set; }
-        public uint Unk03 { get; set; }
-        public uint Unk04 { get; set; }
-        public uint Unk05 { get; set; }
-        public uint Unk06 { get; set; }
-        public uint Unk07 { get; set; }
-        public uint Unk08 { get; set; }
-        public uint Unk09 { get; set; }
-        public uint Unk10 { get; set; }
-        public uint Unk11 { get; set; }
-        public uint AudioTracksCount { get; set; }
-        public MetaHash[] AudioTracks { get; set; }
-
-        public Dat151RadioDLC(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.RadioDLC;
-            TypeID = (byte)Type;
-        }
-        public Dat151RadioDLC(RelData d, BinaryReader br) : base(d, br)
-        {
-            Unk00 = br.ReadUInt32();
-            Unk01 = br.ReadUInt32();
-            Unk02 = br.ReadUInt32();
-            Unk03 = br.ReadUInt32();
-            Unk04 = br.ReadUInt32();
-            Unk05 = br.ReadUInt32();
-            Unk06 = br.ReadUInt32();
-            Unk07 = br.ReadUInt32();
-            Unk08 = br.ReadUInt32();
-            Unk09 = br.ReadUInt32();
-            Unk10 = br.ReadUInt32();
-            Unk11 = br.ReadUInt32();
-            AudioTracksCount = br.ReadUInt32();
-            var tracks = new MetaHash[AudioTracksCount];
-            for (int i = 0; i < AudioTracksCount; i++)
-            {
-                tracks[i] = br.ReadUInt32();
-            }
-            AudioTracks = tracks;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            WriteTypeAndOffset(bw);
-
-            bw.Write(Unk00);
-            bw.Write(Unk01);
-            bw.Write(Unk02);
-            bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
-            bw.Write(Unk06);
-            bw.Write(Unk07);
-            bw.Write(Unk08);
-            bw.Write(Unk09);
-            bw.Write(Unk10);
-            bw.Write(Unk11);
-            bw.Write(AudioTracksCount);
-            for (int i = 0; i < AudioTracksCount; i++)
-            {
-                bw.Write(AudioTracks[i]);
-            }
-        }
-        public override uint[] GetHashTableOffsets()
-        {
-            var offsets = new List<uint>();
-            for (uint i = 0; i < AudioTracksCount; i++)
-            {
-                offsets.Add(52 + i * 4);
             }
             return offsets.ToArray();
         }

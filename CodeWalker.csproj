@@ -309,6 +309,18 @@
     <Compile Include="Project\Panels\EditAudioFilePanel.Designer.cs">
       <DependentUpon>EditAudioFilePanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Project\Panels\EditAudioInteriorPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioInteriorPanel.Designer.cs">
+      <DependentUpon>EditAudioInteriorPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioInteriorRoomPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioInteriorRoomPanel.Designer.cs">
+      <DependentUpon>EditAudioInteriorRoomPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\Panels\EditAudioZoneListPanel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -633,6 +645,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditAudioFilePanel.resx">
       <DependentUpon>EditAudioFilePanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioInteriorPanel.resx">
+      <DependentUpon>EditAudioInteriorPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioInteriorRoomPanel.resx">
+      <DependentUpon>EditAudioInteriorRoomPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditAudioZoneListPanel.resx">
       <DependentUpon>EditAudioZoneListPanel.cs</DependentUpon>
