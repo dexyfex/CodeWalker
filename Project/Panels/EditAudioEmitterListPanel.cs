@@ -140,5 +140,11 @@ namespace CodeWalker.Project.Panels
                 ProjectItemChanged();
             }
         }
+
+        private void DeleteButton_Click(object sender, EventArgs e)
+        {
+            ProjectForm.SetProjectItem(CurrentEmitterList);
+            ProjectForm.DeleteAudioEmitterList();
+        }
     }
 }

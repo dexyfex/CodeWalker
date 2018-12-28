@@ -1116,7 +1116,7 @@ namespace CodeWalker.Project.Panels
         {
             if (list == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(list.Rel);
-            var zonelistsnode = GetChildTreeNode(relnode, "ZoneLists");
+            var zonelistsnode = GetChildTreeNode(relnode, "AmbientZoneLists");
             if (zonelistsnode == null) return null;
             for (int i = 0; i < zonelistsnode.Nodes.Count; i++)
             {

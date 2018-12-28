@@ -35,6 +35,7 @@
             this.NameTextBox = new System.Windows.Forms.TextBox();
             this.label19 = new System.Windows.Forms.Label();
             this.HashesTextBox = new CodeWalker.WinForms.TextBoxFix();
+            this.DeleteButton = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.SuspendLayout();
@@ -53,6 +54,7 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.DeleteButton);
             this.tabPage1.Controls.Add(this.label12);
             this.tabPage1.Controls.Add(this.NameTextBox);
             this.tabPage1.Controls.Add(this.label19);
@@ -107,6 +109,17 @@
             this.HashesTextBox.WordWrap = false;
             this.HashesTextBox.TextChanged += new System.EventHandler(this.HashesTextBox_TextChanged);
             // 
+            // DeleteButton
+            // 
+            this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.DeleteButton.Location = new System.Drawing.Point(438, 381);
+            this.DeleteButton.Name = "DeleteButton";
+            this.DeleteButton.Size = new System.Drawing.Size(93, 23);
+            this.DeleteButton.TabIndex = 77;
+            this.DeleteButton.Text = "Delete list";
+            this.DeleteButton.UseVisualStyleBackColor = true;
+            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
+            // 
             // EditAudioZoneListPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -131,5 +144,6 @@
         private WinForms.TextBoxFix HashesTextBox;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.TextBox NameTextBox;
+        private System.Windows.Forms.Button DeleteButton;
     }
 }
