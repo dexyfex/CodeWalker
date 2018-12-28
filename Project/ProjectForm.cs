@@ -4818,7 +4818,7 @@ namespace CodeWalker.Project
             ProjectExplorer?.TrySelectAudioZoneListTreeNode(zonelist);
             CurrentAudioZoneList = zonelist;
 
-            ShowEditAudioZonePanel(false);
+            ShowEditAudioZoneListPanel(false);
         }
         public bool DeleteAudioZoneList()
         {
@@ -4885,7 +4885,7 @@ namespace CodeWalker.Project
             ProjectExplorer?.TrySelectAudioEmitterListTreeNode(emlist);
             CurrentAudioEmitterList = emlist;
 
-            ShowEditAudioZonePanel(false);
+            ShowEditAudioEmitterListPanel(false);
         }
         public bool DeleteAudioEmitterList()
         {
