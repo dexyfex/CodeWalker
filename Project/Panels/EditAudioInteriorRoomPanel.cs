@@ -48,7 +48,7 @@ namespace CodeWalker.Project.Panels
 
                 populatingui = true;
                 NameTextBox.Text = string.Empty;
-                Unk00TextBox.Text = string.Empty;
+                MloRoomTextBox.Text = string.Empty;
                 Hash1TextBox.Text = string.Empty;
                 Unk02TextBox.Text = string.Empty;
                 Unk03TextBox.Text = string.Empty;
@@ -75,7 +75,7 @@ namespace CodeWalker.Project.Panels
                 var cr = CurrentRoom;
 
                 NameTextBox.Text = cr.NameHash.ToString();
-                Unk00TextBox.Text = cr.Unk00.ToString();
+                MloRoomTextBox.Text = cr.MloRoom.ToString();
                 Hash1TextBox.Text = cr.Hash1.ToString();
                 Unk02TextBox.Text = cr.Unk02.ToString();
                 Unk03TextBox.Text = FloatUtil.ToString(cr.Unk03);
@@ -136,7 +136,7 @@ namespace CodeWalker.Project.Panels
             if (CurrentRoom == null) return;
 
             uint hash = 0;
-            string name = Unk00TextBox.Text;
+            string name = MloRoomTextBox.Text;
             if (!uint.TryParse(name, out hash))//don't re-hash hashes
             {
                 hash = JenkHash.GenHash(name);
@@ -144,9 +144,9 @@ namespace CodeWalker.Project.Panels
             }
             //NameHashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentRoom.Unk00 != hash)
+            if (CurrentRoom.MloRoom != hash)
             {
-                CurrentRoom.Unk00 = hash;
+                CurrentRoom.MloRoom = hash;
 
                 ProjectItemChanged();
             }

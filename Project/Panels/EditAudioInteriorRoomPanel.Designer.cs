@@ -35,7 +35,7 @@
             this.label13 = new System.Windows.Forms.Label();
             this.Flags0TextBox = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
-            this.Unk00TextBox = new System.Windows.Forms.TextBox();
+            this.MloRoomTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.Hash1TextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -120,19 +120,19 @@
             this.label16.AutoSize = true;
             this.label16.Location = new System.Drawing.Point(9, 39);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(68, 13);
+            this.label16.Size = new System.Drawing.Size(59, 13);
             this.label16.TabIndex = 64;
-            this.label16.Text = "Unk00 hash:";
+            this.label16.Text = "MLO room:";
             // 
-            // Unk00TextBox
+            // MloRoomTextBox
             // 
-            this.Unk00TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.MloRoomTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Unk00TextBox.Location = new System.Drawing.Point(86, 36);
-            this.Unk00TextBox.Name = "Unk00TextBox";
-            this.Unk00TextBox.Size = new System.Drawing.Size(237, 20);
-            this.Unk00TextBox.TabIndex = 65;
-            this.Unk00TextBox.TextChanged += new System.EventHandler(this.Unk00TextBox_TextChanged);
+            this.MloRoomTextBox.Location = new System.Drawing.Point(86, 36);
+            this.MloRoomTextBox.Name = "MloRoomTextBox";
+            this.MloRoomTextBox.Size = new System.Drawing.Size(237, 20);
+            this.MloRoomTextBox.TabIndex = 65;
+            this.MloRoomTextBox.TextChanged += new System.EventHandler(this.Unk00TextBox_TextChanged);
             // 
             // label1
             // 
@@ -434,7 +434,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.Hash1TextBox);
             this.Controls.Add(this.label16);
-            this.Controls.Add(this.Unk00TextBox);
+            this.Controls.Add(this.MloRoomTextBox);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.Flags0TextBox);
             this.Controls.Add(this.DeleteButton);
@@ -456,7 +456,7 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.TextBox Flags0TextBox;
         private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.TextBox Unk00TextBox;
+        private System.Windows.Forms.TextBox MloRoomTextBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox Hash1TextBox;
         private System.Windows.Forms.Label label2;

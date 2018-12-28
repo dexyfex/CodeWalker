@@ -3371,7 +3371,7 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public class Dat151InteriorRoom : Dat151RelData
     {
         public FlagsUint Flags0 { get; set; }
-        public MetaHash Unk00 { get; set; }
+        public MetaHash MloRoom { get; set; }
         public MetaHash Hash1 { get; set; }
         public uint Unk02 { get; set; }
         public float Unk03 { get; set; }
@@ -3395,7 +3395,7 @@ namespace CodeWalker.GameFiles
         public Dat151InteriorRoom(RelData d, BinaryReader br) : base(d, br)
         {
             Flags0 = br.ReadUInt32();
-            Unk00 = br.ReadUInt32();
+            MloRoom = br.ReadUInt32();
             Hash1 = br.ReadUInt32();
             Unk02 = br.ReadUInt32();
             Unk03 = br.ReadSingle();
@@ -3420,7 +3420,7 @@ namespace CodeWalker.GameFiles
             WriteTypeAndOffset(bw);
 
             bw.Write(Flags0.Value);
-            bw.Write(Unk00);
+            bw.Write(MloRoom);
             bw.Write(Hash1);
             bw.Write(Unk02);
             bw.Write(Unk03);
