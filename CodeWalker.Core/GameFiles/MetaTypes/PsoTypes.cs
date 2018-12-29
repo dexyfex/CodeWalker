@@ -13213,7 +13213,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)3538495220),
                      new PsoStructureEntryInfo((MetaName)3796409423, PsoDataType.Array, 16, 0, (MetaName)6),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)253191135),
-                     new PsoStructureEntryInfo((MetaName)2131007641, PsoDataType.Array, 32, 0, (MetaName)8),
+                     new PsoStructureEntryInfo(MetaName.aSelectionSets, PsoDataType.Array, 32, 0, (MetaName)8),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CComponentInfo),
                      new PsoStructureEntryInfo(MetaName.compInfos, PsoDataType.Array, 48, 0, (MetaName)10),
                      new PsoStructureEntryInfo(MetaName.propInfo, PsoDataType.Structure, 64, 0, (MetaName)2858946626),
@@ -14063,8 +14063,8 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.dataSize, PsoDataType.UInt, 32, 0, 0),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.UByte, 0, 0, 0),
                      new PsoStructureEntryInfo(MetaName.verts, PsoDataType.Array, 40, 6, (MetaName)2097155),
-                     new PsoStructureEntryInfo((MetaName)853977995, PsoDataType.UShort, 48, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)2337695078, PsoDataType.UShort, 50, 0, 0)
+                     new PsoStructureEntryInfo(MetaName.numVertsInBytes, PsoDataType.UShort, 48, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.numTris, PsoDataType.UShort, 50, 0, 0)
                     );
                 case MetaName.CTimeCycleModifier:
                     return new PsoStructureInfo(MetaName.CTimeCycleModifier, 0, 0, 64,

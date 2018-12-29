@@ -491,10 +491,10 @@ namespace CodeWalker.World
                 //if (r.Unk_3844724227 != null) //visualise AccelGrid...
                 //{
                 //    var grid = r._Data.AccelGrid;
-                //    var minx = grid.Unk_MinX_860552138;
-                //    var maxx = grid.Unk_MaxX_3824598937;
-                //    var miny = grid.Unk_MinY_496029782;
-                //    var maxy = grid.Unk_MaxY_3374647798;
+                //    var minx = grid.MinCellX;
+                //    var maxx = grid.MaxCellX;
+                //    var miny = grid.MinCellY;
+                //    var maxy = grid.MaxCellY;
                 //    var cntx = (maxx - minx) + 1;
                 //    var cnty = (maxy - miny) + 1;
                 //    var calclen = cntx * cnty; //==r.Unk_3844724227.Length;
@@ -1016,12 +1016,12 @@ namespace CodeWalker.World
 
 
             rage__spdGrid2D grid = new rage__spdGrid2D();
-            grid.Unk_X_2690909759 = cellsize;
-            grid.Unk_Y_3691675019 = cellsize;
-            grid.Unk_MinX_860552138 = imin.X;
-            grid.Unk_MinY_496029782 = imin.Y;
-            grid.Unk_MaxX_3824598937 = imax.X;
-            grid.Unk_MaxY_3374647798 = imax.Y;
+            grid.CellDimX = cellsize;
+            grid.CellDimY = cellsize;
+            grid.MinCellX = imin.X;
+            grid.MinCellY = imin.Y;
+            grid.MaxCellX = imax.X;
+            grid.MaxCellY = imax.Y;
             Region._Data.AccelGrid = grid;
 
             //store the reordered points.

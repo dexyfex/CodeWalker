@@ -191,7 +191,7 @@ namespace CodeWalker.GameFiles
             //    {
             //        if ((unk5.verts.Ptr > 0) && (unk5.verts.Ptr <= (ulong)Meta.DataBlocks.Length))
             //        {
-            //            var indicesoffset = unk5.Unk_853977995;
+            //            var indicesoffset = unk5.numVertsInBytes;
             //            var datablock = Meta.DataBlocks[((int)unk5.verts.Ptr) - 1];
             //            if (datablock != null)
             //            { }//vertex data... occlusion mesh?
@@ -2248,7 +2248,7 @@ namespace CodeWalker.GameFiles
         {
             var vptr = _OccludeModel.verts;
             var dataSize = _OccludeModel.dataSize;
-            var indicesOffset = _OccludeModel.Unk_853977995;
+            var indicesOffset = _OccludeModel.numVertsInBytes;
             var vertexCount = indicesOffset / 12;
             var indexCount = (int)(dataSize - indicesOffset);// / 4;
             Data = MetaTypes.GetByteArray(meta, vptr, dataSize);

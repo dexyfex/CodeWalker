@@ -3611,6 +3611,37 @@ namespace CodeWalker.GameFiles
         IsDoor = 474556907,
         IsGlass = 1060358829,
 
+        CellDimX = 2690909759,
+        CellDimY = 3691675019,
+        //METAL_SOLID_LADDER = 1101797524,
+        MaxCellX = 3824598937,
+        MaxCellY = 3374647798,
+        MinCellX = 860552138,
+        MinCellY = 496029782,
+        //ZoomTransformInformations = 3304563391, //this one doesn't make sense
+        aSelectionSets = 2131007641,
+        creatureMetadataName = 2766477159,
+        expressionDictionaryName = 1095612811,
+        fadeDistanceEnd = 475013030,
+        fadeDistanceStart = 40301253,
+        fadeInTimeEnd = 120454521,
+        fadeInTimeStart = 1616789093,
+        fadeOutTimeEnd = 75548206,
+        fadeOutTimeStart = 1297365553,
+        initialiseOnCollision = 1562817888,
+        maxScaleZ = 147400493,
+        maxZOffset = 3889902555,
+        minScaleZ = 3913056845,
+        minZOffset = 2591582364,
+        numTris = 2337695078,
+        numVertsInBytes = 853977995,
+        //rage__spdAABB = 4084721864,
+        scaleBySunIntensity = 59101696,
+
+
+
+
+
 
         //from rubidium / dav90 PSO XML / zonebind
         mpName = 2031203854,
