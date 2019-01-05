@@ -6634,6 +6634,11 @@ namespace CodeWalker
             Renderer.renderproxies = ProxiesCheckBox.Checked;
         }
 
+        private void HDTexturesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderhdtextures = HDTexturesCheckBox.Checked;
+        }
+
         private void PathsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             renderpaths = PathsCheckBox.Checked;

@@ -29,6 +29,7 @@ namespace CodeWalker.GameFiles
         public ResourcePointerList64<Texture> Textures { get; set; }
 
         public Dictionary<uint, Texture> Dict { get; set; }
+
         public long MemoryUsage
         {
             get
@@ -81,7 +82,7 @@ namespace CodeWalker.GameFiles
                     dict[hash] = tex;
                 }
             }
-            Dict = new Dictionary<uint, Texture>(dict);
+            Dict = dict;// new Dictionary<uint, Texture>(dict);
         }
 
         /// <summary>
@@ -108,21 +109,6 @@ namespace CodeWalker.GameFiles
             };
         }
 
-        public Dictionary<uint, Texture> GetDictionary()
-        {
-            Dictionary<uint, Texture> td = new Dictionary<uint, Texture>();
-            if ((Textures != null) && (Textures.data_items != null))
-            {
-                var texs = Textures.data_items;
-                var hashes = TextureNameHashes;
-                for (int i = 0; (i < texs.Length) && (i < hashes.Length); i++)
-                {
-                    td.Add(hashes[i], texs[i]);
-                }
-            }
-            return td;
-        }
-
         public Texture Lookup(uint hash)
         {
             Texture tex = null;
@@ -132,6 +118,21 @@ namespace CodeWalker.GameFiles
             }
             return tex;
         }
+
+        //public Dictionary<uint, Texture> GetDictionary()
+        //{
+        //    Dictionary<uint, Texture> td = new Dictionary<uint, Texture>();
+        //    if ((Textures != null) && (Textures.data_items != null))
+        //    {
+        //        var texs = Textures.data_items;
+        //        var hashes = TextureNameHashes;
+        //        for (int i = 0; (i < texs.Length) && (i < hashes.Length); i++)
+        //        {
+        //            td.Add(hashes[i], texs[i]);
+        //        }
+        //    }
+        //    return td;
+        //}
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class TextureBase : ResourceSystemBlock

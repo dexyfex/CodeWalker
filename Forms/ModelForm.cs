@@ -519,7 +519,14 @@ namespace CodeWalker.Forms
                     {
                         var f = Yft.Fragment;
 
-                        hash = Yft?.RpfFileEntry?.ShortNameHash ?? 0;
+                        hash = Yft.RpfFileEntry?.ShortNameHash ?? 0;
+
+                        var namelower = Yft.RpfFileEntry?.GetShortNameLower();
+                        if (namelower?.EndsWith("_hi") ?? false)
+                        {
+                            hash = JenkHash.GenHash(namelower.Substring(0, namelower.Length - 3));
+                        }
+
                         arch = TryGetArchetype(hash);
 
                         Renderer.RenderFragment(arch, null, f, hash);

@@ -376,6 +376,14 @@ namespace CodeWalker.Rendering
                 for (int i = 0; i < geom.RenderableTextures.Length; i++)
                 {
                     var itex = geom.RenderableTextures[i];
+                    if (geom.HDTextureEnable)
+                    {
+                        var hdtex = geom.RenderableTexturesHD[i];
+                        if ((hdtex != null) && (hdtex.IsLoaded))
+                        {
+                            itex = hdtex;
+                        }
+                    }
                     var ihash = geom.TextureParamHashes[i];
                     switch (ihash)
                     {

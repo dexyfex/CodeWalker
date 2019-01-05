@@ -15,7 +15,7 @@ namespace CodeWalker.GameFiles
         public RbfFile Rbf { get; set; }
 
 
-        public Dictionary<string, string> CMapParentTxds { get; set; }
+        public Dictionary<string, string> TxdRelationships { get; set; }
 
 
 
@@ -46,7 +46,7 @@ namespace CodeWalker.GameFiles
 
                     if (rbfstruct.Name == "CMapParentTxds")
                     {
-                        LoadMapParentTxds(rbfstruct);
+                        LoadTxdRelationships(rbfstruct);
                     }
 
                     Loaded = true;
@@ -68,7 +68,7 @@ namespace CodeWalker.GameFiles
                     xml = xml.Remove(0, bom.Length);
                 }
 
-                LoadMapParentTxds(xml);
+                LoadTxdRelationships(xml);
                 Loaded = true;
             }
 
@@ -76,10 +76,10 @@ namespace CodeWalker.GameFiles
         }
 
 
-        private void LoadMapParentTxds(RbfStructure rbfstruct)
+        private void LoadTxdRelationships(RbfStructure rbfstruct)
         {
 
-            CMapParentTxds = new Dictionary<string, string>();
+            TxdRelationships = new Dictionary<string, string>();
             //StringBuilder sblist = new StringBuilder();
             foreach (var child in rbfstruct.Children)
             {
@@ -118,9 +118,9 @@ namespace CodeWalker.GameFiles
                             }
                             if ((!string.IsNullOrEmpty(parentstr)) && (!string.IsNullOrEmpty(childstr)))
                             {
-                                if (!CMapParentTxds.ContainsKey(childstr))
+                                if (!TxdRelationships.ContainsKey(childstr))
                                 {
-                                    CMapParentTxds.Add(childstr, parentstr);
+                                    TxdRelationships.Add(childstr, parentstr);
                                 }
                                 else
                                 {
@@ -140,13 +140,13 @@ namespace CodeWalker.GameFiles
 
 
 
-        private void LoadMapParentTxds(string xml)
+        private void LoadTxdRelationships(string xml)
         {
             XmlDocument xmldoc = new XmlDocument();
             xmldoc.LoadXml(xml); //maybe better load xml.ToLower() and use "cmapparenttxds/txdrelationships/item" as xpath?
             XmlNodeList items = xmldoc.SelectNodes("CMapParentTxds/txdRelationships/Item | CMapParentTxds/txdRelationships/item");
 
-            CMapParentTxds = new Dictionary<string, string>();
+            TxdRelationships = new Dictionary<string, string>();
             for (int i = 0; i < items.Count; i++)
             {
                 string parentstr = Xml.GetChildInnerText(items[i], "parent");
@@ -154,9 +154,9 @@ namespace CodeWalker.GameFiles
 
                 if ((!string.IsNullOrEmpty(parentstr)) && (!string.IsNullOrEmpty(childstr)))
                 {
-                    if (!CMapParentTxds.ContainsKey(childstr))
+                    if (!TxdRelationships.ContainsKey(childstr))
                     {
-                        CMapParentTxds.Add(childstr, parentstr);
+                        TxdRelationships.Add(childstr, parentstr);
                     }
                 }
             }

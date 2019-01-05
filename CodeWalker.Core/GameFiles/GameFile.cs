@@ -70,6 +70,7 @@ namespace CodeWalker.GameFiles
         Ywr = 14,
         Yvr = 15,
         Gtxd = 16,
+        Vehicles = 17,
     }
 
 

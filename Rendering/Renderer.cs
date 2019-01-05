@@ -111,6 +111,9 @@ namespace CodeWalker.Rendering
         private List<RenderSkeletonItem> renderskeletonlist = new List<RenderSkeletonItem>();
         private List<VertexTypePC> skeletonLineVerts = new List<VertexTypePC>();
 
+        public bool renderhdtextures = true;
+
+
         public MapSelectionMode SelectionMode = MapSelectionMode.Entity; //to assist in rendering embedded collisions properly...
 
 
@@ -146,6 +149,7 @@ namespace CodeWalker.Rendering
         public bool RenderedBoundCompsListEnable = false; //whether or not to add rendered bound comps to the list
 
 
+        private List<YtdFile> tryGetRenderableHDtxds = new List<YtdFile>();
 
 
 
@@ -1578,38 +1582,31 @@ namespace CodeWalker.Rendering
             }
 
 
-            //go through the render list, and try ensure renderables and textures for all.
-            //if an entity is not fully loaded, set a flag for its parent, then traverse to root
-            //until found an entity that is fully loaded.
-            //on a second loop, build a final render list based on the flags.
-
-            for (int i = 0; i < renderworldentities.Count; i++)
+            if (renderentities)
             {
-                var ent = renderworldentities[i];
-                var arch = ent.Archetype;
-                var pent = ent.Parent;
-                var drawable = gameFileCache.TryGetDrawable(arch);
-                Renderable rndbl = TryGetRenderable(arch, drawable);
-                if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
+                //go through the render list, and try ensure renderables and textures for all.
+                //if an entity is not fully loaded, set a flag for its parent, then traverse to root
+                //until found an entity that is fully loaded.
+                //on a second loop, build a final render list based on the flags.
+                for (int i = 0; i < renderworldentities.Count; i++)
                 {
-                    RenderableEntity rent = new RenderableEntity();
-                    rent.Entity = ent;
-                    rent.Renderable = rndbl;
-                    renderworldrenderables.Add(rent);
+                    var ent = renderworldentities[i];
+                    var arch = ent.Archetype;
+                    var pent = ent.Parent;
+                    var drawable = gameFileCache.TryGetDrawable(arch);
+                    Renderable rndbl = TryGetRenderable(arch, drawable);
+                    if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
+                    {
+                        RenderableEntity rent = new RenderableEntity();
+                        rent.Entity = ent;
+                        rent.Renderable = rndbl;
+                        renderworldrenderables.Add(rent);
+                    }
+                    else if (waitforchildrentoload)
+                    {
+                        //todo: render parent if children loading.......
+                    }
                 }
-                else if (waitforchildrentoload)
-                {
-                    //todo: render parent if children loading.......
-                }
-
-                if ((rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision)) && renderinteriors)
-                {
-                    RenderInteriorCollisionMesh(ent);
-                }
-            }
-
-            if(renderentities)
-            {
                 for (int i = 0; i < renderworldrenderables.Count; i++)
                 {
                     var rent = renderworldrenderables[i];
@@ -1619,6 +1616,21 @@ namespace CodeWalker.Rendering
                     RenderArchetype(arch, ent, rent.Renderable, false);
                 }
             }
+
+
+
+            if (renderinteriors && (rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision)))
+            {
+                for (int i = 0; i < renderworldentities.Count; i++)
+                {
+                    var ent = renderworldentities[i];
+                    if (ent.IsMlo)
+                    {
+                        RenderInteriorCollisionMesh(ent);
+                    }
+                }
+            }
+
 
 
             if (rendercars)
@@ -1766,59 +1778,9 @@ namespace CodeWalker.Rendering
                     renderworldentities.Add(ent);
 
 
-                    if (renderinteriors && ent.IsMlo) //render Mlo child entities...
+                    if (renderinteriors && ent.IsMlo && (ent.MloInstance != null)) //render Mlo child entities...
                     {
-                        if ((ent.MloInstance != null))
-                        {
-                            if (ent.MloInstance.Entities != null)
-                            {
-                                for (int j = 0; j < ent.MloInstance.Entities.Length; j++)
-                                {
-                                    var intent = ent.MloInstance.Entities[j];
-                                    if (intent.Archetype == null) continue; //missing archetype...
-                                    if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
-
-                                    intent.IsVisible = true;
-
-                                    var iebscent = intent.Position + intent.BSCenter - camera.Position;
-                                    float iebsrad = intent.BSRadius;
-                                    if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
-                                    {
-                                        continue; //frustum cull interior ents
-                                    }
-
-                                    renderworldentities.Add(intent);
-                                }
-                            }
-                            if (ent.MloInstance.EntitySets != null)
-                            {
-                                foreach (var entitysets in ent.MloInstance.EntitySets)
-                                {
-                                    var entityset = entitysets.Value;
-                                    if (!entityset.Visible) continue;
-
-                                    var entities = entityset.Entities;
-                                    for (int i = 0; i < entities.Count; i++)
-                                    {
-                                        var intent = entities[i];
-                                        if (intent.Archetype == null) continue; //missing archetype...
-                                        if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
-
-                                        intent.IsVisible = true;
-
-                                        var iebscent = intent.Position + intent.BSCenter - camera.Position;
-                                        float iebsrad = intent.BSRadius;
-                                        if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
-                                        {
-                                            continue; //frustum cull interior ents
-                                        }
-
-                                        renderworldentities.Add(intent);
-
-                                    }
-                                }
-                            }
-                        }
+                        RenderWorldAddInteriorEntities(ent);
                     }
 
                 }
@@ -1835,7 +1797,57 @@ namespace CodeWalker.Rendering
                 }
             }
         }
+        private void RenderWorldAddInteriorEntities(YmapEntityDef ent)
+        {
+            if (ent.MloInstance.Entities != null)
+            {
+                for (int j = 0; j < ent.MloInstance.Entities.Length; j++)
+                {
+                    var intent = ent.MloInstance.Entities[j];
+                    if (intent.Archetype == null) continue; //missing archetype...
+                    if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
 
+                    intent.IsVisible = true;
+
+                    var iebscent = intent.Position + intent.BSCenter - camera.Position;
+                    float iebsrad = intent.BSRadius;
+                    if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
+                    {
+                        continue; //frustum cull interior ents
+                    }
+
+                    renderworldentities.Add(intent);
+                }
+            }
+            if (ent.MloInstance.EntitySets != null)
+            {
+                foreach (var entitysets in ent.MloInstance.EntitySets)
+                {
+                    var entityset = entitysets.Value;
+                    if (!entityset.Visible) continue;
+
+                    var entities = entityset.Entities;
+                    for (int i = 0; i < entities.Count; i++)
+                    {
+                        var intent = entities[i];
+                        if (intent.Archetype == null) continue; //missing archetype...
+                        if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
+
+                        intent.IsVisible = true;
+
+                        var iebscent = intent.Position + intent.BSCenter - camera.Position;
+                        float iebsrad = intent.BSRadius;
+                        if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
+                        {
+                            continue; //frustum cull interior ents
+                        }
+
+                        renderworldentities.Add(intent);
+
+                    }
+                }
+            }
+        }
 
 
 
@@ -2381,6 +2393,16 @@ namespace CodeWalker.Rendering
             float distance = (camrel + bscen).Length();
 
 
+
+            //bool usehdtxd = renderhdtextures && ((dist - bsrad) <= arche._BaseArchetypeDef.hdTextureDist);
+            //var usehdtxd = false;
+            //if ((arch != null) && (renderhdtextures))
+            //{
+            //    usehdtxd = ((ent.Distance - arch.BSRadius) <= arch._BaseArchetypeDef.hdTextureDist);
+            //}
+
+
+
             if ((rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision)) && rendercollisionmeshlayerdrawable)
             {
                 Drawable sdrawable = rndbl.Key as Drawable;
@@ -2581,14 +2603,27 @@ namespace CodeWalker.Rendering
 
 
 
-
         private Renderable TryGetRenderable(Archetype arche, DrawableBase drawable, uint txdHash = 0)
         {
             if (drawable == null) return null;
             //BUG: only last texdict used!! needs to cache textures per archetype........
             //(but is it possible to have the same drawable with different archetypes?)
-            uint texDict = (arche != null) ? arche.TextureDict.Hash : txdHash;
-            uint clipDict = (arche != null) ? arche.ClipDict.Hash : 0;
+            MetaHash texDict = txdHash;
+            //uint texDictOrig = txdHash;
+            uint clipDict = 0;
+
+            if (arche != null)
+            {
+                texDict = arche.TextureDict.Hash;
+                clipDict = arche.ClipDict.Hash;
+
+                //texDictOrig = texDict;
+                //if (hdtxd)
+                //{
+                //    texDict = gameFileCache.TryGetHDTextureHash(texDict);
+                //}
+            }
+
 
             Renderable rndbl = renderableCache.GetRenderable(drawable);
             if (rndbl == null) return null;
@@ -2624,11 +2659,61 @@ namespace CodeWalker.Rendering
 
             var yptTexDict = (drawable.Owner as YptFile)?.PtfxList?.TextureDictionary;
 
+
+            tryGetRenderableHDtxds.Clear();
+            if (renderhdtextures)
+            {
+                if (arche != null) //try get HD txd for the asset
+                {
+                    MetaHash hdtxd = gameFileCache.TryGetHDTextureHash(arche._BaseArchetypeDef.assetName);
+                    if (hdtxd != arche._BaseArchetypeDef.assetName)
+                    {
+                        var asshdytd = gameFileCache.GetYtd(hdtxd);
+                        if ((asshdytd != null) && (asshdytd.Loaded))
+                        {
+                            tryGetRenderableHDtxds.Add(asshdytd);
+                        }
+                    }
+                }
+                if (texDict != 0) //try get HD txd for the current txd 
+                {
+                    MetaHash hdtxd = gameFileCache.TryGetHDTextureHash(texDict);
+                    if (hdtxd != texDict)
+                    {
+                        var txdhdytd = gameFileCache.GetYtd(hdtxd);
+                        if ((txdhdytd != null) && (txdhdytd.Loaded))
+                        {
+                            tryGetRenderableHDtxds.Add(txdhdytd);
+                        }
+                    }
+
+                    MetaHash ptxdname = gameFileCache.TryGetParentYtdHash(texDict);
+                    while (ptxdname != 0) //look for parent HD txds
+                    {
+                        MetaHash phdtxdname = gameFileCache.TryGetHDTextureHash(ptxdname);
+                        if (phdtxdname != ptxdname)
+                        {
+                            var phdytd = gameFileCache.GetYtd(phdtxdname);
+                            if ((phdytd != null) && (phdytd.Loaded))
+                            {
+                                tryGetRenderableHDtxds.Add(phdytd);
+                            }
+                        }
+                        ptxdname = gameFileCache.TryGetParentYtdHash(ptxdname);
+                    }
+                }
+                if (tryGetRenderableHDtxds.Count > 0)
+                { }
+            }
+
+            YtdFile ytd = (texDict != 0) ? gameFileCache.GetYtd(texDict) : null;
+
+
             bool alltexsloaded = true;
             int missingtexcount = 0;
-            for (int mi = 0; mi < rndbl.HDModels.Length; mi++)
+            for (int mi = 0; mi < rndbl.AllModels.Length; mi++)
             {
-                var model = rndbl.HDModels[mi];
+                var model = rndbl.AllModels[mi];
 
                 //if (!RenderIsModelFinalRender(model) && !renderproxies)
                 //{
@@ -2644,56 +2729,32 @@ namespace CodeWalker.Rendering
                         {
                             var tex = geom.Textures[i];
                             var ttex = tex as Texture;
+                            Texture dtex = null;
                             RenderableTexture rdtex = null;
-                            if ((ttex == null) && (tex != null))
+                            if ((tex != null) && (ttex == null))
                             {
                                 //TextureRef means this RenderableTexture needs to be loaded from texture dict...
                                 if (yptTexDict != null) //for ypt files, first try the embedded tex dict..
                                 {
-                                    var dtex = yptTexDict.Lookup(tex.NameHash);
-                                    rdtex = renderableCache.GetRenderableTexture(dtex);
+                                    dtex = yptTexDict.Lookup(tex.NameHash);
                                 }
                                 else if (texDict != 0)
                                 {
-                                    YtdFile ytd = gameFileCache.GetYtd(texDict);
                                     if ((ytd != null) && (ytd.Loaded) && (ytd.TextureDict != null))
                                     {
-                                        var dtex = ytd.TextureDict.Lookup(tex.NameHash);
+                                        dtex = ytd.TextureDict.Lookup(tex.NameHash);
                                         if (dtex == null)
                                         {
-                                            //not present in dictionary... check already loaded texture dicts...
-                                            var ytd2 = gameFileCache.TryGetTextureDictForTexture(tex.NameHash);
-                                            if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
-                                            {
-                                                dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                            }
-                                            else
-                                            {
-                                                //couldn't find texture dict?
-                                                //first try going through ytd hierarchy...
-                                                dtex = gameFileCache.TryFindTextureInParent(tex.NameHash, texDict);
-
-
-                                                //if (dtex == null)
-                                                //{ //try for a texture dict with the same hash as the archetype?
-                                                //    dtex = gameFileCache.TryFindTextureInParent(tex.TextureRef.NameHash, arche.Hash);
-                                                //    if (dtex != null)
-                                                //    { }
-                                                //}
-                                            }
-                                        }
-                                        if (dtex != null)
-                                        {
-                                            geom.Textures[i] = dtex; //cache it for next time to avoid the lookup...
-                                            rdtex = renderableCache.GetRenderableTexture(dtex);
+                                            //couldn't find texture in specified dict
+                                            //first try going through ytd hierarchy...
+                                            dtex = gameFileCache.TryFindTextureInParent(tex.NameHash, texDict);
                                         }
                                         if (rdtex == null)
                                         { } //nothing to see here :(
                                     }
-                                    else if ((ytd == null))
+                                    else if ((ytd == null))//ytd not found
                                     {
-                                        Texture dtex = null;
-                                        if (drawable.ShaderGroup.TextureDictionary != null)
+                                        if (drawable.ShaderGroup.TextureDictionary != null)//check any embedded texdict
                                         {
                                             dtex = drawable.ShaderGroup.TextureDictionary.Lookup(tex.NameHash);
                                             if (dtex == null)
@@ -2703,19 +2764,8 @@ namespace CodeWalker.Rendering
                                         }
                                         if (dtex == null)
                                         {
-                                            var ytd2 = gameFileCache.TryGetTextureDictForTexture(tex.NameHash);
-                                            if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
-                                            {
-                                                dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                            }
-                                            if (dtex == null)
-                                            {
-                                                dtex = gameFileCache.TryFindTextureInParent(tex.NameHash, texDict);
-                                            }
+                                            dtex = gameFileCache.TryFindTextureInParent(tex.NameHash, texDict);
                                         }
-                                        rdtex = renderableCache.GetRenderableTexture(dtex);
-                                        if (rdtex == null)
-                                        { missingtexcount -= 2; } //(give extra chance..)  couldn't find the texture! :(
                                     }
                                     else if (ytd != null)
                                     {
@@ -2724,13 +2774,26 @@ namespace CodeWalker.Rendering
                                     }
                                 }
                                 else //no texdict specified, nothing to see here..
+                                { }
+                                if (dtex == null)
                                 {
+                                    //not present in dictionary... check already loaded texture dicts... (maybe resident?)
                                     var ytd2 = gameFileCache.TryGetTextureDictForTexture(tex.NameHash);
                                     if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
                                     {
-                                        var dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                        rdtex = renderableCache.GetRenderableTexture(dtex);
+                                        dtex = ytd2.TextureDict.Lookup(tex.NameHash);
                                     }
+                                    //else
+                                    //{
+                                    //    //couldn't find texture dict?
+                                    //}
+                                }
+
+                                if (dtex != null)
+                                {
+                                    geom.Textures[i] = dtex; //cache it for next time to avoid the lookup...
+                                    ttex = dtex;
+                                    rdtex = renderableCache.GetRenderableTexture(dtex);
                                 }
                             }
                             else if (ttex != null) //ensure embedded renderable texture
@@ -2756,6 +2819,29 @@ namespace CodeWalker.Rendering
                                 missingtexcount++;
                             }
 
+
+                            RenderableTexture rhdtex = null;
+                            if (renderhdtextures)
+                            {
+                                Texture hdtex = geom.TexturesHD[i];
+                                if (hdtex == null)
+                                {
+                                    for (int j = 0; j < tryGetRenderableHDtxds.Count; j++)
+                                    {
+                                        hdtex = tryGetRenderableHDtxds[j].TextureDict?.Lookup(tex.NameHash);
+                                        if (hdtex != null) break;
+                                    }
+                                    if (hdtex != null)
+                                    {
+                                        geom.TexturesHD[i] = hdtex;
+                                    }
+                                }
+                                if (hdtex != null)
+                                {
+                                    rhdtex = renderableCache.GetRenderableTexture(hdtex);
+                                }
+                            }
+                            geom.RenderableTexturesHD[i] = rhdtex;
 
                         }
                     }

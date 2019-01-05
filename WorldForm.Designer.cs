@@ -109,6 +109,7 @@ namespace CodeWalker
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.OptionsTabControl = new System.Windows.Forms.TabControl();
             this.tabPage8 = new System.Windows.Forms.TabPage();
+            this.CarGeneratorsCheckBox = new System.Windows.Forms.CheckBox();
             this.RenderEntitiesCheckBox = new System.Windows.Forms.CheckBox();
             this.AdvancedSettingsButton = new System.Windows.Forms.Button();
             this.ControlSettingsButton = new System.Windows.Forms.Button();
@@ -286,7 +287,7 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
-            this.CarGeneratorsCheckBox = new System.Windows.Forms.CheckBox();
+            this.HDTexturesCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -1335,6 +1336,17 @@ namespace CodeWalker
             this.tabPage8.Text = "General";
             this.tabPage8.UseVisualStyleBackColor = true;
             // 
+            // CarGeneratorsCheckBox
+            // 
+            this.CarGeneratorsCheckBox.AutoSize = true;
+            this.CarGeneratorsCheckBox.Location = new System.Drawing.Point(10, 72);
+            this.CarGeneratorsCheckBox.Name = "CarGeneratorsCheckBox";
+            this.CarGeneratorsCheckBox.Size = new System.Drawing.Size(124, 17);
+            this.CarGeneratorsCheckBox.TabIndex = 31;
+            this.CarGeneratorsCheckBox.Text = "Show car generators";
+            this.CarGeneratorsCheckBox.UseVisualStyleBackColor = true;
+            this.CarGeneratorsCheckBox.CheckedChanged += new System.EventHandler(this.CarGeneratorsCheckBox_CheckedChanged);
+            // 
             // RenderEntitiesCheckBox
             // 
             this.RenderEntitiesCheckBox.AutoSize = true;
@@ -1633,6 +1645,7 @@ namespace CodeWalker
             // 
             // tabPage14
             // 
+            this.tabPage14.Controls.Add(this.HDTexturesCheckBox);
             this.tabPage14.Controls.Add(this.WireframeCheckBox);
             this.tabPage14.Controls.Add(this.RenderModeComboBox);
             this.tabPage14.Controls.Add(this.label11);
@@ -3270,16 +3283,18 @@ namespace CodeWalker
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
             // 
-            // CarGeneratorsCheckBox
+            // HDTexturesCheckBox
             // 
-            this.CarGeneratorsCheckBox.AutoSize = true;
-            this.CarGeneratorsCheckBox.Location = new System.Drawing.Point(10, 72);
-            this.CarGeneratorsCheckBox.Name = "CarGeneratorsCheckBox";
-            this.CarGeneratorsCheckBox.Size = new System.Drawing.Size(124, 17);
-            this.CarGeneratorsCheckBox.TabIndex = 31;
-            this.CarGeneratorsCheckBox.Text = "Show car generators";
-            this.CarGeneratorsCheckBox.UseVisualStyleBackColor = true;
-            this.CarGeneratorsCheckBox.CheckedChanged += new System.EventHandler(this.CarGeneratorsCheckBox_CheckedChanged);
+            this.HDTexturesCheckBox.AutoSize = true;
+            this.HDTexturesCheckBox.Checked = true;
+            this.HDTexturesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.HDTexturesCheckBox.Location = new System.Drawing.Point(10, 231);
+            this.HDTexturesCheckBox.Name = "HDTexturesCheckBox";
+            this.HDTexturesCheckBox.Size = new System.Drawing.Size(82, 17);
+            this.HDTexturesCheckBox.TabIndex = 57;
+            this.HDTexturesCheckBox.Text = "HD textures";
+            this.HDTexturesCheckBox.UseVisualStyleBackColor = true;
+            this.HDTexturesCheckBox.CheckedChanged += new System.EventHandler(this.HDTexturesCheckBox_CheckedChanged);
             // 
             // WorldForm
             // 
@@ -3624,5 +3639,6 @@ namespace CodeWalker
         private System.Windows.Forms.CheckBox RenderEntitiesCheckBox;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectOcclusionButton;
         private System.Windows.Forms.CheckBox CarGeneratorsCheckBox;
+        private System.Windows.Forms.CheckBox HDTexturesCheckBox;
     }
 }

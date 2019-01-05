@@ -60,6 +60,7 @@
     <Compile Include="GameFiles\FileTypes\JPsoFile.cs" />
     <Compile Include="GameFiles\FileTypes\RelFile.cs" />
     <Compile Include="GameFiles\FileTypes\Stats.cs" />
+    <Compile Include="GameFiles\FileTypes\VehiclesFile.cs" />
     <Compile Include="GameFiles\FileTypes\YbnFile.cs" />
     <Compile Include="GameFiles\FileTypes\YcdFile.cs" />
     <Compile Include="GameFiles\FileTypes\YddFile.cs" />

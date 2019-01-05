@@ -27,7 +27,8 @@ namespace CodeWalker.GameFiles
         private volatile bool archetypesLoaded = false;
         private Dictionary<uint, Archetype> archetypeDict = new Dictionary<uint, Archetype>();
         private Dictionary<uint, RpfFileEntry> textureLookup = new Dictionary<uint, RpfFileEntry>();
-        private Dictionary<uint, uint> textureParents;
+        private Dictionary<MetaHash, MetaHash> textureParents;
+        private Dictionary<MetaHash, MetaHash> hdtexturelookup;
 
         private object updateSyncRoot = new object();
         private object requestSyncRoot = new object();
@@ -132,6 +133,7 @@ namespace CodeWalker.GameFiles
             mainCache.Clear();
 
             textureLookup.Clear();
+
             GameFile queueclear;
             while (requestQueue.TryPop(out queueclear))
             { } //empty the old queue out...
@@ -958,6 +960,7 @@ namespace CodeWalker.GameFiles
         private void InitManifestDicts()
         {
             AllManifests = new List<YmfFile>();
+            hdtexturelookup = new Dictionary<MetaHash, MetaHash>();
             foreach (RpfFile file in ActiveMapRpfFiles.Values) //RpfMan.BaseRpfs)
             {
                 if (file.AllEntries == null) continue;
@@ -985,6 +988,19 @@ namespace CodeWalker.GameFiles
                             { }
                             else
                             { }
+
+
+                            if (ymffile.HDTxdAssetBindings != null)
+                            {
+                                for (int i = 0; i < ymffile.HDTxdAssetBindings.Length; i++)
+                                {
+                                    var b = ymffile.HDTxdAssetBindings[i];
+                                    var targetasset = JenkHash.GenHash(b.targetAsset.ToString().ToLowerInvariant());
+                                    var hdtxd = JenkHash.GenHash(b.HDTxd.ToString().ToLowerInvariant());
+                                    hdtexturelookup[targetasset] = hdtxd;
+                                }
+                            }
+
                         }
                     }
 
@@ -996,70 +1012,49 @@ namespace CodeWalker.GameFiles
         private void InitGtxds()
         {
 
-            Dictionary<uint, uint> parentTxds = new Dictionary<uint, uint>();
+            var parentTxds = new Dictionary<MetaHash, MetaHash>();
 
             IEnumerable<RpfFile> rpfs = PreloadedMode ? AllRpfs : (IEnumerable<RpfFile>)ActiveMapRpfFiles.Values;
 
-            foreach (RpfFile file in rpfs)
+            var addTxdRelationships = new Action<Dictionary<string, string>>((from) => 
             {
-                if (file.AllEntries == null) continue;
-                foreach (RpfEntry entry in file.AllEntries)
+                foreach (var kvp in from)
                 {
-                    try
+                    uint chash = JenkHash.GenHash(kvp.Key.ToLowerInvariant());
+                    uint phash = JenkHash.GenHash(kvp.Value.ToLowerInvariant());
+                    if (!parentTxds.ContainsKey(chash))
                     {
-                        if ((entry.NameLower == "gtxd.ymt") || (entry.NameLower == "gtxd.meta"))
-                        {
-                            GtxdFile ymt = RpfMan.GetFile<GtxdFile>(entry);
-                            if (ymt.CMapParentTxds != null)
-                            {
-                                foreach (var kvp in ymt.CMapParentTxds)
-                                {
-                                    uint chash = JenkHash.GenHash(kvp.Key.ToLowerInvariant());
-                                    uint phash = JenkHash.GenHash(kvp.Value.ToLowerInvariant());
-                                    if (!parentTxds.ContainsKey(chash))
-                                    {
-                                        parentTxds.Add(chash, phash);
-                                    }
-                                    else
-                                    {
-                                    }
-                                }
-                            }
-                        }
+                        parentTxds.Add(chash, phash);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        string errstr = entry.Path + "\n" + ex.ToString();
-                        ErrorLog(errstr);
                     }
                 }
-            }
+            });
 
-            if (EnableDlc)
+            var addRpfTxdRelationships = new Action<IEnumerable<RpfFile>>((from) =>
             {
-                foreach (var dlcfile in DlcActiveRpfs)
+                foreach (RpfFile file in from)
                 {
-                    foreach (RpfEntry entry in dlcfile.AllEntries)
+                    if (file.AllEntries == null) continue;
+                    foreach (RpfEntry entry in file.AllEntries)
                     {
                         try
                         {
-                            if (entry.NameLower == "gtxd.meta")
+                            if ((entry.NameLower == "gtxd.ymt") || (entry.NameLower == "gtxd.meta"))
                             {
                                 GtxdFile ymt = RpfMan.GetFile<GtxdFile>(entry);
-                                if (ymt.CMapParentTxds != null)
+                                if (ymt.TxdRelationships != null)
                                 {
-                                    foreach (var kvp in ymt.CMapParentTxds)
-                                    {
-                                        uint chash = JenkHash.GenHash(kvp.Key.ToLowerInvariant());
-                                        uint phash = JenkHash.GenHash(kvp.Value.ToLowerInvariant());
-                                        if (!parentTxds.ContainsKey(chash))
-                                        {
-                                            parentTxds.Add(chash, phash);
-                                        }
-                                        else
-                                        {
-                                        }
-                                    }
+                                    addTxdRelationships(ymt.TxdRelationships);
+                                }
+                            }
+                            else if (entry.NameLower == "vehicles.meta")
+                            {
+                                VehiclesFile vf = RpfMan.GetFile<VehiclesFile>(entry);
+                                if (vf.TxdRelationships != null)
+                                {
+                                    addTxdRelationships(vf.TxdRelationships);
                                 }
                             }
                         }
@@ -1070,6 +1065,16 @@ namespace CodeWalker.GameFiles
                         }
                     }
                 }
+
+            });
+
+
+            addRpfTxdRelationships(rpfs);
+
+
+            if (EnableDlc)
+            {
+                addRpfTxdRelationships(DlcActiveRpfs);
             }
 
 
@@ -1078,7 +1083,7 @@ namespace CodeWalker.GameFiles
 
 
 
-            //ensure global texture dicts:
+            //ensure resident global texture dicts:
             YtdFile ytd1 = new YtdFile(GetYtdEntry(JenkHash.GenHash("mapdetail")));
             LoadFile(ytd1);
             AddTextureLookups(ytd1);
@@ -1087,17 +1092,6 @@ namespace CodeWalker.GameFiles
             LoadFile(ytd2);
             AddTextureLookups(ytd2);
 
-            YtdFile ytd3 = new YtdFile(GetYtdEntry(JenkHash.GenHash("vehshare_worn")));
-            LoadFile(ytd3);
-            AddTextureLookups(ytd3);
-
-            YtdFile ytd4 = new YtdFile(GetYtdEntry(JenkHash.GenHash("vehshare_army")));
-            LoadFile(ytd4);
-            AddTextureLookups(ytd4);
-
-            YtdFile ytd5 = new YtdFile(GetYtdEntry(JenkHash.GenHash("vehshare_truck")));
-            LoadFile(ytd5);
-            AddTextureLookups(ytd5);
 
 
         }
@@ -1435,7 +1429,7 @@ namespace CodeWalker.GameFiles
             {
                 lock (updateSyncRoot)
                 {
-                    lock (textureSyncRoot)
+                    //lock (textureSyncRoot)
                     {
                         SelectedDlc = dlc;
                         EnableDlc = enable;
@@ -1459,7 +1453,7 @@ namespace CodeWalker.GameFiles
             {
                 lock (updateSyncRoot)
                 {
-                    lock (textureSyncRoot)
+                    //lock (textureSyncRoot)
                     {
                         EnableMods = enable;
                         RpfMan.EnableMods = enable;
@@ -1901,7 +1895,7 @@ namespace CodeWalker.GameFiles
                         break;
                     case GameFileType.Ytd:
                         req.Loaded = LoadFile(req as YtdFile);
-                        if (req.Loaded) AddTextureLookups(req as YtdFile);
+                        //if (req.Loaded) AddTextureLookups(req as YtdFile);
                         break;
                     case GameFileType.Ymap:
                         YmapFile y = req as YmapFile;
@@ -1983,7 +1977,7 @@ namespace CodeWalker.GameFiles
         }
         public YtdFile TryGetParentYtd(uint hash)
         {
-            uint phash;
+            MetaHash phash;
             if(textureParents.TryGetValue(hash, out phash))
             {
                 return GetYtd(phash);
@@ -1992,9 +1986,18 @@ namespace CodeWalker.GameFiles
         }
         public uint TryGetParentYtdHash(uint hash)
         {
-            uint phash = 0;
+            MetaHash phash = 0;
             textureParents.TryGetValue(hash, out phash);
             return phash;
+        }
+        public uint TryGetHDTextureHash(uint txdhash)
+        {
+            MetaHash hdhash = 0;
+            if (hdtexturelookup?.TryGetValue(txdhash, out hdhash) ?? false)
+            {
+                return hdhash;
+            }
+            return txdhash;
         }
 
         public Texture TryFindTextureInParent(uint texhash, uint txdhash)
@@ -2002,9 +2005,12 @@ namespace CodeWalker.GameFiles
             Texture tex = null;
 
             var ytd = TryGetParentYtd(txdhash);
-            while ((ytd != null) && (ytd.Loaded) && (ytd.TextureDict != null) && (tex == null))
+            while ((ytd != null) && (tex == null))
             {
-                tex = ytd.TextureDict.Lookup(texhash);
+                if (ytd.Loaded && (ytd.TextureDict != null))
+                {
+                    tex = ytd.TextureDict.Lookup(texhash);
+                }
                 if (tex == null)
                 {
                     ytd = TryGetParentYtd(ytd.Key.Hash);

@@ -59,6 +59,9 @@ namespace CodeWalker.Rendering
         public bool AllTexturesLoaded = false;
 
         public RenderableModel[] HDModels;
+        public RenderableModel[] MedModels;
+        public RenderableModel[] LowModels;
+        public RenderableModel[] VlowModels;
         public RenderableModel[] AllModels;
         //public Dictionary<uint, Texture> TextureDict { get; private set; }
         //public long EmbeddedTextureSize { get; private set; }
@@ -88,25 +91,31 @@ namespace CodeWalker.Rendering
             }
             if (med != null)
             {
+                MedModels = new RenderableModel[med.Length];
                 for (int i = 0; i < med.Length; i++)
                 {
-                    AllModels[curmodel + i] = InitModel(med[i]);
+                    MedModels[i] = InitModel(med[i]);
+                    AllModels[curmodel + i] = MedModels[i];
                 }
                 curmodel += med.Length;
             }
             if (low != null)
             {
+                LowModels = new RenderableModel[low.Length];
                 for (int i = 0; i < low.Length; i++)
                 {
-                    AllModels[curmodel + i] = InitModel(low[i]);
+                    LowModels[i] = InitModel(low[i]);
+                    AllModels[curmodel + i] = LowModels[i];
                 }
                 curmodel += low.Length;
             }
             if (vlow != null)
             {
+                VlowModels = new RenderableModel[vlow.Length];
                 for (int i = 0; i < vlow.Length; i++)
                 {
-                    AllModels[curmodel + i] = InitModel(vlow[i]);
+                    VlowModels[i] =  InitModel(vlow[i]);
+                    AllModels[curmodel + i] = VlowModels[i];
                 }
                 curmodel += vlow.Length;
             }
@@ -364,7 +373,9 @@ namespace CodeWalker.Rendering
         public uint IndexDataSize { get; set; }
         public uint TotalDataSize { get; set; }
         public TextureBase[] Textures;
+        public Texture[] TexturesHD;
         public RenderableTexture[] RenderableTextures;
+        public RenderableTexture[] RenderableTexturesHD;
         public MetaName[] TextureParamHashes;
         public PrimitiveTopology Topology { get; set; }
         public bool IsFragment = false;
@@ -392,6 +403,7 @@ namespace CodeWalker.Rendering
         public float WaterHeight { get; set; } = 0; //for terrainfoam
         public float WaveMovement { get; set; } = 0; //for terrainfoam
         public float HeightOpacity { get; set; } = 0; //for terrainfoam
+        public bool HDTextureEnable = true;
 
 
         public static MetaName[] GetTextureSamplerList()
@@ -595,60 +607,9 @@ namespace CodeWalker.Rendering
                 {
                     TextureParamHashes = phashes.ToArray();
                     Textures = texs.ToArray();
+                    TexturesHD = new Texture[texs.Count];
                     RenderableTextures = new RenderableTexture[texs.Count]; //these will get populated at render time.
-                    //Textures = new RenderableTexture[texs.Count];
-                    for (int i = 0; i < texs.Count; i++)
-                    {
-                        //RenderableTexture tex = new RenderableTexture();
-                        //tex.Init(texs[i]);
-                        //Textures[i] = tex;
-
-
-                        ////testing texture usage
-                        //MetaName thash = phashes[i];
-                        //switch (thash)
-                        //{
-                        //    case MetaName.DiffuseSampler: //base diffuse
-                        //    case MetaName.SpecSampler: //base specular
-                        //    case MetaName.BumpSampler: //base normal
-                        //    case MetaName.TintPaletteSampler: // _pal
-                        //    case MetaName.DetailSampler: // ENV_
-                        //    case MetaName.FlowSampler: //river _flow
-                        //    case MetaName.FogSampler: //river _fog , water slod
-                        //    case MetaName.TextureSampler_layer0: //CS_RSN_SL_Road_0007
-                        //    case MetaName.BumpSampler_layer0: //CS_RSN_SL_Road_0007_n
-                        //    case MetaName.heightMapSamplerLayer0: //nxg_cs_rsn_sl_road_0007_h
-                        //    case MetaName.TextureSampler_layer1: //IM_Road_009b
-                        //    case MetaName.BumpSampler_layer1: //IM_Road_010b_N
-                        //    case MetaName.heightMapSamplerLayer1: //nxg_im_road_010b_h
-                        //    case MetaName.TextureSampler_layer2: //IM_Concrete10
-                        //    case MetaName.BumpSampler_layer2: //IM_Concrete13_N
-                        //    case MetaName.heightMapSamplerLayer2: //nxg_im_concrete13_h
-                        //    case MetaName.TextureSampler_layer3: //SC1_RSN_NS_ground_0009
-                        //    case MetaName.BumpSampler_layer3: //sc1_rsn_ns_ground_0010_n
-                        //    case MetaName.heightMapSamplerLayer3: //nxg_sc1_rsn_ns_ground_0010_b_h
-                        //    case MetaName.lookupSampler: //TF_RSN_Msk_CS1_DesHill1, bh1_43_golf_blendmap_04_LOD
-                        //    case MetaName.heightSampler: //nxg_prop_tree_palm2_displ_l
-                        //    case MetaName.FoamSampler: //bj_beachfoam01_lod, CS_RSN_SL_RiverFoam_01_A_lodCS_RSN_SL_RiverFoam_01_A
-                        //    case MetaName.textureSamp://cable...
-                        //        break;
-                        //    //not yet implemented:
-                        //    case MetaName.DiffuseSampler2:
-                        //    case MetaName.DiffuseHfSampler:
-                        //    case MetaName.ComboHeightSamplerFur01:
-                        //    case MetaName.ComboHeightSamplerFur23:
-                        //    case MetaName.ComboHeightSamplerFur45:
-                        //    case MetaName.ComboHeightSamplerFur67:
-                        //    case MetaName.StippleSampler:
-                        //    case MetaName.FurMaskSampler:
-                        //    case MetaName.EnvironmentSampler:
-                        //    case MetaName.distanceMapSampler:
-                        //        break;
-                        //    default:
-                        //        break;
-                        //}
-
-                    }
+                    RenderableTexturesHD = new RenderableTexture[texs.Count]; //these will get populated at render time.
                 }
             }
 
@@ -770,6 +731,14 @@ namespace CodeWalker.Rendering
                     RenderableTextures[i] = null;
                 }
                 RenderableTextures = null;
+            }
+            if (RenderableTexturesHD != null)
+            {
+                for (int i = 0; i < RenderableTexturesHD.Length; i++)
+                {
+                    RenderableTexturesHD[i] = null;
+                }
+                RenderableTexturesHD = null;
             }
 
         }
