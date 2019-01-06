@@ -56,6 +56,8 @@ namespace CodeWalker.Rendering
 
     public class Renderable : RenderableCacheItem<DrawableBase>
     {
+        public YtdFile[] SDtxds;
+        public YtdFile[] HDtxds;
         public bool AllTexturesLoaded = false;
 
         public RenderableModel[] HDModels;
