@@ -18,7 +18,7 @@ namespace CodeWalker.GameFiles
         private Action<string> ErrorLog;
         public int MaxItemsPerLoop = 1; //to keep things flowing...
 
-        private ConcurrentStack<GameFile> requestQueue = new ConcurrentStack<GameFile>();
+        private ConcurrentQueue<GameFile> requestQueue = new ConcurrentQueue<GameFile>();
 
         ////dynamic cache
         private Cache<GameFileCacheKey, GameFile> mainCache;
@@ -135,7 +135,7 @@ namespace CodeWalker.GameFiles
             textureLookup.Clear();
 
             GameFile queueclear;
-            while (requestQueue.TryPop(out queueclear))
+            while (requestQueue.TryDequeue(out queueclear))
             { } //empty the old queue out...
         }
 
@@ -1486,9 +1486,9 @@ namespace CodeWalker.GameFiles
 
         private void TryLoadEnqueue(GameFile gf)
         {
-            if (((!gf.Loaded)) && (requestQueue.Count < 5))//(!gf.LoadQueued) && 
+            if (((!gf.Loaded)) && (requestQueue.Count < 10))// && (!gf.LoadQueued)
             {
-                requestQueue.Push(gf);
+                requestQueue.Enqueue(gf);
                 gf.LoadQueued = true;
             }
         }
@@ -1870,7 +1870,7 @@ namespace CodeWalker.GameFiles
 
             int itemcount = 0;
 
-            while (requestQueue.TryPop(out req) && (itemcount < MaxItemsPerLoop))
+            while (requestQueue.TryDequeue(out req) && (itemcount < MaxItemsPerLoop))
             {
                 //process content requests.
                 if (req.Loaded)

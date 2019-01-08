@@ -253,10 +253,10 @@ namespace CodeWalker.Rendering
 
     public class RenderableCacheLookup<TKey, TVal> where TVal: RenderableCacheItem<TKey>, new()
     {
-        private ConcurrentStack<TVal> itemsToLoad = new ConcurrentStack<TVal>();
-        private ConcurrentStack<TVal> itemsToUnload = new ConcurrentStack<TVal>();
-        private ConcurrentStack<TVal> itemsToInvalidate = new ConcurrentStack<TVal>();
-        private ConcurrentStack<TKey> keysToInvalidate = new ConcurrentStack<TKey>();
+        private ConcurrentQueue<TVal> itemsToLoad = new ConcurrentQueue<TVal>();
+        private ConcurrentQueue<TVal> itemsToUnload = new ConcurrentQueue<TVal>();
+        private ConcurrentQueue<TVal> itemsToInvalidate = new ConcurrentQueue<TVal>();
+        private ConcurrentQueue<TKey> keysToInvalidate = new ConcurrentQueue<TKey>();
         private LinkedList<TVal> loadeditems = new LinkedList<TVal>();//only use from content thread!
         private Dictionary<TKey, TVal> cacheitems = new Dictionary<TKey, TVal>();//only use from render thread!
         public long CacheLimit;
@@ -296,16 +296,16 @@ namespace CodeWalker.Rendering
 
         public void Clear()
         {
-            itemsToLoad.Clear();
+            itemsToLoad = new ConcurrentQueue<TVal>();
             foreach (TVal rnd in loadeditems)
             {
                 rnd.Unload();
             }
             loadeditems.Clear();
             cacheitems.Clear();
-            itemsToUnload.Clear();
-            itemsToInvalidate.Clear();
-            keysToInvalidate.Clear();
+            itemsToUnload = new ConcurrentQueue<TVal>();
+            itemsToInvalidate = new ConcurrentQueue<TVal>();
+            keysToInvalidate = new ConcurrentQueue<TKey>();
         }
 
 
@@ -313,7 +313,7 @@ namespace CodeWalker.Rendering
         {
             TVal item;
             LoadedCount = 0;
-            while (itemsToLoad.TryPop(out item))
+            while (itemsToLoad.TryDequeue(out item))
             {
                 if (item.IsLoaded) continue; //don't load it again...
                 LoadedCount++;
@@ -337,7 +337,7 @@ namespace CodeWalker.Rendering
                 }
                 if (LoadedCount >= maxitemsperloop) break;
             }
-            while (itemsToInvalidate.TryPop(out item))
+            while (itemsToInvalidate.TryDequeue(out item))
             {
                 try
                 {
@@ -363,7 +363,7 @@ namespace CodeWalker.Rendering
                 if ((now - lu).TotalSeconds > CacheTime)
                 {
                     var nextnode = rnode.Next;
-                    itemsToUnload.Push(rnode.Value);
+                    itemsToUnload.Enqueue(rnode.Value);
                     loadeditems.Remove(rnode);
                     rnode = nextnode;
                 }
@@ -380,18 +380,18 @@ namespace CodeWalker.Rendering
             LastFrameTime = DateTime.UtcNow.ToBinary();
             TVal item;
             TKey key;
-            while (keysToInvalidate.TryPop(out key))
+            while (keysToInvalidate.TryDequeue(out key))
             {
                 if (cacheitems.TryGetValue(key, out item))
                 {
                     item.Unload();
                     item.Init(key);
                     item.LoadQueued = true;
-                    itemsToInvalidate.Push(item);
+                    itemsToInvalidate.Enqueue(item);
                     Interlocked.Add(ref CacheUse, -item.DataSize);
                 }
             }
-            while (itemsToUnload.TryPop(out item))
+            while (itemsToUnload.TryDequeue(out item))
             {
                 if ((item.Key != null) && (cacheitems.ContainsKey(item.Key)))
                 {
@@ -418,7 +418,7 @@ namespace CodeWalker.Rendering
             if ((!item.IsLoaded) && (!item.LoadQueued))// || 
             {
                 item.LoadQueued = true;
-                itemsToLoad.Push(item);
+                itemsToLoad.Enqueue(item);
             }
             return item;
         }
@@ -428,7 +428,7 @@ namespace CodeWalker.Rendering
         {
             if (key == null) return;
 
-            keysToInvalidate.Push(key);
+            keysToInvalidate.Enqueue(key);
 
         }
 

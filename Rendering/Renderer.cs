@@ -1721,6 +1721,7 @@ namespace CodeWalker.Rendering
             }
 
 
+            ent.Distance = dist;
             ent.IsVisible = (dist <= loddist);
             ent.ChildrenVisible = (dist <= cloddist) && (ent.CEntityDef.numChildren > 0);
 
@@ -2009,6 +2010,7 @@ namespace CodeWalker.Rendering
                     bool usechild = false;
                     Vector3 camrel = entity.Position - camera.Position;
                     float dist = (camrel + entity.BSCenter).Length();
+                    entity.Distance = dist;
                     float rad = arch.BSRadius;
                     float loddist = entity.CEntityDef.lodDist;
                     if (loddist < 1.0f)
@@ -2380,6 +2382,7 @@ namespace CodeWalker.Rendering
             Vector3 bbmax = (arche != null) ? arche.BBMax : rndbl.Key.BoundingBoxMax.XYZ();
             Vector3 bscen = (arche != null) ? arche.BSCenter : rndbl.Key.BoundingCenter;
             float radius = (arche != null) ? arche.BSRadius : rndbl.Key.BoundingSphereRadius;
+            float distance = 0;// (camrel + bscen).Length();
             if (entity != null)
             {
                 position = entity.Position;
@@ -2390,9 +2393,12 @@ namespace CodeWalker.Rendering
                 bbmax = entity.BBMax;
                 bscen = entity.BSCenter;
                 camrel += position;
+                distance = entity.Distance;
             }
-            float distance = (camrel + bscen).Length();
-
+            else
+            {
+                distance = (camrel + bscen).Length();
+            }
 
 
             //bool usehdtxd = renderhdtextures && ((dist - bsrad) <= arche._BaseArchetypeDef.hdTextureDist);
@@ -2660,13 +2666,14 @@ namespace CodeWalker.Rendering
 
             var yptTexDict = (drawable.Owner as YptFile)?.PtfxList?.TextureDictionary;
 
-
-            if (rndbl.SDtxds == null)
+            bool cacheSD = (rndbl.SDtxds == null);
+            bool cacheHD = (renderhdtextures && (rndbl.HDtxds == null));
+            if (cacheSD || cacheHD)
             {
                 //cache the txd hierarchies for this renderable
                 tryGetRenderableSDtxds.Clear();
                 tryGetRenderableHDtxds.Clear();
-                if (arche != null) //try get HD txd for the asset
+                if (cacheHD && (arche != null)) //try get HD txd for the asset
                 {
                     MetaHash hdtxd = gameFileCache.TryGetHDTextureHash(arche._BaseArchetypeDef.assetName);
                     if (hdtxd != arche._BaseArchetypeDef.assetName)
@@ -2680,59 +2687,71 @@ namespace CodeWalker.Rendering
                 }
                 if (texDict != 0)
                 {
-                    var txdytd = gameFileCache.GetYtd(texDict);
-                    if (txdytd != null)
+                    if (cacheSD)
                     {
-                        tryGetRenderableSDtxds.Add(txdytd);
-                    }
-                    MetaHash hdtxd = gameFileCache.TryGetHDTextureHash(texDict);
-                    if (hdtxd != texDict)
-                    {
-                        var txdhdytd = gameFileCache.GetYtd(hdtxd);
-                        if (txdhdytd != null)
+                        var txdytd = gameFileCache.GetYtd(texDict);
+                        if (txdytd != null)
                         {
-                            tryGetRenderableHDtxds.Add(txdhdytd);
+                            tryGetRenderableSDtxds.Add(txdytd);
+                        }
+                    }
+                    if (cacheHD)
+                    {
+                        MetaHash hdtxd = gameFileCache.TryGetHDTextureHash(texDict);
+                        if (hdtxd != texDict)
+                        {
+                            var txdhdytd = gameFileCache.GetYtd(hdtxd);
+                            if (txdhdytd != null)
+                            {
+                                tryGetRenderableHDtxds.Add(txdhdytd);
+                            }
                         }
                     }
                     MetaHash ptxdname = gameFileCache.TryGetParentYtdHash(texDict);
                     while (ptxdname != 0) //look for parent HD txds
                     {
-                        var pytd = gameFileCache.GetYtd(ptxdname);
-                        if (pytd != null)
+                        if (cacheSD)
                         {
-                            tryGetRenderableSDtxds.Add(pytd);
-                        }
-                        MetaHash phdtxdname = gameFileCache.TryGetHDTextureHash(ptxdname);
-                        if (phdtxdname != ptxdname)
-                        {
-                            var phdytd = gameFileCache.GetYtd(phdtxdname);
-                            if (phdytd != null)
+                            var pytd = gameFileCache.GetYtd(ptxdname);
+                            if (pytd != null)
                             {
-                                tryGetRenderableHDtxds.Add(phdytd);
+                                tryGetRenderableSDtxds.Add(pytd);
+                            }
+                        }
+                        if (cacheHD)
+                        {
+                            MetaHash phdtxdname = gameFileCache.TryGetHDTextureHash(ptxdname);
+                            if (phdtxdname != ptxdname)
+                            {
+                                var phdytd = gameFileCache.GetYtd(phdtxdname);
+                                if (phdytd != null)
+                                {
+                                    tryGetRenderableHDtxds.Add(phdytd);
+                                }
                             }
                         }
                         ptxdname = gameFileCache.TryGetParentYtdHash(ptxdname);
                     }
                 }
-                rndbl.SDtxds = tryGetRenderableSDtxds.ToArray();
-                rndbl.HDtxds = tryGetRenderableHDtxds.ToArray();
+                if (cacheSD) rndbl.SDtxds = tryGetRenderableSDtxds.ToArray();
+                if (cacheHD) rndbl.HDtxds = tryGetRenderableHDtxds.ToArray();
             }
 
 
 
 
 
-
+            //bool alltexsloaded = true;
 
 
             for (int mi = 0; mi < rndbl.AllModels.Length; mi++)
             {
                 var model = rndbl.AllModels[mi];
 
-                //if (!RenderIsModelFinalRender(model) && !renderproxies)
-                //{
-                //    continue; //filter out reflection proxy models...
-                //}
+                if (!RenderIsModelFinalRender(model) && !renderproxies)
+                {
+                    continue; //filter out reflection proxy models...
+                }
 
 
                 foreach (var geom in model.Geometries)
@@ -2753,7 +2772,7 @@ namespace CodeWalker.Rendering
                                     dtex = yptTexDict.Lookup(tex.NameHash);
                                 }
 
-                                else //if (texDict != 0)
+                                if (dtex == null) //else //if (texDict != 0)
                                 {
 
                                     if (rndbl.SDtxds != null)
@@ -2772,13 +2791,13 @@ namespace CodeWalker.Rendering
                                             }
                                             if (dtex != null) break;
                                         }
-                                        if (dtex == null)// rndbl.SDtxds.Length == 0)//ytd not found..
+                                        if (dtex == null)// rndbl.SDtxds.Length == 0)//texture not found..
                                         {
                                             if (drawable.ShaderGroup.TextureDictionary != null)//check any embedded texdict
                                             {
                                                 dtex = drawable.ShaderGroup.TextureDictionary.Lookup(tex.NameHash);
                                                 if (dtex != null)
-                                                { }
+                                                { } //this shouldn't really happen as embedded textures should already be loaded! (not as TextureRef)
                                             }
                                         }
                                     }
@@ -2806,10 +2825,15 @@ namespace CodeWalker.Rendering
                             }
 
 
-                            if (ttex != null) //ensure embedded renderable texture
+                            if (ttex != null) //ensure renderable texture
                             {
                                 rdtex = renderableCache.GetRenderableTexture(ttex);
                             }
+
+                            //if ((rdtex != null) && (rdtex.IsLoaded == false))
+                            //{
+                            //    alltexsloaded = false;
+                            //}
 
 
                             geom.RenderableTextures[i] = rdtex;
@@ -2856,7 +2880,29 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            rndbl.AllTexturesLoaded = true;// alltexsloaded || (missingtexcount < 2);
+            //if (rndbl.SDtxds != null)
+            //{
+            //    for (int i = 0; i < rndbl.SDtxds.Length; i++)
+            //    {
+            //        if (!rndbl.SDtxds[i].Loaded)
+            //        {
+            //            alltexsloaded = false;
+            //        }
+            //    }
+            //}
+            //if (rndbl.HDtxds != null)
+            //{
+            //    for (int i = 0; i < rndbl.HDtxds.Length; i++)
+            //    {
+            //        if (!rndbl.HDtxds[i].Loaded)
+            //        {
+            //            rndbl.AllTexturesLoaded = false;
+            //        }
+            //    }
+            //}
+
+            rndbl.AllTexturesLoaded = true;// alltexsloaded;// || (missingtexcount < 2);
+
 
             return rndbl;
         }

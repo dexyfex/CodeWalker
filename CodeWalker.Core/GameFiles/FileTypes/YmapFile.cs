@@ -1248,6 +1248,7 @@ namespace CodeWalker.GameFiles
         public MetaWrapper[] Extensions { get; set; }
 
         public int Index { get; set; }
+        public float Distance { get; set; } //used for rendering
         public bool IsVisible; //used for rendering
         public bool ChildrenVisible; //used for rendering
         public bool ChildrenRendered; //used when rendering ymap mode to reduce LOD flashing...
