@@ -84,7 +84,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="WaitForChildren" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="CacheSize" Type="System.Int64" Scope="User">
       <Value Profile="(Default)">2147483648</Value>

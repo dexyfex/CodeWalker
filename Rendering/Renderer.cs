@@ -1585,10 +1585,6 @@ namespace CodeWalker.Rendering
 
             if (renderentities)
             {
-                //go through the render list, and try ensure renderables and textures for all.
-                //if an entity is not fully loaded, set a flag for its parent, then traverse to root
-                //until found an entity that is fully loaded.
-                //on a second loop, build a final render list based on the flags.
                 for (int i = 0; i < renderworldentities.Count; i++)
                 {
                     var ent = renderworldentities[i];
@@ -2741,7 +2737,7 @@ namespace CodeWalker.Rendering
 
 
 
-            //bool alltexsloaded = true;
+            bool alltexsloaded = true;
 
 
             for (int mi = 0; mi < rndbl.AllModels.Length; mi++)
@@ -2774,7 +2770,7 @@ namespace CodeWalker.Rendering
 
                                 if (dtex == null) //else //if (texDict != 0)
                                 {
-                                    var waitingforload = false;
+                                    bool waitingforload = false;
                                     if (rndbl.SDtxds != null)
                                     {
                                         //check the SD texture hierarchy
@@ -2792,16 +2788,32 @@ namespace CodeWalker.Rendering
                                             }
                                             if (dtex != null) break;
                                         }
+
+                                        if (waitingforload)
+                                        {
+                                            alltexsloaded = false;
+                                        }
                                     }
 
                                     if ((dtex == null) && (!waitingforload))
                                     {
                                         //not present in dictionary... check already loaded texture dicts... (maybe resident?)
                                         var ytd2 = gameFileCache.TryGetTextureDictForTexture(tex.NameHash);
-                                        if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
+                                        if (ytd2 != null)
                                         {
-                                            dtex = ytd2.TextureDict.Lookup(tex.NameHash);
+                                            if (ytd2.Loaded)
+                                            {
+                                                if (ytd2.TextureDict != null)
+                                                {
+                                                    dtex = ytd2.TextureDict.Lookup(tex.NameHash);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                alltexsloaded = false;
+                                            }
                                         }
+
                                         //else { } //couldn't find texture dict?
 
                                         if ((dtex == null) && (ytd2 == null))// rndbl.SDtxds.Length == 0)//texture not found..
@@ -2879,28 +2891,8 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            //if (rndbl.SDtxds != null)
-            //{
-            //    for (int i = 0; i < rndbl.SDtxds.Length; i++)
-            //    {
-            //        if (!rndbl.SDtxds[i].Loaded)
-            //        {
-            //            alltexsloaded = false;
-            //        }
-            //    }
-            //}
-            //if (rndbl.HDtxds != null)
-            //{
-            //    for (int i = 0; i < rndbl.HDtxds.Length; i++)
-            //    {
-            //        if (!rndbl.HDtxds[i].Loaded)
-            //        {
-            //            rndbl.AllTexturesLoaded = false;
-            //        }
-            //    }
-            //}
 
-            rndbl.AllTexturesLoaded = true;// alltexsloaded;// || (missingtexcount < 2);
+            rndbl.AllTexturesLoaded = alltexsloaded;
 
 
             return rndbl;
