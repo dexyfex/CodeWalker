@@ -338,7 +338,7 @@ namespace CodeWalker
             }
             else if (EntityDef != null)
             {
-                name = EntityDef.CEntityDef.archetypeName.ToString();
+                name = EntityDef._CEntityDef.archetypeName.ToString();
             }
             else if (Archetype != null)
             {
@@ -424,7 +424,7 @@ namespace CodeWalker
             }
             else if (EntityDef != null)
             {
-                name = EntityDef.CEntityDef.archetypeName.ToString();
+                name = EntityDef._CEntityDef.archetypeName.ToString();
             }
             else if (Archetype != null)
             {

@@ -1544,11 +1544,11 @@ namespace CodeWalker.Rendering
                 if (ymap.RootEntities != null)
                 {
                     YmapFile pymap;
-                    renderworldVisibleYmapDict.TryGetValue(ymap.CMapData.parent, out pymap);
+                    renderworldVisibleYmapDict.TryGetValue(ymap._CMapData.parent, out pymap);
                     for (int i = 0; i < ymap.RootEntities.Length; i++)
                     {
                         var ent = ymap.RootEntities[i];
-                        int pind = ent.CEntityDef.parentIndex;
+                        int pind = ent._CEntityDef.parentIndex;
                         if (pind >= 0) //connect root entities to parents if they have them..
                         {
                             YmapEntityDef p = null;
@@ -1558,7 +1558,7 @@ namespace CodeWalker.Rendering
                                 {
                                     p = pymap.AllEntities[pind];
                                     ent.Parent = p;
-                                    ent.ParentName = p.CEntityDef.archetypeName;
+                                    ent.ParentName = p._CEntityDef.archetypeName;
                                 }
                             }
                             else
@@ -1684,8 +1684,8 @@ namespace CodeWalker.Rendering
             }
 
 
-            var loddist = ent.CEntityDef.lodDist;
-            var cloddist = ent.CEntityDef.childLodDist;
+            var loddist = ent._CEntityDef.lodDist;
+            var cloddist = ent._CEntityDef.childLodDist;
 
             if (loddist <= 0.0f)//usually -1 or -2
             {
@@ -1694,7 +1694,7 @@ namespace CodeWalker.Rendering
                     loddist = ent.Archetype.LodDist * renderworldLodDistMult;
                 }
             }
-            else if (ent.CEntityDef.lodLevel == Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)
+            else if (ent._CEntityDef.lodLevel == Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)
             {
                 loddist *= renderworldDetailDistMult * 1.5f; //orphan view dist adjustment...
             }
@@ -1719,19 +1719,19 @@ namespace CodeWalker.Rendering
 
             ent.Distance = dist;
             ent.IsVisible = (dist <= loddist);
-            ent.ChildrenVisible = (dist <= cloddist) && (ent.CEntityDef.numChildren > 0);
+            ent.ChildrenVisible = (dist <= cloddist) && (ent._CEntityDef.numChildren > 0);
 
 
 
             if (renderworldMaxLOD != Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)
             {
-                if ((ent.CEntityDef.lodLevel == Unk_1264241711.LODTYPES_DEPTH_ORPHANHD) ||
-                    (ent.CEntityDef.lodLevel < renderworldMaxLOD))
+                if ((ent._CEntityDef.lodLevel == Unk_1264241711.LODTYPES_DEPTH_ORPHANHD) ||
+                    (ent._CEntityDef.lodLevel < renderworldMaxLOD))
                 {
                     ent.IsVisible = false;
                     ent.ChildrenVisible = false;
                 }
-                if (ent.CEntityDef.lodLevel == renderworldMaxLOD)
+                if (ent._CEntityDef.lodLevel == renderworldMaxLOD)
                 {
                     ent.ChildrenVisible = false;
                 }
@@ -2008,7 +2008,7 @@ namespace CodeWalker.Rendering
                     float dist = (camrel + entity.BSCenter).Length();
                     entity.Distance = dist;
                     float rad = arch.BSRadius;
-                    float loddist = entity.CEntityDef.lodDist;
+                    float loddist = entity._CEntityDef.lodDist;
                     if (loddist < 1.0f)
                     {
                         loddist = 200.0f;
@@ -2384,7 +2384,7 @@ namespace CodeWalker.Rendering
                 position = entity.Position;
                 scale = entity.Scale;
                 orientation = entity.Orientation;
-                tintPaletteIndex = entity.CEntityDef.tintValue;
+                tintPaletteIndex = entity._CEntityDef.tintValue;
                 bbmin = entity.BBMin;
                 bbmax = entity.BBMax;
                 bscen = entity.BSCenter;

@@ -1063,7 +1063,7 @@ namespace CodeWalker.World
                         {
                             if (!IsYmapAvailable(hash, hour, weather)) break;
                             ymaps[hash] = ymap;
-                            hash = ymap.CMapData.parent;
+                            hash = ymap._CMapData.parent;
                             if (ymaps.ContainsKey(hash)) break;
                             ymap = (hash > 0) ? GameFileCache.GetYmap(hash) : null;
                         }

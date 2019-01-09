@@ -433,7 +433,7 @@ namespace CodeWalker.GameFiles
                 for (int j = 0; j < Entities.Length; j++)
                 {
                     var ient = Entities[j];
-                    var iarch = gfc.GetArchetype(ient.CEntityDef.archetypeName);
+                    var iarch = gfc.GetArchetype(ient._CEntityDef.archetypeName);
                     ient.SetArchetype(iarch);
 
                     if (iarch == null)
@@ -453,7 +453,7 @@ namespace CodeWalker.GameFiles
                     for (int i = 0; i < entities.Count; i++)
                     {
                         var ient = entities[i];
-                        var iarch = gfc.GetArchetype(ient.CEntityDef.archetypeName);
+                        var iarch = gfc.GetArchetype(ient._CEntityDef.archetypeName);
                         ient.SetArchetype(iarch);
 
                         if (iarch == null)
