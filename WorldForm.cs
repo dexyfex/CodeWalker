@@ -4238,13 +4238,23 @@ namespace CodeWalker
             EnableDLCModsUI();
 
 
+            Task.Run(() => {
+                while (formopen && !IsDisposed) //renderer content loop
+                {
+                    bool rcItemsPending = Renderer.ContentThreadProc();
+
+                    if (!rcItemsPending)
+                    {
+                        Thread.Sleep(1); //sleep if there's nothing to do
+                    }
+                }
+            });
+
             while (formopen && !IsDisposed) //main asset loop
             {
                 bool fcItemsPending = gameFileCache.ContentThreadProc();
 
-                bool rcItemsPending = Renderer.ContentThreadProc();
-
-                if (!(fcItemsPending || rcItemsPending))
+                if (!fcItemsPending)
                 {
                     Thread.Sleep(1); //sleep if there's nothing to do
                 }
