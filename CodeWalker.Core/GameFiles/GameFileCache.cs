@@ -195,7 +195,7 @@ namespace CodeWalker.GameFiles
             Clear();
 
             PreloadedMode = true;
-            EnableDlc = false;
+            EnableDlc = true;//just so everything (mainly archetypes) will load..
             EnableMods = false;
             RpfMan = new RpfManager(); //try not to use this in this mode...
             RpfMan.Init(allRpfs);
