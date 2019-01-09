@@ -60,6 +60,8 @@ namespace CodeWalker.GameFiles
                 }
                 return;
             }
+            else
+            { }//doesn't get here
 
 
 

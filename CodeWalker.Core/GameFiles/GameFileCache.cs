@@ -204,10 +204,16 @@ namespace CodeWalker.GameFiles
             BaseRpfs = allRpfs;
             DlcRpfs = new List<RpfFile>();
 
+            UpdateStatus("Building global dictionaries...");
             InitGlobalDicts();
 
+            UpdateStatus("Loading manifests...");
+            InitManifestDicts();
+
+            UpdateStatus("Loading global texture list...");
             InitGtxds();
 
+            UpdateStatus("Loading archetypes...");
             InitArchetypeDicts();
 
             IsInited = true;
@@ -961,7 +967,8 @@ namespace CodeWalker.GameFiles
         {
             AllManifests = new List<YmfFile>();
             hdtexturelookup = new Dictionary<MetaHash, MetaHash>();
-            foreach (RpfFile file in ActiveMapRpfFiles.Values) //RpfMan.BaseRpfs)
+            IEnumerable<RpfFile> rpfs = PreloadedMode ? AllRpfs : (IEnumerable<RpfFile>)ActiveMapRpfFiles.Values;
+            foreach (RpfFile file in rpfs)
             {
                 if (file.AllEntries == null) continue;
                 //manifest and meta parsing..

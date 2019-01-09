@@ -1399,6 +1399,11 @@ namespace CodeWalker.Forms
             Renderer.shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
         }
 
+        private void HDTexturesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderhdtextures = HDTexturesCheckBox.Checked;
+        }
+
         private void RenderModeComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             TextureSamplerComboBox.Enabled = false;

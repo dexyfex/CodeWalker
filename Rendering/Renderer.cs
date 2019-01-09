@@ -2774,7 +2774,7 @@ namespace CodeWalker.Rendering
 
                                 if (dtex == null) //else //if (texDict != 0)
                                 {
-
+                                    var waitingforload = false;
                                     if (rndbl.SDtxds != null)
                                     {
                                         //check the SD texture hierarchy
@@ -2788,10 +2788,23 @@ namespace CodeWalker.Rendering
                                             else
                                             {
                                                 txd = gameFileCache.GetYtd(txd.Key.Hash);//keep trying to load it - sometimes resuests can get lost (!)
+                                                waitingforload = true;
                                             }
                                             if (dtex != null) break;
                                         }
-                                        if (dtex == null)// rndbl.SDtxds.Length == 0)//texture not found..
+                                    }
+
+                                    if ((dtex == null) && (!waitingforload))
+                                    {
+                                        //not present in dictionary... check already loaded texture dicts... (maybe resident?)
+                                        var ytd2 = gameFileCache.TryGetTextureDictForTexture(tex.NameHash);
+                                        if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
+                                        {
+                                            dtex = ytd2.TextureDict.Lookup(tex.NameHash);
+                                        }
+                                        //else { } //couldn't find texture dict?
+
+                                        if ((dtex == null) && (ytd2 == null))// rndbl.SDtxds.Length == 0)//texture not found..
                                         {
                                             if (drawable.ShaderGroup.TextureDictionary != null)//check any embedded texdict
                                             {
@@ -2801,20 +2814,6 @@ namespace CodeWalker.Rendering
                                             }
                                         }
                                     }
-
-
-                                }
-                                //else //no texdict specified, nothing to see here..
-                                //{ }
-                                if (dtex == null)
-                                {
-                                    //not present in dictionary... check already loaded texture dicts... (maybe resident?)
-                                    var ytd2 = gameFileCache.TryGetTextureDictForTexture(tex.NameHash);
-                                    if ((ytd2 != null) && (ytd2.Loaded) && (ytd2.TextureDict != null))
-                                    {
-                                        dtex = ytd2.TextureDict.Lookup(tex.NameHash);
-                                    }
-                                    //else { } //couldn't find texture dict?
                                 }
 
                                 if (dtex != null)
