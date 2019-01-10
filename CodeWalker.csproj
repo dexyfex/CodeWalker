@@ -143,10 +143,10 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="BrowseForm.cs">
+    <Compile Include="Tools\BrowseForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="BrowseForm.Designer.cs">
+    <Compile Include="Tools\BrowseForm.Designer.cs">
       <DependentUpon>BrowseForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ExploreForm.cs">
@@ -155,34 +155,34 @@
     <Compile Include="ExploreForm.Designer.cs">
       <DependentUpon>ExploreForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExtractKeysForm.cs">
+    <Compile Include="Tools\ExtractKeysForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExtractKeysForm.Designer.cs">
+    <Compile Include="Tools\ExtractKeysForm.Designer.cs">
       <DependentUpon>ExtractKeysForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExtractScriptsForm.cs">
+    <Compile Include="Tools\ExtractScriptsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExtractScriptsForm.Designer.cs">
+    <Compile Include="Tools\ExtractScriptsForm.Designer.cs">
       <DependentUpon>ExtractScriptsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExtractRawForm.cs">
+    <Compile Include="Tools\ExtractRawForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExtractRawForm.Designer.cs">
+    <Compile Include="Tools\ExtractRawForm.Designer.cs">
       <DependentUpon>ExtractRawForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExtractShadersForm.cs">
+    <Compile Include="Tools\ExtractShadersForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExtractShadersForm.Designer.cs">
+    <Compile Include="Tools\ExtractShadersForm.Designer.cs">
       <DependentUpon>ExtractShadersForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExtractTexForm.cs">
+    <Compile Include="Tools\ExtractTexForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExtractTexForm.Designer.cs">
+    <Compile Include="Tools\ExtractTexForm.Designer.cs">
       <DependentUpon>ExtractTexForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\AwcForm.cs">
@@ -265,16 +265,16 @@
     </Compile>
     <Compile Include="GameFiles\FxcParser.cs" />
     <Compile Include="GameFiles\GameFileCacheFactory.cs" />
-    <Compile Include="JenkGenForm.cs">
+    <Compile Include="Tools\JenkGenForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="JenkGenForm.Designer.cs">
+    <Compile Include="Tools\JenkGenForm.Designer.cs">
       <DependentUpon>JenkGenForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="JenkIndForm.cs">
+    <Compile Include="Tools\JenkIndForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="JenkIndForm.Designer.cs">
+    <Compile Include="Tools\JenkIndForm.Designer.cs">
       <DependentUpon>JenkIndForm.cs</DependentUpon>
     </Compile>
     <Compile Include="KeyBindForm.cs">
@@ -522,10 +522,10 @@
     <Compile Include="StatisticsForm.Designer.cs">
       <DependentUpon>StatisticsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="TextInputForm.cs">
+    <Compile Include="Utils\TextInputForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="TextInputForm.Designer.cs">
+    <Compile Include="Utils\TextInputForm.Designer.cs">
       <DependentUpon>TextInputForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\DDSIO.cs" />
@@ -549,10 +549,10 @@
     <Compile Include="Rendering\DirectX\DXForm.cs" />
     <Compile Include="Rendering\DirectX\DXManager.cs" />
     <Compile Include="Rendering\Utils\UnitQuad.cs" />
-    <Compile Include="BinarySearchForm.cs">
+    <Compile Include="Tools\BinarySearchForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="BinarySearchForm.Designer.cs">
+    <Compile Include="Tools\BinarySearchForm.Designer.cs">
       <DependentUpon>BinarySearchForm.cs</DependentUpon>
     </Compile>
     <Compile Include="WorldForm.cs">
@@ -565,25 +565,25 @@
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="BrowseForm.resx">
+    <EmbeddedResource Include="Tools\BrowseForm.resx">
       <DependentUpon>BrowseForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ExploreForm.resx">
       <DependentUpon>ExploreForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExtractKeysForm.resx">
+    <EmbeddedResource Include="Tools\ExtractKeysForm.resx">
       <DependentUpon>ExtractKeysForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExtractScriptsForm.resx">
+    <EmbeddedResource Include="Tools\ExtractScriptsForm.resx">
       <DependentUpon>ExtractScriptsForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExtractRawForm.resx">
+    <EmbeddedResource Include="Tools\ExtractRawForm.resx">
       <DependentUpon>ExtractRawForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExtractShadersForm.resx">
+    <EmbeddedResource Include="Tools\ExtractShadersForm.resx">
       <DependentUpon>ExtractShadersForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExtractTexForm.resx">
+    <EmbeddedResource Include="Tools\ExtractTexForm.resx">
       <DependentUpon>ExtractTexForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\AwcForm.resx">
@@ -625,10 +625,10 @@
     <EmbeddedResource Include="Forms\YwrForm.resx">
       <DependentUpon>YwrForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="JenkGenForm.resx">
+    <EmbeddedResource Include="Tools\JenkGenForm.resx">
       <DependentUpon>JenkGenForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="JenkIndForm.resx">
+    <EmbeddedResource Include="Tools\JenkIndForm.resx">
       <DependentUpon>JenkIndForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="KeyBindForm.resx">
@@ -737,7 +737,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="BinarySearchForm.resx">
+    <EmbeddedResource Include="Tools\BinarySearchForm.resx">
       <DependentUpon>BinarySearchForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SelectFolderForm.resx">
@@ -749,7 +749,7 @@
     <EmbeddedResource Include="StatisticsForm.resx">
       <DependentUpon>StatisticsForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="TextInputForm.resx">
+    <EmbeddedResource Include="Utils\TextInputForm.resx">
       <DependentUpon>TextInputForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WorldForm.resx">
@@ -780,7 +780,6 @@
     <Content Include="icons\icon_glokon_debug_32x32.png" />
     <Content Include="icons\icon_glokon_normal_32x32.png" />
     <Content Include="icons\icon_google_marker_64x64.png" />
-    <Content Include="Materials.txt" />
     <Content Include="Notice.txt" />
     <None Include="README.md" />
     <None Include="Resources\CW.ico" />
