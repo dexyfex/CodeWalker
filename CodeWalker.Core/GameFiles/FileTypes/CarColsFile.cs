@@ -4,12 +4,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using TC = System.ComponentModel.TypeConverterAttribute;
-using EXP = System.ComponentModel.ExpandableObjectConverter;
 using SharpDX;
 using System.IO;
 using System.Xml;
+
+using TC = System.ComponentModel.TypeConverterAttribute;
+using EXP = System.ComponentModel.ExpandableObjectConverter;
 
 namespace CodeWalker.GameFiles
 {
@@ -842,7 +842,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return modelName.ToString() + ": " + modShopLabel + ": " + bone.ToString();
+            return modelName.ToString() + ": " + modShopLabel + ": " + type.ToString() + ": " + bone.ToString();
         }
     }
     [TC(typeof(EXP))] public class CVehicleModLink
