@@ -1063,6 +1063,10 @@ namespace CodeWalker.GameFiles
         {
             var str = JenkIndex.TryGetString(Hash);
             if (!string.IsNullOrEmpty(str)) return str;
+            if (Enum.IsDefined(typeof(MetaName), Hash))
+            {
+                return ((MetaName)Hash).ToString();
+            }
             return GlobalText.GetString(Hash);
         }
 

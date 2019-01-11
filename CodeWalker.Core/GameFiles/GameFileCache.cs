@@ -1514,18 +1514,21 @@ namespace CodeWalker.GameFiles
                             {
                                 var cf = RpfMan.GetFile<CarColsFile>(entry);
                                 if (cf.VehicleModelInfo != null)
-                                {
-                                }
+                                { }
                                 allCarCols.Add(cf);
                             }
                             if (entry.NameLower == "carmodcols.ymt")
                             {
                                 var cf = RpfMan.GetFile<CarModColsFile>(entry);
+                                if (cf.VehicleModColours != null)
+                                { }
                                 allCarModCols.Add(cf);
                             }
                             if ((entry.NameLower == "carvariations.ymt") || (entry.NameLower == "carvariations.meta"))
                             {
                                 var cf = RpfMan.GetFile<CarVariationsFile>(entry);
+                                if (cf.VehicleModelInfo != null)
+                                { }
                                 allCarVariations.Add(cf);
                             }
                             if (entry.NameLower.StartsWith("vehiclelayouts") && entry.NameLower.EndsWith(".meta"))
