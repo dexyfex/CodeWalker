@@ -543,9 +543,11 @@ namespace CodeWalker.Rendering
                         switch (ihash)
                         {
                             case MetaName.DiffuseSampler:
+                            case MetaName.PlateBgSampler:
                                 texture = itex;
                                 break;
                             case MetaName.BumpSampler:
+                            case MetaName.PlateBgBumpSampler:
                                 bumptex = itex;
                                 break;
                             case MetaName.SpecSampler:

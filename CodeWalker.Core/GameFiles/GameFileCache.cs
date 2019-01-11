@@ -1534,6 +1534,8 @@ namespace CodeWalker.GameFiles
                             if (entry.NameLower.StartsWith("vehiclelayouts") && entry.NameLower.EndsWith(".meta"))
                             {
                                 var lf = RpfMan.GetFile<VehicleLayoutsFile>(entry);
+                                if (lf.Xml != null)
+                                { }
                                 allVehicleLayouts.Add(lf);
                             }
                         }

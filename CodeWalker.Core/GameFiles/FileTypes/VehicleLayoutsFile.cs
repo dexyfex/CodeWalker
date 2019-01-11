@@ -10,6 +10,8 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class VehicleLayoutsFile : GameFile, PackedFile
     {
+        public string Xml { get; set; }
+
         public VehicleLayoutsFile() : base(null, GameFileType.VehicleLayouts)
         { }
         public VehicleLayoutsFile(RpfFileEntry entry) : base(entry, GameFileType.VehicleLayouts)
@@ -22,9 +24,11 @@ namespace CodeWalker.GameFiles
             Name = entry.Name;
             FilePath = Name;
 
-            //TODO
 
             //always XML .meta
+            Xml = Encoding.UTF8.GetString(data);
+
+            //TODO: parse CVehicleMetadataMgr XML
 
 
             Loaded = true;
