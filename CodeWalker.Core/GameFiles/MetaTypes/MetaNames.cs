@@ -3479,6 +3479,7 @@ namespace CodeWalker.GameFiles
         CVehicleModelColor = 4213335822,
         CVehicleWindowColor = 2561269966,
         CVehicleMetallicSetting = 2073371064,
+        CVehicleXenonLightColor = 2807227399,
         PlateProbabilities = 2135495316,
         CVehicleModColors = 2858318490,
         CVehicleModColor = 1443412025,

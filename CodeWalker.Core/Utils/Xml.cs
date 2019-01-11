@@ -70,6 +70,26 @@ namespace CodeWalker
             FloatUtil.TryParse(val, out f);
             return f;
         }
+        public static T GetChildEnumInnerText<T>(XmlNode node, string name) where T : struct
+        {
+            if (node == null) return new T();
+            string val = node.SelectSingleNode(name)?.InnerText;
+            return GetEnumValue<T>(val);
+        }
+        public static T GetEnumValue<T>(string val) where T : struct
+        {
+            if (val.StartsWith("hash_"))
+            {
+                //convert hash_12ABC to Unk_12345
+                var substr = val.Substring(5);
+                var uval = Convert.ToUInt32(substr, 16);
+                val = "Unk_" + uval.ToString();
+            }
+            T enumval;
+            Enum.TryParse(val, out enumval);
+            return enumval;
+        }
+
 
         public static bool GetChildBoolAttribute(XmlNode node, string name, string attribute)
         {
@@ -87,6 +107,22 @@ namespace CodeWalker
             int.TryParse(val, out i);
             return i;
         }
+        public static uint GetChildUIntAttribute(XmlNode node, string name, string attribute)
+        {
+            if (node == null) return 0;
+            string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
+            uint i;
+            if (val?.StartsWith("0x") ?? false)
+            {
+                var subs = val.Substring(2);
+                i = Convert.ToUInt32(subs, 16);
+            }
+            else
+            {
+                uint.TryParse(val, out i);
+            }
+            return i;
+        }
         public static float GetChildFloatAttribute(XmlNode node, string name, string attribute)
         {
             if (node == null) return 0;
@@ -101,12 +137,26 @@ namespace CodeWalker
             string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
             return val;
         }
+        public static Vector2 GetChildVector2Attributes(XmlNode node, string name, string x, string y)
+        {
+            float fx = GetChildFloatAttribute(node, name, x);
+            float fy = GetChildFloatAttribute(node, name, y);
+            return new Vector2(fx, fy);
+        }
         public static Vector3 GetChildVector3Attributes(XmlNode node, string name, string x, string y, string z)
         {
             float fx = GetChildFloatAttribute(node, name, x);
             float fy = GetChildFloatAttribute(node, name, y);
             float fz = GetChildFloatAttribute(node, name, z);
             return new Vector3(fx, fy, fz);
+        }
+        public static Vector4 GetChildVector4Attributes(XmlNode node, string name, string x, string y, string z, string w)
+        {
+            float fx = GetChildFloatAttribute(node, name, x);
+            float fy = GetChildFloatAttribute(node, name, y);
+            float fz = GetChildFloatAttribute(node, name, z);
+            float fw = GetChildFloatAttribute(node, name, w);
+            return new Vector4(fx, fy, fz, fw);
         }
 
         public static XmlElement GetChild(XmlElement element, string name)

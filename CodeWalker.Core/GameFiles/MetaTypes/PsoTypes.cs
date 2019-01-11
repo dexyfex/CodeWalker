@@ -369,7 +369,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Array, 0, 0, (MetaName)13),
                      new PsoStructureEntryInfo(MetaName.Wheels, PsoDataType.Array, 144, 4, (MetaName)851982),
                      new PsoStructureEntryInfo(MetaName.GlobalVariationData, PsoDataType.Structure, 352, 0, (MetaName)3062246906),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2807227399),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleXenonLightColor),
                      new PsoStructureEntryInfo(MetaName.XenonLightColors, PsoDataType.Array, 376, 0, MetaName.BYTE)
                     );
                 case (MetaName)465922034: //CVehicleModelInfoVarGlobal VehiclePlates
@@ -402,8 +402,8 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.xenonLightIntensityModifier, PsoDataType.Float, 16, 0, 0),
                      new PsoStructureEntryInfo(MetaName.xenonCoronaIntensityModifier, PsoDataType.Float, 20, 0, 0)
                     );
-                case (MetaName)2807227399: //CVehicleModelInfoVarGlobal XenonLightColors //vehicle xenon light color
-                    return new PsoStructureInfo((MetaName)2807227399, 0, 0, 24,
+                case MetaName.CVehicleXenonLightColor: //CVehicleModelInfoVarGlobal XenonLightColors
+                    return new PsoStructureInfo(MetaName.CVehicleXenonLightColor, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.lightColor, PsoDataType.UInt, 8, 1, 0),
                      new PsoStructureEntryInfo(MetaName.coronaColor, PsoDataType.UInt, 12, 1, 0),
                      new PsoStructureEntryInfo(MetaName.lightIntensityModifier, PsoDataType.Float, 16, 0, 0),

@@ -488,12 +488,22 @@ namespace CodeWalker.GameFiles
                     else
                     {
                         //do we need to include root rpf files? generally don't seem to contain map data?
-                        //ActiveMapRpfFiles[path] = baserpf;
+                        ActiveMapRpfFiles[path] = baserpf;
                     }
                 }
             }
 
             if (!EnableDlc) return; //don't continue for base title only
+
+            foreach (var rpf in DlcRpfs)
+            {
+                if (rpf.NameLower == "update.rpf")//include this so that files not in child rpf's can be used..
+                {
+                    string path = rpf.Path.Replace('\\', '/');
+                    ActiveMapRpfFiles[path] = rpf;
+                    break;
+                }
+            }
 
 
             DlcActiveRpfs.Clear();
@@ -1469,6 +1479,10 @@ namespace CodeWalker.GameFiles
 
 
             var allVehicles = new Dictionary<MetaHash, VehicleInitData>();
+            var allCarCols = new List<CarColsFile>();
+            var allCarModCols = new List<CarModColsFile>();
+            var allCarVariations = new List<CarVariationsFile>();
+            var allVehicleLayouts = new List<VehicleLayoutsFile>();
 
             var addVehicleFiles = new Action<IEnumerable<RpfFile>>((from) =>
             {
@@ -1499,22 +1513,25 @@ namespace CodeWalker.GameFiles
                             if ((entry.NameLower == "carcols.ymt") || (entry.NameLower == "carcols.meta"))
                             {
                                 var cf = RpfMan.GetFile<CarColsFile>(entry);
-
+                                if (cf.VehicleModelInfo != null)
+                                {
+                                }
+                                allCarCols.Add(cf);
                             }
                             if (entry.NameLower == "carmodcols.ymt")
                             {
                                 var cf = RpfMan.GetFile<CarModColsFile>(entry);
-
+                                allCarModCols.Add(cf);
                             }
                             if ((entry.NameLower == "carvariations.ymt") || (entry.NameLower == "carvariations.meta"))
                             {
                                 var cf = RpfMan.GetFile<CarVariationsFile>(entry);
-
+                                allCarVariations.Add(cf);
                             }
                             if (entry.NameLower.StartsWith("vehiclelayouts") && entry.NameLower.EndsWith(".meta"))
                             {
                                 var lf = RpfMan.GetFile<VehicleLayoutsFile>(entry);
-
+                                allVehicleLayouts.Add(lf);
                             }
                         }
 #if !DEBUG

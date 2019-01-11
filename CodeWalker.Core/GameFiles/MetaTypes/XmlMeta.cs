@@ -672,8 +672,9 @@ namespace CodeWalker.GameFiles
             Buffer.BlockCopy(bytes, 0, data, offset, sizeof(float));
         }
 
-        private static MetaHash GetHash(string str)
+        public static MetaHash GetHash(string str)
         {
+            if (str == null) return 0;
             if (str.StartsWith("hash_"))
             {
                 return (MetaHash) Convert.ToUInt32(str.Substring(5), 16);
