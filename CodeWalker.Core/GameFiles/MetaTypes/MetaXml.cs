@@ -821,8 +821,8 @@ namespace CodeWalker.GameFiles
                                 break;
                             case 1: //unsigned int
                                 var int6bVal = MetaTypes.SwapBytes(BitConverter.ToUInt32(data, eoffset));
-                                ValueTag(sb, cind, ename, int6bVal.ToString());
-                                //ValueTag(sb, cind, ename, "0x" + int6bVal.ToString("X").PadLeft(8, '0'));
+                                //ValueTag(sb, cind, ename, int6bVal.ToString());
+                                ValueTag(sb, cind, ename, "0x" + int6bVal.ToString("X").PadLeft(8, '0'));
                                 break;
                         }
                         break;

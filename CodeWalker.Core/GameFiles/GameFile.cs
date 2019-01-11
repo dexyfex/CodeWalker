@@ -71,6 +71,10 @@ namespace CodeWalker.GameFiles
         Yvr = 15,
         Gtxd = 16,
         Vehicles = 17,
+        CarCols = 18,
+        CarModCols = 19,
+        CarVariations = 20,
+        VehicleLayouts = 21,
     }
 
 

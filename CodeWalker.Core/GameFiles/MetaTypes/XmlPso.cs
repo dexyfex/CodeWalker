@@ -166,7 +166,17 @@ namespace CodeWalker.GameFiles
                                         Write(sval, data, entry.DataOffset);
                                         break;
                                     case 1: //unsigned int
-                                        var uval = Convert.ToUInt32(cnode.Attributes["value"].Value);
+                                        var ustr = cnode.Attributes["value"].Value;
+                                        uint uval = 0;
+                                        if (ustr.StartsWith("0x"))
+                                        {
+                                            ustr = ustr.Substring(2);
+                                            uval = Convert.ToUInt32(ustr, 16);
+                                        }
+                                        else
+                                        {
+                                            uval = Convert.ToUInt32(ustr);
+                                        } 
                                         Write(uval, data, entry.DataOffset);
                                         break;
                                 }

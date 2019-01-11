@@ -3469,12 +3469,30 @@ namespace CodeWalker.GameFiles
         TB_COLD = 3827341951,
         TB_HOT = 2709699671,
 
-
-
-
-
-
-
+        vehicleLight = 1339481019,
+        vehicleLightSettings = 2581049192,
+        vehicleCorona = 1860240263,
+        CVehicleKit = 679130282,
+        CVehicleModVisible = 4238291236,
+        CVehicleModLink = 2730707380,
+        CVehicleModStat = 243590259,
+        CVehicleModelColor = 4213335822,
+        CVehicleWindowColor = 2561269966,
+        CVehicleMetallicSetting = 2073371064,
+        PlateProbabilities = 2135495316,
+        CVehicleModColors = 2858318490,
+        CVehicleModColor = 1443412025,
+        metallic = 2204727143,
+        classic = 2458459502,
+        matte = 1951049216,
+        metals = 2740125593,
+        chrome = 1114790148,
+        pearlescent = 3095366650,
+        spec = 1912906641,
+        sirens = 2047330294,
+        CCreditItem = 113388969,
+        JOB_MED = 568575574,
+        JOB_SMALL = 4127034762,
 
 
 
@@ -3638,6 +3656,9 @@ namespace CodeWalker.GameFiles
         //rage__spdAABB = 4084721864,
         scaleBySunIntensity = 59101696,
 
+        CVehicleModPearlescentColors = 1380492417,
+        baseCols = 2645876692,
+        specCols = 666439252,
 
 
 
@@ -3816,6 +3837,13 @@ namespace CodeWalker.GameFiles
         ASSET_TYPE_DRAWABLEDICTIONARY = 1580165652,
         ASSET_TYPE_ASSETLESS = 4161085041,
 
+        aLevelsData = 1643066032,
+        cFriendlyName = 2077026003,
+        cTitle = 834048882,
+        cFilename = 3760135447,
+        cBugstarName = 3970741067,
+
+
 
         //openIV carcols.ymt
         VehiclePlates = 593302648,
@@ -3881,7 +3909,11 @@ namespace CodeWalker.GameFiles
         xenonCoronaColor = 4113209874,
         xenonLightIntensityModifier = 849227792,
         xenonCoronaIntensityModifier = 3145775573,
-
+        XenonLightColors = 2580788834,
+        lightColor = 78766281,
+        coronaColor = 3615736814,
+        lightIntensityModifier = 1981979787,
+        coronaIntensityModifier = 3155797354,
 
 
 

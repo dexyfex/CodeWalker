@@ -534,6 +534,12 @@
     <Compile Include="Utils\MapUtils.cs" />
     <Compile Include="GameFiles\TextureFormats.cs" />
     <Compile Include="Utils\TextureLoader.cs" />
+    <Compile Include="Vehicles\VehicleForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Vehicles\VehicleForm.Designer.cs">
+      <DependentUpon>VehicleForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="WorldInfoForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -751,6 +757,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Utils\TextInputForm.resx">
       <DependentUpon>TextInputForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Vehicles\VehicleForm.resx">
+      <DependentUpon>VehicleForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WorldForm.resx">
       <DependentUpon>WorldForm.cs</DependentUpon>

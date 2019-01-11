@@ -51,6 +51,9 @@
     <Compile Include="GameFiles\FileTypes\Builders\YndBuilder.cs" />
     <Compile Include="GameFiles\FileTypes\Builders\YnvBuilder.cs" />
     <Compile Include="GameFiles\FileTypes\CacheDatFile.cs" />
+    <Compile Include="GameFiles\FileTypes\CarColsFile.cs" />
+    <Compile Include="GameFiles\FileTypes\CarModColsFile.cs" />
+    <Compile Include="GameFiles\FileTypes\CarVariationsFile.cs" />
     <Compile Include="GameFiles\FileTypes\CutFile.cs" />
     <Compile Include="GameFiles\FileTypes\DlcContentFile.cs" />
     <Compile Include="GameFiles\FileTypes\DlcSetupFile.cs" />
@@ -60,6 +63,7 @@
     <Compile Include="GameFiles\FileTypes\JPsoFile.cs" />
     <Compile Include="GameFiles\FileTypes\RelFile.cs" />
     <Compile Include="GameFiles\FileTypes\Stats.cs" />
+    <Compile Include="GameFiles\FileTypes\VehicleLayoutsFile.cs" />
     <Compile Include="GameFiles\FileTypes\VehiclesFile.cs" />
     <Compile Include="GameFiles\FileTypes\YbnFile.cs" />
     <Compile Include="GameFiles\FileTypes\YcdFile.cs" />

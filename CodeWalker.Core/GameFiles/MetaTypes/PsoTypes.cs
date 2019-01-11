@@ -350,29 +350,29 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.fCycleOffset, PsoDataType.Float, 16, 0, 0),
                      new PsoStructureEntryInfo(MetaName.fCycleDuration, PsoDataType.Float, 20, 0, 0)
                     );
-                case MetaName.CVehicleModelInfoVarGlobal:
+                case MetaName.CVehicleModelInfoVarGlobal: //carcols.ymt root
                     return new PsoStructureInfo(MetaName.CVehicleModelInfoVarGlobal, 0, 0, 392,
                      new PsoStructureEntryInfo(MetaName.VehiclePlates, PsoDataType.Structure, 8, 0, (MetaName)465922034),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)4213335822),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleModelColor),
                      new PsoStructureEntryInfo(MetaName.Colors, PsoDataType.Array, 48, 0, (MetaName)1),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2073371064),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleMetallicSetting),
                      new PsoStructureEntryInfo(MetaName.MetallicSettings, PsoDataType.Array, 64, 0, (MetaName)3),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2561269966),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleWindowColor),
                      new PsoStructureEntryInfo(MetaName.WindowColors, PsoDataType.Array, 80, 0, (MetaName)5),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2581049192),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.vehicleLightSettings),
                      new PsoStructureEntryInfo(MetaName.Lights, PsoDataType.Array, 96, 0, MetaName.POINTER),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.sirenSettings),
                      new PsoStructureEntryInfo(MetaName.Sirens, PsoDataType.Array, 112, 0, (MetaName)9),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)679130282),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleKit),
                      new PsoStructureEntryInfo(MetaName.Kits, PsoDataType.Array, 128, 0, (MetaName)11),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleWheel),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Array, 0, 0, (MetaName)13),
                      new PsoStructureEntryInfo(MetaName.Wheels, PsoDataType.Array, 144, 4, (MetaName)851982),
                      new PsoStructureEntryInfo(MetaName.GlobalVariationData, PsoDataType.Structure, 352, 0, (MetaName)3062246906),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2807227399),
-                     new PsoStructureEntryInfo((MetaName)2580788834, PsoDataType.Array, 376, 0, MetaName.BYTE)
+                     new PsoStructureEntryInfo(MetaName.XenonLightColors, PsoDataType.Array, 376, 0, MetaName.BYTE)
                     );
-                case (MetaName)465922034:
+                case (MetaName)465922034: //CVehicleModelInfoVarGlobal VehiclePlates
                     return new PsoStructureInfo((MetaName)465922034, 0, 0, 40,
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)3027500557),
                      new PsoStructureEntryInfo(MetaName.Textures, PsoDataType.Array, 8, 0, 0),
@@ -383,14 +383,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.RandomCharOffset, PsoDataType.UByte, 31, 0, 0),
                      new PsoStructureEntryInfo(MetaName.NumRandomChar, PsoDataType.UByte, 32, 0, 0)
                     );
-                case (MetaName)3062246906:
-                    return new PsoStructureInfo((MetaName)3062246906, 0, 0, 24,
-                     new PsoStructureEntryInfo(MetaName.xenonLightColor, PsoDataType.UInt, 8, 1, 0),
-                     new PsoStructureEntryInfo(MetaName.xenonCoronaColor, PsoDataType.UInt, 12, 1, 0),
-                     new PsoStructureEntryInfo(MetaName.xenonLightIntensityModifier, PsoDataType.Float, 16, 0, 0),
-                     new PsoStructureEntryInfo(MetaName.xenonCoronaIntensityModifier, PsoDataType.Float, 20, 0, 0)
-                    );
-                case (MetaName)3027500557:
+                case (MetaName)3027500557: //CVehicleModelInfoVarGlobal VehiclePlates Texture
                     return new PsoStructureInfo((MetaName)3027500557, 0, 0, 80,
                      new PsoStructureEntryInfo(MetaName.TextureSetName, PsoDataType.String, 8, 7, 0),
                      new PsoStructureEntryInfo(MetaName.DiffuseMapName, PsoDataType.String, 12, 7, 0),
@@ -402,8 +395,22 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.IsFontOutlineEnabled, PsoDataType.Bool, 64, 0, 0),
                      new PsoStructureEntryInfo(MetaName.FontOutlineMinMaxDepth, PsoDataType.Float2, 68, 0, 0)
                     );
-                case (MetaName)4213335822:
-                    return new PsoStructureInfo((MetaName)4213335822, 0, 0, 32,
+                case (MetaName)3062246906: //CVehicleModelInfoVarGlobal GlobalVariationData
+                    return new PsoStructureInfo((MetaName)3062246906, 0, 0, 24,
+                     new PsoStructureEntryInfo(MetaName.xenonLightColor, PsoDataType.UInt, 8, 1, 0),
+                     new PsoStructureEntryInfo(MetaName.xenonCoronaColor, PsoDataType.UInt, 12, 1, 0),
+                     new PsoStructureEntryInfo(MetaName.xenonLightIntensityModifier, PsoDataType.Float, 16, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.xenonCoronaIntensityModifier, PsoDataType.Float, 20, 0, 0)
+                    );
+                case (MetaName)2807227399: //CVehicleModelInfoVarGlobal XenonLightColors //vehicle xenon light color
+                    return new PsoStructureInfo((MetaName)2807227399, 0, 0, 24,
+                     new PsoStructureEntryInfo(MetaName.lightColor, PsoDataType.UInt, 8, 1, 0),
+                     new PsoStructureEntryInfo(MetaName.coronaColor, PsoDataType.UInt, 12, 1, 0),
+                     new PsoStructureEntryInfo(MetaName.lightIntensityModifier, PsoDataType.Float, 16, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.coronaIntensityModifier, PsoDataType.Float, 20, 0, 0)
+                    );
+                case MetaName.CVehicleModelColor: //CVehicleModelInfoVarGlobal Colors
+                    return new PsoStructureInfo(MetaName.CVehicleModelColor, 0, 0, 32,
                      new PsoStructureEntryInfo(MetaName.color, PsoDataType.UInt, 8, 1, 0),
                      new PsoStructureEntryInfo(MetaName.metallicID, PsoDataType.Enum, 12, 2, (MetaName)360458334),
                      new PsoStructureEntryInfo(MetaName.audioColor, PsoDataType.Enum, 13, 2, (MetaName)544262540),
@@ -412,34 +419,34 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.audioPrefixHash, PsoDataType.UInt, 20, 0, 0),
                      new PsoStructureEntryInfo(MetaName.colorName, PsoDataType.String, 24, 1, 0)
                     );
-                case (MetaName)2073371064:
-                    return new PsoStructureInfo((MetaName)2073371064, 0, 0, 24,
+                case MetaName.CVehicleMetallicSetting: //CVehicleModelInfoVarGlobal MetallicSettings
+                    return new PsoStructureInfo(MetaName.CVehicleMetallicSetting, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.specInt, PsoDataType.Float, 8, 0, 0),
                      new PsoStructureEntryInfo(MetaName.specFalloff, PsoDataType.Float, 12, 0, 0),
                      new PsoStructureEntryInfo(MetaName.specFresnel, PsoDataType.Float, 16, 0, 0)
                     );
-                case (MetaName)2561269966:
-                    return new PsoStructureInfo((MetaName)2561269966, 0, 0, 16,
+                case MetaName.CVehicleWindowColor: //CVehicleModelInfoVarGlobal WindowColors
+                    return new PsoStructureInfo(MetaName.CVehicleWindowColor, 0, 0, 16,
                      new PsoStructureEntryInfo(MetaName.color, PsoDataType.UInt, 8, 1, 0),
                      new PsoStructureEntryInfo(MetaName.name, PsoDataType.String, 12, 7, 0)
                     );
-                case (MetaName)2581049192:
-                    return new PsoStructureInfo((MetaName)2581049192, 0, 0, 552,
+                case MetaName.vehicleLightSettings: //CVehicleModelInfoVarGlobal Lights
+                    return new PsoStructureInfo(MetaName.vehicleLightSettings, 0, 0, 552,
                      new PsoStructureEntryInfo(MetaName.id, PsoDataType.UByte, 8, 0, 0),
-                     new PsoStructureEntryInfo(MetaName.indicator, PsoDataType.Structure, 16, 0, (MetaName)1339481019),
-                     new PsoStructureEntryInfo(MetaName.rearIndicatorCorona, PsoDataType.Structure, 64, 0, (MetaName)1860240263),
-                     new PsoStructureEntryInfo(MetaName.frontIndicatorCorona, PsoDataType.Structure, 120, 0, (MetaName)1860240263),
-                     new PsoStructureEntryInfo(MetaName.tailLight, PsoDataType.Structure, 176, 0, (MetaName)1339481019),
-                     new PsoStructureEntryInfo(MetaName.tailLightCorona, PsoDataType.Structure, 224, 0, (MetaName)1860240263),
-                     new PsoStructureEntryInfo(MetaName.tailLightMiddleCorona, PsoDataType.Structure, 280, 0, (MetaName)1860240263),
-                     new PsoStructureEntryInfo(MetaName.headLight, PsoDataType.Structure, 336, 0, (MetaName)1339481019),
-                     new PsoStructureEntryInfo(MetaName.headLightCorona, PsoDataType.Structure, 384, 0, (MetaName)1860240263),
-                     new PsoStructureEntryInfo(MetaName.reversingLight, PsoDataType.Structure, 440, 0, (MetaName)1339481019),
-                     new PsoStructureEntryInfo(MetaName.reversingLightCorona, PsoDataType.Structure, 488, 0, (MetaName)1860240263),
+                     new PsoStructureEntryInfo(MetaName.indicator, PsoDataType.Structure, 16, 0, MetaName.vehicleLight),
+                     new PsoStructureEntryInfo(MetaName.rearIndicatorCorona, PsoDataType.Structure, 64, 0, MetaName.vehicleCorona),
+                     new PsoStructureEntryInfo(MetaName.frontIndicatorCorona, PsoDataType.Structure, 120, 0, MetaName.vehicleCorona),
+                     new PsoStructureEntryInfo(MetaName.tailLight, PsoDataType.Structure, 176, 0, MetaName.vehicleLight),
+                     new PsoStructureEntryInfo(MetaName.tailLightCorona, PsoDataType.Structure, 224, 0, MetaName.vehicleCorona),
+                     new PsoStructureEntryInfo(MetaName.tailLightMiddleCorona, PsoDataType.Structure, 280, 0, MetaName.vehicleCorona),
+                     new PsoStructureEntryInfo(MetaName.headLight, PsoDataType.Structure, 336, 0, MetaName.vehicleLight),
+                     new PsoStructureEntryInfo(MetaName.headLightCorona, PsoDataType.Structure, 384, 0, MetaName.vehicleCorona),
+                     new PsoStructureEntryInfo(MetaName.reversingLight, PsoDataType.Structure, 440, 0, MetaName.vehicleLight),
+                     new PsoStructureEntryInfo(MetaName.reversingLightCorona, PsoDataType.Structure, 488, 0, MetaName.vehicleCorona),
                      new PsoStructureEntryInfo(MetaName.name, PsoDataType.String, 544, 1, 0)
                     );
-                case (MetaName)1339481019:
-                    return new PsoStructureInfo((MetaName)1339481019, 0, 0, 48,
+                case MetaName.vehicleLight: //CVehicleModelInfoVarGlobal Lights Light info
+                    return new PsoStructureInfo(MetaName.vehicleLight, 0, 0, 48,
                      new PsoStructureEntryInfo(MetaName.intensity, PsoDataType.Float, 8, 0, 0),
                      new PsoStructureEntryInfo(MetaName.falloffMax, PsoDataType.Float, 12, 0, 0),
                      new PsoStructureEntryInfo(MetaName.falloffExponent, PsoDataType.Float, 16, 0, 0),
@@ -450,8 +457,8 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.textureName, PsoDataType.String, 36, 7, 0),
                      new PsoStructureEntryInfo(MetaName.mirrorTexture, PsoDataType.Bool, 40, 0, 0)
                     );
-                case (MetaName)1860240263:
-                    return new PsoStructureInfo((MetaName)1860240263, 0, 0, 56,
+                case MetaName.vehicleCorona: //CVehicleModelInfoVarGlobal Lights Corona info
+                    return new PsoStructureInfo(MetaName.vehicleCorona, 0, 0, 56,
                      new PsoStructureEntryInfo(MetaName.size, PsoDataType.Float, 8, 0, 0),
                      new PsoStructureEntryInfo(MetaName.size_far, PsoDataType.Float, 12, 0, 0),
                      new PsoStructureEntryInfo(MetaName.intensity, PsoDataType.Float, 16, 0, 0),
@@ -488,7 +495,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.rightTailLightMultiples, PsoDataType.UByte, 123, 0, 0),
                      new PsoStructureEntryInfo(MetaName.useRealLights, PsoDataType.Bool, 124, 0, 0),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.sirenLight),
-                     new PsoStructureEntryInfo((MetaName)2047330294, PsoDataType.Array, 128, 1, (MetaName)1310739)
+                     new PsoStructureEntryInfo(MetaName.sirens, PsoDataType.Array, 128, 1, (MetaName)1310739)
                     );
                 case (MetaName)188820339:
                     return new PsoStructureInfo((MetaName)188820339, 0, 0, 16,
@@ -527,17 +534,17 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.pull, PsoDataType.Float, 16, 0, 0),
                      new PsoStructureEntryInfo(MetaName.faceCamera, PsoDataType.Bool, 20, 0, 0)
                     );
-                case (MetaName)679130282:
-                    return new PsoStructureInfo((MetaName)679130282, 0, 0, 120,
+                case MetaName.CVehicleKit:
+                    return new PsoStructureInfo(MetaName.CVehicleKit, 0, 0, 120,
                      new PsoStructureEntryInfo(MetaName.kitName, PsoDataType.String, 8, 7, 0),
                      new PsoStructureEntryInfo(MetaName.id, PsoDataType.UShort, 12, 0, 0),
                      new PsoStructureEntryInfo(MetaName.kitType, PsoDataType.Enum, 16, 0, (MetaName)3865430600),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)4238291236),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleModVisible),
                      new PsoStructureEntryInfo(MetaName.visibleMods, PsoDataType.Array, 24, 0, (MetaName)3),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2730707380),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleModLink),
                      new PsoStructureEntryInfo(MetaName.linkMods, PsoDataType.Array, 40, 0, (MetaName)5),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)243590259),
-                     new PsoStructureEntryInfo(MetaName.statMods, PsoDataType.Array, 56, 0, MetaName.POINTER),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleModStat),
+                     new PsoStructureEntryInfo(MetaName.statMods, PsoDataType.Array, 56, 0, (MetaName)7),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)427606548),
                      new PsoStructureEntryInfo(MetaName.slotNames, PsoDataType.Array, 72, 0, (MetaName)9),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.String, 0, 2, 0),
@@ -545,16 +552,16 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.String, 0, 2, 0),
                      new PsoStructureEntryInfo(MetaName.livery2Names, PsoDataType.Array, 104, 0, (MetaName)13)
                     );
-                case (MetaName)243590259:
-                    return new PsoStructureInfo((MetaName)243590259, 0, 0, 32,
+                case MetaName.CVehicleModStat:
+                    return new PsoStructureInfo(MetaName.CVehicleModStat, 0, 0, 32,
                      new PsoStructureEntryInfo(MetaName.identifier, PsoDataType.String, 8, 7, 0),
                      new PsoStructureEntryInfo(MetaName.modifier, PsoDataType.UInt, 12, 0, 0),
                      new PsoStructureEntryInfo(MetaName.audioApply, PsoDataType.Float, 16, 0, 0),
                      new PsoStructureEntryInfo(MetaName.weight, PsoDataType.UByte, 20, 0, 0),
                      new PsoStructureEntryInfo(MetaName.type, PsoDataType.Enum, 24, 0, (MetaName)2363989491)
                     );
-                case (MetaName)4238291236:
-                    return new PsoStructureInfo((MetaName)4238291236, 0, 0, 96,
+                case MetaName.CVehicleModVisible:
+                    return new PsoStructureInfo(MetaName.CVehicleModVisible, 0, 0, 96,
                      new PsoStructureEntryInfo(MetaName.modelName, PsoDataType.String, 8, 7, 0),
                      new PsoStructureEntryInfo(MetaName.modShopLabel, PsoDataType.String, 16, 2, 0),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.String, 0, 7, 0),
@@ -582,8 +589,8 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.slot, PsoDataType.Enum, 8, 0, (MetaName)2363989491),
                      new PsoStructureEntryInfo(MetaName.name, PsoDataType.String, 16, 2, 0)
                     );
-                case (MetaName)2730707380:
-                    return new PsoStructureInfo((MetaName)2730707380, 0, 0, 24,
+                case MetaName.CVehicleModLink:
+                    return new PsoStructureInfo(MetaName.CVehicleModLink, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.modelName, PsoDataType.String, 8, 7, 0),
                      new PsoStructureEntryInfo(MetaName.bone, PsoDataType.Enum, 12, 0, (MetaName)3635907608),
                      new PsoStructureEntryInfo(MetaName.turnOffExtra, PsoDataType.Bool, 16, 0, 0)
@@ -596,39 +603,39 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.rimRadius, PsoDataType.Float, 24, 0, 0),
                      new PsoStructureEntryInfo(MetaName.rear, PsoDataType.Bool, 28, 0, 0)
                     );
-                case (MetaName)2858318490:
-                    return new PsoStructureInfo((MetaName)2858318490, 0, 0, 128,
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)1443412025),
-                     new PsoStructureEntryInfo((MetaName)2204727143, PsoDataType.Array, 8, 0, 0),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)1443412025),
-                     new PsoStructureEntryInfo((MetaName)2458459502, PsoDataType.Array, 24, 0, (MetaName)2),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)1443412025),
-                     new PsoStructureEntryInfo((MetaName)1951049216, PsoDataType.Array, 40, 0, (MetaName)4),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)1443412025),
-                     new PsoStructureEntryInfo((MetaName)2740125593, PsoDataType.Array, 56, 0, (MetaName)6),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)1443412025),
-                     new PsoStructureEntryInfo((MetaName)1114790148, PsoDataType.Array, 72, 0, (MetaName)8),
-                     new PsoStructureEntryInfo((MetaName)3095366650, PsoDataType.Structure, 88, 0, (MetaName)1380492417)
+                case MetaName.CVehicleModColors: //carmodcols.ymt root
+                    return new PsoStructureInfo(MetaName.CVehicleModColors, 0, 0, 128,
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleModColor),
+                     new PsoStructureEntryInfo(MetaName.metallic, PsoDataType.Array, 8, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleModColor),
+                     new PsoStructureEntryInfo(MetaName.classic, PsoDataType.Array, 24, 0, (MetaName)2),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleModColor),
+                     new PsoStructureEntryInfo(MetaName.matte, PsoDataType.Array, 40, 0, (MetaName)4),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleModColor),
+                     new PsoStructureEntryInfo(MetaName.metals, PsoDataType.Array, 56, 0, (MetaName)6),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleModColor),
+                     new PsoStructureEntryInfo(MetaName.chrome, PsoDataType.Array, 72, 0, (MetaName)8),
+                     new PsoStructureEntryInfo(MetaName.pearlescent, PsoDataType.Structure, 88, 0, MetaName.CVehicleModPearlescentColors)
                     );
-                case (MetaName)1380492417:
-                    return new PsoStructureInfo((MetaName)1380492417, 0, 0, 40,
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)1443412025),
-                     new PsoStructureEntryInfo((MetaName)2645876692, PsoDataType.Array, 8, 0, 0),
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)1443412025),
-                     new PsoStructureEntryInfo((MetaName)666439252, PsoDataType.Array, 24, 0, (MetaName)2)
+                case MetaName.CVehicleModPearlescentColors:
+                    return new PsoStructureInfo(MetaName.CVehicleModPearlescentColors, 0, 0, 40,
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleModColor),
+                     new PsoStructureEntryInfo(MetaName.baseCols, PsoDataType.Array, 8, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CVehicleModColor),
+                     new PsoStructureEntryInfo(MetaName.specCols, PsoDataType.Array, 24, 0, (MetaName)2)
                     );
-                case (MetaName)1443412025:
-                    return new PsoStructureInfo((MetaName)1443412025, 0, 0, 24,
+                case MetaName.CVehicleModColor:
+                    return new PsoStructureInfo(MetaName.CVehicleModColor, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.name, PsoDataType.String, 8, 2, 0),
                      new PsoStructureEntryInfo(MetaName.col, PsoDataType.UByte, 16, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)1912906641, PsoDataType.UByte, 17, 0, 0)
+                     new PsoStructureEntryInfo(MetaName.spec, PsoDataType.UByte, 17, 0, 0)
                     );
-                case MetaName.CVehicleModelInfoVariation:
+                case MetaName.CVehicleModelInfoVariation: //carvariations.ymt root
                     return new PsoStructureInfo(MetaName.CVehicleModelInfoVariation, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)418053801),
                      new PsoStructureEntryInfo(MetaName.variationData, PsoDataType.Array, 8, 0, 0)
                     );
-                case (MetaName)418053801:
+                case (MetaName)418053801: //CVehicleModelInfoVariation variationData
                     return new PsoStructureInfo((MetaName)418053801, 0, 0, 96,
                      new PsoStructureEntryInfo(MetaName.modelName, PsoDataType.String, 8, 1, 0),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2575850962),
@@ -637,34 +644,34 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.kits, PsoDataType.Array, 32, 0, (MetaName)3),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.String, 0, 7, 0),
                      new PsoStructureEntryInfo(MetaName.windowsWithExposedEdges, PsoDataType.Array, 48, 0, (MetaName)5),
-                     new PsoStructureEntryInfo(MetaName.plateProbabilities, PsoDataType.Structure, 64, 0, (MetaName)2135495316),
+                     new PsoStructureEntryInfo(MetaName.plateProbabilities, PsoDataType.Structure, 64, 0, MetaName.PlateProbabilities),
                      new PsoStructureEntryInfo(MetaName.lightSettings, PsoDataType.UByte, 88, 0, 0),
                      new PsoStructureEntryInfo(MetaName.sirenSettings, PsoDataType.UByte, 89, 0, 0)
                     );
-                case (MetaName)2135495316:
-                    return new PsoStructureInfo((MetaName)2135495316, 0, 0, 24,
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)938618322),
-                     new PsoStructureEntryInfo(MetaName.Probabilities, PsoDataType.Array, 8, 0, 0)
-                    );
-                case (MetaName)2575850962:
+                case (MetaName)2575850962: //CVehicleModelInfoVariation variationData colors
                     return new PsoStructureInfo((MetaName)2575850962, 0, 0, 44 /*40*/,
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.UByte, 0, 0, 0),
                      new PsoStructureEntryInfo(MetaName.indices, PsoDataType.Array, 8, 4, (MetaName)393216 /*262144*/),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Bool, 0, 0, 0),
                      new PsoStructureEntryInfo(MetaName.liveries, PsoDataType.Array, 14 /*12*/, 4, (MetaName)1966082 /*1638402*/)
                     );
+                case MetaName.PlateProbabilities:
+                    return new PsoStructureInfo(MetaName.PlateProbabilities, 0, 0, 24,
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)938618322),
+                     new PsoStructureEntryInfo(MetaName.Probabilities, PsoDataType.Array, 8, 0, 0)
+                    );
                 case (MetaName)938618322:
                     return new PsoStructureInfo((MetaName)938618322, 0, 0, 16,
                      new PsoStructureEntryInfo(MetaName.Name, PsoDataType.String, 8, 7, 0),
                      new PsoStructureEntryInfo(MetaName.Value, PsoDataType.UInt, 12, 0, 0)
                     );
-                case (MetaName)1998252412:
+                case (MetaName)1998252412: //credits.ymt root
                     return new PsoStructureInfo((MetaName)1998252412, 0, 0, 24,
-                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)113388969),
+                     new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CCreditItem),
                      new PsoStructureEntryInfo(MetaName.CreditItems, PsoDataType.Array, 8, 0, 0)
                     );
-                case (MetaName)113388969:
-                    return new PsoStructureInfo((MetaName)113388969, 0, 0, 48,
+                case MetaName.CCreditItem:
+                    return new PsoStructureInfo(MetaName.CCreditItem, 0, 0, 48,
                      new PsoStructureEntryInfo(MetaName.LineType, PsoDataType.Enum, 8, 0, (MetaName)1795685103),
                      new PsoStructureEntryInfo(MetaName.cTextId1, PsoDataType.String, 16, 3, 0),
                      new PsoStructureEntryInfo(MetaName.cTextId2, PsoDataType.String, 32, 3, 0)
@@ -701,19 +708,19 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.contents, PsoDataType.Enum, 168, 0, MetaName.DataFileContents),
                      new PsoStructureEntryInfo(MetaName.installPartition, PsoDataType.Enum, 172, 0, MetaName.InstallPartition)
                     );
-                case MetaName.CLevelData:
+                case MetaName.CLevelData: //levels.ymt root
                     return new PsoStructureInfo(MetaName.CLevelData, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.sLevelData),
-                     new PsoStructureEntryInfo((MetaName)1643066032, PsoDataType.Array, 8, 0, 0)
+                     new PsoStructureEntryInfo(MetaName.aLevelsData, PsoDataType.Array, 8, 0, 0)
                     );
                 case MetaName.sLevelData:
                     return new PsoStructureInfo(MetaName.sLevelData, 0, 0, 72,
-                     new PsoStructureEntryInfo((MetaName)2077026003, PsoDataType.String, 8, 3, 0),
-                     new PsoStructureEntryInfo((MetaName)834048882, PsoDataType.String, 24, 3, 0),
-                     new PsoStructureEntryInfo((MetaName)3760135447, PsoDataType.String, 40, 3, 0),
-                     new PsoStructureEntryInfo((MetaName)3970741067, PsoDataType.String, 56, 3, 0)
+                     new PsoStructureEntryInfo(MetaName.cFriendlyName, PsoDataType.String, 8, 3, 0),
+                     new PsoStructureEntryInfo(MetaName.cTitle, PsoDataType.String, 24, 3, 0),
+                     new PsoStructureEntryInfo(MetaName.cFilename, PsoDataType.String, 40, 3, 0),
+                     new PsoStructureEntryInfo(MetaName.cBugstarName, PsoDataType.String, 56, 3, 0)
                     );
-                case (MetaName)1056751197:
+                case (MetaName)1056751197: //mapdatacullboxes.ymt root
                     return new PsoStructureInfo((MetaName)1056751197, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)322201475),
                      new PsoStructureEntryInfo((MetaName)934859523, PsoDataType.Array, 8, 0, 0)
@@ -741,7 +748,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CTxdRelationship),
                      new PsoStructureEntryInfo(MetaName.txdRelationships, PsoDataType.Array, 56, 0, (MetaName)5),
                      new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CMultiTxdRelationship),
-                     new PsoStructureEntryInfo(MetaName.multiTxdRelationships, PsoDataType.Array, 72, 0, MetaName.POINTER)
+                     new PsoStructureEntryInfo(MetaName.multiTxdRelationships, PsoDataType.Array, 72, 0, (MetaName)7)
                     );
                 case MetaName.CPedModelInfo__InitData:
                     return new PsoStructureInfo(MetaName.CPedModelInfo__InitData, 0, 0, 296,
@@ -14185,13 +14192,6 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo((MetaName)2721898107, PsoDataType.UInt, 0, 0, 0),
                      new PsoStructureEntryInfo((MetaName)1084559223, PsoDataType.SInt, 4, 0, 0)
                     );
-                case (MetaName)2807227399:
-                    return new PsoStructureInfo((MetaName)2807227399, 0, 0, 24,
-                     new PsoStructureEntryInfo((MetaName)78766281, PsoDataType.UInt, 8, 1, 0),
-                     new PsoStructureEntryInfo((MetaName)3615736814, PsoDataType.UInt, 12, 1, 0),
-                     new PsoStructureEntryInfo((MetaName)1981979787, PsoDataType.Float, 16, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)3155797354, PsoDataType.Float, 20, 0, 0)
-                    );
                 case MetaName.camMotionBlurSettingsMetadata:
                     return new PsoStructureInfo(MetaName.camMotionBlurSettingsMetadata, 0, 0, 64,
                      new PsoStructureEntryInfo(MetaName.Name, PsoDataType.String, 8, 7, 0),
@@ -14285,7 +14285,7 @@ namespace CodeWalker.GameFiles
             //to generate enuminfos
             switch (name)
             {
-                case (MetaName)360458334:
+                case (MetaName)360458334: //vehicle mod color metallic id
                     return new PsoEnumInfo((MetaName)360458334, 1,
                      new PsoEnumEntryInfo(MetaName.none, -1),
                      new PsoEnumEntryInfo((MetaName)815563434, 0),
@@ -14299,7 +14299,7 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo((MetaName)4285337393, 8),
                      new PsoEnumEntryInfo((MetaName)847803751, 9)
                     );
-                case (MetaName)544262540:
+                case (MetaName)544262540: //vehicle mod color audio color
                     return new PsoEnumInfo((MetaName)544262540, 1,
                      new PsoEnumEntryInfo((MetaName)52583446, 0),
                      new PsoEnumEntryInfo((MetaName)2253400966, 1),
@@ -14315,21 +14315,21 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo((MetaName)1645071976, 11),
                      new PsoEnumEntryInfo((MetaName)1358390657, 12)
                     );
-                case (MetaName)2065815796:
+                case (MetaName)2065815796: //vehicle mod color audio prefix
                     return new PsoEnumInfo((MetaName)2065815796, 1,
                      new PsoEnumEntryInfo(MetaName.none, 0),
                      new PsoEnumEntryInfo((MetaName)2318284788, 1),
                      new PsoEnumEntryInfo((MetaName)840729009, 2),
                      new PsoEnumEntryInfo((MetaName)3921902053, 3)
                     );
-                case (MetaName)3865430600:
+                case (MetaName)3865430600: //vehicle mod kit type
                     return new PsoEnumInfo((MetaName)3865430600, 1,
                      new PsoEnumEntryInfo(MetaName.MKT_STANDARD, 0),
                      new PsoEnumEntryInfo(MetaName.MKT_SPORT, 1),
                      new PsoEnumEntryInfo(MetaName.MKT_SUV, 2),
                      new PsoEnumEntryInfo(MetaName.MKT_SPECIAL, 3)
                     );
-                case (MetaName)2363989491:
+                case (MetaName)2363989491: //vehicle mod type
                     return new PsoEnumInfo((MetaName)2363989491, 1,
                      new PsoEnumEntryInfo(MetaName.VMT_SPOILER, 0),
                      new PsoEnumEntryInfo(MetaName.VMT_BUMPER_F, 1),
@@ -14382,7 +14382,7 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo(MetaName.VMT_WHEELS, 48),
                      new PsoEnumEntryInfo(MetaName.VMT_WHEELS_REAR_OR_HYDRAULICS, 49)
                     );
-                case (MetaName)3635907608:
+                case (MetaName)3635907608: //vehicle mod bone
                     return new PsoEnumInfo((MetaName)3635907608, 1,
                      new PsoEnumEntryInfo(MetaName.none, -1),
                      new PsoEnumEntryInfo(MetaName.chassis, 0),
@@ -14590,7 +14590,7 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo((MetaName)2166816405, 591),
                      new PsoEnumEntryInfo((MetaName)2486991428, 592)
                     );
-                case (MetaName)3413962745:
+                case (MetaName)3413962745: //vehicle mod camera position
                     return new PsoEnumInfo((MetaName)3413962745, 1,
                      new PsoEnumEntryInfo(MetaName.VMCP_DEFAULT, 0),
                      new PsoEnumEntryInfo((MetaName)3001706694, 1),
@@ -14604,11 +14604,11 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo((MetaName)3193071790, 9),
                      new PsoEnumEntryInfo((MetaName)2770495034, 10)
                     );
-                case (MetaName)1795685103:
+                case (MetaName)1795685103: //credit item job line type
                     return new PsoEnumInfo((MetaName)1795685103, 1,
                      new PsoEnumEntryInfo(MetaName.JOB_BIG, 0),
-                     new PsoEnumEntryInfo((MetaName)568575574, 1),
-                     new PsoEnumEntryInfo((MetaName)4127034762, 2),
+                     new PsoEnumEntryInfo(MetaName.JOB_MED, 1),
+                     new PsoEnumEntryInfo(MetaName.JOB_SMALL, 2),
                      new PsoEnumEntryInfo((MetaName)1877679104, 3),
                      new PsoEnumEntryInfo((MetaName)2980984179, 4),
                      new PsoEnumEntryInfo((MetaName)298596333, 5),
@@ -14904,7 +14904,7 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo((MetaName)551739454, 3),
                      new PsoEnumEntryInfo((MetaName)462532381, 4)
                     );
-                case (MetaName)3029795674:
+                case (MetaName)3029795674: //CPedModelInfo__InitData ScenarioPopStreamingSlot
                     return new PsoEnumInfo((MetaName)3029795674, 1,
                      new PsoEnumEntryInfo(MetaName.SCENARIO_POP_STREAMING_NORMAL, 0),
                      new PsoEnumEntryInfo((MetaName)1152280719, 1)
@@ -14923,7 +14923,7 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo((MetaName)3916722287, 2),
                      new PsoEnumEntryInfo((MetaName)157616235, 3)
                     );
-                case (MetaName)224899699:
+                case (MetaName)224899699: //animation clip flags
                     return new PsoEnumInfo((MetaName)224899699, 1,
                      new PsoEnumEntryInfo((MetaName)2933717348, 0),
                      new PsoEnumEntryInfo((MetaName)892548521, 1),
@@ -14958,7 +14958,7 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo((MetaName)1321103795, 30),
                      new PsoEnumEntryInfo((MetaName)3765996064, 31)
                     );
-                case (MetaName)1498349301:
+                case (MetaName)1498349301: //animation clip priority
                     return new PsoEnumInfo((MetaName)1498349301, 1,
                      new PsoEnumEntryInfo(MetaName.AP_LOW, 0),
                      new PsoEnumEntryInfo(MetaName.AP_MEDIUM, 1),
@@ -14967,13 +14967,13 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo((MetaName)3509068476, 4),
                      new PsoEnumEntryInfo((MetaName)611607097, 5)
                     );
-                case (MetaName)1631789397:
+                case (MetaName)1631789397: //anim clip dictionary streaming policy
                     return new PsoEnumInfo((MetaName)1631789397, 1,
                      new PsoEnumEntryInfo(MetaName.SP_STREAMING, 0),
                      new PsoEnumEntryInfo(MetaName.SP_SINGLEPLAYER_RESIDENT, 1),
                      new PsoEnumEntryInfo(MetaName.SP_MULTIPLAYER_RESIDENT, 2)
                     );
-                case (MetaName)733577798:
+                case (MetaName)733577798: //anim clip dictionary streaming priority
                     return new PsoEnumInfo((MetaName)733577798, 1,
                      new PsoEnumEntryInfo((MetaName)3866220764, 0),
                      new PsoEnumEntryInfo(MetaName.SP_Low, 1),

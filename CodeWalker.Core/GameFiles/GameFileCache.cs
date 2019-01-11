@@ -78,12 +78,17 @@ namespace CodeWalker.GameFiles
 
         public Dictionary<uint, World.TimecycleMod> TimeCycleModsDict = new Dictionary<uint, World.TimecycleMod>();
 
+        public Dictionary<MetaHash, VehicleInitData> VehiclesInitDict { get; set; }
+
+
         public List<RpfFile> BaseRpfs { get; private set; }
         public List<RpfFile> AllRpfs { get; private set; }
         public List<RpfFile> DlcRpfs { get; private set; }
 
         public bool DoFullStringIndex = false;
-
+        public bool BuildExtendedJenkIndex = true;
+        public bool LoadArchetypes = true;
+        public bool LoadVehicles = false;
         private bool PreloadedMode = false;
 
         private string GTAFolder;
@@ -149,13 +154,14 @@ namespace CodeWalker.GameFiles
 
             if (RpfMan == null)
             {
-                EnableDlc = !string.IsNullOrEmpty(SelectedDlc);
+                //EnableDlc = !string.IsNullOrEmpty(SelectedDlc);
 
 
 
                 RpfMan = new RpfManager();
                 RpfMan.ExcludePaths = GetExcludePaths();
                 RpfMan.EnableMods = EnableMods;
+                RpfMan.BuildExtendedJenkIndex = BuildExtendedJenkIndex;
                 RpfMan.Init(GTAFolder, UpdateStatus, ErrorLog);//, true);
 
                 //RE test area!
@@ -255,6 +261,9 @@ namespace CodeWalker.GameFiles
 
             UpdateStatus("Loading strings...");
             InitStringDicts();
+
+            UpdateStatus("Loading vehicles...");
+            InitVehicles();
         }
 
         private void InitDlcList()
@@ -409,6 +418,14 @@ namespace CodeWalker.GameFiles
             {
                 if ((sfile == null) || (sfile.DlcFile == null)) continue;
                 DlcNameList.Add(GetDlcNameFromPath(sfile.DlcFile.Path));
+            }
+
+            if (DlcNameList.Count > 0)
+            {
+                if (string.IsNullOrEmpty(SelectedDlc))
+                {
+                    SelectedDlc = DlcNameList[DlcNameList.Count - 1];
+                }
             }
         }
 
@@ -1058,7 +1075,7 @@ namespace CodeWalker.GameFiles
                             }
                             else if (entry.NameLower == "vehicles.meta")
                             {
-                                VehiclesFile vf = RpfMan.GetFile<VehiclesFile>(entry);
+                                VehiclesFile vf = RpfMan.GetFile<VehiclesFile>(entry);//could also get loaded in InitVehicles...
                                 if (vf.TxdRelationships != null)
                                 {
                                     addTxdRelationships(vf.TxdRelationships);
@@ -1243,6 +1260,8 @@ namespace CodeWalker.GameFiles
             archetypesLoaded = false;
             archetypeDict.Clear();
 
+            if (!LoadArchetypes) return;
+
 
             var rpfs = EnableDlc ? AllRpfs : BaseRpfs;
 
@@ -1424,6 +1443,104 @@ namespace CodeWalker.GameFiles
             StatsNames.FullIndexBuilt = true;
         }
 
+        public void InitVehicles()
+        {
+            if (!LoadVehicles) return;
+
+
+            //Neos7
+            //Involved files(at least for rendering purpose )
+            //Vehicles.meta
+            //Carcols.meta
+            //Carvariations.meta
+            //Vehiclelayouts.meta
+            //The other metas shouldn't be important for rendering
+            //Then the global carcols.ymt is required too
+            //As it contains the general shared tuning options
+            //Carcols for modkits and lights kits definitions
+            //Carvariations links such modkits and lights kits to each vehicle plus defines colours combinations of spawned vehicles
+            //Vehiclelayouts mostly to handle ped interactions with the vehicle
+
+
+
+
+
+            IEnumerable <RpfFile> rpfs = PreloadedMode ? AllRpfs : (IEnumerable<RpfFile>)ActiveMapRpfFiles.Values;
+
+
+            var allVehicles = new Dictionary<MetaHash, VehicleInitData>();
+
+            var addVehicleFiles = new Action<IEnumerable<RpfFile>>((from) =>
+            {
+                foreach (RpfFile file in from)
+                {
+                    if (file.AllEntries == null) continue;
+                    foreach (RpfEntry entry in file.AllEntries)
+                    {
+#if !DEBUG
+                        try
+#endif
+                        {
+                            if (entry.NameLower == "vehicles.meta")
+                            {
+                                VehiclesFile vf = RpfMan.GetFile<VehiclesFile>(entry);
+                                if (vf.InitDatas != null)
+                                {
+                                    foreach (var initData in vf.InitDatas)
+                                    {
+                                        var name = initData.modelName.ToLowerInvariant();
+                                        var hash = JenkHash.GenHash(name);
+                                        if (allVehicles.ContainsKey(hash))
+                                        { }
+                                        allVehicles[hash] = initData;
+                                    }
+                                }
+                            }
+                            if ((entry.NameLower == "carcols.ymt") || (entry.NameLower == "carcols.meta"))
+                            {
+                                var cf = RpfMan.GetFile<CarColsFile>(entry);
+
+                            }
+                            if (entry.NameLower == "carmodcols.ymt")
+                            {
+                                var cf = RpfMan.GetFile<CarModColsFile>(entry);
+
+                            }
+                            if ((entry.NameLower == "carvariations.ymt") || (entry.NameLower == "carvariations.meta"))
+                            {
+                                var cf = RpfMan.GetFile<CarVariationsFile>(entry);
+
+                            }
+                            if (entry.NameLower.StartsWith("vehiclelayouts") && entry.NameLower.EndsWith(".meta"))
+                            {
+                                var lf = RpfMan.GetFile<VehicleLayoutsFile>(entry);
+
+                            }
+                        }
+#if !DEBUG
+                        catch (Exception ex)
+                        {
+                            string errstr = entry.Path + "\n" + ex.ToString();
+                            ErrorLog(errstr);
+                        }
+#endif
+                    }
+                }
+
+            });
+
+
+            addVehicleFiles(rpfs);
+
+            if (EnableDlc)
+            {
+                addVehicleFiles(DlcActiveRpfs);
+            }
+
+
+            VehiclesInitDict = allVehicles;
+
+        }
 
 
         public bool SetDlcLevel(string dlc, bool enable)

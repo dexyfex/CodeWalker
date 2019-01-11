@@ -18,6 +18,7 @@ namespace CodeWalker
             bool menumode = false;
             bool explorermode = false;
             bool projectmode = false;
+            bool vehiclesmode = false;
             if ((args != null) && (args.Length > 0))
             {
                 foreach (string arg in args)
@@ -34,6 +35,10 @@ namespace CodeWalker
                     if (argl == "project")
                     {
                         projectmode = true;
+                    }
+                    if (argl == "vehicles")
+                    {
+                        vehiclesmode = true;
                     }
                 }
             }
@@ -63,6 +68,10 @@ namespace CodeWalker
                 else if (projectmode)
                 {
                     Application.Run(new Project.ProjectForm());
+                }
+                else if (vehiclesmode)
+                {
+                    Application.Run(new Vehicles.VehicleForm());
                 }
                 else
                 {
