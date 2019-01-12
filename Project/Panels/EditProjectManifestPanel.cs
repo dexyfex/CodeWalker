@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace CodeWalker.Project.Panels
@@ -87,46 +89,113 @@ namespace CodeWalker.Project.Panels
             });
 
 
-            if ((CurrentProjectFile != null) && (CurrentProjectFile.YmapFiles.Count > 0))
+            if (CurrentProjectFile != null)
             {
-                sb.AppendLine("  <imapDependencies_2>");
-                foreach (var ymap in CurrentProjectFile.YmapFiles)
+                if (CurrentProjectFile.YmapFiles.Count > 0)
                 {
-                    var ymapname = ymap.RpfFileEntry?.NameLower;
-                    if (string.IsNullOrEmpty(ymapname))
+                    sb.AppendLine("  <imapDependencies_2>");
+                    foreach (var ymap in CurrentProjectFile.YmapFiles)
                     {
-                        ymapname = ymap.Name.ToLowerInvariant();
-                    }
-                    if (ymapname.EndsWith(".ymap"))
-                    {
-                        ymapname = ymapname.Substring(0, ymapname.Length - 5);
-                    }
-
-                    mapdeps.Clear();
-                    if (ymap.AllEntities != null)
-                    {
-                        foreach (var ent in ymap.AllEntities)
+                        var ymapname = ymap.RpfFileEntry?.NameLower;
+                        if (string.IsNullOrEmpty(ymapname))
                         {
-                            var ytyp = ent.Archetype?.Ytyp;
-                            var ytypname = getYtypName(ytyp);
-                            if (ytyp != null)
-                            {
-                                mapdeps[ytypname] = ytyp;
-                            }
+                            ymapname = ymap.Name.ToLowerInvariant();
+                        }
+                        if (ymapname.EndsWith(".ymap"))
+                        {
+                            ymapname = ymapname.Substring(0, ymapname.Length - 5);
+                        }
 
-                            if (ent.IsMlo)
+                        mapdeps.Clear();
+                        if (ymap.AllEntities != null)
+                        {
+                            foreach (var ent in ymap.AllEntities)
                             {
-                                if (ent.MloInstance?.Entities != null)
+                                var ytyp = ent.Archetype?.Ytyp;
+                                var ytypname = getYtypName(ytyp);
+                                if (ytyp != null)
                                 {
-                                    Dictionary<string, YtypFile> typdepdict;
-                                    if (!typdeps.TryGetValue(ytypname, out typdepdict))
+                                    mapdeps[ytypname] = ytyp;
+                                }
+
+                                if (ent.IsMlo)
+                                {
+                                    if (ent.MloInstance?.Entities != null)
                                     {
-                                        typdepdict = new Dictionary<string, YtypFile>();
-                                        typdeps[ytypname] = typdepdict;
+                                        Dictionary<string, YtypFile> typdepdict;
+                                        if (!typdeps.TryGetValue(ytypname, out typdepdict))
+                                        {
+                                            typdepdict = new Dictionary<string, YtypFile>();
+                                            typdeps[ytypname] = typdepdict;
+                                        }
+                                        foreach (var ient in ent.MloInstance.Entities)
+                                        {
+                                            var iytyp = ient.Archetype?.Ytyp;
+                                            var iytypname = getYtypName(iytyp);
+                                            if ((iytyp != null) && (iytypname != ytypname))
+                                            {
+                                                typdepdict[iytypname] = iytyp;
+                                            }
+                                        }
                                     }
-                                    foreach (var ient in ent.MloInstance.Entities)
+                                }
+
+                            }
+                        }
+                        if (ymap.GrassInstanceBatches != null)
+                        {
+                            foreach (var batch in ymap.GrassInstanceBatches)
+                            {
+                                var ytyp = batch.Archetype?.Ytyp;
+                                var ytypname = getYtypName(ytyp);
+                                if (ytyp != null)
+                                {
+                                    mapdeps[ytypname] = ytyp;
+                                }
+                            }
+                        }
+
+                        sb.AppendLine("    <Item>");
+                        sb.AppendLine("      <imapName>" + ymapname + "</imapName>");
+                        sb.AppendLine("      <manifestFlags/>");
+                        sb.AppendLine("      <itypDepArray>");
+                        foreach (var kvp in mapdeps)
+                        {
+                            sb.AppendLine("        <Item>" + kvp.Key + "</Item>");
+                        }
+                        sb.AppendLine("      </itypDepArray>");
+                        sb.AppendLine("    </Item>");
+                    }
+                    sb.AppendLine("  </imapDependencies_2>");
+                }
+                else
+                {
+                    sb.AppendLine("  <imapDependencies_2/>");
+                }
+
+                if ((CurrentProjectFile.YtypFiles.Count > 0) && (ProjectForm?.GameFileCache != null))
+                {
+                    foreach (var ytyp in CurrentProjectFile.YtypFiles)
+                    {
+                        var ytypname = getYtypName(ytyp);
+                        foreach (var archm in ytyp.AllArchetypes)
+                        {
+                            var mloa = archm as MloArchetype;
+                            if (mloa != null)
+                            {
+                                Dictionary<string, YtypFile> typdepdict;
+                                if (!typdeps.TryGetValue(ytypname, out typdepdict))
+                                {
+                                    typdepdict = new Dictionary<string, YtypFile>();
+                                    typdeps[ytypname] = typdepdict;
+                                }
+                                if (mloa.entities != null)
+                                {
+                                    foreach (var ent in mloa.entities)
                                     {
-                                        var iytyp = ient.Archetype?.Ytyp;
+                                        var archname = ent._Data.archetypeName;
+                                        var arch = ProjectForm.GameFileCache.GetArchetype(archname);
+                                        var iytyp = arch?.Ytyp;
                                         var iytypname = getYtypName(iytyp);
                                         if ((iytyp != null) && (iytypname != ytypname))
                                         {
@@ -134,39 +203,31 @@ namespace CodeWalker.Project.Panels
                                         }
                                     }
                                 }
+                                if (mloa.entitySets != null)
+                                {
+                                    foreach (var entset in mloa.entitySets)
+                                    {
+                                        if (entset.Entities != null)
+                                        {
+                                            foreach (var ent in entset.Entities)
+                                            {
+                                                var archname = ent._Data.archetypeName;
+                                                var arch = ProjectForm.GameFileCache.GetArchetype(archname);
+                                                var iytyp = arch?.Ytyp;
+                                                var iytypname = getYtypName(iytyp);
+                                                if ((iytyp != null) && (iytypname != ytypname))
+                                                {
+                                                    typdepdict[iytypname] = iytyp;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
-
                         }
                     }
-                    if (ymap.GrassInstanceBatches != null)
-                    {
-                        foreach (var batch in ymap.GrassInstanceBatches)
-                        {
-                            var ytyp = batch.Archetype?.Ytyp;
-                            var ytypname = getYtypName(ytyp);
-                            if (ytyp != null)
-                            {
-                                mapdeps[ytypname] = ytyp;
-                            }
-                        }
-                    }
-
-                    sb.AppendLine("    <Item>");
-                    sb.AppendLine("      <imapName>" + ymapname + "</imapName>");
-                    sb.AppendLine("      <manifestFlags/>");
-                    sb.AppendLine("      <itypDepArray>");
-                    foreach (var kvp in mapdeps)
-                    {
-                        sb.AppendLine("        <Item>" + kvp.Key + "</Item>");
-                    }
-                    sb.AppendLine("      </itypDepArray>");
-                    sb.AppendLine("    </Item>");
                 }
-                sb.AppendLine("  </imapDependencies_2>");
-            }
-            else
-            {
-                sb.AppendLine("  <imapDependencies_2/>");
+
             }
 
             if (typdeps.Count > 0)
@@ -203,6 +264,28 @@ namespace CodeWalker.Project.Panels
         {
             CurrentProjectFile = ProjectForm.CurrentProjectFile;
             GenerateProjectManifest();
+        }
+
+        private void SaveManifestButton_Click(object sender, EventArgs e)
+        {
+
+            if (SaveFileDialog.ShowDialog() != DialogResult.OK) return;
+
+            try
+            {
+                var filename = SaveFileDialog.FileName;
+                var xml = ProjectManifestTextBox.Text;
+                var xmldoc = new XmlDocument();
+                xmldoc.LoadXml(xml);
+                var pso = XmlPso.GetPso(xmldoc);
+                var bytes = pso.Save();
+                File.WriteAllBytes(filename, bytes);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving _manifest.ymf file:\n" + ex.ToString());
+            }
+
         }
     }
 }
