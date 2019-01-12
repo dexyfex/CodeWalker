@@ -894,21 +894,21 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.StartImapFile, 264, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.EndImapFile, 268, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.PtFxAssetName, 272, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1980345114),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompEntityAnims),
                      new MetaStructureEntryInfo_s(MetaName.Animations, 280, MetaStructureEntryDataType.Array, 0, 13, 0)
                     );
-                case (MetaName)1980345114:
-                    return new MetaStructureInfo((MetaName)1980345114, 4110496011, 768, 216,
+                case MetaName.CCompEntityAnims:
+                    return new MetaStructureInfo(MetaName.CCompEntityAnims, 4110496011, 768, 216,
                      new MetaStructureEntryInfo_s(MetaName.AnimDict, 0, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
                      new MetaStructureEntryInfo_s(MetaName.AnimName, 64, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
                      new MetaStructureEntryInfo_s(MetaName.AnimatedModel, 128, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
                      new MetaStructureEntryInfo_s(MetaName.punchInPhase, 192, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.punchOutPhase, 196, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)3430328684),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompEntityEffectsData),
                      new MetaStructureEntryInfo_s(MetaName.effectsData, 200, MetaStructureEntryDataType.Array, 0, 5, 0)
                     );
-                case (MetaName)3430328684:
-                    return new MetaStructureInfo((MetaName)3430328684, 1724963966, 1024, 160,
+                case MetaName.CCompEntityEffectsData:
+                    return new MetaStructureInfo(MetaName.CCompEntityEffectsData, 1724963966, 1024, 160,
                      new MetaStructureEntryInfo_s(MetaName.fxType, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.fxOffsetPos, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.fxOffsetRot, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
@@ -1007,16 +1007,16 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.y, 4, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.z, 8, MetaStructureEntryDataType.Float, 0, 0, 0)
                     );
-                case (MetaName)2858946626:
-                    return new MetaStructureInfo((MetaName)2858946626, 1792487819, 768, 40,
+                case MetaName.CPedPropInfo:
+                    return new MetaStructureInfo(MetaName.CPedPropInfo, 1792487819, 768, 40,
                      new MetaStructureEntryInfo_s((MetaName)2598445407, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)94549140),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropMetaData),
                      new MetaStructureEntryInfo_s((MetaName)3902803273, 8, MetaStructureEntryDataType.Array, 0, 1, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CAnchorProps),
                      new MetaStructureEntryInfo_s(MetaName.aAnchors, 24, MetaStructureEntryDataType.Array, 0, 3, 0)
                     );
-                case (MetaName)376833625:
-                    return new MetaStructureInfo((MetaName)376833625, 4030871161, 768, 112,
+                case MetaName.CPedVariationInfo:
+                    return new MetaStructureInfo(MetaName.CPedVariationInfo, 4030871161, 768, 112,
                      new MetaStructureEntryInfo_s((MetaName)1235281004, 0, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)4086467184, 1, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)911147899, 2, MetaStructureEntryDataType.Boolean, 0, 0, 0),
@@ -1025,11 +1025,11 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s((MetaName)2996560424, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, MetaName.PsoPOINTER),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)3538495220),
                      new MetaStructureEntryInfo_s((MetaName)3796409423, 16, MetaStructureEntryDataType.Array, 0, 6, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)253191135),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedSelectionSet),
                      new MetaStructureEntryInfo_s(MetaName.aSelectionSets, 32, MetaStructureEntryDataType.Array, 0, 8, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CComponentInfo),
                      new MetaStructureEntryInfo_s(MetaName.compInfos, 48, MetaStructureEntryDataType.Array, 0, 10, 0),
-                     new MetaStructureEntryInfo_s(MetaName.propInfo, 64, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)2858946626),
+                     new MetaStructureEntryInfo_s(MetaName.propInfo, 64, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropInfo),
                      new MetaStructureEntryInfo_s(MetaName.dlcName, 104, MetaStructureEntryDataType.Hash, 0, 0, 0)
                     );
                 case (MetaName)3538495220:
@@ -1069,8 +1069,8 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s((MetaName)3509540765, 44, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)4196345791, 45, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
                     );
-                case (MetaName)94549140:
-                    return new MetaStructureInfo((MetaName)94549140, 2029738350, 768, 56,
+                case MetaName.CPedPropMetaData:
+                    return new MetaStructureInfo(MetaName.CPedPropMetaData, 2029738350, 768, 56,
                      new MetaStructureEntryInfo_s(MetaName.audioId, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.expressionMods, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, (MetaName)5),
@@ -1098,8 +1098,8 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.props, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.anchor, 16, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)2834549053)
                     );
-                case (MetaName)253191135:
-                    return new MetaStructureInfo((MetaName)253191135, 3120284999, 512, 48,
+                case MetaName.CPedSelectionSet:
+                    return new MetaStructureInfo(MetaName.CPedSelectionSet, 3120284999, 512, 48,
                      new MetaStructureEntryInfo_s(MetaName.name, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)173599222, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, MetaName.PsoPOINTER),
@@ -2234,7 +2234,7 @@ namespace CodeWalker.GameFiles
         PV_COMP_MAX = 2048,//12,
     }
 
-    public enum Unk_4212977111 //component peds Unk_94549140 renderFlags
+    public enum Unk_4212977111 //component peds CPedPropMetaData renderFlags
         : int //Key:1551913633
     {
         Unk_3757767268 = 0,
@@ -5808,7 +5808,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct Unk_1980345114 //216 bytes, Key:4110496011 //destruction animations?
+    [TC(typeof(EXP))] public struct CCompEntityAnims //216 bytes, Key:4110496011 //destruction animations?
     {
         public ArrayOfChars64 AnimDict { get; set; } //0   0: ArrayOfChars: 64: AnimDict
         public ArrayOfChars64 AnimName { get; set; } //64   64: ArrayOfChars: 64: AnimName
@@ -5818,7 +5818,7 @@ namespace CodeWalker.GameFiles
         public Array_Structure effectsData { get; set; } //200   200: Array: 0: effectsData  {0: Structure: 3430328684: 256}
     }
 
-    [TC(typeof(EXP))] public struct Unk_3430328684 //160 bytes, Key:1724963966 //destruction animation effects data
+    [TC(typeof(EXP))] public struct CCompEntityEffectsData //160 bytes, Key:1724963966 //destruction animation effects data
     {
         public uint fxType { get; set; } //0   0: UnsignedInt: 0: fxType
         public uint Unused0 { get; set; }//4
@@ -5968,7 +5968,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    public struct Unk_376833625 //112 bytes, Key:4030871161  //COMPONENT PEDS YMT ROOT  - in componentpeds .rpf's
+    public struct CPedVariationInfo //112 bytes, Key:4030871161  //COMPONENT PEDS YMT ROOT  - in componentpeds .rpf's
     {
         public byte Unk_1235281004 { get; set; } //0   0: Boolean: 0: 1235281004
         public byte Unk_4086467184 { get; set; } //1   1: Boolean: 0: 4086467184
@@ -5978,7 +5978,7 @@ namespace CodeWalker.GameFiles
         public Array_Structure Unk_3796409423 { get; set; } //16   16: Array: 0: 3796409423  {0: Structure: 3538495220: 256}
         public Array_Structure aSelectionSets { get; set; } //32   32: Array: 0: aSelectionSets  {0: Structure: 253191135: 256}
         public Array_Structure compInfos { get; set; } //48   48: Array: 0: compInfos//592652859  {0: Structure: CComponentInfo//1866571721: 256}
-        public Unk_2858946626 propInfo { get; set; } //64   64: Structure: 2858946626: propInfo//2240851416
+        public CPedPropInfo propInfo { get; set; } //64   64: Structure: 2858946626: propInfo//2240851416
         public MetaHash dlcName { get; set; } //104   104: Hash: 0: dlcName
         public uint Unused0 { get; set; }//108
     }
@@ -6021,7 +6021,7 @@ namespace CodeWalker.GameFiles
         public uint Unused6 { get; set; }//20
     }
 
-    public struct Unk_253191135 //48 bytes, Key:3120284999  //COMPONENT PEDS unknown
+    public struct CPedSelectionSet //48 bytes, Key:3120284999  //COMPONENT PEDS unknown
     {
         public MetaHash name { get; set; } //0   0: Hash: 0: name
         public ArrayOfBytes12 Unk_173599222 { get; set; } //4   4: ArrayOfBytes: 12: 173599222
@@ -6052,7 +6052,7 @@ namespace CodeWalker.GameFiles
         public ushort Unused5 { get; set; }//46
     }
 
-    public struct Unk_2858946626 //40 bytes, Key:1792487819  //COMPONENT PEDS unknown
+    public struct CPedPropInfo //40 bytes, Key:1792487819  //COMPONENT PEDS unknown
     {
         public byte Unk_2598445407 { get; set; } //0   0: UnsignedByte: 0: 2598445407
         public byte Unused0 { get; set; }//1
@@ -6062,7 +6062,7 @@ namespace CodeWalker.GameFiles
         public Array_Structure aAnchors { get; set; } //24   24: Array: 0: aAnchors//162345210  {0: Structure: CAnchorProps//2170383875: 256}
     }
 
-    public struct Unk_94549140 //56 bytes, Key:2029738350  //COMPONENT PEDS unknown
+    public struct CPedPropMetaData //56 bytes, Key:2029738350  //COMPONENT PEDS unknown
     {
         public MetaHash audioId { get; set; } //0   0: Hash: 0: audioId
         public ArrayOfBytes5 expressionMods { get; set; } //4   4: ArrayOfBytes: 5: expressionMods//942761829

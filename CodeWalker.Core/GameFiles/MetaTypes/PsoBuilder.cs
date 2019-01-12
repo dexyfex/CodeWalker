@@ -342,7 +342,7 @@ namespace CodeWalker.GameFiles
             //case (MetaName)3219912345:
             //    return new PsoStructureInfo((MetaName)3219912345, 0, 0, 24,
             //        new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2356519750),
-            //        new PsoStructureEntryInfo((MetaName)4147768898, PsoDataType.Array, 8, 0, 0)
+            //        new PsoStructureEntryInfo(MetaName.Adjustments, PsoDataType.Array, 8, 0, 0)
             //    );
         }
 

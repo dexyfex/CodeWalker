@@ -98,7 +98,7 @@ namespace CodeWalker.GameFiles
 
             HDTxdAssetBindings = PsoTypes.GetItemArray<CHDTxdAssetBinding>(Pso, d.HDTxdBindingArray);
 
-            Interiors = PsoTypes.GetObjectArray<YmfInterior, Unk_741495440>(Pso, d.Interiors);
+            Interiors = PsoTypes.GetObjectArray<YmfInterior, CInteriorBoundsFiles>(Pso, d.Interiors);
 
 
         }
@@ -169,9 +169,9 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class YmfInterior : PsoClass<Unk_741495440>
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class YmfInterior : PsoClass<CInteriorBoundsFiles>
     {
-        public Unk_741495440 Interior { get; set; }
+        public CInteriorBoundsFiles Interior { get; set; }
         public MetaHash[] Bounds { get; set; }//ybn hashes?
 
         public override string ToString()
@@ -179,7 +179,7 @@ namespace CodeWalker.GameFiles
             return Interior.ToString();
         }
 
-        public override void Init(PsoFile pso, ref Unk_741495440 v)
+        public override void Init(PsoFile pso, ref CInteriorBoundsFiles v)
         {
             Interior = v;
             Bounds = PsoTypes.GetHashArray(pso, v.Bounds);
