@@ -1482,6 +1482,7 @@ namespace CodeWalker.GameFiles
             var allCarCols = new List<CarColsFile>();
             var allCarModCols = new List<CarModColsFile>();
             var allCarVariations = new List<CarVariationsFile>();
+            var allCarVariationsDict = new Dictionary<MetaHash, CVehicleModelInfoVariation_418053801>();
             var allVehicleLayouts = new List<VehicleLayoutsFile>();
 
             var addVehicleFiles = new Action<IEnumerable<RpfFile>>((from) =>
@@ -1527,8 +1528,15 @@ namespace CodeWalker.GameFiles
                             if ((entry.NameLower == "carvariations.ymt") || (entry.NameLower == "carvariations.meta"))
                             {
                                 var cf = RpfMan.GetFile<CarVariationsFile>(entry);
-                                if (cf.VehicleModelInfo != null)
-                                { }
+                                if (cf.VehicleModelInfo?.variationData != null)
+                                {
+                                    foreach (var variation in cf.VehicleModelInfo.variationData)
+                                    {
+                                        var name = variation.modelName.ToLowerInvariant();
+                                        var hash = JenkHash.GenHash(name);
+                                        allCarVariationsDict[hash] = variation;
+                                    }
+                                }
                                 allCarVariations.Add(cf);
                             }
                             if (entry.NameLower.StartsWith("vehiclelayouts") && entry.NameLower.EndsWith(".meta"))

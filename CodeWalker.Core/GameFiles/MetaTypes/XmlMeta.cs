@@ -696,13 +696,14 @@ namespace CodeWalker.GameFiles
 
         public static MetaHash GetHash(string str)
         {
-            if (str == null) return 0;
+            if (string.IsNullOrEmpty(str)) return 0;
             if (str.StartsWith("hash_"))
             {
                 return (MetaHash) Convert.ToUInt32(str.Substring(5), 16);
             }
             else
             {
+                JenkIndex.Ensure(str);
                 return JenkHash.GenHash(str);
             }
         }

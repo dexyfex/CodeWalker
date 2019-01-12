@@ -4,6 +4,7 @@ using CodeWalker.Rendering;
 using CodeWalker.World;
 using SharpDX;
 using SharpDX.Direct3D11;
+using SharpDX.XInput;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,6 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Color = SharpDX.Color;
 
 namespace CodeWalker.Vehicles
 {
@@ -54,6 +56,23 @@ namespace CodeWalker.Vehicles
 
 
         bool initedOk = false;
+
+
+
+        bool toolsPanelResizing = false;
+        int toolsPanelResizeStartX = 0;
+        int toolsPanelResizeStartLeft = 0;
+        int toolsPanelResizeStartRight = 0;
+
+        Dictionary<DrawableBase, bool> DrawableDrawFlags = new Dictionary<DrawableBase, bool>();
+
+        bool enableGrid = false;
+        float gridSize = 1.0f;
+        int gridCount = 40;
+        List<VertexTypePC> gridVerts = new List<VertexTypePC>();
+        object gridSyncRoot = new object();
+
+
 
 
 
@@ -109,7 +128,7 @@ namespace CodeWalker.Vehicles
             camera.CurrentRotation.X = 0.5f * (float)Math.PI;
 
 
-            //LoadSettings();
+            LoadSettings();
 
 
             formopen = true;
@@ -141,7 +160,7 @@ namespace CodeWalker.Vehicles
             if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
             { return; } //couldn't get a lock, try again next time
 
-            //UpdateControlInputs(elapsed);
+            UpdateControlInputs(elapsed);
             //space.Update(elapsed);
 
 
@@ -178,7 +197,7 @@ namespace CodeWalker.Vehicles
             //RenderSelection();
 
 
-            //RenderGrid(context);
+            RenderGrid(context);
 
 
             Renderer.RenderQueued();
@@ -227,6 +246,21 @@ namespace CodeWalker.Vehicles
                 Close();
                 return;
             }
+
+
+
+            MetaName[] texsamplers = RenderableGeometry.GetTextureSamplerList();
+            foreach (var texsampler in texsamplers)
+            {
+                TextureSamplerComboBox.Items.Add(texsampler);
+            }
+            //TextureSamplerComboBox.SelectedIndex = 0;//LoadSettings will do this..
+
+
+            UpdateGridVerts();
+            GridSizeComboBox.SelectedIndex = 1;
+            GridCountComboBox.SelectedIndex = 1;
+
 
 
             Input.Init();
@@ -305,6 +339,25 @@ namespace CodeWalker.Vehicles
 
 
 
+        private void LoadSettings()
+        {
+            var s = Settings.Default;
+            //WindowState = s.WindowMaximized ? FormWindowState.Maximized : WindowState;
+            //FullScreenCheckBox.Checked = s.FullScreen;
+            WireframeCheckBox.Checked = s.Wireframe;
+            HDRRenderingCheckBox.Checked = s.HDR;
+            ShadowsCheckBox.Checked = s.Shadows;
+            SkydomeCheckBox.Checked = s.Skydome;
+            RenderModeComboBox.SelectedIndex = Math.Max(RenderModeComboBox.FindString(s.RenderMode), 0);
+            TextureSamplerComboBox.SelectedIndex = Math.Max(TextureSamplerComboBox.FindString(s.RenderTextureSampler), 0);
+            TextureCoordsComboBox.SelectedIndex = Math.Max(TextureCoordsComboBox.FindString(s.RenderTextureSamplerCoord), 0);
+            AnisotropicFilteringCheckBox.Checked = s.AnisotropicFiltering;
+            //ErrorConsoleCheckBox.Checked = s.ShowErrorConsole;
+            //StatusBarCheckBox.Checked = s.ShowStatusBar;
+        }
+
+
+
         private void LoadWorld()
         {
             UpdateStatus("Loading timecycles...");
@@ -355,7 +408,7 @@ namespace CodeWalker.Vehicles
                 else
                 {
                     //TODO: error logging..
-                    //ConsoleTextBox.AppendText(text + "\r\n");
+                    ConsoleTextBox.AppendText(text + "\r\n");
                     //StatusLabel.Text = text;
                     //MessageBox.Show(text);
                 }
@@ -378,6 +431,364 @@ namespace CodeWalker.Vehicles
             camera.MouseRotate(dx, dy);
         }
 
+        private void MoveCameraToView(Vector3 pos, float rad)
+        {
+            //move the camera to a default place where the given sphere is fully visible.
+
+            rad = Math.Max(0.5f, rad);
+
+            camera.FollowEntity.Position = pos;
+            camera.TargetDistance = rad * 1.6f;
+            camera.CurrentDistance = rad * 1.6f;
+
+        }
+
+
+        private void AddDrawableTreeNode(DrawableBase drawable, uint hash, bool check)
+        {
+            MetaHash mhash = new MetaHash(hash);
+
+            var dnode = ModelsTreeView.Nodes.Add(mhash.ToString());
+            dnode.Tag = drawable;
+            dnode.Checked = check;
+
+            AddDrawableModelsTreeNodes(drawable.DrawableModelsHigh, "High Detail", true, dnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModelsMedium, "Medium Detail", false, dnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", false, dnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", false, dnode);
+            //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false, dnode);
+
+        }
+        private void AddDrawableModelsTreeNodes(ResourcePointerList64<DrawableModel> models, string prefix, bool check, TreeNode parentDrawableNode = null)
+        {
+            if (models == null) return;
+            if (models.data_items == null) return;
+
+            for (int mi = 0; mi < models.data_items.Length; mi++)
+            {
+                var tnc = (parentDrawableNode != null) ? parentDrawableNode.Nodes : ModelsTreeView.Nodes;
+
+                var model = models.data_items[mi];
+                string mprefix = prefix + " " + (mi + 1).ToString();
+                var mnode = tnc.Add(mprefix + " " + model.ToString());
+                mnode.Tag = model;
+                mnode.Checked = check;
+
+                var tmnode = TexturesTreeView.Nodes.Add(mprefix + " " + model.ToString());
+                tmnode.Tag = model;
+
+                if (!check)
+                {
+                    Renderer.SelectionModelDrawFlags[model] = false;
+                }
+
+                if ((model.Geometries == null) || (model.Geometries.data_items == null)) continue;
+
+                foreach (var geom in model.Geometries.data_items)
+                {
+                    var gname = geom.ToString();
+                    var gnode = mnode.Nodes.Add(gname);
+                    gnode.Tag = geom;
+                    gnode.Checked = true;// check;
+
+                    var tgnode = tmnode.Nodes.Add(gname);
+                    tgnode.Tag = geom;
+
+                    if ((geom.Shader != null) && (geom.Shader.ParametersList != null) && (geom.Shader.ParametersList.Hashes != null))
+                    {
+                        var pl = geom.Shader.ParametersList;
+                        var h = pl.Hashes;
+                        var p = pl.Parameters;
+                        for (int ip = 0; ip < h.Length; ip++)
+                        {
+                            var hash = pl.Hashes[ip];
+                            var parm = pl.Parameters[ip];
+                            var tex = parm.Data as TextureBase;
+                            if (tex != null)
+                            {
+                                var t = tex as Texture;
+                                var tstr = tex.Name.Trim();
+                                if (t != null)
+                                {
+                                    tstr = string.Format("{0} ({1}x{2}, embedded)", tex.Name, t.Width, t.Height);
+                                }
+                                var tnode = tgnode.Nodes.Add(hash.ToString().Trim() + ": " + tstr);
+                                tnode.Tag = tex;
+                            }
+                        }
+                        tgnode.Expand();
+                    }
+
+                }
+
+                mnode.Expand();
+                tmnode.Expand();
+            }
+        }
+        private void UpdateSelectionDrawFlags(TreeNode node)
+        {
+            //update the selection draw flags depending on tag and checked/unchecked
+            var drwbl = node.Tag as DrawableBase;
+            var model = node.Tag as DrawableModel;
+            var geom = node.Tag as DrawableGeometry;
+            bool rem = node.Checked;
+            lock (Renderer.RenderSyncRoot)
+            {
+                if (drwbl != null)
+                {
+                    if (rem)
+                    {
+                        if (DrawableDrawFlags.ContainsKey(drwbl))
+                        {
+                            DrawableDrawFlags.Remove(drwbl);
+                        }
+                    }
+                    else
+                    {
+                        DrawableDrawFlags[drwbl] = false;
+                    }
+                }
+                if (model != null)
+                {
+                    if (rem)
+                    {
+                        if (Renderer.SelectionModelDrawFlags.ContainsKey(model))
+                        {
+                            Renderer.SelectionModelDrawFlags.Remove(model);
+                        }
+                    }
+                    else
+                    {
+                        Renderer.SelectionModelDrawFlags[model] = false;
+                    }
+                }
+                if (geom != null)
+                {
+                    if (rem)
+                    {
+                        if (Renderer.SelectionGeometryDrawFlags.ContainsKey(geom))
+                        {
+                            Renderer.SelectionGeometryDrawFlags.Remove(geom);
+                        }
+                    }
+                    else
+                    {
+                        Renderer.SelectionGeometryDrawFlags[geom] = false;
+                    }
+                }
+                //updateArchetypeStatus = true;
+            }
+        }
+
+        private void UpdateModelsUI(DrawableBase drawable)
+        {
+            DetailsPropertyGrid.SelectedObject = drawable;
+
+            DrawableDrawFlags.Clear();
+            Renderer.SelectionModelDrawFlags.Clear();
+            Renderer.SelectionGeometryDrawFlags.Clear();
+            ModelsTreeView.Nodes.Clear();
+            ModelsTreeView.ShowRootLines = false;
+            TexturesTreeView.Nodes.Clear();
+            if (drawable != null)
+            {
+                AddDrawableModelsTreeNodes(drawable.DrawableModelsHigh, "High Detail", true);
+                AddDrawableModelsTreeNodes(drawable.DrawableModelsMedium, "Medium Detail", false);
+                AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", false);
+                AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", false);
+                //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false);
+            }
+        }
+
+        public void LoadModel(YftFile yft)
+        {
+            if (yft == null) return;
+
+            //FileName = yft.Name;
+            //Yft = yft;
+
+            var dr = yft.Fragment?.Drawable;
+            if (dr != null)
+            {
+                MoveCameraToView(dr.BoundingCenter, dr.BoundingSphereRadius);
+            }
+
+            UpdateModelsUI(yft.Fragment.Drawable);
+        }
+
+
+
+        private void UpdateTimeOfDayLabel()
+        {
+            int v = TimeOfDayTrackBar.Value;
+            float fh = v / 60.0f;
+            int ih = (int)fh;
+            int im = v - (ih * 60);
+            if (ih == 24) ih = 0;
+            TimeOfDayLabel.Text = string.Format("{0:00}:{1:00}", ih, im);
+        }
+
+
+        private void UpdateControlInputs(float elapsed)
+        {
+            if (elapsed > 0.1f) elapsed = 0.1f;
+
+            var s = Settings.Default;
+
+            float moveSpeed = 2.0f;
+
+
+            Input.Update(elapsed);
+
+            if (Input.xbenable)
+            {
+                //if (ControllerButtonJustPressed(GamepadButtonFlags.Start))
+                //{
+                //    SetControlMode(ControlMode == WorldControlMode.Free ? WorldControlMode.Ped : WorldControlMode.Free);
+                //}
+            }
+
+
+
+            if (Input.ShiftPressed)
+            {
+                moveSpeed *= 5.0f;
+            }
+            if (Input.CtrlPressed)
+            {
+                moveSpeed *= 0.2f;
+            }
+
+            Vector3 movevec = Input.KeyboardMoveVec(false);
+
+
+            //if (MapViewEnabled == true)
+            //{
+            //    movevec *= elapsed * 100.0f * Math.Min(camera.OrthographicTargetSize * 0.01f, 30.0f);
+            //    float mapviewscale = 1.0f / camera.Height;
+            //    float fdx = MapViewDragX * mapviewscale;
+            //    float fdy = MapViewDragY * mapviewscale;
+            //    movevec.X -= fdx * camera.OrthographicSize;
+            //    movevec.Y += fdy * camera.OrthographicSize;
+            //}
+            //else
+            {
+                //normal movement
+                movevec *= elapsed * moveSpeed * Math.Min(camera.TargetDistance, 50.0f);
+            }
+
+
+            Vector3 movewvec = camera.ViewInvQuaternion.Multiply(movevec);
+            camEntity.Position += movewvec;
+
+            //MapViewDragX = 0;
+            //MapViewDragY = 0;
+
+
+
+
+            if (Input.xbenable)
+            {
+                camera.ControllerRotate(Input.xblx + Input.xbrx, Input.xbly + Input.xbry);
+
+                float zoom = 0.0f;
+                float zoomspd = s.XInputZoomSpeed;
+                float zoomamt = zoomspd * elapsed;
+                if (Input.ControllerButtonPressed(GamepadButtonFlags.DPadUp)) zoom += zoomamt;
+                if (Input.ControllerButtonPressed(GamepadButtonFlags.DPadDown)) zoom -= zoomamt;
+
+                camera.ControllerZoom(zoom);
+
+                float acc = 0.0f;
+                float accspd = s.XInputMoveSpeed;//actually accel speed...
+                acc += Input.xbrt * accspd;
+                acc -= Input.xblt * accspd;
+
+                Vector3 newdir = camera.ViewDirection; //maybe use the "vehicle" direction...?
+                Input.xbcontrolvelocity += (acc * elapsed);
+
+                if (Input.ControllerButtonPressed(GamepadButtonFlags.A | GamepadButtonFlags.RightShoulder)) //handbrake...
+                {
+                    Input.xbcontrolvelocity *= Math.Max(0.75f - elapsed, 0);//not ideal for low fps...
+                                                                            //xbcontrolvelocity = 0.0f;
+                    if (Math.Abs(Input.xbcontrolvelocity) < 0.001f) Input.xbcontrolvelocity = 0.0f;
+                }
+
+                camEntity.Velocity = newdir * Input.xbcontrolvelocity;
+                camEntity.Position += camEntity.Velocity * elapsed;
+
+
+                //fire!
+                //if (ControllerButtonJustPressed(GamepadButtonFlags.LeftShoulder))
+                //{
+                //    SpawnTestEntity(true);
+                //}
+
+            }
+
+
+
+        }
+
+
+
+        private void UpdateGridVerts()
+        {
+            lock (gridSyncRoot)
+            {
+                gridVerts.Clear();
+
+                float s = gridSize * gridCount * 0.5f;
+                uint cblack = (uint)Color.Black.ToRgba();
+                uint cgray = (uint)Color.DimGray.ToRgba();
+                uint cred = (uint)Color.DarkRed.ToRgba();
+                uint cgrn = (uint)Color.DarkGreen.ToRgba();
+                int interval = 10;
+
+                for (int i = 0; i <= gridCount; i++)
+                {
+                    float o = (gridSize * i) - s;
+                    if ((i % interval) != 0)
+                    {
+                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(o, -s, 0), Colour = cgray });
+                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(o, s, 0), Colour = cgray });
+                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(-s, o, 0), Colour = cgray });
+                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(s, o, 0), Colour = cgray });
+                    }
+                }
+                for (int i = 0; i <= gridCount; i++) //draw main lines last, so they are on top
+                {
+                    float o = (gridSize * i) - s;
+                    if ((i % interval) == 0)
+                    {
+                        var cx = (o == 0) ? cred : cblack;
+                        var cy = (o == 0) ? cgrn : cblack;
+                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(o, -s, 0), Colour = cy });
+                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(o, s, 0), Colour = cy });
+                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(-s, o, 0), Colour = cx });
+                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(s, o, 0), Colour = cx });
+                    }
+                }
+
+            }
+        }
+
+        private void RenderGrid(DeviceContext context)
+        {
+            if (!enableGrid) return;
+
+            lock (gridSyncRoot)
+            {
+                if (gridVerts.Count > 0)
+                {
+                    Renderer.RenderLines(gridVerts);
+                }
+            }
+        }
+
+
+
+
 
 
 
@@ -394,10 +805,10 @@ namespace CodeWalker.Vehicles
                 case MouseButtons.Right: MouseRButtonDown = true; break;
             }
 
-            //if (!ToolsPanelShowButton.Focused)
-            //{
-            //    ToolsPanelShowButton.Focus(); //make sure no textboxes etc are focused!
-            //}
+            if (!ToolsPanelShowButton.Focused)
+            {
+                ToolsPanelShowButton.Focus(); //make sure no textboxes etc are focused!
+            }
 
             MouseDownPoint = e.Location;
             MouseLastPoint = MouseDownPoint;
@@ -462,9 +873,9 @@ namespace CodeWalker.Vehicles
                         timecycle.SetTime(tod);
                         Renderer.timeofday = tod;
 
-                        //float fv = tod * 60.0f;
-                        //TimeOfDayTrackBar.Value = (int)fv;
-                        //UpdateTimeOfDayLabel();
+                        float fv = tod * 60.0f;
+                        TimeOfDayTrackBar.Value = (int)fv;
+                        UpdateTimeOfDayLabel();
                     }
                 }
 
@@ -598,12 +1009,271 @@ namespace CodeWalker.Vehicles
 
             if (Renderer.timerunning)
             {
-                //float fv = Renderer.timeofday * 60.0f;
-                ////TimeOfDayTrackBar.Value = (int)fv;
-                //UpdateTimeOfDayLabel();
+                float fv = Renderer.timeofday * 60.0f;
+                //TimeOfDayTrackBar.Value = (int)fv;
+                UpdateTimeOfDayLabel();
             }
 
             //CameraPositionTextBox.Text = FloatUtil.GetVector3String(camera.Position, "0.##");
+        }
+
+        private void ToolsPanelShowButton_Click(object sender, EventArgs e)
+        {
+            ToolsPanel.Visible = true;
+        }
+
+        private void ToolsPanelHideButton_Click(object sender, EventArgs e)
+        {
+            ToolsPanel.Visible = false;
+        }
+
+        private void ToolsDragPanel_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                toolsPanelResizing = true;
+                toolsPanelResizeStartX = e.X + ToolsPanel.Left + ToolsDragPanel.Left;
+                toolsPanelResizeStartLeft = ToolsPanel.Left;
+                toolsPanelResizeStartRight = ToolsPanel.Right;
+            }
+        }
+
+        private void ToolsDragPanel_MouseUp(object sender, MouseEventArgs e)
+        {
+            toolsPanelResizing = false;
+        }
+
+        private void ToolsDragPanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (toolsPanelResizing)
+            {
+                int rx = e.X + ToolsPanel.Left + ToolsDragPanel.Left;
+                int dx = rx - toolsPanelResizeStartX;
+                ToolsPanel.Width = toolsPanelResizeStartRight - toolsPanelResizeStartLeft + dx;
+            }
+        }
+
+        private void ModelsTreeView_AfterCheck(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node != null)
+            {
+                UpdateSelectionDrawFlags(e.Node);
+            }
+        }
+
+        private void ModelsTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Node != null)
+            {
+                e.Node.Checked = !e.Node.Checked;
+                //UpdateSelectionDrawFlags(e.Node);
+            }
+        }
+
+        private void ModelsTreeView_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = true; //stops annoying ding sound...
+        }
+
+        private void HDRRenderingCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            lock (Renderer.RenderSyncRoot)
+            {
+                Renderer.shaders.hdr = HDRRenderingCheckBox.Checked;
+            }
+        }
+
+        private void ShadowsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            lock (Renderer.RenderSyncRoot)
+            {
+                Renderer.shaders.shadows = ShadowsCheckBox.Checked;
+            }
+        }
+
+        private void SkydomeCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderskydome = SkydomeCheckBox.Checked;
+            //Renderer.controllightdir = !Renderer.renderskydome;
+        }
+
+        private void ControlLightDirCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.controllightdir = ControlLightDirCheckBox.Checked;
+        }
+
+        private void TimeOfDayTrackBar_Scroll(object sender, EventArgs e)
+        {
+            int v = TimeOfDayTrackBar.Value;
+            float fh = v / 60.0f;
+            UpdateTimeOfDayLabel();
+            lock (Renderer.RenderSyncRoot)
+            {
+                Renderer.timeofday = fh;
+                timecycle.SetTime(Renderer.timeofday);
+            }
+        }
+
+        private void ShowCollisionMeshesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.rendercollisionmeshes = ShowCollisionMeshesCheckBox.Checked;
+            Renderer.rendercollisionmeshlayerdrawable = ShowCollisionMeshesCheckBox.Checked;
+        }
+
+        private void WireframeCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.shaders.wireframe = WireframeCheckBox.Checked;
+        }
+
+        private void AnisotropicFilteringCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
+        }
+
+        private void HDTexturesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderhdtextures = HDTexturesCheckBox.Checked;
+        }
+
+        private void RenderModeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TextureSamplerComboBox.Enabled = false;
+            TextureCoordsComboBox.Enabled = false;
+            switch (RenderModeComboBox.Text)
+            {
+                default:
+                case "Default":
+                    Renderer.shaders.RenderMode = WorldRenderMode.Default;
+                    break;
+                case "Single texture":
+                    Renderer.shaders.RenderMode = WorldRenderMode.SingleTexture;
+                    TextureSamplerComboBox.Enabled = true;
+                    TextureCoordsComboBox.Enabled = true;
+                    break;
+                case "Vertex normals":
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexNormals;
+                    break;
+                case "Vertex tangents":
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexTangents;
+                    break;
+                case "Vertex colour 1":
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.shaders.RenderVertexColourIndex = 1;
+                    break;
+                case "Vertex colour 2":
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.shaders.RenderVertexColourIndex = 2;
+                    break;
+                case "Vertex colour 3":
+                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.shaders.RenderVertexColourIndex = 3;
+                    break;
+                case "Texture coord 1":
+                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.shaders.RenderTextureCoordIndex = 1;
+                    break;
+                case "Texture coord 2":
+                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.shaders.RenderTextureCoordIndex = 2;
+                    break;
+                case "Texture coord 3":
+                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.shaders.RenderTextureCoordIndex = 3;
+                    break;
+            }
+        }
+
+        private void TextureSamplerComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (TextureSamplerComboBox.SelectedItem is MetaName)
+            {
+                Renderer.shaders.RenderTextureSampler = (MetaName)TextureSamplerComboBox.SelectedItem;
+            }
+        }
+
+        private void TextureCoordsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch (TextureCoordsComboBox.Text)
+            {
+                default:
+                case "Texture coord 1":
+                    Renderer.shaders.RenderTextureSamplerCoord = 1;
+                    break;
+                case "Texture coord 2":
+                    Renderer.shaders.RenderTextureSamplerCoord = 2;
+                    break;
+                case "Texture coord 3":
+                    Renderer.shaders.RenderTextureSamplerCoord = 3;
+                    break;
+            }
+        }
+
+        private void GridCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            enableGrid = GridCheckBox.Checked;
+        }
+
+        private void GridSizeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            float newgs;
+            float.TryParse(GridSizeComboBox.Text, out newgs);
+            if (newgs != gridSize)
+            {
+                gridSize = newgs;
+                UpdateGridVerts();
+            }
+        }
+
+        private void GridCountComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int newgc;
+            int.TryParse(GridCountComboBox.Text, out newgc);
+            if (newgc != gridCount)
+            {
+                gridCount = newgc;
+                UpdateGridVerts();
+            }
+        }
+
+        private void SkeletonsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderskeletons = SkeletonsCheckBox.Checked;
+        }
+
+        private void ErrorConsoleCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            ConsolePanel.Visible = ErrorConsoleCheckBox.Checked;
+        }
+
+        private void StatusBarCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            StatusStrip.Visible = StatusBarCheckBox.Checked;
+        }
+
+        private void TextureViewerButton_Click(object sender, EventArgs e)
+        {
+            //TextureDictionary td = null;
+
+            //if ((Ydr != null) && (Ydr.Loaded))
+            //{
+            //    td = Ydr.Drawable?.ShaderGroup?.TextureDictionary;
+            //}
+            //else if ((Yft != null) && (Yft.Loaded))
+            //{
+            //    td = Yft.Fragment?.Drawable?.ShaderGroup?.TextureDictionary;
+            //}
+
+            //if (td != null)
+            //{
+            //    YtdForm f = new YtdForm();
+            //    f.Show();
+            //    f.LoadTexDict(td, fileName);
+            //    //f.LoadYtd(ytd);
+            //}
+            //else
+            //{
+            //    MessageBox.Show("Couldn't find embedded texture dict.");
+            //}
         }
     }
 }

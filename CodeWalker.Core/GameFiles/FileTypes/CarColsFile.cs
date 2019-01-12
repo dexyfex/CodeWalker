@@ -785,8 +785,8 @@ namespace CodeWalker.GameFiles
         public bool turnOffExtra { get; set; }
         public bool disableBonnetCamera { get; set; }
         public bool allowBonnetSlide { get; set; }
-        public byte weaponSlot { get; set; } //SByte?
-        public byte Unk_2656206330 { get; set; } //SByte?
+        public sbyte weaponSlot { get; set; }
+        public sbyte Unk_2656206330 { get; set; }
         public bool disableProjectileDriveby { get; set; }
         public bool disableDriveby { get; set; }
         public int Unk_161724223 { get; set; }
@@ -832,12 +832,12 @@ namespace CodeWalker.GameFiles
             turnOffExtra = Xml.GetChildBoolAttribute(node, "turnOffExtra", "value");
             disableBonnetCamera = Xml.GetChildBoolAttribute(node, "disableBonnetCamera", "value");
             allowBonnetSlide = Xml.GetChildBoolAttribute(node, "allowBonnetSlide", "value");
-            weaponSlot = (byte)Xml.GetChildIntAttribute(node, "weaponSlot", "value");
-            Unk_2656206330 = (byte)Xml.GetChildIntAttribute(node, "Unk_2656206330", "value");
+            weaponSlot = (sbyte)Xml.GetChildIntAttribute(node, "weaponSlot", "value");
+            Unk_2656206330 = (sbyte)Xml.GetChildIntAttribute(node, "hash_9E527DFA", "value");//TODO: fix
             disableProjectileDriveby = Xml.GetChildBoolAttribute(node, "disableProjectileDriveby", "value");
             disableDriveby = Xml.GetChildBoolAttribute(node, "disableDriveby", "value");
-            Unk_161724223 = Xml.GetChildIntAttribute(node, "Unk_161724223", "value");
-            Unk_484538291 = Xml.GetChildIntAttribute(node, "Unk_484538291", "value");
+            Unk_161724223 = Xml.GetChildIntAttribute(node, "hash_09A3B73F", "value");//TODO: fix
+            Unk_484538291 = Xml.GetChildIntAttribute(node, "hash_1CE177B3", "value");//TODO: fix
         }
 
         public override string ToString()
