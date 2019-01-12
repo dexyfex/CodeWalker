@@ -62,6 +62,7 @@ namespace CodeWalker.Project.Panels
             var sb = new StringBuilder();
             var mapdeps = new Dictionary<string, YtypFile>();
             var typdeps = new Dictionary<string, Dictionary<string, YtypFile>>();
+            var interiors = new List<string>();
 
             sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
             sb.AppendLine("<CPackFileMetaData>");
@@ -107,6 +108,7 @@ namespace CodeWalker.Project.Panels
                         }
 
                         mapdeps.Clear();
+                        bool ismilo = false;
                         if (ymap.AllEntities != null)
                         {
                             foreach (var ent in ymap.AllEntities)
@@ -120,6 +122,7 @@ namespace CodeWalker.Project.Panels
 
                                 if (ent.IsMlo)
                                 {
+                                    ismilo = true;
                                     if (ent.MloInstance?.Entities != null)
                                     {
                                         Dictionary<string, YtypFile> typdepdict;
@@ -157,7 +160,14 @@ namespace CodeWalker.Project.Panels
 
                         sb.AppendLine("    <Item>");
                         sb.AppendLine("      <imapName>" + ymapname + "</imapName>");
-                        sb.AppendLine("      <manifestFlags/>");
+                        if (ismilo)
+                        {
+                            sb.AppendLine("      <manifestFlags>INTERIOR_DATA</manifestFlags>");
+                        }
+                        else
+                        {
+                            sb.AppendLine("      <manifestFlags/>");
+                        }
                         sb.AppendLine("      <itypDepArray>");
                         foreach (var kvp in mapdeps)
                         {
@@ -183,6 +193,7 @@ namespace CodeWalker.Project.Panels
                             var mloa = archm as MloArchetype;
                             if (mloa != null)
                             {
+                                interiors.Add(mloa.Name);
                                 Dictionary<string, YtypFile> typdepdict;
                                 if (!typdeps.TryGetValue(ytypname, out typdepdict))
                                 {
@@ -253,7 +264,24 @@ namespace CodeWalker.Project.Panels
                 sb.AppendLine("  <itypDependencies_2/>");
             }
 
-            sb.AppendLine("  <Interiors/>");
+            if (interiors.Count > 0)
+            {
+                sb.AppendLine("  <Interiors itemType=\"CInteriorBoundsFiles\">");
+                foreach (var interior in interiors)
+                {
+                    sb.AppendLine("    <Item>");
+                    sb.AppendLine("      <Name>" + interior + "</Name>");
+                    sb.AppendLine("      <Bounds>");
+                    sb.AppendLine("        <Item>" + interior + "</Item>");
+                    sb.AppendLine("      </Bounds>");
+                    sb.AppendLine("    </Item>");
+                }
+                sb.AppendLine("  </Interiors>");
+            }
+            else
+            {
+                sb.AppendLine("  <Interiors/>");
+            }
             sb.AppendLine("</CPackFileMetaData>");
 
             ProjectManifestTextBox.Text = sb.ToString();
