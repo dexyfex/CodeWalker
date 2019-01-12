@@ -670,7 +670,7 @@ namespace CodeWalker.GameFiles
     {
         public MetaHash kitName { get; set; }
         public ushort id { get; set; }
-        public CVehicleKit_3865430600 kitType { get; set; }
+        public eModKitType kitType { get; set; }
         public CVehicleModVisible[] visibleMods { get; set; }
         public CVehicleModLink[] linkMods { get; set; }
         public CVehicleModStat[] statMods { get; set; }
@@ -682,7 +682,7 @@ namespace CodeWalker.GameFiles
         {
             kitName = XmlMeta.GetHash(Xml.GetChildInnerText(node, "kitName"));
             id = (ushort)Xml.GetChildUIntAttribute(node, "id", "value");
-            kitType = Xml.GetChildEnumInnerText<CVehicleKit_3865430600>(node, "kitType");
+            kitType = Xml.GetChildEnumInnerText<eModKitType>(node, "kitType");
             XmlNode cnode;
             cnode = node.SelectSingleNode("visibleMods");
             if (cnode != null)
@@ -776,21 +776,21 @@ namespace CodeWalker.GameFiles
         public string modShopLabel { get; set; }
         public MetaHash[] linkedModels { get; set; }
         public CVehicleMod_3635907608[] turnOffBones { get; set; }
-        public CVehicleMod_2363989491 type { get; set; }
+        public eVehicleModType type { get; set; }
         public CVehicleMod_3635907608 bone { get; set; }
         public CVehicleMod_3635907608 collisionBone { get; set; }
-        public CVehicleMod_3413962745 cameraPos { get; set; }
+        public eVehicleModCameraPos cameraPos { get; set; }
         public float audioApply { get; set; }
         public byte weight { get; set; }
         public bool turnOffExtra { get; set; }
         public bool disableBonnetCamera { get; set; }
         public bool allowBonnetSlide { get; set; }
         public sbyte weaponSlot { get; set; }
-        public sbyte Unk_2656206330 { get; set; }
+        public sbyte weaponSlotSecondary { get; set; }
         public bool disableProjectileDriveby { get; set; }
         public bool disableDriveby { get; set; }
-        public int Unk_161724223 { get; set; }
-        public int Unk_484538291 { get; set; }
+        public int disableDrivebySeat { get; set; }
+        public int disableDrivebySeatSecondary { get; set; }
 
         public CVehicleModVisible(XmlNode node)
         {
@@ -823,21 +823,21 @@ namespace CodeWalker.GameFiles
                     }
                 }
             }
-            type = Xml.GetChildEnumInnerText<CVehicleMod_2363989491>(node, "type");
+            type = Xml.GetChildEnumInnerText<eVehicleModType>(node, "type");
             bone = Xml.GetChildEnumInnerText<CVehicleMod_3635907608>(node, "bone");
             collisionBone = Xml.GetChildEnumInnerText<CVehicleMod_3635907608>(node, "collisionBone");
-            cameraPos = Xml.GetChildEnumInnerText<CVehicleMod_3413962745>(node, "cameraPos");
+            cameraPos = Xml.GetChildEnumInnerText<eVehicleModCameraPos>(node, "cameraPos");
             audioApply = Xml.GetChildFloatAttribute(node, "audioApply", "value");
             weight = (byte)Xml.GetChildIntAttribute(node, "weight", "value");
             turnOffExtra = Xml.GetChildBoolAttribute(node, "turnOffExtra", "value");
             disableBonnetCamera = Xml.GetChildBoolAttribute(node, "disableBonnetCamera", "value");
             allowBonnetSlide = Xml.GetChildBoolAttribute(node, "allowBonnetSlide", "value");
             weaponSlot = (sbyte)Xml.GetChildIntAttribute(node, "weaponSlot", "value");
-            Unk_2656206330 = (sbyte)Xml.GetChildIntAttribute(node, "hash_9E527DFA", "value");//TODO: fix
+            weaponSlotSecondary = (sbyte)Xml.GetChildIntAttribute(node, "weaponSlotSecondary", "value");
             disableProjectileDriveby = Xml.GetChildBoolAttribute(node, "disableProjectileDriveby", "value");
             disableDriveby = Xml.GetChildBoolAttribute(node, "disableDriveby", "value");
-            Unk_161724223 = Xml.GetChildIntAttribute(node, "hash_09A3B73F", "value");//TODO: fix
-            Unk_484538291 = Xml.GetChildIntAttribute(node, "hash_1CE177B3", "value");//TODO: fix
+            disableDrivebySeat = Xml.GetChildIntAttribute(node, "disableDrivebySeat", "value");
+            disableDrivebySeatSecondary = Xml.GetChildIntAttribute(node, "disableDrivebySeatSecondary", "value");
         }
 
         public override string ToString()
@@ -869,7 +869,7 @@ namespace CodeWalker.GameFiles
         public uint modifier { get; set; }
         public float audioApply { get; set; }
         public byte weight { get; set; }
-        public CVehicleMod_2363989491 type { get; set; }
+        public eVehicleModType type { get; set; }
 
         public CVehicleModStat(XmlNode node)
         {
@@ -877,7 +877,7 @@ namespace CodeWalker.GameFiles
             modifier = Xml.GetChildUIntAttribute(node, "modifier", "value");
             audioApply = Xml.GetChildFloatAttribute(node, "audioApply", "value");
             weight = (byte)Xml.GetChildIntAttribute(node, "weight", "value");
-            type = Xml.GetChildEnumInnerText<CVehicleMod_2363989491>(node, "type");
+            type = Xml.GetChildEnumInnerText<eVehicleModType>(node, "type");
         }
         public override string ToString()
         {
@@ -886,12 +886,12 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class CVehicleKit_427606548
     {
-        public CVehicleMod_2363989491 slot { get; set; }
+        public eVehicleModType slot { get; set; }
         public string name { get; set; }
 
         public CVehicleKit_427606548(XmlNode node)
         {
-            slot = Xml.GetChildEnumInnerText<CVehicleMod_2363989491>(node, "slot");
+            slot = Xml.GetChildEnumInnerText<eVehicleModType>(node, "slot");
             name = Xml.GetChildInnerText(node, "name");
         }
         public override string ToString()
@@ -955,42 +955,42 @@ namespace CodeWalker.GameFiles
     public enum CVehicleModelColor_360458334 //vehicle mod color metallic id
     {
         none = -1,
-        Unk_815563434 = 0,
-        Unk_969376721 = 1,
-        Unk_731244402 = 2,
-        Unk_3537679873 = 3,
-        Unk_3183119293 = 4,
-        Unk_4039766491 = 5,
-        Unk_3777516184 = 6,
-        Unk_229878718 = 7,
-        Unk_4285337393 = 8,
-        Unk_847803751 = 9
+        EVehicleModelColorMetallic_normal = 0,
+        EVehicleModelColorMetallic_1 = 1,
+        EVehicleModelColorMetallic_2 = 2,
+        EVehicleModelColorMetallic_3 = 3,
+        EVehicleModelColorMetallic_4 = 4,
+        EVehicleModelColorMetallic_5 = 5,
+        EVehicleModelColorMetallic_6 = 6,
+        EVehicleModelColorMetallic_7 = 7,
+        EVehicleModelColorMetallic_8 = 8,
+        EVehicleModelColorMetallic_9 = 9
     }
     public enum CVehicleModelColor_544262540 //vehicle mod color audio color
     {
-        Unk_52583446 = 0,
-        Unk_2253400966 = 1,
-        Unk_4012089111 = 2,
-        Unk_2477037232 = 3,
-        Unk_437487559 = 4,
-        Unk_730308174 = 5,
-        Unk_3129410619 = 6,
-        Unk_1762671403 = 7,
-        Unk_2615326998 = 8,
-        Unk_4157715503 = 9,
-        Unk_2969646890 = 10,
-        Unk_1645071976 = 11,
-        Unk_1358390657 = 12
+        POLICE_SCANNER_COLOUR_black = 0,
+        POLICE_SCANNER_COLOUR_blue = 1,
+        POLICE_SCANNER_COLOUR_brown = 2,
+        POLICE_SCANNER_COLOUR_beige = 3,
+        POLICE_SCANNER_COLOUR_graphite = 4,
+        POLICE_SCANNER_COLOUR_green = 5,
+        POLICE_SCANNER_COLOUR_grey = 6,
+        POLICE_SCANNER_COLOUR_orange = 7,
+        POLICE_SCANNER_COLOUR_pink = 8,
+        POLICE_SCANNER_COLOUR_red = 9,
+        POLICE_SCANNER_COLOUR_silver = 10,
+        POLICE_SCANNER_COLOUR_white = 11,
+        POLICE_SCANNER_COLOUR_yellow = 12
     }
     public enum CVehicleModelColor_2065815796 //vehicle mod color audio prefix
     {
         none = 0,
-        Unk_2318284788 = 1,
-        Unk_840729009 = 2,
-        Unk_3921902053 = 3
+        POLICE_SCANNER_PREFIX_bright = 1,
+        POLICE_SCANNER_PREFIX_light = 2,
+        POLICE_SCANNER_PREFIX_dark = 3
     }
 
-    public enum CVehicleKit_3865430600 //vehicle mod kit type
+    public enum eModKitType //vehicle mod kit type
     {
         MKT_STANDARD = 0,
         MKT_SPORT = 1,
@@ -1001,7 +1001,7 @@ namespace CodeWalker.GameFiles
     {
         none = -1,
         chassis = 0,
-        Unk_1970334199 = 48,
+        bodyshell = 48,
         bumper_f = 49,
         bumper_r = 50,
         wing_rf = 51,
@@ -1012,58 +1012,58 @@ namespace CodeWalker.GameFiles
         exhaust_2 = 57,
         exhaust_3 = 58,
         exhaust_4 = 59,
-        Unk_1666652977 = 60,
-        Unk_1972682668 = 61,
-        Unk_3204862618 = 62,
-        Unk_3503093287 = 63,
-        Unk_442599751 = 64,
-        Unk_2600343066 = 65,
-        Unk_3598945568 = 66,
-        Unk_3896619164 = 67,
-        Unk_2989016171 = 68,
-        Unk_3320572913 = 69,
-        Unk_529211190 = 70,
-        Unk_823345734 = 71,
+        exhaust_5 = 60,
+        exhaust_6 = 61,
+        exhaust_7 = 62,
+        exhaust_8 = 63,
+        exhaust_9 = 64,
+        exhaust_10 = 65,
+        exhaust_11 = 66,
+        exhaust_12 = 67,
+        exhaust_13 = 68,
+        exhaust_14 = 69,
+        exhaust_15 = 70,
+        exhaust_16 = 71,
         extra_1 = 401,
         extra_2 = 402,
         extra_3 = 403,
         extra_4 = 404,
         extra_5 = 405,
-        Unk_3145755371 = 406,
-        Unk_2360446286 = 407,
-        Unk_2661527858 = 408,
-        Unk_1913477126 = 409,
-        Unk_2125833567 = 410,
-        Unk_2431830489 = 411,
-        Unk_2720558148 = 412,
-        Unk_903844796 = 413,
-        Unk_1202337617 = 414,
-        Unk_2190258525 = 417,
-        Unk_1950749904 = 418,
-        Unk_1709504522 = 419,
-        Unk_1480285367 = 420,
-        Unk_1213709552 = 421,
-        Unk_848662892 = 422,
-        Unk_3990325233 = 423,
-        Unk_367056899 = 424,
-        Unk_3413787451 = 425,
-        Unk_2734584581 = 426,
+        extra_6 = 406,
+        extra_7 = 407,
+        extra_8 = 408,
+        extra_9 = 409,
+        extra_10 = 410,
+        extra_11 = 411,
+        extra_12 = 412,
+        extra_13 = 413,
+        extra_14 = 414,
+        break_extra_1 = 417,
+        break_extra_2 = 418,
+        break_extra_3 = 419,
+        break_extra_4 = 420,
+        break_extra_5 = 421,
+        break_extra_6 = 422,
+        break_extra_7 = 423,
+        break_extra_8 = 424,
+        break_extra_9 = 425,
+        break_extra_10 = 426,
         mod_col_1 = 427,
         mod_col_2 = 428,
         mod_col_3 = 429,
         mod_col_4 = 430,
         mod_col_5 = 431,
-        Unk_1547719720 = 432,
-        Unk_580018373 = 433,
-        Unk_4191162177 = 434,
-        Unk_3257212908 = 435,
-        Unk_3033709986 = 436,
-        Unk_2249285664 = 437,
-        Unk_1498318491 = 438,
-        Unk_1787603223 = 439,
-        Unk_1573326728 = 440,
-        Unk_1862676998 = 441,
-        Unk_1044598917 = 442,
+        mod_col_6 = 432,
+        mod_col_7 = 433,
+        mod_col_8 = 434,
+        mod_col_9 = 435,
+        mod_col_10 = 436,
+        mod_col_11 = 437,
+        mod_col_12 = 438,
+        mod_col_13 = 439,
+        mod_col_14 = 440,
+        mod_col_15 = 441,
+        mod_col_16 = 442,
         misc_a = 369,
         misc_b = 370,
         misc_c = 371,
@@ -1090,99 +1090,99 @@ namespace CodeWalker.GameFiles
         misc_x = 392,
         misc_y = 393,
         misc_z = 394,
-        Unk_2690009945 = 395,
-        Unk_1385115596 = 396,
-        Unk_2921986035 = 79,
+        misc_1 = 395,
+        misc_2 = 396,
+        handlebars = 79,
         steeringwheel = 80,
-        Unk_3929033220 = 29,
-        Unk_837923007 = 21,
-        Unk_991413023 = 22,
+        swingarm = 29,
+        forks_u = 21,
+        forks_l = 22,
         headlight_l = 91,
         headlight_r = 92,
-        Unk_3979005071 = 97,
+        indicator_lr = 97,
         indicator_lf = 95,
-        Unk_112742354 = 98,
+        indicator_rr = 98,
         indicator_rf = 96,
-        Unk_3008822349 = 93,
-        Unk_914195096 = 94,
+        taillight_l = 93,
+        taillight_r = 94,
         window_lf = 42,
         window_rf = 43,
-        Unk_2355575415 = 45,
-        Unk_2639884295 = 44,
-        Unk_2675373130 = 46,
-        Unk_3523659197 = 47,
+        window_rr = 45,
+        window_lr = 44,
+        window_lm = 46,
+        window_rm = 47,
         hub_lf = 30,
         hub_rf = 31,
         windscreen_r = 41,
-        Unk_4084563217 = 104,
-        Unk_556062831 = 105,
-        Unk_3850133799 = 106,
-        Unk_728001778 = 107,
+        neon_l = 104,
+        neon_r = 105,
+        neon_f = 106,
+        neon_b = 107,
         door_dside_f = 3,
         door_dside_r = 4,
         door_pside_f = 5,
         door_pside_r = 6,
         bobble_head = 361,
         bobble_base = 362,
-        Unk_785162942 = 363,
+        bobble_hand = 363,
         engineblock = 364,
-        Unk_3654959273 = 474,
-        Unk_808381781 = 475,
-        Unk_4268165574 = 476,
-        Unk_3579951032 = 477,
-        Unk_2733953759 = 478,
-        Unk_4123490435 = 479,
-        Unk_3342441320 = 480,
-        Unk_1726175929 = 481,
-        Unk_1947366679 = 482,
-        Unk_2065498928 = 483,
-        Unk_2572238744 = 484,
-        Unk_730555402 = 485,
-        Unk_4194074861 = 486,
-        Unk_1343696161 = 487,
-        Unk_506677594 = 488,
-        Unk_4167728581 = 489,
-        Unk_3326122354 = 490,
-        Unk_217851628 = 491,
-        Unk_3666821647 = 492,
-        Unk_2168885119 = 493,
-        Unk_2399611648 = 494,
-        Unk_3519328378 = 495,
-        Unk_2958716326 = 496,
-        Unk_3292501248 = 497,
-        Unk_2651277456 = 498,
-        Unk_3888995355 = 499,
-        Unk_3843353624 = 500,
-        Unk_3135215534 = 501,
-        Unk_3364434689 = 502,
-        Unk_2723112578 = 503,
-        Unk_2970026993 = 504,
-        Unk_2245832093 = 505,
-        Unk_2492156666 = 506,
-        Unk_1765012564 = 507,
-        Unk_2014155263 = 508,
-        Unk_1286290243 = 509,
-        Unk_1535367412 = 510,
-        Unk_3992710274 = 511,
-        Unk_1077448950 = 512,
-        Unk_1382757723 = 513,
-        Unk_614062521 = 514,
-        Unk_3783807571 = 524,
-        Unk_2839830988 = 525,
-        Unk_3138651499 = 526,
-        Unk_2400824695 = 527,
-        Unk_4141162370 = 560,
-        Unk_451472348 = 561,
-        Unk_1768767594 = 562,
-        Unk_3599310922 = 563,
-        Unk_1496111458 = 564,
-        Unk_3929521030 = 565,
-        Unk_1157497495 = 566,
-        Unk_1032498025 = 567,
-        Unk_2573434709 = 568,
-        Unk_930609265 = 569,
-        Unk_879315983 = 570,
-        Unk_411536741 = 571,
+        mod_a = 474,
+        mod_b = 475,
+        mod_c = 476,
+        mod_d = 477,
+        mod_e = 478,
+        mod_f = 479,
+        mod_g = 480,
+        mod_h = 481,
+        mod_i = 482,
+        mod_j = 483,
+        mod_k = 484,
+        mod_l = 485,
+        mod_m = 486,
+        mod_n = 487,
+        mod_o = 488,
+        mod_p = 489,
+        mod_q = 490,
+        mod_r = 491,
+        mod_s = 492,
+        mod_t = 493,
+        mod_u = 494,
+        mod_v = 495,
+        mod_w = 496,
+        mod_x = 497,
+        mod_y = 498,
+        mod_z = 499,
+        mod_aa = 500,
+        mod_ab = 501,
+        mod_ac = 502,
+        mod_ad = 503,
+        mod_ae = 504,
+        mod_af = 505,
+        mod_ag = 506,
+        mod_ah = 507,
+        mod_ai = 508,
+        mod_aj = 509,
+        mod_ak = 510,
+        turret_a1 = 511,
+        turret_a2 = 512,
+        turret_a3 = 513,
+        turret_a4 = 514,
+        turret_b1 = 524,
+        turret_b2 = 525,
+        turret_b3 = 526,
+        turret_b4 = 527,
+        rblade_1mod = 560,
+        rblade_1fast = 561,
+        rblade_2mod = 562,
+        rblade_2fast = 563,
+        rblade_3mod = 564,
+        rblade_3fast = 565,
+        fblade_1mod = 566,
+        fblade_1fast = 567,
+        fblade_2mod = 568,
+        fblade_2fast = 569,
+        fblade_3mod = 570,
+        fblade_3fast = 571,
         Unk_1086719913 = 572,
         Unk_3237490897 = 573,
         Unk_3375838140 = 574,
@@ -1192,20 +1192,20 @@ namespace CodeWalker.GameFiles
         Unk_1208798824 = 578,
         Unk_303656220 = 579,
         Unk_660207018 = 580,
-        Unk_2796607005 = 581,
+        spike_1mod = 581,
         Unk_3045655218 = 582,
         Unk_2017296145 = 583,
-        Unk_3978311755 = 584,
+        spike_2mod = 584,
         Unk_1122332083 = 585,
         Unk_1123212214 = 586,
-        Unk_4063416457 = 587,
+        spike_3mod = 587,
         Unk_4011591561 = 588,
         Unk_2320654166 = 589,
-        Unk_2292220415 = 590,
-        Unk_2166816405 = 591,
-        Unk_2486991428 = 592
+        scoop_1mod = 590,
+        scoop_2mod = 591,
+        scoop_3mod = 592
     }
-    public enum CVehicleMod_2363989491 //vehicle mod type
+    public enum eVehicleModType //vehicle mod type
     {
         VMT_SPOILER = 0,
         VMT_BUMPER_F = 1,
@@ -1240,7 +1240,7 @@ namespace CodeWalker.GameFiles
         VMT_CHASSIS4 = 30,
         VMT_CHASSIS5 = 31,
         VMT_DOOR_L = 32,
-        Unk_514696742 = 33,
+        VMT_DOOR_R = 33,
         VMT_LIVERY_MOD = 34,
         Unk_3409280882 = 35,
         VMT_ENGINE = 36,
@@ -1250,27 +1250,27 @@ namespace CodeWalker.GameFiles
         VMT_SUSPENSION = 40,
         VMT_ARMOUR = 41,
         Unk_3278520444 = 42,
-        Unk_2334449168 = 43,
+        VMT_TURBO = 43,
         Unk_1675686396 = 44,
-        Unk_3968559424 = 45,
-        Unk_3919652883 = 46,
-        Unk_2656522436 = 47,
+        VMT_TYRE_SMOKE = 45,
+        VMT_HYDRAULICS = 46,
+        VMT_XENON_LIGHTS = 47,
         VMT_WHEELS = 48,
         VMT_WHEELS_REAR_OR_HYDRAULICS = 49
     }
-    public enum CVehicleMod_3413962745 //vehicle mod camera position
+    public enum eVehicleModCameraPos //vehicle mod camera position
     {
         VMCP_DEFAULT = 0,
-        Unk_3001706694 = 1,
-        Unk_1148399176 = 2,
-        Unk_2057559994 = 3,
-        Unk_1556139353 = 4,
-        Unk_1830737308 = 5,
-        Unk_457854237 = 6,
-        Unk_1629770278 = 7,
-        Unk_2879151926 = 8,
-        Unk_3193071790 = 9,
-        Unk_2770495034 = 10
+        VMCP_FRONT = 1,
+        VMCP_FRONT_LEFT = 2,
+        VMCP_FRONT_RIGHT = 3,
+        VMCP_REAR = 4,
+        VMCP_REAR_LEFT = 5,
+        VMCP_REAR_RIGHT = 6,
+        VMCP_LEFT = 7,
+        VMCP_RIGHT = 8,
+        VMCP_TOP = 9,
+        VMCP_BOTTOM = 10
     }
 
 
