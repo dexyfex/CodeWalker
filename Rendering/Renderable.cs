@@ -434,8 +434,10 @@ namespace CodeWalker.Rendering
                 MetaName.lookupSampler, //TF_RSN_Msk_CS1_DesHill1, bh1_43_golf_blendmap_04_LOD
                 MetaName.heightSampler, //nxg_prop_tree_palm2_displ_l
                 MetaName.FoamSampler, //bj_beachfoam01_lod, CS_RSN_SL_RiverFoam_01_A_lodCS_RSN_SL_RiverFoam_01_A
-                MetaName.textureSamp,
+                MetaName.DirtSampler,
+                MetaName.DirtBumpSampler,
                 MetaName.DiffuseSampler2,
+                MetaName.DiffuseSampler3,
                 MetaName.DiffuseHfSampler,
                 MetaName.ComboHeightSamplerFur01,
                 MetaName.ComboHeightSamplerFur23,

@@ -589,39 +589,61 @@ namespace CodeWalker.GameFiles
         {
             var items = new List<Vector4>();
 
-
-            var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
-
-
             float x = 0f;
             float y = 0f;
             float z = 0f;
             float w = 0f;
 
-            for (int i = 0; i < split.Length; i++)
+            var cnodes = node.SelectNodes("Item");
+            if (cnodes.Count > 0)
             {
-                var s = split[i]?.Trim();
-                if (string.IsNullOrEmpty(s)) continue;
-                var split2 = Regex.Split(s, @"[\s\t]");
-                int c = 0;
-                x = 0f; y = 0f; z = 0f;
-                for (int n = 0; n < split2.Length; n++)
+                foreach (XmlNode cnode in cnodes)
                 {
-                    var ts = split2[n]?.Trim();
-                    if (string.IsNullOrEmpty(ts)) continue;
-                    var f = FloatUtil.Parse(ts);
-                    switch (c)
+                    var str = cnode.InnerText;
+                    var strs = str.Split(',');
+                    if (strs.Length >= 3)
                     {
-                        case 0: x = f; break;
-                        case 1: y = f; break;
-                        case 2: z = f; break;
+                        x = FloatUtil.Parse(strs[0].Trim());
+                        y = FloatUtil.Parse(strs[1].Trim());
+                        z = FloatUtil.Parse(strs[2].Trim());
+                        if (strs.Length >= 4)
+                        {
+                            w = FloatUtil.Parse(strs[3].Trim());
+                        }
+                        var val = new Vector4(x, y, z, w);
+                        items.Add(val);
                     }
-                    c++;
                 }
-                if (c >= 3)
+            }
+            else
+            {
+                var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
+
+                for (int i = 0; i < split.Length; i++)
                 {
-                    var val = new Vector4(x, y, z, w);
-                    items.Add(val);
+                    var s = split[i]?.Trim();
+                    if (string.IsNullOrEmpty(s)) continue;
+                    var split2 = Regex.Split(s, @"[\s\t]");
+                    int c = 0;
+                    x = 0f; y = 0f; z = 0f;
+                    for (int n = 0; n < split2.Length; n++)
+                    {
+                        var ts = split2[n]?.Trim();
+                        if (string.IsNullOrEmpty(ts)) continue;
+                        var f = FloatUtil.Parse(ts);
+                        switch (c)
+                        {
+                            case 0: x = f; break;
+                            case 1: y = f; break;
+                            case 2: z = f; break;
+                        }
+                        c++;
+                    }
+                    if (c >= 3)
+                    {
+                        var val = new Vector4(x, y, z, w);
+                        items.Add(val);
+                    }
                 }
             }
 

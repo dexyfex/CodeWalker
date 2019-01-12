@@ -573,8 +573,9 @@ namespace CodeWalker.Rendering
                             //case MetaName.SnowSampler0:
                             //case MetaName.SnowSampler1:
                             //case MetaName.DiffuseSampler2:
+                            //case MetaName.DiffuseSampler3:
                             //case MetaName.DirtSampler:
-                            //case (MetaName)3157820509://normal?
+                            //case MetaName.DirtBumpSampler:
                                 break;
                             case MetaName.FlowSampler:
                             case MetaName.FogSampler:

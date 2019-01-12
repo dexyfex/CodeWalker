@@ -2136,6 +2136,7 @@ namespace CodeWalker.GameFiles
         DiffuseNoBorderTexSampler = 1732587965,
         DiffuseSampler = 4059966321,
         DiffuseSampler2 = 181641832,
+        DiffuseSampler3 = 1429813046, //thanks CP
         DiffuseSamplerFur = 1282320680,
         DiffuseSamplerPhase2 = 3227619449,
         DiffuseSamplerPoint = 4015001285,
@@ -2158,6 +2159,7 @@ namespace CodeWalker.GameFiles
         dirtLevel = 47191856,
         dirtLevelMod = 3961814809,
         DirtSampler = 2124031998,
+        DirtBumpSampler = 3157820509,//thanks CP
         DiskBrakeGlow = 1035405954,
         displParams = 1163050293,
         distanceMapSampler = 1616890976,
