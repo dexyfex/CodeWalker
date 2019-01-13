@@ -184,6 +184,32 @@ namespace CodeWalker.Rendering
                             fragtransformid = phys.OwnerFragPhysIndex;
                             fragoffset = phys.OwnerFragPhysLod.Unknown_30h;
                             fragoffset.W = 0.0f;
+
+                            if (fragtransformid < phys.OwnerFragPhysLod.Children?.data_items?.Length)
+                            {
+                                var pgrp = phys.OwnerFragPhysLod.Children.data_items[fragtransformid];
+
+                                switch (pgrp.BoneTag) //right hand side wheel flip!
+                                {
+                                    //case 27922: //wheel_lf
+                                    //case 29921: //wheel_lm1
+                                    //case 29922: //wheel_lm2
+                                    //case 29923: //wheel_lm3
+                                    //case 27902: //wheel_lr
+                                    case 26418: //wheel_rf
+                                    case 5857:  //wheel_rm1
+                                    case 5858:  //wheel_rm2
+                                    case 5859:  //wheel_rm3
+                                    case 26398: //wheel_rr
+                                        fragtransforms[fragtransformid].M11 = -1;
+                                        fragtransforms[fragtransformid].M33 = -1;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+
+
                         }
                     }
                     else if (frag != null)
