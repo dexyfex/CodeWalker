@@ -885,7 +885,10 @@ namespace CodeWalker.GameFiles
                                 }
                                 if (pbok)
                                 {
+                                    var typename = HashString(cont.Pso.GetBlock(pbid).NameHash);
+                                    OpenTag(sb, cind, ename + " type=\"" + typename + "\"");
                                     WriteNode(sb, cind, cont, ptrVal.BlockID, (int)ptrVal.ItemOffset, XmlTagMode.None, (MetaName)entry.ReferenceKey);
+                                    CloseTag(sb, cind, ename);
                                 }
                                 else
                                 {

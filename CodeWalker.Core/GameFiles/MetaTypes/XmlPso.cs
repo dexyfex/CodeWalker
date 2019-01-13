@@ -83,7 +83,16 @@ namespace CodeWalker.GameFiles
                             }
                         case PsoDataType.Structure:
                             {
-                                var struc = Traverse(cnode, pb, (MetaName)entry.ReferenceKey);
+                                var stype = (MetaName)entry.ReferenceKey;
+                                if (stype == 0)
+                                {
+                                    var stypestr = Xml.GetStringAttribute(cnode, "type");
+                                    if (!string.IsNullOrEmpty(stypestr))
+                                    {
+                                        stype = (MetaName)(uint)GetHash(stypestr);
+                                    }
+                                }
+                                var struc = Traverse(cnode, pb, stype);
                                 if (struc != null)
                                 {
                                     switch (entry.Unk_5h)
@@ -99,7 +108,7 @@ namespace CodeWalker.GameFiles
                                         case 3: //structure pointer...
                                         case 4: //also pointer? what's the difference?
 
-                                            var bptr = pb.AddItem((MetaName)entry.ReferenceKey, struc);
+                                            var bptr = pb.AddItem(stype, struc);
                                             var ptr = new PsoPOINTER(bptr.BlockID, bptr.Offset, 0);
                                             ptr.SwapEnd();
                                             var ptrb = MetaTypes.ConvertToBytes(ptr);
@@ -109,6 +118,8 @@ namespace CodeWalker.GameFiles
                                             break;
                                     }
                                 }
+                                else
+                                { }
                                 break;
                             }
                         case PsoDataType.Map:
@@ -176,7 +187,7 @@ namespace CodeWalker.GameFiles
                                         else
                                         {
                                             uval = Convert.ToUInt32(ustr);
-                                        } 
+                                        }
                                         Write(uval, data, entry.DataOffset);
                                         break;
                                 }
@@ -348,6 +359,8 @@ namespace CodeWalker.GameFiles
                 return data;
 
             }
+            else
+            { }//info not found
 
             return null;
         }
