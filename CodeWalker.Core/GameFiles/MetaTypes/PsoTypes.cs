@@ -15909,7 +15909,7 @@ namespace CodeWalker.GameFiles
             {
                 return null;
             }
-            var entryoffset = (arr.Pointer & 0xFFFFFF) >> 12;
+            var entryoffset = (arr.Pointer >> 12) & 0xFFFFF;
             var arrentry = pso.DataMapSection.Entries[(int)entryid - 1];
             int totoffset = arrentry.Offset + (int)entryoffset;
             uint[] readdata = ConvertDataArrayRaw<uint>(data, totoffset, arr.Count1);
@@ -15949,7 +15949,7 @@ namespace CodeWalker.GameFiles
             {
                 return null;
             }
-            var entryoffset = (arr.Pointer & 0xFFFFFF) >> 12;
+            var entryoffset = (arr.Pointer >> 12) & 0xFFFFF;
             var arrentry = pso.DataMapSection.Entries[(int)entryid - 1];
             int totoffset = arrentry.Offset + (int)entryoffset;
             float[] readdata = ConvertDataArrayRaw<float>(data, totoffset, arr.Count1);
@@ -15978,7 +15978,7 @@ namespace CodeWalker.GameFiles
             {
                 return null;
             }
-            var entryoffset = (arr.Pointer & 0xFFFFFF) >> 12;
+            var entryoffset = (arr.Pointer >> 12) & 0xFFFFF;
             var arrentry = pso.DataMapSection.Entries[(int)entryid - 1];
             int totoffset = arrentry.Offset + (int)entryoffset;
             ushort[] readdata = ConvertDataArrayRaw<ushort>(data, totoffset, arr.Count1);

@@ -2641,7 +2641,8 @@ namespace CodeWalker.GameFiles
                                     { }
                                     if (entry.NameLower == "popgroups.ymt")
                                     { }
-
+                                    if (entry.NameLower == "clip_sets.ymt")
+                                    { }
 
                                 }
                             }
