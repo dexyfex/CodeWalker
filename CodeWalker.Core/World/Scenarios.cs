@@ -994,7 +994,7 @@ namespace CodeWalker.World
                     newpoints.AddRange(cell);
                     foreach (var point in cell)
                     {
-                        if ((point.Flags & Unk_700327466.ExtendedRange) > 0)
+                        if ((point.Flags & CScenarioPointFlags__Flags.ExtendedRange) > 0)
                         {
                             flag = true;
                         }

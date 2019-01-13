@@ -2056,8 +2056,8 @@ namespace CodeWalker
             cent.flags = 1572872;
             cent.parentIndex = -1;
             cent.lodDist = 200.0f;
-            cent.lodLevel = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
-            cent.priorityLevel = Unk_648413703.PRI_REQUIRED;
+            cent.lodLevel = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
+            cent.priorityLevel = rage__ePriorityLevel.PRI_REQUIRED;
             cent.ambientOcclusionMultiplier = 255;
             cent.artificialAmbientOcclusion = 255;
             cent.position = pos;
@@ -7176,25 +7176,25 @@ namespace CodeWalker
             {
                 default:
                 case "ORPHANHD":
-                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
+                    Renderer.renderworldMaxLOD = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
                     break;
                 case "HD":
-                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_HD;
+                    Renderer.renderworldMaxLOD = rage__eLodType.LODTYPES_DEPTH_HD;
                     break;
                 case "LOD":
-                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_LOD;
+                    Renderer.renderworldMaxLOD = rage__eLodType.LODTYPES_DEPTH_LOD;
                     break;
                 case "SLOD1":
-                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_SLOD1;
+                    Renderer.renderworldMaxLOD = rage__eLodType.LODTYPES_DEPTH_SLOD1;
                     break;
                 case "SLOD2":
-                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_SLOD2;
+                    Renderer.renderworldMaxLOD = rage__eLodType.LODTYPES_DEPTH_SLOD2;
                     break;
                 case "SLOD3":
-                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_SLOD3;
+                    Renderer.renderworldMaxLOD = rage__eLodType.LODTYPES_DEPTH_SLOD3;
                     break;
                 case "SLOD4":
-                    Renderer.renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_SLOD4;
+                    Renderer.renderworldMaxLOD = rage__eLodType.LODTYPES_DEPTH_SLOD4;
                     break;
             }
         }

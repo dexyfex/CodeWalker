@@ -313,8 +313,8 @@ namespace CodeWalker.GameFiles
                     {
                         YmapEntityDef p = alldefs[pind];
                         if ((p._CEntityDef.lodLevel <= d._CEntityDef.lodLevel) ||
-                            ((p._CEntityDef.lodLevel == Unk_1264241711.LODTYPES_DEPTH_ORPHANHD) &&
-                             (d._CEntityDef.lodLevel != Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)))
+                            ((p._CEntityDef.lodLevel == rage__eLodType.LODTYPES_DEPTH_ORPHANHD) &&
+                             (d._CEntityDef.lodLevel != rage__eLodType.LODTYPES_DEPTH_ORPHANHD)))
                         {
                             isroot = true;
                             p = null;
@@ -701,8 +701,8 @@ namespace CodeWalker.GameFiles
                 mb.AddStructureInfo(MetaName.CCarGen);
             }
 
-            mb.AddEnumInfo((MetaName)1264241711); //LODTYPES_
-            mb.AddEnumInfo((MetaName)648413703);  //PRI_
+            mb.AddEnumInfo(MetaName.rage__eLodType); //LODTYPES_
+            mb.AddEnumInfo(MetaName.rage__ePriorityLevel);  //PRI_
 
 
             Meta meta = mb.GetMeta();
@@ -782,7 +782,7 @@ namespace CodeWalker.GameFiles
                                 int pind = rcent._CEntityDef.parentIndex;
                                 if (pind < 0)
                                 {
-                                    if (rcent._CEntityDef.lodLevel != Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)
+                                    if (rcent._CEntityDef.lodLevel != rage__eLodType.LODTYPES_DEPTH_ORPHANHD)
                                     {
                                     }
                                     //pind = 0;
@@ -987,21 +987,21 @@ namespace CodeWalker.GameFiles
                 {
                     switch (yent._CEntityDef.lodLevel)
                     {
-                        case Unk_1264241711.LODTYPES_DEPTH_ORPHANHD:
-                        case Unk_1264241711.LODTYPES_DEPTH_HD:
+                        case rage__eLodType.LODTYPES_DEPTH_ORPHANHD:
+                        case rage__eLodType.LODTYPES_DEPTH_HD:
                             contentFlags = SetBit(contentFlags, 0); //1
                             break;
-                        case Unk_1264241711.LODTYPES_DEPTH_LOD:
+                        case rage__eLodType.LODTYPES_DEPTH_LOD:
                             contentFlags = SetBit(contentFlags, 1); //2
                             flags = SetBit(flags, 1); //2
                             break;
-                        case Unk_1264241711.LODTYPES_DEPTH_SLOD1:
+                        case rage__eLodType.LODTYPES_DEPTH_SLOD1:
                             contentFlags = SetBit(contentFlags, 4); //16
                             flags = SetBit(flags, 1); //2
                             break;
-                        case Unk_1264241711.LODTYPES_DEPTH_SLOD2:
-                        case Unk_1264241711.LODTYPES_DEPTH_SLOD3:
-                        case Unk_1264241711.LODTYPES_DEPTH_SLOD4:
+                        case rage__eLodType.LODTYPES_DEPTH_SLOD2:
+                        case rage__eLodType.LODTYPES_DEPTH_SLOD3:
+                        case rage__eLodType.LODTYPES_DEPTH_SLOD4:
                             contentFlags = SetBit(contentFlags, 2); //4
                             contentFlags = SetBit(contentFlags, 4); //16
                             flags = SetBit(flags, 1); //2

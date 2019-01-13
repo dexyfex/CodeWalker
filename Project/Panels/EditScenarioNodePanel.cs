@@ -1041,7 +1041,7 @@ namespace CodeWalker.Project.Panels
                 ScenarioPointFlagsCheckedListBox.SetItemCheckState(i, c ? CheckState.Checked : CheckState.Unchecked);
             }
             populatingui = false;
-            Unk_700327466 f = (Unk_700327466)iflags;
+            CScenarioPointFlags__Flags f = (CScenarioPointFlags__Flags)iflags;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.MyPoint.Flags != f)
@@ -1078,7 +1078,7 @@ namespace CodeWalker.Project.Panels
             populatingui = true;
             ScenarioPointFlagsValueUpDown.Value = iflags;
             populatingui = false;
-            Unk_700327466 f = (Unk_700327466)iflags;
+            CScenarioPointFlags__Flags f = (CScenarioPointFlags__Flags)iflags;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.MyPoint.Flags != f)
@@ -1590,7 +1590,7 @@ namespace CodeWalker.Project.Panels
                 ScenarioEntityPointFlagsCheckedListBox.SetItemCheckState(i, c ? CheckState.Checked : CheckState.Unchecked);
             }
             populatingui = false;
-            Unk_700327466 f = (Unk_700327466)iflags;
+            CScenarioPointFlags__Flags f = (CScenarioPointFlags__Flags)iflags;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.EntityPoint.Flags != f)
@@ -1627,7 +1627,7 @@ namespace CodeWalker.Project.Panels
             populatingui = true;
             ScenarioEntityPointFlagsUpDown.Value = iflags;
             populatingui = false;
-            Unk_700327466 f = (Unk_700327466)iflags;
+            CScenarioPointFlags__Flags f = (CScenarioPointFlags__Flags)iflags;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.EntityPoint.Flags != f)
@@ -2347,7 +2347,7 @@ namespace CodeWalker.Project.Panels
                 ScenarioClusterPointFlagsCheckedListBox.SetItemCheckState(i, c ? CheckState.Checked : CheckState.Unchecked);
             }
             populatingui = false;
-            Unk_700327466 f = (Unk_700327466)iflags;
+            CScenarioPointFlags__Flags f = (CScenarioPointFlags__Flags)iflags;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.ClusterMyPoint.Flags != f)
@@ -2384,7 +2384,7 @@ namespace CodeWalker.Project.Panels
             populatingui = true;
             ScenarioClusterPointFlagsUpDown.Value = iflags;
             populatingui = false;
-            Unk_700327466 f = (Unk_700327466)iflags;
+            CScenarioPointFlags__Flags f = (CScenarioPointFlags__Flags)iflags;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.ClusterMyPoint.Flags != f)

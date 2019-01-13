@@ -1531,8 +1531,8 @@ namespace CodeWalker.Project
                 cent.flags = 1572872;
                 cent.parentIndex = -1;
                 cent.lodDist = 200.0f;
-                cent.lodLevel = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
-                cent.priorityLevel = Unk_648413703.PRI_REQUIRED;
+                cent.lodLevel = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
+                cent.priorityLevel = rage__ePriorityLevel.PRI_REQUIRED;
                 cent.ambientOcclusionMultiplier = 255;
                 cent.artificialAmbientOcclusion = 255;
             }
@@ -2038,8 +2038,8 @@ namespace CodeWalker.Project
                     cent.flags = placement.Dynamic ? 32u : 0;// 1572872; //?
                     cent.parentIndex = -1;
                     cent.lodDist = placement.LodDistance;
-                    cent.lodLevel = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
-                    cent.priorityLevel = Unk_648413703.PRI_REQUIRED;
+                    cent.lodLevel = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
+                    cent.priorityLevel = rage__ePriorityLevel.PRI_REQUIRED;
                     cent.ambientOcclusionMultiplier = 255;
                     cent.artificialAmbientOcclusion = 255;
 
@@ -2344,8 +2344,8 @@ namespace CodeWalker.Project
                 cent.flags = 1572872;
                 cent.parentIndex = -1;
                 cent.lodDist = 200.0f;
-                cent.lodLevel = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
-                cent.priorityLevel = Unk_648413703.PRI_REQUIRED;
+                cent.lodLevel = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
+                cent.priorityLevel = rage__ePriorityLevel.PRI_REQUIRED;
                 cent.ambientOcclusionMultiplier = 255;
                 cent.artificialAmbientOcclusion = 255;
             }
@@ -4313,7 +4313,7 @@ namespace CodeWalker.Project
                 thisnode.MyPoint.Direction = dir;
                 thisnode.MyPoint.Type = stype;
                 thisnode.MyPoint.ModelSet = modelset;
-                thisnode.MyPoint.Flags = (Unk_700327466)flags;
+                thisnode.MyPoint.Flags = (CScenarioPointFlags__Flags)flags;
 
                 thisnode.ChainingNode = new MCScenarioChainingNode();
                 thisnode.ChainingNode.ScenarioNode = thisnode;

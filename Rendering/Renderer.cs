@@ -90,7 +90,7 @@ namespace CodeWalker.Rendering
         public bool ShowScriptedYmaps = true;
         public List<YmapFile> VisibleYmaps = new List<YmapFile>();
 
-        public Unk_1264241711 renderworldMaxLOD = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
+        public rage__eLodType renderworldMaxLOD = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
         public float renderworldLodDistMult = 1.0f;
         public float renderworldDetailDistMult = 1.0f;
 
@@ -1694,7 +1694,7 @@ namespace CodeWalker.Rendering
                     loddist = ent.Archetype.LodDist * renderworldLodDistMult;
                 }
             }
-            else if (ent._CEntityDef.lodLevel == Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)
+            else if (ent._CEntityDef.lodLevel == rage__eLodType.LODTYPES_DEPTH_ORPHANHD)
             {
                 loddist *= renderworldDetailDistMult * 1.5f; //orphan view dist adjustment...
             }
@@ -1723,9 +1723,9 @@ namespace CodeWalker.Rendering
 
 
 
-            if (renderworldMaxLOD != Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)
+            if (renderworldMaxLOD != rage__eLodType.LODTYPES_DEPTH_ORPHANHD)
             {
-                if ((ent._CEntityDef.lodLevel == Unk_1264241711.LODTYPES_DEPTH_ORPHANHD) ||
+                if ((ent._CEntityDef.lodLevel == rage__eLodType.LODTYPES_DEPTH_ORPHANHD) ||
                     (ent._CEntityDef.lodLevel < renderworldMaxLOD))
                 {
                     ent.IsVisible = false;

@@ -130,7 +130,7 @@ namespace CodeWalker.GameFiles
             if ((AllArchetypes != null && AllArchetypes.Length > 0))
             {
                 mb.AddStructureInfo(MetaName.CBaseArchetypeDef);
-                mb.AddEnumInfo((MetaName)1991964615); // ASSET_TYPE_
+                mb.AddEnumInfo(MetaName.rage__fwArchetypeDef__eAssetType); // ASSET_TYPE_
             }
 
             if ((AllArchetypes != null) && (AllArchetypes.Any(x => x is MloArchetype)))
@@ -145,8 +145,8 @@ namespace CodeWalker.GameFiles
             if ((AllArchetypes != null) && (AllArchetypes.Any(x => x is MloArchetype m && m.entities.Length > 0)))
             {
                 mb.AddStructureInfo(MetaName.CEntityDef);
-                mb.AddEnumInfo((MetaName)1264241711); //LODTYPES_
-                mb.AddEnumInfo((MetaName)648413703);  //PRI_
+                mb.AddEnumInfo(MetaName.rage__eLodType); //LODTYPES_
+                mb.AddEnumInfo(MetaName.rage__ePriorityLevel);  //PRI_
             }
 
             if ((AllArchetypes != null) && (AllArchetypes.Any(x => x is TimeArchetype)))
@@ -376,7 +376,7 @@ namespace CodeWalker.GameFiles
         public Archetype AddArchetype()
         {
             var a = new Archetype();
-            a._BaseArchetypeDef.assetType = Unk_1991964615.ASSET_TYPE_DRAWABLE;
+            a._BaseArchetypeDef.assetType = rage__fwArchetypeDef__eAssetType.ASSET_TYPE_DRAWABLE;
             a._BaseArchetypeDef.lodDist = 60;
             a._BaseArchetypeDef.hdTextureDist = 15;
             a.Ytyp = this;

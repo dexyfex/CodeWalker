@@ -23,7 +23,7 @@ namespace CodeWalker.Project.Panels
 
         private void EditYtypArchetypePanel_Load(object sender, EventArgs e)
         {
-            AssetTypeComboBox.Items.AddRange(Enum.GetNames(typeof(Unk_1991964615)));
+            AssetTypeComboBox.Items.AddRange(Enum.GetNames(typeof(rage__fwArchetypeDef__eAssetType)));
         }
 
         public void SetArchetype(Archetype archetype)

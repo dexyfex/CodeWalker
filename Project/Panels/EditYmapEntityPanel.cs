@@ -39,19 +39,19 @@ namespace CodeWalker.Project.Panels
         private void LoadDropDowns()
         {
             EntityLodLevelComboBox.Items.Clear();
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_ORPHANHD);
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_HD);
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_LOD);
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_SLOD1);
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_SLOD2);
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_SLOD3);
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_SLOD4);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_ORPHANHD);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_HD);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_LOD);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_SLOD1);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_SLOD2);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_SLOD3);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_SLOD4);
 
             EntityPriorityLevelComboBox.Items.Clear();
-            EntityPriorityLevelComboBox.Items.Add(Unk_648413703.PRI_REQUIRED);
-            EntityPriorityLevelComboBox.Items.Add(Unk_648413703.PRI_OPTIONAL_HIGH);
-            EntityPriorityLevelComboBox.Items.Add(Unk_648413703.PRI_OPTIONAL_MEDIUM);
-            EntityPriorityLevelComboBox.Items.Add(Unk_648413703.PRI_OPTIONAL_LOW);
+            EntityPriorityLevelComboBox.Items.Add(rage__ePriorityLevel.PRI_REQUIRED);
+            EntityPriorityLevelComboBox.Items.Add(rage__ePriorityLevel.PRI_OPTIONAL_HIGH);
+            EntityPriorityLevelComboBox.Items.Add(rage__ePriorityLevel.PRI_OPTIONAL_MEDIUM);
+            EntityPriorityLevelComboBox.Items.Add(rage__ePriorityLevel.PRI_OPTIONAL_LOW);
         }
 
 
@@ -164,9 +164,9 @@ namespace CodeWalker.Project.Panels
                 //int parentIndex { get; set; } //72   72: SignedInt: 0: parentIndex
                 //float lodDist { get; set; } //76   76: Float: 0: lodDist
                 //float childLodDist { get; set; } //80   80: Float: 0: childLodDist//3398912973
-                //Unk_1264241711 lodLevel { get; set; } //84   84: IntEnum: 1264241711: lodLevel  //LODTYPES_DEPTH_
+                //rage__eLodType lodLevel { get; set; } //84   84: IntEnum: 1264241711: lodLevel  //LODTYPES_DEPTH_
                 //uint numChildren { get; set; } //88   88: UnsignedInt: 0: numChildren//2793909385
-                //Unk_648413703 priorityLevel { get; set; } //92   92: IntEnum: 648413703: priorityLevel//647098393
+                //rage__ePriorityLevel priorityLevel { get; set; } //92   92: IntEnum: 648413703: priorityLevel//647098393
                 //Array_StructurePointer extensions { get; set; } //96   96: Array: 0: extensions  {0: StructurePointer: 0: 256}
                 //int ambientOcclusionMultiplier { get; set; } //112   112: SignedInt: 0: ambientOcclusionMultiplier//415356295
                 //int artificialAmbientOcclusion { get; set; } //116   116: SignedInt: 0: artificialAmbientOcclusion//599844163
@@ -528,7 +528,7 @@ namespace CodeWalker.Project.Panels
         {
             if (populatingui) return;
             if (CurrentEntity == null) return;
-            Unk_1264241711 lodLevel = (Unk_1264241711)EntityLodLevelComboBox.SelectedItem;
+            rage__eLodType lodLevel = (rage__eLodType)EntityLodLevelComboBox.SelectedItem;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentEntity._CEntityDef.lodLevel != lodLevel)
@@ -563,7 +563,7 @@ namespace CodeWalker.Project.Panels
         {
             if (populatingui) return;
             if (CurrentEntity == null) return;
-            Unk_648413703 priorityLevel = (Unk_648413703)EntityPriorityLevelComboBox.SelectedItem;
+            rage__ePriorityLevel priorityLevel = (rage__ePriorityLevel)EntityPriorityLevelComboBox.SelectedItem;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentEntity._CEntityDef.priorityLevel != priorityLevel)

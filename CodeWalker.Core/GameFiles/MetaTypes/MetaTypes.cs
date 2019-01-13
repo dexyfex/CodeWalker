@@ -366,7 +366,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.iRadius, 29, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.iTimeTillPedLeaves, 30, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.iScenarioGroup, 32, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Flags, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)700327466),
+                     new MetaStructureEntryInfo_s(MetaName.Flags, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
                      new MetaStructureEntryInfo_s(MetaName.vPositionAndDirection, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
                     );
                 case MetaName.CScenarioEntityOverride:
@@ -394,7 +394,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.radius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.start, 84, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.end, 85, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 88, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)700327466),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 88, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
                      new MetaStructureEntryInfo_s(MetaName.highPri, 92, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extendedRange, 93, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.shortRange, 94, MetaStructureEntryDataType.Boolean, 0, 0, 0)
@@ -498,7 +498,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1991964615),
+                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
                      new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0)
@@ -627,7 +627,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.entitiesExtentsMax, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.entities, 96, MetaStructureEntryDataType.Array, 0, 8, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)372253349),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwContainerLodDef),
                      new MetaStructureEntryInfo_s(MetaName.containerLods, 112, MetaStructureEntryDataType.Array, 0, 10, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.BoxOccluder),
                      new MetaStructureEntryInfo_s(MetaName.boxOccluders, 128, MetaStructureEntryDataType.Array, 4, 12, 0),
@@ -656,9 +656,9 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1264241711),
+                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__eLodType),
                      new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)648413703),
+                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__ePriorityLevel),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
                      new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
@@ -690,7 +690,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1991964615),
+                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
                      new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
@@ -761,9 +761,9 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1264241711),
+                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__eLodType),
                      new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)648413703),
+                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__ePriorityLevel),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
                      new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
@@ -813,7 +813,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1991964615),
+                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
                      new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
@@ -1141,7 +1141,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.Group, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ModelSet, 44, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.AvailabilityInMpSp, 48, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)3573596290),
-                     new MetaStructureEntryInfo_s(MetaName.Flags, 52, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)700327466),
+                     new MetaStructureEntryInfo_s(MetaName.Flags, 52, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
                      new MetaStructureEntryInfo_s(MetaName.Radius, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.TimeTillPedLeaves, 60, MetaStructureEntryDataType.Float, 0, 0, 0)
                     );
@@ -1245,8 +1245,8 @@ namespace CodeWalker.GameFiles
             //to generate enuminfos
             switch (name)
             {
-                case (MetaName)700327466:
-                    return new MetaEnumInfo((MetaName)700327466, 2814596095,
+                case MetaName.CScenarioPointFlags__Flags:
+                    return new MetaEnumInfo(MetaName.CScenarioPointFlags__Flags, 2814596095,
                      new MetaEnumEntryInfo_s(MetaName.IgnoreMaxInRange, 0),
                      new MetaEnumEntryInfo_s(MetaName.NoSpawn, 1),
                      new MetaEnumEntryInfo_s(MetaName.StationaryReactions, 2),
@@ -1316,16 +1316,16 @@ namespace CodeWalker.GameFiles
                      new MetaEnumEntryInfo_s((MetaName)3717649022, 14),
                      new MetaEnumEntryInfo_s((MetaName)3356026130, 15)
                     );
-                case (MetaName)1991964615:
-                    return new MetaEnumInfo((MetaName)1991964615, 1866031916,
+                case MetaName.rage__fwArchetypeDef__eAssetType:
+                    return new MetaEnumInfo(MetaName.rage__fwArchetypeDef__eAssetType, 1866031916,
                      new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_UNINITIALIZED, 0),
                      new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_FRAGMENT, 1),
                      new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_DRAWABLE, 2),
                      new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_DRAWABLEDICTIONARY, 3),
                      new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_ASSETLESS, 4)
                     );
-                case (MetaName)1264241711:
-                    return new MetaEnumInfo((MetaName)1264241711, 1856311430,
+                case MetaName.rage__eLodType:
+                    return new MetaEnumInfo(MetaName.rage__eLodType, 1856311430,
                      new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_HD, 0),
                      new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_LOD, 1),
                      new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD1, 2),
@@ -1334,8 +1334,8 @@ namespace CodeWalker.GameFiles
                      new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_ORPHANHD, 5),
                      new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD4, 6)
                     );
-                case (MetaName)648413703:
-                    return new MetaEnumInfo((MetaName)648413703, 2200357711,
+                case MetaName.rage__ePriorityLevel:
+                    return new MetaEnumInfo(MetaName.rage__ePriorityLevel, 2200357711,
                      new MetaEnumEntryInfo_s(MetaName.PRI_REQUIRED, 0),
                      new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_HIGH, 1),
                      new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_MEDIUM, 2),
@@ -2075,7 +2075,7 @@ namespace CodeWalker.GameFiles
 
     //generated enums
     
-    [Flags] public enum Unk_700327466 //SCENARIO point flags  / extension spawn point flags
+    [Flags] public enum CScenarioPointFlags__Flags //SCENARIO point flags  / extension spawn point flags
         : int //Key:2814596095
     {
         IgnoreMaxInRange = 1,//0,
@@ -2156,7 +2156,7 @@ namespace CodeWalker.GameFiles
         Unk_15_3356026130 = 15,
     }
 
-    public enum Unk_1991964615 //archetype assetType
+    public enum rage__fwArchetypeDef__eAssetType //archetype assetType
         : int //Key:1866031916
     {
         ASSET_TYPE_UNINITIALIZED = 0, //189734893
@@ -2166,7 +2166,7 @@ namespace CodeWalker.GameFiles
         ASSET_TYPE_ASSETLESS = 4, //4161085041
     }
 
-    public enum Unk_1264241711 //entity lodLevel
+    public enum rage__eLodType //entity lodLevel
         : int //Key:1856311430
     {
         LODTYPES_DEPTH_HD = 0,
@@ -2178,7 +2178,7 @@ namespace CodeWalker.GameFiles
         LODTYPES_DEPTH_SLOD4 = 6,
     }
 
-    public enum Unk_648413703 //entity priorityLevel
+    public enum rage__ePriorityLevel //entity priorityLevel
         : int //Key:2200357711
     {
         PRI_REQUIRED = 0,  //1943361227
@@ -2314,7 +2314,7 @@ namespace CodeWalker.GameFiles
         public MetaHash clipDictionary { get; set; } //96   96: Hash: 0: clipDictionary//424089489
         public MetaHash drawableDictionary { get; set; } //100   100: Hash: 0: drawableDictionary
         public MetaHash physicsDictionary { get; set; } //104   104: Hash: 0: physicsDictionary//3553040380
-        public Unk_1991964615 assetType { get; set; } //108   108: IntEnum: 1991964615: assetType
+        public rage__fwArchetypeDef__eAssetType assetType { get; set; } //108   108: IntEnum: 1991964615: assetType
         public MetaHash assetName { get; set; } //112   112: Hash: 0: assetName
         public uint Unused08 { get; set; }//116
         public Array_StructurePointer extensions { get; set; } //120   120: Array: 0: extensions  {0: StructurePointer: 0: 256}
@@ -2753,9 +2753,9 @@ namespace CodeWalker.GameFiles
         public int parentIndex { get; set; } //72   72: SignedInt: 0: parentIndex
         public float lodDist { get; set; } //76   76: Float: 0: lodDist
         public float childLodDist { get; set; } //80   80: Float: 0: childLodDist//3398912973
-        public Unk_1264241711 lodLevel { get; set; } //84   84: IntEnum: 1264241711: lodLevel  //LODTYPES_DEPTH_
+        public rage__eLodType lodLevel { get; set; } //84   84: IntEnum: 1264241711: lodLevel  //LODTYPES_DEPTH_
         public uint numChildren { get; set; } //88   88: UnsignedInt: 0: numChildren//2793909385
-        public Unk_648413703 priorityLevel { get; set; } //92   92: IntEnum: 648413703: priorityLevel//647098393
+        public rage__ePriorityLevel priorityLevel { get; set; } //92   92: IntEnum: 648413703: priorityLevel//647098393
         public Array_StructurePointer extensions { get; set; } //96   96: Array: 0: extensions  {0: StructurePointer: 0: 256}
         public int ambientOcclusionMultiplier { get; set; } //112   112: SignedInt: 0: ambientOcclusionMultiplier//415356295
         public int artificialAmbientOcclusion { get; set; } //116   116: SignedInt: 0: artificialAmbientOcclusion//599844163
@@ -3619,7 +3619,7 @@ namespace CodeWalker.GameFiles
         public byte start { get; set; } //84   84: UnsignedByte: 0: start
         public byte end { get; set; } //85   85: UnsignedByte: 0: end
         public ushort Unused4 { get; set; }//86
-        public Unk_700327466 flags { get; set; } //88   88: IntFlags2: 700327466: flags
+        public CScenarioPointFlags__Flags flags { get; set; } //88   88: IntFlags2: 700327466: flags
         public byte highPri { get; set; } //92   92: Boolean: 0: highPri
         public byte extendedRange { get; set; } //93   93: Boolean: 0: extendedRange
         public byte shortRange { get; set; } //94   94: Boolean: 0: shortRange
@@ -3653,7 +3653,7 @@ namespace CodeWalker.GameFiles
         public float Radius { get { return _Data.radius; } set { _Data.radius = value; } }
         public byte StartTime { get { return _Data.start; } set { _Data.start = value; } }
         public byte EndTime { get { return _Data.end; } set { _Data.end = value; } }
-        public Unk_700327466 Flags { get { return _Data.flags; } set { _Data.flags = value; } }
+        public CScenarioPointFlags__Flags Flags { get { return _Data.flags; } set { _Data.flags = value; } }
         public bool HighPri { get { return _Data.highPri == 1; } set { _Data.highPri = (byte)(value ? 1 : 0); } }
         public bool ExtendedRange { get { return _Data.extendedRange == 1; } set { _Data.extendedRange = (byte)(value ? 1 : 0); } }
         public bool ShortRange { get { return _Data.shortRange == 1; } set { _Data.shortRange = (byte)(value ? 1 : 0); } }
@@ -3687,7 +3687,7 @@ namespace CodeWalker.GameFiles
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddEnumInfo((MetaName)3573596290);
-            mb.AddEnumInfo((MetaName)700327466);
+            mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
             mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
             return mb.AddItemPtr(MetaName.CExtensionDefSpawnPoint, _Data);
         }
@@ -3721,7 +3721,7 @@ namespace CodeWalker.GameFiles
         public MetaHash Group { get; set; } //40   40: Hash: 0: Group
         public MetaHash ModelSet { get; set; } //44   44: Hash: 0: ModelSet
         public Unk_3573596290 AvailabilityInMpSp { get; set; } //48   48: IntEnum: 3573596290: AvailabilityInMpSp//2932681318
-        public Unk_700327466 Flags { get; set; } //52   52: IntFlags2: 700327466: Flags
+        public CScenarioPointFlags__Flags Flags { get; set; } //52   52: IntFlags2: 700327466: Flags
         public float Radius { get; set; } //56   56: Float: 0: Radius
         public float TimeTillPedLeaves { get; set; } //60   60: Float: 0: TimeTillPedLeaves//4073598194
 
@@ -3743,7 +3743,7 @@ namespace CodeWalker.GameFiles
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddEnumInfo((MetaName)3573596290);
-            mb.AddEnumInfo((MetaName)700327466);
+            mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
             mb.AddStructureInfo(MetaName.CExtensionDefSpawnPointOverride);
             return mb.AddItemPtr(MetaName.CExtensionDefSpawnPointOverride, _Data);
         }
@@ -4049,7 +4049,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct rage__spdAABB //32 bytes, Key:1158138379  //WAS: Unk_4084721864
+    [TC(typeof(EXP))] public struct rage__spdAABB //32 bytes, Key:1158138379
     {
         public Vector4 min { get; set; } //0   0: Float_XYZW: 0: min
         public Vector4 max { get; set; } //16   16: Float_XYZW: 0: max
@@ -4215,14 +4215,14 @@ namespace CodeWalker.GameFiles
                 {
                     mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
                     mb.AddEnumInfo((MetaName)3573596290);
-                    mb.AddEnumInfo((MetaName)700327466);
+                    mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                     scp.LoadSavePoints = mb.AddItemArrayPtr(MetaName.CExtensionDefSpawnPoint, loadSavePoints);
                 }
                 var myPoints = Points.GetCMyPoints();
                 if (myPoints != null)
                 {
                     mb.AddStructureInfo(MetaName.CScenarioPoint);
-                    mb.AddEnumInfo((MetaName)700327466);
+                    mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                     scp.MyPoints = mb.AddItemArrayPtr(MetaName.CScenarioPoint, myPoints);
                 }
 
@@ -4250,7 +4250,7 @@ namespace CodeWalker.GameFiles
                     {
                         mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
                         mb.AddEnumInfo((MetaName)3573596290);
-                        mb.AddEnumInfo((MetaName)700327466);
+                        mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                         cent.ScenarioPoints = mb.AddItemArrayPtr(MetaName.CExtensionDefSpawnPoint, scps);
                     }
                     cents[i] = cent;
@@ -4681,7 +4681,7 @@ namespace CodeWalker.GameFiles
         public byte Unused6 { get; set; }//31
         public ushort iScenarioGroup { get; set; } //32   32: UnsignedShort: 0: iScenarioGroup//2180252673
         public ushort Unused7 { get; set; }//34
-        public Unk_700327466 Flags { get; set; } //36   36: IntFlags2: 700327466: Flags
+        public CScenarioPointFlags__Flags Flags { get; set; } //36   36: IntFlags2: 700327466: Flags
         public uint Unused8 { get; set; }//40
         public uint Unused9 { get; set; }//44
         public Vector4 vPositionAndDirection { get; set; } //48   48: Float_XYZW: 0: vPositionAndDirection//4685037
@@ -4735,7 +4735,7 @@ namespace CodeWalker.GameFiles
         public byte AvailableMpSp { get { return _Data.uAvailableInMpSp; } set { _Data.uAvailableInMpSp = value; } }
         public byte Radius { get { return _Data.iRadius; } set { _Data.iRadius = value; } }
         public byte WaitTime { get { return _Data.iTimeTillPedLeaves; } set { _Data.iTimeTillPedLeaves = value; } }
-        public Unk_700327466 Flags { get { return _Data.Flags; } set { _Data.Flags = value; } }
+        public CScenarioPointFlags__Flags Flags { get { return _Data.Flags; } set { _Data.Flags = value; } }
 
         public int PointIndex { get; set; }
 
@@ -4886,7 +4886,7 @@ namespace CodeWalker.GameFiles
             {
                 mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
                 mb.AddEnumInfo((MetaName)3573596290);
-                mb.AddEnumInfo((MetaName)700327466);
+                mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                 _Data.ScenarioPoints = mb.AddWrapperArray(ScenarioPoints);
             }
 
@@ -5645,14 +5645,14 @@ namespace CodeWalker.GameFiles
                 {
                     mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
                     mb.AddEnumInfo((MetaName)3573596290);
-                    mb.AddEnumInfo((MetaName)700327466);
+                    mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                     scp.LoadSavePoints = mb.AddItemArrayPtr(MetaName.CExtensionDefSpawnPoint, loadSavePoints);
                 }
                 var myPoints = Points.GetCMyPoints();
                 if (myPoints != null)
                 {
                     mb.AddStructureInfo(MetaName.CScenarioPoint);
-                    mb.AddEnumInfo((MetaName)700327466);
+                    mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                     scp.MyPoints = mb.AddItemArrayPtr(MetaName.CScenarioPoint, myPoints);
                 }
 
