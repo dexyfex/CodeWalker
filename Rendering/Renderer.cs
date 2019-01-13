@@ -2211,23 +2211,59 @@ namespace CodeWalker.Rendering
 
             RenderDrawable(f.Drawable, arch, ent, txdhash);
 
-            if (f.Unknown_F8h_Data != null) //cloth
+            if (f.Drawable2 != null) //cloth
             {
-                RenderDrawable(f.Unknown_F8h_Data, arch, ent, txdhash);
+                RenderDrawable(f.Drawable2, arch, ent, txdhash);
             }
 
             //vehicle wheels...
             if ((f.PhysicsLODGroup != null) && (f.PhysicsLODGroup.PhysicsLOD1 != null))
             {
                 var pl1 = f.PhysicsLODGroup.PhysicsLOD1;
-                if ((pl1.Children != null) && (pl1.Children.data_items != null))
+                //var groupnames = pl1?.GroupNames?.data_items;
+                var groups = pl1?.Groups?.data_items;
+
+                FragDrawable wheel_f = null;
+                FragDrawable wheel_r = null;
+
+                if (pl1.Children?.data_items != null)
                 {
                     for (int i = 0; i < pl1.Children.data_items.Length; i++)
                     {
                         var pch = pl1.Children.data_items[i];
+
+                        //var groupname = pch.GroupNameHash;
+                        //if ((pl1.Groups?.data_items != null) && (i < pl1.Groups.data_items.Length))
+                        //{
+                        //    //var group = pl1.Groups.data_items[i];
+                        //}
+
                         if ((pch.Drawable1 != null) && (pch.Drawable1.AllModels.Length != 0))
                         {
-                            RenderDrawable(pch.Drawable1, arch, ent, txdhash);
+
+                            switch (pch.BoneTag)
+                            {
+                                case 27922: //wheel_lf
+                                case 26418: //wheel_rf
+                                    wheel_f = pch.Drawable1;
+                                    break;
+                                case 29921: //wheel_lm1
+                                case 29922: //wheel_lm2
+                                case 29923: //wheel_lm3
+                                case 27902: //wheel_lr
+                                case 5857:  //wheel_rm1
+                                case 5858:  //wheel_rm2
+                                case 5859:  //wheel_rm3
+                                case 26398: //wheel_rr
+                                    wheel_r = pch.Drawable1;
+                                    break;
+                                default:
+
+                                    RenderDrawable(pch.Drawable1, arch, ent, txdhash);
+
+                                    break;
+                            }
+
                         }
                         else
                         { }
@@ -2238,6 +2274,79 @@ namespace CodeWalker.Rendering
                         else
                         { }
                     }
+
+                    if ((wheel_f != null) || (wheel_r != null))
+                    {
+                        for (int i = 0; i < pl1.Children.data_items.Length; i++)
+                        {
+                            var pch = pl1.Children.data_items[i];
+                            FragDrawable dwbl = pch.Drawable1;
+                            FragDrawable dwblcopy = null;
+                            switch (pch.BoneTag)
+                            {
+                                case 27922: //wheel_lf
+                                case 26418: //wheel_rf
+                                    dwblcopy = wheel_f != null ? wheel_f : wheel_r;
+                                    break;
+                                case 29921: //wheel_lm1
+                                case 29922: //wheel_lm2
+                                case 29923: //wheel_lm3
+                                case 27902: //wheel_lr
+                                case 5857:  //wheel_rm1
+                                case 5858:  //wheel_rm2
+                                case 5859:  //wheel_rm3
+                                case 26398: //wheel_rr
+                                    dwblcopy = wheel_r != null ? wheel_r : wheel_f;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            //switch (pch.GroupNameHash)
+                            //{
+                            //    case 3311608449: //wheel_lf
+                            //    case 1705452237: //wheel_lm1
+                            //    case 1415282742: //wheel_lm2
+                            //    case 3392433122: //wheel_lm3
+                            //    case 133671269:  //wheel_rf
+                            //    case 2908525601: //wheel_rm1
+                            //    case 2835549038: //wheel_rm2
+                            //    case 4148013026: //wheel_rm3
+                            //        dwblcopy = wheel_f != null ? wheel_f : wheel_r;
+                            //        break;
+                            //    case 1695736278: //wheel_lr
+                            //    case 1670111368: //wheel_rr
+                            //        dwblcopy = wheel_r != null ? wheel_r : wheel_f;
+                            //        break;
+                            //    default:
+                            //        break;
+                            //}
+
+                            if (dwblcopy != null)
+                            {
+                                if (dwbl != null)
+                                {
+                                    if ((dwbl != dwblcopy) && (dwbl.AllModels.Length == 0))
+                                    {
+                                        dwbl.Owner = dwblcopy;
+                                        dwbl.AllModels = dwblcopy.AllModels;
+                                        dwbl.DrawableModelsHigh = dwblcopy.DrawableModelsHigh;
+                                        dwbl.DrawableModelsMedium = dwblcopy.DrawableModelsMedium;
+                                        dwbl.DrawableModelsLow = dwblcopy.DrawableModelsLow;
+                                        dwbl.DrawableModelsVeryLow = dwblcopy.DrawableModelsVeryLow;
+                                        dwbl.VertexDecls = dwblcopy.VertexDecls;
+                                    }
+
+                                    RenderDrawable(dwbl, arch, ent, txdhash);
+
+                                }
+                                else
+                                { }
+                            }
+                            else
+                            { }
+                        }
+                    }
+
                 }
             }
 
@@ -2321,9 +2430,9 @@ namespace CodeWalker.Rendering
                 if (fd != null)
                 {
                     var frag = fd.OwnerFragment;
-                    if ((frag != null) && (frag.Unknown_F8h_Data != null)) //cloth...
+                    if ((frag != null) && (frag.Drawable2 != null)) //cloth...
                     {
-                        rndbl = TryGetRenderable(arche, frag.Unknown_F8h_Data);
+                        rndbl = TryGetRenderable(arche, frag.Drawable2);
                         if (rndbl != null)
                         {
                             bool res2 = RenderRenderable(rndbl, arche, entity);

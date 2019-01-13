@@ -654,16 +654,19 @@ namespace CodeWalker.GameFiles
             var list = new List<uint>();
             var mloarch = Owner?.Archetype as MloArchetype;
 
-            for (uint i = 0; i < mloarch.entitySets.Length; i++)
+            if (mloarch?.entitySets != null)
             {
-                var entset = mloarch.entitySets[i];
-                MloInstanceEntitySet instset = null;
-                EntitySets.TryGetValue(entset._Data.name, out instset);
-                if (instset != null)
+                for (uint i = 0; i < mloarch.entitySets.Length; i++)
                 {
-                    if (instset.Visible)
+                    var entset = mloarch.entitySets[i];
+                    MloInstanceEntitySet instset = null;
+                    EntitySets.TryGetValue(entset._Data.name, out instset);
+                    if (instset != null)
                     {
-                        list.Add(i);
+                        if (instset.Visible)
+                        {
+                            list.Add(i);
+                        }
                     }
                 }
             }

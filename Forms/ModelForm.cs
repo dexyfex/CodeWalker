@@ -824,6 +824,30 @@ namespace CodeWalker.Forms
                 AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", false);
                 AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", false);
                 //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false);
+
+                var fdrawable = drawable as FragDrawable;
+                if (fdrawable != null)
+                {
+                    var plod1 = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1;
+                    if ((plod1 != null) && (plod1.Children?.data_items != null))
+                    {
+                        foreach (var child in plod1.Children.data_items)
+                        {
+                            var cdrwbl = child.Drawable1;
+                            if ((cdrwbl != null) && (cdrwbl.AllModels?.Length > 0))
+                            {
+                                if (cdrwbl.Owner is FragDrawable) continue; //it's a copied drawable... eg a wheel
+
+                                var dname = child.GroupNameHash.ToString();
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsHigh, dname + " - High Detail", true);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsMedium, dname + " - Medium Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsLow, dname + " - Low Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsVeryLow, dname + " - Very Low Detail", false);
+                            }
+                        }
+                    }
+                }
+
             }
         }
         private void UpdateModelsUI(FragType frag)
@@ -845,6 +869,29 @@ namespace CodeWalker.Forms
                 AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", false);
                 AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", false);
                 //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false);
+
+                var fdrawable = drawable as FragDrawable;
+                if (fdrawable != null)
+                {
+                    var plod1 = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1;
+                    if ((plod1 != null) && (plod1.Children?.data_items != null))
+                    {
+                        foreach (var child in plod1.Children.data_items)
+                        {
+                            var cdrwbl = child.Drawable1;
+                            if ((cdrwbl != null) && (cdrwbl.AllModels?.Length > 0))
+                            {
+                                if (cdrwbl.Owner is FragDrawable) continue; //it's a copied drawable... eg a wheel
+
+                                var dname = child.GroupNameHash.ToString();
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsHigh, dname + " - High Detail", true);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsMedium, dname + " - Medium Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsLow, dname + " - Low Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsVeryLow, dname + " - Very Low Detail", false);
+                            }
+                        }
+                    }
+                }
             }
         }
         private void UpdateModelsUI(Dictionary<uint, Drawable> dict)

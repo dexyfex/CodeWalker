@@ -1373,6 +1373,8 @@ namespace CodeWalker.GameFiles
         public void InitStringDicts()
         {
             string langstr = "american_rel"; //todo: make this variable?
+            string langstr2 = "americandlc.rpf";
+            string langstr3 = "american.rpf";
 
             if (!DoFullStringIndex)
             {
@@ -1395,7 +1397,8 @@ namespace CodeWalker.GameFiles
             {
                 foreach (var entry in rpf.AllEntries)
                 {
-                    if (entry.NameLower.EndsWith(".gxt2") && entry.Path.Contains(langstr))
+                    var p = entry.Path;
+                    if (entry.NameLower.EndsWith(".gxt2") && (p.Contains(langstr)|| p.Contains(langstr2)|| p.Contains(langstr3)))
                     {
                         var gxt2 = RpfMan.GetFile<Gxt2File>(entry);
                         if (gxt2 != null)
@@ -2633,6 +2636,12 @@ namespace CodeWalker.GameFiles
                                     {
                                         diffpsos.Add(fentry.Path);
                                     }
+
+                                    if (entry.NameLower == "wantedtuning.ymt")
+                                    { }
+                                    if (entry.NameLower == "popgroups.ymt")
+                                    { }
+
 
                                 }
                             }

@@ -37,9 +37,9 @@ namespace CodeWalker.GameFiles
             {
                 Fragment.Drawable.Owner = this;
             }
-            if (Fragment.Unknown_F8h_Data != null)
+            if (Fragment.Drawable2 != null)
             {
-                Fragment.Unknown_F8h_Data.Owner = this;
+                Fragment.Drawable2.Owner = this;
             }
 
             Loaded = true;

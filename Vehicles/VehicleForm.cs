@@ -75,6 +75,13 @@ namespace CodeWalker.Vehicles
 
 
 
+        MetaHash SelectedVehicleHash = 0;//base vehicle name hash
+        MetaHash SelectedModelHash = 0;//yft name hash, can be _hi
+        VehicleInitData SelectedVehicleInit = null;
+        YftFile SelectedVehicleYft = null;
+
+
+
 
 
         public VehicleForm()
@@ -181,18 +188,8 @@ namespace CodeWalker.Vehicles
             Renderer.SelectedDrawable = null;// SelectedItem.Drawable;
 
 
-            //if (renderworld)
-            //{
-            //    RenderWorld();
-            //}
-            //else if (rendermaps)
-            //{
-            //    RenderYmaps();
-            //}
-            //else
-            //{
-            //    RenderSingleItem();
-            //}
+            RenderVehicle();
+
             //UpdateMouseHitsFromRenderer();
             //RenderSelection();
 
@@ -292,11 +289,15 @@ namespace CodeWalker.Vehicles
             GameFileCache.LoadVehicles = true;
             GameFileCache.LoadArchetypes = false;//to speed things up a little
             GameFileCache.BuildExtendedJenkIndex = false;//to speed things up a little
+            GameFileCache.DoFullStringIndex = true;//to get all global text from DLC...
             GameFileCache.Init(UpdateStatus, LogError);
 
             //UpdateDlcListComboBox(gameFileCache.DlcNameList);
 
             //EnableCacheDependentUI();
+
+            UpdateGlobalVehiclesUI();
+
 
             LoadWorld();
 
@@ -580,6 +581,37 @@ namespace CodeWalker.Vehicles
             }
         }
 
+
+        private void UpdateGlobalVehiclesUI()
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(() => { UpdateGlobalVehiclesUI(); }));
+            }
+            else
+            {
+                VehicleModelComboBox.Items.Clear();
+
+                var vehicles = GameFileCache.VehiclesInitDict.Values.ToList();
+                vehicles.Sort((a, b) => { return a.modelName.CompareTo(b.modelName); });
+
+                foreach (var vehicle in vehicles)
+                {
+                    VehicleModelComboBox.Items.Add(vehicle.modelName);
+                }
+
+                if (vehicles.Count > 0)
+                {
+                    VehicleModelComboBox.SelectedIndex = 0;
+                }
+            }
+
+        }
+
+
+
+
+
         private void UpdateModelsUI(DrawableBase drawable)
         {
             DetailsPropertyGrid.SelectedObject = drawable;
@@ -597,10 +629,74 @@ namespace CodeWalker.Vehicles
                 AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", false);
                 AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", false);
                 //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false);
+
+
+                var fdrawable = drawable as FragDrawable;
+                if (fdrawable != null)
+                {
+                    var plod1 = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1;
+                    if ((plod1 != null) && (plod1.Children?.data_items != null))
+                    {
+                        foreach (var child in plod1.Children.data_items)
+                        {
+                            var cdrwbl = child.Drawable1;
+                            if ((cdrwbl != null) && (cdrwbl.AllModels?.Length > 0))
+                            {
+                                if (cdrwbl.Owner is FragDrawable) continue; //it's a copied drawable... eg a wheel
+
+                                var dname = child.GroupNameHash.ToString();
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsHigh, dname + " - High Detail", true);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsMedium, dname + " - Medium Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsLow, dname + " - Low Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsVeryLow, dname + " - Very Low Detail", false);
+                            }
+                        }
+                    }
+                }
+
             }
         }
 
-        public void LoadModel(YftFile yft)
+
+
+        public void LoadVehicle()
+        {
+            var modelname = VehicleModelComboBox.Text;
+            var modelnamel = modelname.ToLowerInvariant();
+            MetaHash modelhash = JenkHash.GenHash(modelnamel);
+            MetaHash modelhashhi = JenkHash.GenHash(modelnamel + "_hi");
+            bool hidet = VehicleHighDetailCheckBox.Checked;
+            var yfthash = hidet ? modelhashhi : modelhash;
+
+            VehicleInitData vid = null;
+            if (GameFileCache.VehiclesInitDict.TryGetValue(modelhash, out vid))
+            {
+                bool vehiclechange = SelectedVehicleHash != modelhash;
+                SelectedModelHash = yfthash;
+                SelectedVehicleHash = modelhash;
+                SelectedVehicleInit = vid;
+                SelectedVehicleYft = GameFileCache.GetYft(SelectedModelHash);
+                while (!SelectedVehicleYft.Loaded)
+                {
+                    Thread.Sleep(20);//kinda hacky
+                    SelectedVehicleYft = GameFileCache.GetYft(SelectedModelHash);
+                }
+                LoadModel(SelectedVehicleYft, vehiclechange);
+                VehicleMakeLabel.Text = GlobalText.TryGetString(JenkHash.GenHash(vid.vehicleMakeName.ToLower()));
+                VehicleNameLabel.Text = GlobalText.TryGetString(JenkHash.GenHash(vid.gameName.ToLower()));
+            }
+            else
+            {
+                SelectedModelHash = 0;
+                SelectedVehicleHash = 0;
+                SelectedVehicleInit = null;
+                SelectedVehicleYft = null;
+                VehicleMakeLabel.Text = "-";
+                VehicleNameLabel.Text = "-";
+            }
+        }
+
+        public void LoadModel(YftFile yft, bool movecamera = true)
         {
             if (yft == null) return;
 
@@ -608,7 +704,7 @@ namespace CodeWalker.Vehicles
             //Yft = yft;
 
             var dr = yft.Fragment?.Drawable;
-            if (dr != null)
+            if (movecamera && (dr != null))
             {
                 MoveCameraToView(dr.BoundingCenter, dr.BoundingSphereRadius);
             }
@@ -785,6 +881,44 @@ namespace CodeWalker.Vehicles
                 }
             }
         }
+
+
+
+
+
+
+
+        private void RenderVehicle()
+        {
+
+            YftFile yft = GameFileCache.GetYft(SelectedModelHash);
+            if (yft != null)
+            {
+                if (yft.Loaded)
+                {
+                    if (yft.Fragment != null)
+                    {
+                        var f = yft.Fragment;
+
+                        var txdhash = SelectedVehicleHash;// yft.RpfFileEntry?.ShortNameHash ?? 0;
+
+                        var namelower = yft.RpfFileEntry?.GetShortNameLower();
+                        if (namelower?.EndsWith("_hi") ?? false)
+                        {
+                            txdhash = JenkHash.GenHash(namelower.Substring(0, namelower.Length - 3));
+                        }
+
+                        Archetype arch = null;// TryGetArchetype(hash);
+
+                        Renderer.RenderFragment(arch, null, f, txdhash);
+
+                        //seldrwbl = f.Drawable;
+                    }
+                }
+            }
+
+        }
+
 
 
 
@@ -1274,6 +1408,22 @@ namespace CodeWalker.Vehicles
             //{
             //    MessageBox.Show("Couldn't find embedded texture dict.");
             //}
+        }
+
+
+
+        private void VehicleModelComboBox_TextChanged(object sender, EventArgs e)
+        {
+            if (!GameFileCache.IsInited) return;
+
+            LoadVehicle();
+        }
+
+        private void VehicleHighDetailCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!GameFileCache.IsInited) return;
+
+            LoadVehicle();
         }
     }
 }

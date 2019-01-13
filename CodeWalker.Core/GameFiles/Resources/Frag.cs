@@ -96,7 +96,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_E8h { get; set; } // 0x00000000
         public uint Unknown_ECh { get; set; } // 0x00000000
         public ulong PhysicsLODGroupPointer { get; set; }
-        public ulong Unknown_F8h_Pointer { get; set; }
+        public ulong Drawable2Pointer { get; set; }
         public uint Unknown_100h { get; set; } // 0x00000000
         public uint Unknown_104h { get; set; } // 0x00000000
         public uint Unknown_108h { get; set; } // 0x00000000
@@ -116,7 +116,7 @@ namespace CodeWalker.GameFiles
         public FragUnknown_F_004 Unknown_A8h_Data { get; set; }
         public ResourcePointerArray64<FragUnknown_F_006> Unknown_E0h_Data { get; set; }
         public FragPhysicsLODGroup PhysicsLODGroup { get; set; }
-        public FragDrawable Unknown_F8h_Data { get; set; }
+        public FragDrawable Drawable2 { get; set; }
         public FragUnknown_F_003 Unknown_120h_Data { get; set; }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_E8h = reader.ReadUInt32();
             this.Unknown_ECh = reader.ReadUInt32();
             this.PhysicsLODGroupPointer = reader.ReadUInt64();
-            this.Unknown_F8h_Pointer = reader.ReadUInt64();
+            this.Drawable2Pointer = reader.ReadUInt64();
             this.Unknown_100h = reader.ReadUInt32();
             this.Unknown_104h = reader.ReadUInt32();
             this.Unknown_108h = reader.ReadUInt32();
@@ -230,12 +230,12 @@ namespace CodeWalker.GameFiles
             this.PhysicsLODGroup = reader.ReadBlockAt<FragPhysicsLODGroup>(
                 this.PhysicsLODGroupPointer // offset
             );
-            this.Unknown_F8h_Data = reader.ReadBlockAt<FragDrawable>(
-                this.Unknown_F8h_Pointer // offset
+            this.Drawable2 = reader.ReadBlockAt<FragDrawable>(
+                this.Drawable2Pointer // offset
             );
-            if (this.Unknown_F8h_Data != null)
+            if (this.Drawable2 != null)
             {
-                this.Unknown_F8h_Data.OwnerFragment = this;
+                this.Drawable2.OwnerFragment = this;
             }
 
             this.Unknown_120h_Data = reader.ReadBlockAt<FragUnknown_F_003>(
@@ -283,7 +283,7 @@ namespace CodeWalker.GameFiles
             //this.anotherCount = (byte)(this.pxxxxx_3data != null ? this.pxxxxx_3data.Count : 0);
             this.Unknown_E0h_Pointer = (ulong)(this.Unknown_E0h_Data != null ? this.Unknown_E0h_Data.FilePosition : 0);
             this.PhysicsLODGroupPointer = (ulong)(this.PhysicsLODGroup != null ? this.PhysicsLODGroup.FilePosition : 0);
-            this.Unknown_F8h_Pointer = (ulong)(this.Unknown_F8h_Data != null ? this.Unknown_F8h_Data.FilePosition : 0);
+            this.Drawable2Pointer = (ulong)(this.Drawable2 != null ? this.Drawable2.FilePosition : 0);
             //this.cntxx51a = (ushort)(this.pxxxxx_5data != null ? this.pxxxxx_5data.Count : 0);
             this.Unknown_120h_Pointer = (ulong)(this.Unknown_120h_Data != null ? this.Unknown_120h_Data.FilePosition : 0);
 
@@ -338,7 +338,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_E8h);
             writer.Write(this.Unknown_ECh);
             writer.Write(this.PhysicsLODGroupPointer);
-            writer.Write(this.Unknown_F8h_Pointer);
+            writer.Write(this.Drawable2Pointer);
             writer.Write(this.Unknown_100h);
             writer.Write(this.Unknown_104h);
             writer.Write(this.Unknown_108h);
@@ -362,7 +362,7 @@ namespace CodeWalker.GameFiles
             if (Unknown_A8h_Data != null) list.Add(Unknown_A8h_Data);
             if (Unknown_E0h_Data != null) list.Add(Unknown_E0h_Data);
             if (PhysicsLODGroup != null) list.Add(PhysicsLODGroup);
-            if (Unknown_F8h_Data != null) list.Add(Unknown_F8h_Data);
+            if (Drawable2 != null) list.Add(Drawable2);
             if (Unknown_120h_Data != null) list.Add(Unknown_120h_Data);
             return list.ToArray();
         }
@@ -2451,6 +2451,14 @@ namespace CodeWalker.GameFiles
                     var child = Children.data_items[i];
                     child.OwnerFragPhysLod = this;
                     child.OwnerFragPhysIndex = i;
+
+                    if ((Groups?.data_items != null) && (i < Groups.data_items.Length))
+                    {
+                        var group = Groups.data_items[i];
+                        var str = group.Name.ToString().ToLowerInvariant();
+                        JenkIndex.Ensure(str);
+                        child.GroupNameHash = JenkHash.GenHash(str);
+                    }
                 }
             }
         }
@@ -3350,7 +3358,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_04h { get; set; } // 0x00000001
         public float Unknown_08h { get; set; }
         public float Unknown_0Ch { get; set; }
-        public float Unknown_10h { get; set; }
+        public ushort BoneIndex { get; set; }
+        public ushort BoneTag { get; set; }
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000000
         public uint Unknown_1Ch { get; set; } // 0x00000000
@@ -3417,6 +3426,7 @@ namespace CodeWalker.GameFiles
 
         public FragPhysicsLOD OwnerFragPhysLod { get; set; }
         public int OwnerFragPhysIndex { get; set; }
+        public MetaHash GroupNameHash { get; set; }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -3428,7 +3438,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_04h = reader.ReadUInt32();
             this.Unknown_08h = reader.ReadSingle();
             this.Unknown_0Ch = reader.ReadSingle();
-            this.Unknown_10h = reader.ReadSingle();
+            this.BoneIndex = reader.ReadUInt16();
+            this.BoneTag = reader.ReadUInt16();
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
@@ -3523,7 +3534,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_04h);
             writer.Write(this.Unknown_08h);
             writer.Write(this.Unknown_0Ch);
-            writer.Write(this.Unknown_10h);
+            writer.Write(this.BoneIndex);
+            writer.Write(this.BoneTag);
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
@@ -3592,6 +3604,12 @@ namespace CodeWalker.GameFiles
             if (Drawable2 != null) list.Add(Drawable2);
             if (EvtSet != null) list.Add(EvtSet);
             return list.ToArray();
+        }
+
+
+        public override string ToString()
+        {
+            return GroupNameHash.ToString();
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class FragPhysEvtSet : ResourceSystemBlock
