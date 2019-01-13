@@ -202,6 +202,13 @@ namespace CodeWalker.Rendering
                                     case 5859:  //wheel_rm3
                                     case 26398: //wheel_rr
                                         fragtransforms[fragtransformid].M11 = -1;
+                                        fragtransforms[fragtransformid].M12 = 0;
+                                        fragtransforms[fragtransformid].M13 = 0;
+                                        fragtransforms[fragtransformid].M21 = 0;
+                                        fragtransforms[fragtransformid].M22 = 1;
+                                        fragtransforms[fragtransformid].M23 = 0;
+                                        fragtransforms[fragtransformid].M31 = 0;
+                                        fragtransforms[fragtransformid].M32 = 0;
                                         fragtransforms[fragtransformid].M33 = -1;
                                         break;
                                     default:

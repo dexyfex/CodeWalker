@@ -2449,12 +2449,13 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < Children.data_items.Length; i++)
                 {
                     var child = Children.data_items[i];
+                    var gi = child.GroupIndex;
                     child.OwnerFragPhysLod = this;
                     child.OwnerFragPhysIndex = i;
 
-                    if ((Groups?.data_items != null) && (i < Groups.data_items.Length))
+                    if ((Groups?.data_items != null) && (gi < Groups.data_items.Length))
                     {
-                        var group = Groups.data_items[i];
+                        var group = Groups.data_items[gi];
                         var str = group.Name.ToString().ToLowerInvariant();
                         JenkIndex.Ensure(str);
                         child.GroupNameHash = JenkHash.GenHash(str);
@@ -3358,7 +3359,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_04h { get; set; } // 0x00000001
         public float Unknown_08h { get; set; }
         public float Unknown_0Ch { get; set; }
-        public ushort BoneIndex { get; set; }
+        public ushort GroupIndex { get; set; }
         public ushort BoneTag { get; set; }
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000000
@@ -3438,7 +3439,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_04h = reader.ReadUInt32();
             this.Unknown_08h = reader.ReadSingle();
             this.Unknown_0Ch = reader.ReadSingle();
-            this.BoneIndex = reader.ReadUInt16();
+            this.GroupIndex = reader.ReadUInt16();
             this.BoneTag = reader.ReadUInt16();
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
@@ -3534,7 +3535,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_04h);
             writer.Write(this.Unknown_08h);
             writer.Write(this.Unknown_0Ch);
-            writer.Write(this.BoneIndex);
+            writer.Write(this.GroupIndex);
             writer.Write(this.BoneTag);
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
