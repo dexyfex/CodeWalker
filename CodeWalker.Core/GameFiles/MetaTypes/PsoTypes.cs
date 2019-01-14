@@ -9942,7 +9942,8 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.MpActivationModifiers, PsoDataType.Structure, 272, 0, (MetaName)2720813484),
                      new PsoStructureEntryInfo(MetaName.PlayerBumpedByCloneCarActivationModifier, PsoDataType.Float, 352, 0, 0),
                      new PsoStructureEntryInfo(MetaName.ClonePlayerBumpedByCarActivationModifier, PsoDataType.Float, 356, 0, 0),
-                     new PsoStructureEntryInfo(MetaName.ClonePlayerBumpedByCloneCarActivationModifier, PsoDataType.Float, 360, 0, 0),
+                     //new PsoStructureEntryInfo(MetaName.ClonePlayerBumpedByCloneCarActivationModifier, PsoDataType.Float, 360, 0, 0),
+                     new PsoStructureEntryInfo((MetaName)2048881690, PsoDataType.Float, 360, 0, 0), //seems to be newer than above..
                      new PsoStructureEntryInfo(MetaName.MaxVehicleCapsulePushTimeForRagdollActivation, PsoDataType.Float, 364, 0, 0),
                      new PsoStructureEntryInfo(MetaName.MaxVehicleCapsulePushTimeForPlayerRagdollActivation, PsoDataType.Float, 368, 0, 0),
                      new PsoStructureEntryInfo(MetaName.VehicleMinSpeedForContinuousPushActivation, PsoDataType.Float, 372, 0, 0),

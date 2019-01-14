@@ -2637,11 +2637,20 @@ namespace CodeWalker.GameFiles
                                         diffpsos.Add(fentry.Path);
                                     }
 
-                                    if (entry.NameLower == "wantedtuning.ymt")
-                                    { }
-                                    if (entry.NameLower == "popgroups.ymt")
-                                    { }
+
                                     if (entry.NameLower == "clip_sets.ymt")
+                                    { }
+                                    //if (entry.NameLower == "vfxinteriorinfo.ymt")
+                                    //{ }
+                                    //if (entry.NameLower == "vfxvehicleinfo.ymt")
+                                    //{ }
+                                    //if (entry.NameLower == "vfxpedinfo.ymt")
+                                    //{ }
+                                    //if (entry.NameLower == "vfxregioninfo.ymt")
+                                    //{ }
+                                    //if (entry.NameLower == "vfxweaponinfo.ymt")
+                                    //{ }
+                                    if (entry.NameLower == "physicstasks.ymt")
                                     { }
 
                                 }

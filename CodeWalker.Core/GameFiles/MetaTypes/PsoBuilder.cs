@@ -54,13 +54,13 @@ namespace CodeWalker.GameFiles
         {
             PsoBuilderBlock block = EnsureBlock(type);
             int brem = data.Length % 16;
-            if (brem > 0)
-            {
-                int newlen = data.Length - brem + 16;
-                byte[] newdata = new byte[newlen];
-                Buffer.BlockCopy(data, 0, newdata, 0, data.Length);
-                data = newdata; //make sure item size is multiple of 16... so pointers don't need sub offsets!
-            }
+            //if (brem > 0)
+            //{
+            //    int newlen = data.Length - brem + 16;
+            //    byte[] newdata = new byte[newlen];
+            //    Buffer.BlockCopy(data, 0, newdata, 0, data.Length);
+            //    data = newdata; //make sure item size is multiple of 16... so pointers don't need sub offsets!
+            //}
             int idx = block.AddItem(data);
             PsoBuilderPointer r = new PsoBuilderPointer();
             r.BlockID = block.Index + 1;

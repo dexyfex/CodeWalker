@@ -3218,8 +3218,8 @@ namespace CodeWalker.GameFiles
         vecPlayerPos = 2050268192,
         vehglassCrackTextureParams = 3043112491,
         vehglassCrackTextureSampler = 3541769459,
-        Velocity1 = 1362920836,
-        Velocity2 = 1853341690,
+        velocity1 = 1362920836,
+        velocity2 = 1853341690,
         VelocityBufferSampler = 415075366,
         VelocityMapSampler = 3944176109,
         VelocityTexSampler = 2305380067,
@@ -8627,6 +8627,18 @@ namespace CodeWalker.GameFiles
         yawKd = 3266080932,
         yawKi = 1366920760,
         yawKp = 922081581,
+
+
+        Velocity2 = 2944635386,
+
+
+
+
+
+
+
+
+
 
 
 

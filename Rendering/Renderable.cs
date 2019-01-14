@@ -185,37 +185,32 @@ namespace CodeWalker.Rendering
                             fragoffset = phys.OwnerFragPhysLod.Unknown_30h;
                             fragoffset.W = 0.0f;
 
-                            if (fragtransformid < phys.OwnerFragPhysLod.Children?.data_items?.Length)
+
+                            switch (phys.BoneTag) //right hand side wheel flip!
                             {
-                                var pgrp = phys.OwnerFragPhysLod.Children.data_items[fragtransformid];
-
-                                switch (pgrp.BoneTag) //right hand side wheel flip!
-                                {
-                                    //case 27922: //wheel_lf
-                                    //case 29921: //wheel_lm1
-                                    //case 29922: //wheel_lm2
-                                    //case 29923: //wheel_lm3
-                                    //case 27902: //wheel_lr
-                                    case 26418: //wheel_rf
-                                    case 5857:  //wheel_rm1
-                                    case 5858:  //wheel_rm2
-                                    case 5859:  //wheel_rm3
-                                    case 26398: //wheel_rr
-                                        fragtransforms[fragtransformid].M11 = -1;
-                                        fragtransforms[fragtransformid].M12 = 0;
-                                        fragtransforms[fragtransformid].M13 = 0;
-                                        fragtransforms[fragtransformid].M21 = 0;
-                                        fragtransforms[fragtransformid].M22 = 1;
-                                        fragtransforms[fragtransformid].M23 = 0;
-                                        fragtransforms[fragtransformid].M31 = 0;
-                                        fragtransforms[fragtransformid].M32 = 0;
-                                        fragtransforms[fragtransformid].M33 = -1;
-                                        break;
-                                    default:
-                                        break;
-                                }
+                                //case 27922: //wheel_lf
+                                //case 29921: //wheel_lm1
+                                //case 29922: //wheel_lm2
+                                //case 29923: //wheel_lm3
+                                //case 27902: //wheel_lr
+                                case 26418: //wheel_rf
+                                case 5857:  //wheel_rm1
+                                case 5858:  //wheel_rm2
+                                case 5859:  //wheel_rm3
+                                case 26398: //wheel_rr
+                                    fragtransforms[fragtransformid].M11 = -1;
+                                    fragtransforms[fragtransformid].M12 = 0;
+                                    fragtransforms[fragtransformid].M13 = 0;
+                                    fragtransforms[fragtransformid].M21 = 0;
+                                    fragtransforms[fragtransformid].M22 = 1;
+                                    fragtransforms[fragtransformid].M23 = 0;
+                                    fragtransforms[fragtransformid].M31 = 0;
+                                    fragtransforms[fragtransformid].M32 = 0;
+                                    fragtransforms[fragtransformid].M33 = -1;
+                                    break;
+                                default:
+                                    break;
                             }
-
 
                         }
                     }
