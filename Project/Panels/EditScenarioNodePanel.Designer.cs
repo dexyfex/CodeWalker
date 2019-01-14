@@ -1805,7 +1805,8 @@
             // 
             this.ScenarioChainNodeTypeComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioChainNodeTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ScenarioChainNodeTypeComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.ScenarioChainNodeTypeComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.ScenarioChainNodeTypeComboBox.FormattingEnabled = true;
             this.ScenarioChainNodeTypeComboBox.Location = new System.Drawing.Point(73, 55);
             this.ScenarioChainNodeTypeComboBox.Name = "ScenarioChainNodeTypeComboBox";
