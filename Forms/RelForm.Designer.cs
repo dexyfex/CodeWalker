@@ -28,24 +28,29 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RelForm));
             this.RelPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.DetailsTabPage = new System.Windows.Forms.TabPage();
             this.NameTableTabPage = new System.Windows.Forms.TabPage();
             this.MainTextBox = new CodeWalker.WinForms.TextBoxFix();
-            this.CloseButton = new System.Windows.Forms.Button();
             this.SearchTabPage = new System.Windows.Forms.TabPage();
-            this.SearchResultsGrid = new CodeWalker.WinForms.PropertyGridFix();
+            this.SearchTextRadio = new System.Windows.Forms.RadioButton();
+            this.SearchHashRadio = new System.Windows.Forms.RadioButton();
             this.label12 = new System.Windows.Forms.Label();
             this.SearchTextBox = new System.Windows.Forms.TextBox();
             this.SearchButton = new System.Windows.Forms.Button();
-            this.SearchHashRadio = new System.Windows.Forms.RadioButton();
-            this.SearchTextRadio = new System.Windows.Forms.RadioButton();
+            this.SearchResultsGrid = new CodeWalker.WinForms.PropertyGridFix();
+            this.CloseButton = new System.Windows.Forms.Button();
+            this.XmlTabPage = new System.Windows.Forms.TabPage();
+            this.XmlTextBox = new FastColoredTextBoxNS.FastColoredTextBox();
             this.MainTabControl.SuspendLayout();
             this.DetailsTabPage.SuspendLayout();
             this.NameTableTabPage.SuspendLayout();
             this.SearchTabPage.SuspendLayout();
+            this.XmlTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.XmlTextBox)).BeginInit();
             this.SuspendLayout();
             // 
             // RelPropertyGrid
@@ -64,6 +69,7 @@
             this.MainTabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.MainTabControl.Controls.Add(this.XmlTabPage);
             this.MainTabControl.Controls.Add(this.DetailsTabPage);
             this.MainTabControl.Controls.Add(this.NameTableTabPage);
             this.MainTabControl.Controls.Add(this.SearchTabPage);
@@ -111,17 +117,6 @@
             this.MainTextBox.TabIndex = 1;
             this.MainTextBox.WordWrap = false;
             // 
-            // CloseButton
-            // 
-            this.CloseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.CloseButton.Location = new System.Drawing.Point(584, 409);
-            this.CloseButton.Name = "CloseButton";
-            this.CloseButton.Size = new System.Drawing.Size(75, 23);
-            this.CloseButton.TabIndex = 2;
-            this.CloseButton.Text = "Close";
-            this.CloseButton.UseVisualStyleBackColor = true;
-            this.CloseButton.Click += new System.EventHandler(this.CloseButton_Click);
-            // 
             // SearchTabPage
             // 
             this.SearchTabPage.Controls.Add(this.SearchTextRadio);
@@ -137,16 +132,29 @@
             this.SearchTabPage.Text = "Search";
             this.SearchTabPage.UseVisualStyleBackColor = true;
             // 
-            // SearchResultsGrid
+            // SearchTextRadio
             // 
-            this.SearchResultsGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SearchResultsGrid.HelpVisible = false;
-            this.SearchResultsGrid.Location = new System.Drawing.Point(3, 31);
-            this.SearchResultsGrid.Name = "SearchResultsGrid";
-            this.SearchResultsGrid.Size = new System.Drawing.Size(647, 331);
-            this.SearchResultsGrid.TabIndex = 1;
+            this.SearchTextRadio.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.SearchTextRadio.AutoSize = true;
+            this.SearchTextRadio.Location = new System.Drawing.Point(343, 4);
+            this.SearchTextRadio.Name = "SearchTextRadio";
+            this.SearchTextRadio.Size = new System.Drawing.Size(46, 17);
+            this.SearchTextRadio.TabIndex = 36;
+            this.SearchTextRadio.Text = "Text";
+            this.SearchTextRadio.UseVisualStyleBackColor = true;
+            // 
+            // SearchHashRadio
+            // 
+            this.SearchHashRadio.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.SearchHashRadio.AutoSize = true;
+            this.SearchHashRadio.Checked = true;
+            this.SearchHashRadio.Location = new System.Drawing.Point(287, 4);
+            this.SearchHashRadio.Name = "SearchHashRadio";
+            this.SearchHashRadio.Size = new System.Drawing.Size(50, 17);
+            this.SearchHashRadio.TabIndex = 35;
+            this.SearchHashRadio.TabStop = true;
+            this.SearchHashRadio.Text = "Hash";
+            this.SearchHashRadio.UseVisualStyleBackColor = true;
             // 
             // label12
             // 
@@ -178,29 +186,77 @@
             this.SearchButton.UseVisualStyleBackColor = true;
             this.SearchButton.Click += new System.EventHandler(this.SearchButton_Click);
             // 
-            // SearchHashRadio
+            // SearchResultsGrid
             // 
-            this.SearchHashRadio.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SearchHashRadio.AutoSize = true;
-            this.SearchHashRadio.Checked = true;
-            this.SearchHashRadio.Location = new System.Drawing.Point(287, 4);
-            this.SearchHashRadio.Name = "SearchHashRadio";
-            this.SearchHashRadio.Size = new System.Drawing.Size(50, 17);
-            this.SearchHashRadio.TabIndex = 35;
-            this.SearchHashRadio.TabStop = true;
-            this.SearchHashRadio.Text = "Hash";
-            this.SearchHashRadio.UseVisualStyleBackColor = true;
+            this.SearchResultsGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.SearchResultsGrid.HelpVisible = false;
+            this.SearchResultsGrid.Location = new System.Drawing.Point(3, 31);
+            this.SearchResultsGrid.Name = "SearchResultsGrid";
+            this.SearchResultsGrid.Size = new System.Drawing.Size(647, 331);
+            this.SearchResultsGrid.TabIndex = 1;
             // 
-            // SearchTextRadio
+            // CloseButton
             // 
-            this.SearchTextRadio.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SearchTextRadio.AutoSize = true;
-            this.SearchTextRadio.Location = new System.Drawing.Point(343, 4);
-            this.SearchTextRadio.Name = "SearchTextRadio";
-            this.SearchTextRadio.Size = new System.Drawing.Size(46, 17);
-            this.SearchTextRadio.TabIndex = 36;
-            this.SearchTextRadio.Text = "Text";
-            this.SearchTextRadio.UseVisualStyleBackColor = true;
+            this.CloseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.CloseButton.Location = new System.Drawing.Point(584, 409);
+            this.CloseButton.Name = "CloseButton";
+            this.CloseButton.Size = new System.Drawing.Size(75, 23);
+            this.CloseButton.TabIndex = 2;
+            this.CloseButton.Text = "Close";
+            this.CloseButton.UseVisualStyleBackColor = true;
+            this.CloseButton.Click += new System.EventHandler(this.CloseButton_Click);
+            // 
+            // XmlTabPage
+            // 
+            this.XmlTabPage.Controls.Add(this.XmlTextBox);
+            this.XmlTabPage.Location = new System.Drawing.Point(4, 22);
+            this.XmlTabPage.Name = "XmlTabPage";
+            this.XmlTabPage.Size = new System.Drawing.Size(656, 368);
+            this.XmlTabPage.TabIndex = 3;
+            this.XmlTabPage.Text = "XML";
+            this.XmlTabPage.UseVisualStyleBackColor = true;
+            // 
+            // XmlTextBox
+            // 
+            this.XmlTextBox.AutoCompleteBracketsList = new char[] {
+        '(',
+        ')',
+        '{',
+        '}',
+        '[',
+        ']',
+        '\"',
+        '\"',
+        '\'',
+        '\''};
+            this.XmlTextBox.AutoIndentChars = false;
+            this.XmlTextBox.AutoIndentCharsPatterns = "";
+            this.XmlTextBox.AutoIndentExistingLines = false;
+            this.XmlTextBox.AutoScrollMinSize = new System.Drawing.Size(27, 14);
+            this.XmlTextBox.BackBrush = null;
+            this.XmlTextBox.CharHeight = 14;
+            this.XmlTextBox.CharWidth = 8;
+            this.XmlTextBox.CommentPrefix = null;
+            this.XmlTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.XmlTextBox.DelayedEventsInterval = 1;
+            this.XmlTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.XmlTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.XmlTextBox.IsReplaceMode = false;
+            this.XmlTextBox.Language = FastColoredTextBoxNS.Language.XML;
+            this.XmlTextBox.LeftBracket = '<';
+            this.XmlTextBox.LeftBracket2 = '(';
+            this.XmlTextBox.Location = new System.Drawing.Point(0, 0);
+            this.XmlTextBox.Name = "XmlTextBox";
+            this.XmlTextBox.Paddings = new System.Windows.Forms.Padding(0);
+            this.XmlTextBox.RightBracket = '>';
+            this.XmlTextBox.RightBracket2 = ')';
+            this.XmlTextBox.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
+            this.XmlTextBox.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("XmlTextBox.ServiceColors")));
+            this.XmlTextBox.Size = new System.Drawing.Size(656, 368);
+            this.XmlTextBox.TabIndex = 2;
+            this.XmlTextBox.Zoom = 100;
             // 
             // RelForm
             // 
@@ -218,6 +274,8 @@
             this.NameTableTabPage.PerformLayout();
             this.SearchTabPage.ResumeLayout(false);
             this.SearchTabPage.PerformLayout();
+            this.XmlTabPage.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.XmlTextBox)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -237,5 +295,7 @@
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.TextBox SearchTextBox;
         private System.Windows.Forms.Button SearchButton;
+        private System.Windows.Forms.TabPage XmlTabPage;
+        private FastColoredTextBoxNS.FastColoredTextBox XmlTextBox;
     }
 }

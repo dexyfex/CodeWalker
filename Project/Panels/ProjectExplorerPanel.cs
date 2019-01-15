@@ -1577,6 +1577,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindAudioZoneTreeNode(zone);
             if (tn != null)
             {
+                tn.Text = zone.NameHash.ToString();
             }
         }
         public void UpdateAudioEmitterTreeNode(AudioPlacement emitter)
@@ -1584,6 +1585,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindAudioEmitterTreeNode(emitter);
             if (tn != null)
             {
+                tn.Text = emitter.NameHash.ToString();
             }
         }
         public void UpdateAudioZoneListTreeNode(Dat151AmbientZoneList list)

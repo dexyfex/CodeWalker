@@ -445,7 +445,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags0TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentZone.AudioZone.Flags0.Value != flags)
+                if (CurrentZone.AudioZone.Flags0 != flags)
                 {
                     CurrentZone.AudioZone.Flags0 = flags;
 
@@ -463,7 +463,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags1TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentZone.AudioZone.Flags1.Value != flags)
+                if (CurrentZone.AudioZone.Flags1 != flags)
                 {
                     CurrentZone.AudioZone.Flags1 = flags;
 
@@ -480,7 +480,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags2TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentZone.AudioZone.Flags2.Value != flags)
+                if (CurrentZone.AudioZone.Flags2 != flags)
                 {
                     CurrentZone.AudioZone.Flags2 = flags;
 

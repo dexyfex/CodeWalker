@@ -59,6 +59,7 @@ namespace CodeWalker.Forms
 
             CurrentFile = rel;
 
+            XmlTextBox.Text = RelXml.GetXml(rel);
 
             StringBuilder sb = new StringBuilder();
             if (rel != null)

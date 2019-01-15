@@ -418,7 +418,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags0TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentRoom.Flags0.Value != flags)
+                if (CurrentRoom.Flags0 != flags)
                 {
                     CurrentRoom.Flags0 = flags;
 

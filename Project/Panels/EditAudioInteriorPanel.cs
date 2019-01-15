@@ -128,7 +128,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags0TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentInterior.Unk0.Value != flags)
+                if (CurrentInterior.Unk0 != flags)
                 {
                     CurrentInterior.Unk0 = flags;
 
@@ -145,7 +145,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags1TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentInterior.Unk1.Value != flags)
+                if (CurrentInterior.Unk1 != flags)
                 {
                     CurrentInterior.Unk1 = flags;
 
@@ -162,7 +162,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags2TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentInterior.Unk2.Value != flags)
+                if (CurrentInterior.Unk2 != flags)
                 {
                     CurrentInterior.Unk2 = flags;
 

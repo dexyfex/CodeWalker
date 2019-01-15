@@ -455,7 +455,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags0TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentEmitter.AudioEmitter.Flags0.Value != flags)
+                if (CurrentEmitter.AudioEmitter.Flags0 != flags)
                 {
                     CurrentEmitter.AudioEmitter.Flags0 = flags;
 
@@ -472,7 +472,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags1TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentEmitter.AudioEmitter.Flags1.Value != flags)
+                if (CurrentEmitter.AudioEmitter.Flags1 != flags)
                 {
                     CurrentEmitter.AudioEmitter.Flags1 = flags;
 
@@ -489,7 +489,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags2TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentEmitter.AudioEmitter.Flags2.Value != flags)
+                if (CurrentEmitter.AudioEmitter.Flags2 != flags)
                 {
                     CurrentEmitter.AudioEmitter.Flags2 = flags;
 
@@ -506,7 +506,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags3TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentEmitter.AudioEmitter.Flags3.Value != flags)
+                if (CurrentEmitter.AudioEmitter.Flags3 != flags)
                 {
                     CurrentEmitter.AudioEmitter.Flags3 = flags;
 
@@ -523,7 +523,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags4TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentEmitter.AudioEmitter.Flags4.Value != flags)
+                if (CurrentEmitter.AudioEmitter.Flags4 != flags)
                 {
                     CurrentEmitter.AudioEmitter.Flags4 = flags;
 
@@ -540,7 +540,7 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags5TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentEmitter.AudioEmitter.Flags5.Value != flags)
+                if (CurrentEmitter.AudioEmitter.Flags5 != flags)
                 {
                     CurrentEmitter.AudioEmitter.Flags5 = flags;
 
@@ -583,7 +583,7 @@ namespace CodeWalker.Project.Panels
                 }
 
                 CurrentEmitter.AudioEmitter.ExtParams = paramlist.ToArray();
-                CurrentEmitter.AudioEmitter.ExtParamCount = (ushort)paramlist.Count;
+                CurrentEmitter.AudioEmitter.ExtParamsCount = (ushort)paramlist.Count;
 
                 ProjectItemChanged();
             }

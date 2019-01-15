@@ -194,6 +194,10 @@ namespace CodeWalker.GameFiles
         {
             return new FlagsByte(v);
         }
+        public static implicit operator byte(FlagsByte v)
+        {
+            return v.Value;  //implicit conversion
+        }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct FlagsUshort
@@ -234,6 +238,11 @@ namespace CodeWalker.GameFiles
         {
             return new FlagsUshort(v);
         }
+        public static implicit operator ushort(FlagsUshort v)
+        {
+            return v.Value;  //implicit conversion
+        }
+
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct FlagsUint
@@ -274,6 +283,11 @@ namespace CodeWalker.GameFiles
         {
             return new FlagsUint(v);
         }
+        public static implicit operator uint(FlagsUint v)
+        {
+            return v.Value;  //implicit conversion
+        }
+
     }
 
 

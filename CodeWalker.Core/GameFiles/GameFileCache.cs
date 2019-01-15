@@ -2413,13 +2413,14 @@ namespace CodeWalker.GameFiles
                 }
 
             }
-            int ctot = Dat151RelData.TotCount;
-            StringBuilder sbp = new StringBuilder();
-            foreach (string s in Dat151RelData.FoundCoords)
-            {
-                sbp.AppendLine(s);
-            }
-            string posz = sbp.ToString();
+
+            //int ctot = Dat151RelData.TotCount;
+            //StringBuilder sbp = new StringBuilder();
+            //foreach (string s in Dat151RelData.FoundCoords)
+            //{
+            //    sbp.AppendLine(s);
+            //}
+            //string posz = sbp.ToString();
 
             string relstrs = sb.ToString();
             string hashstrs = sbh.ToString();
@@ -2638,8 +2639,8 @@ namespace CodeWalker.GameFiles
                                     }
 
 
-                                    if (entry.NameLower == "clip_sets.ymt")
-                                    { }
+                                    //if (entry.NameLower == "clip_sets.ymt")
+                                    //{ }
                                     //if (entry.NameLower == "vfxinteriorinfo.ymt")
                                     //{ }
                                     //if (entry.NameLower == "vfxvehicleinfo.ymt")
@@ -2650,8 +2651,8 @@ namespace CodeWalker.GameFiles
                                     //{ }
                                     //if (entry.NameLower == "vfxweaponinfo.ymt")
                                     //{ }
-                                    if (entry.NameLower == "physicstasks.ymt")
-                                    { }
+                                    //if (entry.NameLower == "physicstasks.ymt")
+                                    //{ }
 
                                 }
                             }

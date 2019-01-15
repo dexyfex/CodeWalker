@@ -4575,7 +4575,7 @@ namespace CodeWalker.Project
 
             //AA800424 box, line
             //AA800420 sphere
-            zone.Flags0 = cp ? copy.AudioZone.Flags0 : 0xAA800424;
+            zone.Flags0 = cp ? copy.AudioZone.Flags0.Value : 0xAA800424;
             zone.Flags1 = cp ? copy.AudioZone.Flags1 : 0;
             zone.Flags2 = cp ? copy.AudioZone.Flags2 : 0;
             zone.Shape = cp ? copy.AudioZone.Shape : Dat151ZoneShape.Box;
@@ -4697,23 +4697,23 @@ namespace CodeWalker.Project
 
             var emitter = new Dat151AmbientEmitter(CurrentAudioFile);
 
-            emitter.Flags0 = cp ? copy.AudioEmitter.Flags0 : 0xAA001100;
-            emitter.Flags5 = cp ? copy.AudioEmitter.Flags5 : 0xFFFFFFFF;
+            emitter.Flags0 = cp ? copy.AudioEmitter.Flags0.Value : 0xAA001100;
+            emitter.Flags5 = cp ? copy.AudioEmitter.Flags5.Value : 0xFFFFFFFF;
             emitter.InnerRad = cp ? copy.AudioEmitter.InnerRad : 0.0f;
             emitter.OuterRad = cp ? copy.AudioEmitter.OuterRad : 20.0f;
             emitter.Unk01 = cp ? copy.AudioEmitter.Unk01 : 1.0f;
-            emitter.Unk02 = cp ? copy.AudioEmitter.Unk02 : 0;
-            emitter.Unk03 = cp ? copy.AudioEmitter.Unk03 : 0;
-            emitter.Unk04 = cp ? copy.AudioEmitter.Unk04 : 160;
-            emitter.Unk05 = cp ? copy.AudioEmitter.Unk05 : 5;
-            emitter.Unk06 = cp ? copy.AudioEmitter.Unk06 : 0;
-            emitter.Unk07 = cp ? copy.AudioEmitter.Unk07 : 0;
-            emitter.Unk08 = cp ? copy.AudioEmitter.Unk08 : 0;
-            emitter.Unk09 = cp ? copy.AudioEmitter.Unk09 : 1;
-            emitter.Unk10 = cp ? copy.AudioEmitter.Unk10 : 1;
-            emitter.Unk11 = cp ? copy.AudioEmitter.Unk11 : 1;
-            emitter.Unk12 = cp ? copy.AudioEmitter.Unk12 : 100;
-            emitter.Unk13 = cp ? copy.AudioEmitter.Unk13 : 3;
+            emitter.Unk02 = cp ? copy.AudioEmitter.Unk02.Value : (byte)0;
+            emitter.Unk03 = cp ? copy.AudioEmitter.Unk03.Value : (byte)0;
+            emitter.Unk04 = cp ? copy.AudioEmitter.Unk04.Value : (byte)160;
+            emitter.Unk05 = cp ? copy.AudioEmitter.Unk05.Value : (byte)5;
+            emitter.Unk06 = cp ? copy.AudioEmitter.Unk06.Value : (ushort)0;
+            emitter.Unk07 = cp ? copy.AudioEmitter.Unk07.Value : (ushort)0;
+            emitter.Unk08 = cp ? copy.AudioEmitter.Unk08.Value : (byte)0;
+            emitter.Unk09 = cp ? copy.AudioEmitter.Unk09.Value : (byte)1;
+            emitter.Unk10 = cp ? copy.AudioEmitter.Unk10.Value : (byte)1;
+            emitter.Unk11 = cp ? copy.AudioEmitter.Unk11.Value : (byte)1;
+            emitter.Unk12 = cp ? copy.AudioEmitter.Unk12.Value : (byte)100;
+            emitter.Unk13 = cp ? copy.AudioEmitter.Unk13.Value : (byte)3;
 
 
             emitter.Name = "emitter1";

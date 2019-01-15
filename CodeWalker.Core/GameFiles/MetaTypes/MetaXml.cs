@@ -1726,6 +1726,10 @@ namespace CodeWalker.GameFiles
         {
             return FloatUtil.GetVector4String(v);
         }
+        public static string FormatHexByte(byte b)
+        {
+            return Convert.ToString(b, 16).ToUpperInvariant().PadLeft(2, '0'); //hex byte array
+        }
 
         public static string FormatHashSwap(MetaHash h) //for use with WriteItemArray, swaps endianness
         {
