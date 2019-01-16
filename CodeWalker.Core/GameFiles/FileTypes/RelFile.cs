@@ -535,8 +535,9 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.RadioDjSpeechAction: return new Dat151RadioDjSpeechAction(d, br);
                 case Dat151RelType.ForceRadioTrackAction: return new Dat151ForceRadioTrackAction(d, br);
                 case Dat151RelType.Unk78: return new Dat151Unk78(d, br);
-                case Dat151RelType.RadioStationsDLC: return new Dat151RadioStationsDLC(d, br); //
-                case Dat151RelType.RadioDLC: return new Dat151RadioDLC(d, br);
+                case Dat151RelType.RadioStations: return new Dat151RadioStations(d, br); //
+                case Dat151RelType.RadioStation: return new Dat151RadioStation(d, br);
+                case Dat151RelType.RadioMusic: return new Dat151RadioMusic(d, br);
                 case Dat151RelType.Unk49: return new Dat151Unk49(d, br);
                 case Dat151RelType.Unk84: return new Dat151Unk84(d, br);
                 case Dat151RelType.Unk86: return new Dat151Unk86(d, br);
@@ -548,80 +549,79 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.ShoreLineOcean: return new Dat151ShoreLineOcean(d, br);
                 case Dat151RelType.ShoreLineList: return new Dat151ShoreLineList(d, br);
 
-                case Dat151RelType.Vehicle:
-                case Dat151RelType.VehicleEngine:
-                case Dat151RelType.Stream: //generic audio stream?
-                case Dat151RelType.Helicopter: //maybe
-                case Dat151RelType.SpeechParams:
-                case Dat151RelType.Weapon:
-                case Dat151RelType.DLCMusic:
-                case Dat151RelType.PedPVG: //maybe Ped Voice Group?
-                case Dat151RelType.Aeroplane:
-                case Dat151RelType.AnimalParams:
-                case Dat151RelType.VehicleScannerParams: //maybe not just vehicle
-                case Dat151RelType.Explosion:
-                case Dat151RelType.VehicleEngineGranular: //maybe not just vehicle
-                case Dat151RelType.Unk2:
-                case Dat151RelType.Unk7:
-                case Dat151RelType.Unk9:
-                case Dat151RelType.Unk11:
-                case Dat151RelType.Unk12:
-                case Dat151RelType.Unk13:
-                case Dat151RelType.Unk15:
-                case Dat151RelType.Unk16:
-                case Dat151RelType.Unk18:
-                case Dat151RelType.Unk22:
-                case Dat151RelType.Unk23:
-                case Dat151RelType.Unk27:
-                case Dat151RelType.Unk28:
-                case Dat151RelType.Unk29:
-                case Dat151RelType.Unk31:
-                case Dat151RelType.Unk33:
-                case Dat151RelType.Unk35:
-                case Dat151RelType.Unk36:
-                case Dat151RelType.Unk40:
-                case Dat151RelType.Unk41:
-                case Dat151RelType.Unk42:
-                case Dat151RelType.Unk45:
-                case Dat151RelType.Unk48:
-                case Dat151RelType.Unk51:
-                case Dat151RelType.Unk53:
-                case Dat151RelType.Unk54:
-                case Dat151RelType.Unk56:
-                case Dat151RelType.Unk59:
-                case Dat151RelType.Unk69:
-                case Dat151RelType.Unk70:
-                case Dat151RelType.Unk71:
-                case Dat151RelType.Unk72:
-                case Dat151RelType.Unk74:
-                case Dat151RelType.Unk75:
-                case Dat151RelType.Unk77:
-                case Dat151RelType.Unk79:
-                case Dat151RelType.Unk80:
-                case Dat151RelType.Unk82:
-                case Dat151RelType.Unk85:
-                case Dat151RelType.Unk95:
-                case Dat151RelType.Unk96:
-                case Dat151RelType.Unk99:
-                case Dat151RelType.Unk100:
-                case Dat151RelType.Unk101:
-                case Dat151RelType.Unk105:
-                case Dat151RelType.Unk106:
-                case Dat151RelType.Unk107:
-                case Dat151RelType.Unk108:
-                case Dat151RelType.Unk109:
-                case Dat151RelType.Unk110:
-                case Dat151RelType.Unk111:
-                case Dat151RelType.Unk112:
-                case Dat151RelType.Unk113:
-                case Dat151RelType.Unk114:
-                case Dat151RelType.Unk115:
-                case Dat151RelType.Unk116:
-                case Dat151RelType.Unk118:
-                case Dat151RelType.Unk119:
-                case Dat151RelType.Unk120:
-                case Dat151RelType.Unk121:
-                    return new Dat151RelData(d, br);
+                case Dat151RelType.Unk114: return new Dat151Unk114(d, br);
+                case Dat151RelType.VehicleEngineGranular: return new Dat151VehicleEngineGranular(d, br); //maybe not just vehicle
+                case Dat151RelType.Vehicle: return new Dat151Vehicle(d, br);
+                case Dat151RelType.VehicleEngine: return new Dat151VehicleEngine(d, br);
+                case Dat151RelType.VehicleScannerParams: return new Dat151VehicleScannerParams(d, br); //maybe not just vehicle
+                case Dat151RelType.Stream: return new Dat151Stream(d, br); //generic audio stream?
+
+                //case Dat151RelType.Helicopter: return new Dat151Helicopter(d, br); //maybe
+                //case Dat151RelType.SpeechParams: return new Dat151SpeechParams(d, br);
+                //case Dat151RelType.Weapon: return new Dat151Weapon(d, br);
+                //case Dat151RelType.PedPVG: return new Dat151PedPVG(d, br); //maybe Ped Voice Group?
+                //case Dat151RelType.Aeroplane: return new Dat151Aeroplane(d, br);
+                //case Dat151RelType.AnimalParams: return new Dat151AnimalParams(d, br);
+                //case Dat151RelType.Explosion: return new Dat151Explosion(d, br);
+                //case Dat151RelType.Unk2: return new Dat151Unk2(d, br);
+                //case Dat151RelType.Unk7: return new Dat151Unk7(d, br);
+                //case Dat151RelType.Unk9: return new Dat151Unk9(d, br);
+                //case Dat151RelType.Unk11: return new Dat151Unk11(d, br);
+                //case Dat151RelType.Unk12: return new Dat151Unk12(d, br);
+                //case Dat151RelType.Unk13: return new Dat151Unk13(d, br);
+                //case Dat151RelType.Unk15: return new Dat151Unk15(d, br);
+                //case Dat151RelType.Unk16: return new Dat151Unk16(d, br);
+                //case Dat151RelType.Unk18: return new Dat151Unk18(d, br);
+                //case Dat151RelType.Unk22: return new Dat151Unk22(d, br);
+                //case Dat151RelType.Unk23: return new Dat151Unk23(d, br);
+                //case Dat151RelType.Unk27: return new Dat151Unk27(d, br);
+                //case Dat151RelType.Unk28: return new Dat151Unk28(d, br);
+                //case Dat151RelType.Unk29: return new Dat151Unk29(d, br);
+                //case Dat151RelType.Unk31: return new Dat151Unk31(d, br);
+                //case Dat151RelType.Unk33: return new Dat151Unk33(d, br);
+                //case Dat151RelType.Unk35: return new Dat151Unk35(d, br);
+                //case Dat151RelType.Unk36: return new Dat151Unk36(d, br);
+                //case Dat151RelType.Unk40: return new Dat151Unk40(d, br);
+                //case Dat151RelType.Unk41: return new Dat151Unk41(d, br);
+                //case Dat151RelType.Unk42: return new Dat151Unk42(d, br);
+                //case Dat151RelType.Unk45: return new Dat151Unk45(d, br);
+                //case Dat151RelType.Unk48: return new Dat151Unk48(d, br);
+                //case Dat151RelType.Unk51: return new Dat151Unk51(d, br);
+                //case Dat151RelType.Unk53: return new Dat151Unk53(d, br);
+                //case Dat151RelType.Unk54: return new Dat151Unk54(d, br);
+                //case Dat151RelType.Unk56: return new Dat151Unk56(d, br);
+                //case Dat151RelType.Unk59: return new Dat151Unk59(d, br);
+                //case Dat151RelType.Unk69: return new Dat151Unk69(d, br);
+                //case Dat151RelType.Unk70: return new Dat151Unk70(d, br);
+                //case Dat151RelType.Unk71: return new Dat151Unk71(d, br);
+                //case Dat151RelType.Unk72: return new Dat151Unk72(d, br);
+                //case Dat151RelType.Unk74: return new Dat151Unk74(d, br);
+                //case Dat151RelType.Unk75: return new Dat151Unk75(d, br);
+                //case Dat151RelType.Unk77: return new Dat151Unk77(d, br);
+                //case Dat151RelType.Unk79: return new Dat151Unk79(d, br);
+                //case Dat151RelType.Unk80: return new Dat151Unk80(d, br);
+                //case Dat151RelType.Unk82: return new Dat151Unk82(d, br);
+                //case Dat151RelType.Unk85: return new Dat151Unk85(d, br);
+                //case Dat151RelType.Unk95: return new Dat151Unk95(d, br);
+                //case Dat151RelType.Unk96: return new Dat151Unk96(d, br);
+                //case Dat151RelType.Unk99: return new Dat151Unk99(d, br);
+                //case Dat151RelType.Unk100: return new Dat151Unk100(d, br);
+                //case Dat151RelType.Unk101: return new Dat151Unk101(d, br);
+                //case Dat151RelType.Unk105: return new Dat151Unk105(d, br);
+                //case Dat151RelType.Unk106: return new Dat151Unk106(d, br);
+                //case Dat151RelType.Unk107: return new Dat151Unk107(d, br);
+                //case Dat151RelType.Unk108: return new Dat151Unk108(d, br);
+                //case Dat151RelType.Unk109: return new Dat151Unk109(d, br);
+                //case Dat151RelType.Unk110: return new Dat151Unk110(d, br);
+                //case Dat151RelType.Unk111: return new Dat151Unk111(d, br);
+                //case Dat151RelType.Unk112: return new Dat151Unk112(d, br);
+                //case Dat151RelType.Unk113: return new Dat151Unk113(d, br);
+                //case Dat151RelType.Unk115: return new Dat151Unk115(d, br);
+                //case Dat151RelType.Unk116: return new Dat151Unk116(d, br);
+                //case Dat151RelType.Unk118: return new Dat151Unk118(d, br);
+                //case Dat151RelType.Unk119: return new Dat151Unk119(d, br);
+                //case Dat151RelType.Unk120: return new Dat151Unk120(d, br);
+                //case Dat151RelType.Unk121: return new Dat151Unk121(d, br);
 
                 default:
                     return new Dat151RelData(d, br);
@@ -3175,9 +3175,9 @@ namespace CodeWalker.GameFiles
         Unk18 = 18,
         Unk22 = 22,
         Unk23 = 23,
-        RadioStationsDLC = 24, //
-        RadioDLC = 25, 
-        DLCMusic = 26,
+        RadioStations = 24, //
+        RadioStation = 25, 
+        RadioMusic = 26,
         Unk27 = 27,
         Unk28 = 28,
         Unk29 = 29,
@@ -4335,17 +4335,17 @@ namespace CodeWalker.GameFiles
             return new uint[] { 8 };
         }
     }
-    [TC(typeof(EXP))] public class Dat151RadioStationsDLC : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151RadioStations : Dat151RelData
     {
         public uint StationsCount { get; set; }
         public MetaHash[] Stations { get; set; }
 
-        public Dat151RadioStationsDLC(RelFile rel) : base(rel)
+        public Dat151RadioStations(RelFile rel) : base(rel)
         {
-            Type = Dat151RelType.RadioStationsDLC;
+            Type = Dat151RelType.RadioStations;
             TypeID = (byte)Type;
         }
-        public Dat151RadioStationsDLC(RelData d, BinaryReader br) : base(d, br)
+        public Dat151RadioStations(RelData d, BinaryReader br) : base(d, br)
         {
             StationsCount = br.ReadUInt32();
             var tracks = new MetaHash[StationsCount];
@@ -4397,7 +4397,7 @@ namespace CodeWalker.GameFiles
             return offsets.ToArray();
         }
     }
-    [TC(typeof(EXP))] public class Dat151RadioDLC : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151RadioStation : Dat151RelData
     {
         public FlagsUint Unk00 { get; set; }
         public uint Unk01 { get; set; }
@@ -4416,12 +4416,12 @@ namespace CodeWalker.GameFiles
         public uint AudioTracksCount { get; set; }
         public MetaHash[] AudioTracks { get; set; }
 
-        public Dat151RadioDLC(RelFile rel) : base(rel)
+        public Dat151RadioStation(RelFile rel) : base(rel)
         {
-            Type = Dat151RelType.RadioDLC;
+            Type = Dat151RelType.RadioStation;
             TypeID = (byte)Type;
         }
-        public Dat151RadioDLC(RelData d, BinaryReader br) : base(d, br)
+        public Dat151RadioStation(RelData d, BinaryReader br) : base(d, br)
         {
             Unk00 = br.ReadUInt32();
             Unk01 = br.ReadUInt32();
@@ -4513,6 +4513,138 @@ namespace CodeWalker.GameFiles
                 offsets.Add(52 + i * 4);
             }
             return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151RadioMusic : Dat151RelData
+    {
+        public FlagsUint Unk00 { get; set; }
+        public byte MusicType { get; set; }//maybe int?
+        public uint Unk01 { get; set; }
+        public uint Unk02 { get; set; }
+        public byte Unk03 { get; set; }
+        public uint Unk04 { get; set; }
+        public uint Unk05 { get; set; }
+        public uint Unk06 { get; set; }
+        public uint Unk07 { get; set; }
+        public uint Unk08 { get; set; }
+        public uint Unk09 { get; set; }
+        public uint Unk10 { get; set; }
+        public uint Unk11 { get; set; }
+        public uint Unk12 { get; set; }
+        public uint Unk13 { get; set; }
+        public uint Unk14 { get; set; }
+        public uint Unk15 { get; set; }
+        public ushort Unk16 { get; set; }
+        public uint PlaylistCount { get; set; }
+        public Dat151HashPair[] Playlists { get; set; }
+
+
+        public Dat151RadioMusic(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.RadioMusic;
+            TypeID = (byte)Type;
+        }
+        public Dat151RadioMusic(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk00 = br.ReadUInt32();
+            MusicType = br.ReadByte();
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadByte();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadUInt32();
+            Unk10 = br.ReadUInt32();
+            Unk11 = br.ReadUInt32();
+            Unk12 = br.ReadUInt32();
+            Unk13 = br.ReadUInt32();
+            Unk14 = br.ReadUInt32();
+            Unk15 = br.ReadUInt32();
+            Unk16 = br.ReadUInt16();
+            PlaylistCount = br.ReadUInt32();
+
+            Dat151HashPair[] items = new Dat151HashPair[PlaylistCount];
+            for (int i = 0; i < PlaylistCount; i++)
+            {
+                items[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
+            }
+            this.Playlists = items;
+
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk00);
+            bw.Write(MusicType);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+            bw.Write(Unk16);
+            bw.Write(PlaylistCount);
+            for (int i = 0; i < PlaylistCount; i++)
+            {
+                bw.Write(Playlists[i].Hash0);
+                bw.Write(Playlists[i].Hash1);
+            }
+
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk00", "0x" + Unk00.Hex);
+            RelXml.ValueTag(sb, indent, "MusicType", MusicType.ToString());
+            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            RelXml.ValueTag(sb, indent, "Unk02", Unk03.ToString());
+            RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
+            RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
+            RelXml.ValueTag(sb, indent, "Unk05", Unk05.ToString());
+            RelXml.ValueTag(sb, indent, "Unk06", Unk06.ToString());
+            RelXml.ValueTag(sb, indent, "Unk07", Unk07.ToString());
+            RelXml.ValueTag(sb, indent, "Unk08", Unk08.ToString());
+            RelXml.ValueTag(sb, indent, "Unk09", Unk09.ToString());
+            RelXml.ValueTag(sb, indent, "Unk10", Unk10.ToString());
+            RelXml.ValueTag(sb, indent, "Unk11", Unk11.ToString());
+            RelXml.ValueTag(sb, indent, "Unk12", Unk12.ToString());
+            RelXml.ValueTag(sb, indent, "Unk13", Unk13.ToString());
+            RelXml.ValueTag(sb, indent, "Unk14", Unk14.ToString());
+            RelXml.ValueTag(sb, indent, "Unk15", Unk15.ToString());
+            RelXml.ValueTag(sb, indent, "Unk16", Unk16.ToString());
+            if (PlaylistCount > 0)
+            {
+                RelXml.OpenTag(sb, indent, "Playlists");
+                var cind = indent + 1;
+                var cind2 = indent + 2;
+                for (int i = 0; i < PlaylistCount; i++)
+                {
+                    RelXml.OpenTag(sb, cind, "Item");
+                    Playlists[i].WriteXml(sb, cind2);
+                    RelXml.CloseTag(sb, cind, "Item");
+                }
+                RelXml.CloseTag(sb, indent, "Playlists");
+            }
+            else
+            {
+                RelXml.SelfClosingTag(sb, indent, "Playlists");
+            }
         }
     }
 
@@ -7206,6 +7338,2744 @@ namespace CodeWalker.GameFiles
             }
         }
     }
+
+
+    [TC(typeof(EXP))] public class Dat151Unk114 : Dat151RelData
+    {
+        public uint ItemCount { get; set; }
+        public ItemValue[] Items { get; set; }
+
+        public struct ItemValue
+        {
+            public uint Unk0 { get; set; }
+            public uint Unk1 { get; set; }
+
+            public ItemValue(uint unk0, uint unk1)
+            {
+                Unk0 = unk0;
+                Unk1 = unk1;
+            }
+
+            public override string ToString()
+            {
+                return Unk0.ToString() + ": " + Unk1.ToString();
+            }
+        }
+
+        public Dat151Unk114(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk114;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk114(RelData d, BinaryReader br) : base(d, br)
+        {
+            ItemCount = br.ReadUInt32();
+            Items = new ItemValue[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i] = new ItemValue(br.ReadUInt32(), br.ReadUInt32());
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(ItemCount);
+            for (int i = 0; i < ItemCount; i++)
+            {
+                bw.Write(Items[i].Unk0);
+                bw.Write(Items[i].Unk1);
+            }
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            if (ItemCount > 0)
+            {
+                RelXml.OpenTag(sb, indent, "Items");
+                var cind = indent + 1;
+                var cind2 = indent + 2;
+                for (int i = 0; i < ItemCount; i++)
+                {
+                    RelXml.OpenTag(sb, cind, "Item");
+                    RelXml.ValueTag(sb, cind2, "Unk0", Items[i].Unk0.ToString());
+                    RelXml.ValueTag(sb, cind2, "Unk1", Items[i].Unk1.ToString());
+                    RelXml.CloseTag(sb, cind, "Item");
+                }
+                RelXml.CloseTag(sb, indent, "Items");
+            }
+            else
+            {
+                RelXml.SelfClosingTag(sb, indent, "Items");
+            }
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151VehicleEngineGranular : Dat151RelData
+    {
+        public FlagsUint Unk00 { get; set; }
+        public int Unk01 { get; set; }
+        public MetaHash Unk02 { get; set; }
+        public MetaHash Unk03 { get; set; }
+        public int Unk04 { get; set; }
+        public int Unk05 { get; set; }
+        public int Unk06 { get; set; }
+        public int Unk07 { get; set; }
+        public int Unk08 { get; set; }
+        public int Unk09 { get; set; }
+        public int Unk10 { get; set; }
+        public int Unk11 { get; set; }
+        public int Unk12 { get; set; }
+        public int Unk13 { get; set; }
+        public int Unk14 { get; set; }
+        public int Unk15 { get; set; }
+        public int Unk16 { get; set; }
+        public int Unk17 { get; set; }
+        public int Unk18 { get; set; }
+        public int Unk19 { get; set; }
+        public int Unk20 { get; set; }
+        public int Unk21 { get; set; }
+        public float Unk22 { get; set; }
+        public float Unk23 { get; set; }
+        public float Unk24 { get; set; }
+        public float Unk25 { get; set; }
+        public float Unk26 { get; set; }
+        public float Unk27 { get; set; }
+        public float Unk28 { get; set; }
+        public int Unk29 { get; set; }
+        public int Unk30 { get; set; }
+        public MetaHash Unk31 { get; set; }
+        public MetaHash Unk32 { get; set; }
+        public MetaHash Unk33 { get; set; }
+        public MetaHash Unk34 { get; set; }
+        public MetaHash Unk35 { get; set; }
+        public MetaHash Unk36 { get; set; }
+        public MetaHash Unk37 { get; set; }
+        public int Unk38 { get; set; }
+        public int Unk39 { get; set; }
+        public MetaHash Unk40 { get; set; }
+        public MetaHash Unk41 { get; set; }
+        public int Unk42 { get; set; }
+        public int Unk43 { get; set; }
+        public int Unk44 { get; set; }
+        public MetaHash Unk45 { get; set; }
+        public int Unk46 { get; set; }
+        public int Unk47 { get; set; }
+        public int Unk48 { get; set; }
+        public int Unk49 { get; set; }
+        public int Unk50 { get; set; }
+        public int Unk51 { get; set; }
+        public MetaHash Unk52 { get; set; }
+        public MetaHash Unk53 { get; set; }
+        public int Unk54 { get; set; }
+        public int Unk55 { get; set; }
+        public int Unk56 { get; set; }
+        public int Unk57 { get; set; }
+        public int Unk58 { get; set; }//OPTIONAL!? only include this and next if either nonzero?
+        public float Unk59 { get; set; }//OPTIONAL!?
+
+        public Dat151VehicleEngineGranular(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.VehicleEngineGranular;
+            TypeID = (byte)Type;
+        }
+        public Dat151VehicleEngineGranular(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk00 = br.ReadUInt32();
+            Unk01 = br.ReadInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadUInt32();
+            Unk04 = br.ReadInt32();
+            Unk05 = br.ReadInt32();
+            Unk06 = br.ReadInt32();
+            Unk07 = br.ReadInt32();
+            Unk08 = br.ReadInt32();
+            Unk09 = br.ReadInt32();
+            Unk10 = br.ReadInt32();
+            Unk11 = br.ReadInt32();
+            Unk12 = br.ReadInt32();
+            Unk13 = br.ReadInt32();
+            Unk14 = br.ReadInt32();
+            Unk15 = br.ReadInt32();
+            Unk16 = br.ReadInt32();
+            Unk17 = br.ReadInt32();
+            Unk18 = br.ReadInt32();
+            Unk19 = br.ReadInt32();
+            Unk20 = br.ReadInt32();
+            Unk21 = br.ReadInt32();
+            Unk22 = br.ReadSingle();
+            Unk23 = br.ReadSingle();
+            Unk24 = br.ReadSingle();
+            Unk25 = br.ReadSingle();
+            Unk26 = br.ReadSingle();
+            Unk27 = br.ReadSingle();
+            Unk28 = br.ReadSingle();
+            Unk29 = br.ReadInt32();
+            Unk30 = br.ReadInt32();
+            Unk31 = br.ReadUInt32();
+            Unk32 = br.ReadUInt32();
+            Unk33 = br.ReadUInt32();
+            Unk34 = br.ReadUInt32();
+            Unk35 = br.ReadUInt32();
+            Unk36 = br.ReadUInt32();
+            Unk37 = br.ReadUInt32();
+            Unk38 = br.ReadInt32();
+            Unk39 = br.ReadInt32();
+            Unk40 = br.ReadUInt32();
+            Unk41 = br.ReadUInt32();
+            Unk42 = br.ReadInt32();
+            Unk43 = br.ReadInt32();
+            Unk44 = br.ReadInt32();
+            Unk45 = br.ReadUInt32();
+            Unk46 = br.ReadInt32();
+            Unk47 = br.ReadInt32();
+            Unk48 = br.ReadInt32();
+            Unk49 = br.ReadInt32();
+            Unk50 = br.ReadInt32();
+            Unk51 = br.ReadInt32();
+            Unk52 = br.ReadUInt32();
+            Unk53 = br.ReadUInt32();
+            Unk54 = br.ReadInt32();
+            Unk55 = br.ReadInt32();
+            Unk56 = br.ReadInt32();
+            Unk57 = br.ReadInt32();
+
+
+
+            switch (this.Unk00)
+            {
+                case 0xAAAAA905:
+                case 0xAAAAA955:
+                case 0xAAAAA954:
+                case 0xAAAAA914:
+                case 0xAAAAA904:
+                case 0xAAAAA805:
+                case 0xAAAAA915:
+                case 0xAAAAA945:
+                case 0xAAAAA815:
+                case 0xAAAAA944:
+                case 0xAAAAA854:
+                    break;
+                default:
+                    break;
+            }
+            switch (this.Unk40)
+            {
+                case 1225003942:
+                    break;
+                default:
+                    break;
+            }
+            switch (this.Unk41)
+            {
+                case 1479769906:
+                    break;
+                default:
+                    break;
+            }
+            switch (this.Unk43)
+            {
+                case 5:
+                case 3:
+                case 4:
+                case 2:
+                case 6:
+                case 1:
+                    break;
+                default:
+                    break;
+            }
+            switch (this.Unk44)
+            {
+                case 2:
+                case 1:
+                case 3:
+                case 4:
+                    break;
+                default:
+                    break;
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            switch (bytesleft) //any other way to tell??
+            {
+                case 0:
+                    break;
+                case 8:
+                    Unk58 = br.ReadInt32();
+                    Unk59 = br.ReadSingle();
+                    switch (Unk58)
+                    {
+                        case 1:
+                        case 2:
+                        case 0:
+                            break;
+                        default:
+                            break;//no hit here
+                    }
+                    if ((Unk58 == 0) && (Unk59 == 0))
+                    { }//no hit here
+                    break;
+                default:
+                    break;//no hit here
+            }
+
+            if (bytesleft != 0)
+            { }
+
+            if (Unk04 != 0)
+            { }
+            if (Unk09 != 0)
+            { }
+            if (Unk10 != 0)
+            { }
+            if (Unk11 != 0)
+            { }
+            if (Unk12 != 0)
+            { }
+            if (Unk38 != 0)
+            { }
+            if (Unk39 != 0)
+            { }
+            if (Unk47 != 0)
+            { }
+            if (Unk48 != 0)
+            { }
+            if (Unk50 != 0)
+            { }
+            if (Unk51 != 0)
+            { }
+
+
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+            bw.Write(Unk00);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+            bw.Write(Unk16);
+            bw.Write(Unk17);
+            bw.Write(Unk18);
+            bw.Write(Unk19);
+            bw.Write(Unk20);
+            bw.Write(Unk21);
+            bw.Write(Unk22);
+            bw.Write(Unk23);
+            bw.Write(Unk24);
+            bw.Write(Unk25);
+            bw.Write(Unk26);
+            bw.Write(Unk27);
+            bw.Write(Unk28);
+            bw.Write(Unk29);
+            bw.Write(Unk30);
+            bw.Write(Unk31);
+            bw.Write(Unk32);
+            bw.Write(Unk33);
+            bw.Write(Unk34);
+            bw.Write(Unk35);
+            bw.Write(Unk36);
+            bw.Write(Unk37);
+            bw.Write(Unk38);
+            bw.Write(Unk39);
+            bw.Write(Unk40);
+            bw.Write(Unk41);
+            bw.Write(Unk42);
+            bw.Write(Unk43);
+            bw.Write(Unk44);
+            bw.Write(Unk45);
+            bw.Write(Unk46);
+            bw.Write(Unk47);
+            bw.Write(Unk48);
+            bw.Write(Unk49);
+            bw.Write(Unk50);
+            bw.Write(Unk51);
+            bw.Write(Unk52);
+            bw.Write(Unk53);
+            bw.Write(Unk54);
+            bw.Write(Unk55);
+            bw.Write(Unk56);
+            bw.Write(Unk57);
+            if ((Unk58 != 0) || (Unk59 != 0))//how else to know?? seems hacky!
+            {
+                bw.Write(Unk58);
+                bw.Write(Unk59);
+            }
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk00", "0x" + Unk00.Hex);
+            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
+            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
+            RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
+            RelXml.ValueTag(sb, indent, "Unk05", Unk05.ToString());
+            RelXml.ValueTag(sb, indent, "Unk06", Unk06.ToString());
+            RelXml.ValueTag(sb, indent, "Unk07", Unk07.ToString());
+            RelXml.ValueTag(sb, indent, "Unk08", Unk08.ToString());
+            RelXml.ValueTag(sb, indent, "Unk09", Unk09.ToString());
+            RelXml.ValueTag(sb, indent, "Unk10", Unk10.ToString());
+            RelXml.ValueTag(sb, indent, "Unk11", Unk11.ToString());
+            RelXml.ValueTag(sb, indent, "Unk12", Unk12.ToString());
+            RelXml.ValueTag(sb, indent, "Unk13", Unk13.ToString());
+            RelXml.ValueTag(sb, indent, "Unk14", Unk14.ToString());
+            RelXml.ValueTag(sb, indent, "Unk15", Unk15.ToString());
+            RelXml.ValueTag(sb, indent, "Unk16", Unk16.ToString());
+            RelXml.ValueTag(sb, indent, "Unk17", Unk17.ToString());
+            RelXml.ValueTag(sb, indent, "Unk18", Unk18.ToString());
+            RelXml.ValueTag(sb, indent, "Unk19", Unk19.ToString());
+            RelXml.ValueTag(sb, indent, "Unk20", Unk20.ToString());
+            RelXml.ValueTag(sb, indent, "Unk21", Unk21.ToString());
+            RelXml.ValueTag(sb, indent, "Unk22", FloatUtil.ToString(Unk22));
+            RelXml.ValueTag(sb, indent, "Unk23", FloatUtil.ToString(Unk23));
+            RelXml.ValueTag(sb, indent, "Unk24", FloatUtil.ToString(Unk24));
+            RelXml.ValueTag(sb, indent, "Unk25", FloatUtil.ToString(Unk25));
+            RelXml.ValueTag(sb, indent, "Unk26", FloatUtil.ToString(Unk26));
+            RelXml.ValueTag(sb, indent, "Unk27", FloatUtil.ToString(Unk27));
+            RelXml.ValueTag(sb, indent, "Unk28", FloatUtil.ToString(Unk28));
+            RelXml.ValueTag(sb, indent, "Unk29", Unk29.ToString());
+            RelXml.ValueTag(sb, indent, "Unk30", Unk30.ToString());
+            RelXml.StringTag(sb, indent, "Unk31", RelXml.HashString(Unk31));
+            RelXml.StringTag(sb, indent, "Unk32", RelXml.HashString(Unk32));
+            RelXml.StringTag(sb, indent, "Unk33", RelXml.HashString(Unk33));
+            RelXml.StringTag(sb, indent, "Unk34", RelXml.HashString(Unk34));
+            RelXml.StringTag(sb, indent, "Unk35", RelXml.HashString(Unk35));
+            RelXml.StringTag(sb, indent, "Unk36", RelXml.HashString(Unk36));
+            RelXml.StringTag(sb, indent, "Unk37", RelXml.HashString(Unk37));
+            RelXml.ValueTag(sb, indent, "Unk38", Unk38.ToString());
+            RelXml.ValueTag(sb, indent, "Unk39", Unk39.ToString());
+            RelXml.StringTag(sb, indent, "Unk40", RelXml.HashString(Unk40));
+            RelXml.StringTag(sb, indent, "Unk41", RelXml.HashString(Unk41));
+            RelXml.ValueTag(sb, indent, "Unk42", Unk42.ToString());
+            RelXml.ValueTag(sb, indent, "Unk43", Unk43.ToString());
+            RelXml.ValueTag(sb, indent, "Unk44", Unk44.ToString());
+            RelXml.StringTag(sb, indent, "Unk45", RelXml.HashString(Unk45));
+            RelXml.ValueTag(sb, indent, "Unk46", Unk46.ToString());
+            RelXml.ValueTag(sb, indent, "Unk47", Unk47.ToString());
+            RelXml.ValueTag(sb, indent, "Unk48", Unk48.ToString());
+            RelXml.ValueTag(sb, indent, "Unk49", Unk49.ToString());
+            RelXml.ValueTag(sb, indent, "Unk50", Unk50.ToString());
+            RelXml.ValueTag(sb, indent, "Unk51", Unk51.ToString());
+            RelXml.StringTag(sb, indent, "Unk52", RelXml.HashString(Unk52));
+            RelXml.StringTag(sb, indent, "Unk53", RelXml.HashString(Unk53));
+            RelXml.ValueTag(sb, indent, "Unk54", Unk54.ToString());
+            RelXml.ValueTag(sb, indent, "Unk55", Unk55.ToString());
+            RelXml.ValueTag(sb, indent, "Unk56", Unk56.ToString());
+            RelXml.ValueTag(sb, indent, "Unk57", Unk57.ToString());
+            RelXml.ValueTag(sb, indent, "Unk58", Unk58.ToString());
+            RelXml.ValueTag(sb, indent, "Unk59", FloatUtil.ToString(Unk59));
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Vehicle : Dat151RelData
+    {
+        public FlagsUint Unk00 { get; set; } //2432719400   0x91005A28
+        public MetaHash Engine { get; set; }
+        public MetaHash EngineGranular { get; set; }
+        public MetaHash Unk03 { get; set; }
+        public MetaHash DoorOpen { get; set; }
+        public MetaHash DoorClose { get; set; }
+        public MetaHash Unk06 { get; set; }
+        public MetaHash Unk07 { get; set; }
+        public MetaHash Unk08 { get; set; }
+        public float Unk09 { get; set; }
+        public MetaHash Unk10 { get; set; }
+        public MetaHash Unk11 { get; set; }
+        public float Unk12 { get; set; }
+        public float Unk13 { get; set; }
+        public MetaHash Unk14 { get; set; }//split? 0x00C2FB47..
+        public int Unk15 { get; set; }
+        public int Unk16 { get; set; }
+        public int Unk17 { get; set; }
+        public MetaHash ScannerParams { get; set; }
+        public MetaHash JumpLandIntact { get; set; }
+        public MetaHash JumpLandLoose { get; set; }
+        public int Unk21 { get; set; }
+        public int Unk22 { get; set; }
+        public FlagsUint Unk23 { get; set; }
+        //public FlagsUshort Unk23a { get; set; }//0x0002
+        //public FlagsUshort Unk23b { get; set; }//0x0801
+        public MetaHash Unk24 { get; set; }
+        public MetaHash Unk25 { get; set; }
+        public MetaHash Unk26 { get; set; }
+        public FlagsUint Unk27 { get; set; }
+        //public FlagsUshort Unk27a { get; set; }
+        //public FlagsUshort Unk27b { get; set; }
+        public MetaHash Unk28 { get; set; }
+        public FlagsUint Unk29 { get; set; }
+        //public FlagsUshort Unk29a { get; set; }//0x0070
+        //public FlagsUshort Unk29b { get; set; }//0x55fc
+        public MetaHash Unk30 { get; set; }
+        public MetaHash Unk31 { get; set; }
+        public MetaHash Unk32 { get; set; }
+        public MetaHash Unk33 { get; set; }//flags??  0xB807DF3E
+        public MetaHash Unk34 { get; set; }//flags??  0xE38FCF16
+        public MetaHash Unk35 { get; set; }
+        public MetaHash Unk36 { get; set; }
+        public float Unk37 { get; set; }
+        public float Unk38 { get; set; }
+        public MetaHash Unk39 { get; set; }
+        public int Unk40 { get; set; }
+        public MetaHash Unk41 { get; set; }//flags? 0x49DF3CF8   0x8E53EC78
+        public int Unk42 { get; set; }
+        public int Unk43 { get; set; }
+        public int Unk44 { get; set; }
+        public MetaHash Unk45 { get; set; }
+        public MetaHash Unk46 { get; set; }
+        public MetaHash Unk47 { get; set; }//flags?  0x83FC62DA
+        public MetaHash TurretSounds { get; set; }
+        public int Unk49 { get; set; }
+        public MetaHash Unk50 { get; set; }//flags? 0x65A95A8B, 0x85439DAD
+        public MetaHash Unk51 { get; set; }//flags? 0x6213618E, 0x990D0483
+        public int Unk52 { get; set; }
+        public MetaHash Unk53 { get; set; }//flags?  0x04D73241, 0x7F471776
+        public float Unk54 { get; set; }
+        public MetaHash Unk55 { get; set; }
+        public int Unk56 { get; set; }
+        public MetaHash Unk57 { get; set; }
+        public MetaHash Unk58 { get; set; }
+        public float Unk59 { get; set; }
+        public int Unk60 { get; set; }
+        public float Unk61 { get; set; }
+        public int Unk62 { get; set; }
+        public MetaHash Unk63 { get; set; }//flags??  0xE38FCF16
+        public int Unk64 { get; set; }
+        public ushort Unk65 { get; set; }
+        public ushort Unk66 { get; set; }
+        public MetaHash Unk67 { get; set; }//flags?  0x536F6CAC
+        public MetaHash Unk68 { get; set; }//flags??  0xE38FCF16
+        public MetaHash Unk69 { get; set; }//flags?  0x7C9B8D8C
+        public int Unk70 { get; set; }
+        public MetaHash Unk71 { get; set; }//flags??  0xE38FCF16
+        public MetaHash Unk72 { get; set; }//flags??  0xE38FCF16
+
+        public Dat151Vehicle(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Vehicle;
+            TypeID = (byte)Type;
+        }
+        public Dat151Vehicle(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk00 = br.ReadUInt32(); //2432719400   0x91005A28
+            Engine = br.ReadUInt32();
+            EngineGranular = br.ReadUInt32();
+            Unk03 = br.ReadUInt32();
+            DoorOpen = br.ReadUInt32();
+            DoorClose = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadSingle();
+            Unk10 = br.ReadUInt32();
+            Unk11 = br.ReadUInt32();
+            Unk12 = br.ReadSingle();
+            Unk13 = br.ReadSingle();
+            Unk14 = br.ReadUInt32();//split? 0x00C2FB47..
+            Unk15 = br.ReadInt32();
+            Unk16 = br.ReadInt32();
+            Unk17 = br.ReadInt32();
+            ScannerParams = br.ReadUInt32();
+            JumpLandIntact = br.ReadUInt32();
+            JumpLandLoose = br.ReadUInt32();
+            Unk21 = br.ReadInt32();
+            Unk22 = br.ReadInt32();
+            Unk23 = br.ReadUInt32();
+            //Unk23a = br.ReadUInt16();//0x0002
+            //Unk23b = br.ReadUInt16();//0x0801
+            Unk24 = br.ReadUInt32();
+            Unk25 = br.ReadUInt32();
+            Unk26 = br.ReadUInt32();
+            Unk27 = br.ReadUInt32();
+            //Unk27a = br.ReadUInt16();
+            //Unk27b = br.ReadUInt16();
+            Unk28 = br.ReadUInt32();
+            Unk29 = br.ReadUInt32();
+            //Unk29a = br.ReadUInt16();//0x0070
+            //Unk29b = br.ReadUInt16();//0x55fc
+            Unk30 = br.ReadUInt32();
+            Unk31 = br.ReadUInt32();
+            Unk32 = br.ReadUInt32();
+            Unk33 = br.ReadUInt32();//flags??  0xB807DF3E
+            Unk34 = br.ReadUInt32();//flags??  0xE38FCF16
+            Unk35 = br.ReadUInt32();
+            Unk36 = br.ReadUInt32();
+            Unk37 = br.ReadSingle();
+            Unk38 = br.ReadSingle();
+            Unk39 = br.ReadUInt32();
+            Unk40 = br.ReadInt32();
+            Unk41 = br.ReadUInt32();//flags? 0x49DF3CF8   0x8E53EC78
+            Unk42 = br.ReadInt32();
+            Unk43 = br.ReadInt32();
+            Unk44 = br.ReadInt32();
+            Unk45 = br.ReadUInt32();
+            Unk46 = br.ReadUInt32();
+            Unk47 = br.ReadUInt32();//flags?  0x83FC62DA
+            TurretSounds = br.ReadUInt32();
+            Unk49 = br.ReadInt32();
+            Unk50 = br.ReadUInt32();//flags? 0x65A95A8B, 0x85439DAD
+            Unk51 = br.ReadUInt32();//flags? 0x6213618E, 0x990D0483
+            Unk52 = br.ReadInt32();
+            Unk53 = br.ReadUInt32();//flags?  0x04D73241, 0x7F471776
+            Unk54 = br.ReadSingle();
+            Unk55 = br.ReadUInt32();
+            Unk56 = br.ReadInt32();
+            Unk57 = br.ReadUInt32();
+            Unk58 = br.ReadUInt32();
+            Unk59 = br.ReadSingle();
+            Unk60 = br.ReadInt32();
+            Unk61 = br.ReadSingle();
+            Unk62 = br.ReadInt32();
+
+
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            switch (bytesleft) //any other way to tell..?
+            {
+                case 0:
+                    break;
+                case 4:
+                    Unk63 = br.ReadUInt32();//flags??  0xE38FCF16
+                    if (Unk63 == 0)
+                    { }
+                    break;
+                case 36:
+                    Unk63 = br.ReadUInt32();//flags??  0xE38FCF16
+                    Unk64 = br.ReadInt32();
+                    Unk65 = br.ReadUInt16();
+                    Unk66 = br.ReadUInt16();
+                    Unk67 = br.ReadUInt32();//flags?  0x536F6CAC
+                    Unk68 = br.ReadUInt32();//flags??  0xE38FCF16
+                    Unk69 = br.ReadUInt32();//flags?  0x7C9B8D8C
+                    Unk70 = br.ReadInt32();
+                    Unk71 = br.ReadUInt32();//flags??  0xE38FCF16
+                    Unk72 = br.ReadUInt32();//flags??  0xE38FCF16
+                    if (Unk70 != 0)
+                    { }
+                    if (Unk68 == 0)
+                    { }
+                    if (Unk71 == 0)
+                    { }
+                    if (Unk72 == 0)
+                    { }
+
+                    break;
+                default:
+                    break;
+            }
+            if (bytesleft != 0)
+            { }
+
+
+
+
+            if (Unk15 != 0)
+            { }
+            if (Unk16 != 0)
+            { }
+            if (Unk17 != 0)
+            { }
+            if (Unk40 != 0)
+            { }
+            if (Unk42 != 0)
+            { }
+            if (Unk43 != 0)
+            { }
+            if (Unk44 != 0)
+            { }
+
+            switch (Unk21)
+            {
+                case 31:
+                case 0:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk22)
+            {
+                case 36:
+                case 100:
+                case 1:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk49)
+            {
+                case 8:
+                case 5:
+                case 3:
+                case 1:
+                case 4:
+                case 0:
+                case 6:
+                case 7:
+                    break;
+                default:
+                    break;
+            }
+            switch (Unk56)
+            {
+                case 2:
+                case 3:
+                case 0:
+                case 1:
+                    break;
+                default:
+                    break;
+            }
+
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            //base.Write(bw);
+            //return;
+
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk00); //2432719400   0x91005A28
+            bw.Write(Engine);
+            bw.Write(EngineGranular);
+            bw.Write(Unk03);
+            bw.Write(DoorOpen);
+            bw.Write(DoorClose);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);//split? 0x00C2FB47..
+            bw.Write(Unk15);
+            bw.Write(Unk16);
+            bw.Write(Unk17);
+            bw.Write(ScannerParams);
+            bw.Write(JumpLandIntact);
+            bw.Write(JumpLandLoose);
+            bw.Write(Unk21);
+            bw.Write(Unk22);
+            bw.Write(Unk23);
+            //bw.Write(Unk23a);//0x0002
+            //bw.Write(Unk23b);//0x0801
+            bw.Write(Unk24);
+            bw.Write(Unk25);
+            bw.Write(Unk26);
+            bw.Write(Unk27);
+            //bw.Write(Unk27a);
+            //bw.Write(Unk27b);
+            bw.Write(Unk28);
+            bw.Write(Unk29);
+            //bw.Write(Unk29a);//0x0070
+            //bw.Write(Unk29b);//0x55fc
+            bw.Write(Unk30);
+            bw.Write(Unk31);
+            bw.Write(Unk32);
+            bw.Write(Unk33);//flags??  0xB807DF3E
+            bw.Write(Unk34);//flags??  0xE38FCF16
+            bw.Write(Unk35);
+            bw.Write(Unk36);
+            bw.Write(Unk37);
+            bw.Write(Unk38);
+            bw.Write(Unk39);
+            bw.Write(Unk40);
+            bw.Write(Unk41);//flags? 0x49DF3CF8   0x8E53EC78
+            bw.Write(Unk42);
+            bw.Write(Unk43);
+            bw.Write(Unk44);
+            bw.Write(Unk45);
+            bw.Write(Unk46);
+            bw.Write(Unk47);//flags?  0x83FC62DA
+            bw.Write(TurretSounds);
+            bw.Write(Unk49);
+            bw.Write(Unk50);//flags? 0x65A95A8B, 0x85439DAD
+            bw.Write(Unk51);//flags? 0x6213618E, 0x990D0483
+            bw.Write(Unk52);
+            bw.Write(Unk53);//flags?  0x04D73241, 0x7F471776
+            bw.Write(Unk54);
+            bw.Write(Unk55);
+            bw.Write(Unk56);
+            bw.Write(Unk57);
+            bw.Write(Unk58);
+            bw.Write(Unk59);
+            bw.Write(Unk60);
+            bw.Write(Unk61);
+            bw.Write(Unk62);
+
+            if (Unk63 != 0)//any better way?
+            {
+                bw.Write(Unk63);
+
+                if ((Unk68 != 0)||(Unk71 != 0) ||(Unk72 != 0))//any better way?
+                {
+                    bw.Write(Unk64);
+                    bw.Write(Unk65);
+                    bw.Write(Unk66);
+                    bw.Write(Unk67);//flags?  0x536F6CAC
+                    bw.Write(Unk68);//flags??  0xE38FCF16
+                    bw.Write(Unk69);//flags?  0x7C9B8D8C
+                    bw.Write(Unk70);
+                    bw.Write(Unk71);//flags??  0xE38FCF16
+                    bw.Write(Unk72);//flags??  0xE38FCF16
+                }
+            }
+
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk00", "0x" + Unk00.Hex);
+            RelXml.StringTag(sb, indent, "Engine", RelXml.HashString(Engine));
+            RelXml.StringTag(sb, indent, "EngineGranular", RelXml.HashString(EngineGranular));
+            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
+            RelXml.StringTag(sb, indent, "DoorOpen", RelXml.HashString(DoorOpen));
+            RelXml.StringTag(sb, indent, "DoorClose", RelXml.HashString(DoorClose));
+            RelXml.StringTag(sb, indent, "Unk06", RelXml.HashString(Unk06));
+            RelXml.StringTag(sb, indent, "Unk07", RelXml.HashString(Unk07));
+            RelXml.StringTag(sb, indent, "Unk08", RelXml.HashString(Unk08));
+            RelXml.ValueTag(sb, indent, "Unk09", FloatUtil.ToString(Unk09));
+            RelXml.StringTag(sb, indent, "Unk10", RelXml.HashString(Unk10));
+            RelXml.StringTag(sb, indent, "Unk11", RelXml.HashString(Unk11));
+            RelXml.ValueTag(sb, indent, "Unk12", FloatUtil.ToString(Unk12));
+            RelXml.ValueTag(sb, indent, "Unk13", FloatUtil.ToString(Unk13));
+            RelXml.StringTag(sb, indent, "Unk14", RelXml.HashString(Unk14));
+            RelXml.ValueTag(sb, indent, "Unk15", Unk15.ToString());
+            RelXml.ValueTag(sb, indent, "Unk16", Unk16.ToString());
+            RelXml.ValueTag(sb, indent, "Unk17", Unk17.ToString());
+            RelXml.StringTag(sb, indent, "ScannerParams", RelXml.HashString(ScannerParams));
+            RelXml.StringTag(sb, indent, "JumpLandIntact", RelXml.HashString(JumpLandIntact));
+            RelXml.StringTag(sb, indent, "JumpLandLoose", RelXml.HashString(JumpLandLoose));
+            RelXml.ValueTag(sb, indent, "Unk21", Unk21.ToString());
+            RelXml.ValueTag(sb, indent, "Unk22", Unk22.ToString());
+            RelXml.ValueTag(sb, indent, "Unk23", "0x" + Unk23.Hex);
+            RelXml.StringTag(sb, indent, "Unk24", RelXml.HashString(Unk24));
+            RelXml.StringTag(sb, indent, "Unk25", RelXml.HashString(Unk25));
+            RelXml.StringTag(sb, indent, "Unk26", RelXml.HashString(Unk26));
+            RelXml.ValueTag(sb, indent, "Unk27", "0x" + Unk27.Hex);
+            RelXml.StringTag(sb, indent, "Unk28", RelXml.HashString(Unk28));
+            RelXml.ValueTag(sb, indent, "Unk29", "0x" + Unk29.Hex);
+            RelXml.StringTag(sb, indent, "Unk30", RelXml.HashString(Unk30));
+            RelXml.StringTag(sb, indent, "Unk31", RelXml.HashString(Unk31));
+            RelXml.StringTag(sb, indent, "Unk32", RelXml.HashString(Unk32));
+            RelXml.StringTag(sb, indent, "Unk33", RelXml.HashString(Unk33));
+            RelXml.StringTag(sb, indent, "Unk34", RelXml.HashString(Unk34));
+            RelXml.StringTag(sb, indent, "Unk35", RelXml.HashString(Unk35));
+            RelXml.StringTag(sb, indent, "Unk36", RelXml.HashString(Unk36));
+            RelXml.ValueTag(sb, indent, "Unk37", FloatUtil.ToString(Unk37));
+            RelXml.ValueTag(sb, indent, "Unk38", FloatUtil.ToString(Unk38));
+            RelXml.StringTag(sb, indent, "Unk39", RelXml.HashString(Unk39));
+            RelXml.ValueTag(sb, indent, "Unk40", Unk40.ToString());
+            RelXml.StringTag(sb, indent, "Unk41", RelXml.HashString(Unk41));
+            RelXml.ValueTag(sb, indent, "Unk42", Unk42.ToString());
+            RelXml.ValueTag(sb, indent, "Unk43", Unk43.ToString());
+            RelXml.ValueTag(sb, indent, "Unk44", Unk44.ToString());
+            RelXml.StringTag(sb, indent, "Unk45", RelXml.HashString(Unk45));
+            RelXml.StringTag(sb, indent, "Unk46", RelXml.HashString(Unk46));
+            RelXml.StringTag(sb, indent, "Unk47", RelXml.HashString(Unk47));
+            RelXml.StringTag(sb, indent, "TurretSounds", RelXml.HashString(TurretSounds));
+            RelXml.ValueTag(sb, indent, "Unk49", Unk49.ToString());
+            RelXml.StringTag(sb, indent, "Unk50", RelXml.HashString(Unk50));
+            RelXml.StringTag(sb, indent, "Unk51", RelXml.HashString(Unk51));
+            RelXml.ValueTag(sb, indent, "Unk52", Unk52.ToString());
+            RelXml.StringTag(sb, indent, "Unk53", RelXml.HashString(Unk53));
+            RelXml.ValueTag(sb, indent, "Unk54", FloatUtil.ToString(Unk54));
+            RelXml.StringTag(sb, indent, "Unk55", RelXml.HashString(Unk55));
+            RelXml.ValueTag(sb, indent, "Unk56", Unk56.ToString());
+            RelXml.StringTag(sb, indent, "Unk57", RelXml.HashString(Unk57));
+            RelXml.StringTag(sb, indent, "Unk58", RelXml.HashString(Unk58));
+            RelXml.ValueTag(sb, indent, "Unk59", FloatUtil.ToString(Unk59));
+            RelXml.ValueTag(sb, indent, "Unk60", Unk60.ToString());
+            RelXml.ValueTag(sb, indent, "Unk61", FloatUtil.ToString(Unk61));
+            RelXml.ValueTag(sb, indent, "Unk62", Unk62.ToString());
+            RelXml.StringTag(sb, indent, "Unk63", RelXml.HashString(Unk63));
+            RelXml.ValueTag(sb, indent, "Unk64", Unk64.ToString());
+            RelXml.ValueTag(sb, indent, "Unk65", Unk65.ToString());
+            RelXml.ValueTag(sb, indent, "Unk66", Unk66.ToString());
+            RelXml.StringTag(sb, indent, "Unk67", RelXml.HashString(Unk67));
+            RelXml.StringTag(sb, indent, "Unk68", RelXml.HashString(Unk68));
+            RelXml.StringTag(sb, indent, "Unk69", RelXml.HashString(Unk69));
+            RelXml.ValueTag(sb, indent, "Unk70", Unk70.ToString());
+            RelXml.StringTag(sb, indent, "Unk71", RelXml.HashString(Unk71));
+            RelXml.StringTag(sb, indent, "Unk72", RelXml.HashString(Unk72));
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151VehicleEngine : Dat151RelData
+    {
+        public int Unk00 { get; set; }
+        public int Unk01 { get; set; }
+        public int Unk02 { get; set; }
+        public int Unk03 { get; set; }
+        public MetaHash Unk04 { get; set; }
+        public MetaHash Unk05 { get; set; }
+        public MetaHash Unk06 { get; set; }
+        public MetaHash Unk07 { get; set; }
+        public MetaHash Unk08 { get; set; }
+        public int Unk09 { get; set; }
+        public int Unk10 { get; set; }
+        public MetaHash Unk11 { get; set; }
+        public MetaHash Unk12 { get; set; }//flags? float?
+        public int Unk13 { get; set; }
+        public int Unk14 { get; set; }
+        public MetaHash Unk15 { get; set; }
+        public int Unk16 { get; set; }
+        public int Unk17 { get; set; }
+        public MetaHash Turbo { get; set; }
+        public int Unk19 { get; set; }
+        public int Unk20 { get; set; }
+        public MetaHash Unk21 { get; set; }
+        public int Unk22 { get; set; }
+        public int Unk23 { get; set; }
+        public MetaHash Transmission { get; set; }
+        public int Unk25 { get; set; }
+        public int Unk26 { get; set; }
+        public int Unk27 { get; set; }
+        public MetaHash Ignition { get; set; }
+        public MetaHash ShutDown { get; set; }
+        public MetaHash Unk30 { get; set; }
+        public MetaHash ExhaustPops { get; set; }
+        public MetaHash Unk32 { get; set; }
+        public int Unk33 { get; set; }
+        public int Unk34 { get; set; }
+        public MetaHash StartupMaster { get; set; }
+        public MetaHash Unk36 { get; set; }
+        public MetaHash Unk37 { get; set; }
+        public MetaHash Unk38 { get; set; }
+        public MetaHash Unk39 { get; set; }//flags? separate?
+        public MetaHash Unk40 { get; set; }
+        public MetaHash Unk41 { get; set; }
+        public int Unk42 { get; set; }
+        public MetaHash Unk43 { get; set; }
+        public MetaHash Unk44 { get; set; }//flags? separate?
+        public int Unk45 { get; set; }
+        public int Unk46 { get; set; }
+        public int Unk47 { get; set; }
+        public int Unk48 { get; set; }
+        public int Unk49 { get; set; }
+        public int Unk50 { get; set; }
+        public MetaHash DumpValve { get; set; }
+        public int Unk52 { get; set; }
+        public MetaHash TransmissionUpgraded { get; set; }
+        public MetaHash TurboUpgraded { get; set; }
+        public MetaHash Unk55 { get; set; }
+        public MetaHash ExhaustPopsUpgraded { get; set; }
+
+        public Dat151VehicleEngine(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.VehicleEngine;
+            TypeID = (byte)Type;
+        }
+        public Dat151VehicleEngine(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk00 = br.ReadInt32();
+            Unk01 = br.ReadInt32();
+            Unk02 = br.ReadInt32();
+            Unk03 = br.ReadInt32();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadInt32();
+            Unk10 = br.ReadInt32();
+            Unk11 = br.ReadUInt32();
+            Unk12 = br.ReadUInt32();//flags? float?
+            Unk13 = br.ReadInt32();
+            Unk14 = br.ReadInt32();
+            Unk15 = br.ReadUInt32();
+            Unk16 = br.ReadInt32();
+            Unk17 = br.ReadInt32();
+            Turbo = br.ReadUInt32();
+            Unk19 = br.ReadInt32();
+            Unk20 = br.ReadInt32();
+            Unk21 = br.ReadUInt32();
+            Unk22 = br.ReadInt32();
+            Unk23 = br.ReadInt32();
+            Transmission = br.ReadUInt32();
+            Unk25 = br.ReadInt32();
+            Unk26 = br.ReadInt32();
+            Unk27 = br.ReadInt32();
+            Ignition = br.ReadUInt32();
+            ShutDown = br.ReadUInt32();
+            Unk30 = br.ReadUInt32();
+            ExhaustPops = br.ReadUInt32();
+            Unk32 = br.ReadUInt32();
+            Unk33 = br.ReadInt32();
+            Unk34 = br.ReadInt32();
+            StartupMaster = br.ReadUInt32();
+            Unk36 = br.ReadUInt32();
+            Unk37 = br.ReadUInt32();
+            Unk38 = br.ReadUInt32();
+            Unk39 = br.ReadUInt32();//flags? separate?
+            Unk40 = br.ReadUInt32();
+            Unk41 = br.ReadUInt32();
+            Unk42 = br.ReadInt32();
+            Unk43 = br.ReadUInt32();
+            Unk44 = br.ReadUInt32();//flags? separate?
+            Unk45 = br.ReadInt32();
+            Unk46 = br.ReadInt32();
+            Unk47 = br.ReadInt32();
+            Unk48 = br.ReadInt32();
+            Unk49 = br.ReadInt32();
+            Unk50 = br.ReadInt32();
+            DumpValve = br.ReadUInt32();//float?
+            Unk52 = br.ReadInt32();
+            TransmissionUpgraded = br.ReadUInt32();
+            TurboUpgraded = br.ReadUInt32();
+            Unk55 = br.ReadUInt32();
+            ExhaustPopsUpgraded = br.ReadUInt32();
+
+            if ((Unk38 != 0) && (Unk38 != 0x4022A088))//float?
+            { }
+            if (Unk46 != 0)
+            { }
+            if (Unk47 != 0)
+            { }
+            if (Unk49 != 0)
+            { }
+            if (Unk50 != 0)
+            { }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk00);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);//flags? float?
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+            bw.Write(Unk16);
+            bw.Write(Unk17);
+            bw.Write(Turbo);
+            bw.Write(Unk19);
+            bw.Write(Unk20);
+            bw.Write(Unk21);
+            bw.Write(Unk22);
+            bw.Write(Unk23);
+            bw.Write(Transmission);
+            bw.Write(Unk25);
+            bw.Write(Unk26);
+            bw.Write(Unk27);
+            bw.Write(Ignition);
+            bw.Write(ShutDown);
+            bw.Write(Unk30);
+            bw.Write(ExhaustPops);
+            bw.Write(Unk32);
+            bw.Write(Unk33);
+            bw.Write(Unk34);
+            bw.Write(StartupMaster);
+            bw.Write(Unk36);
+            bw.Write(Unk37);
+            bw.Write(Unk38);
+            bw.Write(Unk39);//flags? separate?
+            bw.Write(Unk40);
+            bw.Write(Unk41);
+            bw.Write(Unk42);
+            bw.Write(Unk43);
+            bw.Write(Unk44);//flags? separate?
+            bw.Write(Unk45);
+            bw.Write(Unk46);
+            bw.Write(Unk47);
+            bw.Write(Unk48);
+            bw.Write(Unk49);
+            bw.Write(Unk50);
+            bw.Write(DumpValve);//float?
+            bw.Write(Unk52);
+            bw.Write(TransmissionUpgraded);
+            bw.Write(TurboUpgraded);
+            bw.Write(Unk55);
+            bw.Write(ExhaustPopsUpgraded);
+
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk00", Unk00.ToString());
+            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
+            RelXml.StringTag(sb, indent, "Unk04", RelXml.HashString(Unk04));
+            RelXml.StringTag(sb, indent, "Unk05", RelXml.HashString(Unk05));
+            RelXml.StringTag(sb, indent, "Unk06", RelXml.HashString(Unk06));
+            RelXml.StringTag(sb, indent, "Unk07", RelXml.HashString(Unk07));
+            RelXml.StringTag(sb, indent, "Unk08", RelXml.HashString(Unk08));
+            RelXml.ValueTag(sb, indent, "Unk09", Unk09.ToString());
+            RelXml.ValueTag(sb, indent, "Unk10", Unk10.ToString());
+            RelXml.StringTag(sb, indent, "Unk11", RelXml.HashString(Unk11));
+            RelXml.StringTag(sb, indent, "Unk12", RelXml.HashString(Unk12));
+            RelXml.ValueTag(sb, indent, "Unk13", Unk13.ToString());
+            RelXml.ValueTag(sb, indent, "Unk14", Unk14.ToString());
+            RelXml.StringTag(sb, indent, "Unk15", RelXml.HashString(Unk15));
+            RelXml.ValueTag(sb, indent, "Unk16", Unk16.ToString());
+            RelXml.ValueTag(sb, indent, "Unk17", Unk17.ToString());
+            RelXml.StringTag(sb, indent, "Turbo", RelXml.HashString(Turbo));
+            RelXml.ValueTag(sb, indent, "Unk19", Unk19.ToString());
+            RelXml.ValueTag(sb, indent, "Unk20", Unk20.ToString());
+            RelXml.StringTag(sb, indent, "Unk21", RelXml.HashString(Unk21));
+            RelXml.ValueTag(sb, indent, "Unk22", Unk22.ToString());
+            RelXml.ValueTag(sb, indent, "Unk23", Unk23.ToString());
+            RelXml.StringTag(sb, indent, "Transmission", RelXml.HashString(Transmission));
+            RelXml.ValueTag(sb, indent, "Unk25", Unk25.ToString());
+            RelXml.ValueTag(sb, indent, "Unk26", Unk26.ToString());
+            RelXml.ValueTag(sb, indent, "Unk27", Unk27.ToString());
+            RelXml.StringTag(sb, indent, "Ignition", RelXml.HashString(Ignition));
+            RelXml.StringTag(sb, indent, "ShutDown", RelXml.HashString(ShutDown));
+            RelXml.StringTag(sb, indent, "Unk30", RelXml.HashString(Unk30));
+            RelXml.StringTag(sb, indent, "Unk31", RelXml.HashString(ExhaustPops));
+            RelXml.StringTag(sb, indent, "Unk32", RelXml.HashString(Unk32));
+            RelXml.ValueTag(sb, indent, "Unk33", Unk33.ToString());
+            RelXml.ValueTag(sb, indent, "Unk34", Unk34.ToString());
+            RelXml.StringTag(sb, indent, "StartupMaster", RelXml.HashString(StartupMaster));
+            RelXml.StringTag(sb, indent, "Unk36", RelXml.HashString(Unk36));
+            RelXml.StringTag(sb, indent, "Unk37", RelXml.HashString(Unk37));
+            RelXml.StringTag(sb, indent, "Unk38", RelXml.HashString(Unk38));
+            RelXml.StringTag(sb, indent, "Unk39", RelXml.HashString(Unk39));
+            RelXml.StringTag(sb, indent, "Unk40", RelXml.HashString(Unk40));
+            RelXml.StringTag(sb, indent, "Unk41", RelXml.HashString(Unk41));
+            RelXml.ValueTag(sb, indent, "Unk42", Unk42.ToString());
+            RelXml.StringTag(sb, indent, "Unk43", RelXml.HashString(Unk43));
+            RelXml.StringTag(sb, indent, "Unk44", RelXml.HashString(Unk44));
+            RelXml.ValueTag(sb, indent, "Unk45", Unk45.ToString());
+            RelXml.ValueTag(sb, indent, "Unk46", Unk46.ToString());
+            RelXml.ValueTag(sb, indent, "Unk47", Unk47.ToString());
+            RelXml.ValueTag(sb, indent, "Unk48", Unk48.ToString());
+            RelXml.ValueTag(sb, indent, "Unk49", Unk49.ToString());
+            RelXml.ValueTag(sb, indent, "Unk50", Unk50.ToString());
+            RelXml.StringTag(sb, indent, "DumpValve", RelXml.HashString(DumpValve));
+            RelXml.ValueTag(sb, indent, "Unk52", Unk52.ToString());
+            RelXml.StringTag(sb, indent, "TransmissionUpgraded", RelXml.HashString(TransmissionUpgraded));
+            RelXml.StringTag(sb, indent, "TurboUpgraded", RelXml.HashString(TurboUpgraded));
+            RelXml.StringTag(sb, indent, "Unk55", RelXml.HashString(Unk55));
+            RelXml.StringTag(sb, indent, "ExhaustPopsUpgraded", RelXml.HashString(ExhaustPopsUpgraded));
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151VehicleScannerParams : Dat151RelData
+    {
+        public FlagsUint Flags { get; set; }
+        public int ParamCount { get; set; }
+        public Param[] Params;
+
+        public class Param
+        {
+            public MetaHash Unk01 { get; set; }
+            public MetaHash Unk02 { get; set; }
+            public MetaHash Unk03 { get; set; }
+            public MetaHash Unk04 { get; set; }
+        }
+
+        public Dat151VehicleScannerParams(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.VehicleScannerParams;
+            TypeID = (byte)Type;
+        }
+        public Dat151VehicleScannerParams(RelData d, BinaryReader br) : base(d, br)
+        {
+            Flags = br.ReadUInt32();
+            ParamCount = br.ReadInt32();
+            Params = new Param[ParamCount];
+            for (int i = 0; i < ParamCount; i++)
+            {
+                var p = new Param();
+                p.Unk01 = br.ReadUInt32();
+                p.Unk02 = br.ReadUInt32();
+                p.Unk03 = br.ReadUInt32();
+                p.Unk04 = br.ReadUInt32();
+                Params[i] = p;
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Flags);
+            bw.Write(ParamCount);
+            for (int i = 0; i < ParamCount; i++)
+            {
+                var p = Params[i];
+                bw.Write(p.Unk01);
+                bw.Write(p.Unk02);
+                bw.Write(p.Unk03);
+                bw.Write(p.Unk04);
+            }
+
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            if (ParamCount > 0)
+            {
+                RelXml.OpenTag(sb, indent, "Params");
+                var cind = indent + 1;
+                var cind2 = indent + 2;
+                for (int i = 0; i < ParamCount; i++)
+                {
+                    var p = Params[i];
+                    RelXml.OpenTag(sb, cind, "Item");
+                    RelXml.StringTag(sb, cind2, "Unk01", RelXml.HashString(p.Unk01));
+                    RelXml.StringTag(sb, cind2, "Unk02", RelXml.HashString(p.Unk02));
+                    RelXml.StringTag(sb, cind2, "Unk03", RelXml.HashString(p.Unk03));
+                    RelXml.StringTag(sb, cind2, "Unk04", RelXml.HashString(p.Unk04));
+                    RelXml.CloseTag(sb, cind, "Item");
+                }
+                RelXml.CloseTag(sb, indent, "Params");
+            }
+            else
+            {
+                RelXml.SelfClosingTag(sb, indent, "Params");
+            }
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Stream : Dat151RelData
+    {
+        public FlagsUint Flags { get; set; }//flags
+        public MetaHash Unk01 { get; set; }
+        public MetaHash Unk02 { get; set; }
+        public float Unk03 { get; set; }
+        public float Unk04 { get; set; }
+        public float Unk05 { get; set; }
+        public float Unk06 { get; set; }
+        public float Unk07 { get; set; }
+        public int Unk08 { get; set; }
+        public int Unk09 { get; set; }
+        public int Unk10 { get; set; }
+        public MetaHash Unk11 { get; set; }
+        public MetaHash Unk12 { get; set; }
+        public MetaHash Unk13 { get; set; }
+        public float Unk14 { get; set; }
+        public ushort Unk15 { get; set; }
+        public ushort Unk16 { get; set; }
+        public float Unk17 { get; set; }
+        public MetaHash Unk18 { get; set; }
+        public int Unk19 { get; set; }
+        public FlagsUint Unk20 { get; set; }//0x05A00000
+        public float Unk21 { get; set; }
+        public float Unk22 { get; set; }
+
+        public Dat151Stream(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Stream;
+            TypeID = (byte)Type;
+        }
+        public Dat151Stream(RelData d, BinaryReader br) : base(d, br)
+        {
+            Flags = br.ReadUInt32();//flags
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadSingle();
+            Unk04 = br.ReadSingle();
+            Unk05 = br.ReadSingle();
+            Unk06 = br.ReadSingle();
+            Unk07 = br.ReadSingle();
+            Unk08 = br.ReadInt32();
+            Unk09 = br.ReadInt32();
+            Unk10 = br.ReadInt32();
+            Unk11 = br.ReadUInt32();
+            Unk12 = br.ReadUInt32();
+            Unk13 = br.ReadUInt32();
+            Unk14 = br.ReadSingle();
+            Unk15 = br.ReadUInt16();
+            Unk16 = br.ReadUInt16();
+            Unk17 = br.ReadSingle();
+            Unk18 = br.ReadUInt32();
+            Unk19 = br.ReadInt32();
+            Unk20 = br.ReadUInt32();//0x05A00000
+            Unk21 = br.ReadSingle();
+            Unk22 = br.ReadSingle();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+            bw.Write(Flags);//flags
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+            bw.Write(Unk16);
+            bw.Write(Unk17);
+            bw.Write(Unk18);
+            bw.Write(Unk19);
+            bw.Write(Unk20);//0x05A00000
+            bw.Write(Unk21);
+            bw.Write(Unk22);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
+            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
+            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
+            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
+            RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
+            RelXml.ValueTag(sb, indent, "Unk08", Unk08.ToString());
+            RelXml.ValueTag(sb, indent, "Unk09", Unk09.ToString());
+            RelXml.ValueTag(sb, indent, "Unk10", Unk10.ToString());
+            RelXml.StringTag(sb, indent, "Unk11", RelXml.HashString(Unk11));
+            RelXml.StringTag(sb, indent, "Unk12", RelXml.HashString(Unk12));
+            RelXml.StringTag(sb, indent, "Unk13", RelXml.HashString(Unk13));
+            RelXml.ValueTag(sb, indent, "Unk14", FloatUtil.ToString(Unk14));
+            RelXml.ValueTag(sb, indent, "Unk15", Unk15.ToString());
+            RelXml.ValueTag(sb, indent, "Unk16", Unk16.ToString());
+            RelXml.ValueTag(sb, indent, "Unk17", FloatUtil.ToString(Unk17));
+            RelXml.StringTag(sb, indent, "Unk18", RelXml.HashString(Unk18));
+            RelXml.ValueTag(sb, indent, "Unk19", Unk19.ToString());
+            RelXml.ValueTag(sb, indent, "Unk20", "0x" + Unk20.Hex);
+            RelXml.ValueTag(sb, indent, "Unk21", FloatUtil.ToString(Unk21));
+            RelXml.ValueTag(sb, indent, "Unk22", FloatUtil.ToString(Unk22));
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+    [TC(typeof(EXP))] public class Dat151Unk2 : Dat151RelData
+    {
+        public Dat151Unk2(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk2;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk2(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk7 : Dat151RelData
+    {
+        public Dat151Unk7(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk7;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk7(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Helicopter : Dat151RelData
+    {
+        public Dat151Helicopter(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Helicopter;
+            TypeID = (byte)Type;
+        }
+        public Dat151Helicopter(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk9 : Dat151RelData
+    {
+        public Dat151Unk9(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk9;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk9(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk11 : Dat151RelData
+    {
+        public Dat151Unk11(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk11;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk11(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk12 : Dat151RelData
+    {
+        public Dat151Unk12(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk12;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk12(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk13 : Dat151RelData
+    {
+        public Dat151Unk13(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk13;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk13(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151SpeechParams : Dat151RelData
+    {
+        public Dat151SpeechParams(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.SpeechParams;
+            TypeID = (byte)Type;
+        }
+        public Dat151SpeechParams(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk15 : Dat151RelData
+    {
+        public Dat151Unk15(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk15;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk15(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk16 : Dat151RelData
+    {
+        public Dat151Unk16(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk16;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk16(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Weapon : Dat151RelData
+    {
+        public Dat151Weapon(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Weapon;
+            TypeID = (byte)Type;
+        }
+        public Dat151Weapon(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk18 : Dat151RelData
+    {
+        public Dat151Unk18(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk18;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk18(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk22 : Dat151RelData
+    {
+        public Dat151Unk22(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk22;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk22(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk23 : Dat151RelData
+    {
+        public Dat151Unk23(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk23;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk23(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk27 : Dat151RelData
+    {
+        public Dat151Unk27(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk27;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk27(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk28 : Dat151RelData
+    {
+        public Dat151Unk28(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk28;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk28(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk29 : Dat151RelData
+    {
+        public Dat151Unk29(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk29;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk29(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151PedPVG : Dat151RelData
+    {
+        public Dat151PedPVG(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.PedPVG;
+            TypeID = (byte)Type;
+        }
+        public Dat151PedPVG(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk31 : Dat151RelData
+    {
+        public Dat151Unk31(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk31;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk31(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk33 : Dat151RelData
+    {
+        public Dat151Unk33(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk33;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk33(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk35 : Dat151RelData
+    {
+        public Dat151Unk35(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk35;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk35(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk36 : Dat151RelData
+    {
+        public Dat151Unk36(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk36;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk36(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk40 : Dat151RelData
+    {
+        public Dat151Unk40(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk40;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk40(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk41 : Dat151RelData
+    {
+        public Dat151Unk41(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk41;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk41(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk42 : Dat151RelData
+    {
+        public Dat151Unk42(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk42;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk42(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk45 : Dat151RelData
+    {
+        public Dat151Unk45(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk45;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk45(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk48 : Dat151RelData
+    {
+        public Dat151Unk48(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk48;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk48(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk51 : Dat151RelData
+    {
+        public Dat151Unk51(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk51;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk51(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk53 : Dat151RelData
+    {
+        public Dat151Unk53(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk53;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk53(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk54 : Dat151RelData
+    {
+        public Dat151Unk54(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk54;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk54(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk56 : Dat151RelData
+    {
+        public Dat151Unk56(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk56;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk56(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Aeroplane : Dat151RelData
+    {
+        public Dat151Aeroplane(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Aeroplane;
+            TypeID = (byte)Type;
+        }
+        public Dat151Aeroplane(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk59 : Dat151RelData
+    {
+        public Dat151Unk59(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk59;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk59(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk69 : Dat151RelData
+    {
+        public Dat151Unk69(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk69;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk69(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk70 : Dat151RelData
+    {
+        public Dat151Unk70(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk70;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk70(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk71 : Dat151RelData
+    {
+        public Dat151Unk71(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk71;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk71(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk72 : Dat151RelData
+    {
+        public Dat151Unk72(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk72;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk72(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151AnimalParams : Dat151RelData
+    {
+        public Dat151AnimalParams(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.AnimalParams;
+            TypeID = (byte)Type;
+        }
+        public Dat151AnimalParams(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk74 : Dat151RelData
+    {
+        public Dat151Unk74(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk74;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk74(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk75 : Dat151RelData
+    {
+        public Dat151Unk75(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk75;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk75(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk77 : Dat151RelData
+    {
+        public Dat151Unk77(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk77;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk77(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk79 : Dat151RelData
+    {
+        public Dat151Unk79(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk79;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk79(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk80 : Dat151RelData
+    {
+        public Dat151Unk80(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk80;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk80(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk82 : Dat151RelData
+    {
+        public Dat151Unk82(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk82;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk82(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk85 : Dat151RelData
+    {
+        public Dat151Unk85(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk85;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk85(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Explosion : Dat151RelData
+    {
+        public Dat151Explosion(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Explosion;
+            TypeID = (byte)Type;
+        }
+        public Dat151Explosion(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk95 : Dat151RelData
+    {
+        public Dat151Unk95(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk95;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk95(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk96 : Dat151RelData
+    {
+        public Dat151Unk96(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk96;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk96(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk99 : Dat151RelData
+    {
+        public Dat151Unk99(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk99;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk99(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk100 : Dat151RelData
+    {
+        public Dat151Unk100(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk100;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk100(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk101 : Dat151RelData
+    {
+        public Dat151Unk101(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk101;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk101(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk105 : Dat151RelData
+    {
+        public Dat151Unk105(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk105;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk105(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk106 : Dat151RelData
+    {
+        public Dat151Unk106(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk106;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk106(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk107 : Dat151RelData
+    {
+        public Dat151Unk107(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk107;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk107(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk108 : Dat151RelData
+    {
+        public Dat151Unk108(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk108;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk108(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk109 : Dat151RelData
+    {
+        public Dat151Unk109(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk109;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk109(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk110 : Dat151RelData
+    {
+        public Dat151Unk110(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk110;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk110(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk111 : Dat151RelData
+    {
+        public Dat151Unk111(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk111;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk111(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk112 : Dat151RelData
+    {
+        public Dat151Unk112(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk112;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk112(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk113 : Dat151RelData
+    {
+        public Dat151Unk113(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk113;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk113(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk115 : Dat151RelData
+    {
+        public Dat151Unk115(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk115;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk115(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk116 : Dat151RelData
+    {
+        public Dat151Unk116(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk116;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk116(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk118 : Dat151RelData
+    {
+        public Dat151Unk118(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk118;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk118(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk119 : Dat151RelData
+    {
+        public Dat151Unk119(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk119;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk119(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk120 : Dat151RelData
+    {
+        public Dat151Unk120(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk120;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk120(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk121 : Dat151RelData
+    {
+        public Dat151Unk121(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk121;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk121(RelData d, BinaryReader br) : base(d, br)
+        {
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+    }
+
+
+
+
+
+
 
 
 
