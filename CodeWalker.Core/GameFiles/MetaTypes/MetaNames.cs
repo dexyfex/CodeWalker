@@ -3473,6 +3473,9 @@ namespace CodeWalker.GameFiles
 
         eVfxGroup = 679492,
 
+        silence = 3503773450, //used in game.dat151.rel
+        null_sound = 3817852694, //used in game.dat151.rel
+
 
 
 
