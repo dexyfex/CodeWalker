@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -30,6 +31,14 @@ namespace CodeWalker
             string val = node.Attributes[attribute]?.InnerText;
             int i;
             int.TryParse(val, out i);
+            return i;
+        }
+        public static uint GetUIntAttribute(XmlNode node, string attribute)
+        {
+            if (node == null) return 0;
+            string val = node.Attributes[attribute]?.InnerText;
+            uint i;
+            uint.TryParse(val, out i);
             return i;
         }
         public static float GetFloatAttribute(XmlNode node, string attribute)
@@ -182,6 +191,118 @@ namespace CodeWalker
             child.SetAttribute(attributeName, attributeValue);
             return child;
         }
+
+
+
+
+        public static byte[] GetRawByteArray(XmlNode node)
+        {
+            if (node == null) return new byte[0];
+            var data = new List<byte>();
+            var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");
+            for (int i = 0; i < split.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(split[i]))
+                {
+                    var str = split[i];
+                    if (string.IsNullOrEmpty(str)) continue;
+                    var val = Convert.ToByte(str, 16);
+                    data.Add(val);
+                }
+            }
+            return data.ToArray();
+        }
+        public static byte[] GetChildRawByteArray(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            return GetRawByteArray(cnode);
+        }
+
+        public static Vector2[] GetRawVector2Array(XmlNode node)
+        {
+            if (node == null) return new Vector2[0];
+            float x = 0f;
+            float y = 0f;
+            var items = new List<Vector2>();
+            var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
+            for (int i = 0; i < split.Length; i++)
+            {
+                var s = split[i]?.Trim();
+                if (string.IsNullOrEmpty(s)) continue;
+                var split2 = s.Split(',');// Regex.Split(s, @"[\s\t]");
+                int c = 0;
+                x = 0f; y = 0f;
+                for (int n = 0; n < split2.Length; n++)
+                {
+                    var ts = split2[n]?.Trim();
+                    if (string.IsNullOrEmpty(ts)) continue;
+                    var f = FloatUtil.Parse(ts);
+                    switch (c)
+                    {
+                        case 0: x = f; break;
+                        case 1: y = f; break;
+                        //case 2: z = f; break;
+                    }
+                    c++;
+                }
+                if (c >= 2)
+                {
+                    var val = new Vector2(x, y);
+                    items.Add(val);
+                }
+            }
+
+            return items.ToArray();
+        }
+        public static Vector2[] GetChildRawVector2Array(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            return GetRawVector2Array(cnode);
+        }
+
+        public static Vector3[] GetRawVector3Array(XmlNode node)
+        {
+            if (node == null) return new Vector3[0];
+            float x = 0f;
+            float y = 0f;
+            float z = 0f;
+            var items = new List<Vector3>();
+            var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
+            for (int i = 0; i < split.Length; i++)
+            {
+                var s = split[i]?.Trim();
+                if (string.IsNullOrEmpty(s)) continue;
+                var split2 = s.Split(',');// Regex.Split(s, @"[\s\t]");
+                int c = 0;
+                x = 0f; y = 0f;
+                for (int n = 0; n < split2.Length; n++)
+                {
+                    var ts = split2[n]?.Trim();
+                    if (string.IsNullOrEmpty(ts)) continue;
+                    var f = FloatUtil.Parse(ts);
+                    switch (c)
+                    {
+                        case 0: x = f; break;
+                        case 1: y = f; break;
+                        case 2: z = f; break;
+                    }
+                    c++;
+                }
+                if (c >= 3)
+                {
+                    var val = new Vector3(x, y, z);
+                    items.Add(val);
+                }
+            }
+
+            return items.ToArray();
+        }
+        public static Vector3[] GetChildRawVector3Array(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            return GetRawVector3Array(cnode);
+        }
+
 
     }
 }

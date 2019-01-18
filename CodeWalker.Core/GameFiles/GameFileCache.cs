@@ -2401,6 +2401,47 @@ namespace CodeWalker.GameFiles
 
 
 
+                        var relxml = RelXml.GetXml(rel); //XML test...
+                        var rel3 = XmlRel.GetRel(relxml);
+                        if (rel3 != null)
+                        {
+                            if (rel3.RelDatasSorted?.Length != rel.RelDatasSorted?.Length)
+                            { } //check nothing went missing...
+
+                            
+                            data = rel3.Save(); //full roundtrip!
+                            if (data != null)
+                            {
+                                var rel4 = new RelFile();
+                                rel4.Load(data, rfe); //insanity check
+
+                                if (data.Length != rbfe.FileUncompressedSize)
+                                { }
+                                else if (data.Length != rel.RawFileData.Length)
+                                { }
+                                else
+                                {
+                                    for (int i = 0; i < data.Length; i++) //raw file test
+                                        if (data[i] != rel.RawFileData[i])
+                                        { break; }
+                                }
+
+                                var relxml2 = RelXml.GetXml(rel4); //full insanity
+                                if (relxml2.Length != relxml.Length)
+                                { }
+                                if (relxml2 != relxml)
+                                { }
+
+                            }
+                            else
+                            { }
+                        }
+                        else
+                        { }
+
+
+
+
                         //sbi.Clear();
                         //foreach (var rd in rel.RelDatas)
                         //{

@@ -1528,7 +1528,7 @@ namespace CodeWalker.Project
                 cent.rotation = new Vector4(0, 0, 0, 1);
                 cent.scaleXY = 1.0f;
                 cent.scaleZ = 1.0f;
-                cent.flags = 1572872;
+                cent.flags = 32; //1572872;
                 cent.parentIndex = -1;
                 cent.lodDist = 200.0f;
                 cent.lodLevel = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
