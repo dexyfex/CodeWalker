@@ -538,6 +538,7 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.RadioStations: return new Dat151RadioStations(d, br); //
                 case Dat151RelType.RadioStation: return new Dat151RadioStation(d, br);
                 case Dat151RelType.RadioMusic: return new Dat151RadioMusic(d, br);
+                case Dat151RelType.RadioTrackList: return new Dat151RadioTrackList(d, br);
                 case Dat151RelType.Unk49: return new Dat151Unk49(d, br);
                 case Dat151RelType.Unk84: return new Dat151Unk84(d, br);
                 case Dat151RelType.Unk86: return new Dat151Unk86(d, br);
@@ -620,7 +621,6 @@ namespace CodeWalker.GameFiles
                 //case Dat151RelType.Unk116: return new Dat151Unk116(d, br);
                 //case Dat151RelType.Unk118: return new Dat151Unk118(d, br);
                 //case Dat151RelType.Unk119: return new Dat151Unk119(d, br);
-                //case Dat151RelType.Unk120: return new Dat151Unk120(d, br);
                 //case Dat151RelType.Unk121: return new Dat151Unk121(d, br);
 
                 default:
@@ -3264,7 +3264,7 @@ namespace CodeWalker.GameFiles
         Unk117 = 117,
         Unk118 = 118,
         Unk119 = 119,
-        Unk120 = 120, //radio track list?
+        RadioTrackList = 120, //radio track list?
         Unk121 = 121,
     }
 
@@ -4513,12 +4513,12 @@ namespace CodeWalker.GameFiles
         public uint Unk02 { get; set; }
         public ushort Unk03 { get; set; }
         public ushort Unk04 { get; set; }
-        public uint Unk05 { get; set; }
-        public uint Unk06 { get; set; }
+        public uint Unk05 { get; set; }//what is this? maybe shorts
+        public uint Unk06 { get; set; }//what is this? maybe shorts
         public ushort Unk07 { get; set; }
         public ushort Unk08 { get; set; }
-        public uint Unk09 { get; set; }
-        public uint Unk10 { get; set; }
+        public uint Unk09 { get; set; }//what is this? maybe shorts
+        public uint Unk10 { get; set; }//what is this? maybe shorts
         public uint Unk11 { get; set; }
         public uint Unk12 { get; set; }
         public uint Unk13 { get; set; }
@@ -4753,6 +4753,66 @@ namespace CodeWalker.GameFiles
             else
             {
                 RelXml.SelfClosingTag(sb, indent, "Playlists");
+            }
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151RadioTrackList : Dat151RelData
+    {
+        public FlagsUint Unk00 { get; set; }
+        public uint TrackCount { get; set; }
+        public Dat151HashPair[] Tracks { get; set; }
+
+        public Dat151RadioTrackList(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.RadioTrackList;
+            TypeID = (byte)Type;
+        }
+        public Dat151RadioTrackList(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk00 = br.ReadUInt32();
+            TrackCount = br.ReadUInt32();
+            Tracks = new Dat151HashPair[TrackCount];
+            for (int i = 0; i < TrackCount; i++)
+            {
+                Tracks[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk00);
+            bw.Write(TrackCount);
+            for (int i = 0; i < TrackCount; i++)
+            {
+                bw.Write(Tracks[i].Hash0);
+                bw.Write(Tracks[i].Hash1);
+            }
+
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk00", "0x" + Unk00.Hex);
+            if (TrackCount > 0)
+            {
+                RelXml.OpenTag(sb, indent, "Tracks");
+                var cind = indent + 1;
+                var cind2 = indent + 2;
+                for (int i = 0; i < TrackCount; i++)
+                {
+                    RelXml.OpenTag(sb, cind, "Item");
+                    Tracks[i].WriteXml(sb, cind2);
+                    RelXml.CloseTag(sb, cind, "Item");
+                }
+                RelXml.CloseTag(sb, indent, "Tracks");
+            }
+            else
+            {
+                RelXml.SelfClosingTag(sb, indent, "Tracks");
             }
         }
     }
@@ -9189,6 +9249,54 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat151PedPVG : Dat151RelData
     {
+        public FlagsUint Unk00 { get; set; }//flags?
+        public byte Unk01 { get; set; } = 94;
+        public byte Unk02 { get; set; } = 57;
+        public byte Unk03 { get; set; } = 245;
+        public byte ItemCount1 { get; set; }
+        public UnkStruct[] Items1 { get; set; }
+        public byte ItemCount2 { get; set; }
+        public UnkStruct[] Items2 { get; set; }
+        public byte ItemCount3 { get; set; }
+        public UnkStruct[] Items3 { get; set; }
+        public byte Unk07 { get; set; } //item count4? (=0)
+
+
+        public class UnkStruct
+        {
+            public MetaHash Name { get; set; }
+            public FlagsUint Unk1 { get; set; }
+            public FlagsUint Unk2 { get; set; }
+
+            public UnkStruct(BinaryReader br)
+            {
+                Name = br.ReadUInt32();
+                Unk1 = br.ReadUInt32();
+                Unk2 = br.ReadUInt32();
+
+                if (Unk1 != 0)
+                { }//no hit
+                if (Unk2 != 0)
+                { }//no hit
+            }
+            public void Write(BinaryWriter bw)
+            {
+                bw.Write(Name);
+                bw.Write(Unk1);
+                bw.Write(Unk2);
+            }
+            public void WriteXml(StringBuilder sb, int indent)
+            {
+                RelXml.StringTag(sb, indent, "Name", RelXml.HashString(Name));
+                RelXml.ValueTag(sb, indent, "Unk1", Unk1.Value.ToString());
+                RelXml.ValueTag(sb, indent, "Unk2", Unk2.Value.ToString());
+            }
+            public override string ToString()
+            {
+                return Name.ToString() + ", " + Unk1.Value.ToString() + ", " + Unk2.Value.ToString();
+            }
+        }
+
         public Dat151PedPVG(RelFile rel) : base(rel)
         {
             Type = Dat151RelType.PedPVG;
@@ -9196,46 +9304,134 @@ namespace CodeWalker.GameFiles
         }
         public Dat151PedPVG(RelData d, BinaryReader br) : base(d, br)
         {
-            FlagsUint Unk01 = br.ReadUInt32();//flags?
-            MetaHash Unk02 = br.ReadUInt32();
-            MetaHash Unk03 = br.ReadUInt32();//ped name?
-            int Unk04 = br.ReadInt32();
-            FlagsUint Unk05 = br.ReadUInt32();//0
-            FlagsByte Unk06 = br.ReadByte();
-            FlagsByte Unk07 = br.ReadByte();
-            FlagsByte Unk08 = br.ReadByte();
+            Unk00 = br.ReadUInt32();//flags?
+            Unk01 = br.ReadByte();//94
+            Unk02 = br.ReadByte();//57
+            Unk03 = br.ReadByte();//245
 
-            if (Unk04 != 0)
-            { }
-            if (Unk05 != 0)
-            { }
-            if (Unk06 != 0)
-            { }
-            if (Unk07 != 0)
-            { }
-            if (Unk08 != 0)
-            { }
+            ItemCount1 = br.ReadByte();
+            Items1 = new UnkStruct[ItemCount1];
+            for (int i = 0; i < ItemCount1; i++)
+            {
+                Items1[i] = new UnkStruct(br);
+            }
 
-            //yay more weird arrays
-            //List<byte> bytes = new List<byte>();
-            //while (br.BaseStream.Position < br.BaseStream.Length)
+            ItemCount2 = br.ReadByte();
+            Items2 = new UnkStruct[ItemCount2];
+            for (int i = 0; i < ItemCount2; i++)
+            {
+                Items2[i] = new UnkStruct(br);
+            }
+
+            ItemCount3 = br.ReadByte();
+            Items3 = new UnkStruct[ItemCount3];
+            for (int i = 0; i < ItemCount3; i++)
+            {
+                Items3[i] = new UnkStruct(br);
+            }
+
+            Unk07 = br.ReadByte();
+            //Items4 = new UnkStruct[Unk07];
+            //for (int i = 0; i < Unk07; i++)
             //{
-            //    bytes.Add(br.ReadByte());
+            //    Items4[i] = new UnkStruct(br);
             //}
+
 
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
             { }
+            //if (Unk06 != 0)
+            //{ }
+            //if (Unk04 != 0)
+            //{ }
 
         }
         public override void Write(BinaryWriter bw)
         {
-            base.Write(bw);
-            //WriteTypeAndOffset(bw);
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk00);//flags?
+            bw.Write(Unk01);//94
+            bw.Write(Unk02);//57
+            bw.Write(Unk03);//245
+            bw.Write(ItemCount1);
+            for (int i = 0; i < ItemCount1; i++)
+            {
+                Items1[i].Write(bw);
+            }
+            bw.Write(ItemCount2);
+            for (int i = 0; i < ItemCount2; i++)
+            {
+                Items2[i].Write(bw);
+            }
+            bw.Write(ItemCount3);
+            for (int i = 0; i < ItemCount3; i++)
+            {
+                Items3[i].Write(bw);
+            }
+            bw.Write(Unk07);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
+            RelXml.ValueTag(sb, indent, "Unk00", "0x" + Unk00.Hex);
+            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            RelXml.ValueTag(sb, indent, "Unk02", Unk01.ToString());
+            RelXml.ValueTag(sb, indent, "Unk03", Unk01.ToString());
+
+            var cind = indent + 1;
+            var cind2 = indent + 2;
+            if (ItemCount1 > 0)
+            {
+                RelXml.OpenTag(sb, indent, "Items1");
+                for (int i = 0; i < ItemCount1; i++)
+                {
+                    RelXml.OpenTag(sb, cind, "Item");
+                    Items1[i].WriteXml(sb, cind2);
+                    RelXml.CloseTag(sb, cind, "Item");
+                }
+                RelXml.CloseTag(sb, indent, "Items1");
+            }
+            else
+            {
+                RelXml.SelfClosingTag(sb, indent, "Items1");
+            }
+
+            if (ItemCount2 > 0)
+            {
+                RelXml.OpenTag(sb, indent, "Items2");
+                for (int i = 0; i < ItemCount2; i++)
+                {
+                    RelXml.OpenTag(sb, cind, "Item");
+                    Items2[i].WriteXml(sb, cind2);
+                    RelXml.CloseTag(sb, cind, "Item");
+                }
+                RelXml.CloseTag(sb, indent, "Items2");
+            }
+            else
+            {
+                RelXml.SelfClosingTag(sb, indent, "Items2");
+            }
+
+            if (ItemCount3 > 0)
+            {
+                RelXml.OpenTag(sb, indent, "Items3");
+                for (int i = 0; i < ItemCount3; i++)
+                {
+                    RelXml.OpenTag(sb, cind, "Item");
+                    Items3[i].WriteXml(sb, cind2);
+                    RelXml.CloseTag(sb, cind, "Item");
+                }
+                RelXml.CloseTag(sb, indent, "Items3");
+            }
+            else
+            {
+                RelXml.SelfClosingTag(sb, indent, "Items3");
+            }
+
+            RelXml.ValueTag(sb, indent, "Unk07", Unk07.ToString());
+
         }
     }
 
@@ -9248,7 +9444,7 @@ namespace CodeWalker.GameFiles
 
 
 
-
+    //TODO classes
     [TC(typeof(EXP))] public class Dat151Unk2 : Dat151RelData
     {
         public Dat151Unk2(RelFile rel) : base(rel)
@@ -10517,27 +10713,6 @@ namespace CodeWalker.GameFiles
             TypeID = (byte)Type;
         }
         public Dat151Unk119(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            WriteTypeAndOffset(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk120 : Dat151RelData
-    {
-        public Dat151Unk120(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk120;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk120(RelData d, BinaryReader br) : base(d, br)
         {
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
