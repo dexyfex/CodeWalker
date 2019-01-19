@@ -2286,6 +2286,9 @@ namespace CodeWalker.GameFiles
             StringBuilder sbh = new StringBuilder();
             StringBuilder sbi = new StringBuilder();
 
+            bool savetest = true;
+            bool xmltest = true;
+
             foreach (RpfFile rpf in RpfMan.AllRpfs)
             {
                 foreach (RpfEntry entry in rpf.AllEntries)
@@ -2374,6 +2377,8 @@ namespace CodeWalker.GameFiles
                         sb.AppendLine();
 
 
+                        if (!savetest) continue;
+
 
                         byte[] data = rel.Save();
                         if (data != null)
@@ -2389,6 +2394,8 @@ namespace CodeWalker.GameFiles
                                     { break; }
                             }
                         }
+                        else
+                        { }
 
 
                         RelFile rel2 = new RelFile();
@@ -2400,6 +2407,7 @@ namespace CodeWalker.GameFiles
                         { }
 
 
+                        if (!xmltest) continue;
 
                         var relxml = RelXml.GetXml(rel); //XML test...
                         var rel3 = XmlRel.GetRel(relxml);
@@ -2467,17 +2475,35 @@ namespace CodeWalker.GameFiles
             string hashstrs = sbh.ToString();
 
 
-            var wavesmap = RelFile.HashesMap;
-            if (wavesmap.Count > 0)
+            var hashmap = RelFile.HashesMap;
+            if (hashmap.Count > 0)
             { }
 
 
             var sb2 = new StringBuilder();
-            foreach (var kvp in wavesmap)
+            foreach (var kvp in hashmap)
             {
+                string itemtype = kvp.Key.ItemType.ToString();
                 if (kvp.Key.FileType == RelDatFileType.Dat151)
                 {
-                    sb2.Append(((Dat151RelType)kvp.Key.ItemType).ToString());
+                    itemtype = ((Dat151RelType)kvp.Key.ItemType).ToString();
+                }
+                else if (kvp.Key.FileType == RelDatFileType.Dat54DataEntries)
+                {
+                    itemtype = ((Dat54SoundType)kvp.Key.ItemType).ToString();
+                }
+                else
+                {
+                    itemtype = kvp.Key.FileType.ToString() + ".Unk" + kvp.Key.ItemType.ToString();
+                }
+                if (kvp.Key.IsContainer)
+                {
+                    itemtype += " (container)";
+                }
+
+                //if (kvp.Key.FileType == RelDatFileType.Dat151)
+                {
+                    sb2.Append(itemtype);
                     sb2.Append("     ");
                     foreach (var val in kvp.Value)
                     {
@@ -2490,8 +2516,8 @@ namespace CodeWalker.GameFiles
 
             }
 
-            var dat151str = sb2.ToString();
-            if (!string.IsNullOrEmpty(dat151str))
+            var hashmapstr = sb2.ToString();
+            if (!string.IsNullOrEmpty(hashmapstr))
             { }
 
         }
