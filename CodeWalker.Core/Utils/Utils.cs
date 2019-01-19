@@ -114,6 +114,11 @@ namespace CodeWalker
             var c = CultureInfo.InvariantCulture;
             return v.X.ToString(c) + ", " + v.Y.ToString(c);
         }
+        public static string GetVector2XmlString(Vector2 v)
+        {
+            var c = CultureInfo.InvariantCulture;
+            return string.Format("x=\"{0}\" y=\"{1}\"", v.X.ToString(c), v.Y.ToString(c));
+        }
         public static string GetVector3String(Vector3 v)
         {
             var c = CultureInfo.InvariantCulture;

@@ -80,6 +80,10 @@
             this.label16 = new System.Windows.Forms.Label();
             this.InnerPosTextBox = new System.Windows.Forms.TextBox();
             this.GoToButton = new System.Windows.Forms.Button();
+            this.label24 = new System.Windows.Forms.Label();
+            this.Hash0TextBox = new System.Windows.Forms.TextBox();
+            this.label25 = new System.Windows.Forms.Label();
+            this.Hash1TextBox = new System.Windows.Forms.TextBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.SuspendLayout();
@@ -98,6 +102,10 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.label25);
+            this.tabPage1.Controls.Add(this.Hash1TextBox);
+            this.tabPage1.Controls.Add(this.label24);
+            this.tabPage1.Controls.Add(this.Hash0TextBox);
             this.tabPage1.Controls.Add(this.label22);
             this.tabPage1.Controls.Add(this.UnkBytesTextBox);
             this.tabPage1.Controls.Add(this.DeleteButton);
@@ -179,7 +187,7 @@
             this.DeleteButton.Location = new System.Drawing.Point(343, 3);
             this.DeleteButton.Name = "DeleteButton";
             this.DeleteButton.Size = new System.Drawing.Size(93, 23);
-            this.DeleteButton.TabIndex = 77;
+            this.DeleteButton.TabIndex = 81;
             this.DeleteButton.Text = "Delete zone";
             this.DeleteButton.UseVisualStyleBackColor = true;
             this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
@@ -190,7 +198,7 @@
             this.AddToProjectButton.Location = new System.Drawing.Point(452, 3);
             this.AddToProjectButton.Name = "AddToProjectButton";
             this.AddToProjectButton.Size = new System.Drawing.Size(93, 23);
-            this.AddToProjectButton.TabIndex = 76;
+            this.AddToProjectButton.TabIndex = 80;
             this.AddToProjectButton.Text = "Add to project";
             this.AddToProjectButton.UseVisualStyleBackColor = true;
             this.AddToProjectButton.Click += new System.EventHandler(this.AddToProjectButton_Click);
@@ -218,21 +226,21 @@
             // 
             this.label20.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(340, 278);
+            this.label20.Location = new System.Drawing.Point(340, 303);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(193, 13);
-            this.label20.TabIndex = 74;
+            this.label20.TabIndex = 78;
             this.label20.Text = "Ext params:   Name (hash), Value (float)";
             // 
             // ExtParamsTextBox
             // 
             this.ExtParamsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ExtParamsTextBox.Location = new System.Drawing.Point(335, 295);
+            this.ExtParamsTextBox.Location = new System.Drawing.Point(335, 319);
             this.ExtParamsTextBox.Multiline = true;
             this.ExtParamsTextBox.Name = "ExtParamsTextBox";
             this.ExtParamsTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.ExtParamsTextBox.Size = new System.Drawing.Size(209, 116);
-            this.ExtParamsTextBox.TabIndex = 75;
+            this.ExtParamsTextBox.Size = new System.Drawing.Size(209, 92);
+            this.ExtParamsTextBox.TabIndex = 79;
             this.ExtParamsTextBox.WordWrap = false;
             this.ExtParamsTextBox.TextChanged += new System.EventHandler(this.ExtParamsTextBox_TextChanged);
             // 
@@ -240,10 +248,10 @@
             // 
             this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(340, 134);
+            this.label19.Location = new System.Drawing.Point(340, 183);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(46, 13);
-            this.label19.TabIndex = 72;
+            this.label19.TabIndex = 76;
             this.label19.Text = "Hashes:";
             // 
             // label15
@@ -306,12 +314,12 @@
             // HashesTextBox
             // 
             this.HashesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.HashesTextBox.Location = new System.Drawing.Point(335, 151);
+            this.HashesTextBox.Location = new System.Drawing.Point(335, 199);
             this.HashesTextBox.Multiline = true;
             this.HashesTextBox.Name = "HashesTextBox";
             this.HashesTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.HashesTextBox.Size = new System.Drawing.Size(209, 116);
-            this.HashesTextBox.TabIndex = 73;
+            this.HashesTextBox.Size = new System.Drawing.Size(209, 92);
+            this.HashesTextBox.TabIndex = 77;
             this.HashesTextBox.WordWrap = false;
             this.HashesTextBox.TextChanged += new System.EventHandler(this.HashesTextBox_TextChanged);
             // 
@@ -634,6 +642,44 @@
             this.GoToButton.UseVisualStyleBackColor = true;
             this.GoToButton.Click += new System.EventHandler(this.GoToButton_Click);
             // 
+            // label24
+            // 
+            this.label24.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(340, 130);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(44, 13);
+            this.label24.TabIndex = 72;
+            this.label24.Text = "Hash 0:";
+            // 
+            // Hash0TextBox
+            // 
+            this.Hash0TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.Hash0TextBox.Location = new System.Drawing.Point(390, 127);
+            this.Hash0TextBox.Name = "Hash0TextBox";
+            this.Hash0TextBox.Size = new System.Drawing.Size(155, 20);
+            this.Hash0TextBox.TabIndex = 73;
+            this.Hash0TextBox.TextChanged += new System.EventHandler(this.Hash0TextBox_TextChanged);
+            // 
+            // label25
+            // 
+            this.label25.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(340, 154);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(44, 13);
+            this.label25.TabIndex = 74;
+            this.label25.Text = "Hash 1:";
+            // 
+            // Hash1TextBox
+            // 
+            this.Hash1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.Hash1TextBox.Location = new System.Drawing.Point(390, 151);
+            this.Hash1TextBox.Name = "Hash1TextBox";
+            this.Hash1TextBox.Size = new System.Drawing.Size(155, 20);
+            this.Hash1TextBox.TabIndex = 75;
+            this.Hash1TextBox.TextChanged += new System.EventHandler(this.Hash1TextBox_TextChanged);
+            // 
             // EditAudioZonePanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -703,5 +749,9 @@
         private System.Windows.Forms.Button DeleteButton;
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.TextBox UnkBytesTextBox;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.TextBox Hash1TextBox;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.TextBox Hash0TextBox;
     }
 }

@@ -4591,7 +4591,9 @@ namespace CodeWalker.Project
             zone.OuterVec3 = cp ? copy.AudioZone.OuterVec3 : Vector3.Zero;
             zone.UnkVec1 = cp ? copy.AudioZone.UnkVec1 : new Vector4(0, 0, 1, 0);
             zone.UnkVec2 = cp ? copy.AudioZone.UnkVec2 : new Vector4(1, -1, -1, 0);
-            zone.UnkVec3 = cp ? copy.AudioZone.UnkVec3 : new Vector4(0, 0, -1, 0);
+            zone.UnkHash0 = cp ? copy.AudioZone.UnkHash0 : 0;
+            zone.UnkHash1 = cp ? copy.AudioZone.UnkHash1 : 0;
+            zone.UnkVec3 = cp ? copy.AudioZone.UnkVec3 : new Vector2(-1, 0);
             zone.Unk14 = cp ? copy.AudioZone.Unk14 : (byte)4;
             zone.Unk15 = cp ? copy.AudioZone.Unk15 : (byte)1;
             zone.Unk16 = cp ? copy.AudioZone.Unk16 : (byte)0;

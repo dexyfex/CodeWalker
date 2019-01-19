@@ -72,6 +72,8 @@ namespace CodeWalker.Project.Panels
                 Flags0TextBox.Text = string.Empty;
                 Flags1TextBox.Text = string.Empty;
                 Flags2TextBox.Text = string.Empty;
+                Hash0TextBox.Text = string.Empty;
+                Hash1TextBox.Text = string.Empty;
                 HashesTextBox.Text = string.Empty;
                 ExtParamsTextBox.Text = string.Empty;
                 populatingui = false;
@@ -99,11 +101,13 @@ namespace CodeWalker.Project.Panels
                 OuterVec3TextBox.Text = FloatUtil.GetVector3String(z.OuterVec3);
                 UnkVec1TextBox.Text = FloatUtil.GetVector4String(z.UnkVec1);
                 UnkVec2TextBox.Text = FloatUtil.GetVector4String(z.UnkVec2);
-                UnkVec3TextBox.Text = FloatUtil.GetVector4String(z.UnkVec3);
+                UnkVec3TextBox.Text = FloatUtil.GetVector2String(z.UnkVec3);
                 UnkBytesTextBox.Text = string.Format("{0}, {1}, {2}", z.Unk14, z.Unk15, z.Unk16);
                 Flags0TextBox.Text = z.Flags0.Hex;
                 Flags1TextBox.Text = z.Flags1.Hex;
                 Flags2TextBox.Text = z.Flags2.Hex;
+                Hash0TextBox.Text = z.UnkHash0.ToString();
+                Hash1TextBox.Text = z.UnkHash1.ToString();
 
                 StringBuilder sb = new StringBuilder();
                 if (z.Hashes != null)
@@ -410,7 +414,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
-            var vec = FloatUtil.ParseVector4String(UnkVec3TextBox.Text);
+            var vec = FloatUtil.ParseVector2String(UnkVec3TextBox.Text);
             if (CurrentZone.AudioZone.UnkVec3 != vec)
             {
                 CurrentZone.AudioZone.UnkVec3 = vec;
@@ -486,6 +490,48 @@ namespace CodeWalker.Project.Panels
 
                     ProjectItemChanged();
                 }
+            }
+        }
+
+        private void Hash0TextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var hashstr = Hash0TextBox.Text;
+            uint hash = 0;
+            if (!uint.TryParse(hashstr, out hash))//don't re-hash hashes
+            {
+                hash = JenkHash.GenHash(hashstr);
+                JenkIndex.Ensure(hashstr);
+            }
+
+            if (CurrentZone.AudioZone.UnkHash0 != hash)
+            {
+                CurrentZone.AudioZone.UnkHash0 = hash;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void Hash1TextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var hashstr = Hash1TextBox.Text;
+            uint hash = 0;
+            if (!uint.TryParse(hashstr, out hash))//don't re-hash hashes
+            {
+                hash = JenkHash.GenHash(hashstr);
+                JenkIndex.Ensure(hashstr);
+            }
+
+            if (CurrentZone.AudioZone.UnkHash1 != hash)
+            {
+                CurrentZone.AudioZone.UnkHash1 = hash;
+
+                ProjectItemChanged();
             }
         }
 
@@ -570,6 +616,5 @@ namespace CodeWalker.Project.Panels
             ProjectForm.SetProjectItem(CurrentZone);
             ProjectForm.DeleteAudioZone();
         }
-
     }
 }

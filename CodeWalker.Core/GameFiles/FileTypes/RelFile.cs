@@ -824,10 +824,14 @@ namespace CodeWalker.GameFiles
                 {
                     ntlength += (uint)name.Length + 1;
                 }
+                if ((NameTableLength != ntlength)&&(NameTableLength!=0))
+                { }
                 NameTableLength = ntlength;
             }
             else
             {
+                if ((NameTableLength != 4)&& (NameTableLength != 0))
+                { }
                 NameTableCount = 0;
                 NameTableLength = 4;
             }
@@ -848,7 +852,7 @@ namespace CodeWalker.GameFiles
                     break;
                 case RelDatFileType.Dat4://TODO!
                 case RelDatFileType.Dat54DataEntries://TODO!
-                default://TODO..?
+                //default://TODO..?
                     return;
             }
 
@@ -867,32 +871,60 @@ namespace CodeWalker.GameFiles
 
                 var rd = RelDatasSorted[i];
 
-                switch ((Dat151RelType)rd.TypeID)//must be a better way of doing this!
+                switch (RelType)
                 {
-                    case Dat151RelType.AmbientEmitter:
-                    case Dat151RelType.AmbientZone:
-                    case Dat151RelType.Unk101:
-                    case Dat151RelType.Unk35:
-                        while ((ms.Position & 0xF) != 0) bw.Write((byte)0); //align to nearest 16 bytes
-                        break;
-                    case Dat151RelType.Mood:
-                    case Dat151RelType.Unk70:
-                    case Dat151RelType.Unk29:
-                    case Dat151RelType.SpeechParams:
-                    case Dat151RelType.Unk11:
-                    case Dat151RelType.Unk41:
-                    case Dat151RelType.Unk2:
-                    case Dat151RelType.AmbientEmitterList:
-                    case Dat151RelType.Weapon:
-                    case Dat151RelType.Vehicle:
-                    case Dat151RelType.StopTrackAction:
+                    case RelDatFileType.Dat10ModularSynth:
                         while ((ms.Position & 3) != 0) bw.Write((byte)0); //align these to nearest 4 bytes
                         break;
-
+                    case RelDatFileType.Dat15DynamicMixer:
+                        switch (rd.TypeID)
+                        {
+                            case 0:
+                            case 6:
+                            case 5:
+                            case 7:
+                            case 8:
+                                while ((ms.Position & 3) != 0) bw.Write((byte)0); //align these to nearest 4 bytes
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    case RelDatFileType.Dat149:
+                    case RelDatFileType.Dat150:
+                    case RelDatFileType.Dat151:
+                        switch ((Dat151RelType)rd.TypeID)//must be a better way of doing this!
+                        {
+                            case Dat151RelType.AmbientEmitter:
+                            case Dat151RelType.AmbientZone:
+                            case Dat151RelType.Unk101:
+                            case Dat151RelType.Unk35:
+                                while ((ms.Position & 0xF) != 0) bw.Write((byte)0); //align to nearest 16 bytes
+                                break;
+                            case Dat151RelType.Mood:
+                            case Dat151RelType.Unk70:
+                            case Dat151RelType.Unk29:
+                            case Dat151RelType.SpeechParams:
+                            case Dat151RelType.Unk11:
+                            case Dat151RelType.Unk41:
+                            case Dat151RelType.Unk2:
+                            case Dat151RelType.AmbientEmitterList:
+                            case Dat151RelType.Weapon:
+                            case Dat151RelType.Vehicle:
+                            case Dat151RelType.StopTrackAction:
+                                while ((ms.Position & 3) != 0) bw.Write((byte)0); //align these to nearest 4 bytes
+                                break;
+                        }
+                        break;
+                    //case RelDatFileType.Dat4://TODO!
+                    //case RelDatFileType.Dat54DataEntries://TODO!
+                    //    //default://TODO..?
+                    //    return;
                 }
 
+
                 var pos = ms.Position;
-                if (ms.Position != rd.DataOffset)
+                if ((ms.Position != rd.DataOffset)&&(rd.DataOffset!=0))
                 { }
                 rd.DataOffset = (uint)ms.Position;
                 rd.Write(bw);
@@ -908,7 +940,7 @@ namespace CodeWalker.GameFiles
             ms.Position = 0;
             ms.Read(buf, 0, buf.Length);
 
-            if ((DataBlock?.Length ?? 0) != buf.Length)
+            if ((DataBlock!=null)&&(DataBlock.Length != buf.Length))
             { }
 
             DataBlock = buf;
@@ -928,22 +960,37 @@ namespace CodeWalker.GameFiles
                     break;
                 case RelDatFileType.Dat4://TODO!
                 case RelDatFileType.Dat54DataEntries://TODO!
-                default://TODO..?
+                //default://TODO..?
                     return;
             }
 
 
             //for the correct index ordering, needs to be in order of hashes, but with bits rotated right by 8 (why!?)
             var sorted = RelDatasSorted.ToList();
-            //sorted.Sort((a, b) => { return ((uint)a.NameHash).CompareTo((uint)b.NameHash); });
-            sorted.Sort((a, b) => 
+            switch (RelType)
             {
-                var ah = (uint)a.NameHash;
-                var bh = (uint)b.NameHash;
-                var av = (ah >> 8) | (ah << 24);
-                var bv = (bh >> 8) | (bh << 24);
-                return av.CompareTo(bv);
-            });
+                case RelDatFileType.Dat15DynamicMixer:
+                    //don't sort? sort alphabetically?
+                    //break;
+                case RelDatFileType.Dat149:
+                case RelDatFileType.Dat150:
+                case RelDatFileType.Dat151:
+                case RelDatFileType.Dat10ModularSynth:
+                case RelDatFileType.Dat22Categories:
+                case RelDatFileType.Dat16Curves:
+                    sorted.Sort((a, b) => 
+                    {
+                        var ah = (uint)a.NameHash;
+                        var bh = (uint)b.NameHash;
+                        var av = (ah >> 8) | (ah << 24);
+                        var bv = (bh >> 8) | (bh << 24);
+                        return av.CompareTo(bv);
+                    });
+                    break;
+                default:
+                    sorted.Sort((a, b) => { return ((uint)a.NameHash).CompareTo((uint)b.NameHash); });
+                    break;
+            }
             RelDatas = sorted.ToArray();
 
 
@@ -4429,7 +4476,9 @@ namespace CodeWalker.GameFiles
         public Vector3 InnerVec3 { get; set; }
         public Vector4 UnkVec1 { get; set; }
         public Vector4 UnkVec2 { get; set; }
-        public Vector4 UnkVec3 { get; set; }
+        public MetaHash UnkHash0 { get; set; }
+        public MetaHash UnkHash1 { get; set; }
+        public Vector2 UnkVec3 { get; set; }
         public FlagsUint Flags2 { get; set; }
         public byte Unk14 { get; set; }
         public byte Unk15 { get; set; }
@@ -4499,7 +4548,9 @@ namespace CodeWalker.GameFiles
             InnerVec3 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             UnkVec1 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             UnkVec2 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkVec3 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkHash0 = br.ReadUInt32();
+            UnkHash1 = br.ReadUInt32();
+            UnkVec3 = new Vector2(br.ReadSingle(), br.ReadSingle());
 
             Flags2 = br.ReadUInt32();
             Unk14 = br.ReadByte();
@@ -4562,6 +4613,11 @@ namespace CodeWalker.GameFiles
             if (Flags2 != 0)
             { }//eg 0xAE64583B, 0x61083310, 0xCAE96294, 0x1C376176
 
+            if (UnkHash0 != 0)
+            { }
+            if (UnkHash1 != 0)
+            { }
+
             #endregion
 
         }
@@ -4621,10 +4677,14 @@ namespace CodeWalker.GameFiles
             bw.Write(UnkVec2.Y);
             bw.Write(UnkVec2.Z);
             bw.Write(UnkVec2.W);
+            //bw.Write(UnkVec3.X);
+            //bw.Write(UnkVec3.Y);
+            //bw.Write(UnkVec3.Z);
+            //bw.Write(UnkVec3.W);
+            bw.Write(UnkHash0);
+            bw.Write(UnkHash1);
             bw.Write(UnkVec3.X);
             bw.Write(UnkVec3.Y);
-            bw.Write(UnkVec3.Z);
-            bw.Write(UnkVec3.W);
 
             bw.Write(Flags2);
             bw.Write(Unk14);
@@ -4666,7 +4726,11 @@ namespace CodeWalker.GameFiles
             RelXml.SelfClosingTag(sb, indent, "InnerVec3 " + FloatUtil.GetVector3XmlString(InnerVec3));
             RelXml.SelfClosingTag(sb, indent, "UnkVec1 " + FloatUtil.GetVector4XmlString(UnkVec1));
             RelXml.SelfClosingTag(sb, indent, "UnkVec2 " + FloatUtil.GetVector4XmlString(UnkVec2));
-            RelXml.SelfClosingTag(sb, indent, "UnkVec3 " + FloatUtil.GetVector4XmlString(UnkVec3));
+            //RelXml.SelfClosingTag(sb, indent, "UnkVec3 " + FloatUtil.GetVector4XmlString(UnkVec3));
+            RelXml.StringTag(sb, indent, "UnkHash0", RelXml.HashString(UnkHash0));
+            RelXml.StringTag(sb, indent, "UnkHash1", RelXml.HashString(UnkHash1));
+            RelXml.SelfClosingTag(sb, indent, "UnkVec3 " + FloatUtil.GetVector2XmlString(UnkVec3));
+
             RelXml.ValueTag(sb, indent, "Flags2", "0x" + Flags2.Hex);
             RelXml.ValueTag(sb, indent, "Unk14", Unk14.ToString());
             RelXml.ValueTag(sb, indent, "Unk15", Unk15.ToString());
@@ -4723,7 +4787,11 @@ namespace CodeWalker.GameFiles
             InnerVec3 = Xml.GetChildVector3Attributes(node, "InnerVec3", "x", "y", "z");
             UnkVec1 = Xml.GetChildVector4Attributes(node, "UnkVec1", "x", "y", "z", "w");
             UnkVec2 = Xml.GetChildVector4Attributes(node, "UnkVec2", "x", "y", "z", "w");
-            UnkVec3 = Xml.GetChildVector4Attributes(node, "UnkVec3", "x", "y", "z", "w");
+            //UnkVec3 = Xml.GetChildVector4Attributes(node, "UnkVec3", "x", "y", "z", "w");
+            UnkHash0 = XmlRel.GetHash(Xml.GetChildInnerText(node, "UnkHash0"));
+            UnkHash1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "UnkHash1"));
+            UnkVec3 = Xml.GetChildVector2Attributes(node, "UnkVec3", "x", "y");
+
             Flags2 = Xml.GetChildUIntAttribute(node, "Flags2", "value");
             Unk14 = (byte)Xml.GetChildUIntAttribute(node, "Unk14", "value");
             Unk15 = (byte)Xml.GetChildUIntAttribute(node, "Unk15", "value");
@@ -11710,8 +11778,8 @@ namespace CodeWalker.GameFiles
         {
             RelXml.ValueTag(sb, indent, "Unk00", "0x" + Unk00.Hex);
             RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
-            RelXml.ValueTag(sb, indent, "Unk02", Unk01.ToString());
-            RelXml.ValueTag(sb, indent, "Unk03", Unk01.ToString());
+            RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
 
             var cind = indent + 1;
             var cind2 = indent + 2;
