@@ -6291,8 +6291,8 @@ namespace CodeWalker.GameFiles
         public int Unk08 { get; set; }
         public int Unk09 { get; set; }
         public int Unk10 { get; set; }
-        public MetaHash Unk11 { get; set; }
-        public MetaHash Unk12 { get; set; }
+        public MetaHash Interior { get; set; }
+        public MetaHash Room { get; set; }
         public MetaHash Unk13 { get; set; }
         public float Unk14 { get; set; }
         public ushort Unk15 { get; set; }
@@ -6320,8 +6320,8 @@ namespace CodeWalker.GameFiles
             Unk08 = br.ReadInt32();
             Unk09 = br.ReadInt32();
             Unk10 = br.ReadInt32();
-            Unk11 = br.ReadUInt32();
-            Unk12 = br.ReadUInt32();
+            Interior = br.ReadUInt32();
+            Room = br.ReadUInt32();
             Unk13 = br.ReadUInt32();
             Unk14 = br.ReadSingle();
             Unk15 = br.ReadUInt16();
@@ -6351,8 +6351,8 @@ namespace CodeWalker.GameFiles
             bw.Write(Unk08);
             bw.Write(Unk09);
             bw.Write(Unk10);
-            bw.Write(Unk11);
-            bw.Write(Unk12);
+            bw.Write(Interior);
+            bw.Write(Room);
             bw.Write(Unk13);
             bw.Write(Unk14);
             bw.Write(Unk15);
@@ -6375,8 +6375,8 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "Unk08", Unk08.ToString());
             RelXml.ValueTag(sb, indent, "Unk09", Unk09.ToString());
             RelXml.ValueTag(sb, indent, "Unk10", Unk10.ToString());
-            RelXml.StringTag(sb, indent, "Unk11", RelXml.HashString(Unk11));
-            RelXml.StringTag(sb, indent, "Unk12", RelXml.HashString(Unk12));
+            RelXml.StringTag(sb, indent, "Interior", RelXml.HashString(Interior));
+            RelXml.StringTag(sb, indent, "Room", RelXml.HashString(Room));
             RelXml.StringTag(sb, indent, "Unk13", RelXml.HashString(Unk13));
             RelXml.ValueTag(sb, indent, "Unk14", FloatUtil.ToString(Unk14));
             RelXml.ValueTag(sb, indent, "Unk15", Unk15.ToString());
@@ -6399,8 +6399,8 @@ namespace CodeWalker.GameFiles
             Unk08 = Xml.GetChildIntAttribute(node, "Unk08", "value");
             Unk09 = Xml.GetChildIntAttribute(node, "Unk09", "value");
             Unk10 = Xml.GetChildIntAttribute(node, "Unk10", "value");
-            Unk11 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk11"));
-            Unk12 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk12"));
+            Interior = XmlRel.GetHash(Xml.GetChildInnerText(node, "Interior"));
+            Room = XmlRel.GetHash(Xml.GetChildInnerText(node, "Room"));
             Unk13 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk13"));
             Unk14 = Xml.GetChildFloatAttribute(node, "Unk14", "value");
             Unk15 = (ushort)Xml.GetChildUIntAttribute(node, "Unk15", "value");
@@ -11051,7 +11051,7 @@ namespace CodeWalker.GameFiles
         public FlagsUint Unk00 { get; set; } //2432719400   0x91005A28
         public MetaHash Engine { get; set; }
         public MetaHash EngineGranular { get; set; }
-        public MetaHash Unk03 { get; set; }
+        public MetaHash Horns { get; set; }
         public MetaHash DoorOpen { get; set; }
         public MetaHash DoorClose { get; set; }
         public MetaHash Unk06 { get; set; }
@@ -11138,7 +11138,7 @@ namespace CodeWalker.GameFiles
             Unk00 = br.ReadUInt32(); //2432719400   0x91005A28
             Engine = br.ReadUInt32();
             EngineGranular = br.ReadUInt32();
-            Unk03 = br.ReadUInt32();
+            Horns = br.ReadUInt32();
             DoorOpen = br.ReadUInt32();
             DoorClose = br.ReadUInt32();
             Unk06 = br.ReadUInt32();
@@ -11315,7 +11315,7 @@ namespace CodeWalker.GameFiles
             bw.Write(Unk00); //2432719400   0x91005A28
             bw.Write(Engine);
             bw.Write(EngineGranular);
-            bw.Write(Unk03);
+            bw.Write(Horns);
             bw.Write(DoorOpen);
             bw.Write(DoorClose);
             bw.Write(Unk06);
@@ -11406,7 +11406,7 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "Unk00", "0x" + Unk00.Hex);
             RelXml.StringTag(sb, indent, "Engine", RelXml.HashString(Engine));
             RelXml.StringTag(sb, indent, "EngineGranular", RelXml.HashString(EngineGranular));
-            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
+            RelXml.StringTag(sb, indent, "Horns", RelXml.HashString(Horns));
             RelXml.StringTag(sb, indent, "DoorOpen", RelXml.HashString(DoorOpen));
             RelXml.StringTag(sb, indent, "DoorClose", RelXml.HashString(DoorClose));
             RelXml.StringTag(sb, indent, "Unk06", RelXml.HashString(Unk06));
@@ -11482,7 +11482,7 @@ namespace CodeWalker.GameFiles
             Unk00 = Xml.GetChildUIntAttribute(node, "Unk00", "value");
             Engine = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine"));
             EngineGranular = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineGranular"));
-            Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
+            Horns = XmlRel.GetHash(Xml.GetChildInnerText(node, "Horns"));
             DoorOpen = XmlRel.GetHash(Xml.GetChildInnerText(node, "DoorOpen"));
             DoorClose = XmlRel.GetHash(Xml.GetChildInnerText(node, "DoorClose"));
             Unk06 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk06"));
