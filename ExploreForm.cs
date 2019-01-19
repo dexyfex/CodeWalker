@@ -1316,6 +1316,7 @@ namespace CodeWalker
                 case FileTypeAction.ViewYtyp:
                 case FileTypeAction.ViewJPso:
                 case FileTypeAction.ViewCut:
+                case FileTypeAction.ViewRel:
                     return true;
             }
             return false;
@@ -2269,6 +2270,10 @@ namespace CodeWalker
                         MessageBox.Show(fname + ": RBF XML import not yet supported.", "Cannot import XML");
                         continue;
                     }
+                    if (fnamel.EndsWith(".rel.xml"))
+                    {
+                        mformat = MetaFormat.AudioRel;
+                    }
 
                     fname = fname.Substring(0, fname.Length - trimlength);
                     fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
@@ -2309,6 +2314,17 @@ namespace CodeWalker
                         case MetaFormat.RBF:
                             {
                                 //todo!
+                                break;
+                            }
+                        case MetaFormat.AudioRel:
+                            {
+                                var rel = XmlRel.GetRel(doc);
+                                if ((rel.RelDatasSorted == null) || (rel.RelDatas == null))
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import REL XML");
+                                    continue;
+                                }
+                                data = rel.Save();
                                 break;
                             }
                     }

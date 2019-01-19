@@ -46,6 +46,11 @@ namespace CodeWalker.GameFiles
                 CutFile cut = RpfFile.GetFile<CutFile>(e, data);
                 return GetXml(cut, out filename);
             }
+            else if (fnl.EndsWith(".rel"))
+            {
+                RelFile rel = RpfFile.GetFile<RelFile>(e, data);
+                return GetXml(rel, out filename);
+            }
             filename = fn;
             return string.Empty;
         }
@@ -98,6 +103,12 @@ namespace CodeWalker.GameFiles
             if (cut.Pso != null) { filename = fn + ".pso.xml"; return PsoXml.GetXml(cut.Pso); }
             filename = string.Empty;
             return string.Empty;
+        }
+        public static string GetXml(RelFile rel, out string filename)
+        {
+            var fn = (rel?.RpfFileEntry?.Name) ?? "";
+            filename = fn + ".xml";
+            return RelXml.GetXml(rel);
         }
 
 
