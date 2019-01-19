@@ -14331,6 +14331,7 @@ namespace CodeWalker.GameFiles
             }
             else
             {
+                JenkIndex.Ensure(str);
                 return JenkHash.GenHash(str);
             }
         }
