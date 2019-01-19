@@ -1361,10 +1361,10 @@ namespace CodeWalker
                 switch (ft.DefaultAction)
                 {
                     case FileTypeAction.ViewText:
-                        ViewText(name, path, data);
+                        ViewText(name, path, data, item.File);
                         break;
                     case FileTypeAction.ViewXml:
-                        ViewXml(name, path, data);
+                        ViewXml(name, path, data, item.File);
                         break;
                     case FileTypeAction.ViewYtd:
                         ViewYtd(name, path, data, item.File);
@@ -1467,19 +1467,19 @@ namespace CodeWalker
             f.Show();
             f.LoadData(name, path, data);
         }
-        private void ViewXml(string name, string path, byte[] data)
+        private void ViewXml(string name, string path, byte[] data, RpfFileEntry e)
         {
             string xml = Encoding.UTF8.GetString(data);
-            XmlForm f = new XmlForm();
+            XmlForm f = new XmlForm(this);
             f.Show();
-            f.LoadXml(name, path, xml);
+            f.LoadXml(name, path, xml, e);
         }
-        private void ViewText(string name, string path, byte[] data)
+        private void ViewText(string name, string path, byte[] data, RpfFileEntry e)
         {
             string txt = Encoding.UTF8.GetString(data);
-            TextForm f = new TextForm();
+            TextForm f = new TextForm(this);
             f.Show();
-            f.LoadText(name, path, txt);
+            f.LoadText(name, path, txt, e);
         }
         private void ViewYtd(string name, string path, byte[] data, RpfFileEntry e)
         {

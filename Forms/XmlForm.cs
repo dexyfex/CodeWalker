@@ -1,4 +1,5 @@
-﻿using CodeWalker.Properties;
+﻿using CodeWalker.GameFiles;
+using CodeWalker.Properties;
 using FastColoredTextBoxNS;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace CodeWalker.Forms
 {
@@ -42,19 +44,25 @@ namespace CodeWalker.Forms
         private bool LoadingXml = false;
         private bool DelayHighlight = false;
 
+        private ExploreForm exploreForm = null;
+        public RpfFileEntry rpfFileEntry { get; private set; } = null;
 
-        public XmlForm()
+
+        public XmlForm(ExploreForm owner)
         {
+            exploreForm = owner;
+
             InitializeComponent();
         }
 
 
 
-        public void LoadXml(string filename, string filepath, string xml)
+        public void LoadXml(string filename, string filepath, string xml, RpfFileEntry e)
         {
             FileName = filename;
             FilePath = filepath;
             Xml = xml;
+            rpfFileEntry = e;
             modified = false;
         }
 
@@ -153,6 +161,26 @@ namespace CodeWalker.Forms
         }
         private void SaveDocument(bool saveAs = false)
         {
+            if (saveAs == false)
+            {
+                var doc = new XmlDocument();
+                try
+                {
+                    doc.LoadXml(xml);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("There's something wrong with your XML document:\r\n" + ex.Message, "Unable to parse XML");
+                    return;
+                }
+                if (SaveToRPF(xml))
+                {
+                    return;
+                }
+                //if saving to RPF failed for whatever reason, fallback to saving the file in the filesystem.
+                saveAs = true;
+            }
+
             if (string.IsNullOrEmpty(FileName)) saveAs = true;
             if (string.IsNullOrEmpty(FilePath)) saveAs = true;
             else if ((FilePath.ToLowerInvariant().StartsWith(GTAFolder.CurrentGTAFolder.ToLowerInvariant()))) saveAs = true;
@@ -179,6 +207,58 @@ namespace CodeWalker.Forms
             FileName = new FileInfo(fn).Name;
         }
 
+
+
+
+
+        private bool SaveToRPF(string txt)
+        {
+
+            if (!(exploreForm?.EditMode ?? false)) return false;
+            if (rpfFileEntry?.Parent == null) return false;
+
+            byte[] data = null;
+
+            data = Encoding.UTF8.GetBytes(txt);
+
+            if (data == null)
+            {
+                MessageBox.Show("Unspecified error - data was null!", "Cannot save XML file");
+                return false;
+            }
+
+            if (!rpfFileEntry.Path.ToLowerInvariant().StartsWith("mods"))
+            {
+                if (MessageBox.Show("This file is NOT located in the mods folder - Are you SURE you want to save this file?\r\nWARNING: This could cause permanent damage to your game!!!", "WARNING: Are you sure about this?", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                {
+                    return false;//that was a close one
+                }
+            }
+
+            try
+            {
+                if (!(exploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false)) return false;
+
+                var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
+                if (newentry != rpfFileEntry)
+                { }
+                rpfFileEntry = newentry;
+
+                exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+
+                modified = false;
+
+                StatusLabel.Text = "XML file saved successfully at " + DateTime.Now.ToString();
+
+                return true; //victory!
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving file to RPF! The RPF archive may be corrupted...\r\n" + ex.ToString(), "Really Bad Error");
+            }
+
+            return false;
+        }
 
 
 
