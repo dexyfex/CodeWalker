@@ -1837,6 +1837,7 @@ namespace CodeWalker.GameFiles
         PSO = 2,
         RBF = 3,
         CacheFile = 4,
+        AudioRel = 5,
     }
 
 }

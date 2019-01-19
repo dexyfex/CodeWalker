@@ -400,6 +400,8 @@ namespace CodeWalker.Forms
 
                 modified = false;
 
+                StatusLabel.Text = metaFormat.ToString() + " file saved successfully at " + DateTime.Now.ToString();
+
                 return true; //victory!
             }
             catch (Exception ex)

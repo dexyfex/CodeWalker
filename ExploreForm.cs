@@ -1580,7 +1580,7 @@ namespace CodeWalker
         private void ViewRel(string name, string path, byte[] data, RpfFileEntry e)
         {
             var rel = RpfFile.GetFile<RelFile>(e, data);
-            RelForm f = new RelForm();
+            RelForm f = new RelForm(this);
             f.Show();
             f.LoadRel(rel);
         }
