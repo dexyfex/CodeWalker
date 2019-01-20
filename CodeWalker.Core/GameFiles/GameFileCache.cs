@@ -2376,53 +2376,14 @@ namespace CodeWalker.GameFiles
 
                         sb.AppendLine();
 
+                        byte[] data;
 
-                        if (!savetest) continue;
-
-
-                        byte[] data = rel.Save();
-                        if (data != null)
+                        if (savetest)
                         {
-                            if (data.Length != rbfe.FileUncompressedSize)
-                            { }
-                            else if (data.Length != rel.RawFileData.Length)
-                            { }
-                            else
-                            {
-                                for (int i = 0; i < data.Length; i++) //raw file test
-                                    if (data[i] != rel.RawFileData[i])
-                                    { break; }
-                            }
-                        }
-                        else
-                        { }
 
-
-                        RelFile rel2 = new RelFile();
-                        rel2.Load(data, rfe);//roundtrip test
-
-                        if (rel2.IndexCount != rel.IndexCount)
-                        { }
-                        if (rel2.RelDatas == null)
-                        { }
-
-
-                        if (!xmltest) continue;
-
-                        var relxml = RelXml.GetXml(rel); //XML test...
-                        var rel3 = XmlRel.GetRel(relxml);
-                        if (rel3 != null)
-                        {
-                            if (rel3.RelDatasSorted?.Length != rel.RelDatasSorted?.Length)
-                            { } //check nothing went missing...
-
-                            
-                            data = rel3.Save(); //full roundtrip!
+                            data = rel.Save();
                             if (data != null)
                             {
-                                var rel4 = new RelFile();
-                                rel4.Load(data, rfe); //insanity check
-
                                 if (data.Length != rbfe.FileUncompressedSize)
                                 { }
                                 else if (data.Length != rel.RawFileData.Length)
@@ -2434,20 +2395,62 @@ namespace CodeWalker.GameFiles
                                         { break; }
                                 }
 
-                                var relxml2 = RelXml.GetXml(rel4); //full insanity
-                                if (relxml2.Length != relxml.Length)
+
+                                RelFile rel2 = new RelFile();
+                                rel2.Load(data, rfe);//roundtrip test
+
+                                if (rel2.IndexCount != rel.IndexCount)
                                 { }
-                                if (relxml2 != relxml)
+                                if (rel2.RelDatas == null)
                                 { }
 
                             }
                             else
                             { }
+
                         }
-                        else
-                        { }
+
+                        if (xmltest)
+                        {
+                            var relxml = RelXml.GetXml(rel); //XML test...
+                            var rel3 = XmlRel.GetRel(relxml);
+                            if (rel3 != null)
+                            {
+                                if (rel3.RelDatasSorted?.Length != rel.RelDatasSorted?.Length)
+                                { } //check nothing went missing...
 
 
+                                data = rel3.Save(); //full roundtrip!
+                                if (data != null)
+                                {
+                                    var rel4 = new RelFile();
+                                    rel4.Load(data, rfe); //insanity check
+
+                                    if (data.Length != rbfe.FileUncompressedSize)
+                                    { }
+                                    else if (data.Length != rel.RawFileData.Length)
+                                    { }
+                                    else
+                                    {
+                                        for (int i = 0; i < data.Length; i++) //raw file test
+                                            if (data[i] != rel.RawFileData[i])
+                                            { break; }
+                                    }
+
+                                    var relxml2 = RelXml.GetXml(rel4); //full insanity
+                                    if (relxml2.Length != relxml.Length)
+                                    { }
+                                    if (relxml2 != relxml)
+                                    { }
+
+                                }
+                                else
+                                { }
+                            }
+                            else
+                            { }
+
+                        }
 
 
                         //sbi.Clear();

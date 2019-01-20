@@ -75,7 +75,7 @@ namespace CodeWalker.GameFiles
         public uint[] NameTableOffsets { get; set; }
         public string[] NameTable { get; set; }
         public uint IndexCount { get; set; }
-        public uint IndexStringFlags { get; set; }
+        public uint IndexStringFlags { get; set; } = 2524;
         public RelIndexHash[] IndexHashes { get; set; }
         public RelIndexString[] IndexStrings { get; set; }
         public uint HashTableCount { get; set; }
@@ -87,9 +87,9 @@ namespace CodeWalker.GameFiles
 
         public RelData[] RelDatas { get; set; }
         public RelData[] RelDatasSorted { get; set; }
-        //testing zone for decoding .rel audio files.
-
         public Dictionary<uint, RelData> RelDataDict { get; set; } = new Dictionary<uint, RelData>();
+
+        public bool IsAudioConfig { get; set; }
 
 
         //fields used by the editor:
@@ -156,6 +156,7 @@ namespace CodeWalker.GameFiles
             {
                 if ((RelType == RelDatFileType.Dat4) && (NameTableLength == 4))//audioconfig.dat4.rel    //checking NameTableLength here doesn't make sense!
                 {
+                    IsAudioConfig = true;
                     IndexStringFlags = br.ReadUInt32(); //what is this?  2524
                     if (IndexStringFlags != 2524)
                     { }
@@ -174,6 +175,7 @@ namespace CodeWalker.GameFiles
                         ristr.Offset = br.ReadUInt32();
                         ristr.Length = br.ReadUInt32();
                         indexstrs[i] = ristr;
+                        JenkIndex.Ensure(ristr.Name.ToLowerInvariant());
                     }
                     IndexStrings = indexstrs;
                 }
@@ -431,8 +433,22 @@ namespace CodeWalker.GameFiles
 
         private RelData ReadData4(RelData d, BinaryReader br)
         {
-            if (NameTableLength == 4) //(for audioconfig.dat4.rel)
+            if (IsAudioConfig) //(for audioconfig.dat4.rel)
             {
+                switch ((Dat4ConfigType)d.TypeID)
+                {
+                    case Dat4ConfigType.Int: return new Dat4ConfigInt(d, br);
+                    case Dat4ConfigType.Int2: return new Dat4ConfigInt2(d, br);
+                    case Dat4ConfigType.Float: return new Dat4ConfigFloat(d, br);
+                    case Dat4ConfigType.String: return new Dat4ConfigString(d, br);
+                    case Dat4ConfigType.Orientation: return new Dat4ConfigOrientation(d, br);
+                    case Dat4ConfigType.VariableList: return new Dat4ConfigVariableList(d, br);
+                    case Dat4ConfigType.WaveSlot: return new Dat4ConfigWaveSlot(d, br);
+                    case Dat4ConfigType.WaveSlotsList: return new Dat4ConfigWaveSlotsList(d, br);
+                    case Dat4ConfigType.UnkER: return new Dat4ConfigUnkER(d, br);
+                    default:
+                        break;
+                }
             }
             else //(for eg speech.dat4.rel)
             {
@@ -797,6 +813,32 @@ namespace CodeWalker.GameFiles
                         default:
                             return new Dat151RelData(this, (Dat151RelType)dataType);
                     }
+                case RelDatFileType.Dat4:
+                    if (IsAudioConfig)
+                    {
+                        switch((Dat4ConfigType)dataType)
+                        {
+                            case Dat4ConfigType.Int: return new Dat4ConfigInt(this);
+                            case Dat4ConfigType.Int2: return new Dat4ConfigInt2(this);
+                            case Dat4ConfigType.Float: return new Dat4ConfigFloat(this);
+                            case Dat4ConfigType.String: return new Dat4ConfigString(this);
+                            case Dat4ConfigType.Orientation: return new Dat4ConfigOrientation(this);
+                            case Dat4ConfigType.VariableList: return new Dat4ConfigVariableList(this);
+                            case Dat4ConfigType.WaveSlot: return new Dat4ConfigWaveSlot(this);
+                            case Dat4ConfigType.WaveSlotsList: return new Dat4ConfigWaveSlotsList(this);
+                            case Dat4ConfigType.UnkER: return new Dat4ConfigUnkER(this);
+                            default:
+                                d = new RelData(this);
+                                d.TypeID = (byte)dataType;
+                                return d;
+                        }
+                    }
+                    else
+                    {
+                        d = new RelData(this);
+                        d.TypeID = (byte)dataType;
+                        return d;
+                    }
                 default:
                     d = new RelData(this);
                     d.TypeID = (byte)dataType;
@@ -847,7 +889,12 @@ namespace CodeWalker.GameFiles
             switch (RelType)
             {
                 case RelDatFileType.Dat4://TODO!
-                    return;
+                    if (!IsAudioConfig)
+                    {
+                        DataBlock = null;
+                        return;
+                    }
+                    break;
             }
 
 
@@ -910,10 +957,17 @@ namespace CodeWalker.GameFiles
                                 break;
                         }
                         break;
-                    //case RelDatFileType.Dat4://TODO!
-                    //case RelDatFileType.Dat54DataEntries://TODO!
-                    //    //default://TODO..?
-                    //    return;
+                    case RelDatFileType.Dat4:
+                        if (IsAudioConfig)
+                        {
+                            switch ((Dat4ConfigType)rd.TypeID)
+                            {
+                                case Dat4ConfigType.Orientation:
+                                    while ((ms.Position & 0xF) != 0) bw.Write((byte)0); //align to nearest 16 bytes
+                                    break;
+                            }
+                        }
+                        break;
                 }
 
 
@@ -949,7 +1003,8 @@ namespace CodeWalker.GameFiles
             switch (RelType)
             {
                 case RelDatFileType.Dat4://TODO!
-                    return;
+                    if(!IsAudioConfig) return;
+                    break;
             }
 
 
@@ -958,8 +1013,6 @@ namespace CodeWalker.GameFiles
             switch (RelType)
             {
                 case RelDatFileType.Dat15DynamicMixer:
-                    //don't sort? sort alphabetically?
-                    //break;
                 case RelDatFileType.Dat149:
                 case RelDatFileType.Dat150:
                 case RelDatFileType.Dat151:
@@ -977,43 +1030,47 @@ namespace CodeWalker.GameFiles
                     });
                     break;
                 default:
-                    sorted.Sort((a, b) => { return ((uint)a.NameHash).CompareTo((uint)b.NameHash); });
+                    if (!IsAudioConfig)//don't sort audioconfig
+                    {
+                        sorted.Sort((a, b) => { return ((uint)a.NameHash).CompareTo((uint)b.NameHash); });
+                    }
                     break;
             }
             RelDatas = sorted.ToArray();
 
 
-
-            var hashes = new RelIndexHash[RelDatas.Length];
-            for (int i = 0; i < RelDatas.Length; i++)
+            if (IsAudioConfig)
             {
-                var rd = RelDatas[i];
-                hashes[i] = new RelIndexHash() { Name = rd.NameHash, Offset = rd.DataOffset, Length = rd.DataLength };
-            }
-            //if (hashes.Length != IndexHashes.Length)
-            //{ }
-
-            IndexHashes = hashes;
-            //IndexCount = (uint)hashes.Length;
-
-            if ((RelType == RelDatFileType.Dat4) && (NameTableLength == 4))
-            {
+                var strs = new RelIndexString[RelDatas.Length];
+                for (int i = 0; i < RelDatas.Length; i++)
+                {
+                    var rd = RelDatas[i];
+                    strs[i] = new RelIndexString() { Name = rd.Name, Offset = rd.DataOffset, Length = rd.DataLength };
+                }
+                IndexStrings = strs;
                 IndexCount = (uint)(IndexStrings?.Length ?? 0);
             }
             else
             {
+
+                var hashes = new RelIndexHash[RelDatas.Length];
+                for (int i = 0; i < RelDatas.Length; i++)
+                {
+                    var rd = RelDatas[i];
+                    hashes[i] = new RelIndexHash() { Name = rd.NameHash, Offset = rd.DataOffset, Length = rd.DataLength };
+                }
+                //if (hashes.Length != IndexHashes.Length)
+                //{ }
+
+                IndexHashes = hashes;
+                //IndexCount = (uint)hashes.Length;
+
                 IndexCount = (uint)(IndexHashes?.Length ?? 0);
             }
         }
         private void BuildHashTable()
         {
             if (RelDatasSorted == null) return;
-
-            switch (RelType)
-            {
-                case RelDatFileType.Dat4://TODO!
-                    return;
-            }
 
             var htoffsets = new List<uint>();
             foreach (var rd in RelDatasSorted)
@@ -1068,11 +1125,6 @@ namespace CodeWalker.GameFiles
         }
         private void BuildPackTable()
         {
-            switch (RelType)
-            {
-                case RelDatFileType.Dat4://TODO!
-                    return;
-            }
 
             var ptoffsets = new List<uint>();
             foreach (var rd in RelDatasSorted)
@@ -1137,7 +1189,7 @@ namespace CodeWalker.GameFiles
                     break;
             }
 
-            if ((relType != RelDatFileType.Dat54DataEntries))// && (relType != RelDatFileType.Dat4))
+            if (relType != RelDatFileType.Dat4)
             { return; }
 
 
@@ -1326,7 +1378,7 @@ namespace CodeWalker.GameFiles
             bw.Write(IndexCount);
             if (IndexCount > 0)
             {
-                if ((RelType == RelDatFileType.Dat4) && (NameTableLength == 4))//audioconfig.dat4.rel    //checking NameTableLength here doesn't make sense!
+                if (IsAudioConfig)//audioconfig.dat4.rel
                 {
                     bw.Write(IndexStringFlags); //should be 2524..? could be a length?
                     for (uint i = 0; i < IndexCount; i++)
@@ -1932,13 +1984,20 @@ namespace CodeWalker.GameFiles
         public void WriteAudioTracksXml(StringBuilder sb, int indent)
         {
             if (AudioTrackHashes == null) return;
-            RelXml.OpenTag(sb, indent, "AudioTracks");
-            var cind = indent + 1;
-            foreach (var hash in AudioTrackHashes)
+            if (AudioTrackHashes.Length > 0)
             {
-                RelXml.StringTag(sb, cind, "Item", RelXml.HashString(hash));
+                RelXml.OpenTag(sb, indent, "AudioTracks");
+                var cind = indent + 1;
+                foreach (var hash in AudioTrackHashes)
+                {
+                    RelXml.StringTag(sb, cind, "Item", RelXml.HashString(hash));
+                }
+                RelXml.CloseTag(sb, indent, "AudioTracks");
             }
-            RelXml.CloseTag(sb, indent, "AudioTracks");
+            else
+            {
+                RelXml.SelfClosingTag(sb, indent, "AudioTracks");
+            }
         }
 
 
@@ -14134,7 +14193,799 @@ namespace CodeWalker.GameFiles
 
 
 
+    #region dat4 (config)
 
+
+    public enum Dat4ConfigType : byte
+    {
+        Int = 0,
+        Int2 = 1,
+        Float = 2,
+        String = 3,
+        Orientation = 5,
+        VariableList = 7,
+        WaveSlot = 8,
+        WaveSlotsList = 9,
+        UnkER = 10,
+    }
+
+    [TC(typeof(EXP))] public class Dat4ConfigData : RelData
+    {
+        public Dat4ConfigType Type { get; set; }
+        public uint NameTableOffset { get; set; }
+        public FlagsUint Flags { get; set; } = 0xAAAAAAAA;
+
+        public Dat4ConfigData(RelFile rel) : base(rel) { }
+        public Dat4ConfigData(RelFile rel, Dat4ConfigType type) : base(rel)
+        {
+            Type = type;
+            TypeID = (byte)type;
+        }
+        public Dat4ConfigData(RelData d, BinaryReader br) : base(d)
+        {
+            Type = (Dat4ConfigType)TypeID;
+
+            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+
+            NameTableOffset = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
+            Flags = br.ReadUInt32();
+
+            if (Flags != 0xAAAAAAAA)
+            { }
+        }
+
+        public override void Write(BinaryWriter bw)
+        {
+            //don't use this as a fallback case, since it won't write as raw data
+            //base.Write(bw);
+            var val = ((NameTableOffset & 0xFFFFFF) << 8) + TypeID;
+            bw.Write(val);
+            bw.Write(Flags);
+        }
+
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            //base.WriteXml(sb, indent);
+            //RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            //base.ReadXml(node);
+            //Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            Flags = 0xAAAAAAAA; //it's always this value so what's the point of putting it in XML?
+        }
+
+        public override string ToString()
+        {
+            return GetBaseString() + ": " + Type.ToString();
+        }
+    }
+
+    [TC(typeof(EXP))] public class Dat4ConfigInt : Dat4ConfigData
+    {
+        public int Value { get; set; }
+
+        public Dat4ConfigInt(RelFile rel) : base(rel)
+        {
+            Type = Dat4ConfigType.Int;
+            TypeID = (byte)Type;
+        }
+        public Dat4ConfigInt(RelData d, BinaryReader br) : base(d, br)
+        {
+            Value = br.ReadInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            base.Write(bw);
+            bw.Write(Value);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            base.WriteXml(sb, indent);
+            RelXml.ValueTag(sb, indent, "Value", Value.ToString());
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            Value = Xml.GetChildIntAttribute(node, "Value", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat4ConfigInt2 : Dat4ConfigData
+    {
+        public int Value { get; set; }
+
+        public Dat4ConfigInt2(RelFile rel) : base(rel)
+        {
+            Type = Dat4ConfigType.Int2;
+            TypeID = (byte)Type;
+        }
+        public Dat4ConfigInt2(RelData d, BinaryReader br) : base(d, br)
+        {
+            Value = br.ReadInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            base.Write(bw);
+            bw.Write(Value);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            base.WriteXml(sb, indent);
+            RelXml.ValueTag(sb, indent, "Value", Value.ToString());
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            Value = Xml.GetChildIntAttribute(node, "Value", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat4ConfigFloat : Dat4ConfigData
+    {
+        public float Value { get; set; }
+
+        public Dat4ConfigFloat(RelFile rel) : base(rel)
+        {
+            Type = Dat4ConfigType.Float;
+            TypeID = (byte)Type;
+        }
+        public Dat4ConfigFloat(RelData d, BinaryReader br) : base(d, br)
+        {
+            Value = br.ReadSingle();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            base.Write(bw);
+            bw.Write(Value);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            base.WriteXml(sb, indent);
+            RelXml.ValueTag(sb, indent, "Value", FloatUtil.ToString(Value));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            Value = Xml.GetChildFloatAttribute(node, "Value", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat4ConfigString : Dat4ConfigData
+    {
+        public string Value { get; set; }
+
+        public Dat4ConfigString(RelFile rel) : base(rel)
+        {
+            Type = Dat4ConfigType.String;
+            TypeID = (byte)Type;
+        }
+        public Dat4ConfigString(RelData d, BinaryReader br) : base(d, br)
+        {
+            var data = br.ReadBytes(64);
+            Value = Encoding.ASCII.GetString(data).Replace("\0", "");
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            base.Write(bw);
+
+            byte[] data = new byte[64];
+            int len = Math.Min(Value?.Length ?? 0, 64);
+            if (len > 0)
+            {
+                Encoding.ASCII.GetBytes(Value, 0, len, data, 0);
+            }
+            bw.Write(data);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            base.WriteXml(sb, indent);
+            RelXml.StringTag(sb, indent, "Value", Value);
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            Value = Xml.GetChildInnerText(node, "Value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat4ConfigOrientation : Dat4ConfigData
+    {
+        public Vector3 Vec1 { get; set; }
+        public Vector3 Vec2 { get; set; }
+
+        public Dat4ConfigOrientation(RelFile rel) : base(rel)
+        {
+            Type = Dat4ConfigType.Orientation;
+            TypeID = (byte)Type;
+        }
+        public Dat4ConfigOrientation(RelData d, BinaryReader br) : base(d, br)
+        {
+            Vec1 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Vec2 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            base.Write(bw);
+            bw.Write(Vec1.X);
+            bw.Write(Vec1.Y);
+            bw.Write(Vec1.Z);
+            bw.Write(Vec2.X);
+            bw.Write(Vec2.Y);
+            bw.Write(Vec2.Z);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            base.WriteXml(sb, indent);
+            RelXml.SelfClosingTag(sb, indent, "Vec1 " + FloatUtil.GetVector3XmlString(Vec1));
+            RelXml.SelfClosingTag(sb, indent, "Vec2 " + FloatUtil.GetVector3XmlString(Vec2));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            Vec1 = Xml.GetChildVector3Attributes(node, "Vec1", "x", "y", "z");
+            Vec2 = Xml.GetChildVector3Attributes(node, "Vec2", "x", "y", "z");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat4ConfigVariableList : Dat4ConfigData
+    {
+        public int VariableCount { get; set; }
+        public VariableValue[] Variables { get; set; }
+        public class VariableValue
+        {
+            public MetaHash Name { get; set; }
+            public float Value { get; set; }
+
+            public VariableValue() { }
+            public VariableValue(BinaryReader br)
+            {
+                Name = br.ReadUInt32();
+                Value = br.ReadSingle();
+            }
+            public void Write(BinaryWriter bw)
+            {
+                bw.Write(Name);
+                bw.Write(Value);
+            }
+            public void WriteXml(StringBuilder sb, int indent)
+            {
+                RelXml.StringTag(sb, indent, "Name", RelXml.HashString(Name));
+                RelXml.ValueTag(sb, indent, "Value", FloatUtil.ToString(Value));
+            }
+            public void ReadXml(XmlNode node)
+            {
+                Name = XmlRel.GetHash(Xml.GetChildInnerText(node, "Name"));
+                Value = Xml.GetChildFloatAttribute(node, "Value", "value");
+            }
+        }
+
+        public Dat4ConfigVariableList(RelFile rel) : base(rel)
+        {
+            Type = Dat4ConfigType.VariableList;
+            TypeID = (byte)Type;
+        }
+        public Dat4ConfigVariableList(RelData d, BinaryReader br) : base(d, br)
+        {
+            VariableCount = br.ReadInt32();
+            Variables = new VariableValue[VariableCount];
+            for (int i = 0; i < VariableCount; i++)
+            {
+                Variables[i] = new VariableValue(br);
+            }
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            base.Write(bw);
+            bw.Write(VariableCount);
+            for (int i = 0; i < VariableCount; i++)
+            {
+                Variables[i].Write(bw);
+            }
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            base.WriteXml(sb, indent);
+            if (VariableCount > 0)
+            {
+                RelXml.OpenTag(sb, indent, "Variables");
+                var cind = indent + 1;
+                var cind2 = indent + 2;
+                for (int i = 0; i < VariableCount; i++)
+                {
+                    RelXml.OpenTag(sb, cind, "Item");
+                    Variables[i].WriteXml(sb, cind2);
+                    RelXml.CloseTag(sb, cind, "Item");
+                }
+                RelXml.CloseTag(sb, indent, "Variables");
+            }
+            else
+            {
+                RelXml.SelfClosingTag(sb, indent, "Variables");
+            }
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            var vnode = node.SelectSingleNode("Variables");
+            if (vnode != null)
+            {
+                var inodes = vnode.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    var vlist = new List<VariableValue>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        var v = new VariableValue();
+                        v.ReadXml(inode);
+                        vlist.Add(v);
+                    }
+                    VariableCount = vlist.Count;
+                    Variables = vlist.ToArray();
+                }
+            }
+        }
+    }
+    [TC(typeof(EXP))] public class Dat4ConfigWaveSlot : Dat4ConfigData
+    {
+        public int Unk1 { get; set; }
+        public int Unk2 { get; set; }
+        public int Unk3 { get; set; }
+        public MetaHash Unk4 { get; set; }
+        public int Unk5 { get; set; }
+        public int Unk6 { get; set; }
+
+        public Dat4ConfigWaveSlot(RelFile rel) : base(rel)
+        {
+            Type = Dat4ConfigType.WaveSlot;
+            TypeID = (byte)Type;
+        }
+        public Dat4ConfigWaveSlot(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk1 = br.ReadInt32();
+            Unk2 = br.ReadInt32();
+            Unk3 = br.ReadInt32();
+            Unk4 = br.ReadUInt32();
+            Unk5 = br.ReadInt32();
+            Unk6 = br.ReadInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            base.Write(bw);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(Unk3);
+            bw.Write(Unk4);
+            bw.Write(Unk5);
+            bw.Write(Unk6);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            base.WriteXml(sb, indent);
+            RelXml.ValueTag(sb, indent, "Unk1", Unk1.ToString());
+            RelXml.ValueTag(sb, indent, "Unk2", Unk2.ToString());
+            RelXml.ValueTag(sb, indent, "Unk3", Unk3.ToString());
+            RelXml.StringTag(sb, indent, "Unk4", RelXml.HashString(Unk4));
+            RelXml.ValueTag(sb, indent, "Unk5", Unk5.ToString());
+            RelXml.ValueTag(sb, indent, "Unk6", Unk6.ToString());
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            Unk1 = Xml.GetChildIntAttribute(node, "Unk1", "value");
+            Unk2 = Xml.GetChildIntAttribute(node, "Unk2", "value");
+            Unk3 = Xml.GetChildIntAttribute(node, "Unk3", "value");
+            Unk4 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk4"));
+            Unk5 = Xml.GetChildIntAttribute(node, "Unk5", "value");
+            Unk6 = Xml.GetChildIntAttribute(node, "Unk6", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat4ConfigWaveSlotsList : Dat4ConfigData
+    {
+        public int WaveSlotsCount { get; set; }
+        public MetaHash[] WaveSlots { get; set; }
+
+        public Dat4ConfigWaveSlotsList(RelFile rel) : base(rel)
+        {
+            Type = Dat4ConfigType.WaveSlotsList;
+            TypeID = (byte)Type;
+        }
+        public Dat4ConfigWaveSlotsList(RelData d, BinaryReader br) : base(d, br)
+        {
+            WaveSlotsCount = br.ReadInt32();
+            WaveSlots = new MetaHash[WaveSlotsCount];
+            for (int i = 0; i < WaveSlotsCount; i++)
+            {
+                WaveSlots[i] = br.ReadUInt32();
+            }
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            base.Write(bw);
+            bw.Write(WaveSlotsCount);
+            for (int i = 0; i < WaveSlotsCount; i++)
+            {
+                bw.Write(WaveSlots[i]);
+            }
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            base.WriteXml(sb, indent);
+            if (WaveSlots?.Length > 0)
+            {
+                RelXml.OpenTag(sb, indent, "WaveSlots");
+                var cind = indent + 1;
+                foreach (var hash in WaveSlots)
+                {
+                    RelXml.StringTag(sb, cind, "Item", RelXml.HashString(hash));
+                }
+                RelXml.CloseTag(sb, indent, "WaveSlots");
+            }
+            else
+            {
+                RelXml.SelfClosingTag(sb, indent, "WaveSlots");
+            }
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            var atnode = node.SelectSingleNode("WaveSlots");
+            if (atnode == null) return;
+
+            var slotnodes = atnode.SelectNodes("Item");
+            var slotlist = new List<MetaHash>();
+            foreach (XmlNode slotnode in slotnodes)
+            {
+                slotlist.Add(XmlRel.GetHash(slotnode.InnerText));
+            }
+            WaveSlots = slotlist.ToArray();
+            WaveSlotsCount = (byte)slotlist.Count;
+        }
+        public override uint[] GetHashTableOffsets()
+        {
+            var offsets = new List<uint>();
+            for (uint i = 0; i < WaveSlotsCount; i++)
+            {
+                offsets.Add(8 + i * 4);
+            }
+            return offsets.ToArray();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat4ConfigUnkER : Dat4ConfigData
+    {
+        float Unk1 { get; set; }
+        float Unk2 { get; set; }
+        float Unk3 { get; set; }
+        float Unk4 { get; set; }
+        float Unk5 { get; set; }
+        float Unk6 { get; set; }
+        float Unk7 { get; set; }
+        int UnkItemsCount { get; set; }
+        UnkItem[] UnkItems { get; set; }
+        Vector4 UnkVec1 { get; set; }
+        Vector4 UnkVec2 { get; set; }
+        Vector4 UnkVec3 { get; set; }
+        Vector4 UnkVec4 { get; set; }
+        Vector4 UnkVec5 { get; set; }
+        Vector4 UnkVec6 { get; set; }
+        Vector4 UnkVec7 { get; set; }
+        Vector4 UnkVec8 { get; set; }
+        Vector4 UnkVec9 { get; set; }
+        int UnkVecCount1 { get; set; }
+        Vector4[] UnkVecs1 { get; set; }
+        int UnkVecCount2 { get; set; }
+        Vector4[] UnkVecs2 { get; set; }
+        int UnkVecCount3 { get; set; }
+        Vector4[] UnkVecs3 { get; set; }
+
+
+        public class UnkItem
+        {
+            public float UnkFloat { get; set; }
+            public int UnkInt { get; set; }
+
+            public UnkItem() { }
+            public UnkItem(BinaryReader br)
+            {
+                UnkFloat = br.ReadSingle();
+                UnkInt = br.ReadInt32();
+            }
+            public void Write(BinaryWriter bw)
+            {
+                bw.Write(UnkFloat);
+                bw.Write(UnkInt);
+            }
+            public void WriteXml(StringBuilder sb, int indent)
+            {
+                RelXml.ValueTag(sb, indent, "UnkFloat", FloatUtil.ToString(UnkFloat));
+                RelXml.ValueTag(sb, indent, "UnkInt", UnkInt.ToString());
+            }
+            public void ReadXml(XmlNode node)
+            {
+                UnkFloat = Xml.GetChildFloatAttribute(node, "UnkFloat", "value");
+                UnkInt = Xml.GetChildIntAttribute(node, "UnkInt", "value");
+            }
+            public override string ToString()
+            {
+                return FloatUtil.ToString(UnkFloat) + ", " + UnkInt.ToString();
+            }
+        }
+
+
+        public Dat4ConfigUnkER(RelFile rel) : base(rel)
+        {
+            Type = Dat4ConfigType.UnkER;
+            TypeID = (byte)Type;
+        }
+        public Dat4ConfigUnkER(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk1 = br.ReadSingle();
+            Unk2 = br.ReadSingle();
+            Unk3 = br.ReadSingle();
+            Unk4 = br.ReadSingle();
+            Unk5 = br.ReadSingle();
+            Unk6 = br.ReadSingle();
+            Unk7 = br.ReadSingle();
+            UnkItemsCount = br.ReadInt32();
+            UnkItems = new UnkItem[UnkItemsCount];
+            for (int i = 0; i < UnkItemsCount; i++)
+            {
+                UnkItems[i] = new UnkItem(br);
+            }
+            UnkVec1 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkVec2 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkVec3 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkVec4 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkVec5 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkVec6 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkVec7 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkVec8 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkVec9 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            UnkVecCount1 = br.ReadInt32();
+            UnkVecs1 = new Vector4[UnkVecCount1];
+            for (int i = 0; i < UnkVecCount1; i++)
+            {
+                UnkVecs1[i] = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            }
+            UnkVecCount2 = br.ReadInt32();
+            UnkVecs2 = new Vector4[UnkVecCount1];
+            for (int i = 0; i < UnkVecCount2; i++)
+            {
+                UnkVecs2[i] = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            }
+            UnkVecCount3 = br.ReadInt32();
+            UnkVecs3 = new Vector4[UnkVecCount1];
+            for (int i = 0; i < UnkVecCount3; i++)
+            {
+                UnkVecs3[i] = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            base.Write(bw);
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(Unk3);
+            bw.Write(Unk4);
+            bw.Write(Unk5);
+            bw.Write(Unk6);
+            bw.Write(Unk7);
+            bw.Write(UnkItemsCount);
+            for (int i = 0; i < UnkItemsCount; i++)
+            {
+                UnkItems[i].Write(bw);
+            }
+            bw.Write(UnkVec1.X);
+            bw.Write(UnkVec1.Y);
+            bw.Write(UnkVec1.Z);
+            bw.Write(UnkVec1.W);
+            bw.Write(UnkVec2.X);
+            bw.Write(UnkVec2.Y);
+            bw.Write(UnkVec2.Z);
+            bw.Write(UnkVec2.W);
+            bw.Write(UnkVec3.X);
+            bw.Write(UnkVec3.Y);
+            bw.Write(UnkVec3.Z);
+            bw.Write(UnkVec3.W);
+            bw.Write(UnkVec4.X);
+            bw.Write(UnkVec4.Y);
+            bw.Write(UnkVec4.Z);
+            bw.Write(UnkVec4.W);
+            bw.Write(UnkVec5.X);
+            bw.Write(UnkVec5.Y);
+            bw.Write(UnkVec5.Z);
+            bw.Write(UnkVec5.W);
+            bw.Write(UnkVec6.X);
+            bw.Write(UnkVec6.Y);
+            bw.Write(UnkVec6.Z);
+            bw.Write(UnkVec6.W);
+            bw.Write(UnkVec7.X);
+            bw.Write(UnkVec7.Y);
+            bw.Write(UnkVec7.Z);
+            bw.Write(UnkVec7.W);
+            bw.Write(UnkVec8.X);
+            bw.Write(UnkVec8.Y);
+            bw.Write(UnkVec8.Z);
+            bw.Write(UnkVec8.W);
+            bw.Write(UnkVec9.X);
+            bw.Write(UnkVec9.Y);
+            bw.Write(UnkVec9.Z);
+            bw.Write(UnkVec9.W);
+            bw.Write(UnkVecCount1);
+            for (int i = 0; i < UnkVecCount1; i++)
+            {
+                bw.Write(UnkVecs1[i].X);
+                bw.Write(UnkVecs1[i].Y);
+                bw.Write(UnkVecs1[i].Z);
+                bw.Write(UnkVecs1[i].W);
+            }
+            bw.Write(UnkVecCount2);
+            for (int i = 0; i < UnkVecCount2; i++)
+            {
+                bw.Write(UnkVecs2[i].X);
+                bw.Write(UnkVecs2[i].Y);
+                bw.Write(UnkVecs2[i].Z);
+                bw.Write(UnkVecs2[i].W);
+            }
+            bw.Write(UnkVecCount3);
+            for (int i = 0; i < UnkVecCount3; i++)
+            {
+                bw.Write(UnkVecs3[i].X);
+                bw.Write(UnkVecs3[i].Y);
+                bw.Write(UnkVecs3[i].Z);
+                bw.Write(UnkVecs3[i].W);
+            }
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            base.WriteXml(sb, indent);
+            var cind = indent + 1;
+            var cind2 = indent + 2;
+            RelXml.ValueTag(sb, indent, "Unk1", FloatUtil.ToString(Unk1));
+            RelXml.ValueTag(sb, indent, "Unk2", FloatUtil.ToString(Unk2));
+            RelXml.ValueTag(sb, indent, "Unk3", FloatUtil.ToString(Unk3));
+            RelXml.ValueTag(sb, indent, "Unk4", FloatUtil.ToString(Unk4));
+            RelXml.ValueTag(sb, indent, "Unk5", FloatUtil.ToString(Unk5));
+            RelXml.ValueTag(sb, indent, "Unk6", FloatUtil.ToString(Unk6));
+            RelXml.ValueTag(sb, indent, "Unk7", FloatUtil.ToString(Unk7));
+            if (UnkItemsCount > 0)
+            {
+                RelXml.OpenTag(sb, indent, "UnkItems");
+                for (int i = 0; i < UnkItemsCount; i++)
+                {
+                    RelXml.OpenTag(sb, cind, "Item");
+                    UnkItems[i].WriteXml(sb, cind2);
+                    RelXml.CloseTag(sb, cind, "Item");
+                }
+                RelXml.CloseTag(sb, indent, "UnkItems");
+            }
+            else
+            {
+                RelXml.SelfClosingTag(sb, indent, "UnkItems");
+            }
+            RelXml.SelfClosingTag(sb, indent, "UnkVec1 " + FloatUtil.GetVector4XmlString(UnkVec1));
+            RelXml.SelfClosingTag(sb, indent, "UnkVec2 " + FloatUtil.GetVector4XmlString(UnkVec2));
+            RelXml.SelfClosingTag(sb, indent, "UnkVec3 " + FloatUtil.GetVector4XmlString(UnkVec3));
+            RelXml.SelfClosingTag(sb, indent, "UnkVec4 " + FloatUtil.GetVector4XmlString(UnkVec4));
+            RelXml.SelfClosingTag(sb, indent, "UnkVec5 " + FloatUtil.GetVector4XmlString(UnkVec5));
+            RelXml.SelfClosingTag(sb, indent, "UnkVec6 " + FloatUtil.GetVector4XmlString(UnkVec6));
+            RelXml.SelfClosingTag(sb, indent, "UnkVec7 " + FloatUtil.GetVector4XmlString(UnkVec7));
+            RelXml.SelfClosingTag(sb, indent, "UnkVec8 " + FloatUtil.GetVector4XmlString(UnkVec8));
+            RelXml.SelfClosingTag(sb, indent, "UnkVec9 " + FloatUtil.GetVector4XmlString(UnkVec9));
+            RelXml.WriteRawArray(sb, UnkVecs1, indent, "UnkVecs1", "", RelXml.FormatVector4, 1);
+            RelXml.WriteRawArray(sb, UnkVecs2, indent, "UnkVecs2", "", RelXml.FormatVector4, 1);
+            RelXml.WriteRawArray(sb, UnkVecs3, indent, "UnkVecs3", "", RelXml.FormatVector4, 1);
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            Unk1 = Xml.GetChildFloatAttribute(node, "Unk1", "value");
+            Unk2 = Xml.GetChildFloatAttribute(node, "Unk2", "value");
+            Unk3 = Xml.GetChildFloatAttribute(node, "Unk3", "value");
+            Unk4 = Xml.GetChildFloatAttribute(node, "Unk4", "value");
+            Unk5 = Xml.GetChildFloatAttribute(node, "Unk5", "value");
+            Unk6 = Xml.GetChildFloatAttribute(node, "Unk6", "value");
+            Unk7 = Xml.GetChildFloatAttribute(node, "Unk7", "value");
+            var vnode = node.SelectSingleNode("UnkItems");
+            if (vnode != null)
+            {
+                var inodes = vnode.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    var vlist = new List<UnkItem>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        var v = new UnkItem();
+                        v.ReadXml(inode);
+                        vlist.Add(v);
+                    }
+                    UnkItemsCount = vlist.Count;
+                    UnkItems = vlist.ToArray();
+                }
+            }
+            UnkVec1 = Xml.GetChildVector4Attributes(node, "UnkVec1", "x", "y", "z", "w");
+            UnkVec2 = Xml.GetChildVector4Attributes(node, "UnkVec2", "x", "y", "z", "w");
+            UnkVec3 = Xml.GetChildVector4Attributes(node, "UnkVec3", "x", "y", "z", "w");
+            UnkVec4 = Xml.GetChildVector4Attributes(node, "UnkVec4", "x", "y", "z", "w");
+            UnkVec5 = Xml.GetChildVector4Attributes(node, "UnkVec5", "x", "y", "z", "w");
+            UnkVec6 = Xml.GetChildVector4Attributes(node, "UnkVec6", "x", "y", "z", "w");
+            UnkVec7 = Xml.GetChildVector4Attributes(node, "UnkVec7", "x", "y", "z", "w");
+            UnkVec8 = Xml.GetChildVector4Attributes(node, "UnkVec8", "x", "y", "z", "w");
+            UnkVec9 = Xml.GetChildVector4Attributes(node, "UnkVec9", "x", "y", "z", "w");
+            UnkVecs1 = Xml.GetChildRawVector4Array(node, "UnkVecs1");
+            UnkVecs2 = Xml.GetChildRawVector4Array(node, "UnkVecs2");
+            UnkVecs3 = Xml.GetChildRawVector4Array(node, "UnkVecs3");
+            UnkVecCount1 = UnkVecs1?.Length ?? 0;
+            UnkVecCount2 = UnkVecs2?.Length ?? 0;
+            UnkVecCount3 = UnkVecs3?.Length ?? 0;
+        }
+    }
+
+
+    //[TC(typeof(EXP))] public class Dat4ConfigBlankTemplateItem : Dat4ConfigData
+    //{
+    //    public Dat4ConfigBlankTemplateItem(RelFile rel) : base(rel)
+    //    {
+    //        Type = Dat4ConfigType.RELTYPE;
+    //        TypeID = (byte)Type;
+    //    }
+    //    public Dat4ConfigBlankTemplateItem(RelData d, BinaryReader br) : base(d, br)
+    //    {
+    //        var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+    //        if (bytesleft != 0)
+    //        { }
+    //    }
+    //    public override void Write(BinaryWriter bw)
+    //    {
+    //        base.Write(bw);
+    //    }
+    //    public override void WriteXml(StringBuilder sb, int indent)
+    //    {
+    //        base.WriteXml(sb, indent);
+    //    }
+    //    public override void ReadXml(XmlNode node)
+    //    {
+    //        base.ReadXml(node);
+    //    }
+    //}
+
+
+
+
+    #endregion
+
+    #region dat4 (speech)
+
+    #endregion
 
 
     public class RelXml : MetaXmlBase
@@ -14156,6 +15007,11 @@ namespace CodeWalker.GameFiles
                 OpenTag(sb, indent, name);
 
                 ValueTag(sb, cindent, "Version", rel.DataUnkVal.ToString());
+
+                if (rel.IsAudioConfig)
+                {
+                    ValueTag(sb, cindent, "IsAudioConfig", "true");
+                }
 
                 if (rel.NameTable != null)
                 {
@@ -14184,6 +15040,9 @@ namespace CodeWalker.GameFiles
                         case RelDatFileType.Dat151:
                             typeid = ((Dat151RelType)item.TypeID).ToString();
                             break;
+                        case RelDatFileType.Dat4:
+                            if (rel.IsAudioConfig) typeid = ((Dat4ConfigType)item.TypeID).ToString();
+                            break;
                         default:
                             break;
                     }
@@ -14193,6 +15052,11 @@ namespace CodeWalker.GameFiles
                     if (dat151item != null)
                     {
                         ntoffset = " ntOffset=\"" + dat151item.NameTableOffset.ToString() + "\"";
+                    }
+                    var dat4config = item as Dat4ConfigData;
+                    if (dat4config != null)
+                    {
+                        ntoffset = " ntOffset=\"" + dat4config.NameTableOffset.ToString() + "\"";
                     }
 
                     OpenTag(sb, iindent, "Item type=\"" + typeid + "\"" + ntoffset);
@@ -14243,6 +15107,7 @@ namespace CodeWalker.GameFiles
             RelFile rel = new RelFile();
             rel.RelType = reltype;
             rel.DataUnkVal = Xml.GetChildUIntAttribute(node, "Version", "value");
+            rel.IsAudioConfig = Xml.GetChildBoolAttribute(node, "IsAudioConfig", "value");
 
             var ntnode = node.SelectSingleNode("NameTable");
             if (ntnode != null)
@@ -14285,6 +15150,16 @@ namespace CodeWalker.GameFiles
                                 typeid = (int)rt;
                             }
                             break;
+                        case RelDatFileType.Dat4:
+                            if (rel.IsAudioConfig)
+                            {
+                                Dat4ConfigType ct;
+                                if (Enum.TryParse(typestr, out ct))
+                                {
+                                    typeid = (int)ct;
+                                }
+                            }
+                            break;
                     }
                     if (typeid < 0)
                     {
@@ -14306,6 +15181,11 @@ namespace CodeWalker.GameFiles
                     if (dat151data != null)
                     {
                         dat151data.NameTableOffset = ntoffset;
+                    }
+                    var dat4config = rd as Dat4ConfigData;
+                    if (dat4config != null)
+                    {
+                        dat4config.NameTableOffset = ntoffset;
                     }
 
                 }

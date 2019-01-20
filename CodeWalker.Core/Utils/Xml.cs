@@ -303,6 +303,51 @@ namespace CodeWalker
             return GetRawVector3Array(cnode);
         }
 
+        public static Vector4[] GetRawVector4Array(XmlNode node)
+        {
+            if (node == null) return new Vector4[0];
+            float x = 0f;
+            float y = 0f;
+            float z = 0f;
+            float w = 0f;
+            var items = new List<Vector4>();
+            var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
+            for (int i = 0; i < split.Length; i++)
+            {
+                var s = split[i]?.Trim();
+                if (string.IsNullOrEmpty(s)) continue;
+                var split2 = s.Split(',');// Regex.Split(s, @"[\s\t]");
+                int c = 0;
+                x = 0f; y = 0f;
+                for (int n = 0; n < split2.Length; n++)
+                {
+                    var ts = split2[n]?.Trim();
+                    if (string.IsNullOrEmpty(ts)) continue;
+                    var f = FloatUtil.Parse(ts);
+                    switch (c)
+                    {
+                        case 0: x = f; break;
+                        case 1: y = f; break;
+                        case 2: z = f; break;
+                        case 3: w = f; break;
+                    }
+                    c++;
+                }
+                if (c >= 4)
+                {
+                    var val = new Vector4(x, y, z, w);
+                    items.Add(val);
+                }
+            }
+
+            return items.ToArray();
+        }
+        public static Vector4[] GetChildRawVector4Array(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            return GetRawVector4Array(cnode);
+        }
+
 
     }
 }
