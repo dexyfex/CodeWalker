@@ -2304,6 +2304,9 @@ namespace CodeWalker.GameFiles
                         RelFile rel = new RelFile(rfe);
                         RpfMan.LoadFile(rel, rfe);
 
+
+                        #region string building
+
                         if (rel.NameTable == null)
                         {
                             sb.AppendLine(rfe.Path + ": no strings found");
@@ -2375,6 +2378,9 @@ namespace CodeWalker.GameFiles
                         }
 
                         sb.AppendLine();
+
+                        #endregion
+
 
                         byte[] data;
 

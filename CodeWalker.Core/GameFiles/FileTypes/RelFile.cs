@@ -452,6 +452,25 @@ namespace CodeWalker.GameFiles
             }
             else //(for eg speech.dat4.rel)
             {
+                //switch (d.DataLength)
+                //{
+                //    case 4:
+                //        return new Dat4SpeechHash(d, br);
+                //    case 8:
+                //        if (d.Data[0] == 4)//container hash, with typeid and ntoffset
+                //        {
+                //            return new Dat4SpeechContainer(d, br);
+                //        }
+                //        else if (d.Data[0] == 7)
+                //        {
+                //            return new Dat4SpeechByteArray(d, br);
+                //        }
+                //        else
+                //        { return d; }//shouldn't get here!
+                //    default:
+                //        return new Dat4SpeechByteArray(d, br);
+                //}
+
             }
             return d;
         }
@@ -886,15 +905,11 @@ namespace CodeWalker.GameFiles
             if (RelDatasSorted == null) return;
 
 
-            switch (RelType)
+            if ((RelType == RelDatFileType.Dat4) && (!IsAudioConfig))
             {
-                case RelDatFileType.Dat4://TODO!
-                    if (!IsAudioConfig)
-                    {
-                        DataBlock = null;
-                        return;
-                    }
-                    break;
+                //speech dat4.rel riles - need more work
+                DataBlock = null;
+                return;
             }
 
 
@@ -1000,12 +1015,6 @@ namespace CodeWalker.GameFiles
             if (RelDatas == null) return;
             if (RelDatasSorted == null) return;
 
-            switch (RelType)
-            {
-                case RelDatFileType.Dat4://TODO!
-                    if(!IsAudioConfig) return;
-                    break;
-            }
 
 
             //for the correct index ordering, needs to be in order of hashes, but with bits rotated right by 8 (why!?)
@@ -1030,7 +1039,7 @@ namespace CodeWalker.GameFiles
                     });
                     break;
                 default:
-                    if (!IsAudioConfig)//don't sort audioconfig
+                    if (!IsAudioConfig)//don't sort audioconfig (only sort speech dat4's)
                     {
                         sorted.Sort((a, b) => { return ((uint)a.NameHash).CompareTo((uint)b.NameHash); });
                     }
@@ -1079,11 +1088,12 @@ namespace CodeWalker.GameFiles
                 if (offsets == null) continue;
                 var rdoffset = rd.DataOffset + 8;
                 var rs = rd as RelSound;
+                var ss = rd as Dat4SpeechData;
                 if (rs?.Header != null)
                 {
                     rdoffset += 1 + rs.Header.CalcHeaderLength();
                 }
-                else
+                else if (ss == null)//don't add 4 for speech!
                 {
                     rdoffset += 4; //typeid + nt offset
                 }
@@ -1133,11 +1143,12 @@ namespace CodeWalker.GameFiles
                 if (offsets == null) continue;
                 var rdoffset = rd.DataOffset + 8;
                 var rs = rd as RelSound;
+                var ss = rd as Dat4SpeechData;
                 if (rs?.Header != null)
                 {
                     rdoffset += 1 + rs.Header.CalcHeaderLength();
                 }
-                else
+                else if (ss == null)//don't add 4 for speech!
                 {
                     rdoffset += 4; //typeid + nt offset
                 }
@@ -6343,7 +6354,7 @@ namespace CodeWalker.GameFiles
     {
         public FlagsUint Flags { get; set; }//flags
         public MetaHash Unk01 { get; set; }
-        public MetaHash Unk02 { get; set; }
+        public MetaHash RadioStation { get; set; }
         public Vector3 Position { get; set; }
         public float Unk06 { get; set; }
         public float Unk07 { get; set; }
@@ -6372,7 +6383,7 @@ namespace CodeWalker.GameFiles
         {
             Flags = br.ReadUInt32();//flags
             Unk01 = br.ReadUInt32();
-            Unk02 = br.ReadUInt32();
+            RadioStation = br.ReadUInt32();
             Position = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unk06 = br.ReadSingle();
             Unk07 = br.ReadSingle();
@@ -6401,7 +6412,7 @@ namespace CodeWalker.GameFiles
             WriteTypeAndOffset(bw);
             bw.Write(Flags);//flags
             bw.Write(Unk01);
-            bw.Write(Unk02);
+            bw.Write(RadioStation);
             bw.Write(Position.X);
             bw.Write(Position.Y);
             bw.Write(Position.Z);
@@ -6427,7 +6438,7 @@ namespace CodeWalker.GameFiles
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
             RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
-            RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
+            RelXml.StringTag(sb, indent, "RadioStation", RelXml.HashString(RadioStation));
             RelXml.SelfClosingTag(sb, indent, "Position " + FloatUtil.GetVector3XmlString(Position));
             RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
             RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
@@ -6451,7 +6462,7 @@ namespace CodeWalker.GameFiles
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
             Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
-            Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
+            RadioStation = XmlRel.GetHash(Xml.GetChildInnerText(node, "RadioStation"));
             Position = Xml.GetChildVector3Attributes(node, "Position", "x", "y", "z");
             Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
             Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
@@ -6764,16 +6775,9 @@ namespace CodeWalker.GameFiles
         public uint Unk01 { get; set; }
         public uint Unk02 { get; set; }
         public ushort Unk03 { get; set; }
+        public string RadioName { get; set; }
         public ushort Unk04 { get; set; }
-        public uint Unk05 { get; set; }//what is this? maybe shorts
-        public uint Unk06 { get; set; }//what is this? maybe shorts
-        public ushort Unk07 { get; set; }
-        public ushort Unk08 { get; set; }
-        public uint Unk09 { get; set; }//what is this? maybe shorts
-        public uint Unk10 { get; set; }//what is this? maybe shorts
-        public uint Unk11 { get; set; }
-        public uint Unk12 { get; set; }
-        public uint Unk13 { get; set; }
+
         public uint AudioTracksCount { get; set; }
         public MetaHash[] AudioTracks { get; set; }
 
@@ -6788,16 +6792,15 @@ namespace CodeWalker.GameFiles
             Unk01 = br.ReadUInt32();
             Unk02 = br.ReadUInt32();
             Unk03 = br.ReadUInt16();
+
+            var data = br.ReadBytes(32);
+            RadioName = Encoding.ASCII.GetString(data).Replace("\0", "");
+
             Unk04 = br.ReadUInt16();
-            Unk05 = br.ReadUInt32();
-            Unk06 = br.ReadUInt32();
-            Unk07 = br.ReadUInt16();
-            Unk08 = br.ReadUInt16();
-            Unk09 = br.ReadUInt32();
-            Unk10 = br.ReadUInt32();
-            Unk11 = br.ReadUInt32();
-            Unk12 = br.ReadUInt32();
-            Unk13 = br.ReadUInt32();
+
+            if (Unk04 != 0)
+            { }
+
             AudioTracksCount = br.ReadUInt32();
             var tracks = new MetaHash[AudioTracksCount];
             for (int i = 0; i < AudioTracksCount; i++)
@@ -6818,16 +6821,17 @@ namespace CodeWalker.GameFiles
             bw.Write(Unk01);
             bw.Write(Unk02);
             bw.Write(Unk03);
+
+            byte[] data = new byte[32];
+            int len = Math.Min(RadioName?.Length ?? 0, 32);
+            if (len > 0)
+            {
+                Encoding.ASCII.GetBytes(RadioName, 0, len, data, 0);
+            }
+            bw.Write(data);
+
             bw.Write(Unk04);
-            bw.Write(Unk05);
-            bw.Write(Unk06);
-            bw.Write(Unk07);
-            bw.Write(Unk08);
-            bw.Write(Unk09);
-            bw.Write(Unk10);
-            bw.Write(Unk11);
-            bw.Write(Unk12);
-            bw.Write(Unk13);
+
             bw.Write(AudioTracksCount);
             for (int i = 0; i < AudioTracksCount; i++)
             {
@@ -6840,16 +6844,10 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
             RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
             RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
+            RelXml.StringTag(sb, indent, "RadioName", RadioName);
             RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
-            RelXml.ValueTag(sb, indent, "Unk05", Unk05.ToString());
-            RelXml.ValueTag(sb, indent, "Unk06", Unk06.ToString());
-            RelXml.ValueTag(sb, indent, "Unk07", Unk07.ToString());
-            RelXml.ValueTag(sb, indent, "Unk08", Unk08.ToString());
-            RelXml.ValueTag(sb, indent, "Unk09", Unk09.ToString());
-            RelXml.ValueTag(sb, indent, "Unk10", Unk10.ToString());
-            RelXml.ValueTag(sb, indent, "Unk11", Unk11.ToString());
-            RelXml.ValueTag(sb, indent, "Unk12", Unk12.ToString());
-            RelXml.ValueTag(sb, indent, "Unk13", Unk13.ToString());
+
+
             if (AudioTracksCount > 0)
             {
                 RelXml.OpenTag(sb, indent, "AudioTracks");
@@ -6872,16 +6870,10 @@ namespace CodeWalker.GameFiles
             Unk01 = Xml.GetChildUIntAttribute(node, "Unk01", "value");
             Unk02 = Xml.GetChildUIntAttribute(node, "Unk02", "value");
             Unk03 = (ushort)Xml.GetChildUIntAttribute(node, "Unk03", "value");
+            RadioName = Xml.GetChildInnerText(node, "RadioName");
             Unk04 = (ushort)Xml.GetChildUIntAttribute(node, "Unk04", "value");
-            Unk05 = Xml.GetChildUIntAttribute(node, "Unk05", "value");
-            Unk06 = Xml.GetChildUIntAttribute(node, "Unk06", "value");
-            Unk07 = (ushort)Xml.GetChildUIntAttribute(node, "Unk07", "value");
-            Unk08 = (ushort)Xml.GetChildUIntAttribute(node, "Unk08", "value");
-            Unk09 = Xml.GetChildUIntAttribute(node, "Unk09", "value");
-            Unk10 = Xml.GetChildUIntAttribute(node, "Unk10", "value");
-            Unk11 = Xml.GetChildUIntAttribute(node, "Unk11", "value");
-            Unk12 = Xml.GetChildUIntAttribute(node, "Unk12", "value");
-            Unk13 = Xml.GetChildUIntAttribute(node, "Unk13", "value");
+
+
             var vnode = node.SelectSingleNode("AudioTracks");
             if (vnode != null)
             {
@@ -6965,6 +6957,29 @@ namespace CodeWalker.GameFiles
                 items[i] = new Dat151HashPair(br.ReadUInt32(), br.ReadUInt32());
             }
             this.Playlists = items;
+
+
+
+            if (Unk04 != 0)
+            { }
+            if (Unk05 != 0)
+            { }
+            if (Unk06 != 0)
+            { }
+            if (Unk07 != 0)
+            { }
+            if (Unk08 != 0)
+            { }
+            if (Unk09 != 0)
+            { }
+            if (Unk10 != 0)
+            { }
+            if (Unk11 != 0)
+            { }
+            if (Unk12 != 0)
+            { }
+            if (Unk13 != 0)
+            { }
 
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
@@ -10677,7 +10692,7 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public class Dat151VehicleEngineGranular : Dat151RelData
     {
         public FlagsUint Unk00 { get; set; }
-        public int Unk01 { get; set; }
+        public int MasterVolume { get; set; }
         public MetaHash Unk02 { get; set; }
         public MetaHash Unk03 { get; set; }
         public int Unk04 { get; set; }
@@ -10745,7 +10760,7 @@ namespace CodeWalker.GameFiles
         public Dat151VehicleEngineGranular(RelData d, BinaryReader br) : base(d, br)
         {
             Unk00 = br.ReadUInt32();
-            Unk01 = br.ReadInt32();
+            MasterVolume = br.ReadInt32();
             Unk02 = br.ReadUInt32();
             Unk03 = br.ReadUInt32();
             Unk04 = br.ReadInt32();
@@ -10915,7 +10930,7 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
             bw.Write(Unk00);
-            bw.Write(Unk01);
+            bw.Write(MasterVolume);
             bw.Write(Unk02);
             bw.Write(Unk03);
             bw.Write(Unk04);
@@ -10981,7 +10996,7 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Unk00", "0x" + Unk00.Hex);
-            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            RelXml.ValueTag(sb, indent, "MasterVolume", MasterVolume.ToString());
             RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
             RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
             RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
@@ -11044,7 +11059,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             Unk00 = Xml.GetChildUIntAttribute(node, "Unk00", "value");
-            Unk01 = Xml.GetChildIntAttribute(node, "Unk01", "value");
+            MasterVolume = Xml.GetChildIntAttribute(node, "MasterVolume", "value");
             Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
             Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
             Unk04 = Xml.GetChildIntAttribute(node, "Unk04", "value");
@@ -11649,7 +11664,7 @@ namespace CodeWalker.GameFiles
         public MetaHash ExhaustPops { get; set; }
         public MetaHash Unk32 { get; set; }
         public int Unk33 { get; set; }
-        public int Unk34 { get; set; }
+        public int FansVolume { get; set; }
         public MetaHash StartupMaster { get; set; }
         public MetaHash Unk36 { get; set; }
         public MetaHash Unk37 { get; set; }
@@ -11714,7 +11729,7 @@ namespace CodeWalker.GameFiles
             ExhaustPops = br.ReadUInt32();
             Unk32 = br.ReadUInt32();
             Unk33 = br.ReadInt32();
-            Unk34 = br.ReadInt32();
+            FansVolume = br.ReadInt32();
             StartupMaster = br.ReadUInt32();
             Unk36 = br.ReadUInt32();
             Unk37 = br.ReadUInt32();
@@ -11792,7 +11807,7 @@ namespace CodeWalker.GameFiles
             bw.Write(ExhaustPops);
             bw.Write(Unk32);
             bw.Write(Unk33);
-            bw.Write(Unk34);
+            bw.Write(FansVolume);
             bw.Write(StartupMaster);
             bw.Write(Unk36);
             bw.Write(Unk37);
@@ -11853,7 +11868,7 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "ExhaustPops", RelXml.HashString(ExhaustPops));
             RelXml.StringTag(sb, indent, "Unk32", RelXml.HashString(Unk32));
             RelXml.ValueTag(sb, indent, "Unk33", Unk33.ToString());
-            RelXml.ValueTag(sb, indent, "Unk34", Unk34.ToString());
+            RelXml.ValueTag(sb, indent, "FansVolume", FansVolume.ToString());
             RelXml.StringTag(sb, indent, "StartupMaster", RelXml.HashString(StartupMaster));
             RelXml.StringTag(sb, indent, "Unk36", RelXml.HashString(Unk36));
             RelXml.StringTag(sb, indent, "Unk37", RelXml.HashString(Unk37));
@@ -11913,7 +11928,7 @@ namespace CodeWalker.GameFiles
             ExhaustPops = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustPops"));
             Unk32 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk32"));
             Unk33 = Xml.GetChildIntAttribute(node, "Unk33", "value");
-            Unk34 = Xml.GetChildIntAttribute(node, "Unk34", "value");
+            FansVolume = Xml.GetChildIntAttribute(node, "FansVolume", "value");
             StartupMaster = XmlRel.GetHash(Xml.GetChildInnerText(node, "StartupMaster"));
             Unk36 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk36"));
             Unk37 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk37"));
@@ -14985,6 +15000,159 @@ namespace CodeWalker.GameFiles
 
     #region dat4 (speech)
 
+    public enum Dat4SpeechType : byte
+    {
+        ByteArray = 0,
+        Hash = 4,
+        Container = 8,
+    }
+
+    [TC(typeof(EXP))] public class Dat4SpeechData : RelData
+    {
+        public Dat4SpeechType Type { get; set; }
+        public Dat4SpeechData(RelFile rel) : base(rel)
+        { }
+        public Dat4SpeechData(RelData d, BinaryReader br) : base(d)
+        {
+            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+        }
+    }
+    [TC(typeof(EXP))] public class Dat4SpeechByteArray : Dat4SpeechData
+    {
+        public byte[] Bytes { get; set; }
+
+        public Dat4SpeechByteArray(RelFile rel) : base(rel)
+        {
+            Type = Dat4SpeechType.ByteArray;
+            TypeID = (byte)Type;
+        }
+        public Dat4SpeechByteArray(RelData d, BinaryReader br) : base(d, br)
+        {
+            Type = Dat4SpeechType.ByteArray;
+            TypeID = (byte)Type;
+
+            int dataLength = (int)br.BaseStream.Length;
+            int arrayLength = dataLength;
+            if (dataLength >= 4)
+            {
+                arrayLength = br.ReadByte();
+            }
+            Bytes = br.ReadBytes(arrayLength);
+
+            if (br.BaseStream.Position != br.BaseStream.Length)
+            { }
+        }
+
+        public override void Write(BinaryWriter bw)
+        {
+            byte arrayLength = (byte)(Bytes?.Length ?? 0);
+            if (arrayLength >= 4)
+            {
+                bw.Write(arrayLength);
+            }
+            bw.Write(Bytes);
+        }
+
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+        public override void ReadXml(XmlNode node)
+        {
+        }
+
+        public override string ToString()
+        {
+            return GetBaseString() + ": " + Type.ToString();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat4SpeechHash : Dat4SpeechData
+    {
+        public MetaHash Hash { get; set; }
+
+        public Dat4SpeechHash(RelFile rel) : base(rel)
+        {
+            Type = Dat4SpeechType.Hash;
+            TypeID = (byte)Type;
+        }
+        public Dat4SpeechHash(RelData d, BinaryReader br) : base(d, br)
+        {
+            Type = Dat4SpeechType.Hash;
+            TypeID = (byte)Type;
+
+            Hash = br.ReadUInt32();
+
+            if (br.BaseStream.Position != br.BaseStream.Length)
+            { }
+        }
+
+        public override void Write(BinaryWriter bw)
+        {
+            bw.Write(Hash);
+        }
+
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+        public override void ReadXml(XmlNode node)
+        {
+        }
+        public override uint[] GetHashTableOffsets()
+        {
+            return new uint[] { 0 };
+        }
+
+        public override string ToString()
+        {
+            return GetBaseString() + ": " + Type.ToString() + ": " + Hash.ToString();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat4SpeechContainer : Dat4SpeechData
+    {
+        public uint NameTableOffset { get; set; }
+        public MetaHash ContainerHash { get; set; }
+
+        public Dat4SpeechContainer(RelFile rel) : base(rel)
+        {
+            Type = Dat4SpeechType.Container;
+            TypeID = (byte)Type;
+        }
+        public Dat4SpeechContainer(RelData d, BinaryReader br) : base(d, br)
+        {
+            Type = Dat4SpeechType.Container;
+            TypeID = (byte)Type;
+
+            NameTableOffset = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
+            ContainerHash = br.ReadUInt32();
+
+            if (br.BaseStream.Position != br.BaseStream.Length)
+            { }
+        }
+
+        public override void Write(BinaryWriter bw)
+        {
+            bw.Write(((NameTableOffset & 0xFFFFFF) << 8) + 4 /*TypeID*/);
+            bw.Write(ContainerHash);
+        }
+
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+        public override void ReadXml(XmlNode node)
+        {
+        }
+        public override uint[] GetPackTableOffsets()
+        {
+            return new uint[] { 4 };
+        }
+
+        public override string ToString()
+        {
+            return GetBaseString() + ": " + Type.ToString() + ": " + ContainerHash.ToString();
+        }
+    }
+
+
+
     #endregion
 
 
@@ -15042,6 +15210,7 @@ namespace CodeWalker.GameFiles
                             break;
                         case RelDatFileType.Dat4:
                             if (rel.IsAudioConfig) typeid = ((Dat4ConfigType)item.TypeID).ToString();
+                            else typeid = ((Dat4SpeechType)item.TypeID).ToString();
                             break;
                         default:
                             break;
@@ -15157,6 +15326,14 @@ namespace CodeWalker.GameFiles
                                 if (Enum.TryParse(typestr, out ct))
                                 {
                                     typeid = (int)ct;
+                                }
+                            }
+                            else
+                            {
+                                Dat4SpeechType spt;
+                                if (Enum.TryParse(typestr, out spt))
+                                {
+                                    typeid = (int)spt;
                                 }
                             }
                             break;
