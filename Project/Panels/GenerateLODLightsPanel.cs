@@ -151,15 +151,71 @@ namespace CodeWalker.Project.Panels
                                     //transform this light with the entity position and orientation
                                     //generate lights data from it!
 
+
+                                    //gotta transform the light position by the given bone! annoying
+                                    Bone bone = null;
+                                    Matrix xform = Matrix.Identity;
+                                    int boneidx = 0;
+                                    var skeleton = dwbl.Skeleton;
+                                    if (skeleton?.Bones?.Data != null)
+                                    {
+                                        for (int j = 0; j < skeleton.Bones.Data.Count; j++)
+                                        {
+                                            var tbone = skeleton.Bones.Data[j];
+                                            if (tbone.Id == la.BoneId)
+                                            {
+                                                boneidx = j;
+                                                bone = tbone;
+                                                break;
+                                            }
+                                        }
+                                        if (bone != null)
+                                        {
+                                            var modeltransforms = skeleton.Transformations;
+                                            var fragtransforms = fdwbl?.OwnerFragmentPhys?.OwnerFragPhysLod?.FragTransforms?.Data;
+                                            var fragtransformid = fdwbl?.OwnerFragmentPhys?.OwnerFragPhysIndex ?? 0;
+                                            var fragoffset = fdwbl?.OwnerFragmentPhys?.OwnerFragPhysLod.Unknown_30h ?? Vector4.Zero;
+                                            fragoffset.W = 0.0f;
+
+                                            if ((fragtransforms != null))// && (fragtransformid < fragtransforms.Length))
+                                            {
+                                                if (fragtransformid < fragtransforms.Length)
+                                                {
+                                                    xform = fragtransforms[fragtransformid];
+                                                    xform.Row4 += fragoffset;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                //when using the skeleton's matrices, they need to be transformed by parent
+                                                xform = modeltransforms[boneidx];
+                                                xform.Column4 = Vector4.UnitW;
+                                                //xform = Matrix.Identity;
+                                                ushort[] pinds = skeleton.ParentIndices;
+                                                ushort parentind = ((pinds != null) && (boneidx < pinds.Length)) ? pinds[boneidx] : (ushort)65535;
+                                                while (parentind < pinds.Length)
+                                                {
+                                                    Matrix ptrans = (parentind < modeltransforms.Length) ? modeltransforms[parentind] : Matrix.Identity;
+                                                    ptrans.Column4 = Vector4.UnitW;
+                                                    xform = Matrix.Multiply(ptrans, xform);
+                                                    parentind = ((pinds != null) && (parentind < pinds.Length)) ? pinds[parentind] : (ushort)65535;
+                                                }
+                                            }
+                                        }
+                                    }
+
+
+
                                     Vector3 lpos = new Vector3(la.PositionX, la.PositionY, la.PositionZ);
                                     Vector3 ldir = new Vector3(la.DirectionX, la.DirectionY, la.DirectionZ);
-                                    Vector3 epos = ent.Orientation.Multiply(lpos) + ent.Position;
+                                    Vector3 bpos = xform.Multiply(lpos);
+                                    Vector3 epos = ent.Orientation.Multiply(bpos) + ent.Position;
                                     Vector3 edir = ent.Orientation.Multiply(ldir);
 
                                     uint r = la.ColorR;
                                     uint g = la.ColorG;
                                     uint b = la.ColorB;
-                                    uint i = (byte)la.Intensity;
+                                    uint i = (byte)Math.Min(la.Intensity*4, 255);
                                     uint c = (i << 24) + (r << 16) + (g << 8) + b;
 
                                     uint h = 0; //TODO: what hash to use???
