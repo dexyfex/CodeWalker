@@ -27,6 +27,14 @@ namespace CodeWalker
             return new Vector3(x, y, z);
             //this quick mul ignores W...
         }
+        public static Vector3 MultiplyRot(this Matrix m, Vector3 v)
+        {
+            float x = (((m.M11 * v.X) + (m.M21 * v.Y)) + (m.M31 * v.Z));// + m.M41;
+            float y = (((m.M12 * v.X) + (m.M22 * v.Y)) + (m.M32 * v.Z));// + m.M42;
+            float z = (((m.M13 * v.X) + (m.M23 * v.Y)) + (m.M33 * v.Z));// + m.M43;
+            return new Vector3(x, y, z);
+            //this quick mul ignores W and translation...
+        }
 
         public static Vector4 Multiply(this Matrix m, Vector4 v)
         {

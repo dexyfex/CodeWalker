@@ -177,13 +177,10 @@ namespace CodeWalker.Project.Panels
                                             var fragoffset = fdwbl?.OwnerFragmentPhys?.OwnerFragPhysLod.Unknown_30h ?? Vector4.Zero;
                                             fragoffset.W = 0.0f;
 
-                                            if ((fragtransforms != null))// && (fragtransformid < fragtransforms.Length))
+                                            if ((fragtransforms != null) && (fragtransformid < fragtransforms.Length))
                                             {
-                                                if (fragtransformid < fragtransforms.Length)
-                                                {
-                                                    xform = fragtransforms[fragtransformid];
-                                                    xform.Row4 += fragoffset;
-                                                }
+                                                xform = fragtransforms[fragtransformid];
+                                                xform.Row4 += fragoffset;
                                             }
                                             else
                                             {
@@ -209,8 +206,9 @@ namespace CodeWalker.Project.Panels
                                     Vector3 lpos = new Vector3(la.PositionX, la.PositionY, la.PositionZ);
                                     Vector3 ldir = new Vector3(la.DirectionX, la.DirectionY, la.DirectionZ);
                                     Vector3 bpos = xform.Multiply(lpos);
+                                    Vector3 bdir = xform.MultiplyRot(ldir);
                                     Vector3 epos = ent.Orientation.Multiply(bpos) + ent.Position;
-                                    Vector3 edir = ent.Orientation.Multiply(ldir);
+                                    Vector3 edir = ent.Orientation.Multiply(bdir);
 
                                     uint r = la.ColorR;
                                     uint g = la.ColorG;
@@ -218,9 +216,14 @@ namespace CodeWalker.Project.Panels
                                     uint i = (byte)Math.Min(la.Intensity*4, 255);
                                     uint c = (i << 24) + (r << 16) + (g << 8) + b;
 
-                                    uint h = 0; //TODO: what hash to use???
+                                    uint h = 123456; //TODO: what hash to use???
 
-                                    uint t = la.TimeFlags;
+                                    //@Calcium:
+                                    //1 = point
+                                    //2 = spot
+                                    //4 = capsule
+                                    uint type = 1;
+                                    uint t = la.TimeFlags + (type << 26);
 
                                     var maxext = (byte)Math.Max(Math.Max(la.ExtentX, la.ExtentY), la.ExtentZ);
                                     
