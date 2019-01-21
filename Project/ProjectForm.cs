@@ -327,6 +327,13 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
                 (panel) => { return true; }); //findFunc
         }
+        public void ShowGenerateLODLightsPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new GenerateLODLightsPanel(this); }, //createFunc
+                (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
+                (panel) => { return true; }); //findFunc
+        }
         public void ShowGenerateNavMeshPanel(bool promote)
         {
             ShowPanel(promote,
@@ -6839,6 +6846,10 @@ namespace CodeWalker.Project
         private void ToolsManifestGeneratorMenu_Click(object sender, EventArgs e)
         {
             ShowEditProjectManifestPanel(false);
+        }
+        private void ToolsLODLightsGeneratorMenu_Click(object sender, EventArgs e)
+        {
+            ShowGenerateLODLightsPanel(false);
         }
         private void ToolsNavMeshGeneratorMenu_Click(object sender, EventArgs e)
         {

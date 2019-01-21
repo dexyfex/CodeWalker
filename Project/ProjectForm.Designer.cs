@@ -133,6 +133,8 @@
             this.AudioNewAmbientEmitterListMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.AudioNewAmbientZoneMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.AudioNewAmbientZoneListMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.AudioNewInteriorMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.AudioNewInteriorRoomMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator24 = new System.Windows.Forms.ToolStripSeparator();
             this.AudioAddToProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.AudioRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -170,8 +172,7 @@
             this.ToolbarSaveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.AudioNewInteriorMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.AudioNewInteriorRoomMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsLODLightsGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.SuspendLayout();
@@ -1022,6 +1023,22 @@
             this.AudioNewAmbientZoneListMenu.Text = "New Ambient Zone List";
             this.AudioNewAmbientZoneListMenu.Click += new System.EventHandler(this.AudioNewAmbientZoneListMenu_Click);
             // 
+            // AudioNewInteriorMenu
+            // 
+            this.AudioNewInteriorMenu.Enabled = false;
+            this.AudioNewInteriorMenu.Name = "AudioNewInteriorMenu";
+            this.AudioNewInteriorMenu.Size = new System.Drawing.Size(216, 22);
+            this.AudioNewInteriorMenu.Text = "New Interior";
+            this.AudioNewInteriorMenu.Click += new System.EventHandler(this.AudioNewInteriorMenu_Click);
+            // 
+            // AudioNewInteriorRoomMenu
+            // 
+            this.AudioNewInteriorRoomMenu.Enabled = false;
+            this.AudioNewInteriorRoomMenu.Name = "AudioNewInteriorRoomMenu";
+            this.AudioNewInteriorRoomMenu.Size = new System.Drawing.Size(216, 22);
+            this.AudioNewInteriorRoomMenu.Text = "New Interior Room";
+            this.AudioNewInteriorRoomMenu.Click += new System.EventHandler(this.AudioNewInteriorRoomMenu_Click);
+            // 
             // toolStripSeparator24
             // 
             this.toolStripSeparator24.Name = "toolStripSeparator24";
@@ -1047,6 +1064,7 @@
             // 
             this.ToolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ToolsManifestGeneratorMenu,
+            this.ToolsLODLightsGeneratorMenu,
             this.ToolsNavMeshGeneratorMenu,
             this.toolStripSeparator2,
             this.ToolsImportMenyooXmlMenu});
@@ -1057,14 +1075,14 @@
             // ToolsManifestGeneratorMenu
             // 
             this.ToolsManifestGeneratorMenu.Name = "ToolsManifestGeneratorMenu";
-            this.ToolsManifestGeneratorMenu.Size = new System.Drawing.Size(193, 22);
+            this.ToolsManifestGeneratorMenu.Size = new System.Drawing.Size(196, 22);
             this.ToolsManifestGeneratorMenu.Text = "Manifest Generator...";
             this.ToolsManifestGeneratorMenu.Click += new System.EventHandler(this.ToolsManifestGeneratorMenu_Click);
             // 
             // ToolsNavMeshGeneratorMenu
             // 
             this.ToolsNavMeshGeneratorMenu.Name = "ToolsNavMeshGeneratorMenu";
-            this.ToolsNavMeshGeneratorMenu.Size = new System.Drawing.Size(193, 22);
+            this.ToolsNavMeshGeneratorMenu.Size = new System.Drawing.Size(196, 22);
             this.ToolsNavMeshGeneratorMenu.Text = "Nav Mesh Generator...";
             this.ToolsNavMeshGeneratorMenu.Visible = false;
             this.ToolsNavMeshGeneratorMenu.Click += new System.EventHandler(this.ToolsNavMeshGeneratorMenu_Click);
@@ -1072,12 +1090,12 @@
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(190, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(193, 6);
             // 
             // ToolsImportMenyooXmlMenu
             // 
             this.ToolsImportMenyooXmlMenu.Name = "ToolsImportMenyooXmlMenu";
-            this.ToolsImportMenyooXmlMenu.Size = new System.Drawing.Size(193, 22);
+            this.ToolsImportMenyooXmlMenu.Size = new System.Drawing.Size(196, 22);
             this.ToolsImportMenyooXmlMenu.Text = "Import Menyoo XML...";
             this.ToolsImportMenyooXmlMenu.Click += new System.EventHandler(this.ToolsImportMenyooXmlMenu_Click);
             // 
@@ -1318,21 +1336,12 @@
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
             // 
-            // AudioNewInteriorMenu
+            // ToolsLODLightsGeneratorMenu
             // 
-            this.AudioNewInteriorMenu.Enabled = false;
-            this.AudioNewInteriorMenu.Name = "AudioNewInteriorMenu";
-            this.AudioNewInteriorMenu.Size = new System.Drawing.Size(216, 22);
-            this.AudioNewInteriorMenu.Text = "New Interior";
-            this.AudioNewInteriorMenu.Click += new System.EventHandler(this.AudioNewInteriorMenu_Click);
-            // 
-            // AudioNewInteriorRoomMenu
-            // 
-            this.AudioNewInteriorRoomMenu.Enabled = false;
-            this.AudioNewInteriorRoomMenu.Name = "AudioNewInteriorRoomMenu";
-            this.AudioNewInteriorRoomMenu.Size = new System.Drawing.Size(216, 22);
-            this.AudioNewInteriorRoomMenu.Text = "New Interior Room";
-            this.AudioNewInteriorRoomMenu.Click += new System.EventHandler(this.AudioNewInteriorRoomMenu_Click);
+            this.ToolsLODLightsGeneratorMenu.Name = "ToolsLODLightsGeneratorMenu";
+            this.ToolsLODLightsGeneratorMenu.Size = new System.Drawing.Size(196, 22);
+            this.ToolsLODLightsGeneratorMenu.Text = "LOD Lights Generator...";
+            this.ToolsLODLightsGeneratorMenu.Click += new System.EventHandler(this.ToolsLODLightsGeneratorMenu_Click);
             // 
             // ProjectForm
             // 
@@ -1502,5 +1511,6 @@
         private System.Windows.Forms.ToolStripMenuItem FileOpenAudioDatMenu;
         private System.Windows.Forms.ToolStripMenuItem AudioNewInteriorMenu;
         private System.Windows.Forms.ToolStripMenuItem AudioNewInteriorRoomMenu;
+        private System.Windows.Forms.ToolStripMenuItem ToolsLODLightsGeneratorMenu;
     }
 }

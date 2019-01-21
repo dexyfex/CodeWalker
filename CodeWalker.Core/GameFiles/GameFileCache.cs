@@ -2245,6 +2245,83 @@ namespace CodeWalker.GameFiles
             return drawable;
         }
 
+        public DrawableBase TryGetDrawable(Archetype arche, out bool waitingForLoad)
+        {
+            waitingForLoad = false;
+            if (arche == null) return null;
+            uint drawhash = arche.Hash;
+            DrawableBase drawable = null;
+            if ((arche.DrawableDict != 0))// && (arche.DrawableDict != arche.Hash))
+            {
+                //try get drawable from ydd...
+                YddFile ydd = GetYdd(arche.DrawableDict);
+                if (ydd != null)
+                {
+                    if (ydd.Loaded)
+                    {
+                        if (ydd.Dict != null)
+                        {
+                            Drawable d;
+                            ydd.Dict.TryGetValue(drawhash, out d); //can't out to base class?
+                            drawable = d;
+                            if (drawable == null)
+                            {
+                                return null; //drawable wasn't in dict!!
+                            }
+                        }
+                        else
+                        {
+                            return null; //ydd has no dict
+                        }
+                    }
+                    else
+                    {
+                        waitingForLoad = true;
+                        return null; //ydd not loaded yet
+                    }
+                }
+                else
+                {
+                    //return null; //couldn't find drawable dict... quit now?
+                }
+            }
+            if (drawable == null)
+            {
+                //try get drawable from ydr.
+                YdrFile ydr = GetYdr(drawhash);
+                if (ydr != null)
+                {
+                    if (ydr.Loaded)
+                    {
+                        drawable = ydr.Drawable;
+                    }
+                    else
+                    {
+                        waitingForLoad = true;
+                    }
+                }
+                else
+                {
+                    YftFile yft = GetYft(drawhash);
+                    if (yft != null)
+                    {
+                        if (yft.Loaded)
+                        {
+                            if (yft.Fragment != null)
+                            {
+                                drawable = yft.Fragment.Drawable;
+                            }
+                        }
+                        else
+                        {
+                            waitingForLoad = true;
+                        }
+                    }
+                }
+            }
+
+            return drawable;
+        }
 
 
 

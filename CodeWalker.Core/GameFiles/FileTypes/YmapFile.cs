@@ -46,6 +46,8 @@ namespace CodeWalker.GameFiles
 
         public YmapDistantLODLights DistantLODLights { get; set; }
 
+        public YmapLODLights LODLights { get; set; }
+
         public YmapTimeCycleModifier[] TimeCycleModifiers { get; set; }
 
         public YmapCarGen[] CarGenerators { get; set; }
@@ -116,7 +118,7 @@ namespace CodeWalker.GameFiles
 
             EnsureInstances(Meta);
 
-            EnsureLodLights(Meta);
+            EnsureLODLights(Meta);
 
             EnsureDistantLODLights(Meta);
 
@@ -379,11 +381,22 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        private void EnsureLodLights(Meta Meta)
+        private void EnsureLODLights(Meta Meta)
         {
-            //TODO!
             if (_CMapData.LODLightsSOA.direction.Count1 != 0)
             {
+                var soa = _CMapData.LODLightsSOA;
+                LODLights = new YmapLODLights();
+                LODLights.Ymap = this;
+                LODLights.CLODLight = soa;
+                LODLights.direction = MetaTypes.ConvertDataArray<MetaVECTOR3>(Meta, MetaName.VECTOR3, soa.direction);
+                LODLights.falloff = MetaTypes.GetFloatArray(Meta, soa.falloff);
+                LODLights.falloffExponent = MetaTypes.GetFloatArray(Meta, soa.falloffExponent);
+                LODLights.timeAndStateFlags = MetaTypes.GetUintArray(Meta, soa.timeAndStateFlags);
+                LODLights.hash = MetaTypes.GetUintArray(Meta, soa.hash);
+                LODLights.coneInnerAngle = MetaTypes.GetByteArray(Meta, soa.coneInnerAngle);
+                LODLights.coneOuterAngleOrCapExt = MetaTypes.GetByteArray(Meta, soa.coneOuterAngleOrCapExt);
+                LODLights.coronaIntensity = MetaTypes.GetByteArray(Meta, soa.coronaIntensity);
             }
         }
 
@@ -391,11 +404,12 @@ namespace CodeWalker.GameFiles
         {
             if (_CMapData.DistantLODLightsSOA.position.Count1 != 0)
             {
+                var soa = _CMapData.DistantLODLightsSOA;
                 DistantLODLights = new YmapDistantLODLights();
                 DistantLODLights.Ymap = this;
-                DistantLODLights.CDistantLODLight = _CMapData.DistantLODLightsSOA;
-                DistantLODLights.colours = MetaTypes.GetUintArray(Meta, _CMapData.DistantLODLightsSOA.RGBI);
-                DistantLODLights.positions = MetaTypes.ConvertDataArray<MetaVECTOR3>(Meta, MetaName.VECTOR3, _CMapData.DistantLODLightsSOA.position);
+                DistantLODLights.CDistantLODLight = soa;
+                DistantLODLights.colours = MetaTypes.GetUintArray(Meta, soa.RGBI);
+                DistantLODLights.positions = MetaTypes.ConvertDataArray<MetaVECTOR3>(Meta, MetaName.VECTOR3, soa.position);
                 DistantLODLights.CalcBB();
             }
         }
@@ -480,6 +494,8 @@ namespace CodeWalker.GameFiles
         public void BuildCEntityDefs()
         {
             //recreates the CEntityDefs and CMloInstanceDefs arrays from AllEntities.
+            //TODO: save entity extensions!!?
+
             CEntityDefs = null;
             CMloInstanceDefs = null;
             if (AllEntities == null)
@@ -659,8 +675,34 @@ namespace CodeWalker.GameFiles
                 mapdata.instancedData = new rage__fwInstancedMapData();
             }
 
-            mapdata.LODLightsSOA = new CLODLight();
-            mapdata.DistantLODLightsSOA = new CDistantLODLight();
+            if ((LODLights != null) && (LODLights.direction != null))
+            {
+                var soa = new CLODLight();
+                soa.direction = mb.AddItemArrayPtr(MetaName.VECTOR3, LODLights.direction);
+                soa.falloff = mb.AddFloatArrayPtr(LODLights.falloff);
+                soa.falloffExponent = mb.AddFloatArrayPtr(LODLights.falloffExponent);
+                soa.timeAndStateFlags = mb.AddUintArrayPtr(LODLights.timeAndStateFlags);
+                soa.hash = mb.AddUintArrayPtr(LODLights.hash);
+                soa.coneInnerAngle = mb.AddByteArrayPtr(LODLights.coneInnerAngle);
+                soa.coneOuterAngleOrCapExt = mb.AddByteArrayPtr(LODLights.coneOuterAngleOrCapExt);
+                soa.coronaIntensity = mb.AddByteArrayPtr(LODLights.coronaIntensity);
+                mapdata.LODLightsSOA = soa;
+            }
+            else
+            {
+                mapdata.LODLightsSOA = new CLODLight();
+            }
+            if ((DistantLODLights != null) && (DistantLODLights.positions != null))
+            {
+                var soa = DistantLODLights.CDistantLODLight;//to copy base vars
+                soa.position = mb.AddItemArrayPtr(MetaName.VECTOR3, DistantLODLights.positions);
+                soa.RGBI = mb.AddUintArrayPtr(DistantLODLights.colours);
+                mapdata.DistantLODLightsSOA = soa;
+            }
+            else
+            {
+                mapdata.DistantLODLightsSOA = new CDistantLODLight();
+            }
 
 
 
@@ -699,6 +741,14 @@ namespace CodeWalker.GameFiles
             if ((CCarGens != null) && (CCarGens.Length > 0))
             {
                 mb.AddStructureInfo(MetaName.CCarGen);
+            }
+            if ((LODLights != null) && (LODLights.direction != null))
+            {
+                mb.AddStructureInfo(MetaName.VECTOR3);
+            }
+            if ((DistantLODLights != null) && (DistantLODLights.positions != null))
+            {
+                mb.AddStructureInfo(MetaName.VECTOR3);
             }
 
             mb.AddEnumInfo(MetaName.rage__eLodType); //LODTYPES_
@@ -2126,6 +2176,44 @@ namespace CodeWalker.GameFiles
 
         }
     }
+
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class YmapLODLights
+    {
+        public CLODLight CLODLight { get; set; }
+        public MetaVECTOR3[] direction { get; set; }
+        public float[] falloff { get; set; }
+        public float[] falloffExponent { get; set; }
+        public uint[] timeAndStateFlags { get; set; }
+        public uint[] hash { get; set; }
+        public byte[] coneInnerAngle { get; set; }
+        public byte[] coneOuterAngleOrCapExt { get; set; }
+        public byte[] coronaIntensity { get; set; }
+
+        public Vector3 BBMin { get; set; }
+        public Vector3 BBMax { get; set; }
+        public YmapFile Ymap { get; set; }
+
+        public void CalcBB()
+        {
+            //if (positions != null)
+            //{
+            //    Vector3 min = new Vector3(float.MaxValue);
+            //    Vector3 max = new Vector3(float.MinValue);
+            //    for (int i = 0; i < positions.Length; i++)
+            //    {
+            //        var p = positions[i];
+            //        Vector3 pv = p.ToVector3();
+            //        min = Vector3.Min(min, pv);
+            //        max = Vector3.Max(max, pv);
+            //    }
+            //    BBMin = min;
+            //    BBMax = max;
+            //}
+
+        }
+    }
+
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class YmapTimeCycleModifier

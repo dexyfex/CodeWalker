@@ -143,6 +143,12 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Project\Panels\GenerateLODLightsPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\GenerateLODLightsPanel.Designer.cs">
+      <DependentUpon>GenerateLODLightsPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Tools\BrowseForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -570,6 +576,9 @@
     <Compile Include="World\Widget.cs" />
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\GenerateLODLightsPanel.resx">
+      <DependentUpon>GenerateLODLightsPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Tools\BrowseForm.resx">
       <DependentUpon>BrowseForm.cs</DependentUpon>

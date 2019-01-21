@@ -1009,6 +1009,13 @@ namespace CodeWalker.GameFiles
             return x.ToString() + ", " + y.ToString() + ", " + z.ToString();
         }
 
+        public MetaVECTOR3(Vector3 v)
+        {
+            x = v.X;
+            y = v.Y;
+            z = v.Z;
+        }
+
         public Vector3 ToVector3()
         {
             return new Vector3(x, y, z);
