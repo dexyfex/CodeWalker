@@ -111,7 +111,7 @@ namespace CodeWalker.Project.Panels
 
                 foreach (var ymap in projectYmaps)
                 {
-
+                    if (ymap?.AllEntities == null) continue;
                     foreach (var ent in ymap.AllEntities)
                     {
                         if (ent.Archetype == null) continue;
@@ -253,6 +253,7 @@ namespace CodeWalker.Project.Panels
                     return;
                 }
 
+                UpdateStatus("Creating new ymap files...");
 
                 var lodymap = new YmapFile();
                 var distymap = new YmapFile();
@@ -281,11 +282,11 @@ namespace CodeWalker.Project.Panels
                 lodymap._CMapData.entitiesExtentsMin = eemin;
                 lodymap._CMapData.entitiesExtentsMax = eemax;
                 lodymap._CMapData.streamingExtentsMin = semin - 1000f;
-                lodymap._CMapData.streamingExtentsMax = semax + 1000f;
+                lodymap._CMapData.streamingExtentsMax = semax + 1000f; //vanilla = ~1km
                 distymap._CMapData.entitiesExtentsMin = eemin;
                 distymap._CMapData.entitiesExtentsMax = eemax;
                 distymap._CMapData.streamingExtentsMin = semin - 5000f; //make it huge
-                distymap._CMapData.streamingExtentsMax = semax + 5000f;
+                distymap._CMapData.streamingExtentsMax = semax + 5000f; //vanilla = ~3km
 
                 lodymap.LODLights = ll;
                 distymap.DistantLODLights = dl;
@@ -304,6 +305,9 @@ namespace CodeWalker.Project.Panels
                 distymap.RpfFileEntry.NameLower = distname + ".ymap";
 
                 lodymap._CMapData.parent = distymap._CMapData.name;
+
+
+                UpdateStatus("Adding new ymap files to project...");
 
                 ProjectForm.Invoke((MethodInvoker)delegate
                 {
