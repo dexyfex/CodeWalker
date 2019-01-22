@@ -81,7 +81,7 @@ namespace CodeWalker.Project.Panels
             var gameFileCache = ProjectForm?.WorldForm?.GameFileCache;
             if (gameFileCache == null) return;
 
-            var path = ProjectForm.CurrentProjectFile.GetFullFilePath("navmeshes") + "\\";
+            var path = ProjectForm.CurrentProjectFile.GetFullFilePath("lodlights") + "\\";
 
             GenerateButton.Enabled = false;
 
@@ -222,7 +222,7 @@ namespace CodeWalker.Project.Panels
                                     //1 = point
                                     //2 = spot
                                     //4 = capsule
-                                    uint type = 1;
+                                    uint type = la.Type;
                                     uint t = la.TimeFlags + (type << 26);
 
                                     var maxext = (byte)Math.Max(Math.Max(la.ExtentX, la.ExtentY), la.ExtentZ);
