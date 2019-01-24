@@ -587,7 +587,7 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.ShoreLineOcean: return new Dat151ShoreLineOcean(d, br);
                 case Dat151RelType.ShoreLineList: return new Dat151ShoreLineList(d, br);
 
-                case Dat151RelType.RadioTrackLabels: return new Dat151RadioTrackLabels(d, br);
+                case Dat151RelType.RadioTrackEvents: return new Dat151RadioTrackEvents(d, br);
                 case Dat151RelType.VehicleEngineGranular: return new Dat151VehicleEngineGranular(d, br); //maybe not just vehicle
                 case Dat151RelType.Vehicle: return new Dat151Vehicle(d, br);
                 case Dat151RelType.VehicleEngine: return new Dat151VehicleEngine(d, br);
@@ -756,7 +756,7 @@ namespace CodeWalker.GameFiles
                         case Dat151RelType.ShoreLineRiver: return new Dat151ShoreLineRiver(this);
                         case Dat151RelType.ShoreLineOcean: return new Dat151ShoreLineOcean(this);
                         case Dat151RelType.ShoreLineList: return new Dat151ShoreLineList(this);
-                        case Dat151RelType.RadioTrackLabels: return new Dat151RadioTrackLabels(this);
+                        case Dat151RelType.RadioTrackEvents: return new Dat151RadioTrackEvents(this);
                         case Dat151RelType.VehicleEngineGranular: return new Dat151VehicleEngineGranular(this); //maybe not just vehicle
                         case Dat151RelType.Vehicle: return new Dat151Vehicle(this);
                         case Dat151RelType.VehicleEngine: return new Dat151VehicleEngine(this);
@@ -5266,7 +5266,7 @@ namespace CodeWalker.GameFiles
         Unk111 = 111,
         Unk112 = 112,
         Unk113 = 113,
-        RadioTrackLabels = 114,
+        RadioTrackEvents = 114,
         Unk115 = 115,
         Unk116 = 116,
         Unk117 = 117,
@@ -6900,7 +6900,7 @@ namespace CodeWalker.GameFiles
             return offsets.ToArray();
         }
     }
-    [TC(typeof(EXP))] public class Dat151RadioMusic : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151RadioMusic : Dat151RelData //name eg: radioname_music
     {
         public FlagsUint Unk00 { get; set; }
         public byte MusicType { get; set; }//maybe int?
@@ -10595,40 +10595,40 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TC(typeof(EXP))] public class Dat151RadioTrackLabels : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151RadioTrackEvents : Dat151RelData
     {
-        public uint LabelCount { get; set; }
-        public LabelData[] Labels { get; set; }
+        public uint EventCount { get; set; }
+        public EventData[] Events { get; set; }
 
-        public struct LabelData
+        public struct EventData
         {
             public uint Time { get; set; }
-            public uint Label { get; set; }
+            public uint Event { get; set; }
 
-            public LabelData(uint time, uint trackID)
+            public EventData(uint time, uint trackID)
             {
                 Time = time;
-                Label = trackID;
+                Event = trackID;
             }
 
             public override string ToString()
             {
-                return Time.ToString() + ": " + Label.ToString();
+                return Time.ToString() + ": " + Event.ToString();
             }
         }
 
-        public Dat151RadioTrackLabels(RelFile rel) : base(rel)
+        public Dat151RadioTrackEvents(RelFile rel) : base(rel)
         {
-            Type = Dat151RelType.RadioTrackLabels;
+            Type = Dat151RelType.RadioTrackEvents;
             TypeID = (byte)Type;
         }
-        public Dat151RadioTrackLabels(RelData d, BinaryReader br) : base(d, br)
+        public Dat151RadioTrackEvents(RelData d, BinaryReader br) : base(d, br)
         {
-            LabelCount = br.ReadUInt32();
-            Labels = new LabelData[LabelCount];
-            for (int i = 0; i < LabelCount; i++)
+            EventCount = br.ReadUInt32();
+            Events = new EventData[EventCount];
+            for (int i = 0; i < EventCount; i++)
             {
-                Labels[i] = new LabelData(br.ReadUInt32(), br.ReadUInt32());
+                Events[i] = new EventData(br.ReadUInt32(), br.ReadUInt32());
             }
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
@@ -10639,52 +10639,52 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
-            bw.Write(LabelCount);
-            for (int i = 0; i < LabelCount; i++)
+            bw.Write(EventCount);
+            for (int i = 0; i < EventCount; i++)
             {
-                bw.Write(Labels[i].Time);
-                bw.Write(Labels[i].Label);
+                bw.Write(Events[i].Time);
+                bw.Write(Events[i].Event);
             }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            if (LabelCount > 0)
+            if (EventCount > 0)
             {
-                RelXml.OpenTag(sb, indent, "Labels");
+                RelXml.OpenTag(sb, indent, "Events");
                 var cind = indent + 1;
                 var cind2 = indent + 2;
-                for (int i = 0; i < LabelCount; i++)
+                for (int i = 0; i < EventCount; i++)
                 {
                     RelXml.OpenTag(sb, cind, "Item");
-                    RelXml.ValueTag(sb, cind2, "Time", Labels[i].Time.ToString());
-                    RelXml.ValueTag(sb, cind2, "Label", Labels[i].Label.ToString());
+                    RelXml.ValueTag(sb, cind2, "Time", Events[i].Time.ToString());
+                    RelXml.ValueTag(sb, cind2, "Event", Events[i].Event.ToString());
                     RelXml.CloseTag(sb, cind, "Item");
                 }
-                RelXml.CloseTag(sb, indent, "Labels");
+                RelXml.CloseTag(sb, indent, "Events");
             }
             else
             {
-                RelXml.SelfClosingTag(sb, indent, "Labels");
+                RelXml.SelfClosingTag(sb, indent, "Events");
             }
         }
         public override void ReadXml(XmlNode node)
         {
-            var vnode = node.SelectSingleNode("Labels");
+            var vnode = node.SelectSingleNode("Events");
             if (vnode != null)
             {
                 var inodes = vnode.SelectNodes("Item");
                 if (inodes?.Count > 0)
                 {
-                    var vlist = new List<LabelData>();
+                    var vlist = new List<EventData>();
                     foreach (XmlNode inode in inodes)
                     {
-                        LabelData v = new LabelData();
+                        EventData v = new EventData();
                         v.Time = Xml.GetChildUIntAttribute(inode, "Time", "value");
-                        v.Label = Xml.GetChildUIntAttribute(inode, "Label", "value");
+                        v.Event = Xml.GetChildUIntAttribute(inode, "Event", "value");
                         vlist.Add(v);
                     }
-                    LabelCount = (uint)vlist.Count;
-                    Labels = vlist.ToArray();
+                    EventCount = (uint)vlist.Count;
+                    Events = vlist.ToArray();
                 }
             }
         }
@@ -11148,9 +11148,9 @@ namespace CodeWalker.GameFiles
         public FlagsUint Unk23 { get; set; }
         //public FlagsUshort Unk23a { get; set; }//0x0002
         //public FlagsUshort Unk23b { get; set; }//0x0801
-        public MetaHash Unk24 { get; set; }
-        public MetaHash Unk25 { get; set; }
-        public MetaHash Unk26 { get; set; }
+        public MetaHash IndicatorOn { get; set; }
+        public MetaHash IndicatorOff { get; set; }
+        public MetaHash Handbrake { get; set; }
         public FlagsUint Unk27 { get; set; }
         //public FlagsUshort Unk27a { get; set; }
         //public FlagsUshort Unk27b { get; set; }
@@ -11186,7 +11186,7 @@ namespace CodeWalker.GameFiles
         public MetaHash Unk55 { get; set; }
         public int Unk56 { get; set; }
         public MetaHash Unk57 { get; set; }
-        public MetaHash Unk58 { get; set; }
+        public MetaHash ShutdownBeep { get; set; }
         public float Unk59 { get; set; }
         public int Unk60 { get; set; }
         public float Unk61 { get; set; }
@@ -11235,9 +11235,9 @@ namespace CodeWalker.GameFiles
             Unk23 = br.ReadUInt32();
             //Unk23a = br.ReadUInt16();//0x0002
             //Unk23b = br.ReadUInt16();//0x0801
-            Unk24 = br.ReadUInt32();
-            Unk25 = br.ReadUInt32();
-            Unk26 = br.ReadUInt32();
+            IndicatorOn = br.ReadUInt32();
+            IndicatorOff = br.ReadUInt32();
+            Handbrake = br.ReadUInt32();
             Unk27 = br.ReadUInt32();
             //Unk27a = br.ReadUInt16();
             //Unk27b = br.ReadUInt16();
@@ -11273,7 +11273,7 @@ namespace CodeWalker.GameFiles
             Unk55 = br.ReadUInt32();
             Unk56 = br.ReadInt32();
             Unk57 = br.ReadUInt32();
-            Unk58 = br.ReadUInt32();
+            ShutdownBeep = br.ReadUInt32();
             Unk59 = br.ReadSingle();
             Unk60 = br.ReadInt32();
             Unk61 = br.ReadSingle();
@@ -11412,9 +11412,9 @@ namespace CodeWalker.GameFiles
             bw.Write(Unk23);
             //bw.Write(Unk23a);//0x0002
             //bw.Write(Unk23b);//0x0801
-            bw.Write(Unk24);
-            bw.Write(Unk25);
-            bw.Write(Unk26);
+            bw.Write(IndicatorOn);
+            bw.Write(IndicatorOff);
+            bw.Write(Handbrake);
             bw.Write(Unk27);
             //bw.Write(Unk27a);
             //bw.Write(Unk27b);
@@ -11450,7 +11450,7 @@ namespace CodeWalker.GameFiles
             bw.Write(Unk55);
             bw.Write(Unk56);
             bw.Write(Unk57);
-            bw.Write(Unk58);
+            bw.Write(ShutdownBeep);
             bw.Write(Unk59);
             bw.Write(Unk60);
             bw.Write(Unk61);
@@ -11501,9 +11501,9 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "Unk21", Unk21.ToString());
             RelXml.ValueTag(sb, indent, "Unk22", Unk22.ToString());
             RelXml.ValueTag(sb, indent, "Unk23", "0x" + Unk23.Hex);
-            RelXml.StringTag(sb, indent, "Unk24", RelXml.HashString(Unk24));
-            RelXml.StringTag(sb, indent, "Unk25", RelXml.HashString(Unk25));
-            RelXml.StringTag(sb, indent, "Unk26", RelXml.HashString(Unk26));
+            RelXml.StringTag(sb, indent, "IndicatorOn", RelXml.HashString(IndicatorOn));
+            RelXml.StringTag(sb, indent, "IndicatorOff", RelXml.HashString(IndicatorOff));
+            RelXml.StringTag(sb, indent, "Handbrake", RelXml.HashString(Handbrake));
             RelXml.ValueTag(sb, indent, "Unk27", "0x" + Unk27.Hex);
             RelXml.StringTag(sb, indent, "Unk28", RelXml.HashString(Unk28));
             RelXml.ValueTag(sb, indent, "Unk29", "0x" + Unk29.Hex);
@@ -11535,7 +11535,7 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "Unk55", RelXml.HashString(Unk55));
             RelXml.ValueTag(sb, indent, "Unk56", Unk56.ToString());
             RelXml.StringTag(sb, indent, "Unk57", RelXml.HashString(Unk57));
-            RelXml.StringTag(sb, indent, "Unk58", RelXml.HashString(Unk58));
+            RelXml.StringTag(sb, indent, "ShutdownBeep", RelXml.HashString(ShutdownBeep));
             RelXml.ValueTag(sb, indent, "Unk59", FloatUtil.ToString(Unk59));
             RelXml.ValueTag(sb, indent, "Unk60", Unk60.ToString());
             RelXml.ValueTag(sb, indent, "Unk61", FloatUtil.ToString(Unk61));
@@ -11577,9 +11577,9 @@ namespace CodeWalker.GameFiles
             Unk21 = Xml.GetChildIntAttribute(node, "Unk21", "value");
             Unk22 = Xml.GetChildIntAttribute(node, "Unk22", "value");
             Unk23 = Xml.GetChildUIntAttribute(node, "Unk23", "value");
-            Unk24 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk24"));
-            Unk25 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk25"));
-            Unk26 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk26"));
+            IndicatorOn = XmlRel.GetHash(Xml.GetChildInnerText(node, "IndicatorOn"));
+            IndicatorOff = XmlRel.GetHash(Xml.GetChildInnerText(node, "IndicatorOff"));
+            Handbrake = XmlRel.GetHash(Xml.GetChildInnerText(node, "Handbrake"));
             Unk27 = Xml.GetChildUIntAttribute(node, "Unk27", "value");
             Unk28 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk28"));
             Unk29 = Xml.GetChildUIntAttribute(node, "Unk29", "value");
@@ -11611,7 +11611,7 @@ namespace CodeWalker.GameFiles
             Unk55 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk55"));
             Unk56 = Xml.GetChildIntAttribute(node, "Unk56", "value");
             Unk57 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk57"));
-            Unk58 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk58"));
+            ShutdownBeep = XmlRel.GetHash(Xml.GetChildInnerText(node, "ShutdownBeep"));
             Unk59 = Xml.GetChildFloatAttribute(node, "Unk59", "value");
             Unk60 = Xml.GetChildIntAttribute(node, "Unk60", "value");
             Unk61 = Xml.GetChildFloatAttribute(node, "Unk61", "value");
@@ -11634,15 +11634,15 @@ namespace CodeWalker.GameFiles
         public int Unk01 { get; set; }
         public int Unk02 { get; set; }
         public int Unk03 { get; set; }
-        public MetaHash Unk04 { get; set; }
-        public MetaHash Unk05 { get; set; }
-        public MetaHash Unk06 { get; set; }
-        public MetaHash Unk07 { get; set; }
-        public MetaHash Unk08 { get; set; }
+        public MetaHash EngineLow { get; set; }
+        public MetaHash EngineHigh { get; set; }
+        public MetaHash ExhaustLow { get; set; }
+        public MetaHash ExhaustHigh { get; set; }
+        public MetaHash RevsOff { get; set; }
         public int Unk09 { get; set; }
         public int Unk10 { get; set; }
-        public MetaHash Unk11 { get; set; }
-        public MetaHash Unk12 { get; set; }//flags? float?
+        public MetaHash EngineIdleLoop { get; set; }
+        public MetaHash ExhaustIdleLoop { get; set; }
         public int Unk13 { get; set; }
         public int Unk14 { get; set; }
         public MetaHash AirIntake { get; set; }
@@ -11699,15 +11699,15 @@ namespace CodeWalker.GameFiles
             Unk01 = br.ReadInt32();
             Unk02 = br.ReadInt32();
             Unk03 = br.ReadInt32();
-            Unk04 = br.ReadUInt32();
-            Unk05 = br.ReadUInt32();
-            Unk06 = br.ReadUInt32();
-            Unk07 = br.ReadUInt32();
-            Unk08 = br.ReadUInt32();
+            EngineLow = br.ReadUInt32();
+            EngineHigh = br.ReadUInt32();
+            ExhaustLow = br.ReadUInt32();
+            ExhaustHigh = br.ReadUInt32();
+            RevsOff = br.ReadUInt32();
             Unk09 = br.ReadInt32();
             Unk10 = br.ReadInt32();
-            Unk11 = br.ReadUInt32();
-            Unk12 = br.ReadUInt32();//flags? float?
+            EngineIdleLoop = br.ReadUInt32();
+            ExhaustIdleLoop = br.ReadUInt32();
             Unk13 = br.ReadInt32();
             Unk14 = br.ReadInt32();
             AirIntake = br.ReadUInt32();
@@ -11777,15 +11777,15 @@ namespace CodeWalker.GameFiles
             bw.Write(Unk01);
             bw.Write(Unk02);
             bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
-            bw.Write(Unk06);
-            bw.Write(Unk07);
-            bw.Write(Unk08);
+            bw.Write(EngineLow);
+            bw.Write(EngineHigh);
+            bw.Write(ExhaustLow);
+            bw.Write(ExhaustHigh);
+            bw.Write(RevsOff);
             bw.Write(Unk09);
             bw.Write(Unk10);
-            bw.Write(Unk11);
-            bw.Write(Unk12);//flags? float?
+            bw.Write(EngineIdleLoop);
+            bw.Write(ExhaustIdleLoop);
             bw.Write(Unk13);
             bw.Write(Unk14);
             bw.Write(AirIntake);
@@ -11838,15 +11838,15 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
             RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
             RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
-            RelXml.StringTag(sb, indent, "Unk04", RelXml.HashString(Unk04));
-            RelXml.StringTag(sb, indent, "Unk05", RelXml.HashString(Unk05));
-            RelXml.StringTag(sb, indent, "Unk06", RelXml.HashString(Unk06));
-            RelXml.StringTag(sb, indent, "Unk07", RelXml.HashString(Unk07));
-            RelXml.StringTag(sb, indent, "Unk08", RelXml.HashString(Unk08));
+            RelXml.StringTag(sb, indent, "EngineLow", RelXml.HashString(EngineLow));
+            RelXml.StringTag(sb, indent, "EngineHigh", RelXml.HashString(EngineHigh));
+            RelXml.StringTag(sb, indent, "ExhaustLow", RelXml.HashString(ExhaustLow));
+            RelXml.StringTag(sb, indent, "ExhaustHigh", RelXml.HashString(ExhaustHigh));
+            RelXml.StringTag(sb, indent, "RevsOff", RelXml.HashString(RevsOff));
             RelXml.ValueTag(sb, indent, "Unk09", Unk09.ToString());
             RelXml.ValueTag(sb, indent, "Unk10", Unk10.ToString());
-            RelXml.StringTag(sb, indent, "Unk11", RelXml.HashString(Unk11));
-            RelXml.StringTag(sb, indent, "Unk12", RelXml.HashString(Unk12));
+            RelXml.StringTag(sb, indent, "EngineIdleLoop", RelXml.HashString(EngineIdleLoop));
+            RelXml.StringTag(sb, indent, "ExhaustIdleLoop", RelXml.HashString(ExhaustIdleLoop));
             RelXml.ValueTag(sb, indent, "Unk13", Unk13.ToString());
             RelXml.ValueTag(sb, indent, "Unk14", Unk14.ToString());
             RelXml.StringTag(sb, indent, "AirIntake", RelXml.HashString(AirIntake));
@@ -11898,15 +11898,15 @@ namespace CodeWalker.GameFiles
             Unk01 = Xml.GetChildIntAttribute(node, "Unk01", "value");
             Unk02 = Xml.GetChildIntAttribute(node, "Unk02", "value");
             Unk03 = Xml.GetChildIntAttribute(node, "Unk03", "value");
-            Unk04 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
-            Unk05 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
-            Unk06 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk06"));
-            Unk07 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk07"));
-            Unk08 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk08"));
+            EngineLow = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineLow"));
+            EngineHigh = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineHigh"));
+            ExhaustLow = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustLow"));
+            ExhaustHigh = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustHigh"));
+            RevsOff = XmlRel.GetHash(Xml.GetChildInnerText(node, "RevsOff"));
             Unk09 = Xml.GetChildIntAttribute(node, "Unk09", "value");
             Unk10 = Xml.GetChildIntAttribute(node, "Unk10", "value");
-            Unk11 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk11"));
-            Unk12 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk12"));
+            EngineIdleLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineIdleLoop"));
+            ExhaustIdleLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustIdleLoop"));
             Unk13 = Xml.GetChildIntAttribute(node, "Unk13", "value");
             Unk14 = Xml.GetChildIntAttribute(node, "Unk14", "value");
             AirIntake = XmlRel.GetHash(Xml.GetChildInnerText(node, "AirIntake"));
