@@ -216,14 +216,15 @@ namespace CodeWalker.Project.Panels
                                     uint i = (byte)Math.Min(la.Intensity*4, 255);
                                     uint c = (i << 24) + (r << 16) + (g << 8) + b;
 
-                                    uint h = 123456; //TODO: what hash to use???
+                                    uint h = 0; //TODO: what hash to use???
 
                                     //@Calcium:
                                     //1 = point
                                     //2 = spot
                                     //4 = capsule
                                     uint type = la.Type;
-                                    uint t = la.TimeFlags + (type << 26);
+                                    uint unk = 1;//that is this? 2 bits
+                                    uint t = la.TimeFlags + (type << 26) + (unk << 24);
 
                                     var maxext = (byte)Math.Max(Math.Max(la.ExtentX, la.ExtentY), la.ExtentZ);
                                     
@@ -237,7 +238,7 @@ namespace CodeWalker.Project.Panels
                                     hash.Add(h);
                                     coneInnerAngle.Add((byte)la.ConeInnerAngle);
                                     coneOuterAngleOrCapExt.Add(Math.Max((byte)la.ConeOuterAngle, maxext));
-                                    coronaIntensity.Add((byte)la.CoronaIntensity);
+                                    coronaIntensity.Add((byte)(la.CoronaIntensity*6));
 
 
                                 }
