@@ -3484,6 +3484,32 @@ namespace CodeWalker.GameFiles
 
 
 
+
+
+
+
+
+
+
+        //GranularSound dat54.rel FileName hashes from NotGigo
+        engine_accel = 3748922026,
+        exhaust_accel = 598446449,
+        engine_decel = 2556723864,
+        exhaust_decel = 780159042,
+        engine_idle = 1025030561,
+        exhaust_idle = 396221610,
+
+
+
+
+
+
+
+
+
+
+
+
         //from dav90's PSO_RBF_XMLExport_V5.7
         AutoJunctionAdjustments = 1352439928,
         vLocation = 929088795,
