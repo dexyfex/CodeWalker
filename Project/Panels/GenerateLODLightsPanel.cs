@@ -93,21 +93,12 @@ namespace CodeWalker.Project.Panels
             Task.Run(() =>
             {
 
-
-                var position = new List<MetaVECTOR3>();
-                var colour = new List<uint>();
-                var direction = new List<MetaVECTOR3>();
-                var falloff = new List<float>();
-                var falloffExponent = new List<float>();
-                var timeAndStateFlags = new List<uint>();
-                var hash = new List<uint>();
-                var coneInnerAngle = new List<byte>();
-                var coneOuterAngleOrCapExt = new List<byte>();
-                var coronaIntensity = new List<byte>();
+                var lights = new List<Light>();
                 var eemin = new Vector3(float.MaxValue);
                 var eemax = new Vector3(float.MinValue);
                 var semin = new Vector3(float.MaxValue);
                 var semax = new Vector3(float.MinValue);
+                var rnd = new Random();
 
                 foreach (var ymap in projectYmaps)
                 {
@@ -216,11 +207,12 @@ namespace CodeWalker.Project.Panels
                                     uint i = (byte)Math.Min(la.Intensity*4, 255);
                                     uint c = (i << 24) + (r << 16) + (g << 8) + b;
 
-                                    uint h = 0; //TODO: what hash to use???
+                                    uint h = (uint)rnd.NextLong(); //TODO: what hash to use???
 
                                     //any other way to know if it's a streetlight?
                                     var name = ent.Archetype.Name;
                                     bool isStreetLight = (name != null) && (name.Contains("street") || name.Contains("traffic"));
+                                    //isStreetLight = rnd.Next() > 2000000000;//DEBUG
 
                                     //@Calcium:
                                     //1 = point
@@ -231,20 +223,23 @@ namespace CodeWalker.Project.Panels
                                     uint t = la.TimeFlags + (type << 26) + (unk << 24);
 
                                     var maxext = (byte)Math.Max(Math.Max(la.ExtentX, la.ExtentY), la.ExtentZ);
-                                    
 
-                                    position.Add(new MetaVECTOR3(epos));
-                                    colour.Add(c);
-                                    direction.Add(new MetaVECTOR3(edir));
-                                    falloff.Add(la.Falloff);
-                                    falloffExponent.Add(la.FalloffExponent);
-                                    timeAndStateFlags.Add(t);
-                                    hash.Add(h);
-                                    coneInnerAngle.Add((byte)la.ConeInnerAngle);
-                                    coneOuterAngleOrCapExt.Add(Math.Max((byte)la.ConeOuterAngle, maxext));
-                                    coronaIntensity.Add((byte)(la.CoronaIntensity*6));
 
-                                    //final lights should be sorted by isStreetLight (1 first!) and then hash
+
+                                    var light = new Light();
+                                    light.position = new MetaVECTOR3(epos);
+                                    light.colour = c;
+                                    light.direction = new MetaVECTOR3(edir);
+                                    light.falloff = la.Falloff;
+                                    light.falloffExponent = la.FalloffExponent;
+                                    light.timeAndStateFlags = t;
+                                    light.hash = h;
+                                    light.coneInnerAngle = (byte)la.ConeInnerAngle;
+                                    light.coneOuterAngleOrCapExt = Math.Max((byte)la.ConeOuterAngle, maxext);
+                                    light.coronaIntensity = (byte)(la.CoronaIntensity * 6);
+                                    light.isStreetLight = isStreetLight;
+                                    lights.Add(light);
+
                                 }
                             }
                         }
@@ -252,11 +247,50 @@ namespace CodeWalker.Project.Panels
                 }
 
 
-                if (position.Count == 0)
+                if (lights.Count == 0)
                 {
                     MessageBox.Show("No lights found in project!");
                     return;
                 }
+
+
+
+                //final lights should be sorted by isStreetLight (1 first!) and then hash
+                lights.Sort((a, b) => 
+                {
+                    if (a.isStreetLight != b.isStreetLight) return b.isStreetLight.CompareTo(a.isStreetLight);
+                    return a.hash.CompareTo(b.hash);
+                });
+
+
+
+                var position = new List<MetaVECTOR3>();
+                var colour = new List<uint>();
+                var direction = new List<MetaVECTOR3>();
+                var falloff = new List<float>();
+                var falloffExponent = new List<float>();
+                var timeAndStateFlags = new List<uint>();
+                var hash = new List<uint>();
+                var coneInnerAngle = new List<byte>();
+                var coneOuterAngleOrCapExt = new List<byte>();
+                var coronaIntensity = new List<byte>();
+                ushort numStreetLights = 0;
+                foreach (var light in lights)
+                {
+                    position.Add(light.position);
+                    colour.Add(light.colour);
+                    direction.Add(light.direction);
+                    falloff.Add(light.falloff);
+                    falloffExponent.Add(light.falloffExponent);
+                    timeAndStateFlags.Add(light.timeAndStateFlags);
+                    hash.Add(light.hash);
+                    coneInnerAngle.Add(light.coneInnerAngle);
+                    coneOuterAngleOrCapExt.Add(light.coneOuterAngleOrCapExt);
+                    coronaIntensity.Add(light.coronaIntensity);
+                    if (light.isStreetLight) numStreetLights++;
+                }
+
+
 
                 UpdateStatus("Creating new ymap files...");
 
@@ -266,7 +300,7 @@ namespace CodeWalker.Project.Panels
                 var dl = new YmapDistantLODLights();
                 var cdl = new CDistantLODLight();
                 cdl.category = 1;//0=small, 1=med, 2=large
-                cdl.numStreetLights = 0;//todo?
+                cdl.numStreetLights = numStreetLights;
                 dl.CDistantLODLight = cdl;
                 dl.positions = position.ToArray();
                 dl.colours = colour.ToArray();
@@ -327,5 +361,24 @@ namespace CodeWalker.Project.Panels
 
             });
         }
+
+
+
+        public class Light
+        {
+            public MetaVECTOR3 position { get; set; }
+            public uint colour { get; set; }
+            public MetaVECTOR3 direction { get; set; }
+            public float falloff { get; set; }
+            public float falloffExponent { get; set; }
+            public uint timeAndStateFlags { get; set; }
+            public uint hash { get; set; }
+            public byte coneInnerAngle { get; set; }
+            public byte coneOuterAngleOrCapExt { get; set; }
+            public byte coronaIntensity { get; set; }
+
+            public bool isStreetLight { get; set; }
+        }
+
     }
 }
