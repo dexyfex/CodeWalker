@@ -218,12 +218,16 @@ namespace CodeWalker.Project.Panels
 
                                     uint h = 0; //TODO: what hash to use???
 
+                                    //any other way to know if it's a streetlight?
+                                    var name = ent.Archetype.Name;
+                                    bool isStreetLight = (name != null) && (name.Contains("street") || name.Contains("traffic"));
+
                                     //@Calcium:
                                     //1 = point
                                     //2 = spot
                                     //4 = capsule
                                     uint type = la.Type;
-                                    uint unk = 1;//that is this? 2 bits
+                                    uint unk = isStreetLight ? 1u : 0;//2 bits - isStreetLight low bit, unk high bit
                                     uint t = la.TimeFlags + (type << 26) + (unk << 24);
 
                                     var maxext = (byte)Math.Max(Math.Max(la.ExtentX, la.ExtentY), la.ExtentZ);
@@ -240,7 +244,7 @@ namespace CodeWalker.Project.Panels
                                     coneOuterAngleOrCapExt.Add(Math.Max((byte)la.ConeOuterAngle, maxext));
                                     coronaIntensity.Add((byte)(la.CoronaIntensity*6));
 
-
+                                    //final lights should be sorted by isStreetLight (1 first!) and then hash
                                 }
                             }
                         }
@@ -261,7 +265,8 @@ namespace CodeWalker.Project.Panels
                 var ll = new YmapLODLights();
                 var dl = new YmapDistantLODLights();
                 var cdl = new CDistantLODLight();
-                cdl.category = 1;
+                cdl.category = 1;//0=small, 1=med, 2=large
+                cdl.numStreetLights = 0;//todo?
                 dl.CDistantLODLight = cdl;
                 dl.positions = position.ToArray();
                 dl.colours = colour.ToArray();

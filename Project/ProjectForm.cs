@@ -2042,7 +2042,7 @@ namespace CodeWalker.Project
                     cent.rotation = placement.Rotation;
                     cent.scaleXY = 1.0f;
                     cent.scaleZ = 1.0f;
-                    cent.flags = placement.Dynamic ? 32u : 0;// 1572872; //?
+                    cent.flags = placement.Dynamic ? 0 : 32u;// 1572872; //32 = static
                     cent.parentIndex = -1;
                     cent.lodDist = placement.LodDistance;
                     cent.lodLevel = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
