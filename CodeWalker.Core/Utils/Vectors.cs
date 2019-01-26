@@ -25,6 +25,11 @@ namespace CodeWalker
             return new Vector4((float)Math.Floor(v.X), (float)Math.Floor(v.Y), (float)Math.Floor(v.Z), (float)Math.Floor(v.W));
         }
 
+        public static Vector4 Abs(this Vector4 v)
+        {
+            return new Vector4(Math.Abs(v.X), Math.Abs(v.Y), Math.Abs(v.Z), Math.Abs(v.W));
+        }
+
         public static Quaternion ToQuaternion(this Vector4 v)
         {
             return new Quaternion(v);

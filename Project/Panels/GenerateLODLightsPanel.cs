@@ -98,7 +98,7 @@ namespace CodeWalker.Project.Panels
                 var eemax = new Vector3(float.MinValue);
                 var semin = new Vector3(float.MaxValue);
                 var semax = new Vector3(float.MinValue);
-                var rnd = new Random();
+                //var rnd = new Random();
 
                 foreach (var ymap in projectYmaps)
                 {
@@ -137,8 +137,9 @@ namespace CodeWalker.Project.Panels
                                 semax = Vector3.Max(semax, ent.BBMax + ent._CEntityDef.lodDist);
 
 
-                                foreach (var la in lightAttrs)
+                                for (int li = 0; li<lightAttrs.Length;li++)
                                 {
+                                    var la = lightAttrs[li];
                                     //transform this light with the entity position and orientation
                                     //generate lights data from it!
 
@@ -207,12 +208,22 @@ namespace CodeWalker.Project.Panels
                                     uint i = (byte)Math.Min(la.Intensity*4, 255);
                                     uint c = (i << 24) + (r << 16) + (g << 8) + b;
 
-                                    uint h = (uint)rnd.NextLong(); //TODO: what hash to use???
+
+                                    uint h = GetLightHash(ent, li);// (uint)rnd.NextLong();
+
+                                    if (ent._CEntityDef.guid == 91259075)
+                                    { } //h = 2324437992?     should be:19112537
+                                    if (ent._CEntityDef.guid == 889043351)
+                                    { } //h = 422028630 ?     should be:4267224866
+
+
 
                                     //any other way to know if it's a streetlight?
-                                    var name = ent.Archetype.Name;
-                                    bool isStreetLight = (name != null) && (name.Contains("street") || name.Contains("traffic"));
-                                    //isStreetLight = rnd.Next() > 2000000000;//DEBUG
+                                    //var name = ent.Archetype.Name;
+                                    var flags = la.Flags;
+                                    bool isStreetLight = (((flags >> 10) & 1u) == 1);// (name != null) && (name.Contains("street") || name.Contains("traffic"));
+                                    isStreetLight = false; //TODO: fix this!
+
 
                                     //@Calcium:
                                     //1 = point
@@ -220,7 +231,7 @@ namespace CodeWalker.Project.Panels
                                     //4 = capsule
                                     uint type = la.Type;
                                     uint unk = isStreetLight ? 1u : 0;//2 bits - isStreetLight low bit, unk high bit
-                                    uint t = la.TimeFlags + (type << 26) + (unk << 24);
+                                    uint t = la.TimeFlags | (type << 26) | (unk << 24);
 
                                     var maxext = (byte)Math.Max(Math.Max(la.ExtentX, la.ExtentY), la.ExtentZ);
 
@@ -363,6 +374,154 @@ namespace CodeWalker.Project.Panels
         }
 
 
+
+        private uint GetLightHash(YmapEntityDef ent, int lightIndex)
+        {
+            unchecked
+            {
+
+                //var aabb1 = GetAABB(ent);
+                var aabb = GetAABB2(ent);
+
+                var hashData = new int[7];
+                hashData[0] = (int)(aabb.Min.X * 10.0f);
+                hashData[1] = (int)(aabb.Min.Y * 10.0f);
+                hashData[2] = (int)(aabb.Min.Z * 10.0f);
+                hashData[3] = (int)(aabb.Max.X * 10.0f);
+                hashData[4] = (int)(aabb.Max.Y * 10.0f);
+                hashData[5] = (int)(aabb.Max.Z * 10.0f);
+                hashData[6] = lightIndex;
+
+
+                int v3 = 7;
+                int v4 = 0;//=hashData index
+                int v5 = (int)0xDEADBEEF + 28;// -559038709;
+                int v6 = (int)0xDEADBEEF + 28;
+                int v7 = (int)0xDEADBEEF + 28;
+
+                uint v8 = 2;
+                do
+                {
+                    int v9 = hashData[v4 + 2] + v5;
+                    int v10 = hashData[v4 + 1] + v6;
+                    int v11 = hashData[v4 + 0] - v9;
+                    int v13 = v10 + v9;
+                    int v14 = (v7 + v11) ^ RotateLeft(v9, 4);
+                    int v17 = v13 + v14;
+                    int v18 = (v10 - v14) ^ RotateLeft(v14, 6);
+                    int v21 = v17 + v18;
+                    int v22 = (v13 - v18) ^ RotateLeft(v18, 8);
+                    int v25 = v21 + v22;
+                    int v26 = (v17 - v22) ^ RotateLeft(v22, 16);
+                    int v29 = (v21 - v26) ^ RotateRight(v26, 13);
+                    int v30 = v25 - v29;
+                    v7 = v25 + v26;
+                    v6 = v7 + v29;
+                    v5 = v30 ^ RotateLeft(v29, 4);
+                    v4 += 3;
+                    v3 -= 3;
+                    --v8;
+                }
+                while (v8 > 0);
+
+                int v32 = v3 - 1; //should always be 0
+                if (v32 != 0)
+                { }
+
+                int v50 = v7 + hashData[v4];
+                int v34 = (v6 ^ v5) - RotateLeft(v6, 14);
+                int v35 = (v34 ^ v50) - RotateLeft(v34, 11);
+                int v36 = (v35 ^ v6) - RotateRight(v35, 7);
+                int v37 = (v36 ^ v34) - RotateLeft(v36, 16);
+                int v51 = (v35 ^ v37) - RotateLeft(v37, 4);
+                int v38 = (v51 ^ v36) - RotateLeft(v51, 14);
+                int v53 = (v38 ^ v37) - RotateRight(v38, 8);
+                return (uint)v53;
+
+            }
+        }
+
+
+        private AABB_s GetAABB(YmapEntityDef ent)
+        {
+            var arch = ent.Archetype;
+            var ori = ent.Orientation;
+            Vector3 bbmin = ent.Position - ent.BSRadius; //sphere
+            Vector3 bbmax = ent.Position + ent.BSRadius;
+            if (arch != null)
+            {
+                Vector3[] c = new Vector3[8];
+                Vector3 abmin = arch.BBMin * ent.Scale; //entity box
+                Vector3 abmax = arch.BBMax * ent.Scale;
+                c[0] = abmin;
+                c[1] = new Vector3(abmin.X, abmin.Y, abmax.Z);
+                c[2] = new Vector3(abmin.X, abmax.Y, abmin.Z);
+                c[3] = new Vector3(abmin.X, abmax.Y, abmax.Z);
+                c[4] = new Vector3(abmax.X, abmin.Y, abmin.Z);
+                c[5] = new Vector3(abmax.X, abmin.Y, abmax.Z);
+                c[6] = new Vector3(abmax.X, abmax.Y, abmin.Z);
+                c[7] = abmax;
+                bbmin = new Vector3(float.MaxValue);
+                bbmax = new Vector3(float.MinValue);
+                for (int j = 0; j < 8; j++)
+                {
+                    Vector3 corn = ori.Multiply(c[j]) + ent.Position;
+                    bbmin = Vector3.Min(bbmin, corn);
+                    bbmax = Vector3.Max(bbmax, corn);
+                }
+            }
+            AABB_s b = new AABB_s();
+            b.Min = new Vector4(bbmin, 0f);
+            b.Max = new Vector4(bbmax, 0f);
+            return b;
+        }
+        private AABB_s GetAABB2(YmapEntityDef ent)
+        {
+            var arch = ent.Archetype;
+            var ori = ent.Orientation;
+            var pos = ent.Position;
+            var sca = ent.Scale;
+            var mat = Matrix.Transformation(Vector3.Zero, Quaternion.Identity, sca, Vector3.Zero, ori, pos);
+            var matabs = mat;
+            matabs.Column1 = mat.Column1.Abs();
+            matabs.Column2 = mat.Column2.Abs();
+            matabs.Column3 = mat.Column3.Abs();
+            matabs.Column4 = mat.Column4.Abs();
+            Vector3 bbmin = pos - ent.BSRadius; //sphere
+            Vector3 bbmax = pos + ent.BSRadius;
+            if (arch != null)
+            {
+                var bbcenter = (arch.BBMax + arch.BBMin) * 0.5f;
+                var bbextent = (arch.BBMax - arch.BBMin) * 0.5f;
+                var ncenter = Vector3.TransformCoordinate(bbcenter, mat);
+                var nextent = Vector3.TransformNormal(bbextent, matabs);
+                bbmin = ncenter - nextent;
+                bbmax = ncenter + nextent;
+            }
+            AABB_s b = new AABB_s();
+            b.Min = new Vector4(bbmin, 0f);
+            b.Max = new Vector4(bbmax, 0f);
+            return b;
+        }
+
+
+
+        private static uint RotateLeft(uint value, int count)
+        {
+            return (value << count) | (value >> (32 - count));
+        }
+        private static uint RotateRight(uint value, int count)
+        {
+            return (value >> count) | (value << (32 - count));
+        }
+        private static int RotateLeft(int value, int count)
+        {
+            return (int)RotateLeft((uint)value, count);
+        }
+        private static int RotateRight(int value, int count)
+        {
+            return (int)RotateRight((uint)value, count);
+        }
 
         public class Light
         {
