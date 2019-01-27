@@ -178,6 +178,7 @@ namespace CodeWalker.GameFiles
                 //TestPsos();
                 //TestYcds();
                 //TestYtds();
+                //TestYbns();
                 //TestYmaps();
                 //TestPlacements();
                 //TestDrawables();
@@ -2908,6 +2909,156 @@ namespace CodeWalker.GameFiles
                                 { continue; }
                                 if (ytd2.TextureDict.Textures?.Count != ytdfile.TextureDict.Textures?.Count)
                                 { continue; }
+
+
+
+                            }
+                        }
+                    }
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //}
+                }
+            }
+            if (errorfiles.Count > 0)
+            { }
+        }
+        public void TestYbns()
+        {
+            var errorfiles = new List<RpfEntry>();
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    //try
+                    {
+                        if (entry.NameLower.EndsWith(".ybn"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            YbnFile ybn = null;
+                            try
+                            {
+                                ybn = RpfMan.GetFile<YbnFile>(entry);
+                            }
+                            catch (Exception ex)
+                            {
+                                UpdateStatus("Error! " + ex.ToString());
+                                errorfiles.Add(entry);
+                            }
+                            if ((ybn != null) && (ybn.Bounds != null))
+                            {
+                                var fentry = entry as RpfFileEntry;
+                                if (fentry == null)
+                                { continue; } //shouldn't happen
+
+                                var bytes = ybn.Save();
+
+                                string origlen = TextUtil.GetBytesReadable(fentry.FileSize);
+                                string bytelen = TextUtil.GetBytesReadable(bytes.Length);
+
+
+                                var ybn2 = new YbnFile();
+                                RpfFile.LoadResourceFile(ybn2, bytes, 43);
+
+                                if (ybn2.Bounds == null)
+                                { continue; }
+                                if (ybn2.Bounds.Type != ybn.Bounds.Type)
+                                { continue; }
+
+                                //quick check of roundtrip
+                                switch (ybn2.Bounds.Type)
+                                {
+                                    case 0: //return new BoundSphere();
+                                        {
+                                            var a = ybn.Bounds as BoundSphere;
+                                            var b = ybn2.Bounds as BoundSphere;
+                                            if (b == null)
+                                            { continue; }
+                                            break;
+                                        }
+                                    case 1: //return new BoundCapsule();
+                                        {
+                                            var a = ybn.Bounds as BoundCapsule;
+                                            var b = ybn2.Bounds as BoundCapsule;
+                                            if (b == null)
+                                            { continue; }
+                                            break;
+                                        }
+                                    case 3: //return new BoundBox();
+                                        {
+                                            var a = ybn.Bounds as BoundBox;
+                                            var b = ybn2.Bounds as BoundBox;
+                                            if (b == null)
+                                            { continue; }
+                                            break;
+                                        }
+                                    case 4: //return new BoundGeometry();
+                                        {
+                                            var a = ybn.Bounds as BoundGeometry;
+                                            var b = ybn2.Bounds as BoundGeometry;
+                                            if (b == null)
+                                            { continue; }
+                                            if (a.Polygons?.Length != b.Polygons?.Length)
+                                            { continue; }
+                                            for (int i = 0; i < a.Polygons.Length; i++)
+                                            {
+                                                var pa = a.Polygons[i];
+                                                var pb = b.Polygons[i];
+                                                if (pa.Type != pb.Type)
+                                                { }
+                                            }
+                                            break;
+                                        }
+                                    case 8: //return new BoundBVH();
+                                        {
+                                            var a = ybn.Bounds as BoundBVH;
+                                            var b = ybn2.Bounds as BoundBVH;
+                                            if (b == null)
+                                            { continue; }
+                                            if (a.BVH?.Nodes?.data_items?.Length != b.BVH?.Nodes?.data_items?.Length)
+                                            { }
+                                            if (a.Polygons?.Length != b.Polygons?.Length)
+                                            { continue; }
+                                            for (int i = 0; i < a.Polygons.Length; i++)
+                                            {
+                                                var pa = a.Polygons[i];
+                                                var pb = b.Polygons[i];
+                                                if (pa.Type != pb.Type)
+                                                { }
+                                            }
+                                            break;
+                                        }
+                                    case 10: //return new BoundComposite();
+                                        {
+                                            var a = ybn.Bounds as BoundComposite;
+                                            var b = ybn2.Bounds as BoundComposite;
+                                            if (b == null)
+                                            { continue; }
+                                            if (a.Children?.data_items?.Length != b.Children?.data_items?.Length)
+                                            { }
+                                            break;
+                                        }
+                                    case 12: //return new BoundDisc();
+                                        {
+                                            var a = ybn.Bounds as BoundDisc;
+                                            var b = ybn2.Bounds as BoundDisc;
+                                            if (b == null)
+                                            { continue; }
+                                            break;
+                                        }
+                                    case 13: //return new BoundCylinder();
+                                        {
+                                            var a = ybn.Bounds as BoundCylinder;
+                                            var b = ybn2.Bounds as BoundCylinder;
+                                            if (b == null)
+                                            { continue; }
+                                            break;
+                                        }
+                                    case 15: //return null; //TODO: find out what this is!
+                                    default: //return null; // throw new Exception("Unknown bound type");
+                                        break;
+                                }
 
 
 

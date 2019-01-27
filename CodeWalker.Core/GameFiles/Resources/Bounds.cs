@@ -277,6 +277,88 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class BoundBox : Bounds
     { }
+    [TC(typeof(EXP))] public class BoundDisc : Bounds
+    {
+        public override long BlockLength
+        {
+            get { return 128; }
+        }
+
+        // structure data
+        public uint Unknown_70h { get; set; } // 0x00000000
+        public uint Unknown_74h { get; set; } // 0x00000000
+        public uint Unknown_78h { get; set; } // 0x00000000
+        public uint Unknown_7Ch { get; set; } // 0x00000000
+
+        /// <summary>
+        /// Reads the data-block from a stream.
+        /// </summary>
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            base.Read(reader, parameters);
+
+            // read structure data
+            this.Unknown_70h = reader.ReadUInt32();
+            this.Unknown_74h = reader.ReadUInt32();
+            this.Unknown_78h = reader.ReadUInt32();
+            this.Unknown_7Ch = reader.ReadUInt32();
+        }
+
+        /// <summary>
+        /// Writes the data-block to a stream.
+        /// </summary>
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            base.Write(writer, parameters);
+
+            // write structure data
+            writer.Write(this.Unknown_70h);
+            writer.Write(this.Unknown_74h);
+            writer.Write(this.Unknown_78h);
+            writer.Write(this.Unknown_7Ch);
+        }
+    }
+    [TC(typeof(EXP))] public class BoundCylinder : Bounds
+    {
+        public override long BlockLength
+        {
+            get { return 128; }
+        }
+
+        // structure data
+        public uint Unknown_70h { get; set; } // 0x00000000
+        public uint Unknown_74h { get; set; } // 0x00000000
+        public uint Unknown_78h { get; set; } // 0x00000000
+        public uint Unknown_7Ch { get; set; } // 0x00000000
+
+        /// <summary>
+        /// Reads the data-block from a stream.
+        /// </summary>
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            base.Read(reader, parameters);
+
+            // read structure data
+            this.Unknown_70h = reader.ReadUInt32();
+            this.Unknown_74h = reader.ReadUInt32();
+            this.Unknown_78h = reader.ReadUInt32();
+            this.Unknown_7Ch = reader.ReadUInt32();
+        }
+
+        /// <summary>
+        /// Writes the data-block to a stream.
+        /// </summary>
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            base.Write(writer, parameters);
+
+            // write structure data
+            writer.Write(this.Unknown_70h);
+            writer.Write(this.Unknown_74h);
+            writer.Write(this.Unknown_78h);
+            writer.Write(this.Unknown_7Ch);
+        }
+    }
     [TC(typeof(EXP))] public class BoundGeometry : Bounds
     {
         public override long BlockLength
@@ -329,10 +411,19 @@ namespace CodeWalker.GameFiles
         public Vector3[] Vertices { get; set; }
         public uint[] Unknown_B8h_Data { get; set; }
         public uint[] Unknown_C0h_Data { get; set; }
-        public uint[][] Unknown_C8h_Data { get; set; }
+        public BoundUnknown1 Unknown_C8h_Data { get; set; }
         public BoundMaterial_s[] Materials { get; set; }
         public BoundMaterialColour[] MaterialColours { get; set; }
         public byte[] PolygonMaterialIndices { get; set; }
+
+        private ResourceSystemStructBlock<BoundVertex_s> p1dataBlock = null;
+        private ResourceSystemDataBlock PolygonsBlock = null;
+        private ResourceSystemStructBlock<BoundVertex_s> VerticesBlock = null;
+        private ResourceSystemStructBlock<uint> Unknown_B8h_Block = null;
+        private ResourceSystemStructBlock<uint> Unknown_C0h_Block = null;
+        private ResourceSystemStructBlock<BoundMaterial_s> MaterialsBlock = null;
+        private ResourceSystemStructBlock<BoundMaterialColour> MaterialColoursBlock = null;
+        private ResourceSystemStructBlock<byte> PolygonMaterialIndicesBlock = null;
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -398,16 +489,11 @@ namespace CodeWalker.GameFiles
             }
 
             this.Unknown_B8h_Data = reader.ReadUintsAt(this.Unknown_B8h_Pointer, this.VerticesCount);
-            this.Unknown_C0h_Data = reader.ReadUintsAt(this.Unknown_C0h_Pointer, 8);
 
+            this.Unknown_C0h_Data = reader.ReadUintsAt(this.Unknown_C0h_Pointer, 8);//item counts
             if (this.Unknown_C0h_Data != null)
             {
-                ulong[] ptrlist = reader.ReadUlongsAt(this.Unknown_C8h_Pointer, 8);//(uint)Unknown_C0h_Data.Length
-                Unknown_C8h_Data = new uint[8][]; //Unknown_C0h_Data.Length
-                for (int i = 0; i < 8; i++) //Unknown_C0h_Data.Length
-                {
-                    Unknown_C8h_Data[i] = reader.ReadUintsAt(ptrlist[i], Unknown_C0h_Data[i]);
-                }
+                this.Unknown_C8h_Data = reader.ReadBlockAt<BoundUnknown1>(this.Unknown_C8h_Pointer, this.Unknown_C0h_Data);
             }
 
             this.Materials = reader.ReadStructsAt<BoundMaterial_s>(this.MaterialsPointer, this.MaterialsCount);
@@ -430,7 +516,7 @@ namespace CodeWalker.GameFiles
             {
                 var offset = i * 16;
                 byte b0 = polygonData[offset];
-                polygonData[offset] = (byte)(b0 & 0x7F);//mask it off
+                polygonData[offset] = (byte)(b0 & 0xF8);//mask it off
                 BoundPolygonType type = (BoundPolygonType)(b0 & 7);
                 BoundPolygon p = null;
                 switch (type)
@@ -475,20 +561,20 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // update structure data
-            //this.Unknown_78h_Pointer = (ulong)(this.p1data != null ? this.p1data.Position : 0);
-            //this.PolygonsPointer = (ulong)(this.Polygons != null ? this.Polygons.Position : 0);
-            //this.VerticesPointer = (ulong)(this.Vertices != null ? this.Vertices.Position : 0);
-            //this.Unknown_B8h_Pointer = (ulong)(this.Unknown_B8h_Data != null ? this.Unknown_B8h_Data.Position : 0);
-            //this.Unknown_C0h_Pointer = (ulong)(this.Unknown_C0h_Data != null ? this.Unknown_C0h_Data.Position : 0);
-            //this.Unknown_C8h_Pointer = (ulong)(this.Unknown_C8h_Data != null ? this.Unknown_C8h_Data.Position : 0);
-            //this.VerticesCount = (uint)(this.Vertices != null ? this.Vertices.Count : 0);
-            //this.PolygonsCount = (uint)(this.Polygons != null ? this.Polygons.Count : 0);
-            //this.MaterialsPointer = (ulong)(this.Materials != null ? this.Materials.Position : 0);
-            //this.Unknown_F8h_Pointer = (ulong)(this.Unknown_F8h_Data != null ? this.Unknown_F8h_Data.Position : 0);
-            //this.PolygonMaterialIndicesPointer = (ulong)(this.PolygonMaterialIndices != null ? this.PolygonMaterialIndices.Position : 0);
-            //this.MaterialsCount = (byte)(this.Materials != null ? this.Materials.Count : 0);
-            //this.Count2 = (byte)(this.Unknown_F8h_Data != null ? this.Unknown_F8h_Data.Count : 0);
-            //TODO: fix all this
+            this.Unknown_78h_Pointer = (ulong)(this.p1dataBlock != null ? this.p1dataBlock.FilePosition : 0);
+            this.PolygonsPointer = (ulong)(this.PolygonsBlock != null ? this.PolygonsBlock.FilePosition : 0);
+            this.VerticesPointer = (ulong)(this.VerticesBlock != null ? this.VerticesBlock.FilePosition : 0);
+            this.Unknown_B8h_Pointer = (ulong)(this.Unknown_B8h_Block != null ? this.Unknown_B8h_Block.FilePosition : 0);
+            this.Unknown_C0h_Pointer = (ulong)(this.Unknown_C0h_Block != null ? this.Unknown_C0h_Block.FilePosition : 0);
+            this.Unknown_C8h_Pointer = (ulong)(this.Unknown_C8h_Data != null ? this.Unknown_C8h_Data.FilePosition : 0);
+            this.VerticesCount = (uint)(this.VerticesBlock != null ? this.VerticesBlock.ItemCount : 0);
+            this.PolygonsCount = (uint)(this.Polygons != null ? this.Polygons.Length : 0);
+            this.MaterialsPointer = (ulong)(this.MaterialsBlock != null ? this.MaterialsBlock.FilePosition : 0);
+            this.MaterialColoursPointer = (ulong)(this.MaterialColoursBlock != null ? this.MaterialColoursBlock.FilePosition : 0);
+            this.PolygonMaterialIndicesPointer = (ulong)(this.PolygonMaterialIndicesBlock != null ? this.PolygonMaterialIndicesBlock.FilePosition : 0);
+            this.MaterialsCount = (byte)(this.MaterialsBlock != null ? this.MaterialsBlock.ItemCount : 0);
+            this.MaterialColoursCount = (byte)(this.MaterialColoursBlock != null ? this.MaterialColoursBlock.ItemCount : 0);
+
 
             // write structure data
             writer.Write(this.Unknown_70h);
@@ -540,16 +626,151 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
-            //if (p1data != null) list.Add(p1data);
-            //if (Polygons != null) list.Add(Polygons);
-            //if (Vertices != null) list.Add(Vertices);
-            //if (Unknown_B8h_Data != null) list.Add(Unknown_B8h_Data);
-            //if (Unknown_C0h_Data != null) list.Add(Unknown_C0h_Data);
-            //if (Unknown_C8h_Data != null) list.Add(Unknown_C8h_Data);
-            //if (Materials != null) list.Add(Materials);
-            //if (Unknown_F8h_Data != null) list.Add(Unknown_F8h_Data);
-            //if (PolygonMaterialIndices != null) list.Add(PolygonMaterialIndices);
-            //TODO: fix all these!
+            if (p1data != null)
+            {
+                p1dataBlock = new ResourceSystemStructBlock<BoundVertex_s>(p1data);
+                list.Add(p1dataBlock);
+            }
+            if (Polygons != null)
+            {
+                MemoryStream ms = new MemoryStream();
+                BinaryWriter bw = new BinaryWriter(ms);
+                foreach (var poly in Polygons)
+                {
+                    poly.Write(bw);
+                }
+                var polydata = new byte[ms.Length];
+                ms.Position = 0;
+                ms.Read(polydata, 0, polydata.Length);
+                for (int i = 0; i < Polygons.Length; i++)
+                {
+                    var o = i * 16;
+                    var t = (byte)Polygons[i].Type;
+                    var b = polydata[o];
+                    polydata[o] = (byte)((b & 0xF8) | (t & 7)); //add the poly types back in!
+                }
+
+                if (polydata.Length != (Polygons.Length * 16))
+                { }
+
+                PolygonsBlock = new ResourceSystemDataBlock(polydata);
+                list.Add(PolygonsBlock);
+            }
+            if (Vertices != null)
+            {
+                var verts = new List<BoundVertex_s>();
+                foreach (var v in Vertices)
+                {
+                    var vq = v / Quantum;  //Vertices[i] = new Vector3(bv.X, bv.Y, bv.Z) * Quantum;
+                    var vs = new BoundVertex_s(vq);
+                    verts.Add(vs);
+                }
+                VerticesBlock = new ResourceSystemStructBlock<BoundVertex_s>(verts.ToArray());
+                list.Add(VerticesBlock);
+            }
+            if (Unknown_B8h_Data != null)
+            {
+                Unknown_B8h_Block = new ResourceSystemStructBlock<uint>(Unknown_B8h_Data);
+                list.Add(Unknown_B8h_Block);
+            }
+            if (Unknown_C0h_Data != null)
+            {
+                Unknown_C0h_Block = new ResourceSystemStructBlock<uint>(Unknown_C0h_Data);
+                list.Add(Unknown_C0h_Block);
+            }
+            if (Unknown_C8h_Data != null)
+            {
+                list.Add(Unknown_C8h_Data);//this one is already a resource block!
+            }
+            if (Materials != null)
+            {
+                MaterialsBlock = new ResourceSystemStructBlock<BoundMaterial_s>(Materials);
+                list.Add(MaterialsBlock);
+            }
+            if (MaterialColours != null)
+            {
+                MaterialColoursBlock = new ResourceSystemStructBlock<BoundMaterialColour>(MaterialColours);
+                list.Add(MaterialColoursBlock);
+            }
+            if (PolygonMaterialIndices != null)
+            {
+                PolygonMaterialIndicesBlock = new ResourceSystemStructBlock<byte>(PolygonMaterialIndices);
+                list.Add(PolygonMaterialIndicesBlock);
+            }
+            return list.ToArray();
+        }
+    }
+
+    [TC(typeof(EXP))] public class BoundUnknown1 : ResourceSystemBlock
+    {
+        public uint[][] Items { get; private set; }
+
+        private ResourceSystemStructBlock<uint>[] ItemBlocks = null;
+
+
+        public override long BlockLength
+        {
+            get
+            {
+                return Items != null ? (Items.Length*8) : 0; //main pointer array has 8 items, 8 bytes each
+            }
+        }
+
+        public BoundUnknown1() { }
+        public BoundUnknown1(uint[][] items)
+        {
+            Items = items;
+        }
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            if (parameters?.Length < 1)
+            { return; } //shouldn't happen!
+
+            var itemcounts = (uint[])parameters[0];
+            ulong ptr = (ulong)reader.Position; //pointer array pointer
+
+            if (itemcounts != null)
+            {
+                ulong[] ptrlist = reader.ReadUlongsAt(ptr, (uint)itemcounts.Length);
+                Items = new uint[itemcounts.Length][];
+                for (int i = 0; i < itemcounts.Length; i++)
+                {
+                    Items[i] = reader.ReadUintsAt(ptrlist[i], itemcounts[i]);
+                }
+            }
+        }
+
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+
+            //just write the pointer array.
+            if (ItemBlocks != null)
+            {
+                foreach (var item in ItemBlocks)
+                {
+                    writer.Write((ulong)item.FilePosition);
+                }
+            }
+            
+        }
+
+        public override IResourceBlock[] GetReferences()
+        {
+            var list = new List<IResourceBlock>(base.GetReferences());
+
+            var ilist = new List<ResourceSystemStructBlock<uint>>();
+            if (Items != null)
+            {
+                foreach (var item in Items)
+                {
+                    var block = new ResourceSystemStructBlock<uint>(item);
+                    ilist.Add(block);
+                    list.Add(block);
+                }
+            }
+            ItemBlocks = ilist.ToArray();
+
             return list.ToArray();
         }
     }
@@ -586,8 +807,16 @@ namespace CodeWalker.GameFiles
         public short X { get; set; }
         public short Y { get; set; }
         public short Z { get; set; }
+
+        public BoundVertex_s(Vector3 v)
+        {
+            X = (short)v.X;
+            Y = (short)v.Y;
+            Z = (short)v.Z;
+        }
     }
-    public enum BoundPolygonType
+
+    public enum BoundPolygonType : byte
     {
         Triangle = 0,
         Sphere = 1,
@@ -599,7 +828,7 @@ namespace CodeWalker.GameFiles
     {
         public BoundPolygonType Type { get; set; }
         public abstract void Read(byte[] bytes, int offset);
-
+        public abstract void Write(BinaryWriter bw);
         public override string ToString()
         {
             return Type.ToString();
@@ -637,7 +866,16 @@ namespace CodeWalker.GameFiles
             edgeIndex2 = BitConverter.ToInt16(bytes, offset + 12);
             edgeIndex3 = BitConverter.ToInt16(bytes, offset + 14);
         }
-
+        public override void Write(BinaryWriter bw)
+        {
+            bw.Write(triArea);
+            bw.Write(triIndex1);
+            bw.Write(triIndex2);
+            bw.Write(triIndex3);
+            bw.Write(edgeIndex1);
+            bw.Write(edgeIndex2);
+            bw.Write(edgeIndex3);
+        }
         public override string ToString()
         {
             return base.ToString() + ": " + vertIndex1.ToString() + ", " + vertIndex2.ToString() + ", " + vertIndex3.ToString();
@@ -663,7 +901,14 @@ namespace CodeWalker.GameFiles
             unused0 = BitConverter.ToUInt32(bytes, offset + 8);
             unused1 = BitConverter.ToUInt32(bytes, offset + 12);
         }
-
+        public override void Write(BinaryWriter bw)
+        {
+            bw.Write(sphereType);
+            bw.Write(sphereIndex);
+            bw.Write(sphereRadius);
+            bw.Write(unused0);
+            bw.Write(unused1);
+        }
         public override string ToString()
         {
             return base.ToString() + ": " + sphereIndex.ToString() + ", " + sphereRadius.ToString();
@@ -691,7 +936,15 @@ namespace CodeWalker.GameFiles
             unused0 = BitConverter.ToUInt16(bytes, offset + 10);
             unused1 = BitConverter.ToUInt32(bytes, offset + 12);
         }
-
+        public override void Write(BinaryWriter bw)
+        {
+            bw.Write(capsuleType);
+            bw.Write(capsuleIndex1);
+            bw.Write(capsuleRadius);
+            bw.Write(capsuleIndex2);
+            bw.Write(unused0);
+            bw.Write(unused1);
+        }
         public override string ToString()
         {
             return base.ToString() + ": " + capsuleIndex1.ToString() + ", " + capsuleIndex2.ToString() + ", " + capsuleRadius.ToString();
@@ -719,7 +972,15 @@ namespace CodeWalker.GameFiles
             boxIndex4 = BitConverter.ToInt16(bytes, offset + 10);
             unused0 = BitConverter.ToUInt32(bytes, offset + 12);
         }
-
+        public override void Write(BinaryWriter bw)
+        {
+            bw.Write(boxType);
+            bw.Write(boxIndex1);
+            bw.Write(boxIndex2);
+            bw.Write(boxIndex3);
+            bw.Write(boxIndex4);
+            bw.Write(unused0);
+        }
         public override string ToString()
         {
             return base.ToString() + ": " + boxIndex1.ToString() + ", " + boxIndex2.ToString() + ", " + boxIndex3.ToString() + ", " + boxIndex4.ToString();
@@ -747,12 +1008,21 @@ namespace CodeWalker.GameFiles
             unused0 = BitConverter.ToUInt16(bytes, offset + 10);
             unused1 = BitConverter.ToUInt32(bytes, offset + 12);
         }
-
+        public override void Write(BinaryWriter bw)
+        {
+            bw.Write(cylinderType);
+            bw.Write(cylinderIndex1);
+            bw.Write(cylinderRadius);
+            bw.Write(cylinderIndex2);
+            bw.Write(unused0);
+            bw.Write(unused1);
+        }
         public override string ToString()
         {
             return base.ToString() + ": " + cylinderIndex1.ToString() + ", " + cylinderIndex2.ToString() + ", " + cylinderRadius.ToString();
         }
     }
+
     [TC(typeof(EXP))] public class BoundBVH : BoundGeometry
     {
         public override long BlockLength
@@ -855,11 +1125,6 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public ResourcePointerArray64<Bounds> Children { get; set; }
-        //public ResourceSimpleArray<Matrix4_r> ChildrenTransformation1 { get; set; }
-        //public ResourceSimpleArray<Matrix4_r> ChildrenTransformation2 { get; set; }
-        //public ResourceSimpleArray<AABB_r> ChildrenBoundingBoxes { get; set; }
-        //public ResourceSimpleArray<BoundComposite_Unknown_B_002> Unknown_90h_Data { get; set; }
-        //public ResourceSimpleArray<BoundComposite_Unknown_B_002> Unknown_98h_Data { get; set; }
         public Matrix[] ChildrenTransformation1 { get; set; }
         public Matrix[] ChildrenTransformation2 { get; set; }
         public AABB_s[] ChildrenBoundingBoxes { get; set; }
@@ -867,6 +1132,14 @@ namespace CodeWalker.GameFiles
         public BoundComposite_Unknown_B_002_s[] Unknown_98h_Data { get; set; }
 
         public BVH BVH { get; set; }
+
+
+        private ResourceSystemStructBlock<Matrix> ChildrenTransformation1Block = null;
+        private ResourceSystemStructBlock<Matrix> ChildrenTransformation2Block = null;
+        private ResourceSystemStructBlock<AABB_s> ChildrenBoundingBoxesBlock = null;
+        private ResourceSystemStructBlock<BoundComposite_Unknown_B_002_s> Unknown_90h_Block = null;
+        private ResourceSystemStructBlock<BoundComposite_Unknown_B_002_s> Unknown_98h_Block = null;
+
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -901,34 +1174,11 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            //this.ChildrenTransformation1 = reader.ReadBlockAt<ResourceSimpleArray<Matrix4_r>>(
-            //    this.ChildrenTransformation1Pointer, // offset
-            //    this.ChildrenCount1
-            //);
-            //this.ChildrenTransformation2 = reader.ReadBlockAt<ResourceSimpleArray<Matrix4_r>>(
-            //    this.ChildrenTransformation2Pointer, // offset
-            //    this.ChildrenCount1
-            //);
-            //this.ChildrenBoundingBoxes = reader.ReadBlockAt<ResourceSimpleArray<AABB_r>>(
-            //    this.ChildrenBoundingBoxesPointer, // offset
-            //    this.ChildrenCount1
-            //);
-            //this.Unknown_90h_Data = reader.ReadBlockAt<ResourceSimpleArray<BoundComposite_Unknown_B_002>>(
-            //    this.Unknown_90h_Pointer, // offset
-            //    this.ChildrenCount1
-            //);
-            //this.Unknown_98h_Data = reader.ReadBlockAt<ResourceSimpleArray<BoundComposite_Unknown_B_002>>(
-            //    this.Unknown_98h_Pointer, // offset
-            //    this.ChildrenCount1
-            //);
-
-
             this.ChildrenTransformation1 = reader.ReadStructsAt<Matrix>(this.ChildrenTransformation1Pointer, this.ChildrenCount1);
             this.ChildrenTransformation2 = reader.ReadStructsAt<Matrix>(this.ChildrenTransformation2Pointer, this.ChildrenCount1);
             this.ChildrenBoundingBoxes = reader.ReadStructsAt<AABB_s>(this.ChildrenBoundingBoxesPointer, this.ChildrenCount1);
             this.Unknown_90h_Data = reader.ReadStructsAt<BoundComposite_Unknown_B_002_s>(this.Unknown_90h_Pointer, this.ChildrenCount1);
             this.Unknown_98h_Data = reader.ReadStructsAt<BoundComposite_Unknown_B_002_s>(this.Unknown_98h_Pointer, this.ChildrenCount1);
-
 
             this.BVH = reader.ReadBlockAt<BVH>(
                 this.BVHPointer // offset
@@ -944,12 +1194,11 @@ namespace CodeWalker.GameFiles
 
             // update structure data
             this.ChildrenPointer = (ulong)(this.Children != null ? this.Children.FilePosition : 0);
-            //this.ChildrenTransformation1Pointer = (ulong)(this.ChildrenTransformation1 != null ? this.ChildrenTransformation1.Position : 0);
-            //this.ChildrenTransformation2Pointer = (ulong)(this.ChildrenTransformation2 != null ? this.ChildrenTransformation2.Position : 0);
-            //this.ChildrenBoundingBoxesPointer = (ulong)(this.ChildrenBoundingBoxes != null ? this.ChildrenBoundingBoxes.Position : 0);
-            //this.Unknown_90h_Pointer = (ulong)(this.Unknown_90h_Data != null ? this.Unknown_90h_Data.Position : 0);
-            //this.Unknown_98h_Pointer = (ulong)(this.Unknown_98h_Data != null ? this.Unknown_98h_Data.Position : 0);
-            //TODO: fix
+            this.ChildrenTransformation1Pointer = (ulong)(this.ChildrenTransformation1Block != null ? this.ChildrenTransformation1Block.FilePosition : 0);
+            this.ChildrenTransformation2Pointer = (ulong)(this.ChildrenTransformation2Block != null ? this.ChildrenTransformation2Block.FilePosition : 0);
+            this.ChildrenBoundingBoxesPointer = (ulong)(this.ChildrenBoundingBoxesBlock != null ? this.ChildrenBoundingBoxesBlock.FilePosition : 0);
+            this.Unknown_90h_Pointer = (ulong)(this.Unknown_90h_Block != null ? this.Unknown_90h_Block.FilePosition : 0);
+            this.Unknown_98h_Pointer = (ulong)(this.Unknown_98h_Block != null ? this.Unknown_98h_Block.FilePosition : 0);
             this.ChildrenCount1 = (ushort)(this.Children != null ? this.Children.Count : 0);
             this.ChildrenCount2 = (ushort)(this.Children != null ? this.Children.Count : 0);
             this.BVHPointer = (ulong)(this.BVH != null ? this.BVH.FilePosition : 0);
@@ -974,11 +1223,31 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>(base.GetReferences());
             if (Children != null) list.Add(Children);
-            //if (ChildrenTransformation1 != null) list.Add(ChildrenTransformation1); //TODO: fix
-            //if (ChildrenTransformation2 != null) list.Add(ChildrenTransformation2);
-            //if (ChildrenBoundingBoxes != null) list.Add(ChildrenBoundingBoxes);
-            //if (Unknown_90h_Data != null) list.Add(Unknown_90h_Data);
-            //if (Unknown_98h_Data != null) list.Add(Unknown_98h_Data);
+            if (ChildrenTransformation1 != null)
+            {
+                ChildrenTransformation1Block = new ResourceSystemStructBlock<Matrix>(ChildrenTransformation1);
+                list.Add(ChildrenTransformation1Block);
+            }
+            if (ChildrenTransformation2 != null)
+            {
+                ChildrenTransformation2Block = new ResourceSystemStructBlock<Matrix>(ChildrenTransformation2);
+                list.Add(ChildrenTransformation2Block);
+            }
+            if (ChildrenBoundingBoxes != null)
+            {
+                ChildrenBoundingBoxesBlock = new ResourceSystemStructBlock<AABB_s>(ChildrenBoundingBoxes);
+                list.Add(ChildrenBoundingBoxesBlock);
+            }
+            if (Unknown_90h_Data != null)
+            {
+                Unknown_90h_Block = new ResourceSystemStructBlock<BoundComposite_Unknown_B_002_s>(Unknown_90h_Data);
+                list.Add(Unknown_90h_Block);
+            }
+            if (Unknown_98h_Data != null)
+            {
+                Unknown_98h_Block = new ResourceSystemStructBlock<BoundComposite_Unknown_B_002_s>(Unknown_98h_Data);
+                list.Add(Unknown_98h_Block);
+            }
             if (BVH != null) list.Add(BVH);
             return list.ToArray();
         }
@@ -993,88 +1262,6 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public class BoundDisc : Bounds
-    {
-        public override long BlockLength
-        {
-            get { return 128; }
-        }
-
-        // structure data
-        public uint Unknown_70h { get; set; } // 0x00000000
-        public uint Unknown_74h { get; set; } // 0x00000000
-        public uint Unknown_78h { get; set; } // 0x00000000
-        public uint Unknown_7Ch { get; set; } // 0x00000000
-
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
-        public override void Read(ResourceDataReader reader, params object[] parameters)
-        {
-            base.Read(reader, parameters);
-
-            // read structure data
-            this.Unknown_70h = reader.ReadUInt32();
-            this.Unknown_74h = reader.ReadUInt32();
-            this.Unknown_78h = reader.ReadUInt32();
-            this.Unknown_7Ch = reader.ReadUInt32();
-        }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
-        {
-            base.Write(writer, parameters);
-
-            // write structure data
-            writer.Write(this.Unknown_70h);
-            writer.Write(this.Unknown_74h);
-            writer.Write(this.Unknown_78h);
-            writer.Write(this.Unknown_7Ch);
-        }
-    }
-    [TC(typeof(EXP))] public class BoundCylinder : Bounds
-    {
-        public override long BlockLength
-        {
-            get { return 128; }
-        }
-
-        // structure data
-        public uint Unknown_70h { get; set; } // 0x00000000
-        public uint Unknown_74h { get; set; } // 0x00000000
-        public uint Unknown_78h { get; set; } // 0x00000000
-        public uint Unknown_7Ch { get; set; } // 0x00000000
-
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
-        public override void Read(ResourceDataReader reader, params object[] parameters)
-        {
-            base.Read(reader, parameters);
-
-            // read structure data
-            this.Unknown_70h = reader.ReadUInt32();
-            this.Unknown_74h = reader.ReadUInt32();
-            this.Unknown_78h = reader.ReadUInt32();
-            this.Unknown_7Ch = reader.ReadUInt32();
-        }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
-        {
-            base.Write(writer, parameters);
-
-            // write structure data
-            writer.Write(this.Unknown_70h);
-            writer.Write(this.Unknown_74h);
-            writer.Write(this.Unknown_78h);
-            writer.Write(this.Unknown_7Ch);
-        }
-    }
 
     [TC(typeof(EXP))] public class BVH : ResourceSystemBlock
     {
@@ -1084,9 +1271,6 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        //public ulong NodesPointer { get; set; }
-        //public uint NodesCount { get; set; }
-        //public uint Count2 { get; set; }
         public ResourceSimpleList64b_s<BVHNode_s> Nodes { get; set; }
         public uint Unknown_10h { get; set; } // 0x00000000
         public uint Unknown_14h { get; set; } // 0x00000000
@@ -1099,10 +1283,6 @@ namespace CodeWalker.GameFiles
         public Vector4 Quantum { get; set; } // bounding box dimension / 2^16
         public ResourceSimpleList64_s<BVHTreeInfo_s> Trees { get; set; }
 
-        // reference data
-        ////public ResourceSimpleArray2<BVHNode, BVHNode_Unknown_B_003> Nodes;
-        //public BVHNode_s[] Nodes { get; set; }
-        //public BVHNode_s[] Nodes_Unk1 { get; set; }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -1110,9 +1290,6 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            //this.NodesPointer = reader.ReadUInt64();
-            //this.NodesCount = reader.ReadUInt32();
-            //this.Count2 = reader.ReadUInt32();
             this.Nodes = reader.ReadBlock<ResourceSimpleList64b_s<BVHNode_s>>();
             this.Unknown_10h = reader.ReadUInt32();
             this.Unknown_14h = reader.ReadUInt32();
@@ -1123,21 +1300,8 @@ namespace CodeWalker.GameFiles
             this.BoundingBoxCenter = reader.ReadStruct<Vector4>();
             this.QuantumInverse = reader.ReadStruct<Vector4>();
             this.Quantum = reader.ReadStruct<Vector4>();
-
             this.Trees = reader.ReadBlock<ResourceSimpleList64_s<BVHTreeInfo_s>>();
 
-            // read reference data
-            ////this.Nodes = reader.ReadBlockAt<ResourceSimpleArray2<BVHNode, BVHNode_Unknown_B_003>>(
-            ////    this.NodesPointer, // offset
-            ////    this.NodesCount,
-            ////    this.Count2 - this.NodesCount
-            ////);
-
-            //this.Nodes = reader.ReadStructsAt<BVHNode_s>(this.NodesPointer, this.NodesCount);
-            //this.Nodes_Unk1 = reader.ReadStructsAt<BVHNode_s>(this.NodesPointer + NodesCount * 16 /*sizeof(BVHNode_s)*/, Count2 - NodesCount);
-
-            //if (Nodes_Unk1 != null)
-            //{ }
         }
 
         /// <summary>
@@ -1145,16 +1309,8 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            // update structure data
-            //this.NodesPointer = (ulong)(this.Nodes != null ? this.Nodes.Position : 0);
-            //this.NodesCount = (uint)(this.Nodes != null ? this.Nodes.Array1.Count : 0);
-            //this.Count2 = (uint)(this.Nodes != null ? this.Nodes.Array1.Count + this.Nodes.Array2.Count : 0);
-            //TODO: fix
 
             // write structure data
-            //writer.Write(this.NodesPointer);
-            //writer.Write(this.NodesCount);
-            //writer.Write(this.Count2);
             writer.WriteBlock(this.Nodes);
             writer.Write(this.Unknown_10h);
             writer.Write(this.Unknown_14h);
@@ -1174,7 +1330,7 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Nodes != null) list.Add(Nodes); //TODO: fix!
+            //if (Nodes != null) list.Add(Nodes);
             //if (Trees != null) list.Add(Trees);
             return list.ToArray();
         }
@@ -1183,11 +1339,6 @@ namespace CodeWalker.GameFiles
         {
             return new Tuple<long, IResourceBlock>[] {
                 new Tuple<long, IResourceBlock>(0x0, Nodes),
-                //new Tuple<long, IResourceBlock>(0x20, BoundingBoxMin),
-                //new Tuple<long, IResourceBlock>(0x30, BoundingBoxMax),
-                //new Tuple<long, IResourceBlock>(0x40, BoundingBoxCenter),
-                //new Tuple<long, IResourceBlock>(0x50, QuantumInverse),
-                //new Tuple<long, IResourceBlock>(0x60, Quantum),
                 new Tuple<long, IResourceBlock>(0x70, Trees)
             };
         }

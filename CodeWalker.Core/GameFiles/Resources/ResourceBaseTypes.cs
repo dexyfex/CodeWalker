@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -1747,8 +1748,8 @@ namespace CodeWalker.GameFiles
             get
             {
                 long len = 8 * Data.Count;
-                foreach (var f in Data)
-                    len += f.BlockLength;
+                //foreach (var f in Data)
+                //    len += f.BlockLength;
                 return len;
             }
         }
@@ -1933,6 +1934,80 @@ namespace CodeWalker.GameFiles
 
 
 
+
+
+
+
+    public class ResourceSystemDataBlock : ResourceSystemBlock //used for writing resources.
+    {
+        public byte[] Data { get; set; }
+        public int DataLength { get; set; }
+
+        public override long BlockLength
+        {
+            get
+            {
+                return (Data != null) ? Data.Length : DataLength;
+            }
+        }
+
+
+        public ResourceSystemDataBlock(byte[] data)
+        {
+            Data = data;
+            DataLength = (Data != null) ? Data.Length : 0;
+        }
+
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            Data = reader.ReadBytes(DataLength);
+        }
+
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            writer.Write(Data);
+        }
+    }
+
+    public class ResourceSystemStructBlock<T> : ResourceSystemBlock where T : struct //used for writing resources.
+    {
+        public T[] Items { get; set; }
+        public int ItemCount { get; set; }
+        public int StructureSize { get; set; }
+
+        public override long BlockLength
+        {
+            get
+            {
+                return ((Items != null) ? Items.Length : ItemCount) * StructureSize;
+            }
+        }
+
+        public ResourceSystemStructBlock(T[] items)
+        {
+            Items = items;
+            ItemCount = (Items != null) ? Items.Length : 0;
+            StructureSize = Marshal.SizeOf(typeof(T));
+        }
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            int datalength = ItemCount * StructureSize;
+            byte[] data = reader.ReadBytes(datalength);
+            Items = MetaTypes.ConvertDataArray<T>(data, 0, ItemCount);
+        }
+
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+
+            byte[] data = MetaTypes.ConvertArrayToBytes(Items);
+            if (data != null)
+            {
+                writer.Write(data);
+            }
+        }
+    }
 
 
 
