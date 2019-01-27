@@ -2609,32 +2609,32 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat54StreamingSound : Dat54Sound
     {
-        int UnkInt { get; set; } //0x0-0x4
+        int Duration { get; set; } //0x0-0x4
 
         public Dat54StreamingSound(RelFile rel) : base(rel, Dat54SoundType.StreamingSound)
         { }
         public Dat54StreamingSound(RelData d, BinaryReader br) : base(d, br)
         {
-            UnkInt = br.ReadInt32();
+            Duration = br.ReadInt32();
 
             ReadAudioTrackHashes(br);
         }
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            UnkInt = Xml.GetChildIntAttribute(node, "UnkInt", "value");
+            Duration = Xml.GetChildIntAttribute(node, "Duration", "value");
             ReadAudioTracksXml(node);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             base.WriteXml(sb, indent);
-            RelXml.ValueTag(sb, indent, "UnkInt", UnkInt.ToString());
+            RelXml.ValueTag(sb, indent, "Duration", Duration.ToString());
             WriteAudioTracksXml(sb, indent);
         }
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
-            bw.Write(UnkInt);
+            bw.Write(Duration);
             WriteAudioTrackHashes(bw);
         }
         public override uint[] GetHashTableOffsets()
