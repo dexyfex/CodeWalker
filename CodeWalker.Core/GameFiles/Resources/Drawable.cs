@@ -2345,18 +2345,13 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public ulong NamePointer { get; set; }
-        public ulong LightAttributesPointer { get; set; }
-        public ushort LightAttributesCount1 { get; set; }
-        public ushort LightAttributesCount2 { get; set; }
-        public uint Unknown_BCh { get; set; } // 0x00000000
+        public ResourceSimpleList64_s<LightAttributes_s> LightAttributes { get; set; }
         public uint Unknown_C0h { get; set; } // 0x00000000
         public uint Unknown_C4h { get; set; } // 0x00000000
         public ulong BoundPointer { get; set; }
 
         // reference data
         public string Name { get; set; }
-        //public ResourceSimpleArray<LightAttributes> LightAttributes { get; set; }
-        public LightAttributes_s[] LightAttributes { get; set; }
         public Bounds Bound { get; set; }
 
         public string ErrorMessage { get; set; }
@@ -2370,10 +2365,7 @@ namespace CodeWalker.GameFiles
 
             // read structure data
             this.NamePointer = reader.ReadUInt64();
-            this.LightAttributesPointer = reader.ReadUInt64();
-            this.LightAttributesCount1 = reader.ReadUInt16();
-            this.LightAttributesCount2 = reader.ReadUInt16();
-            this.Unknown_BCh = reader.ReadUInt32();
+            this.LightAttributes = reader.ReadBlock<ResourceSimpleList64_s<LightAttributes_s>>();
             this.Unknown_C0h = reader.ReadUInt32();
             this.Unknown_C4h = reader.ReadUInt32();
             this.BoundPointer = reader.ReadUInt64();
@@ -2385,11 +2377,6 @@ namespace CodeWalker.GameFiles
                 this.Name = reader.ReadStringAt(//BlockAt<string_r>(
                     this.NamePointer // offset
                 );
-                //this.LightAttributes = reader.ReadBlockAt<ResourceSimpleArray<LightAttributes>>(
-                //    this.LightAttributesPointer, // offset
-                //    this.LightAttributesCount1
-                //);
-                this.LightAttributes = reader.ReadStructsAt<LightAttributes_s>(this.LightAttributesPointer, this.LightAttributesCount1);
 
                 this.Bound = reader.ReadBlockAt<Bounds>(
                     this.BoundPointer // offset
@@ -2410,16 +2397,11 @@ namespace CodeWalker.GameFiles
 
             // update structure data
             //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0); //TODO: fix
-            //this.LightAttributesPointer = (ulong)(this.LightAttributes != null ? this.LightAttributes.Position : 0);
             this.BoundPointer = (ulong)(this.Bound != null ? this.Bound.FilePosition : 0);
-            //TODO: fix
 
             // write structure data
             writer.Write(this.NamePointer);
-            writer.Write(this.LightAttributesPointer);
-            writer.Write(this.LightAttributesCount1);
-            writer.Write(this.LightAttributesCount2);
-            writer.Write(this.Unknown_BCh);
+            writer.WriteBlock(this.LightAttributes);
             writer.Write(this.Unknown_C0h);
             writer.Write(this.Unknown_C4h);
             writer.Write(this.BoundPointer);
@@ -2432,9 +2414,14 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>(base.GetReferences());
             //if (Name != null) list.Add(Name); //TODO: fix
-            //if (LightAttributes != null) list.Add(LightAttributes); //TODO: fix
             if (Bound != null) list.Add(Bound);
             return list.ToArray();
+        }
+        public override Tuple<long, IResourceBlock>[] GetParts()
+        {
+            return new Tuple<long, IResourceBlock>[] {
+                new Tuple<long, IResourceBlock>(0xB0, LightAttributes),
+            };
         }
 
 

@@ -54,6 +54,8 @@ namespace CodeWalker.GameFiles
         public string Name { get; private set; }
         //public string[] Strings { get; set; }
 
+        private string_r NameBlock = null;
+
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -107,6 +109,9 @@ namespace CodeWalker.GameFiles
                 (ulong)this.NamePointer // offset
             );
 
+            if (!string.IsNullOrEmpty(Name))
+            { }
+
             //Strings = MetaTypes.GetStrings(this);
         }
 
@@ -121,7 +126,7 @@ namespace CodeWalker.GameFiles
             this.StructureInfosPointer = this.StructureInfos?.FilePosition ?? 0;
             this.EnumInfosPointer = this.EnumInfos?.FilePosition ?? 0;
             this.DataBlocksPointer = this.DataBlocks?.FilePosition ?? 0;
-            //this.NamePointer = this.Name?.Position ?? 0; //TODO: fix
+            this.NamePointer = this.NameBlock?.FilePosition ?? 0;
             this.UselessPointer = 0;
             this.StructureInfosCount = (short)(this.StructureInfos?.Count ?? 0);
             this.EnumInfosCount = (short)(this.EnumInfos?.Count ?? 0);
@@ -162,7 +167,11 @@ namespace CodeWalker.GameFiles
             if ((StructureInfos != null) && (StructureInfos.Count > 0)) list.Add(StructureInfos);
             if ((EnumInfos != null) && (EnumInfos.Count > 0)) list.Add(EnumInfos);
             if ((DataBlocks != null) && (DataBlocks.Count > 0)) list.Add(DataBlocks);
-            //if (Name != null) list.Add(Name); //TODO: fix
+            if (!string.IsNullOrEmpty(Name))
+            {
+                NameBlock = (string_r)Name;
+                list.Add(NameBlock);
+            }
             return list.ToArray();
         }
 

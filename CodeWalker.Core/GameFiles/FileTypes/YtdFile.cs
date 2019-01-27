@@ -45,5 +45,13 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public byte[] Save()
+        {
+            byte[] data = ResourceBuilder.Build(TextureDict, 13); //ytd is type/version 13...
+
+            return data;
+        }
+
+
     }
 }

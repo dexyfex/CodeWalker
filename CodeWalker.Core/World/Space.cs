@@ -1285,7 +1285,7 @@ namespace CodeWalker.World
                                         { continue; }
                                         if (bgeom.Polygons == null)
                                         { continue; }
-                                        if ((bgeom.BVH == null) || (bgeom.BVH.Trees == null))
+                                        if ((bgeom.BVH?.Nodes?.data_items == null) || (bgeom.BVH?.Trees?.data_items == null))
                                         { continue; }
 
                                         box.Minimum = bgeom.BoundingBoxMin;
@@ -1299,9 +1299,9 @@ namespace CodeWalker.World
                                         var q = bgeom.BVH.Quantum.XYZ();
                                         var c = bgeom.BVH.BoundingBoxCenter.XYZ();
                                         var cg = bgeom.CenterGeom;
-                                        for (int t = 0; t < bgeom.BVH.Trees.Length; t++)
+                                        for (int t = 0; t < bgeom.BVH.Trees.data_items.Length; t++)
                                         {
-                                            var tree = bgeom.BVH.Trees[t];
+                                            var tree = bgeom.BVH.Trees.data_items[t];
                                             box.Minimum = new Vector3(tree.MinX, tree.MinY, tree.MinZ) * q + c;
                                             box.Maximum = new Vector3(tree.MaxX, tree.MaxY, tree.MaxZ) * q + c;
                                             if (!ray.Intersects(ref box, out bvhboxhittest))
@@ -1315,7 +1315,7 @@ namespace CodeWalker.World
                                             int lastind = tree.NodeIndex2;
                                             while (nodeind < lastind)
                                             {
-                                                var node = bgeom.BVH.Nodes[nodeind];
+                                                var node = bgeom.BVH.Nodes.data_items[nodeind];
                                                 box.Minimum = new Vector3(node.MinX, node.MinY, node.MinZ) * q + c;
                                                 box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
                                                 bool nodehit = ray.Intersects(ref box, out bvhboxhittest);
@@ -1567,7 +1567,7 @@ namespace CodeWalker.World
                                         { continue; }
                                         if (bgeom.Polygons == null)
                                         { continue; }
-                                        if ((bgeom.BVH == null) || (bgeom.BVH.Trees == null))
+                                        if ((bgeom.BVH?.Nodes?.data_items == null) || (bgeom.BVH?.Trees?.data_items == null))
                                         { continue; }
 
                                         box.Minimum = bgeom.BoundingBoxMin;
@@ -1578,9 +1578,9 @@ namespace CodeWalker.World
                                         var q = bgeom.BVH.Quantum.XYZ();
                                         var c = bgeom.BVH.BoundingBoxCenter.XYZ();
                                         var cg = bgeom.CenterGeom;
-                                        for (int t = 0; t < bgeom.BVH.Trees.Length; t++)
+                                        for (int t = 0; t < bgeom.BVH.Trees.data_items.Length; t++)
                                         {
-                                            var tree = bgeom.BVH.Trees[t];
+                                            var tree = bgeom.BVH.Trees.data_items[t];
                                             box.Minimum = new Vector3(tree.MinX, tree.MinY, tree.MinZ) * q + c;
                                             box.Maximum = new Vector3(tree.MaxX, tree.MaxY, tree.MaxZ) * q + c;
                                             if (!sph.Intersects(ref box))
@@ -1590,7 +1590,7 @@ namespace CodeWalker.World
                                             int lastind = tree.NodeIndex2;
                                             while (nodeind < lastind)
                                             {
-                                                var node = bgeom.BVH.Nodes[nodeind];
+                                                var node = bgeom.BVH.Nodes.data_items[nodeind];
                                                 box.Minimum = new Vector3(node.MinX, node.MinY, node.MinZ) * q + c;
                                                 box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
                                                 bool nodehit = sph.Intersects(ref box);

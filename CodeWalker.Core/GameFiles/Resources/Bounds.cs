@@ -53,9 +53,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_14h { get; set; } // 0x00000001
         public uint Unknown_18h { get; set; } // 0x00000001
         public uint Unknown_1Ch { get; set; } // 0x00000001
-        //public ResourceSimpleList64<uint_r> BoundNameHashes;
-        public ResourceSimpleList64Ptr BoundNameHashesPtr { get; set; }
-        public uint[] BoundNameHashes { get; set; }
+        public ResourceSimpleList64_uint BoundNameHashes;
         public ResourcePointerList64<Bounds> Bounds { get; set; }
 
         /// <summary>
@@ -70,9 +68,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            //this.BoundNameHashes = reader.ReadBlock<ResourceSimpleList64<uint_r>>();
-            this.BoundNameHashesPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.BoundNameHashes = reader.ReadUintsAt(this.BoundNameHashesPtr.EntriesPointer, this.BoundNameHashesPtr.EntriesCount);
+            this.BoundNameHashes = reader.ReadBlock<ResourceSimpleList64_uint>();
             this.Bounds = reader.ReadBlock<ResourcePointerList64<Bounds>>();
         }
 
@@ -88,14 +84,14 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
-            //writer.WriteBlock(this.BoundNameHashes); //TODO: fix!
-            //writer.WriteBlock(this.Bounds);
+            writer.WriteBlock(this.BoundNameHashes);
+            writer.WriteBlock(this.Bounds);
         }
 
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             return new Tuple<long, IResourceBlock>[] {
-                //new Tuple<long, IResourceBlock>(0x20, BoundNameHashes), //TODO: fix!
+                new Tuple<long, IResourceBlock>(0x20, BoundNameHashes),
                 new Tuple<long, IResourceBlock>(0x30, Bounds)
             };
         }
@@ -196,16 +192,16 @@ namespace CodeWalker.GameFiles
             writer.Write(this.BoundingSphereRadius);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
-            //writer.WriteBlock(this.BoundingBoxMax); //TODO: FIX!!
+            writer.Write(this.BoundingBoxMax);
             writer.Write(this.Margin);
-            //writer.WriteBlock(this.BoundingBoxMin);
+            writer.Write(this.BoundingBoxMin);
             writer.Write(this.Unknown_3Ch);
-            //writer.WriteBlock(this.BoundingBoxCenter);
+            writer.Write(this.BoundingBoxCenter);
             writer.Write(this.MaterialIndex);
             writer.Write(this.ProceduralId);
             writer.Write(this.RoomId_and_PedDensity);
             writer.Write(this.Unknown_4Fh);
-            //writer.WriteBlock(this.Center);
+            writer.Write(this.Center);
             writer.Write(this.PolyFlags);
             writer.Write(this.MaterialColorIndex);
             writer.Write(this.Unknown_5Eh);
@@ -329,9 +325,7 @@ namespace CodeWalker.GameFiles
 
 
         public BoundVertex_s[] p1data { get; set; }
-
         public BoundPolygon[] Polygons { get; set; }
-
         public Vector3[] Vertices { get; set; }
         public uint[] Unknown_B8h_Data { get; set; }
         public uint[] Unknown_C0h_Data { get; set; }
@@ -408,10 +402,9 @@ namespace CodeWalker.GameFiles
 
             if (this.Unknown_C0h_Data != null)
             {
-                ulong[] ptrlist = reader.ReadUlongsAt(this.Unknown_C8h_Pointer, (uint)Unknown_C0h_Data.Length);//8
-                //reader.Position += Unknown_C0h_Data.Length * 8; //account for ptrlist read
-                Unknown_C8h_Data = new uint[Unknown_C0h_Data.Length][]; //8
-                for (int i = 0; i < Unknown_C0h_Data.Length; i++) //8
+                ulong[] ptrlist = reader.ReadUlongsAt(this.Unknown_C8h_Pointer, 8);//(uint)Unknown_C0h_Data.Length
+                Unknown_C8h_Data = new uint[8][]; //Unknown_C0h_Data.Length
+                for (int i = 0; i < 8; i++) //Unknown_C0h_Data.Length
                 {
                     Unknown_C8h_Data[i] = reader.ReadUintsAt(ptrlist[i], Unknown_C0h_Data[i]);
                 }
@@ -1091,9 +1084,10 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public ulong NodesPointer { get; set; }
-        public uint NodesCount { get; set; }
-        public uint Count2 { get; set; }
+        //public ulong NodesPointer { get; set; }
+        //public uint NodesCount { get; set; }
+        //public uint Count2 { get; set; }
+        public ResourceSimpleList64b_s<BVHNode_s> Nodes { get; set; }
         public uint Unknown_10h { get; set; } // 0x00000000
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000000
@@ -1103,14 +1097,12 @@ namespace CodeWalker.GameFiles
         public Vector4 BoundingBoxCenter { get; set; }
         public Vector4 QuantumInverse { get; set; }
         public Vector4 Quantum { get; set; } // bounding box dimension / 2^16
-        //public ResourceSimpleList64<BVHTreeInfo> Trees { get; set; }
-        public ResourceSimpleList64Ptr TreesPtr { get; set; }
-        public BVHTreeInfo_s[] Trees { get; set; }
+        public ResourceSimpleList64_s<BVHTreeInfo_s> Trees { get; set; }
 
         // reference data
-        //public ResourceSimpleArray2<BVHNode, BVHNode_Unknown_B_003> Nodes;
-        public BVHNode_s[] Nodes { get; set; }
-        public BVHNode_s[] Nodes_Unk1 { get; set; }
+        ////public ResourceSimpleArray2<BVHNode, BVHNode_Unknown_B_003> Nodes;
+        //public BVHNode_s[] Nodes { get; set; }
+        //public BVHNode_s[] Nodes_Unk1 { get; set; }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -1118,40 +1110,34 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.NodesPointer = reader.ReadUInt64();
-            this.NodesCount = reader.ReadUInt32();
-            this.Count2 = reader.ReadUInt32();
+            //this.NodesPointer = reader.ReadUInt64();
+            //this.NodesCount = reader.ReadUInt32();
+            //this.Count2 = reader.ReadUInt32();
+            this.Nodes = reader.ReadBlock<ResourceSimpleList64b_s<BVHNode_s>>();
             this.Unknown_10h = reader.ReadUInt32();
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            //this.BoundingBoxMin = reader.ReadBlock<Vector4_r>();
-            //this.BoundingBoxMax = reader.ReadBlock<Vector4_r>();
-            //this.BoundingBoxCenter = reader.ReadBlock<Vector4_r>();
-            //this.QuantumInverse = reader.ReadBlock<Vector4_r>();
-            //this.Quantum = reader.ReadBlock<Vector4_r>();
             this.BoundingBoxMin = reader.ReadStruct<Vector4>();
             this.BoundingBoxMax = reader.ReadStruct<Vector4>();
             this.BoundingBoxCenter = reader.ReadStruct<Vector4>();
             this.QuantumInverse = reader.ReadStruct<Vector4>();
             this.Quantum = reader.ReadStruct<Vector4>();
 
-            //this.Trees = reader.ReadBlock<ResourceSimpleList64<BVHTreeInfo>>();
-            this.TreesPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Trees = reader.ReadStructsAt<BVHTreeInfo_s>(this.TreesPtr.EntriesPointer, this.TreesPtr.EntriesCount);
+            this.Trees = reader.ReadBlock<ResourceSimpleList64_s<BVHTreeInfo_s>>();
 
             // read reference data
-            //this.Nodes = reader.ReadBlockAt<ResourceSimpleArray2<BVHNode, BVHNode_Unknown_B_003>>(
-            //    this.NodesPointer, // offset
-            //    this.NodesCount,
-            //    this.Count2 - this.NodesCount
-            //);
+            ////this.Nodes = reader.ReadBlockAt<ResourceSimpleArray2<BVHNode, BVHNode_Unknown_B_003>>(
+            ////    this.NodesPointer, // offset
+            ////    this.NodesCount,
+            ////    this.Count2 - this.NodesCount
+            ////);
 
-            this.Nodes = reader.ReadStructsAt<BVHNode_s>(this.NodesPointer, this.NodesCount);
+            //this.Nodes = reader.ReadStructsAt<BVHNode_s>(this.NodesPointer, this.NodesCount);
+            //this.Nodes_Unk1 = reader.ReadStructsAt<BVHNode_s>(this.NodesPointer + NodesCount * 16 /*sizeof(BVHNode_s)*/, Count2 - NodesCount);
 
-            this.Nodes_Unk1 = reader.ReadStructsAt<BVHNode_s>(this.NodesPointer + NodesCount * 16 /*sizeof(BVHNode_s)*/, Count2 - NodesCount);
-
-
+            //if (Nodes_Unk1 != null)
+            //{ }
         }
 
         /// <summary>
@@ -1166,19 +1152,20 @@ namespace CodeWalker.GameFiles
             //TODO: fix
 
             // write structure data
-            writer.Write(this.NodesPointer);
-            writer.Write(this.NodesCount);
-            writer.Write(this.Count2);
+            //writer.Write(this.NodesPointer);
+            //writer.Write(this.NodesCount);
+            //writer.Write(this.Count2);
+            writer.WriteBlock(this.Nodes);
             writer.Write(this.Unknown_10h);
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
-            //writer.WriteBlock(this.BoundingBoxMin);
-            //writer.WriteBlock(this.BoundingBoxMax);
-            //writer.WriteBlock(this.BoundingBoxCenter);
-            //writer.WriteBlock(this.QuantumInverse);
-            //writer.WriteBlock(this.Quantum);
-            //writer.WriteBlock(this.Trees); //TODO: fix
+            writer.Write(this.BoundingBoxMin);
+            writer.Write(this.BoundingBoxMax);
+            writer.Write(this.BoundingBoxCenter);
+            writer.Write(this.QuantumInverse);
+            writer.Write(this.Quantum);
+            writer.WriteBlock(this.Trees);
         }
 
         /// <summary>
@@ -1195,12 +1182,13 @@ namespace CodeWalker.GameFiles
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             return new Tuple<long, IResourceBlock>[] {
+                new Tuple<long, IResourceBlock>(0x0, Nodes),
                 //new Tuple<long, IResourceBlock>(0x20, BoundingBoxMin),
                 //new Tuple<long, IResourceBlock>(0x30, BoundingBoxMax),
                 //new Tuple<long, IResourceBlock>(0x40, BoundingBoxCenter),
                 //new Tuple<long, IResourceBlock>(0x50, QuantumInverse),
                 //new Tuple<long, IResourceBlock>(0x60, Quantum),
-                //new Tuple<long, IResourceBlock>(0x70, Trees) //TODO: fix!
+                new Tuple<long, IResourceBlock>(0x70, Trees)
             };
         }
     }

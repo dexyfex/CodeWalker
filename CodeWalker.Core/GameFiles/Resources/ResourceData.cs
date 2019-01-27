@@ -87,6 +87,19 @@ namespace CodeWalker.GameFiles
             var systemSize = resentry.SystemSize;
             var graphicsSize = resentry.GraphicsSize;
 
+            //if (data != null)
+            //{
+            //    if (systemSize > data.Length)
+            //    {
+            //        systemSize = data.Length;
+            //        graphicsSize = 0;
+            //    }
+            //    else if ((systemSize + graphicsSize) > data.Length)
+            //    {
+            //        graphicsSize = data.Length - systemSize;
+            //    }
+            //}
+
             this.systemStream = new MemoryStream(data, 0, systemSize);
             this.graphicsStream = new MemoryStream(data, systemSize, graphicsSize);
             this.blockPool = new Dictionary<long, List<IResourceBlock>>();
@@ -735,8 +748,12 @@ namespace CodeWalker.GameFiles
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
+            
             byte[] data = MetaTypes.ConvertArrayToBytes(Items);
-            writer.Write(data);
+            if (data != null)
+            {
+                writer.Write(data);
+            }
         }
     }
 

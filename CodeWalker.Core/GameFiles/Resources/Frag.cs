@@ -101,9 +101,9 @@ namespace CodeWalker.GameFiles
         public uint Unknown_104h { get; set; } // 0x00000000
         public uint Unknown_108h { get; set; } // 0x00000000
         public uint Unknown_10Ch { get; set; } // 0x00000000
-        //public ResourceSimpleList64<LightAttributes> LightAttributes { get; set; }
-        public ResourceSimpleList64Ptr LightAttributesPtr { get; set; }
-        public LightAttributes_s[] LightAttributes { get; set; }
+        public ResourceSimpleList64_s<LightAttributes_s> LightAttributes { get; set; }
+        //public ResourceSimpleList64Ptr LightAttributesPtr { get; set; }
+        //public LightAttributes_s[] LightAttributes { get; set; }
         public ulong Unknown_120h_Pointer { get; set; }
         public uint Unknown_128h { get; set; } // 0x00000000
         public uint Unknown_12Ch { get; set; } // 0x00000000
@@ -182,9 +182,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_104h = reader.ReadUInt32();
             this.Unknown_108h = reader.ReadUInt32();
             this.Unknown_10Ch = reader.ReadUInt32();
-            //this.LightAttributes = reader.ReadBlock<ResourceSimpleList64<LightAttributes>>();
-            this.LightAttributesPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.LightAttributes = reader.ReadStructsAt<LightAttributes_s>(LightAttributesPtr.EntriesPointer, LightAttributesPtr.EntriesCount);
+            this.LightAttributes = reader.ReadBlock<ResourceSimpleList64_s<LightAttributes_s>>();
             this.Unknown_120h_Pointer = reader.ReadUInt64();
             this.Unknown_128h = reader.ReadUInt32();
             this.Unknown_12Ch = reader.ReadUInt32();
@@ -276,15 +274,13 @@ namespace CodeWalker.GameFiles
             this.DrawablePointer = (ulong)(this.Drawable != null ? this.Drawable.FilePosition : 0);
             this.Unknown_28h_Pointer = (ulong)(this.Unknown_28h_Data != null ? this.Unknown_28h_Data.FilePosition : 0);
             this.Unknown_30h_Pointer = (ulong)(this.Unknown_30h_Data != null ? this.Unknown_30h_Data.FilePosition : 0);
-            //this.cc00 = (uint)(this.pxxxxx_0data != null ? this.pxxxxx_0data.Count : 0);
+            this.Count0 = (uint)(this.Unknown_28h_Data != null ? this.Unknown_28h_Data.Count : 0);
             ////this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0); //TODO: fix!!!
-            //this.cnt1 = (ushort)(this.pxxxxx_2data != null ? this.pxxxxx_2data.Count : 0);
             this.Unknown_A8h_Pointer = (ulong)(this.Unknown_A8h_Data != null ? this.Unknown_A8h_Data.FilePosition : 0);
-            //this.anotherCount = (byte)(this.pxxxxx_3data != null ? this.pxxxxx_3data.Count : 0);
+            this.Count3 = (byte)(this.Unknown_E0h_Data != null ? this.Unknown_E0h_Data.Count : 0);
             this.Unknown_E0h_Pointer = (ulong)(this.Unknown_E0h_Data != null ? this.Unknown_E0h_Data.FilePosition : 0);
             this.PhysicsLODGroupPointer = (ulong)(this.PhysicsLODGroup != null ? this.PhysicsLODGroup.FilePosition : 0);
             this.Drawable2Pointer = (ulong)(this.Drawable2 != null ? this.Drawable2.FilePosition : 0);
-            //this.cntxx51a = (ushort)(this.pxxxxx_5data != null ? this.pxxxxx_5data.Count : 0);
             this.Unknown_120h_Pointer = (ulong)(this.Unknown_120h_Data != null ? this.Unknown_120h_Data.FilePosition : 0);
 
             // write structure data
@@ -343,7 +339,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_104h);
             writer.Write(this.Unknown_108h);
             writer.Write(this.Unknown_10Ch);
-            //writer.WriteBlock(this.LightAttributes); //TODO: fix!
+            writer.WriteBlock(this.LightAttributes);
             writer.Write(this.Unknown_120h_Pointer);
             writer.Write(this.Unknown_128h);
             writer.Write(this.Unknown_12Ch);
@@ -371,7 +367,7 @@ namespace CodeWalker.GameFiles
         {
             return new Tuple<long, IResourceBlock>[] {
                 new Tuple<long, IResourceBlock>(0x60, Clothes),
-                //new Tuple<long, IResourceBlock>(0x110, LightAttributes) //TODO: fix!
+                new Tuple<long, IResourceBlock>(0x110, LightAttributes)
             };
         }
     }
@@ -777,63 +773,37 @@ namespace CodeWalker.GameFiles
         public uint Unknown_14h { get; set; }
         public uint Unknown_18h { get; set; }
         public uint Unknown_1Ch { get; set; } // 0x00000000
-        //public ResourceSimpleList64<uint_r> Unknown_20h { get; set; }
-        //public ResourceSimpleList64<uint_r> Unknown_30h { get; set; }
-        //public ResourceSimpleList64<uint_r> Unknown_40h { get; set; }
-        public ResourceSimpleList64Ptr Unknown_20hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_30hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_40hPtr { get; set; }
-        public float[] Unknown_20h { get; set; }
-        public float[] Unknown_30h { get; set; }
-        public float[] Unknown_40h { get; set; }
+        public ResourceSimpleList64_float Unknown_20h { get; set; }
+        public ResourceSimpleList64_float Unknown_30h { get; set; }
+        public ResourceSimpleList64_float Unknown_40h { get; set; }
         public uint Unknown_50h { get; set; } // 0x00000000
         public uint Unknown_54h { get; set; } // 0x00000000
         public uint Unknown_58h { get; set; } // 0x00000000
         public uint Unknown_5Ch { get; set; } // 0x00000000
-        //public ResourceSimpleList64<float_r> Unknown_60h { get; set; }
-        //public ResourceSimpleList64<uint_r> Unknown_70h { get; set; }
-        //public ResourceSimpleList64<uint_r> Unknown_80h { get; set; }
-        public ResourceSimpleList64Ptr Unknown_60hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_70hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_80hPtr { get; set; }
-        public float[] Unknown_60h { get; set; }
-        public uint[] Unknown_70h { get; set; }
-        public uint[] Unknown_80h { get; set; }
+        public ResourceSimpleList64_float Unknown_60h { get; set; }
+        public ResourceSimpleList64_uint Unknown_70h { get; set; }
+        public ResourceSimpleList64_uint Unknown_80h { get; set; }
         public uint Unknown_90h { get; set; } // 0x00000000
         public uint Unknown_94h { get; set; } // 0x00000000
         public uint Unknown_98h { get; set; } // 0x00000000
         public uint Unknown_9Ch { get; set; } // 0x00000000
-        //public ResourceSimpleList64<float_r> Unknown_A0h { get; set; }
-        //public ResourceSimpleList64<uint_r> Unknown_B0h { get; set; }
-        //public ResourceSimpleList64<uint_r> Unknown_C0h { get; set; }
-        public ResourceSimpleList64Ptr Unknown_A0hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_B0hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_C0hPtr { get; set; }
-        public float[] Unknown_A0h { get; set; }
-        public uint[] Unknown_B0h { get; set; }
-        public uint[] Unknown_C0h { get; set; }
+        public ResourceSimpleList64_float Unknown_A0h { get; set; }
+        public ResourceSimpleList64_uint Unknown_B0h { get; set; }
+        public ResourceSimpleList64_uint Unknown_C0h { get; set; }
         public uint Unknown_D0h { get; set; } // 0x00000000
         public uint Unknown_D4h { get; set; } // 0x00000000
         public uint Unknown_D8h { get; set; } // 0x00000000
         public uint Unknown_DCh { get; set; } // 0x00000000
-        //public ResourceSimpleList64<ushort_r> Unknown_E0h { get; set; }
-        //public ResourceSimpleList64<ushort_r> Unknown_F0h { get; set; }
-        //public ResourceSimpleList64<ushort_r> Unknown_100h { get; set; }
-        public ResourceSimpleList64Ptr Unknown_E0hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_F0hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_100hPtr { get; set; }
-        public ushort[] Unknown_E0h { get; set; }
-        public ushort[] Unknown_F0h { get; set; }
-        public ushort[] Unknown_100h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_E0h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_F0h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_100h { get; set; }
         public uint Unknown_110h { get; set; } // 0x00000000
         public uint Unknown_114h { get; set; } // 0x00000000
         public uint Unknown_118h { get; set; } // 0x00000000
         public uint Unknown_11Ch { get; set; } // 0x00000000
         public uint Unknown_120h { get; set; } // 0x00000000
         public uint Unknown_124h { get; set; } // 0x00000000
-        //public ResourceSimpleList64<uint_r> Unknown_128h { get; set; }
-        public ResourceSimpleList64Ptr Unknown_128hPtr { get; set; }
-        public uint[] Unknown_128h { get; set; }
+        public ResourceSimpleList64_uint Unknown_128h { get; set; }
         public uint Unknown_138h { get; set; } // 0x00000000
         public uint Unknown_13Ch { get; set; } // 0x00000000
 
@@ -851,50 +821,37 @@ namespace CodeWalker.GameFiles
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_30hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_40hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_20h = reader.ReadFloatsAt(Unknown_20hPtr.EntriesPointer, Unknown_20hPtr.EntriesCount);
-            this.Unknown_30h = reader.ReadFloatsAt(Unknown_30hPtr.EntriesPointer, Unknown_30hPtr.EntriesCount);
-            this.Unknown_40h = reader.ReadFloatsAt(Unknown_40hPtr.EntriesPointer, Unknown_40hPtr.EntriesCount);
+            this.Unknown_20h = reader.ReadBlock<ResourceSimpleList64_float>();
+            this.Unknown_30h = reader.ReadBlock<ResourceSimpleList64_float>();
+            this.Unknown_40h = reader.ReadBlock<ResourceSimpleList64_float>();
             this.Unknown_50h = reader.ReadUInt32();
             this.Unknown_54h = reader.ReadUInt32();
             this.Unknown_58h = reader.ReadUInt32();
             this.Unknown_5Ch = reader.ReadUInt32();
-            this.Unknown_60hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_70hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_80hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_60h = reader.ReadFloatsAt(Unknown_60hPtr.EntriesPointer, Unknown_60hPtr.EntriesCount);
-            this.Unknown_70h = reader.ReadUintsAt(Unknown_70hPtr.EntriesPointer, Unknown_70hPtr.EntriesCount);
-            this.Unknown_80h = reader.ReadUintsAt(Unknown_80hPtr.EntriesPointer, Unknown_80hPtr.EntriesCount);
+            this.Unknown_60h = reader.ReadBlock<ResourceSimpleList64_float>();
+            this.Unknown_70h = reader.ReadBlock<ResourceSimpleList64_uint>();
+            this.Unknown_80h = reader.ReadBlock<ResourceSimpleList64_uint>();
             this.Unknown_90h = reader.ReadUInt32();
             this.Unknown_94h = reader.ReadUInt32();
             this.Unknown_98h = reader.ReadUInt32();
             this.Unknown_9Ch = reader.ReadUInt32();
-            this.Unknown_A0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_B0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_C0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_A0h = reader.ReadFloatsAt(Unknown_A0hPtr.EntriesPointer, Unknown_A0hPtr.EntriesCount);
-            this.Unknown_B0h = reader.ReadUintsAt(Unknown_B0hPtr.EntriesPointer, Unknown_B0hPtr.EntriesCount);
-            this.Unknown_C0h = reader.ReadUintsAt(Unknown_C0hPtr.EntriesPointer, Unknown_C0hPtr.EntriesCount);
+            this.Unknown_A0h = reader.ReadBlock<ResourceSimpleList64_float>();
+            this.Unknown_B0h = reader.ReadBlock<ResourceSimpleList64_uint>();
+            this.Unknown_C0h = reader.ReadBlock<ResourceSimpleList64_uint>();
             this.Unknown_D0h = reader.ReadUInt32();
             this.Unknown_D4h = reader.ReadUInt32();
             this.Unknown_D8h = reader.ReadUInt32();
             this.Unknown_DCh = reader.ReadUInt32();
-            this.Unknown_E0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_F0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_100hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_E0h = reader.ReadUshortsAt(Unknown_E0hPtr.EntriesPointer, Unknown_E0hPtr.EntriesCount);
-            this.Unknown_F0h = reader.ReadUshortsAt(Unknown_F0hPtr.EntriesPointer, Unknown_F0hPtr.EntriesCount);
-            this.Unknown_100h = reader.ReadUshortsAt(Unknown_100hPtr.EntriesPointer, Unknown_100hPtr.EntriesCount);
+            this.Unknown_E0h = reader.ReadBlock<ResourceSimpleList64_ushort>();
+            this.Unknown_F0h = reader.ReadBlock<ResourceSimpleList64_ushort>();
+            this.Unknown_100h = reader.ReadBlock<ResourceSimpleList64_ushort>();
             this.Unknown_110h = reader.ReadUInt32();
             this.Unknown_114h = reader.ReadUInt32();
             this.Unknown_118h = reader.ReadUInt32();
             this.Unknown_11Ch = reader.ReadUInt32();
             this.Unknown_120h = reader.ReadUInt32();
             this.Unknown_124h = reader.ReadUInt32();
-            this.Unknown_128hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_128h = reader.ReadUintsAt(Unknown_128hPtr.EntriesPointer, Unknown_128hPtr.EntriesCount);
+            this.Unknown_128h = reader.ReadBlock<ResourceSimpleList64_uint>();
             this.Unknown_138h = reader.ReadUInt32();
             this.Unknown_13Ch = reader.ReadUInt32();
         }
@@ -913,37 +870,37 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
-            //writer.WriteBlock(this.Unknown_20h); //TODO: fix!
-            //writer.WriteBlock(this.Unknown_30h);
-            //writer.WriteBlock(this.Unknown_40h);
+            writer.WriteBlock(this.Unknown_20h);
+            writer.WriteBlock(this.Unknown_30h);
+            writer.WriteBlock(this.Unknown_40h);
             writer.Write(this.Unknown_50h);
             writer.Write(this.Unknown_54h);
             writer.Write(this.Unknown_58h);
             writer.Write(this.Unknown_5Ch);
-            //writer.WriteBlock(this.Unknown_60h);
-            //writer.WriteBlock(this.Unknown_70h);
-            //writer.WriteBlock(this.Unknown_80h);
+            writer.WriteBlock(this.Unknown_60h);
+            writer.WriteBlock(this.Unknown_70h);
+            writer.WriteBlock(this.Unknown_80h);
             writer.Write(this.Unknown_90h);
             writer.Write(this.Unknown_94h);
             writer.Write(this.Unknown_98h);
             writer.Write(this.Unknown_9Ch);
-            //writer.WriteBlock(this.Unknown_A0h);
-            //writer.WriteBlock(this.Unknown_B0h);
-            //writer.WriteBlock(this.Unknown_C0h);
+            writer.WriteBlock(this.Unknown_A0h);
+            writer.WriteBlock(this.Unknown_B0h);
+            writer.WriteBlock(this.Unknown_C0h);
             writer.Write(this.Unknown_D0h);
             writer.Write(this.Unknown_D4h);
             writer.Write(this.Unknown_D8h);
             writer.Write(this.Unknown_DCh);
-            //writer.WriteBlock(this.Unknown_E0h);
-            //writer.WriteBlock(this.Unknown_F0h);
-            //writer.WriteBlock(this.Unknown_100h);
+            writer.WriteBlock(this.Unknown_E0h);
+            writer.WriteBlock(this.Unknown_F0h);
+            writer.WriteBlock(this.Unknown_100h);
             writer.Write(this.Unknown_110h);
             writer.Write(this.Unknown_114h);
             writer.Write(this.Unknown_118h);
             writer.Write(this.Unknown_11Ch);
             writer.Write(this.Unknown_120h);
             writer.Write(this.Unknown_124h);
-            //writer.WriteBlock(this.Unknown_128h);
+            writer.WriteBlock(this.Unknown_128h);
             writer.Write(this.Unknown_138h);
             writer.Write(this.Unknown_13Ch);
         }
@@ -951,19 +908,19 @@ namespace CodeWalker.GameFiles
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             return new Tuple<long, IResourceBlock>[] {
-                //new Tuple<long, IResourceBlock>(0x20, Unknown_20h), //TODO: fix!
-                //new Tuple<long, IResourceBlock>(0x30, Unknown_30h),
-                //new Tuple<long, IResourceBlock>(0x40, Unknown_40h),
-                //new Tuple<long, IResourceBlock>(0x60, Unknown_60h),
-                //new Tuple<long, IResourceBlock>(0x70, Unknown_70h),
-                //new Tuple<long, IResourceBlock>(0x80, Unknown_80h),
-                //new Tuple<long, IResourceBlock>(0xA0, Unknown_A0h),
-                //new Tuple<long, IResourceBlock>(0xB0, Unknown_B0h),
-                //new Tuple<long, IResourceBlock>(0xC0, Unknown_C0h),
-                //new Tuple<long, IResourceBlock>(0xE0, Unknown_E0h),
-                //new Tuple<long, IResourceBlock>(0xF0, Unknown_F0h),
-                //new Tuple<long, IResourceBlock>(0x100, Unknown_100h),
-                //new Tuple<long, IResourceBlock>(0x128, Unknown_128h)
+                new Tuple<long, IResourceBlock>(0x20, Unknown_20h),
+                new Tuple<long, IResourceBlock>(0x30, Unknown_30h),
+                new Tuple<long, IResourceBlock>(0x40, Unknown_40h),
+                new Tuple<long, IResourceBlock>(0x60, Unknown_60h),
+                new Tuple<long, IResourceBlock>(0x70, Unknown_70h),
+                new Tuple<long, IResourceBlock>(0x80, Unknown_80h),
+                new Tuple<long, IResourceBlock>(0xA0, Unknown_A0h),
+                new Tuple<long, IResourceBlock>(0xB0, Unknown_B0h),
+                new Tuple<long, IResourceBlock>(0xC0, Unknown_C0h),
+                new Tuple<long, IResourceBlock>(0xE0, Unknown_E0h),
+                new Tuple<long, IResourceBlock>(0xF0, Unknown_F0h),
+                new Tuple<long, IResourceBlock>(0x100, Unknown_100h),
+                new Tuple<long, IResourceBlock>(0x128, Unknown_128h)
             };
         }
     }
@@ -1092,36 +1049,16 @@ namespace CodeWalker.GameFiles
         public uint Unknown_44h { get; set; } // 0x00000000
         public uint Unknown_48h { get; set; } // 0x00000000
         public uint Unknown_4Ch { get; set; } // 0x00000000
-        //public ResourceSimpleList64<Vector4_r> Unknown_50h { get; set; }
-        //public ResourceSimpleList64<ushort_r> Unknown_60h { get; set; }
-        //public ResourceSimpleList64<ushort_r> Unknown_70h { get; set; }
-        //public ResourceSimpleList64<ushort_r> Unknown_80h { get; set; }
-        //public ResourceSimpleList64<ushort_r> Unknown_90h { get; set; }
-        //public ResourceSimpleList64<Vector4_r> Unknown_A0h { get; set; }
-        //public ResourceSimpleList64<ushort_r> Unknown_B0h { get; set; }
-        //public ResourceSimpleList64<ushort_r> Unknown_C0h { get; set; }
-        //public ResourceSimpleList64<ushort_r> Unknown_D0h { get; set; }
-        //public ResourceSimpleList64<ushort_r> Unknown_E0h { get; set; }
-        public ResourceSimpleList64Ptr Unknown_50hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_60hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_70hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_80hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_90hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_A0hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_B0hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_C0hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_D0hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_E0hPtr { get; set; }
-        public Vector4[] Unknown_50h { get; set; }
-        public ushort[] Unknown_60h { get; set; }
-        public ushort[] Unknown_70h { get; set; }
-        public ushort[] Unknown_80h { get; set; }
-        public ushort[] Unknown_90h { get; set; }
-        public Vector4[] Unknown_A0h { get; set; }
-        public ushort[] Unknown_B0h { get; set; }
-        public ushort[] Unknown_C0h { get; set; }
-        public ushort[] Unknown_D0h { get; set; }
-        public ushort[] Unknown_E0h { get; set; }
+        public ResourceSimpleList64_s<Vector4> Unknown_50h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_60h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_70h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_80h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_90h { get; set; }
+        public ResourceSimpleList64_s<Vector4> Unknown_A0h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_B0h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_C0h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_D0h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_E0h { get; set; }
         public uint Unknown_F0h { get; set; } // 0x00000000
         public uint Unknown_F4h { get; set; } // 0x00000000
         public uint Unknown_F8h { get; set; } // 0x00000000
@@ -1146,12 +1083,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_144h { get; set; } // 0x00000000
         public uint Unknown_148h { get; set; } // 0x00000000
         public uint Unknown_14Ch { get; set; } // 0x00000000
-        //public ResourceSimpleList64<ushort_r> Unknown_150h { get; set; }
-        //public ResourceSimpleList64<ushort_r> Unknown_160h { get; set; }
-        public ResourceSimpleList64Ptr Unknown_150hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_160hPtr { get; set; }
-        public ushort[] Unknown_150h { get; set; }
-        public ushort[] Unknown_160h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_150h { get; set; }
+        public ResourceSimpleList64_ushort Unknown_160h { get; set; }
         public uint Unknown_170h { get; set; } // 0x00000000
         public uint Unknown_174h { get; set; } // 0x00000000
         public uint Unknown_178h { get; set; } // 0x00000000
@@ -1187,36 +1120,16 @@ namespace CodeWalker.GameFiles
             this.Unknown_44h = reader.ReadUInt32();
             this.Unknown_48h = reader.ReadUInt32();
             this.Unknown_4Ch = reader.ReadUInt32();
-            //this.Unknown_50h = reader.ReadBlock<ResourceSimpleList64<Vector4_r>>();
-            //this.Unknown_60h = reader.ReadBlock<ResourceSimpleList64<ushort_r>>();
-            //this.Unknown_70h = reader.ReadBlock<ResourceSimpleList64<ushort_r>>();
-            //this.Unknown_80h = reader.ReadBlock<ResourceSimpleList64<ushort_r>>();
-            //this.Unknown_90h = reader.ReadBlock<ResourceSimpleList64<ushort_r>>();
-            //this.Unknown_A0h = reader.ReadBlock<ResourceSimpleList64<Vector4_r>>();
-            //this.Unknown_B0h = reader.ReadBlock<ResourceSimpleList64<ushort_r>>();
-            //this.Unknown_C0h = reader.ReadBlock<ResourceSimpleList64<ushort_r>>();
-            //this.Unknown_D0h = reader.ReadBlock<ResourceSimpleList64<ushort_r>>();
-            //this.Unknown_E0h = reader.ReadBlock<ResourceSimpleList64<ushort_r>>();
-            this.Unknown_50hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_60hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_70hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_80hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_90hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_A0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_B0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_C0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_D0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_E0hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_50h = reader.ReadStructsAt<Vector4>(Unknown_50hPtr.EntriesPointer, Unknown_50hPtr.EntriesCount);
-            this.Unknown_60h = reader.ReadUshortsAt(Unknown_60hPtr.EntriesPointer, Unknown_60hPtr.EntriesCount);
-            this.Unknown_70h = reader.ReadUshortsAt(Unknown_70hPtr.EntriesPointer, Unknown_70hPtr.EntriesCount);
-            this.Unknown_80h = reader.ReadUshortsAt(Unknown_80hPtr.EntriesPointer, Unknown_80hPtr.EntriesCount);
-            this.Unknown_90h = reader.ReadUshortsAt(Unknown_90hPtr.EntriesPointer, Unknown_90hPtr.EntriesCount);
-            this.Unknown_A0h = reader.ReadStructsAt<Vector4>(Unknown_A0hPtr.EntriesPointer, Unknown_A0hPtr.EntriesCount);
-            this.Unknown_B0h = reader.ReadUshortsAt(Unknown_B0hPtr.EntriesPointer, Unknown_B0hPtr.EntriesCount);
-            this.Unknown_C0h = reader.ReadUshortsAt(Unknown_C0hPtr.EntriesPointer, Unknown_C0hPtr.EntriesCount);
-            this.Unknown_D0h = reader.ReadUshortsAt(Unknown_D0hPtr.EntriesPointer, Unknown_D0hPtr.EntriesCount);
-            this.Unknown_E0h = reader.ReadUshortsAt(Unknown_E0hPtr.EntriesPointer, Unknown_E0hPtr.EntriesCount);
+            this.Unknown_50h = reader.ReadBlock<ResourceSimpleList64_s<Vector4>>();
+            this.Unknown_60h = reader.ReadBlock<ResourceSimpleList64_ushort>();
+            this.Unknown_70h = reader.ReadBlock<ResourceSimpleList64_ushort>();
+            this.Unknown_80h = reader.ReadBlock<ResourceSimpleList64_ushort>();
+            this.Unknown_90h = reader.ReadBlock<ResourceSimpleList64_ushort>();
+            this.Unknown_A0h = reader.ReadBlock<ResourceSimpleList64_s<Vector4>>();
+            this.Unknown_B0h = reader.ReadBlock<ResourceSimpleList64_ushort>();
+            this.Unknown_C0h = reader.ReadBlock<ResourceSimpleList64_ushort>();
+            this.Unknown_D0h = reader.ReadBlock<ResourceSimpleList64_ushort>();
+            this.Unknown_E0h = reader.ReadBlock<ResourceSimpleList64_ushort>();
             this.Unknown_F0h = reader.ReadUInt32();
             this.Unknown_F4h = reader.ReadUInt32();
             this.Unknown_F8h = reader.ReadUInt32();
@@ -1241,12 +1154,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_144h = reader.ReadUInt32();
             this.Unknown_148h = reader.ReadUInt32();
             this.Unknown_14Ch = reader.ReadUInt32();
-            //this.Unknown_150h = reader.ReadBlock<ResourceSimpleList64<ushort_r>>();
-            //this.Unknown_160h = reader.ReadBlock<ResourceSimpleList64<ushort_r>>();
-            this.Unknown_150hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_160hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_150h = reader.ReadUshortsAt(Unknown_150hPtr.EntriesPointer, Unknown_150hPtr.EntriesCount);
-            this.Unknown_160h = reader.ReadUshortsAt(Unknown_160hPtr.EntriesPointer, Unknown_160hPtr.EntriesCount);
+            this.Unknown_150h = reader.ReadBlock<ResourceSimpleList64_ushort>();
+            this.Unknown_160h = reader.ReadBlock<ResourceSimpleList64_ushort>();
             this.Unknown_170h = reader.ReadUInt32();
             this.Unknown_174h = reader.ReadUInt32();
             this.Unknown_178h = reader.ReadUInt32();
@@ -1283,16 +1192,16 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_44h);
             writer.Write(this.Unknown_48h);
             writer.Write(this.Unknown_4Ch);
-            //writer.WriteBlock(this.Unknown_50h); //TODO: fix this!
-            //writer.WriteBlock(this.Unknown_60h);
-            //writer.WriteBlock(this.Unknown_70h);
-            //writer.WriteBlock(this.Unknown_80h);
-            //writer.WriteBlock(this.Unknown_90h);
-            //writer.WriteBlock(this.Unknown_A0h);
-            //writer.WriteBlock(this.Unknown_B0h);
-            //writer.WriteBlock(this.Unknown_C0h);
-            //writer.WriteBlock(this.Unknown_D0h);
-            //writer.WriteBlock(this.Unknown_E0h);
+            writer.WriteBlock(this.Unknown_50h);
+            writer.WriteBlock(this.Unknown_60h);
+            writer.WriteBlock(this.Unknown_70h);
+            writer.WriteBlock(this.Unknown_80h);
+            writer.WriteBlock(this.Unknown_90h);
+            writer.WriteBlock(this.Unknown_A0h);
+            writer.WriteBlock(this.Unknown_B0h);
+            writer.WriteBlock(this.Unknown_C0h);
+            writer.WriteBlock(this.Unknown_D0h);
+            writer.WriteBlock(this.Unknown_E0h);
             writer.Write(this.Unknown_F0h);
             writer.Write(this.Unknown_F4h);
             writer.Write(this.Unknown_F8h);
@@ -1317,8 +1226,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_144h);
             writer.Write(this.Unknown_148h);
             writer.Write(this.Unknown_14Ch);
-            //writer.WriteBlock(this.Unknown_150h); //TODO: fix
-            //writer.WriteBlock(this.Unknown_160h);
+            writer.WriteBlock(this.Unknown_150h);
+            writer.WriteBlock(this.Unknown_160h);
             writer.Write(this.Unknown_170h);
             writer.Write(this.Unknown_174h);
             writer.Write(this.Unknown_178h);
@@ -1332,18 +1241,18 @@ namespace CodeWalker.GameFiles
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             return new Tuple<long, IResourceBlock>[] {
-                //new Tuple<long, IResourceBlock>(0x50, Unknown_50h), //TODO: fix this
-                //new Tuple<long, IResourceBlock>(0x60, Unknown_60h),
-                //new Tuple<long, IResourceBlock>(0x70, Unknown_70h),
-                //new Tuple<long, IResourceBlock>(0x80, Unknown_80h),
-                //new Tuple<long, IResourceBlock>(0x90, Unknown_90h),
-                //new Tuple<long, IResourceBlock>(0xA0, Unknown_A0h),
-                //new Tuple<long, IResourceBlock>(0xB0, Unknown_B0h),
-                //new Tuple<long, IResourceBlock>(0xC0, Unknown_C0h),
-                //new Tuple<long, IResourceBlock>(0xD0, Unknown_D0h),
-                //new Tuple<long, IResourceBlock>(0xE0, Unknown_E0h),
-                //new Tuple<long, IResourceBlock>(0x150, Unknown_150h),
-                //new Tuple<long, IResourceBlock>(0x160, Unknown_160h)
+                new Tuple<long, IResourceBlock>(0x50, Unknown_50h),
+                new Tuple<long, IResourceBlock>(0x60, Unknown_60h),
+                new Tuple<long, IResourceBlock>(0x70, Unknown_70h),
+                new Tuple<long, IResourceBlock>(0x80, Unknown_80h),
+                new Tuple<long, IResourceBlock>(0x90, Unknown_90h),
+                new Tuple<long, IResourceBlock>(0xA0, Unknown_A0h),
+                new Tuple<long, IResourceBlock>(0xB0, Unknown_B0h),
+                new Tuple<long, IResourceBlock>(0xC0, Unknown_C0h),
+                new Tuple<long, IResourceBlock>(0xD0, Unknown_D0h),
+                new Tuple<long, IResourceBlock>(0xE0, Unknown_E0h),
+                new Tuple<long, IResourceBlock>(0x150, Unknown_150h),
+                new Tuple<long, IResourceBlock>(0x160, Unknown_160h)
             };
         }
     }
@@ -1382,15 +1291,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_64h { get; set; } // 0x00000000
         public uint Unknown_68h { get; set; } // 0x00000000
         public uint Unknown_6Ch { get; set; } // 0x00000000
-        public ResourceSimpleList64Ptr Unknown_70hPtr { get; set; }
-        public Vector4[] Unknown_70h { get; set; }
-        //public uint Unknown_70h { get; set; } // 0x00000000
-        //public uint Unknown_74h { get; set; } // 0x00000000
-        //public uint Unknown_78h { get; set; } // 0x00000000
-        //public uint Unknown_7Ch { get; set; } // 0x00000000
-        //public ResourceSimpleList64<Vector4_r> Unknown_80h { get; set; }
-        public ResourceSimpleList64Ptr Unknown_80hPtr { get; set; }
-        public Vector4[] Unknown_80h { get; set; }
+        public ResourceSimpleList64_s<Vector4> Unknown_70h { get; set; }
+        public ResourceSimpleList64_s<Vector4> Unknown_80h { get; set; }
         public uint Unknown_90h { get; set; } // 0x00000000
         public uint Unknown_94h { get; set; } // 0x00000000
         public uint Unknown_98h { get; set; } // 0x00000000
@@ -1419,12 +1321,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_F4h { get; set; } // 0x00000000
         public uint Unknown_F8h { get; set; }
         public uint Unknown_FCh { get; set; } // 0x00000000
-        //public ResourceSimpleList64<Vector4_r> Unknown_100h { get; set; }
-        //public ResourceSimpleList64<Vector4_r> Unknown_110h { get; set; }
-        public ResourceSimpleList64Ptr Unknown_100hPtr { get; set; }
-        public ResourceSimpleList64Ptr Unknown_110hPtr { get; set; }
-        public Vector4[] Unknown_100h { get; set; }
-        public Vector4[] Unknown_110h { get; set; }
+        public ResourceSimpleList64_s<Vector4> Unknown_100h { get; set; }
+        public ResourceSimpleList64_s<Vector4> Unknown_110h { get; set; }
         public uint Unknown_120h { get; set; } // 0x00000000
         public uint Unknown_124h { get; set; } // 0x00000000
         public uint Unknown_128h { get; set; } // 0x00000000
@@ -1486,15 +1384,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_64h = reader.ReadUInt32();
             this.Unknown_68h = reader.ReadUInt32();
             this.Unknown_6Ch = reader.ReadUInt32();
-            this.Unknown_70hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_70h = reader.ReadStructsAt<Vector4>(Unknown_70hPtr.EntriesPointer, Unknown_70hPtr.EntriesCount);
-            //this.Unknown_70h = reader.ReadUInt32();
-            //this.Unknown_74h = reader.ReadUInt32();
-            //this.Unknown_78h = reader.ReadUInt32();
-            //this.Unknown_7Ch = reader.ReadUInt32();
-            //this.Unknown_80h = reader.ReadBlock<ResourceSimpleList64<Vector4_r>>();
-            this.Unknown_80hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_80h = reader.ReadStructsAt<Vector4>(Unknown_80hPtr.EntriesPointer, Unknown_80hPtr.EntriesCount);
+            this.Unknown_70h = reader.ReadBlock<ResourceSimpleList64_s<Vector4>>();
+            this.Unknown_80h = reader.ReadBlock<ResourceSimpleList64_s<Vector4>>();
             this.Unknown_90h = reader.ReadUInt32();
             this.Unknown_94h = reader.ReadUInt32();
             this.Unknown_98h = reader.ReadUInt32();
@@ -1523,12 +1414,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_F4h = reader.ReadUInt32();
             this.Unknown_F8h = reader.ReadUInt32();
             this.Unknown_FCh = reader.ReadUInt32();
-            //this.Unknown_100h = reader.ReadBlock<ResourceSimpleList64<Vector4_r>>();
-            //this.Unknown_110h = reader.ReadBlock<ResourceSimpleList64<Vector4_r>>();
-            this.Unknown_100hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_110hPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.Unknown_100h = reader.ReadStructsAt<Vector4>(Unknown_100hPtr.EntriesPointer, Unknown_100hPtr.EntriesCount);
-            this.Unknown_110h = reader.ReadStructsAt<Vector4>(Unknown_110hPtr.EntriesPointer, Unknown_110hPtr.EntriesCount);
+            this.Unknown_100h = reader.ReadBlock<ResourceSimpleList64_s<Vector4>>();
+            this.Unknown_110h = reader.ReadBlock<ResourceSimpleList64_s<Vector4>>();
             this.Unknown_120h = reader.ReadUInt32();
             this.Unknown_124h = reader.ReadUInt32();
             this.Unknown_128h = reader.ReadUInt32();
@@ -1602,11 +1489,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_64h);
             writer.Write(this.Unknown_68h);
             writer.Write(this.Unknown_6Ch);
-            //writer.Write(this.Unknown_70h);
-            //writer.Write(this.Unknown_74h);
-            //writer.Write(this.Unknown_78h);
-            //writer.Write(this.Unknown_7Ch);
-            //writer.WriteBlock(this.Unknown_80h); //TODO: fix
+            writer.WriteBlock(this.Unknown_70h);
+            writer.WriteBlock(this.Unknown_80h);
             writer.Write(this.Unknown_90h);
             writer.Write(this.Unknown_94h);
             writer.Write(this.Unknown_98h);
@@ -1635,8 +1519,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_F4h);
             writer.Write(this.Unknown_F8h);
             writer.Write(this.Unknown_FCh);
-            //writer.WriteBlock(this.Unknown_100h); //TODO: fix
-            //writer.WriteBlock(this.Unknown_110h);
+            writer.WriteBlock(this.Unknown_100h);
+            writer.WriteBlock(this.Unknown_110h);
             writer.Write(this.Unknown_120h);
             writer.Write(this.Unknown_124h);
             writer.Write(this.Unknown_128h);
@@ -1676,9 +1560,10 @@ namespace CodeWalker.GameFiles
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             return new Tuple<long, IResourceBlock>[] {
-                //new Tuple<long, IResourceBlock>(0x80, Unknown_80h), //TODO: fix
-                //new Tuple<long, IResourceBlock>(0x100, Unknown_100h),
-                //new Tuple<long, IResourceBlock>(0x110, Unknown_110h)
+                new Tuple<long, IResourceBlock>(0x70, Unknown_70h),
+                new Tuple<long, IResourceBlock>(0x80, Unknown_80h),
+                new Tuple<long, IResourceBlock>(0x100, Unknown_100h),
+                new Tuple<long, IResourceBlock>(0x110, Unknown_110h)
             };
         }
     }

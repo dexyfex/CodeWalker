@@ -123,11 +123,11 @@ namespace CodeWalker.Project.Panels
                             LightAttributes_s[] lightAttrs = null;
                             if (ddwbl != null)
                             {
-                                lightAttrs = ddwbl.LightAttributes;
+                                lightAttrs = ddwbl.LightAttributes?.data_items;
                             }
                             else if (fdwbl != null)
                             {
-                                lightAttrs = fdwbl.OwnerFragment?.LightAttributes;
+                                lightAttrs = fdwbl.OwnerFragment?.LightAttributes?.data_items;
                             }
                             if (lightAttrs != null)
                             {

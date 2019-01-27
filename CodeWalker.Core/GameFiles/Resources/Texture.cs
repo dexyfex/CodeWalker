@@ -24,11 +24,11 @@ namespace CodeWalker.GameFiles
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000001
         public uint Unknown_1Ch { get; set; } // 0x00000000
-        public ResourceSimpleList64Ptr TextureNameHashesPtr { get; set; }
-        public uint[] TextureNameHashes { get; set; }
+        public ResourceSimpleList64_uint TextureNameHashes { get; set; }
         public ResourcePointerList64<Texture> Textures { get; set; }
 
         public Dictionary<uint, Texture> Dict { get; set; }
+
 
         public long MemoryUsage
         {
@@ -51,8 +51,8 @@ namespace CodeWalker.GameFiles
 
         public TextureDictionary()
         {
-            //this.TextureNameHashes = new ResourceSimpleList64<uint_r>();
-            this.Textures = new ResourcePointerList64<Texture>();
+            //this.TextureNameHashes = new ResourceSimpleList64_uint();
+            //this.Textures = new ResourcePointerList64<Texture>();
         }
 
         /// <summary>
@@ -67,18 +67,16 @@ namespace CodeWalker.GameFiles
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.TextureNameHashesPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            this.TextureNameHashes = reader.ReadUintsAt(this.TextureNameHashesPtr.EntriesPointer, this.TextureNameHashesPtr.EntriesCount);
-            //this.TextureNameHashes = reader.ReadBlock<ResourceSimpleList64<uint_r>>();
+            this.TextureNameHashes = reader.ReadBlock<ResourceSimpleList64_uint>();
             this.Textures = reader.ReadBlock<ResourcePointerList64<Texture>>();
 
             var dict = new Dictionary<uint, Texture>();
-            if ((Textures != null) && (Textures.data_items != null) && (TextureNameHashes != null))
+            if ((Textures?.data_items != null) && (TextureNameHashes?.data_items != null))
             {
-                for (int i = 0; (i < Textures.data_items.Length) && (i < TextureNameHashes.Length); i++)
+                for (int i = 0; (i < Textures.data_items.Length) && (i < TextureNameHashes.data_items.Length); i++)
                 {
                     var tex = Textures.data_items[i];
-                    var hash = TextureNameHashes[i];
+                    var hash = TextureNameHashes.data_items[i];
                     dict[hash] = tex;
                 }
             }
@@ -92,19 +90,20 @@ namespace CodeWalker.GameFiles
         {
             base.Write(writer, parameters);
 
+
             // write structure data
             writer.Write(this.Unknown_10h);
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
-            //writer.WriteBlock(this.TextureNameHashes); //TODO: fix!
-            //writer.WriteBlock(this.Textures);
+            writer.WriteBlock(this.TextureNameHashes);
+            writer.WriteBlock(this.Textures);
         }
 
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             return new Tuple<long, IResourceBlock>[] {
-                //new Tuple<long, IResourceBlock>(0x20, TextureNameHashes), //TODO: fix!
+                new Tuple<long, IResourceBlock>(0x20, TextureNameHashes),
                 new Tuple<long, IResourceBlock>(0x30, Textures)
             };
         }
@@ -163,6 +162,8 @@ namespace CodeWalker.GameFiles
         public string Name { get; set; }
         public uint NameHash { get; set; }
 
+        private string_r NameBlock = null;
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
@@ -202,7 +203,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0); //TODO: fix
+            this.NamePointer = (ulong)(this.NameBlock != null ? this.NameBlock.FilePosition : 0);
 
             // write structure data
             writer.Write(this.VFT);
@@ -228,7 +229,11 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Name != null) list.Add(Name); //TODO: fix
+            if (!string.IsNullOrEmpty(Name))
+            {
+                NameBlock = (string_r)Name;
+                list.Add(NameBlock);
+            }
             return list.ToArray();
         }
 

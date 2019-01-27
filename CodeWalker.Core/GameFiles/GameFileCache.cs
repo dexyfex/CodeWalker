@@ -164,19 +164,20 @@ namespace CodeWalker.GameFiles
                 RpfMan.BuildExtendedJenkIndex = BuildExtendedJenkIndex;
                 RpfMan.Init(GTAFolder, UpdateStatus, ErrorLog);//, true);
 
-                //RE test area!
-                //TestAudioRels();
-
 
                 InitGlobal();
 
                 InitDlc();
 
 
+
+                //RE test area!
+                //TestAudioRels();
                 //TestAudioYmts();
                 //TestMetas();
                 //TestPsos();
                 //TestYcds();
+                //TestYtds();
                 //TestYmaps();
                 //TestPlacements();
                 //TestDrawables();
@@ -2106,13 +2107,11 @@ namespace CodeWalker.GameFiles
 
         private void AddTextureLookups(YtdFile ytd)
         {
-            if (ytd == null) return;
-            if (ytd.TextureDict == null) return;
-            if (ytd.TextureDict.TextureNameHashes == null) return;
+            if (ytd?.TextureDict?.TextureNameHashes?.data_items == null) return;
 
             lock (textureSyncRoot)
             {
-                foreach (uint hash in ytd.TextureDict.TextureNameHashes)
+                foreach (uint hash in ytd.TextureDict.TextureNameHashes.data_items)
                 {
                     textureLookup[hash] = ytd.RpfFileEntry;
                 }
@@ -2863,6 +2862,66 @@ namespace CodeWalker.GameFiles
             //if (sd != null)
             //{
             //}
+        }
+        public void TestYtds()
+        {
+            var errorfiles = new List<RpfEntry>();
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    //try
+                    {
+                        if (entry.NameLower.EndsWith(".ytd"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            YtdFile ytdfile = null;
+                            try
+                            {
+                                ytdfile = RpfMan.GetFile<YtdFile>(entry);
+                            }
+                            catch(Exception ex)
+                            {
+                                UpdateStatus("Error! " + ex.ToString());
+                                errorfiles.Add(entry);
+                            }
+                            if ((ytdfile != null) && (ytdfile.TextureDict != null))
+                            {
+                                var fentry = entry as RpfFileEntry;
+                                if (fentry == null)
+                                { continue; } //shouldn't happen
+
+                                var bytes = ytdfile.Save();
+
+                                string origlen = TextUtil.GetBytesReadable(fentry.FileSize);
+                                string bytelen = TextUtil.GetBytesReadable(bytes.Length);
+
+                                if (ytdfile.TextureDict.Textures?.Count == 0)
+                                { }
+
+
+                                var ytd2 = new YtdFile();
+                                //ytd2.Load(bytes, fentry);
+                                RpfFile.LoadResourceFile(ytd2, bytes, 13);
+
+                                if (ytd2.TextureDict == null)
+                                { continue; }
+                                if (ytd2.TextureDict.Textures?.Count != ytdfile.TextureDict.Textures?.Count)
+                                { continue; }
+
+
+
+                            }
+                        }
+                    }
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //}
+                }
+            }
+            if (errorfiles.Count > 0)
+            { }
         }
         public void TestYmaps()
         {
