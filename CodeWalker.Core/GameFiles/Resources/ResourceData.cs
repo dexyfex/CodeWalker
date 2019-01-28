@@ -513,7 +513,14 @@ namespace CodeWalker.GameFiles
             Marshal.FreeHGlobal(ptr);
             Write(arr);
         }
-
+        public void WriteStructs<T>(T[] val) where T : struct
+        {
+            if (val == null) return;
+            foreach (var v in val)
+            {
+                WriteStruct(v);
+            }
+        }
 
 
     }

@@ -102,8 +102,6 @@ namespace CodeWalker.GameFiles
         public uint Unknown_108h { get; set; } // 0x00000000
         public uint Unknown_10Ch { get; set; } // 0x00000000
         public ResourceSimpleList64_s<LightAttributes_s> LightAttributes { get; set; }
-        //public ResourceSimpleList64Ptr LightAttributesPtr { get; set; }
-        //public LightAttributes_s[] LightAttributes { get; set; }
         public ulong Unknown_120h_Pointer { get; set; }
         public uint Unknown_128h { get; set; } // 0x00000000
         public uint Unknown_12Ch { get; set; } // 0x00000000
@@ -118,6 +116,9 @@ namespace CodeWalker.GameFiles
         public FragPhysicsLODGroup PhysicsLODGroup { get; set; }
         public FragDrawable Drawable2 { get; set; }
         public FragUnknown_F_003 Unknown_120h_Data { get; set; }
+
+
+        private string_r NameBlock = null; //only used for saving
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -275,7 +276,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_28h_Pointer = (ulong)(this.Unknown_28h_Data != null ? this.Unknown_28h_Data.FilePosition : 0);
             this.Unknown_30h_Pointer = (ulong)(this.Unknown_30h_Data != null ? this.Unknown_30h_Data.FilePosition : 0);
             this.Count0 = (uint)(this.Unknown_28h_Data != null ? this.Unknown_28h_Data.Count : 0);
-            ////this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0); //TODO: fix!!!
+            this.NamePointer = (ulong)(this.NameBlock != null ? this.NameBlock.FilePosition : 0);
             this.Unknown_A8h_Pointer = (ulong)(this.Unknown_A8h_Data != null ? this.Unknown_A8h_Data.FilePosition : 0);
             this.Count3 = (byte)(this.Unknown_E0h_Data != null ? this.Unknown_E0h_Data.Count : 0);
             this.Unknown_E0h_Pointer = (ulong)(this.Unknown_E0h_Data != null ? this.Unknown_E0h_Data.FilePosition : 0);
@@ -354,7 +355,11 @@ namespace CodeWalker.GameFiles
             if (Drawable != null) list.Add(Drawable);
             if (Unknown_28h_Data != null) list.Add(Unknown_28h_Data);
             if (Unknown_30h_Data != null) list.Add(Unknown_30h_Data);
-            //if (Name != null) list.Add(Name); //TODO: fix!
+            if (Name != null)
+            {
+                NameBlock = (string_r)Name;
+                list.Add(NameBlock);
+            }
             if (Unknown_A8h_Data != null) list.Add(Unknown_A8h_Data);
             if (Unknown_E0h_Data != null) list.Add(Unknown_E0h_Data);
             if (PhysicsLODGroup != null) list.Add(PhysicsLODGroup);
@@ -401,9 +406,9 @@ namespace CodeWalker.GameFiles
         public uint Unknown_54h { get; set; } // 0x00000000
         public uint Unknown_58h { get; set; } // 0x00000000
         public uint Unknown_5Ch { get; set; } // 0x00000000
-        public ulong pxxxxx_2 { get; set; }
-        public ushort cntxx51a { get; set; }
-        public ushort cntxx51b { get; set; }
+        public ulong UnknownPointer { get; set; }
+        public ushort UnknownCount1 { get; set; }
+        public ushort UnknownCount2 { get; set; }
         public uint Unknown_6Ch { get; set; } // 0x00000000
         public uint Unknown_70h { get; set; } // 0x00000000
         public uint Unknown_74h { get; set; } // 0x00000000
@@ -414,7 +419,12 @@ namespace CodeWalker.GameFiles
         public FragClothInstanceTuning InstanceTuning { get; set; }
         public FragDrawable Drawable { get; set; }
         public FragClothController Controller { get; set; }
-        public uint[] pxxxxx_2data { get; set; }
+        public uint[] UnknownData { get; set; }
+
+
+
+        private ResourceSystemStructBlock<uint> UnknownDataBlock = null;
+
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -443,9 +453,9 @@ namespace CodeWalker.GameFiles
             this.Unknown_54h = reader.ReadUInt32();
             this.Unknown_58h = reader.ReadUInt32();
             this.Unknown_5Ch = reader.ReadUInt32();
-            this.pxxxxx_2 = reader.ReadUInt64();
-            this.cntxx51a = reader.ReadUInt16();
-            this.cntxx51b = reader.ReadUInt16();
+            this.UnknownPointer = reader.ReadUInt64();
+            this.UnknownCount1 = reader.ReadUInt16();
+            this.UnknownCount2 = reader.ReadUInt16();
             this.Unknown_6Ch = reader.ReadUInt32();
             this.Unknown_70h = reader.ReadUInt32();
             this.Unknown_74h = reader.ReadUInt32();
@@ -467,11 +477,7 @@ namespace CodeWalker.GameFiles
             this.Controller = reader.ReadBlockAt<FragClothController>(
                 this.ControllerPointer // offset
             );
-            //this.pxxxxx_2data = reader.ReadBlockAt<ResourceSimpleArray<uint_r>>(
-            //    this.pxxxxx_2, // offset
-            //    this.cntxx51a
-            //);
-            this.pxxxxx_2data = reader.ReadUintsAt(this.pxxxxx_2, this.cntxx51a);
+            this.UnknownData = reader.ReadUintsAt(this.UnknownPointer, this.UnknownCount1);
 
         }
 
@@ -484,8 +490,9 @@ namespace CodeWalker.GameFiles
             this.InstanceTuningPointer = (ulong)(this.InstanceTuning != null ? this.InstanceTuning.FilePosition : 0);
             this.DrawablePointer = (ulong)(this.Drawable != null ? this.Drawable.FilePosition : 0);
             this.ControllerPointer = (ulong)(this.Controller != null ? this.Controller.FilePosition : 0);
-            //this.pxxxxx_2 = (ulong)(this.pxxxxx_2data != null ? this.pxxxxx_2data.Position : 0); //TODO: fix
-            //this.cntxx51a = (ushort)(this.pxxxxx_2data != null ? this.pxxxxx_2data.Count : 0);
+            this.UnknownPointer = (ulong)(this.UnknownDataBlock != null ? this.UnknownDataBlock.FilePosition : 0);
+            this.UnknownCount1 = (ushort)(this.UnknownDataBlock != null ? this.UnknownDataBlock.ItemCount : 0);
+            this.UnknownCount2 = this.UnknownCount1;
 
             // write structure data
             writer.Write(this.VFT);
@@ -509,9 +516,9 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_54h);
             writer.Write(this.Unknown_58h);
             writer.Write(this.Unknown_5Ch);
-            writer.Write(this.pxxxxx_2);
-            writer.Write(this.cntxx51a);
-            writer.Write(this.cntxx51b);
+            writer.Write(this.UnknownPointer);
+            writer.Write(this.UnknownCount1);
+            writer.Write(this.UnknownCount2);
             writer.Write(this.Unknown_6Ch);
             writer.Write(this.Unknown_70h);
             writer.Write(this.Unknown_74h);
@@ -528,7 +535,11 @@ namespace CodeWalker.GameFiles
             if (InstanceTuning != null) list.Add(InstanceTuning);
             if (Drawable != null) list.Add(Drawable);
             if (Controller != null) list.Add(Controller);
-            //if (pxxxxx_2data != null) list.Add(pxxxxx_2data); //TODO: fix
+            if (UnknownData != null)
+            {
+                UnknownDataBlock = new ResourceSystemStructBlock<uint>(UnknownData);
+                list.Add(UnknownDataBlock);
+            }
             return list.ToArray();
         }
     }
@@ -1714,15 +1725,18 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public Bounds Bound { get; set; }
-        //public ResourceSimpleArray<ulong_r> Unknown_F8h_Data { get; set; }
         public ulong[] Unknown_F8h_Data { get; set; }
-        //public ResourceSimpleArray<Matrix4_r> Unknown_108h_Data { get; set; }
         public Matrix[] Unknown_108h_Data { get; set; }
         public string Name { get; set; }
 
         public FragType OwnerFragment { get; set; } //for handy use
         public FragCloth OwnerFragmentCloth { get; set; }
         public FragPhysTypeChild OwnerFragmentPhys { get; set; }
+
+
+        private ResourceSystemStructBlock<ulong> Unknown_F8h_DataBlock = null; //used for saving only
+        private ResourceSystemStructBlock<Matrix> Unknown_108h_DataBlock = null;
+        private string_r NameBlock = null;
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -1762,18 +1776,8 @@ namespace CodeWalker.GameFiles
             this.Bound = reader.ReadBlockAt<Bounds>(
                 this.BoundPointer // offset
             );
-            //this.Unknown_F8h_Data = reader.ReadBlockAt<ResourceSimpleArray<ulong_r>>(
-            //    this.Unknown_F8h_Pointer, // offset
-            //    this.Count1
-            //);
             this.Unknown_F8h_Data = reader.ReadUlongsAt(this.Unknown_0F8h_Pointer, this.Count1);
-
-            //this.Unknown_108h_Data = reader.ReadBlockAt<ResourceSimpleArray<Matrix4_r>>(
-            //    this.Unknown_108h_Pointer, // offset
-            //    this.Count2
-            //);
             this.Unknown_108h_Data = reader.ReadStructsAt<Matrix>(this.Unknown_108h_Pointer, this.Count2);
-
             this.Name = reader.ReadStringAt(//BlockAt<string_r>(
                 this.NamePointer // offset
             );
@@ -1788,16 +1792,16 @@ namespace CodeWalker.GameFiles
 
             // update structure data
             this.BoundPointer = (ulong)(this.Bound != null ? this.Bound.FilePosition : 0);
-            //this.Unknown_F8h_Pointer = (ulong)(this.Unknown_F8h_Data != null ? this.Unknown_F8h_Data.Position : 0); //TODO: fix
-            //this.c1qqq = (ushort)(this.pxx2data != null ? this.pxx2data.Count : 0);
-            //this.c2qqq = (ushort)(this.pxx3data != null ? this.pxx3data.Count : 0);
-            //this.Unknown_108h_Pointer = (ulong)(this.Unknown_108h_Data != null ? this.Unknown_108h_Data.Position : 0);
-            //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0); //TODO: fix
+            this.Unknown_0F8h_Pointer = (ulong)(this.Unknown_F8h_DataBlock != null ? this.Unknown_F8h_DataBlock.FilePosition : 0);
+            this.Count1 = (ushort)(this.Unknown_F8h_DataBlock != null ? this.Unknown_F8h_DataBlock.ItemCount : 0);
+            this.Count2 = (ushort)(this.Unknown_108h_DataBlock != null ? this.Unknown_108h_DataBlock.ItemCount : 0);
+            this.Unknown_108h_Pointer = (ulong)(this.Unknown_108h_DataBlock != null ? this.Unknown_108h_DataBlock.FilePosition : 0);
+            this.NamePointer = (ulong)(this.NameBlock != null ? this.NameBlock.FilePosition : 0);
 
             // write structure data
             writer.Write(this.Unknown_0A8h);
             writer.Write(this.Unknown_0ACh);
-            //writer.WriteBlock(this.Unknown_0B0h); //TODO: fix!
+            writer.Write(this.Unknown_0B0h);
             writer.Write(this.BoundPointer);
             writer.Write(this.Unknown_0F8h_Pointer);
             writer.Write(this.Count1);
@@ -1829,9 +1833,21 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>(base.GetReferences());
             if (Bound != null) list.Add(Bound);
-            //if (Unknown_F8h_Data != null) list.Add(Unknown_F8h_Data); //TODO: fix
-            //if (Unknown_108h_Data != null) list.Add(Unknown_108h_Data);
-            //if (Name != null) list.Add(Name); //TODO: fix
+            if (Unknown_F8h_Data != null)
+            {
+                Unknown_F8h_DataBlock = new ResourceSystemStructBlock<ulong>(Unknown_F8h_Data);
+                list.Add(Unknown_F8h_DataBlock);
+            }
+            if (Unknown_108h_Data != null)
+            {
+                Unknown_108h_DataBlock = new ResourceSystemStructBlock<Matrix>(Unknown_108h_Data);
+                list.Add(Unknown_108h_DataBlock);
+            }
+            if (Name != null)
+            {
+                NameBlock = (string_r)Name;
+                list.Add(NameBlock);
+            }
             return list.ToArray();
         }
     }
@@ -1840,7 +1856,7 @@ namespace CodeWalker.GameFiles
     {
         public override long BlockLength
         {
-            get { return 32 + Data.Length; }
+            get { return 32 + ((Data?.Length ?? 0) * 48); }
         }
 
         // structure data
@@ -1848,8 +1864,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_04h { get; set; } // 0x00000000
         public uint Unknown_08h { get; set; } // 0x00000000
         public uint Unknown_0Ch { get; set; } // 0x00000000
-        public byte cnt1 { get; set; }
-        public byte cnt2 { get; set; }
+        public byte DataCount1 { get; set; }
+        public byte DataCount2 { get; set; }
         public ushort Unknown_12h { get; set; }
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000000
@@ -1866,16 +1882,13 @@ namespace CodeWalker.GameFiles
             this.Unknown_04h = reader.ReadUInt32();
             this.Unknown_08h = reader.ReadUInt32();
             this.Unknown_0Ch = reader.ReadUInt32();
-            this.cnt1 = reader.ReadByte();
-            this.cnt2 = reader.ReadByte();
+            this.DataCount1 = reader.ReadByte();
+            this.DataCount2 = reader.ReadByte();
             this.Unknown_12h = reader.ReadUInt16();
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            //this.Data = reader.ReadBlock<ResourceSimpleArray<Matrix3_r>>(
-            //    cnt1
-            //    );
-            this.Data = reader.ReadStructsAt<Matrix3_s>((ulong)reader.Position, cnt1);
+            this.Data = reader.ReadStructs<Matrix3_s>(DataCount1);
 
         }
 
@@ -1889,21 +1902,15 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_04h);
             writer.Write(this.Unknown_08h);
             writer.Write(this.Unknown_0Ch);
-            writer.Write(this.cnt1);
-            writer.Write(this.cnt2);
+            writer.Write(this.DataCount1);
+            writer.Write(this.DataCount2);
             writer.Write(this.Unknown_12h);
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
-            //writer.WriteBlock(this.Data); //TODO: fix
+            writer.WriteStructs(Data);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
-        {
-            return new Tuple<long, IResourceBlock>[] {
-                //new Tuple<long, IResourceBlock>(32, Data) //TODO: FIX
-            };
-        }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class FragUnknown_F_006 : ResourceSystemBlock
     {
@@ -2018,15 +2025,14 @@ namespace CodeWalker.GameFiles
     {
         public override long BlockLength
         {
-            get { return 16 + Data.Length; }
+            get { return 16 + (Data?.Length ?? 0); }
         }
 
         // structure data
         public uint Unknown_0h { get; set; } // 0x56475748
         public uint Unknown_4h { get; set; }
-        public uint cnt1 { get; set; }
+        public uint TotalLength { get; set; }
         public uint Unknown_Ch { get; set; }
-        //public ResourceSimpleArray<byte_r> Data { get; set; }
         public byte[] Data { get; set; }
 
         /// <summary>
@@ -2037,13 +2043,9 @@ namespace CodeWalker.GameFiles
             // read structure data
             this.Unknown_0h = reader.ReadUInt32();
             this.Unknown_4h = reader.ReadUInt32();
-            this.cnt1 = reader.ReadUInt32();
+            this.TotalLength = reader.ReadUInt32();
             this.Unknown_Ch = reader.ReadUInt32();
-            //this.Data = reader.ReadBlock<ResourceSimpleArray<byte_r>>(
-            //  cnt1 - 16
-            //  );
-            this.Data = reader.ReadBytesAt((ulong)this.FilePosition, cnt1 - 16);
-
+            this.Data = reader.ReadBytes((int)TotalLength - 16);
         }
 
         /// <summary>
@@ -2051,20 +2053,16 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
+            TotalLength = (uint)(Data?.Length ?? 0) + 16;
+
             // write structure data
             writer.Write(this.Unknown_0h);
             writer.Write(this.Unknown_4h);
-            writer.Write(this.cnt1);
+            writer.Write(this.TotalLength);
             writer.Write(this.Unknown_Ch);
-            //writer.WriteBlock(this.Data); //TODO: FIX!!
+            writer.Write(Data);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
-        {
-            return new Tuple<long, IResourceBlock>[] {
-                //new Tuple<long, IResourceBlock>(16, Data)
-            };
-        }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class FragPhysicsLODGroup : ResourceSystemBlock
@@ -2220,6 +2218,13 @@ namespace CodeWalker.GameFiles
         public byte[] Unknown_110h_Data { get; set; }
 
 
+        private ResourceSystemStructBlock<uint> Unknown_28h_DataBlock = null; //used only for saving
+        private ResourceSystemStructBlock<Vector4> InertiaTensorsBlock = null;
+        private ResourceSystemStructBlock<Vector4> Unknown_F8h_DataBlock = null;
+        private ResourceSystemStructBlock<byte> Unknown_108h_DataBlock = null;
+        private ResourceSystemStructBlock<byte> Unknown_110h_DataBlock = null;
+
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
@@ -2273,10 +2278,6 @@ namespace CodeWalker.GameFiles
             this.ArticulatedBodyType = reader.ReadBlockAt<FragPhysArticulatedBodyType>(
                 this.ArticulatedBodyTypePointer // offset
             );
-            //this.Unknown_28h_Data = reader.ReadBlockAt<ResourceSimpleArray<uint_r>>(
-            //    this.Unknown_28h_Pointer, // offset
-            //    this.ChildrenCount
-            //);
             this.Unknown_28h_Data = reader.ReadUintsAt(this.Unknown_28h_Pointer, this.ChildrenCount);
 
             this.GroupNames = reader.ReadBlockAt<ResourcePointerArray64_s<FragPhysNameStruct_s>>(
@@ -2300,30 +2301,11 @@ namespace CodeWalker.GameFiles
             this.Bound = reader.ReadBlockAt<Bounds>(
                 this.BoundPointer // offset
             );
-            //this.Unknown_F0h_Data = reader.ReadBlockAt<ResourceSimpleArray<Vector4_r>>(
-            //    this.Unknown_F0h_Pointer, // offset
-            //    this.ChildrenCount
-            //);
-            //this.Unknown_F8h_Data = reader.ReadBlockAt<ResourceSimpleArray<Vector4_r>>(
-            //    this.Unknown_F8h_Pointer, // offset
-            //    this.ChildrenCount
-            //);
             this.InertiaTensors = reader.ReadStructsAt<Vector4>(this.InertiaTensorsPointer, this.ChildrenCount);
             this.Unknown_F8h_Data = reader.ReadStructsAt<Vector4>(this.Unknown_F8h_Pointer, this.ChildrenCount);
-
-
             this.FragTransforms = reader.ReadBlockAt<FragPhysUnknown_F_002>(
                 this.FragTransformsPointer // offset
             );
-            //this.Unknown_108h_Data = reader.ReadBlockAt<ResourceSimpleArray<byte_r>>(
-            //    this.Unknown_108h_Pointer, // offset
-            //    this.Count1
-            //);
-            //this.Unknown_110h_Data = reader.ReadBlockAt<ResourceSimpleArray<byte_r>>(
-            //    this.Unknown_110h_Pointer, // offset
-            //    this.Count2
-            //);
-
             this.Unknown_108h_Data = reader.ReadBytesAt(this.Unknown_108h_Pointer, this.Count1);
             this.Unknown_110h_Data = reader.ReadBytesAt(this.Unknown_110h_Pointer, this.Count2);
 
@@ -2356,23 +2338,24 @@ namespace CodeWalker.GameFiles
         {
             // update structure data
             this.ArticulatedBodyTypePointer = (ulong)(this.ArticulatedBodyType != null ? this.ArticulatedBodyType.FilePosition : 0);
-            //this.Unknown_28h_Pointer = (ulong)(this.Unknown_28h_Data != null ? this.Unknown_28h_Data.Position : 0); //TODO: fix
+            this.Unknown_28h_Pointer = (ulong)(this.Unknown_28h_DataBlock != null ? this.Unknown_28h_DataBlock.FilePosition : 0);
             this.GroupNamesPointer = (ulong)(this.GroupNames != null ? this.GroupNames.FilePosition : 0);
             this.GroupsPointer = (ulong)(this.Groups != null ? this.Groups.FilePosition : 0);
             this.ChildrenPointer = (ulong)(this.Children != null ? this.Children.FilePosition : 0);
             this.Archetype1Pointer = (ulong)(this.Archetype1 != null ? this.Archetype1.FilePosition : 0);
             this.Archetype2Pointer = (ulong)(this.Archetype2 != null ? this.Archetype2.FilePosition : 0);
             this.BoundPointer = (ulong)(this.Bound != null ? this.Bound.FilePosition : 0);
-            //this.Unknown_F0h_Pointer = (ulong)(this.Unknown_F0h_Data != null ? this.Unknown_F0h_Data.Position : 0);
-            //this.Unknown_F8h_Pointer = (ulong)(this.Unknown_F8h_Data != null ? this.Unknown_F8h_Data.Position : 0);
+            this.InertiaTensorsPointer = (ulong)(this.InertiaTensorsBlock != null ? this.InertiaTensorsBlock.FilePosition : 0);
+            this.Unknown_F8h_Pointer = (ulong)(this.Unknown_F8h_DataBlock != null ? this.Unknown_F8h_DataBlock.FilePosition : 0);
             this.FragTransformsPointer = (ulong)(this.FragTransforms != null ? this.FragTransforms.FilePosition : 0);
-            //this.Unknown_108h_Pointer = (ulong)(this.Unknown_108h_Data != null ? this.Unknown_108h_Data.Position : 0);
-            //this.Unknown_110h_Pointer = (ulong)(this.Unknown_110h_Data != null ? this.Unknown_110h_Data.Position : 0);
+            this.Unknown_108h_Pointer = (ulong)(this.Unknown_108h_DataBlock != null ? this.Unknown_108h_DataBlock.FilePosition : 0);
+            this.Unknown_110h_Pointer = (ulong)(this.Unknown_110h_DataBlock != null ? this.Unknown_110h_DataBlock.FilePosition : 0);
 
-            //this.vvv1 = (byte)(this.pxxxxx_2data != null ? this.pxxxxx_2data.Count : 0);
-            //this.vvv2 = (byte)(this.pxxxxx_3data != null ? this.pxxxxx_3data.Count : 0);
-            //this.GroupsCount = (byte)(this.Groups != null ? this.Groups.Count : 0);
-            //this.ChildrenCount = (byte)(this.p1data != null ? this.p1data.Count : 0);
+            this.Count1 = (byte)(this.Unknown_108h_DataBlock != null ? this.Unknown_108h_DataBlock.ItemCount : 0);
+            this.Count2 = (byte)(this.Unknown_110h_DataBlock != null ? this.Unknown_110h_DataBlock.ItemCount : 0);
+            this.GroupsCount = (byte)(this.Groups != null ? this.Groups.Count : 0);
+            this.ChildrenCount = (byte)(this.Children != null ? this.Children.Count : 0);
+
 
             // write structure data
             writer.Write(this.VFT);
@@ -2385,15 +2368,15 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_1Ch);
             writer.Write(this.ArticulatedBodyTypePointer);
             writer.Write(this.Unknown_28h_Pointer);
-            //writer.WriteBlock(this.Unknown_30h); //TODO: fix this!
-            //writer.WriteBlock(this.Unknown_40h);
-            //writer.WriteBlock(this.Unknown_50h);
-            //writer.WriteBlock(this.Unknown_60h);
-            //writer.WriteBlock(this.Unknown_70h);
-            //writer.WriteBlock(this.Unknown_80h);
-            //writer.WriteBlock(this.Unknown_90h);
-            //writer.WriteBlock(this.Unknown_A0h);
-            //writer.WriteBlock(this.Unknown_B0h);
+            writer.Write(this.Unknown_30h);
+            writer.Write(this.Unknown_40h);
+            writer.Write(this.Unknown_50h);
+            writer.Write(this.Unknown_60h);
+            writer.Write(this.Unknown_70h);
+            writer.Write(this.Unknown_80h);
+            writer.Write(this.Unknown_90h);
+            writer.Write(this.Unknown_A0h);
+            writer.Write(this.Unknown_B0h);
             writer.Write(this.GroupNamesPointer);
             writer.Write(this.GroupsPointer);
             writer.Write(this.ChildrenPointer);
@@ -2426,17 +2409,37 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>();
             if (ArticulatedBodyType != null) list.Add(ArticulatedBodyType);
-            //if (Unknown_28h_Data != null) list.Add(Unknown_28h_Data); //TODO: fix
+            if (Unknown_28h_Data != null)
+            {
+                Unknown_28h_DataBlock = new ResourceSystemStructBlock<uint>(Unknown_28h_Data);
+                list.Add(Unknown_28h_DataBlock);
+            }
             if (Groups != null) list.Add(Groups);
             if (Children != null) list.Add(Children);
             if (Archetype1 != null) list.Add(Archetype1);
             if (Archetype2 != null) list.Add(Archetype2);
             if (Bound != null) list.Add(Bound);
-            //if (Unknown_F0h_Data != null) list.Add(Unknown_F0h_Data);
-            //if (Unknown_F8h_Data != null) list.Add(Unknown_F8h_Data);
+            if (InertiaTensors != null)
+            {
+                InertiaTensorsBlock = new ResourceSystemStructBlock<Vector4>(InertiaTensors);
+                list.Add(InertiaTensorsBlock);
+            }
+            if (Unknown_F8h_Data != null)
+            {
+                Unknown_F8h_DataBlock = new ResourceSystemStructBlock<Vector4>(Unknown_F8h_Data);
+                list.Add(Unknown_F8h_DataBlock);
+            }
             if (FragTransforms != null) list.Add(FragTransforms);
-            //if (Unknown_108h_Data != null) list.Add(Unknown_108h_Data);
-            //if (Unknown_110h_Data != null) list.Add(Unknown_110h_Data);
+            if (Unknown_108h_Data != null)
+            {
+                Unknown_108h_DataBlock = new ResourceSystemStructBlock<byte>(Unknown_108h_Data);
+                list.Add(Unknown_108h_DataBlock);
+            }
+            if (Unknown_110h_Data != null)
+            {
+                Unknown_110h_DataBlock = new ResourceSystemStructBlock<byte>(Unknown_110h_Data);
+                list.Add(Unknown_110h_DataBlock);
+            }
             if (GroupNames != null) list.Add(GroupNames);
             return list.ToArray();
         }
@@ -2481,8 +2484,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_70h { get; set; }
         public uint Unknown_74h { get; set; }
         public ulong JointTypesPointer { get; set; }
-        public ulong p2 { get; set; }
-        public byte c1 { get; set; }
+        public ulong UnknownPointer { get; set; }
+        public byte UnknownCount { get; set; }
         public byte JointTypesCount { get; set; }
         public ushort Unknown_8Ah { get; set; }
         public uint Unknown_8Ch { get; set; }
@@ -2497,7 +2500,12 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public ResourcePointerArray64<FragPhysJointType> JointTypes { get; set; }
-        public Vector4[] p2data { get; set; }
+        public Vector4[] UnknownData { get; set; }
+
+
+
+        private ResourceSystemStructBlock<Vector4> UnknownDataBlock = null;//only used for saving
+
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -2536,8 +2544,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_70h = reader.ReadUInt32();
             this.Unknown_74h = reader.ReadUInt32();
             this.JointTypesPointer = reader.ReadUInt64();
-            this.p2 = reader.ReadUInt64();
-            this.c1 = reader.ReadByte();
+            this.UnknownPointer = reader.ReadUInt64();
+            this.UnknownCount = reader.ReadByte();
             this.JointTypesCount = reader.ReadByte();
             this.Unknown_8Ah = reader.ReadUInt16();
             this.Unknown_8Ch = reader.ReadUInt32();
@@ -2555,11 +2563,7 @@ namespace CodeWalker.GameFiles
                 this.JointTypesPointer, // offset
                 this.JointTypesCount
             );
-            //this.p2data = reader.ReadBlockAt<ResourceSimpleArray<Vector4_r>>(
-            //    this.p2, // offset
-            //    this.c1
-            //);
-            this.p2data = reader.ReadStructsAt<Vector4>(this.p2, this.c1);
+            this.UnknownData = reader.ReadStructsAt<Vector4>(this.UnknownPointer, this.UnknownCount);
 
         }
 
@@ -2570,9 +2574,9 @@ namespace CodeWalker.GameFiles
         {
             // update structure data
             this.JointTypesPointer = (ulong)(this.JointTypes != null ? this.JointTypes.FilePosition : 0);
-            //this.p2 = (ulong)(this.p2data != null ? this.p2data.Position : 0); //TODO:fix
-            ////this.c1 = (byte)(this.p2data != null ? this.p2data.Count : 0);
-            ////this.c2 = (byte)(this.p1data != null ? this.p1data.Count : 0);
+            this.UnknownPointer = (ulong)(this.UnknownDataBlock != null ? this.UnknownDataBlock.FilePosition : 0);
+            this.UnknownCount = (byte)(this.UnknownDataBlock != null ? this.UnknownDataBlock.ItemCount : 0);
+            this.JointTypesCount = (byte)(this.JointTypes != null ? this.JointTypes.Count : 0);
 
             // write structure data
             writer.Write(this.VFT);
@@ -2606,8 +2610,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_70h);
             writer.Write(this.Unknown_74h);
             writer.Write(this.JointTypesPointer);
-            writer.Write(this.p2);
-            writer.Write(this.c1);
+            writer.Write(this.UnknownPointer);
+            writer.Write(this.UnknownCount);
             writer.Write(this.JointTypesCount);
             writer.Write(this.Unknown_8Ah);
             writer.Write(this.Unknown_8Ch);
@@ -2628,7 +2632,11 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>();
             if (JointTypes != null) list.Add(JointTypes);
-            //if (p2data != null) list.Add(p2data); //TODO: fix
+            if (UnknownData != null)
+            {
+                UnknownDataBlock = new ResourceSystemStructBlock<Vector4>(UnknownData);
+                list.Add(UnknownDataBlock);
+            }
             return list.ToArray();
         }
     }
@@ -2743,8 +2751,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_9Ch { get; set; }
         public uint Unknown_A0h { get; set; }
         public uint Unknown_A4h { get; set; }
-        public uint Unknown_A8h { get; set; } // 0x4CBEBC20
-        public uint Unknown_ACh { get; set; } // 0xCCBEBC20
+        public uint Unknown_A8h { get; set; } // 0x4CBEBC20  (float: 1.0E8)
+        public uint Unknown_ACh { get; set; } // 0xCCBEBC20  (float:-1.0E8)
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -3028,7 +3036,7 @@ namespace CodeWalker.GameFiles
     {
         public override long BlockLength
         {
-            get { return 32 + Data.Length; }
+            get { return 32 + ((Data?.Length ?? 0) * 64); }
         }
 
         // structure data
@@ -3036,11 +3044,10 @@ namespace CodeWalker.GameFiles
         public uint Unknown_04h { get; set; } // 0x00000001
         public uint Unknown_08h { get; set; } // 0x00000000
         public uint Unknown_0Ch { get; set; } // 0x00000000
-        public uint cnt { get; set; }
+        public uint DataCount { get; set; }
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000000
         public uint Unknown_1Ch { get; set; } // 0x00000000
-        //public ResourceSimpleArray<Matrix4_r> Data { get; set; }
         public Matrix[] Data { get; set; }
 
         /// <summary>
@@ -3053,14 +3060,11 @@ namespace CodeWalker.GameFiles
             this.Unknown_04h = reader.ReadUInt32();
             this.Unknown_08h = reader.ReadUInt32();
             this.Unknown_0Ch = reader.ReadUInt32();
-            this.cnt = reader.ReadUInt32();
+            this.DataCount = reader.ReadUInt32();
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            //this.Data = reader.ReadBlock<ResourceSimpleArray<Matrix4_r>>(
-            //  cnt
-            //  );
-            this.Data = reader.ReadStructsAt<Matrix>((ulong)reader.Position, cnt);
+            this.Data = reader.ReadStructsAt<Matrix>((ulong)reader.Position, DataCount);
 
         }
 
@@ -3069,24 +3073,20 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
+            DataCount = (uint)(Data?.Length ?? 0);
+
             // write structure data
             writer.Write(this.VFT);
             writer.Write(this.Unknown_04h);
             writer.Write(this.Unknown_08h);
             writer.Write(this.Unknown_0Ch);
-            writer.Write(this.cnt);
+            writer.Write(this.DataCount);
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
-            //writer.WriteBlock(this.Data); //TODO: fix
+            writer.WriteStructs(Data);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
-        {
-            return new Tuple<long, IResourceBlock>[] {
-                //new Tuple<long, IResourceBlock>(32, Data) //TODO: fix
-            };
-        }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class FragPhysArchetype : ResourceSystemBlock
@@ -3131,6 +3131,10 @@ namespace CodeWalker.GameFiles
         // reference data
         public string Name { get; set; }
         public Bounds Bound { get; set; }
+
+
+        private string_r NameBlock = null;//used only when saving
+
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -3184,7 +3188,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0); //TODO:fix
+            this.NamePointer = (ulong)(this.NameBlock != null ? this.NameBlock.FilePosition : 0);
             this.BoundPointer = (ulong)(this.Bound != null ? this.Bound.FilePosition : 0);
 
             // write structure data
@@ -3210,14 +3214,14 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_54h);
             writer.Write(this.Unknown_58h);
             writer.Write(this.Unknown_5Ch);
-            //writer.WriteBlock(this.Unknown_60h); //TODO: fix!
-            //writer.WriteBlock(this.Unknown_70h);
-            //writer.WriteBlock(this.Unknown_80h);
-            //writer.WriteBlock(this.Unknown_90h);
-            //writer.WriteBlock(this.Unknown_A0h);
-            //writer.WriteBlock(this.Unknown_B0h);
-            //writer.WriteBlock(this.Unknown_C0h);
-            //writer.WriteBlock(this.Unknown_D0h);
+            writer.Write(this.Unknown_60h);
+            writer.Write(this.Unknown_70h);
+            writer.Write(this.Unknown_80h);
+            writer.Write(this.Unknown_90h);
+            writer.Write(this.Unknown_A0h);
+            writer.Write(this.Unknown_B0h);
+            writer.Write(this.Unknown_C0h);
+            writer.Write(this.Unknown_D0h);
         }
 
         /// <summary>
@@ -3226,7 +3230,11 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Name != null) list.Add(Name); //TODO: fix!
+            if (Name != null)
+            {
+                NameBlock = (string_r)Name;
+                list.Add(NameBlock);
+            }
             if (Bound != null) list.Add(Bound);
             return list.ToArray();
         }
@@ -3586,11 +3594,9 @@ namespace CodeWalker.GameFiles
         public byte Unknown_4Chb { get; set; }
         public byte Unknown_4Chc { get; set; }
         public byte Unknown_4Chd { get; set; }
-        //public uint Unknown_4Ch { get; set; }
         public byte Unknown_50ha { get; set; }
         public byte Unknown_50hb { get; set; }//0xFF
         public ushort Unknown_50hc { get; set; }//0
-        //public uint Unknown_50h { get; set; }
         public float Unknown_54h { get; set; }
         public float Unknown_58h { get; set; }
         public float Unknown_5Ch { get; set; }

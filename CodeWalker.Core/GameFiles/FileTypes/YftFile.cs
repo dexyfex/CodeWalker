@@ -45,6 +45,13 @@ namespace CodeWalker.GameFiles
             Loaded = true;
         }
 
+        public byte[] Save()
+        {
+            byte[] data = ResourceBuilder.Build(Fragment, 162); //yft is type/version 162...
+
+            return data;
+        }
+
 
     }
 }
