@@ -97,6 +97,13 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public byte[] Save()
+        {
+            byte[] data = ResourceBuilder.Build(PtfxList, 68); //ypt is type/version 68...
+
+            return data;
+        }
+
     }
 
 

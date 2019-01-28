@@ -182,6 +182,7 @@ namespace CodeWalker.GameFiles
                 //TestYdrs();
                 //TestYdds();
                 //TestYfts();
+                //TestYpts();
                 //TestYmaps();
                 //TestPlacements();
                 //TestDrawables();
@@ -3250,6 +3251,60 @@ namespace CodeWalker.GameFiles
                                 if (yft2.Fragment == null)
                                 { continue; }
                                 if (yft2.Fragment.Drawable?.AllModels?.Length != yft.Fragment.Drawable?.AllModels?.Length)
+                                { continue; }
+
+                            }
+                        }
+                    }
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //}
+                }
+            }
+            if (errorfiles.Count > 0)
+            { }
+        }
+        public void TestYpts()
+        {
+            var errorfiles = new List<RpfEntry>();
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    //try
+                    {
+                        if (entry.NameLower.EndsWith(".ypt"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            YptFile ypt = null;
+                            try
+                            {
+                                ypt = RpfMan.GetFile<YptFile>(entry);
+                            }
+                            catch (Exception ex)
+                            {
+                                UpdateStatus("Error! " + ex.ToString());
+                                errorfiles.Add(entry);
+                            }
+                            if ((ypt != null) && (ypt.PtfxList != null))
+                            {
+                                var fentry = entry as RpfFileEntry;
+                                if (fentry == null)
+                                { continue; } //shouldn't happen
+
+                                var bytes = ypt.Save();
+
+
+                                string origlen = TextUtil.GetBytesReadable(fentry.FileSize);
+                                string bytelen = TextUtil.GetBytesReadable(bytes.Length);
+
+                                var ypt2 = new YptFile();
+                                RpfFile.LoadResourceFile(ypt2, bytes, 68);
+
+                                if (ypt2.PtfxList == null)
+                                { continue; }
+                                if (ypt2.PtfxList.Name?.Value != ypt.PtfxList.Name?.Value)
                                 { continue; }
 
                             }
