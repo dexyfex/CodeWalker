@@ -929,6 +929,13 @@ namespace CodeWalker.GameFiles
         public uint PointerDataIndex { get { return (Ptr0 & 0xFFF) - 1; } }
         public uint PointerDataOffset { get { return ((Ptr0 >> 12) & 0xFFFFF); } }
 
+
+        public DataBlockPointer(int blockId, int offset)
+        {
+            Ptr0 = ((uint)blockId & 0xFFF) | (((uint)offset & 0xFFFFF) << 12);
+            Ptr1 = 0;
+        }
+
         public override string ToString()
         {
             return "DataBlockPointer: " + Ptr0.ToString() + ", " + Ptr1.ToString();

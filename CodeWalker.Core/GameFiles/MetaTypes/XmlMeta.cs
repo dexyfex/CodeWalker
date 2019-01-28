@@ -86,11 +86,11 @@ namespace CodeWalker.GameFiles
                         case MetaStructureEntryDataType.ArrayOfChars:
                             {
                                 int offset = entry.DataOffset;
-                                var split = Split(cnode.InnerText, 2);
+                                var split = cnode.InnerText;// Split(cnode.InnerText, 1);
 
                                 for (int j = 0; j < split.Length; j++)
                                 {
-                                    byte val = Convert.ToByte(split[j], 16);
+                                    byte val = (byte)split[j];// Convert.ToByte(split[j], 16);
                                     data[offset] = val;
                                     offset += sizeof(byte);
                                 }
@@ -128,7 +128,23 @@ namespace CodeWalker.GameFiles
 
                         case MetaStructureEntryDataType.DataBlockPointer:
                             {
-                                // TODO
+                                var ns = NumberStyles.HexNumber;
+                                var ic = CultureInfo.InvariantCulture;
+                                var sa = new[] { ' ', '\n' };
+                                var so = StringSplitOptions.RemoveEmptyEntries;
+                                var split = cnode.InnerText.Trim().Split(sa, so); //split = Split(node.InnerText, 2); to read as unsplitted HEX
+                                var bytes = new List<byte>();
+                                for (int j = 0; j < split.Length; j++)
+                                {
+                                    byte val;// = Convert.ToByte(split[j], 10);
+                                    if (byte.TryParse(split[j].Trim(), ns, ic, out val))
+                                    {
+                                        bytes.Add(val);
+                                    }
+                                }
+                                var ptr = mb.AddDataBlockPtr(bytes.ToArray(), MetaName.BYTE);
+                                var byt = MetaTypes.ConvertToBytes(ptr);
+                                Buffer.BlockCopy(byt, 0, data, entry.DataOffset, byt.Length);
                                 break;
                             }
 
@@ -735,8 +751,13 @@ namespace CodeWalker.GameFiles
 
         private static int GetEnumInt(MetaName type, string enumString, MetaStructureEntryDataType dataType)
         {
-            var infos = MetaTypes.GetEnumInfo(type);
+            var intval = 0;
+            if (int.TryParse(enumString, out intval))
+            {
+                return intval; //it's already an int.... maybe enum not found or has no entries... or original value didn't match anything
+            }
 
+            var infos = MetaTypes.GetEnumInfo(type);
             if (infos == null)
             {
                 return 0;

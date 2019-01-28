@@ -27,6 +27,10 @@ namespace CodeWalker.GameFiles
                     }
                 }
             }
+            return AddBlock(type);
+        }
+        public MetaBuilderBlock AddBlock(MetaName type)
+        {
             MetaBuilderBlock b = new MetaBuilderBlock();
             b.StructureNameHash = type;
             b.Index = Blocks.Count;
@@ -91,12 +95,7 @@ namespace CodeWalker.GameFiles
             MetaBuilderBlock block = EnsureBlock(MetaName.STRING);
             byte[] data = Encoding.ASCII.GetBytes(str);
             int datalen = data.Length;
-            int newlen = datalen;
-            int lenrem = newlen % 16;
-            if (lenrem != 0)  //need to pad the data length up to multiple of 16.
-            {
-                newlen += (16 - lenrem);
-            }
+            int newlen = datalen + 1; //include null terminator
             byte[] newdata = new byte[newlen];
             Buffer.BlockCopy(data, 0, newdata, 0, datalen);
             int offs = block.TotalSize;
@@ -104,7 +103,7 @@ namespace CodeWalker.GameFiles
             MetaBuilderPointer r = new MetaBuilderPointer();
             r.BlockID = block.Index + 1;
             r.Offset = offs;// (idx * data.Length);
-            r.Length = datalen; //actual length of string.
+            r.Length = datalen; //actual length of string. (not incl null terminator)
             return r;
         }
 
@@ -192,6 +191,14 @@ namespace CodeWalker.GameFiles
         {
             var ptr = AddString(str);
             return new CharPointer(ptr);
+        }
+        public DataBlockPointer AddDataBlockPtr(byte[] data, MetaName type)
+        {
+            var block = AddBlock(type);
+            int offs = block.TotalSize;//should always be 0...
+            int idx = block.AddItem(data);
+            var ptr = new DataBlockPointer(block.Index + 1, offs);
+            return ptr;
         }
 
 
@@ -351,19 +358,35 @@ namespace CodeWalker.GameFiles
 
             m.RootBlockIndex = 1; //assume first block is root. todo: make adjustable?
 
-            m.StructureInfos = new ResourceSimpleArray<MetaStructureInfo>();
-            foreach (var si in StructureInfos.Values)
+            if (StructureInfos.Count > 0)
             {
-                m.StructureInfos.Add(si);
+                m.StructureInfos = new ResourceSimpleArray<MetaStructureInfo>();
+                foreach (var si in StructureInfos.Values)
+                {
+                    m.StructureInfos.Add(si);
+                }
+                m.StructureInfosCount = (short)m.StructureInfos.Count;
             }
-            m.StructureInfosCount = (short)m.StructureInfos.Count;
+            else
+            {
+                m.StructureInfos = null;
+                m.StructureInfosCount = 0;
+            }
 
-            m.EnumInfos = new ResourceSimpleArray<MetaEnumInfo>();
-            foreach (var ei in EnumInfos.Values)
+            if (EnumInfos.Count > 0)
             {
-                m.EnumInfos.Add(ei);
+                m.EnumInfos = new ResourceSimpleArray<MetaEnumInfo>();
+                foreach (var ei in EnumInfos.Values)
+                {
+                    m.EnumInfos.Add(ei);
+                }
+                m.EnumInfosCount = (short)m.EnumInfos.Count;
             }
-            m.EnumInfosCount = (short)m.EnumInfos.Count;
+            else
+            {
+                m.EnumInfos = null;
+                m.EnumInfosCount = 0;
+            }
 
             m.DataBlocks = new ResourceSimpleArray<MetaDataBlock>();
             foreach (var bb in Blocks)

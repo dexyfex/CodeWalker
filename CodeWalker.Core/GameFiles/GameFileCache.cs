@@ -2690,41 +2690,67 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-                    try
+                    //try
                     {
                         var n = entry.NameLower;
-                        if (n.EndsWith(".ymap"))
+                        //if (n.EndsWith(".ymap"))
+                        //{
+                        //    UpdateStatus(string.Format(entry.Path));
+                        //    YmapFile ymapfile = RpfMan.GetFile<YmapFile>(entry);
+                        //    if ((ymapfile != null) && (ymapfile.Meta != null))
+                        //    {
+                        //        MetaTypes.EnsureMetaTypes(ymapfile.Meta);
+                        //    }
+                        //}
+                        //else if (n.EndsWith(".ytyp"))
+                        //{
+                        //    UpdateStatus(string.Format(entry.Path));
+                        //    YtypFile ytypfile = RpfMan.GetFile<YtypFile>(entry);
+                        //    if ((ytypfile != null) && (ytypfile.Meta != null))
+                        //    {
+                        //        MetaTypes.EnsureMetaTypes(ytypfile.Meta);
+                        //    }
+                        //}
+                        //else if (n.EndsWith(".ymt"))
+                        //{
+                        //    UpdateStatus(string.Format(entry.Path));
+                        //    YmtFile ymtfile = RpfMan.GetFile<YmtFile>(entry);
+                        //    if ((ymtfile != null) && (ymtfile.Meta != null))
+                        //    {
+                        //        MetaTypes.EnsureMetaTypes(ymtfile.Meta);
+                        //    }
+                        //}
+
+
+                        if (n.EndsWith(".ymap") || n.EndsWith(".ytyp") || n.EndsWith(".ymt"))
                         {
+                            var rfe = entry as RpfResourceFileEntry;
+                            if (rfe == null) continue;
+
                             UpdateStatus(string.Format(entry.Path));
-                            YmapFile ymapfile = RpfMan.GetFile<YmapFile>(entry);
-                            if ((ymapfile != null) && (ymapfile.Meta != null))
-                            {
-                                MetaTypes.EnsureMetaTypes(ymapfile.Meta);
-                            }
+
+                            var data = rfe.File.ExtractFile(rfe);
+                            ResourceDataReader rd = new ResourceDataReader(rfe, data);
+                            var meta = rd.ReadBlock<Meta>();
+                            var xml = MetaXml.GetXml(meta);
+                            var xdoc = new XmlDocument();
+                            xdoc.LoadXml(xml);
+                            var meta2 = XmlMeta.GetMeta(xdoc);
+                            var xml2 = MetaXml.GetXml(meta2);
+
+                            if (xml.Length != xml2.Length)
+                            { }
+                            if ((xml != xml2)&&(!n.EndsWith("srl.ymt") && !n.StartsWith("des_")))
+                            { }
+
                         }
-                        else if (n.EndsWith(".ytyp"))
-                        {
-                            UpdateStatus(string.Format(entry.Path));
-                            YtypFile ytypfile = RpfMan.GetFile<YtypFile>(entry);
-                            if ((ytypfile != null) && (ytypfile.Meta != null))
-                            {
-                                MetaTypes.EnsureMetaTypes(ytypfile.Meta);
-                            }
-                        }
-                        else if (n.EndsWith(".ymt"))
-                        {
-                            UpdateStatus(string.Format(entry.Path));
-                            YmtFile ymtfile = RpfMan.GetFile<YmtFile>(entry);
-                            if ((ymtfile != null) && (ymtfile.Meta != null))
-                            {
-                                MetaTypes.EnsureMetaTypes(ymtfile.Meta);
-                            }
-                        }
+
+
                     }
-                    catch (Exception ex)
-                    {
-                        UpdateStatus("Error! " + ex.ToString());
-                    }
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //}
                 }
             }
 

@@ -234,10 +234,10 @@ namespace CodeWalker.GameFiles
                         OneLineTag(sb, cind, ename, charStr);
                         break;
                     case MetaStructureEntryDataType.DataBlockPointer:
-                        OpenTag(sb, cind, ename);
                         var dataPtr = MetaTypes.ConvertData<DataBlockPointer>(data, eoffset);
-                        ErrorXml(sb, cind + 1, "DataBlockPointer not currently supported here!"); //TODO! ymap occludeModels vertices data is this type!
-                        CloseTag(sb, cind, ename);
+                        //need to just get all the data from that block, since this pointer is referring to the whole block! it should be of type BYTE!
+                        var dblock = cont.Meta.GetBlock((int)dataPtr.PointerDataId);
+                        WriteRawArray(sb, dblock.Data, cind, ename, "ByteArray", FormatHexByte, 32);
                         break;
                     case MetaStructureEntryDataType.Float:
                         var floatVal = BitConverter.ToSingle(data, eoffset);
@@ -577,14 +577,14 @@ namespace CodeWalker.GameFiles
             {
                 Meta = meta;
 
-                if (meta.StructureInfos != null)
+                if (meta.StructureInfos?.Data != null)
                 {
                     foreach (var si in meta.StructureInfos)
                     {
                         structInfos[si.StructureNameHash] = si;
                     }
                 }
-                if (meta.EnumInfos != null)
+                if (meta.EnumInfos?.Data != null)
                 {
                     foreach (var ei in meta.EnumInfos)
                     {
