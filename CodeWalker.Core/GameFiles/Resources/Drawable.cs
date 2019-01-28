@@ -77,7 +77,8 @@ namespace CodeWalker.GameFiles
             // update structure data
             this.TextureDictionaryPointer = (ulong)(this.TextureDictionary != null ? this.TextureDictionary.FilePosition : 0);
             this.ShadersPointer = (ulong)(this.Shaders != null ? this.Shaders.FilePosition : 0);
-            //	this.ShadersCount1 = (ushort)(this.Shaders != null ? this.Shaders.Count : 0);
+            this.ShadersCount1 = (ushort)(this.Shaders != null ? this.Shaders.Count : 0);
+            this.ShadersCount2 = this.ShadersCount1;
 
             // write structure data
             writer.Write(this.VFT);
@@ -161,17 +162,6 @@ namespace CodeWalker.GameFiles
             this.Unknown_2Ch = reader.ReadUInt32();
 
             // read reference data
-            //this.Parameters = reader.ReadBlockAt<ResourceSimpleArray<ShaderParameter_GTA5_pc>>(
-            //	this.ParametersPointer, // offset
-            //	this.ParameterCount
-            //);
-            //this.ParameterHashes = reader.ReadBlockAt<SimpleArrayOFFSET<uint_r>>(
-            //	this.ParametersPointer, // offset
-            //	this.ParameterCount,
-            //	this.TextureParametersCount
-            //);
-
-
             this.ParametersList = reader.ReadBlockAt<ShaderParametersBlock>(
                 this.ParametersPointer, // offset
                 this.ParameterCount
@@ -185,8 +175,7 @@ namespace CodeWalker.GameFiles
         {
             // update structure data
             this.ParametersPointer = (ulong)(this.ParametersList != null ? this.ParametersList.FilePosition : 0);
-            //this.ParametersPointer = (ulong)(this.Parameters != null ? this.Parameters.Position : 0);
-            //this.ParameterCount = (byte)(this.Parameters != null ? this.Parameters.Count : 0);
+            this.ParameterCount = (byte)(this.ParametersList != null ? this.ParametersList.Count : 0);
 
             // write structure data
             writer.Write(this.ParametersPointer);
@@ -213,7 +202,6 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>();
             if (ParametersList != null) list.Add(ParametersList);
-            //		if (ParameterHashes != null) list.Add(ParameterHashes);
             return list.ToArray();
         }
 
@@ -313,19 +301,22 @@ namespace CodeWalker.GameFiles
 
         public ShaderParameter[] Parameters { get; set; }
         public MetaName[] Hashes { get; set; }
+        public int Count { get; set; }
+
+        private ResourceSystemStructBlock<Vector4>[] ParameterDataBlocks = null;
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            int cnt = Convert.ToInt32(parameters[0]);
+            Count = Convert.ToInt32(parameters[0]);
 
             var paras = new List<ShaderParameter>();
-            for (int i = 0; i < cnt; i++)
+            for (int i = 0; i < Count; i++)
             {
                 paras.Add(reader.ReadBlock<ShaderParameter>());
             }
 
             int offset = 0;
-            for (int i = 0; i < cnt; i++)
+            for (int i = 0; i < Count; i++)
             {
                 var p = paras[i];
 
@@ -334,50 +325,24 @@ namespace CodeWalker.GameFiles
                 {
                     case 0:
                         offset += 0;
-                        p.Data = reader.ReadBlockAt<TextureBase>(
-                            p.DataPointer // offset
-                        );
+                        p.Data = reader.ReadBlockAt<TextureBase>(p.DataPointer);
                         break;
                     case 1:
                         offset += 16;
-                        //p.Data = reader.ReadBlockAt<Vector4_r>(
-                        //    p.DataPointer // offset
-                        //);
-                        p.Data = reader.ReadStructAt<Vector4>(
-                            (long)p.DataPointer // offset
-                        );
-
+                        p.Data = reader.ReadStructAt<Vector4>((long)p.DataPointer);
                         break;
-                    //case 2:
-                    //    offset += 32;
-                    //    p.Data = reader.ReadBlockAt<ResourceSimpleArray<RAGE_Vector4>>(
-                    //         p.DataPointer, // offset
-                    //         2
-                    //     );
-                    //    break;
-                    //case 4:
-                    //    offset += 64;
-                    //    p.Data = reader.ReadBlockAt<ResourceSimpleArray<RAGE_Vector4>>(
-                    //        p.DataPointer, // offset
-                    //        4
-                    //    );
-                    //    break;
-
                     default:
                         offset += 16 * p.DataType;
-                        //p.Data = reader.ReadBlockAt<ResourceSimpleArray<Vector4_r>>(
-                        //     p.DataPointer, // offset
-                        //      p.DataType
-                        // );
                         p.Data = reader.ReadStructsAt<Vector4>(p.DataPointer, p.DataType);
-
                         break;
                 }
             }
 
-            reader.Position += offset;
+
+            reader.Position += offset; //Vector4 data gets embedded here... but why pointers in params also???
+
             var hashes = new List<MetaName>();
-            for (int i = 0; i < cnt; i++)
+            for (int i = 0; i < Count; i++)
             {
                 hashes.Add((MetaName)reader.ReadUInt32());
             }
@@ -389,7 +354,6 @@ namespace CodeWalker.GameFiles
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            //TODO: fix all this
 
             // update pointers...
             //foreach (var f in Parameters)
@@ -397,6 +361,27 @@ namespace CodeWalker.GameFiles
             //        f.DataPointer = (ulong)f.Data.Position;
             //    else
             //        f.DataPointer = 0;
+            for (int i = 0; i < Parameters.Length; i++)
+            {
+                var param = Parameters[i];
+                if (param.DataType == 0)
+                {
+                    param.DataPointer = (ulong)((param.Data as TextureBase)?.FilePosition ?? 0);
+                }
+                else
+                {
+                    var block = (i < ParameterDataBlocks?.Length) ? ParameterDataBlocks[i] : null;
+                    if (block != null)
+                    {
+                        param.DataPointer = (ulong)block.FilePosition;
+                    }
+                    else
+                    {
+                        param.DataPointer = 0;//shouldn't happen!
+                    }
+                }
+            }
+
 
 
             // write parameter infos
@@ -409,6 +394,20 @@ namespace CodeWalker.GameFiles
             //    if (f.DataType != 0)
             //        writer.WriteBlock(f.Data);
             //}
+            for (int i = 0; i < Parameters.Length; i++)
+            {
+                var param = Parameters[i];
+                if (param.DataType != 0)
+                {
+                    var block = (i < ParameterDataBlocks?.Length) ? ParameterDataBlocks[i] : null;
+                    if (block != null)
+                    {
+                        writer.WriteBlock(block);
+                    }
+                    else
+                    { } //shouldn't happen!
+                }
+            }
 
             // write hashes
             foreach (var h in Hashes)
@@ -423,10 +422,9 @@ namespace CodeWalker.GameFiles
             var list = new List<IResourceBlock>();
             list.AddRange(base.GetReferences());
 
-            //TODO: fix this
-            //foreach (var x in Parameters)
-            //    if (x.DataType == 0)
-            //        list.Add(x.Data);
+            foreach (var x in Parameters)
+                if (x.DataType == 0)
+                    list.Add(x.Data as TextureBase);
 
             return list.ToArray();
         }
@@ -443,13 +441,30 @@ namespace CodeWalker.GameFiles
                 offset += 16;
             }
 
-            //TODO: fix this
-            //foreach (var x in Parameters)
-            //{
-            //    if (x.DataType != 0)
-            //        list.Add(new Tuple<long, IResourceBlock>(offset, x.Data));
-            //    offset += 16 * x.DataType;
-            //}
+
+            var blist = new List<ResourceSystemStructBlock<Vector4>>();
+            foreach (var x in Parameters)
+            {
+                if (x.DataType != 0)
+                {
+                    var vecs = x.Data as Vector4[];
+                    if (vecs == null)
+                    {
+                        vecs = new[] { (Vector4)x.Data };
+                    }
+                    if (vecs == null)
+                    { }
+                    var block = new ResourceSystemStructBlock<Vector4>(vecs);
+                    list.Add(new Tuple<long, IResourceBlock>(offset, block));
+                    blist.Add(block);
+                }
+                else
+                {
+                    blist.Add(null);
+                }
+                offset += 16 * x.DataType;
+            }
+            ParameterDataBlocks = blist.ToArray();
 
             return list.ToArray();
         }
@@ -494,15 +509,16 @@ namespace CodeWalker.GameFiles
         // reference data
         public ResourcePointerArray64<Skeleton_Unknown_D_001> Unknown_10h_Data { get; set; }
         public ResourceSimpleArray<Bone> Bones { get; set; }
-        //public ResourceSimpleArray<Matrix4_r> TransformationsInverted { get; set; }
-        //public ResourceSimpleArray<Matrix4_r> Transformations { get; set; }
-        //public ResourceSimpleArray<ushort_r> ParentIndices { get; set; }
-        //public ResourceSimpleArray<ushort_r> Unknown_40h_Data { get; set; }
 
         public Matrix[] TransformationsInverted { get; set; }
         public Matrix[] Transformations { get; set; }
         public ushort[] ParentIndices { get; set; }
         public ushort[] Unknown_40h_Data { get; set; }
+
+        private ResourceSystemStructBlock<Matrix> TransformationsInvertedBlock = null;//for saving only
+        private ResourceSystemStructBlock<Matrix> TransformationsBlock = null;
+        private ResourceSystemStructBlock<ushort> ParentIndicesBlock = null;
+        private ResourceSystemStructBlock<ushort> Unknown_40h_DataBlock = null;
 
 
         /// <summary>
@@ -546,22 +562,6 @@ namespace CodeWalker.GameFiles
                 this.BonesPointer, // offset
                 this.BonesCount
             );
-            //this.TransformationsInverted = reader.ReadBlockAt<ResourceSimpleArray<Matrix4_r>>(
-            //    this.TransformationsInvertedPointer, // offset
-            //    this.BonesCount
-            //);
-            //this.Transformations = reader.ReadBlockAt<ResourceSimpleArray<Matrix4_r>>(
-            //    this.TransformationsPointer, // offset
-            //    this.BonesCount
-            //);
-            //this.ParentIndices = reader.ReadBlockAt<ResourceSimpleArray<ushort_r>>(
-            //    this.ParentIndicesPointer, // offset
-            //    this.BonesCount
-            //);
-            //this.Unknown_40h_Data = reader.ReadBlockAt<ResourceSimpleArray<ushort_r>>(
-            //    this.Unknown_40h_Pointer, // offset
-            //    this.Count4
-            //);
             this.TransformationsInverted = reader.ReadStructsAt<Matrix>(this.TransformationsInvertedPointer, this.BonesCount);
             this.Transformations = reader.ReadStructsAt<Matrix>(this.TransformationsPointer, this.BonesCount);
             this.ParentIndices = reader.ReadUshortsAt(this.ParentIndicesPointer, this.BonesCount);
@@ -591,15 +591,16 @@ namespace CodeWalker.GameFiles
         {
             // update structure data
             this.Unknown_10h_Pointer = (ulong)(this.Unknown_10h_Data != null ? this.Unknown_10h_Data.FilePosition : 0);
-            //	this.c1 = (ushort)(this.arr1 != null ? this.arr1.Count : 0);
+            this.Count1 = (ushort)(this.Unknown_10h_Data != null ? this.Unknown_10h_Data.Count : 0);
             this.BonesPointer = (ulong)(this.Bones != null ? this.Bones.FilePosition : 0);
-            //this.TransformationsInvertedPointer = (ulong)(this.TransformationsInverted != null ? this.TransformationsInverted.Position : 0);
-            //this.TransformationsPointer = (ulong)(this.Transformations != null ? this.Transformations.Position : 0);
-            //this.ParentIndicesPointer = (ulong)(this.ParentIndices != null ? this.ParentIndices.Position : 0);
-            //this.Unknown_40h_Pointer = (ulong)(this.Unknown_40h_Data != null ? this.Unknown_40h_Data.Position : 0);
-            /////	this.c3 = (ushort)(this.Bones != null ? this.Bones.Count : 0);
-            //this.Count4 = (ushort)(this.Unknown_40h_Data != null ? this.Unknown_40h_Data.Count : 0);
-            //TODO: fix/update
+            this.TransformationsInvertedPointer = (ulong)(this.TransformationsInvertedBlock != null ? this.TransformationsInvertedBlock.FilePosition : 0);
+            this.TransformationsPointer = (ulong)(this.TransformationsBlock != null ? this.TransformationsBlock.FilePosition : 0);
+            this.ParentIndicesPointer = (ulong)(this.ParentIndicesBlock != null ? this.ParentIndicesBlock.FilePosition : 0);
+            this.Unknown_40h_Pointer = (ulong)(this.Unknown_40h_DataBlock != null ? this.Unknown_40h_DataBlock.FilePosition : 0);
+            this.BonesCount = (ushort)(this.Bones != null ? this.Bones.Count : 0);
+            this.Count4 = (ushort)(this.Unknown_40h_DataBlock != null ? this.Unknown_40h_DataBlock.ItemCount : 0);
+            //this.Count2 = BonesCount;//?
+
 
             // write structure data
             writer.Write(this.VFT);
@@ -637,10 +638,26 @@ namespace CodeWalker.GameFiles
             var list = new List<IResourceBlock>();
             if (Unknown_10h_Data != null) list.Add(Unknown_10h_Data);
             if (Bones != null) list.Add(Bones);
-            //if (TransformationsInverted != null) list.Add(TransformationsInverted);
-            //if (Transformations != null) list.Add(Transformations);
-            //if (ParentIndices != null) list.Add(ParentIndices);
-            //if (Unknown_40h_Data != null) list.Add(Unknown_40h_Data); //TODO: fix
+            if (TransformationsInverted != null)
+            {
+                TransformationsInvertedBlock = new ResourceSystemStructBlock<Matrix>(TransformationsInverted);
+                list.Add(TransformationsInvertedBlock);
+            }
+            if (Transformations != null)
+            {
+                TransformationsBlock = new ResourceSystemStructBlock<Matrix>(Transformations);
+                list.Add(TransformationsBlock);
+            }
+            if (ParentIndices != null)
+            {
+                ParentIndicesBlock = new ResourceSystemStructBlock<ushort>(ParentIndices);
+                list.Add(ParentIndicesBlock);
+            }
+            if (Unknown_40h_Data != null)
+            {
+                Unknown_40h_DataBlock = new ResourceSystemStructBlock<ushort>(Unknown_40h_Data);
+                list.Add(Unknown_40h_DataBlock);
+            }
             return list.ToArray();
         }
     }
@@ -715,9 +732,6 @@ namespace CodeWalker.GameFiles
         //public float RotationW { get; set; }
         public Quaternion Rotation { get; set; }
         public Vector3 Translation { get; set; }
-        //public float TranslationX { get; set; }
-        //public float TranslationY { get; set; }
-        //public float TranslationZ { get; set; }
         public uint Unknown_1Ch { get; set; } // 0x00000000 RHW?
         public float ScaleX { get; set; } // 1.0
         public float ScaleY { get; set; } // 1.0
@@ -739,6 +753,7 @@ namespace CodeWalker.GameFiles
 
         public Bone Parent { get; set; }
 
+        private string_r NameBlock = null;
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -783,18 +798,11 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0); //TODO: fix
+            this.NamePointer = (ulong)(this.NameBlock != null ? this.NameBlock.FilePosition : 0);
 
             // write structure data
-            //writer.Write(this.RotationX);
-            //writer.Write(this.RotationY);
-            //writer.Write(this.RotationZ);
-            //writer.Write(this.RotationW);
             writer.Write(this.Rotation.ToVector4());
             writer.Write(this.Translation);
-            //writer.Write(this.TranslationX);
-            //writer.Write(this.TranslationY);
-            //writer.Write(this.TranslationZ);
             writer.Write(this.Unknown_1Ch);
             writer.Write(this.ScaleX);
             writer.Write(this.ScaleY);
@@ -818,7 +826,11 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Name != null) list.Add(Name); //TODO: fix
+            if (Name != null)
+            {
+                NameBlock = (string_r)Name;
+                list.Add(NameBlock);
+            }
             return list.ToArray();
         }
 
@@ -854,10 +866,11 @@ namespace CodeWalker.GameFiles
         public uint Unknown_3Ch { get; set; } // 0x00000000
 
         // reference data
-        //public ResourceSimpleArray<JointRotationLimit> RotationLimits { get; set; }
-        //public ResourceSimpleArray<JointTranslationLimit> TranslationLimits { get; set; }
         public JointRotationLimit_s[] RotationLimits { get; set; }
         public JointTranslationLimit_s[] TranslationLimits { get; set; }
+
+        private ResourceSystemStructBlock<JointRotationLimit_s> RotationLimitsBlock = null; //for saving only
+        private ResourceSystemStructBlock<JointTranslationLimit_s> TranslationLimitsBlock = null;
 
 
         /// <summary>
@@ -903,11 +916,11 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            //this.RotationLimitsPointer = (ulong)(this.RotationLimits != null ? this.RotationLimits.Position : 0);
-            //this.TranslationLimitsPointer = (ulong)(this.TranslationLimits != null ? this.TranslationLimits.Position : 0);
-            //this.RotationLimitsCount = (ushort)(this.RotationLimits != null ? this.RotationLimits.Count : 0);
-            //this.TranslationLimitsCount = (ushort)(this.TranslationLimits != null ? this.TranslationLimits.Count : 0);
-            //TODO: fix this
+            this.RotationLimitsPointer = (ulong)(this.RotationLimitsBlock != null ? this.RotationLimitsBlock.FilePosition : 0);
+            this.TranslationLimitsPointer = (ulong)(this.TranslationLimitsBlock != null ? this.TranslationLimitsBlock.FilePosition : 0);
+            this.RotationLimitsCount = (ushort)(this.RotationLimitsBlock != null ? this.RotationLimitsBlock.ItemCount : 0);
+            this.TranslationLimitsCount = (ushort)(this.TranslationLimitsBlock != null ? this.TranslationLimitsBlock.ItemCount : 0);
+
 
             // write structure data
             writer.Write(this.VFT);
@@ -934,9 +947,16 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (RotationLimits != null) list.Add(RotationLimits);
-            //if (TranslationLimits != null) list.Add(TranslationLimits);
-            //TODO: fix this
+            if (RotationLimits != null)
+            {
+                RotationLimitsBlock = new ResourceSystemStructBlock<JointRotationLimit_s>(RotationLimits);
+                list.Add(RotationLimitsBlock);
+            }
+            if (TranslationLimits != null)
+            {
+                TranslationLimitsBlock = new ResourceSystemStructBlock<JointTranslationLimit_s>(TranslationLimits);
+                list.Add(TranslationLimitsBlock);
+            }
             return list.ToArray();
         }
     }
@@ -1034,10 +1054,14 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public ResourcePointerArray64<DrawableGeometry> Geometries { get; set; }
-        //public ResourceSimpleArray<AABB_r> Unknown_18h_Data;
-        //public ResourceSimpleArray<ushort_r> ShaderMapping;
         public AABB_s[] BoundsData { get; set; }
         public ushort[] ShaderMapping { get; set; }
+
+
+        private ResourceSystemStructBlock<AABB_s> BoundsDataBlock = null; //for saving only
+        private ResourceSystemStructBlock<ushort> ShaderMappingBlock = null;
+
+
 
         public long MemoryUsage
         {
@@ -1100,14 +1124,6 @@ namespace CodeWalker.GameFiles
                 this.GeometriesPointer, // offset
                 this.GeometriesCount1
             );
-            //this.Unknown_18h_Data = reader.ReadBlockAt<ResourceSimpleArray<AABB_r>>(
-            //    this.Unknown_18h_Pointer, // offset
-            //    this.GeometriesCount1 > 1 ? this.GeometriesCount1 + 1 : this.GeometriesCount1
-            //);
-            //this.ShaderMapping = reader.ReadBlockAt<ResourceSimpleArray<ushort_r>>(
-            //    this.ShaderMappingPointer, // offset
-            //    this.GeometriesCount1
-            //);
             this.BoundsData = reader.ReadStructsAt<AABB_s>(this.BoundsPointer, (uint)(this.GeometriesCount1 > 1 ? this.GeometriesCount1 + 1 : this.GeometriesCount1));
             this.ShaderMapping = reader.ReadUshortsAt(this.ShaderMappingPointer, this.GeometriesCount1);
 
@@ -1120,10 +1136,11 @@ namespace CodeWalker.GameFiles
         {
             // update structure data
             this.GeometriesPointer = (ulong)(this.Geometries != null ? this.Geometries.FilePosition : 0);
-            //	this.GeometriesCount1 = (ushort)(this.Geometries != null ? this.Geometries.Count : 0);
-            //this.Unknown_18h_Pointer = (ulong)(this.Unknown_18h_Data != null ? this.Unknown_18h_Data.Position : 0);
-            //this.ShaderMappingPointer = (ulong)(this.ShaderMapping != null ? this.ShaderMapping.Position : 0);
-            //TODO: fix
+            this.GeometriesCount1 = (ushort)(this.Geometries != null ? this.Geometries.Count : 0);
+            this.GeometriesCount2 = this.GeometriesCount1;//is this correct?
+            this.BoundsPointer = (ulong)(this.BoundsDataBlock != null ? this.BoundsDataBlock.FilePosition : 0);
+            this.ShaderMappingPointer = (ulong)(this.ShaderMappingBlock != null ? this.ShaderMappingBlock.FilePosition : 0);
+            
 
             // write structure data
             writer.Write(this.VFT);
@@ -1145,8 +1162,16 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>();
             if (Geometries != null) list.Add(Geometries);
-            //if (Unknown_18h_Data != null) list.Add(Unknown_18h_Data);
-            //if (ShaderMapping != null) list.Add(ShaderMapping); //TODO: fix
+            if (BoundsData != null)
+            {
+                BoundsDataBlock = new ResourceSystemStructBlock<AABB_s>(BoundsData);
+                list.Add(BoundsDataBlock);
+            }
+            if (ShaderMapping != null)
+            {
+                ShaderMappingBlock = new ResourceSystemStructBlock<ushort>(ShaderMapping);
+                list.Add(ShaderMappingBlock);
+            }
             return list.ToArray();
         }
 
@@ -1191,7 +1216,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_64h { get; set; } // 0x00000000
         public ulong BoneIdsPointer { get; set; }
         public ushort VertexStride { get; set; }
-        public ushort Count1 { get; set; }
+        public ushort BoneIdsCount { get; set; }
         public uint Unknown_74h { get; set; } // 0x00000000
         public ulong VertexDataPointer { get; set; }
         public uint Unknown_80h { get; set; } // 0x00000000
@@ -1207,6 +1232,9 @@ namespace CodeWalker.GameFiles
         public ushort[] BoneIds { get; set; }
         public VertexData VertexData { get; set; }
         public ShaderFX Shader { get; set; }
+
+        private ResourceSystemStructBlock<ushort> BoneIdsBlock = null;//for saving only
+
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -1241,7 +1269,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_64h = reader.ReadUInt32();
             this.BoneIdsPointer = reader.ReadUInt64();
             this.VertexStride = reader.ReadUInt16();
-            this.Count1 = reader.ReadUInt16();
+            this.BoneIdsCount = reader.ReadUInt16();
             this.Unknown_74h = reader.ReadUInt32();
             this.VertexDataPointer = reader.ReadUInt64();
             this.Unknown_80h = reader.ReadUInt32();
@@ -1258,11 +1286,7 @@ namespace CodeWalker.GameFiles
             this.IndexBuffer = reader.ReadBlockAt<IndexBuffer>(
                 this.IndexBufferPointer // offset
             );
-            //this.Unknown_68h_Data = reader.ReadBlockAt<ResourceSimpleArray<ushort_r>>(
-            //    this.Unknown_68h_Pointer, // offset
-            //    this.Count1
-            //);
-            this.BoneIds = reader.ReadUshortsAt(this.BoneIdsPointer, this.Count1);
+            this.BoneIds = reader.ReadUshortsAt(this.BoneIdsPointer, this.BoneIdsCount);
             if (this.BoneIds != null) //skinned mesh bones to use? peds, also yft props...
             {
             }
@@ -1302,9 +1326,9 @@ namespace CodeWalker.GameFiles
             // update structure data
             this.VertexBufferPointer = (ulong)(this.VertexBuffer != null ? this.VertexBuffer.FilePosition : 0);
             this.IndexBufferPointer = (ulong)(this.IndexBuffer != null ? this.IndexBuffer.FilePosition : 0);
-            //this.Unknown_68h_Pointer = (ulong)(this.Unknown_68h_Data != null ? this.Unknown_68h_Data.Position : 0);
-            //this.VertexStride = (ushort)(this.VertexData != null ? this.VertexData.Count : 0); //TODO: fix
-            //this.c1 = (ushort)(this.p1data != null ? this.p1data.Count : 0);
+            this.BoneIdsPointer = (ulong)(this.BoneIdsBlock != null ? this.BoneIdsBlock.FilePosition : 0);
+            this.VerticesCount = (ushort)(this.VertexData != null ? this.VertexData.VertexCount : 0); //TODO: fix?
+            this.BoneIdsCount = (ushort)(this.BoneIdsBlock != null ? this.BoneIdsBlock.ItemCount : 0);
             this.VertexDataPointer = (ulong)(this.VertexData != null ? this.VertexData.FilePosition : 0);
 
             // write structure data
@@ -1335,7 +1359,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_64h);
             writer.Write(this.BoneIdsPointer);
             writer.Write(this.VertexStride);
-            writer.Write(this.Count1);
+            writer.Write(this.BoneIdsCount);
             writer.Write(this.Unknown_74h);
             writer.Write(this.VertexDataPointer);
             writer.Write(this.Unknown_80h);
@@ -1354,7 +1378,11 @@ namespace CodeWalker.GameFiles
             var list = new List<IResourceBlock>();
             if (VertexBuffer != null) list.Add(VertexBuffer);
             if (IndexBuffer != null) list.Add(IndexBuffer);
-            //if (Unknown_68h_Data != null) list.Add(Unknown_68h_Data); //TODO: fix
+            if (BoneIds != null)
+            {
+                BoneIdsBlock = new ResourceSystemStructBlock<ushort>(BoneIds);
+                list.Add(BoneIdsBlock);
+            }
             if (VertexData != null) list.Add(VertexData);
             return list.ToArray();
         }
@@ -1470,7 +1498,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            //this.VertexStride = (uint)(this.Data1 != null ? this.Data1.Count : 0);
+            this.VertexCount = (uint)(this.Data1 != null ? this.Data1.VertexCount : 0);
             this.DataPointer1 = (ulong)(this.Data1 != null ? this.Data1.FilePosition : 0);
             this.DataPointer2 = (ulong)(this.Data2 != null ? this.Data2.FilePosition : 0);
             this.InfoPointer = (ulong)(this.Info != null ? this.Info.FilePosition : 0);
@@ -1525,18 +1553,17 @@ namespace CodeWalker.GameFiles
     {
 
 
-        private int length = 0;
+        //private int length = 0;
         public override long BlockLength
         {
             get
             {
-                return this.length;
+                return VertexBytes?.Length ?? 0; //this.length;
             }
         }
 
 
 
-        public int cnt { get; set; }
         public VertexDeclaration info { get; set; }
         public object[] Data { get; set; }
         public uint[] Types { get; set; }
@@ -1560,9 +1587,7 @@ namespace CodeWalker.GameFiles
         {
             VertexStride = Convert.ToInt32(parameters[0]);
             VertexCount = Convert.ToInt32(parameters[1]);
-            var info = (VertexDeclaration)parameters[2];
-            this.cnt = VertexCount;
-            this.info = info;
+            info = (VertexDeclaration)parameters[2];
 
             VertexType = (VertexType)info.Flags;
 
@@ -1598,7 +1623,7 @@ namespace CodeWalker.GameFiles
             int stride = Convert.ToInt32(parameters[0]);
             int count = Convert.ToInt32(parameters[1]);
             var info = (VertexDeclaration)parameters[2];
-            this.cnt = count;
+            this.VertexCount = count;
             this.info = info;
 
 
@@ -1731,14 +1756,14 @@ namespace CodeWalker.GameFiles
 
             }
 
-            this.length = stride * count;
+            //this.length = stride * count;
         }
 
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        public /*override*/ void WriteOrig(ResourceDataWriter writer, params object[] parameters)
         {
 
             // write...
-            for (int i = 0; i < cnt; i++)
+            for (int i = 0; i < VertexCount; i++)
             {
 
                 for (int k = 0; k < 16; k++)
@@ -1830,9 +1855,17 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            if (VertexBytes != null)
+            {
+                writer.Write(VertexBytes); //not dealing with individual vertex data here any more!
+            }
+        }
+
         public override string ToString()
         {
-            return "Type: " + VertexType.ToString() + ", Count: " + cnt.ToString();
+            return "Type: " + VertexType.ToString() + ", Count: " + VertexCount.ToString();
         }
     }
 
@@ -1931,6 +1964,10 @@ namespace CodeWalker.GameFiles
         //public ResourceSimpleArray<ushort_r> Indices;
         public ushort[] Indices { get; set; }
 
+
+        private ResourceSystemStructBlock<ushort> IndicesBlock = null; //only used when saving
+
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
@@ -1975,8 +2012,8 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            //this.IndicesCount = (uint)(this.Indices != null ? this.Indices.Count : 0);
-            //this.IndicesPointer = (ulong)(this.Indices != null ? this.Indices.Position : 0);
+            this.IndicesCount = (uint)(this.IndicesBlock != null ? this.IndicesBlock.ItemCount : 0);
+            this.IndicesPointer = (ulong)(this.IndicesBlock != null ? this.IndicesBlock.FilePosition : 0);
 
             // write structure data
             writer.Write(this.VFT);
@@ -2010,7 +2047,11 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Indices != null) list.Add(Indices); //TODO: fix..
+            if (Indices != null)
+            {
+                IndicesBlock = new ResourceSystemStructBlock<ushort>(Indices);
+                list.Add(IndicesBlock);
+            }
             return list.ToArray();
         }
     }
@@ -2296,10 +2337,10 @@ namespace CodeWalker.GameFiles
             // write structure data
             writer.Write(this.ShaderGroupPointer);
             writer.Write(this.SkeletonPointer);
-            //writer.WriteBlock(this.BoundingCenter); //TODO: fix!
+            writer.Write(this.BoundingCenter);
             writer.Write(this.BoundingSphereRadius);
-            //writer.WriteBlock(this.BoundingBoxMin); //TODO: fix!
-            //writer.WriteBlock(this.BoundingBoxMax);
+            writer.Write(this.BoundingBoxMin);
+            writer.Write(this.BoundingBoxMax);
             writer.Write(this.DrawableModelsHighPointer);
             writer.Write(this.DrawableModelsMediumPointer);
             writer.Write(this.DrawableModelsLowPointer);
@@ -2356,6 +2397,10 @@ namespace CodeWalker.GameFiles
 
         public string ErrorMessage { get; set; }
 
+
+        private string_r NameBlock = null;//only used when saving..
+
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
@@ -2396,7 +2441,7 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // update structure data
-            //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0); //TODO: fix
+            this.NamePointer = (ulong)(this.NameBlock != null ? this.NameBlock.FilePosition : 0);
             this.BoundPointer = (ulong)(this.Bound != null ? this.Bound.FilePosition : 0);
 
             // write structure data
@@ -2413,7 +2458,11 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
-            //if (Name != null) list.Add(Name); //TODO: fix
+            if (Name != null)
+            {
+                NameBlock = (string_r)Name;
+                list.Add(NameBlock);
+            }
             if (Bound != null) list.Add(Bound);
             return list.ToArray();
         }
@@ -2457,6 +2506,10 @@ namespace CodeWalker.GameFiles
         public uint[] Hashes { get; set; }
         public ResourcePointerArray64<DrawableBase> Drawables { get; set; }
 
+
+        private ResourceSystemStructBlock<uint> HashesBlock = null;//only used for saving
+
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
@@ -2499,12 +2552,12 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // update structure data
-            //this.HashesPointer = (ulong)(this.Hashes != null ? this.Hashes.Position : 0); //TODO:: FIX THIS
-            //	this.HashesCount1 = (ushort)(this.Hashes != null ? this.Hashes.Count : 0);
-            //   this.HashesCount2 = (ushort)(this.Hashes != null ? this.Hashes.Count : 0);
+            this.HashesPointer = (ulong)(this.HashesBlock != null ? this.HashesBlock.FilePosition : 0);
+            this.HashesCount1 = (ushort)(this.HashesBlock != null ? this.HashesBlock.ItemCount : 0);
+            this.HashesCount2 = (ushort)(this.HashesBlock != null ? this.HashesBlock.ItemCount : 0);
             this.DrawablesPointer = (ulong)(this.Drawables != null ? this.Drawables.FilePosition : 0);
-            //	this.DrawablesCount1 = (ushort)(this.Drawables != null ? this.Drawables.Count : 0);
-            //   this.DrawablesCount2 = (ushort)(this.Drawables != null ? this.Drawables.Count : 0);
+            this.DrawablesCount1 = (ushort)(this.Drawables != null ? this.Drawables.Count : 0);
+            this.DrawablesCount2 = (ushort)(this.Drawables != null ? this.Drawables.Count : 0);
 
             // write structure data
             writer.Write(this.Unknown_10h);
@@ -2527,7 +2580,11 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
-            //if (Hashes != null) list.Add(Hashes); //TODO: fix
+            if (Hashes != null)
+            {
+                HashesBlock = new ResourceSystemStructBlock<uint>(Hashes);
+                list.Add(HashesBlock);
+            }
             if (Drawables != null) list.Add(Drawables);
             return list.ToArray();
         }
@@ -2558,6 +2615,10 @@ namespace CodeWalker.GameFiles
         //public ResourceSimpleArray<uint_r> Hashes { get; set; }
         public uint[] Hashes { get; set; }
         public ResourcePointerArray64<Drawable> Drawables { get; set; }
+
+
+        private ResourceSystemStructBlock<uint> HashesBlock = null;//only used for saving
+
 
         public long MemoryUsage
         {
@@ -2597,10 +2658,6 @@ namespace CodeWalker.GameFiles
             this.Unknown_3Ch = reader.ReadUInt32();
 
             // read reference data
-            //this.Hashes = reader.ReadBlockAt<ResourceSimpleArray<uint_r>>(
-            //    this.HashesPointer, // offset
-            //    this.HashesCount1
-            //);
             this.Hashes = reader.ReadUintsAt(this.HashesPointer, this.HashesCount1);
 
             this.Drawables = reader.ReadBlockAt<ResourcePointerArray64<Drawable>>(
@@ -2617,12 +2674,12 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // update structure data
-            //this.HashesPointer = (ulong)(this.Hashes != null ? this.Hashes.Position : 0); //TODO: fix update this
-            //	this.HashesCount1 = (ushort)(this.Hashes != null ? this.Hashes.Count : 0);
-            //   this.HashesCount2 = (ushort)(this.Hashes != null ? this.Hashes.Count : 0);
+            this.HashesPointer = (ulong)(this.HashesBlock != null ? this.HashesBlock.FilePosition : 0);
+            this.HashesCount1 = (ushort)(this.HashesBlock != null ? this.HashesBlock.ItemCount : 0);
+            this.HashesCount2 = (ushort)(this.HashesBlock != null ? this.HashesBlock.ItemCount : 0);
             this.DrawablesPointer = (ulong)(this.Drawables != null ? this.Drawables.FilePosition : 0);
-            //	this.DrawablesCount1 = (ushort)(this.Drawables != null ? this.Drawables.Count : 0);
-            //   this.DrawablesCount2 = (ushort)(this.Drawables != null ? this.Drawables.Count : 0);
+            this.DrawablesCount1 = (ushort)(this.Drawables != null ? this.Drawables.Count : 0);
+            this.DrawablesCount2 = (ushort)(this.Drawables != null ? this.Drawables.Count : 0);
 
             // write structure data
             writer.Write(this.Unknown_10h);
@@ -2645,7 +2702,11 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
-            //if (Hashes != null) list.Add(Hashes); //TODO: fix
+            if (Hashes != null)
+            {
+                HashesBlock = new ResourceSystemStructBlock<uint>(Hashes);
+                list.Add(HashesBlock);
+            }
             if (Drawables != null) list.Add(Drawables);
             return list.ToArray();
         }

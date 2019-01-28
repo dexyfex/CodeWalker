@@ -49,6 +49,13 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public byte[] Save()
+        {
+            byte[] data = ResourceBuilder.Build(Drawable, 165); //ydr is type/version 165...
+
+            return data;
+        }
+
 
     }
 

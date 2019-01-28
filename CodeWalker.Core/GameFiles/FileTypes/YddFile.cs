@@ -85,5 +85,12 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public byte[] Save()
+        {
+            byte[] data = ResourceBuilder.Build(DrawableDict, 165); //ydd is type/version 165...
+
+            return data;
+        }
+
     }
 }
