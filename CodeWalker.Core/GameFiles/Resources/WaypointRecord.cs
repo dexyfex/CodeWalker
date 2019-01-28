@@ -43,9 +43,9 @@ namespace CodeWalker.GameFiles
         {
             base.Write(writer, parameters);
 
-            //// update structure data
-            //this.EntriesPointer = (ulong)(this.Entries?.Position ?? 0);
-            //this.EntriesCount = (uint)(this.Entries?.Count ?? 0);
+            // update structure data
+            this.EntriesPointer = (ulong)(this.Entries?.FilePosition ?? 0);
+            this.EntriesCount = (uint)(this.Entries?.Count ?? 0);
 
             // write structure data
             writer.Write(this.Unknown_10h);
