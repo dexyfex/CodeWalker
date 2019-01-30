@@ -22,6 +22,7 @@
     <FxCompile Include="ShadowVS.hlsl" />
     <FxCompile Include="ShadowPS.hlsl" />
     <FxCompile Include="BasicVS_PNCT.hlsl" />
+    <FxCompile Include="BasicVS_PNCTT.hlsl" />
     <FxCompile Include="BasicVS_PNCTX.hlsl" />
     <FxCompile Include="BasicVS_PNCCT.hlsl" />
     <FxCompile Include="BasicVS_PNCCTT.hlsl" />

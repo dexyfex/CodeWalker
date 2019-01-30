@@ -55,6 +55,10 @@ namespace CodeWalker.Rendering
     public struct BasicShaderPSGeomVars
     {
         public uint EnableTexture;
+        public uint EnableTexture2;
+        public uint pad1;
+        public uint pad2;
+        public uint pad3;
         public uint EnableTint;
         public uint EnableNormalMap;
         public uint EnableSpecMap;
@@ -119,6 +123,7 @@ namespace CodeWalker.Rendering
         bool disposed = false;
 
         VertexShader basicvspnct;
+        VertexShader basicvspnctt;
         VertexShader basicvspncct;
         VertexShader basicvspncctt;
         VertexShader basicvspnccttt;
@@ -168,6 +173,7 @@ namespace CodeWalker.Rendering
         public BasicShader(Device device)
         {
             byte[] vspnctbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCT.cso");
+            byte[] vspncttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCTT.cso");
             byte[] vspncctbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCT.cso");
             byte[] vspnccttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTT.cso");
             byte[] vspncctttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTTT.cso");
@@ -184,6 +190,7 @@ namespace CodeWalker.Rendering
             byte[] psbytes = File.ReadAllBytes("Shaders\\BasicPS.cso");
 
             basicvspnct = new VertexShader(device, vspnctbytes);
+            basicvspnctt = new VertexShader(device, vspncttbytes);
             basicvspncct = new VertexShader(device, vspncctbytes);
             basicvspncctt = new VertexShader(device, vspnccttbytes);
             basicvspnccttt = new VertexShader(device, vspncctttbytes);
@@ -214,11 +221,12 @@ namespace CodeWalker.Rendering
             //supported layouts - requires Position, Normal, Colour, Texcoord
             layouts.Add(VertexType.Default, new InputLayout(device, vspnctbytes, VertexTypeDefault.GetLayout()));
             layouts.Add(VertexType.PNCH2, new InputLayout(device, vspnctbytes, VertexTypePNCH2.GetLayout()));
-            layouts.Add(VertexType.PNCTT, new InputLayout(device, vspnctbytes, VertexTypePNCTT.GetLayout()));
-            layouts.Add(VertexType.PNCTTT, new InputLayout(device, vspnctbytes, VertexTypePNCTTT.GetLayout()));
             layouts.Add(VertexType.PBBNCT, new InputLayout(device, vspnctbytes, VertexTypePBBNCT.GetLayout()));
-            layouts.Add(VertexType.PBBNCTT, new InputLayout(device, vspnctbytes, VertexTypePBBNCTT.GetLayout()));
-            layouts.Add(VertexType.PBBNCTTT, new InputLayout(device, vspnctbytes, VertexTypePBBNCTTT.GetLayout()));
+
+            layouts.Add(VertexType.PNCTT, new InputLayout(device, vspncttbytes, VertexTypePNCTT.GetLayout()));
+            layouts.Add(VertexType.PNCTTT, new InputLayout(device, vspncttbytes, VertexTypePNCTTT.GetLayout()));
+            layouts.Add(VertexType.PBBNCTT, new InputLayout(device, vspncttbytes, VertexTypePBBNCTT.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTT, new InputLayout(device, vspncttbytes, VertexTypePBBNCTTT.GetLayout()));
 
             layouts.Add(VertexType.PNCCT, new InputLayout(device, vspncctbytes, VertexTypePNCCT.GetLayout()));
             layouts.Add(VertexType.PBBNCCT, new InputLayout(device, vspncctbytes, VertexTypePBBNCCT.GetLayout()));
@@ -360,12 +368,14 @@ namespace CodeWalker.Rendering
             {
                 case VertexType.Default:
                 case VertexType.PNCH2:
+                case VertexType.PBBNCT:
+                    vs = basicvspnct;
+                    break;
                 case VertexType.PNCTT:
                 case VertexType.PNCTTT:
-                case VertexType.PBBNCT:
                 case VertexType.PBBNCTT:
                 case VertexType.PBBNCTTT:
-                    vs = basicvspnct;
+                    vs = basicvspnctt;
                     break;
                 case VertexType.PNCCT:
                 case VertexType.PBBNCCT:
@@ -515,6 +525,7 @@ namespace CodeWalker.Rendering
         public override void SetGeomVars(DeviceContext context, RenderableGeometry geom)
         {
             RenderableTexture texture = null;
+            RenderableTexture texture2 = null;
             RenderableTexture tintpal = null;
             RenderableTexture bumptex = null;
             RenderableTexture spectex = null;
@@ -568,11 +579,13 @@ namespace CodeWalker.Rendering
                                 texture = itex;
                                 isdistmap = true;
                                 break;
+                            case MetaName.DiffuseSampler2:
+                                texture2 = itex;
+                                break;
                             case MetaName.heightSampler:
                             case MetaName.EnvironmentSampler:
                             //case MetaName.SnowSampler0:
                             //case MetaName.SnowSampler1:
-                            //case MetaName.DiffuseSampler2:
                             //case MetaName.DiffuseSampler3:
                             //case MetaName.DirtSampler:
                             //case MetaName.DirtBumpSampler:
@@ -605,6 +618,7 @@ namespace CodeWalker.Rendering
 
 
             bool usediff = ((texture != null) && (texture.ShaderResourceView != null));
+            bool usediff2 = ((texture2 != null) && (texture2.ShaderResourceView != null));
             bool usebump = ((bumptex != null) && (bumptex.ShaderResourceView != null));
             bool usespec = ((spectex != null) && (spectex.ShaderResourceView != null));
             bool usedetl = ((detltex != null) && (detltex.ShaderResourceView != null));
@@ -658,6 +672,7 @@ namespace CodeWalker.Rendering
 
 
             PSGeomVars.Vars.EnableTexture = usediff ? 1u : 0u;
+            PSGeomVars.Vars.EnableTexture2 = usediff2 ? 1u : 0u;
             PSGeomVars.Vars.EnableTint = pstintflag;
             PSGeomVars.Vars.EnableNormalMap = usebump ? 1u : 0u;
             PSGeomVars.Vars.EnableSpecMap = usespec ? 1u : 0u;
@@ -705,6 +720,10 @@ namespace CodeWalker.Rendering
             if (usedetl)
             {
                 detltex.SetPSResource(context, 4);
+            }
+            if (usediff2)
+            {
+                texture2.SetPSResource(context, 5);
             }
             if (usetint)
             {
