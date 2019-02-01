@@ -883,6 +883,7 @@ namespace CodeWalker.Rendering
             context.PixelShader.SetShaderResource(2, null);
             context.PixelShader.SetShaderResource(3, null);
             context.PixelShader.SetShaderResource(4, null);
+            context.PixelShader.SetShaderResource(5, null);
             context.VertexShader.SetShaderResource(0, null);
             context.VertexShader.SetShaderResource(1, null);
             context.VertexShader.SetShaderResource(2, null);
@@ -921,6 +922,7 @@ namespace CodeWalker.Rendering
 
             basicps.Dispose();
             basicvspnct.Dispose();
+            basicvspnctt.Dispose();
             basicvspncct.Dispose();
             basicvspncctt.Dispose();
             basicvspnccttt.Dispose();
