@@ -62,7 +62,7 @@
             this.MaxTextBox.Name = "MaxTextBox";
             this.MaxTextBox.Size = new System.Drawing.Size(177, 20);
             this.MaxTextBox.TabIndex = 48;
-            this.MaxTextBox.Text = "100, 100";
+            this.MaxTextBox.Text = "50, 50";
             // 
             // label1
             // 

@@ -140,6 +140,7 @@
             this.AudioRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsManifestGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsLODLightsGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsNavMeshGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.ToolsImportMenyooXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -172,7 +173,6 @@
             this.ToolbarSaveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolsLODLightsGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.SuspendLayout();
@@ -1079,12 +1079,18 @@
             this.ToolsManifestGeneratorMenu.Text = "Manifest Generator...";
             this.ToolsManifestGeneratorMenu.Click += new System.EventHandler(this.ToolsManifestGeneratorMenu_Click);
             // 
+            // ToolsLODLightsGeneratorMenu
+            // 
+            this.ToolsLODLightsGeneratorMenu.Name = "ToolsLODLightsGeneratorMenu";
+            this.ToolsLODLightsGeneratorMenu.Size = new System.Drawing.Size(196, 22);
+            this.ToolsLODLightsGeneratorMenu.Text = "LOD Lights Generator...";
+            this.ToolsLODLightsGeneratorMenu.Click += new System.EventHandler(this.ToolsLODLightsGeneratorMenu_Click);
+            // 
             // ToolsNavMeshGeneratorMenu
             // 
             this.ToolsNavMeshGeneratorMenu.Name = "ToolsNavMeshGeneratorMenu";
             this.ToolsNavMeshGeneratorMenu.Size = new System.Drawing.Size(196, 22);
             this.ToolsNavMeshGeneratorMenu.Text = "Nav Mesh Generator...";
-            this.ToolsNavMeshGeneratorMenu.Visible = false;
             this.ToolsNavMeshGeneratorMenu.Click += new System.EventHandler(this.ToolsNavMeshGeneratorMenu_Click);
             // 
             // toolStripSeparator2
@@ -1335,13 +1341,6 @@
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
-            // 
-            // ToolsLODLightsGeneratorMenu
-            // 
-            this.ToolsLODLightsGeneratorMenu.Name = "ToolsLODLightsGeneratorMenu";
-            this.ToolsLODLightsGeneratorMenu.Size = new System.Drawing.Size(196, 22);
-            this.ToolsLODLightsGeneratorMenu.Text = "LOD Lights Generator...";
-            this.ToolsLODLightsGeneratorMenu.Click += new System.EventHandler(this.ToolsLODLightsGeneratorMenu_Click);
             // 
             // ProjectForm
             // 
