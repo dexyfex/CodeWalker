@@ -54,11 +54,7 @@ namespace CodeWalker.Rendering
     }
     public struct BasicShaderPSGeomVars
     {
-        public uint EnableTexture;
-        public uint EnableTexture2;
-        public uint pad1;
-        public uint pad2;
-        public uint pad3;
+        public uint EnableTexture;//1+=diffuse1, 2+=diffuse2
         public uint EnableTint;
         public uint EnableNormalMap;
         public uint EnableSpecMap;
@@ -671,8 +667,7 @@ namespace CodeWalker.Rendering
             }
 
 
-            PSGeomVars.Vars.EnableTexture = usediff ? 1u : 0u;
-            PSGeomVars.Vars.EnableTexture2 = usediff2 ? 1u : 0u;
+            PSGeomVars.Vars.EnableTexture = (usediff ? 1u : 0u) + (usediff2 ? 2u : 0u);
             PSGeomVars.Vars.EnableTint = pstintflag;
             PSGeomVars.Vars.EnableNormalMap = usebump ? 1u : 0u;
             PSGeomVars.Vars.EnableSpecMap = usespec ? 1u : 0u;
