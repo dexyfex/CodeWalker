@@ -2940,7 +2940,22 @@ namespace CodeWalker.GameFiles
                                 if (ytd2.TextureDict.Textures?.Count != ytdfile.TextureDict.Textures?.Count)
                                 { continue; }
 
+                                for (int i = 0; i < ytdfile.TextureDict.Textures.Count; i++)
+                                {
+                                    var tx1 = ytdfile.TextureDict.Textures[i];
+                                    var tx2 = ytd2.TextureDict.Textures[i];
+                                    var td1 = tx1.Data;
+                                    var td2 = tx2.Data;
+                                    if (td1.FullData.Length != td2.FullData.Length)
+                                    { continue; }
 
+                                    for (int j = 0; j < td1.FullData.Length; j++)
+                                    {
+                                        if (td1.FullData[j] != td2.FullData[j])
+                                        { break; }
+                                    }
+
+                                }
 
                             }
                         }

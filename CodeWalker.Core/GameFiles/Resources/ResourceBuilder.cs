@@ -127,7 +127,7 @@ namespace CodeWalker.GameFiles
                 foreach (var block in blocks)
                 {
                     if (block.FilePosition != -1)
-                        throw new Exception("A position of -1 is not possible!");
+                        throw new Exception("Block was already assigned a position!");
                     //if (block.Length == 0)
                     //    throw new Exception("A length of 0 is not allowed!");
 
@@ -226,23 +226,14 @@ namespace CodeWalker.GameFiles
 
 
 
-            var sysDataSize = 0x2000;
-            while (sysDataSize < systemStream.Length)
-            {
-                sysDataSize *= 2;
-            }
+            var sysDataSize = systemPageCount * systemPageSize;
             var sysData = new byte[sysDataSize];
             systemStream.Flush();
             systemStream.Position = 0;
             systemStream.Read(sysData, 0, (int)systemStream.Length);
 
 
-            var gfxPageSize = 0x2000;
-            while (gfxPageSize != graphicsPageSize)
-            {
-                gfxPageSize *= 2;
-            }
-            var gfxDataSize = graphicsPageCount * gfxPageSize;
+            var gfxDataSize = graphicsPageCount * graphicsPageSize;
             var gfxData = new byte[gfxDataSize];
             graphicsStream.Flush();
             graphicsStream.Position = 0;
