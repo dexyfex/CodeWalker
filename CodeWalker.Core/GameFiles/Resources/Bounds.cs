@@ -780,13 +780,53 @@ namespace CodeWalker.GameFiles
         public BoundsMaterialType Type { get; set; }
         public byte ProceduralId { get; set; }
         public byte RoomId_and_PedDensity { get; set; }
-        public ushort PolyFlags { get; set; } //TOBEFIXED
-        public byte MaterialColorIndex { get; set; } //TOBEFIXED
+        public EBoundMaterialFlags Flags { get; set; }
+        public byte MaterialColorIndex { get; set; }
         public ushort Unk4 { get; set; }
+
+        /// <summary>
+        /// Bits 0, 1, 2, 3, 4 of <see cref="RoomId_and_PedDensity"/>, values from 0 to 31
+        /// </summary>
+        public byte RoomId
+        {
+            get => (byte)(RoomId_and_PedDensity & 0x1F);
+            set => RoomId_and_PedDensity = (byte)((RoomId_and_PedDensity & 0xE0) | (value & 0x1F));
+        }
+
+        /// <summary>
+        /// Bits 5, 6, 7 of <see cref="RoomId_and_PedDensity"/>, values from 0 to 7
+        /// </summary>
+        public byte PedDensity
+        {
+            get => (byte)((RoomId_and_PedDensity & 0xE0) >> 5);
+            set => RoomId_and_PedDensity = (byte)((RoomId_and_PedDensity & 0x1F) | ((value << 5) & 0xE0));
+        }
+
         public override string ToString()
         {
-            return Type.ToString() + ", " + ProceduralId.ToString() + ", " + RoomId_and_PedDensity.ToString() + ", " + MaterialColorIndex.ToString() + ", " + PolyFlags.ToString() + ", " + Unk4.ToString();
+            return Type.ToString() + ", " + ProceduralId.ToString() + ", " + RoomId_and_PedDensity.ToString() + ", " + MaterialColorIndex.ToString() + ", " + Flags.ToString() + ", " + Unk4.ToString();
         }
+    }
+
+    [Flags] public enum EBoundMaterialFlags : ushort
+    {
+        NONE = 0,
+        FLAG_STAIRS = 1,
+        FLAG_NOT_CLIMBABLE = 1 << 1,
+        FLAG_SEE_THROUGH = 1 << 2,
+        FLAG_SHOOT_THROUGH = 1 << 3,
+        FLAG_NOT_COVER = 1 << 4,
+        FLAG_WALKABLE_PATH = 1 << 5,
+        FLAG_NO_CAM_COLLISION = 1 << 6,
+        FLAG_SHOOT_THROUGH_FX = 1 << 7,
+        FLAG_NO_DECAL = 1 << 8,
+        FLAG_NO_NAVMESH = 1 << 9,
+        FLAG_NO_RAGDOLL = 1 << 10,
+        FLAG_VEHICLE_WHEEL = 1 << 11,
+        FLAG_NO_PTFX = 1 << 12,
+        FLAG_TOO_STEEP_FOR_PLAYER = 1 << 13,
+        FLAG_NO_NETWORK_SPAWN = 1 << 14,
+        FLAG_NO_CAM_COLLISION_ALLOW_CLIPPING = 1 << 15,
     }
 
     [TC(typeof(EXP))] public struct BoundMaterialColour
@@ -1116,8 +1156,8 @@ namespace CodeWalker.GameFiles
         public ulong ChildrenTransformation1Pointer { get; set; }
         public ulong ChildrenTransformation2Pointer { get; set; }
         public ulong ChildrenBoundingBoxesPointer { get; set; }
-        public ulong Unknown_90h_Pointer { get; set; }
-        public ulong Unknown_98h_Pointer { get; set; }
+        public ulong ChildrenFlags1Pointer { get; set; }
+        public ulong ChildrenFlags2Pointer { get; set; }
         public ushort ChildrenCount1 { get; set; }
         public ushort ChildrenCount2 { get; set; }
         public uint Unknown_A4h { get; set; } // 0x00000000
@@ -1128,8 +1168,8 @@ namespace CodeWalker.GameFiles
         public Matrix[] ChildrenTransformation1 { get; set; }
         public Matrix[] ChildrenTransformation2 { get; set; }
         public AABB_s[] ChildrenBoundingBoxes { get; set; }
-        public BoundComposite_Unknown_B_002_s[] Unknown_90h_Data { get; set; }
-        public BoundComposite_Unknown_B_002_s[] Unknown_98h_Data { get; set; }
+        public BoundCompositeChildrenFlags[] ChildrenFlags1 { get; set; }
+        public BoundCompositeChildrenFlags[] ChildrenFlags2 { get; set; }
 
         public BVH BVH { get; set; }
 
@@ -1137,8 +1177,8 @@ namespace CodeWalker.GameFiles
         private ResourceSystemStructBlock<Matrix> ChildrenTransformation1Block = null;
         private ResourceSystemStructBlock<Matrix> ChildrenTransformation2Block = null;
         private ResourceSystemStructBlock<AABB_s> ChildrenBoundingBoxesBlock = null;
-        private ResourceSystemStructBlock<BoundComposite_Unknown_B_002_s> Unknown_90h_Block = null;
-        private ResourceSystemStructBlock<BoundComposite_Unknown_B_002_s> Unknown_98h_Block = null;
+        private ResourceSystemStructBlock<BoundCompositeChildrenFlags> ChildrenFlags1Block = null;
+        private ResourceSystemStructBlock<BoundCompositeChildrenFlags> ChildrenFlags2Block = null;
 
 
         /// <summary>
@@ -1153,8 +1193,8 @@ namespace CodeWalker.GameFiles
             this.ChildrenTransformation1Pointer = reader.ReadUInt64();
             this.ChildrenTransformation2Pointer = reader.ReadUInt64();
             this.ChildrenBoundingBoxesPointer = reader.ReadUInt64();
-            this.Unknown_90h_Pointer = reader.ReadUInt64();
-            this.Unknown_98h_Pointer = reader.ReadUInt64();
+            this.ChildrenFlags1Pointer = reader.ReadUInt64();
+            this.ChildrenFlags2Pointer = reader.ReadUInt64();
             this.ChildrenCount1 = reader.ReadUInt16();
             this.ChildrenCount2 = reader.ReadUInt16();
             this.Unknown_A4h = reader.ReadUInt32();
@@ -1177,8 +1217,8 @@ namespace CodeWalker.GameFiles
             this.ChildrenTransformation1 = reader.ReadStructsAt<Matrix>(this.ChildrenTransformation1Pointer, this.ChildrenCount1);
             this.ChildrenTransformation2 = reader.ReadStructsAt<Matrix>(this.ChildrenTransformation2Pointer, this.ChildrenCount1);
             this.ChildrenBoundingBoxes = reader.ReadStructsAt<AABB_s>(this.ChildrenBoundingBoxesPointer, this.ChildrenCount1);
-            this.Unknown_90h_Data = reader.ReadStructsAt<BoundComposite_Unknown_B_002_s>(this.Unknown_90h_Pointer, this.ChildrenCount1);
-            this.Unknown_98h_Data = reader.ReadStructsAt<BoundComposite_Unknown_B_002_s>(this.Unknown_98h_Pointer, this.ChildrenCount1);
+            this.ChildrenFlags1 = reader.ReadStructsAt<BoundCompositeChildrenFlags>(this.ChildrenFlags1Pointer, this.ChildrenCount1);
+            this.ChildrenFlags2 = reader.ReadStructsAt<BoundCompositeChildrenFlags>(this.ChildrenFlags2Pointer, this.ChildrenCount1);
 
             this.BVH = reader.ReadBlockAt<BVH>(
                 this.BVHPointer // offset
@@ -1197,8 +1237,8 @@ namespace CodeWalker.GameFiles
             this.ChildrenTransformation1Pointer = (ulong)(this.ChildrenTransformation1Block != null ? this.ChildrenTransformation1Block.FilePosition : 0);
             this.ChildrenTransformation2Pointer = (ulong)(this.ChildrenTransformation2Block != null ? this.ChildrenTransformation2Block.FilePosition : 0);
             this.ChildrenBoundingBoxesPointer = (ulong)(this.ChildrenBoundingBoxesBlock != null ? this.ChildrenBoundingBoxesBlock.FilePosition : 0);
-            this.Unknown_90h_Pointer = (ulong)(this.Unknown_90h_Block != null ? this.Unknown_90h_Block.FilePosition : 0);
-            this.Unknown_98h_Pointer = (ulong)(this.Unknown_98h_Block != null ? this.Unknown_98h_Block.FilePosition : 0);
+            this.ChildrenFlags1Pointer = (ulong)(this.ChildrenFlags1Block != null ? this.ChildrenFlags1Block.FilePosition : 0);
+            this.ChildrenFlags2Pointer = (ulong)(this.ChildrenFlags2Block != null ? this.ChildrenFlags2Block.FilePosition : 0);
             this.ChildrenCount1 = (ushort)(this.Children != null ? this.Children.Count : 0);
             this.ChildrenCount2 = (ushort)(this.Children != null ? this.Children.Count : 0);
             this.BVHPointer = (ulong)(this.BVH != null ? this.BVH.FilePosition : 0);
@@ -1208,8 +1248,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.ChildrenTransformation1Pointer);
             writer.Write(this.ChildrenTransformation2Pointer);
             writer.Write(this.ChildrenBoundingBoxesPointer);
-            writer.Write(this.Unknown_90h_Pointer);
-            writer.Write(this.Unknown_98h_Pointer);
+            writer.Write(this.ChildrenFlags1Pointer);
+            writer.Write(this.ChildrenFlags2Pointer);
             writer.Write(this.ChildrenCount1);
             writer.Write(this.ChildrenCount2);
             writer.Write(this.Unknown_A4h);
@@ -1238,27 +1278,65 @@ namespace CodeWalker.GameFiles
                 ChildrenBoundingBoxesBlock = new ResourceSystemStructBlock<AABB_s>(ChildrenBoundingBoxes);
                 list.Add(ChildrenBoundingBoxesBlock);
             }
-            if (Unknown_90h_Data != null)
+            if (ChildrenFlags1 != null)
             {
-                Unknown_90h_Block = new ResourceSystemStructBlock<BoundComposite_Unknown_B_002_s>(Unknown_90h_Data);
-                list.Add(Unknown_90h_Block);
+                ChildrenFlags1Block = new ResourceSystemStructBlock<BoundCompositeChildrenFlags>(ChildrenFlags1);
+                list.Add(ChildrenFlags1Block);
             }
-            if (Unknown_98h_Data != null)
+            if (ChildrenFlags2 != null)
             {
-                Unknown_98h_Block = new ResourceSystemStructBlock<BoundComposite_Unknown_B_002_s>(Unknown_98h_Data);
-                list.Add(Unknown_98h_Block);
+                ChildrenFlags2Block = new ResourceSystemStructBlock<BoundCompositeChildrenFlags>(ChildrenFlags2);
+                list.Add(ChildrenFlags2Block);
             }
             if (BVH != null) list.Add(BVH);
             return list.ToArray();
         }
     }
-    [TC(typeof(EXP))] public struct BoundComposite_Unknown_B_002_s
+
+    [Flags] public enum EBoundCompositeFlags
     {
-        public uint Unknown_0h { get; set; }
-        public uint Unknown_4h { get; set; }
+        NONE = 0,
+        UNKNOWN = 1,
+        MAP_WEAPON = 1 << 1,
+        MAP_DYNAMIC = 1 << 2,
+        MAP_ANIMAL = 1 << 3,
+        MAP_COVER = 1 << 4,
+        MAP_VEHICLE = 1 << 5,
+        VEHICLE_NOT_BVH = 1 << 6,
+        VEHICLE_BVH = 1 << 7,
+        VEHICLE_BOX = 1 << 8,
+        PED = 1 << 9,
+        RAGDOLL = 1 << 10,
+        ANIMAL = 1 << 11,
+        ANIMAL_RAGDOLL = 1 << 12,
+        OBJECT = 1 << 13,
+        OBJECT_ENV_CLOTH = 1 << 14,
+        PLANT = 1 << 15,
+        PROJECTILE = 1 << 16,
+        EXPLOSION = 1 << 17,
+        PICKUP = 1 << 18,
+        FOLIAGE = 1 << 19,
+        FORKLIFT_FORKS = 1 << 20,
+        TEST_WEAPON = 1 << 21,
+        TEST_CAMERA = 1 << 22,
+        TEST_AI = 1 << 23,
+        TEST_SCRIPT = 1 << 24,
+        TEST_VEHICLE_WHEEL = 1 << 25,
+        GLASS = 1 << 26,
+        MAP_RIVER = 1 << 27,
+        SMOKE = 1 << 28,
+        UNSMASHED = 1 << 29,
+        MAP_STAIRS = 1 << 30,
+        MAP_DEEP_SURFACE = 1 << 31,
+    }
+
+    [TC(typeof(EXP))] public struct BoundCompositeChildrenFlags
+    {
+        public EBoundCompositeFlags Flags1 { get; set; }
+        public EBoundCompositeFlags Flags2 { get; set; }
         public override string ToString()
         {
-            return Unknown_0h.ToString() + ", " + Unknown_4h.ToString();
+            return Flags1.ToString() + ", " + Flags2.ToString();
         }
     }
 
