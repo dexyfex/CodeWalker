@@ -191,7 +191,7 @@ namespace CodeWalker.Project.Panels
                                         vert.Position = intres.Position;
                                         vert.Normal = intres.Normal;
                                         vert.Material = intres.Material.Type;
-                                        vert.PolyFlags = intres.Material.PolyFlags;
+                                        vert.PolyFlags = (ushort)intres.Material.Flags;
                                         vert.PrevIDX = -1;
                                         vert.PrevIDY = -1;
                                         vert.NextIDX = -1;
