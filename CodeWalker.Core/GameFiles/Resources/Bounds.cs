@@ -783,6 +783,25 @@ namespace CodeWalker.GameFiles
         public EBoundMaterialFlags Flags { get; set; }
         public byte MaterialColorIndex { get; set; }
         public ushort Unk4 { get; set; }
+
+        /// <summary>
+        /// Bits 0, 1, 2, 3, 4 of <see cref="RoomId_and_PedDensity"/>, values from 0 to 31
+        /// </summary>
+        public byte RoomId
+        {
+            get => (byte)(RoomId_and_PedDensity & 0x1F);
+            set => RoomId_and_PedDensity = (byte)((RoomId_and_PedDensity & 0xE0) | (value & 0x1F));
+        }
+
+        /// <summary>
+        /// Bits 5, 6, 7 of <see cref="RoomId_and_PedDensity"/>, values from 0 to 7
+        /// </summary>
+        public byte PedDensity
+        {
+            get => (byte)((RoomId_and_PedDensity & 0xE0) >> 5);
+            set => RoomId_and_PedDensity = (byte)((RoomId_and_PedDensity & 0x1F) | ((value << 5) & 0xE0));
+        }
+
         public override string ToString()
         {
             return Type.ToString() + ", " + ProceduralId.ToString() + ", " + RoomId_and_PedDensity.ToString() + ", " + MaterialColorIndex.ToString() + ", " + Flags.ToString() + ", " + Unk4.ToString();
