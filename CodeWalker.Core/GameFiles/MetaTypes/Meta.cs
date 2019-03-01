@@ -1080,6 +1080,30 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public float Float
+        {
+            get
+            {
+                return MetaTypes.ConvertData<float>(MetaTypes.ConvertToBytes(Hash));
+            }
+        }
+
+        public short Short1
+        {
+            get
+            {
+                return (short)(Hash & 0xFFFF);
+            }
+        }
+        public short Short2
+        {
+            get
+            {
+                return (short)((Hash >> 16) & 0xFFFF);
+            }
+        }
+
+
         public MetaHash(uint h) { Hash = h; }
 
         public override string ToString()
