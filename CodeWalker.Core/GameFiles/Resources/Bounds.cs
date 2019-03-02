@@ -775,37 +775,81 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] [StructLayout(LayoutKind.Sequential, Pack = 1)] public struct BoundMaterial_s
+    [TC(typeof(EXP))]
+    public struct BoundMaterial_s
     {
-        public BoundsMaterialType Type { get; set; }
-        public byte ProceduralId { get; set; }
-        public byte RoomId_and_PedDensity { get; set; }
-        public EBoundMaterialFlags Flags { get; set; }
-        public byte MaterialColorIndex { get; set; }
-        public ushort Unk4 { get; set; }
 
-        /// <summary>
-        /// Bits 0, 1, 2, 3, 4 of <see cref="RoomId_and_PedDensity"/>, values from 0 to 31
-        /// </summary>
-        public byte RoomId
+        public uint Data1;
+        public uint Data2;
+
+        #region Public Properties
+
+        public BoundsMaterialType Type
         {
-            get => (byte)(RoomId_and_PedDensity & 0x1F);
-            set => RoomId_and_PedDensity = (byte)((RoomId_and_PedDensity & 0xE0) | (value & 0x1F));
+            get => (BoundsMaterialType)(Data1 & 0xFFu);
+            set => Data1 = ((Data1 & 0xFFFFFF00u) | ((byte)value & 0xFFu));
         }
 
-        /// <summary>
-        /// Bits 5, 6, 7 of <see cref="RoomId_and_PedDensity"/>, values from 0 to 7
-        /// </summary>
+        public byte ProceduralId
+        {
+            get => (byte)((Data1 >> 8) & 0xFFu);
+            set => Data1 = ((Data1 & 0xFFFF00FFu) | ((value & 0xFFu) << 8));
+        }
+
+        public byte RoomId
+        {
+            get => (byte)((Data1 >> 16) & 0x1Fu);
+            set => Data1 = ((Data1 & 0xFFE0FFFFu) | ((value & 0x1Fu) << 16));
+        }
+
         public byte PedDensity
         {
-            get => (byte)((RoomId_and_PedDensity & 0xE0) >> 5);
-            set => RoomId_and_PedDensity = (byte)((RoomId_and_PedDensity & 0x1F) | ((value << 5) & 0xE0));
+            get => (byte)((Data1 >> 21) & 0x7u);
+            set => Data1 = ((Data1 & 0xFF1FFFFFu) | ((value & 0x7u) << 21));
+        }
+
+        //public byte Flags1
+        //{
+        //    get => (byte)((Data1 >> 24) & 0xFFu);
+        //    set => Data1 = ((Data1 & 0xFFFFFFu) | ((value & 0xFFu) << 24));
+        //}
+
+        //public byte Flags2
+        //{
+        //    get => (byte)((Data2 >> 24) & 0xFFu);
+        //    set => Data2 = ((Data2 & 0xFFFFFFu) | ((value & 0xFFu) << 24));
+        //}
+
+        public EBoundMaterialFlags Flags
+        {
+            get => (EBoundMaterialFlags)(((Data1 >> 24) & 0xFFu) | ((Data2 & 0xFFu) << 8));
+            set
+            {
+                Data1 = (Data1 & 0x00FFFFFFu) | (((ushort)value & 0x00FFu) << 24);
+                Data2 = (Data2 & 0xFFFFFF00u) | (((ushort)value & 0xFF00u) >> 8);
+            }
+        }
+
+        public byte MaterialColorIndex
+        {
+            get => (byte)((Data2 >> 8) & 0xFFu);
+            set => Data2 = ((Data2 & 0xFFFF00FFu) | (value & 0xFFu));
+        }
+
+        public ushort Unk4
+        {
+            get => (ushort)((Data2 >> 16) & 0xFFFFu);
+            set => Data2 = ((Data2 & 0x0000FFFFu) | ((value & 0xFFFFu) << 16));
         }
 
         public override string ToString()
         {
-            return Type.ToString() + ", " + ProceduralId.ToString() + ", " + RoomId_and_PedDensity.ToString() + ", " + MaterialColorIndex.ToString() + ", " + Flags.ToString() + ", " + Unk4.ToString();
+            return Data1.ToString() + ", " + Data2.ToString() + ", "
+                + Type.ToString() + ", " + ProceduralId.ToString() + ", " + RoomId.ToString() + ", " + PedDensity.ToString() + ", "
+                + Flags.ToString() + ", " + MaterialColorIndex.ToString() + ", " + Unk4.ToString();
         }
+
+        #endregion
     }
 
     [Flags] public enum EBoundMaterialFlags : ushort
@@ -1471,6 +1515,16 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             return BoundsMaterialTypes.GetMaterialName(this);
+        }
+
+        public static implicit operator byte(BoundsMaterialType matType)
+        {
+            return matType.Index;  //implicit conversion
+        }
+
+        public static implicit operator BoundsMaterialType(byte b)
+        {
+            return new BoundsMaterialType() { Index = b };
         }
     }
 
