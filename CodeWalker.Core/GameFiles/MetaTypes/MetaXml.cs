@@ -1692,7 +1692,6 @@ namespace CodeWalker.GameFiles
                 SelfClosingTag(sb, ind, arrTag);
             }
         }
-
         public static void WriteItemArray<T>(StringBuilder sb, T[] arr, int ind, string name, string typeName, Func<T, string> formatter) where T : struct
         {
             var aCount = arr?.Length ?? 0;
@@ -1713,6 +1712,46 @@ namespace CodeWalker.GameFiles
             else
             {
                 SelfClosingTag(sb, ind, arrTag);
+            }
+        }
+        public static void WriteItemArray<T>(StringBuilder sb, T[] arr, int ind, string name) where T : IMetaXmlItem
+        {
+            var itemCount = arr?.Length ?? 0;
+            if (itemCount > 0)
+            {
+                OpenTag(sb, ind, name);
+                var cind = ind + 1;
+                var cind2 = ind + 2;
+                for (int i = 0; i < itemCount; i++)
+                {
+                    OpenTag(sb, cind, "Item");
+                    arr[i].WriteXml(sb, cind2);
+                    CloseTag(sb, cind, "Item");
+                }
+                CloseTag(sb, ind, name);
+            }
+            else
+            {
+                SelfClosingTag(sb, ind, name);
+            }
+        }
+        public static void WriteHashItemArray(StringBuilder sb, MetaHash[] arr, int ind, string name)
+        {
+            var itemCount = arr?.Length ?? 0;
+            if (itemCount > 0)
+            {
+                OpenTag(sb, ind, name);
+                var cind = ind + 1;
+                for (int i = 0; i < itemCount; i++)
+                {
+                    var iname = HashString(arr[i]);
+                    StringTag(sb, cind, "Item", iname);
+                }
+                CloseTag(sb, ind, name);
+            }
+            else
+            {
+                SelfClosingTag(sb, ind, name);
             }
         }
 
@@ -1838,6 +1877,11 @@ namespace CodeWalker.GameFiles
         }
     }
 
+    public interface IMetaXmlItem
+    {
+        void WriteXml(StringBuilder sb, int indent);
+        void ReadXml(XmlNode node);
+    }
 
 
 
