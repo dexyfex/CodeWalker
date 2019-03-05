@@ -619,30 +619,30 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.Unk33: return new Dat151Unk33(d, br);
                 case Dat151RelType.Unk35: return new Dat151Unk35(d, br);
                 case Dat151RelType.Unk36: return new Dat151Unk36(d, br);
+                case Dat151RelType.AmbientStreamList: return new Dat151AmbientStreamList(d, br);
+                case Dat151RelType.AmbienceBankMap: return new Dat151AmbienceBankMap(d, br);
+                case Dat151RelType.Unk42: return new Dat151Unk42(d, br);
+                case Dat151RelType.Unk45: return new Dat151Unk45(d, br);
+                case Dat151RelType.Unk48: return new Dat151Unk48(d, br);
+                case Dat151RelType.Unk51: return new Dat151Unk51(d, br);
+                case Dat151RelType.Unk54: return new Dat151Unk54(d, br);
+                case Dat151RelType.Unk59: return new Dat151Unk59(d, br);
+                case Dat151RelType.Unk69: return new Dat151Unk69(d, br);
+                case Dat151RelType.Unk70: return new Dat151Unk70(d, br);
+                case Dat151RelType.Unk71: return new Dat151Unk71(d, br);
+                case Dat151RelType.Unk72: return new Dat151Unk72(d, br);
+                case Dat151RelType.Unk74: return new Dat151Unk74(d, br);
+                case Dat151RelType.Unk75: return new Dat151Unk75(d, br);
+                case Dat151RelType.Unk77: return new Dat151Unk77(d, br);
+                case Dat151RelType.Unk79: return new Dat151Unk79(d, br);
+                case Dat151RelType.VehicleRecord: return new Dat151VehicleRecord(d, br);
+                case Dat151RelType.Unk82: return new Dat151Unk82(d, br);
+                case Dat151RelType.Unk85: return new Dat151Unk85(d, br);
+                case Dat151RelType.Unk95: return new Dat151Unk95(d, br);
+                case Dat151RelType.Unk96: return new Dat151Unk96(d, br);
+                case Dat151RelType.Unk99: return new Dat151Unk99(d, br);
+                case Dat151RelType.Unk100: return new Dat151Unk100(d, br);
 
-                //case Dat151RelType.Unk40: return new Dat151Unk40(d, br);
-                //case Dat151RelType.Unk41: return new Dat151Unk41(d, br);
-                //case Dat151RelType.Unk42: return new Dat151Unk42(d, br);
-                //case Dat151RelType.Unk45: return new Dat151Unk45(d, br);
-                //case Dat151RelType.Unk48: return new Dat151Unk48(d, br);
-                //case Dat151RelType.Unk51: return new Dat151Unk51(d, br);
-                //case Dat151RelType.Unk54: return new Dat151Unk54(d, br);
-                //case Dat151RelType.Unk59: return new Dat151Unk59(d, br);
-                //case Dat151RelType.Unk69: return new Dat151Unk69(d, br);
-                //case Dat151RelType.Unk70: return new Dat151Unk70(d, br);
-                //case Dat151RelType.Unk71: return new Dat151Unk71(d, br);
-                //case Dat151RelType.Unk72: return new Dat151Unk72(d, br);
-                //case Dat151RelType.Unk74: return new Dat151Unk74(d, br);
-                //case Dat151RelType.Unk75: return new Dat151Unk75(d, br);
-                //case Dat151RelType.Unk77: return new Dat151Unk77(d, br);
-                //case Dat151RelType.Unk79: return new Dat151Unk79(d, br);
-                //case Dat151RelType.Unk80: return new Dat151Unk80(d, br);
-                //case Dat151RelType.Unk82: return new Dat151Unk82(d, br);
-                //case Dat151RelType.Unk85: return new Dat151Unk85(d, br);
-                //case Dat151RelType.Unk95: return new Dat151Unk95(d, br);
-                //case Dat151RelType.Unk96: return new Dat151Unk96(d, br);
-                //case Dat151RelType.Unk99: return new Dat151Unk99(d, br);
-                //case Dat151RelType.Unk100: return new Dat151Unk100(d, br);
                 //case Dat151RelType.Unk101: return new Dat151Unk101(d, br);
                 //case Dat151RelType.Unk105: return new Dat151Unk105(d, br);
                 //case Dat151RelType.Unk106: return new Dat151Unk106(d, br);
@@ -788,30 +788,30 @@ namespace CodeWalker.GameFiles
                         case Dat151RelType.Unk33: return new Dat151Unk33(this);
                         case Dat151RelType.Unk35: return new Dat151Unk35(this);
                         case Dat151RelType.Unk36: return new Dat151Unk36(this);
+                        case Dat151RelType.AmbientStreamList: return new Dat151AmbientStreamList(this);
+                        case Dat151RelType.AmbienceBankMap: return new Dat151AmbienceBankMap(this);
+                        case Dat151RelType.Unk42: return new Dat151Unk42(this);
+                        case Dat151RelType.Unk45: return new Dat151Unk45(this);
+                        case Dat151RelType.Unk48: return new Dat151Unk48(this);
+                        case Dat151RelType.Unk51: return new Dat151Unk51(this);
+                        case Dat151RelType.Unk54: return new Dat151Unk54(this);
+                        case Dat151RelType.Unk59: return new Dat151Unk59(this);
+                        case Dat151RelType.Unk69: return new Dat151Unk69(this);
+                        case Dat151RelType.Unk70: return new Dat151Unk70(this);
+                        case Dat151RelType.Unk71: return new Dat151Unk71(this);
+                        case Dat151RelType.Unk72: return new Dat151Unk72(this);
+                        case Dat151RelType.Unk74: return new Dat151Unk74(this);
+                        case Dat151RelType.Unk75: return new Dat151Unk75(this);
+                        case Dat151RelType.Unk77: return new Dat151Unk77(this);
+                        case Dat151RelType.Unk79: return new Dat151Unk79(this);
+                        case Dat151RelType.VehicleRecord: return new Dat151VehicleRecord(this);
+                        case Dat151RelType.Unk82: return new Dat151Unk82(this);
+                        case Dat151RelType.Unk85: return new Dat151Unk85(this);
+                        case Dat151RelType.Unk95: return new Dat151Unk95(this);
+                        case Dat151RelType.Unk96: return new Dat151Unk96(this);
+                        case Dat151RelType.Unk99: return new Dat151Unk99(this);
+                        case Dat151RelType.Unk100: return new Dat151Unk100(this);
 
-                        //case Dat151RelType.Unk40: return new Dat151Unk40(this);
-                        //case Dat151RelType.Unk41: return new Dat151Unk41(this);
-                        //case Dat151RelType.Unk42: return new Dat151Unk42(this);
-                        //case Dat151RelType.Unk45: return new Dat151Unk45(this);
-                        //case Dat151RelType.Unk48: return new Dat151Unk48(this);
-                        //case Dat151RelType.Unk51: return new Dat151Unk51(this);
-                        //case Dat151RelType.Unk54: return new Dat151Unk54(this);
-                        //case Dat151RelType.Unk59: return new Dat151Unk59(this);
-                        //case Dat151RelType.Unk69: return new Dat151Unk69(this);
-                        //case Dat151RelType.Unk70: return new Dat151Unk70(this);
-                        //case Dat151RelType.Unk71: return new Dat151Unk71(this);
-                        //case Dat151RelType.Unk72: return new Dat151Unk72(this);
-                        //case Dat151RelType.Unk74: return new Dat151Unk74(this);
-                        //case Dat151RelType.Unk75: return new Dat151Unk75(this);
-                        //case Dat151RelType.Unk77: return new Dat151Unk77(this);
-                        //case Dat151RelType.Unk79: return new Dat151Unk79(this);
-                        //case Dat151RelType.Unk80: return new Dat151Unk80(this);
-                        //case Dat151RelType.Unk82: return new Dat151Unk82(this);
-                        //case Dat151RelType.Unk85: return new Dat151Unk85(this);
-                        //case Dat151RelType.Unk95: return new Dat151Unk95(this);
-                        //case Dat151RelType.Unk96: return new Dat151Unk96(this);
-                        //case Dat151RelType.Unk99: return new Dat151Unk99(this);
-                        //case Dat151RelType.Unk100: return new Dat151Unk100(this);
                         //case Dat151RelType.Unk101: return new Dat151Unk101(this);
                         //case Dat151RelType.Unk105: return new Dat151Unk105(this);
                         //case Dat151RelType.Unk106: return new Dat151Unk106(this);
@@ -961,7 +961,7 @@ namespace CodeWalker.GameFiles
                             case Dat151RelType.Unk29:
                             case Dat151RelType.SpeechParams:
                             case Dat151RelType.Unk11:
-                            case Dat151RelType.Unk41:
+                            case Dat151RelType.AmbienceBankMap:
                             case Dat151RelType.VehicleTrailer:
                             case Dat151RelType.AmbientEmitterList:
                             case Dat151RelType.Weapon:
@@ -4835,8 +4835,8 @@ namespace CodeWalker.GameFiles
         AmbientZone = 37,
         AmbientEmitter = 38,
         AmbientZoneList = 39,
-        Unk40 = 40,
-        Unk41 = 41, //ambience_bank_map_autogenerated
+        AmbientStreamList = 40, //contains eg amb_stream_bird_01
+        AmbienceBankMap = 41, //ambience_bank_map_autogenerated
         Unk42 = 42,
         Interior = 44,
         Unk45 = 45,
@@ -4871,7 +4871,7 @@ namespace CodeWalker.GameFiles
         Unk77 = 77,
         Unk78 = 78,
         Unk79 = 79,
-        Unk80 = 80, //vehicle record audio? (YVR)
+        VehicleRecord = 80, //vehicle record audio? (YVR)
         Unk81 = 81,
         Unk82 = 82,
         Unk83 = 83, //something to do with animals
@@ -15245,6 +15245,2258 @@ namespace CodeWalker.GameFiles
             ItemCount = (Items?.Length ?? 0);
         }
     }
+    [TC(typeof(EXP))] public class Dat151AmbientStreamListItem : IMetaXmlItem
+    {
+        public MetaHash Unk1 { get; set; }
+        public MetaHash Unk2 { get; set; }
+        public int Unk3 { get; set; }
+
+        public Dat151AmbientStreamListItem()
+        { }
+        public Dat151AmbientStreamListItem(BinaryReader br)
+        {
+            Unk1 = br.ReadUInt32();
+            Unk2 = br.ReadUInt32();
+            Unk3 = br.ReadInt32();
+        }
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write(Unk1);
+            bw.Write(Unk2);
+            bw.Write(Unk3);
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.StringTag(sb, indent, "Unk1", RelXml.HashString(Unk1));
+            RelXml.StringTag(sb, indent, "Unk2", RelXml.HashString(Unk2));
+            RelXml.ValueTag(sb, indent, "Unk3", Unk3.ToString());
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Unk1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk1"));
+            Unk2 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk2"));
+            Unk3 = Xml.GetChildIntAttribute(node, "Unk3", "value");
+        }
+        public override string ToString()
+        {
+            return Unk1.ToString() + ", " + Unk2.ToString() + ", " + Unk3.ToString();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151AmbientStreamList : Dat151RelData //contains eg amb_stream_bird_01
+    {
+        public int ItemCount { get; set; }
+        public Dat151AmbientStreamListItem[] Items { get; set; }
+
+        public Dat151AmbientStreamList(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.AmbientStreamList;
+            TypeID = (byte)Type;
+        }
+        public Dat151AmbientStreamList(RelData d, BinaryReader br) : base(d, br)
+        {
+            ItemCount = br.ReadInt32();
+            Items = new Dat151AmbientStreamListItem[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i] = new Dat151AmbientStreamListItem(br);
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(ItemCount);
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i].Write(bw);
+            }
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.WriteItemArray(sb, Items, indent, "Items");
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Items = XmlRel.ReadItemArray<Dat151AmbientStreamListItem>(node, "Items");
+            ItemCount = (Items?.Length ?? 0);
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151AmbienceBankMap : Dat151RelData //ambience_bank_map_autogenerated
+    {
+        public int ItemCount { get; set; }
+        public Dat151HashPair[] Items { get; set; }
+
+        public Dat151AmbienceBankMap(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.AmbienceBankMap;
+            TypeID = (byte)Type;
+        }
+        public Dat151AmbienceBankMap(RelData d, BinaryReader br) : base(d, br)
+        {
+            ItemCount = br.ReadInt32();
+            Items = new Dat151HashPair[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i] = new Dat151HashPair(br);
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(ItemCount);
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i].Write(bw);
+            }
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.WriteItemArray(sb, Items, indent, "Items");
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Items = XmlRel.ReadItemArray<Dat151HashPair>(node, "Items");
+            ItemCount = (Items?.Length ?? 0);
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk42 : Dat151RelData
+    {
+        public FlagsUint Flags { get; set; }
+        public MetaHash Unk01 { get; set; }//0
+        public float Unk02 { get; set; }
+        public MetaHash Unk03 { get; set; }//0
+        public float Unk04 { get; set; }
+        public float Unk05 { get; set; }
+        public float Unk06 { get; set; }
+        public float Unk07 { get; set; }
+        public MetaHash Unk08 { get; set; }//0
+        public MetaHash Unk09 { get; set; }//0
+        public MetaHash Unk10 { get; set; }//0
+
+        public Dat151Unk42(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk42;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk42(RelData d, BinaryReader br) : base(d, br)
+        {
+            Flags = br.ReadUInt32();
+            Unk01 = br.ReadUInt32();//0
+            Unk02 = br.ReadSingle();
+            Unk03 = br.ReadUInt32();//0
+            Unk04 = br.ReadSingle();
+            Unk05 = br.ReadSingle();
+            Unk06 = br.ReadSingle();
+            Unk07 = br.ReadSingle();
+            Unk08 = br.ReadUInt32();//0
+            Unk09 = br.ReadUInt32();//0
+            Unk10 = br.ReadUInt32();//0
+
+            if (Unk01 != 0)
+            { }
+            if (Unk03 != 0)
+            { }
+            if (Unk08 != 0)
+            { }
+            if (Unk09 != 0)
+            { }
+            if (Unk10 != 0)
+            { }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Flags);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
+            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
+            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
+            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
+            RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
+            RelXml.StringTag(sb, indent, "Unk08", RelXml.HashString(Unk08));
+            RelXml.StringTag(sb, indent, "Unk09", RelXml.HashString(Unk09));
+            RelXml.StringTag(sb, indent, "Unk10", RelXml.HashString(Unk10));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
+            Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
+            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
+            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
+            Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
+            Unk08 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk08"));
+            Unk09 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk09"));
+            Unk10 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk10"));
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk45 : Dat151RelData
+    {
+        public float Unk01 { get; set; }
+        public float Unk02 { get; set; }
+        public int Unk03 { get; set; }
+        public int Unk04 { get; set; }
+        public float Unk05 { get; set; }
+
+        public Dat151Unk45(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk45;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk45(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadSingle();
+            Unk02 = br.ReadSingle();
+            Unk03 = br.ReadInt32();
+            Unk04 = br.ReadInt32();
+            Unk05 = br.ReadSingle();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
+            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
+            RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
+            RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
+            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
+            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
+            Unk03 = Xml.GetChildIntAttribute(node, "Unk03", "value");
+            Unk04 = Xml.GetChildIntAttribute(node, "Unk04", "value");
+            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk48 : Dat151RelData
+    {
+        public FlagsUint Flags { get; set; }
+        public float Unk01 { get; set; }
+        public MetaHash Unk02 { get; set; }//0
+        public float Unk03 { get; set; }
+        public float Unk04 { get; set; }
+        public float Unk05 { get; set; }
+        public float Unk06 { get; set; }
+        public float Unk07 { get; set; }
+        public int Unk08 { get; set; }
+
+        public Dat151Unk48(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk48;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk48(RelData d, BinaryReader br) : base(d, br)
+        {
+            Flags = br.ReadUInt32();
+            Unk01 = br.ReadSingle();
+            Unk02 = br.ReadUInt32();//0
+            Unk03 = br.ReadSingle();
+            Unk04 = br.ReadSingle();
+            Unk05 = br.ReadSingle();
+            Unk06 = br.ReadSingle();
+            Unk07 = br.ReadSingle();
+            Unk08 = br.ReadInt32();
+
+            if (Unk02 != 0)
+            { }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Flags);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
+            RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
+            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
+            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
+            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
+            RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
+            RelXml.ValueTag(sb, indent, "Unk08", Unk08.ToString());
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
+            Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
+            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
+            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
+            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
+            Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
+            Unk08 = Xml.GetChildIntAttribute(node, "Unk08", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk51 : Dat151RelData
+    {
+        public MetaHash Unk01 { get; set; }
+        public MetaHash Unk02 { get; set; }
+        public MetaHash Unk03 { get; set; }
+        public MetaHash Unk04 { get; set; }
+        public MetaHash Unk05 { get; set; }
+
+        public Dat151Unk51(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk51;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk51(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadUInt32();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
+            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
+            RelXml.StringTag(sb, indent, "Unk04", RelXml.HashString(Unk04));
+            RelXml.StringTag(sb, indent, "Unk05", RelXml.HashString(Unk05));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
+            Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
+            Unk04 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
+            Unk05 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk54 : Dat151RelData
+    {
+        public float Unk01 { get; set; }
+        public float Unk02 { get; set; }
+        public float Unk03 { get; set; }
+        public float Unk04 { get; set; }
+        public float Unk05 { get; set; }
+        public MetaHash Unk06 { get; set; }
+        public MetaHash Unk07 { get; set; }
+        public MetaHash Unk08 { get; set; }
+        public int ItemCount { get; set; }
+        public MetaHash[] Items { get; set; }
+
+        public Dat151Unk54(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk54;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk54(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadSingle();
+            Unk02 = br.ReadSingle();
+            Unk03 = br.ReadSingle();
+            Unk04 = br.ReadSingle();
+            Unk05 = br.ReadSingle();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            ItemCount = br.ReadInt32();
+            Items = new MetaHash[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i] = br.ReadUInt32();
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(ItemCount);
+            for (int i = 0; i < ItemCount; i++)
+            {
+                bw.Write(Items[i]);
+            }
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
+            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
+            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
+            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
+            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.StringTag(sb, indent, "Unk06", RelXml.HashString(Unk06));
+            RelXml.StringTag(sb, indent, "Unk07", RelXml.HashString(Unk07));
+            RelXml.StringTag(sb, indent, "Unk08", RelXml.HashString(Unk08));
+            RelXml.WriteHashItemArray(sb, Items, indent, "Items");
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
+            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
+            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
+            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
+            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+            Unk06 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk06"));
+            Unk07 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk07"));
+            Unk08 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk08"));
+            Items = XmlRel.ReadHashItemArray(node, "Items");
+            ItemCount = (Items?.Length ?? 0);
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk59 : Dat151RelData
+    {
+        public short Unk01 { get; set; }
+        public short Unk02 { get; set; }
+        public short Unk03 { get; set; }
+        public short Unk04 { get; set; }
+        public short Unk05 { get; set; }
+        public short Unk06 { get; set; }
+        public short Unk07 { get; set; }
+        public short Unk08 { get; set; }
+
+        public Dat151Unk59(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk59;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk59(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadInt16();
+            Unk02 = br.ReadInt16();
+            Unk03 = br.ReadInt16();
+            Unk04 = br.ReadInt16();
+            Unk05 = br.ReadInt16();
+            Unk06 = br.ReadInt16();
+            Unk07 = br.ReadInt16();
+            Unk08 = br.ReadInt16();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
+            RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
+            RelXml.ValueTag(sb, indent, "Unk05", Unk05.ToString());
+            RelXml.ValueTag(sb, indent, "Unk06", Unk06.ToString());
+            RelXml.ValueTag(sb, indent, "Unk07", Unk07.ToString());
+            RelXml.ValueTag(sb, indent, "Unk08", Unk08.ToString());
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = (short)Xml.GetChildIntAttribute(node, "Unk01", "value");
+            Unk02 = (short)Xml.GetChildIntAttribute(node, "Unk02", "value");
+            Unk03 = (short)Xml.GetChildIntAttribute(node, "Unk03", "value");
+            Unk04 = (short)Xml.GetChildIntAttribute(node, "Unk04", "value");
+            Unk05 = (short)Xml.GetChildIntAttribute(node, "Unk05", "value");
+            Unk06 = (short)Xml.GetChildIntAttribute(node, "Unk06", "value");
+            Unk07 = (short)Xml.GetChildIntAttribute(node, "Unk07", "value");
+            Unk08 = (short)Xml.GetChildIntAttribute(node, "Unk08", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk69 : Dat151RelData
+    {
+        public ushort Unk01 { get; set; } 
+
+        public Dat151Unk69(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk69;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk69(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadUInt16();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = (ushort)Xml.GetChildUIntAttribute(node, "Unk01", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk70 : Dat151RelData
+    {
+        public int Unk01 { get; set; }
+        public int Unk02 { get; set; }
+
+        public Dat151Unk70(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk70;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk70(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadInt32();
+            Unk02 = br.ReadInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = Xml.GetChildIntAttribute(node, "Unk01", "value");
+            Unk02 = Xml.GetChildIntAttribute(node, "Unk02", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk71 : Dat151RelData
+    {
+        public FlagsUint Flags { get; set; }
+        public MetaHash Unk01 { get; set; }
+        public MetaHash Unk02 { get; set; }//0
+        public MetaHash Unk03 { get; set; }//0
+        public MetaHash Unk04 { get; set; }//0
+        public float Unk05 { get; set; }
+        public MetaHash Unk06 { get; set; }
+        public MetaHash Unk07 { get; set; }
+        public MetaHash Unk08 { get; set; }
+        public MetaHash Unk09 { get; set; }
+        public MetaHash Unk10 { get; set; }
+        public MetaHash Unk11 { get; set; }
+        public MetaHash Unk12 { get; set; }
+        public MetaHash Unk13 { get; set; }
+        public float Unk14 { get; set; }
+        public MetaHash Unk15 { get; set; }
+        public MetaHash Unk16 { get; set; }
+        public MetaHash Unk17 { get; set; }
+        public float Unk18 { get; set; }
+
+        public Dat151Unk71(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk71;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk71(RelData d, BinaryReader br) : base(d, br)
+        {
+            Flags = br.ReadUInt32();
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();//0
+            Unk03 = br.ReadUInt32();//0
+            Unk04 = br.ReadUInt32();//0
+            Unk05 = br.ReadSingle();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadUInt32();
+            Unk10 = br.ReadUInt32();
+            Unk11 = br.ReadUInt32();
+            Unk12 = br.ReadUInt32();
+            Unk13 = br.ReadUInt32();
+            Unk14 = br.ReadSingle();
+            Unk15 = br.ReadUInt32();
+            Unk16 = br.ReadUInt32();
+            Unk17 = br.ReadUInt32();
+            Unk18 = br.ReadSingle();
+
+            if (Unk02 != 0)
+            { }
+            if (Unk03 != 0)
+            { }
+            if (Unk04 != 0)
+            { }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Flags);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+            bw.Write(Unk16);
+            bw.Write(Unk17);
+            bw.Write(Unk18);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
+            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
+            RelXml.StringTag(sb, indent, "Unk04", RelXml.HashString(Unk04));
+            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.StringTag(sb, indent, "Unk06", RelXml.HashString(Unk06));
+            RelXml.StringTag(sb, indent, "Unk07", RelXml.HashString(Unk07));
+            RelXml.StringTag(sb, indent, "Unk08", RelXml.HashString(Unk08));
+            RelXml.StringTag(sb, indent, "Unk09", RelXml.HashString(Unk09));
+            RelXml.StringTag(sb, indent, "Unk10", RelXml.HashString(Unk10));
+            RelXml.StringTag(sb, indent, "Unk11", RelXml.HashString(Unk11));
+            RelXml.StringTag(sb, indent, "Unk12", RelXml.HashString(Unk12));
+            RelXml.StringTag(sb, indent, "Unk13", RelXml.HashString(Unk13));
+            RelXml.ValueTag(sb, indent, "Unk14", FloatUtil.ToString(Unk14));
+            RelXml.StringTag(sb, indent, "Unk15", RelXml.HashString(Unk15));
+            RelXml.StringTag(sb, indent, "Unk16", RelXml.HashString(Unk16));
+            RelXml.StringTag(sb, indent, "Unk17", RelXml.HashString(Unk17));
+            RelXml.ValueTag(sb, indent, "Unk18", FloatUtil.ToString(Unk18));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
+            Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
+            Unk04 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
+            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+            Unk06 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk06"));
+            Unk07 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk07"));
+            Unk08 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk08"));
+            Unk09 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk09"));
+            Unk10 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk10"));
+            Unk11 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk11"));
+            Unk12 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk12"));
+            Unk13 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk13"));
+            Unk14 = Xml.GetChildFloatAttribute(node, "Unk14", "value");
+            Unk15 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk15"));
+            Unk16 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk16"));
+            Unk17 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk17"));
+            Unk18 = Xml.GetChildFloatAttribute(node, "Unk18", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk72 : Dat151RelData
+    {
+        public int Unk01 { get; set; }
+        public float Unk02 { get; set; }
+        public float Unk03 { get; set; }
+        public float Unk04 { get; set; }
+        public float Unk05 { get; set; }
+        public float Unk06 { get; set; }
+        public float Unk07 { get; set; }
+        public float Unk08 { get; set; }
+        public float Unk09 { get; set; }
+        public MetaHash Unk10 { get; set; }//0
+        public MetaHash Unk11 { get; set; }//0
+        public MetaHash Unk12 { get; set; }
+        public MetaHash Unk13 { get; set; }
+        public MetaHash Unk14 { get; set; }
+        public MetaHash Unk15 { get; set; }
+
+        public Dat151Unk72(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk72;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk72(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadInt32();
+            Unk02 = br.ReadSingle();
+            Unk03 = br.ReadSingle();
+            Unk04 = br.ReadSingle();
+            Unk05 = br.ReadSingle();
+            Unk06 = br.ReadSingle();
+            Unk07 = br.ReadSingle();
+            Unk08 = br.ReadSingle();
+            Unk09 = br.ReadSingle();
+            Unk10 = br.ReadUInt32();//0
+            Unk11 = br.ReadUInt32();//0
+            Unk12 = br.ReadUInt32();
+            Unk13 = br.ReadUInt32();
+            Unk14 = br.ReadUInt32();
+            Unk15 = br.ReadUInt32();
+
+            if (Unk10 != 0)
+            { }
+            if (Unk11 != 0)
+            { }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
+            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
+            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
+            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
+            RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
+            RelXml.ValueTag(sb, indent, "Unk08", FloatUtil.ToString(Unk08));
+            RelXml.ValueTag(sb, indent, "Unk09", FloatUtil.ToString(Unk09));
+            RelXml.StringTag(sb, indent, "Unk10", RelXml.HashString(Unk10));
+            RelXml.StringTag(sb, indent, "Unk11", RelXml.HashString(Unk11));
+            RelXml.StringTag(sb, indent, "Unk12", RelXml.HashString(Unk12));
+            RelXml.StringTag(sb, indent, "Unk13", RelXml.HashString(Unk13));
+            RelXml.StringTag(sb, indent, "Unk14", RelXml.HashString(Unk14));
+            RelXml.StringTag(sb, indent, "Unk15", RelXml.HashString(Unk15));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = Xml.GetChildIntAttribute(node, "Unk01", "value");
+            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
+            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
+            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
+            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
+            Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
+            Unk08 = Xml.GetChildFloatAttribute(node, "Unk08", "value");
+            Unk09 = Xml.GetChildFloatAttribute(node, "Unk09", "value");
+            Unk10 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk10"));
+            Unk11 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk11"));
+            Unk12 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk12"));
+            Unk13 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk13"));
+            Unk14 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk14"));
+            Unk15 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk15"));
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk74Item : IMetaXmlItem
+    {
+        public byte Unk1 { get; set; }
+        public byte ItemCount1 { get; set; } //indicates how many are used
+        public Dat151HashFloat[] Items1 { get; set; } //always array of 8
+        public byte ItemCount2 { get; set; } //indicates how many are used
+        public Dat151HashFloat[] Items2 { get; set; } //always array of 8
+
+        public Dat151Unk74Item()
+        { }
+        public Dat151Unk74Item(BinaryReader br)
+        {
+            Unk1 = br.ReadByte();
+            ItemCount1 = br.ReadByte();
+            Items1 = new Dat151HashFloat[8];
+            for (int i = 0; i < 8; i++)
+            {
+                Items1[i] = new Dat151HashFloat(br);
+            }
+            ItemCount2 = br.ReadByte();
+            Items2 = new Dat151HashFloat[8];
+            for (int i = 0; i < 8; i++)
+            {
+                Items2[i] = new Dat151HashFloat(br);
+            }
+        }
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write(Unk1);
+            bw.Write(ItemCount1);
+            for (int i = 0; i < 8; i++)
+            {
+                Items1[i].Write(bw);
+            }
+            bw.Write(ItemCount2);
+            for (int i = 0; i < 8; i++)
+            {
+                Items2[i].Write(bw);
+            }
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk1", Unk1.ToString());
+            RelXml.ValueTag(sb, indent, "ItemCount1", ItemCount1.ToString());
+            RelXml.WriteItemArray(sb, Items1, indent, "Items1");
+            RelXml.ValueTag(sb, indent, "ItemCount2", ItemCount2.ToString());
+            RelXml.WriteItemArray(sb, Items2, indent, "Items2");
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Unk1 = (byte)Xml.GetChildUIntAttribute(node, "Unk1", "value");
+            ItemCount1 = (byte)Xml.GetChildUIntAttribute(node, "ItemCount1", "value");
+            Items1 = XmlRel.ReadItemArray<Dat151HashFloat>(node, "Items1");
+            ItemCount2 = (byte)Xml.GetChildUIntAttribute(node, "ItemCount2", "value");
+            Items2 = XmlRel.ReadItemArray<Dat151HashFloat>(node, "Items2");
+            //probably should make an error if Items1/2 are not an array of 8...
+        }
+        public override string ToString()
+        {
+            return Unk1.ToString() + ": " + ItemCount1.ToString() + ", " + ItemCount2.ToString();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk74 : Dat151RelData
+    {
+        public byte ItemCount { get; set; }
+        public Dat151Unk74Item[] Items { get; set; }
+
+        public Dat151Unk74(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk74;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk74(RelData d, BinaryReader br) : base(d, br)
+        {
+            ItemCount = br.ReadByte();//1
+            Items = new Dat151Unk74Item[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i] = new Dat151Unk74Item(br);
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(ItemCount);
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i].Write(bw);
+            }
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.WriteItemArray(sb, Items, indent, "Items");
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Items = XmlRel.ReadItemArray<Dat151Unk74Item>(node, "Items");
+            ItemCount = (byte)(Items?.Length ?? 0);
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk75 : Dat151RelData
+    {
+        public MetaHash Unk01 { get; set; }
+        public MetaHash Unk02 { get; set; }
+        public MetaHash Unk03 { get; set; }
+        public MetaHash Unk04 { get; set; }
+        public MetaHash Unk05 { get; set; }
+        public MetaHash Unk06 { get; set; }
+        public MetaHash Unk07 { get; set; }
+        public MetaHash Unk08 { get; set; }
+        public MetaHash Unk09 { get; set; }
+        public MetaHash Unk10 { get; set; }
+        public MetaHash Unk11 { get; set; }
+        public MetaHash Unk12 { get; set; }
+        public MetaHash Unk13 { get; set; }
+        public MetaHash Unk14 { get; set; }
+        public MetaHash Unk15 { get; set; }
+        public MetaHash Unk16 { get; set; }
+        public MetaHash Unk17 { get; set; }//0
+        public MetaHash Unk18 { get; set; }//0
+        public MetaHash Unk19 { get; set; }
+        public MetaHash Unk20 { get; set; }
+        public MetaHash Unk21 { get; set; }//0
+        public MetaHash Unk22 { get; set; }//0
+        public MetaHash Unk23 { get; set; }
+        public MetaHash Unk24 { get; set; }
+        public MetaHash Unk25 { get; set; }//0
+        public MetaHash Unk26 { get; set; }
+        public MetaHash Unk27 { get; set; }//0
+        public MetaHash Unk28 { get; set; }
+        public MetaHash Unk29 { get; set; }
+        public MetaHash Unk30 { get; set; }//0
+        public MetaHash Unk31 { get; set; }//0
+        public MetaHash Unk32 { get; set; }
+        public MetaHash Unk33 { get; set; }
+        public MetaHash Unk34 { get; set; }//dlc_replayed/mono_tv_ammunation
+        public MetaHash Unk35 { get; set; }//0
+        public MetaHash Unk36 { get; set; }
+        public MetaHash Unk37 { get; set; }
+        public MetaHash Unk38 { get; set; }//0
+        public MetaHash Unk39 { get; set; }
+        public MetaHash Unk40 { get; set; }//0
+        public MetaHash Unk41 { get; set; }
+        public MetaHash Unk42 { get; set; }
+        public MetaHash Unk43 { get; set; }//0
+        public MetaHash Unk44 { get; set; }//0
+        public MetaHash Unk45 { get; set; }
+        public MetaHash Unk46 { get; set; }
+        public MetaHash Unk47 { get; set; }
+        public MetaHash Unk48 { get; set; }//0
+        public MetaHash Unk49 { get; set; }
+        public MetaHash Unk50 { get; set; }
+        public MetaHash Unk51 { get; set; }//0
+        public MetaHash Unk52 { get; set; }
+        public MetaHash Unk53 { get; set; }//0
+        public MetaHash Unk54 { get; set; }
+        public MetaHash Unk55 { get; set; }//0
+        public MetaHash Unk56 { get; set; }
+        public MetaHash Unk57 { get; set; }//0
+        public MetaHash Unk58 { get; set; }//0
+        public MetaHash Unk59 { get; set; }//0
+        public MetaHash Unk60 { get; set; }
+        public MetaHash Unk61 { get; set; }//0
+        public MetaHash Unk62 { get; set; }
+        public MetaHash Unk63 { get; set; }//0
+        public MetaHash Unk64 { get; set; }//0
+        public MetaHash Unk65 { get; set; }//0
+        public MetaHash Unk66 { get; set; }
+
+        public Dat151Unk75(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk75;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk75(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadUInt32();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadUInt32();
+            Unk10 = br.ReadUInt32();
+            Unk11 = br.ReadUInt32();
+            Unk12 = br.ReadUInt32();
+            Unk13 = br.ReadUInt32();
+            Unk14 = br.ReadUInt32();
+            Unk15 = br.ReadUInt32();
+            Unk16 = br.ReadUInt32();
+            Unk17 = br.ReadUInt32();//0
+            Unk18 = br.ReadUInt32();//0
+            Unk19 = br.ReadUInt32();
+            Unk20 = br.ReadUInt32();
+            Unk21 = br.ReadUInt32();//0
+            Unk22 = br.ReadUInt32();//0
+            Unk23 = br.ReadUInt32();
+            Unk24 = br.ReadUInt32();
+            Unk25 = br.ReadUInt32();//0
+            Unk26 = br.ReadUInt32();
+            Unk27 = br.ReadUInt32();//0
+            Unk28 = br.ReadUInt32();
+            Unk29 = br.ReadUInt32();
+            Unk30 = br.ReadUInt32();//0
+            Unk31 = br.ReadUInt32();//0
+            Unk32 = br.ReadUInt32();
+            Unk33 = br.ReadUInt32();
+            Unk34 = br.ReadUInt32();//dlc_replayed/mono_tv_ammunation
+            Unk35 = br.ReadUInt32();//0
+            Unk36 = br.ReadUInt32();
+            Unk37 = br.ReadUInt32();
+            Unk38 = br.ReadUInt32();//0
+            Unk39 = br.ReadUInt32();
+            Unk40 = br.ReadUInt32();//0
+            Unk41 = br.ReadUInt32();
+            Unk42 = br.ReadUInt32();
+            Unk43 = br.ReadUInt32();//0
+            Unk44 = br.ReadUInt32();//0
+            Unk45 = br.ReadUInt32();
+            Unk46 = br.ReadUInt32();
+            Unk47 = br.ReadUInt32();
+            Unk48 = br.ReadUInt32();//0
+            Unk49 = br.ReadUInt32();
+            Unk50 = br.ReadUInt32();
+            Unk51 = br.ReadUInt32();//0
+            Unk52 = br.ReadUInt32();
+            Unk53 = br.ReadUInt32();//0
+            Unk54 = br.ReadUInt32();
+            Unk55 = br.ReadUInt32();//0
+            Unk56 = br.ReadUInt32();
+            Unk57 = br.ReadUInt32();//0
+            Unk58 = br.ReadUInt32();//0
+            Unk59 = br.ReadUInt32();//0
+            Unk60 = br.ReadUInt32();
+            Unk61 = br.ReadUInt32();//0
+            Unk62 = br.ReadUInt32();
+            Unk63 = br.ReadUInt32();//0
+            Unk64 = br.ReadUInt32();//0
+            Unk65 = br.ReadUInt32();//0
+            Unk66 = br.ReadUInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+            bw.Write(Unk16);
+            bw.Write(Unk17);
+            bw.Write(Unk18);
+            bw.Write(Unk19);
+            bw.Write(Unk20);
+            bw.Write(Unk21);
+            bw.Write(Unk22);
+            bw.Write(Unk23);
+            bw.Write(Unk24);
+            bw.Write(Unk25);
+            bw.Write(Unk26);
+            bw.Write(Unk27);
+            bw.Write(Unk28);
+            bw.Write(Unk29);
+            bw.Write(Unk30);
+            bw.Write(Unk31);
+            bw.Write(Unk32);
+            bw.Write(Unk33);
+            bw.Write(Unk34);
+            bw.Write(Unk35);
+            bw.Write(Unk36);
+            bw.Write(Unk37);
+            bw.Write(Unk38);
+            bw.Write(Unk39);
+            bw.Write(Unk40);
+            bw.Write(Unk41);
+            bw.Write(Unk42);
+            bw.Write(Unk43);
+            bw.Write(Unk44);
+            bw.Write(Unk45);
+            bw.Write(Unk46);
+            bw.Write(Unk47);
+            bw.Write(Unk48);
+            bw.Write(Unk49);
+            bw.Write(Unk50);
+            bw.Write(Unk51);
+            bw.Write(Unk52);
+            bw.Write(Unk53);
+            bw.Write(Unk54);
+            bw.Write(Unk55);
+            bw.Write(Unk56);
+            bw.Write(Unk57);
+            bw.Write(Unk58);
+            bw.Write(Unk59);
+            bw.Write(Unk60);
+            bw.Write(Unk61);
+            bw.Write(Unk62);
+            bw.Write(Unk63);
+            bw.Write(Unk64);
+            bw.Write(Unk65);
+            bw.Write(Unk66);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
+            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
+            RelXml.StringTag(sb, indent, "Unk04", RelXml.HashString(Unk04));
+            RelXml.StringTag(sb, indent, "Unk05", RelXml.HashString(Unk05));
+            RelXml.StringTag(sb, indent, "Unk06", RelXml.HashString(Unk06));
+            RelXml.StringTag(sb, indent, "Unk07", RelXml.HashString(Unk07));
+            RelXml.StringTag(sb, indent, "Unk08", RelXml.HashString(Unk08));
+            RelXml.StringTag(sb, indent, "Unk09", RelXml.HashString(Unk09));
+            RelXml.StringTag(sb, indent, "Unk10", RelXml.HashString(Unk10));
+            RelXml.StringTag(sb, indent, "Unk11", RelXml.HashString(Unk11));
+            RelXml.StringTag(sb, indent, "Unk12", RelXml.HashString(Unk12));
+            RelXml.StringTag(sb, indent, "Unk13", RelXml.HashString(Unk13));
+            RelXml.StringTag(sb, indent, "Unk14", RelXml.HashString(Unk14));
+            RelXml.StringTag(sb, indent, "Unk15", RelXml.HashString(Unk15));
+            RelXml.StringTag(sb, indent, "Unk16", RelXml.HashString(Unk16));
+            RelXml.StringTag(sb, indent, "Unk17", RelXml.HashString(Unk17));
+            RelXml.StringTag(sb, indent, "Unk18", RelXml.HashString(Unk18));
+            RelXml.StringTag(sb, indent, "Unk19", RelXml.HashString(Unk19));
+            RelXml.StringTag(sb, indent, "Unk20", RelXml.HashString(Unk20));
+            RelXml.StringTag(sb, indent, "Unk21", RelXml.HashString(Unk21));
+            RelXml.StringTag(sb, indent, "Unk22", RelXml.HashString(Unk22));
+            RelXml.StringTag(sb, indent, "Unk23", RelXml.HashString(Unk23));
+            RelXml.StringTag(sb, indent, "Unk24", RelXml.HashString(Unk24));
+            RelXml.StringTag(sb, indent, "Unk25", RelXml.HashString(Unk25));
+            RelXml.StringTag(sb, indent, "Unk26", RelXml.HashString(Unk26));
+            RelXml.StringTag(sb, indent, "Unk27", RelXml.HashString(Unk27));
+            RelXml.StringTag(sb, indent, "Unk28", RelXml.HashString(Unk28));
+            RelXml.StringTag(sb, indent, "Unk29", RelXml.HashString(Unk29));
+            RelXml.StringTag(sb, indent, "Unk30", RelXml.HashString(Unk30));
+            RelXml.StringTag(sb, indent, "Unk31", RelXml.HashString(Unk31));
+            RelXml.StringTag(sb, indent, "Unk32", RelXml.HashString(Unk32));
+            RelXml.StringTag(sb, indent, "Unk33", RelXml.HashString(Unk33));
+            RelXml.StringTag(sb, indent, "Unk34", RelXml.HashString(Unk34));
+            RelXml.StringTag(sb, indent, "Unk35", RelXml.HashString(Unk35));
+            RelXml.StringTag(sb, indent, "Unk36", RelXml.HashString(Unk36));
+            RelXml.StringTag(sb, indent, "Unk37", RelXml.HashString(Unk37));
+            RelXml.StringTag(sb, indent, "Unk38", RelXml.HashString(Unk38));
+            RelXml.StringTag(sb, indent, "Unk39", RelXml.HashString(Unk39));
+            RelXml.StringTag(sb, indent, "Unk40", RelXml.HashString(Unk40));
+            RelXml.StringTag(sb, indent, "Unk41", RelXml.HashString(Unk41));
+            RelXml.StringTag(sb, indent, "Unk42", RelXml.HashString(Unk42));
+            RelXml.StringTag(sb, indent, "Unk43", RelXml.HashString(Unk43));
+            RelXml.StringTag(sb, indent, "Unk44", RelXml.HashString(Unk44));
+            RelXml.StringTag(sb, indent, "Unk45", RelXml.HashString(Unk45));
+            RelXml.StringTag(sb, indent, "Unk46", RelXml.HashString(Unk46));
+            RelXml.StringTag(sb, indent, "Unk47", RelXml.HashString(Unk47));
+            RelXml.StringTag(sb, indent, "Unk48", RelXml.HashString(Unk48));
+            RelXml.StringTag(sb, indent, "Unk49", RelXml.HashString(Unk49));
+            RelXml.StringTag(sb, indent, "Unk50", RelXml.HashString(Unk50));
+            RelXml.StringTag(sb, indent, "Unk51", RelXml.HashString(Unk51));
+            RelXml.StringTag(sb, indent, "Unk52", RelXml.HashString(Unk52));
+            RelXml.StringTag(sb, indent, "Unk53", RelXml.HashString(Unk53));
+            RelXml.StringTag(sb, indent, "Unk54", RelXml.HashString(Unk54));
+            RelXml.StringTag(sb, indent, "Unk55", RelXml.HashString(Unk55));
+            RelXml.StringTag(sb, indent, "Unk56", RelXml.HashString(Unk56));
+            RelXml.StringTag(sb, indent, "Unk57", RelXml.HashString(Unk57));
+            RelXml.StringTag(sb, indent, "Unk58", RelXml.HashString(Unk58));
+            RelXml.StringTag(sb, indent, "Unk59", RelXml.HashString(Unk59));
+            RelXml.StringTag(sb, indent, "Unk60", RelXml.HashString(Unk60));
+            RelXml.StringTag(sb, indent, "Unk61", RelXml.HashString(Unk61));
+            RelXml.StringTag(sb, indent, "Unk62", RelXml.HashString(Unk62));
+            RelXml.StringTag(sb, indent, "Unk63", RelXml.HashString(Unk63));
+            RelXml.StringTag(sb, indent, "Unk64", RelXml.HashString(Unk64));
+            RelXml.StringTag(sb, indent, "Unk65", RelXml.HashString(Unk65));
+            RelXml.StringTag(sb, indent, "Unk66", RelXml.HashString(Unk66));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
+            Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
+            Unk04 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
+            Unk05 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
+            Unk06 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk06"));
+            Unk07 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk07"));
+            Unk08 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk08"));
+            Unk09 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk09"));
+            Unk10 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk10"));
+            Unk11 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk11"));
+            Unk12 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk12"));
+            Unk13 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk13"));
+            Unk14 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk14"));
+            Unk15 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk15"));
+            Unk16 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk16"));
+            Unk17 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk17"));
+            Unk18 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk18"));
+            Unk19 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk19"));
+            Unk20 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk20"));
+            Unk21 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk21"));
+            Unk22 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk22"));
+            Unk23 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk23"));
+            Unk24 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk24"));
+            Unk25 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk25"));
+            Unk26 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk26"));
+            Unk27 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk27"));
+            Unk28 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk28"));
+            Unk29 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk29"));
+            Unk30 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk30"));
+            Unk31 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk31"));
+            Unk32 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk32"));
+            Unk33 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk33"));
+            Unk34 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk34"));
+            Unk35 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk35"));
+            Unk36 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk36"));
+            Unk37 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk37"));
+            Unk38 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk38"));
+            Unk39 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk39"));
+            Unk40 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk40"));
+            Unk41 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk41"));
+            Unk42 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk42"));
+            Unk43 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk43"));
+            Unk44 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk44"));
+            Unk45 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk45"));
+            Unk46 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk46"));
+            Unk47 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk47"));
+            Unk48 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk48"));
+            Unk49 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk49"));
+            Unk50 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk50"));
+            Unk51 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk51"));
+            Unk52 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk52"));
+            Unk53 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk53"));
+            Unk54 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk54"));
+            Unk55 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk55"));
+            Unk56 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk56"));
+            Unk57 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk57"));
+            Unk58 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk58"));
+            Unk59 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk59"));
+            Unk60 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk60"));
+            Unk61 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk61"));
+            Unk62 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk62"));
+            Unk63 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk63"));
+            Unk64 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk64"));
+            Unk65 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk65"));
+            Unk66 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk66"));
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk77 : Dat151RelData
+    {
+        public MetaHash Unk01 { get; set; }//0
+        public float Unk02 { get; set; }
+
+        public Dat151Unk77(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk77;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk77(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadUInt32();//0
+            Unk02 = br.ReadSingle();
+
+            if (Unk01 != 0)
+            { }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk79Item : IMetaXmlItem
+    {
+        public float Unk01 { get; set; }
+        public float Unk02 { get; set; }
+        public float Unk03 { get; set; }
+        public float Unk04 { get; set; }
+        public float Unk05 { get; set; }
+        public float Unk06 { get; set; }
+        public int Unk07 { get; set; }
+        public float Unk08 { get; set; }
+        public float Unk09 { get; set; }
+
+        public Dat151Unk79Item()
+        { }
+        public Dat151Unk79Item(BinaryReader br)
+        {
+            Unk01 = br.ReadSingle();
+            Unk02 = br.ReadSingle();
+            Unk03 = br.ReadSingle();
+            Unk04 = br.ReadSingle();
+            Unk05 = br.ReadSingle();
+            Unk06 = br.ReadSingle();
+            Unk07 = br.ReadInt32();
+            Unk08 = br.ReadSingle();
+            Unk09 = br.ReadSingle();
+        }
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
+            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
+            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
+            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
+            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
+            RelXml.ValueTag(sb, indent, "Unk07", Unk07.ToString());
+            RelXml.ValueTag(sb, indent, "Unk08", FloatUtil.ToString(Unk08));
+            RelXml.ValueTag(sb, indent, "Unk09", FloatUtil.ToString(Unk09));
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
+            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
+            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
+            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
+            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
+            Unk07 = Xml.GetChildIntAttribute(node, "Unk07", "value");
+            Unk08 = Xml.GetChildFloatAttribute(node, "Unk08", "value");
+            Unk09 = Xml.GetChildFloatAttribute(node, "Unk09", "value");
+        }
+        public override string ToString()
+        {
+            return string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}", Unk01, Unk02, Unk03, Unk04, Unk05, Unk06, Unk07, Unk08, Unk09);
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk79 : Dat151RelData
+    {
+        public FlagsUint Flags { get; set; }
+        public byte Unk01 { get; set; }
+        public byte ItemCount { get; set; }
+        public byte Unk02 { get; set; }
+        public byte Unk03 { get; set; }
+        public Dat151Unk79Item[] Items { get; set; }
+
+        public Dat151Unk79(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk79;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk79(RelData d, BinaryReader br) : base(d, br)
+        {
+            Flags = br.ReadUInt32();
+            Unk01 = br.ReadByte();
+            ItemCount = br.ReadByte();
+            Unk02 = br.ReadByte();
+            Unk03 = br.ReadByte();
+
+            Items = new Dat151Unk79Item[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i] = new Dat151Unk79Item(br);
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Flags);
+            bw.Write(Unk01);
+            bw.Write(ItemCount);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i].Write(bw);
+            }
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
+            RelXml.WriteItemArray(sb, Items, indent, "Items");
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            Unk01 = (byte)Xml.GetChildIntAttribute(node, "Unk01", "value");
+            Unk02 = (byte)Xml.GetChildIntAttribute(node, "Unk02", "value");
+            Unk03 = (byte)Xml.GetChildIntAttribute(node, "Unk03", "value");
+            Items = XmlRel.ReadItemArray<Dat151Unk79Item>(node, "Items");
+            ItemCount = (byte)(Items?.Length ?? 0);
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151VehicleRecordItem : IMetaXmlItem
+    {
+        public float Time { get; set; }
+        public MetaHash Hash1 { get; set; }
+        public MetaHash Hash2 { get; set; }
+
+        public Dat151VehicleRecordItem()
+        { }
+        public Dat151VehicleRecordItem(BinaryReader br)
+        {
+            Time = br.ReadSingle();
+            Hash1 = br.ReadUInt32();
+            Hash2 = br.ReadUInt32();
+        }
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write(Time);
+            bw.Write(Hash1);
+            bw.Write(Hash2);
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Time", FloatUtil.ToString(Time));
+            RelXml.StringTag(sb, indent, "Hash1", RelXml.HashString(Hash1));
+            RelXml.StringTag(sb, indent, "Hash2", RelXml.HashString(Hash2));
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Time = Xml.GetChildFloatAttribute(node, "Time", "value");
+            Hash1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Hash1"));
+            Hash2 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Hash2"));
+        }
+        public override string ToString()
+        {
+            return Time.ToString() + ", " + Hash1.ToString() + ", " + Hash2.ToString();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151VehicleRecordItem2 : IMetaXmlItem
+    {
+        public MetaHash Unk01 { get; set; }
+        public float Unk02 { get; set; }
+        public float Unk03 { get; set; }
+
+        public Dat151VehicleRecordItem2()
+        { }
+        public Dat151VehicleRecordItem2(BinaryReader br)
+        {
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadSingle();
+            Unk03 = br.ReadSingle();
+        }
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
+            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
+            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
+        }
+        public override string ToString()
+        {
+            return Unk01.ToString() + ", " + Unk02.ToString() + ", " + Unk03.ToString();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151VehicleRecord : Dat151RelData  //vehicle record audio? (YVR)
+    {
+        public MetaHash Unk01 { get; set; }
+        public int Unk02 { get; set; }
+        public int ItemCount { get; set; }
+        public Dat151VehicleRecordItem[] Items { get; set; }
+        public int ItemCount2 { get; set; }
+        public Dat151VehicleRecordItem2[] Items2 { get; set; }
+
+        public Dat151VehicleRecord(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.VehicleRecord;
+            TypeID = (byte)Type;
+        }
+        public Dat151VehicleRecord(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadInt32();
+            ItemCount = br.ReadInt32();
+            Items = new Dat151VehicleRecordItem[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i] = new Dat151VehicleRecordItem(br);
+            }
+            if (ItemCount != 0)
+            {
+                ItemCount2 = br.ReadInt32();
+                Items2 = new Dat151VehicleRecordItem2[ItemCount2];
+                for (int i = 0; i < ItemCount2; i++)
+                {
+                    Items2[i] = new Dat151VehicleRecordItem2(br);
+                }
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(ItemCount);
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i].Write(bw);
+            }
+            if (ItemCount > 0)
+            {
+                bw.Write(ItemCount2);
+                for (int i = 0; i < ItemCount2; i++)
+                {
+                    Items2[i].Write(bw);
+                }
+            }
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            RelXml.WriteItemArray(sb, Items, indent, "Items");
+            if (ItemCount > 0)
+            {
+                RelXml.WriteItemArray(sb, Items2, indent, "Items2");
+            }
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            Unk02 = Xml.GetChildIntAttribute(node, "Unk02", "value");
+            Items = XmlRel.ReadItemArray<Dat151VehicleRecordItem>(node, "Items");
+            ItemCount = (Items?.Length ?? 0);
+            if (ItemCount > 0)
+            {
+                Items2 = XmlRel.ReadItemArray<Dat151VehicleRecordItem2>(node, "Items2");
+                ItemCount2 = (Items2?.Length ?? 0);
+            }
+            else
+            {
+                Items2 = null;
+                ItemCount2 = 0;
+            }
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk82 : Dat151RelData
+    {
+        public MetaHash Unk01 { get; set; }
+        public MetaHash Unk02 { get; set; }
+        public MetaHash Unk03 { get; set; }
+        public MetaHash Unk04 { get; set; }
+        public MetaHash Unk05 { get; set; }
+        public MetaHash Unk06 { get; set; }
+        public MetaHash Unk07 { get; set; }
+        public MetaHash Unk08 { get; set; }
+        public MetaHash Unk09 { get; set; }
+        public int Unk10 { get; set; }
+
+        public Dat151Unk82(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk82;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk82(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadUInt32();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadUInt32();
+            Unk10 = br.ReadInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
+            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
+            RelXml.StringTag(sb, indent, "Unk04", RelXml.HashString(Unk04));
+            RelXml.StringTag(sb, indent, "Unk05", RelXml.HashString(Unk05));
+            RelXml.StringTag(sb, indent, "Unk06", RelXml.HashString(Unk06));
+            RelXml.StringTag(sb, indent, "Unk07", RelXml.HashString(Unk07));
+            RelXml.StringTag(sb, indent, "Unk08", RelXml.HashString(Unk08));
+            RelXml.StringTag(sb, indent, "Unk09", RelXml.HashString(Unk09));
+            RelXml.ValueTag(sb, indent, "Unk10", Unk10.ToString());
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
+            Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
+            Unk04 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
+            Unk05 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
+            Unk06 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk06"));
+            Unk07 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk07"));
+            Unk08 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk08"));
+            Unk09 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk09"));
+            Unk10 = Xml.GetChildIntAttribute(node, "Unk10", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk85 : Dat151RelData
+    {
+        public FlagsUint Flags { get; set; }
+        public MetaHash Unk01 { get; set; }
+        public MetaHash Unk02 { get; set; }
+        public MetaHash Unk03 { get; set; }
+        public MetaHash Unk04 { get; set; }
+        public MetaHash Unk05 { get; set; }
+        public MetaHash Unk06 { get; set; }
+        public MetaHash Unk07 { get; set; }
+        public MetaHash Unk08 { get; set; }//0
+        public MetaHash Unk09 { get; set; }
+        public MetaHash Unk10 { get; set; }
+        public MetaHash Unk11 { get; set; }
+        public MetaHash Unk12 { get; set; }//0
+        public MetaHash Unk13 { get; set; }
+        public MetaHash Unk14 { get; set; }
+
+        public Dat151Unk85(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk85;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk85(RelData d, BinaryReader br) : base(d, br)
+        {
+            Flags = br.ReadUInt32();
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadUInt32();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();//0
+            Unk09 = br.ReadUInt32();
+            Unk10 = br.ReadUInt32();
+            Unk11 = br.ReadUInt32();
+            Unk12 = br.ReadUInt32();//0
+            Unk13 = br.ReadUInt32();
+            Unk14 = br.ReadUInt32();
+
+            if (Unk08 != 0)
+            { }
+            if (Unk12 != 0)
+            { }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Flags);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
+            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
+            RelXml.StringTag(sb, indent, "Unk04", RelXml.HashString(Unk04));
+            RelXml.StringTag(sb, indent, "Unk05", RelXml.HashString(Unk05));
+            RelXml.StringTag(sb, indent, "Unk06", RelXml.HashString(Unk06));
+            RelXml.StringTag(sb, indent, "Unk07", RelXml.HashString(Unk07));
+            RelXml.StringTag(sb, indent, "Unk08", RelXml.HashString(Unk08));
+            RelXml.StringTag(sb, indent, "Unk09", RelXml.HashString(Unk09));
+            RelXml.StringTag(sb, indent, "Unk10", RelXml.HashString(Unk10));
+            RelXml.StringTag(sb, indent, "Unk11", RelXml.HashString(Unk11));
+            RelXml.StringTag(sb, indent, "Unk12", RelXml.HashString(Unk12));
+            RelXml.StringTag(sb, indent, "Unk13", RelXml.HashString(Unk13));
+            RelXml.StringTag(sb, indent, "Unk14", RelXml.HashString(Unk14));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
+            Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
+            Unk04 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
+            Unk05 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
+            Unk06 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk06"));
+            Unk07 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk07"));
+            Unk08 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk08"));
+            Unk09 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk09"));
+            Unk10 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk10"));
+            Unk11 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk11"));
+            Unk12 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk12"));
+            Unk13 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk13"));
+            Unk14 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk14"));
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk95 : Dat151RelData
+    {
+        public MetaHash Unk01 { get; set; }
+        public int Unk02 { get; set; }
+        public MetaHash Unk03 { get; set; }
+        public float Unk04 { get; set; }
+
+        public Dat151Unk95(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk95;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk95(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadInt32();
+            Unk03 = br.ReadUInt32();
+            Unk04 = br.ReadSingle();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
+            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            Unk02 = Xml.GetChildIntAttribute(node, "Unk02", "value");
+            Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
+            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk96Item : IMetaXmlItem
+    {
+        public MetaHash Unk01 { get; set; }
+        public float Unk02 { get; set; }
+        public int Unk03 { get; set; }
+        public int Unk04 { get; set; }
+        public float Unk05 { get; set; }
+        public float Unk06 { get; set; }
+        public int Unk07 { get; set; }
+        public MetaHash Unk08 { get; set; }//0
+        public MetaHash Unk09 { get; set; }
+        public float Unk10 { get; set; }
+        public int Unk11 { get; set; }
+        public MetaHash Unk12 { get; set; }//0
+        public MetaHash Unk13 { get; set; }
+        public float Unk14 { get; set; }
+        public int Unk15 { get; set; }
+        public MetaHash Unk16 { get; set; }//0
+        public MetaHash Unk17 { get; set; }
+        public float Unk18 { get; set; }
+        public int Unk19 { get; set; }
+        public int Unk20 { get; set; }
+        public MetaHash Unk21 { get; set; }
+        public float Unk22 { get; set; }
+        public int Unk23 { get; set; }
+        public MetaHash Unk24 { get; set; }//0
+        public float Unk25 { get; set; }
+
+        public Dat151Unk96Item()
+        { }
+        public Dat151Unk96Item(BinaryReader br)
+        {
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadSingle();
+            Unk03 = br.ReadInt32();
+            Unk04 = br.ReadInt32();
+            Unk05 = br.ReadSingle();
+            Unk06 = br.ReadSingle();
+            Unk07 = br.ReadInt32();
+            Unk08 = br.ReadUInt32();//0
+            Unk09 = br.ReadUInt32();
+            Unk10 = br.ReadSingle();
+            Unk11 = br.ReadInt32();
+            Unk12 = br.ReadUInt32();//0
+            Unk13 = br.ReadUInt32();
+            Unk14 = br.ReadSingle();
+            Unk15 = br.ReadInt32();
+            Unk16 = br.ReadUInt32();//0
+            Unk17 = br.ReadUInt32();
+            Unk18 = br.ReadSingle();
+            Unk19 = br.ReadInt32();
+            Unk20 = br.ReadInt32();
+            Unk21 = br.ReadUInt32();
+            Unk22 = br.ReadSingle();
+            Unk23 = br.ReadInt32();
+            Unk24 = br.ReadUInt32();//0
+            Unk25 = br.ReadSingle();
+
+            if (Unk08 != 0)
+            { }
+            if (Unk12 != 0)
+            { }
+            if (Unk16 != 0)
+            { }
+            if (Unk24 != 0)
+            { }
+        }
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+            bw.Write(Unk16);
+            bw.Write(Unk17);
+            bw.Write(Unk18);
+            bw.Write(Unk19);
+            bw.Write(Unk20);
+            bw.Write(Unk21);
+            bw.Write(Unk22);
+            bw.Write(Unk23);
+            bw.Write(Unk24);
+            bw.Write(Unk25);
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
+            RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
+            RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
+            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
+            RelXml.ValueTag(sb, indent, "Unk07", Unk07.ToString());
+            RelXml.StringTag(sb, indent, "Unk08", RelXml.HashString(Unk08));
+            RelXml.StringTag(sb, indent, "Unk09", RelXml.HashString(Unk09));
+            RelXml.ValueTag(sb, indent, "Unk10", FloatUtil.ToString(Unk10));
+            RelXml.ValueTag(sb, indent, "Unk11", Unk11.ToString());
+            RelXml.StringTag(sb, indent, "Unk12", RelXml.HashString(Unk12));
+            RelXml.StringTag(sb, indent, "Unk13", RelXml.HashString(Unk13));
+            RelXml.ValueTag(sb, indent, "Unk14", FloatUtil.ToString(Unk14));
+            RelXml.ValueTag(sb, indent, "Unk15", Unk15.ToString());
+            RelXml.StringTag(sb, indent, "Unk16", RelXml.HashString(Unk16));
+            RelXml.StringTag(sb, indent, "Unk17", RelXml.HashString(Unk17));
+            RelXml.ValueTag(sb, indent, "Unk18", FloatUtil.ToString(Unk18));
+            RelXml.ValueTag(sb, indent, "Unk19", Unk19.ToString());
+            RelXml.ValueTag(sb, indent, "Unk20", Unk20.ToString());
+            RelXml.StringTag(sb, indent, "Unk21", RelXml.HashString(Unk21));
+            RelXml.ValueTag(sb, indent, "Unk22", FloatUtil.ToString(Unk22));
+            RelXml.ValueTag(sb, indent, "Unk23", Unk23.ToString());
+            RelXml.StringTag(sb, indent, "Unk24", RelXml.HashString(Unk24));
+            RelXml.ValueTag(sb, indent, "Unk25", FloatUtil.ToString(Unk25));
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
+            Unk03 = Xml.GetChildIntAttribute(node, "Unk03", "value");
+            Unk04 = Xml.GetChildIntAttribute(node, "Unk04", "value");
+            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
+            Unk07 = Xml.GetChildIntAttribute(node, "Unk07", "value");
+            Unk08 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk08"));
+            Unk09 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk09"));
+            Unk10 = Xml.GetChildFloatAttribute(node, "Unk10", "value");
+            Unk11 = Xml.GetChildIntAttribute(node, "Unk11", "value");
+            Unk12 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk12"));
+            Unk13 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk13"));
+            Unk14 = Xml.GetChildFloatAttribute(node, "Unk14", "value");
+            Unk15 = Xml.GetChildIntAttribute(node, "Unk15", "value");
+            Unk16 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk16"));
+            Unk17 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk17"));
+            Unk18 = Xml.GetChildFloatAttribute(node, "Unk18", "value");
+            Unk19 = Xml.GetChildIntAttribute(node, "Unk19", "value");
+            Unk20 = Xml.GetChildIntAttribute(node, "Unk20", "value");
+            Unk21 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk21"));
+            Unk22 = Xml.GetChildFloatAttribute(node, "Unk22", "value");
+            Unk23 = Xml.GetChildIntAttribute(node, "Unk23", "value");
+            Unk24 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk24"));
+            Unk25 = Xml.GetChildFloatAttribute(node, "Unk25", "value");
+        }
+        public override string ToString()
+        {
+            return Unk01.ToString();
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk96 : Dat151RelData
+    {
+        public float Unk01 { get; set; }
+        public float Unk02 { get; set; }
+        public float Unk03 { get; set; }
+        public float Unk04 { get; set; }
+        public float Unk05 { get; set; }
+        public int ItemCount { get; set; }
+        public Dat151Unk96Item[] Items { get; set; }
+
+        public Dat151Unk96(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk96;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk96(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadSingle();
+            Unk02 = br.ReadSingle();
+            Unk03 = br.ReadSingle();
+            Unk04 = br.ReadSingle();
+            Unk05 = br.ReadSingle();
+            ItemCount = br.ReadInt32();
+            Items = new Dat151Unk96Item[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i] = new Dat151Unk96Item(br);
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(ItemCount);
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i].Write(bw);
+            }
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
+            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
+            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
+            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
+            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.WriteItemArray(sb, Items, indent, "Items");
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
+            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
+            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
+            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
+            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+            Items = XmlRel.ReadItemArray<Dat151Unk96Item>(node, "Items");
+            ItemCount = (Items?.Length ?? 0);
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk99 : Dat151RelData
+    {
+        public float Unk01 { get; set; }
+
+        public Dat151Unk99(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk99;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk99(RelData d, BinaryReader br) : base(d, br)
+        {
+            Unk01 = br.ReadSingle();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Unk01);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
+        }
+    }
+    [TC(typeof(EXP))] public class Dat151Unk100 : Dat151RelData
+    {
+        public FlagsUint Flags { get; set; }
+        public float Unk01 { get; set; }
+        public float Unk02 { get; set; }
+        public float Unk03 { get; set; }
+        public float Unk04 { get; set; }
+        public MetaHash Unk05 { get; set; }
+        public MetaHash Unk06 { get; set; }
+        public MetaHash Unk07 { get; set; }
+        public float Unk08 { get; set; }
+        public int Unk09 { get; set; }
+        public float Unk10 { get; set; }
+        public int Unk11 { get; set; }
+        public float Unk12 { get; set; }
+        public float Unk13 { get; set; }
+        public float Unk14 { get; set; }
+        public float Unk15 { get; set; }
+        public float Unk16 { get; set; }
+        public float Unk17 { get; set; }
+        public MetaHash Unk18 { get; set; }
+
+        public Dat151Unk100(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk100;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk100(RelData d, BinaryReader br) : base(d, br)
+        {
+            Flags = br.ReadUInt32();
+            Unk01 = br.ReadSingle();
+            Unk02 = br.ReadSingle();
+            Unk03 = br.ReadSingle();
+            Unk04 = br.ReadSingle();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadSingle();
+            Unk09 = br.ReadInt32();
+            Unk10 = br.ReadSingle();
+            Unk11 = br.ReadInt32();
+            Unk12 = br.ReadSingle();
+            Unk13 = br.ReadSingle();
+            Unk14 = br.ReadSingle();
+            Unk15 = br.ReadSingle();
+            Unk16 = br.ReadSingle();
+            Unk17 = br.ReadSingle();
+            Unk18 = br.ReadUInt32();
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Flags);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+            bw.Write(Unk16);
+            bw.Write(Unk17);
+            bw.Write(Unk18);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
+            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
+            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
+            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
+            RelXml.StringTag(sb, indent, "Unk05", RelXml.HashString(Unk05));
+            RelXml.StringTag(sb, indent, "Unk06", RelXml.HashString(Unk06));
+            RelXml.StringTag(sb, indent, "Unk07", RelXml.HashString(Unk07));
+            RelXml.ValueTag(sb, indent, "Unk08", FloatUtil.ToString(Unk08));
+            RelXml.ValueTag(sb, indent, "Unk09", Unk09.ToString());
+            RelXml.ValueTag(sb, indent, "Unk10", FloatUtil.ToString(Unk10));
+            RelXml.ValueTag(sb, indent, "Unk11", Unk11.ToString());
+            RelXml.ValueTag(sb, indent, "Unk12", FloatUtil.ToString(Unk12));
+            RelXml.ValueTag(sb, indent, "Unk13", FloatUtil.ToString(Unk13));
+            RelXml.ValueTag(sb, indent, "Unk14", FloatUtil.ToString(Unk14));
+            RelXml.ValueTag(sb, indent, "Unk15", FloatUtil.ToString(Unk15));
+            RelXml.ValueTag(sb, indent, "Unk16", FloatUtil.ToString(Unk16));
+            RelXml.ValueTag(sb, indent, "Unk17", FloatUtil.ToString(Unk17));
+            RelXml.StringTag(sb, indent, "Unk18", RelXml.HashString(Unk18));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
+            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
+            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
+            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
+            Unk05 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
+            Unk06 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk06"));
+            Unk07 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk07"));
+            Unk08 = Xml.GetChildFloatAttribute(node, "Unk08", "value");
+            Unk09 = Xml.GetChildIntAttribute(node, "Unk09", "value");
+            Unk10 = Xml.GetChildFloatAttribute(node, "Unk10", "value");
+            Unk11 = Xml.GetChildIntAttribute(node, "Unk11", "value");
+            Unk12 = Xml.GetChildFloatAttribute(node, "Unk12", "value");
+            Unk13 = Xml.GetChildFloatAttribute(node, "Unk13", "value");
+            Unk14 = Xml.GetChildFloatAttribute(node, "Unk14", "value");
+            Unk15 = Xml.GetChildFloatAttribute(node, "Unk15", "value");
+            Unk16 = Xml.GetChildFloatAttribute(node, "Unk16", "value");
+            Unk17 = Xml.GetChildFloatAttribute(node, "Unk17", "value");
+            Unk18 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk18"));
+        }
+    }
 
 
 
@@ -15255,627 +17507,6 @@ namespace CodeWalker.GameFiles
 
 
     //TODO classes
-    [TC(typeof(EXP))] public class Dat151Unk40 : Dat151RelData
-    {
-        public Dat151Unk40(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk40;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk40(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk41 : Dat151RelData
-    {
-        public Dat151Unk41(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk41;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk41(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk42 : Dat151RelData
-    {
-        public Dat151Unk42(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk42;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk42(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk45 : Dat151RelData
-    {
-        public Dat151Unk45(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk45;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk45(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk48 : Dat151RelData
-    {
-        public Dat151Unk48(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk48;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk48(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk51 : Dat151RelData
-    {
-        public Dat151Unk51(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk51;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk51(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk54 : Dat151RelData
-    {
-        public Dat151Unk54(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk54;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk54(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk59 : Dat151RelData
-    {
-        public Dat151Unk59(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk59;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk59(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk69 : Dat151RelData
-    {
-        public Dat151Unk69(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk69;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk69(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk70 : Dat151RelData
-    {
-        public Dat151Unk70(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk70;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk70(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk71 : Dat151RelData
-    {
-        public Dat151Unk71(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk71;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk71(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk72 : Dat151RelData
-    {
-        public Dat151Unk72(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk72;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk72(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk74 : Dat151RelData
-    {
-        public Dat151Unk74(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk74;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk74(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk75 : Dat151RelData
-    {
-        public Dat151Unk75(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk75;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk75(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk77 : Dat151RelData
-    {
-        public Dat151Unk77(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk77;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk77(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk79 : Dat151RelData
-    {
-        public Dat151Unk79(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk79;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk79(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk80 : Dat151RelData  //vehicle record audio? (YVR)
-    {
-        public Dat151Unk80(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk80;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk80(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk82 : Dat151RelData
-    {
-        public Dat151Unk82(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk82;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk82(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk85 : Dat151RelData
-    {
-        public Dat151Unk85(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk85;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk85(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk95 : Dat151RelData
-    {
-        public Dat151Unk95(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk95;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk95(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk96 : Dat151RelData
-    {
-        public Dat151Unk96(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk96;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk96(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk99 : Dat151RelData
-    {
-        public Dat151Unk99(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk99;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk99(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
-    [TC(typeof(EXP))] public class Dat151Unk100 : Dat151RelData
-    {
-        public Dat151Unk100(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Unk100;
-            TypeID = (byte)Type;
-        }
-        public Dat151Unk100(RelData d, BinaryReader br) : base(d, br)
-        {
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-        }
-        public override void Write(BinaryWriter bw)
-        {
-            //WriteTypeAndOffset(bw);
-            base.Write(bw);
-        }
-        public override void WriteXml(StringBuilder sb, int indent)
-        {
-            base.WriteXml(sb, indent);
-        }
-        public override void ReadXml(XmlNode node)
-        {
-            base.ReadXml(node);
-        }
-    }
     [TC(typeof(EXP))] public class Dat151Unk101 : Dat151RelData
     {
         public Dat151Unk101(RelFile rel) : base(rel)
