@@ -3477,7 +3477,7 @@ namespace CodeWalker.GameFiles
         null_sound = 3817852694, //used in game.dat151.rel
 
         run = 285848937, //used in game.dat151.rel
-
+        cop_dispatch_interaction_settings = 778268174, //used in game.dat151.rel
 
 
 
