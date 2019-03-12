@@ -714,12 +714,18 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Entries != null) list.Add(Entries);
 
-            data_block = new ResourceSimpleArray<T>();
-            data_block.Data = new List<T>();
-            data_block.Data.AddRange(data_items);
-            list.Add(data_block);
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSimpleArray<T>();
+                data_block.Data = new List<T>();
+                data_block.Data.AddRange(data_items);
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
 
             return list.ToArray();
         }
@@ -787,11 +793,17 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Entries != null) list.Add(Entries);
 
-            data_block = new ResourceSystemStructBlock<T>(data_items);
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<T>(data_items);
 
-            list.Add(data_block);
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
 
             return list.ToArray();
         }
@@ -861,11 +873,17 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Entries != null) list.Add(Entries);
 
-            data_block = new ResourceSystemStructBlock<T>(data_items);
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<T>(data_items);
 
-            list.Add(data_block);
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
 
             return list.ToArray();
         }
@@ -933,11 +951,17 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Entries != null) list.Add(Entries);
 
-            data_block = new ResourceSystemStructBlock<byte>(data_items);
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<byte>(data_items);
 
-            list.Add(data_block);
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
 
             return list.ToArray();
         }
@@ -1005,11 +1029,17 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Entries != null) list.Add(Entries);
 
-            data_block = new ResourceSystemStructBlock<ushort>(data_items);
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<ushort>(data_items);
 
-            list.Add(data_block);
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
 
             return list.ToArray();
         }
@@ -1077,11 +1107,17 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Entries != null) list.Add(Entries);
 
-            data_block = new ResourceSystemStructBlock<uint>(data_items);
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<uint>(data_items);
 
-            list.Add(data_block);
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
 
             return list.ToArray();
         }
@@ -1149,11 +1185,17 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Entries != null) list.Add(Entries);
 
-            data_block = new ResourceSystemStructBlock<ulong>(data_items);
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<ulong>(data_items);
 
-            list.Add(data_block);
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
 
             return list.ToArray();
         }
@@ -1221,11 +1263,17 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Entries != null) list.Add(Entries);
 
-            data_block = new ResourceSystemStructBlock<float>(data_items);
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<float>(data_items);
 
-            list.Add(data_block);
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
 
             return list.ToArray();
         }
@@ -1642,10 +1690,16 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>();
 
-            //if (Entries != null) list.Add(Entries);
-            data_block = new ResourcePointerArray64<T>();
-            data_block.data_items = data_items;
-            list.Add(data_block);
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourcePointerArray64<T>();
+                data_block.data_items = data_items;
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
 
             return list.ToArray();
         }
