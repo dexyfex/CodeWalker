@@ -238,7 +238,7 @@ namespace CodeWalker.Rendering
                 if (hastransforms)
                 {
 
-                    int boneidx = (int)((model.Unk28h >> 24) & 0xFF);
+                    int boneidx = (int)((model.SkeletonBinding >> 24) & 0xFF);
 
                     Matrix trans = (boneidx < modeltransforms.Length) ? modeltransforms[boneidx] : Matrix.Identity;
                     Bone bone = (hasbones && (boneidx < bones.Count)) ? bones[boneidx] : null;
@@ -267,7 +267,7 @@ namespace CodeWalker.Rendering
                         }
                     }
 
-                    if (((model.Unk28h >> 8) & 0xFF) > 0) //skin mesh?
+                    if (((model.SkeletonBinding >> 8) & 0xFF) > 0) //skin mesh?
                     {
                         model.Transform = Matrix.Identity;
                     }
@@ -337,20 +337,16 @@ namespace CodeWalker.Rendering
         public AABB_s[] GeometryBounds;
         public long GeometrySize { get; private set; }
 
-        public uint Unk4h;
-        public uint Unk14h;
-        public uint Unk28h;
-        public uint Unk2Ch; //flags.......
+        public uint SkeletonBinding;
+        public uint RenderMaskFlags; //flags.......
 
         public bool UseTransform;
         public Matrix Transform;
 
         public void Init(DrawableModel dmodel)
         {
-            Unk4h = dmodel.Unknown_4h;
-            Unk14h = dmodel.Unknown_14h;
-            Unk28h = dmodel.Unknown_28h;
-            Unk2Ch = dmodel.Unknown_2Ch; //only the first byte of Unknown_2Ch seems be related to this
+            SkeletonBinding = dmodel.SkeletonBinding;//4th byte is bone index, 2nd byte for skin meshes
+            RenderMaskFlags = dmodel.RenderMaskFlags; //only the first byte seems be related to this
 
 
             DrawableModel = dmodel;

@@ -32,7 +32,15 @@ float4 Unpack4x8UNF(uint v)
 
 float DepthFunc(float2 zw)
 {
-    return zw.x;//
+    return zw.x;
+
+	////this sort of works for reverse depth buffering, but has issues with vertices behind the near clip plane.
+	////might need to adjust the viewproj matrix to fix that...
+	////(for this to work, also need to change GpuBuffers.Clear,.ClearDepth and ShaderManager DepthComparison,RenderFinalPass)
+	//return max(0.001 / zw.x, 0);
+
+
+
 
     //return zw.x * (0.1 + 0.00001*(abs(zw.y)));
     //return zw.x * (0.1 + 0.00001*((zw.y)));

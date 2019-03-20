@@ -122,13 +122,14 @@ namespace CodeWalker.GameFiles
         public MetaHash Name { get; set; } //530103687, 2401522793, 1912906641
         public uint Unknown_Ch { get; set; } // 0x00000000
         public byte ParameterCount { get; set; }
-        public byte Unknown_11h { get; set; } // 2, 0, 
-        public ushort Unknown_12h { get; set; } // 32768
-        public uint Unknown_14h { get; set; } //10485872, 17826000, 26214720
+        public byte RenderBucket { get; set; } // 2, 0, 
+        public ushort Unknown_12h { get; set; } // 32768    HasComment?
+        public ushort ParameterSize { get; set; } //112, 208, 320    (with 16h) 10485872, 17826000, 26214720
+        public ushort ParameterDataSize { get; set; } //160, 272, 400 
         public MetaHash FileName { get; set; } //2918136469, 2635608835, 2247429097
         public uint Unknown_1Ch { get; set; } // 0x00000000
-        public uint Unknown_20h { get; set; } //65284, 65281
-        public ushort Unknown_24h { get; set; } //0
+        public uint RenderBucketMask { get; set; } //65284, 65281  DrawBucketMask?   (1<<bucket) | 0xFF00
+        public ushort Unknown_24h { get; set; } //0   Instanced?
         public byte Unknown_26h { get; set; } //0
         public byte TextureParametersCount { get; set; }
         public uint Unknown_28h { get; set; } // 0x00000000
@@ -149,12 +150,13 @@ namespace CodeWalker.GameFiles
             this.Name = new MetaHash(reader.ReadUInt32());
             this.Unknown_Ch = reader.ReadUInt32();
             this.ParameterCount = reader.ReadByte();
-            this.Unknown_11h = reader.ReadByte();
+            this.RenderBucket = reader.ReadByte();
             this.Unknown_12h = reader.ReadUInt16();
-            this.Unknown_14h = reader.ReadUInt32();
+            this.ParameterSize = reader.ReadUInt16();
+            this.ParameterDataSize = reader.ReadUInt16();
             this.FileName = new MetaHash(reader.ReadUInt32());
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt32();
+            this.RenderBucketMask = reader.ReadUInt32();
             this.Unknown_24h = reader.ReadUInt16();
             this.Unknown_26h = reader.ReadByte();
             this.TextureParametersCount = reader.ReadByte();
@@ -182,12 +184,13 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Name.Hash);
             writer.Write(this.Unknown_Ch);
             writer.Write(this.ParameterCount);
-            writer.Write(this.Unknown_11h);
+            writer.Write(this.RenderBucket);
             writer.Write(this.Unknown_12h);
-            writer.Write(this.Unknown_14h);
+            writer.Write(this.ParameterSize);
+            writer.Write(this.ParameterDataSize);
             writer.Write(this.FileName.Hash);
             writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
+            writer.Write(this.RenderBucketMask);
             writer.Write(this.Unknown_24h);
             writer.Write(this.Unknown_26h);
             writer.Write(this.TextureParametersCount);
@@ -296,6 +299,32 @@ namespace CodeWalker.GameFiles
                 offset += Parameters.Length * 4;
 
                 return offset;
+            }
+        }
+
+        public ushort ParametersSize
+        {
+            get
+            {
+                ushort size = (ushort)((Parameters?.Length??0) * 16);
+                foreach (var x in Parameters)
+                {
+                    size += (ushort)(16 * x.DataType);
+                }
+                return size;
+            }
+        }
+
+        public byte TextureParamsCount
+        {
+            get
+            {
+                byte c = 0;
+                foreach (var x in Parameters)
+                {
+                    if (x.DataType == 0) c++;
+                }
+                return c;
             }
         }
 
@@ -1049,8 +1078,9 @@ namespace CodeWalker.GameFiles
         public uint Unknown_14h { get; set; } // 0x00000000
         public ulong BoundsPointer { get; set; }
         public ulong ShaderMappingPointer { get; set; }
-        public uint Unknown_28h { get; set; }
-        public uint Unknown_2Ch { get; set; } //First byte is called "Mask" in GIMS EVO, third byte is always equal to GeometriesCount, is it ShaderMappingCount?
+        public uint SkeletonBinding { get; set; }//4th byte is bone index, 2nd byte for skin meshes
+        public ushort RenderMaskFlags { get; set; } //First byte is called "Mask" in GIMS EVO
+        public ushort GeometriesCount3 { get; set; } //always equal to GeometriesCount, is it ShaderMappingCount?
 
         // reference data
         public ResourcePointerArray64<DrawableGeometry> Geometries { get; set; }
@@ -1116,8 +1146,10 @@ namespace CodeWalker.GameFiles
             this.Unknown_14h = reader.ReadUInt32();
             this.BoundsPointer = reader.ReadUInt64();
             this.ShaderMappingPointer = reader.ReadUInt64();
-            this.Unknown_28h = reader.ReadUInt32();
-            this.Unknown_2Ch = reader.ReadUInt32();
+            this.SkeletonBinding = reader.ReadUInt32();
+            this.RenderMaskFlags = reader.ReadUInt16();
+            this.GeometriesCount3 = reader.ReadUInt16();
+
 
             // read reference data
             this.Geometries = reader.ReadBlockAt<ResourcePointerArray64<DrawableGeometry>>(
@@ -1138,6 +1170,7 @@ namespace CodeWalker.GameFiles
             this.GeometriesPointer = (ulong)(this.Geometries != null ? this.Geometries.FilePosition : 0);
             this.GeometriesCount1 = (ushort)(this.Geometries != null ? this.Geometries.Count : 0);
             this.GeometriesCount2 = this.GeometriesCount1;//is this correct?
+            this.GeometriesCount3 = this.GeometriesCount1;//is this correct?
             this.BoundsPointer = (ulong)(this.BoundsDataBlock != null ? this.BoundsDataBlock.FilePosition : 0);
             this.ShaderMappingPointer = (ulong)(this.ShaderMappingBlock != null ? this.ShaderMappingBlock.FilePosition : 0);
             
@@ -1151,8 +1184,9 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_14h);
             writer.Write(this.BoundsPointer);
             writer.Write(this.ShaderMappingPointer);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_2Ch);
+            writer.Write(this.SkeletonBinding);
+            writer.Write(this.RenderMaskFlags);
+            writer.Write(this.GeometriesCount3);
         }
 
         /// <summary>
@@ -2137,16 +2171,17 @@ namespace CodeWalker.GameFiles
         public ulong DrawableModelsMediumPointer { get; set; }
         public ulong DrawableModelsLowPointer { get; set; }
         public ulong DrawableModelsVeryLowPointer { get; set; }
-        public float LodGroupHigh { get; set; }
-        public float LodGroupMed { get; set; }
-        public float LodGroupLow { get; set; }
-        public float LodGroupVlow { get; set; }
+        public float LodDistHigh { get; set; }
+        public float LodDistMed { get; set; }
+        public float LodDistLow { get; set; }
+        public float LodDistVlow { get; set; }
         public uint Unknown_80h { get; set; }
         public uint Unknown_84h { get; set; }
         public uint Unknown_88h { get; set; }
         public uint Unknown_8Ch { get; set; }
         public ulong JointsPointer { get; set; }
-        public uint Unknown_98h { get; set; }
+        public ushort Unknown_98h { get; set; }
+        public ushort Unknown_9Ah { get; set; }
         public uint Unknown_9Ch { get; set; } // 0x00000000
         public ulong DrawableModelsXPointer { get; set; }
 
@@ -2207,16 +2242,17 @@ namespace CodeWalker.GameFiles
             this.DrawableModelsMediumPointer = reader.ReadUInt64();
             this.DrawableModelsLowPointer = reader.ReadUInt64();
             this.DrawableModelsVeryLowPointer = reader.ReadUInt64();
-            this.LodGroupHigh = reader.ReadSingle();
-            this.LodGroupMed = reader.ReadSingle();
-            this.LodGroupLow = reader.ReadSingle();
-            this.LodGroupVlow = reader.ReadSingle();
+            this.LodDistHigh = reader.ReadSingle();
+            this.LodDistMed = reader.ReadSingle();
+            this.LodDistLow = reader.ReadSingle();
+            this.LodDistVlow = reader.ReadSingle();
             this.Unknown_80h = reader.ReadUInt32();
             this.Unknown_84h = reader.ReadUInt32();
             this.Unknown_88h = reader.ReadUInt32();
             this.Unknown_8Ch = reader.ReadUInt32();
             this.JointsPointer = reader.ReadUInt64();
-            this.Unknown_98h = reader.ReadUInt32();
+            this.Unknown_98h = reader.ReadUInt16();
+            this.Unknown_9Ah = reader.ReadUInt16();
             this.Unknown_9Ch = reader.ReadUInt32();
             this.DrawableModelsXPointer = reader.ReadUInt64();
 
@@ -2345,16 +2381,17 @@ namespace CodeWalker.GameFiles
             writer.Write(this.DrawableModelsMediumPointer);
             writer.Write(this.DrawableModelsLowPointer);
             writer.Write(this.DrawableModelsVeryLowPointer);
-            writer.Write(this.LodGroupHigh);
-            writer.Write(this.LodGroupMed);
-            writer.Write(this.LodGroupLow);
-            writer.Write(this.LodGroupVlow);
+            writer.Write(this.LodDistHigh);
+            writer.Write(this.LodDistMed);
+            writer.Write(this.LodDistLow);
+            writer.Write(this.LodDistVlow);
             writer.Write(this.Unknown_80h);
             writer.Write(this.Unknown_84h);
             writer.Write(this.Unknown_88h);
             writer.Write(this.Unknown_8Ch);
             writer.Write(this.JointsPointer);
             writer.Write(this.Unknown_98h);
+            writer.Write(this.Unknown_9Ah);
             writer.Write(this.Unknown_9Ch);
             writer.Write(this.DrawableModelsXPointer);
         }

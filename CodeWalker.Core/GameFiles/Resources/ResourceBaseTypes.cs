@@ -1644,7 +1644,7 @@ namespace CodeWalker.GameFiles
         //public ResourcePointerArray64<T> Entries;
 
         public ulong[] data_pointers { get; private set; }
-        public T[] data_items { get; private set; }
+        public T[] data_items { get; set; }
 
         private ResourcePointerArray64<T> data_block;//used for saving.
 

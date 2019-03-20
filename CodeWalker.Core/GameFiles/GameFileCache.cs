@@ -1014,33 +1014,41 @@ namespace CodeWalker.GameFiles
                     //}
                     if (entry.Name.EndsWith(".ymf"))// || entry.Name.EndsWith(".ymt"))
                     {
-                        UpdateStatus(string.Format(entry.Path));
-                        YmfFile ymffile = RpfMan.GetFile<YmfFile>(entry);
-                        if (ymffile != null)
+                        try
                         {
-                            AllManifests.Add(ymffile);
-
-                            if (ymffile.Pso != null)
-                            { }
-                            else if (ymffile.Rbf != null)
-                            { }
-                            else if (ymffile.Meta != null)
-                            { }
-                            else
-                            { }
-
-
-                            if (ymffile.HDTxdAssetBindings != null)
+                            UpdateStatus(string.Format(entry.Path));
+                            YmfFile ymffile = RpfMan.GetFile<YmfFile>(entry);
+                            if (ymffile != null)
                             {
-                                for (int i = 0; i < ymffile.HDTxdAssetBindings.Length; i++)
-                                {
-                                    var b = ymffile.HDTxdAssetBindings[i];
-                                    var targetasset = JenkHash.GenHash(b.targetAsset.ToString().ToLowerInvariant());
-                                    var hdtxd = JenkHash.GenHash(b.HDTxd.ToString().ToLowerInvariant());
-                                    hdtexturelookup[targetasset] = hdtxd;
-                                }
-                            }
+                                AllManifests.Add(ymffile);
 
+                                if (ymffile.Pso != null)
+                                { }
+                                else if (ymffile.Rbf != null)
+                                { }
+                                else if (ymffile.Meta != null)
+                                { }
+                                else
+                                { }
+
+
+                                if (ymffile.HDTxdAssetBindings != null)
+                                {
+                                    for (int i = 0; i < ymffile.HDTxdAssetBindings.Length; i++)
+                                    {
+                                        var b = ymffile.HDTxdAssetBindings[i];
+                                        var targetasset = JenkHash.GenHash(b.targetAsset.ToString().ToLowerInvariant());
+                                        var hdtxd = JenkHash.GenHash(b.HDTxd.ToString().ToLowerInvariant());
+                                        hdtexturelookup[targetasset] = hdtxd;
+                                    }
+                                }
+
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            string errstr = entry.Path + "\n" + ex.ToString();
+                            ErrorLog(errstr);
                         }
                     }
 
@@ -2363,9 +2371,6 @@ namespace CodeWalker.GameFiles
         {
             UpdateStatus("Testing Audio REL files");
 
-            StringBuilder sb = new StringBuilder();
-            StringBuilder sbh = new StringBuilder();
-            StringBuilder sbi = new StringBuilder();
 
             bool savetest = true;
             bool xmltest = true;
@@ -2385,82 +2390,6 @@ namespace CodeWalker.GameFiles
                         RelFile rel = new RelFile(rfe);
                         RpfMan.LoadFile(rel, rfe);
 
-
-                        #region string building
-
-                        if (rel.NameTable == null)
-                        {
-                            sb.AppendLine(rfe.Path + ": no strings found");
-                        }
-                        else
-                        {
-                            sb.AppendLine(rfe.Path + ": " + rel.NameTable.Length.ToString() + " strings found:");
-                            foreach (string str in rel.NameTable)
-                            {
-                                sb.AppendLine(str);
-                            }
-                        }
-                        if (rel.IndexStrings != null)
-                        {
-                            sb.AppendLine("Config-specific:");
-                            foreach (var unk in rel.IndexStrings)
-                            {
-                                sb.AppendLine(unk.ToString());
-                            }
-                        }
-                        if (rel.IndexHashes != null)
-                        {
-                            sbh.AppendLine(rfe.Path + ": " + rel.IndexHashes.Length.ToString() + " entries:");
-                            foreach (var unk in rel.IndexHashes)
-                            {
-                                sbh.Append(unk.Name.Hash.ToString("X8"));
-                                string strval;
-                                if (JenkIndex.Index.TryGetValue(unk.Name, out strval))
-                                {
-                                    sbh.Append(" - ");
-                                    sbh.Append(strval);
-                                }
-                                sbh.AppendLine();
-                                //sbh.AppendLine(unk.ToString());
-                            }
-                            sbh.AppendLine();
-                        }
-                        if (rel.HashTable != null)
-                        {
-                            sbh.AppendLine(rfe.Path + ": " + rel.HashTable.Length.ToString() + " Hashes1:");
-                            foreach (var unk in rel.HashTable)
-                            {
-                                sbh.Append(unk.Hash.ToString("X8"));
-                                string strval;
-                                if (JenkIndex.Index.TryGetValue(unk, out strval))
-                                {
-                                    sbh.Append(" - ");
-                                    sbh.Append(strval);
-                                }
-                                sbh.AppendLine();
-                            }
-                            sbh.AppendLine();
-                        }
-                        if (rel.PackTable != null)
-                        {
-                            sbh.AppendLine(rfe.Path + ": " + rel.PackTable.Length.ToString() + " Hashes2:");
-                            foreach (var unk in rel.PackTable)
-                            {
-                                sbh.Append(unk.Hash.ToString("X8"));
-                                string strval;
-                                if (JenkIndex.Index.TryGetValue(unk, out strval))
-                                {
-                                    sbh.Append(" - ");
-                                    sbh.Append(strval);
-                                }
-                                sbh.AppendLine();
-                            }
-                            sbh.AppendLine();
-                        }
-
-                        sb.AppendLine();
-
-                        #endregion
 
 
                         byte[] data;
@@ -2540,29 +2469,12 @@ namespace CodeWalker.GameFiles
                         }
 
 
-                        //sbi.Clear();
-                        //foreach (var rd in rel.RelDatas)
-                        //{
-                        //    sbi.AppendLine(new FlagsUint(rd.NameHash).Bin);
-                        //}
-                        //string indexbinstr = sbi.ToString();
-
                     }
 
                 }
 
             }
 
-            //int ctot = Dat151RelData.TotCount;
-            //StringBuilder sbp = new StringBuilder();
-            //foreach (string s in Dat151RelData.FoundCoords)
-            //{
-            //    sbp.AppendLine(s);
-            //}
-            //string posz = sbp.ToString();
-
-            string relstrs = sb.ToString();
-            string hashstrs = sbh.ToString();
 
 
             var hashmap = RelFile.HashesMap;

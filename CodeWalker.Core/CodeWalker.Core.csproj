@@ -123,6 +123,8 @@
     </Compile>
     <Compile Include="Utils\BoundingBoxes.cs" />
     <Compile Include="Utils\Cache.cs" />
+    <Compile Include="Utils\Fbx.cs" />
+    <Compile Include="Utils\FbxConverter.cs" />
     <Compile Include="Utils\Matrices.cs" />
     <Compile Include="Utils\Quaternions.cs" />
     <Compile Include="Utils\Utils.cs" />

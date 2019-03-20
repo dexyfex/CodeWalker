@@ -739,7 +739,7 @@ namespace CodeWalker.Rendering
         {
             var shader = geom.Geom.DrawableGeom.Shader;
 
-            var b = (shader!=null) ? shader.Unknown_11h : 0; //rage render bucket?
+            var b = (shader!=null) ? shader.RenderBucket : 0; //rage render bucket?
 
             var bucket = EnsureRenderBucket(b);
 

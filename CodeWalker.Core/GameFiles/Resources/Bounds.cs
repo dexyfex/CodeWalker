@@ -775,8 +775,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))]
-    public struct BoundMaterial_s
+    [TC(typeof(EXP))] public struct BoundMaterial_s
     {
 
         public uint Data1;

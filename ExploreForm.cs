@@ -537,10 +537,11 @@ namespace CodeWalker
             var str = ic.ToString() + " item" + ((ic != 1) ? "s" : "") + " shown";
             bool isitem = false;
             bool isfile = false;
+            bool issearch = CurrentFolder?.IsSearchResults ?? false;
             bool canview = false;
             bool canedit = false;
             bool canexportxml = false;
-            bool canimport = false;
+            bool canimport = EditMode && (CurrentFolder?.RpfFolder != null) && !issearch;
             if (sc != 0)
             {
                 long bc = 0;
@@ -578,6 +579,7 @@ namespace CodeWalker
             EditExtractRawMenu.Enabled = isfile;
 
             EditImportRawMenu.Visible = canimport;
+            EditImportFbxMenu.Visible = canimport;
             EditImportXmlMenu.Visible = canimport;
             EditImportMenuSeparator.Visible = canimport;
 
@@ -688,6 +690,11 @@ namespace CodeWalker
                         RpfFile rpf = new RpfFile(path, relpath);
 
                         rpf.ScanStructure(UpdateStatus, UpdateErrorLog);
+
+                        if (rpf.LastException != null) //incase of corrupted rpf (or renamed NG encrypted RPF)
+                        {
+                            continue;
+                        }
 
                         node = CreateRpfTreeFolder(rpf, relpath, path);
 
@@ -1703,6 +1710,7 @@ namespace CodeWalker
 
             ListContextNewMenu.Visible = cancreate;
             ListContextImportRawMenu.Visible = canimport;
+            ListContextImportFbxMenu.Visible = canimport;
             ListContextImportXmlMenu.Visible = canimport;
             ListContextImportSeparator.Visible = cancreate;
 
@@ -1747,6 +1755,7 @@ namespace CodeWalker
             MainListView.LabelEdit = enable;
 
             EnsureEditModeWarning();
+            UpdateSelectionUI();
         }
 
         private void EnsureEditModeWarning()
@@ -2214,6 +2223,98 @@ namespace CodeWalker
                 RecurseMainTreeViewRPF(node, AllRpfs);
                 AddNewFolderTreeNode(node);
             }
+
+        }
+        private void ImportFbx()
+        {
+            if (!EditMode) return;
+            if (CurrentFolder?.IsSearchResults ?? false) return;
+
+
+            RpfDirectoryEntry parentrpffldr = CurrentFolder.RpfFolder;
+            if (parentrpffldr == null)
+            {
+                MessageBox.Show("No parent RPF folder selected! This shouldn't happen. Refresh the view and try again.");
+                return;
+            }
+
+            if (!EnsureRpfValidEncryption()) return;
+
+
+            OpenFileDialog.Filter = "FBX Files|*.fbx";
+            if (OpenFileDialog.ShowDialog(this) != DialogResult.OK)
+            {
+                return;//canceled
+            }
+
+            var fpaths = OpenFileDialog.FileNames;
+            var fdict = new Dictionary<string, byte[]>();
+
+            foreach (var fpath in fpaths)
+            {
+#if !DEBUG
+                try
+#endif
+                {
+                    if (!File.Exists(fpath))
+                    {
+                        continue;//this shouldn't happen...
+                    }
+
+                    var fi = new FileInfo(fpath);
+                    var fname = fi.Name;
+                    var fnamel = fname.ToLowerInvariant();
+                    var trimlength = 4;
+
+                    if (!fnamel.EndsWith(".fbx"))
+                    {
+                        MessageBox.Show(fname + ": Not an FBX file!", "Cannot import FBX");
+                        continue;
+                    }
+
+                    fname = fname.Substring(0, fname.Length - trimlength);
+
+                    var data = File.ReadAllBytes(fpath);
+                    fdict[fname] = data;
+
+                }
+#if !DEBUG
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Unable to read file " + fpath);
+                }
+#endif
+
+            }
+
+
+            var fbxForm = new ImportFbxForm();
+            fbxForm.SetInputFiles(fdict);
+            fbxForm.ShowDialog();
+
+            if (fbxForm.DialogResult != DialogResult.OK)
+            {
+                return; //fbx import canceled
+            }
+
+            var converted = fbxForm.GetOutputFiles();
+            if (converted == null)
+            {
+                return;
+            }
+
+            foreach (var kvp in converted)
+            {
+                var fname = kvp.Key;
+                var data = kvp.Value;
+                if (data != null)
+                {
+                    RpfFile.CreateFile(parentrpffldr, fname, data);
+                }
+            }
+
+
+            RefreshMainListView();
 
         }
         private void ImportXml()
@@ -3413,6 +3514,11 @@ namespace CodeWalker
             NewRpfArchive();
         }
 
+        private void ListContextImportFbxMenu_Click(object sender, EventArgs e)
+        {
+            ImportFbx();
+        }
+
         private void ListContextImportXmlMenu_Click(object sender, EventArgs e)
         {
             ImportXml();
@@ -3496,6 +3602,11 @@ namespace CodeWalker
         private void EditExtractAllMenu_Click(object sender, EventArgs e)
         {
             ExtractAll();
+        }
+
+        private void EditImportFbxMenu_Click(object sender, EventArgs e)
+        {
+            ImportFbx();
         }
 
         private void EditImportXmlMenu_Click(object sender, EventArgs e)

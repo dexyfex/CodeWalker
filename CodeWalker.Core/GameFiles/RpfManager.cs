@@ -74,6 +74,11 @@ namespace CodeWalker.GameFiles
 
                     rf.ScanStructure(updateStatus, errorLog);
 
+                    if (rf.LastException != null) //incase of corrupted rpf (or renamed NG encrypted RPF)
+                    {
+                        continue;
+                    }
+
                     AddRpfFile(rf, false, false);
                 }
                 catch (Exception ex)
@@ -384,7 +389,7 @@ namespace CodeWalker.GameFiles
                         }
                         if (BuildExtendedJenkIndex)
                         {
-                            if (nlow.EndsWith(".ydr") || nlow.EndsWith(".yft"))
+                            if (nlow.EndsWith(".ydr"))// || nlow.EndsWith(".yft")) //do yft's get lods?
                             {
                                 var sname = nlow.Substring(0, nlow.Length - 4);
                                 JenkIndex.Ensure(sname + "_lod");

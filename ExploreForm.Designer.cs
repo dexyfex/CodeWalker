@@ -41,6 +41,7 @@
             this.EditExtractRawMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditExtractAllMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.EditImportFbxMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditImportXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditImportRawMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditImportMenuSeparator = new System.Windows.Forms.ToolStripSeparator();
@@ -115,6 +116,7 @@
             this.ListContextNewMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextNewFolderMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextNewRpfArchiveMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ListContextImportFbxMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportRawMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportSeparator = new System.Windows.Forms.ToolStripSeparator();
@@ -196,6 +198,7 @@
             this.EditExtractRawMenu,
             this.EditExtractAllMenu,
             this.toolStripSeparator4,
+            this.EditImportFbxMenu,
             this.EditImportXmlMenu,
             this.EditImportRawMenu,
             this.EditImportMenuSeparator,
@@ -266,6 +269,14 @@
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(204, 6);
+            // 
+            // EditImportFbxMenu
+            // 
+            this.EditImportFbxMenu.Name = "EditImportFbxMenu";
+            this.EditImportFbxMenu.Size = new System.Drawing.Size(207, 22);
+            this.EditImportFbxMenu.Text = "Import FBX...";
+            this.EditImportFbxMenu.Visible = false;
+            this.EditImportFbxMenu.Click += new System.EventHandler(this.EditImportFbxMenu_Click);
             // 
             // EditImportXmlMenu
             // 
@@ -383,21 +394,21 @@
             // ViewLargeIconsMenu
             // 
             this.ViewLargeIconsMenu.Name = "ViewLargeIconsMenu";
-            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(134, 22);
             this.ViewLargeIconsMenu.Text = "Large Icons";
             this.ViewLargeIconsMenu.Click += new System.EventHandler(this.ViewLargeIconsMenu_Click);
             // 
             // ViewSmallIconsMenu
             // 
             this.ViewSmallIconsMenu.Name = "ViewSmallIconsMenu";
-            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(134, 22);
             this.ViewSmallIconsMenu.Text = "Small Icons";
             this.ViewSmallIconsMenu.Click += new System.EventHandler(this.ViewSmallIconsMenu_Click);
             // 
             // ViewListMenu
             // 
             this.ViewListMenu.Name = "ViewListMenu";
-            this.ViewListMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewListMenu.Size = new System.Drawing.Size(134, 22);
             this.ViewListMenu.Text = "List";
             this.ViewListMenu.Click += new System.EventHandler(this.ViewListMenu_Click);
             // 
@@ -406,14 +417,14 @@
             this.ViewDetailsMenu.Checked = true;
             this.ViewDetailsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ViewDetailsMenu.Name = "ViewDetailsMenu";
-            this.ViewDetailsMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewDetailsMenu.Size = new System.Drawing.Size(134, 22);
             this.ViewDetailsMenu.Text = "Details";
             this.ViewDetailsMenu.Click += new System.EventHandler(this.ViewDetailsMenu_Click);
             // 
             // toolStripSeparator11
             // 
             this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator11.Size = new System.Drawing.Size(131, 6);
             // 
             // ViewThemeMenu
             // 
@@ -423,7 +434,7 @@
             this.ViewThemeLightMenu,
             this.ViewThemeDarkMenu});
             this.ViewThemeMenu.Name = "ViewThemeMenu";
-            this.ViewThemeMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewThemeMenu.Size = new System.Drawing.Size(134, 22);
             this.ViewThemeMenu.Text = "Theme";
             // 
             // ViewThemeWindowsMenu
@@ -431,28 +442,28 @@
             this.ViewThemeWindowsMenu.Checked = true;
             this.ViewThemeWindowsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ViewThemeWindowsMenu.Name = "ViewThemeWindowsMenu";
-            this.ViewThemeWindowsMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewThemeWindowsMenu.Size = new System.Drawing.Size(123, 22);
             this.ViewThemeWindowsMenu.Text = "Windows";
             this.ViewThemeWindowsMenu.Click += new System.EventHandler(this.ViewThemeWindowsMenu_Click);
             // 
             // ViewThemeBlueMenu
             // 
             this.ViewThemeBlueMenu.Name = "ViewThemeBlueMenu";
-            this.ViewThemeBlueMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewThemeBlueMenu.Size = new System.Drawing.Size(123, 22);
             this.ViewThemeBlueMenu.Text = "Blue";
             this.ViewThemeBlueMenu.Click += new System.EventHandler(this.ViewThemeBlueMenu_Click);
             // 
             // ViewThemeLightMenu
             // 
             this.ViewThemeLightMenu.Name = "ViewThemeLightMenu";
-            this.ViewThemeLightMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewThemeLightMenu.Size = new System.Drawing.Size(123, 22);
             this.ViewThemeLightMenu.Text = "Light";
             this.ViewThemeLightMenu.Click += new System.EventHandler(this.ViewThemeLightMenu_Click);
             // 
             // ViewThemeDarkMenu
             // 
             this.ViewThemeDarkMenu.Name = "ViewThemeDarkMenu";
-            this.ViewThemeDarkMenu.Size = new System.Drawing.Size(152, 22);
+            this.ViewThemeDarkMenu.Size = new System.Drawing.Size(123, 22);
             this.ViewThemeDarkMenu.Text = "Dark";
             this.ViewThemeDarkMenu.Click += new System.EventHandler(this.ViewThemeDarkMenu_Click);
             // 
@@ -891,6 +902,7 @@
             this.ListContextExtractAllMenu,
             this.toolStripSeparator5,
             this.ListContextNewMenu,
+            this.ListContextImportFbxMenu,
             this.ListContextImportXmlMenu,
             this.ListContextImportRawMenu,
             this.ListContextImportSeparator,
@@ -908,7 +920,7 @@
             this.ListContextDefragmentSeparator,
             this.ListContextSelectAllMenu});
             this.ListContextMenu.Name = "MainContextMenu";
-            this.ListContextMenu.Size = new System.Drawing.Size(208, 442);
+            this.ListContextMenu.Size = new System.Drawing.Size(208, 464);
             // 
             // ListContextViewMenu
             // 
@@ -994,6 +1006,13 @@
             this.ListContextNewRpfArchiveMenu.Size = new System.Drawing.Size(146, 22);
             this.ListContextNewRpfArchiveMenu.Text = "RPF Archive...";
             this.ListContextNewRpfArchiveMenu.Click += new System.EventHandler(this.ListContextNewRpfArchiveMenu_Click);
+            // 
+            // ListContextImportFbxMenu
+            // 
+            this.ListContextImportFbxMenu.Name = "ListContextImportFbxMenu";
+            this.ListContextImportFbxMenu.Size = new System.Drawing.Size(207, 22);
+            this.ListContextImportFbxMenu.Text = "Import FBX...";
+            this.ListContextImportFbxMenu.Click += new System.EventHandler(this.ListContextImportFbxMenu_Click);
             // 
             // ListContextImportXmlMenu
             // 
@@ -1326,5 +1345,7 @@
         private System.Windows.Forms.ToolStripMenuItem ViewThemeDarkMenu;
         private WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender VSExtender;
         private System.Windows.Forms.ToolStripMenuItem ViewThemeWindowsMenu;
+        private System.Windows.Forms.ToolStripMenuItem ListContextImportFbxMenu;
+        private System.Windows.Forms.ToolStripMenuItem EditImportFbxMenu;
     }
 }

@@ -432,6 +432,7 @@ namespace CodeWalker.World
                 }
                 foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load nodes from current dlc rpfs
                 {
+                    if (dlcrpf.Path.StartsWith("x64")) continue; //don't override update.rpf YNDs with x64 ones! *hack
                     foreach (var rpffile in dlcrpf.Children)
                     {
                         AddRpfYnds(rpffile, yndentries);

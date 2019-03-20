@@ -4932,7 +4932,7 @@ namespace CodeWalker.GameFiles
         VehicleEngine = 4,
         Entity = 5, //not sure about this
         StaticEmitter = 6,//radio emitter?
-        Prop = 7,//prop? eg. fan, radar
+        Prop = 7,//prop? entity emitter? eg. fan, radar
         Helicopter = 8,
         Unk9 = 9,
         Unk11 = 11, //contains reference to Unk12

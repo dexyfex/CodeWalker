@@ -1904,7 +1904,7 @@ namespace CodeWalker.Rendering
         private bool RenderIsModelFinalRender(RenderableModel model)
         {
 
-            if ((model.Unk2Ch & 1) == 0) //smallest bit is proxy/"final render" bit? seems to work...
+            if ((model.RenderMaskFlags & 1) == 0) //smallest bit is proxy/"final render" bit? seems to work...
             {
                 return renderproxies;
             }
