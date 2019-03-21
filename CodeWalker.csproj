@@ -143,6 +143,12 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\ModelMatForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ModelMatForm.Designer.cs">
+      <DependentUpon>ModelMatForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\Panels\GenerateLODLightsPanel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -582,6 +588,9 @@
     <Compile Include="World\Widget.cs" />
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ModelMatForm.resx">
+      <DependentUpon>ModelMatForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\GenerateLODLightsPanel.resx">
       <DependentUpon>GenerateLODLightsPanel.cs</DependentUpon>

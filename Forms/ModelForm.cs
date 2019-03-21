@@ -100,6 +100,11 @@ namespace CodeWalker.Forms
         bool updateArchetypeStatus = true;
 
 
+        ModelMatForm materialForm = null;
+
+
+
+
         public ModelForm(ExploreForm ExpForm = null)
         {
             InitializeComponent();
@@ -1066,6 +1071,11 @@ namespace CodeWalker.Forms
 
 
 
+        public void OnMaterialFormClosed()
+        {
+            materialForm = null;
+        }
+
 
 
 
@@ -1590,6 +1600,61 @@ namespace CodeWalker.Forms
             {
                 MessageBox.Show("Couldn't find embedded texture dict.");
             }
+        }
+
+        private void MaterialEditorButton_Click(object sender, EventArgs e)
+        {
+            DrawableBase drawable = null;
+            Dictionary<uint, Drawable> dict = null;
+
+
+            if ((Ydr != null) && (Ydr.Loaded))
+            {
+                drawable = Ydr.Drawable;
+            }
+            else if ((Ydd != null) && (Ydd.Loaded))
+            {
+                dict = Ydd.Dict;
+            }
+            else if ((Yft != null) && (Yft.Loaded))
+            {
+                drawable = Yft.Fragment?.Drawable;
+            }
+            else if ((Ypt != null) && (Ypt.Loaded))
+            {
+                dict = Ypt.DrawableDict;
+            }
+            else
+            {
+                MessageBox.Show("Material editor not supported for the current file.");
+                return;
+            }
+
+            if (materialForm == null)
+            {
+                materialForm = new ModelMatForm(this);
+
+                if (drawable != null)
+                {
+                    materialForm.LoadModel(drawable);
+                }
+                else if (dict != null)
+                {
+                    materialForm.LoadModels(dict);
+                }
+
+                materialForm.Show(this);
+            }
+            else
+            {
+                if (materialForm.WindowState == FormWindowState.Minimized)
+                {
+                    materialForm.WindowState = FormWindowState.Normal;
+                }
+                materialForm.Focus();
+            }
+
+
         }
     }
 }

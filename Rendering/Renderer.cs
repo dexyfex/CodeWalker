@@ -2563,10 +2563,17 @@ namespace CodeWalker.Rendering
                     for (int gi = 0; gi < model.Geometries.Length; gi++)
                     {
                         var geom = model.Geometries[gi];
+                        var dgeom = geom.DrawableGeom;
+
+                        if (dgeom.UpdateRenderableParameters) //when edited by material editor
+                        {
+                            geom.Init(dgeom);
+                            dgeom.UpdateRenderableParameters = false;
+                        }
 
                         if (isselected)
                         {
-                            if (SelectionGeometryDrawFlags.ContainsKey(geom.DrawableGeom))
+                            if (SelectionGeometryDrawFlags.ContainsKey(dgeom))
                             { continue; } //filter out geometries in selected item that aren't flagged for drawing.
                         }
 

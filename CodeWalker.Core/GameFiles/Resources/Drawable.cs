@@ -1270,6 +1270,9 @@ namespace CodeWalker.GameFiles
         private ResourceSystemStructBlock<ushort> BoneIdsBlock = null;//for saving only
 
 
+        public bool UpdateRenderableParameters { get; set; } = false; //used by model material editor...
+
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>

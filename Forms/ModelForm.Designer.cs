@@ -41,12 +41,14 @@
             this.ToolsTabControl = new System.Windows.Forms.TabControl();
             this.ToolsModelsTabPage = new System.Windows.Forms.TabPage();
             this.ModelsTreeView = new CodeWalker.WinForms.TreeViewFix();
-            this.ToolsTexturesTabPage = new System.Windows.Forms.TabPage();
+            this.ToolsMaterialsTabPage = new System.Windows.Forms.TabPage();
+            this.MaterialEditorButton = new System.Windows.Forms.Button();
             this.TextureViewerButton = new System.Windows.Forms.Button();
             this.TexturesTreeView = new CodeWalker.WinForms.TreeViewFix();
             this.ToolsDetailsTabPage = new System.Windows.Forms.TabPage();
             this.DetailsPropertyGrid = new CodeWalker.WinForms.ReadOnlyPropertyGrid();
             this.ToolsOptionsTabPage = new System.Windows.Forms.TabPage();
+            this.HDTexturesCheckBox = new System.Windows.Forms.CheckBox();
             this.SkeletonsCheckBox = new System.Windows.Forms.CheckBox();
             this.TimeOfDayLabel = new System.Windows.Forms.Label();
             this.label19 = new System.Windows.Forms.Label();
@@ -74,13 +76,12 @@
             this.ToolsPanelHideButton = new System.Windows.Forms.Button();
             this.ToolsDragPanel = new System.Windows.Forms.Panel();
             this.ToolsPanelShowButton = new System.Windows.Forms.Button();
-            this.HDTexturesCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ConsolePanel.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
             this.ToolsModelsTabPage.SuspendLayout();
-            this.ToolsTexturesTabPage.SuspendLayout();
+            this.ToolsMaterialsTabPage.SuspendLayout();
             this.ToolsDetailsTabPage.SuspendLayout();
             this.ToolsOptionsTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
@@ -172,7 +173,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ToolsTabControl.Controls.Add(this.ToolsModelsTabPage);
-            this.ToolsTabControl.Controls.Add(this.ToolsTexturesTabPage);
+            this.ToolsTabControl.Controls.Add(this.ToolsMaterialsTabPage);
             this.ToolsTabControl.Controls.Add(this.ToolsDetailsTabPage);
             this.ToolsTabControl.Controls.Add(this.ToolsOptionsTabPage);
             this.ToolsTabControl.Location = new System.Drawing.Point(2, 30);
@@ -207,25 +208,36 @@
             this.ModelsTreeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.ModelsTreeView_NodeMouseDoubleClick);
             this.ModelsTreeView.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ModelsTreeView_KeyPress);
             // 
-            // ToolsTexturesTabPage
+            // ToolsMaterialsTabPage
             // 
-            this.ToolsTexturesTabPage.Controls.Add(this.TextureViewerButton);
-            this.ToolsTexturesTabPage.Controls.Add(this.TexturesTreeView);
-            this.ToolsTexturesTabPage.Location = new System.Drawing.Point(4, 22);
-            this.ToolsTexturesTabPage.Name = "ToolsTexturesTabPage";
-            this.ToolsTexturesTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.ToolsTexturesTabPage.Size = new System.Drawing.Size(205, 500);
-            this.ToolsTexturesTabPage.TabIndex = 1;
-            this.ToolsTexturesTabPage.Text = "Textures";
-            this.ToolsTexturesTabPage.UseVisualStyleBackColor = true;
+            this.ToolsMaterialsTabPage.Controls.Add(this.MaterialEditorButton);
+            this.ToolsMaterialsTabPage.Controls.Add(this.TextureViewerButton);
+            this.ToolsMaterialsTabPage.Controls.Add(this.TexturesTreeView);
+            this.ToolsMaterialsTabPage.Location = new System.Drawing.Point(4, 22);
+            this.ToolsMaterialsTabPage.Name = "ToolsMaterialsTabPage";
+            this.ToolsMaterialsTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.ToolsMaterialsTabPage.Size = new System.Drawing.Size(205, 500);
+            this.ToolsMaterialsTabPage.TabIndex = 1;
+            this.ToolsMaterialsTabPage.Text = "Materials";
+            this.ToolsMaterialsTabPage.UseVisualStyleBackColor = true;
+            // 
+            // MaterialEditorButton
+            // 
+            this.MaterialEditorButton.Location = new System.Drawing.Point(3, 6);
+            this.MaterialEditorButton.Name = "MaterialEditorButton";
+            this.MaterialEditorButton.Size = new System.Drawing.Size(91, 23);
+            this.MaterialEditorButton.TabIndex = 3;
+            this.MaterialEditorButton.Text = "Material editor";
+            this.MaterialEditorButton.UseVisualStyleBackColor = true;
+            this.MaterialEditorButton.Click += new System.EventHandler(this.MaterialEditorButton_Click);
             // 
             // TextureViewerButton
             // 
-            this.TextureViewerButton.Location = new System.Drawing.Point(6, 6);
+            this.TextureViewerButton.Location = new System.Drawing.Point(111, 6);
             this.TextureViewerButton.Name = "TextureViewerButton";
-            this.TextureViewerButton.Size = new System.Drawing.Size(113, 23);
+            this.TextureViewerButton.Size = new System.Drawing.Size(91, 23);
             this.TextureViewerButton.TabIndex = 2;
-            this.TextureViewerButton.Text = "Open texture viewer";
+            this.TextureViewerButton.Text = "Texture viewer";
             this.TextureViewerButton.UseVisualStyleBackColor = true;
             this.TextureViewerButton.Click += new System.EventHandler(this.TextureViewerButton_Click);
             // 
@@ -297,6 +309,19 @@
             this.ToolsOptionsTabPage.TabIndex = 3;
             this.ToolsOptionsTabPage.Text = "Options";
             this.ToolsOptionsTabPage.UseVisualStyleBackColor = true;
+            // 
+            // HDTexturesCheckBox
+            // 
+            this.HDTexturesCheckBox.AutoSize = true;
+            this.HDTexturesCheckBox.Checked = true;
+            this.HDTexturesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.HDTexturesCheckBox.Location = new System.Drawing.Point(19, 242);
+            this.HDTexturesCheckBox.Name = "HDTexturesCheckBox";
+            this.HDTexturesCheckBox.Size = new System.Drawing.Size(82, 17);
+            this.HDTexturesCheckBox.TabIndex = 10;
+            this.HDTexturesCheckBox.Text = "HD textures";
+            this.HDTexturesCheckBox.UseVisualStyleBackColor = true;
+            this.HDTexturesCheckBox.CheckedChanged += new System.EventHandler(this.HDTexturesCheckBox_CheckedChanged);
             // 
             // SkeletonsCheckBox
             // 
@@ -614,19 +639,6 @@
             this.ToolsPanelShowButton.UseVisualStyleBackColor = true;
             this.ToolsPanelShowButton.Click += new System.EventHandler(this.ToolsPanelShowButton_Click);
             // 
-            // HDTexturesCheckBox
-            // 
-            this.HDTexturesCheckBox.AutoSize = true;
-            this.HDTexturesCheckBox.Checked = true;
-            this.HDTexturesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.HDTexturesCheckBox.Location = new System.Drawing.Point(19, 242);
-            this.HDTexturesCheckBox.Name = "HDTexturesCheckBox";
-            this.HDTexturesCheckBox.Size = new System.Drawing.Size(82, 17);
-            this.HDTexturesCheckBox.TabIndex = 10;
-            this.HDTexturesCheckBox.Text = "HD textures";
-            this.HDTexturesCheckBox.UseVisualStyleBackColor = true;
-            this.HDTexturesCheckBox.CheckedChanged += new System.EventHandler(this.HDTexturesCheckBox_CheckedChanged);
-            // 
             // ModelForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -655,7 +667,7 @@
             this.ToolsPanel.ResumeLayout(false);
             this.ToolsTabControl.ResumeLayout(false);
             this.ToolsModelsTabPage.ResumeLayout(false);
-            this.ToolsTexturesTabPage.ResumeLayout(false);
+            this.ToolsMaterialsTabPage.ResumeLayout(false);
             this.ToolsDetailsTabPage.ResumeLayout(false);
             this.ToolsOptionsTabPage.ResumeLayout(false);
             this.ToolsOptionsTabPage.PerformLayout();
@@ -680,7 +692,7 @@
         private System.Windows.Forms.Button ToolsPanelShowButton;
         private System.Windows.Forms.TabControl ToolsTabControl;
         private System.Windows.Forms.TabPage ToolsModelsTabPage;
-        private System.Windows.Forms.TabPage ToolsTexturesTabPage;
+        private System.Windows.Forms.TabPage ToolsMaterialsTabPage;
         private System.Windows.Forms.TabPage ToolsDetailsTabPage;
         private WinForms.TreeViewFix ModelsTreeView;
         private WinForms.ReadOnlyPropertyGrid DetailsPropertyGrid;
@@ -712,5 +724,6 @@
         private System.Windows.Forms.CheckBox SkeletonsCheckBox;
         private System.Windows.Forms.Button TextureViewerButton;
         private System.Windows.Forms.CheckBox HDTexturesCheckBox;
+        private System.Windows.Forms.Button MaterialEditorButton;
     }
 }

@@ -425,6 +425,10 @@ namespace CodeWalker.GameFiles
                                     }
                                 }
                             }
+                            if (nlow.EndsWith(".sps"))
+                            {
+                                JenkIndex.Ensure(nlow);//for shader preset filename hashes!
+                            }
                             if (nlow.EndsWith(".awc")) //create audio container path hashes...
                             {
                                 string[] parts = entry.Path.Split('\\');
