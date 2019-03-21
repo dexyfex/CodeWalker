@@ -12,7 +12,7 @@ namespace CodeWalker
 {
     public class FbxConverter
     {
-
+        public bool InvertTexcoordV { get; set; } = true;
 
 
         public YdrFile ConvertToYdr(string name, byte[] fbxdata)
@@ -26,10 +26,7 @@ namespace CodeWalker
 
             YdrFile ydr = new YdrFile();
             ydr.Drawable = dwbl;
-
-            //byte[] ddata = ydr.Save();
-            //File.WriteAllBytes("C:\\Dump\\TestFbx\\" + name + ".ydr", ddata);
-
+            ydr.Name = name;
 
             return ydr;
         }
@@ -402,7 +399,8 @@ namespace CodeWalker
                     foreach (var fVert in fPoly.Vertices)
                     {
                         var ai = indexed ? aiTexcs[j] : j;
-                        fVert.Texcoords[i] = GetVector2FromDoubleArray(arTexcs, ai);
+                        var tc = GetVector2FromDoubleArray(arTexcs, ai);
+                        fVert.Texcoords[i] = InvertTexcoordV ? new Vector2(tc.X, -tc.Y) : tc;//whyyyy
                         j++;
                     }
                 }
@@ -532,7 +530,7 @@ namespace CodeWalker
             var dShader = TryConvertMaterial(matNode);
             var dVertDecl = GetVertexDeclaration(dShader);
 
-            var vDict = new Dictionary<FbxVertex, ushort>();//TODO:use final vertex data instead of FbxVertex!!!
+            var vDict = new Dictionary<FbxVertex, ushort>();
             var vList = new List<FbxVertex>();
             var iList = new List<ushort>();
 
@@ -986,23 +984,11 @@ namespace CodeWalker
         {
             return (other != null)
                 && ((Bytes == null) ? (other.Bytes == null) : Bytes.SequenceEqual(other.Bytes));
-                //&& Position.Equals(other.Position)
-                //&& ((Normals == null) ? (other.Normals == null) : Normals.SequenceEqual(other.Normals))
-                //&& ((Binormals == null) ? (other.Binormals == null) : Binormals.SequenceEqual(other.Binormals))
-                //&& ((Tangents == null) ? (other.Tangents == null) : Tangents.SequenceEqual(other.Tangents))
-                //&& ((Texcoords == null) ? (other.Texcoords == null) : Texcoords.SequenceEqual(other.Texcoords))
-                //&& ((Colours == null) ? (other.Colours == null) : Colours.SequenceEqual(other.Colours));
         }
         public override int GetHashCode()
         {
             var hashCode = -907793594;
             if (Bytes != null) hashCode = hashCode * -1521134295 + ((IStructuralEquatable)Bytes).GetHashCode(EqualityComparer<byte>.Default);
-            //hashCode = hashCode * -1521134295 + Position.GetHashCode();
-            //if (Normals != null) hashCode = hashCode * -1521134295 + ((IStructuralEquatable)Normals).GetHashCode(EqualityComparer<Vector3>.Default);
-            //if (Binormals != null) hashCode = hashCode * -1521134295 + ((IStructuralEquatable)Binormals).GetHashCode(EqualityComparer<Vector3>.Default);
-            //if (Tangents != null) hashCode = hashCode * -1521134295 + ((IStructuralEquatable)Tangents).GetHashCode(EqualityComparer<Vector3>.Default);
-            //if (Texcoords != null) hashCode = hashCode * -1521134295 + ((IStructuralEquatable)Texcoords).GetHashCode(EqualityComparer<Vector2>.Default);
-            //if (Colours != null) hashCode = hashCode * -1521134295 + ((IStructuralEquatable)Colours).GetHashCode(EqualityComparer<Vector4>.Default);
             return hashCode;
         }
     }
