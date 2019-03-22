@@ -101,7 +101,10 @@ namespace CodeWalker.Forms
 
 
         ModelMatForm materialForm = null;
+        private bool modelModified = false;
 
+        ExploreForm exploreForm = null;
+        RpfFileEntry rpfFileEntry = null;
 
 
 
@@ -109,6 +112,7 @@ namespace CodeWalker.Forms
         {
             InitializeComponent();
 
+            exploreForm = ExpForm;
 
             gameFileCache = ExpForm?.GetFileCache();
 
@@ -569,6 +573,7 @@ namespace CodeWalker.Forms
 
             FileName = ydr.Name;
             Ydr = ydr;
+            rpfFileEntry = Ydr.RpfFileEntry;
 
             if (ydr.Drawable != null)
             {
@@ -583,6 +588,7 @@ namespace CodeWalker.Forms
 
             FileName = ydd.Name;
             Ydd = ydd;
+            rpfFileEntry = Ydd.RpfFileEntry;
 
             UpdateModelsUI(ydd.Dict);
 
@@ -594,6 +600,7 @@ namespace CodeWalker.Forms
 
             FileName = yft.Name;
             Yft = yft;
+            rpfFileEntry = Yft.RpfFileEntry;
 
             var dr = yft.Fragment?.Drawable;
             if (dr != null)
@@ -609,6 +616,7 @@ namespace CodeWalker.Forms
 
             FileName = ybn.Name;
             Ybn = ybn;
+            rpfFileEntry = Ybn.RpfFileEntry;
 
             if (Ybn.Bounds != null)
             {
@@ -623,6 +631,7 @@ namespace CodeWalker.Forms
 
             FileName = ypt.Name;
             Ypt = ypt;
+            rpfFileEntry = Ypt.RpfFileEntry;
 
             UpdateModelsUI(ypt.DrawableDict);
 
@@ -634,6 +643,7 @@ namespace CodeWalker.Forms
 
             FileName = ynv.Name;
             Ynv = ynv;
+            rpfFileEntry = Ynv.RpfFileEntry;
 
             if (ynv.Nav.SectorTree != null)
             {
@@ -655,7 +665,7 @@ namespace CodeWalker.Forms
 
         private void UpdateFormTitle()
         {
-            Text = fileName + " - CodeWalker by dexyfex";
+            Text = fileName + (modelModified ? "*" : "") + " - CodeWalker by dexyfex";
         }
 
 
@@ -1075,6 +1085,161 @@ namespace CodeWalker.Forms
         {
             materialForm = null;
         }
+
+
+        public void OnModelModified()
+        {
+            modelModified = true;
+            UpdateFormTitle();
+        }
+
+
+
+
+
+        private void Save(bool saveAs = false)
+        {
+            var editMode = exploreForm?.EditMode ?? false;
+
+            if (string.IsNullOrEmpty(FilePath))
+            {
+                if (!editMode) saveAs = true;
+                if (rpfFileEntry?.Parent == null) saveAs = true;
+            }
+            else
+            {
+                if ((FilePath.ToLowerInvariant().StartsWith(GTAFolder.CurrentGTAFolder.ToLowerInvariant()))) saveAs = true;
+                if (!File.Exists(FilePath)) saveAs = true;
+            }
+
+            var fn = FilePath;
+            if (saveAs)
+            {
+                if (!string.IsNullOrEmpty(fn))
+                {
+                    var dir = new FileInfo(fn).DirectoryName;
+                    if (!Directory.Exists(dir)) dir = "";
+                    SaveFileDialog.InitialDirectory = dir;
+                }
+                SaveFileDialog.FileName = FileName;
+
+                var fileExt = Path.GetExtension(FileName);
+                if ((fileExt.Length > 1) && fileExt.StartsWith("."))
+                {
+                    fileExt = fileExt.Substring(1);
+                }
+                SaveFileDialog.Filter = fileExt.ToUpperInvariant() + " files|*." + fileExt + "|All files|*.*";
+
+                if (SaveFileDialog.ShowDialog() != DialogResult.OK) return;
+                fn = SaveFileDialog.FileName;
+            }
+
+
+
+            byte[] fileBytes = null;
+
+#if !DEBUG
+            try
+            {
+#endif
+            if (Ydr != null)
+            {
+                fileBytes = Ydr.Save();
+            }
+            else if (Ydd != null)
+            {
+                fileBytes = Ydd.Save();
+            }
+            else if (Yft != null)
+            {
+                fileBytes = Yft.Save();
+            }
+            else if (Ybn != null)
+            {
+                fileBytes = Ybn.Save();
+            }
+            else if (Ypt != null)
+            {
+                fileBytes = Ypt.Save();
+            }
+            else if (Ynv != null)
+            {
+                fileBytes = Ynv.Save();
+            }
+#if !DEBUG
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("Error saving file!\n" + ex.ToString());
+                return;
+            }
+#endif
+            if (fileBytes == null)
+            {
+                MessageBox.Show("Error saving file!\n fileBytes was null!");
+                return;
+            }
+
+
+            var rpfSave = editMode && (rpfFileEntry?.Parent != null) && !saveAs;
+
+            if (rpfSave)
+            {
+                if (!rpfFileEntry.Path.ToLowerInvariant().StartsWith("mods"))
+                {
+                    if (MessageBox.Show("This file is NOT located in the mods folder - Are you SURE you want to save this file?\r\nWARNING: This could cause permanent damage to your game!!!", "WARNING: Are you sure about this?", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    {
+                        return;//that was a close one
+                    }
+                }
+
+                try
+                {
+                    if (!(exploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false)) return;
+
+                    var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, fileBytes);
+                    if (newentry != rpfFileEntry)
+                    { }
+                    rpfFileEntry = newentry;
+
+                    exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+
+                    StatusLabel.Text = rpfFileEntry.Name + " saved successfully at " + DateTime.Now.ToString();
+
+                    //victory!
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error saving file to RPF! The RPF archive may be corrupted...\r\n" + ex.ToString(), "Really Bad Error");
+                }
+
+            }
+            else
+            {
+                try
+                {
+                    File.WriteAllBytes(fn, fileBytes);
+
+                    fileName = Path.GetFileName(fn);
+                    FilePath = fn;
+
+                    StatusLabel.Text = fileName + " saved successfully at " + DateTime.Now.ToString();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error writing file to disk!\n" + ex.ToString());
+                    return;
+                }
+            }
+
+
+            modelModified = false;
+            UpdateFormTitle();
+
+        }
+
+
+
 
 
 
@@ -1655,6 +1820,21 @@ namespace CodeWalker.Forms
             }
 
 
+        }
+
+        private void SaveButton_ButtonClick(object sender, EventArgs e)
+        {
+            Save();
+        }
+
+        private void SaveMenuButton_Click(object sender, EventArgs e)
+        {
+            Save();
+        }
+
+        private void SaveAsMenuButton_Click(object sender, EventArgs e)
+        {
+            Save(true);
         }
     }
 }

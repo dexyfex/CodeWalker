@@ -38,6 +38,11 @@
             this.ConsolePanel = new System.Windows.Forms.Panel();
             this.ConsoleTextBox = new CodeWalker.WinForms.TextBoxFix();
             this.ToolsPanel = new System.Windows.Forms.Panel();
+            this.MainToolbarPanel = new System.Windows.Forms.Panel();
+            this.MainToolbar = new System.Windows.Forms.ToolStrip();
+            this.SaveButton = new System.Windows.Forms.ToolStripSplitButton();
+            this.SaveMenuButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.SaveAsMenuButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsTabControl = new System.Windows.Forms.TabControl();
             this.ToolsModelsTabPage = new System.Windows.Forms.TabPage();
             this.ModelsTreeView = new CodeWalker.WinForms.TreeViewFix();
@@ -76,9 +81,12 @@
             this.ToolsPanelHideButton = new System.Windows.Forms.Button();
             this.ToolsDragPanel = new System.Windows.Forms.Panel();
             this.ToolsPanelShowButton = new System.Windows.Forms.Button();
+            this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.StatusStrip.SuspendLayout();
             this.ConsolePanel.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
+            this.MainToolbarPanel.SuspendLayout();
+            this.MainToolbar.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
             this.ToolsModelsTabPage.SuspendLayout();
             this.ToolsMaterialsTabPage.SuspendLayout();
@@ -158,6 +166,7 @@
             this.ToolsPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.ToolsPanel.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.ToolsPanel.Controls.Add(this.MainToolbarPanel);
             this.ToolsPanel.Controls.Add(this.ToolsTabControl);
             this.ToolsPanel.Controls.Add(this.ToolsPanelHideButton);
             this.ToolsPanel.Controls.Add(this.ToolsDragPanel);
@@ -166,6 +175,56 @@
             this.ToolsPanel.Size = new System.Drawing.Size(218, 559);
             this.ToolsPanel.TabIndex = 2;
             this.ToolsPanel.Visible = false;
+            // 
+            // MainToolbarPanel
+            // 
+            this.MainToolbarPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.MainToolbarPanel.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.MainToolbarPanel.Controls.Add(this.MainToolbar);
+            this.MainToolbarPanel.Location = new System.Drawing.Point(181, 2);
+            this.MainToolbarPanel.Name = "MainToolbarPanel";
+            this.MainToolbarPanel.Size = new System.Drawing.Size(34, 24);
+            this.MainToolbarPanel.TabIndex = 4;
+            // 
+            // MainToolbar
+            // 
+            this.MainToolbar.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.MainToolbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.SaveButton});
+            this.MainToolbar.Location = new System.Drawing.Point(0, 0);
+            this.MainToolbar.Name = "MainToolbar";
+            this.MainToolbar.Size = new System.Drawing.Size(34, 25);
+            this.MainToolbar.TabIndex = 7;
+            this.MainToolbar.Text = "Main Toolbar";
+            // 
+            // SaveButton
+            // 
+            this.SaveButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.SaveButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.SaveMenuButton,
+            this.SaveAsMenuButton});
+            this.SaveButton.Image = ((System.Drawing.Image)(resources.GetObject("SaveButton.Image")));
+            this.SaveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.SaveButton.Name = "SaveButton";
+            this.SaveButton.Size = new System.Drawing.Size(32, 22);
+            this.SaveButton.Text = "Save";
+            this.SaveButton.ButtonClick += new System.EventHandler(this.SaveButton_ButtonClick);
+            // 
+            // SaveMenuButton
+            // 
+            this.SaveMenuButton.Image = ((System.Drawing.Image)(resources.GetObject("SaveMenuButton.Image")));
+            this.SaveMenuButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.SaveMenuButton.Name = "SaveMenuButton";
+            this.SaveMenuButton.Size = new System.Drawing.Size(123, 22);
+            this.SaveMenuButton.Text = "Save";
+            this.SaveMenuButton.Click += new System.EventHandler(this.SaveMenuButton_Click);
+            // 
+            // SaveAsMenuButton
+            // 
+            this.SaveAsMenuButton.Name = "SaveAsMenuButton";
+            this.SaveAsMenuButton.Size = new System.Drawing.Size(123, 22);
+            this.SaveAsMenuButton.Text = "Save As...";
+            this.SaveAsMenuButton.Click += new System.EventHandler(this.SaveAsMenuButton_Click);
             // 
             // ToolsTabControl
             // 
@@ -639,6 +698,10 @@
             this.ToolsPanelShowButton.UseVisualStyleBackColor = true;
             this.ToolsPanelShowButton.Click += new System.EventHandler(this.ToolsPanelShowButton_Click);
             // 
+            // SaveFileDialog
+            // 
+            this.SaveFileDialog.Filter = "All files|*.*";
+            // 
             // ModelForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -665,6 +728,10 @@
             this.ConsolePanel.ResumeLayout(false);
             this.ConsolePanel.PerformLayout();
             this.ToolsPanel.ResumeLayout(false);
+            this.MainToolbarPanel.ResumeLayout(false);
+            this.MainToolbarPanel.PerformLayout();
+            this.MainToolbar.ResumeLayout(false);
+            this.MainToolbar.PerformLayout();
             this.ToolsTabControl.ResumeLayout(false);
             this.ToolsModelsTabPage.ResumeLayout(false);
             this.ToolsMaterialsTabPage.ResumeLayout(false);
@@ -725,5 +792,11 @@
         private System.Windows.Forms.Button TextureViewerButton;
         private System.Windows.Forms.CheckBox HDTexturesCheckBox;
         private System.Windows.Forms.Button MaterialEditorButton;
+        private System.Windows.Forms.Panel MainToolbarPanel;
+        private System.Windows.Forms.ToolStrip MainToolbar;
+        private System.Windows.Forms.ToolStripSplitButton SaveButton;
+        private System.Windows.Forms.ToolStripMenuItem SaveMenuButton;
+        private System.Windows.Forms.ToolStripMenuItem SaveAsMenuButton;
+        private System.Windows.Forms.SaveFileDialog SaveFileDialog;
     }
 }

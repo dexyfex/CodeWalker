@@ -15,6 +15,8 @@ namespace CodeWalker.Forms
     public partial class ModelMatForm : Form
     {
         private ModelForm ModelForm;
+        private DrawableBase Drawable;
+        private Dictionary<uint, Drawable> DrawableDict;
 
 
         public ModelMatForm(ModelForm modelForm)
@@ -28,6 +30,7 @@ namespace CodeWalker.Forms
 
         public void LoadModel(DrawableBase drawable)
         {
+            Drawable = drawable;
 
             ModelsTreeView.Nodes.Clear();
             ModelsTreeView.ShowRootLines = false;
@@ -64,6 +67,8 @@ namespace CodeWalker.Forms
         }
         public void LoadModels(Dictionary<uint, Drawable> dict)
         {
+            DrawableDict = dict;
+
             ModelsTreeView.Nodes.Clear();
             //ModelsTreeView.ShowRootLines = true;
 
@@ -198,10 +203,15 @@ namespace CodeWalker.Forms
             if (parm.DataType == 0)//texture
             {
                 var tex = parm.Data as TextureBase;
-                if (!(tex is Texture))//don't do this for embedded textures!
+                var ttex = tex as Texture;
+                if (ttex == null)//don't do this for embedded textures!
                 {
                     tex.Name = txt;
                     tex.NameHash = JenkHash.GenHash(txt.ToLowerInvariant());
+                }
+                else
+                {
+                    //TODO: modify embedded textures!
                 }
             }
             else if (parm.DataType == 1)//Vector4
@@ -228,10 +238,38 @@ namespace CodeWalker.Forms
             var geom = ModelsTreeView.SelectedNode?.Tag as DrawableGeometry;
             if (geom != null)
             {
-                geom.UpdateRenderableParameters = true;
+                if (Drawable != null)
+                {
+                    UpdateRenderableParams(Drawable, geom.Shader);
+                }
+                if (DrawableDict != null)
+                {
+                    foreach (var dwbl in DrawableDict.Values)
+                    {
+                        UpdateRenderableParams(dwbl, geom.Shader);
+                    }
+                }
             }
 
+            ModelForm.OnModelModified();
+
         }
+
+        private void UpdateRenderableParams(DrawableBase dwbl, ShaderFX shader)
+        {
+            foreach (var model in dwbl.AllModels)
+            {
+                if (model?.Geometries?.data_items == null) continue;
+                foreach (var geom in model.Geometries.data_items)
+                {
+                    if (geom.Shader == shader)
+                    {
+                        geom.UpdateRenderableParameters = true;
+                    }
+                }
+            }
+        }
+
 
         private void ModelMatForm_FormClosed(object sender, FormClosedEventArgs e)
         {
