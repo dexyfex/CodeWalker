@@ -1365,61 +1365,68 @@ namespace CodeWalker
                 if (data == null) return;
 
                 var ft = item.FileType;
+                var fe = item.File;
+                if (fe == null)
+                { 
+                    //this should only happen when opening a file from filesystem...
+                    fe = CreateFileEntry(name, path, ref data);
+                }
+
                 switch (ft.DefaultAction)
                 {
                     case FileTypeAction.ViewText:
-                        ViewText(name, path, data, item.File);
+                        ViewText(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewXml:
-                        ViewXml(name, path, data, item.File);
+                        ViewXml(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYtd:
-                        ViewYtd(name, path, data, item.File);
+                        ViewYtd(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYmt:
-                        ViewYmt(name, path, data, item.File);
+                        ViewYmt(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYmf:
-                        ViewYmf(name, path, data, item.File);
+                        ViewYmf(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYmap:
-                        ViewYmap(name, path, data, item.File);
+                        ViewYmap(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYtyp:
-                        ViewYtyp(name, path, data, item.File);
+                        ViewYtyp(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewJPso:
-                        ViewJPso(name, path, data, item.File);
+                        ViewJPso(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewCut:
-                        ViewCut(name, path, data, item.File);
+                        ViewCut(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewModel:
-                        ViewModel(name, path, data, item.File);
+                        ViewModel(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewAwc:
-                        ViewAwc(name, path, data, item.File);
+                        ViewAwc(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewGxt:
-                        ViewGxt(name, path, data, item.File);
+                        ViewGxt(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewRel:
-                        ViewRel(name, path, data, item.File);
+                        ViewRel(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewFxc:
-                        ViewFxc(name, path, data, item.File);
+                        ViewFxc(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYwr:
-                        ViewYwr(name, path, data, item.File);
+                        ViewYwr(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYvr:
-                        ViewYvr(name, path, data, item.File);
+                        ViewYvr(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYcd:
-                        ViewYcd(name, path, data, item.File);
+                        ViewYcd(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewCacheDat:
-                        ViewCacheDat(name, path, data, item.File);
+                        ViewCacheDat(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewHex:
                     default:
@@ -1626,6 +1633,31 @@ namespace CodeWalker
             MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(cachedat);
+        }
+
+        private RpfFileEntry CreateFileEntry(string name, string path, ref byte[] data)
+        {
+            //this should only really be used when loading a file from the filesystem.
+            RpfFileEntry e = null;
+            uint rsc7 = (data?.Length > 4) ? BitConverter.ToUInt32(data, 0) : 0;
+            if (rsc7 == 0x37435352) //RSC7 header present! create RpfResourceFileEntry and decompress data...
+            {
+                e = RpfFile.CreateResourceFileEntry(ref data, 0);//"version" should be loadable from the header in the data..
+                data = ResourceBuilder.Decompress(data);
+            }
+            else
+            {
+                var be = new RpfBinaryFileEntry();
+                be.FileSize = (uint)data?.Length;
+                be.FileUncompressedSize = be.FileSize;
+                e = be;
+            }
+            e.Name = name;
+            e.NameLower = name?.ToLowerInvariant();
+            e.NameHash = JenkHash.GenHash(e.NameLower);
+            e.ShortNameHash = JenkHash.GenHash(Path.GetFileNameWithoutExtension(e.NameLower));
+            e.Path = path;
+            return e;
         }
 
 
