@@ -334,5 +334,20 @@ namespace CodeWalker.World
             }
             return true;
         }
+        public bool ContainsAABBNoClipNoOpt(ref Vector3 bmin, ref Vector3 bmax)
+        {
+            var c = (bmax + bmin) * 0.5f - Position;
+            var e = (bmax - bmin) * 0.5f;
+            for (int i = 0; i < 5; i++)
+            {
+                var pd = Planes[i].D;
+                var pn = Planes[i].Normal;
+                var d = (c.X * pn.X) + (c.Y * pn.Y) + (c.Z * pn.Z);
+                var r = (e.X * (pn.X > 0 ? pn.X : -pn.X)) + (e.Y * (pn.Y > 0 ? pn.Y : -pn.Y)) + (e.Z * (pn.Z > 0 ? pn.Z : -pn.Z));
+                if ((d + r) < -pd) return false;
+                //if ((d - r) < -pd) ; //intersecting
+            }
+            return true;
+        }
     }
 }

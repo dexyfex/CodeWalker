@@ -1672,6 +1672,16 @@ namespace CodeWalker.Rendering
                     return false;
             }
 
+            if (!ymap.HasChanged)//don't cull edited project ymaps, because extents may not have been updated!
+            {
+                var eemin = ymap._CMapData.entitiesExtentsMin;
+                var eemax = ymap._CMapData.entitiesExtentsMax;
+                if (!camera.ViewFrustum.ContainsAABBNoClipNoOpt(ref eemin, ref eemax))
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
         private void RenderWorldCalcEntityVisibility(YmapEntityDef ent)
@@ -2522,6 +2532,19 @@ namespace CodeWalker.Rendering
                 {
                     RenderCollisionMesh(sdrawable.Bound, entity);
                 }
+                //FragDrawable fdrawable = rndbl.Key as FragDrawable;
+                //if (fdrawable != null)
+                //{
+                //    if (fdrawable.Bound != null)
+                //    {
+                //        RenderCollisionMesh(fdrawable.Bound, entity);
+                //    }
+                //    var fbound = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1?.Bound;
+                //    if (fbound != null)
+                //    {
+                //        RenderCollisionMesh(fbound, entity);
+                //    }
+                //}
             }
             if (renderskeletons && rndbl.HasSkeleton)
             {
