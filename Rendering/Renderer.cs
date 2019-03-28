@@ -2338,12 +2338,12 @@ namespace CodeWalker.Rendering
                                     if ((dwbl != dwblcopy) && (dwbl.AllModels.Length == 0))
                                     {
                                         dwbl.Owner = dwblcopy;
-                                        dwbl.AllModels = dwblcopy.AllModels;
-                                        dwbl.DrawableModelsHigh = dwblcopy.DrawableModelsHigh;
-                                        dwbl.DrawableModelsMedium = dwblcopy.DrawableModelsMedium;
-                                        dwbl.DrawableModelsLow = dwblcopy.DrawableModelsLow;
-                                        dwbl.DrawableModelsVeryLow = dwblcopy.DrawableModelsVeryLow;
-                                        dwbl.VertexDecls = dwblcopy.VertexDecls;
+                                        dwbl.AllModels = dwblcopy.AllModels; //hopefully this is all that's need to render, otherwise drawable is actually getting edited!
+                                        //dwbl.DrawableModelsHigh = dwblcopy.DrawableModelsHigh;
+                                        //dwbl.DrawableModelsMedium = dwblcopy.DrawableModelsMedium;
+                                        //dwbl.DrawableModelsLow = dwblcopy.DrawableModelsLow;
+                                        //dwbl.DrawableModelsVeryLow = dwblcopy.DrawableModelsVeryLow;
+                                        //dwbl.VertexDecls = dwblcopy.VertexDecls;
                                     }
 
                                     RenderDrawable(dwbl, arch, ent, txdhash);

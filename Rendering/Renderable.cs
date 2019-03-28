@@ -78,18 +78,21 @@ namespace CodeWalker.Rendering
 
             DataSize = 0;
 
-            var hd = Key.DrawableModelsHigh.data_items;
+            var hd = Key.DrawableModelsHigh?.data_items ?? Key.AllModels;
             var med = Key.DrawableModelsMedium?.data_items;
             var low = Key.DrawableModelsLow?.data_items;
             var vlow = Key.DrawableModelsVeryLow?.data_items;
-            int totmodels = hd.Length + ((med != null) ? med.Length : 0) + ((low != null) ? low.Length : 0) + ((vlow != null) ? vlow.Length : 0);
-            int curmodel = hd.Length;
+            int totmodels = (hd?.Length ?? 0) + (med?.Length ?? 0) + (low?.Length ?? 0) + (vlow?.Length ?? 0);
+            int curmodel = hd?.Length ?? 0;
             AllModels = new RenderableModel[totmodels];
             HDModels = new RenderableModel[hd.Length];
-            for (int i = 0; i < hd.Length; i++)
+            if (hd != null)
             {
-                HDModels[i] = InitModel(hd[i]);
-                AllModels[i] = HDModels[i];
+                for (int i = 0; i < hd.Length; i++)
+                {
+                    HDModels[i] = InitModel(hd[i]);
+                    AllModels[i] = HDModels[i];
+                }
             }
             if (med != null)
             {
