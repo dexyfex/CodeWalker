@@ -1676,7 +1676,16 @@ namespace CodeWalker.Rendering
             {
                 var eemin = ymap._CMapData.entitiesExtentsMin;
                 var eemax = ymap._CMapData.entitiesExtentsMax;
-                if (!camera.ViewFrustum.ContainsAABBNoClipNoOpt(ref eemin, ref eemax))
+                bool visible = false;
+                if (MapViewEnabled)//don't do front clipping in 2D mode
+                {
+                    visible = camera.ViewFrustum.ContainsAABBNoFrontClipNoOpt(ref eemin, ref eemax);
+                }
+                else
+                {
+                    visible = camera.ViewFrustum.ContainsAABBNoClipNoOpt(ref eemin, ref eemax);
+                }
+                if (!visible)
                 {
                     return false;
                 }

@@ -3039,6 +3039,17 @@ namespace CodeWalker
 
 
 
+        protected override void WndProc(ref Message m)
+        {
+            //handle back/forward buttons globally for all the form
+            if (m.Msg == 0x319) //WM_APPCOMMAND
+            {
+                var cmd = (m.LParam.ToInt64() >> 16) & 0xFFF;
+                if (cmd == 1) GoBack(); //APPCOMMAND_BROWSER_BACKWARD
+                if (cmd == 2) GoForward(); //APPCOMMAND_BROWSER_FORWARD
+            }
+            base.WndProc(ref m);
+        }
 
 
         private void ExploreForm_Load(object sender, EventArgs e)

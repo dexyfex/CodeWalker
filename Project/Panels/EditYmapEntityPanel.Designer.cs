@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditYmapEntityPanel));
             this.EntityTabControl = new System.Windows.Forms.TabControl();
             this.EntityGeneralTabPage = new System.Windows.Forms.TabPage();
+            this.EntityEditArchetypeButton = new System.Windows.Forms.Button();
             this.EntityFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
             this.label13 = new System.Windows.Forms.Label();
             this.label28 = new System.Windows.Forms.Label();
@@ -91,7 +92,6 @@
             this.label4 = new System.Windows.Forms.Label();
             this.MiloEntitySetsListBox = new System.Windows.Forms.CheckedListBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.EntityEditArchetypeButton = new System.Windows.Forms.Button();
             this.EntityTabControl.SuspendLayout();
             this.EntityGeneralTabPage.SuspendLayout();
             this.EntityLodTabPage.SuspendLayout();
@@ -161,6 +161,17 @@
             this.EntityGeneralTabPage.Text = "General";
             this.EntityGeneralTabPage.UseVisualStyleBackColor = true;
             // 
+            // EntityEditArchetypeButton
+            // 
+            this.EntityEditArchetypeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.EntityEditArchetypeButton.Location = new System.Drawing.Point(454, 59);
+            this.EntityEditArchetypeButton.Name = "EntityEditArchetypeButton";
+            this.EntityEditArchetypeButton.Size = new System.Drawing.Size(95, 23);
+            this.EntityEditArchetypeButton.TabIndex = 35;
+            this.EntityEditArchetypeButton.Text = "Edit Archetype...";
+            this.EntityEditArchetypeButton.UseVisualStyleBackColor = true;
+            this.EntityEditArchetypeButton.Click += new System.EventHandler(this.EntityEditArchetypeButton_Click);
+            // 
             // EntityFlagsCheckedListBox
             // 
             this.EntityFlagsCheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -170,7 +181,7 @@
             this.EntityFlagsCheckedListBox.Items.AddRange(new object[] {
             "1 - Allow full rotation",
             "2 - Unk02",
-            "4 - Unk03",
+            "4 - Disable embedded collisions",
             "8 - Unk04",
             "16 - Unk05",
             "32 - Static entity",
@@ -792,17 +803,6 @@
             this.label2.Size = new System.Drawing.Size(91, 13);
             this.label2.TabIndex = 3;
             this.label2.Text = "DefaultEntitySets:";
-            // 
-            // EntityEditArchetypeButton
-            // 
-            this.EntityEditArchetypeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityEditArchetypeButton.Location = new System.Drawing.Point(454, 59);
-            this.EntityEditArchetypeButton.Name = "EntityEditArchetypeButton";
-            this.EntityEditArchetypeButton.Size = new System.Drawing.Size(95, 23);
-            this.EntityEditArchetypeButton.TabIndex = 35;
-            this.EntityEditArchetypeButton.Text = "Edit Archetype...";
-            this.EntityEditArchetypeButton.UseVisualStyleBackColor = true;
-            this.EntityEditArchetypeButton.Click += new System.EventHandler(this.EntityEditArchetypeButton_Click);
             // 
             // EditYmapEntityPanel
             // 
