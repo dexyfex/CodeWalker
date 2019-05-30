@@ -14,6 +14,7 @@ using CodeWalker.Project;
 using CodeWalker.Rendering;
 using CodeWalker.GameFiles;
 using CodeWalker.Properties;
+using System.Linq;
 
 namespace CodeWalker
 {
@@ -211,10 +212,13 @@ namespace CodeWalker
 
         bool initedOk = false;
 
+        string[] objectCompleteList;
 
         public WorldForm()
         {
             InitializeComponent();
+
+            InitializeModelCombo();
 
             Renderer = new Renderer(this, gameFileCache);
             camera = Renderer.camera;
@@ -7832,6 +7836,40 @@ namespace CodeWalker
             var statsForm = new StatisticsForm(this);
             statsForm.Show(this);
         }
+
+        private void InitializeModelCombo()
+        {
+            string[] objects = System.IO.File.ReadAllLines("entities\\ObjectList.ini");
+            string[] vehicles = System.IO.File.ReadAllLines("entities\\VehicleList.ini");
+            //string[] ped = System.IO.File.ReadAllLines("entities\\PedList.ini");
+
+
+            this.objectCompleteList = objects.Concat(vehicles).ToArray();
+            //this.objectCompleteList = this.objectCompleteList.Concat(ped).ToArray();
+            this.ModelComboBox.Items.AddRange(this.objectCompleteList);
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            List<string> temp = new List<string>();
+            string[] keys = ModelFilterTextBox.Text.Split(' ');
+
+            ModelComboBox.Items.Clear();
+            
+            foreach (string prop in this.objectCompleteList)
+            {
+                if (keys.All(prop.Contains))
+                {
+                    temp.Add(prop);
+                }
+            }
+
+            this.ModelComboBox.Items.AddRange(temp.ToArray());
+            if (temp.Count > 0)
+                this.ModelComboBox.Text = temp[0];
+            else
+                this.ModelComboBox.Text = "";
+        }   
     }
 
     public enum WorldControlMode

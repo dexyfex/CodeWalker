@@ -1,7 +1,7 @@
-﻿using CodeWalker.WinForms;
+﻿    using CodeWalker.WinForms;
 
-namespace CodeWalker
-{
+    namespace CodeWalker
+    {
     partial class WorldForm
     {
         /// <summary>
@@ -69,6 +69,8 @@ namespace CodeWalker
             this.DynamicLODCheckBox = new System.Windows.Forms.CheckBox();
             this.YmapsTextBox = new CodeWalker.WinForms.TextBoxFix();
             this.ViewModelTabPage = new System.Windows.Forms.TabPage();
+            this.ModelFilterTextBox = new System.Windows.Forms.TextBox();
+            this.label31 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.ViewModeComboBox = new System.Windows.Forms.ComboBox();
@@ -136,6 +138,7 @@ namespace CodeWalker
             this.TimedEntitiesCheckBox = new System.Windows.Forms.CheckBox();
             this.FieldOfViewTrackBar = new System.Windows.Forms.TrackBar();
             this.tabPage14 = new System.Windows.Forms.TabPage();
+            this.HDTexturesCheckBox = new System.Windows.Forms.CheckBox();
             this.WireframeCheckBox = new System.Windows.Forms.CheckBox();
             this.RenderModeComboBox = new System.Windows.Forms.ComboBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -287,7 +290,6 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
-            this.HDTexturesCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -374,44 +376,9 @@ namespace CodeWalker
             this.ModelComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ModelComboBox.FormattingEnabled = true;
-            this.ModelComboBox.Items.AddRange(new object[] {
-            "dt1_lod_slod3",
-            "dt1_tc_dufo_core",
-            "dt1_tc_ufocore",
-            "ex_office_citymodel_01",
-            "id1_30_build3_dtl2",
-            "imp_prop_ship_01a",
-            "prop_alien_egg_01",
-            "prop_fruit_stand_02",
-            "prop_fruit_stand_03",
-            "dune",
-            "dune2",
-            "dune2_hi",
-            "adder",
-            "adder_hi",
-            "kuruma2",
-            "kuruma2_hi",
-            "infernus",
-            "infernus_hi",
-            "buzzard",
-            "buzzard_hi",
-            "rhino",
-            "rhino_hi",
-            "lazer",
-            "lazer_hi",
-            "duster",
-            "duster_hi",
-            "marquis",
-            "marquis_hi",
-            "submersible",
-            "submersible_hi",
-            "cargobob",
-            "cargobob_hi",
-            "sanchez",
-            "sanchez_hi"});
-            this.ModelComboBox.Location = new System.Drawing.Point(44, 7);
+            this.ModelComboBox.Location = new System.Drawing.Point(54, 41);
             this.ModelComboBox.Name = "ModelComboBox";
-            this.ModelComboBox.Size = new System.Drawing.Size(150, 21);
+            this.ModelComboBox.Size = new System.Drawing.Size(137, 21);
             this.ModelComboBox.TabIndex = 11;
             this.ModelComboBox.SelectedIndexChanged += new System.EventHandler(this.ModelComboBox_SelectedIndexChanged);
             this.ModelComboBox.TextUpdate += new System.EventHandler(this.ModelComboBox_TextUpdate);
@@ -805,6 +772,8 @@ namespace CodeWalker
             // 
             // ViewModelTabPage
             // 
+            this.ViewModelTabPage.Controls.Add(this.ModelFilterTextBox);
+            this.ViewModelTabPage.Controls.Add(this.label31);
             this.ViewModelTabPage.Controls.Add(this.label1);
             this.ViewModelTabPage.Controls.Add(this.ModelComboBox);
             this.ViewModelTabPage.Location = new System.Drawing.Point(4, 22);
@@ -814,10 +783,27 @@ namespace CodeWalker
             this.ViewModelTabPage.Text = "Model";
             this.ViewModelTabPage.UseVisualStyleBackColor = true;
             // 
+            // ModelFilterTextBox
+            // 
+            this.ModelFilterTextBox.Location = new System.Drawing.Point(54, 11);
+            this.ModelFilterTextBox.Name = "ModelFilterTextBox";
+            this.ModelFilterTextBox.Size = new System.Drawing.Size(137, 20);
+            this.ModelFilterTextBox.TabIndex = 13;
+            this.ModelFilterTextBox.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
+            // label31
+            // 
+            this.label31.AutoSize = true;
+            this.label31.Location = new System.Drawing.Point(3, 11);
+            this.label31.Name = "label31";
+            this.label31.Size = new System.Drawing.Size(44, 13);
+            this.label31.TabIndex = 12;
+            this.label31.Text = "Search:";
+            // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(-1, 10);
+            this.label1.Location = new System.Drawing.Point(3, 44);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(39, 13);
             this.label1.TabIndex = 5;
@@ -1662,6 +1648,19 @@ namespace CodeWalker
             this.tabPage14.TabIndex = 3;
             this.tabPage14.Text = "Render";
             this.tabPage14.UseVisualStyleBackColor = true;
+            // 
+            // HDTexturesCheckBox
+            // 
+            this.HDTexturesCheckBox.AutoSize = true;
+            this.HDTexturesCheckBox.Checked = true;
+            this.HDTexturesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.HDTexturesCheckBox.Location = new System.Drawing.Point(10, 231);
+            this.HDTexturesCheckBox.Name = "HDTexturesCheckBox";
+            this.HDTexturesCheckBox.Size = new System.Drawing.Size(82, 17);
+            this.HDTexturesCheckBox.TabIndex = 57;
+            this.HDTexturesCheckBox.Text = "HD textures";
+            this.HDTexturesCheckBox.UseVisualStyleBackColor = true;
+            this.HDTexturesCheckBox.CheckedChanged += new System.EventHandler(this.HDTexturesCheckBox_CheckedChanged);
             // 
             // WireframeCheckBox
             // 
@@ -3283,19 +3282,6 @@ namespace CodeWalker
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
             // 
-            // HDTexturesCheckBox
-            // 
-            this.HDTexturesCheckBox.AutoSize = true;
-            this.HDTexturesCheckBox.Checked = true;
-            this.HDTexturesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.HDTexturesCheckBox.Location = new System.Drawing.Point(10, 231);
-            this.HDTexturesCheckBox.Name = "HDTexturesCheckBox";
-            this.HDTexturesCheckBox.Size = new System.Drawing.Size(82, 17);
-            this.HDTexturesCheckBox.TabIndex = 57;
-            this.HDTexturesCheckBox.Text = "HD textures";
-            this.HDTexturesCheckBox.UseVisualStyleBackColor = true;
-            this.HDTexturesCheckBox.CheckedChanged += new System.EventHandler(this.HDTexturesCheckBox_CheckedChanged);
-            // 
             // WorldForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3640,5 +3626,7 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectOcclusionButton;
         private System.Windows.Forms.CheckBox CarGeneratorsCheckBox;
         private System.Windows.Forms.CheckBox HDTexturesCheckBox;
+        private System.Windows.Forms.TextBox ModelFilterTextBox;
+        private System.Windows.Forms.Label label31;
     }
-}
+    }
