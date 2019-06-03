@@ -215,8 +215,10 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public RpfFile FindRpfFile(string path) => FindRpfFile(path, false);
 
-        public RpfFile FindRpfFile(string path)
+
+        public RpfFile FindRpfFile(string path, bool exactPathOnly)
         {
             RpfFile file = null; //check the dictionary
 
@@ -233,7 +235,7 @@ namespace CodeWalker.GameFiles
             string lpath = path.ToLowerInvariant(); //try look at names etc
             foreach (RpfFile tfile in AllRpfs)
             {
-                if (tfile.NameLower == lpath)
+                if (!exactPathOnly && tfile.NameLower == lpath)
                 {
                     return tfile;
                 }
