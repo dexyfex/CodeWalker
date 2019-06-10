@@ -801,11 +801,11 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="CodeWalker.Core\CodeWalker.Core.csproj">
+    <ProjectReference Include="..\CodeWalker.Core\CodeWalker.Core.csproj">
       <Project>{de50d3a6-b49e-47a0-abe6-101473a00759}</Project>
       <Name>CodeWalker.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="CodeWalker.WinForms\CodeWalker.WinForms.csproj">
+    <ProjectReference Include="..\CodeWalker.WinForms\CodeWalker.WinForms.csproj">
       <Project>{9702c58d-f52f-45cf-9456-9ce5af40f5c3}</Project>
       <Name>CodeWalker.WinForms</Name>
     </ProjectReference>

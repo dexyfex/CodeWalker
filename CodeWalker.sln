@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeWalker", "CodeWalker.csproj", "{3BB16320-99BF-4E30-9065-CA0877A36BF4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeWalker", "CodeWalker\CodeWalker.csproj", "{3BB16320-99BF-4E30-9065-CA0877A36BF4}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0D14B076-0ABF-434E-AB9F-36E7800D8887} = {0D14B076-0ABF-434E-AB9F-36E7800D8887}
 		{DE50D3A6-B49E-47A0-ABE6-101473A00759} = {DE50D3A6-B49E-47A0-ABE6-101473A00759}
