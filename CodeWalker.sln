@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2020
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29001.49
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeWalker", "CodeWalker\CodeWalker.csproj", "{3BB16320-99BF-4E30-9065-CA0877A36BF4}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -16,6 +16,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeWalker.Core", "CodeWalker.Core\CodeWalker.Core.csproj", "{DE50D3A6-B49E-47A0-ABE6-101473A00759}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeWalker.ErrorReport", "CodeWalker.ErrorReport\CodeWalker.ErrorReport.csproj", "{47A2C383-99B4-4447-94D9-0685E6D7E2DA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B2C8FA64-716F-46DA-A913-DCA4299B6080}"
+	ProjectSection(SolutionItems) = preProject
+		Notice.txt = Notice.txt
+		README.md = README.md
+		Todo.txt = Todo.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

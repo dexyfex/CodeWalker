@@ -782,11 +782,8 @@
     <Content Include="icons\icon_glokon_debug_32x32.png" />
     <Content Include="icons\icon_glokon_normal_32x32.png" />
     <Content Include="icons\icon_google_marker_64x64.png" />
-    <Content Include="Notice.txt" />
-    <None Include="README.md" />
     <None Include="Resources\CW.ico" />
     <None Include="Resources\CW16.ico" />
-    <Content Include="Todo.txt" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
