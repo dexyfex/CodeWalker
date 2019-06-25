@@ -93,34 +93,61 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void YndAreaIDUpDownChange()
+        private void yndMove_Click(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (Ynd == null) return;
+
             int x = (int)YndAreaIDXUpDown.Value;
             int y = (int)YndAreaIDYUpDown.Value;
             lock (ProjectForm.ProjectSyncRoot)
             {
+                int shiftX = x - Ynd.CellX;
+                int shiftY = y - Ynd.CellY;
+
                 var areaid = y * 32 + x;
-                if (Ynd.AreaID != areaid)
+
+                if (Ynd.AreaID != areaid && ProjectForm.WorldForm != null)
                 {
+                    YndNode[] yndNodes = Ynd.Nodes;
+
+                    for (int i = 0; i < yndNodes.Length; i++)
+                    {
+                        YndNode yndNode = yndNodes[i];
+                        // a node is 512x512
+                        yndNode.SetPosition(yndNode.Position + new SharpDX.Vector3(512 * shiftX, 512 * shiftY, 0.0f));
+                        yndNode.AreaID = (ushort)areaid;
+
+                        ProjectForm.WorldForm.SetWidgetPosition(yndNode.Position);
+                        ProjectForm.WorldForm.UpdatePathNodeGraphics(yndNode, false);
+                    }
+
+                    YndJunction[] yndJunctions = Ynd.Junctions;
+                    if (yndJunctions != null && yndJunctions.Length != 0)
+                    {
+                        for (int i = 0; i < yndJunctions.Length; i++)
+                        {
+                            YndJunction yndJunction = yndJunctions[i];
+                            yndJunction.PositionX += (short)(512 * shiftX);
+                            yndJunction.PositionY += (short)(512 * shiftY);
+                        }
+                    }
+
+                    // Editing links is not needed since they are already loaded as node above
+
                     Ynd.AreaID = areaid;
                     Ynd.Name = "nodes" + areaid.ToString() + ".ynd";
-                    YndAreaIDInfoLabel.Text = "ID: " + areaid.ToString();
+                    YndAreaIDInfoLabel.Text = "AID: " + areaid.ToString();
+
+                    Ynd.UpdateAllNodePositions();
+                    Ynd.UpdateBoundingBox();
+                    Ynd.UpdateTriangleVertices();
+
                     ProjectForm.SetYndHasChanged(true);
+                    MessageBox.Show("Don't forget to remove the former ynd!");
                 }
             }
             UpdateFormTitleYndChanged();
-        }
-
-        private void YndAreaIDXUpDown_ValueChanged(object sender, EventArgs e)
-        {
-            YndAreaIDUpDownChange();
-        }
-
-        private void YndAreaIDYUpDown_ValueChanged(object sender, EventArgs e)
-        {
-            YndAreaIDUpDownChange();
         }
 
         private void YndVehicleNodesUpDown_ValueChanged(object sender, EventArgs e)
@@ -155,6 +182,6 @@ namespace CodeWalker.Project.Panels
                 }
             }
             UpdateFormTitleYndChanged();
-        }
+        }        
     }
 }

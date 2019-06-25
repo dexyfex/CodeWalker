@@ -46,6 +46,7 @@
             this.YndAreaIDInfoLabel = new System.Windows.Forms.Label();
             this.label33 = new System.Windows.Forms.Label();
             this.YndRpfPathTextBox = new System.Windows.Forms.TextBox();
+            this.yndMove = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.YndAreaIDYUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.YndAreaIDXUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.YndPedNodesUpDown)).BeginInit();
@@ -72,7 +73,6 @@
             this.YndAreaIDYUpDown.Name = "YndAreaIDYUpDown";
             this.YndAreaIDYUpDown.Size = new System.Drawing.Size(48, 20);
             this.YndAreaIDYUpDown.TabIndex = 35;
-            this.YndAreaIDYUpDown.ValueChanged += new System.EventHandler(this.YndAreaIDYUpDown_ValueChanged);
             // 
             // label87
             // 
@@ -94,7 +94,6 @@
             this.YndAreaIDXUpDown.Name = "YndAreaIDXUpDown";
             this.YndAreaIDXUpDown.Size = new System.Drawing.Size(48, 20);
             this.YndAreaIDXUpDown.TabIndex = 33;
-            this.YndAreaIDXUpDown.ValueChanged += new System.EventHandler(this.YndAreaIDXUpDown_ValueChanged);
             // 
             // label48
             // 
@@ -199,7 +198,7 @@
             // YndAreaIDInfoLabel
             // 
             this.YndAreaIDInfoLabel.AutoSize = true;
-            this.YndAreaIDInfoLabel.Location = new System.Drawing.Point(271, 20);
+            this.YndAreaIDInfoLabel.Location = new System.Drawing.Point(386, 20);
             this.YndAreaIDInfoLabel.Name = "YndAreaIDInfoLabel";
             this.YndAreaIDInfoLabel.Size = new System.Drawing.Size(30, 13);
             this.YndAreaIDInfoLabel.TabIndex = 22;
@@ -224,11 +223,22 @@
             this.YndRpfPathTextBox.Size = new System.Drawing.Size(450, 20);
             this.YndRpfPathTextBox.TabIndex = 20;
             // 
+            // yndMove
+            // 
+            this.yndMove.Location = new System.Drawing.Point(263, 16);
+            this.yndMove.Name = "yndMove";
+            this.yndMove.Size = new System.Drawing.Size(108, 21);
+            this.yndMove.TabIndex = 37;
+            this.yndMove.Text = "Move";
+            this.yndMove.UseVisualStyleBackColor = true;
+            this.yndMove.Click += new System.EventHandler(this.yndMove_Click);
+            // 
             // EditYndPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(574, 499);
+            this.Controls.Add(this.yndMove);
             this.Controls.Add(this.label88);
             this.Controls.Add(this.YndAreaIDYUpDown);
             this.Controls.Add(this.label87);
@@ -277,5 +287,6 @@
         private System.Windows.Forms.Label YndAreaIDInfoLabel;
         private System.Windows.Forms.Label label33;
         private System.Windows.Forms.TextBox YndRpfPathTextBox;
+        private System.Windows.Forms.Button yndMove;
     }
 }
