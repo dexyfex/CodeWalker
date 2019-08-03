@@ -133,6 +133,9 @@ namespace CodeWalker.Project.Panels
             var stypes = types.GetScenarioTypes();
             if (stypes == null) return;
 
+            var stgroups = types.GetScenarioTypeGroups();
+            if (stgroups == null) return;
+
             var pmsets = types.GetPedModelSets();
             if (pmsets == null) return;
 
@@ -147,9 +150,17 @@ namespace CodeWalker.Project.Panels
             ScenarioChainNodeTypeComboBox.Items.Add("");
             foreach (var stype in stypes)
             {
-                ScenarioPointTypeComboBox.Items.Add(stype);
-                ScenarioClusterPointTypeComboBox.Items.Add(stype);
-                ScenarioChainNodeTypeComboBox.Items.Add(stype);
+                ScenarioTypeRef? typeRef = new ScenarioTypeRef(stype);
+                ScenarioPointTypeComboBox.Items.Add(typeRef);
+                ScenarioClusterPointTypeComboBox.Items.Add(typeRef);
+                ScenarioChainNodeTypeComboBox.Items.Add(typeRef);
+            }
+            foreach (var stgroup in stgroups)
+            {
+                ScenarioTypeRef? typeRef = new ScenarioTypeRef(stgroup);
+                ScenarioPointTypeComboBox.Items.Add(typeRef);
+                ScenarioClusterPointTypeComboBox.Items.Add(typeRef);
+                ScenarioChainNodeTypeComboBox.Items.Add(typeRef);
             }
 
             ScenarioPointModelSetComboBox.Items.Clear();
@@ -827,7 +838,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.MyPoint == null) return;
-            ScenarioType stype = ScenarioPointTypeComboBox.SelectedItem as ScenarioType;
+            ScenarioTypeRef? stype = ScenarioPointTypeComboBox.SelectedItem as ScenarioTypeRef?;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.MyPoint.Type != stype)
@@ -1711,7 +1722,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.ChainingNode == null) return;
-            ScenarioType stype = ScenarioChainNodeTypeComboBox.SelectedItem as ScenarioType;
+            ScenarioTypeRef? stype = ScenarioChainNodeTypeComboBox.SelectedItem as ScenarioTypeRef?;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.ChainingNode.Type != stype)
@@ -2133,7 +2144,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.ClusterMyPoint == null) return;
-            ScenarioType stype = ScenarioClusterPointTypeComboBox.SelectedItem as ScenarioType;
+            ScenarioTypeRef? stype = ScenarioClusterPointTypeComboBox.SelectedItem as ScenarioTypeRef?;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.ClusterMyPoint.Type != stype)
