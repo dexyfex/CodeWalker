@@ -51,7 +51,7 @@ namespace CodeWalker.GameFiles
         public ResourceSimpleArray<MetaStructureInfo> StructureInfos { get; set; }
         public ResourceSimpleArray<MetaEnumInfo> EnumInfos { get; set; }
         public ResourceSimpleArray<MetaDataBlock> DataBlocks { get; set; }
-        public string Name { get; private set; }
+        public string Name { get; set; }
         //public string[] Strings { get; set; }
 
         private string_r NameBlock = null;
