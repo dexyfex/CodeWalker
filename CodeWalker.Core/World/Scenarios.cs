@@ -1692,7 +1692,16 @@ namespace CodeWalker.World
             {
                 if (VehicleModelSets == null) return null;
                 AmbientModelSet ms;
-                VehicleModelSets.TryGetValue(hash, out ms);
+                if(!VehicleModelSets.TryGetValue(hash, out ms))
+                {
+                    string s_hash = hash.ToString("X");
+                    ms = new AmbientModelSet();
+                    ms.Name = $"UNKNOWN VEHICLE MODELSET ({s_hash})";
+                    ms.NameLower = ms.Name.ToLowerInvariant();
+                    ms.NameHash = new MetaHash(hash);
+                    ms.Models = new AmbientModel[] {};
+                    VehicleModelSets.Add(hash, ms);
+                }
                 return ms;
             }
         }
