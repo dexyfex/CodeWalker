@@ -317,12 +317,12 @@ namespace CodeWalker.GameFiles
                     );
                 case MetaName.rage__spdGrid2D:
                     return new MetaStructureInfo(MetaName.rage__spdGrid2D, 894636096, 768, 64,
-                     new MetaStructureEntryInfo_s((MetaName)860552138, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)3824598937, 16, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)496029782, 20, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)3374647798, 24, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)2690909759, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)3691675019, 48, MetaStructureEntryDataType.Float, 0, 0, 0)
+                     new MetaStructureEntryInfo_s(MetaName.MinCellX, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.MaxCellX, 16, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.MinCellY, 20, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.MaxCellY, 24, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.CellDimX, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.CellDimY, 48, MetaStructureEntryDataType.Float, 0, 0, 0)
                     );
                 case MetaName.CScenarioPointLookUps:
                     return new MetaStructureInfo(MetaName.CScenarioPointLookUps, 2669361587, 768, 96,
@@ -366,7 +366,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.iRadius, 29, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.iTimeTillPedLeaves, 30, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.iScenarioGroup, 32, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Flags, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)700327466),
+                     new MetaStructureEntryInfo_s(MetaName.Flags, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
                      new MetaStructureEntryInfo_s(MetaName.vPositionAndDirection, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
                     );
                 case MetaName.CScenarioEntityOverride:
@@ -394,7 +394,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.radius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.start, 84, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.end, 85, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 88, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)700327466),
+                     new MetaStructureEntryInfo_s(MetaName.flags, 88, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
                      new MetaStructureEntryInfo_s(MetaName.highPri, 92, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extendedRange, 93, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.shortRange, 94, MetaStructureEntryDataType.Boolean, 0, 0, 0)
@@ -498,7 +498,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1991964615),
+                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
                      new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0)
@@ -627,11 +627,11 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.entitiesExtentsMax, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.entities, 96, MetaStructureEntryDataType.Array, 0, 8, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)372253349),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwContainerLodDef),
                      new MetaStructureEntryInfo_s(MetaName.containerLods, 112, MetaStructureEntryDataType.Array, 0, 10, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)975711773),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.BoxOccluder),
                      new MetaStructureEntryInfo_s(MetaName.boxOccluders, 128, MetaStructureEntryDataType.Array, 4, 12, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)2741784237),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.OccludeModel),
                      new MetaStructureEntryInfo_s(MetaName.occludeModels, 144, MetaStructureEntryDataType.Array, 4, 14, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.physicsDictionaries, 160, MetaStructureEntryDataType.Array, 0, 16, 0),
@@ -656,9 +656,9 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1264241711),
+                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__eLodType),
                      new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)648413703),
+                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__ePriorityLevel),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
                      new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
@@ -690,7 +690,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1991964615),
+                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
                      new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
@@ -761,9 +761,9 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1264241711),
+                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__eLodType),
                      new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)648413703),
+                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__ePriorityLevel),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
                      new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
@@ -776,8 +776,8 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.numExitPortals, 152, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.MLOInstflags, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
                     );
-                case (MetaName)975711773:
-                    return new MetaStructureInfo((MetaName)975711773, 1831736438, 256, 16,
+                case MetaName.BoxOccluder:
+                    return new MetaStructureInfo(MetaName.BoxOccluder, 1831736438, 256, 16,
                      new MetaStructureEntryInfo_s(MetaName.iCenterX, 0, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.iCenterY, 2, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.iCenterZ, 4, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
@@ -787,15 +787,15 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.iHeight, 12, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.iSinZ, 14, MetaStructureEntryDataType.SignedShort, 0, 0, 0)
                     );
-                case (MetaName)2741784237:
-                    return new MetaStructureInfo((MetaName)2741784237, 1172796107, 1024, 64,
+                case MetaName.OccludeModel:
+                    return new MetaStructureInfo(MetaName.OccludeModel, 1172796107, 1024, 64,
                      new MetaStructureEntryInfo_s(MetaName.bmin, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.bmax, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.dataSize, 32, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.verts, 40, MetaStructureEntryDataType.DataBlockPointer, 4, 3, (MetaName)2),
-                     new MetaStructureEntryInfo_s((MetaName)853977995, 48, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)2337695078, 50, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.numVertsInBytes, 48, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.numTris, 50, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.flags, 52, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
                     );
                 case MetaName.CMloArchetypeDef:
@@ -813,7 +813,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1991964615),
+                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
                      new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
@@ -894,21 +894,21 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.StartImapFile, 264, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.EndImapFile, 268, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.PtFxAssetName, 272, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1980345114),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompEntityAnims),
                      new MetaStructureEntryInfo_s(MetaName.Animations, 280, MetaStructureEntryDataType.Array, 0, 13, 0)
                     );
-                case (MetaName)1980345114:
-                    return new MetaStructureInfo((MetaName)1980345114, 4110496011, 768, 216,
+                case MetaName.CCompEntityAnims:
+                    return new MetaStructureInfo(MetaName.CCompEntityAnims, 4110496011, 768, 216,
                      new MetaStructureEntryInfo_s(MetaName.AnimDict, 0, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
                      new MetaStructureEntryInfo_s(MetaName.AnimName, 64, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
                      new MetaStructureEntryInfo_s(MetaName.AnimatedModel, 128, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
                      new MetaStructureEntryInfo_s(MetaName.punchInPhase, 192, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.punchOutPhase, 196, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)3430328684),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompEntityEffectsData),
                      new MetaStructureEntryInfo_s(MetaName.effectsData, 200, MetaStructureEntryDataType.Array, 0, 5, 0)
                     );
-                case (MetaName)3430328684:
-                    return new MetaStructureInfo((MetaName)3430328684, 1724963966, 1024, 160,
+                case MetaName.CCompEntityEffectsData:
+                    return new MetaStructureInfo(MetaName.CCompEntityEffectsData, 1724963966, 1024, 160,
                      new MetaStructureEntryInfo_s(MetaName.fxType, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.fxOffsetPos, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.fxOffsetRot, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
@@ -970,10 +970,10 @@ namespace CodeWalker.GameFiles
                     return new MetaStructureInfo(MetaName.CExtensionDefExpression, 24441706, 1024, 48,
                      new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)1095612811, 32, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.expressionDictionaryName, 32, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.expressionName, 36, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)2766477159, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)1562817888, 44, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                     new MetaStructureEntryInfo_s(MetaName.creatureMetadataName, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.initialiseOnCollision, 44, MetaStructureEntryDataType.Boolean, 0, 0, 0)
                     );
                 case MetaName.CExtensionDefLightShaft:
                     return new MetaStructureInfo(MetaName.CExtensionDefLightShaft, 2526429398, 1024, 176,
@@ -986,12 +986,12 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.direction, 96, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.directionAmount, 112, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.length, 116, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)1616789093, 120, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)120454521, 124, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)1297365553, 128, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)75548206, 132, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)40301253, 136, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)475013030, 140, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.fadeInTimeStart, 120, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.fadeInTimeEnd, 124, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.fadeOutTimeStart, 128, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.fadeOutTimeEnd, 132, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.fadeDistanceStart, 136, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.fadeDistanceEnd, 140, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.color, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.intensity, 148, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.flashiness, 152, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
@@ -999,7 +999,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.densityType, 160, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)1931949281),
                      new MetaStructureEntryInfo_s(MetaName.volumeType, 164, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)2266515059),
                      new MetaStructureEntryInfo_s(MetaName.softness, 168, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)59101696, 172, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                     new MetaStructureEntryInfo_s(MetaName.scaleBySunIntensity, 172, MetaStructureEntryDataType.Boolean, 0, 0, 0)
                     );
                 case MetaName.VECTOR3:
                     return new MetaStructureInfo(MetaName.VECTOR3, 2751397072, 512, 12,
@@ -1007,16 +1007,16 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.y, 4, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.z, 8, MetaStructureEntryDataType.Float, 0, 0, 0)
                     );
-                case (MetaName)2858946626:
-                    return new MetaStructureInfo((MetaName)2858946626, 1792487819, 768, 40,
+                case MetaName.CPedPropInfo:
+                    return new MetaStructureInfo(MetaName.CPedPropInfo, 1792487819, 768, 40,
                      new MetaStructureEntryInfo_s((MetaName)2598445407, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)94549140),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropMetaData),
                      new MetaStructureEntryInfo_s((MetaName)3902803273, 8, MetaStructureEntryDataType.Array, 0, 1, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CAnchorProps),
                      new MetaStructureEntryInfo_s(MetaName.aAnchors, 24, MetaStructureEntryDataType.Array, 0, 3, 0)
                     );
-                case (MetaName)376833625:
-                    return new MetaStructureInfo((MetaName)376833625, 4030871161, 768, 112,
+                case MetaName.CPedVariationInfo:
+                    return new MetaStructureInfo(MetaName.CPedVariationInfo, 4030871161, 768, 112,
                      new MetaStructureEntryInfo_s((MetaName)1235281004, 0, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)4086467184, 1, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)911147899, 2, MetaStructureEntryDataType.Boolean, 0, 0, 0),
@@ -1025,11 +1025,11 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s((MetaName)2996560424, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, MetaName.PsoPOINTER),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)3538495220),
                      new MetaStructureEntryInfo_s((MetaName)3796409423, 16, MetaStructureEntryDataType.Array, 0, 6, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)253191135),
-                     new MetaStructureEntryInfo_s((MetaName)2131007641, 32, MetaStructureEntryDataType.Array, 0, 8, 0),
+                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedSelectionSet),
+                     new MetaStructureEntryInfo_s(MetaName.aSelectionSets, 32, MetaStructureEntryDataType.Array, 0, 8, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CComponentInfo),
                      new MetaStructureEntryInfo_s(MetaName.compInfos, 48, MetaStructureEntryDataType.Array, 0, 10, 0),
-                     new MetaStructureEntryInfo_s(MetaName.propInfo, 64, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)2858946626),
+                     new MetaStructureEntryInfo_s(MetaName.propInfo, 64, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropInfo),
                      new MetaStructureEntryInfo_s(MetaName.dlcName, 104, MetaStructureEntryDataType.Hash, 0, 0, 0)
                     );
                 case (MetaName)3538495220:
@@ -1069,8 +1069,8 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s((MetaName)3509540765, 44, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)4196345791, 45, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
                     );
-                case (MetaName)94549140:
-                    return new MetaStructureInfo((MetaName)94549140, 2029738350, 768, 56,
+                case MetaName.CPedPropMetaData:
+                    return new MetaStructureInfo(MetaName.CPedPropMetaData, 2029738350, 768, 56,
                      new MetaStructureEntryInfo_s(MetaName.audioId, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.expressionMods, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, (MetaName)5),
@@ -1098,8 +1098,8 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.props, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.anchor, 16, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)2834549053)
                     );
-                case (MetaName)253191135:
-                    return new MetaStructureInfo((MetaName)253191135, 3120284999, 512, 48,
+                case MetaName.CPedSelectionSet:
+                    return new MetaStructureInfo(MetaName.CPedSelectionSet, 3120284999, 512, 48,
                      new MetaStructureEntryInfo_s(MetaName.name, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)173599222, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, MetaName.PsoPOINTER),
@@ -1141,7 +1141,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.Group, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ModelSet, 44, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.AvailabilityInMpSp, 48, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)3573596290),
-                     new MetaStructureEntryInfo_s(MetaName.Flags, 52, MetaStructureEntryDataType.IntFlags2, 0, 32, (MetaName)700327466),
+                     new MetaStructureEntryInfo_s(MetaName.Flags, 52, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
                      new MetaStructureEntryInfo_s(MetaName.Radius, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.TimeTillPedLeaves, 60, MetaStructureEntryDataType.Float, 0, 0, 0)
                     );
@@ -1210,10 +1210,10 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.spacing, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.minScale, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.maxScale, 48, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)3913056845, 52, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)147400493, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)2591582364, 60, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)3889902555, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.minScaleZ, 52, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.maxScaleZ, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.minZOffset, 60, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.maxZOffset, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.objectHash, 68, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.flags, 72, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
                     );
@@ -1245,8 +1245,8 @@ namespace CodeWalker.GameFiles
             //to generate enuminfos
             switch (name)
             {
-                case (MetaName)700327466:
-                    return new MetaEnumInfo((MetaName)700327466, 2814596095,
+                case MetaName.CScenarioPointFlags__Flags:
+                    return new MetaEnumInfo(MetaName.CScenarioPointFlags__Flags, 2814596095,
                      new MetaEnumEntryInfo_s(MetaName.IgnoreMaxInRange, 0),
                      new MetaEnumEntryInfo_s(MetaName.NoSpawn, 1),
                      new MetaEnumEntryInfo_s(MetaName.StationaryReactions, 2),
@@ -1316,16 +1316,16 @@ namespace CodeWalker.GameFiles
                      new MetaEnumEntryInfo_s((MetaName)3717649022, 14),
                      new MetaEnumEntryInfo_s((MetaName)3356026130, 15)
                     );
-                case (MetaName)1991964615:
-                    return new MetaEnumInfo((MetaName)1991964615, 1866031916,
+                case MetaName.rage__fwArchetypeDef__eAssetType:
+                    return new MetaEnumInfo(MetaName.rage__fwArchetypeDef__eAssetType, 1866031916,
                      new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_UNINITIALIZED, 0),
                      new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_FRAGMENT, 1),
                      new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_DRAWABLE, 2),
                      new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_DRAWABLEDICTIONARY, 3),
                      new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_ASSETLESS, 4)
                     );
-                case (MetaName)1264241711:
-                    return new MetaEnumInfo((MetaName)1264241711, 1856311430,
+                case MetaName.rage__eLodType:
+                    return new MetaEnumInfo(MetaName.rage__eLodType, 1856311430,
                      new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_HD, 0),
                      new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_LOD, 1),
                      new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD1, 2),
@@ -1334,8 +1334,8 @@ namespace CodeWalker.GameFiles
                      new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_ORPHANHD, 5),
                      new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD4, 6)
                     );
-                case (MetaName)648413703:
-                    return new MetaEnumInfo((MetaName)648413703, 2200357711,
+                case MetaName.rage__ePriorityLevel:
+                    return new MetaEnumInfo(MetaName.rage__ePriorityLevel, 2200357711,
                      new MetaEnumEntryInfo_s(MetaName.PRI_REQUIRED, 0),
                      new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_HIGH, 1),
                      new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_MEDIUM, 2),
@@ -1728,6 +1728,21 @@ namespace CodeWalker.GameFiles
             Buffer.BlockCopy(ptrblock.Data, (int)ptroffset, data, 0, count);
             return data;
         }
+        public static byte[] GetByteArray(Meta meta, DataBlockPointer ptr, uint count)
+        {
+            //var pointer = array.Pointer;
+            uint ptrindex = ptr.PointerDataIndex;// (pointer & 0xFFF) - 1;
+            uint ptroffset = ptr.PointerDataOffset;// ((pointer >> 12) & 0xFFFFF);
+            var ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
+            if ((ptrblock == null) || (ptrblock.Data == null))// || (ptrblock.StructureNameHash != name))
+            { return null; } //no block or wrong block? shouldn't happen!
+            //var count = array.Count1;
+            if ((ptroffset + count) > ptrblock.Data.Length)
+            { return null; }
+            byte[] data = new byte[count];
+            Buffer.BlockCopy(ptrblock.Data, (int)ptroffset, data, 0, (int)count);
+            return data;
+        }
 
 
         public static T[] GetTypedDataArray<T>(Meta meta, MetaName name) where T : struct
@@ -1992,6 +2007,10 @@ namespace CodeWalker.GameFiles
         {
             return (ushort)(((x & 0xFF00) >> 8) | ((x & 0x00FF) << 8));
         }
+        public static short SwapBytes(short x)
+        {
+            return (short)SwapBytes((ushort)x);
+        }
         public static uint SwapBytes(uint x)
         {
             // swap adjacent 16-bit blocks
@@ -2056,7 +2075,7 @@ namespace CodeWalker.GameFiles
 
     //generated enums
     
-    [Flags] public enum Unk_700327466 //SCENARIO point flags  / extension spawn point flags
+    [Flags] public enum CScenarioPointFlags__Flags //SCENARIO point flags  / extension spawn point flags
         : int //Key:2814596095
     {
         IgnoreMaxInRange = 1,//0,
@@ -2137,7 +2156,7 @@ namespace CodeWalker.GameFiles
         Unk_15_3356026130 = 15,
     }
 
-    public enum Unk_1991964615 //archetype assetType
+    public enum rage__fwArchetypeDef__eAssetType //archetype assetType
         : int //Key:1866031916
     {
         ASSET_TYPE_UNINITIALIZED = 0, //189734893
@@ -2147,7 +2166,7 @@ namespace CodeWalker.GameFiles
         ASSET_TYPE_ASSETLESS = 4, //4161085041
     }
 
-    public enum Unk_1264241711 //entity lodLevel
+    public enum rage__eLodType //entity lodLevel
         : int //Key:1856311430
     {
         LODTYPES_DEPTH_HD = 0,
@@ -2159,7 +2178,7 @@ namespace CodeWalker.GameFiles
         LODTYPES_DEPTH_SLOD4 = 6,
     }
 
-    public enum Unk_648413703 //entity priorityLevel
+    public enum rage__ePriorityLevel //entity priorityLevel
         : int //Key:2200357711
     {
         PRI_REQUIRED = 0,  //1943361227
@@ -2215,7 +2234,7 @@ namespace CodeWalker.GameFiles
         PV_COMP_MAX = 2048,//12,
     }
 
-    public enum Unk_4212977111 //component peds Unk_94549140 renderFlags
+    public enum Unk_4212977111 //component peds CPedPropMetaData renderFlags
         : int //Key:1551913633
     {
         Unk_3757767268 = 0,
@@ -2295,7 +2314,7 @@ namespace CodeWalker.GameFiles
         public MetaHash clipDictionary { get; set; } //96   96: Hash: 0: clipDictionary//424089489
         public MetaHash drawableDictionary { get; set; } //100   100: Hash: 0: drawableDictionary
         public MetaHash physicsDictionary { get; set; } //104   104: Hash: 0: physicsDictionary//3553040380
-        public Unk_1991964615 assetType { get; set; } //108   108: IntEnum: 1991964615: assetType
+        public rage__fwArchetypeDef__eAssetType assetType { get; set; } //108   108: IntEnum: 1991964615: assetType
         public MetaHash assetName { get; set; } //112   112: Hash: 0: assetName
         public uint Unused08 { get; set; }//116
         public Array_StructurePointer extensions { get; set; } //120   120: Array: 0: extensions  {0: StructurePointer: 0: 256}
@@ -2428,7 +2447,9 @@ namespace CodeWalker.GameFiles
         public Vector3 BBMax { get { return (_Data.bbMax); } }
         public Vector3 BBMin_CW { get; set; }
         public Vector3 BBMax_CW { get; set; }
-
+        
+        public MloArchetype Archetype { get; set; }
+        public int Index { get; set; }
 
         public MCMloRoomDef() { }
         public MCMloRoomDef(Meta meta, CMloRoomDef data)
@@ -2610,7 +2631,7 @@ namespace CodeWalker.GameFiles
                 Entities = new MCEntityDef[ents.Length];
                 for (int i = 0; i < ents.Length; i++)
                 {
-                    Entities[i] = new MCEntityDef(meta, ents[i]);
+                    Entities[i] = new MCEntityDef(meta, ref ents[i]);
                 }
             }
         }
@@ -2732,9 +2753,9 @@ namespace CodeWalker.GameFiles
         public int parentIndex { get; set; } //72   72: SignedInt: 0: parentIndex
         public float lodDist { get; set; } //76   76: Float: 0: lodDist
         public float childLodDist { get; set; } //80   80: Float: 0: childLodDist//3398912973
-        public Unk_1264241711 lodLevel { get; set; } //84   84: IntEnum: 1264241711: lodLevel  //LODTYPES_DEPTH_
+        public rage__eLodType lodLevel { get; set; } //84   84: IntEnum: 1264241711: lodLevel  //LODTYPES_DEPTH_
         public uint numChildren { get; set; } //88   88: UnsignedInt: 0: numChildren//2793909385
-        public Unk_648413703 priorityLevel { get; set; } //92   92: IntEnum: 648413703: priorityLevel//647098393
+        public rage__ePriorityLevel priorityLevel { get; set; } //92   92: IntEnum: 648413703: priorityLevel//647098393
         public Array_StructurePointer extensions { get; set; } //96   96: Array: 0: extensions  {0: StructurePointer: 0: 256}
         public int ambientOcclusionMultiplier { get; set; } //112   112: SignedInt: 0: ambientOcclusionMultiplier//415356295
         public int artificialAmbientOcclusion { get; set; } //116   116: SignedInt: 0: artificialAmbientOcclusion//599844163
@@ -2750,22 +2771,25 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public class MCEntityDef : MetaWrapper
     {
         public CEntityDef _Data;
-        public CEntityDef Data { get { return _Data; } }
+        public CEntityDef Data { get { return _Data; } set { _Data = value; } }
         public MetaWrapper[] Extensions { get; set; }
 
 
-        public MCEntityDef() { }
+        public MloArchetype Archetype { get; set; } // for browsing/reference purposes
+
         public MCEntityDef(MCEntityDef copy)
         {
-            if (copy != null)
-            {
-                _Data = copy.Data;
-            }
+            if (copy != null) _Data = copy.Data;
         }
-        public MCEntityDef(Meta meta, CEntityDef d)
+        public MCEntityDef(Meta meta, ref CEntityDef d)
         {
             _Data = d;
             Extensions = MetaTypes.GetExtensions(meta, _Data.extensions);
+        }
+        public MCEntityDef(ref CEntityDef d, MloArchetype arch)
+        {
+            _Data = d;
+            Archetype = arch;
         }
 
         public override void Load(Meta meta, MetaPOINTER ptr)
@@ -2803,7 +2827,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct Unk_975711773 //16 bytes, Key:1831736438   //boxOccluders
+    [TC(typeof(EXP))] public struct BoxOccluder //16 bytes, Key:1831736438   //boxOccluders
     {
         public short iCenterX { get; set; } //0   0: SignedShort: 0: 48026296
         public short iCenterY { get; set; } //2   2: SignedShort: 0: 896907229
@@ -2815,7 +2839,7 @@ namespace CodeWalker.GameFiles
         public short iSinZ { get; set; } //14   14: SignedShort: 0: iSinZ
     }
 
-    [TC(typeof(EXP))] public struct Unk_2741784237 //64 bytes, Key:1172796107  //occludeModels
+    [TC(typeof(EXP))] public struct OccludeModel //64 bytes, Key:1172796107  //occludeModels
     {
         public Vector3 bmin { get; set; } //0   0: Float_XYZ: 0: bmin
         public float Unused0 { get; set; }//12
@@ -2824,8 +2848,8 @@ namespace CodeWalker.GameFiles
         public uint dataSize { get; set; } //32   32: UnsignedInt: 0: dataSize//2442753371
         public uint Unused2 { get; set; }//36
         public DataBlockPointer verts { get; set; } //40   40: DataBlockPointer: 2: verts
-        public ushort Unk_853977995 { get; set; } //48   48: UnsignedShort: 0: 853977995
-        public ushort Unk_2337695078 { get; set; } //50   50: UnsignedShort: 0: 2337695078
+        public ushort numVertsInBytes { get; set; } //48   48: UnsignedShort: 0: numVertsInBytes
+        public ushort numTris { get; set; } //50   50: UnsignedShort: 0: numTris
         public uint flags { get; set; } //52   52: UnsignedInt: 0: flags
         public uint Unused3 { get; set; }//56
         public uint Unused4 { get; set; }//60
@@ -3405,10 +3429,10 @@ namespace CodeWalker.GameFiles
         public uint Unused2 { get; set; }//12
         public Vector3 offsetPosition { get; set; } //16   16: Float_XYZ: 0: offsetPosition
         public float Unused3 { get; set; }//28
-        public MetaHash Unk_1095612811 { get; set; } //32   32: Hash: 0: 1095612811
+        public MetaHash expressionDictionaryName { get; set; } //32   32: Hash: 0: expressionDictionaryName
         public MetaHash expressionName { get; set; } //36   36: Hash: 0: expressionName
-        public MetaHash Unk_2766477159 { get; set; } //40   40: Hash: 0: 2766477159
-        public byte Unk_1562817888 { get; set; } //44   44: Boolean: 0: 1562817888
+        public MetaHash creatureMetadataName { get; set; } //40   40: Hash: 0: creatureMetadataName
+        public byte initialiseOnCollision { get; set; } //44   44: Boolean: 0: initialiseOnCollision
         public byte Unused4 { get; set; }//45
         public ushort Unused5 { get; set; }//46
 
@@ -3467,12 +3491,12 @@ namespace CodeWalker.GameFiles
         public float Unused08 { get; set; }//108
         public float directionAmount { get; set; } //112   112: Float: 0: 1441249296
         public float length { get; set; } //116   116: Float: 0: length
-        public float Unk_1616789093 { get; set; } //120   120: Float: 0: 1616789093
-        public float Unk_120454521 { get; set; } //124   124: Float: 0: 120454521
-        public float Unk_1297365553 { get; set; } //128   128: Float: 0: 1297365553
-        public float Unk_75548206 { get; set; } //132   132: Float: 0: 75548206
-        public float Unk_40301253 { get; set; } //136   136: Float: 0: 40301253
-        public float Unk_475013030 { get; set; } //140   140: Float: 0: 475013030
+        public float fadeInTimeStart { get; set; } //120   120: Float: 0: fadeInTimeStart
+        public float fadeInTimeEnd { get; set; } //124   124: Float: 0: fadeInTimeEnd
+        public float fadeOutTimeStart { get; set; } //128   128: Float: 0: fadeOutTimeStart
+        public float fadeOutTimeEnd { get; set; } //132   132: Float: 0: fadeOutTimeEnd
+        public float fadeDistanceStart { get; set; } //136   136: Float: 0: fadeDistanceStart
+        public float fadeDistanceEnd { get; set; } //140   140: Float: 0: fadeDistanceEnd
         public uint color { get; set; } //144   144: UnsignedInt: 0: color
         public float intensity { get; set; } //148   148: Float: 0: intensity
         public byte flashiness { get; set; } //152   152: UnsignedByte: 0: 3829693202
@@ -3482,7 +3506,7 @@ namespace CodeWalker.GameFiles
         public Unk_1931949281 densityType { get; set; } //160   160: IntEnum: 1931949281: densityType//235100599
         public Unk_2266515059 volumeType { get; set; } //164   164: IntEnum: 2266515059: volumeType//4021175589
         public float softness { get; set; } //168   168: Float: 0: softness//187712958
-        public byte Unk_59101696 { get; set; } //172   172: Boolean: 0: 59101696
+        public byte scaleBySunIntensity { get; set; } //172   172: Boolean: 0: scaleBySunIntensity
         public byte Unused11 { get; set; }//173
         public ushort Unused12 { get; set; }//174
 
@@ -3595,7 +3619,7 @@ namespace CodeWalker.GameFiles
         public byte start { get; set; } //84   84: UnsignedByte: 0: start
         public byte end { get; set; } //85   85: UnsignedByte: 0: end
         public ushort Unused4 { get; set; }//86
-        public Unk_700327466 flags { get; set; } //88   88: IntFlags2: 700327466: flags
+        public CScenarioPointFlags__Flags flags { get; set; } //88   88: IntFlags2: 700327466: flags
         public byte highPri { get; set; } //92   92: Boolean: 0: highPri
         public byte extendedRange { get; set; } //93   93: Boolean: 0: extendedRange
         public byte shortRange { get; set; } //94   94: Boolean: 0: shortRange
@@ -3629,7 +3653,7 @@ namespace CodeWalker.GameFiles
         public float Radius { get { return _Data.radius; } set { _Data.radius = value; } }
         public byte StartTime { get { return _Data.start; } set { _Data.start = value; } }
         public byte EndTime { get { return _Data.end; } set { _Data.end = value; } }
-        public Unk_700327466 Flags { get { return _Data.flags; } set { _Data.flags = value; } }
+        public CScenarioPointFlags__Flags Flags { get { return _Data.flags; } set { _Data.flags = value; } }
         public bool HighPri { get { return _Data.highPri == 1; } set { _Data.highPri = (byte)(value ? 1 : 0); } }
         public bool ExtendedRange { get { return _Data.extendedRange == 1; } set { _Data.extendedRange = (byte)(value ? 1 : 0); } }
         public bool ShortRange { get { return _Data.shortRange == 1; } set { _Data.shortRange = (byte)(value ? 1 : 0); } }
@@ -3663,7 +3687,7 @@ namespace CodeWalker.GameFiles
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddEnumInfo((MetaName)3573596290);
-            mb.AddEnumInfo((MetaName)700327466);
+            mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
             mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
             return mb.AddItemPtr(MetaName.CExtensionDefSpawnPoint, _Data);
         }
@@ -3697,7 +3721,7 @@ namespace CodeWalker.GameFiles
         public MetaHash Group { get; set; } //40   40: Hash: 0: Group
         public MetaHash ModelSet { get; set; } //44   44: Hash: 0: ModelSet
         public Unk_3573596290 AvailabilityInMpSp { get; set; } //48   48: IntEnum: 3573596290: AvailabilityInMpSp//2932681318
-        public Unk_700327466 Flags { get; set; } //52   52: IntFlags2: 700327466: Flags
+        public CScenarioPointFlags__Flags Flags { get; set; } //52   52: IntFlags2: 700327466: Flags
         public float Radius { get; set; } //56   56: Float: 0: Radius
         public float TimeTillPedLeaves { get; set; } //60   60: Float: 0: TimeTillPedLeaves//4073598194
 
@@ -3719,7 +3743,7 @@ namespace CodeWalker.GameFiles
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddEnumInfo((MetaName)3573596290);
-            mb.AddEnumInfo((MetaName)700327466);
+            mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
             mb.AddStructureInfo(MetaName.CExtensionDefSpawnPointOverride);
             return mb.AddItemPtr(MetaName.CExtensionDefSpawnPointOverride, _Data);
         }
@@ -3800,16 +3824,16 @@ namespace CodeWalker.GameFiles
         public uint Unused2 { get; set; }//12
         public Vector3 offsetPosition { get; set; } //16   16: Float_XYZ: 0: offsetPosition
         public float Unused3 { get; set; }//28
-        public float radiusInner { get; set; } //32   32: Float: 0: radiusInner//406390660
-        public float radiusOuter { get; set; } //36   36: Float: 0: radiusOuter//1814053978
+        public float radiusInner { get; set; } //32   32: Float: 0: radiusInner
+        public float radiusOuter { get; set; } //36   36: Float: 0: radiusOuter
         public float spacing { get; set; } //40   40: Float: 0: spacing
-        public float minScale { get; set; } //44   44: Float: 0: minScale//3662913353
-        public float maxScale { get; set; } //48   48: Float: 0: maxScale//803384552
-        public float Unk_3913056845 { get; set; } //52   52: Float: 0: 3913056845
-        public float Unk_147400493 { get; set; } //56   56: Float: 0: 147400493
-        public float Unk_2591582364 { get; set; } //60   60: Float: 0: 2591582364
-        public float Unk_3889902555 { get; set; } //64   64: Float: 0: 3889902555
-        public uint objectHash { get; set; } //68   68: UnsignedInt: 0: objectHash//1951307499
+        public float minScale { get; set; } //44   44: Float: 0: minScale
+        public float maxScale { get; set; } //48   48: Float: 0: maxScale
+        public float minScaleZ { get; set; } //52   52: Float: 0: minScaleZ
+        public float maxScaleZ { get; set; } //56   56: Float: 0: maxScaleZ
+        public float minZOffset { get; set; } //60   60: Float: 0: minZOffset
+        public float maxZOffset { get; set; } //64   64: Float: 0: maxZOffset
+        public uint objectHash { get; set; } //68   68: UnsignedInt: 0: objectHash
         public uint flags { get; set; } //72   72: UnsignedInt: 0: flags
         public uint Unused4 { get; set; }//76
 
@@ -3963,16 +3987,16 @@ namespace CodeWalker.GameFiles
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
         public uint Unused2 { get; set; }//8
-        public int Unk_MinX_860552138 { get; set; } //12   12: SignedInt: 0: 860552138   //MIN X
-        public int Unk_MaxX_3824598937 { get; set; } //16   16: SignedInt: 0: 3824598937 //MAX X
-        public int Unk_MinY_496029782 { get; set; } //20   20: SignedInt: 0: 496029782   //MIN Y
-        public int Unk_MaxY_3374647798 { get; set; } //24   24: SignedInt: 0: 3374647798 //MAX Y
+        public int MinCellX { get; set; } //12   12: SignedInt: 0: MinCellX   //MIN X
+        public int MaxCellX { get; set; } //16   16: SignedInt: 0: MaxCellX //MAX X
+        public int MinCellY { get; set; } //20   20: SignedInt: 0: MinCellY   //MIN Y
+        public int MaxCellY { get; set; } //24   24: SignedInt: 0: MaxCellY //MAX Y
         public uint Unused3 { get; set; }//28
         public uint Unused4 { get; set; }//32
         public uint Unused5 { get; set; }//36
         public uint Unused6 { get; set; }//40
-        public float Unk_X_2690909759 { get; set; } //44   44: Float: 0: 2690909759 //grid scale X (cell size)
-        public float Unk_Y_3691675019 { get; set; } //48   48: Float: 0: 3691675019 //grid scale Y (cell size)
+        public float CellDimX { get; set; } //44   44: Float: 0: CellDimX //grid scale X (cell size)
+        public float CellDimY { get; set; } //48   48: Float: 0: CellDimY //grid scale Y (cell size)
         public uint Unused7 { get; set; }//52
         public uint Unused8 { get; set; }//56
         public uint Unused9 { get; set; }//60
@@ -3982,50 +4006,50 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                return new Vector2I((Unk_MaxX_3824598937 - Unk_MinX_860552138)+1, (Unk_MaxY_3374647798 - Unk_MinY_496029782)+1);
+                return new Vector2I((MaxCellX - MinCellX)+1, (MaxCellY - MinCellY)+1);
             }
         }
         public Vector2 Scale
         {
             get
             {
-                return new Vector2(Unk_X_2690909759, Unk_Y_3691675019);
+                return new Vector2(CellDimX, CellDimY);
             }
             set
             {
-                Unk_X_2690909759 = value.X;
-                Unk_Y_3691675019 = value.Y;
+                CellDimX = value.X;
+                CellDimY = value.Y;
             }
         }
         public Vector2 Min
         {
             get
             {
-                return new Vector2(Unk_MinX_860552138, Unk_MinY_496029782) * Scale;
+                return new Vector2(MinCellX, MinCellY) * Scale;
             }
             set
             {
                 var gv = value / Scale;
-                Unk_MinX_860552138 = (int)Math.Floor(gv.X);
-                Unk_MinY_496029782 = (int)Math.Floor(gv.Y);
+                MinCellX = (int)Math.Floor(gv.X);
+                MinCellY = (int)Math.Floor(gv.Y);
             }
         }
         public Vector2 Max
         {
             get
             {
-                return new Vector2(Unk_MaxX_3824598937, Unk_MaxY_3374647798) * Scale;
+                return new Vector2(MaxCellX, MaxCellY) * Scale;
             }
             set
             {
                 var gv = value / Scale;
-                Unk_MaxX_3824598937 = (int)Math.Floor(gv.X);
-                Unk_MaxY_3374647798 = (int)Math.Floor(gv.Y);
+                MaxCellX = (int)Math.Floor(gv.X);
+                MaxCellY = (int)Math.Floor(gv.Y);
             }
         }
     }
 
-    [TC(typeof(EXP))] public struct rage__spdAABB //32 bytes, Key:1158138379  //WAS: Unk_4084721864
+    [TC(typeof(EXP))] public struct rage__spdAABB //32 bytes, Key:1158138379
     {
         public Vector4 min { get; set; } //0   0: Float_XYZW: 0: min
         public Vector4 max { get; set; } //16   16: Float_XYZW: 0: max
@@ -4138,10 +4162,10 @@ namespace CodeWalker.GameFiles
             //if (Unk_3844724227 != null)
             //{
             //    var grid = _Data.AccelGrid;
-            //    var minx = grid.Unk_MinX_860552138;
-            //    var maxx = grid.Unk_MaxX_3824598937;
-            //    var miny = grid.Unk_MinY_496029782;
-            //    var maxy = grid.Unk_MaxY_3374647798;
+            //    var minx = grid.MinCellX;
+            //    var maxx = grid.MaxCellX;
+            //    var miny = grid.MinCellY;
+            //    var maxy = grid.MaxCellY;
             //    var len = Unk_3844724227.Length;
             //    var calclen = ((maxx - minx) + 1) * ((maxy - miny) + 1);
             //    if (len != calclen)
@@ -4191,14 +4215,14 @@ namespace CodeWalker.GameFiles
                 {
                     mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
                     mb.AddEnumInfo((MetaName)3573596290);
-                    mb.AddEnumInfo((MetaName)700327466);
+                    mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                     scp.LoadSavePoints = mb.AddItemArrayPtr(MetaName.CExtensionDefSpawnPoint, loadSavePoints);
                 }
                 var myPoints = Points.GetCMyPoints();
                 if (myPoints != null)
                 {
                     mb.AddStructureInfo(MetaName.CScenarioPoint);
-                    mb.AddEnumInfo((MetaName)700327466);
+                    mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                     scp.MyPoints = mb.AddItemArrayPtr(MetaName.CScenarioPoint, myPoints);
                 }
 
@@ -4226,7 +4250,7 @@ namespace CodeWalker.GameFiles
                     {
                         mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
                         mb.AddEnumInfo((MetaName)3573596290);
-                        mb.AddEnumInfo((MetaName)700327466);
+                        mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                         cent.ScenarioPoints = mb.AddItemArrayPtr(MetaName.CExtensionDefSpawnPoint, scps);
                     }
                     cents[i] = cent;
@@ -4657,7 +4681,7 @@ namespace CodeWalker.GameFiles
         public byte Unused6 { get; set; }//31
         public ushort iScenarioGroup { get; set; } //32   32: UnsignedShort: 0: iScenarioGroup//2180252673
         public ushort Unused7 { get; set; }//34
-        public Unk_700327466 Flags { get; set; } //36   36: IntFlags2: 700327466: Flags
+        public CScenarioPointFlags__Flags Flags { get; set; } //36   36: IntFlags2: 700327466: Flags
         public uint Unused8 { get; set; }//40
         public uint Unused9 { get; set; }//44
         public Vector4 vPositionAndDirection { get; set; } //48   48: Float_XYZW: 0: vPositionAndDirection//4685037
@@ -4711,7 +4735,7 @@ namespace CodeWalker.GameFiles
         public byte AvailableMpSp { get { return _Data.uAvailableInMpSp; } set { _Data.uAvailableInMpSp = value; } }
         public byte Radius { get { return _Data.iRadius; } set { _Data.iRadius = value; } }
         public byte WaitTime { get { return _Data.iTimeTillPedLeaves; } set { _Data.iTimeTillPedLeaves = value; } }
-        public Unk_700327466 Flags { get { return _Data.Flags; } set { _Data.Flags = value; } }
+        public CScenarioPointFlags__Flags Flags { get { return _Data.Flags; } set { _Data.Flags = value; } }
 
         public int PointIndex { get; set; }
 
@@ -4862,7 +4886,7 @@ namespace CodeWalker.GameFiles
             {
                 mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
                 mb.AddEnumInfo((MetaName)3573596290);
-                mb.AddEnumInfo((MetaName)700327466);
+                mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                 _Data.ScenarioPoints = mb.AddWrapperArray(ScenarioPoints);
             }
 
@@ -5621,14 +5645,14 @@ namespace CodeWalker.GameFiles
                 {
                     mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
                     mb.AddEnumInfo((MetaName)3573596290);
-                    mb.AddEnumInfo((MetaName)700327466);
+                    mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                     scp.LoadSavePoints = mb.AddItemArrayPtr(MetaName.CExtensionDefSpawnPoint, loadSavePoints);
                 }
                 var myPoints = Points.GetCMyPoints();
                 if (myPoints != null)
                 {
                     mb.AddStructureInfo(MetaName.CScenarioPoint);
-                    mb.AddEnumInfo((MetaName)700327466);
+                    mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                     scp.MyPoints = mb.AddItemArrayPtr(MetaName.CScenarioPoint, myPoints);
                 }
 
@@ -5784,7 +5808,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct Unk_1980345114 //216 bytes, Key:4110496011 //destruction animations?
+    [TC(typeof(EXP))] public struct CCompEntityAnims //216 bytes, Key:4110496011 //destruction animations?
     {
         public ArrayOfChars64 AnimDict { get; set; } //0   0: ArrayOfChars: 64: AnimDict
         public ArrayOfChars64 AnimName { get; set; } //64   64: ArrayOfChars: 64: AnimName
@@ -5794,7 +5818,7 @@ namespace CodeWalker.GameFiles
         public Array_Structure effectsData { get; set; } //200   200: Array: 0: effectsData  {0: Structure: 3430328684: 256}
     }
 
-    [TC(typeof(EXP))] public struct Unk_3430328684 //160 bytes, Key:1724963966 //destruction animation effects data
+    [TC(typeof(EXP))] public struct CCompEntityEffectsData //160 bytes, Key:1724963966 //destruction animation effects data
     {
         public uint fxType { get; set; } //0   0: UnsignedInt: 0: fxType
         public uint Unused0 { get; set; }//4
@@ -5944,7 +5968,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    public struct Unk_376833625 //112 bytes, Key:4030871161  //COMPONENT PEDS YMT ROOT  - in componentpeds .rpf's
+    public struct CPedVariationInfo //112 bytes, Key:4030871161  //COMPONENT PEDS YMT ROOT  - in componentpeds .rpf's
     {
         public byte Unk_1235281004 { get; set; } //0   0: Boolean: 0: 1235281004
         public byte Unk_4086467184 { get; set; } //1   1: Boolean: 0: 4086467184
@@ -5952,9 +5976,9 @@ namespace CodeWalker.GameFiles
         public byte Unk_315291935 { get; set; } //3   3: Boolean: 0: 315291935
         public ArrayOfBytes12 Unk_2996560424 { get; set; } //4   4: ArrayOfBytes: 12: 2996560424
         public Array_Structure Unk_3796409423 { get; set; } //16   16: Array: 0: 3796409423  {0: Structure: 3538495220: 256}
-        public Array_Structure Unk_2131007641 { get; set; } //32   32: Array: 0: 2131007641  {0: Structure: 253191135: 256}
+        public Array_Structure aSelectionSets { get; set; } //32   32: Array: 0: aSelectionSets  {0: Structure: 253191135: 256}
         public Array_Structure compInfos { get; set; } //48   48: Array: 0: compInfos//592652859  {0: Structure: CComponentInfo//1866571721: 256}
-        public Unk_2858946626 propInfo { get; set; } //64   64: Structure: 2858946626: propInfo//2240851416
+        public CPedPropInfo propInfo { get; set; } //64   64: Structure: 2858946626: propInfo//2240851416
         public MetaHash dlcName { get; set; } //104   104: Hash: 0: dlcName
         public uint Unused0 { get; set; }//108
     }
@@ -5997,7 +6021,7 @@ namespace CodeWalker.GameFiles
         public uint Unused6 { get; set; }//20
     }
 
-    public struct Unk_253191135 //48 bytes, Key:3120284999  //COMPONENT PEDS unknown
+    public struct CPedSelectionSet //48 bytes, Key:3120284999  //COMPONENT PEDS unknown
     {
         public MetaHash name { get; set; } //0   0: Hash: 0: name
         public ArrayOfBytes12 Unk_173599222 { get; set; } //4   4: ArrayOfBytes: 12: 173599222
@@ -6028,7 +6052,7 @@ namespace CodeWalker.GameFiles
         public ushort Unused5 { get; set; }//46
     }
 
-    public struct Unk_2858946626 //40 bytes, Key:1792487819  //COMPONENT PEDS unknown
+    public struct CPedPropInfo //40 bytes, Key:1792487819  //COMPONENT PEDS unknown
     {
         public byte Unk_2598445407 { get; set; } //0   0: UnsignedByte: 0: 2598445407
         public byte Unused0 { get; set; }//1
@@ -6038,7 +6062,7 @@ namespace CodeWalker.GameFiles
         public Array_Structure aAnchors { get; set; } //24   24: Array: 0: aAnchors//162345210  {0: Structure: CAnchorProps//2170383875: 256}
     }
 
-    public struct Unk_94549140 //56 bytes, Key:2029738350  //COMPONENT PEDS unknown
+    public struct CPedPropMetaData //56 bytes, Key:2029738350  //COMPONENT PEDS unknown
     {
         public MetaHash audioId { get; set; } //0   0: Hash: 0: audioId
         public ArrayOfBytes5 expressionMods { get; set; } //4   4: ArrayOfBytes: 5: expressionMods//942761829

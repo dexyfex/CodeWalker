@@ -40,5 +40,13 @@ namespace CodeWalker.GameFiles
 
             Loaded = true;
         }
+
+        public byte[] Save()
+        {
+            byte[] data = ResourceBuilder.Build(Bounds, 43); //ybn is type/version 43...
+
+            return data;
+        }
+
     }
 }

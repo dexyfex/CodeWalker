@@ -32,6 +32,8 @@
             this.ScenarioTabControl = new System.Windows.Forms.TabControl();
             this.ScenarioPointTabPage = new System.Windows.Forms.TabPage();
             this.ScenarioPointOuterPanel = new System.Windows.Forms.Panel();
+            this.ScenarioPointDeleteButton = new System.Windows.Forms.Button();
+            this.ScenarioPointAddToProjectButton = new System.Windows.Forms.Button();
             this.ScenarioPointPanel = new System.Windows.Forms.Panel();
             this.ScenarioPointImapHashLabel = new System.Windows.Forms.Label();
             this.ScenarioPointImapTextBox = new System.Windows.Forms.TextBox();
@@ -66,8 +68,6 @@
             this.label99 = new System.Windows.Forms.Label();
             this.ScenarioPointTypeComboBox = new System.Windows.Forms.ComboBox();
             this.label98 = new System.Windows.Forms.Label();
-            this.ScenarioPointDeleteButton = new System.Windows.Forms.Button();
-            this.ScenarioPointAddToProjectButton = new System.Windows.Forms.Button();
             this.ScenarioEntityTabPage = new System.Windows.Forms.TabPage();
             this.ScenarioEntityDeleteButton = new System.Windows.Forms.Button();
             this.ScenarioEntityPanel = new System.Windows.Forms.Panel();
@@ -309,6 +309,30 @@
             this.ScenarioPointOuterPanel.Name = "ScenarioPointOuterPanel";
             this.ScenarioPointOuterPanel.Size = new System.Drawing.Size(551, 420);
             this.ScenarioPointOuterPanel.TabIndex = 1;
+            // 
+            // ScenarioPointDeleteButton
+            // 
+            this.ScenarioPointDeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.ScenarioPointDeleteButton.Enabled = false;
+            this.ScenarioPointDeleteButton.Location = new System.Drawing.Point(458, 394);
+            this.ScenarioPointDeleteButton.Name = "ScenarioPointDeleteButton";
+            this.ScenarioPointDeleteButton.Size = new System.Drawing.Size(90, 23);
+            this.ScenarioPointDeleteButton.TabIndex = 3;
+            this.ScenarioPointDeleteButton.Text = "Delete Point";
+            this.ScenarioPointDeleteButton.UseVisualStyleBackColor = true;
+            this.ScenarioPointDeleteButton.Click += new System.EventHandler(this.ScenarioPointDeleteButton_Click);
+            // 
+            // ScenarioPointAddToProjectButton
+            // 
+            this.ScenarioPointAddToProjectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.ScenarioPointAddToProjectButton.Enabled = false;
+            this.ScenarioPointAddToProjectButton.Location = new System.Drawing.Point(362, 394);
+            this.ScenarioPointAddToProjectButton.Name = "ScenarioPointAddToProjectButton";
+            this.ScenarioPointAddToProjectButton.Size = new System.Drawing.Size(90, 23);
+            this.ScenarioPointAddToProjectButton.TabIndex = 2;
+            this.ScenarioPointAddToProjectButton.Text = "Add to Project";
+            this.ScenarioPointAddToProjectButton.UseVisualStyleBackColor = true;
+            this.ScenarioPointAddToProjectButton.Click += new System.EventHandler(this.ScenarioPointAddToProjectButton_Click);
             // 
             // ScenarioPointPanel
             // 
@@ -692,7 +716,8 @@
             // 
             this.ScenarioPointModelSetComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioPointModelSetComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ScenarioPointModelSetComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.ScenarioPointModelSetComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.ScenarioPointModelSetComboBox.FormattingEnabled = true;
             this.ScenarioPointModelSetComboBox.Location = new System.Drawing.Point(73, 73);
             this.ScenarioPointModelSetComboBox.Name = "ScenarioPointModelSetComboBox";
@@ -713,7 +738,8 @@
             // 
             this.ScenarioPointTypeComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioPointTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ScenarioPointTypeComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.ScenarioPointTypeComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.ScenarioPointTypeComboBox.FormattingEnabled = true;
             this.ScenarioPointTypeComboBox.Location = new System.Drawing.Point(73, 49);
             this.ScenarioPointTypeComboBox.Name = "ScenarioPointTypeComboBox";
@@ -729,30 +755,6 @@
             this.label98.Size = new System.Drawing.Size(34, 13);
             this.label98.TabIndex = 9;
             this.label98.Text = "Type:";
-            // 
-            // ScenarioPointDeleteButton
-            // 
-            this.ScenarioPointDeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioPointDeleteButton.Enabled = false;
-            this.ScenarioPointDeleteButton.Location = new System.Drawing.Point(458, 394);
-            this.ScenarioPointDeleteButton.Name = "ScenarioPointDeleteButton";
-            this.ScenarioPointDeleteButton.Size = new System.Drawing.Size(90, 23);
-            this.ScenarioPointDeleteButton.TabIndex = 3;
-            this.ScenarioPointDeleteButton.Text = "Delete Point";
-            this.ScenarioPointDeleteButton.UseVisualStyleBackColor = true;
-            this.ScenarioPointDeleteButton.Click += new System.EventHandler(this.ScenarioPointDeleteButton_Click);
-            // 
-            // ScenarioPointAddToProjectButton
-            // 
-            this.ScenarioPointAddToProjectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioPointAddToProjectButton.Enabled = false;
-            this.ScenarioPointAddToProjectButton.Location = new System.Drawing.Point(362, 394);
-            this.ScenarioPointAddToProjectButton.Name = "ScenarioPointAddToProjectButton";
-            this.ScenarioPointAddToProjectButton.Size = new System.Drawing.Size(90, 23);
-            this.ScenarioPointAddToProjectButton.TabIndex = 2;
-            this.ScenarioPointAddToProjectButton.Text = "Add to Project";
-            this.ScenarioPointAddToProjectButton.UseVisualStyleBackColor = true;
-            this.ScenarioPointAddToProjectButton.Click += new System.EventHandler(this.ScenarioPointAddToProjectButton_Click);
             // 
             // ScenarioEntityTabPage
             // 
@@ -1803,7 +1805,8 @@
             // 
             this.ScenarioChainNodeTypeComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioChainNodeTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ScenarioChainNodeTypeComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.ScenarioChainNodeTypeComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.ScenarioChainNodeTypeComboBox.FormattingEnabled = true;
             this.ScenarioChainNodeTypeComboBox.Location = new System.Drawing.Point(73, 55);
             this.ScenarioChainNodeTypeComboBox.Name = "ScenarioChainNodeTypeComboBox";
@@ -2541,7 +2544,8 @@
             // 
             this.ScenarioClusterPointModelSetComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioClusterPointModelSetComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ScenarioClusterPointModelSetComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.ScenarioClusterPointModelSetComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.ScenarioClusterPointModelSetComboBox.FormattingEnabled = true;
             this.ScenarioClusterPointModelSetComboBox.Location = new System.Drawing.Point(73, 73);
             this.ScenarioClusterPointModelSetComboBox.Name = "ScenarioClusterPointModelSetComboBox";
@@ -2562,7 +2566,8 @@
             // 
             this.ScenarioClusterPointTypeComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioClusterPointTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ScenarioClusterPointTypeComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.ScenarioClusterPointTypeComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.ScenarioClusterPointTypeComboBox.FormattingEnabled = true;
             this.ScenarioClusterPointTypeComboBox.Location = new System.Drawing.Point(73, 49);
             this.ScenarioClusterPointTypeComboBox.Name = "ScenarioClusterPointTypeComboBox";

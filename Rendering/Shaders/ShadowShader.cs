@@ -93,8 +93,8 @@ namespace CodeWalker.Rendering
             layouts.Add(VertexType.DefaultEx, new InputLayout(device, vsbytes, VertexTypeDefaultEx.GetLayout()));
             layouts.Add(VertexType.PNCCT, new InputLayout(device, vsbytes, VertexTypePNCCT.GetLayout()));
             layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vsbytes, VertexTypePNCCTTTT.GetLayout()));
-            layouts.Add(VertexType.PCCNCCTTX, new InputLayout(device, vsbytes, VertexTypePCCNCCTTX.GetLayout()));
-            layouts.Add(VertexType.PCCNCCT, new InputLayout(device, vsbytes, VertexTypePCCNCCT.GetLayout()));
+            layouts.Add(VertexType.PBBNCCTTX, new InputLayout(device, vsbytes, VertexTypePBBNCCTTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCCT, new InputLayout(device, vsbytes, VertexTypePBBNCCT.GetLayout()));
             layouts.Add(VertexType.PNCTTTX, new InputLayout(device, vsbytes, VertexTypePNCTTTX.GetLayout()));
             layouts.Add(VertexType.PNCTTTX_2, new InputLayout(device, vsbytes, VertexTypePNCTTTX_2.GetLayout()));
             layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vsbytes, VertexTypePNCTTTX_3.GetLayout()));
@@ -103,19 +103,19 @@ namespace CodeWalker.Rendering
             layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vsbytes, VertexTypePNCCTTX.GetLayout()));
             layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vsbytes, VertexTypePNCCTTX_2.GetLayout()));
             layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vsbytes, VertexTypePNCCTTTX.GetLayout()));
-            layouts.Add(VertexType.PCCNCCTX, new InputLayout(device, vsbytes, VertexTypePCCNCCTX.GetLayout()));
-            layouts.Add(VertexType.PCCNCTX, new InputLayout(device, vsbytes, VertexTypePCCNCTX.GetLayout()));
-            layouts.Add(VertexType.PCCNCT, new InputLayout(device, vsbytes, VertexTypePCCNCT.GetLayout()));
+            layouts.Add(VertexType.PBBNCCTX, new InputLayout(device, vsbytes, VertexTypePBBNCCTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCTX, new InputLayout(device, vsbytes, VertexTypePBBNCTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCT, new InputLayout(device, vsbytes, VertexTypePBBNCT.GetLayout()));
             layouts.Add(VertexType.PNCCTT, new InputLayout(device, vsbytes, VertexTypePNCCTT.GetLayout()));
             layouts.Add(VertexType.PNCCTX, new InputLayout(device, vsbytes, VertexTypePNCCTX.GetLayout()));
             layouts.Add(VertexType.PNCH2, new InputLayout(device, vsbytes, VertexTypePNCH2.GetLayout()));
             layouts.Add(VertexType.PCCH2H4, new InputLayout(device, vsbytes, VertexTypePCCH2H4.GetLayout()));
-            layouts.Add(VertexType.PCCNCTT, new InputLayout(device, vsbytes, VertexTypePCCNCTT.GetLayout()));
-            layouts.Add(VertexType.PCCNCTTX, new InputLayout(device, vsbytes, VertexTypePCCNCTTX.GetLayout()));
-            layouts.Add(VertexType.PCCNCTTT, new InputLayout(device, vsbytes, VertexTypePCCNCTTT.GetLayout()));
+            layouts.Add(VertexType.PBBNCTT, new InputLayout(device, vsbytes, VertexTypePBBNCTT.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTX, new InputLayout(device, vsbytes, VertexTypePBBNCTTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTT, new InputLayout(device, vsbytes, VertexTypePBBNCTTT.GetLayout()));
             layouts.Add(VertexType.PNCTT, new InputLayout(device, vsbytes, VertexTypePNCTT.GetLayout()));
             layouts.Add(VertexType.PNCTTT, new InputLayout(device, vsbytes, VertexTypePNCTTT.GetLayout()));
-            layouts.Add(VertexType.PCCNCTTTX, new InputLayout(device, vsbytes, VertexTypePCCNCTTTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTTX, new InputLayout(device, vsbytes, VertexTypePBBNCTTTX.GetLayout()));
 
 
 

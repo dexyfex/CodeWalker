@@ -4,6 +4,7 @@ Texture2D<float4> Colourmap : register(t0);
 Texture2D<float4> Bumpmap : register(t2);
 Texture2D<float4> Specmap : register(t3);
 Texture2D<float4> Detailmap : register(t4);
+Texture2D<float4> Colourmap2 : register(t5);
 SamplerState TextureSS : register(s0);
 
 
@@ -17,7 +18,7 @@ cbuffer PSSceneVars : register(b0)
 }
 cbuffer PSGeomVars : register(b2)
 {
-    uint EnableTexture;
+    uint EnableTexture;//1+=diffuse1, 2+=diffuse2
     uint EnableTint;
     uint EnableNormalMap;
     uint EnableSpecMap;
@@ -63,7 +64,7 @@ float4 main(VS_OUTPUT input) : SV_TARGET
 {
     float4 c = float4(0.5, 0.5, 0.5, 1);
     if (RenderMode == 0) c = float4(1, 1, 1, 1);
-    if (EnableTexture == 1)
+    if (EnableTexture > 0)
     {
         float2 texc = input.Texcoord0;
         if (RenderMode >= 5)
@@ -73,6 +74,12 @@ float4 main(VS_OUTPUT input) : SV_TARGET
         }
 
         c = Colourmap.Sample(TextureSS, texc);
+
+        if (EnableTexture > 1) //2+ enables diffuse2
+        {
+            float4 c2 = Colourmap2.Sample(TextureSS, input.Texcoord1);
+            c = c2.a * c2 + (1 - c2.a) * c;
+        }
 
         if (IsDistMap) c = float4(c.rgb*2, (c.r+c.g+c.b) - 1);
         if ((IsDecal == 0) && (c.a <= 0.33)) discard;

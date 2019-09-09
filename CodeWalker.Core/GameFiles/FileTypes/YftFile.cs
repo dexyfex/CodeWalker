@@ -37,12 +37,19 @@ namespace CodeWalker.GameFiles
             {
                 Fragment.Drawable.Owner = this;
             }
-            if (Fragment.Unknown_F8h_Data != null)
+            if (Fragment.Drawable2 != null)
             {
-                Fragment.Unknown_F8h_Data.Owner = this;
+                Fragment.Drawable2.Owner = this;
             }
 
             Loaded = true;
+        }
+
+        public byte[] Save()
+        {
+            byte[] data = ResourceBuilder.Build(Fragment, 162); //yft is type/version 162...
+
+            return data;
         }
 
 

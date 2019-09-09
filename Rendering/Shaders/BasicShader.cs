@@ -54,7 +54,7 @@ namespace CodeWalker.Rendering
     }
     public struct BasicShaderPSGeomVars
     {
-        public uint EnableTexture;
+        public uint EnableTexture;//1+=diffuse1, 2+=diffuse2
         public uint EnableTint;
         public uint EnableNormalMap;
         public uint EnableSpecMap;
@@ -119,6 +119,7 @@ namespace CodeWalker.Rendering
         bool disposed = false;
 
         VertexShader basicvspnct;
+        VertexShader basicvspnctt;
         VertexShader basicvspncct;
         VertexShader basicvspncctt;
         VertexShader basicvspnccttt;
@@ -168,6 +169,7 @@ namespace CodeWalker.Rendering
         public BasicShader(Device device)
         {
             byte[] vspnctbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCT.cso");
+            byte[] vspncttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCTT.cso");
             byte[] vspncctbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCT.cso");
             byte[] vspnccttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTT.cso");
             byte[] vspncctttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTTT.cso");
@@ -184,6 +186,7 @@ namespace CodeWalker.Rendering
             byte[] psbytes = File.ReadAllBytes("Shaders\\BasicPS.cso");
 
             basicvspnct = new VertexShader(device, vspnctbytes);
+            basicvspnctt = new VertexShader(device, vspncttbytes);
             basicvspncct = new VertexShader(device, vspncctbytes);
             basicvspncctt = new VertexShader(device, vspnccttbytes);
             basicvspnccttt = new VertexShader(device, vspncctttbytes);
@@ -214,38 +217,44 @@ namespace CodeWalker.Rendering
             //supported layouts - requires Position, Normal, Colour, Texcoord
             layouts.Add(VertexType.Default, new InputLayout(device, vspnctbytes, VertexTypeDefault.GetLayout()));
             layouts.Add(VertexType.PNCH2, new InputLayout(device, vspnctbytes, VertexTypePNCH2.GetLayout()));
+            layouts.Add(VertexType.PBBNCT, new InputLayout(device, vspnctbytes, VertexTypePBBNCT.GetLayout()));
 
-            layouts.Add(VertexType.PCCNCT, new InputLayout(device, vspncctbytes, VertexTypePCCNCT.GetLayout()));
-            layouts.Add(VertexType.PCCNCCT, new InputLayout(device, vspncctbytes, VertexTypePCCNCCT.GetLayout()));
+            layouts.Add(VertexType.PNCTT, new InputLayout(device, vspncttbytes, VertexTypePNCTT.GetLayout()));
+            layouts.Add(VertexType.PNCTTT, new InputLayout(device, vspncttbytes, VertexTypePNCTTT.GetLayout()));
+            layouts.Add(VertexType.PBBNCTT, new InputLayout(device, vspncttbytes, VertexTypePBBNCTT.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTT, new InputLayout(device, vspncttbytes, VertexTypePBBNCTTT.GetLayout()));
+
             layouts.Add(VertexType.PNCCT, new InputLayout(device, vspncctbytes, VertexTypePNCCT.GetLayout()));
+            layouts.Add(VertexType.PBBNCCT, new InputLayout(device, vspncctbytes, VertexTypePBBNCCT.GetLayout()));
+
             layouts.Add(VertexType.PNCCTT, new InputLayout(device, vspnccttbytes, VertexTypePNCCTT.GetLayout()));
+
             layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vspncctttbytes, VertexTypePNCCTTTT.GetLayout()));
+
 
 
             //normalmap layouts - requires Position, Normal, Colour, Texcoord, Tangent (X)
             layouts.Add(VertexType.DefaultEx, new InputLayout(device, vspnctxbytes, VertexTypeDefaultEx.GetLayout()));
             layouts.Add(VertexType.PCCH2H4, new InputLayout(device, vspnctxbytes, VertexTypePCCH2H4.GetLayout()));
+            layouts.Add(VertexType.PBBNCTX, new InputLayout(device, vspnctxbytes, VertexTypePBBNCTX.GetLayout()));
 
-            layouts.Add(VertexType.PCCNCTX, new InputLayout(device, vspncctxbytes, VertexTypePCCNCTX.GetLayout()));
-            layouts.Add(VertexType.PCCNCCTX, new InputLayout(device, vspncctxbytes, VertexTypePCCNCCTX.GetLayout()));
             layouts.Add(VertexType.PNCCTX, new InputLayout(device, vspncctxbytes, VertexTypePNCCTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCCTX, new InputLayout(device, vspncctxbytes, VertexTypePBBNCCTX.GetLayout()));
+
             layouts.Add(VertexType.PNCTTX, new InputLayout(device, vspncttxbytes, VertexTypePNCTTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTX, new InputLayout(device, vspncttxbytes, VertexTypePBBNCTTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTTX, new InputLayout(device, vspncttxbytes, VertexTypePBBNCTTTX.GetLayout()));
+
             layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vspnccttxbytes, VertexTypePNCCTTX.GetLayout()));
             layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vspnccttxbytes, VertexTypePNCCTTX_2.GetLayout()));
-            layouts.Add(VertexType.PCCNCCTTX, new InputLayout(device, vspnccttxbytes, VertexTypePCCNCCTTX.GetLayout()));
             layouts.Add(VertexType.PNCTTTX, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTX.GetLayout()));
             layouts.Add(VertexType.PNCTTTX_2, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTX_2.GetLayout()));
             layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTX_3.GetLayout()));
             layouts.Add(VertexType.PNCTTTTX, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTTX.GetLayout()));
             layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vspncctttxbytes, VertexTypePNCCTTTX.GetLayout()));
-            layouts.Add(VertexType.PCCNCTTTX, new InputLayout(device, vspncctttxbytes, VertexTypePCCNCTTTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCCTTX, new InputLayout(device, vspnccttxbytes, VertexTypePBBNCCTTX.GetLayout()));
 
 
-            layouts.Add(VertexType.PCCNCTT, new InputLayout(device, vspnccttbytes, VertexTypePCCNCTT.GetLayout()));
-            layouts.Add(VertexType.PCCNCTTX, new InputLayout(device, vspnccttxbytes, VertexTypePCCNCTTX.GetLayout()));
-            layouts.Add(VertexType.PCCNCTTT, new InputLayout(device, vspncctttbytes, VertexTypePCCNCTTT.GetLayout()));
-            layouts.Add(VertexType.PNCTT, new InputLayout(device, vspnctbytes, VertexTypePNCTT.GetLayout()));
-            layouts.Add(VertexType.PNCTTT, new InputLayout(device, vspnctbytes, VertexTypePNCTTT.GetLayout()));
 
 
 
@@ -355,42 +364,44 @@ namespace CodeWalker.Rendering
             {
                 case VertexType.Default:
                 case VertexType.PNCH2:
-                case VertexType.PNCTT:
-                case VertexType.PNCTTT:
+                case VertexType.PBBNCT:
                     vs = basicvspnct;
                     break;
-                case VertexType.PCCNCT:
-                case VertexType.PCCNCCT:
+                case VertexType.PNCTT:
+                case VertexType.PNCTTT:
+                case VertexType.PBBNCTT:
+                case VertexType.PBBNCTTT:
+                    vs = basicvspnctt;
+                    break;
                 case VertexType.PNCCT:
+                case VertexType.PBBNCCT:
                     vs = basicvspncct;
                     break;
                 case VertexType.PNCCTT://not used?
-                case VertexType.PCCNCTT:
                     vs = basicvspncctt;
                     break;
                 case VertexType.PNCCTTTT://not used?
-                case VertexType.PCCNCTTT:
                     vs = basicvspnccttt;
                     break;
                 case VertexType.DefaultEx:
                 case VertexType.PCCH2H4:
+                case VertexType.PBBNCTX:
                     vs = basicvspnctx;
                     break;
 
-                case VertexType.PCCNCTX:
-                case VertexType.PCCNCCTX:
+                case VertexType.PBBNCCTX:
                 case VertexType.PNCCTX:
                     vs = basicvspncctx;
                     break;
 
                 case VertexType.PNCTTX:
+                case VertexType.PBBNCTTX:
                     vs = basicvspncttx;
                     break;
 
                 case VertexType.PNCCTTX://not used?
                 case VertexType.PNCCTTX_2://not used?
-                case VertexType.PCCNCCTTX://not used?
-                case VertexType.PCCNCTTX:
+                case VertexType.PBBNCCTTX://not used?
                     vs = basicvspnccttx;
                     break;
 
@@ -398,11 +409,11 @@ namespace CodeWalker.Rendering
                 case VertexType.PNCTTTX_2:
                 case VertexType.PNCTTTX_3:
                 case VertexType.PNCTTTTX: //not using last texcoords!
+                case VertexType.PBBNCTTTX:
                     vs = basicvspnctttx;
                     break;
 
                 case VertexType.PNCCTTTX://not used?
-                case VertexType.PCCNCTTTX:
                     vs = basicvspncctttx;
                     break;
 
@@ -510,6 +521,7 @@ namespace CodeWalker.Rendering
         public override void SetGeomVars(DeviceContext context, RenderableGeometry geom)
         {
             RenderableTexture texture = null;
+            RenderableTexture texture2 = null;
             RenderableTexture tintpal = null;
             RenderableTexture bumptex = null;
             RenderableTexture spectex = null;
@@ -524,14 +536,25 @@ namespace CodeWalker.Rendering
                     for (int i = 0; i < geom.RenderableTextures.Length; i++)
                     {
                         var itex = geom.RenderableTextures[i];
+                        if (geom.HDTextureEnable)
+                        {
+                            var hdtex = geom.RenderableTexturesHD[i];
+                            if ((hdtex != null) && (hdtex.IsLoaded))
+                            {
+                                itex = hdtex;
+                            }
+                        }
                         var ihash = geom.TextureParamHashes[i];
                         if (itex == null) continue;
+                        if (itex.Key?.NameHash == 1678728908 /*"blank"*/) continue;
                         switch (ihash)
                         {
                             case MetaName.DiffuseSampler:
+                            case MetaName.PlateBgSampler:
                                 texture = itex;
                                 break;
                             case MetaName.BumpSampler:
+                            case MetaName.PlateBgBumpSampler:
                                 bumptex = itex;
                                 break;
                             case MetaName.SpecSampler:
@@ -552,8 +575,16 @@ namespace CodeWalker.Rendering
                                 texture = itex;
                                 isdistmap = true;
                                 break;
+                            case MetaName.DiffuseSampler2:
+                                texture2 = itex;
+                                break;
                             case MetaName.heightSampler:
                             case MetaName.EnvironmentSampler:
+                            //case MetaName.SnowSampler0:
+                            //case MetaName.SnowSampler1:
+                            //case MetaName.DiffuseSampler3:
+                            //case MetaName.DirtSampler:
+                            //case MetaName.DirtBumpSampler:
                                 break;
                             case MetaName.FlowSampler:
                             case MetaName.FogSampler:
@@ -583,6 +614,7 @@ namespace CodeWalker.Rendering
 
 
             bool usediff = ((texture != null) && (texture.ShaderResourceView != null));
+            bool usediff2 = ((texture2 != null) && (texture2.ShaderResourceView != null));
             bool usebump = ((bumptex != null) && (bumptex.ShaderResourceView != null));
             bool usespec = ((spectex != null) && (spectex.ShaderResourceView != null));
             bool usedetl = ((detltex != null) && (detltex.ShaderResourceView != null));
@@ -635,7 +667,7 @@ namespace CodeWalker.Rendering
             }
 
 
-            PSGeomVars.Vars.EnableTexture = usediff ? 1u : 0u;
+            PSGeomVars.Vars.EnableTexture = (usediff ? 1u : 0u) + (usediff2 ? 2u : 0u);
             PSGeomVars.Vars.EnableTint = pstintflag;
             PSGeomVars.Vars.EnableNormalMap = usebump ? 1u : 0u;
             PSGeomVars.Vars.EnableSpecMap = usespec ? 1u : 0u;
@@ -684,6 +716,10 @@ namespace CodeWalker.Rendering
             {
                 detltex.SetPSResource(context, 4);
             }
+            if (usediff2)
+            {
+                texture2.SetPSResource(context, 5);
+            }
             if (usetint)
             {
                 tintpal.SetVSResource(context, 0);
@@ -695,7 +731,11 @@ namespace CodeWalker.Rendering
         {
             var gb = batch.Key;
 
-            VSEntityVars.Vars.CamRel = new Vector4(gb.CamRel, 0.0f);
+            // sanity check
+            if (batch.GrassInstanceBuffer == null)
+                return;
+
+            VSEntityVars.Vars.CamRel = new Vector4(batch.CamRel, 0.0f);
             VSEntityVars.Vars.Orientation = Quaternion.Identity;
             VSEntityVars.Vars.Scale = Vector3.One;
             VSEntityVars.Vars.HasSkeleton = 0;
@@ -707,13 +747,13 @@ namespace CodeWalker.Rendering
 
             InstGlobalVars.SetVSCBuffer(context, 5);
 
-            InstLocalVars.Vars.vecBatchAabbMin = gb.AABBMin;
-            InstLocalVars.Vars.vecBatchAabbDelta = gb.AABBMax - gb.AABBMin;
-            InstLocalVars.Vars.vecPlayerPos = new Vector4(gb.Position - gb.CamRel, 1.0f);
+            InstLocalVars.Vars.vecBatchAabbMin = batch.AABBMin;
+            InstLocalVars.Vars.vecBatchAabbDelta = batch.AABBMax - batch.AABBMin;
+            InstLocalVars.Vars.vecPlayerPos = new Vector4(batch.Position - batch.CamRel, 1.0f);
             InstLocalVars.Vars._vecCollParams = new Vector2(2.0f, -3.0f);//range, offset
             InstLocalVars.Vars.fadeAlphaDistUmTimer = new Vector4(0.0f);
             InstLocalVars.Vars.uMovementParams = new Vector4(0.0f);
-            InstLocalVars.Vars._fakedGrassNormal = new Vector4(Vector3.Normalize(-gb.CamRel), 0.0f);
+            InstLocalVars.Vars._fakedGrassNormal = new Vector4(Vector3.Normalize(-batch.CamRel), 0.0f);
             InstLocalVars.Vars.gScaleRange = gb.Batch.ScaleRange;
             InstLocalVars.Vars.gWindBendingGlobals = new Vector4(WindVector.X, WindVector.Y, 1.0f, 1.0f);
             InstLocalVars.Vars.gWindBendScaleVar = new Vector2(WindVector.Z, WindVector.W);
@@ -838,6 +878,7 @@ namespace CodeWalker.Rendering
             context.PixelShader.SetShaderResource(2, null);
             context.PixelShader.SetShaderResource(3, null);
             context.PixelShader.SetShaderResource(4, null);
+            context.PixelShader.SetShaderResource(5, null);
             context.VertexShader.SetShaderResource(0, null);
             context.VertexShader.SetShaderResource(1, null);
             context.VertexShader.SetShaderResource(2, null);
@@ -876,6 +917,7 @@ namespace CodeWalker.Rendering
 
             basicps.Dispose();
             basicvspnct.Dispose();
+            basicvspnctt.Dispose();
             basicvspncct.Dispose();
             basicvspncctt.Dispose();
             basicvspnccttt.Dispose();

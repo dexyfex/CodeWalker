@@ -1,5 +1,5 @@
 ﻿
- Copyright(c) 2017 dexyfex
+ Copyright(c) 2017-2019 dexyfex
 
 
 
@@ -52,6 +52,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
+
+
+
+
+/*
+
+Copyright (c) 2015 Hamish Milne
+
+"An FBX library for .NET"
+Contains source code for FBX file format reading and writing from:
+https://github.com/hamish-milne/FbxWriter
+Published under GPL license, for full terms and conditions see the above link.
+
+*/
+
+
+
 
 
 

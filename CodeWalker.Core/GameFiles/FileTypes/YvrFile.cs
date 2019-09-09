@@ -49,6 +49,13 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public byte[] Save()
+        {
+            byte[] data = ResourceBuilder.Build(Records, 1); //yvr is type/version 1...
+
+            return data;
+        }
+
 
     }
 }

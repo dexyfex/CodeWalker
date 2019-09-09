@@ -114,6 +114,11 @@ namespace CodeWalker
             var c = CultureInfo.InvariantCulture;
             return v.X.ToString(c) + ", " + v.Y.ToString(c);
         }
+        public static string GetVector2XmlString(Vector2 v)
+        {
+            var c = CultureInfo.InvariantCulture;
+            return string.Format("x=\"{0}\" y=\"{1}\"", v.X.ToString(c), v.Y.ToString(c));
+        }
         public static string GetVector3String(Vector3 v)
         {
             var c = CultureInfo.InvariantCulture;
@@ -140,21 +145,37 @@ namespace CodeWalker
             return string.Format("x=\"{0}\" y=\"{1}\" z=\"{2}\" w=\"{3}\"", q.X.ToString(c), q.Y.ToString(c), q.Z.ToString(c), q.W.ToString(c));
         }
 
+
+        public static Vector2 ParseVector2String(string s)
+        {
+            Vector2 p = new Vector2(0.0f);
+            string[] ss = s.Split(',');
+            if (ss.Length > 0)
+            {
+                TryParse(ss[0].Trim(), out p.X);
+            }
+            if (ss.Length > 1)
+            {
+                TryParse(ss[1].Trim(), out p.Y);
+            }
+            return p;
+        }
+
         public static Vector3 ParseVector3String(string s)
         {
             Vector3 p = new Vector3(0.0f);
             string[] ss = s.Split(',');
             if (ss.Length > 0)
             {
-                FloatUtil.TryParse(ss[0].Trim(), out p.X);
+                TryParse(ss[0].Trim(), out p.X);
             }
             if (ss.Length > 1)
             {
-                FloatUtil.TryParse(ss[1].Trim(), out p.Y);
+                TryParse(ss[1].Trim(), out p.Y);
             }
             if (ss.Length > 2)
             {
-                FloatUtil.TryParse(ss[2].Trim(), out p.Z);
+                TryParse(ss[2].Trim(), out p.Z);
             }
             return p;
         }
@@ -172,19 +193,19 @@ namespace CodeWalker
             string[] ss = s.Split(',');
             if (ss.Length > 0)
             {
-                FloatUtil.TryParse(ss[0].Trim(), out p.X);
+                TryParse(ss[0].Trim(), out p.X);
             }
             if (ss.Length > 1)
             {
-                FloatUtil.TryParse(ss[1].Trim(), out p.Y);
+                TryParse(ss[1].Trim(), out p.Y);
             }
             if (ss.Length > 2)
             {
-                FloatUtil.TryParse(ss[2].Trim(), out p.Z);
+                TryParse(ss[2].Trim(), out p.Z);
             }
             if (ss.Length > 3)
             {
-                FloatUtil.TryParse(ss[3].Trim(), out p.W);
+                TryParse(ss[3].Trim(), out p.W);
             }
             return p;
         }

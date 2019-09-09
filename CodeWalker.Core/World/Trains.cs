@@ -69,11 +69,14 @@ namespace CodeWalker.World
             get
             {
                 int sc = 0;
-                foreach (var node in Nodes)
+                if (Nodes != null)
                 {
-                    if ((node.NodeType == 1) || (node.NodeType == 2) || (node.NodeType == 5))
+                    foreach (var node in Nodes)
                     {
-                        sc++;
+                        if ((node.NodeType == 1) || (node.NodeType == 2) || (node.NodeType == 5))
+                        {
+                            sc++;
+                        }
                     }
                 }
                 return sc;

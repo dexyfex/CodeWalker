@@ -7,6 +7,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using CodeWalker.Core.Utils;
+using CodeWalker.World;
 
 namespace CodeWalker.GameFiles
 {
@@ -27,8 +29,8 @@ namespace CodeWalker.GameFiles
         public CTimeCycleModifier[] CTimeCycleModifiers { get; set; }
         public MetaHash[] physicsDictionaries { get; set; }
 
-        public Unk_975711773[] CBoxOccluders { get; set; }
-        public Unk_2741784237[] COccludeModels { get; set; }
+        public BoxOccluder[] CBoxOccluders { get; set; }
+        public OccludeModel[] COccludeModels { get; set; }
 
 
         public string[] Strings { get; set; }
@@ -43,6 +45,8 @@ namespace CodeWalker.GameFiles
         public YmapPropInstanceBatch[] PropInstanceBatches { get; set; }
 
         public YmapDistantLODLights DistantLODLights { get; set; }
+
+        public YmapLODLights LODLights { get; set; }
 
         public YmapTimeCycleModifier[] TimeCycleModifiers { get; set; }
 
@@ -107,14 +111,14 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            physicsDictionaries = MetaTypes.GetHashArray(Meta, CMapData.physicsDictionaries);
+            physicsDictionaries = MetaTypes.GetHashArray(Meta, _CMapData.physicsDictionaries);
 
 
             EnsureEntities(Meta); //load all the entity data and create the YmapEntityDefs
 
             EnsureInstances(Meta);
 
-            EnsureLodLights(Meta);
+            EnsureLODLights(Meta);
 
             EnsureDistantLODLights(Meta);
 
@@ -189,7 +193,7 @@ namespace CodeWalker.GameFiles
             //    {
             //        if ((unk5.verts.Ptr > 0) && (unk5.verts.Ptr <= (ulong)Meta.DataBlocks.Length))
             //        {
-            //            var indicesoffset = unk5.Unk_853977995;
+            //            var indicesoffset = unk5.numVertsInBytes;
             //            var datablock = Meta.DataBlocks[((int)unk5.verts.Ptr) - 1];
             //            if (datablock != null)
             //            { }//vertex data... occlusion mesh?
@@ -252,7 +256,7 @@ namespace CodeWalker.GameFiles
             if (CMloInstanceDefs != null)
             { }
 
-            var eptrs = MetaTypes.GetPointerArray(Meta, CMapData.entities);
+            var eptrs = MetaTypes.GetPointerArray(Meta, _CMapData.entities);
             //CEntityDefs = MetaTypes.ConvertDataArray<CEntityDef>(Meta, MetaName.CEntityDef, CMapData.entities);
             CEntityDefs = MetaTypes.GetTypedDataArray<CEntityDef>(Meta, MetaName.CEntityDef);
             if (CEntityDefs != null)
@@ -301,7 +305,7 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < alldefs.Count; i++)
                 {
                     YmapEntityDef d = alldefs[i];
-                    int pind = d.CEntityDef.parentIndex;
+                    int pind = d._CEntityDef.parentIndex;
                     bool isroot = false;
                     if ((pind < 0) || (pind >= alldefs.Count) || (pind >= i)) //index check? might be a problem
                     {
@@ -310,9 +314,9 @@ namespace CodeWalker.GameFiles
                     else
                     {
                         YmapEntityDef p = alldefs[pind];
-                        if ((p.CEntityDef.lodLevel <= d.CEntityDef.lodLevel) ||
-                            ((p.CEntityDef.lodLevel == Unk_1264241711.LODTYPES_DEPTH_ORPHANHD) &&
-                             (d.CEntityDef.lodLevel != Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)))
+                        if ((p._CEntityDef.lodLevel <= d._CEntityDef.lodLevel) ||
+                            ((p._CEntityDef.lodLevel == rage__eLodType.LODTYPES_DEPTH_ORPHANHD) &&
+                             (d._CEntityDef.lodLevel != rage__eLodType.LODTYPES_DEPTH_ORPHANHD)))
                         {
                             isroot = true;
                             p = null;
@@ -344,7 +348,7 @@ namespace CodeWalker.GameFiles
 
                 foreach (var ent in AllEntities)
                 {
-                    ent.Extensions = MetaTypes.GetExtensions(Meta, ent.CEntityDef.extensions);
+                    ent.Extensions = MetaTypes.GetExtensions(Meta, ent._CEntityDef.extensions);
                 }
             }
 
@@ -352,9 +356,9 @@ namespace CodeWalker.GameFiles
 
         private void EnsureInstances(Meta Meta)
         {
-            if (CMapData.instancedData.GrassInstanceList.Count1 != 0)
+            if (_CMapData.instancedData.GrassInstanceList.Count1 != 0)
             {
-                rage__fwGrassInstanceListDef[] batches = MetaTypes.ConvertDataArray<rage__fwGrassInstanceListDef>(Meta, MetaName.rage__fwGrassInstanceListDef, CMapData.instancedData.GrassInstanceList);
+                rage__fwGrassInstanceListDef[] batches = MetaTypes.ConvertDataArray<rage__fwGrassInstanceListDef>(Meta, MetaName.rage__fwGrassInstanceListDef, _CMapData.instancedData.GrassInstanceList);
                 YmapGrassInstanceBatch[] gbatches = new YmapGrassInstanceBatch[batches.Length];
                 for (int i = 0; i < batches.Length; i++)
                 {
@@ -372,35 +376,47 @@ namespace CodeWalker.GameFiles
                 }
                 GrassInstanceBatches = gbatches;
             }
-            if (CMapData.instancedData.PropInstanceList.Count1 != 0)
+            if (_CMapData.instancedData.PropInstanceList.Count1 != 0)
             {
             }
         }
 
-        private void EnsureLodLights(Meta Meta)
+        private void EnsureLODLights(Meta Meta)
         {
-            //TODO!
-            if (CMapData.LODLightsSOA.direction.Count1 != 0)
+            if (_CMapData.LODLightsSOA.direction.Count1 != 0)
             {
+                var soa = _CMapData.LODLightsSOA;
+                LODLights = new YmapLODLights();
+                LODLights.Ymap = this;
+                LODLights.CLODLight = soa;
+                LODLights.direction = MetaTypes.ConvertDataArray<MetaVECTOR3>(Meta, MetaName.VECTOR3, soa.direction);
+                LODLights.falloff = MetaTypes.GetFloatArray(Meta, soa.falloff);
+                LODLights.falloffExponent = MetaTypes.GetFloatArray(Meta, soa.falloffExponent);
+                LODLights.timeAndStateFlags = MetaTypes.GetUintArray(Meta, soa.timeAndStateFlags);
+                LODLights.hash = MetaTypes.GetUintArray(Meta, soa.hash);
+                LODLights.coneInnerAngle = MetaTypes.GetByteArray(Meta, soa.coneInnerAngle);
+                LODLights.coneOuterAngleOrCapExt = MetaTypes.GetByteArray(Meta, soa.coneOuterAngleOrCapExt);
+                LODLights.coronaIntensity = MetaTypes.GetByteArray(Meta, soa.coronaIntensity);
             }
         }
 
         private void EnsureDistantLODLights(Meta Meta)
         {
-            if (CMapData.DistantLODLightsSOA.position.Count1 != 0)
+            if (_CMapData.DistantLODLightsSOA.position.Count1 != 0)
             {
+                var soa = _CMapData.DistantLODLightsSOA;
                 DistantLODLights = new YmapDistantLODLights();
                 DistantLODLights.Ymap = this;
-                DistantLODLights.CDistantLODLight = CMapData.DistantLODLightsSOA;
-                DistantLODLights.colours = MetaTypes.GetUintArray(Meta, CMapData.DistantLODLightsSOA.RGBI);
-                DistantLODLights.positions = MetaTypes.ConvertDataArray<MetaVECTOR3>(Meta, MetaName.VECTOR3, CMapData.DistantLODLightsSOA.position);
+                DistantLODLights.CDistantLODLight = soa;
+                DistantLODLights.colours = MetaTypes.GetUintArray(Meta, soa.RGBI);
+                DistantLODLights.positions = MetaTypes.ConvertDataArray<MetaVECTOR3>(Meta, MetaName.VECTOR3, soa.position);
                 DistantLODLights.CalcBB();
             }
         }
 
         private void EnsureTimeCycleModifiers(Meta Meta)
         {
-            CTimeCycleModifiers = MetaTypes.ConvertDataArray<CTimeCycleModifier>(Meta, MetaName.CTimeCycleModifier, CMapData.timeCycleModifiers);
+            CTimeCycleModifiers = MetaTypes.ConvertDataArray<CTimeCycleModifier>(Meta, MetaName.CTimeCycleModifier, _CMapData.timeCycleModifiers);
             if (CTimeCycleModifiers != null)
             {
                 TimeCycleModifiers = new YmapTimeCycleModifier[CTimeCycleModifiers.Length];
@@ -419,7 +435,7 @@ namespace CodeWalker.GameFiles
         private void EnsureCarGens(Meta Meta)
         {
 
-            CCarGens = MetaTypes.ConvertDataArray<CCarGen>(Meta, MetaName.CCarGen, CMapData.carGenerators);
+            CCarGens = MetaTypes.ConvertDataArray<CCarGen>(Meta, MetaName.CCarGen, _CMapData.carGenerators);
             if (CCarGens != null)
             {
                 //string str = MetaTypes.GetTypesInitString(resentry, Meta); //to generate structinfos and enuminfos
@@ -433,26 +449,30 @@ namespace CodeWalker.GameFiles
 
         private void EnsureBoxOccluders(Meta meta)
         {
-            CBoxOccluders = MetaTypes.ConvertDataArray<Unk_975711773>(Meta, (MetaName)975711773, CMapData.boxOccluders);
+            CBoxOccluders = MetaTypes.ConvertDataArray<BoxOccluder>(Meta, MetaName.BoxOccluder, _CMapData.boxOccluders);
             if (CBoxOccluders != null)
             {
                 BoxOccluders = new YmapBoxOccluder[CBoxOccluders.Length];
                 for (int i = 0; i < CBoxOccluders.Length; i++)
                 {
                     BoxOccluders[i] = new YmapBoxOccluder(this, CBoxOccluders[i]);
+                    BoxOccluders[i].Index = i;
                 }
             }
         }
 
         private void EnsureOccludeModels(Meta meta)
         {
-            COccludeModels = MetaTypes.ConvertDataArray<Unk_2741784237>(Meta, (MetaName)2741784237, CMapData.occludeModels);
+            COccludeModels = MetaTypes.ConvertDataArray<OccludeModel>(Meta, MetaName.OccludeModel, _CMapData.occludeModels);
             if (COccludeModels != null)
             {
                 OccludeModels = new YmapOccludeModel[COccludeModels.Length];
                 for (int i = 0; i < COccludeModels.Length; i++)
                 {
                     OccludeModels[i] = new YmapOccludeModel(this, COccludeModels[i]);
+                    OccludeModels[i].Index = i;
+                    OccludeModels[i].Load(Meta);
+
                 }
             }
         }
@@ -461,7 +481,7 @@ namespace CodeWalker.GameFiles
         {
 
             //TODO: containerLods
-            if (CMapData.containerLods.Count1 > 0)
+            if (_CMapData.containerLods.Count1 > 0)
             {
                 //string str = MetaTypes.GetTypesInitString(Meta); //to generate structinfos and enuminfos
 
@@ -474,6 +494,8 @@ namespace CodeWalker.GameFiles
         public void BuildCEntityDefs()
         {
             //recreates the CEntityDefs and CMloInstanceDefs arrays from AllEntities.
+            //TODO: save entity extensions!!?
+
             CEntityDefs = null;
             CMloInstanceDefs = null;
             if (AllEntities == null)
@@ -494,7 +516,7 @@ namespace CodeWalker.GameFiles
                 }
                 else
                 {
-                    centdefs.Add(ent.CEntityDef);
+                    centdefs.Add(ent._CEntityDef);
                 }
             }
 
@@ -593,6 +615,11 @@ namespace CodeWalker.GameFiles
                     var ent = AllEntities[i];
                     if (ent.MloInstance != null)
                     {
+                        ent.MloInstance.UpdateDefaultEntitySets();
+
+                        ent.MloInstance._Instance.CEntityDef = ent.CEntityDef; //overwrite with all the updated values..
+                        ent.MloInstance._Instance.defaultEntitySets = mb.AddUintArrayPtr(ent.MloInstance.defaultEntitySets);
+
                         ptrs[i] = mb.AddItemPtr(MetaName.CMloInstanceDef, ent.MloInstance.Instance);
                     }
                     else
@@ -648,8 +675,34 @@ namespace CodeWalker.GameFiles
                 mapdata.instancedData = new rage__fwInstancedMapData();
             }
 
-            mapdata.LODLightsSOA = new CLODLight();
-            mapdata.DistantLODLightsSOA = new CDistantLODLight();
+            if ((LODLights != null) && (LODLights.direction != null))
+            {
+                var soa = new CLODLight();
+                soa.direction = mb.AddItemArrayPtr(MetaName.VECTOR3, LODLights.direction);
+                soa.falloff = mb.AddFloatArrayPtr(LODLights.falloff);
+                soa.falloffExponent = mb.AddFloatArrayPtr(LODLights.falloffExponent);
+                soa.timeAndStateFlags = mb.AddUintArrayPtr(LODLights.timeAndStateFlags);
+                soa.hash = mb.AddUintArrayPtr(LODLights.hash);
+                soa.coneInnerAngle = mb.AddByteArrayPtr(LODLights.coneInnerAngle);
+                soa.coneOuterAngleOrCapExt = mb.AddByteArrayPtr(LODLights.coneOuterAngleOrCapExt);
+                soa.coronaIntensity = mb.AddByteArrayPtr(LODLights.coronaIntensity);
+                mapdata.LODLightsSOA = soa;
+            }
+            else
+            {
+                mapdata.LODLightsSOA = new CLODLight();
+            }
+            if ((DistantLODLights != null) && (DistantLODLights.positions != null))
+            {
+                var soa = DistantLODLights.CDistantLODLight;//to copy base vars
+                soa.position = mb.AddItemArrayPtr(MetaName.VECTOR3, DistantLODLights.positions);
+                soa.RGBI = mb.AddUintArrayPtr(DistantLODLights.colours);
+                mapdata.DistantLODLightsSOA = soa;
+            }
+            else
+            {
+                mapdata.DistantLODLightsSOA = new CDistantLODLight();
+            }
 
 
 
@@ -689,9 +742,17 @@ namespace CodeWalker.GameFiles
             {
                 mb.AddStructureInfo(MetaName.CCarGen);
             }
+            if ((LODLights != null) && (LODLights.direction != null))
+            {
+                mb.AddStructureInfo(MetaName.VECTOR3);
+            }
+            if ((DistantLODLights != null) && (DistantLODLights.positions != null))
+            {
+                mb.AddStructureInfo(MetaName.VECTOR3);
+            }
 
-            mb.AddEnumInfo((MetaName)1264241711); //LODTYPES_
-            mb.AddEnumInfo((MetaName)648413703);  //PRI_
+            mb.AddEnumInfo(MetaName.rage__eLodType); //LODTYPES_
+            mb.AddEnumInfo(MetaName.rage__ePriorityLevel);  //PRI_
 
 
             Meta meta = mb.GetMeta();
@@ -768,10 +829,10 @@ namespace CodeWalker.GameFiles
                         {
                             foreach (var rcent in cmap.RootEntities)
                             {
-                                int pind = rcent.CEntityDef.parentIndex;
+                                int pind = rcent._CEntityDef.parentIndex;
                                 if (pind < 0)
                                 {
-                                    if (rcent.CEntityDef.lodLevel != Unk_1264241711.LODTYPES_DEPTH_ORPHANHD)
+                                    if (rcent._CEntityDef.lodLevel != rage__eLodType.LODTYPES_DEPTH_ORPHANHD)
                                     {
                                     }
                                     //pind = 0;
@@ -925,6 +986,7 @@ namespace CodeWalker.GameFiles
             GrassInstanceBatches = batches.ToArray();
 
             HasChanged = true;
+            UpdateGrassPhysDict(true);
         }
 
         public bool RemoveGrassBatch(YmapGrassInstanceBatch batch)
@@ -949,6 +1011,10 @@ namespace CodeWalker.GameFiles
                 }
             }
 
+            if (batches.Count <= 0)
+            {
+                UpdateGrassPhysDict(false);
+            }
 
             GrassInstanceBatches = batches.ToArray();
 
@@ -969,35 +1035,38 @@ namespace CodeWalker.GameFiles
             {
                 foreach (var yent in AllEntities)
                 {
-                    var cent = yent.CEntityDef;
-                    switch (cent.lodLevel)
+                    switch (yent._CEntityDef.lodLevel)
                     {
-                        case Unk_1264241711.LODTYPES_DEPTH_ORPHANHD:
-                        case Unk_1264241711.LODTYPES_DEPTH_HD:
+                        case rage__eLodType.LODTYPES_DEPTH_ORPHANHD:
+                        case rage__eLodType.LODTYPES_DEPTH_HD:
                             contentFlags = SetBit(contentFlags, 0); //1
                             break;
-                        case Unk_1264241711.LODTYPES_DEPTH_LOD:
+                        case rage__eLodType.LODTYPES_DEPTH_LOD:
                             contentFlags = SetBit(contentFlags, 1); //2
                             flags = SetBit(flags, 1); //2
                             break;
-                        case Unk_1264241711.LODTYPES_DEPTH_SLOD1:
+                        case rage__eLodType.LODTYPES_DEPTH_SLOD1:
                             contentFlags = SetBit(contentFlags, 4); //16
                             flags = SetBit(flags, 1); //2
                             break;
-                        case Unk_1264241711.LODTYPES_DEPTH_SLOD2:
-                        case Unk_1264241711.LODTYPES_DEPTH_SLOD3:
-                        case Unk_1264241711.LODTYPES_DEPTH_SLOD4:
+                        case rage__eLodType.LODTYPES_DEPTH_SLOD2:
+                        case rage__eLodType.LODTYPES_DEPTH_SLOD3:
+                        case rage__eLodType.LODTYPES_DEPTH_SLOD4:
                             contentFlags = SetBit(contentFlags, 2); //4
                             contentFlags = SetBit(contentFlags, 4); //16
                             flags = SetBit(flags, 1); //2
                             break;
+                    }
+                    if (yent.MloInstance != null)
+                    {
+                        contentFlags = SetBit(contentFlags, 3); //8  //(interior instance)
                     }
                 }
             }
 
             if ((CMloInstanceDefs != null) && (CMloInstanceDefs.Length > 0))
             {
-                contentFlags = SetBit(contentFlags, 3); //8
+                contentFlags = SetBit(contentFlags, 3); //8  //(interior instance) //is this still necessary?
             }
             if ((physicsDictionaries != null) && (physicsDictionaries.Length > 0))
             {
@@ -1137,6 +1206,62 @@ namespace CodeWalker.GameFiles
         }
 
 
+        private void UpdateGrassPhysDict(bool add)
+        {
+            var physDict = physicsDictionaries?.ToList() ?? new List<MetaHash>();
+            var vproc1 = JenkHash.GenHash("v_proc1");
+            var vproc2 = JenkHash.GenHash("v_proc2"); // I think you need vproc2 as well.
+            var change = false;
+            if (!physDict.Contains(vproc1))
+            {
+                change = true;
+                if (add) physDict.Add(vproc1);
+                else physDict.Remove(vproc1);
+            }
+            if (!physDict.Contains(vproc2))
+            {
+                change = true;
+                if (add) physDict.Add(vproc2);
+                else physDict.Remove(vproc2);
+            }
+            if (change) physicsDictionaries = physDict.ToArray();
+        }
+
+        public void InitYmapEntityArchetypes(GameFileCache gfc)
+        {
+            if (AllEntities != null)
+            {
+                for (int i = 0; i < AllEntities.Length; i++)
+                {
+                    var ent = AllEntities[i];
+                    var arch = gfc.GetArchetype(ent._CEntityDef.archetypeName);
+                    ent.SetArchetype(arch);
+                    if (ent.IsMlo) ent.MloInstance.InitYmapEntityArchetypes(gfc);
+                }
+            }
+            if (GrassInstanceBatches != null)
+            {
+                for (int i = 0; i < GrassInstanceBatches.Length; i++)
+                {
+                    var batch = GrassInstanceBatches[i];
+                    batch.Archetype = gfc.GetArchetype(batch.Batch.archetypeName);
+                }
+            }
+
+            if (TimeCycleModifiers != null)
+            {
+                for (int i = 0; i < TimeCycleModifiers.Length; i++)
+                {
+                    var tcm = TimeCycleModifiers[i];
+                    World.TimecycleMod wtcm;
+                    if (gfc.TimeCycleModsDict.TryGetValue(tcm.CTimeCycleModifier.name.Hash, out wtcm))
+                    {
+                        tcm.TimeCycleModData = wtcm;
+                    }
+                }
+            }
+
+        }
 
         private static uint SetBit(uint value, int bit)
         {
@@ -1166,12 +1291,13 @@ namespace CodeWalker.GameFiles
         public bool IsMlo { get; set; }
         public MloInstanceData MloInstance { get; set; }
         public YmapEntityDef MloParent { get; set; }
-        public MCMloEntitySet MloEntitySet { get; set; }
+        public MloInstanceEntitySet MloEntitySet { get; set; }
         public Vector3 MloRefPosition { get; set; }
         public Quaternion MloRefOrientation { get; set; }
         public MetaWrapper[] Extensions { get; set; }
 
         public int Index { get; set; }
+        public float Distance { get; set; } //used for rendering
         public bool IsVisible; //used for rendering
         public bool ChildrenVisible; //used for rendering
         public bool ChildrenRendered; //used when rendering ymap mode to reduce LOD flashing...
@@ -1206,9 +1332,9 @@ namespace CodeWalker.GameFiles
             Ymap = ymap;
             Index = index;
             CEntityDef = def;
-            Scale = new Vector3(new Vector2(CEntityDef.scaleXY), CEntityDef.scaleZ);
-            Position = CEntityDef.position;
-            Orientation = new Quaternion(CEntityDef.rotation);
+            Scale = new Vector3(new Vector2(_CEntityDef.scaleXY), _CEntityDef.scaleZ);
+            Position = _CEntityDef.position;
+            Orientation = new Quaternion(_CEntityDef.rotation);
             if (Orientation != Quaternion.Identity)
             {
                 Orientation = Quaternion.Invert(Orientation);
@@ -1224,9 +1350,9 @@ namespace CodeWalker.GameFiles
             Ymap = ymap;
             Index = index;
             CEntityDef = mlo.CEntityDef;
-            Scale = new Vector3(new Vector2(CEntityDef.scaleXY), CEntityDef.scaleZ);
-            Position = CEntityDef.position;
-            Orientation = new Quaternion(CEntityDef.rotation);
+            Scale = new Vector3(new Vector2(_CEntityDef.scaleXY), _CEntityDef.scaleZ);
+            Position = _CEntityDef.position;
+            Orientation = new Quaternion(_CEntityDef.rotation);
             //if (Orientation != Quaternion.Identity)
             //{
             //    Orientation = Quaternion.Invert(Orientation);
@@ -1269,56 +1395,57 @@ namespace CodeWalker.GameFiles
                     {
                         MloInstance = new MloInstanceData();
                     }
-                    MloInstance.CreateYmapEntities(this, mloa);
+                    if (mloa != null)
+                    {
+                        if (!IsMlo)
+                        {
+                            IsMlo = true;
+                            MloInstance._Instance = new CMloInstanceDef { CEntityDef = _CEntityDef };
+
+                            List<YmapEntityDef> mloEntities = Ymap.MloEntities?.ToList() ?? new List<YmapEntityDef>();
+                            mloEntities.Add(this);
+                            Ymap.MloEntities = mloEntities.ToArray();
+                        }
+
+                        MloInstance.CreateYmapEntities(this, mloa);
+                    }
 
                     if (BSRadius == 0.0f)
                     {
-                        BSRadius = CEntityDef.lodDist;//need something so it doesn't get culled...
+                        BSRadius = _CEntityDef.lodDist;//need something so it doesn't get culled...
                     }
                 }
+                else if (IsMlo) // archetype is no longer an mlo
+                {
+                    IsMlo = false;
+                    MloInstance = null;
 
+                    if (Ymap.MloEntities != null)
+                    {
+                        List<YmapEntityDef> mloEntities = Ymap.MloEntities.ToList();
+                        if (mloEntities.Remove(this))
+                        {
+                            Ymap.MloEntities = mloEntities.ToArray();
+                        }
+                    }
+                }
             }
-
         }
 
         public void SetPosition(Vector3 pos)
         {
+            Position = pos;
             if (MloParent != null)
             {
-                //TODO: SetPosition for interior entities!
-                Position = pos;
-                var inst = MloParent.MloInstance;
-                if (inst != null)
-                {
-                    //transform world position into mlo space
-                    //MloRefPosition = ...
-                    //MloRefOrientation = ...
-                }
+                _CEntityDef.position = Quaternion.Normalize(Quaternion.Invert(MloParent.Orientation)).Multiply(pos - MloParent.Position);
+                MloRefPosition = _CEntityDef.position;
+                UpdateBB();
+                UpdateMloArchetype();
             }
             else
             {
-                Position = pos;
                 _CEntityDef.position = pos;
-
-                if (Archetype != null)
-                {
-                    BSCenter = Orientation.Multiply(Archetype.BSCenter) * Scale;
-                }
-                if ((Archetype != null) && (Orientation == Quaternion.Identity))
-                {
-                    BBMin = (Archetype.BBMin * Scale) + Position;
-                    BBMax = (Archetype.BBMax * Scale) + Position;
-                }
-                else
-                {
-                    BBMin = Position - (BSRadius);
-                    BBMax = Position + (BSRadius);
-                    ////not ideal: should transform all 8 corners!
-                }
-
-
-
-                UpdateWidgetPosition();
+                UpdateBB();
             }
 
 
@@ -1328,39 +1455,50 @@ namespace CodeWalker.GameFiles
                 MloInstance.UpdateEntities();
             }
 
+            UpdateWidgetPosition();
         }
 
-        public void SetOrientation(Quaternion ori)
+        private void UpdateBB()
         {
-            Quaternion inv = Quaternion.Normalize(Quaternion.Invert(ori));
-            Orientation = ori;
-            _CEntityDef.rotation = new Vector4(inv.X, inv.Y, inv.Z, inv.W);
-
-            if (MloInstance != null)
-            {
-                MloInstance.SetOrientation(ori);
-            }
-
-
             if (Archetype != null)
             {
                 BSCenter = Orientation.Multiply(Archetype.BSCenter) * Scale;
             }
-
-            UpdateWidgetPosition();
-            UpdateWidgetOrientation();
+            if ((Archetype != null) && (Orientation == Quaternion.Identity))
+            {
+                BBMin = (Archetype.BBMin * Scale) + Position;
+                BBMax = (Archetype.BBMax * Scale) + Position;
+            }
+            else
+            {
+                BBMin = Position - (BSRadius);
+                BBMax = Position + (BSRadius);
+                ////not ideal: should transform all 8 corners!
+            }
         }
-        public void SetOrientationInv(Quaternion inv)
+
+        public void SetOrientation(Quaternion ori, bool inverse = false)
         {
-            Quaternion ori = Quaternion.Normalize(Quaternion.Invert(inv));
-            Orientation = ori;
-            _CEntityDef.rotation = new Vector4(inv.X, inv.Y, inv.Z, inv.W);
+            if (MloParent != null)
+            {
+                var mloInv = Quaternion.Normalize(Quaternion.Invert(MloParent.Orientation));
+                Quaternion rel = Quaternion.Normalize(Quaternion.Multiply(mloInv, ori));
+                Quaternion inv = Quaternion.Normalize(Quaternion.Invert(rel));
+                Orientation = ori;
+                _CEntityDef.rotation = inv.ToVector4();
+            }
+            else
+            {
+                Quaternion inv = inverse ? ori : Quaternion.Normalize(Quaternion.Invert(ori));
+                ori = inverse ? Quaternion.Normalize(Quaternion.Invert(ori)) : ori;
+                Orientation = ori;
+                _CEntityDef.rotation = inv.ToVector4();
+            }
 
             if (MloInstance != null)
             {
                 MloInstance.SetOrientation(ori);
             }
-
 
             if (Archetype != null)
             {
@@ -1376,14 +1514,35 @@ namespace CodeWalker.GameFiles
             Scale = new Vector3(s.X, s.X, s.Z);
             _CEntityDef.scaleXY = s.X;
             _CEntityDef.scaleZ = s.Z;
+
+            MloInstanceData mloInstance = MloParent?.MloInstance;
+            if (mloInstance != null)
+            {
+                var mcEntity = mloInstance.TryGetArchetypeEntity(this);
+                if (mcEntity != null)
+                {
+                    mcEntity._Data.scaleXY = s.X;
+                    mcEntity._Data.scaleZ = s.Z;
+                }
+            }
             if (Archetype != null)
             {
                 float smax = Math.Max(Scale.X, Scale.Z);
                 BSRadius = Archetype.BSRadius * smax;
             }
+
             SetPosition(Position);//update the BB
         }
 
+        private void UpdateMloArchetype()
+        {
+            if (!(MloParent.Archetype is MloArchetype mloArchetype)) return;
+            if (Index >= mloArchetype.entities.Length) return;
+
+            MCEntityDef entity = mloArchetype.entities[Index];
+            entity._Data.position = _CEntityDef.position;
+            entity._Data.rotation = _CEntityDef.rotation;
+        }
 
 
         public void SetPivotPosition(Vector3 pos)
@@ -1441,7 +1600,7 @@ namespace CodeWalker.GameFiles
                 ChildList = new List<YmapEntityDef>();
             }
             c.Parent = this;
-            c.ParentName = CEntityDef.archetypeName;
+            c.ParentName = _CEntityDef.archetypeName;
 
             ChildList.Add(c);
         }
@@ -1484,7 +1643,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return CEntityDef.ToString() + ((ChildList != null) ? (" (" + ChildList.Count.ToString() + " children) ") : " ") + CEntityDef.lodLevel.ToString();
+            return _CEntityDef.ToString() + ((ChildList != null) ? (" (" + ChildList.Count.ToString() + " children) ") : " ") + _CEntityDef.lodLevel.ToString();
         }
 
     }
@@ -1493,6 +1652,8 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class YmapGrassInstanceBatch
     {
+        private const float BatchVertMultiplier = 0.00001525878f;
+
         public Archetype Archetype { get; set; } //cached by GameFileCache on loading...
         public rage__fwGrassInstanceListDef Batch { get; set; }
         public rage__fwGrassInstanceListDef__InstanceData[] Instances { get; set; }
@@ -1504,9 +1665,477 @@ namespace CodeWalker.GameFiles
         public float Distance; //used for rendering
         public YmapFile Ymap { get; set; }
 
+        private List<BoundingBox> grassBounds; // for brush
+        public bool BrushEnabled; // for brush
+        public float BrushRadius = 5f; // for brush
+        public bool HasChanged; // for brush and renderer
+
+        // TODO: Make configurable.
+        const float BoundingSize = 0.3F;
+        static readonly Vector3 GrassMinMax = Vector3.One * BoundingSize;
+
         public override string ToString()
         {
             return Batch.ToString();
+        }
+
+        public void UpdateInstanceCount()
+        {
+            var b = Batch;
+            var ins = b.InstanceList;
+            ins.Count1 = (ushort)Instances.Length;
+            b.InstanceList = ins;
+            Batch = b;
+        }
+
+        public bool IsPointBlockedByInstance(Vector3 point)
+        {
+            return grassBounds.Any(bb => bb.Contains(point) == ContainmentType.Contains);
+        }
+
+        private void ReInitializeBoundingCache()
+        {
+            // cache is already initialized correctly.
+            if (grassBounds != null && (grassBounds.Count == Instances.Length))
+                return;
+
+            // Clear the current bounding cache.
+            if (grassBounds == null)
+                grassBounds = new List<BoundingBox>();
+            else grassBounds?.Clear();
+
+            foreach (var inst in Instances)
+            {
+                // create bounding box for this instance.
+                var worldPos = GetGrassWorldPos(inst.Position, new BoundingBox(AABBMin, AABBMax));
+                var bb = new BoundingBox(worldPos - GrassMinMax, worldPos + GrassMinMax);
+                grassBounds.Add(bb);
+            }
+        }
+
+        public bool EraseInstancesAtMouse(
+            YmapGrassInstanceBatch batch,
+            SpaceRayIntersectResult mouseRay,
+            float radius)
+        {
+            rage__spdAABB batchAABB = batch.Batch.BatchAABB;
+            var oldInstanceBounds = new BoundingBox
+            (
+                batchAABB.min.XYZ(),
+                batchAABB.max.XYZ()
+            );
+            var deleteSphere = new BoundingSphere(mouseRay.Position, radius);
+
+            // check each instance to see if it's in the delete sphere
+            // thankfully we've just avoided an O(n^2) op using this bounds stuff (doesn't mean it's super fast though,
+            // but it's not super slow either, even at like 50,000 instances)
+            var insList = new List<rage__fwGrassInstanceListDef__InstanceData>();
+            foreach (var instance in batch.Instances)
+            {
+                // get the world pos
+                var worldPos = GetGrassWorldPos(instance.Position, oldInstanceBounds);
+
+                // create a boundary around the instance.
+                var instanceBounds = new BoundingBox(worldPos - GrassMinMax, worldPos + GrassMinMax);
+
+                // check if the sphere contains the boundary.
+                var bb = new BoundingBox(instanceBounds.Minimum, instanceBounds.Maximum);
+                var ct = deleteSphere.Contains(ref bb);
+                if (ct == ContainmentType.Contains || ct == ContainmentType.Intersects)
+                {
+                    //delInstances.Add(instance); // Add a copy of this instance
+                    continue;
+                }
+                insList.Add(instance);
+            }
+            if (insList.Count == Instances.Length)
+                return false;
+
+            var newBounds = GetNewGrassBounds(insList, oldInstanceBounds);
+            // recalc instances
+            var b = RecalcBatch(newBounds, batch);
+            batch.Batch = b;
+            insList = RecalculateInstances(insList, oldInstanceBounds, newBounds);
+            batch.Instances = insList.ToArray();
+            return true;
+        }
+
+        public void CreateInstancesAtMouse(
+            YmapGrassInstanceBatch batch,
+            SpaceRayIntersectResult mouseRay,
+            float radius,
+            int amount,
+            Func<Vector3, SpaceRayIntersectResult> spawnRayFunc,
+            Color color,
+            int ao,
+            int scale,
+            Vector3 pad,
+            bool randomScale)
+        {
+
+            ReInitializeBoundingCache();
+            var spawnPosition = mouseRay.Position;
+            var positions = new List<Vector3>();
+            var normals = new List<Vector3>();
+
+            // Get rand positions.
+            GetSpawns(spawnPosition, spawnRayFunc, positions, normals, radius, amount);
+            if (positions.Count <= 0) return;
+
+            // get the instance list
+            var instances =
+                batch.Instances?.ToList() ?? new List<rage__fwGrassInstanceListDef__InstanceData>();
+            var batchAABB = batch.Batch.BatchAABB;
+
+            // make sure to store the old instance bounds for the original
+            // grass instances
+            var oldInstanceBounds = new BoundingBox(batchAABB.min.XYZ(), batchAABB.max.XYZ());
+
+            if (positions.Count <= 0)
+                return;
+
+            // Begin the spawn bounds.
+            var grassBound = new BoundingBox(positions[0] - GrassMinMax, positions[0] + GrassMinMax);
+            grassBound = EncapsulatePositions(positions, grassBound);
+
+            // Calculate the new spawn bounds.
+            var newInstanceBounds = new BoundingBox(oldInstanceBounds.Minimum, oldInstanceBounds.Maximum);
+            newInstanceBounds = instances.Count > 0
+                ? newInstanceBounds.Encapsulate(grassBound)
+                : new BoundingBox(grassBound.Minimum, grassBound.Maximum);
+
+            // now we need to recalculate the position of each instance
+            instances = RecalculateInstances(instances, oldInstanceBounds, newInstanceBounds);
+
+            // Add new instances at each spawn position with
+            // the parameters in the brush.
+            SpawnInstances(positions, normals, instances, newInstanceBounds, color, ao, scale, pad, randomScale);
+
+            // then recalc the bounds of the grass batch
+            var b = RecalcBatch(newInstanceBounds, batch);
+
+            // plug our values back in and refresh the ymap.
+            batch.Batch = b;
+
+            // Give back the new intsances
+            batch.Instances = instances.ToArray();
+            grassBounds.Clear();
+        }
+
+        // bhv approach recommended by dexy.
+        public YmapGrassInstanceBatch[] OptimizeInstances(YmapGrassInstanceBatch batch, float minRadius)
+        {
+            // this function will return an array of grass instance batches
+            // that are split up into sectors (groups) with a specific size.
+            // say for instance we have 30,000 instances spread across a large
+            // distance. We will split those instances into a grid-like group
+            // and return the groups as an array of batches.
+            var oldInstanceBounds = new BoundingBox(batch.Batch.BatchAABB.min.XYZ(), batch.Batch.BatchAABB.max.XYZ());
+
+            if (oldInstanceBounds.Radius() < minRadius)
+            {
+                return new [] { batch };
+            }
+
+            // Get our optimized grassInstances
+            var split = SplitGrassRecursive(batch.Instances.ToList(), oldInstanceBounds, minRadius);
+
+            // Initiate a new batch list.
+            var newBatches = new List<YmapGrassInstanceBatch>();
+
+            foreach (var grassList in split)
+            {
+                // Create a new batch
+                var newBatch = new YmapGrassInstanceBatch
+                {
+                    Archetype = batch.Archetype,
+                    Ymap = batch.Ymap
+                };
+
+                // Get the boundary of the grassInstances
+                var newInstanceBounds = GetNewGrassBounds(grassList, oldInstanceBounds);
+
+                // Recalculate the batch boundaries.
+                var b = RecalcBatch(newInstanceBounds, newBatch);
+                newBatch.Batch = b;
+
+                var ins = RecalculateInstances(grassList, oldInstanceBounds, newInstanceBounds);
+                newBatch.Instances = ins.ToArray();
+                newBatches.Add(newBatch);
+            }
+
+            return newBatches.ToArray();
+        }
+
+        private List<List<rage__fwGrassInstanceListDef__InstanceData>> SplitGrassRecursive(
+            IReadOnlyList<rage__fwGrassInstanceListDef__InstanceData> grassInstances,
+            BoundingBox batchAABB,
+            float minRadius = 15F
+        )
+        {
+            var ret = new List<List<rage__fwGrassInstanceListDef__InstanceData>>();
+            var oldPoints = SplitGrass(grassInstances, batchAABB);
+            while (true)
+            {
+                var stop = true;
+                var newPoints = new List<List<rage__fwGrassInstanceListDef__InstanceData>>();
+                foreach (var mb in oldPoints)
+                {
+                    // for some reason we got a null group?
+                    if (mb == null)
+                        continue;
+
+                    // Get the bounds of the grassInstances list
+                    var radius = GetNewGrassBounds(mb, batchAABB).Radius();
+
+                    // check if the radius of the grassInstances
+                    if (radius <= minRadius)
+                    {
+                        // this point list is within the minimum 
+                        // radius.
+                        ret.Add(mb);
+                        continue; // we don't need to continue.
+                    }
+
+                    // since we're here let's keep going
+                    stop = false;
+
+                    // split the grassInstances again
+                    var s = SplitGrass(mb, batchAABB);
+
+                    // add it into the new grassInstances list.
+                    newPoints.AddRange(s);
+                }
+
+                // set the old grassInstances to the new grassInstances.
+                oldPoints = newPoints.ToArray();
+
+                // if we're done, and all grassInstances are within the desired size
+                // then end the loop.
+                if (stop) break;
+            }
+            return ret;
+        }
+
+        private List<rage__fwGrassInstanceListDef__InstanceData>[] SplitGrass(
+            IReadOnlyList<rage__fwGrassInstanceListDef__InstanceData> points,
+            BoundingBox batchAABB)
+        {
+            var pointGroup = new List<rage__fwGrassInstanceListDef__InstanceData>[2];
+
+            // Calculate the bounds of these grassInstances.
+            var m = GetNewGrassBounds(points, batchAABB);
+
+            // Get the center and size
+            var mm = new Vector3
+            {
+                X = Math.Abs(m.Minimum.X - m.Maximum.X),
+                Y = Math.Abs(m.Minimum.Y - m.Maximum.Y),
+                Z = Math.Abs(m.Minimum.Z - m.Maximum.Z)
+            };
+
+            // x is the greatest axis...
+            if (mm.X > mm.Y && mm.X > mm.Z)
+            {
+                // Calculate both boundaries.
+                var lhs = new BoundingBox(m.Minimum, m.Maximum - new Vector3(mm.X * 0.5F, 0, 0));
+                var rhs = new BoundingBox(m.Minimum + new Vector3(mm.X * 0.5F, 0, 0), m.Maximum);
+
+                // Set the grassInstances accordingly.
+                pointGroup[0] = points
+                    .Where(p => lhs.Contains(GetGrassWorldPos(p.Position, batchAABB)) == ContainmentType.Contains).ToList();
+                pointGroup[1] = points
+                    .Where(p => rhs.Contains(GetGrassWorldPos(p.Position, batchAABB)) == ContainmentType.Contains).ToList();
+            }
+            // y is the greatest axis...
+            else if (mm.Y > mm.X && mm.Y > mm.Z)
+            {
+                // Calculate both boundaries.
+                var lhs = new BoundingBox(m.Minimum, m.Maximum - new Vector3(0, mm.Y * 0.5F, 0));
+                var rhs = new BoundingBox(m.Minimum + new Vector3(0, mm.Y * 0.5F, 0), m.Maximum);
+
+                // Set the grassInstances accordingly.
+                pointGroup[0] = points
+                    .Where(p => lhs.Contains(GetGrassWorldPos(p.Position, batchAABB)) == ContainmentType.Contains).ToList();
+                pointGroup[1] = points
+                    .Where(p => rhs.Contains(GetGrassWorldPos(p.Position, batchAABB)) == ContainmentType.Contains).ToList();
+            }
+            // z is the greatest axis...
+            else if (mm.Z > mm.X && mm.Z > mm.Y)
+            {
+                // Calculate both boundaries.
+                var lhs = new BoundingBox(m.Minimum, m.Maximum - new Vector3(0, 0, mm.Z * 0.5F));
+                var rhs = new BoundingBox(m.Minimum + new Vector3(0, 0, mm.Z * 0.5F), m.Maximum);
+
+                // Set the grassInstances accordingly.
+                pointGroup[0] = points
+                    .Where(p => lhs.Contains(GetGrassWorldPos(p.Position, batchAABB)) == ContainmentType.Contains).ToList();
+                pointGroup[1] = points
+                    .Where(p => rhs.Contains(GetGrassWorldPos(p.Position, batchAABB)) == ContainmentType.Contains).ToList();
+            }
+            return pointGroup;
+        }
+
+        private static BoundingBox GetNewGrassBounds(IReadOnlyList<rage__fwGrassInstanceListDef__InstanceData> newGrass, BoundingBox oldAABB)
+        {
+            var grassPositions = newGrass.Select(x => GetGrassWorldPos(x.Position, oldAABB)).ToArray();
+            return BoundingBox.FromPoints(grassPositions).Expand(1f);
+        }
+
+        private void SpawnInstances(
+            IReadOnlyList<Vector3> positions,
+            IReadOnlyList<Vector3> normals,
+            ICollection<rage__fwGrassInstanceListDef__InstanceData> instanceList,
+            BoundingBox instanceBounds,
+            Color color,
+            int ao,
+            int scale,
+            Vector3 pad,
+            bool randomScale)
+        {
+            for (var i = 0; i < positions.Count; i++)
+            {
+                var pos = positions[i];
+                // create the new instance.
+                var newInstance = CreateNewInstance(normals[i], color, ao, scale, pad, randomScale);
+
+                // get the grass position of the new instance and add it to the 
+                // instance list
+                var grassPosition = GetGrassPos(pos, instanceBounds);
+                newInstance.Position = grassPosition;
+                instanceList.Add(newInstance);
+            }
+        }
+
+        private rage__fwGrassInstanceListDef__InstanceData CreateNewInstance(Vector3 normal, Color color, int ao, int scale, Vector3 pad,
+            bool randomScale = false)
+        {
+            //Vector3 pad = FloatUtil.ParseVector3String(PadTextBox.Text);
+            //int scale = (int)ScaleNumericUpDown.Value;
+            var rand = new Random();
+            if (randomScale)
+                scale = rand.Next(scale / 2, scale);
+            var newInstance = new rage__fwGrassInstanceListDef__InstanceData
+            {
+                Ao = (byte)ao,
+                Scale = (byte)scale,
+                Color = new ArrayOfBytes3 { b0 = color.R, b1 = color.G, b2 = color.B },
+                Pad = new ArrayOfBytes3 { b0 = (byte)pad.X, b1 = (byte)pad.Y, b2 = (byte)pad.Z },
+                NormalX = (byte)((normal.X + 1) * 0.5F * 255F),
+                NormalY = (byte)((normal.Y + 1) * 0.5F * 255F)
+            };
+            return newInstance;
+        }
+
+        private rage__fwGrassInstanceListDef RecalcBatch(BoundingBox newInstanceBounds, YmapGrassInstanceBatch batch)
+        {
+            batch.AABBMax = newInstanceBounds.Maximum;
+            batch.AABBMin = newInstanceBounds.Minimum;
+            batch.Position = newInstanceBounds.Center();
+            batch.Radius = newInstanceBounds.Radius();
+            var b = batch.Batch;
+            b.BatchAABB = new rage__spdAABB
+            {
+                min =
+                    new Vector4(newInstanceBounds.Minimum,
+                        0), // Let's pass the new stuff into the batchabb as well just because.
+                max = new Vector4(newInstanceBounds.Maximum, 0)
+            };
+            return b;
+        }
+
+        private void GetSpawns(
+            Vector3 origin, Func<Vector3,
+                SpaceRayIntersectResult> spawnRayFunc,
+            ICollection<Vector3> positions,
+            ICollection<Vector3> normals,
+            float radius,
+            int resolution = 28)
+        {
+            var rand = new Random();
+            for (var i = 0; i < resolution; i++)
+            {
+                var randX = (float)rand.NextDouble(-radius, radius);
+                var randY = (float)rand.NextDouble(-radius, radius);
+                if (Math.Abs(randX) > 0 && Math.Abs(randY) > 0)
+                {
+                    randX *= .7071f;
+                    randY *= .7071f;
+                }
+                var posOffset = origin + new Vector3(randX, randY, 2f);
+                var spaceRay = spawnRayFunc.Invoke(posOffset);
+                if (!spaceRay.Hit) continue;
+                // not truly O(n^2) but may be slow...
+                // actually just did some testing, not slow at all.
+                if (IsPointBlockedByInstance(spaceRay.Position)) continue;
+                normals.Add(spaceRay.Normal);
+                positions.Add(spaceRay.Position);
+            }
+        }
+
+        private static List<rage__fwGrassInstanceListDef__InstanceData> RecalculateInstances(
+            List<rage__fwGrassInstanceListDef__InstanceData> instances,
+            BoundingBox oldInstanceBounds,
+            BoundingBox newInstanceBounds)
+        {
+            var refreshList = new List<rage__fwGrassInstanceListDef__InstanceData>();
+            foreach (var inst in instances)
+            {
+                // Copy instance
+                var copy =
+                    new rage__fwGrassInstanceListDef__InstanceData
+                    {
+                        Position = inst.Position,
+                        Ao = inst.Ao,
+                        Color = inst.Color,
+                        NormalX = inst.NormalX,
+                        NormalY = inst.NormalY,
+                        Pad = inst.Pad,
+                        Scale = inst.Scale
+                    };
+                // get the position from where we would be in the old bounds, and move it to
+                // the position it needs to be in the new bounds.
+                var oldPos = GetGrassWorldPos(copy.Position, oldInstanceBounds);
+                //var oldPos = oldInstanceBounds.min + oldInstanceBounds.Size * (grassPos * BatchVertMultiplier);
+                copy.Position = GetGrassPos(oldPos, newInstanceBounds);
+                refreshList.Add(copy);
+            }
+            instances = refreshList.ToList();
+            return instances;
+        }
+
+        private static BoundingBox EncapsulatePositions(IEnumerable<Vector3> positions, BoundingBox bounds)
+        {
+            foreach (var pos in positions)
+            {
+                var posBounds = new BoundingBox(pos - (GrassMinMax + 0.1f), pos + (GrassMinMax + 0.1f));
+                bounds = bounds.Encapsulate(posBounds);
+            }
+            return bounds;
+        }
+
+        private static ArrayOfUshorts3 GetGrassPos(Vector3 worldPos, BoundingBox batchAABB)
+        {
+            var offset = worldPos - batchAABB.Minimum;
+            var size = batchAABB.Size();
+            var percentage =
+                new Vector3(
+                    offset.X / size.X,
+                    offset.Y / size.Y,
+                    offset.Z / size.Z
+                );
+            var instancePos = percentage / BatchVertMultiplier;
+            return new ArrayOfUshorts3
+            {
+                u0 = (ushort)instancePos.X,
+                u1 = (ushort)instancePos.Y,
+                u2 = (ushort)instancePos.Z
+            };
+        }
+
+        private static Vector3 GetGrassWorldPos(ArrayOfUshorts3 grassPos, BoundingBox batchAABB)
+        {
+            return batchAABB.Minimum + batchAABB.Size() * (grassPos.XYZ() * BatchVertMultiplier);
         }
     }
 
@@ -1544,6 +2173,43 @@ namespace CodeWalker.GameFiles
                 BBMin = min;
                 BBMax = max;
             }
+
+        }
+    }
+
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class YmapLODLights
+    {
+        public CLODLight CLODLight { get; set; }
+        public MetaVECTOR3[] direction { get; set; }
+        public float[] falloff { get; set; }
+        public float[] falloffExponent { get; set; }
+        public uint[] timeAndStateFlags { get; set; }
+        public uint[] hash { get; set; }
+        public byte[] coneInnerAngle { get; set; }
+        public byte[] coneOuterAngleOrCapExt { get; set; }
+        public byte[] coronaIntensity { get; set; }
+
+        public Vector3 BBMin { get; set; }
+        public Vector3 BBMax { get; set; }
+        public YmapFile Ymap { get; set; }
+
+        public void CalcBB()
+        {
+            //if (positions != null)
+            //{
+            //    Vector3 min = new Vector3(float.MaxValue);
+            //    Vector3 max = new Vector3(float.MinValue);
+            //    for (int i = 0; i < positions.Length; i++)
+            //    {
+            //        var p = positions[i];
+            //        Vector3 pv = p.ToVector3();
+            //        min = Vector3.Min(min, pv);
+            //        max = Vector3.Max(max, pv);
+            //    }
+            //    BBMin = min;
+            //    BBMax = max;
+            //}
 
         }
     }
@@ -1647,33 +2313,96 @@ namespace CodeWalker.GameFiles
 
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class YmapOccludeModel
+    public class YmapOccludeModel : BasePathData
     {
-        public Unk_2741784237 _OccludeModel;
-        public Unk_2741784237 OccludeModel { get { return _OccludeModel; } set { _OccludeModel = value; } }
+        public OccludeModel _OccludeModel;
+        public OccludeModel OccludeModel { get { return _OccludeModel; } set { _OccludeModel = value; } }
 
         public YmapFile Ymap { get; set; }
 
+        public byte[] Data { get; set; }
+        public Vector3[] Vertices { get; set; }
+        public byte[] Indices { get; set; }
+        public int Index { get; set; }
 
-        public YmapOccludeModel(YmapFile ymap, Unk_2741784237 model)
+        public YmapOccludeModel(YmapFile ymap, OccludeModel model)
         {
             Ymap = ymap;
             _OccludeModel = model;
+        }
+
+
+        public void Load(Meta meta)
+        {
+            var vptr = _OccludeModel.verts;
+            var dataSize = _OccludeModel.dataSize;
+            var indicesOffset = _OccludeModel.numVertsInBytes;
+            var vertexCount = indicesOffset / 12;
+            var indexCount = (int)(dataSize - indicesOffset);// / 4;
+            Data = MetaTypes.GetByteArray(meta, vptr, dataSize);
+            Vertices = MetaTypes.ConvertDataArray<Vector3>(Data, 0, vertexCount);
+            Indices = new byte[indexCount];
+            Buffer.BlockCopy(Data, indicesOffset, Indices, 0, indexCount);
+        }
+
+
+        public EditorVertex[] GetTriangleVertices()
+        {
+            if ((Vertices == null) || (Indices == null)) return null;
+            EditorVertex[] res = new EditorVertex[Indices.Length];//changing from indexed to nonindexed triangle list
+            var colour = new Color4(1.0f, 1.0f, 1.0f, 0.2f); //todo: colours for occlude models? currently transparent white
+            var colourval = (uint)colour.ToRgba();
+            for (int i = 0; i < Indices.Length; i++)
+            {
+                res[i].Position = Vertices[Indices[i]];
+                res[i].Colour = colourval;
+            }
+            return res;
+        }
+
+        public EditorVertex[] GetPathVertices()
+        {
+            return null;
+        }
+        public Vector4[] GetNodePositions()
+        {
+            return null;
         }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class YmapBoxOccluder
     {
-        public Unk_975711773 _Box;
-        public Unk_975711773 Box { get { return _Box; } set { _Box = value; } }
+        public BoxOccluder _Box;
+        public BoxOccluder Box { get { return _Box; } set { _Box = value; } }
 
         public YmapFile Ymap { get; set; }
 
-        public YmapBoxOccluder(YmapFile ymap, Unk_975711773 box)
+
+        public Vector3 Position { get; set; }
+        public Vector3 Size { get; set; }
+        public Vector3 BBMin { get; set; }
+        public Vector3 BBMax { get; set; }
+        public Quaternion Orientation { get; set; }
+        public int Index { get; set; }
+
+
+        public YmapBoxOccluder(YmapFile ymap, BoxOccluder box)
         {
             Ymap = ymap;
             _Box = box;
+
+            Position = new Vector3(box.iCenterX, box.iCenterY, box.iCenterZ) / 4.0f;
+            Size = new Vector3(box.iLength, box.iWidth, box.iHeight) / 4.0f;
+            BBMin = Size * -0.5f;
+            BBMax = Size * 0.5f;
+
+            float cosz = box.iCosZ / 32767.0f;// ((float)short.MaxValue)
+            float sinz = box.iSinZ / 32767.0f;
+
+            float angl = (float)Math.Atan2(cosz, sinz);
+            Orientation = Quaternion.RotationYawPitchRoll(0.0f, 0.0f, angl);
+
         }
 
     }

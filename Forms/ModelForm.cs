@@ -100,10 +100,19 @@ namespace CodeWalker.Forms
         bool updateArchetypeStatus = true;
 
 
+        ModelMatForm materialForm = null;
+        private bool modelModified = false;
+
+        ExploreForm exploreForm = null;
+        RpfFileEntry rpfFileEntry = null;
+
+
+
         public ModelForm(ExploreForm ExpForm = null)
         {
             InitializeComponent();
 
+            exploreForm = ExpForm;
 
             gameFileCache = ExpForm?.GetFileCache();
 
@@ -519,7 +528,14 @@ namespace CodeWalker.Forms
                     {
                         var f = Yft.Fragment;
 
-                        hash = Yft?.RpfFileEntry?.ShortNameHash ?? 0;
+                        hash = Yft.RpfFileEntry?.ShortNameHash ?? 0;
+
+                        var namelower = Yft.RpfFileEntry?.GetShortNameLower();
+                        if (namelower?.EndsWith("_hi") ?? false)
+                        {
+                            hash = JenkHash.GenHash(namelower.Substring(0, namelower.Length - 3));
+                        }
+
                         arch = TryGetArchetype(hash);
 
                         Renderer.RenderFragment(arch, null, f, hash);
@@ -557,6 +573,7 @@ namespace CodeWalker.Forms
 
             FileName = ydr.Name;
             Ydr = ydr;
+            rpfFileEntry = Ydr.RpfFileEntry;
 
             if (ydr.Drawable != null)
             {
@@ -571,6 +588,7 @@ namespace CodeWalker.Forms
 
             FileName = ydd.Name;
             Ydd = ydd;
+            rpfFileEntry = Ydd.RpfFileEntry;
 
             UpdateModelsUI(ydd.Dict);
 
@@ -582,6 +600,7 @@ namespace CodeWalker.Forms
 
             FileName = yft.Name;
             Yft = yft;
+            rpfFileEntry = Yft.RpfFileEntry;
 
             var dr = yft.Fragment?.Drawable;
             if (dr != null)
@@ -597,6 +616,7 @@ namespace CodeWalker.Forms
 
             FileName = ybn.Name;
             Ybn = ybn;
+            rpfFileEntry = Ybn.RpfFileEntry;
 
             if (Ybn.Bounds != null)
             {
@@ -611,6 +631,7 @@ namespace CodeWalker.Forms
 
             FileName = ypt.Name;
             Ypt = ypt;
+            rpfFileEntry = Ypt.RpfFileEntry;
 
             UpdateModelsUI(ypt.DrawableDict);
 
@@ -622,6 +643,7 @@ namespace CodeWalker.Forms
 
             FileName = ynv.Name;
             Ynv = ynv;
+            rpfFileEntry = Ynv.RpfFileEntry;
 
             if (ynv.Nav.SectorTree != null)
             {
@@ -643,7 +665,7 @@ namespace CodeWalker.Forms
 
         private void UpdateFormTitle()
         {
-            Text = fileName + " - CodeWalker by dexyfex";
+            Text = fileName + (modelModified ? "*" : "") + " - CodeWalker by dexyfex";
         }
 
 
@@ -817,6 +839,30 @@ namespace CodeWalker.Forms
                 AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", false);
                 AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", false);
                 //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false);
+
+                var fdrawable = drawable as FragDrawable;
+                if (fdrawable != null)
+                {
+                    var plod1 = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1;
+                    if ((plod1 != null) && (plod1.Children?.data_items != null))
+                    {
+                        foreach (var child in plod1.Children.data_items)
+                        {
+                            var cdrwbl = child.Drawable1;
+                            if ((cdrwbl != null) && (cdrwbl.AllModels?.Length > 0))
+                            {
+                                if (cdrwbl.Owner is FragDrawable) continue; //it's a copied drawable... eg a wheel
+
+                                var dname = child.GroupNameHash.ToString();
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsHigh, dname + " - High Detail", true);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsMedium, dname + " - Medium Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsLow, dname + " - Low Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsVeryLow, dname + " - Very Low Detail", false);
+                            }
+                        }
+                    }
+                }
+
             }
         }
         private void UpdateModelsUI(FragType frag)
@@ -838,6 +884,29 @@ namespace CodeWalker.Forms
                 AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", false);
                 AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", false);
                 //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false);
+
+                var fdrawable = drawable as FragDrawable;
+                if (fdrawable != null)
+                {
+                    var plod1 = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1;
+                    if ((plod1 != null) && (plod1.Children?.data_items != null))
+                    {
+                        foreach (var child in plod1.Children.data_items)
+                        {
+                            var cdrwbl = child.Drawable1;
+                            if ((cdrwbl != null) && (cdrwbl.AllModels?.Length > 0))
+                            {
+                                if (cdrwbl.Owner is FragDrawable) continue; //it's a copied drawable... eg a wheel
+
+                                var dname = child.GroupNameHash.ToString();
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsHigh, dname + " - High Detail", true);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsMedium, dname + " - Medium Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsLow, dname + " - Low Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsVeryLow, dname + " - Very Low Detail", false);
+                            }
+                        }
+                    }
+                }
             }
         }
         private void UpdateModelsUI(Dictionary<uint, Drawable> dict)
@@ -1007,6 +1076,166 @@ namespace CodeWalker.Forms
                 }
                 updateArchetypeStatus = true;
             }
+        }
+
+
+
+
+        public void OnMaterialFormClosed()
+        {
+            materialForm = null;
+        }
+
+
+        public void OnModelModified()
+        {
+            modelModified = true;
+            UpdateFormTitle();
+        }
+
+
+
+
+
+        private void Save(bool saveAs = false)
+        {
+            var editMode = exploreForm?.EditMode ?? false;
+
+            if (string.IsNullOrEmpty(FilePath))
+            {
+                if (!editMode) saveAs = true;
+                if (rpfFileEntry?.Parent == null) saveAs = true;
+            }
+            else
+            {
+                if ((FilePath.ToLowerInvariant().StartsWith(GTAFolder.CurrentGTAFolder.ToLowerInvariant()))) saveAs = true;
+                if (!File.Exists(FilePath)) saveAs = true;
+            }
+
+            var fn = FilePath;
+            if (saveAs)
+            {
+                if (!string.IsNullOrEmpty(fn))
+                {
+                    var dir = new FileInfo(fn).DirectoryName;
+                    if (!Directory.Exists(dir)) dir = "";
+                    SaveFileDialog.InitialDirectory = dir;
+                }
+                SaveFileDialog.FileName = FileName;
+
+                var fileExt = Path.GetExtension(FileName);
+                if ((fileExt.Length > 1) && fileExt.StartsWith("."))
+                {
+                    fileExt = fileExt.Substring(1);
+                }
+                SaveFileDialog.Filter = fileExt.ToUpperInvariant() + " files|*." + fileExt + "|All files|*.*";
+
+                if (SaveFileDialog.ShowDialog() != DialogResult.OK) return;
+                fn = SaveFileDialog.FileName;
+            }
+
+
+
+            byte[] fileBytes = null;
+
+#if !DEBUG
+            try
+            {
+#endif
+            if (Ydr != null)
+            {
+                fileBytes = Ydr.Save();
+            }
+            else if (Ydd != null)
+            {
+                fileBytes = Ydd.Save();
+            }
+            else if (Yft != null)
+            {
+                fileBytes = Yft.Save();
+            }
+            else if (Ybn != null)
+            {
+                fileBytes = Ybn.Save();
+            }
+            else if (Ypt != null)
+            {
+                fileBytes = Ypt.Save();
+            }
+            else if (Ynv != null)
+            {
+                fileBytes = Ynv.Save();
+            }
+#if !DEBUG
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("Error saving file!\n" + ex.ToString());
+                return;
+            }
+#endif
+            if (fileBytes == null)
+            {
+                MessageBox.Show("Error saving file!\n fileBytes was null!");
+                return;
+            }
+
+
+            var rpfSave = editMode && (rpfFileEntry?.Parent != null) && !saveAs;
+
+            if (rpfSave)
+            {
+                if (!rpfFileEntry.Path.ToLowerInvariant().StartsWith("mods"))
+                {
+                    if (MessageBox.Show("This file is NOT located in the mods folder - Are you SURE you want to save this file?\r\nWARNING: This could cause permanent damage to your game!!!", "WARNING: Are you sure about this?", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    {
+                        return;//that was a close one
+                    }
+                }
+
+                try
+                {
+                    if (!(exploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false)) return;
+
+                    var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, fileBytes);
+                    if (newentry != rpfFileEntry)
+                    { }
+                    rpfFileEntry = newentry;
+
+                    exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+
+                    StatusLabel.Text = rpfFileEntry.Name + " saved successfully at " + DateTime.Now.ToString();
+
+                    //victory!
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error saving file to RPF! The RPF archive may be corrupted...\r\n" + ex.ToString(), "Really Bad Error");
+                }
+
+            }
+            else
+            {
+                try
+                {
+                    File.WriteAllBytes(fn, fileBytes);
+
+                    fileName = Path.GetFileName(fn);
+                    FilePath = fn;
+
+                    StatusLabel.Text = fileName + " saved successfully at " + DateTime.Now.ToString();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error writing file to disk!\n" + ex.ToString());
+                    return;
+                }
+            }
+
+
+            modelModified = false;
+            UpdateFormTitle();
+
         }
 
 
@@ -1392,6 +1621,11 @@ namespace CodeWalker.Forms
             Renderer.shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
         }
 
+        private void HDTexturesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderhdtextures = HDTexturesCheckBox.Checked;
+        }
+
         private void RenderModeComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             TextureSamplerComboBox.Enabled = false;
@@ -1531,6 +1765,76 @@ namespace CodeWalker.Forms
             {
                 MessageBox.Show("Couldn't find embedded texture dict.");
             }
+        }
+
+        private void MaterialEditorButton_Click(object sender, EventArgs e)
+        {
+            DrawableBase drawable = null;
+            Dictionary<uint, Drawable> dict = null;
+
+
+            if ((Ydr != null) && (Ydr.Loaded))
+            {
+                drawable = Ydr.Drawable;
+            }
+            else if ((Ydd != null) && (Ydd.Loaded))
+            {
+                dict = Ydd.Dict;
+            }
+            else if ((Yft != null) && (Yft.Loaded))
+            {
+                drawable = Yft.Fragment?.Drawable;
+            }
+            else if ((Ypt != null) && (Ypt.Loaded))
+            {
+                dict = Ypt.DrawableDict;
+            }
+            else
+            {
+                MessageBox.Show("Material editor not supported for the current file.");
+                return;
+            }
+
+            if (materialForm == null)
+            {
+                materialForm = new ModelMatForm(this);
+
+                if (drawable != null)
+                {
+                    materialForm.LoadModel(drawable);
+                }
+                else if (dict != null)
+                {
+                    materialForm.LoadModels(dict);
+                }
+
+                materialForm.Show(this);
+            }
+            else
+            {
+                if (materialForm.WindowState == FormWindowState.Minimized)
+                {
+                    materialForm.WindowState = FormWindowState.Normal;
+                }
+                materialForm.Focus();
+            }
+
+
+        }
+
+        private void SaveButton_ButtonClick(object sender, EventArgs e)
+        {
+            Save();
+        }
+
+        private void SaveMenuButton_Click(object sender, EventArgs e)
+        {
+            Save();
+        }
+
+        private void SaveAsMenuButton_Click(object sender, EventArgs e)
+        {
+            Save(true);
         }
     }
 }

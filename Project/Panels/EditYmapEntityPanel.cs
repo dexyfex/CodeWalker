@@ -1,13 +1,6 @@
 ﻿using CodeWalker.GameFiles;
 using SharpDX;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CodeWalker.Project.Panels
@@ -16,6 +9,7 @@ namespace CodeWalker.Project.Panels
     {
         public ProjectForm ProjectForm;
         public YmapEntityDef CurrentEntity { get; set; }
+        public MCEntityDef CurrentMCEntity { get; set; }
 
         private bool populatingui = false;
 
@@ -29,6 +23,8 @@ namespace CodeWalker.Project.Panels
         public void SetEntity(YmapEntityDef entity)
         {
             CurrentEntity = entity;
+            MloInstanceData instance = entity?.MloParent?.MloInstance;
+            CurrentMCEntity = instance?.TryGetArchetypeEntity(entity);
             Tag = entity;
             LoadEntity();
             UpdateFormTitle();
@@ -43,19 +39,19 @@ namespace CodeWalker.Project.Panels
         private void LoadDropDowns()
         {
             EntityLodLevelComboBox.Items.Clear();
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_ORPHANHD);
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_HD);
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_LOD);
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_SLOD1);
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_SLOD2);
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_SLOD3);
-            EntityLodLevelComboBox.Items.Add(Unk_1264241711.LODTYPES_DEPTH_SLOD4);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_ORPHANHD);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_HD);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_LOD);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_SLOD1);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_SLOD2);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_SLOD3);
+            EntityLodLevelComboBox.Items.Add(rage__eLodType.LODTYPES_DEPTH_SLOD4);
 
             EntityPriorityLevelComboBox.Items.Clear();
-            EntityPriorityLevelComboBox.Items.Add(Unk_648413703.PRI_REQUIRED);
-            EntityPriorityLevelComboBox.Items.Add(Unk_648413703.PRI_OPTIONAL_HIGH);
-            EntityPriorityLevelComboBox.Items.Add(Unk_648413703.PRI_OPTIONAL_MEDIUM);
-            EntityPriorityLevelComboBox.Items.Add(Unk_648413703.PRI_OPTIONAL_LOW);
+            EntityPriorityLevelComboBox.Items.Add(rage__ePriorityLevel.PRI_REQUIRED);
+            EntityPriorityLevelComboBox.Items.Add(rage__ePriorityLevel.PRI_OPTIONAL_HIGH);
+            EntityPriorityLevelComboBox.Items.Add(rage__ePriorityLevel.PRI_OPTIONAL_MEDIUM);
+            EntityPriorityLevelComboBox.Items.Add(rage__ePriorityLevel.PRI_OPTIONAL_LOW);
         }
 
 
@@ -94,10 +90,10 @@ namespace CodeWalker.Project.Panels
             else
             {
                 populatingui = true;
-                var e = CurrentEntity.CEntityDef;
+                var e = CurrentEntity._CEntityDef;
                 var po = CurrentEntity.PivotOrientation;
                 //EntityPanel.Enabled = true;
-                EntityAddToProjectButton.Enabled = !ProjectForm.YmapExistsInProject(CurrentEntity.Ymap);
+                EntityAddToProjectButton.Enabled = CurrentEntity.Ymap != null ? !ProjectForm.YmapExistsInProject(CurrentEntity.Ymap) : !ProjectForm.YtypExistsInProject(CurrentEntity.MloParent?.Archetype?.Ytyp);
                 EntityDeleteButton.Enabled = !EntityAddToProjectButton.Enabled;
                 EntityArchetypeTextBox.Text = e.archetypeName.ToString();
                 EntityArchetypeHashLabel.Text = "Hash: " + e.archetypeName.Hash.ToString();
@@ -123,8 +119,36 @@ namespace CodeWalker.Project.Panels
                     var cv = ((e.flags & (1u << i)) > 0);
                     EntityFlagsCheckedListBox.SetItemCheckState(i, cv ? CheckState.Checked : CheckState.Unchecked);
                 }
+
+
+
+                MiloEntitySetsListBox.Items.Clear();
+                if (CurrentEntity.MloInstance != null)
+                {
+                    var milo = CurrentEntity.MloInstance._Instance;
+                    MiloGroupIDTextBox.Text = milo.groupId.ToString();
+                    MiloFloorIDTextBox.Text = milo.floorId.ToString();
+                    MiloNumExitPortalsTextBox.Text = milo.numExitPortals.ToString();
+                    MiloFlagsTextBox.Text = milo.MLOInstflags.ToString();
+                    foreach (var sets in CurrentEntity.MloInstance.EntitySets)
+                    {
+                        MloInstanceEntitySet set = sets.Value;
+                        MiloEntitySetsListBox.Items.Add(set.EntitySet.ToString(), set.Visible);
+                    }
+                }
+                else
+                {
+                    MiloGroupIDTextBox.Text = string.Empty;
+                    MiloFloorIDTextBox.Text = string.Empty;
+                    MiloNumExitPortalsTextBox.Text = string.Empty;
+                    MiloFlagsTextBox.Text = string.Empty;
+                }
+
+
                 populatingui = false;
 
+
+                UpdateTabVisibility();
 
 
                 ProjectForm.WorldForm?.SelectEntity(CurrentEntity); //hopefully the drawable is already loaded - this will try get from cache
@@ -140,15 +164,45 @@ namespace CodeWalker.Project.Panels
                 //int parentIndex { get; set; } //72   72: SignedInt: 0: parentIndex
                 //float lodDist { get; set; } //76   76: Float: 0: lodDist
                 //float childLodDist { get; set; } //80   80: Float: 0: childLodDist//3398912973
-                //Unk_1264241711 lodLevel { get; set; } //84   84: IntEnum: 1264241711: lodLevel  //LODTYPES_DEPTH_
+                //rage__eLodType lodLevel { get; set; } //84   84: IntEnum: 1264241711: lodLevel  //LODTYPES_DEPTH_
                 //uint numChildren { get; set; } //88   88: UnsignedInt: 0: numChildren//2793909385
-                //Unk_648413703 priorityLevel { get; set; } //92   92: IntEnum: 648413703: priorityLevel//647098393
+                //rage__ePriorityLevel priorityLevel { get; set; } //92   92: IntEnum: 648413703: priorityLevel//647098393
                 //Array_StructurePointer extensions { get; set; } //96   96: Array: 0: extensions  {0: StructurePointer: 0: 256}
                 //int ambientOcclusionMultiplier { get; set; } //112   112: SignedInt: 0: ambientOcclusionMultiplier//415356295
                 //int artificialAmbientOcclusion { get; set; } //116   116: SignedInt: 0: artificialAmbientOcclusion//599844163
                 //uint tintValue { get; set; } //120   120: UnsignedInt: 0: tintValue//1015358759
             }
 
+        }
+
+        private void UpdateTabVisibility()
+        {
+
+            //avoid resetting the tabs if no change is necessary.
+            bool ok = true;
+            bool miloTabVis = false;
+            foreach (var tab in EntityTabControl.TabPages)
+            {
+                if (tab == EntityMiloTabPage) miloTabVis = true;
+            }
+
+            if ((CurrentEntity?.MloInstance != null) != miloTabVis) ok = false;
+            if (ok) return;
+
+            var seltab = EntityTabControl.SelectedTab;
+
+            EntityTabControl.TabPages.Clear();
+
+            EntityTabControl.TabPages.Add(EntityGeneralTabPage);
+            EntityTabControl.TabPages.Add(EntityLodTabPage);
+            EntityTabControl.TabPages.Add(EntityExtensionsTabPage);
+            EntityTabControl.TabPages.Add(EntityPivotTabPage);
+            if (CurrentEntity?.MloInstance != null) EntityTabControl.TabPages.Add(EntityMiloTabPage);
+
+            if (EntityTabControl.TabPages.Contains(seltab))
+            {
+                EntityTabControl.SelectedTab = seltab;
+            }
         }
 
 
@@ -176,18 +230,50 @@ namespace CodeWalker.Project.Panels
             {
                 tn.Text = name;
             }
+            else
+            {
+                tn = ProjectForm.ProjectExplorer?.FindMloEntityTreeNode(CurrentMCEntity);
+                if (tn != null)
+                {
+                    tn.Text = name;
+                }
+            }
 
             if (CurrentEntity != null)
             {
                 lock (ProjectForm.ProjectSyncRoot)
                 {
                     CurrentEntity._CEntityDef.archetypeName = new MetaHash(hash);
+
+                    if (CurrentMCEntity != null)
+                    {
+                        CurrentMCEntity._Data.archetypeName = new MetaHash(hash);
+                    }
+
                     if (CurrentEntity.Archetype != arch)
                     {
                         CurrentEntity.SetArchetype(arch);
-                        ProjectForm.SetYmapHasChanged(true);
+
+                        if (CurrentEntity.IsMlo)
+                        {
+                            CurrentEntity.MloInstance.InitYmapEntityArchetypes(ProjectForm.GameFileCache);
+                        }
+
+                        ProjectItemChanged();
                     }
                 }
+            }
+        }
+
+        private void ProjectItemChanged()
+        {
+            if (CurrentEntity.Ymap != null)
+            {
+                ProjectForm.SetYmapHasChanged(true);
+            }
+            else if (CurrentEntity.MloParent?.Archetype?.Ytyp != null)
+            {
+                ProjectForm.SetYtypHasChanged(true);
             }
         }
 
@@ -209,7 +295,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.flags != flags)
                 {
                     CurrentEntity._CEntityDef.flags = flags;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.flags = flags;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -244,7 +332,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.flags != flags)
                 {
                     CurrentEntity._CEntityDef.flags = flags;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.flags = flags;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -260,7 +350,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.guid != guid)
                 {
                     CurrentEntity._CEntityDef.guid = guid;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.guid = guid;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -274,14 +366,16 @@ namespace CodeWalker.Project.Panels
             {
                 if (CurrentEntity.MloParent != null)
                 {
-                    //TODO: positioning for interior entities!
+                    v = CurrentEntity.MloParent.Position + CurrentEntity.MloParent.Orientation.Multiply(v);
+                    CurrentEntity.SetPosition(v);
+                    ProjectItemChanged();
                 }
                 else
                 {
                     if (CurrentEntity.Position != v)
                     {
                         CurrentEntity.SetPosition(v);
-                        ProjectForm.SetYmapHasChanged(true);
+                        ProjectItemChanged();
                         var wf = ProjectForm.WorldForm;
                         if (wf != null)
                         {
@@ -304,17 +398,24 @@ namespace CodeWalker.Project.Panels
             {
                 if (CurrentEntity._CEntityDef.rotation != v)
                 {
-                    Quaternion q = new Quaternion(v);
-                    CurrentEntity.SetOrientationInv(q);
-                    ProjectForm.SetYmapHasChanged(true);
+                    Quaternion q = v.ToQuaternion();
                     var wf = ProjectForm.WorldForm;
-                    if (wf != null)
+
+                    if (CurrentEntity.MloParent != null)
                     {
-                        wf.BeginInvoke(new Action(() =>
-                        {
-                            wf.SetWidgetRotation(CurrentEntity.WidgetOrientation, true);
-                        }));
+                        var world = Quaternion.Normalize(Quaternion.Multiply(q, CurrentEntity.MloParent.Orientation));
+                        CurrentEntity.SetOrientation(world);
                     }
+                    else
+                    {
+                        CurrentEntity.SetOrientation(q, true);
+                    }
+
+                    ProjectItemChanged();
+                    wf?.BeginInvoke(new Action(() =>
+                    {
+                        wf.SetWidgetRotation(CurrentEntity.WidgetOrientation, true);
+                    }));
                 }
             }
         }
@@ -331,7 +432,7 @@ namespace CodeWalker.Project.Panels
                 {
                     Vector3 newscale = new Vector3(sxy, sxy, CurrentEntity.Scale.Z);
                     CurrentEntity.SetScale(newscale);
-                    ProjectForm.SetYmapHasChanged(true);
+                    ProjectItemChanged();
                     var wf = ProjectForm.WorldForm;
                     if (wf != null)
                     {
@@ -356,7 +457,7 @@ namespace CodeWalker.Project.Panels
                 {
                     Vector3 newscale = new Vector3(CurrentEntity.Scale.X, CurrentEntity.Scale.Y, sz);
                     CurrentEntity.SetScale(newscale);
-                    ProjectForm.SetYmapHasChanged(true);
+                    ProjectItemChanged();
                     var wf = ProjectForm.WorldForm;
                     if (wf != null)
                     {
@@ -380,7 +481,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.parentIndex != pind)
                 {
                     CurrentEntity._CEntityDef.parentIndex = pind; //Needs more work for LOD linking!
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.parentIndex = pind;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -396,7 +499,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.lodDist != lodDist)
                 {
                     CurrentEntity._CEntityDef.lodDist = lodDist;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.lodDist = lodDist;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -412,7 +517,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.childLodDist != childLodDist)
                 {
                     CurrentEntity._CEntityDef.childLodDist = childLodDist;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.childLodDist = childLodDist;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -421,13 +528,15 @@ namespace CodeWalker.Project.Panels
         {
             if (populatingui) return;
             if (CurrentEntity == null) return;
-            Unk_1264241711 lodLevel = (Unk_1264241711)EntityLodLevelComboBox.SelectedItem;
+            rage__eLodType lodLevel = (rage__eLodType)EntityLodLevelComboBox.SelectedItem;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentEntity._CEntityDef.lodLevel != lodLevel)
                 {
                     CurrentEntity._CEntityDef.lodLevel = lodLevel;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.lodLevel = lodLevel;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -443,7 +552,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.numChildren != numChildren)
                 {
                     CurrentEntity._CEntityDef.numChildren = numChildren;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.numChildren = numChildren;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -452,13 +563,15 @@ namespace CodeWalker.Project.Panels
         {
             if (populatingui) return;
             if (CurrentEntity == null) return;
-            Unk_648413703 priorityLevel = (Unk_648413703)EntityPriorityLevelComboBox.SelectedItem;
+            rage__ePriorityLevel priorityLevel = (rage__ePriorityLevel)EntityPriorityLevelComboBox.SelectedItem;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentEntity._CEntityDef.priorityLevel != priorityLevel)
                 {
                     CurrentEntity._CEntityDef.priorityLevel = priorityLevel;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.priorityLevel = priorityLevel;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -474,7 +587,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.ambientOcclusionMultiplier != aomult)
                 {
                     CurrentEntity._CEntityDef.ambientOcclusionMultiplier = aomult;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.ambientOcclusionMultiplier = aomult;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -490,7 +605,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.artificialAmbientOcclusion != artao)
                 {
                     CurrentEntity._CEntityDef.artificialAmbientOcclusion = artao;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.artificialAmbientOcclusion = artao;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -506,7 +623,9 @@ namespace CodeWalker.Project.Panels
                 if (CurrentEntity._CEntityDef.tintValue != tintValue)
                 {
                     CurrentEntity._CEntityDef.tintValue = tintValue;
-                    ProjectForm.SetYmapHasChanged(true);
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.tintValue = tintValue;
+                    ProjectItemChanged();
                 }
             }
         }
@@ -515,7 +634,7 @@ namespace CodeWalker.Project.Panels
         {
             if (CurrentEntity == null) return;
             if (ProjectForm.WorldForm == null) return;
-            ProjectForm.WorldForm.GoToPosition(CurrentEntity.Position);
+            ProjectForm.WorldForm.GoToPosition(CurrentEntity.Position, Vector3.One * CurrentEntity.BSRadius);
         }
 
         private void EntityNormalizeRotationButton_Click(object sender, EventArgs e)
@@ -603,6 +722,93 @@ namespace CodeWalker.Project.Panels
             Vector4 v = FloatUtil.ParseVector4String(EntityPivotRotationTextBox.Text);
             Quaternion q = Quaternion.Normalize(new Quaternion(v));
             EntityPivotRotationTextBox.Text = FloatUtil.GetVector4String(new Vector4(q.X, q.Y, q.Z, q.W));
+        }
+
+        private void MiloGroupIDTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentEntity?.MloInstance == null) return;
+            uint groupId = 0;
+            uint.TryParse(MiloGroupIDTextBox.Text, out groupId);
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                if (CurrentEntity.MloInstance._Instance.groupId != groupId)
+                {
+                    CurrentEntity.MloInstance._Instance.groupId = groupId;
+                    ProjectItemChanged();
+                }
+            }
+        }
+
+        private void MiloFloorIDTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentEntity?.MloInstance == null) return;
+            uint floorId = 0;
+            uint.TryParse(MiloFloorIDTextBox.Text, out floorId);
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                if (CurrentEntity.MloInstance._Instance.floorId != floorId)
+                {
+                    CurrentEntity.MloInstance._Instance.floorId = floorId;
+                    ProjectItemChanged();
+                }
+            }
+        }
+
+        private void MiloNumExitPortalsTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentEntity?.MloInstance == null) return;
+            uint num = 0;
+            uint.TryParse(MiloNumExitPortalsTextBox.Text, out num);
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                if (CurrentEntity.MloInstance._Instance.numExitPortals != num)
+                {
+                    CurrentEntity.MloInstance._Instance.numExitPortals = num;
+                    ProjectItemChanged();
+                }
+            }
+        }
+
+        private void MiloFlagsTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentEntity?.MloInstance == null) return;
+            uint flags = 0;
+            uint.TryParse(MiloFlagsTextBox.Text, out flags);
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                if (CurrentEntity.MloInstance._Instance.MLOInstflags != flags)
+                {
+                    CurrentEntity.MloInstance._Instance.MLOInstflags = flags;
+                    ProjectItemChanged();
+                }
+            }
+        }
+
+        private void MiloEntitySetsListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (populatingui) return;
+            var inst = CurrentEntity?.MloInstance;
+            var mloarch = CurrentEntity?.Archetype as MloArchetype;
+            if ((inst != null) && (mloarch != null))
+            {
+                MloInstanceEntitySet mloInstanceEntitySet = inst.EntitySets[mloarch.entitySets[e.Index]._Data.name];
+                mloInstanceEntitySet.Visible = e.NewValue == CheckState.Checked;
+                return;
+            }
+            e.NewValue = CheckState.Unchecked;
+        }
+
+        private void EntityEditArchetypeButton_Click(object sender, EventArgs e)
+        {
+            if (ProjectForm != null)
+            {
+                ProjectForm.SetCurrentArchetype(CurrentEntity?.Archetype);
+                ProjectForm.ShowEditArchetypePanel(true);
+            }
         }
     }
 }

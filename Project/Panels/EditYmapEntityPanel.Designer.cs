@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditYmapEntityPanel));
             this.EntityTabControl = new System.Windows.Forms.TabControl();
             this.EntityGeneralTabPage = new System.Windows.Forms.TabPage();
+            this.EntityEditArchetypeButton = new System.Windows.Forms.Button();
             this.EntityFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
             this.label13 = new System.Windows.Forms.Label();
             this.label28 = new System.Windows.Forms.Label();
@@ -71,6 +72,7 @@
             this.EntityNumChildrenTextBox = new System.Windows.Forms.TextBox();
             this.label25 = new System.Windows.Forms.Label();
             this.EntityExtensionsTabPage = new System.Windows.Forms.TabPage();
+            this.label1 = new System.Windows.Forms.Label();
             this.EntityPivotTabPage = new System.Windows.Forms.TabPage();
             this.label95 = new System.Windows.Forms.Label();
             this.EntityPivotEditCheckBox = new System.Windows.Forms.CheckBox();
@@ -79,12 +81,23 @@
             this.EntityPivotRotationNormalizeButton = new System.Windows.Forms.Button();
             this.label94 = new System.Windows.Forms.Label();
             this.EntityPivotRotationTextBox = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.EntityMiloTabPage = new System.Windows.Forms.TabPage();
+            this.MiloFlagsTextBox = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.MiloNumExitPortalsTextBox = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.MiloGroupIDTextBox = new System.Windows.Forms.TextBox();
+            this.MiloFloorIDTextBox = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.MiloEntitySetsListBox = new System.Windows.Forms.CheckedListBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.EntityTabControl.SuspendLayout();
             this.EntityGeneralTabPage.SuspendLayout();
             this.EntityLodTabPage.SuspendLayout();
             this.EntityExtensionsTabPage.SuspendLayout();
             this.EntityPivotTabPage.SuspendLayout();
+            this.EntityMiloTabPage.SuspendLayout();
             this.SuspendLayout();
             // 
             // EntityTabControl
@@ -96,6 +109,7 @@
             this.EntityTabControl.Controls.Add(this.EntityLodTabPage);
             this.EntityTabControl.Controls.Add(this.EntityExtensionsTabPage);
             this.EntityTabControl.Controls.Add(this.EntityPivotTabPage);
+            this.EntityTabControl.Controls.Add(this.EntityMiloTabPage);
             this.EntityTabControl.Location = new System.Drawing.Point(2, 3);
             this.EntityTabControl.Name = "EntityTabControl";
             this.EntityTabControl.SelectedIndex = 0;
@@ -104,6 +118,7 @@
             // 
             // EntityGeneralTabPage
             // 
+            this.EntityGeneralTabPage.Controls.Add(this.EntityEditArchetypeButton);
             this.EntityGeneralTabPage.Controls.Add(this.EntityFlagsCheckedListBox);
             this.EntityGeneralTabPage.Controls.Add(this.label13);
             this.EntityGeneralTabPage.Controls.Add(this.label28);
@@ -146,6 +161,17 @@
             this.EntityGeneralTabPage.Text = "General";
             this.EntityGeneralTabPage.UseVisualStyleBackColor = true;
             // 
+            // EntityEditArchetypeButton
+            // 
+            this.EntityEditArchetypeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.EntityEditArchetypeButton.Location = new System.Drawing.Point(454, 59);
+            this.EntityEditArchetypeButton.Name = "EntityEditArchetypeButton";
+            this.EntityEditArchetypeButton.Size = new System.Drawing.Size(95, 23);
+            this.EntityEditArchetypeButton.TabIndex = 35;
+            this.EntityEditArchetypeButton.Text = "Edit Archetype...";
+            this.EntityEditArchetypeButton.UseVisualStyleBackColor = true;
+            this.EntityEditArchetypeButton.Click += new System.EventHandler(this.EntityEditArchetypeButton_Click);
+            // 
             // EntityFlagsCheckedListBox
             // 
             this.EntityFlagsCheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -153,12 +179,12 @@
             this.EntityFlagsCheckedListBox.CheckOnClick = true;
             this.EntityFlagsCheckedListBox.FormattingEnabled = true;
             this.EntityFlagsCheckedListBox.Items.AddRange(new object[] {
-            "1 - Unk01",
+            "1 - Allow full rotation",
             "2 - Unk02",
-            "4 - Unk03",
+            "4 - Disable embedded collisions",
             "8 - Unk04",
             "16 - Unk05",
-            "32 - Unk06",
+            "32 - Static entity",
             "64 - Unk07",
             "128 - Unk08",
             "256 - Unk09",
@@ -178,11 +204,11 @@
             "4194304 - Unk23",
             "8388608 - Unk24",
             "16777216 - Unk25",
-            "33554432 - Unk26",
+            "33554432 - Interior proxy",
             "67108864 - Unk27",
-            "134217728 - Unk28",
+            "134217728 - Reflection proxy",
             "268435456 - Unk29",
-            "536870912 - Unk30",
+            "536870912 - Mirror proxy",
             "1073741824 - Unk31",
             "2147483648 - Unk32"});
             this.EntityFlagsCheckedListBox.Location = new System.Drawing.Point(348, 113);
@@ -575,6 +601,15 @@
             this.EntityExtensionsTabPage.Text = "Extensions";
             this.EntityExtensionsTabPage.UseVisualStyleBackColor = true;
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(27, 27);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(157, 13);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "Entity extensions editing TODO!";
+            // 
             // EntityPivotTabPage
             // 
             this.EntityPivotTabPage.Controls.Add(this.label95);
@@ -660,14 +695,114 @@
             this.EntityPivotRotationTextBox.TabIndex = 25;
             this.EntityPivotRotationTextBox.TextChanged += new System.EventHandler(this.EntityPivotRotationTextBox_TextChanged);
             // 
-            // label1
+            // EntityMiloTabPage
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(27, 27);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(157, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Entity extensions editing TODO!";
+            this.EntityMiloTabPage.Controls.Add(this.MiloFlagsTextBox);
+            this.EntityMiloTabPage.Controls.Add(this.label6);
+            this.EntityMiloTabPage.Controls.Add(this.MiloNumExitPortalsTextBox);
+            this.EntityMiloTabPage.Controls.Add(this.label5);
+            this.EntityMiloTabPage.Controls.Add(this.label3);
+            this.EntityMiloTabPage.Controls.Add(this.MiloGroupIDTextBox);
+            this.EntityMiloTabPage.Controls.Add(this.MiloFloorIDTextBox);
+            this.EntityMiloTabPage.Controls.Add(this.label4);
+            this.EntityMiloTabPage.Controls.Add(this.MiloEntitySetsListBox);
+            this.EntityMiloTabPage.Controls.Add(this.label2);
+            this.EntityMiloTabPage.Location = new System.Drawing.Point(4, 22);
+            this.EntityMiloTabPage.Name = "EntityMiloTabPage";
+            this.EntityMiloTabPage.Size = new System.Drawing.Size(555, 476);
+            this.EntityMiloTabPage.TabIndex = 4;
+            this.EntityMiloTabPage.Text = "MLO Instance";
+            this.EntityMiloTabPage.UseVisualStyleBackColor = true;
+            // 
+            // MiloFlagsTextBox
+            // 
+            this.MiloFlagsTextBox.Location = new System.Drawing.Point(101, 93);
+            this.MiloFlagsTextBox.Name = "MiloFlagsTextBox";
+            this.MiloFlagsTextBox.Size = new System.Drawing.Size(154, 20);
+            this.MiloFlagsTextBox.TabIndex = 43;
+            this.MiloFlagsTextBox.TextChanged += new System.EventHandler(this.MiloFlagsTextBox_TextChanged);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(5, 96);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(75, 13);
+            this.label6.TabIndex = 42;
+            this.label6.Text = "MLOInstFlags:";
+            // 
+            // MiloNumExitPortalsTextBox
+            // 
+            this.MiloNumExitPortalsTextBox.Location = new System.Drawing.Point(101, 67);
+            this.MiloNumExitPortalsTextBox.Name = "MiloNumExitPortalsTextBox";
+            this.MiloNumExitPortalsTextBox.Size = new System.Drawing.Size(154, 20);
+            this.MiloNumExitPortalsTextBox.TabIndex = 41;
+            this.MiloNumExitPortalsTextBox.TextChanged += new System.EventHandler(this.MiloNumExitPortalsTextBox_TextChanged);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(5, 70);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(81, 13);
+            this.label5.TabIndex = 40;
+            this.label5.Text = "NumExitPortals:";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(5, 18);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(50, 13);
+            this.label3.TabIndex = 36;
+            this.label3.Text = "GroupID:";
+            // 
+            // MiloGroupIDTextBox
+            // 
+            this.MiloGroupIDTextBox.Location = new System.Drawing.Point(101, 15);
+            this.MiloGroupIDTextBox.Name = "MiloGroupIDTextBox";
+            this.MiloGroupIDTextBox.Size = new System.Drawing.Size(154, 20);
+            this.MiloGroupIDTextBox.TabIndex = 37;
+            this.MiloGroupIDTextBox.TextChanged += new System.EventHandler(this.MiloGroupIDTextBox_TextChanged);
+            // 
+            // MiloFloorIDTextBox
+            // 
+            this.MiloFloorIDTextBox.Location = new System.Drawing.Point(101, 41);
+            this.MiloFloorIDTextBox.Name = "MiloFloorIDTextBox";
+            this.MiloFloorIDTextBox.Size = new System.Drawing.Size(154, 20);
+            this.MiloFloorIDTextBox.TabIndex = 39;
+            this.MiloFloorIDTextBox.TextChanged += new System.EventHandler(this.MiloFloorIDTextBox_TextChanged);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(5, 44);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(44, 13);
+            this.label4.TabIndex = 38;
+            this.label4.Text = "FloorID:";
+            // 
+            // MiloEntitySetsListBox
+            // 
+            this.MiloEntitySetsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MiloEntitySetsListBox.CheckOnClick = true;
+            this.MiloEntitySetsListBox.FormattingEnabled = true;
+            this.MiloEntitySetsListBox.Location = new System.Drawing.Point(103, 128);
+            this.MiloEntitySetsListBox.Name = "MiloEntitySetsListBox";
+            this.MiloEntitySetsListBox.Size = new System.Drawing.Size(434, 319);
+            this.MiloEntitySetsListBox.TabIndex = 4;
+            this.MiloEntitySetsListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.MiloEntitySetsListBox_ItemCheck);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(3, 129);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(91, 13);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "DefaultEntitySets:";
             // 
             // EditYmapEntityPanel
             // 
@@ -687,6 +822,8 @@
             this.EntityExtensionsTabPage.PerformLayout();
             this.EntityPivotTabPage.ResumeLayout(false);
             this.EntityPivotTabPage.PerformLayout();
+            this.EntityMiloTabPage.ResumeLayout(false);
+            this.EntityMiloTabPage.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -744,5 +881,17 @@
         private System.Windows.Forms.Label label94;
         private System.Windows.Forms.TextBox EntityPivotRotationTextBox;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TabPage EntityMiloTabPage;
+        private System.Windows.Forms.CheckedListBox MiloEntitySetsListBox;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox MiloGroupIDTextBox;
+        private System.Windows.Forms.TextBox MiloFloorIDTextBox;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox MiloNumExitPortalsTextBox;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox MiloFlagsTextBox;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button EntityEditArchetypeButton;
     }
 }

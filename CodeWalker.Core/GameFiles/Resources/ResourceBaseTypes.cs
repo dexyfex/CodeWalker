@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -194,6 +195,10 @@ namespace CodeWalker.GameFiles
         {
             return new FlagsByte(v);
         }
+        public static implicit operator byte(FlagsByte v)
+        {
+            return v.Value;  //implicit conversion
+        }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct FlagsUshort
@@ -234,6 +239,11 @@ namespace CodeWalker.GameFiles
         {
             return new FlagsUshort(v);
         }
+        public static implicit operator ushort(FlagsUshort v)
+        {
+            return v.Value;  //implicit conversion
+        }
+
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct FlagsUint
@@ -274,6 +284,11 @@ namespace CodeWalker.GameFiles
         {
             return new FlagsUint(v);
         }
+        public static implicit operator uint(FlagsUint v)
+        {
+            return v.Value;  //implicit conversion
+        }
+
     }
 
 
@@ -644,6 +659,9 @@ namespace CodeWalker.GameFiles
         //public ResourceSimpleArray<T> Entries;
         public T[] data_items { get; private set; }
 
+        private ResourceSimpleArray<T> data_block;//used for saving.
+
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
@@ -679,9 +697,9 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data //TODO: fix
-            //this.EntriesPointer = (ulong)(this.Entries != null ? this.Entries.Position : 0);
-            //this.EntriesCount = (ushort)(this.Entries != null ? this.Entries.Count : 0);
-            //this.EntriesCapacity = (ushort)(this.Entries != null ? this.Entries.Count : 0);
+            this.EntriesPointer = (ulong)(this.data_block != null ? this.data_block.FilePosition : 0);
+            this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.Count : 0);
+            this.EntriesCapacity = (ushort)(this.data_block != null ? this.data_block.Count : 0);
 
             // write structure data
             writer.Write(this.EntriesPointer);
@@ -696,7 +714,567 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Entries != null) list.Add(Entries);
+
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSimpleArray<T>();
+                data_block.Data = new List<T>();
+                data_block.Data.AddRange(data_items);
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
+
+            return list.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return "(Count: " + EntriesCount.ToString() + ")";
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_s<T> : ResourceSystemBlock where T : struct
+    {
+        public override long BlockLength
+        {
+            get { return 16; }
+        }
+
+        // structure data
+        public ulong EntriesPointer { get; private set; }
+        public ushort EntriesCount { get; private set; }
+        public ushort EntriesCapacity { get; private set; }
+
+        // reference data
+        public T[] data_items { get; private set; }
+
+        private ResourceSystemStructBlock<T> data_block;//used for saving.
+
+
+        /// <summary>
+        /// Reads the data-block from a stream.
+        /// </summary>
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.EntriesPointer = reader.ReadUInt64();
+            this.EntriesCount = reader.ReadUInt16();
+            this.EntriesCapacity = reader.ReadUInt16();
+            reader.Position += 4;
+
+            // read reference data
+
+            //TODO: NEEDS TO BE TESTED!!!
+            data_items = reader.ReadStructsAt<T>(EntriesPointer, EntriesCount);
+        }
+
+        /// <summary>
+        /// Writes the data-block to a stream.
+        /// </summary>
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            // update structure data //TODO: fix
+            this.EntriesPointer = (ulong)(this.data_block != null ? this.data_block.FilePosition : 0);
+            this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+            this.EntriesCapacity = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+
+            // write structure data
+            writer.Write(this.EntriesPointer);
+            writer.Write(this.EntriesCount);
+            writer.Write(this.EntriesCapacity);
+            writer.Write((uint)0x00000000);
+        }
+
+        /// <summary>
+        /// Returns a list of data blocks which are referenced by this block.
+        /// </summary>
+        public override IResourceBlock[] GetReferences()
+        {
+            var list = new List<IResourceBlock>();
+
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<T>(data_items);
+
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
+
+            return list.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return "(Count: " + EntriesCount.ToString() + ")";
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64b_s<T> : ResourceSystemBlock where T : struct
+    {
+        //this version uses uints for the count/cap!
+
+        public override long BlockLength
+        {
+            get { return 16; }
+        }
+
+        // structure data
+        public ulong EntriesPointer { get; private set; }
+        public uint EntriesCount { get; private set; }
+        public uint EntriesCapacity { get; private set; }
+
+        // reference data
+        public T[] data_items { get; private set; }
+
+        private ResourceSystemStructBlock<T> data_block;//used for saving.
+
+
+        /// <summary>
+        /// Reads the data-block from a stream.
+        /// </summary>
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.EntriesPointer = reader.ReadUInt64();
+            this.EntriesCount = reader.ReadUInt32();
+            this.EntriesCapacity = reader.ReadUInt32();
+            //reader.Position += 4;
+
+            // read reference data
+
+            //TODO: NEEDS TO BE TESTED!!!
+            data_items = reader.ReadStructsAt<T>(EntriesPointer, EntriesCount);
+        }
+
+        /// <summary>
+        /// Writes the data-block to a stream.
+        /// </summary>
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            // update structure data //TODO: fix
+            this.EntriesPointer = (ulong)(this.data_block != null ? this.data_block.FilePosition : 0);
+            this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+            this.EntriesCapacity = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+
+            // write structure data
+            writer.Write(this.EntriesPointer);
+            writer.Write(this.EntriesCount);
+            writer.Write(this.EntriesCapacity);
+            //writer.Write((uint)0x00000000);
+        }
+
+        /// <summary>
+        /// Returns a list of data blocks which are referenced by this block.
+        /// </summary>
+        public override IResourceBlock[] GetReferences()
+        {
+            var list = new List<IResourceBlock>();
+
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<T>(data_items);
+
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
+
+            return list.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return "(Count: " + EntriesCount.ToString() + ")";
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_byte : ResourceSystemBlock
+    {
+        public override long BlockLength
+        {
+            get { return 16; }
+        }
+
+        // structure data
+        public ulong EntriesPointer { get; private set; }
+        public ushort EntriesCount { get; private set; }
+        public ushort EntriesCapacity { get; private set; }
+
+        // reference data
+        public byte[] data_items { get; private set; }
+
+        private ResourceSystemStructBlock<byte> data_block;//used for saving.
+
+
+        /// <summary>
+        /// Reads the data-block from a stream.
+        /// </summary>
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.EntriesPointer = reader.ReadUInt64();
+            this.EntriesCount = reader.ReadUInt16();
+            this.EntriesCapacity = reader.ReadUInt16();
+            reader.Position += 4;
+
+            // read reference data
+
+            //TODO: NEEDS TO BE TESTED!!!
+            data_items = reader.ReadBytesAt(EntriesPointer, EntriesCount);
+        }
+
+        /// <summary>
+        /// Writes the data-block to a stream.
+        /// </summary>
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            // update structure data //TODO: fix
+            this.EntriesPointer = (ulong)(this.data_block != null ? this.data_block.FilePosition : 0);
+            this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+            this.EntriesCapacity = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+
+            // write structure data
+            writer.Write(this.EntriesPointer);
+            writer.Write(this.EntriesCount);
+            writer.Write(this.EntriesCapacity);
+            writer.Write((uint)0x00000000);
+        }
+
+        /// <summary>
+        /// Returns a list of data blocks which are referenced by this block.
+        /// </summary>
+        public override IResourceBlock[] GetReferences()
+        {
+            var list = new List<IResourceBlock>();
+
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<byte>(data_items);
+
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
+
+            return list.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return "(Count: " + EntriesCount.ToString() + ")";
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_ushort : ResourceSystemBlock
+    {
+        public override long BlockLength
+        {
+            get { return 16; }
+        }
+
+        // structure data
+        public ulong EntriesPointer { get; private set; }
+        public ushort EntriesCount { get; private set; }
+        public ushort EntriesCapacity { get; private set; }
+
+        // reference data
+        public ushort[] data_items { get; private set; }
+
+        private ResourceSystemStructBlock<ushort> data_block;//used for saving.
+
+
+        /// <summary>
+        /// Reads the data-block from a stream.
+        /// </summary>
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.EntriesPointer = reader.ReadUInt64();
+            this.EntriesCount = reader.ReadUInt16();
+            this.EntriesCapacity = reader.ReadUInt16();
+            reader.Position += 4;
+
+            // read reference data
+
+            //TODO: NEEDS TO BE TESTED!!!
+            data_items = reader.ReadUshortsAt(EntriesPointer, EntriesCount);
+        }
+
+        /// <summary>
+        /// Writes the data-block to a stream.
+        /// </summary>
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            // update structure data //TODO: fix
+            this.EntriesPointer = (ulong)(this.data_block != null ? this.data_block.FilePosition : 0);
+            this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+            this.EntriesCapacity = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+
+            // write structure data
+            writer.Write(this.EntriesPointer);
+            writer.Write(this.EntriesCount);
+            writer.Write(this.EntriesCapacity);
+            writer.Write((uint)0x00000000);
+        }
+
+        /// <summary>
+        /// Returns a list of data blocks which are referenced by this block.
+        /// </summary>
+        public override IResourceBlock[] GetReferences()
+        {
+            var list = new List<IResourceBlock>();
+
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<ushort>(data_items);
+
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
+
+            return list.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return "(Count: " + EntriesCount.ToString() + ")";
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_uint : ResourceSystemBlock
+    {
+        public override long BlockLength
+        {
+            get { return 16; }
+        }
+
+        // structure data
+        public ulong EntriesPointer { get; private set; }
+        public ushort EntriesCount { get; private set; }
+        public ushort EntriesCapacity { get; private set; }
+
+        // reference data
+        public uint[] data_items { get; private set; }
+
+        private ResourceSystemStructBlock<uint> data_block;//used for saving.
+
+
+        /// <summary>
+        /// Reads the data-block from a stream.
+        /// </summary>
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.EntriesPointer = reader.ReadUInt64();
+            this.EntriesCount = reader.ReadUInt16();
+            this.EntriesCapacity = reader.ReadUInt16();
+            reader.Position += 4;
+
+            // read reference data
+
+            //TODO: NEEDS TO BE TESTED!!!
+            data_items = reader.ReadUintsAt(EntriesPointer, EntriesCount);
+        }
+
+        /// <summary>
+        /// Writes the data-block to a stream.
+        /// </summary>
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            // update structure data //TODO: fix
+            this.EntriesPointer = (ulong)(this.data_block != null ? this.data_block.FilePosition : 0);
+            this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+            this.EntriesCapacity = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+
+            // write structure data
+            writer.Write(this.EntriesPointer);
+            writer.Write(this.EntriesCount);
+            writer.Write(this.EntriesCapacity);
+            writer.Write((uint)0x00000000);
+        }
+
+        /// <summary>
+        /// Returns a list of data blocks which are referenced by this block.
+        /// </summary>
+        public override IResourceBlock[] GetReferences()
+        {
+            var list = new List<IResourceBlock>();
+
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<uint>(data_items);
+
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
+
+            return list.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return "(Count: " + EntriesCount.ToString() + ")";
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_ulong : ResourceSystemBlock
+    {
+        public override long BlockLength
+        {
+            get { return 16; }
+        }
+
+        // structure data
+        public ulong EntriesPointer { get; private set; }
+        public ushort EntriesCount { get; private set; }
+        public ushort EntriesCapacity { get; private set; }
+
+        // reference data
+        public ulong[] data_items { get; private set; }
+
+        private ResourceSystemStructBlock<ulong> data_block;//used for saving.
+
+
+        /// <summary>
+        /// Reads the data-block from a stream.
+        /// </summary>
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.EntriesPointer = reader.ReadUInt64();
+            this.EntriesCount = reader.ReadUInt16();
+            this.EntriesCapacity = reader.ReadUInt16();
+            reader.Position += 4;
+
+            // read reference data
+
+            //TODO: NEEDS TO BE TESTED!!!
+            data_items = reader.ReadUlongsAt(EntriesPointer, EntriesCount);
+        }
+
+        /// <summary>
+        /// Writes the data-block to a stream.
+        /// </summary>
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            // update structure data //TODO: fix
+            this.EntriesPointer = (ulong)(this.data_block != null ? this.data_block.FilePosition : 0);
+            this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+            this.EntriesCapacity = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+
+            // write structure data
+            writer.Write(this.EntriesPointer);
+            writer.Write(this.EntriesCount);
+            writer.Write(this.EntriesCapacity);
+            writer.Write((uint)0x00000000);
+        }
+
+        /// <summary>
+        /// Returns a list of data blocks which are referenced by this block.
+        /// </summary>
+        public override IResourceBlock[] GetReferences()
+        {
+            var list = new List<IResourceBlock>();
+
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<ulong>(data_items);
+
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
+
+            return list.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return "(Count: " + EntriesCount.ToString() + ")";
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_float : ResourceSystemBlock
+    {
+        public override long BlockLength
+        {
+            get { return 16; }
+        }
+
+        // structure data
+        public ulong EntriesPointer { get; private set; }
+        public ushort EntriesCount { get; private set; }
+        public ushort EntriesCapacity { get; private set; }
+
+        // reference data
+        public float[] data_items { get; private set; }
+
+        private ResourceSystemStructBlock<float> data_block;//used for saving.
+
+
+        /// <summary>
+        /// Reads the data-block from a stream.
+        /// </summary>
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.EntriesPointer = reader.ReadUInt64();
+            this.EntriesCount = reader.ReadUInt16();
+            this.EntriesCapacity = reader.ReadUInt16();
+            reader.Position += 4;
+
+            // read reference data
+
+            //TODO: NEEDS TO BE TESTED!!!
+            data_items = reader.ReadFloatsAt(EntriesPointer, EntriesCount);
+        }
+
+        /// <summary>
+        /// Writes the data-block to a stream.
+        /// </summary>
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            // update structure data //TODO: fix
+            this.EntriesPointer = (ulong)(this.data_block != null ? this.data_block.FilePosition : 0);
+            this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+            this.EntriesCapacity = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+
+            // write structure data
+            writer.Write(this.EntriesPointer);
+            writer.Write(this.EntriesCount);
+            writer.Write(this.EntriesCapacity);
+            writer.Write((uint)0x00000000);
+        }
+
+        /// <summary>
+        /// Returns a list of data blocks which are referenced by this block.
+        /// </summary>
+        public override IResourceBlock[] GetReferences()
+        {
+            var list = new List<IResourceBlock>();
+
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourceSystemStructBlock<float>(data_items);
+
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
+
             return list.ToArray();
         }
 
@@ -738,52 +1316,22 @@ namespace CodeWalker.GameFiles
         }
 
 
-        //// structure data
-        //public List<ulong> data_pointers;
-
-        //// reference data
-        //public List<T> data_items;
-
         public ulong[] data_pointers { get; private set; }
-        public T[] data_items { get; private set; }
+        public T[] data_items { get; set; }
 
 
 
         public ResourcePointerArray64()
         {
-            //data_items = new List<T>();
         }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             int numElements = Convert.ToInt32(parameters[0]);
 
-            // read structure data            
-            //data_pointers = new List<ulong>();
-            //for (int i = 0; i < numElements; i++)
-            //{
-            //    data_pointers.Add(reader.ReadUInt64());
-            //}
 
             data_pointers = reader.ReadUlongsAt((ulong)reader.Position, (uint)numElements);
 
-
-            //foreach (var dp in data_pointers)
-            //{
-            //    if (dp == 0)
-            //    {
-
-            //    }
-            //}
-
-            // read reference data
-            //data_items = new List<T>();
-            //for (int i = 0; i < numElements; i++)
-            //{
-            //    data_items.Add(
-            //        reader.ReadBlockAt<T>(data_pointers[i])
-            //        );
-            //}
 
             data_items = new T[numElements];
             for (int i = 0; i < numElements; i++)
@@ -797,13 +1345,13 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update...
-            //data_pointers = new List<ulong>();
-            //foreach (var x in data_items)
-            //    if (x != null)
-            //        data_pointers.Add((uint)x.Position);
-            //    else
-            //        data_pointers.Add((uint)0);
-            //TODO: fix!
+            var list = new List<ulong>();
+            foreach (var x in data_items)
+                if (x != null)
+                    list.Add((uint)x.FilePosition);
+                else
+                    list.Add((uint)0);
+            data_pointers = list.ToArray();
 
             // write...
             foreach (var x in data_pointers)
@@ -914,67 +1462,28 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourcePointerArray64_s<T> : ResourceSystemBlock, IList<T> where T : struct
     {
 
-        //public int GetNonEmptyNumber()
-        //{
-        //    int i = 0;
-        //    foreach (var q in data_items)
-        //        if (q != null)
-        //            i++;
-        //    return i;
-        //}
-
         public override long BlockLength
         {
             get { return (data_items != null) ? 8 * data_items.Length : 0; }
         }
 
 
-        //// structure data
-        //public List<ulong> data_pointers;
-
-        //// reference data
-        //public List<T> data_items;
-
         public ulong[] data_pointers { get; private set; }
         public T[] data_items { get; private set; }
 
 
+        private ResourceSystemStructBlock<T>[] data_blocks = null;
+
 
         public ResourcePointerArray64_s()
         {
-            //data_items = new List<T>();
         }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             int numElements = Convert.ToInt32(parameters[0]);
 
-            // read structure data            
-            //data_pointers = new List<ulong>();
-            //for (int i = 0; i < numElements; i++)
-            //{
-            //    data_pointers.Add(reader.ReadUInt64());
-            //}
-
             data_pointers = reader.ReadUlongsAt((ulong)reader.Position, (uint)numElements);
-
-
-            //foreach (var dp in data_pointers)
-            //{
-            //    if (dp == 0)
-            //    {
-
-            //    }
-            //}
-
-            // read reference data
-            //data_items = new List<T>();
-            //for (int i = 0; i < numElements; i++)
-            //{
-            //    data_items.Add(
-            //        reader.ReadBlockAt<T>(data_pointers[i])
-            //        );
-            //}
 
             data_items = new T[numElements];
             for (int i = 0; i < numElements; i++)
@@ -987,13 +1496,20 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update...
-            //data_pointers = new List<ulong>();
+            var list = new List<ulong>();
+            if (data_blocks != null)
+            {
+                foreach (var x in data_blocks)
+                {
+                    list.Add((ulong)x.FilePosition);
+                }
+            }
             //foreach (var x in data_items)
             //    if (x != null)
             //        data_pointers.Add((uint)x.Position);
             //    else
             //        data_pointers.Add((uint)0);
-            //TODO: fix!
+            data_pointers = list.ToArray();
 
             // write...
             foreach (var x in data_pointers)
@@ -1005,7 +1521,18 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>();
 
-            //foreach (var x in data_items) //TODO: fix
+            var blocks = new List<ResourceSystemStructBlock<T>>();
+            if (data_items != null)
+            {
+                foreach (var x in data_items)
+                {
+                    var block = new ResourceSystemStructBlock<T>(new[] { x });
+                    blocks.Add(block);
+                    list.Add(block);
+                }
+            }
+            data_blocks = blocks.ToArray();
+            //foreach (var x in data_items)
             //    list.Add(x);
 
             return list.ToArray();
@@ -1117,8 +1644,9 @@ namespace CodeWalker.GameFiles
         //public ResourcePointerArray64<T> Entries;
 
         public ulong[] data_pointers { get; private set; }
-        public T[] data_items { get; private set; }
+        public T[] data_items { get; set; }
 
+        private ResourcePointerArray64<T> data_block;//used for saving.
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -1145,10 +1673,11 @@ namespace CodeWalker.GameFiles
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            // update... //TODO: fix...
-            //this.EntriesPointer = (ulong)(this.Entries != null ? this.Entries.Position : 0);
-            //this.EntriesCount = (ushort)(this.Entries != null ? this.Entries.Count : 0);
-            //this.EntriesCapacity = (ushort)(this.Entries != null ? this.Entries.Count : 0);
+            // update...
+            this.EntriesPointer = (ulong)(this.data_block != null ? this.data_block.FilePosition : 0);
+            this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.Count : 0);
+            this.EntriesCapacity = (ushort)(this.data_block != null ? this.data_block.Count : 0);
+
 
             // write...
             writer.Write(EntriesPointer);
@@ -1160,7 +1689,18 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Entries != null) list.Add(Entries); //TODO: fix..
+
+            if (data_items?.Length > 0)
+            {
+                data_block = new ResourcePointerArray64<T>();
+                data_block.data_items = data_items;
+                list.Add(data_block);
+            }
+            else
+            {
+                data_block = null;
+            }
+
             return list.ToArray();
         }
 
@@ -1262,8 +1802,8 @@ namespace CodeWalker.GameFiles
             get
             {
                 long len = 8 * Data.Count;
-                foreach (var f in Data)
-                    len += f.BlockLength;
+                //foreach (var f in Data)
+                //    len += f.BlockLength;
                 return len;
             }
         }
@@ -1344,8 +1884,8 @@ namespace CodeWalker.GameFiles
 
             foreach (var x in ptr_list)
                 writer.Write(x);
-            foreach (var x in Data)
-                x.Write(writer);
+            //foreach (var x in Data)
+            //    x.Write(writer);
 
         }
 
@@ -1355,7 +1895,7 @@ namespace CodeWalker.GameFiles
         {
             var children = new List<IResourceBlock>();
 
-            //if (Data != null) children.AddRange(Data);
+            if (Data != null) children.AddRange(Data);
 
             return children.ToArray();
         }
@@ -1364,15 +1904,15 @@ namespace CodeWalker.GameFiles
         {
             var children = new List<Tuple<long, IResourceBlock>>();
 
-            if (Data != null)
-            {
-                long len = 8 * Data.Count;
-                foreach (var f in Data)
-                {
-                    children.Add(new Tuple<long, IResourceBlock>(len, f));
-                    len += f.BlockLength;
-                }
-            }
+            //if (Data != null)
+            //{
+            //    long len = 8 * Data.Count;
+            //    foreach (var f in Data)
+            //    {
+            //        children.Add(new Tuple<long, IResourceBlock>(len, f));
+            //        len += f.BlockLength;
+            //    }
+            //}
 
             return children.ToArray();
         }
@@ -1448,6 +1988,80 @@ namespace CodeWalker.GameFiles
 
 
 
+
+
+
+
+    public class ResourceSystemDataBlock : ResourceSystemBlock //used for writing resources.
+    {
+        public byte[] Data { get; set; }
+        public int DataLength { get; set; }
+
+        public override long BlockLength
+        {
+            get
+            {
+                return (Data != null) ? Data.Length : DataLength;
+            }
+        }
+
+
+        public ResourceSystemDataBlock(byte[] data)
+        {
+            Data = data;
+            DataLength = (Data != null) ? Data.Length : 0;
+        }
+
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            Data = reader.ReadBytes(DataLength);
+        }
+
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            writer.Write(Data);
+        }
+    }
+
+    public class ResourceSystemStructBlock<T> : ResourceSystemBlock where T : struct //used for writing resources.
+    {
+        public T[] Items { get; set; }
+        public int ItemCount { get; set; }
+        public int StructureSize { get; set; }
+
+        public override long BlockLength
+        {
+            get
+            {
+                return ((Items != null) ? Items.Length : ItemCount) * StructureSize;
+            }
+        }
+
+        public ResourceSystemStructBlock(T[] items)
+        {
+            Items = items;
+            ItemCount = (Items != null) ? Items.Length : 0;
+            StructureSize = Marshal.SizeOf(typeof(T));
+        }
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            int datalength = ItemCount * StructureSize;
+            byte[] data = reader.ReadBytes(datalength);
+            Items = MetaTypes.ConvertDataArray<T>(data, 0, ItemCount);
+        }
+
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+
+            byte[] data = MetaTypes.ConvertArrayToBytes(Items);
+            if (data != null)
+            {
+                writer.Write(data);
+            }
+        }
+    }
 
 
 

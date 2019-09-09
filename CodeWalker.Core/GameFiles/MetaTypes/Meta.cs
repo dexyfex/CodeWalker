@@ -54,6 +54,8 @@ namespace CodeWalker.GameFiles
         public string Name { get; private set; }
         //public string[] Strings { get; set; }
 
+        private string_r NameBlock = null;
+
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -107,6 +109,9 @@ namespace CodeWalker.GameFiles
                 (ulong)this.NamePointer // offset
             );
 
+            if (!string.IsNullOrEmpty(Name))
+            { }
+
             //Strings = MetaTypes.GetStrings(this);
         }
 
@@ -121,7 +126,7 @@ namespace CodeWalker.GameFiles
             this.StructureInfosPointer = this.StructureInfos?.FilePosition ?? 0;
             this.EnumInfosPointer = this.EnumInfos?.FilePosition ?? 0;
             this.DataBlocksPointer = this.DataBlocks?.FilePosition ?? 0;
-            //this.NamePointer = this.Name?.Position ?? 0; //TODO: fix
+            this.NamePointer = this.NameBlock?.FilePosition ?? 0;
             this.UselessPointer = 0;
             this.StructureInfosCount = (short)(this.StructureInfos?.Count ?? 0);
             this.EnumInfosCount = (short)(this.EnumInfos?.Count ?? 0);
@@ -162,7 +167,11 @@ namespace CodeWalker.GameFiles
             if ((StructureInfos != null) && (StructureInfos.Count > 0)) list.Add(StructureInfos);
             if ((EnumInfos != null) && (EnumInfos.Count > 0)) list.Add(EnumInfos);
             if ((DataBlocks != null) && (DataBlocks.Count > 0)) list.Add(DataBlocks);
-            //if (Name != null) list.Add(Name); //TODO: fix
+            if (!string.IsNullOrEmpty(Name))
+            {
+                NameBlock = (string_r)Name;
+                list.Add(NameBlock);
+            }
             return list.ToArray();
         }
 
@@ -621,9 +630,9 @@ namespace CodeWalker.GameFiles
         public ushort Count2 { get; set; }
         public uint Unk1 { get; set; }
 
-        public uint PointerDataId { get { return (Pointer & 0xFFF); } }
-        public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } }
-        public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } }
+        public uint PointerDataId { get { return (Pointer & 0xFFF); } set { Pointer = (Pointer & 0xFFFFF000) + (value & 0xFFF); } }
+        public uint PointerDataIndex { get { return (Pointer & 0xFFF) - 1; } set { PointerDataId = value + 1; } }
+        public uint PointerDataOffset { get { return ((Pointer >> 12) & 0xFFFFF); } set { Pointer = (Pointer & 0xFFF) + ((value << 12) & 0xFFFFF000); } }
 
 
 
@@ -920,6 +929,13 @@ namespace CodeWalker.GameFiles
         public uint PointerDataIndex { get { return (Ptr0 & 0xFFF) - 1; } }
         public uint PointerDataOffset { get { return ((Ptr0 >> 12) & 0xFFFFF); } }
 
+
+        public DataBlockPointer(int blockId, int offset)
+        {
+            Ptr0 = ((uint)blockId & 0xFFF) | (((uint)offset & 0xFFFFF) << 12);
+            Ptr1 = 0;
+        }
+
         public override string ToString()
         {
             return "DataBlockPointer: " + Ptr0.ToString() + ", " + Ptr1.ToString();
@@ -935,6 +951,10 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public struct ArrayOfUshorts3 //array of 3 ushorts
     {
         public ushort u0, u1, u2;
+        public Vector3 XYZ()
+        {
+            return new Vector3(u0, u1, u2);
+        }
         public override string ToString()
         {
             return u0.ToString() + ", " + u1.ToString() + ", " + u2.ToString();
@@ -1005,6 +1025,13 @@ namespace CodeWalker.GameFiles
             return x.ToString() + ", " + y.ToString() + ", " + z.ToString();
         }
 
+        public MetaVECTOR3(Vector3 v)
+        {
+            x = v.X;
+            y = v.Y;
+            z = v.Z;
+        }
+
         public Vector3 ToVector3()
         {
             return new Vector3(x, y, z);
@@ -1053,12 +1080,40 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public float Float
+        {
+            get
+            {
+                return MetaTypes.ConvertData<float>(MetaTypes.ConvertToBytes(Hash));
+            }
+        }
+
+        public short Short1
+        {
+            get
+            {
+                return (short)(Hash & 0xFFFF);
+            }
+        }
+        public short Short2
+        {
+            get
+            {
+                return (short)((Hash >> 16) & 0xFFFF);
+            }
+        }
+
+
         public MetaHash(uint h) { Hash = h; }
 
         public override string ToString()
         {
             var str = JenkIndex.TryGetString(Hash);
             if (!string.IsNullOrEmpty(str)) return str;
+            if (Enum.IsDefined(typeof(MetaName), Hash))
+            {
+                return ((MetaName)Hash).ToString();
+            }
             return GlobalText.GetString(Hash);
         }
 

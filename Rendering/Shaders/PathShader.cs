@@ -178,16 +178,31 @@ namespace CodeWalker.Rendering
             SetInputLayout(context, VertexType.PC);
             SetSceneVars(context, camera, null, lights);
 
-            vertices.Clear();
-            foreach (var vert in verts)
+            int drawn = 0;
+            int tricount = verts.Count / 3;
+            int maxcount = vertices.StructCount / 3;
+            while (drawn < tricount)
             {
-                vertices.Add(vert);
-            }
-            vertices.Update(context);
-            vertices.SetVSResource(context, 0);
+                vertices.Clear();
 
-            context.InputAssembler.PrimitiveTopology = SharpDX.Direct3D.PrimitiveTopology.TriangleList;
-            context.Draw(vertices.CurrentCount, 0);
+                int offset = drawn*3;
+                int bcount = Math.Min(tricount - drawn, maxcount);
+                for (int i = 0; i < bcount; i++)
+                {
+                    int t = offset + (i * 3);
+                    vertices.Add(verts[t + 0]);
+                    vertices.Add(verts[t + 1]);
+                    vertices.Add(verts[t + 2]);
+                }
+                drawn += bcount;
+
+                vertices.Update(context);
+                vertices.SetVSResource(context, 0);
+
+                context.InputAssembler.PrimitiveTopology = SharpDX.Direct3D.PrimitiveTopology.TriangleList;
+                context.Draw(vertices.CurrentCount, 0);
+            }
+
         }
 
         public void RenderLines(DeviceContext context, List<VertexTypePC> verts, Camera camera, ShaderGlobalLights lights)
@@ -197,16 +212,29 @@ namespace CodeWalker.Rendering
             SetInputLayout(context, VertexType.PC);
             SetSceneVars(context, camera, null, lights);
 
-            vertices.Clear();
-            foreach (var vert in verts)
+            int drawn = 0;
+            int linecount = verts.Count / 2;
+            int maxcount = vertices.StructCount / 2;
+            while (drawn < linecount)
             {
-                vertices.Add(vert);
-            }
-            vertices.Update(context);
-            vertices.SetVSResource(context, 0);
+                vertices.Clear();
 
-            context.InputAssembler.PrimitiveTopology = SharpDX.Direct3D.PrimitiveTopology.LineList;
-            context.Draw(vertices.CurrentCount, 0);
+                int offset = drawn * 2;
+                int bcount = Math.Min(linecount - drawn, maxcount);
+                for (int i = 0; i < bcount; i++)
+                {
+                    int t = offset + (i * 2);
+                    vertices.Add(verts[t + 0]);
+                    vertices.Add(verts[t + 1]);
+                }
+                drawn += bcount;
+
+                vertices.Update(context);
+                vertices.SetVSResource(context, 0);
+
+                context.InputAssembler.PrimitiveTopology = SharpDX.Direct3D.PrimitiveTopology.LineList;
+                context.Draw(vertices.CurrentCount, 0);
+            }
         }
 
 

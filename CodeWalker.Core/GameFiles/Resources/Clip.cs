@@ -291,9 +291,9 @@ namespace CodeWalker.GameFiles
         public uint Unknown_38h { get; set; }
         public uint Unknown_3Ch { get; set; }
         public ResourcePointerList64<Sequence> Sequences { get; set; }
-        //public ResourceSimpleList64<uint_r> Unknown_50h { get; set; }
-        public ResourceSimpleList64Ptr BoneIdsPtr { get; set; }
-        public AnimationBoneId[] BoneIds { get; set; }
+        public ResourceSimpleList64_s<AnimationBoneId> BoneIds { get; set; }
+        //public ResourceSimpleList64Ptr BoneIdsPtr { get; set; }
+        //public AnimationBoneId[] BoneIds { get; set; }
 
         public YcdFile Ycd { get; set; }
 
@@ -323,10 +323,10 @@ namespace CodeWalker.GameFiles
             this.Unknown_38h = reader.ReadUInt32(); //314   174     1238    390     sequences length?
             this.Unknown_3Ch = reader.ReadUInt32(); //2     2       2       2       material/type?
             this.Sequences = reader.ReadBlock<ResourcePointerList64<Sequence>>();
-            //this.Unknown_50h = reader.ReadBlock<ResourceSimpleList64<uint_r>>();
-            this.BoneIdsPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
-            //this.BoneIds = reader.ReadUintsAt(this.BoneIdsPtr.EntriesPointer, this.BoneIdsPtr.EntriesCount);
-            this.BoneIds = reader.ReadStructsAt<AnimationBoneId>(this.BoneIdsPtr.EntriesPointer, this.BoneIdsPtr.EntriesCount);
+            this.BoneIds = reader.ReadBlock<ResourceSimpleList64_s<AnimationBoneId>>();
+            //this.BoneIdsPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
+            ////this.BoneIds = reader.ReadUintsAt(this.BoneIdsPtr.EntriesPointer, this.BoneIdsPtr.EntriesCount);
+            //this.BoneIds = reader.ReadStructsAt<AnimationBoneId>(this.BoneIdsPtr.EntriesPointer, this.BoneIdsPtr.EntriesCount);
         }
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -352,14 +352,14 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_38h);
             writer.Write(this.Unknown_3Ch);
             writer.WriteBlock(this.Sequences);
-            //writer.WriteBlock(this.Unknown_50h);//todo: fix!!
+            writer.WriteBlock(this.BoneIds);
         }
 
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             return new Tuple<long, IResourceBlock>[] {
                 new Tuple<long, IResourceBlock>(0x40, Sequences),
-                //new Tuple<long, IResourceBlock>(0x50, Unknown_50h)//todo: fix!
+                new Tuple<long, IResourceBlock>(0x50, BoneIds)
             };
         }
     }

@@ -56,9 +56,14 @@ namespace CodeWalker.Rendering
 
     public class Renderable : RenderableCacheItem<DrawableBase>
     {
+        public YtdFile[] SDtxds;
+        public YtdFile[] HDtxds;
         public bool AllTexturesLoaded = false;
 
         public RenderableModel[] HDModels;
+        public RenderableModel[] MedModels;
+        public RenderableModel[] LowModels;
+        public RenderableModel[] VlowModels;
         public RenderableModel[] AllModels;
         //public Dictionary<uint, Texture> TextureDict { get; private set; }
         //public long EmbeddedTextureSize { get; private set; }
@@ -73,40 +78,49 @@ namespace CodeWalker.Rendering
 
             DataSize = 0;
 
-            var hd = Key.DrawableModelsHigh.data_items;
+            var hd = Key.DrawableModelsHigh?.data_items ?? Key.AllModels;
             var med = Key.DrawableModelsMedium?.data_items;
             var low = Key.DrawableModelsLow?.data_items;
             var vlow = Key.DrawableModelsVeryLow?.data_items;
-            int totmodels = hd.Length + ((med != null) ? med.Length : 0) + ((low != null) ? low.Length : 0) + ((vlow != null) ? vlow.Length : 0);
-            int curmodel = hd.Length;
+            int totmodels = (hd?.Length ?? 0) + (med?.Length ?? 0) + (low?.Length ?? 0) + (vlow?.Length ?? 0);
+            int curmodel = hd?.Length ?? 0;
             AllModels = new RenderableModel[totmodels];
             HDModels = new RenderableModel[hd.Length];
-            for (int i = 0; i < hd.Length; i++)
+            if (hd != null)
             {
-                HDModels[i] = InitModel(hd[i]);
-                AllModels[i] = HDModels[i];
+                for (int i = 0; i < hd.Length; i++)
+                {
+                    HDModels[i] = InitModel(hd[i]);
+                    AllModels[i] = HDModels[i];
+                }
             }
             if (med != null)
             {
+                MedModels = new RenderableModel[med.Length];
                 for (int i = 0; i < med.Length; i++)
                 {
-                    AllModels[curmodel + i] = InitModel(med[i]);
+                    MedModels[i] = InitModel(med[i]);
+                    AllModels[curmodel + i] = MedModels[i];
                 }
                 curmodel += med.Length;
             }
             if (low != null)
             {
+                LowModels = new RenderableModel[low.Length];
                 for (int i = 0; i < low.Length; i++)
                 {
-                    AllModels[curmodel + i] = InitModel(low[i]);
+                    LowModels[i] = InitModel(low[i]);
+                    AllModels[curmodel + i] = LowModels[i];
                 }
                 curmodel += low.Length;
             }
             if (vlow != null)
             {
+                VlowModels = new RenderableModel[vlow.Length];
                 for (int i = 0; i < vlow.Length; i++)
                 {
-                    AllModels[curmodel + i] = InitModel(vlow[i]);
+                    VlowModels[i] =  InitModel(vlow[i]);
+                    AllModels[curmodel + i] = VlowModels[i];
                 }
                 curmodel += vlow.Length;
             }
@@ -173,6 +187,34 @@ namespace CodeWalker.Rendering
                             fragtransformid = phys.OwnerFragPhysIndex;
                             fragoffset = phys.OwnerFragPhysLod.Unknown_30h;
                             fragoffset.W = 0.0f;
+
+
+                            switch (phys.BoneTag) //right hand side wheel flip!
+                            {
+                                //case 27922: //wheel_lf
+                                //case 29921: //wheel_lm1
+                                //case 29922: //wheel_lm2
+                                //case 29923: //wheel_lm3
+                                //case 27902: //wheel_lr
+                                case 26418: //wheel_rf
+                                case 5857:  //wheel_rm1
+                                case 5858:  //wheel_rm2
+                                case 5859:  //wheel_rm3
+                                case 26398: //wheel_rr
+                                    fragtransforms[fragtransformid].M11 = -1;
+                                    fragtransforms[fragtransformid].M12 = 0;
+                                    fragtransforms[fragtransformid].M13 = 0;
+                                    fragtransforms[fragtransformid].M21 = 0;
+                                    fragtransforms[fragtransformid].M22 = 1;
+                                    fragtransforms[fragtransformid].M23 = 0;
+                                    fragtransforms[fragtransformid].M31 = 0;
+                                    fragtransforms[fragtransformid].M32 = 0;
+                                    fragtransforms[fragtransformid].M33 = -1;
+                                    break;
+                                default:
+                                    break;
+                            }
+
                         }
                     }
                     else if (frag != null)
@@ -199,7 +241,7 @@ namespace CodeWalker.Rendering
                 if (hastransforms)
                 {
 
-                    int boneidx = (int)((model.Unk28h >> 24) & 0xFF);
+                    int boneidx = (int)((model.SkeletonBinding >> 24) & 0xFF);
 
                     Matrix trans = (boneidx < modeltransforms.Length) ? modeltransforms[boneidx] : Matrix.Identity;
                     Bone bone = (hasbones && (boneidx < bones.Count)) ? bones[boneidx] : null;
@@ -228,7 +270,7 @@ namespace CodeWalker.Rendering
                         }
                     }
 
-                    if (((model.Unk28h >> 8) & 0xFF) > 0) //skin mesh?
+                    if (((model.SkeletonBinding >> 8) & 0xFF) > 0) //skin mesh?
                     {
                         model.Transform = Matrix.Identity;
                     }
@@ -298,20 +340,16 @@ namespace CodeWalker.Rendering
         public AABB_s[] GeometryBounds;
         public long GeometrySize { get; private set; }
 
-        public uint Unk4h;
-        public uint Unk14h;
-        public uint Unk28h;
-        public uint Unk2Ch; //flags.......
+        public uint SkeletonBinding;
+        public uint RenderMaskFlags; //flags.......
 
         public bool UseTransform;
         public Matrix Transform;
 
         public void Init(DrawableModel dmodel)
         {
-            Unk4h = dmodel.Unknown_4h;
-            Unk14h = dmodel.Unknown_14h;
-            Unk28h = dmodel.Unknown_28h;
-            Unk2Ch = dmodel.Unknown_2Ch; //only the first byte of Unknown_2Ch seems be related to this
+            SkeletonBinding = dmodel.SkeletonBinding;//4th byte is bone index, 2nd byte for skin meshes
+            RenderMaskFlags = dmodel.RenderMaskFlags; //only the first byte seems be related to this
 
 
             DrawableModel = dmodel;
@@ -364,7 +402,9 @@ namespace CodeWalker.Rendering
         public uint IndexDataSize { get; set; }
         public uint TotalDataSize { get; set; }
         public TextureBase[] Textures;
+        public Texture[] TexturesHD;
         public RenderableTexture[] RenderableTextures;
+        public RenderableTexture[] RenderableTexturesHD;
         public MetaName[] TextureParamHashes;
         public PrimitiveTopology Topology { get; set; }
         public bool IsFragment = false;
@@ -392,6 +432,7 @@ namespace CodeWalker.Rendering
         public float WaterHeight { get; set; } = 0; //for terrainfoam
         public float WaveMovement { get; set; } = 0; //for terrainfoam
         public float HeightOpacity { get; set; } = 0; //for terrainfoam
+        public bool HDTextureEnable = true;
 
 
         public static MetaName[] GetTextureSamplerList()
@@ -420,8 +461,10 @@ namespace CodeWalker.Rendering
                 MetaName.lookupSampler, //TF_RSN_Msk_CS1_DesHill1, bh1_43_golf_blendmap_04_LOD
                 MetaName.heightSampler, //nxg_prop_tree_palm2_displ_l
                 MetaName.FoamSampler, //bj_beachfoam01_lod, CS_RSN_SL_RiverFoam_01_A_lodCS_RSN_SL_RiverFoam_01_A
-                MetaName.textureSamp,
+                MetaName.DirtSampler,
+                MetaName.DirtBumpSampler,
                 MetaName.DiffuseSampler2,
+                MetaName.DiffuseSampler3,
                 MetaName.DiffuseHfSampler,
                 MetaName.ComboHeightSamplerFur01,
                 MetaName.ComboHeightSamplerFur23,
@@ -595,60 +638,9 @@ namespace CodeWalker.Rendering
                 {
                     TextureParamHashes = phashes.ToArray();
                     Textures = texs.ToArray();
+                    TexturesHD = new Texture[texs.Count];
                     RenderableTextures = new RenderableTexture[texs.Count]; //these will get populated at render time.
-                    //Textures = new RenderableTexture[texs.Count];
-                    for (int i = 0; i < texs.Count; i++)
-                    {
-                        //RenderableTexture tex = new RenderableTexture();
-                        //tex.Init(texs[i]);
-                        //Textures[i] = tex;
-
-
-                        ////testing texture usage
-                        //MetaName thash = phashes[i];
-                        //switch (thash)
-                        //{
-                        //    case MetaName.DiffuseSampler: //base diffuse
-                        //    case MetaName.SpecSampler: //base specular
-                        //    case MetaName.BumpSampler: //base normal
-                        //    case MetaName.TintPaletteSampler: // _pal
-                        //    case MetaName.DetailSampler: // ENV_
-                        //    case MetaName.FlowSampler: //river _flow
-                        //    case MetaName.FogSampler: //river _fog , water slod
-                        //    case MetaName.TextureSampler_layer0: //CS_RSN_SL_Road_0007
-                        //    case MetaName.BumpSampler_layer0: //CS_RSN_SL_Road_0007_n
-                        //    case MetaName.heightMapSamplerLayer0: //nxg_cs_rsn_sl_road_0007_h
-                        //    case MetaName.TextureSampler_layer1: //IM_Road_009b
-                        //    case MetaName.BumpSampler_layer1: //IM_Road_010b_N
-                        //    case MetaName.heightMapSamplerLayer1: //nxg_im_road_010b_h
-                        //    case MetaName.TextureSampler_layer2: //IM_Concrete10
-                        //    case MetaName.BumpSampler_layer2: //IM_Concrete13_N
-                        //    case MetaName.heightMapSamplerLayer2: //nxg_im_concrete13_h
-                        //    case MetaName.TextureSampler_layer3: //SC1_RSN_NS_ground_0009
-                        //    case MetaName.BumpSampler_layer3: //sc1_rsn_ns_ground_0010_n
-                        //    case MetaName.heightMapSamplerLayer3: //nxg_sc1_rsn_ns_ground_0010_b_h
-                        //    case MetaName.lookupSampler: //TF_RSN_Msk_CS1_DesHill1, bh1_43_golf_blendmap_04_LOD
-                        //    case MetaName.heightSampler: //nxg_prop_tree_palm2_displ_l
-                        //    case MetaName.FoamSampler: //bj_beachfoam01_lod, CS_RSN_SL_RiverFoam_01_A_lodCS_RSN_SL_RiverFoam_01_A
-                        //    case MetaName.textureSamp://cable...
-                        //        break;
-                        //    //not yet implemented:
-                        //    case MetaName.DiffuseSampler2:
-                        //    case MetaName.DiffuseHfSampler:
-                        //    case MetaName.ComboHeightSamplerFur01:
-                        //    case MetaName.ComboHeightSamplerFur23:
-                        //    case MetaName.ComboHeightSamplerFur45:
-                        //    case MetaName.ComboHeightSamplerFur67:
-                        //    case MetaName.StippleSampler:
-                        //    case MetaName.FurMaskSampler:
-                        //    case MetaName.EnvironmentSampler:
-                        //    case MetaName.distanceMapSampler:
-                        //        break;
-                        //    default:
-                        //        break;
-                        //}
-
-                    }
+                    RenderableTexturesHD = new RenderableTexture[texs.Count]; //these will get populated at render time.
                 }
             }
 
@@ -770,6 +762,14 @@ namespace CodeWalker.Rendering
                     RenderableTextures[i] = null;
                 }
                 RenderableTextures = null;
+            }
+            if (RenderableTexturesHD != null)
+            {
+                for (int i = 0; i < RenderableTexturesHD.Length; i++)
+                {
+                    RenderableTexturesHD[i] = null;
+                }
+                RenderableTexturesHD = null;
             }
 
         }
@@ -936,6 +936,10 @@ namespace CodeWalker.Rendering
         public rage__fwGrassInstanceListDef__InstanceData[] GrassInstanceData { get; set; }
         public GpuSBuffer<rage__fwGrassInstanceListDef__InstanceData> GrassInstanceBuffer { get; set; }
         public int InstanceCount { get; set; }
+        public Vector3 AABBMin { get; set; }
+        public Vector3 AABBMax { get; set; }
+        public Vector3 Position { get; set; }
+        public Vector3 CamRel { get; set; }
 
         public override void Init(YmapGrassInstanceBatch batch)
         {
@@ -955,6 +959,12 @@ namespace CodeWalker.Rendering
 
         public override void Load(Device device)
         {
+            if (Key != null)
+            {
+                AABBMin = Key.AABBMin;
+                AABBMax = Key.AABBMax;
+                Position = Key.Position;
+            }
             if ((GrassInstanceData != null) && (GrassInstanceData.Length > 0))
             {
                 GrassInstanceBuffer = new GpuSBuffer<rage__fwGrassInstanceListDef__InstanceData>(device, GrassInstanceData);
@@ -1406,7 +1416,7 @@ namespace CodeWalker.Rendering
                 if (poly == null) continue;
                 byte matind = ((bgeom.PolygonMaterialIndices != null) && (i < bgeom.PolygonMaterialIndices.Length)) ? bgeom.PolygonMaterialIndices[i] : (byte)0;
                 BoundMaterial_s mat = ((bgeom.Materials != null) && (matind < bgeom.Materials.Length)) ? bgeom.Materials[matind] : new BoundMaterial_s();
-                Color4 color = BoundsMaterialTypes.GetMaterialColour(mat.Type);
+                Color color = BoundsMaterialTypes.GetMaterialColour(mat.Type);
                 Vector3 p1, p2, p3, p4, a1, n1;//, n2, n3, p5, p7, p8;
                 Vector3 norm = Vector3.Zero;
                 uint colour = (uint)color.ToRgba();

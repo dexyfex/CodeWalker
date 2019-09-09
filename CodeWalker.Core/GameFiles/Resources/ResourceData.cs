@@ -87,6 +87,19 @@ namespace CodeWalker.GameFiles
             var systemSize = resentry.SystemSize;
             var graphicsSize = resentry.GraphicsSize;
 
+            //if (data != null)
+            //{
+            //    if (systemSize > data.Length)
+            //    {
+            //        systemSize = data.Length;
+            //        graphicsSize = 0;
+            //    }
+            //    else if ((systemSize + graphicsSize) > data.Length)
+            //    {
+            //        graphicsSize = data.Length - systemSize;
+            //    }
+            //}
+
             this.systemStream = new MemoryStream(data, 0, systemSize);
             this.graphicsStream = new MemoryStream(data, systemSize, graphicsSize);
             this.blockPool = new Dictionary<long, List<IResourceBlock>>();
@@ -500,7 +513,14 @@ namespace CodeWalker.GameFiles
             Marshal.FreeHGlobal(ptr);
             Write(arr);
         }
-
+        public void WriteStructs<T>(T[] val) where T : struct
+        {
+            if (val == null) return;
+            foreach (var v in val)
+            {
+                WriteStruct(v);
+            }
+        }
 
 
     }
@@ -669,76 +689,6 @@ namespace CodeWalker.GameFiles
 
 
 
-
-
-
-
-    public class ResourceSystemDataBlock : ResourceSystemBlock //used for writing resources.
-    {
-        public byte[] Data { get; set; }
-        public int DataLength { get; set; }
-
-        public override long BlockLength
-        {
-            get
-            {
-                return (Data != null) ? Data.Length : DataLength;
-            }
-        }
-
-
-        public ResourceSystemDataBlock(byte[] data)
-        {
-            Data = data;
-            DataLength = (Data != null) ? Data.Length : 0;
-        }
-
-
-        public override void Read(ResourceDataReader reader, params object[] parameters)
-        {
-            Data = reader.ReadBytes(DataLength);
-        }
-
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
-        {
-            writer.Write(Data);
-        }
-    }
-
-    public class ResourceSystemStructBlock<T> : ResourceSystemBlock where T : struct //used for writing resources.
-    {
-        public T[] Items { get; set; }
-        public int ItemCount { get; set; }
-        public int StructureSize { get; set; }
-
-        public override long BlockLength
-        {
-            get
-            {
-                return ((Items != null) ? Items.Length : ItemCount) * StructureSize;
-            }
-        }
-
-        public ResourceSystemStructBlock(T[] items)
-        {
-            Items = items;
-            ItemCount = (Items != null) ? Items.Length : 0;
-            StructureSize = Marshal.SizeOf(typeof(T));
-        }
-
-        public override void Read(ResourceDataReader reader, params object[] parameters)
-        {
-            int datalength = ItemCount * StructureSize;
-            byte[] data = reader.ReadBytes(datalength);
-            Items = MetaTypes.ConvertDataArray<T>(data, 0, ItemCount);
-        }
-
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
-        {
-            byte[] data = MetaTypes.ConvertArrayToBytes(Items);
-            writer.Write(data);
-        }
-    }
 
 
     //public interface ResourceDataStruct

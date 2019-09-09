@@ -30,20 +30,12 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditProjectManifestPanel));
-            this.label162 = new System.Windows.Forms.Label();
             this.ProjectManifestGenerateButton = new System.Windows.Forms.Button();
             this.ProjectManifestTextBox = new FastColoredTextBoxNS.FastColoredTextBox();
+            this.SaveManifestButton = new System.Windows.Forms.Button();
+            this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.ProjectManifestTextBox)).BeginInit();
             this.SuspendLayout();
-            // 
-            // label162
-            // 
-            this.label162.AutoSize = true;
-            this.label162.Location = new System.Drawing.Point(96, 7);
-            this.label162.Name = "label162";
-            this.label162.Size = new System.Drawing.Size(111, 13);
-            this.label162.TabIndex = 5;
-            this.label162.Text = "XML for _manifest.ymf";
             // 
             // ProjectManifestGenerateButton
             // 
@@ -95,27 +87,41 @@
             this.ProjectManifestTextBox.TabIndex = 3;
             this.ProjectManifestTextBox.Zoom = 100;
             // 
-            // ProjectManifestPanel
+            // SaveManifestButton
+            // 
+            this.SaveManifestButton.Location = new System.Drawing.Point(94, 2);
+            this.SaveManifestButton.Name = "SaveManifestButton";
+            this.SaveManifestButton.Size = new System.Drawing.Size(113, 23);
+            this.SaveManifestButton.TabIndex = 6;
+            this.SaveManifestButton.Text = "Save _manifest.ymf";
+            this.SaveManifestButton.UseVisualStyleBackColor = true;
+            this.SaveManifestButton.Click += new System.EventHandler(this.SaveManifestButton_Click);
+            // 
+            // SaveFileDialog
+            // 
+            this.SaveFileDialog.FileName = "_manifest.ymf";
+            this.SaveFileDialog.Filter = "Manifest files|*.ymf";
+            // 
+            // EditProjectManifestPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(605, 451);
-            this.Controls.Add(this.label162);
+            this.Controls.Add(this.SaveManifestButton);
             this.Controls.Add(this.ProjectManifestGenerateButton);
             this.Controls.Add(this.ProjectManifestTextBox);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "ProjectManifestPanel";
+            this.Name = "EditProjectManifestPanel";
             this.Text = "_manifest.ymf";
             ((System.ComponentModel.ISupportInitialize)(this.ProjectManifestTextBox)).EndInit();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.Label label162;
         private System.Windows.Forms.Button ProjectManifestGenerateButton;
         private FastColoredTextBoxNS.FastColoredTextBox ProjectManifestTextBox;
+        private System.Windows.Forms.Button SaveManifestButton;
+        private System.Windows.Forms.SaveFileDialog SaveFileDialog;
     }
 }

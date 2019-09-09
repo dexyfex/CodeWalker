@@ -116,12 +116,12 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // update structure data
-            //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0);//TODO: fix?!
-            //this.TextureDictionaryPointer = (ulong)(this.TextureDictionary != null ? this.TextureDictionary.Position : 0);
-            //this.DrawableDictionaryPointer = (ulong)(this.DrawableDictionary != null ? this.DrawableDictionary.Position : 0);
-            //this.ParticleRuleDictionaryPointer = (ulong)(this.ParticleRuleDictionary != null ? this.ParticleRuleDictionary.Position : 0);
-            //this.EmitterRuleDictionaryPointer = (ulong)(this.EffectRuleDictionary != null ? this.EffectRuleDictionary.Position : 0);
-            //this.EffectRuleDictionaryPointer = (ulong)(this.EmitterRuleDictionary != null ? this.EmitterRuleDictionary.Position : 0);
+            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
+            this.TextureDictionaryPointer = (ulong)(this.TextureDictionary != null ? this.TextureDictionary.FilePosition : 0);
+            this.DrawableDictionaryPointer = (ulong)(this.DrawableDictionary != null ? this.DrawableDictionary.FilePosition : 0);
+            this.ParticleRuleDictionaryPointer = (ulong)(this.ParticleRuleDictionary != null ? this.ParticleRuleDictionary.FilePosition : 0);
+            this.EmitterRuleDictionaryPointer = (ulong)(this.EffectRuleDictionary != null ? this.EffectRuleDictionary.FilePosition : 0);
+            this.EffectRuleDictionaryPointer = (ulong)(this.EmitterRuleDictionary != null ? this.EmitterRuleDictionary.FilePosition : 0);
 
             // write structure data
             writer.Write(this.NamePointer);
@@ -142,13 +142,13 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>(base.GetReferences()); //TODO: fix!!
-            //if (Name != null) list.Add(Name);
-            //if (TextureDictionary != null) list.Add(TextureDictionary);
-            //if (DrawableDictionary != null) list.Add(DrawableDictionary);
-            //if (ParticleRuleDictionary != null) list.Add(ParticleRuleDictionary);
-            //if (EffectRuleDictionary != null) list.Add(EffectRuleDictionary);
-            //if (EmitterRuleDictionary != null) list.Add(EmitterRuleDictionary);
+            var list = new List<IResourceBlock>(base.GetReferences());
+            if (Name != null) list.Add(Name);
+            if (TextureDictionary != null) list.Add(TextureDictionary);
+            if (DrawableDictionary != null) list.Add(DrawableDictionary);
+            if (ParticleRuleDictionary != null) list.Add(ParticleRuleDictionary);
+            if (EffectRuleDictionary != null) list.Add(EffectRuleDictionary);
+            if (EmitterRuleDictionary != null) list.Add(EmitterRuleDictionary);
             return list.ToArray();
         }
     }
@@ -350,10 +350,12 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            //this.HashesPointer = (ulong)(this.Hashes != null ? this.Hashes.Position : 0);
-            ////this.HashesCount1 = (ushort)(this.Hashes != null ? this.Hashes.Count : 0);
-            //this.EffectRulesPointer = (ulong)(this.EmitterRules != null ? this.EmitterRules.Position : 0);
-            ////this.EffectRulesCount1 = (ushort)(this.EffectRules != null ? this.EffectRules.Count : 0);
+            this.HashesPointer = (ulong)(this.Hashes != null ? this.Hashes.FilePosition : 0);
+            this.HashesCount1 = (ushort)(this.Hashes != null ? this.Hashes.Count : 0);
+            this.HashesCount2 = this.HashesCount1;
+            this.EffectRulesPointer = (ulong)(this.EmitterRules != null ? this.EmitterRules.FilePosition : 0);
+            this.EffectRulesCount1 = (ushort)(this.EmitterRules != null ? this.EmitterRules.Count : 0);
+            this.EffectRulesCount2 = this.EffectRulesCount1;
 
             // write structure data
             writer.Write(this.VFT);
@@ -548,10 +550,10 @@ namespace CodeWalker.GameFiles
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            //// update structure data //TODO: fix!
-            //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0);
-            //this.p9 = (ulong)(this.p9data != null ? this.p9data.Position : 0);
-            //this.p10 = (ulong)(this.p10data != null ? this.p10data.Position : 0);
+            // update structure data
+            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
+            this.p9 = (ulong)(this.p9data != null ? this.p9data.FilePosition : 0);
+            this.p10 = (ulong)(this.p10data != null ? this.p10data.FilePosition : 0);
 
             // write structure data
             writer.Write(this.VFT);
@@ -622,9 +624,9 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Name != null) list.Add(Name);
-            //if (p9data != null) list.Add(p9data);
-            //if (p10data != null) list.Add(p10data);
+            if (Name != null) list.Add(Name);
+            if (p9data != null) list.Add(p9data);
+            if (p10data != null) list.Add(p10data);
             return list.ToArray();
         }
 
@@ -732,9 +734,9 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            // update structure data //TODO: fix!!
-            //this.EmitterRulePointer = (ulong)(this.EmitterRule != null ? this.EmitterRule.Position : 0);
-            //this.p1 = (ulong)(this.p1data != null ? this.p1data.Position : 0);
+            // update structure data
+            this.EmitterRulePointer = (ulong)(this.EmitterRule != null ? this.EmitterRule.FilePosition : 0);
+            this.p1 = (ulong)(this.p1data != null ? this.p1data.FilePosition : 0);
 
             // write structure data
             writer.Write(this.VFT);
@@ -943,13 +945,13 @@ namespace CodeWalker.GameFiles
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            //// update structure data
-            //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0);
-            //this.EventEmittersPointer = (ulong)(this.EventEmitters != null ? this.EventEmitters.Position : 0);
-            ////this.c3b = (ushort)(this.p3data != null ? this.p3data.Count : 0);
-            //this.p4 = (ulong)(this.p4data != null ? this.p4data.Position : 0);
-            //this.KeyframePropsPointer = (ulong)(this.KeyframeProps != null ? this.KeyframeProps.Position : 0);
-            ////this.refcnt2 = (ushort)(this.refs != null ? this.refs.Count : 0);
+            // update structure data
+            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
+            this.EventEmittersPointer = (ulong)(this.EventEmitters != null ? this.EventEmitters.FilePosition : 0);
+            //this.c3b = (ushort)(this.p3data != null ? this.p3data.Count : 0);
+            this.p4 = (ulong)(this.p4data != null ? this.p4data.FilePosition : 0);
+            this.KeyframePropsPointer = (ulong)(this.KeyframeProps != null ? this.KeyframeProps.FilePosition : 0);
+            //this.refcnt2 = (ushort)(this.refs != null ? this.refs.Count : 0);
 
             // write structure data
             writer.Write(this.VFT);
@@ -1020,10 +1022,10 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Name != null) list.Add(Name);
-            //if (EventEmitters != null) list.Add(EventEmitters);
-            //if (p4data != null) list.Add(p4data);
-            //if (KeyframeProps != null) list.Add(KeyframeProps);
+            if (Name != null) list.Add(Name);
+            if (EventEmitters != null) list.Add(EventEmitters);
+            if (p4data != null) list.Add(p4data);
+            if (KeyframeProps != null) list.Add(KeyframeProps);
             return list.ToArray();
         }
 
@@ -1302,11 +1304,11 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            //this.p1 = (ulong)(this.p1data != null ? this.p1data.Position : 0);
-            //this.p2 = (ulong)(this.p2data != null ? this.p2data.Position : 0);
-            //this.p3 = (ulong)(this.p3data != null ? this.p3data.Position : 0);
-            //this.p4 = (ulong)(this.EmitterRule != null ? this.EmitterRule.Position : 0);
-            //this.p5 = (ulong)(this.ParticleRule != null ? this.ParticleRule.Position : 0);
+            this.p1 = (ulong)(this.p1data != null ? this.p1data.FilePosition : 0);
+            this.p2 = (ulong)(this.p2data != null ? this.p2data.FilePosition : 0);
+            this.p3 = (ulong)(this.p3data != null ? this.p3data.FilePosition : 0);
+            this.p4 = (ulong)(this.EmitterRule != null ? this.EmitterRule.FilePosition : 0);
+            this.p5 = (ulong)(this.ParticleRule != null ? this.ParticleRule.FilePosition : 0);
 
             // write structure data
             writer.Write(this.VFT);
@@ -1337,11 +1339,11 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (p1data != null) list.Add(p1data);
-            //if (p2data != null) list.Add(p2data);
-            //if (p3data != null) list.Add(p3data);
-            //if (EmitterRule != null) list.Add(EmitterRule);
-            //if (ParticleRule != null) list.Add(ParticleRule);
+            if (p1data != null) list.Add(p1data);
+            if (p2data != null) list.Add(p2data);
+            if (p3data != null) list.Add(p3data);
+            if (EmitterRule != null) list.Add(EmitterRule);
+            if (ParticleRule != null) list.Add(ParticleRule);
             return list.ToArray();
         }
     }
@@ -1426,7 +1428,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            //this.p1 = (ulong)(this.p1data != null ? this.p1data.Position : 0);
+            this.p1 = (ulong)(this.p1data != null ? this.p1data.FilePosition : 0);
 
             // write structure data
             writer.Write(this.p1);
@@ -1597,7 +1599,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            //this.Unknown_8h_Pointer = (ulong)(this.Unknown_8h_Data != null ? this.Unknown_8h_Data.Position : 0);
+            this.Unknown_8h_Pointer = (ulong)(this.Unknown_8h_Data != null ? this.Unknown_8h_Data.FilePosition : 0);
 
             // write structure data
             writer.Write(this.Unknown_0h);
@@ -1741,12 +1743,12 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0);
-            //this.p2 = (ulong)(this.p2data != null ? this.p2data.Position : 0);
-            //this.p3 = (ulong)(this.p3data != null ? this.p3data.Position : 0);
-            //this.p4 = (ulong)(this.p4data != null ? this.p4data.Position : 0);
-            //this.KeyframePropsPointer = (ulong)(this.KeyframeProps != null ? this.KeyframeProps.Position : 0);
-            ////this.refcnt2 = (ushort)(this.refs != null ? this.refs.Count : 0);
+            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
+            this.p2 = (ulong)(this.p2data != null ? this.p2data.FilePosition : 0);
+            this.p3 = (ulong)(this.p3data != null ? this.p3data.FilePosition : 0);
+            this.p4 = (ulong)(this.p4data != null ? this.p4data.FilePosition : 0);
+            this.KeyframePropsPointer = (ulong)(this.KeyframeProps != null ? this.KeyframeProps.FilePosition : 0);
+            //this.refcnt2 = (ushort)(this.refs != null ? this.refs.Count : 0);
 
             // write structure data
             writer.Write(this.VFT);
@@ -1796,11 +1798,11 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            //if (Name != null) list.Add(Name);
-            //if (p2data != null) list.Add(p2data);
-            //if (p3data != null) list.Add(p3data);
-            //if (p4data != null) list.Add(p4data);
-            //if (KeyframeProps != null) list.Add(KeyframeProps);
+            if (Name != null) list.Add(Name);
+            if (p2data != null) list.Add(p2data);
+            if (p3data != null) list.Add(p3data);
+            if (p4data != null) list.Add(p4data);
+            if (KeyframeProps != null) list.Add(KeyframeProps);
             return list.ToArray();
         }
 
@@ -2027,7 +2029,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            ////this.p1 = (ulong)(this.p1data != null ? this.p1data.Position : 0);
+            this.p1 = (ulong)(this.p1data != null ? this.p1data.FilePosition : 0);
 
             // write structure data
             writer.Write(this.p1);
@@ -2073,7 +2075,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            ////this.p1 = (ulong)(this.p1data != null ? this.p1data.Position : 0);
+            this.p1 = (ulong)(this.p1data != null ? this.p1data.FilePosition : 0);
 
             // write structure data
             writer.Write(this.Unknown_0h);
@@ -4074,8 +4076,8 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // update structure data
-            //this.TexturePointer = (ulong)(this.Texture != null ? this.Texture.Position : 0);
-            //this.NamePointer = (ulong)(this.Name != null ? this.Name.Position : 0);
+            this.TexturePointer = (ulong)(this.Texture != null ? this.Texture.FilePosition : 0);
+            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
 
             // write structure data
             writer.Write(this.Unknown_18h);
@@ -4091,8 +4093,8 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
-            //if (Texture != null) list.Add(Texture);
-            //if (Name != null) list.Add(Name);
+            if (Texture != null) list.Add(Texture);
+            if (Name != null) list.Add(Name);
             return list.ToArray();
         }
     }
@@ -4248,9 +4250,9 @@ namespace CodeWalker.GameFiles
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            //// update structure data
-            //this.Unknown_10h_Pointer = (ulong)(this.Unknown_10h_Data != null ? this.Unknown_10h_Data.Position : 0);
-            //this.DrawablePointer = (ulong)(this.Drawable != null ? this.Drawable.Position : 0);
+            // update structure data
+            this.Unknown_10h_Pointer = (ulong)(this.Unknown_10h_Data != null ? this.Unknown_10h_Data.FilePosition : 0);
+            this.DrawablePointer = (ulong)(this.Drawable != null ? this.Drawable.FilePosition : 0);
 
             // write structure data
             writer.Write(this.Unknown_0h);

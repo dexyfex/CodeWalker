@@ -91,9 +91,8 @@
     <ApplicationIcon>Resources\CW.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FastColoredTextBox, Version=2.16.21.0, Culture=neutral, PublicKeyToken=fb8aa12b994ef61b, processorArchitecture=MSIL">
-      <HintPath>packages\FCTB.2.16.21.0\lib\FastColoredTextBox.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
+    <Reference Include="FastColoredTextBox, Version=2.16.24.0, Culture=neutral, PublicKeyToken=fb8aa12b994ef61b, processorArchitecture=MSIL">
+      <HintPath>packages\FCTB.2.16.24\lib\FastColoredTextBox.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>packages\SharpDX.4.0.1\lib\net45\SharpDX.dll</HintPath>
@@ -130,11 +129,11 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="WeifenLuo.WinFormsUI.Docking, Version=3.0.4.0, Culture=neutral, PublicKeyToken=5cded1a1a0a7b481, processorArchitecture=MSIL">
-      <HintPath>packages\DockPanelSuite.3.0.4\lib\net40\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
+    <Reference Include="WeifenLuo.WinFormsUI.Docking, Version=3.0.6.0, Culture=neutral, PublicKeyToken=5cded1a1a0a7b481, processorArchitecture=MSIL">
+      <HintPath>packages\DockPanelSuite.3.0.6\lib\net40\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
     </Reference>
-    <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2015, Version=3.0.4.0, Culture=neutral, PublicKeyToken=5cded1a1a0a7b481, processorArchitecture=MSIL">
-      <HintPath>packages\DockPanelSuite.ThemeVS2015.3.0.4\lib\net40\WeifenLuo.WinFormsUI.Docking.ThemeVS2015.dll</HintPath>
+    <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2015, Version=3.0.6.0, Culture=neutral, PublicKeyToken=5cded1a1a0a7b481, processorArchitecture=MSIL">
+      <HintPath>packages\DockPanelSuite.ThemeVS2015.3.0.6\lib\net40\WeifenLuo.WinFormsUI.Docking.ThemeVS2015.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -144,10 +143,22 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="BrowseForm.cs">
+    <Compile Include="Forms\ModelMatForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="BrowseForm.Designer.cs">
+    <Compile Include="Forms\ModelMatForm.Designer.cs">
+      <DependentUpon>ModelMatForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\GenerateLODLightsPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\GenerateLODLightsPanel.Designer.cs">
+      <DependentUpon>GenerateLODLightsPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Tools\BrowseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Tools\BrowseForm.Designer.cs">
       <DependentUpon>BrowseForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ExploreForm.cs">
@@ -156,34 +167,34 @@
     <Compile Include="ExploreForm.Designer.cs">
       <DependentUpon>ExploreForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExtractKeysForm.cs">
+    <Compile Include="Tools\ExtractKeysForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExtractKeysForm.Designer.cs">
+    <Compile Include="Tools\ExtractKeysForm.Designer.cs">
       <DependentUpon>ExtractKeysForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExtractScriptsForm.cs">
+    <Compile Include="Tools\ExtractScriptsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExtractScriptsForm.Designer.cs">
+    <Compile Include="Tools\ExtractScriptsForm.Designer.cs">
       <DependentUpon>ExtractScriptsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExtractRawForm.cs">
+    <Compile Include="Tools\ExtractRawForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExtractRawForm.Designer.cs">
+    <Compile Include="Tools\ExtractRawForm.Designer.cs">
       <DependentUpon>ExtractRawForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExtractShadersForm.cs">
+    <Compile Include="Tools\ExtractShadersForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExtractShadersForm.Designer.cs">
+    <Compile Include="Tools\ExtractShadersForm.Designer.cs">
       <DependentUpon>ExtractShadersForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExtractTexForm.cs">
+    <Compile Include="Tools\ExtractTexForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExtractTexForm.Designer.cs">
+    <Compile Include="Tools\ExtractTexForm.Designer.cs">
       <DependentUpon>ExtractTexForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\AwcForm.cs">
@@ -266,16 +277,22 @@
     </Compile>
     <Compile Include="GameFiles\FxcParser.cs" />
     <Compile Include="GameFiles\GameFileCacheFactory.cs" />
-    <Compile Include="JenkGenForm.cs">
+    <Compile Include="Tools\ImportFbxForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="JenkGenForm.Designer.cs">
+    <Compile Include="Tools\ImportFbxForm.Designer.cs">
+      <DependentUpon>ImportFbxForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Tools\JenkGenForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Tools\JenkGenForm.Designer.cs">
       <DependentUpon>JenkGenForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="JenkIndForm.cs">
+    <Compile Include="Tools\JenkIndForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="JenkIndForm.Designer.cs">
+    <Compile Include="Tools\JenkIndForm.Designer.cs">
       <DependentUpon>JenkIndForm.cs</DependentUpon>
     </Compile>
     <Compile Include="KeyBindForm.cs">
@@ -292,6 +309,48 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Project\MenyooXml.cs" />
+    <Compile Include="Project\Panels\EditAudioEmitterListPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioEmitterListPanel.Designer.cs">
+      <DependentUpon>EditAudioEmitterListPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioEmitterPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioEmitterPanel.Designer.cs">
+      <DependentUpon>EditAudioEmitterPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioFilePanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioFilePanel.Designer.cs">
+      <DependentUpon>EditAudioFilePanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioInteriorPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioInteriorPanel.Designer.cs">
+      <DependentUpon>EditAudioInteriorPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioInteriorRoomPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioInteriorRoomPanel.Designer.cs">
+      <DependentUpon>EditAudioInteriorRoomPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioZoneListPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioZoneListPanel.Designer.cs">
+      <DependentUpon>EditAudioZoneListPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioZonePanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditAudioZonePanel.Designer.cs">
+      <DependentUpon>EditAudioZonePanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\Panels\EditProjectPanel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -327,6 +386,12 @@
     </Compile>
     <Compile Include="Project\Panels\EditYmapCarGenPanel.Designer.cs">
       <DependentUpon>EditYmapCarGenPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypeMloRoomPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypeMloRoomPanel.Designer.cs">
+      <DependentUpon>EditYtypArchetypeMloRoomPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\Panels\EditYmapEntityPanel.cs">
       <SubType>Form</SubType>
@@ -382,11 +447,23 @@
     <Compile Include="Project\Panels\EditYnvPortalPanel.Designer.cs">
       <DependentUpon>EditYnvPortalPanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypePanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypePanel.Designer.cs">
+      <DependentUpon>EditYtypArchetypePanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\Panels\EditYtypPanel.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Project\Panels\EditYtypPanel.Designer.cs">
       <DependentUpon>EditYtypPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\GenerateNavMeshPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\GenerateNavMeshPanel.Designer.cs">
+      <DependentUpon>GenerateNavMeshPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\Panels\ProjectExplorerPanel.cs">
       <SubType>Form</SubType>
@@ -457,10 +534,16 @@
     <Compile Include="SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="TextInputForm.cs">
+    <Compile Include="StatisticsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="TextInputForm.Designer.cs">
+    <Compile Include="StatisticsForm.Designer.cs">
+      <DependentUpon>StatisticsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\TextInputForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Utils\TextInputForm.Designer.cs">
       <DependentUpon>TextInputForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\DDSIO.cs" />
@@ -469,11 +552,11 @@
     <Compile Include="Utils\MapUtils.cs" />
     <Compile Include="GameFiles\TextureFormats.cs" />
     <Compile Include="Utils\TextureLoader.cs" />
-    <Compile Include="Project\ProjectFormOLD.cs">
+    <Compile Include="Vehicles\VehicleForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Project\ProjectFormOLD.Designer.cs">
-      <DependentUpon>ProjectFormOLD.cs</DependentUpon>
+    <Compile Include="Vehicles\VehicleForm.Designer.cs">
+      <DependentUpon>VehicleForm.cs</DependentUpon>
     </Compile>
     <Compile Include="WorldInfoForm.cs">
       <SubType>Form</SubType>
@@ -490,10 +573,10 @@
     <Compile Include="Rendering\DirectX\DXForm.cs" />
     <Compile Include="Rendering\DirectX\DXManager.cs" />
     <Compile Include="Rendering\Utils\UnitQuad.cs" />
-    <Compile Include="BinarySearchForm.cs">
+    <Compile Include="Tools\BinarySearchForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="BinarySearchForm.Designer.cs">
+    <Compile Include="Tools\BinarySearchForm.Designer.cs">
       <DependentUpon>BinarySearchForm.cs</DependentUpon>
     </Compile>
     <Compile Include="WorldForm.cs">
@@ -506,25 +589,31 @@
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="BrowseForm.resx">
+    <EmbeddedResource Include="Forms\ModelMatForm.resx">
+      <DependentUpon>ModelMatForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\GenerateLODLightsPanel.resx">
+      <DependentUpon>GenerateLODLightsPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Tools\BrowseForm.resx">
       <DependentUpon>BrowseForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ExploreForm.resx">
       <DependentUpon>ExploreForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExtractKeysForm.resx">
+    <EmbeddedResource Include="Tools\ExtractKeysForm.resx">
       <DependentUpon>ExtractKeysForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExtractScriptsForm.resx">
+    <EmbeddedResource Include="Tools\ExtractScriptsForm.resx">
       <DependentUpon>ExtractScriptsForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExtractRawForm.resx">
+    <EmbeddedResource Include="Tools\ExtractRawForm.resx">
       <DependentUpon>ExtractRawForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExtractShadersForm.resx">
+    <EmbeddedResource Include="Tools\ExtractShadersForm.resx">
       <DependentUpon>ExtractShadersForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExtractTexForm.resx">
+    <EmbeddedResource Include="Tools\ExtractTexForm.resx">
       <DependentUpon>ExtractTexForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\AwcForm.resx">
@@ -566,10 +655,13 @@
     <EmbeddedResource Include="Forms\YwrForm.resx">
       <DependentUpon>YwrForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="JenkGenForm.resx">
+    <EmbeddedResource Include="Tools\ImportFbxForm.resx">
+      <DependentUpon>ImportFbxForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Tools\JenkGenForm.resx">
       <DependentUpon>JenkGenForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="JenkIndForm.resx">
+    <EmbeddedResource Include="Tools\JenkIndForm.resx">
       <DependentUpon>JenkIndForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="KeyBindForm.resx">
@@ -577,6 +669,27 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MenuForm.resx">
       <DependentUpon>MenuForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioEmitterListPanel.resx">
+      <DependentUpon>EditAudioEmitterListPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioEmitterPanel.resx">
+      <DependentUpon>EditAudioEmitterPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioFilePanel.resx">
+      <DependentUpon>EditAudioFilePanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioInteriorPanel.resx">
+      <DependentUpon>EditAudioInteriorPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioInteriorRoomPanel.resx">
+      <DependentUpon>EditAudioInteriorRoomPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioZoneListPanel.resx">
+      <DependentUpon>EditAudioZoneListPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditAudioZonePanel.resx">
+      <DependentUpon>EditAudioZonePanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditProjectPanel.resx">
       <DependentUpon>EditProjectPanel.cs</DependentUpon>
@@ -595,6 +708,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYmapCarGenPanel.resx">
       <DependentUpon>EditYmapCarGenPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYtypArchetypeMloRoomPanel.resx">
+      <DependentUpon>EditYtypArchetypeMloRoomPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYmapEntityPanel.resx">
       <DependentUpon>EditYmapEntityPanel.cs</DependentUpon>
@@ -623,8 +739,14 @@
     <EmbeddedResource Include="Project\Panels\EditYnvPortalPanel.resx">
       <DependentUpon>EditYnvPortalPanel.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYtypArchetypePanel.resx">
+      <DependentUpon>EditYtypArchetypePanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYtypPanel.resx">
       <DependentUpon>EditYtypPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\GenerateNavMeshPanel.resx">
+      <DependentUpon>GenerateNavMeshPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\ProjectExplorerPanel.resx">
       <DependentUpon>ProjectExplorerPanel.cs</DependentUpon>
@@ -648,20 +770,23 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="BinarySearchForm.resx">
+    <EmbeddedResource Include="Tools\BinarySearchForm.resx">
       <DependentUpon>BinarySearchForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SelectFolderForm.resx">
       <DependentUpon>SelectFolderForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Project\ProjectFormOLD.resx">
-      <DependentUpon>ProjectFormOLD.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="TextInputForm.resx">
+    <EmbeddedResource Include="StatisticsForm.resx">
+      <DependentUpon>StatisticsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Utils\TextInputForm.resx">
       <DependentUpon>TextInputForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Vehicles\VehicleForm.resx">
+      <DependentUpon>VehicleForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WorldForm.resx">
       <DependentUpon>WorldForm.cs</DependentUpon>
@@ -691,7 +816,6 @@
     <Content Include="icons\icon_glokon_debug_32x32.png" />
     <Content Include="icons\icon_glokon_normal_32x32.png" />
     <Content Include="icons\icon_google_marker_64x64.png" />
-    <Content Include="Materials.txt" />
     <Content Include="Notice.txt" />
     <None Include="README.md" />
     <None Include="Resources\CW.ico" />

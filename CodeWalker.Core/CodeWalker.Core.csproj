@@ -48,7 +48,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GameFiles\FileTypes\AwcFile.cs" />
+    <Compile Include="GameFiles\FileTypes\Builders\YndBuilder.cs" />
+    <Compile Include="GameFiles\FileTypes\Builders\YnvBuilder.cs" />
     <Compile Include="GameFiles\FileTypes\CacheDatFile.cs" />
+    <Compile Include="GameFiles\FileTypes\CarColsFile.cs" />
+    <Compile Include="GameFiles\FileTypes\CarModColsFile.cs" />
+    <Compile Include="GameFiles\FileTypes\CarVariationsFile.cs" />
     <Compile Include="GameFiles\FileTypes\CutFile.cs" />
     <Compile Include="GameFiles\FileTypes\DlcContentFile.cs" />
     <Compile Include="GameFiles\FileTypes\DlcSetupFile.cs" />
@@ -58,6 +63,8 @@
     <Compile Include="GameFiles\FileTypes\JPsoFile.cs" />
     <Compile Include="GameFiles\FileTypes\RelFile.cs" />
     <Compile Include="GameFiles\FileTypes\Stats.cs" />
+    <Compile Include="GameFiles\FileTypes\VehicleLayoutsFile.cs" />
+    <Compile Include="GameFiles\FileTypes\VehiclesFile.cs" />
     <Compile Include="GameFiles\FileTypes\YbnFile.cs" />
     <Compile Include="GameFiles\FileTypes\YcdFile.cs" />
     <Compile Include="GameFiles\FileTypes\YddFile.cs" />
@@ -82,9 +89,11 @@
     <Compile Include="GameFiles\MetaTypes\MetaTypes.cs" />
     <Compile Include="GameFiles\MetaTypes\MetaXml.cs" />
     <Compile Include="GameFiles\MetaTypes\Pso.cs" />
+    <Compile Include="GameFiles\MetaTypes\PsoBuilder.cs" />
     <Compile Include="GameFiles\MetaTypes\PsoTypes.cs" />
     <Compile Include="GameFiles\MetaTypes\Rbf.cs" />
     <Compile Include="GameFiles\MetaTypes\XmlMeta.cs" />
+    <Compile Include="GameFiles\MetaTypes\XmlPso.cs" />
     <Compile Include="GameFiles\Resources\Bounds.cs" />
     <Compile Include="GameFiles\Resources\Clip.cs" />
     <Compile Include="GameFiles\Resources\Drawable.cs" />
@@ -112,7 +121,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utils\BoundingBoxes.cs" />
     <Compile Include="Utils\Cache.cs" />
+    <Compile Include="Utils\Fbx.cs" />
+    <Compile Include="Utils\FbxConverter.cs" />
     <Compile Include="Utils\Matrices.cs" />
     <Compile Include="Utils\Quaternions.cs" />
     <Compile Include="Utils\Utils.cs" />

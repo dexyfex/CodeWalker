@@ -21,6 +21,7 @@ namespace CodeWalker.GameFiles
         public bool isLevelPack { get; set; }
 
         public RpfFile DlcFile { get; set; } //used by GameFileCache
+        public List<RpfFile> DlcSubpacks { get; set; } //used by GameFileCache
         public DlcContentFile ContentFile { get; set; }
 
         public void Load(XmlDocument doc)

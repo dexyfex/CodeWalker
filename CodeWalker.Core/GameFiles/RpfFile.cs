@@ -626,6 +626,7 @@ namespace CodeWalker.GameFiles
             RpfFileEntry entry = CreateResourceFileEntry(ref data, 0);
             if ((data != null) && (entry != null))
             {
+                data = ResourceBuilder.Decompress(data);
                 file = new T();
                 file.Load(data, entry);
             }
@@ -2011,6 +2012,10 @@ namespace CodeWalker.GameFiles
         }
         public string GetShortNameLower()
         {
+            if (NameLower == null)
+            {
+                NameLower = Name.ToLowerInvariant();
+            }
             int ind = NameLower.LastIndexOf('.');
             if (ind > 0)
             {

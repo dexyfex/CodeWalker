@@ -44,7 +44,7 @@ namespace CodeWalker
         private GameFileCache FileCache { get; set; } = GameFileCacheFactory.Create();
         private object FileCacheSyncRoot = new object();
 
-        private bool EditMode = false;
+        public bool EditMode { get; private set; } = false;
 
         public ThemeBase Theme { get; private set; }
 
@@ -537,10 +537,11 @@ namespace CodeWalker
             var str = ic.ToString() + " item" + ((ic != 1) ? "s" : "") + " shown";
             bool isitem = false;
             bool isfile = false;
+            bool issearch = CurrentFolder?.IsSearchResults ?? false;
             bool canview = false;
             bool canedit = false;
             bool canexportxml = false;
-            bool canimport = false;
+            bool canimport = EditMode && (CurrentFolder?.RpfFolder != null) && !issearch;
             if (sc != 0)
             {
                 long bc = 0;
@@ -578,6 +579,7 @@ namespace CodeWalker
             EditExtractRawMenu.Enabled = isfile;
 
             EditImportRawMenu.Visible = canimport;
+            EditImportFbxMenu.Visible = canimport;
             EditImportXmlMenu.Visible = canimport;
             EditImportMenuSeparator.Visible = canimport;
 
@@ -688,6 +690,11 @@ namespace CodeWalker
                         RpfFile rpf = new RpfFile(path, relpath);
 
                         rpf.ScanStructure(UpdateStatus, UpdateErrorLog);
+
+                        if (rpf.LastException != null) //incase of corrupted rpf (or renamed NG encrypted RPF)
+                        {
+                            continue;
+                        }
 
                         node = CreateRpfTreeFolder(rpf, relpath, path);
 
@@ -905,7 +912,6 @@ namespace CodeWalker
             RecurseAddMainTreeViewNodes(f, CurrentFolder.TreeNode);
 
             CurrentFolder.AddChild(f);
-            CurrentFolder.ListItems = null;
 
             RefreshMainListView();
         }
@@ -1053,11 +1059,26 @@ namespace CodeWalker
             }
         }
 
+        public void RefreshMainListViewInvoke()
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(() => { RefreshMainListView(); }));
+            }
+            else
+            {
+                RefreshMainListView();
+            }
+        }
         private void RefreshMainListView()
         {
             MainListView.VirtualListSize = 0;
             if (CurrentFolder != null)
             {
+                if (!CurrentFolder.IsSearchResults)
+                {
+                    CurrentFolder.ListItems = null; //makes sure to rebuild the current files list
+                }
                 CurrentFiles = CurrentFolder.GetListItems();
 
                 foreach (var file in CurrentFiles) //cache all the data for use by the list view.
@@ -1302,6 +1323,7 @@ namespace CodeWalker
                 case FileTypeAction.ViewYtyp:
                 case FileTypeAction.ViewJPso:
                 case FileTypeAction.ViewCut:
+                case FileTypeAction.ViewRel:
                     return true;
             }
             return false;
@@ -1314,6 +1336,13 @@ namespace CodeWalker
             try
 #endif
             {
+                var exform = FindExistingForm(item?.File);
+                if (exform != null)
+                {
+                    exform.Focus();
+                    return;
+                }
+
                 byte[] data = null;
                 string name = "";
                 string path = "";
@@ -1336,61 +1365,68 @@ namespace CodeWalker
                 if (data == null) return;
 
                 var ft = item.FileType;
+                var fe = item.File;
+                if (fe == null)
+                { 
+                    //this should only happen when opening a file from filesystem...
+                    fe = CreateFileEntry(name, path, ref data);
+                }
+
                 switch (ft.DefaultAction)
                 {
                     case FileTypeAction.ViewText:
-                        ViewText(name, path, data);
+                        ViewText(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewXml:
-                        ViewXml(name, path, data);
+                        ViewXml(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYtd:
-                        ViewYtd(name, path, data, item.File);
+                        ViewYtd(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYmt:
-                        ViewYmt(name, path, data, item.File);
+                        ViewYmt(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYmf:
-                        ViewYmf(name, path, data, item.File);
+                        ViewYmf(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYmap:
-                        ViewYmap(name, path, data, item.File);
+                        ViewYmap(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYtyp:
-                        ViewYtyp(name, path, data, item.File);
+                        ViewYtyp(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewJPso:
-                        ViewJPso(name, path, data, item.File);
+                        ViewJPso(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewCut:
-                        ViewCut(name, path, data, item.File);
+                        ViewCut(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewModel:
-                        ViewModel(name, path, data, item.File);
+                        ViewModel(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewAwc:
-                        ViewAwc(name, path, data, item.File);
+                        ViewAwc(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewGxt:
-                        ViewGxt(name, path, data, item.File);
+                        ViewGxt(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewRel:
-                        ViewRel(name, path, data, item.File);
+                        ViewRel(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewFxc:
-                        ViewFxc(name, path, data, item.File);
+                        ViewFxc(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYwr:
-                        ViewYwr(name, path, data, item.File);
+                        ViewYwr(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYvr:
-                        ViewYvr(name, path, data, item.File);
+                        ViewYvr(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewYcd:
-                        ViewYcd(name, path, data, item.File);
+                        ViewYcd(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewCacheDat:
-                        ViewCacheDat(name, path, data, item.File);
+                        ViewCacheDat(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewHex:
                     default:
@@ -1445,19 +1481,19 @@ namespace CodeWalker
             f.Show();
             f.LoadData(name, path, data);
         }
-        private void ViewXml(string name, string path, byte[] data)
+        private void ViewXml(string name, string path, byte[] data, RpfFileEntry e)
         {
             string xml = Encoding.UTF8.GetString(data);
-            XmlForm f = new XmlForm();
+            XmlForm f = new XmlForm(this);
             f.Show();
-            f.LoadXml(name, path, xml);
+            f.LoadXml(name, path, xml, e);
         }
-        private void ViewText(string name, string path, byte[] data)
+        private void ViewText(string name, string path, byte[] data, RpfFileEntry e)
         {
             string txt = Encoding.UTF8.GetString(data);
-            TextForm f = new TextForm();
+            TextForm f = new TextForm(this);
             f.Show();
-            f.LoadText(name, path, txt);
+            f.LoadText(name, path, txt, e);
         }
         private void ViewYtd(string name, string path, byte[] data, RpfFileEntry e)
         {
@@ -1469,35 +1505,35 @@ namespace CodeWalker
         private void ViewYmt(string name, string path, byte[] data, RpfFileEntry e)
         {
             var ymt = RpfFile.GetFile<YmtFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(ymt);
         }
         private void ViewYmf(string name, string path, byte[] data, RpfFileEntry e)
         {
             var ymf = RpfFile.GetFile<YmfFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(ymf);
         }
         private void ViewYmap(string name, string path, byte[] data, RpfFileEntry e)
         {
             var ymap = RpfFile.GetFile<YmapFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(ymap);
         }
         private void ViewYtyp(string name, string path, byte[] data, RpfFileEntry e)
         {
             var ytyp = RpfFile.GetFile<YtypFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(ytyp);
         }
         private void ViewJPso(string name, string path, byte[] data, RpfFileEntry e)
         {
             var pso = RpfFile.GetFile<JPsoFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(pso);
         }
@@ -1538,7 +1574,7 @@ namespace CodeWalker
         private void ViewCut(string name, string path, byte[] data, RpfFileEntry e)
         {
             var cut = RpfFile.GetFile<CutFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(cut);
         }
@@ -1559,7 +1595,7 @@ namespace CodeWalker
         private void ViewRel(string name, string path, byte[] data, RpfFileEntry e)
         {
             var rel = RpfFile.GetFile<RelFile>(e, data);
-            RelForm f = new RelForm();
+            RelForm f = new RelForm(this);
             f.Show();
             f.LoadRel(rel);
         }
@@ -1594,9 +1630,51 @@ namespace CodeWalker
         private void ViewCacheDat(string name, string path, byte[] data, RpfFileEntry e)
         {
             var cachedat = RpfFile.GetFile<CacheDatFile>(e, data);
-            MetaForm f = new MetaForm();
+            MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(cachedat);
+        }
+
+        private RpfFileEntry CreateFileEntry(string name, string path, ref byte[] data)
+        {
+            //this should only really be used when loading a file from the filesystem.
+            RpfFileEntry e = null;
+            uint rsc7 = (data?.Length > 4) ? BitConverter.ToUInt32(data, 0) : 0;
+            if (rsc7 == 0x37435352) //RSC7 header present! create RpfResourceFileEntry and decompress data...
+            {
+                e = RpfFile.CreateResourceFileEntry(ref data, 0);//"version" should be loadable from the header in the data..
+                data = ResourceBuilder.Decompress(data);
+            }
+            else
+            {
+                var be = new RpfBinaryFileEntry();
+                be.FileSize = (uint)data?.Length;
+                be.FileUncompressedSize = be.FileSize;
+                e = be;
+            }
+            e.Name = name;
+            e.NameLower = name?.ToLowerInvariant();
+            e.NameHash = JenkHash.GenHash(e.NameLower);
+            e.ShortNameHash = JenkHash.GenHash(Path.GetFileNameWithoutExtension(e.NameLower));
+            e.Path = path;
+            return e;
+        }
+
+
+        private Form FindExistingForm(RpfFileEntry e)
+        {
+            if (e == null) return null;
+            var allforms = Application.OpenForms;
+            var path = e.Path.ToLowerInvariant();
+            foreach (var form in allforms)
+            {
+                var metaform = form as MetaForm;
+                if (metaform?.rpfFileEntry == e) return metaform;
+                if (metaform?.rpfFileEntry?.Path?.ToLowerInvariant() == path)
+                    return metaform; //need to test the path as well since the file entry may have been replaced by a new version..!
+
+            }
+            return null;
         }
 
 
@@ -1664,6 +1742,7 @@ namespace CodeWalker
 
             ListContextNewMenu.Visible = cancreate;
             ListContextImportRawMenu.Visible = canimport;
+            ListContextImportFbxMenu.Visible = canimport;
             ListContextImportXmlMenu.Visible = canimport;
             ListContextImportSeparator.Visible = cancreate;
 
@@ -1708,6 +1787,7 @@ namespace CodeWalker
             MainListView.LabelEdit = enable;
 
             EnsureEditModeWarning();
+            UpdateSelectionUI();
         }
 
         private void EnsureEditModeWarning()
@@ -1745,7 +1825,7 @@ namespace CodeWalker
 
 
 
-        private bool EnsureRpfValidEncryption(RpfFile file = null)
+        public bool EnsureRpfValidEncryption(RpfFile file = null)
         {
             if ((file == null) && (CurrentFolder.RpfFolder == null)) return false;
 
@@ -2177,6 +2257,98 @@ namespace CodeWalker
             }
 
         }
+        private void ImportFbx()
+        {
+            if (!EditMode) return;
+            if (CurrentFolder?.IsSearchResults ?? false) return;
+
+
+            RpfDirectoryEntry parentrpffldr = CurrentFolder.RpfFolder;
+            if (parentrpffldr == null)
+            {
+                MessageBox.Show("No parent RPF folder selected! This shouldn't happen. Refresh the view and try again.");
+                return;
+            }
+
+            if (!EnsureRpfValidEncryption()) return;
+
+
+            OpenFileDialog.Filter = "FBX Files|*.fbx";
+            if (OpenFileDialog.ShowDialog(this) != DialogResult.OK)
+            {
+                return;//canceled
+            }
+
+            var fpaths = OpenFileDialog.FileNames;
+            var fdict = new Dictionary<string, byte[]>();
+
+            foreach (var fpath in fpaths)
+            {
+#if !DEBUG
+                try
+#endif
+                {
+                    if (!File.Exists(fpath))
+                    {
+                        continue;//this shouldn't happen...
+                    }
+
+                    var fi = new FileInfo(fpath);
+                    var fname = fi.Name;
+                    var fnamel = fname.ToLowerInvariant();
+                    var trimlength = 4;
+
+                    if (!fnamel.EndsWith(".fbx"))
+                    {
+                        MessageBox.Show(fname + ": Not an FBX file!", "Cannot import FBX");
+                        continue;
+                    }
+
+                    fname = fname.Substring(0, fname.Length - trimlength);
+
+                    var data = File.ReadAllBytes(fpath);
+                    fdict[fname] = data;
+
+                }
+#if !DEBUG
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Unable to read file " + fpath);
+                }
+#endif
+
+            }
+
+
+            var fbxForm = new ImportFbxForm();
+            fbxForm.SetInputFiles(fdict);
+            fbxForm.ShowDialog();
+
+            if (fbxForm.DialogResult != DialogResult.OK)
+            {
+                return; //fbx import canceled
+            }
+
+            var converted = fbxForm.GetOutputFiles();
+            if (converted == null)
+            {
+                return;
+            }
+
+            foreach (var kvp in converted)
+            {
+                var fname = kvp.Key;
+                var data = kvp.Value;
+                if (data != null)
+                {
+                    RpfFile.CreateFile(parentrpffldr, fname, data);
+                }
+            }
+
+
+            RefreshMainListView();
+
+        }
         private void ImportXml()
         {
             if (!EditMode) return;
@@ -2201,7 +2373,9 @@ namespace CodeWalker
             var fpaths = OpenFileDialog.FileNames;
             foreach (var fpath in fpaths)
             {
+#if !DEBUG
                 try
+#endif
                 {
                     if (!File.Exists(fpath))
                     {
@@ -2211,6 +2385,8 @@ namespace CodeWalker
                     var fi = new FileInfo(fpath);
                     var fname = fi.Name;
                     var fnamel = fname.ToLowerInvariant();
+                    var mformat = MetaFormat.RSC;
+                    var trimlength = 4;
 
                     if (!fnamel.EndsWith(".xml"))
                     {
@@ -2219,17 +2395,21 @@ namespace CodeWalker
                     }
                     if (fnamel.EndsWith(".pso.xml"))
                     {
-                        MessageBox.Show(fname + ": PSO XML import not yet supported.", "Cannot import XML");
-                        continue;
+                        mformat = MetaFormat.PSO;
+                        trimlength = 8;
                     }
                     if (fnamel.EndsWith(".rbf.xml"))
                     {
                         MessageBox.Show(fname + ": RBF XML import not yet supported.", "Cannot import XML");
                         continue;
                     }
+                    if (fnamel.EndsWith(".rel.xml"))
+                    {
+                        mformat = MetaFormat.AudioRel;
+                    }
 
-                    fname = fname.Substring(0, fname.Length - 4);
-                    fnamel = fnamel.Substring(0, fnamel.Length - 4);
+                    fname = fname.Substring(0, fname.Length - trimlength);
+                    fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
 
                     var doc = new XmlDocument();
                     string text = File.ReadAllText(fpath);
@@ -2238,29 +2418,67 @@ namespace CodeWalker
                         doc.LoadXml(text);
                     }
 
-                    var meta = XmlMeta.GetMeta(doc);
+                    byte[] data = null;
 
-
-                    if ((meta.DataBlocks?.Data == null) || (meta.DataBlocks.Count == 0))
+                    switch (mformat)
                     {
-                        MessageBox.Show(fname + ": Schema not supported.", "Cannot import XML");
-                        continue;
+                        case MetaFormat.RSC:
+                            {
+                                var meta = XmlMeta.GetMeta(doc);
+                                if ((meta.DataBlocks?.Data == null) || (meta.DataBlocks.Count == 0))
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import Meta XML");
+                                    continue;
+                                }
+                                data = ResourceBuilder.Build(meta, 2); //meta is RSC V:2
+                                break;
+                            }
+                        case MetaFormat.PSO:
+                            {
+                                var pso = XmlPso.GetPso(doc);
+                                if ((pso.DataSection == null) || (pso.DataMapSection == null) || (pso.SchemaSection == null))
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import PSO XML");
+                                    continue;
+                                }
+                                data = pso.Save();
+                                break;
+                            }
+                        case MetaFormat.RBF:
+                            {
+                                //todo!
+                                break;
+                            }
+                        case MetaFormat.AudioRel:
+                            {
+                                var rel = XmlRel.GetRel(doc);
+                                if ((rel.RelDatasSorted == null) || (rel.RelDatas == null))
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import REL XML");
+                                    continue;
+                                }
+                                data = rel.Save();
+                                break;
+                            }
                     }
 
 
-                    byte[] data = ResourceBuilder.Build(meta, 2); //meta is RSC V:2
+                    if (data != null)
+                    {
+                        RpfFile.CreateFile(parentrpffldr, fname, data);
+                    }
 
-
-                    RpfFile.CreateFile(parentrpffldr, fname, data);
 
                 }
+#if !DEBUG
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message, "Unable to import file");
                 }
+#endif
+
             }
 
-            CurrentFolder.ListItems = null;
             RefreshMainListView();
 
         }
@@ -2402,7 +2620,6 @@ namespace CodeWalker
                 }
             }
 
-            CurrentFolder.ListItems = null;
             RefreshMainListView();
         }
         private void CopySelected()
@@ -2822,6 +3039,17 @@ namespace CodeWalker
 
 
 
+        protected override void WndProc(ref Message m)
+        {
+            //handle back/forward buttons globally for all the form
+            if (m.Msg == 0x319) //WM_APPCOMMAND
+            {
+                var cmd = (m.LParam.ToInt64() >> 16) & 0xFFF;
+                if (cmd == 1) GoBack(); //APPCOMMAND_BROWSER_BACKWARD
+                if (cmd == 2) GoForward(); //APPCOMMAND_BROWSER_FORWARD
+            }
+            base.WndProc(ref m);
+        }
 
 
         private void ExploreForm_Load(object sender, EventArgs e)
@@ -3329,6 +3557,11 @@ namespace CodeWalker
             NewRpfArchive();
         }
 
+        private void ListContextImportFbxMenu_Click(object sender, EventArgs e)
+        {
+            ImportFbx();
+        }
+
         private void ListContextImportXmlMenu_Click(object sender, EventArgs e)
         {
             ImportXml();
@@ -3412,6 +3645,11 @@ namespace CodeWalker
         private void EditExtractAllMenu_Click(object sender, EventArgs e)
         {
             ExtractAll();
+        }
+
+        private void EditImportFbxMenu_Click(object sender, EventArgs e)
+        {
+            ImportFbx();
         }
 
         private void EditImportXmlMenu_Click(object sender, EventArgs e)

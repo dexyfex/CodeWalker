@@ -15,6 +15,7 @@ namespace CodeWalker.GameFiles
         public string Folder { get; private set; }
         public string[] ExcludePaths { get; set; }
         public bool EnableMods { get; set; }
+        public bool BuildExtendedJenkIndex { get; set; } = true;
         public Action<string> UpdateStatus { get; private set; }
         public Action<string> ErrorLog { get; private set; }
 
@@ -73,6 +74,11 @@ namespace CodeWalker.GameFiles
 
                     rf.ScanStructure(updateStatus, errorLog);
 
+                    if (rf.LastException != null) //incase of corrupted rpf (or renamed NG encrypted RPF)
+                    {
+                        continue;
+                    }
+
                     AddRpfFile(rf, false, false);
                 }
                 catch (Exception ex)
@@ -124,7 +130,7 @@ namespace CodeWalker.GameFiles
 
         private void AddRpfFile(RpfFile file, bool isdlc, bool ismod)
         {
-            isdlc = isdlc || (file.NameLower == "dlc.rpf") || (file.NameLower == "update.rpf");
+            isdlc = isdlc || (file.NameLower == "update.rpf") || (file.NameLower.StartsWith("dlc") && file.NameLower.EndsWith(".rpf"));
             ismod = ismod || (file.Path.StartsWith("mods\\"));
 
             if (file.AllEntries != null)
@@ -381,102 +387,109 @@ namespace CodeWalker.GameFiles
                             JenkIndex.Ensure(entry.Name);
                             JenkIndex.Ensure(nlow);
                         }
-                        if (nlow.EndsWith(".ydr") || nlow.EndsWith(".yft"))
+                        if (BuildExtendedJenkIndex)
                         {
-                            var sname = nlow.Substring(0, nlow.Length - 4);
-                            JenkIndex.Ensure(sname + "_lod");
-                            JenkIndex.Ensure(sname + "_loda");
-                            JenkIndex.Ensure(sname + "_lodb");
-                        }
-                        if (nlow.EndsWith(".ydd"))
-                        {
-                            if (nlow.EndsWith("_children.ydd"))
+                            if (nlow.EndsWith(".ydr"))// || nlow.EndsWith(".yft")) //do yft's get lods?
                             {
-                                var strn = nlow.Substring(0, nlow.Length - 13);
-                                JenkIndex.Ensure(strn);
-                                JenkIndex.Ensure(strn + "_lod");
-                                JenkIndex.Ensure(strn + "_loda");
-                                JenkIndex.Ensure(strn + "_lodb");
+                                var sname = nlow.Substring(0, nlow.Length - 4);
+                                JenkIndex.Ensure(sname + "_lod");
+                                JenkIndex.Ensure(sname + "_loda");
+                                JenkIndex.Ensure(sname + "_lodb");
                             }
-                            var idx = nlow.LastIndexOf('_');
-                            if (idx > 0)
+                            if (nlow.EndsWith(".ydd"))
                             {
-                                var str1 = nlow.Substring(0, idx);
-                                var idx2 = str1.LastIndexOf('_');
-                                if (idx2 > 0)
+                                if (nlow.EndsWith("_children.ydd"))
                                 {
-                                    var str2 = str1.Substring(0, idx2);
-                                    JenkIndex.Ensure(str2 + "_lod");
-                                    var maxi = 100;
-                                    for (int i = 1; i <= maxi; i++)
+                                    var strn = nlow.Substring(0, nlow.Length - 13);
+                                    JenkIndex.Ensure(strn);
+                                    JenkIndex.Ensure(strn + "_lod");
+                                    JenkIndex.Ensure(strn + "_loda");
+                                    JenkIndex.Ensure(strn + "_lodb");
+                                }
+                                var idx = nlow.LastIndexOf('_');
+                                if (idx > 0)
+                                {
+                                    var str1 = nlow.Substring(0, idx);
+                                    var idx2 = str1.LastIndexOf('_');
+                                    if (idx2 > 0)
                                     {
-                                        var str3 = str2 + "_" + i.ToString().PadLeft(2, '0');
-                                        //JenkIndex.Ensure(str3);
-                                        JenkIndex.Ensure(str3 + "_lod");
+                                        var str2 = str1.Substring(0, idx2);
+                                        JenkIndex.Ensure(str2 + "_lod");
+                                        var maxi = 100;
+                                        for (int i = 1; i <= maxi; i++)
+                                        {
+                                            var str3 = str2 + "_" + i.ToString().PadLeft(2, '0');
+                                            //JenkIndex.Ensure(str3);
+                                            JenkIndex.Ensure(str3 + "_lod");
+                                        }
                                     }
                                 }
                             }
-                        }
-                        if (nlow.EndsWith(".awc")) //create audio container path hashes...
-                        {
-                            string[] parts = entry.Path.Split('\\');
-                            int pl = parts.Length;
-                            if (pl > 2)
+                            if (nlow.EndsWith(".sps"))
                             {
-                                string fn = parts[pl - 1];
-                                string fd = parts[pl - 2];
-                                string hpath = fn.Substring(0, fn.Length - 4);
-                                if (fd.EndsWith(".rpf"))
-                                {
-                                    fd = fd.Substring(0, fd.Length - 4);
-                                }
-                                hpath = fd + "/" + hpath;
-                                if (parts[pl - 3] != "sfx")
-                                { }//no hit
-
-                                JenkIndex.Ensure(hpath);
+                                JenkIndex.Ensure(nlow);//for shader preset filename hashes!
                             }
-                        }
-                        if (nlow.EndsWith(".nametable"))
-                        {
-                            RpfBinaryFileEntry binfe = entry as RpfBinaryFileEntry;
-                            if (binfe != null)
+                            if (nlow.EndsWith(".awc")) //create audio container path hashes...
                             {
-                                byte[] data = file.ExtractFile(binfe);
-                                if (data != null)
+                                string[] parts = entry.Path.Split('\\');
+                                int pl = parts.Length;
+                                if (pl > 2)
                                 {
-                                    sb.Clear();
-                                    for (int i = 0; i < data.Length; i++)
+                                    string fn = parts[pl - 1];
+                                    string fd = parts[pl - 2];
+                                    string hpath = fn.Substring(0, fn.Length - 4);
+                                    if (fd.EndsWith(".rpf"))
                                     {
-                                        byte c = data[i];
-                                        if (c == 0)
+                                        fd = fd.Substring(0, fd.Length - 4);
+                                    }
+                                    hpath = fd + "/" + hpath;
+                                    if (parts[pl - 3] != "sfx")
+                                    { }//no hit
+
+                                    JenkIndex.Ensure(hpath);
+                                }
+                            }
+                            if (nlow.EndsWith(".nametable"))
+                            {
+                                RpfBinaryFileEntry binfe = entry as RpfBinaryFileEntry;
+                                if (binfe != null)
+                                {
+                                    byte[] data = file.ExtractFile(binfe);
+                                    if (data != null)
+                                    {
+                                        sb.Clear();
+                                        for (int i = 0; i < data.Length; i++)
                                         {
-                                            string str = sb.ToString();
-                                            if (!string.IsNullOrEmpty(str))
+                                            byte c = data[i];
+                                            if (c == 0)
                                             {
-                                                string strl = str.ToLowerInvariant();
-                                                //JenkIndex.Ensure(str);
-                                                JenkIndex.Ensure(strl);
+                                                string str = sb.ToString();
+                                                if (!string.IsNullOrEmpty(str))
+                                                {
+                                                    string strl = str.ToLowerInvariant();
+                                                    //JenkIndex.Ensure(str);
+                                                    JenkIndex.Ensure(strl);
 
-                                                ////DirMod_Sounds_ entries apparently can be used to infer SP audio strings
-                                                ////no luck here yet though
-                                                //if (strl.StartsWith("dirmod_sounds_") && (strl.Length > 14))
-                                                //{
-                                                //    strl = strl.Substring(14);
-                                                //    JenkIndex.Ensure(strl);
-                                                //}
+                                                    ////DirMod_Sounds_ entries apparently can be used to infer SP audio strings
+                                                    ////no luck here yet though
+                                                    //if (strl.StartsWith("dirmod_sounds_") && (strl.Length > 14))
+                                                    //{
+                                                    //    strl = strl.Substring(14);
+                                                    //    JenkIndex.Ensure(strl);
+                                                    //}
+                                                }
+                                                sb.Clear();
                                             }
-                                            sb.Clear();
-                                        }
-                                        else
-                                        {
-                                            sb.Append((char)c);
+                                            else
+                                            {
+                                                sb.Append((char)c);
+                                            }
                                         }
                                     }
                                 }
+                                else
+                                { }
                             }
-                            else
-                            { }
                         }
                     }
 

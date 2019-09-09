@@ -1,4 +1,5 @@
-﻿using CodeWalker.Properties;
+﻿using CodeWalker.GameFiles;
+using CodeWalker.Properties;
 using FastColoredTextBoxNS;
 using System;
 using System.Collections.Generic;
@@ -40,19 +41,26 @@ namespace CodeWalker.Forms
 
         private bool modified = false;
 
+        private ExploreForm exploreForm = null;
+        public RpfFileEntry rpfFileEntry { get; private set; } = null;
 
-        public TextForm()
+
+
+        public TextForm(ExploreForm owner)
         {
+            exploreForm = owner;
+
             InitializeComponent();
         }
 
 
 
-        public void LoadText(string filename, string filepath, string text)
+        public void LoadText(string filename, string filepath, string text, RpfFileEntry e)
         {
             FileName = filename;
             FilePath = filepath;
             TextValue = text;
+            rpfFileEntry = e;
             modified = false;
         }
 
@@ -128,6 +136,16 @@ namespace CodeWalker.Forms
         }
         private void SaveDocument(bool saveAs = false)
         {
+            if (saveAs == false)
+            {
+                if (SaveToRPF(textValue))
+                {
+                    return;
+                }
+                //if saving to RPF failed for whatever reason, fallback to saving the file in the filesystem.
+                saveAs = true;
+            }
+
             if (string.IsNullOrEmpty(FileName)) saveAs = true;
             if (string.IsNullOrEmpty(FilePath)) saveAs = true;
             else if ((FilePath.ToLowerInvariant().StartsWith(GTAFolder.CurrentGTAFolder.ToLowerInvariant()))) saveAs = true;
@@ -153,6 +171,62 @@ namespace CodeWalker.Forms
             FilePath = fn;
             FileName = new FileInfo(fn).Name;
         }
+
+
+
+
+        private bool SaveToRPF(string txt)
+        {
+
+            if (!(exploreForm?.EditMode ?? false)) return false;
+            if (rpfFileEntry?.Parent == null) return false;
+
+            byte[] data = null;
+
+            data = Encoding.UTF8.GetBytes(txt);
+
+            if (data == null)
+            {
+                MessageBox.Show("Unspecified error - data was null!", "Cannot save file");
+                return false;
+            }
+
+            if (!rpfFileEntry.Path.ToLowerInvariant().StartsWith("mods"))
+            {
+                if (MessageBox.Show("This file is NOT located in the mods folder - Are you SURE you want to save this file?\r\nWARNING: This could cause permanent damage to your game!!!", "WARNING: Are you sure about this?", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                {
+                    return false;//that was a close one
+                }
+            }
+
+            try
+            {
+                if (!(exploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false)) return false;
+
+                var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
+                if (newentry != rpfFileEntry)
+                { }
+                rpfFileEntry = newentry;
+
+                exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+
+                modified = false;
+
+                StatusLabel.Text = "Text file saved successfully at " + DateTime.Now.ToString();
+
+                return true; //victory!
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving file to RPF! The RPF archive may be corrupted...\r\n" + ex.ToString(), "Really Bad Error");
+            }
+
+            return false;
+        }
+
+
+
+
 
         private void MainTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {

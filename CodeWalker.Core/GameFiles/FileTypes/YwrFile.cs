@@ -49,6 +49,13 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public byte[] Save()
+        {
+            byte[] data = ResourceBuilder.Build(Waypoints, 1); //ywr is type/version 1...
+
+            return data;
+        }
+
 
     }
 }

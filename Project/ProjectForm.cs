@@ -42,7 +42,9 @@ namespace CodeWalker.Project
         private YmapGrassInstanceBatch CurrentGrassBatch;
 
         private YtypFile CurrentYtypFile;
-        //private Archetype CurrentArchetype;
+        private Archetype CurrentArchetype;
+        private MCEntityDef CurrentMloEntity;
+        private MCMloRoomDef CurrentMloRoom;
 
         private YndFile CurrentYndFile;
         private YndNode CurrentPathNode;
@@ -65,6 +67,8 @@ namespace CodeWalker.Project
         private AudioPlacement CurrentAudioEmitter;
         private Dat151AmbientZoneList CurrentAudioZoneList;
         private Dat151AmbientEmitterList CurrentAudioEmitterList;
+        private Dat151Interior CurrentAudioInterior;
+        private Dat151InteriorRoom CurrentAudioInteriorRoom;
 
         private bool renderitems = true;
         private bool hidegtavmap = false;
@@ -76,6 +80,8 @@ namespace CodeWalker.Project
         private Dictionary<int, YnvFile> visibleynvs = new Dictionary<int, YnvFile>();
         private Dictionary<string, TrainTrack> visibletrains = new Dictionary<string, TrainTrack>();
         private Dictionary<string, YmtFile> visiblescenarios = new Dictionary<string, YmtFile>();
+        private Dictionary<uint, YmapEntityDef> visiblemloentities = new Dictionary<uint, YmapEntityDef>();
+        private Dictionary<uint, RelFile> visibleaudiofiles = new Dictionary<uint, RelFile>();
 
         private bool ShowProjectItemInProcess = false;
 
@@ -104,7 +110,6 @@ namespace CodeWalker.Project
                     RpfMan = GameFileCache.RpfMan;
                 })).Start();
             }
-
         }
 
         private void UpdateStatus(string text)
@@ -229,12 +234,12 @@ namespace CodeWalker.Project
             }
             return null;
         }
-        private void ShowDefaultPanels()
+        public void ShowDefaultPanels()
         {
             ShowProjectExplorer();
             ShowWelcomePanel();
         }
-        private void ShowProjectExplorer()
+        public void ShowProjectExplorer()
         {
             if ((ProjectExplorer == null) || (ProjectExplorer.IsDisposed) || (ProjectExplorer.Disposing))
             {
@@ -249,11 +254,11 @@ namespace CodeWalker.Project
                 ProjectExplorer.Show();
             }
         }
-        private void ShowWelcomePanel()
+        public void ShowWelcomePanel()
         {
             ShowPreviewPanel(() => { return new WelcomePanel(); });
         }
-        private void ShowPreviewPanel<T>(Func<T> createFunc, Action<T> updateAction = null) where T : ProjectPanel
+        public void ShowPreviewPanel<T>(Func<T> createFunc, Action<T> updateAction = null) where T : ProjectPanel
         {
             if ((PreviewPanel != null) && (PreviewPanel is T))
             {
@@ -274,11 +279,15 @@ namespace CodeWalker.Project
                 PreviewPanel = panel;
             }
         }
-        private void ShowPanel<T>(bool promote, Func<T> createFunc, Action<T> updateAction, Func<T,bool> findFunc) where T : ProjectPanel
+        public void ShowPanel<T>(bool promote, Func<T> createFunc, Action<T> updateAction, Func<T,bool> findFunc) where T : ProjectPanel
         {
             T found = FindPanel(findFunc);
             if ((found != null) && (found != PreviewPanel))
             {
+                if (found.IsHidden)
+                {
+                    found.Show();
+                }
                 found.BringToFront();//.Show();
                 updateAction?.Invoke(found);
             }
@@ -304,146 +313,220 @@ namespace CodeWalker.Project
                 }
             }
         }
-        private void ShowEditProjectPanel(bool promote)
+        public void ShowEditProjectPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditProjectPanel(this); }, //createFunc
                 (panel) => { panel.SetProject(CurrentProjectFile); },  //updateFunc
                 (panel) => { return true; }); //findFunc
         }
-        private void ShowEditProjectManifestPanel(bool promote)
+        public void ShowEditProjectManifestPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditProjectManifestPanel(this); }, //createFunc
                 (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
                 (panel) => { return true; }); //findFunc
         }
-        private void ShowEditYmapPanel(bool promote)
+        public void ShowGenerateLODLightsPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new GenerateLODLightsPanel(this); }, //createFunc
+                (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
+                (panel) => { return true; }); //findFunc
+        }
+        public void ShowGenerateNavMeshPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new GenerateNavMeshPanel(this); }, //createFunc
+                (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
+                (panel) => { return true; }); //findFunc
+        }
+        public void ShowEditYmapPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYmapPanel(this); }, //createFunc
                 (panel) => { panel.SetYmap(CurrentYmapFile); }, //updateFunc
                 (panel) => { return panel.Ymap == CurrentYmapFile; }); //findFunc
         }
-        private void ShowEditYmapEntityPanel(bool promote)
+        public void ShowEditYmapEntityPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYmapEntityPanel(this); }, //createFunc
                 (panel) => { panel.SetEntity(CurrentEntity); }, //updateFunc
                 (panel) => { return panel.CurrentEntity == CurrentEntity; }); //findFunc
         }
-        private void ShowEditYmapCarGenPanel(bool promote)
+        public void ShowEditYmapCarGenPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYmapCarGenPanel(this); }, //createFunc
                 (panel) => { panel.SetCarGen(CurrentCarGen); }, //updateFunc
                 (panel) => { return panel.CurrentCarGen == CurrentCarGen; }); //findFunc
         }
-        private void ShowEditYmapGrassBatchPanel(bool promote)
+        public void ShowEditYmapGrassBatchPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYmapGrassPanel(this); }, //createFunc
                 (panel) => { panel.SetBatch(CurrentGrassBatch); }, //updateFunc
                 (panel) => { return panel.CurrentBatch == CurrentGrassBatch; }); //findFunc
         }
-        private void ShowEditYtypPanel(bool promote)
+        public void ShowEditYtypPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYtypPanel(this); }, //createFunc
                 (panel) => { panel.SetYtyp(CurrentYtypFile); }, //updateFunc
                 (panel) => { return panel.Ytyp == CurrentYtypFile; }); //findFunc
         }
-        private void ShowEditYndPanel(bool promote)
+        public void ShowEditArchetypePanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYtypArchetypePanel(this); }, //createFunc
+                (panel) => { panel.SetArchetype(CurrentArchetype); }, //updateFunc
+                (panel) => { return panel.CurrentArchetype == CurrentArchetype; }); //findFunc
+        }
+        public void ShowEditYndPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYndPanel(this); }, //createFunc
                 (panel) => { panel.SetYnd(CurrentYndFile); }, //updateFunc
                 (panel) => { return panel.Ynd == CurrentYndFile; }); //findFunc
         }
-        private void ShowEditYndNodePanel(bool promote)
+        public void ShowEditYndNodePanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYndNodePanel(this); }, //createFunc
                 (panel) => { panel.SetPathNode(CurrentPathNode); }, //updateFunc
                 (panel) => { return panel.CurrentPathNode == CurrentPathNode; }); //findFunc
         }
-        private void ShowEditYnvPanel(bool promote)
+        public void ShowEditYnvPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYnvPanel(this); }, //createFunc
                 (panel) => { panel.SetYnv(CurrentYnvFile); }, //updateFunc
                 (panel) => { return panel.Ynv == CurrentYnvFile; }); //findFunc
         }
-        private void ShowEditYnvPolyPanel(bool promote)
+        public void ShowEditYnvPolyPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYnvPolyPanel(this); }, //createFunc
                 (panel) => { panel.SetYnvPoly(CurrentNavPoly); }, //updateFunc
                 (panel) => { return panel.YnvPoly == CurrentNavPoly; }); //findFunc
         }
-        private void ShowEditYnvPointPanel(bool promote)
+        public void ShowEditYnvPointPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYnvPointPanel(this); }, //createFunc
                 (panel) => { panel.SetYnvPoint(CurrentNavPoint); }, //updateFunc
                 (panel) => { return panel.YnvPoint == CurrentNavPoint; }); //findFunc
         }
-        private void ShowEditYnvPortalPanel(bool promote)
+        public void ShowEditYnvPortalPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditYnvPortalPanel(this); }, //createFunc
                 (panel) => { panel.SetYnvPortal(CurrentNavPortal); }, //updateFunc
                 (panel) => { return panel.YnvPortal == CurrentNavPortal; }); //findFunc
         }
-        private void ShowEditTrainTrackPanel(bool promote)
+        public void ShowEditTrainTrackPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditTrainTrackPanel(this); }, //createFunc
                 (panel) => { panel.SetTrainTrack(CurrentTrainTrack); }, //updateFunc
                 (panel) => { return panel.Track == CurrentTrainTrack; }); //findFunc
         }
-        private void ShowEditTrainNodePanel(bool promote)
+        public void ShowEditTrainNodePanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditTrainNodePanel(this); }, //createFunc
                 (panel) => { panel.SetTrainNode(CurrentTrainNode); }, //updateFunc
                 (panel) => { return panel.TrainNode == CurrentTrainNode; }); //findFunc
         }
-        private void ShowEditScenarioYmtPanel(bool promote)
+        public void ShowEditScenarioYmtPanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditScenarioYmtPanel(this); }, //createFunc
                 (panel) => { panel.SetScenarioYmt(CurrentScenario); }, //updateFunc
                 (panel) => { return panel.CurrentScenario == CurrentScenario; }); //findFunc
         }
-        private void ShowEditScenarioNodePanel(bool promote)
+        public void ShowEditScenarioNodePanel(bool promote)
         {
             ShowPanel(promote,
                 () => { return new EditScenarioNodePanel(this); }, //createFunc
                 (panel) => { panel.SetScenarioNode(CurrentScenarioNode); }, //updateFunc
                 (panel) => { return panel.CurrentScenarioNode == CurrentScenarioNode; }); //findFunc
         }
-        private void ShowEditAudioFilePanel(bool promote) //TODO
+        public void ShowEditYtypArchetypeMloRoomPanel(bool promote)
         {
+            ShowPanel(promote,
+                () => { return new EditYtypArchetypeMloRoomPanel(this); }, //createFunc
+                (panel) => { panel.SetRoom(CurrentMloRoom); }, //updateFunc
+                (panel) => { return panel.CurrentRoom == CurrentMloRoom; }); //findFunc
         }
-        private void ShowEditAudioZonePanel(bool promote) //TODO
+        public void ShowEditAudioFilePanel(bool promote)
         {
+            ShowPanel(promote,
+                () => { return new EditAudioFilePanel(this); }, //createFunc
+                (panel) => { panel.SetFile(CurrentAudioFile); }, //updateFunc
+                (panel) => { return panel.CurrentFile == CurrentAudioFile; }); //findFunc
         }
-        private void ShowEditAudioEmitterPanel(bool promote) //TODO
+        public void ShowEditAudioZonePanel(bool promote)
         {
+            ShowPanel(promote,
+                () => { return new EditAudioZonePanel(this); }, //createFunc
+                (panel) => { panel.SetZone(CurrentAudioZone); }, //updateFunc
+                (panel) => { return panel.CurrentZone?.AudioZone == CurrentAudioZone?.AudioZone; }); //findFunc
         }
-        private void ShowEditAudioZoneListPanel(bool promote) //TODO
+        public void ShowEditAudioEmitterPanel(bool promote)
         {
+            ShowPanel(promote,
+                () => { return new EditAudioEmitterPanel(this); }, //createFunc
+                (panel) => { panel.SetEmitter(CurrentAudioEmitter); }, //updateFunc
+                (panel) => { return panel.CurrentEmitter?.AudioEmitter == CurrentAudioEmitter?.AudioEmitter; }); //findFunc
         }
-        private void ShowEditAudioEmitterListPanel(bool promote) //TODO
+        public void ShowEditAudioZoneListPanel(bool promote)
         {
+            ShowPanel(promote,
+                () => { return new EditAudioZoneListPanel(this); }, //createFunc
+                (panel) => { panel.SetZoneList(CurrentAudioZoneList); }, //updateFunc
+                (panel) => { return panel.CurrentZoneList == CurrentAudioZoneList; }); //findFunc
+        }
+        public void ShowEditAudioEmitterListPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditAudioEmitterListPanel(this); }, //createFunc
+                (panel) => { panel.SetEmitterList(CurrentAudioEmitterList); }, //updateFunc
+                (panel) => { return panel.CurrentEmitterList == CurrentAudioEmitterList; }); //findFunc
+        }
+        public void ShowEditAudioInteriorPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditAudioInteriorPanel(this); }, //createFunc
+                (panel) => { panel.SetInterior(CurrentAudioInterior); }, //updateFunc
+                (panel) => { return panel.CurrentInterior == CurrentAudioInterior; }); //findFunc
+        }
+        public void ShowEditAudioInteriorRoomPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditAudioInteriorRoomPanel(this); }, //createFunc
+                (panel) => { panel.SetRoom(CurrentAudioInteriorRoom); }, //updateFunc
+                (panel) => { return panel.CurrentRoom == CurrentAudioInteriorRoom; }); //findFunc
         }
 
         private void ShowCurrentProjectItem(bool promote)
         {
-            if (CurrentEntity != null)
+            if (CurrentMloEntity != null)
             {
                 ShowEditYmapEntityPanel(promote);
+            }
+            else if (CurrentMloRoom != null)
+            {
+                ShowEditYtypArchetypeMloRoomPanel(promote);
+            }
+            else if (CurrentEntity != null)
+            {
+                ShowEditYmapEntityPanel(promote);
+            }
+            else if (CurrentArchetype != null)
+            {
+                ShowEditArchetypePanel(promote);
             }
             else if (CurrentCarGen != null)
             {
@@ -457,7 +540,7 @@ namespace CodeWalker.Project
             {
                 ShowEditYmapPanel(promote);
             }
-            if (CurrentYtypFile != null)
+            else if (CurrentYtypFile != null)
             {
                 ShowEditYtypPanel(promote);
             }
@@ -517,6 +600,14 @@ namespace CodeWalker.Project
             {
                 ShowEditAudioEmitterListPanel(promote);
             }
+            else if (CurrentAudioInterior != null)
+            {
+                ShowEditAudioInteriorPanel(promote);
+            }
+            else if (CurrentAudioInteriorRoom != null)
+            {
+                ShowEditAudioInteriorRoomPanel(promote);
+            }
             else if (CurrentAudioFile != null)
             {
                 ShowEditAudioFilePanel(promote);
@@ -543,10 +634,12 @@ namespace CodeWalker.Project
         public void SetProjectItem(object item)
         {
             CurrentYmapFile = item as YmapFile;
+            CurrentMloEntity = item as MCEntityDef;
             CurrentEntity = item as YmapEntityDef;
             CurrentCarGen = item as YmapCarGen;
             CurrentGrassBatch = item as YmapGrassInstanceBatch;
             CurrentYtypFile = item as YtypFile;
+            CurrentArchetype = item as Archetype;
             CurrentYndFile = item as YndFile;
             CurrentPathNode = item as YndNode;
             CurrentYnvFile = item as YnvFile;
@@ -559,14 +652,50 @@ namespace CodeWalker.Project
             CurrentScenarioNode = item as ScenarioNode;
             CurrentScenarioChainEdge = item as MCScenarioChainingEdge;
             CurrentAudioFile = item as RelFile;
-            CurrentAudioZone = item as AudioPlacement; if (CurrentAudioZone?.AudioZone == null) CurrentAudioZone = null;
-            CurrentAudioEmitter = item as AudioPlacement; if (CurrentAudioEmitter?.AudioEmitter == null) CurrentAudioEmitter = null;
+            CurrentAudioZone = item as AudioPlacement;
+            CurrentAudioEmitter = item as AudioPlacement;
             CurrentAudioZoneList = item as Dat151AmbientZoneList;
             CurrentAudioEmitterList = item as Dat151AmbientEmitterList;
+            CurrentAudioInterior = item as Dat151Interior;
+            CurrentAudioInteriorRoom = item as Dat151InteriorRoom;
+            CurrentMloRoom = item as MCMloRoomDef;
 
-            if (CurrentEntity != null)
+            if (CurrentAudioZone?.AudioZone == null) CurrentAudioZone = null;
+            if (CurrentAudioEmitter?.AudioEmitter == null) CurrentAudioEmitter = null;
+
+            //need to create a temporary AudioPlacement wrapper for these, since AudioPlacements usually come from WorldForm
+            var daz = item as Dat151AmbientZone;
+            var dae = item as Dat151AmbientEmitter;
+            if (daz != null) CurrentAudioZone = new AudioPlacement(daz.Rel, daz);
+            if (dae != null) CurrentAudioEmitter = new AudioPlacement(dae.Rel, dae);
+
+
+
+            if (CurrentMloEntity != null)
             {
-                CurrentYmapFile = CurrentEntity.Ymap;
+                MloInstanceData instance = TryGetMloInstance(CurrentMloEntity.Archetype);
+
+                if (instance != null)
+                {
+                    CurrentEntity = instance.TryGetYmapEntity(CurrentMloEntity);
+
+                    CurrentYmapFile = instance.Owner?.Ymap;
+                }
+
+                CurrentArchetype = CurrentEntity?.MloParent?.Archetype;
+            }
+            else if (CurrentEntity != null)
+            {
+                if (CurrentEntity.MloParent != null)
+                {
+                    CurrentArchetype = CurrentEntity?.MloParent?.Archetype;
+                }
+                else
+                {
+                    CurrentArchetype = CurrentEntity.Archetype;
+
+                    CurrentYmapFile = CurrentEntity.Ymap;
+                }
             }
             else if (CurrentCarGen != null)
             {
@@ -575,6 +704,10 @@ namespace CodeWalker.Project
             else if (CurrentGrassBatch != null)
             {
                 CurrentYmapFile = CurrentGrassBatch.Ymap;
+            }
+            if (CurrentArchetype != null)
+            {
+                CurrentYtypFile = CurrentEntity?.MloParent?.Archetype?.Ytyp ?? CurrentArchetype?.Ytyp;
             }
             if (CurrentPathNode != null)
             {
@@ -624,9 +757,25 @@ namespace CodeWalker.Project
             {
                 CurrentAudioFile = CurrentAudioEmitterList.Rel;
             }
+            if (CurrentAudioInterior != null)
+            {
+                CurrentAudioFile = CurrentAudioInterior.Rel;
+            }
+            if (CurrentAudioInteriorRoom != null)
+            {
+                CurrentAudioFile = CurrentAudioInteriorRoom.Rel;
+            }
 
             RefreshUI();
 
+        }
+        public void SetCurrentArchetype(Archetype arch)
+        {
+            CurrentArchetype = arch;
+            if (CurrentArchetype != null)
+            {
+                CurrentYtypFile = CurrentEntity?.MloParent?.Archetype?.Ytyp ?? CurrentArchetype?.Ytyp;
+            }
         }
 
         private void ClosePanel<T>(Func<T,bool> findFunc) where T : ProjectPanel
@@ -704,6 +853,25 @@ namespace CodeWalker.Project
 
 
         //######## Public methods
+
+        // Possibly future proofing for procedural prop instances
+        public bool CanPaintInstances()
+        {
+            if (CurrentGrassBatch != null)
+            {
+                if (CurrentGrassBatch.BrushEnabled)
+                    return true;
+            }
+
+            return false;
+        }
+        public float GetInstanceBrushRadius()
+        {
+            if (CurrentGrassBatch != null)
+                return CurrentGrassBatch.BrushRadius;
+
+            return 0f;
+        }
 
         public void NewProject()
         {
@@ -836,6 +1004,23 @@ namespace CodeWalker.Project
                 }
             }
 
+            foreach (var datrel in CurrentProjectFile.AudioRelFiles)
+            {
+                string filename = datrel.FilePath;
+                if (!File.Exists(filename))
+                {
+                    filename = cpath + "\\" + filename;
+                }
+                if (File.Exists(filename))
+                {
+                    LoadAudioRelFromFile(datrel, filename);
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't find file: " + filename);
+                }
+            }
+
 
             LoadProjectUI();
         }
@@ -921,6 +1106,19 @@ namespace CodeWalker.Project
                 }
             }
 
+            foreach (var datrel in CurrentProjectFile.AudioRelFiles)
+            {
+                if ((datrel != null) && (datrel.HasChanged))
+                {
+                    //save the current scenario file first?
+                    if (MessageBox.Show("Would you like to save " + datrel.Name + " before closing?", "Save scenario file before closing?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        CurrentAudioFile = datrel;
+                        SaveAudioFile();
+                    }
+                }
+            }
+
 
             if (CurrentProjectFile.HasChanged)
             {
@@ -994,6 +1192,10 @@ namespace CodeWalker.Project
             else if (CurrentScenario != null)
             {
                 SaveScenario();
+            }
+            else if (CurrentAudioFile != null)
+            {
+                SaveAudioFile();
             }
             else if (CurrentProjectFile != null)
             {
@@ -1076,6 +1278,18 @@ namespace CodeWalker.Project
                     //ShowEditScenarioPanel(false);
                 }
 
+                if (CurrentProjectFile.AudioRelFiles != null)
+                {
+                    var caudf = CurrentAudioFile;
+                    foreach (var audf in CurrentProjectFile.AudioRelFiles)
+                    {
+                        CurrentAudioFile = audf;
+                        SaveAudioFile();
+                    }
+                    CurrentAudioFile = caudf;
+                    //ShowEditAudioFilePanel(false);
+                }
+
 
                 SaveProject();
             }
@@ -1105,6 +1319,10 @@ namespace CodeWalker.Project
             else if (CurrentScenario != null)
             {
                 SaveScenario(saveas);
+            }
+            else if (CurrentAudioFile != null)
+            {
+                SaveAudioFile(saveas);
             }
         }
 
@@ -1270,6 +1488,10 @@ namespace CodeWalker.Project
             {
                 ProjectExplorer?.TrySelectCarGenTreeNode(CurrentCarGen);
             }
+            else if (CurrentGrassBatch != null)
+            {
+                ProjectExplorer?.TrySelectGrassBatchTreeNode(CurrentGrassBatch);
+            }
         }
         public void RemoveYmapFromProject()
         {
@@ -1313,11 +1535,11 @@ namespace CodeWalker.Project
                 cent.rotation = new Vector4(0, 0, 0, 1);
                 cent.scaleXY = 1.0f;
                 cent.scaleZ = 1.0f;
-                cent.flags = 1572872;
+                cent.flags = 32; //1572872;
                 cent.parentIndex = -1;
                 cent.lodDist = 200.0f;
-                cent.lodLevel = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
-                cent.priorityLevel = Unk_648413703.PRI_REQUIRED;
+                cent.lodLevel = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
+                cent.priorityLevel = rage__ePriorityLevel.PRI_REQUIRED;
                 cent.ambientOcclusionMultiplier = 255;
                 cent.artificialAmbientOcclusion = 255;
             }
@@ -1350,30 +1572,56 @@ namespace CodeWalker.Project
         }
         public void AddEntityToProject()
         {
-            if (CurrentEntity == null) return;
-
-            if (CurrentEntity.Ymap == null)
+            try
             {
-                MessageBox.Show("Sorry, interior entities cannot currently be added to the project.");
-                return;
-            }
+                if (CurrentEntity == null) return;
+                if (CurrentEntity.Ymap == null)
+                {
+                    CurrentYtypFile = CurrentEntity.MloParent?.Archetype?.Ytyp;
 
-            CurrentYmapFile = CurrentEntity.Ymap;
-            if (!YmapExistsInProject(CurrentYmapFile))
-            {
-                var ent = CurrentEntity;
-                CurrentYmapFile.HasChanged = true;
-                AddYmapToProject(CurrentYmapFile);
+                    if (!YtypExistsInProject(CurrentYtypFile))
+                    {
+                        if (CurrentEntity.MloParent?.MloInstance != null)
+                        {
+                            var inst = CurrentEntity.MloParent.MloInstance;
+                            var mcEntity = inst.TryGetArchetypeEntity(CurrentEntity);
+                            if (mcEntity != null)
+                            {
+                                YmapEntityDef ent = CurrentEntity;
+                                CurrentYtypFile.HasChanged = true;
+                                AddYtypToProject(CurrentYtypFile);
+                                CurrentEntity = ent;
+                                CurrentYtypFile = ent.MloParent.Archetype.Ytyp;
+                                ProjectExplorer?.TrySelectMloEntityTreeNode(mcEntity);
+                            }
+                        }
+                    }
+                    return;
+                }
 
-                CurrentEntity = ent; //bug fix for some reason the treeview selects the project node here.
-                CurrentYmapFile = ent.Ymap;
-                ProjectExplorer?.TrySelectEntityTreeNode(ent);
+                CurrentYmapFile = CurrentEntity.Ymap;
+                if (!YmapExistsInProject(CurrentYmapFile))
+                {
+                    YmapEntityDef ent = CurrentEntity;
+                    CurrentYmapFile.HasChanged = true;
+                    AddYmapToProject(CurrentYmapFile);
+
+                    CurrentEntity = ent; //bug fix for some reason the treeview selects the project node here.
+                    CurrentYmapFile = ent.Ymap;
+                    ProjectExplorer?.TrySelectEntityTreeNode(ent);
+                }
             }
+            catch
+            { }
         }
         public bool DeleteEntity()
         {
-            if (CurrentYmapFile == null) return false;
             if (CurrentEntity == null) return false;
+            return CurrentYmapFile != null ? DeleteYmapEntity() : DeleteMloArchetypeEntity();
+        }
+
+        private bool DeleteYmapEntity()
+        {
             if (CurrentEntity.Ymap != CurrentYmapFile) return false;
             if (CurrentYmapFile.AllEntities == null) return false; //nothing to delete..
             if (CurrentYmapFile.RootEntities == null) return false; //nothing to delete..
@@ -1433,6 +1681,155 @@ namespace CodeWalker.Project
         public bool IsCurrentEntity(YmapEntityDef ent)
         {
             return CurrentEntity == ent;
+        }
+
+        public void NewGrassBatch(YmapGrassInstanceBatch copy = null)
+        {
+            if (CurrentYmapFile == null) return;
+
+            rage__fwGrassInstanceListDef fwBatch = new rage__fwGrassInstanceListDef();
+            rage__fwGrassInstanceListDef__InstanceData[] instances = new rage__fwGrassInstanceListDef__InstanceData[0];
+
+            if (copy != null)
+            {
+                fwBatch = copy.Batch;
+                instances = copy.Instances;
+            }
+            else
+            {
+                fwBatch.archetypeName = new MetaHash(JenkHash.GenHash("proc_grasses01"));
+                fwBatch.lodDist = 120;
+                fwBatch.LodFadeStartDist = 15;
+                fwBatch.LodInstFadeRange = 0.75f;
+                fwBatch.OrientToTerrain = 1.0f;
+                fwBatch.ScaleRange = new Vector3(0.3f, 0.2f, 0.7f);
+            }
+
+            YmapGrassInstanceBatch batch = new YmapGrassInstanceBatch
+            {
+                AABBMin = fwBatch.BatchAABB.min.XYZ(),
+                AABBMax = fwBatch.BatchAABB.max.XYZ(),
+                Archetype = GameFileCache.GetArchetype(fwBatch.archetypeName),
+                Batch = fwBatch,
+                Instances = instances
+            };
+
+            batch.Position = (batch.AABBMin + batch.AABBMax) * 0.5f;
+            batch.Radius = (batch.AABBMax - batch.AABBMin).Length() * 0.5f;
+            batch.Ymap = CurrentYmapFile;
+            
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    CurrentYmapFile.AddGrassBatch(batch);
+                }
+            }
+            else
+            {
+                CurrentYmapFile.AddGrassBatch(batch);
+            }
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectGrassBatchTreeNode(batch);
+            CurrentGrassBatch = batch;
+            ShowEditYmapGrassBatchPanel(false);
+        }
+        public void AddGrassBatchToProject()
+        {
+            if (CurrentGrassBatch == null) return;
+
+            CurrentYmapFile = CurrentGrassBatch.Ymap;
+            if (!YmapExistsInProject(CurrentYmapFile))
+            {
+                var grassBatch = CurrentGrassBatch;
+                CurrentYmapFile.HasChanged = true;
+                AddYmapToProject(CurrentYmapFile);
+
+                CurrentGrassBatch = grassBatch; //bug fix for some reason the treeview selects the project node here.
+                CurrentYmapFile = grassBatch.Ymap;
+                ProjectExplorer?.TrySelectGrassBatchTreeNode(grassBatch);
+            }
+        }
+        public bool DeleteGrassBatch()
+        {
+            if (CurrentYmapFile == null) return false;
+            if (CurrentGrassBatch == null) return false;
+            if (CurrentGrassBatch.Ymap != CurrentYmapFile) return false;
+            if (CurrentYmapFile.GrassInstanceBatches == null) return false; //nothing to delete..
+
+            if (MessageBox.Show("Are you sure you want to delete this grass batch?\n" + CurrentGrassBatch.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentYmapFile.RemoveGrassBatch(CurrentGrassBatch);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentYmapFile.RemoveGrassBatch(CurrentGrassBatch);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unable to delete the grass batch. This shouldn't happen!");
+            }
+
+            var delbatch = CurrentGrassBatch;
+
+            ProjectExplorer?.RemoveGrassBatchTreeNode(CurrentGrassBatch);
+            ProjectExplorer?.SetYmapHasChanged(CurrentYmapFile, true);
+
+            ClosePanel((EditYmapGrassPanel p) => { return p.Tag == delbatch; });
+
+            CurrentGrassBatch = null;
+
+            return true;
+        }
+        public void PaintGrass(SpaceRayIntersectResult mouseRay, bool erase)
+        {
+            try
+            {
+                if (InvokeRequired)
+                {
+                    Invoke(new Action(() => { PaintGrass(mouseRay, erase); }));
+                    return;
+                }
+
+                if (!mouseRay.Hit || !mouseRay.TestComplete) return;
+                if (CurrentGrassBatch == null || (!CurrentGrassBatch.BrushEnabled)) return; // brush isn't enabled right now
+                EditYmapGrassPanel panel = FindPanel<EditYmapGrassPanel>(x => x.CurrentBatch == CurrentGrassBatch);
+                if (panel == null) return; // no panels with this batch
+
+                // TODO: Maybe move these functions into the batch instead of the grass panel?
+                // although, the panel does have the brush settings.
+                if (!erase)
+                    panel.CreateInstancesAtMouse(mouseRay);
+                else panel.EraseInstancesAtMouse(mouseRay);
+            }
+            catch { }
+        }
+        public bool GrassBatchExistsInProject(YmapGrassInstanceBatch batch)
+        {
+            if (CurrentProjectFile?.YmapFiles == null) return false;
+            if (CurrentProjectFile.YmapFiles.Count <= 0) return false;
+            foreach (var ymapFile in CurrentProjectFile.YmapFiles)
+            {
+                if (ymapFile.GrassInstanceBatches == null) continue;
+                foreach (var b in ymapFile.GrassInstanceBatches)
+                {
+                    if (batch == b)
+                        return true;
+                }
+            }
+            return false;
         }
 
         public void NewCarGen(YmapCarGen copy = null, bool copyPosition = false)
@@ -1645,11 +2042,11 @@ namespace CodeWalker.Project
                     cent.rotation = placement.Rotation;
                     cent.scaleXY = 1.0f;
                     cent.scaleZ = 1.0f;
-                    cent.flags = placement.Dynamic ? 32u : 0;// 1572872; //?
+                    cent.flags = placement.Dynamic ? 0 : 32u;// 1572872; //32 = static
                     cent.parentIndex = -1;
                     cent.lodDist = placement.LodDistance;
-                    cent.lodLevel = Unk_1264241711.LODTYPES_DEPTH_ORPHANHD;
-                    cent.priorityLevel = Unk_648413703.PRI_REQUIRED;
+                    cent.lodLevel = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
+                    cent.priorityLevel = rage__ePriorityLevel.PRI_REQUIRED;
                     cent.ambientOcclusionMultiplier = 255;
                     cent.artificialAmbientOcclusion = 255;
 
@@ -1761,8 +2158,73 @@ namespace CodeWalker.Project
 
             }
         }
-        public void SaveYtyp(bool saveas = false) //TODO!
+        public void SaveYtyp(bool saveas = false)
         {
+            if (CurrentYtypFile == null) return;
+            string ytypname = CurrentYtypFile.Name;
+            string filepath = CurrentYtypFile.FilePath;
+            if (string.IsNullOrEmpty(filepath))
+            {
+                filepath = ytypname;
+            }
+            string origfile = filepath;
+            if (!File.Exists(filepath))
+            {
+                saveas = true;
+            }
+
+
+            byte[] data;
+            lock (projectsyncroot) //need to sync writes to ytyp objects...
+            {
+                saveas = saveas || string.IsNullOrEmpty(filepath);
+                if (saveas)
+                {
+                    filepath = ShowSaveDialog("Ytyp files|*.ytyp", filepath);
+                    if (string.IsNullOrEmpty(filepath))
+                    { return; }
+
+                    string newname = Path.GetFileNameWithoutExtension(filepath);
+                    JenkIndex.Ensure(newname);
+                    CurrentYtypFile.FilePath = filepath;
+                    CurrentYtypFile.RpfFileEntry.Name = new FileInfo(filepath).Name;
+                    CurrentYtypFile.Name = CurrentYtypFile.RpfFileEntry.Name;
+                    CurrentYtypFile._CMapTypes.name = new MetaHash(JenkHash.GenHash(newname));
+                }
+
+                data = CurrentYtypFile.Save();
+            }
+
+
+            if (data != null)
+            {
+                File.WriteAllBytes(filepath, data);
+            }
+
+            SetYtypHasChanged(false);
+
+            if (saveas)
+            {
+                if (CurrentProjectFile != null)
+                {
+                    string origpath = CurrentProjectFile.GetRelativePath(origfile);
+                    string newpath = CurrentProjectFile.GetRelativePath(CurrentYtypFile.FilePath);
+
+                    if (!CurrentProjectFile.RenameYtyp(origpath, newpath))
+                    { //couldn't rename it in the project?
+                        MessageBox.Show("Couldn't rename ytyp in project! This shouldn't happen - check the project file XML.");
+                    }
+                }
+                SetProjectHasChanged(true);
+                SetCurrentSaveItem();
+            }
+
+            if (CurrentYtypFile.SaveWarnings != null)
+            {
+                string w = string.Join("\n", CurrentYtypFile.SaveWarnings);
+                MessageBox.Show(CurrentYtypFile.SaveWarnings.Count.ToString() + " warnings were generated while saving the ytyp:\n" + w);
+                CurrentYtypFile.SaveWarnings = null;//clear it out for next time..
+            }
         }
         public void AddYtypToProject(YtypFile ytyp)
         {
@@ -1797,6 +2259,241 @@ namespace CodeWalker.Project
             return CurrentProjectFile.ContainsYtyp(ytyp);
         }
 
+        public void NewArchetype(Archetype copy = null, bool copyPosition = false)
+        {
+            if (CurrentYtypFile == null) return;
+            var archetype = CurrentYtypFile.AddArchetype();
+            var archetypeDef = archetype._BaseArchetypeDef;
+            if (copy == null)
+            {
+                copy = CurrentArchetype;
+                archetype._BaseArchetypeDef.name = JenkHash.GenHash("prop_alien_egg_01");
+            }
+            if (copy != null)
+            {
+                archetype.Init(CurrentYtypFile, ref copy._BaseArchetypeDef);
+            }
+            archetype._BaseArchetypeDef = archetypeDef;
+
+            LoadProjectTree();
+            ProjectExplorer?.TrySelectArchetypeTreeNode(archetype);
+            CurrentArchetype = archetype;
+        }
+        public void NewMloEntity(YmapEntityDef copy = null, bool copyTransform = false)
+        {
+            if ((CurrentArchetype == null) || !(CurrentArchetype is MloArchetype mloArch))
+            {
+                var arch = CurrentEntity?.MloParent.Archetype ?? CurrentMloRoom?.Archetype;
+                if (arch == null)
+                    return;
+
+                mloArch = arch as MloArchetype;
+                if (mloArch == null)
+                    return;
+
+                CurrentArchetype = mloArch;
+            }
+
+            if (CurrentMloRoom == null) CurrentMloRoom = mloArch?.GetEntityRoom(CurrentMloEntity);
+            if (CurrentMloRoom == null)
+            {
+                return;
+            }
+
+            MloInstanceData mloInstance = TryGetMloInstance(mloArch);
+            if (mloInstance == null) return;
+
+            if (mloArch.rooms.Length <= 0)
+            {
+                MessageBox.Show($@"Mlo {mloArch.Name} has no rooms! Cannot create entity.");
+                return;
+            }
+
+            int roomIndex = CurrentMloRoom.Index;
+            if (roomIndex < 0)
+            {
+                MessageBox.Show(@"Invalid room index.");
+                return;
+            }
+            if (roomIndex >= mloArch.rooms.Length)
+            {
+                MessageBox.Show(
+                    $@"Room at index {roomIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {
+                            mloArch.rooms.Length
+                        } rooms.");
+                return;
+            }
+            
+            float spawndist = 5.0f; //use archetype BSradius if starting with a copy...
+            if (copy != null)
+            {
+                spawndist = copy.BSRadius * 2.5f;
+            }
+
+            bool cp = copyTransform && (copy != null);
+            Vector3 pos = cp ? copy.CEntityDef.position : GetSpawnPosRel(spawndist, mloInstance.Owner.Position, mloInstance.Owner.Orientation);
+            Quaternion rot = cp ? copy.CEntityDef.rotation.ToQuaternion() : Quaternion.Identity;
+
+
+            CEntityDef cent = new CEntityDef();
+
+            if (copy != null)
+            {
+                cent = copy.CEntityDef;
+                //TODO: copy entity extensions!
+            }
+            else
+            {
+                cent.archetypeName = new MetaHash(JenkHash.GenHash("prop_alien_egg_01"));
+                cent.rotation = new Vector4(0, 0, 0, 1);
+                cent.scaleXY = 1.0f;
+                cent.scaleZ = 1.0f;
+                cent.flags = 1572872;
+                cent.parentIndex = -1;
+                cent.lodDist = 200.0f;
+                cent.lodLevel = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
+                cent.priorityLevel = rage__ePriorityLevel.PRI_REQUIRED;
+                cent.ambientOcclusionMultiplier = 255;
+                cent.artificialAmbientOcclusion = 255;
+            }
+
+            cent.position = pos;
+            cent.rotation = rot.ToVector4();
+
+            var createindex = mloArch.entities.Length;
+            MCEntityDef ment = new MCEntityDef(ref cent, mloArch);
+
+            YmapEntityDef outEnt;
+            try
+            {
+                if (WorldForm != null)
+                {
+                    lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                    {
+                        // Add the entity to the mlo instance and archetype.
+                        outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, ment, createindex);
+                        mloArch.AddEntity(outEnt, roomIndex);
+                    }
+                }
+                else
+                {
+                    outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, ment, createindex);
+                    mloArch.AddEntity(outEnt, roomIndex);
+                }
+            }
+            catch(Exception e)
+            {
+                MessageBox.Show(this, e.Message, "Create MLO Entity Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+
+            mloInstance.AddEntity(outEnt);
+            outEnt.SetArchetype(GameFileCache.GetArchetype(cent.archetypeName));
+
+            LoadProjectTree();
+            ProjectExplorer?.TrySelectMloEntityTreeNode(mloInstance.TryGetArchetypeEntity(outEnt));
+            CurrentEntity = outEnt;
+            CurrentYtypFile = CurrentEntity.MloParent?.Archetype?.Ytyp;
+        }
+        private bool DeleteMloArchetypeEntity()
+        {
+            if (CurrentEntity?.MloParent?.Archetype?.Ytyp == null) return false;
+            if (CurrentEntity.MloParent.Archetype.Ytyp != CurrentYtypFile) return false;
+            if (!(CurrentEntity.MloParent.Archetype is MloArchetype mloArchetype)) return false;
+            if (mloArchetype.entities == null) return false; //nothing to delete..
+            //if (mloArchetype.InstancedEntities == null) return false; //nothing to delete..
+
+            if (CurrentEntity._CEntityDef.numChildren != 0)
+            {
+                MessageBox.Show("This entity's numChildren is not 0 - deleting entities with children is not currently supported by CodeWalker.");
+                return true;
+            }
+
+            if (MessageBox.Show("Are you sure you want to delete this entity?\n" + CurrentEntity._CEntityDef.archetypeName.ToString() + "\n" + CurrentEntity.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+            MloInstanceData mloInstance = CurrentEntity.MloParent.MloInstance;
+            if (mloInstance == null) return false;
+
+            var ent = CurrentEntity;
+            var mcEnt = mloInstance.TryGetArchetypeEntity(ent);
+            ProjectExplorer?.RemoveMloEntityTreeNode(mcEnt);
+
+            try
+            {
+                if (WorldForm != null)
+                {
+                    lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                    {
+                        mloInstance.DeleteEntity(ent);
+                        //WorldForm.SelectItem(null, null, null);
+                    }
+                }
+                else
+                {
+                    mloInstance.DeleteEntity(ent);
+                }
+            }
+            catch (Exception e) // various failures could happen so we'll use a trycatch for when an exception is thrown.
+            {
+                MessageBox.Show(this, "Cannot delete entity: " + Environment.NewLine + e.Message);
+                return false;
+            }
+
+            var delent = ent;
+            var delytyp = delent.MloParent.Archetype.Ytyp;
+
+            ProjectExplorer?.SetYtypHasChanged(delytyp, true);
+
+            ClosePanel((EditYmapEntityPanel p) => { return p.Tag == delent; });
+            CurrentEntity = null;
+            WorldForm.SelectItem(null);
+
+            return true;
+        }
+        public bool DeleteArchetype()
+        {
+            if (CurrentArchetype == null) return false;
+            if (CurrentArchetype.Ytyp != CurrentYtypFile) return false;
+
+            if (MessageBox.Show("Are you sure you want to delete this archetype?\n" + CurrentArchetype._BaseArchetypeDef.name.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentArchetype.Ytyp.RemoveArchetype(CurrentArchetype);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentArchetype.Ytyp.RemoveArchetype(CurrentArchetype);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Archetype couldn't be removed!");
+                return false;
+            }
+
+            var delarch = CurrentArchetype;
+            var delytyp = delarch.Ytyp;
+
+            ProjectExplorer?.RemoveArchetypeTreeNode(delarch);
+            ProjectExplorer?.SetYtypHasChanged(delytyp, true);
+
+            ClosePanel((EditYtypArchetypePanel p) => { return p.Tag == delarch; });
+
+            CurrentArchetype = null;
+
+            return true;
+        }
 
         public void NewYnd()
         {
@@ -1871,6 +2568,17 @@ namespace CodeWalker.Project
         {
             if ((CurrentYndFile == null) && (CurrentPathNode != null)) CurrentYndFile = CurrentPathNode.Ynd;
             if (CurrentYndFile == null) return;
+
+            // Check that vehicle nodes and ped nodes add up to total nodes
+            if(CurrentYndFile.NodeDictionary != null && (CurrentYndFile.NodeDictionary.NodesCountPed + CurrentYndFile.NodeDictionary.NodesCountVehicle != CurrentYndFile.NodeDictionary.NodesCount))
+            {
+                var result = MessageBox.Show($"YND Area {CurrentYndFile.AreaID}: The total number of nodes ({CurrentYndFile.NodeDictionary.NodesCount}) does not match the total number of ped ({CurrentYndFile.NodeDictionary.NodesCountPed}) and vehicle ({CurrentYndFile.NodeDictionary.NodesCountVehicle}) nodes. You should manually adjust the number of nodes on the YND screen.\n\nDo you want to continue saving the YND file? Some of your nodes may not work in game.", $"Node count mismatch in Area {CurrentYndFile.AreaID}", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                if(result == DialogResult.Cancel)
+                {
+                    return;
+                }
+            }
+
             string yndname = CurrentYndFile.Name;
             string filepath = CurrentYndFile.FilePath;
             if (string.IsNullOrEmpty(filepath))
@@ -3612,7 +4320,7 @@ namespace CodeWalker.Project
                 thisnode.MyPoint.Direction = dir;
                 thisnode.MyPoint.Type = stype;
                 thisnode.MyPoint.ModelSet = modelset;
-                thisnode.MyPoint.Flags = (Unk_700327466)flags;
+                thisnode.MyPoint.Flags = (CScenarioPointFlags__Flags)flags;
 
                 thisnode.ChainingNode = new MCScenarioChainingNode();
                 thisnode.ChainingNode.ScenarioNode = thisnode;
@@ -3691,14 +4399,132 @@ namespace CodeWalker.Project
 
 
 
-        public void NewAudioFile() //TODO
+        public void NewAudioFile()
         {
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            if (CurrentProjectFile == null) return;
+
+            int testi = 1;
+            string fname = string.Empty;
+            bool filenameok = false;
+            while (!filenameok)
+            {
+                fname = "dlc" + testi.ToString() + "_game.dat151.rel";
+                filenameok = !CurrentProjectFile.ContainsAudioRel(fname);
+                testi++;
+            }
+
+            lock (projectsyncroot)
+            {
+                RelFile rel = CurrentProjectFile.AddAudioRelFile(fname);
+                if (rel != null)
+                {
+                    rel.RelType = RelDatFileType.Dat151; //TODO: different types
+
+                }
+            }
+
+            CurrentProjectFile.HasChanged = true;
+
+            LoadProjectTree();
         }
-        public void OpenAudioFile() //TODO
+        public void OpenAudioFile()
         {
+            string[] files = ShowOpenDialogMulti("DatRel files|*.rel", string.Empty); //TODO: better filter?
+            if (files == null)
+            {
+                return;
+            }
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            foreach (string file in files)
+            {
+                if (!File.Exists(file)) continue;
+
+                var rel = CurrentProjectFile.AddAudioRelFile(file);
+
+                if (rel != null)
+                {
+                    SetProjectHasChanged(true);
+
+                    LoadAudioRelFromFile(rel, file);
+
+                    LoadProjectTree();
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
+                }
+
+            }
         }
-        public void SaveAudioFile(bool saveas = false) //TODO
+        public void SaveAudioFile(bool saveas = false)
         {
+            if (CurrentAudioFile == null) return;
+            string relname = CurrentAudioFile.Name;
+            string filepath = CurrentAudioFile.FilePath;
+            if (string.IsNullOrEmpty(filepath))
+            {
+                filepath = relname;
+            }
+            string origfile = filepath;
+            if (!File.Exists(filepath))
+            {
+                saveas = true;
+            }
+
+
+            byte[] data;
+            lock (projectsyncroot) //need to sync writes to scenario...
+            {
+                saveas = saveas || string.IsNullOrEmpty(filepath);
+                if (saveas)
+                {
+                    filepath = ShowSaveDialog("DatRel files|*.rel", filepath);
+                    if (string.IsNullOrEmpty(filepath))
+                    {
+                        return;
+                    }
+
+                    string newname = Path.GetFileNameWithoutExtension(filepath);
+                    JenkIndex.Ensure(newname);
+                    CurrentAudioFile.FilePath = filepath;
+                    CurrentAudioFile.RpfFileEntry.Name = new FileInfo(filepath).Name;
+                    CurrentAudioFile.Name = CurrentAudioFile.RpfFileEntry.Name;
+                }
+
+                data = CurrentAudioFile.Save();
+            }
+
+            if (data != null)
+            {
+                File.WriteAllBytes(filepath, data);
+            }
+
+            SetAudioFileHasChanged(false);
+
+            if (saveas)
+            {
+                //ShowEditAudioFilePanel(false);
+                if (CurrentProjectFile != null)
+                {
+                    string origpath = CurrentProjectFile.GetRelativePath(origfile);
+                    string newpath = CurrentProjectFile.GetRelativePath(CurrentAudioFile.FilePath);
+                    if (!CurrentProjectFile.RenameAudioRel(origpath, newpath))
+                    { //couldn't rename it in the project? happens when project not saved yet...
+                        //MessageBox.Show("Couldn't rename audio rel in project! This shouldn't happen - check the project file XML.");
+                    }
+                }
+                SetProjectHasChanged(true);
+                SetCurrentSaveItem();
+            }
         }
         public void AddAudioFileToProject(RelFile rel)
         {
@@ -3741,52 +4567,519 @@ namespace CodeWalker.Project
             return CurrentProjectFile.ContainsAudioRel(rel);
         }
 
-        public void NewAudioZone(AudioPlacement copy = null, bool copyPosition = false) //TODO
+        public void NewAudioZone(AudioPlacement copy = null, bool copyPosition = false)
         {
+            if (CurrentAudioFile == null) return;
+
+            if (copy == null)
+            {
+                copy = CurrentAudioZone;
+            }
+
+            bool cp = copyPosition && (copy != null);
+
+            var zone = new Dat151AmbientZone(CurrentAudioFile);
+
+            //AA800424 box, line
+            //AA800420 sphere
+            zone.Flags0 = cp ? copy.AudioZone.Flags0.Value : 0xAA800424;
+            zone.Flags1 = cp ? copy.AudioZone.Flags1 : 0;
+            zone.Flags2 = cp ? copy.AudioZone.Flags2 : 0;
+            zone.Shape = cp ? copy.AudioZone.Shape : Dat151ZoneShape.Box;
+            zone.InnerSize = cp ? copy.AudioZone.InnerSize : Vector3.One * 10.0f;
+            zone.InnerAngle = cp ? copy.AudioZone.InnerAngle : 0;
+            zone.InnerVec1 = cp ? copy.AudioZone.InnerVec1 : Vector4.Zero;
+            zone.InnerVec2 = cp ? copy.AudioZone.InnerVec2 : new Vector4(1, 1, 1, 0);
+            zone.InnerVec3 = cp ? copy.AudioZone.InnerVec3 : Vector3.Zero;
+            zone.OuterSize = cp ? copy.AudioZone.OuterSize : Vector3.One * 15.0f;
+            zone.OuterAngle = cp ? copy.AudioZone.OuterAngle : 0;
+            zone.OuterVec1 = cp ? copy.AudioZone.OuterVec1 : Vector4.Zero;
+            zone.OuterVec2 = cp ? copy.AudioZone.OuterVec2 : new Vector4(1, 1, 1, 0);
+            zone.OuterVec3 = cp ? copy.AudioZone.OuterVec3 : Vector3.Zero;
+            zone.UnkVec1 = cp ? copy.AudioZone.UnkVec1 : new Vector4(0, 0, 1, 0);
+            zone.UnkVec2 = cp ? copy.AudioZone.UnkVec2 : new Vector4(1, -1, -1, 0);
+            zone.UnkHash0 = cp ? copy.AudioZone.UnkHash0 : 0;
+            zone.UnkHash1 = cp ? copy.AudioZone.UnkHash1 : 0;
+            zone.UnkVec3 = cp ? copy.AudioZone.UnkVec3 : new Vector2(-1, 0);
+            zone.Unk14 = cp ? copy.AudioZone.Unk14 : (byte)4;
+            zone.Unk15 = cp ? copy.AudioZone.Unk15 : (byte)1;
+            zone.Unk16 = cp ? copy.AudioZone.Unk16 : (byte)0;
+            zone.HashesCount = cp ? copy.AudioZone.HashesCount: (byte)0;
+            zone.Hashes = cp ? copy.AudioZone.Hashes : null;
+            zone.ExtParamsCount = cp ? copy.AudioZone.ExtParamsCount : 0;
+            zone.ExtParams = cp ? copy.AudioZone.ExtParams : null;
+            zone.Name = "zone1";
+            zone.NameHash = JenkHash.GenHash(zone.Name);
+
+            var ap = new AudioPlacement(CurrentAudioFile, zone);
+            ap.Name = zone.Name;
+            ap.NameHash = zone.NameHash;
+
+            Vector3 pos = cp ? copy.Position : GetSpawnPos(20.0f);
+            Quaternion ori = cp ? copy.Orientation : Quaternion.Identity;
+            ap.SetPosition(pos);
+            ap.SetOrientation(ori);
+
+
+            CurrentAudioFile.AddRelData(zone);
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectAudioZoneTreeNode(ap);
+            CurrentAudioZone = ap;
+            
+            ShowEditAudioZonePanel(false);
+
+
+            if (WorldForm != null)
+            {
+                WorldForm.UpdateAudioPlacementGraphics(CurrentAudioFile);
+            }
         }
-        public bool DeleteAudioZone() //TODO
+        public bool DeleteAudioZone()
         {
-            return false;
+            if (CurrentAudioZone?.RelFile != CurrentAudioFile) return false;
+            if (CurrentAudioFile?.RelDatas == null) return false; //nothing to delete..
+            if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
+            if (CurrentAudioZone?.AudioZone == null) return false;
+
+
+            if (MessageBox.Show("Are you sure you want to delete this audio zone?\n" + CurrentAudioZone.GetNameString() + "\n" + CurrentAudioZone.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentAudioFile.RemoveRelData(CurrentAudioZone.AudioZone);
+
+                    WorldForm.UpdateAudioPlacementGraphics(CurrentAudioFile);
+                }
+            }
+            else
+            {
+                res = CurrentAudioFile.RemoveRelData(CurrentAudioZone.AudioZone);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unspecified error occurred when removing the audio zone from the file!");
+            }
+
+            var delzone = CurrentAudioZone;
+            var delrel = CurrentAudioFile;
+
+            ProjectExplorer?.RemoveAudioZoneTreeNode(delzone);
+            ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
+
+            ClosePanel((EditAudioZonePanel p) => { return p.CurrentZone.AudioZone == delzone.AudioZone; });
+
+            CurrentAudioZone = null;
+
+            //if (WorldForm != null)
+            //{
+            //    lock (WorldForm.RenderSyncRoot)
+            //    {
+            //        WorldForm.SelectItem(null);
+            //    }
+            //}
+
+            return true;
         }
         public bool IsCurrentAudioZone(AudioPlacement zone)
         {
             return zone == CurrentAudioZone;
         }
 
-        public void NewAudioEmitter(AudioPlacement copy = null, bool copyPosition = false) //TODO
+        public void NewAudioEmitter(AudioPlacement copy = null, bool copyPosition = false)
         {
+            if (CurrentAudioFile == null) return;
+
+            if (copy == null)
+            {
+                copy = CurrentAudioEmitter;
+            }
+
+            bool cp = copyPosition && (copy != null);
+
+            var emitter = new Dat151AmbientEmitter(CurrentAudioFile);
+
+            emitter.Flags0 = cp ? copy.AudioEmitter.Flags0.Value : 0xAA001100;
+            emitter.Flags5 = cp ? copy.AudioEmitter.Flags5.Value : 0xFFFFFFFF;
+            emitter.InnerRad = cp ? copy.AudioEmitter.InnerRad : 0.0f;
+            emitter.OuterRad = cp ? copy.AudioEmitter.OuterRad : 20.0f;
+            emitter.Unk01 = cp ? copy.AudioEmitter.Unk01 : 1.0f;
+            emitter.Unk02 = cp ? copy.AudioEmitter.Unk02.Value : (byte)0;
+            emitter.Unk03 = cp ? copy.AudioEmitter.Unk03.Value : (byte)0;
+            emitter.Unk04 = cp ? copy.AudioEmitter.Unk04.Value : (byte)160;
+            emitter.Unk05 = cp ? copy.AudioEmitter.Unk05.Value : (byte)5;
+            emitter.Unk06 = cp ? copy.AudioEmitter.Unk06.Value : (ushort)0;
+            emitter.Unk07 = cp ? copy.AudioEmitter.Unk07.Value : (ushort)0;
+            emitter.Unk08 = cp ? copy.AudioEmitter.Unk08.Value : (byte)0;
+            emitter.Unk09 = cp ? copy.AudioEmitter.Unk09.Value : (byte)1;
+            emitter.Unk10 = cp ? copy.AudioEmitter.Unk10.Value : (byte)1;
+            emitter.Unk11 = cp ? copy.AudioEmitter.Unk11.Value : (byte)1;
+            emitter.Unk12 = cp ? copy.AudioEmitter.Unk12.Value : (byte)100;
+            emitter.Unk13 = cp ? copy.AudioEmitter.Unk13.Value : (byte)3;
+
+
+            emitter.Name = "emitter1";
+            emitter.NameHash = JenkHash.GenHash(emitter.Name);
+
+            var ap = new AudioPlacement(CurrentAudioFile, emitter);
+            ap.Name = emitter.Name;
+            ap.NameHash = emitter.NameHash;
+
+            Vector3 pos = cp ? copy.Position : GetSpawnPos(20.0f);
+            Quaternion ori = cp ? copy.Orientation : Quaternion.Identity;
+            ap.SetPosition(pos);
+            ap.SetOrientation(ori);
+
+
+            CurrentAudioFile.AddRelData(emitter);
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectAudioEmitterTreeNode(ap);
+            CurrentAudioEmitter = ap;
+
+            ShowEditAudioEmitterPanel(false);
+
+
+            if (WorldForm != null)
+            {
+                WorldForm.UpdateAudioPlacementGraphics(CurrentAudioFile);
+            }
         }
-        public bool DeleteAudioEmitter() //TODO
+        public bool DeleteAudioEmitter()
         {
-            return false;
+            if (CurrentAudioEmitter?.RelFile != CurrentAudioFile) return false;
+            if (CurrentAudioFile?.RelDatas == null) return false; //nothing to delete..
+            if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
+            if (CurrentAudioEmitter?.AudioEmitter == null) return false;
+
+
+            if (MessageBox.Show("Are you sure you want to delete this audio emitter?\n" + CurrentAudioEmitter.GetNameString() + "\n" + CurrentAudioEmitter.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentAudioFile.RemoveRelData(CurrentAudioEmitter.AudioEmitter);
+                    
+                    WorldForm.UpdateAudioPlacementGraphics(CurrentAudioFile);
+                }
+            }
+            else
+            {
+                res = CurrentAudioFile.RemoveRelData(CurrentAudioEmitter.AudioEmitter);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unspecified error occurred when removing the audio emitter from the file!");
+            }
+
+            var delem = CurrentAudioEmitter;
+            var delrel = CurrentAudioFile;
+
+            ProjectExplorer?.RemoveAudioEmitterTreeNode(delem);
+            ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
+
+            CurrentAudioEmitter = null;
+
+            ClosePanel((EditAudioEmitterPanel p) => { return p.CurrentEmitter.AudioEmitter == delem.AudioEmitter; });
+
+            //if (WorldForm != null)
+            //{
+            //    lock (WorldForm.RenderSyncRoot)
+            //    {
+            //        WorldForm.SelectItem(null);
+            //    }
+            //}
+
+            return true;
         }
         public bool IsCurrentAudioEmitter(AudioPlacement emitter)
         {
             return emitter == CurrentAudioEmitter;
         }
 
-        public void NewAudioZoneList() //TODO
+        public void NewAudioZoneList()
         {
+            if (CurrentAudioFile == null) return;
+
+
+            var zonelist = new Dat151AmbientZoneList(CurrentAudioFile);
+
+            zonelist.Name = "zonelist1";
+            zonelist.NameHash = JenkHash.GenHash(zonelist.Name);
+
+            CurrentAudioFile.AddRelData(zonelist);
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectAudioZoneListTreeNode(zonelist);
+            CurrentAudioZoneList = zonelist;
+
+            ShowEditAudioZoneListPanel(false);
         }
-        public bool DeleteAudioZoneList() //TODO
+        public bool DeleteAudioZoneList()
         {
-            return false;
+            if (CurrentAudioZoneList?.Rel != CurrentAudioFile) return false;
+            if (CurrentAudioFile?.RelDatas == null) return false; //nothing to delete..
+            if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
+
+
+            if (MessageBox.Show("Are you sure you want to delete this audio zone list?\n" + CurrentAudioZoneList.GetNameString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentAudioFile.RemoveRelData(CurrentAudioZoneList);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentAudioFile.RemoveRelData(CurrentAudioZoneList);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unspecified error occurred when removing the audio zone list from the file!");
+            }
+
+            var delzl = CurrentAudioZoneList;
+            var delrel = CurrentAudioFile;
+
+            ProjectExplorer?.RemoveAudioZoneListTreeNode(delzl);
+            ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
+
+            ClosePanel((EditAudioZoneListPanel p) => { return p.Tag == delzl; });
+
+            CurrentAudioZoneList = null;
+
+            return true;
         }
         public bool IsCurrentAudioZoneList(Dat151AmbientZoneList list)
         {
             return list == CurrentAudioZoneList;
         }
 
-        public void NewAudioEmitterList() //TODO
+        public void NewAudioEmitterList()
         {
+            if (CurrentAudioFile == null) return;
+
+
+            var emlist = new Dat151AmbientEmitterList(CurrentAudioFile);
+
+            emlist.Name = "emitterlist1";
+            emlist.NameHash = JenkHash.GenHash(emlist.Name);
+
+
+            CurrentAudioFile.AddRelData(emlist);
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectAudioEmitterListTreeNode(emlist);
+            CurrentAudioEmitterList = emlist;
+
+            ShowEditAudioEmitterListPanel(false);
         }
-        public bool DeleteAudioEmitterList() //TODO
+        public bool DeleteAudioEmitterList()
         {
-            return false;
+            if (CurrentAudioEmitterList?.Rel != CurrentAudioFile) return false;
+            if (CurrentAudioFile?.RelDatas == null) return false; //nothing to delete..
+            if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
+
+
+            if (MessageBox.Show("Are you sure you want to delete this audio emitter list?\n" + CurrentAudioEmitterList.GetNameString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentAudioFile.RemoveRelData(CurrentAudioEmitterList);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentAudioFile.RemoveRelData(CurrentAudioEmitterList);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unspecified error occurred when removing the audio emitter list from the file!");
+            }
+
+            var delel = CurrentAudioEmitterList;
+            var delrel = CurrentAudioFile;
+
+            ProjectExplorer?.RemoveAudioEmitterListTreeNode(delel);
+            ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
+
+            ClosePanel((EditAudioEmitterListPanel p) => { return p.Tag == delel; });
+
+            CurrentAudioEmitterList = null;
+
+            return true;
         }
         public bool IsCurrentAudioEmitterList(Dat151AmbientEmitterList list)
         {
             return list == CurrentAudioEmitterList;
+        }
+
+        public void NewAudioInterior()
+        {
+            if (CurrentAudioFile == null) return;
+
+
+            var interior = new Dat151Interior(CurrentAudioFile);
+
+            interior.Name = "interior1";
+            interior.NameHash = JenkHash.GenHash(interior.Name);
+            interior.Unk0 = 0xAAAAA844;
+            interior.Unk1 = 0xD4855127;
+
+            CurrentAudioFile.AddRelData(interior);
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectAudioInteriorTreeNode(interior);
+            CurrentAudioInterior = interior;
+
+            ShowEditAudioInteriorPanel(false);
+        }
+        public bool DeleteAudioInterior()
+        {
+            if (CurrentAudioInterior?.Rel != CurrentAudioFile) return false;
+            if (CurrentAudioFile?.RelDatas == null) return false; //nothing to delete..
+            if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
+
+
+            if (MessageBox.Show("Are you sure you want to delete this audio interior?\n" + CurrentAudioInterior.GetNameString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentAudioFile.RemoveRelData(CurrentAudioInterior);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentAudioFile.RemoveRelData(CurrentAudioInterior);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unspecified error occurred when removing the audio interior from the file!");
+            }
+
+            var delel = CurrentAudioInterior;
+            var delrel = CurrentAudioFile;
+
+            ProjectExplorer?.RemoveAudioInteriorTreeNode(delel);
+            ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
+
+            ClosePanel((EditAudioInteriorPanel p) => { return p.Tag == delel; });
+
+            CurrentAudioInterior = null;
+
+            return true;
+        }
+        public bool IsCurrentAudioInterior(Dat151Interior interior)
+        {
+            return interior == CurrentAudioInterior;
+        }
+
+        public void NewAudioInteriorRoom()
+        {
+            if (CurrentAudioFile == null) return;
+
+
+            var room = new Dat151InteriorRoom(CurrentAudioFile);
+
+            room.Name = "room1";
+            room.NameHash = JenkHash.GenHash(room.Name);
+
+            room.Flags0 = 0xAAAAAAAA;
+            room.Unk06 = 3817852694;//??
+            room.Unk14 = 3565506855;//?
+
+
+            CurrentAudioFile.AddRelData(room);
+
+            LoadProjectTree();
+
+            ProjectExplorer?.TrySelectAudioInteriorRoomTreeNode(room);
+            CurrentAudioInteriorRoom = room;
+
+            ShowEditAudioInteriorRoomPanel(false);
+        }
+        public bool DeleteAudioInteriorRoom()
+        {
+            if (CurrentAudioInteriorRoom?.Rel != CurrentAudioFile) return false;
+            if (CurrentAudioFile?.RelDatas == null) return false; //nothing to delete..
+            if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
+
+
+            if (MessageBox.Show("Are you sure you want to delete this audio interior room?\n" + CurrentAudioInteriorRoom.GetNameString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentAudioFile.RemoveRelData(CurrentAudioInteriorRoom);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentAudioFile.RemoveRelData(CurrentAudioInteriorRoom);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unspecified error occurred when removing the audio interior from the file!");
+            }
+
+            var delel = CurrentAudioInteriorRoom;
+            var delrel = CurrentAudioFile;
+
+            ProjectExplorer?.RemoveAudioInteriorRoomTreeNode(delel);
+            ProjectExplorer?.SetAudioRelHasChanged(delrel, true);
+
+            ClosePanel((EditAudioInteriorRoomPanel p) => { return p.Tag == delel; });
+
+            CurrentAudioInteriorRoom = null;
+
+            return true;
+        }
+        public bool IsCurrentAudioInteriorRoom(Dat151InteriorRoom room)
+        {
+            return room == CurrentAudioInteriorRoom;
         }
 
 
@@ -3811,7 +5104,25 @@ namespace CodeWalker.Project
                         var ymap = CurrentProjectFile.YmapFiles[i];
                         if (ymap.Loaded)
                         {
-                            ymaps[ymap._CMapData.name] = ymap;
+                            // make sure we're replacing ymaps that have been added by the end-user.
+                            if (ymap.RpfFileEntry.ShortNameHash == 0)
+                            {
+                                ymap.RpfFileEntry.ShortNameHash = JenkHash.GenHash(ymap.RpfFileEntry.GetShortNameLower());
+                            }
+
+                            ymaps[ymap.RpfFileEntry.ShortNameHash] = ymap;
+                        }
+                    }
+
+                    visiblemloentities.Clear();
+                    foreach (var kvp in ymaps)
+                    {
+                        var ymap = kvp.Value;
+                        if (ymap.MloEntities == null) continue;
+                        foreach (var mloDef in ymap.MloEntities)
+                        {
+                            if (mloDef.Archetype == null) continue; // archetype was changed from an mlo to a regular archetype
+                            visiblemloentities[mloDef.Archetype._BaseArchetypeDef.name] = mloDef;
                         }
                     }
                 }
@@ -3973,6 +5284,54 @@ namespace CodeWalker.Project
             }
 
         }
+        public void GetVisibleAudioFiles(Camera camera, List<RelFile> rels)
+        {
+            if (hidegtavmap)
+            {
+                rels.Clear();
+            }
+
+            if (CurrentProjectFile == null) return;
+
+            lock (projectsyncroot)
+            {
+                visibleaudiofiles.Clear();
+                for (int i = 0; i < rels.Count; i++)
+                {
+                    var rel = rels[i];
+                    visibleaudiofiles[rel.RpfFileEntry.NameHash] = rel;
+                }
+
+                for (int i = 0; i < CurrentProjectFile.AudioRelFiles.Count; i++)
+                {
+                    var rel = CurrentProjectFile.AudioRelFiles[i];
+                    if (rel.Loaded)
+                    {
+                        visibleaudiofiles[rel.RpfFileEntry.NameHash] = rel;
+                    }
+                }
+
+                rels.Clear();
+                foreach (var rel in visibleaudiofiles.Values)
+                {
+                    rels.Add(rel);
+                }
+            }
+
+
+        }
+
+        public MloInstanceData TryGetMloInstance(MloArchetype arch)
+        {
+            lock (projectsyncroot)
+            {
+                if (arch == null) return null;
+                MetaHash name = arch._BaseArchetypeDef.name;
+                if (name == 0) return null;
+                if (!visiblemloentities.ContainsKey(name)) return null;
+                return visiblemloentities[name]?.MloInstance;
+            }
+        }
 
 
         public void OnWorldSelectionChanged(MapSelection sel)
@@ -3985,6 +5344,8 @@ namespace CodeWalker.Project
                 }
                 else
                 {
+                    var mlo = sel.MloEntityDef;
+                    var room = sel.MloRoomDef;
                     var ent = sel.EntityDef;
                     var cargen = sel.CarGenerator;
                     var grassbatch = sel.GrassBatch;
@@ -3997,7 +5358,9 @@ namespace CodeWalker.Project
                     var scenariond = sel.ScenarioNode;
                     var scenarioedge = sel.ScenarioEdge;
                     var audiopl = sel.Audio;
-                    YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap;
+                    Archetype arch = mlo?.Archetype ?? ent?.MloParent?.Archetype ?? ent?.Archetype;
+                    YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.Archetype?.Ytyp;
+                    YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
                     YndFile ynd = pathnode?.Ynd;
                     YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
                     TrainTrack traintrack = trainnode?.Track;
@@ -4014,6 +5377,31 @@ namespace CodeWalker.Project
                         if (cargen != CurrentCarGen)
                         {
                             ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
+                        }
+                        if (grassbatch != CurrentGrassBatch)
+                        {
+                            ProjectExplorer?.TrySelectGrassBatchTreeNode(grassbatch);
+                        }
+
+                    }
+                    else if (YtypExistsInProject(ytyp))
+                    {
+                        if (arch != CurrentArchetype)
+                        {
+                            ProjectExplorer?.TrySelectArchetypeTreeNode(mlo?.Archetype);
+                        }
+                        if (ent != CurrentEntity)
+                        {
+                            MloInstanceData mloInstance = ent.MloParent?.MloInstance;
+                            if (mloInstance != null)
+                            {
+                                MCEntityDef entityDef = mloInstance.TryGetArchetypeEntity(ent);
+                                ProjectExplorer?.TrySelectMloEntityTreeNode(entityDef);
+                            }
+                        }
+                        if (room != CurrentMloRoom)
+                        {
+                            ProjectExplorer?.TrySelectMloRoomTreeNode(room);
                         }
                     }
                     else if (YndExistsInProject(ynd))
@@ -4070,9 +5458,11 @@ namespace CodeWalker.Project
                         showcurrent = true;
                     }
 
+                    CurrentMloRoom = room;
                     CurrentYmapFile = ymap;
-                    CurrentYtypFile = null;//TODO: interiors!
-                    CurrentEntity = ent;
+                    CurrentYtypFile = ytyp;
+                    CurrentArchetype = arch;
+                    CurrentEntity = ent ?? mlo;
                     CurrentCarGen = cargen;
                     CurrentGrassBatch = grassbatch;
                     CurrentYndFile = ynd;
@@ -4105,479 +5495,424 @@ namespace CodeWalker.Project
         }
         public void OnWorldSelectionModified(MapSelection sel, List<MapSelection> items)
         {
-            if (sel.MultipleSelection)
-            {
-                //TODO!!
-            }
-            else if (sel.EntityDef != null)
-            {
-                OnWorldEntityModified(sel.EntityDef);
-            }
-            else if (sel.CarGenerator != null)
-            {
-                OnWorldCarGenModified(sel.CarGenerator);
-            }
-            else if (sel.PathNode != null)
-            {
-                OnWorldPathNodeModified(sel.PathNode, sel.PathLink);
-            }
-            else if (sel.NavPoly != null)
-            {
-                OnWorldNavPolyModified(sel.NavPoly);
-            }
-            else if (sel.NavPoint != null)
-            {
-                OnWorldNavPointModified(sel.NavPoint);
-            }
-            else if (sel.NavPortal != null)
-            {
-                OnWorldNavPortalModified(sel.NavPortal);
-            }
-            else if (sel.TrainTrackNode != null)
-            {
-                OnWorldTrainNodeModified(sel.TrainTrackNode);
-            }
-            else if (sel.ScenarioNode != null)
-            {
-                OnWorldScenarioNodeModified(sel.ScenarioNode);
-            }
-            else if (sel.Audio != null)
-            {
-                OnWorldAudioPlacementModified(sel.Audio);
-            }
-        }
-
-        private void OnWorldEntityModified(YmapEntityDef ent)
-        {
             try
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { OnWorldEntityModified(ent); }));
+                    BeginInvoke(new Action(() => { OnWorldSelectionModified(sel, items); }));
                 }
                 else
                 {
-                    if ((ent.Ymap == null) || (ent.MloParent != null))
+                    if (sel.MultipleSelection)
                     {
-                        return;//TODO: properly handle interior entities!
+                        //TODO!!
                     }
-
-                    if (CurrentProjectFile == null)
+                    else if (sel.EntityDef != null)
                     {
-                        NewProject();
+                        OnWorldEntityModified(sel.EntityDef);
                     }
-
-                    if (!YmapExistsInProject(ent.Ymap))
+                    else if (sel.CarGenerator != null)
                     {
-                        ent.Ymap.HasChanged = true;
-                        AddYmapToProject(ent.Ymap);
-                        ProjectExplorer?.TrySelectEntityTreeNode(ent);
+                        OnWorldCarGenModified(sel.CarGenerator);
                     }
-
-                    if (ent != CurrentEntity)
+                    else if (sel.PathNode != null)
                     {
-                        CurrentEntity = ent;
-                        ProjectExplorer?.TrySelectEntityTreeNode(ent);
+                        OnWorldPathNodeModified(sel.PathNode, sel.PathLink);
                     }
-
-                    if (ent == CurrentEntity)
+                    else if (sel.NavPoly != null)
                     {
-                        ShowEditYmapEntityPanel(false);
-
-                        if (ent.Ymap != null)
-                        {
-                            SetYmapHasChanged(true);
-                        }
+                        OnWorldNavPolyModified(sel.NavPoly);
+                    }
+                    else if (sel.NavPoint != null)
+                    {
+                        OnWorldNavPointModified(sel.NavPoint);
+                    }
+                    else if (sel.NavPortal != null)
+                    {
+                        OnWorldNavPortalModified(sel.NavPortal);
+                    }
+                    else if (sel.TrainTrackNode != null)
+                    {
+                        OnWorldTrainNodeModified(sel.TrainTrackNode);
+                    }
+                    else if (sel.ScenarioNode != null)
+                    {
+                        OnWorldScenarioNodeModified(sel.ScenarioNode);
+                    }
+                    else if (sel.Audio != null)
+                    {
+                        OnWorldAudioPlacementModified(sel.Audio);
                     }
                 }
             }
             catch { }
+        }
+        private void OnWorldEntityModified(YmapEntityDef ent)
+        {
+            if ((ent.Ymap == null) && (ent.MloParent == null))
+            {
+                return;//TODO: properly handle interior entities!
+            }
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            if (ent.MloParent == null && ent.Ymap != null)
+            {
+                if (!YmapExistsInProject(ent.Ymap))
+                {
+                    ent.Ymap.HasChanged = true;
+                    AddYmapToProject(ent.Ymap);
+                    ProjectExplorer?.TrySelectEntityTreeNode(ent);
+                }
+
+                if (ent != CurrentEntity)
+                {
+                    CurrentEntity = ent;
+                    ProjectExplorer?.TrySelectEntityTreeNode(ent);
+                }
+
+                if (ent == CurrentEntity)
+                {
+                    ShowEditYmapEntityPanel(false);
+
+                    if (ent.Ymap != null)
+                    {
+                        SetYmapHasChanged(true);
+                    }
+                }
+            }
+            else if (ent.MloParent != null && ent.Ymap == null)
+            {
+                MloInstanceData mloInstance = ent.MloParent?.MloInstance;
+                if (mloInstance != null)
+                {
+                    var mcEntity = mloInstance.TryGetArchetypeEntity(ent);
+                    if (mcEntity != null)
+                    {
+                        if (!YtypExistsInProject(ent.MloParent.Archetype.Ytyp))
+                        {
+                            ent.MloParent.Archetype.Ytyp.HasChanged = true;
+                            AddYtypToProject(ent.MloParent.Archetype.Ytyp);
+                            ProjectExplorer?.TrySelectMloEntityTreeNode(mcEntity);
+                        }
+
+                        if (ent != CurrentEntity)
+                        {
+                            CurrentEntity = ent;
+                            ProjectExplorer?.TrySelectMloEntityTreeNode(mcEntity);
+                        }
+                    }
+                }
+
+                if (ent == CurrentEntity)
+                {
+                    ShowEditYmapEntityPanel(false);
+
+                    if (ent.MloParent.Archetype.Ytyp != null)
+                    {
+                        SetYtypHasChanged(true);
+                    }
+                }
+            }
         }
         private void OnWorldCarGenModified(YmapCarGen cargen)
         {
-            try
+            if (cargen?.Ymap == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!YmapExistsInProject(cargen.Ymap))
+            {
+                cargen.Ymap.HasChanged = true;
+                AddYmapToProject(cargen.Ymap);
+                ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
+            }
+
+            if (cargen != CurrentCarGen)
+            {
+                CurrentCarGen = cargen;
+                ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
+            }
+
+            if (cargen == CurrentCarGen)
+            {
+                ShowEditYmapCarGenPanel(false);
+
+                ProjectExplorer?.UpdateCarGenTreeNode(cargen);
+
+                if (cargen.Ymap != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldCarGenModified(cargen); }));
-                }
-                else
-                {
-                    if (cargen?.Ymap == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!YmapExistsInProject(cargen.Ymap))
-                    {
-                        cargen.Ymap.HasChanged = true;
-                        AddYmapToProject(cargen.Ymap);
-                        ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
-                    }
-
-                    if (cargen != CurrentCarGen)
-                    {
-                        CurrentCarGen = cargen;
-                        ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
-                    }
-
-                    if (cargen == CurrentCarGen)
-                    {
-                        ShowEditYmapCarGenPanel(false);
-
-                        ProjectExplorer?.UpdateCarGenTreeNode(cargen);
-
-                        if (cargen.Ymap != null)
-                        {
-                            SetYmapHasChanged(true);
-                        }
-                    }
-
+                    SetYmapHasChanged(true);
                 }
             }
-            catch { }
+
         }
         private void OnWorldPathNodeModified(YndNode node, YndLink link)
         {
-            try
+            if (node?.Ynd == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!YndExistsInProject(node.Ynd))
+            {
+                node.Ynd.HasChanged = true;
+                AddYndToProject(node.Ynd);
+                ProjectExplorer?.TrySelectPathNodeTreeNode(node);
+            }
+
+            if (node != CurrentPathNode)
+            {
+                CurrentPathNode = node;
+                ProjectExplorer?.TrySelectPathNodeTreeNode(node);
+            }
+
+            //////if (link != CurrentPathLink)
+            //////{
+            //////    CurrentPathLink = link;
+            //////    ShowEditYndLinkPanel(false);
+            //////}
+
+            if (node == CurrentPathNode)
+            {
+                //////ShowEditYndPanel(false);
+                ShowEditYndNodePanel(false);
+
+                //////UpdatePathNodeTreeNode(node);
+
+                if (node.Ynd != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldPathNodeModified(node, link); }));
-                }
-                else
-                {
-                    if (node?.Ynd == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!YndExistsInProject(node.Ynd))
-                    {
-                        node.Ynd.HasChanged = true;
-                        AddYndToProject(node.Ynd);
-                        ProjectExplorer?.TrySelectPathNodeTreeNode(node);
-                    }
-
-                    if (node != CurrentPathNode)
-                    {
-                        CurrentPathNode = node;
-                        ProjectExplorer?.TrySelectPathNodeTreeNode(node);
-                    }
-
-                    //////if (link != CurrentPathLink)
-                    //////{
-                    //////    CurrentPathLink = link;
-                    //////    ShowEditYndLinkPanel(false);
-                    //////}
-
-                    if (node == CurrentPathNode)
-                    {
-                        //////ShowEditYndPanel(false);
-                        ShowEditYndNodePanel(false);
-
-                        //////UpdatePathNodeTreeNode(node);
-
-                        if (node.Ynd != null)
-                        {
-                            SetYndHasChanged(true);
-                        }
-                    }
-
+                    SetYndHasChanged(true);
                 }
             }
-            catch { }
         }
         private void OnWorldNavPolyModified(YnvPoly poly)
         {
-            try
+            if (poly?.Ynv == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!YnvExistsInProject(poly.Ynv))
+            {
+                poly.Ynv.HasChanged = true;
+                AddYnvToProject(poly.Ynv);
+                ProjectExplorer?.TrySelectNavPolyTreeNode(poly);
+            }
+
+            if (poly != CurrentNavPoly)
+            {
+                CurrentNavPoly = poly;
+                ProjectExplorer?.TrySelectNavPolyTreeNode(poly);
+            }
+
+            if (poly == CurrentNavPoly)
+            {
+                ShowEditYnvPolyPanel(false);
+
+                //////UpdateNavPolyTreeNode(poly);
+
+                if (poly.Ynv != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldNavPolyModified(poly); }));
-                }
-                else
-                {
-                    if (poly?.Ynv == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!YnvExistsInProject(poly.Ynv))
-                    {
-                        poly.Ynv.HasChanged = true;
-                        AddYnvToProject(poly.Ynv);
-                        ProjectExplorer?.TrySelectNavPolyTreeNode(poly);
-                    }
-
-                    if (poly != CurrentNavPoly)
-                    {
-                        CurrentNavPoly = poly;
-                        ProjectExplorer?.TrySelectNavPolyTreeNode(poly);
-                    }
-
-                    if (poly == CurrentNavPoly)
-                    {
-                        ShowEditYnvPolyPanel(false);
-
-                        //////UpdateNavPolyTreeNode(poly);
-
-                        if (poly.Ynv != null)
-                        {
-                            SetYnvHasChanged(true);
-                        }
-                    }
-
+                    SetYnvHasChanged(true);
                 }
             }
-            catch { }
+
         }
         private void OnWorldNavPointModified(YnvPoint point)
         {
-            try
+            if (point?.Ynv == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!YnvExistsInProject(point.Ynv))
+            {
+                point.Ynv.HasChanged = true;
+                AddYnvToProject(point.Ynv);
+                ProjectExplorer?.TrySelectNavPointTreeNode(point);
+            }
+
+            if (point != CurrentNavPoint)
+            {
+                CurrentNavPoint = point;
+                ProjectExplorer?.TrySelectNavPointTreeNode(point);
+            }
+
+            if (point == CurrentNavPoint)
+            {
+                ShowEditYnvPointPanel(false);
+
+                //////UpdateNavPointTreeNode(poly);
+
+                if (point.Ynv != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldNavPointModified(point); }));
-                }
-                else
-                {
-                    if (point?.Ynv == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!YnvExistsInProject(point.Ynv))
-                    {
-                        point.Ynv.HasChanged = true;
-                        AddYnvToProject(point.Ynv);
-                        ProjectExplorer?.TrySelectNavPointTreeNode(point);
-                    }
-
-                    if (point != CurrentNavPoint)
-                    {
-                        CurrentNavPoint = point;
-                        ProjectExplorer?.TrySelectNavPointTreeNode(point);
-                    }
-
-                    if (point == CurrentNavPoint)
-                    {
-                        ShowEditYnvPointPanel(false);
-
-                        //////UpdateNavPointTreeNode(poly);
-
-                        if (point.Ynv != null)
-                        {
-                            SetYnvHasChanged(true);
-                        }
-                    }
-
+                    SetYnvHasChanged(true);
                 }
             }
-            catch { }
+
         }
         private void OnWorldNavPortalModified(YnvPortal portal)
         {
-            try
+            if (portal?.Ynv == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!YnvExistsInProject(portal.Ynv))
+            {
+                portal.Ynv.HasChanged = true;
+                AddYnvToProject(portal.Ynv);
+                ProjectExplorer?.TrySelectNavPortalTreeNode(portal);
+            }
+
+            if (portal != CurrentNavPortal)
+            {
+                CurrentNavPortal = portal;
+                ProjectExplorer?.TrySelectNavPortalTreeNode(portal);
+            }
+
+            if (portal == CurrentNavPortal)
+            {
+                ShowEditYnvPortalPanel(false);
+
+                //////UpdateNavPortalTreeNode(poly);
+
+                if (portal.Ynv != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldNavPortalModified(portal); }));
-                }
-                else
-                {
-                    if (portal?.Ynv == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!YnvExistsInProject(portal.Ynv))
-                    {
-                        portal.Ynv.HasChanged = true;
-                        AddYnvToProject(portal.Ynv);
-                        ProjectExplorer?.TrySelectNavPortalTreeNode(portal);
-                    }
-
-                    if (portal != CurrentNavPortal)
-                    {
-                        CurrentNavPortal = portal;
-                        ProjectExplorer?.TrySelectNavPortalTreeNode(portal);
-                    }
-
-                    if (portal == CurrentNavPortal)
-                    {
-                        ShowEditYnvPortalPanel(false);
-
-                        //////UpdateNavPortalTreeNode(poly);
-
-                        if (portal.Ynv != null)
-                        {
-                            SetYnvHasChanged(true);
-                        }
-                    }
-
+                    SetYnvHasChanged(true);
                 }
             }
-            catch { }
+
         }
         private void OnWorldTrainNodeModified(TrainTrackNode node)
         {
-            try
+            if (node?.Track == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!TrainTrackExistsInProject(node.Track))
+            {
+                node.Track.HasChanged = true;
+                AddTrainTrackToProject(node.Track);
+                ProjectExplorer?.TrySelectTrainNodeTreeNode(node);
+            }
+
+            if (node != CurrentTrainNode)
+            {
+                CurrentTrainNode = node;
+                ProjectExplorer?.TrySelectTrainNodeTreeNode(node);
+            }
+
+            if (node == CurrentTrainNode)
+            {
+                ShowEditTrainNodePanel(false);
+
+                if (node.Track != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldTrainNodeModified(node); }));
-                }
-                else
-                {
-                    if (node?.Track == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!TrainTrackExistsInProject(node.Track))
-                    {
-                        node.Track.HasChanged = true;
-                        AddTrainTrackToProject(node.Track);
-                        ProjectExplorer?.TrySelectTrainNodeTreeNode(node);
-                    }
-
-                    if (node != CurrentTrainNode)
-                    {
-                        CurrentTrainNode = node;
-                        ProjectExplorer?.TrySelectTrainNodeTreeNode(node);
-                    }
-
-                    if (node == CurrentTrainNode)
-                    {
-                        ShowEditTrainNodePanel(false);
-
-                        if (node.Track != null)
-                        {
-                            SetTrainTrackHasChanged(true);
-                        }
-                    }
+                    SetTrainTrackHasChanged(true);
                 }
             }
-            catch { }
         }
         private void OnWorldScenarioNodeModified(ScenarioNode node)
         {
-            try
+            if (node?.Ymt == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!ScenarioExistsInProject(node.Ymt))
+            {
+                node.Ymt.HasChanged = true;
+                AddScenarioToProject(node.Ymt);
+                ProjectExplorer?.TrySelectScenarioNodeTreeNode(node);
+            }
+
+            if (node != CurrentScenarioNode)
+            {
+                CurrentScenarioNode = node;
+                ProjectExplorer?.TrySelectScenarioNodeTreeNode(node);
+            }
+
+            if (node == CurrentScenarioNode)
+            {
+                //ShowEditScenarioPanel(false);
+                ShowEditScenarioNodePanel(false);
+
+                if (node?.Ymt != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldScenarioNodeModified(node); }));
-                }
-                else
-                {
-                    if (node?.Ymt == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!ScenarioExistsInProject(node.Ymt))
-                    {
-                        node.Ymt.HasChanged = true;
-                        AddScenarioToProject(node.Ymt);
-                        ProjectExplorer?.TrySelectScenarioNodeTreeNode(node);
-                    }
-
-                    if (node != CurrentScenarioNode)
-                    {
-                        CurrentScenarioNode = node;
-                        ProjectExplorer?.TrySelectScenarioNodeTreeNode(node);
-                    }
-
-                    if (node == CurrentScenarioNode)
-                    {
-                        //ShowEditScenarioPanel(false);
-                        ShowEditScenarioNodePanel(false);
-
-                        if (node?.Ymt != null)
-                        {
-                            SetScenarioHasChanged(true);
-                        }
-                    }
+                    SetScenarioHasChanged(true);
                 }
             }
-            catch { }
         }
         private void OnWorldAudioPlacementModified(AudioPlacement audio)
         {
-            try
+            if (audio?.RelFile == null) return;
+
+            if (CurrentProjectFile == null)
             {
-                if (InvokeRequired)
+                NewProject();
+            }
+
+            if (!AudioFileExistsInProject(audio.RelFile))
+            {
+                audio.RelFile.HasChanged = true;
+                AddAudioFileToProject(audio.RelFile);
+                if (audio.AudioZone != null)
                 {
-                    BeginInvoke(new Action(() => { OnWorldAudioPlacementModified(audio); }));
+                    ProjectExplorer?.TrySelectAudioZoneTreeNode(audio);
                 }
-                else
+                if (audio.AudioEmitter != null)
                 {
-                    if (audio?.RelFile == null) return;
-
-                    if (CurrentProjectFile == null)
-                    {
-                        NewProject();
-                    }
-
-                    if (!AudioFileExistsInProject(audio.RelFile))
-                    {
-                        audio.RelFile.HasChanged = true;
-                        AddAudioFileToProject(audio.RelFile);
-                        if (audio.AudioZone != null)
-                        {
-                            ProjectExplorer?.TrySelectAudioZoneTreeNode(audio);
-                        }
-                        if (audio.AudioEmitter != null)
-                        {
-                            ProjectExplorer?.TrySelectAudioEmitterTreeNode(audio);
-                        }
-                    }
-
-                    if ((audio.AudioZone != null) && (audio != CurrentAudioZone))
-                    {
-                        CurrentAudioZone = audio;
-                        ProjectExplorer?.TrySelectAudioZoneTreeNode(audio);
-                    }
-                    if ((audio.AudioEmitter != null) && (audio != CurrentAudioEmitter))
-                    {
-                        CurrentAudioEmitter = audio;
-                        ProjectExplorer?.TrySelectAudioEmitterTreeNode(audio);
-                    }
-                    if (audio == CurrentAudioZone)
-                    {
-                        ShowEditAudioZonePanel(false);
-                        if (audio.RelFile != null)
-                        {
-                            SetAudioFileHasChanged(true);
-                        }
-                    }
-                    else if (audio == CurrentAudioEmitter)
-                    {
-                        ShowEditAudioEmitterPanel(false);
-                        if (audio.RelFile != null)
-                        {
-                            SetAudioFileHasChanged(true);
-                        }
-                    }
-
+                    ProjectExplorer?.TrySelectAudioEmitterTreeNode(audio);
                 }
             }
-            catch { }
+
+            if ((audio.AudioZone != null) && (audio != CurrentAudioZone))
+            {
+                CurrentAudioZone = audio;
+                ProjectExplorer?.TrySelectAudioZoneTreeNode(audio);
+            }
+            if ((audio.AudioEmitter != null) && (audio != CurrentAudioEmitter))
+            {
+                CurrentAudioEmitter = audio;
+                ProjectExplorer?.TrySelectAudioEmitterTreeNode(audio);
+            }
+            if (audio == CurrentAudioZone)
+            {
+                ShowEditAudioZonePanel(false);
+                if (audio.RelFile != null)
+                {
+                    SetAudioFileHasChanged(true);
+                }
+            }
+            else if (audio == CurrentAudioEmitter)
+            {
+                ShowEditAudioEmitterPanel(false);
+                if (audio.RelFile != null)
+                {
+                    SetAudioFileHasChanged(true);
+                }
+            }
         }
 
 
@@ -4688,7 +6023,19 @@ namespace CodeWalker.Project
 
             PromoteIfPreviewPanelActive();
         }
+        public void SetGrassBatchHasChanged(bool changed)
+        {
+            if (CurrentGrassBatch == null) return;
 
+            bool changechange = changed != CurrentGrassBatch.HasChanged;
+            if (!changechange) return;
+
+            CurrentGrassBatch.HasChanged = true;
+
+            ProjectExplorer?.SetGrassBatchHasChanged(CurrentGrassBatch, changed);
+
+            PromoteIfPreviewPanelActive();
+        }
 
 
 
@@ -4704,6 +6051,23 @@ namespace CodeWalker.Project
                 Vector3 campos = WorldForm.GetCameraPosition();
                 Vector3 camdir = WorldForm.GetCameraViewDir();
                 pos = campos + camdir * dist;
+            }
+            return pos;
+        }
+
+        public Vector3 GetSpawnPosRel(float dist, Vector3 relPos, Quaternion relRot)
+        {
+            Vector3 pos = Vector3.Zero;
+            if (WorldForm != null)
+            {
+                Vector3 campos = WorldForm.GetCameraPosition();
+                Vector3 camdir = WorldForm.GetCameraViewDir();
+                pos = campos + camdir * dist;
+
+                Quaternion rot = Quaternion.Invert(relRot);
+                Vector3 delta = pos - relPos;
+                Vector3 relativePos = rot.Multiply(delta);
+                pos = relativePos;
             }
             return pos;
         }
@@ -4743,7 +6107,7 @@ namespace CodeWalker.Project
 
             ymap.Load(data);
 
-            GameFileCache.InitYmapEntityArchetypes(ymap); //this needs to be done after calling YmapFile.Load()
+            ymap.InitYmapEntityArchetypes(GameFileCache); //this needs to be done after calling YmapFile.Load()
         }
         private void LoadYtypFromFile(YtypFile ytyp, string filename)
         {
@@ -4797,8 +6161,11 @@ namespace CodeWalker.Project
 
             ymt.Load(data);
         }
-        private void LoadAudioRelFromFile(RelFile rel, string filename) //TODO
+        private void LoadAudioRelFromFile(RelFile rel, string filename)
         {
+            byte[] data = File.ReadAllBytes(filename);
+
+            rel.Load(data, rel?.RpfFileEntry);
         }
 
 
@@ -4866,6 +6233,7 @@ namespace CodeWalker.Project
 
             YmapNewEntityMenu.Enabled = enable && inproj;
             YmapNewCarGenMenu.Enabled = enable && inproj;
+            YmapNewGrassBatchMenu.Enabled = enable && inproj;
 
             if (CurrentYmapFile != null)
             {
@@ -4915,8 +6283,11 @@ namespace CodeWalker.Project
         {
             bool enable = (CurrentYtypFile != null);
             bool inproj = YtypExistsInProject(CurrentYtypFile);
+            bool ismlo = ((CurrentEntity != null) && (CurrentEntity.MloParent != null) || (CurrentMloRoom != null)) || (CurrentArchetype is MloArchetype);
 
             YtypNewArchetypeMenu.Enabled = enable && inproj;
+            YtypMloToolStripMenuItem.Enabled = enable && inproj && ismlo;
+            YtypMloNewEntityToolStripMenuItem.Enabled = YtypMloToolStripMenuItem.Enabled;
 
             if (CurrentYtypFile != null)
             {
@@ -5041,8 +6412,35 @@ namespace CodeWalker.Project
                 WorldForm.EnableScenarioUI(enable, CurrentScenario?.Name ?? "");
             }
         }
-        private void RefreshAudioUI() //TODO
+        private void RefreshAudioUI()
         {
+            bool enable = (CurrentAudioFile != null);
+            bool inproj = AudioFileExistsInProject(CurrentAudioFile);
+
+            AudioNewAmbientEmitterMenu.Enabled = enable && inproj;
+            AudioNewAmbientEmitterListMenu.Enabled = enable && inproj;
+            AudioNewAmbientZoneMenu.Enabled = enable && inproj;
+            AudioNewAmbientZoneListMenu.Enabled = enable && inproj;
+            AudioNewInteriorMenu.Enabled = enable && inproj;
+            AudioNewInteriorRoomMenu.Enabled = enable && inproj;
+
+            if (CurrentAudioFile != null)
+            {
+                AudioNameMenu.Text = "(" + CurrentAudioFile.Name + ")";
+            }
+            else
+            {
+                AudioNameMenu.Text = "(No audio dat file selected)";
+            }
+
+            AudioAddToProjectMenu.Enabled = enable && !inproj;
+            AudioRemoveFromProjectMenu.Enabled = inproj;
+            AudioMenu.Visible = enable;
+
+            if (WorldForm != null)
+            {
+                WorldForm.EnableAudioUI(enable, CurrentAudioFile?.Name ?? "");
+            }
         }
 
 
@@ -5092,7 +6490,7 @@ namespace CodeWalker.Project
                 FileSaveItemAsMenu.Text = "Save As...";
                 ToolbarSaveButton.Text = "Save";
             }
-            
+
             FileSaveItemMenu.Tag = filename;
             FileSaveItemAsMenu.Tag = filename;
 
@@ -5227,6 +6625,10 @@ namespace CodeWalker.Project
         {
             NewScenario();
         }
+        private void FileNewAudioDatMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioFile();
+        }
         private void FileOpenProjectMenu_Click(object sender, EventArgs e)
         {
             OpenProject();
@@ -5254,6 +6656,10 @@ namespace CodeWalker.Project
         private void FileOpenScenarioMenu_Click(object sender, EventArgs e)
         {
             OpenScenario();
+        }
+        private void FileOpenAudioDatMenu_Click(object sender, EventArgs e)
+        {
+            OpenAudioFile();
         }
         private void FileCloseProjectMenu_Click(object sender, EventArgs e)
         {
@@ -5301,6 +6707,10 @@ namespace CodeWalker.Project
         {
             NewCarGen();
         }
+        private void YmapNewGrassBatchMenu_Click(object sender, EventArgs e)
+        {
+            NewGrassBatch();
+        }
         private void YmapAddToProjectMenu_Click(object sender, EventArgs e)
         {
             AddYmapToProject(CurrentYmapFile);
@@ -5310,10 +6720,6 @@ namespace CodeWalker.Project
             RemoveYmapFromProject();
         }
 
-        private void YtypNewArchetypeMenu_Click(object sender, EventArgs e)
-        {
-            //NewArchetype();
-        }
         private void YtypAddToProjectMenu_Click(object sender, EventArgs e)
         {
             AddYtypToProject(CurrentYtypFile);
@@ -5321,6 +6727,14 @@ namespace CodeWalker.Project
         private void YtypRemoveFromProjectMenu_Click(object sender, EventArgs e)
         {
             RemoveYtypFromProject();
+        }
+        private void YtypNewArchetypeMenu_Click(object sender, EventArgs e)
+        {
+            NewArchetype();
+        }
+        private void YtypMloNewEntityToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewMloEntity();
         }
 
         private void YndNewNodeMenu_Click(object sender, EventArgs e)
@@ -5396,9 +6810,50 @@ namespace CodeWalker.Project
             RemoveScenarioFromProject();
         }
 
+        private void AudioNewAmbientEmitterMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioEmitter();
+        }
+        private void AudioNewAmbientEmitterListMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioEmitterList();
+        }
+        private void AudioNewAmbientZoneMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioZone();
+        }
+        private void AudioNewAmbientZoneListMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioZoneList();
+        }
+        private void AudioNewInteriorMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioInterior();
+        }
+        private void AudioNewInteriorRoomMenu_Click(object sender, EventArgs e)
+        {
+            NewAudioInteriorRoom();
+        }
+        private void AudioAddToProjectMenu_Click(object sender, EventArgs e)
+        {
+            AddAudioFileToProject(CurrentAudioFile);
+        }
+        private void AudioRemoveFromProjectMenu_Click(object sender, EventArgs e)
+        {
+            RemoveAudioFileFromProject();
+        }
+
         private void ToolsManifestGeneratorMenu_Click(object sender, EventArgs e)
         {
             ShowEditProjectManifestPanel(false);
+        }
+        private void ToolsLODLightsGeneratorMenu_Click(object sender, EventArgs e)
+        {
+            ShowGenerateLODLightsPanel(false);
+        }
+        private void ToolsNavMeshGeneratorMenu_Click(object sender, EventArgs e)
+        {
+            ShowGenerateNavMeshPanel(false);
         }
         private void ToolsImportMenyooXmlMenu_Click(object sender, EventArgs e)
         {
@@ -5502,5 +6957,6 @@ namespace CodeWalker.Project
         {
             SaveAll();
         }
+
     }
 }

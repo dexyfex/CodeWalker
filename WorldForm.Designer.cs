@@ -109,6 +109,8 @@ namespace CodeWalker
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.OptionsTabControl = new System.Windows.Forms.TabControl();
             this.tabPage8 = new System.Windows.Forms.TabPage();
+            this.CarGeneratorsCheckBox = new System.Windows.Forms.CheckBox();
+            this.RenderEntitiesCheckBox = new System.Windows.Forms.CheckBox();
             this.AdvancedSettingsButton = new System.Windows.Forms.Button();
             this.ControlSettingsButton = new System.Windows.Forms.Button();
             this.MapViewDetailLabel = new System.Windows.Forms.Label();
@@ -253,6 +255,7 @@ namespace CodeWalker
             this.ToolbarSelectMloInstanceButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectAudioButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSelectOcclusionButton = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.ToolbarMoveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarRotateButton = new System.Windows.Forms.ToolStripButton();
@@ -284,6 +287,7 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
+            this.HDTexturesCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -359,9 +363,11 @@ namespace CodeWalker
             // StatsLabel
             // 
             this.StatsLabel.BackColor = System.Drawing.SystemColors.Control;
+            this.StatsLabel.DoubleClickEnabled = true;
             this.StatsLabel.Name = "StatsLabel";
             this.StatsLabel.Size = new System.Drawing.Size(75, 17);
             this.StatsLabel.Text = "0 geometries";
+            this.StatsLabel.DoubleClick += new System.EventHandler(this.StatsLabel_DoubleClick);
             // 
             // ModelComboBox
             // 
@@ -1045,7 +1051,8 @@ namespace CodeWalker
             "Distant Lod Lights",
             "Mlo Instance",
             "Scenario",
-            "Audio"});
+            "Audio",
+            "Occlusion"});
             this.SelectionModeComboBox.Location = new System.Drawing.Point(51, 30);
             this.SelectionModeComboBox.Name = "SelectionModeComboBox";
             this.SelectionModeComboBox.Size = new System.Drawing.Size(121, 21);
@@ -1295,6 +1302,8 @@ namespace CodeWalker
             // 
             // tabPage8
             // 
+            this.tabPage8.Controls.Add(this.CarGeneratorsCheckBox);
+            this.tabPage8.Controls.Add(this.RenderEntitiesCheckBox);
             this.tabPage8.Controls.Add(this.AdvancedSettingsButton);
             this.tabPage8.Controls.Add(this.ControlSettingsButton);
             this.tabPage8.Controls.Add(this.MapViewDetailLabel);
@@ -1327,12 +1336,36 @@ namespace CodeWalker
             this.tabPage8.Text = "General";
             this.tabPage8.UseVisualStyleBackColor = true;
             // 
+            // CarGeneratorsCheckBox
+            // 
+            this.CarGeneratorsCheckBox.AutoSize = true;
+            this.CarGeneratorsCheckBox.Location = new System.Drawing.Point(10, 72);
+            this.CarGeneratorsCheckBox.Name = "CarGeneratorsCheckBox";
+            this.CarGeneratorsCheckBox.Size = new System.Drawing.Size(124, 17);
+            this.CarGeneratorsCheckBox.TabIndex = 31;
+            this.CarGeneratorsCheckBox.Text = "Show car generators";
+            this.CarGeneratorsCheckBox.UseVisualStyleBackColor = true;
+            this.CarGeneratorsCheckBox.CheckedChanged += new System.EventHandler(this.CarGeneratorsCheckBox_CheckedChanged);
+            // 
+            // RenderEntitiesCheckBox
+            // 
+            this.RenderEntitiesCheckBox.AutoSize = true;
+            this.RenderEntitiesCheckBox.Checked = true;
+            this.RenderEntitiesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.RenderEntitiesCheckBox.Location = new System.Drawing.Point(10, 30);
+            this.RenderEntitiesCheckBox.Name = "RenderEntitiesCheckBox";
+            this.RenderEntitiesCheckBox.Size = new System.Drawing.Size(89, 17);
+            this.RenderEntitiesCheckBox.TabIndex = 29;
+            this.RenderEntitiesCheckBox.Text = "Show entities";
+            this.RenderEntitiesCheckBox.UseVisualStyleBackColor = true;
+            this.RenderEntitiesCheckBox.CheckedChanged += new System.EventHandler(this.RenderEntitiesCheckBox_CheckedChanged);
+            // 
             // AdvancedSettingsButton
             // 
             this.AdvancedSettingsButton.Location = new System.Drawing.Point(101, 456);
             this.AdvancedSettingsButton.Name = "AdvancedSettingsButton";
             this.AdvancedSettingsButton.Size = new System.Drawing.Size(93, 23);
-            this.AdvancedSettingsButton.TabIndex = 61;
+            this.AdvancedSettingsButton.TabIndex = 46;
             this.AdvancedSettingsButton.Text = "Advanced...";
             this.AdvancedSettingsButton.UseVisualStyleBackColor = true;
             this.AdvancedSettingsButton.Click += new System.EventHandler(this.AdvancedSettingsButton_Click);
@@ -1342,7 +1375,7 @@ namespace CodeWalker
             this.ControlSettingsButton.Location = new System.Drawing.Point(2, 456);
             this.ControlSettingsButton.Name = "ControlSettingsButton";
             this.ControlSettingsButton.Size = new System.Drawing.Size(93, 23);
-            this.ControlSettingsButton.TabIndex = 60;
+            this.ControlSettingsButton.TabIndex = 45;
             this.ControlSettingsButton.Text = "Controls...";
             this.ControlSettingsButton.UseVisualStyleBackColor = true;
             this.ControlSettingsButton.Click += new System.EventHandler(this.ControlSettingsButton_Click);
@@ -1377,7 +1410,7 @@ namespace CodeWalker
             this.MapViewDetailTrackBar.Minimum = 2;
             this.MapViewDetailTrackBar.Name = "MapViewDetailTrackBar";
             this.MapViewDetailTrackBar.Size = new System.Drawing.Size(188, 45);
-            this.MapViewDetailTrackBar.TabIndex = 58;
+            this.MapViewDetailTrackBar.TabIndex = 44;
             this.MapViewDetailTrackBar.TickFrequency = 2;
             this.MapViewDetailTrackBar.Value = 10;
             this.MapViewDetailTrackBar.Scroll += new System.EventHandler(this.MapViewDetailTrackBar_Scroll);
@@ -1393,7 +1426,7 @@ namespace CodeWalker
             this.CameraModeComboBox.Location = new System.Drawing.Point(82, 305);
             this.CameraModeComboBox.Name = "CameraModeComboBox";
             this.CameraModeComboBox.Size = new System.Drawing.Size(112, 21);
-            this.CameraModeComboBox.TabIndex = 56;
+            this.CameraModeComboBox.TabIndex = 42;
             this.CameraModeComboBox.SelectedIndexChanged += new System.EventHandler(this.CameraModeComboBox_SelectedIndexChanged);
             this.CameraModeComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CameraModeComboBox_KeyPress);
             // 
@@ -1411,10 +1444,10 @@ namespace CodeWalker
             this.WaterQuadsCheckBox.AutoSize = true;
             this.WaterQuadsCheckBox.Checked = true;
             this.WaterQuadsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.WaterQuadsCheckBox.Location = new System.Drawing.Point(10, 104);
+            this.WaterQuadsCheckBox.Location = new System.Drawing.Point(10, 135);
             this.WaterQuadsCheckBox.Name = "WaterQuadsCheckBox";
             this.WaterQuadsCheckBox.Size = new System.Drawing.Size(114, 17);
-            this.WaterQuadsCheckBox.TabIndex = 39;
+            this.WaterQuadsCheckBox.TabIndex = 35;
             this.WaterQuadsCheckBox.Text = "Show water quads";
             this.WaterQuadsCheckBox.UseVisualStyleBackColor = true;
             this.WaterQuadsCheckBox.CheckedChanged += new System.EventHandler(this.WaterQuadsCheckBox_CheckedChanged);
@@ -1440,10 +1473,10 @@ namespace CodeWalker
             // TimedEntitiesAlwaysOnCheckBox
             // 
             this.TimedEntitiesAlwaysOnCheckBox.AutoSize = true;
-            this.TimedEntitiesAlwaysOnCheckBox.Location = new System.Drawing.Point(131, 58);
+            this.TimedEntitiesAlwaysOnCheckBox.Location = new System.Drawing.Point(131, 93);
             this.TimedEntitiesAlwaysOnCheckBox.Name = "TimedEntitiesAlwaysOnCheckBox";
             this.TimedEntitiesAlwaysOnCheckBox.Size = new System.Drawing.Size(58, 17);
-            this.TimedEntitiesAlwaysOnCheckBox.TabIndex = 37;
+            this.TimedEntitiesAlwaysOnCheckBox.TabIndex = 33;
             this.TimedEntitiesAlwaysOnCheckBox.Text = "always";
             this.TimedEntitiesAlwaysOnCheckBox.UseVisualStyleBackColor = true;
             this.TimedEntitiesAlwaysOnCheckBox.CheckedChanged += new System.EventHandler(this.TimedEntitiesAlwaysOnCheckBox_CheckedChanged);
@@ -1453,10 +1486,10 @@ namespace CodeWalker
             this.GrassCheckBox.AutoSize = true;
             this.GrassCheckBox.Checked = true;
             this.GrassCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.GrassCheckBox.Location = new System.Drawing.Point(10, 35);
+            this.GrassCheckBox.Location = new System.Drawing.Point(10, 51);
             this.GrassCheckBox.Name = "GrassCheckBox";
             this.GrassCheckBox.Size = new System.Drawing.Size(81, 17);
-            this.GrassCheckBox.TabIndex = 35;
+            this.GrassCheckBox.TabIndex = 30;
             this.GrassCheckBox.Text = "Show grass";
             this.GrassCheckBox.UseVisualStyleBackColor = true;
             this.GrassCheckBox.CheckedChanged += new System.EventHandler(this.GrassCheckBox_CheckedChanged);
@@ -1466,10 +1499,10 @@ namespace CodeWalker
             this.InteriorsCheckBox.AutoSize = true;
             this.InteriorsCheckBox.Checked = true;
             this.InteriorsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.InteriorsCheckBox.Location = new System.Drawing.Point(10, 81);
+            this.InteriorsCheckBox.Location = new System.Drawing.Point(10, 114);
             this.InteriorsCheckBox.Name = "InteriorsCheckBox";
             this.InteriorsCheckBox.Size = new System.Drawing.Size(92, 17);
-            this.InteriorsCheckBox.TabIndex = 38;
+            this.InteriorsCheckBox.TabIndex = 34;
             this.InteriorsCheckBox.Text = "Show interiors";
             this.InteriorsCheckBox.UseVisualStyleBackColor = true;
             this.InteriorsCheckBox.CheckedChanged += new System.EventHandler(this.InteriorsCheckBox_CheckedChanged);
@@ -1479,10 +1512,10 @@ namespace CodeWalker
             this.CollisionMeshLayerDrawableCheckBox.AutoSize = true;
             this.CollisionMeshLayerDrawableCheckBox.Checked = true;
             this.CollisionMeshLayerDrawableCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.CollisionMeshLayerDrawableCheckBox.Location = new System.Drawing.Point(118, 247);
+            this.CollisionMeshLayerDrawableCheckBox.Location = new System.Drawing.Point(118, 262);
             this.CollisionMeshLayerDrawableCheckBox.Name = "CollisionMeshLayerDrawableCheckBox";
             this.CollisionMeshLayerDrawableCheckBox.Size = new System.Drawing.Size(71, 17);
-            this.CollisionMeshLayerDrawableCheckBox.TabIndex = 52;
+            this.CollisionMeshLayerDrawableCheckBox.TabIndex = 41;
             this.CollisionMeshLayerDrawableCheckBox.Text = "Drawable";
             this.CollisionMeshLayerDrawableCheckBox.UseVisualStyleBackColor = true;
             this.CollisionMeshLayerDrawableCheckBox.CheckedChanged += new System.EventHandler(this.CollisionMeshLayerDrawableCheckBox_CheckedChanged);
@@ -1492,10 +1525,10 @@ namespace CodeWalker
             this.CollisionMeshLayer2CheckBox.AutoSize = true;
             this.CollisionMeshLayer2CheckBox.Checked = true;
             this.CollisionMeshLayer2CheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.CollisionMeshLayer2CheckBox.Location = new System.Drawing.Point(82, 247);
+            this.CollisionMeshLayer2CheckBox.Location = new System.Drawing.Point(82, 262);
             this.CollisionMeshLayer2CheckBox.Name = "CollisionMeshLayer2CheckBox";
             this.CollisionMeshLayer2CheckBox.Size = new System.Drawing.Size(32, 17);
-            this.CollisionMeshLayer2CheckBox.TabIndex = 51;
+            this.CollisionMeshLayer2CheckBox.TabIndex = 40;
             this.CollisionMeshLayer2CheckBox.Text = "2";
             this.CollisionMeshLayer2CheckBox.UseVisualStyleBackColor = true;
             this.CollisionMeshLayer2CheckBox.CheckedChanged += new System.EventHandler(this.CollisionMeshLayer2CheckBox_CheckedChanged);
@@ -1505,10 +1538,10 @@ namespace CodeWalker
             this.CollisionMeshLayer1CheckBox.AutoSize = true;
             this.CollisionMeshLayer1CheckBox.Checked = true;
             this.CollisionMeshLayer1CheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.CollisionMeshLayer1CheckBox.Location = new System.Drawing.Point(46, 247);
+            this.CollisionMeshLayer1CheckBox.Location = new System.Drawing.Point(46, 262);
             this.CollisionMeshLayer1CheckBox.Name = "CollisionMeshLayer1CheckBox";
             this.CollisionMeshLayer1CheckBox.Size = new System.Drawing.Size(32, 17);
-            this.CollisionMeshLayer1CheckBox.TabIndex = 50;
+            this.CollisionMeshLayer1CheckBox.TabIndex = 39;
             this.CollisionMeshLayer1CheckBox.Text = "1";
             this.CollisionMeshLayer1CheckBox.UseVisualStyleBackColor = true;
             this.CollisionMeshLayer1CheckBox.CheckedChanged += new System.EventHandler(this.CollisionMeshLayer1CheckBox_CheckedChanged);
@@ -1516,7 +1549,7 @@ namespace CodeWalker
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(4, 229);
+            this.label13.Location = new System.Drawing.Point(4, 244);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(106, 13);
             this.label13.TabIndex = 54;
@@ -1527,10 +1560,10 @@ namespace CodeWalker
             this.CollisionMeshLayer0CheckBox.AutoSize = true;
             this.CollisionMeshLayer0CheckBox.Checked = true;
             this.CollisionMeshLayer0CheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.CollisionMeshLayer0CheckBox.Location = new System.Drawing.Point(10, 247);
+            this.CollisionMeshLayer0CheckBox.Location = new System.Drawing.Point(10, 262);
             this.CollisionMeshLayer0CheckBox.Name = "CollisionMeshLayer0CheckBox";
             this.CollisionMeshLayer0CheckBox.Size = new System.Drawing.Size(32, 17);
-            this.CollisionMeshLayer0CheckBox.TabIndex = 49;
+            this.CollisionMeshLayer0CheckBox.TabIndex = 38;
             this.CollisionMeshLayer0CheckBox.Text = "0";
             this.CollisionMeshLayer0CheckBox.UseVisualStyleBackColor = true;
             this.CollisionMeshLayer0CheckBox.CheckedChanged += new System.EventHandler(this.CollisionMeshLayer0CheckBox_CheckedChanged);
@@ -1538,7 +1571,7 @@ namespace CodeWalker
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(4, 178);
+            this.label12.Location = new System.Drawing.Point(4, 193);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(129, 13);
             this.label12.TabIndex = 51;
@@ -1550,22 +1583,22 @@ namespace CodeWalker
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CollisionMeshRangeTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.CollisionMeshRangeTrackBar.LargeChange = 1;
-            this.CollisionMeshRangeTrackBar.Location = new System.Drawing.Point(6, 194);
+            this.CollisionMeshRangeTrackBar.Location = new System.Drawing.Point(6, 209);
             this.CollisionMeshRangeTrackBar.Maximum = 15;
             this.CollisionMeshRangeTrackBar.Minimum = 1;
             this.CollisionMeshRangeTrackBar.Name = "CollisionMeshRangeTrackBar";
             this.CollisionMeshRangeTrackBar.Size = new System.Drawing.Size(188, 45);
-            this.CollisionMeshRangeTrackBar.TabIndex = 48;
+            this.CollisionMeshRangeTrackBar.TabIndex = 37;
             this.CollisionMeshRangeTrackBar.Value = 6;
             this.CollisionMeshRangeTrackBar.Scroll += new System.EventHandler(this.CollisionMeshRangeTrackBar_Scroll);
             // 
             // CollisionMeshesCheckBox
             // 
             this.CollisionMeshesCheckBox.AutoSize = true;
-            this.CollisionMeshesCheckBox.Location = new System.Drawing.Point(10, 156);
+            this.CollisionMeshesCheckBox.Location = new System.Drawing.Point(10, 171);
             this.CollisionMeshesCheckBox.Name = "CollisionMeshesCheckBox";
             this.CollisionMeshesCheckBox.Size = new System.Drawing.Size(132, 17);
-            this.CollisionMeshesCheckBox.TabIndex = 47;
+            this.CollisionMeshesCheckBox.TabIndex = 36;
             this.CollisionMeshesCheckBox.Text = "Show collision meshes";
             this.CollisionMeshesCheckBox.UseVisualStyleBackColor = true;
             this.CollisionMeshesCheckBox.CheckedChanged += new System.EventHandler(this.CollisionMeshesCheckBox_CheckedChanged);
@@ -1586,10 +1619,10 @@ namespace CodeWalker
             this.TimedEntitiesCheckBox.AutoSize = true;
             this.TimedEntitiesCheckBox.Checked = true;
             this.TimedEntitiesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.TimedEntitiesCheckBox.Location = new System.Drawing.Point(10, 58);
+            this.TimedEntitiesCheckBox.Location = new System.Drawing.Point(10, 93);
             this.TimedEntitiesCheckBox.Name = "TimedEntitiesCheckBox";
             this.TimedEntitiesCheckBox.Size = new System.Drawing.Size(117, 17);
-            this.TimedEntitiesCheckBox.TabIndex = 36;
+            this.TimedEntitiesCheckBox.TabIndex = 32;
             this.TimedEntitiesCheckBox.Text = "Show timed entities";
             this.TimedEntitiesCheckBox.UseVisualStyleBackColor = true;
             this.TimedEntitiesCheckBox.CheckedChanged += new System.EventHandler(this.TimedEntitiesCheckBox_CheckedChanged);
@@ -1605,13 +1638,14 @@ namespace CodeWalker
             this.FieldOfViewTrackBar.Minimum = 10;
             this.FieldOfViewTrackBar.Name = "FieldOfViewTrackBar";
             this.FieldOfViewTrackBar.Size = new System.Drawing.Size(188, 45);
-            this.FieldOfViewTrackBar.TabIndex = 57;
+            this.FieldOfViewTrackBar.TabIndex = 43;
             this.FieldOfViewTrackBar.TickFrequency = 10;
             this.FieldOfViewTrackBar.Value = 100;
             this.FieldOfViewTrackBar.Scroll += new System.EventHandler(this.FieldOfViewTrackBar_Scroll);
             // 
             // tabPage14
             // 
+            this.tabPage14.Controls.Add(this.HDTexturesCheckBox);
             this.tabPage14.Controls.Add(this.WireframeCheckBox);
             this.tabPage14.Controls.Add(this.RenderModeComboBox);
             this.tabPage14.Controls.Add(this.label11);
@@ -2834,7 +2868,8 @@ namespace CodeWalker
             this.ToolbarSelectDistantLodLightsButton,
             this.ToolbarSelectMloInstanceButton,
             this.ToolbarSelectScenarioButton,
-            this.ToolbarSelectAudioButton});
+            this.ToolbarSelectAudioButton,
+            this.ToolbarSelectOcclusionButton});
             this.ToolbarSelectButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSelectButton.Image")));
             this.ToolbarSelectButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ToolbarSelectButton.Name = "ToolbarSelectButton";
@@ -2949,6 +2984,13 @@ namespace CodeWalker
             this.ToolbarSelectAudioButton.Size = new System.Drawing.Size(181, 22);
             this.ToolbarSelectAudioButton.Text = "Audio";
             this.ToolbarSelectAudioButton.Click += new System.EventHandler(this.ToolbarSelectAudioButton_Click);
+            // 
+            // ToolbarSelectOcclusionButton
+            // 
+            this.ToolbarSelectOcclusionButton.Name = "ToolbarSelectOcclusionButton";
+            this.ToolbarSelectOcclusionButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectOcclusionButton.Text = "Occlusion";
+            this.ToolbarSelectOcclusionButton.Click += new System.EventHandler(this.ToolbarSelectOcclusionButton_Click);
             // 
             // toolStripSeparator1
             // 
@@ -3240,6 +3282,19 @@ namespace CodeWalker
             this.ToolbarPanel.Size = new System.Drawing.Size(557, 26);
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
+            // 
+            // HDTexturesCheckBox
+            // 
+            this.HDTexturesCheckBox.AutoSize = true;
+            this.HDTexturesCheckBox.Checked = true;
+            this.HDTexturesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.HDTexturesCheckBox.Location = new System.Drawing.Point(10, 231);
+            this.HDTexturesCheckBox.Name = "HDTexturesCheckBox";
+            this.HDTexturesCheckBox.Size = new System.Drawing.Size(82, 17);
+            this.HDTexturesCheckBox.TabIndex = 57;
+            this.HDTexturesCheckBox.Text = "HD textures";
+            this.HDTexturesCheckBox.UseVisualStyleBackColor = true;
+            this.HDTexturesCheckBox.CheckedChanged += new System.EventHandler(this.HDTexturesCheckBox_CheckedChanged);
             // 
             // WorldForm
             // 
@@ -3581,5 +3636,9 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarSnapToGroundGridButton;
         private System.Windows.Forms.NumericUpDown SnapGridSizeUpDown;
         private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.CheckBox RenderEntitiesCheckBox;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarSelectOcclusionButton;
+        private System.Windows.Forms.CheckBox CarGeneratorsCheckBox;
+        private System.Windows.Forms.CheckBox HDTexturesCheckBox;
     }
 }
