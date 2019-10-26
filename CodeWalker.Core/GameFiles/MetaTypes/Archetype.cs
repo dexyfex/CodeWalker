@@ -1,4 +1,4 @@
-﻿using SharpDX;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -247,13 +247,37 @@ namespace CodeWalker.GameFiles
                     if (ymapEntityDef != null) ymapEntityDef.Index = index;
                     index++;
                 }
+
                 entities = newentities;
 
-                if (didDel) FixRoomIndexes(delIndex);
+                if (didDel)
+                {
+                    FixRoomIndexes(delIndex);
+                    FixPortalIndexes(delIndex);
+                }
                 return didDel;
             }
 
             return false;
+        }
+
+        private void FixPortalIndexes(int deletedIndex)
+        {
+            foreach (var portal in portals)
+            {
+                List<uint> newAttachedObjects = new List<uint>();
+                if (portal.AttachedObjects == null)
+                    continue;
+
+                foreach(var objIndex in portal.AttachedObjects)
+                {
+                    if (objIndex == deletedIndex) continue;
+                    if (objIndex > deletedIndex)
+                        newAttachedObjects.Add(objIndex - 1); // move the index back so it matches the index in the entitiy array.
+                    else newAttachedObjects.Add(objIndex); // else just add the index to the attached objects.
+                }
+                portal.AttachedObjects = newAttachedObjects.ToArray();
+            }
         }
 
         private void FixRoomIndexes(int deletedIndex)
