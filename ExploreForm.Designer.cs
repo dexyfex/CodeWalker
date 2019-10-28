@@ -142,7 +142,6 @@
             this.TreeContextCollapseAllMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.VSExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
@@ -1291,7 +1290,6 @@
         private System.Windows.Forms.ToolStripMenuItem TreeContextCollapseAllMenu;
         private System.Windows.Forms.SaveFileDialog SaveFileDialog;
         private System.Windows.Forms.OpenFileDialog OpenFileDialog;
-        private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
         private System.Windows.Forms.ToolStripMenuItem FileExitMenu;
         private System.Windows.Forms.ToolStripMenuItem EditViewMenu;
         private System.Windows.Forms.ToolStripMenuItem EditViewHexMenu;
