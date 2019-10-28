@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace CodeWalker
 {
@@ -31,11 +32,11 @@ namespace CodeWalker
 
         private void FolderBrowseButton_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog.SelectedPath = FolderTextBox.Text;
-            DialogResult res = FolderBrowserDialog.ShowDialog();
-            if (res == DialogResult.OK)
+            CommonOpenFileDialog folderDialog = new CommonOpenFileDialog("Select GTA V Folder") { DefaultDirectory = FolderTextBox.Text, IsFolderPicker = true, AddToMostRecentlyUsedList = true, AllowNonFileSystemItems = false, EnsurePathExists = true, Multiselect = false };
+            CommonFileDialogResult res = folderDialog.ShowDialog();
+            if (res == CommonFileDialogResult.Ok)
             {
-                FolderTextBox.Text = FolderBrowserDialog.SelectedPath;
+                FolderTextBox.Text = folderDialog.FileName;
             }
         }
 

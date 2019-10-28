@@ -33,7 +33,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.FolderBrowseButton = new System.Windows.Forms.Button();
             this.FolderTextBox = new System.Windows.Forms.TextBox();
-            this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.CancelButt = new System.Windows.Forms.Button();
             this.RememberFolderCheckbox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
@@ -133,7 +132,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button FolderBrowseButton;
         private System.Windows.Forms.TextBox FolderTextBox;
-        private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
         private System.Windows.Forms.Button CancelButt;
         private System.Windows.Forms.CheckBox RememberFolderCheckbox;
     }
