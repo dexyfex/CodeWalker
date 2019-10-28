@@ -54,8 +54,8 @@ namespace CodeWalker
             string folder = CurrentGTAFolder;
             SelectFolderForm f = new SelectFolderForm();
 
-            string autoFolder = AutoDetectFolder();
-            if (autoFolder != null)
+            string autoFolder = AutoDetectFolder(out string source);
+            if (autoFolder != null && MessageBox.Show($"Auto-detected game folder \"{autoFolder}\" from {source}.\n\nContinue with auto-detected folder?", "Auto-detected game folder", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1) == DialogResult.Yes)
             {
                 f.SelectedFolder = autoFolder;
             }
@@ -103,11 +103,14 @@ namespace CodeWalker
 
         public static string GetCurrentGTAFolderWithTrailingSlash() =>CurrentGTAFolder.EndsWith(@"\") ? CurrentGTAFolder : CurrentGTAFolder + @"\";
 
-        public static bool AutoDetectFolder(out string steamPath, out string retailPath, out string oivPath)
+        public static bool AutoDetectFolder(out Dictionary<string, string> matches)
         {
-            retailPath = null;
-            steamPath = null;
-            oivPath = null;
+            matches = new Dictionary<string, string>();
+
+            if(ValidateGTAFolder(CurrentGTAFolder))
+            {
+                matches.Add("Current CodeWalker Folder", CurrentGTAFolder);
+            }
 
             RegistryKey baseKey32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
             string steamPathValue = baseKey32.OpenSubKey(@"Software\Rockstar Games\GTAV")?.GetValue("InstallFolderSteam") as string;
@@ -121,40 +124,36 @@ namespace CodeWalker
 
             if(ValidateGTAFolder(steamPathValue))
             {
-                steamPath = steamPathValue;
+                matches.Add("Steam", steamPathValue);
             }
 
             if(ValidateGTAFolder(retailPathValue))
             {
-                retailPath = retailPathValue;
+                matches.Add("Retail", retailPathValue);
             }
 
             if(ValidateGTAFolder(oivPathValue))
             {
-                oivPath = oivPathValue;
+                matches.Add("OpenIV", oivPathValue);
             }
 
-            return steamPath != null || retailPath != null || oivPath != null;
+            return matches.Count > 0;
         }
 
-        public static string AutoDetectFolder()
+        public static string AutoDetectFolder(out string source)
         {
-            if(AutoDetectFolder(out string steam, out string retail, out string oiv))
+            source = null;
+
+            if(AutoDetectFolder(out Dictionary<string, string> matches))
             {
-                if(oiv != null)
-                {
-                    return oiv;
-                }
-                if(steam != null)
-                {
-                    return steam;
-                } else if(retail != null)
-                {
-                    return retail;
-                }
+                var match = matches.First();
+                source = match.Key;
+                return match.Value;
             }
 
             return null;
         }
+
+        public static string AutoDetectFolder() => AutoDetectFolder(out string _);
     }
 }
