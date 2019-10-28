@@ -103,40 +103,48 @@ namespace CodeWalker
 
         public static string GetCurrentGTAFolderWithTrailingSlash() =>CurrentGTAFolder.EndsWith(@"\") ? CurrentGTAFolder : CurrentGTAFolder + @"\";
 
-        public static bool AutoDetectFolder(out string steamPath, out string retailPath)
+        public static bool AutoDetectFolder(out string steamPath, out string retailPath, out string oivPath)
         {
             retailPath = null;
             steamPath = null;
+            oivPath = null;
 
-            RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-            string steamPathValue = baseKey.OpenSubKey(@"Software\Rockstar Games\GTAV")?.GetValue("InstallFolderSteam") as string;
-            string retailPathValue = baseKey.OpenSubKey(@"Software\Rockstar Games\Grand Theft Auto V")?.GetValue("InstallFolder") as string;
+            RegistryKey baseKey32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+            string steamPathValue = baseKey32.OpenSubKey(@"Software\Rockstar Games\GTAV")?.GetValue("InstallFolderSteam") as string;
+            string retailPathValue = baseKey32.OpenSubKey(@"Software\Rockstar Games\Grand Theft Auto V")?.GetValue("InstallFolder") as string;
+            string oivPathValue = Registry.CurrentUser.OpenSubKey(@"Software\NewTechnologyStudio\OpenIV.exe\BrowseForFolder")?.GetValue("game_path_Five_pc") as string;
 
-            if(steamPathValue != null)
+            if(steamPathValue?.EndsWith("\\GTAV") == true)
             {
-                if(steamPathValue.EndsWith("\\GTAV"))
-                {
-                    steamPathValue = steamPathValue.Substring(0, steamPathValue.LastIndexOf("\\GTAV"));
-                }
-
-                if(ValidateGTAFolder(steamPathValue))
-                {
-                    steamPath = steamPathValue;
-                }
+                steamPathValue = steamPathValue.Substring(0, steamPathValue.LastIndexOf("\\GTAV"));
             }
 
-            if(retailPathValue != null && ValidateGTAFolder(retailPathValue))
+            if(ValidateGTAFolder(steamPathValue))
+            {
+                steamPath = steamPathValue;
+            }
+
+            if(ValidateGTAFolder(retailPathValue))
             {
                 retailPath = retailPathValue;
             }
 
-            return steamPath != null || retailPath != null;
+            if(ValidateGTAFolder(oivPathValue))
+            {
+                oivPath = oivPathValue;
+            }
+
+            return steamPath != null || retailPath != null || oivPath != null;
         }
 
         public static string AutoDetectFolder()
         {
-            if(AutoDetectFolder(out string steam, out string retail))
+            if(AutoDetectFolder(out string steam, out string retail, out string oiv))
             {
+                if(oiv != null)
+                {
+                    return oiv;
+                }
                 if(steam != null)
                 {
                     return steam;
