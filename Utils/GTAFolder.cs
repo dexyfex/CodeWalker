@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Windows.Forms;
 using CodeWalker.Properties;
+using Microsoft.Win32;
 
 namespace CodeWalker
 {
@@ -52,6 +53,13 @@ namespace CodeWalker
             string origFolder = CurrentGTAFolder;
             string folder = CurrentGTAFolder;
             SelectFolderForm f = new SelectFolderForm();
+
+            string autoFolder = AutoDetectFolder();
+            if (autoFolder != null)
+            {
+                f.SelectedFolder = autoFolder;
+            }
+
             f.ShowDialog();
             if(f.Result == DialogResult.OK && Directory.Exists(f.SelectedFolder))
             {
@@ -95,5 +103,50 @@ namespace CodeWalker
 
         public static string GetCurrentGTAFolderWithTrailingSlash() =>CurrentGTAFolder.EndsWith(@"\") ? CurrentGTAFolder : CurrentGTAFolder + @"\";
 
+        public static bool AutoDetectFolder(out string steamPath, out string retailPath)
+        {
+            retailPath = null;
+            steamPath = null;
+
+            RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+            string steamPathValue = baseKey.OpenSubKey(@"Software\Rockstar Games\GTAV")?.GetValue("InstallFolderSteam") as string;
+            string retailPathValue = baseKey.OpenSubKey(@"Software\Rockstar Games\Grand Theft Auto V")?.GetValue("InstallFolder") as string;
+
+            if(steamPathValue != null)
+            {
+                if(steamPathValue.EndsWith("\\GTAV"))
+                {
+                    steamPathValue = steamPathValue.Substring(0, steamPathValue.LastIndexOf("\\GTAV"));
+                }
+
+                if(ValidateGTAFolder(steamPathValue))
+                {
+                    steamPath = steamPathValue;
+                }
+            }
+
+            if(retailPathValue != null && ValidateGTAFolder(retailPathValue))
+            {
+                retailPath = retailPathValue;
+            }
+
+            return steamPath != null || retailPath != null;
+        }
+
+        public static string AutoDetectFolder()
+        {
+            if(AutoDetectFolder(out string steam, out string retail))
+            {
+                if(steam != null)
+                {
+                    return steam;
+                } else if(retail != null)
+                {
+                    return retail;
+                }
+            }
+
+            return null;
+        }
     }
 }
