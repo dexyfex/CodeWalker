@@ -75,15 +75,57 @@ namespace CodeWalker.GameFiles
             FileSize = filesize;
         }
 
+        // Returns string to new path
+        public string CopyToModsFolder(out string status)
+        {
+            RpfFile parentFile = GetTopParent();
+            string rel_parent_path = parentFile.Path;
+            string full_parent_path = parentFile.FilePath;
 
-        public string GetPhysicalFilePath()
+            if(rel_parent_path.StartsWith(@"mods\"))
+            {
+                status = "already in mods folder";
+                return null;
+            }
+
+            if(!full_parent_path.EndsWith(rel_parent_path))
+            {
+                throw new DirectoryNotFoundException("Expected full parent path to end with relative path");
+            }
+
+            string mods_base_path = full_parent_path.Replace(rel_parent_path, @"mods\");
+            string dest_path = mods_base_path + rel_parent_path;
+
+            try
+            {
+                File.Copy(full_parent_path, dest_path);
+                status = $"copied \"{parentFile.Name}\" from \"{full_parent_path}\" to \"{dest_path}\"";
+                return dest_path;
+            } catch (IOException e)
+            {
+                status = $"unable to copy \"{parentFile.Name}\" from \"{full_parent_path}\" to \"{dest_path}\": {e.Message}";
+                return null;
+            } 
+        }
+
+        public bool IsInModsFolder()
+        {
+            return GetTopParent().Path.StartsWith(@"mods\");
+        }
+
+        public RpfFile GetTopParent()
         {
             RpfFile pfile = this;
             while (pfile.Parent != null)
             {
                 pfile = pfile.Parent;
             }
-            return pfile.FilePath;
+            return pfile;
+        }
+        
+        public string GetPhysicalFilePath()
+        {
+            return GetTopParent().FilePath;
         }
 
 
