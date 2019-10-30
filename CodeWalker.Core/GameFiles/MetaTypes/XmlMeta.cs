@@ -15,9 +15,12 @@ namespace CodeWalker.GameFiles
 
             Traverse(doc.DocumentElement, mb, 0, true);
 
-            var meta = mb.GetMeta();
+            XmlNode metaName = doc.DocumentElement.Attributes.GetNamedItem("name");
 
-            return meta;
+            if (metaName != null)
+                return mb.GetMeta(metaName.Value);
+            else
+                return mb.GetMeta();
         }
 
         private static byte[] Traverse(XmlNode node, MetaBuilder mb, MetaName type = 0, bool isRoot = false)

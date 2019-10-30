@@ -348,7 +348,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public Meta GetMeta()
+        public Meta GetMeta(string metaName = "")
         {
             Meta m = new Meta();
             m.FileVFT = 0x405bc808;
@@ -394,6 +394,8 @@ namespace CodeWalker.GameFiles
                 m.DataBlocks.Add(bb.GetMetaDataBlock());
             }
             m.DataBlocksCount = (short)m.DataBlocks.Count;
+
+            m.Name = metaName;
 
             return m;
         }
