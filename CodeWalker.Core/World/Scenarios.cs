@@ -208,13 +208,23 @@ namespace CodeWalker.World
             if (tpind < typhashes.Length)
             {
                 var hash = typhashes[tpind];
-                scp.Type = types.GetScenarioType(hash);
-                if (scp.Type != null)
+                var st = types.GetScenarioType(hash);
+                if (st != null)
                 {
-                    isveh = scp.Type.IsVehicle;
+                    scp.Type = new ScenarioTypeRef(st);
                 }
                 else
-                { }
+                {
+                    var stg = types.GetScenarioTypeGroup(hash);
+                    if (stg != null)
+                    {
+                        scp.Type = new ScenarioTypeRef(stg);
+                    }
+                    else
+                    { }
+                }
+                
+                isveh = scp.Type.Value.IsVehicle;
             }
             else
             { }
@@ -282,13 +292,23 @@ namespace CodeWalker.World
             if ((hash != 0) && (hash != 493038497))
             {
                 bool isveh = false;
-                spn.Type = types.GetScenarioType(hash);
-                if (spn.Type != null)
+                var st = types.GetScenarioType(hash);
+                if (st != null)
                 {
-                    isveh = spn.Type.IsVehicle;
+                    spn.Type = new ScenarioTypeRef(st);
                 }
                 else
-                { }
+                {
+                    var stg = types.GetScenarioTypeGroup(hash);
+                    if (stg != null)
+                    {
+                        spn.Type = new ScenarioTypeRef(stg);
+                    }
+                    else
+                    { }
+                }
+
+                isveh = spn.Type?.IsVehicle ?? false;
                 if (isveh)
                 { }
                 else
@@ -1067,10 +1087,10 @@ namespace CodeWalker.World
                     int interiorid = 0;
                     int groupid = 0;
                     int imapid = 0;
-                    if ((mp.Type != null) && (!typeNames.TryGetValue(mp.Type.NameHash, out typeid)))
+                    if ((mp.Type != null) && (!typeNames.TryGetValue(mp.Type.Value.NameHash, out typeid)))
                     {
                         typeid = typeNames.Count;
-                        typeNames[mp.Type.NameHash] = typeid;
+                        typeNames[mp.Type.Value.NameHash] = typeid;
                     }
                     if (mp.ModelSet != null)
                     {
@@ -1159,10 +1179,10 @@ namespace CodeWalker.World
                     int interiorid = 0;
                     int groupid = 0;
                     int imapid = 0;
-                    if ((mp.Type != null) && (!typeNames.TryGetValue(mp.Type.NameHash, out typeid)))
+                    if ((mp.Type != null) && (!typeNames.TryGetValue(mp.Type.Value.NameHash, out typeid)))
                     {
                         typeid = typeNames.Count;
-                        typeNames[mp.Type.NameHash] = typeid;
+                        typeNames[mp.Type.Value.NameHash] = typeid;
                     }
                     if (mp.ModelSet != null)
                     {
@@ -1502,6 +1522,7 @@ namespace CodeWalker.World
         private object SyncRoot = new object(); //keep this thread-safe.. technically shouldn't be necessary, but best to be safe
 
         private Dictionary<uint, ScenarioType> Types { get; set; }
+        private Dictionary<uint, ScenarioTypeGroup> TypeGroups { get; set; }
         private Dictionary<uint, AmbientModelSet> PropSets { get; set; }
         private Dictionary<uint, AmbientModelSet> PedModelSets { get; set; }
         private Dictionary<uint, AmbientModelSet> VehicleModelSets { get; set; }
@@ -1514,6 +1535,7 @@ namespace CodeWalker.World
             lock (SyncRoot)
             {
                 Types = LoadTypes(gfc, "common:\\data\\ai\\scenarios.meta");
+                TypeGroups = LoadTypeGroups(gfc, "common:\\data\\ai\\scenarios.meta");
                 PropSets = LoadModelSets(gfc, "common:\\data\\ai\\propsets.meta");
                 PedModelSets = LoadModelSets(gfc, "common:\\data\\ai\\ambientpedmodelsets.meta");
                 VehicleModelSets = LoadModelSets(gfc, "common:\\data\\ai\\vehiclemodelsets.meta");
@@ -1594,6 +1616,40 @@ namespace CodeWalker.World
             return types;
         }
 
+        private Dictionary<uint, ScenarioTypeGroup> LoadTypeGroups(GameFileCache gfc, string filename)
+        {
+            Dictionary<uint, ScenarioTypeGroup> types = new Dictionary<uint, ScenarioTypeGroup>();
+
+            var xml = LoadXml(gfc, filename);
+
+            if ((xml == null) || (xml.DocumentElement == null))
+            {
+                return types;
+            }
+
+            var typesxml = xml.DocumentElement;
+            var items = typesxml.SelectNodes("ScenarioTypeGroups/Item");
+
+            foreach (XmlNode item in items)
+            {
+                ScenarioTypeGroup group = new ScenarioTypeGroup();
+
+                group.Load(item);
+                if (!string.IsNullOrEmpty(group.NameLower))
+                {
+                    JenkIndex.Ensure(group.NameLower);
+                    uint hash = JenkHash.GenHash(group.NameLower);
+                    types[hash] = group;
+                }
+                else
+                { }
+            }
+
+            JenkIndex.Ensure("none");
+
+            return types;
+        }
+
         private Dictionary<uint, AmbientModelSet> LoadModelSets(GameFileCache gfc, string filename)
         {
             Dictionary<uint, AmbientModelSet> sets = new Dictionary<uint, AmbientModelSet>();
@@ -1666,6 +1722,16 @@ namespace CodeWalker.World
                 return st;
             }
         }
+        public ScenarioTypeGroup GetScenarioTypeGroup(uint hash)
+        {
+            lock (SyncRoot)
+            {
+                if (TypeGroups == null) return null;
+                ScenarioTypeGroup tg;
+                TypeGroups.TryGetValue(hash, out tg);
+                return tg;
+            }
+        }
         public AmbientModelSet GetPropSet(uint hash)
         {
             lock (SyncRoot)
@@ -1733,6 +1799,14 @@ namespace CodeWalker.World
                 return Types.Values.ToArray();
             }
         }
+        public ScenarioTypeGroup[] GetScenarioTypeGroups()
+        {
+            lock (SyncRoot)
+            {
+                if (TypeGroups == null) return null;
+                return TypeGroups.Values.ToArray();
+            }
+        }
         public AmbientModelSet[] GetPropSets()
         {
             lock (SyncRoot)
@@ -1768,6 +1842,69 @@ namespace CodeWalker.World
 
     }
 
+    /// <summary>
+    /// Represents a scenario type that may either be a <see cref="ScenarioType"/> or a <see cref="ScenarioTypeGroup"/>.
+    /// Used with CScenarioChainingNode and CScenarioPoint.
+    /// </summary>
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct ScenarioTypeRef
+    {
+        public string Name => IsGroup ? Group.Name : Type.Name;
+        public string NameLower => IsGroup ? Group.NameLower : Type.NameLower;
+        public MetaHash NameHash => IsGroup ? Group.NameHash : Type.NameHash;
+        public bool IsVehicle => IsGroup ? false : Type.IsVehicle; // groups don't support vehicle infos, so always false
+        public string VehicleModelSet => IsGroup ? null : Type.VehicleModelSet;
+        public MetaHash VehicleModelSetHash => IsGroup ? 0 : Type.VehicleModelSetHash;
+
+        public bool IsGroup { get; }
+        public ScenarioType Type { get; }
+        public ScenarioTypeGroup Group { get; }
+
+        public ScenarioTypeRef(ScenarioTypeRef typeRef)
+        {
+            IsGroup = typeRef.IsGroup;
+            Type = typeRef.Type;
+            Group = typeRef.Group;
+        }
+
+        public ScenarioTypeRef(ScenarioType type)
+        {
+            IsGroup = false;
+            Type = type;
+            Group = null;
+        }
+
+        public ScenarioTypeRef(ScenarioTypeGroup group)
+        {
+            IsGroup = true;
+            Type = null;
+            Group = group;
+        }
+
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ScenarioTypeRef other && other == this;
+        }
+
+        public override int GetHashCode()
+        {
+            return NameHash.GetHashCode();
+        }
+
+        public static bool operator ==(ScenarioTypeRef a, ScenarioTypeRef b)
+        {
+            return a.NameHash == b.NameHash;
+        }
+
+        public static bool operator !=(ScenarioTypeRef a, ScenarioTypeRef b)
+        {
+            return a.NameHash != b.NameHash;
+        }
+    }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ScenarioType
     {
@@ -1809,6 +1946,29 @@ namespace CodeWalker.World
         public override void Load(XmlNode node)
         {
             base.Load(node);
+        }
+    }
+
+
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ScenarioTypeGroup
+    {
+        public string OuterXml { get; set; }
+        public string Name { get; set; }
+        public string NameLower { get; set; }
+        public MetaHash NameHash { get; set; }
+
+
+        public void Load(XmlNode node)
+        {
+            OuterXml = node.OuterXml;
+            Name = Xml.GetChildInnerText(node, "Name");
+            NameLower = Name.ToLowerInvariant();
+            NameHash = JenkHash.GenHash(NameLower);
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 

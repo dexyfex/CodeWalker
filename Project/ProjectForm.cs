@@ -4266,7 +4266,7 @@ namespace CodeWalker.Project
                 var action = Unk_3609807418.Move;
                 var navMode = Unk_3971773454.Direct;
                 var navSpeed = Unk_941086046.Unk_00_3279574318;
-                var stype = defaulttype;
+                var stype = new ScenarioTypeRef(defaulttype);
                 var modelset = defaultmodelset;
                 var flags = defaultflags;
                 var ok = true;
@@ -4298,7 +4298,23 @@ namespace CodeWalker.Project
                 if (vals.Length > 6)
                 {
                     var sthash = JenkHash.GenHash(vals[6].Trim().ToLowerInvariant());
-                    stype = stypes?.GetScenarioType(sthash) ?? defaulttype;
+                    var st = stypes?.GetScenarioType(sthash);
+                    if (st != null)
+                    {
+                        stype = new ScenarioTypeRef(st);
+                    }
+                    else
+                    {
+                        var stg = stypes?.GetScenarioTypeGroup(sthash);
+                        if (stg != null)
+                        {
+                            stype = new ScenarioTypeRef(stg);
+                        }
+                        else
+                        {
+                            stype = new ScenarioTypeRef(defaulttype);
+                        }
+                    }
                 }
                 if (vals.Length > 7)
                 {
@@ -4326,7 +4342,7 @@ namespace CodeWalker.Project
                 thisnode.ChainingNode.ScenarioNode = thisnode;
                 thisnode.ChainingNode.Chain = chain;
                 thisnode.ChainingNode.Type = stype;
-                thisnode.ChainingNode.TypeHash = stype?.NameHash ?? 0;
+                thisnode.ChainingNode.TypeHash = stype.NameHash;
                 thisnode.ChainingNode.NotLast = (i < (lines.Length - 1));
                 thisnode.ChainingNode.NotFirst = (lastnode != null);
 
