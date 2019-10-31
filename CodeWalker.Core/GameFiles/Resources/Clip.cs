@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -275,9 +276,9 @@ namespace CodeWalker.GameFiles
         public uint Unknown_0Ch { get; set; } // 0x00000000
         public ushort Unknown_10h { get; set; }
         public ushort Unknown_12h { get; set; }
-        public ushort Unknown_14h { get; set; }
-        public ushort Unknown_16h { get; set; }
-        public float Unknown_18h { get; set; }
+        public ushort Frames { get; set; }
+        public ushort SequenceFrameLimit { get; set; }
+        public float Duration { get; set; }
         public byte Unknown_1Ch { get; set; }
         public byte Unknown_1Dh { get; set; }
         public byte Unknown_1Eh { get; set; }
@@ -288,8 +289,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_2Ch { get; set; } // 0x00000000
         public uint Unknown_30h { get; set; } // 0x00000000
         public uint Unknown_34h { get; set; } // 0x00000000
-        public uint Unknown_38h { get; set; }
-        public uint Unknown_3Ch { get; set; }
+        public uint RawDataSize { get; set; }
+        public uint UsageCount { get; set; }
         public ResourcePointerList64<Sequence> Sequences { get; set; }
         public ResourceSimpleList64_s<AnimationBoneId> BoneIds { get; set; }
         //public ResourceSimpleList64Ptr BoneIdsPtr { get; set; }
@@ -307,9 +308,9 @@ namespace CodeWalker.GameFiles
             this.Unknown_0Ch = reader.ReadUInt32();  //0     0       0       0
             this.Unknown_10h = reader.ReadUInt16(); //257   257     257     257     flags?
             this.Unknown_12h = reader.ReadUInt16(); //0     0       0       0
-            this.Unknown_14h = reader.ReadUInt16(); //221   17      151     201     frames
-            this.Unknown_16h = reader.ReadUInt16(); //223   31      159     207     sequence limit?
-            this.Unknown_18h = reader.ReadSingle(); //7.34  0.53    5.0     6.66    duration
+            this.Frames = reader.ReadUInt16(); //221   17      151     201     frames
+            this.SequenceFrameLimit = reader.ReadUInt16(); //223   31      159     207     sequence limit?
+            this.Duration = reader.ReadSingle(); //7.34  0.53    5.0     6.66    duration
             this.Unknown_1Ch = reader.ReadByte();   //118   0       216     116
             this.Unknown_1Dh = reader.ReadByte();   //152   36      130     182
             this.Unknown_1Eh = reader.ReadByte();   //99    0       66      180
@@ -320,8 +321,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_2Ch = reader.ReadUInt32(); //0     0       0       0
             this.Unknown_30h = reader.ReadUInt32(); //0     0       0       0
             this.Unknown_34h = reader.ReadUInt32(); //0     0       0       0
-            this.Unknown_38h = reader.ReadUInt32(); //314   174     1238    390     sequences length?
-            this.Unknown_3Ch = reader.ReadUInt32(); //2     2       2       2       material/type?
+            this.RawDataSize = reader.ReadUInt32(); //314   174     1238    390     sequences length?
+            this.UsageCount = reader.ReadUInt32(); //2     2       2       2       material/type?
             this.Sequences = reader.ReadBlock<ResourcePointerList64<Sequence>>();
             this.BoneIds = reader.ReadBlock<ResourceSimpleList64_s<AnimationBoneId>>();
             //this.BoneIdsPtr = reader.ReadStruct<ResourceSimpleList64Ptr>();
@@ -338,9 +339,9 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_0Ch);
             writer.Write(this.Unknown_10h);
             writer.Write(this.Unknown_12h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_16h);
-            writer.Write(this.Unknown_18h);
+            writer.Write(this.Frames);
+            writer.Write(this.SequenceFrameLimit);
+            writer.Write(this.Duration);
             writer.Write(this.Unknown_1Ch);
             writer.Write(this.Unknown_1Eh);
             writer.Write(this.Unknown_20h);
@@ -349,8 +350,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_2Ch);
             writer.Write(this.Unknown_30h);
             writer.Write(this.Unknown_34h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_3Ch);
+            writer.Write(this.RawDataSize);
+            writer.Write(this.UsageCount);
             writer.WriteBlock(this.Sequences);
             writer.WriteBlock(this.BoneIds);
         }
@@ -367,10 +368,374 @@ namespace CodeWalker.GameFiles
     {
         public ushort BoneId { get; set; }
         public byte Unk0 { get; set; }
-        public byte Unk1 { get; set; }
+        public byte Track { get; set; }
         public override string ToString()
         {
-            return BoneId.ToString() + ": " + Unk0.ToString() + ", " + Unk1.ToString();
+            return BoneId.ToString() + ": " + Unk0.ToString() + ", " + Track.ToString();
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public abstract class AnimChannel
+    {
+        public int Sequence { get; private set; }
+        public int Index { get; private set; }
+
+        public abstract void Read(Sequence blockStream, ref int channelOffset);
+
+        public virtual void ReadData(Sequence blockStream, ref int channelOffset)
+        {
+
+        }
+
+        public virtual void ReadFrame(Sequence blockStream, int frame, ref int frameOffset)
+        {
+
+        }
+
+        public virtual float EvaluateFloat(int frame) => 0.0f;
+
+        public void Associate(int sequence, int index)
+        {
+            Sequence = sequence;
+            Index = index;
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimChannelStaticFloat : AnimChannel
+    {
+        public float FloatValue { get; set; }
+
+        public override void Read(Sequence blockStream, ref int channelOffset)
+        {
+            FloatValue = BitConverter.ToSingle(blockStream.Data, channelOffset);
+            channelOffset += 4;
+        }
+
+        public override float EvaluateFloat(int frame)
+        {
+            return FloatValue;
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimChannelStaticVector3 : AnimChannel
+    {
+        public Vector3 Value { get; set; }
+
+        public override void Read(Sequence blockStream, ref int channelOffset)
+        {
+            Value = new Vector3(
+                BitConverter.ToSingle(blockStream.Data, channelOffset),
+                BitConverter.ToSingle(blockStream.Data, channelOffset + 4),
+                BitConverter.ToSingle(blockStream.Data, channelOffset + 8)
+            );
+
+            channelOffset += 12;
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimChannelStaticSmallestThreeQuaternion : AnimChannel
+    {
+        public Quaternion Value { get; set; }
+
+        public override void Read(Sequence blockStream, ref int channelOffset)
+        {
+            var vec = new Vector3(
+                BitConverter.ToSingle(blockStream.Data, channelOffset),
+                BitConverter.ToSingle(blockStream.Data, channelOffset + 4),
+                BitConverter.ToSingle(blockStream.Data, channelOffset + 8)
+            );
+
+            Value = new Quaternion(
+                vec,
+                (float)Math.Sqrt(Math.Max(1.0f - vec.LengthSquared(), 0.0))
+            );
+
+            channelOffset += 12;
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimChannelIndirectQuantizeFloat : AnimChannel
+    {
+        public int FrameBits { get; set; }
+        public int ValueBits { get; set; }
+        public float Quantum { get; set; }
+        public float Offset { get; set; }
+        public float[] Values { get; set; }
+        public uint[] Frames { get; set; }
+
+        private int numInts;
+
+        public override void Read(Sequence blockStream, ref int channelOffset)
+        {
+            FrameBits = BitConverter.ToInt32(blockStream.Data, channelOffset);
+            ValueBits = BitConverter.ToInt32(blockStream.Data, channelOffset + 4);
+            numInts = BitConverter.ToInt32(blockStream.Data, channelOffset + 8);
+            Quantum = BitConverter.ToSingle(blockStream.Data, channelOffset + 12);
+            Offset = BitConverter.ToSingle(blockStream.Data, channelOffset + 16);
+
+            channelOffset += 20;
+
+            var bit = channelOffset * 8;
+            var endBit = bit + (numInts * 32);
+
+            channelOffset += numInts * 4;
+
+            var valueList = new List<float>();
+
+            while (bit < endBit)
+            {
+                valueList.Add((blockStream.GetBit(bit, ValueBits) * Quantum) + Offset);
+
+                bit += ValueBits;
+            }
+
+            Values = valueList.ToArray();
+
+            Frames = new uint[blockStream.NumFrames];
+        }
+
+        public override void ReadData(Sequence blockStream, ref int channelOffset)
+        {
+
+        }
+
+        public override void ReadFrame(Sequence blockStream, int frame, ref int frameOffset)
+        {
+            Frames[frame] = blockStream.GetBit(frameOffset, FrameBits);
+
+            frameOffset += FrameBits;
+        }
+
+        public override float EvaluateFloat(int frame)
+        {
+            return Values[Frames[frame]];
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimChannelQuantizeFloat : AnimChannel
+    {
+        public int ValueBits { get; set; }
+        public float Quantum { get; set; }
+        public float Offset { get; set; }
+        public float[] Values { get; set; }
+
+        public override void Read(Sequence blockStream, ref int channelOffset)
+        {
+            ValueBits = BitConverter.ToInt32(blockStream.Data, channelOffset);
+            Quantum = BitConverter.ToSingle(blockStream.Data, channelOffset + 4);
+            Offset = BitConverter.ToSingle(blockStream.Data, channelOffset + 8);
+            Values = new float[blockStream.NumFrames];
+
+            channelOffset += 12;
+        }
+
+        public override void ReadFrame(Sequence blockStream, int frame, ref int frameOffset)
+        {
+            Values[frame] = (blockStream.GetBit(frameOffset, ValueBits) * Quantum) + Offset;
+            frameOffset += ValueBits;
+        }
+
+        public override float EvaluateFloat(int frame)
+        {
+            return Values[frame];
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimChannelLinearFloat : AnimChannel
+    {
+        public float Quantum { get; set; }
+        public float Offset { get; set; }
+        public float[] Values { get; set; }
+
+        private Sequence blockStream;
+
+        private int NumInts { get; set; }
+
+        private int Count1 { get; set; }
+        private int Count2 { get; set; }
+        private int Count3 { get; set; }
+
+        private int Bit { get; set; }
+
+        public override void Read(Sequence blockStream, ref int channelOffset)
+        {
+            NumInts = BitConverter.ToInt32(blockStream.Data, channelOffset);
+            var counts = BitConverter.ToInt32(blockStream.Data, channelOffset + 4);
+            Quantum = BitConverter.ToSingle(blockStream.Data, channelOffset + 8);
+            Offset = BitConverter.ToSingle(blockStream.Data, channelOffset + 12);
+
+            var count1 = counts & 0xFF;
+            var count2 = (counts >> 8) & 0xFF;
+            var count3 = (counts >> 16) & 0xFF;
+
+            Count1 = count1;
+            Count2 = count2;
+            Count3 = count3;
+
+            Values = new float[blockStream.NumFrames];
+
+            Bit = (channelOffset * 8) + 128;
+
+            this.blockStream = blockStream;
+
+            var numChunks = (blockStream.ChunkSize + blockStream.NumFrames) / blockStream.ChunkSize;
+
+            for (int i = 0; i < blockStream.NumFrames; i++)
+            {
+                Values[i] = ReconstructFloat(i);
+            }
+
+            channelOffset += NumInts * 4;
+        }
+
+        private float ReconstructFloat(int frame)
+        {
+            var chunkSize = blockStream.ChunkSize;
+            var numChunks = (blockStream.ChunkSize + blockStream.NumFrames) / chunkSize;
+
+            var startBit = Bit;
+            var startBit2 = (startBit + (numChunks * Count1));
+            uint startBit3 = (uint)(startBit2 + (numChunks * Count2));
+
+            var chunkIdx = (frame / chunkSize);
+            var chunkOff = (frame % chunkSize);
+
+            var offset = (Count1 != 0) ? blockStream.GetBit(startBit + (chunkIdx * Count1), Count1) : 0;
+            var value = (Count2 != 0) ? (int)blockStream.GetBit(startBit2 + (chunkIdx * Count2), Count2) : 0;
+
+            var inc = 0;
+
+            for (int i = 0; i < chunkOff; i++)
+            {
+                var delta = (Count3 != 0) ? (int)blockStream.GetBit((int)(startBit3 + offset), Count3) : 0;
+                offset += (uint)Count3;
+
+                // scan for a '1' bit
+                uint bitIdx = 0;
+
+                {
+                    uint b = 0;
+
+                    do
+                    {
+                        b = blockStream.GetBit((int)(startBit3 + offset + bitIdx), 1);
+                        bitIdx++;
+                    } while (b == 0);
+                }
+
+                offset += bitIdx;
+
+                delta |= (int)(((bitIdx - 1) << Count3));
+
+                if (delta != 0)
+                {
+                    var sign = blockStream.GetBit((int)(startBit3 + offset), 1);
+                    offset += 1;
+
+                    if (sign == 1)
+                    {
+                        delta = -delta;
+                    }
+                }
+
+                inc += delta;
+                value += inc;
+            }
+
+            return (value * Quantum) + Offset;
+        }
+
+        public override float EvaluateFloat(int frame)
+        {
+            return Values[frame];
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimChannelType7 : AnimChannel
+    {
+        private Sequence blockStream;
+
+        private float[] valueCache;
+
+        public float[] Values
+        {
+            get
+            {
+                if (valueCache != null)
+                {
+                    return valueCache;
+                }
+
+                valueCache = new float[blockStream.NumFrames];
+
+                var channels = new AnimChannel[3];
+                var ch = 0;
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if (i != Index)
+                    {
+                        channels[ch] = blockStream.Sequences[Sequence].Channels[i];
+                        ch++;
+                    }
+                }
+
+                for (int i = 0; i < valueCache.Length; i++)
+                {
+                    var vec = new Vector3(
+                        channels[0].EvaluateFloat(i),
+                        channels[1].EvaluateFloat(i),
+                        channels[2].EvaluateFloat(i)
+                    );
+
+                    valueCache[i] = (float)Math.Sqrt(Math.Max(1.0f - vec.LengthSquared(), 0.0));
+                }
+
+                return valueCache;
+            }
+        }
+
+        public int QuatIndex { get; internal set; }
+
+        public override float EvaluateFloat(int frame)
+        {
+            return Values[frame];
+        }
+
+        public override void Read(Sequence blockStream, ref int channelOffset)
+        {
+            this.blockStream = blockStream;
+        }
+    }
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimSequence
+    {
+        public AnimChannel[] Channels { get; set; }
+        public bool IsType7Quat { get; internal set; }
+
+        public Quaternion EvaluateQuaternion(int frame)
+        {
+            if (!IsType7Quat)
+            {
+                return new Quaternion(
+                    Channels[0].EvaluateFloat(frame),
+                    Channels[1].EvaluateFloat(frame),
+                    Channels[2].EvaluateFloat(frame),
+                    Channels[3].EvaluateFloat(frame)
+                );
+            }
+
+            var t7 = (AnimChannelType7)Channels[3];
+
+            var x = Channels[0].EvaluateFloat(frame);
+            var y = Channels[1].EvaluateFloat(frame);
+            var z = Channels[2].EvaluateFloat(frame);
+            var normalized = t7.EvaluateFloat(frame);
+
+            switch (t7.QuatIndex)
+            {
+                case 0:
+                    return new Quaternion(normalized, x, y, z);
+                case 1:
+                    return new Quaternion(x, normalized, y, z);
+                case 2:
+                    return new Quaternion(x, y, normalized, z);
+                case 3:
+                    return new Quaternion(x, y, z, normalized);
+                default:
+                    return Quaternion.Identity;
+            }
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Sequence : ResourceSystemBlock
@@ -384,26 +749,43 @@ namespace CodeWalker.GameFiles
         public MetaHash Unknown_00h { get; set; } //identifier / name?
         public uint DataLength { get; set; }
         public uint Unused_08h { get; set; } // 0x00000000
-        public uint Part1Offset { get; set; } //offset to data items / bytes used by "Part0"?
+        public uint FrameOffset { get; set; } //offset to data items / bytes used by "Part0"?
         public uint UnkLength { get; set; } //total block length? usually == BlockLength
         public ushort Unused_14h { get; set; } //0x0000
-        public ushort Part1Count { get; set; } // count of data items
-        public ushort Part1Stride { get; set; } //stride of data item
+        public ushort NumFrames { get; set; } // count of data items
+        public ushort FrameLength { get; set; } //stride of data item
         public ushort Unknown_1Ah { get; set; } //?
         public ushort Unknown_1Ch { get; set; } //?
-        public byte Unknown_1Eh_Type { get; set; } //64|255                 0x40|0xFF
+        public byte ChunkSize { get; set; } //64|255                 0x40|0xFF
         public byte Unknown_1Fh_Type { get; set; } //0|17|20|21|49|52|53    0x11|0x14|0x15|0x31|0x34|0x35
         public byte[] Data { get; set; }
 
 
-        public SequencePart1[] Part1 { get; set; }
+        public SequencePart1[] FrameData { get; set; }
         public ushort[] Part2 { get; set; }
         public int Part2Count { get; set; }
         public int Part2Offset { get; set; }
 
-
+        // parsed data
+        public AnimSequence[] Sequences { get; set; }
 
         //public static Dictionary<ushort, int> SeqDict = new Dictionary<ushort, int>();
+
+
+
+        class AnimChannelListItem
+        {
+            public int Sequence;
+            public int Index;
+            public AnimChannel Channel;
+            public AnimChannelListItem(int seq, int ind, AnimChannel channel)
+            {
+                Sequence = seq;
+                Index = ind;
+                Channel = channel;
+            }
+        }
+
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -411,14 +793,14 @@ namespace CodeWalker.GameFiles
             this.Unknown_00h = reader.ReadUInt32();//2965995365  2837183178
             this.DataLength = reader.ReadUInt32(); //282        142        1206       358
             this.Unused_08h = reader.ReadUInt32();//0          0          0          0
-            this.Part1Offset = reader.ReadUInt32();//224 (E0)   32 (20)    536 (218)  300    
+            this.FrameOffset = reader.ReadUInt32();//224 (E0)   32 (20)    536 (218)  300    
             this.UnkLength = reader.ReadUInt32();//314        174        1238       390 (=Length)
             this.Unused_14h = reader.ReadUInt16();//0          0          0          0
-            this.Part1Count = reader.ReadUInt16();//221 (DD)   17 (11)    151 (97)   201
-            this.Part1Stride = reader.ReadUInt16();//0          4          4          0      
+            this.NumFrames = reader.ReadUInt16();//221 (DD)   17 (11)    151 (97)   201
+            this.FrameLength = reader.ReadUInt16();//0          4          4          0      
             this.Unknown_1Ah = reader.ReadUInt16();//0          0          106        0      
             this.Unknown_1Ch = reader.ReadUInt16();//0          17         0          0      bone?
-            this.Unknown_1Eh_Type = reader.ReadByte();  //64         255        255        64
+            this.ChunkSize = reader.ReadByte();  //64         255        255        64
             this.Unknown_1Fh_Type = reader.ReadByte();  //0          0          0          0
 
 
@@ -435,22 +817,22 @@ namespace CodeWalker.GameFiles
             { }
 
 
-            if ((Part1Stride % 4) > 0)
+            if ((FrameLength % 4) > 0)
             { }
 
-            int offset = (int)Part1Offset;
-            if (Part1Stride > 0)
+            int offset = (int)FrameOffset;
+            if (FrameLength > 0)
             {
-                Part1 = new SequencePart1[Part1Count];
-                for (int i = 0; i < Part1Count; i++)
+                FrameData = new SequencePart1[NumFrames];
+                for (int i = 0; i < NumFrames; i++)
                 {
                     var sp = new SequencePart1();
-                    sp.Init(Data, offset, Part1Stride);
-                    Part1[i] = sp;
-                    offset += Part1Stride;
+                    sp.Init(Data, offset, FrameLength);
+                    FrameData[i] = sp;
+                    offset += FrameLength;
                 }
             }
-            else if (Part1Count != 0)
+            else if (NumFrames != 0)
             { }
 
             int brem = (int)DataLength - offset;
@@ -476,15 +858,15 @@ namespace CodeWalker.GameFiles
             //if (SeqDict.ContainsKey(Unknown_1Ah)) SeqDict[Unknown_1Ah]++;
             //else SeqDict[Unknown_1Ah] = 1;
 
-            if ((Unknown_1Ah != 0) && (Unknown_1Ah > Part1Offset))
+            if ((Unknown_1Ah != 0) && (Unknown_1Ah > FrameOffset))
             { }
 
-            if ((Unknown_1Ch != 0) && (Unknown_1Ch > Part1Offset))
+            if ((Unknown_1Ch != 0) && (Unknown_1Ch > FrameOffset))
             { }
 
 
 
-            switch (Unknown_1Eh_Type)
+            switch (ChunkSize)
             {
                 case 64: //0x40
                 case 255: //0xFF
@@ -507,7 +889,156 @@ namespace CodeWalker.GameFiles
                     break;
             }
 
+            int channelBitOffset = 0;
+            int channelFrameOffset = unchecked((int)(FrameOffset * 8));
+            int channelListOffset = Part2Offset;
+            int channelDataOffset = Part2Offset + (9 * 2);
 
+            var animChannelList = new List<AnimChannelListItem>();
+
+            var channelLists = new AnimChannel[9][];
+
+            for (int i = 0; i < 9; i++)
+            {
+                int channelCount = BitConverter.ToUInt16(Data, channelListOffset);
+
+                /*if (channelCount > 4)
+                {
+                    Debug.Assert(false, "More than 4 channels per type are currently unsupported!");
+                }*/
+
+                var channels = new AnimChannel[channelCount];
+
+                for (int c = 0; c < channelCount; c++)
+                {
+                    AnimChannel channel = null;
+
+                    switch (i)
+                    {
+                        case 0:
+                            channel = new AnimChannelStaticSmallestThreeQuaternion();
+                            break;
+                        case 1:
+                            channel = new AnimChannelStaticVector3();
+                            break;
+                        case 2:
+                            channel = new AnimChannelStaticFloat();
+                            break;
+                        case 3:
+                            // crAnimChannelRawFloat
+                            break;
+                        case 4:
+                            channel = new AnimChannelQuantizeFloat();
+                            break;
+                        case 5:
+                            channel = new AnimChannelIndirectQuantizeFloat();
+                            break;
+                        case 6:
+                            channel = new AnimChannelLinearFloat();
+                            break;
+                        case 7:
+                            // normalized W from quaternion (evaluate first three channels, calculate W)
+                            channel = new AnimChannelType7();
+                            break;
+                        case 8:
+                            // unknown extra
+                            // kind of the same as above but different at runtime?
+                            channel = new AnimChannelType7();
+                            break;
+                    }
+
+                    //Debug.Assert(channel != null, "Unsupported channel");
+
+                    if (channel != null)
+                    {
+                        channel.Read(this, ref channelBitOffset);
+                    }
+
+                    channels[c] = channel;
+                }
+
+                for (int c = 0; c < channelCount; c++)
+                {
+                    var channel = channels[c];
+
+                    if (channel != null)
+                    {
+                        channel.ReadData(this, ref channelBitOffset);
+                    }
+
+                    var channelDataBit = BitConverter.ToUInt16(Data, channelDataOffset + (c * 2));
+                    var sequence = channelDataBit >> 2;
+                    var index = channelDataBit & 3;
+
+                    if (channel != null)
+                    {
+                        if (i == 7 || i == 8)
+                        {
+                            if (channel is AnimChannelType7 t7)
+                            {
+                                t7.QuatIndex = index;
+                            }
+
+                            index = 3;
+                        }
+
+                        channel.Associate(sequence, index);
+
+                        animChannelList.Add(new AnimChannelListItem(sequence, index, channel));
+                    }
+                }
+
+                if (channelCount > 0)
+                {
+                    var listSize = ((channelCount + 3) / 4) * 4;
+
+                    channelDataOffset += (2 * listSize);
+                }
+
+                channelListOffset += 2;
+
+                channelLists[i] = channels;
+            }
+
+            for (int f = 0; f < NumFrames; f++)
+            {
+                channelFrameOffset = unchecked((int)((FrameOffset + (FrameLength * f)) * 8));
+
+                for (int i = 0; i < channelLists.Length; i++)
+                {
+                    var channels = channelLists[i];
+
+                    for (int c = 0; c < channels.Length; c++)
+                    {
+                        var channel = channels[c];
+
+                        if (channel != null)
+                        {
+                            channel.ReadFrame(this, f, ref channelFrameOffset);
+                        }
+                    }
+                }
+            }
+
+            Sequences = new AnimSequence[animChannelList.Max(a => a.Sequence) + 1];
+
+            for (int i = 0; i < Sequences.Length; i++)
+            {
+                var thisSeq = animChannelList.Where(a => a.Sequence == i);
+
+                Sequences[i] = new AnimSequence();
+                Sequences[i].Channels = new AnimChannel[thisSeq.Max(a => a.Index) + 1];
+                
+                for (int j = 0; j < Sequences[i].Channels.Length; j++)
+                {
+                    Sequences[i].Channels[j] = thisSeq.First(a => a.Index == j).Channel;
+
+                    if (Sequences[i].Channels[j] is AnimChannelType7)
+                    {
+                        Sequences[i].IsType7Quat = true;
+                    }
+                }
+            }
         }
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -516,12 +1047,12 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_00h);
             writer.Write(this.DataLength);
             writer.Write(this.Unused_08h);
-            writer.Write(this.Part1Offset);
+            writer.Write(this.FrameOffset);
             writer.Write(this.UnkLength);
             writer.Write(this.Unused_14h);
-            writer.Write(this.Part1Stride);
+            writer.Write(this.FrameLength);
             writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_1Eh_Type);
+            writer.Write(this.ChunkSize);
             writer.Write(this.Data);
         }
 
@@ -529,6 +1060,27 @@ namespace CodeWalker.GameFiles
         {
             return Unknown_00h.ToString() + ": " + DataLength.ToString();
         }
+
+        public uint GetBit(int startBit, int length)
+        {
+            var mask = MaskTable[length];
+
+            var lowByte = BitConverter.ToUInt32(Data, (startBit / 32) * 4);
+            var highByte = BitConverter.ToUInt32(Data, ((startBit / 32) + 1) * 4);
+
+            var pair = ((ulong)highByte << 32) | lowByte;
+
+            return (uint)((pair >> (startBit % 32)) & mask);
+        }
+
+        private static uint[] MaskTable = new uint[]
+        {
+            0, 1, 3, 7, 0xF, 0x1F, 0x3F, 0x7F, 0xFF, 0x1FF, 0x3FF,
+            0x7FF, 0xFFF, 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF, 0x1FFFF,
+            0x3FFFF, 0x7FFFF, 0xFFFFF, 0x1FFFFF, 0x3FFFFF, 0x7FFFFF,
+            0xFFFFFF, 0x1FFFFFF, 0x3FFFFFF, 0x7FFFFFF, 0xFFFFFFF,
+            0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF, 0xFFFFFFFF
+        };
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class SequencePart1
@@ -820,7 +1372,7 @@ namespace CodeWalker.GameFiles
         public ushort AnimationsCount1 { get; set; }
         public ushort AnimationsCount2 { get; set; }
         public uint Unknown_5Ch { get; set; } // 0x00000000
-        public uint Unknown_60h { get; set; }
+        public float Duration { get; set; }
         public uint Unknown_64h { get; set; } // 0x00000001
         public uint Unknown_68h { get; set; } // 0x00000000
         public uint Unknown_6Ch { get; set; } // 0x00000000
@@ -835,7 +1387,7 @@ namespace CodeWalker.GameFiles
             this.AnimationsCount1 = reader.ReadUInt16();
             this.AnimationsCount2 = reader.ReadUInt16();
             this.Unknown_5Ch = reader.ReadUInt32();
-            this.Unknown_60h = reader.ReadUInt32();
+            this.Duration = reader.ReadSingle();
             this.Unknown_64h = reader.ReadUInt32();
             this.Unknown_68h = reader.ReadUInt32();
             this.Unknown_6Ch = reader.ReadUInt32();
@@ -858,7 +1410,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.AnimationsCount1);
             writer.Write(this.AnimationsCount2);
             writer.Write(this.Unknown_5Ch);
-            writer.Write(this.Unknown_60h);
+            writer.Write(this.Duration);
             writer.Write(this.Unknown_64h);
             writer.Write(this.Unknown_68h);
             writer.Write(this.Unknown_6Ch);
@@ -880,9 +1432,9 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public float Unknown_00h { get; set; }
-        public float Unknown_04h { get; set; }
-        public float Unknown_08h { get; set; }
+        public float StartTime { get; set; }
+        public float EndTime { get; set; }
+        public float Rate { get; set; }
         public uint Unknown_0Ch { get; set; } // 0x00000000
         public ulong AnimationPointer { get; set; }
 
@@ -892,9 +1444,9 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_00h = reader.ReadSingle();
-            this.Unknown_04h = reader.ReadSingle();
-            this.Unknown_08h = reader.ReadSingle();
+            this.StartTime = reader.ReadSingle();
+            this.EndTime = reader.ReadSingle();
+            this.Rate = reader.ReadSingle();
             this.Unknown_0Ch = reader.ReadUInt32();
             this.AnimationPointer = reader.ReadUInt64();
 
@@ -910,9 +1462,9 @@ namespace CodeWalker.GameFiles
             this.AnimationPointer = (ulong)(this.Animation != null ? this.Animation.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.Unknown_00h);
-            writer.Write(this.Unknown_04h);
-            writer.Write(this.Unknown_08h);
+            writer.Write(this.StartTime);
+            writer.Write(this.EndTime);
+            writer.Write(this.Rate);
             writer.Write(this.Unknown_0Ch);
             writer.Write(this.AnimationPointer);
         }
