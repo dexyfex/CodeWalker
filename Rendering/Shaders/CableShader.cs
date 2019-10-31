@@ -76,7 +76,7 @@ namespace CodeWalker.Rendering
         public int RenderVertexColourIndex = 1;
         public int RenderTextureCoordIndex = 1;
         public int RenderTextureSamplerCoord = 1;
-        public MetaName RenderTextureSampler = MetaName.DiffuseSampler;
+        public ShaderParamNames RenderTextureSampler = ShaderParamNames.DiffuseSampler;
 
 
         private Dictionary<VertexType, InputLayout> layouts = new Dictionary<VertexType, InputLayout>();
@@ -230,7 +230,7 @@ namespace CodeWalker.Rendering
                         var ihash = geom.TextureParamHashes[i];
                         switch (ihash)
                         {
-                            case MetaName.DiffuseSampler:
+                            case ShaderParamNames.DiffuseSampler:
                                 texture = itex;
                                 break;
                         }

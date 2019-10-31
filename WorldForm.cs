@@ -281,7 +281,7 @@ namespace CodeWalker
             LocatorMarker.IsMovable = true;
             //AddDefaultMarkers(); //some POI to start with
 
-            MetaName[] texsamplers = RenderableGeometry.GetTextureSamplerList();
+            ShaderParamNames[] texsamplers = RenderableGeometry.GetTextureSamplerList();
             foreach (var texsampler in texsamplers)
             {
                 TextureSamplerComboBox.Items.Add(texsampler);
@@ -7079,9 +7079,9 @@ namespace CodeWalker
 
         private void TextureSamplerComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (TextureSamplerComboBox.SelectedItem is MetaName)
+            if (TextureSamplerComboBox.SelectedItem is ShaderParamNames)
             {
-                Renderer.shaders.RenderTextureSampler = (MetaName)TextureSamplerComboBox.SelectedItem;
+                Renderer.shaders.RenderTextureSampler = (ShaderParamNames)TextureSamplerComboBox.SelectedItem;
             }
         }
 

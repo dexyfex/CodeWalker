@@ -92,7 +92,7 @@ namespace CodeWalker.Rendering
         public int RenderVertexColourIndex = 1;
         public int RenderTextureCoordIndex = 1;
         public int RenderTextureSamplerCoord = 1;
-        public MetaName RenderTextureSampler = MetaName.DiffuseSampler;
+        public ShaderParamNames RenderTextureSampler = ShaderParamNames.DiffuseSampler;
 
         private Dictionary<VertexType, InputLayout> layouts = new Dictionary<VertexType, InputLayout>();
 
@@ -298,13 +298,13 @@ namespace CodeWalker.Rendering
                 case WorldRenderMode.SingleTexture:
                     switch (RenderTextureSampler)
                     {
-                        case MetaName.DiffuseSampler:
+                        case ShaderParamNames.DiffuseSampler:
                             rendermode = 5;
                             break;
-                        case MetaName.BumpSampler:
+                        case ShaderParamNames.BumpSampler:
                             rendermode = 6;
                             break;
-                        case MetaName.SpecSampler:
+                        case ShaderParamNames.SpecSampler:
                             rendermode = 7;
                             break;
                         default:
@@ -387,40 +387,40 @@ namespace CodeWalker.Rendering
                     var ihash = geom.TextureParamHashes[i];
                     switch (ihash)
                     {
-                        case MetaName.DiffuseSampler:
+                        case ShaderParamNames.DiffuseSampler:
                             texture0 = itex;
                             break;
-                        case MetaName.TextureSampler_layer0:
+                        case ShaderParamNames.TextureSampler_layer0:
                             texture1 = itex;
                             break;
-                        case MetaName.TextureSampler_layer1:
+                        case ShaderParamNames.TextureSampler_layer1:
                             texture2 = itex;
                             break;
-                        case MetaName.TextureSampler_layer2:
+                        case ShaderParamNames.TextureSampler_layer2:
                             texture3 = itex;
                             break;
-                        case MetaName.TextureSampler_layer3:
+                        case ShaderParamNames.TextureSampler_layer3:
                             texture4 = itex;
                             break;
-                        case MetaName.BumpSampler:
+                        case ShaderParamNames.BumpSampler:
                             normals0 = itex;
                             break;
-                        case MetaName.BumpSampler_layer0:
+                        case ShaderParamNames.BumpSampler_layer0:
                             normals1 = itex;
                             break;
-                        case MetaName.BumpSampler_layer1:
+                        case ShaderParamNames.BumpSampler_layer1:
                             normals2 = itex;
                             break;
-                        case MetaName.BumpSampler_layer2:
+                        case ShaderParamNames.BumpSampler_layer2:
                             normals3 = itex;
                             break;
-                        case MetaName.BumpSampler_layer3:
+                        case ShaderParamNames.BumpSampler_layer3:
                             normals4 = itex;
                             break;
-                        case MetaName.lookupSampler:
+                        case ShaderParamNames.lookupSampler:
                             texturemask = itex;
                             break;
-                        case MetaName.TintPaletteSampler:
+                        case ShaderParamNames.TintPaletteSampler:
                             tintpal = itex;
                             if (tintpal.Key != null)
                             {
@@ -494,9 +494,9 @@ namespace CodeWalker.Rendering
                 usevc = false;
                 switch (RenderTextureSampler)
                 {
-                    case MetaName.DiffuseSampler:
-                    case MetaName.BumpSampler:
-                    case MetaName.SpecSampler:
+                    case ShaderParamNames.DiffuseSampler:
+                    case ShaderParamNames.BumpSampler:
+                    case ShaderParamNames.SpecSampler:
                         break;
                     default:
                         for (int i = 0; i < geom.RenderableTextures.Length; i++)

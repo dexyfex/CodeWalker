@@ -405,7 +405,7 @@ namespace CodeWalker.Rendering
         public Texture[] TexturesHD;
         public RenderableTexture[] RenderableTextures;
         public RenderableTexture[] RenderableTexturesHD;
-        public MetaName[] TextureParamHashes;
+        public ShaderParamNames[] TextureParamHashes;
         public PrimitiveTopology Topology { get; set; }
         public bool IsFragment = false;
         public bool IsEmissive { get; set; } = false;
@@ -435,46 +435,46 @@ namespace CodeWalker.Rendering
         public bool HDTextureEnable = true;
 
 
-        public static MetaName[] GetTextureSamplerList()
+        public static ShaderParamNames[] GetTextureSamplerList()
         {
-            return new MetaName[]
+            return new ShaderParamNames[]
             {
-                MetaName.DiffuseSampler, //base diffuse
-                MetaName.SpecSampler, //base specular
-                MetaName.BumpSampler, //base normal
-                MetaName.TintPaletteSampler, // _pal
-                MetaName.DetailSampler, // ENV_
-                MetaName.FlowSampler, //river _flow
-                MetaName.FogSampler, //river _fog , water slod
-                MetaName.TextureSampler_layer0, //CS_RSN_SL_Road_0007
-                MetaName.BumpSampler_layer0, //CS_RSN_SL_Road_0007_n
-                MetaName.heightMapSamplerLayer0, //nxg_cs_rsn_sl_road_0007_h
-                MetaName.TextureSampler_layer1, //IM_Road_009b
-                MetaName.BumpSampler_layer1, //IM_Road_010b_N
-                MetaName.heightMapSamplerLayer1, //nxg_im_road_010b_h
-                MetaName.TextureSampler_layer2, //IM_Concrete10
-                MetaName.BumpSampler_layer2, //IM_Concrete13_N
-                MetaName.heightMapSamplerLayer2, //nxg_im_concrete13_h
-                MetaName.TextureSampler_layer3, //SC1_RSN_NS_ground_0009
-                MetaName.BumpSampler_layer3, //sc1_rsn_ns_ground_0010_n
-                MetaName.heightMapSamplerLayer3, //nxg_sc1_rsn_ns_ground_0010_b_h
-                MetaName.lookupSampler, //TF_RSN_Msk_CS1_DesHill1, bh1_43_golf_blendmap_04_LOD
-                MetaName.heightSampler, //nxg_prop_tree_palm2_displ_l
-                MetaName.FoamSampler, //bj_beachfoam01_lod, CS_RSN_SL_RiverFoam_01_A_lodCS_RSN_SL_RiverFoam_01_A
-                MetaName.DirtSampler,
-                MetaName.DirtBumpSampler,
-                MetaName.DiffuseSampler2,
-                MetaName.DiffuseSampler3,
-                MetaName.DiffuseHfSampler,
-                MetaName.ComboHeightSamplerFur01,
-                MetaName.ComboHeightSamplerFur23,
-                MetaName.ComboHeightSamplerFur45,
-                MetaName.ComboHeightSamplerFur67,
-                MetaName.StippleSampler,
-                MetaName.FurMaskSampler,
-                MetaName.EnvironmentSampler,
-                MetaName.distanceMapSampler,
-                MetaName.textureSamp,
+                ShaderParamNames.DiffuseSampler, //base diffuse
+                ShaderParamNames.SpecSampler, //base specular
+                ShaderParamNames.BumpSampler, //base normal
+                ShaderParamNames.TintPaletteSampler, // _pal
+                ShaderParamNames.DetailSampler, // ENV_
+                ShaderParamNames.FlowSampler, //river _flow
+                ShaderParamNames.FogSampler, //river _fog , water slod
+                ShaderParamNames.TextureSampler_layer0, //CS_RSN_SL_Road_0007
+                ShaderParamNames.BumpSampler_layer0, //CS_RSN_SL_Road_0007_n
+                ShaderParamNames.heightMapSamplerLayer0, //nxg_cs_rsn_sl_road_0007_h
+                ShaderParamNames.TextureSampler_layer1, //IM_Road_009b
+                ShaderParamNames.BumpSampler_layer1, //IM_Road_010b_N
+                ShaderParamNames.heightMapSamplerLayer1, //nxg_im_road_010b_h
+                ShaderParamNames.TextureSampler_layer2, //IM_Concrete10
+                ShaderParamNames.BumpSampler_layer2, //IM_Concrete13_N
+                ShaderParamNames.heightMapSamplerLayer2, //nxg_im_concrete13_h
+                ShaderParamNames.TextureSampler_layer3, //SC1_RSN_NS_ground_0009
+                ShaderParamNames.BumpSampler_layer3, //sc1_rsn_ns_ground_0010_n
+                ShaderParamNames.heightMapSamplerLayer3, //nxg_sc1_rsn_ns_ground_0010_b_h
+                ShaderParamNames.lookupSampler, //TF_RSN_Msk_CS1_DesHill1, bh1_43_golf_blendmap_04_LOD
+                ShaderParamNames.heightSampler, //nxg_prop_tree_palm2_displ_l
+                ShaderParamNames.FoamSampler, //bj_beachfoam01_lod, CS_RSN_SL_RiverFoam_01_A_lodCS_RSN_SL_RiverFoam_01_A
+                ShaderParamNames.DirtSampler,
+                ShaderParamNames.DirtBumpSampler,
+                ShaderParamNames.DiffuseSampler2,
+                ShaderParamNames.DiffuseSampler3,
+                ShaderParamNames.DiffuseHfSampler,
+                ShaderParamNames.ComboHeightSamplerFur01,
+                ShaderParamNames.ComboHeightSamplerFur23,
+                ShaderParamNames.ComboHeightSamplerFur45,
+                ShaderParamNames.ComboHeightSamplerFur67,
+                ShaderParamNames.StippleSampler,
+                ShaderParamNames.FurMaskSampler,
+                ShaderParamNames.EnvironmentSampler,
+                ShaderParamNames.distanceMapSampler,
+                ShaderParamNames.textureSamp,
             };
         }
 
@@ -552,82 +552,83 @@ namespace CodeWalker.Rendering
                 var pl = shader.ParametersList.Parameters;
                 var hl = shader.ParametersList.Hashes;
                 List<TextureBase> texs = new List<TextureBase>();
-                List<MetaName> phashes = new List<MetaName>();
+                List<ShaderParamNames> phashes = new List<ShaderParamNames>();
                 if ((pl != null) && (hl != null))
                 {
                     for (int i = 0; (i < pl.Length) && (i < hl.Length); i++)
                     {
+                        ShaderParamNames pName = (ShaderParamNames)hl[i];
                         var param = pl[i];
                         if (param.Data is TextureBase)
                         {
                             texs.Add(param.Data as TextureBase);
-                            phashes.Add(hl[i]);
+                            phashes.Add(pName);
                         }
 
-                        switch (hl[i])
+                        switch (pName)
                         {
-                            case MetaName.HardAlphaBlend:
+                            case ShaderParamNames.HardAlphaBlend:
                                 HardAlphaBlend = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.useTessellation:
+                            case ShaderParamNames.useTessellation:
                                 useTessellation = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.wetnessMultiplier:
+                            case ShaderParamNames.wetnessMultiplier:
                                 wetnessMultiplier = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.bumpiness: //float
+                            case ShaderParamNames.bumpiness: //float
                                 bumpiness = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.detailSettings: //float4
+                            case ShaderParamNames.detailSettings: //float4
                                 detailSettings = (Vector4)param.Data;
                                 break;
-                            case MetaName.specMapIntMask: //float3
+                            case ShaderParamNames.specMapIntMask: //float3
                                 specMapIntMask = ((Vector4)param.Data).XYZ();
                                 break;
-                            case MetaName.specularIntensityMult: //float
+                            case ShaderParamNames.specularIntensityMult: //float
                                 specularIntensityMult = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.specularFalloffMult: //float
+                            case ShaderParamNames.specularFalloffMult: //float
                                 specularFalloffMult = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.specularFresnel: //float
+                            case ShaderParamNames.specularFresnel: //float
                                 specularFresnel= ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.WindGlobalParams:
-                            case MetaName.umGlobalOverrideParams:
+                            case ShaderParamNames.WindGlobalParams:
+                            case ShaderParamNames.umGlobalOverrideParams:
                                 //WindOverrideParams = ((Vector4)param.Data); //todo...
                                 break;
-                            case MetaName.umGlobalParams:
+                            case ShaderParamNames.umGlobalParams:
                                 WindGlobalParams = ((Vector4)param.Data);
                                 break;
-                            case MetaName.RippleSpeed:
+                            case ShaderParamNames.RippleSpeed:
                                 RippleSpeed = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.RippleScale:
+                            case ShaderParamNames.RippleScale:
                                 RippleScale = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.RippleBumpiness:
+                            case ShaderParamNames.RippleBumpiness:
                                 RippleBumpiness = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.globalAnimUV0:
+                            case ShaderParamNames.globalAnimUV0:
                                 globalAnimUV0 = (Vector4)param.Data;
                                 break;
-                            case MetaName.globalAnimUV1:
+                            case ShaderParamNames.globalAnimUV1:
                                 globalAnimUV1 = (Vector4)param.Data;
                                 break;
-                            case MetaName.WaveOffset:
+                            case ShaderParamNames.WaveOffset:
                                 WaveOffset = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.WaterHeight:
+                            case ShaderParamNames.WaterHeight:
                                 WaterHeight = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.WaveMovement:
+                            case ShaderParamNames.WaveMovement:
                                 WaveMovement = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.HeightOpacity:
+                            case ShaderParamNames.HeightOpacity:
                                 HeightOpacity = ((Vector4)param.Data).X;
                                 break;
-                            case MetaName.DirtDecalMask:
+                            case ShaderParamNames.DirtDecalMask:
                                 DirtDecalMask = ((Vector4)param.Data);
                                 break;
                         }

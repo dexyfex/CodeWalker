@@ -189,14 +189,14 @@ namespace CodeWalker.Rendering
 
                 for (int i = 0; i < nparams; i++)
                 {
-                    var h = shader.ParametersList.Hashes[i];
+                    var h = (ShaderParamNames)shader.ParametersList.Hashes[i];
                     switch (h)
                     {
-                        case MetaName.AlphaTest: VSGeomVars.Vars.AlphaTest = (Vector4)sparams[i].Data; break;
-                        case MetaName.AlphaScale: VSGeomVars.Vars.AlphaScale = (Vector4)sparams[i].Data; break;
-                        case MetaName.UseTreeNormals: VSGeomVars.Vars.UseTreeNormals = (Vector4)sparams[i].Data; break;
-                        case MetaName.treeLod2Normal: VSGeomVars.Vars.treeLod2Normal = (Vector4)sparams[i].Data; break;
-                        case MetaName.treeLod2Params: VSGeomVars.Vars.treeLod2Params = (Vector4)sparams[i].Data; break;
+                        case ShaderParamNames.AlphaTest: VSGeomVars.Vars.AlphaTest = (Vector4)sparams[i].Data; break;
+                        case ShaderParamNames.AlphaScale: VSGeomVars.Vars.AlphaScale = (Vector4)sparams[i].Data; break;
+                        case ShaderParamNames.UseTreeNormals: VSGeomVars.Vars.UseTreeNormals = (Vector4)sparams[i].Data; break;
+                        case ShaderParamNames.treeLod2Normal: VSGeomVars.Vars.treeLod2Normal = (Vector4)sparams[i].Data; break;
+                        case ShaderParamNames.treeLod2Params: VSGeomVars.Vars.treeLod2Params = (Vector4)sparams[i].Data; break;
                     }
                 }
 
@@ -222,7 +222,7 @@ namespace CodeWalker.Rendering
                     var ihash = geom.TextureParamHashes[i];
                     switch (ihash)
                     {
-                        case MetaName.DiffuseSampler:
+                        case ShaderParamNames.DiffuseSampler:
                             texture = itex;
                             break;
                     }

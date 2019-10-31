@@ -699,7 +699,7 @@ namespace CodeWalker
 
             shader.ParametersList = new ShaderParametersBlock();
             var paramsBlock = shader.ParametersList;
-            var pNames = new List<MetaName>();
+            var pNames = new List<ShaderParamNames>();
             var pVals = new List<ShaderParameter>();
 
 
@@ -720,29 +720,29 @@ namespace CodeWalker
                     //shader.RenderBucket = 3;
                     //shader.ParameterSize = 208;
                     //shader.ParameterDataSize = 272;
-                    AddShaderParam(pNames, pVals, MetaName.DiffuseSampler, GetTextureBaseParam(texNames, 0));//assume first texture is diffuse...
-                    AddShaderParam(pNames, pVals, MetaName.matMaterialColorScale, new Vector4(1, 0, 0, 1));
-                    AddShaderParam(pNames, pVals, MetaName.HardAlphaBlend, new Vector4(0, 0, 0, 0));
-                    AddShaderParam(pNames, pVals, MetaName.useTessellation, new Vector4(0, 0, 0, 0));
-                    AddShaderParam(pNames, pVals, MetaName.wetnessMultiplier, new Vector4(1, 0, 0, 0));
-                    AddShaderParam(pNames, pVals, MetaName.globalAnimUV1, new Vector4(0, 1, 0, 0));
-                    AddShaderParam(pNames, pVals, MetaName.globalAnimUV0, new Vector4(1, 0, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.DiffuseSampler, GetTextureBaseParam(texNames, 0));//assume first texture is diffuse...
+                    AddShaderParam(pNames, pVals, ShaderParamNames.matMaterialColorScale, new Vector4(1, 0, 0, 1));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.HardAlphaBlend, new Vector4(0, 0, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.useTessellation, new Vector4(0, 0, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.wetnessMultiplier, new Vector4(1, 0, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.globalAnimUV1, new Vector4(0, 1, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.globalAnimUV0, new Vector4(1, 0, 0, 0));
                     break;
                 case "normal":
                     //shader.RenderBucket = 0;
                     //shader.ParameterSize = 320;
                     //shader.ParameterDataSize = 400;
-                    AddShaderParam(pNames, pVals, MetaName.DiffuseSampler, GetTextureBaseParam(texNames, 0));//assume first texture is diffuse...
-                    AddShaderParam(pNames, pVals, MetaName.BumpSampler, GetTextureBaseParam(texNames, 1));//assume 2nd texture is normalmap..
-                    AddShaderParam(pNames, pVals, MetaName.HardAlphaBlend, new Vector4(1, 0, 0, 0));
-                    AddShaderParam(pNames, pVals, MetaName.useTessellation, new Vector4(0, 0, 0, 0));
-                    AddShaderParam(pNames, pVals, MetaName.wetnessMultiplier, new Vector4(1, 0, 0, 0));
-                    AddShaderParam(pNames, pVals, MetaName.bumpiness, new Vector4(1, 0, 0, 0));
-                    AddShaderParam(pNames, pVals, MetaName.specularIntensityMult, new Vector4(0.5f, 0, 0, 0));
-                    AddShaderParam(pNames, pVals, MetaName.specularFalloffMult, new Vector4(20, 0, 0, 0));//too metallic?
-                    AddShaderParam(pNames, pVals, MetaName.specularFresnel, new Vector4(0.9f, 0, 0, 0));
-                    AddShaderParam(pNames, pVals, MetaName.globalAnimUV1, new Vector4(0, 1, 0, 0));
-                    AddShaderParam(pNames, pVals, MetaName.globalAnimUV0, new Vector4(1, 0, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.DiffuseSampler, GetTextureBaseParam(texNames, 0));//assume first texture is diffuse...
+                    AddShaderParam(pNames, pVals, ShaderParamNames.BumpSampler, GetTextureBaseParam(texNames, 1));//assume 2nd texture is normalmap..
+                    AddShaderParam(pNames, pVals, ShaderParamNames.HardAlphaBlend, new Vector4(1, 0, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.useTessellation, new Vector4(0, 0, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.wetnessMultiplier, new Vector4(1, 0, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.bumpiness, new Vector4(1, 0, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.specularIntensityMult, new Vector4(0.5f, 0, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.specularFalloffMult, new Vector4(20, 0, 0, 0));//too metallic?
+                    AddShaderParam(pNames, pVals, ShaderParamNames.specularFresnel, new Vector4(0.9f, 0, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.globalAnimUV1, new Vector4(0, 1, 0, 0));
+                    AddShaderParam(pNames, pVals, ShaderParamNames.globalAnimUV0, new Vector4(1, 0, 0, 0));
                     break;
             }
 
@@ -755,7 +755,13 @@ namespace CodeWalker
                 }
             }
 
-            paramsBlock.Hashes = pNames.ToArray();
+            MetaName[] nameHashes = new MetaName[pNames.Count];
+            for (int i = 0; i < pNames.Count; i++)
+            {
+                nameHashes[i] = (MetaName)pNames[i];
+            }
+
+            paramsBlock.Hashes = nameHashes;
             paramsBlock.Parameters = pVals.ToArray();
             paramsBlock.Count = pVals.Count;
 
@@ -787,7 +793,7 @@ namespace CodeWalker
             texParam.NameHash = JenkHash.GenHash(name.ToLowerInvariant());
             return texParam;
         }
-        private void AddShaderParam(List<MetaName> paramNames, List<ShaderParameter> paramValues, MetaName paramName, object paramValue)
+        private void AddShaderParam(List<ShaderParamNames> paramNames, List<ShaderParameter> paramValues, ShaderParamNames paramName, object paramValue)
         {
             var p = new ShaderParameter();
             p.Data = paramValue;

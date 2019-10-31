@@ -148,7 +148,7 @@ namespace CodeWalker.GameFiles
                 {
                     var entry = msi.Entries[i];
 
-                    if ((entry.DataOffset == 0) && (entry.EntryNameHash == MetaName.ARRAYINFO)) //referred to by array
+                    if ((entry.DataOffset == 0) && (entry.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO)) //referred to by array
                     {
                     }
                     else
@@ -301,18 +301,18 @@ namespace CodeWalker.GameFiles
             {
                 case MetaName.CScenarioPointContainer:
                     return new MetaStructureInfo(MetaName.CScenarioPointContainer, 2489654897, 768, 48,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
                      new MetaStructureEntryInfo_s(MetaName.LoadSavePoints, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPoint),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPoint),
                      new MetaStructureEntryInfo_s(MetaName.MyPoints, 16, MetaStructureEntryDataType.Array, 0, 2, 0)
                     );
                 case (MetaName)4023740759:
                     return new MetaStructureInfo((MetaName)4023740759, 88255871, 768, 88,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingNode),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingNode),
                      new MetaStructureEntryInfo_s(MetaName.Nodes, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingEdge),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingEdge),
                      new MetaStructureEntryInfo_s(MetaName.Edges, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChain),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChain),
                      new MetaStructureEntryInfo_s(MetaName.Chains, 32, MetaStructureEntryDataType.Array, 0, 4, 0)
                     );
                 case MetaName.rage__spdGrid2D:
@@ -326,30 +326,30 @@ namespace CodeWalker.GameFiles
                     );
                 case MetaName.CScenarioPointLookUps:
                     return new MetaStructureInfo(MetaName.CScenarioPointLookUps, 2669361587, 768, 96,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.TypeNames, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.PedModelSetNames, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.VehicleModelSetNames, 32, MetaStructureEntryDataType.Array, 0, 4, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.GroupNames, 48, MetaStructureEntryDataType.Array, 0, 6, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.InteriorNames, 64, MetaStructureEntryDataType.Array, 0, 8, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.RequiredIMapNames, 80, MetaStructureEntryDataType.Array, 0, 10, 0)
                     );
                 case MetaName.CScenarioPointRegion:
                     return new MetaStructureInfo(MetaName.CScenarioPointRegion, 3501351821, 768, 376,
                      new MetaStructureEntryInfo_s(MetaName.VersionNumber, 0, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.Points, 8, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointContainer),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioEntityOverride),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioEntityOverride),
                      new MetaStructureEntryInfo_s(MetaName.EntityOverrides, 72, MetaStructureEntryDataType.Array, 0, 2, 0),
                      new MetaStructureEntryInfo_s((MetaName)3696045377, 96, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)4023740759),
                      new MetaStructureEntryInfo_s(MetaName.AccelGrid, 184, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdGrid2D),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)3844724227, 248, MetaStructureEntryDataType.Array, 0, 6, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointCluster),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointCluster),
                      new MetaStructureEntryInfo_s(MetaName.Clusters, 264, MetaStructureEntryDataType.Array, 0, 8, 0),
                      new MetaStructureEntryInfo_s(MetaName.LookUps, 280, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointLookUps)
                     );
@@ -373,7 +373,7 @@ namespace CodeWalker.GameFiles
                     return new MetaStructureInfo(MetaName.CScenarioEntityOverride, 1271200492, 1024, 80,
                      new MetaStructureEntryInfo_s(MetaName.EntityPosition, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.EntityType, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
                      new MetaStructureEntryInfo_s(MetaName.ScenarioPoints, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
                      new MetaStructureEntryInfo_s((MetaName)538733109, 64, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)1035513142, 65, MetaStructureEntryDataType.Boolean, 0, 0, 0)
@@ -418,7 +418,7 @@ namespace CodeWalker.GameFiles
                 case MetaName.CScenarioChain:
                     return new MetaStructureInfo(MetaName.CScenarioChain, 2751910366, 768, 40,
                      new MetaStructureEntryInfo_s((MetaName)1156691834, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.EdgeIds, 8, MetaStructureEntryDataType.Array, 0, 1, 0)
                     );
                 case MetaName.rage__spdSphere:
@@ -434,53 +434,53 @@ namespace CodeWalker.GameFiles
                     );
                 case MetaName.CStreamingRequestRecord:
                     return new MetaStructureInfo(MetaName.CStreamingRequestRecord, 3825587854, 768, 40,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CStreamingRequestFrame),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CStreamingRequestFrame),
                      new MetaStructureEntryInfo_s(MetaName.Frames, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1358189812),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1358189812),
                      new MetaStructureEntryInfo_s(MetaName.CommonSets, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
                      new MetaStructureEntryInfo_s(MetaName.NewStyle, 32, MetaStructureEntryDataType.Boolean, 0, 0, 0)
                     );
                 case MetaName.CStreamingRequestFrame:
                     return new MetaStructureInfo(MetaName.CStreamingRequestFrame, 1112444512, 1024, 112,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.AddList, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.RemoveList, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)896120921, 32, MetaStructureEntryDataType.Array, 0, 4, 0),
                      new MetaStructureEntryInfo_s(MetaName.CamPos, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.CamDir, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)1762439591, 80, MetaStructureEntryDataType.Array, 0, 8, 0),
                      new MetaStructureEntryInfo_s(MetaName.Flags, 96, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
                     );
                 //case MetaName.CStreamingRequestFrame:
                 //    return new MetaStructureInfo(MetaName.CStreamingRequestFrame, 3672937465, 1024, 96,
-                //     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                 //     new MetaStructureEntryInfo_s(MetaName.AddList, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                //     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                 //     new MetaStructureEntryInfo_s(MetaName.RemoveList, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
                 //     new MetaStructureEntryInfo_s(MetaName.CamPos, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                 //     new MetaStructureEntryInfo_s(MetaName.CamDir, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                //     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                 //     new MetaStructureEntryInfo_s((MetaName)1762439591, 64, MetaStructureEntryDataType.Array, 0, 6, 0),
                 //     new MetaStructureEntryInfo_s(MetaName.Flags, 80, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
                 //    );
                 case (MetaName)1358189812:
                     return new MetaStructureInfo((MetaName)1358189812, 3710200606, 768, 16,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.Requests, 0, MetaStructureEntryDataType.Array, 0, 0, 0)
                     );
                 case MetaName.CMapTypes:
                     return new MetaStructureInfo(MetaName.CMapTypes, 2608875220, 768, 80,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.archetypes, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
                      new MetaStructureEntryInfo_s(MetaName.name, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.dependencies, 48, MetaStructureEntryDataType.Array, 0, 5, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompositeEntityType),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompositeEntityType),
                      new MetaStructureEntryInfo_s(MetaName.compositeEntityTypes, 64, MetaStructureEntryDataType.Array, 0, 7, 0)
                     );
                 case MetaName.CBaseArchetypeDef:
@@ -500,7 +500,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
                      new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0)
                     );
                 //case MetaName.CBaseArchetypeDef:
@@ -518,16 +518,16 @@ namespace CodeWalker.GameFiles
                 //     new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
                 //     new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
                 //     new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                //     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                //     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                 //     new MetaStructureEntryInfo_s(MetaName.extensions, 112, MetaStructureEntryDataType.Array, 0, 13, 0)
                 //    );
                 case MetaName.CCreatureMetaData:
                     return new MetaStructureInfo(MetaName.CCreatureMetaData, 2181653572, 768, 56,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CShaderVariableComponent),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CShaderVariableComponent),
                      new MetaStructureEntryInfo_s(MetaName.shaderVariableComponents, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropExpressionData),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropExpressionData),
                      new MetaStructureEntryInfo_s(MetaName.pedPropExpressions, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedCompExpressionData),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedCompExpressionData),
                      new MetaStructureEntryInfo_s(MetaName.pedCompExpressions, 40, MetaStructureEntryDataType.Array, 0, 4, 0)
                     );
                 case MetaName.CShaderVariableComponent:
@@ -535,11 +535,11 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.pedcompID, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.maskID, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.shaderVariableHashString, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.tracks, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ids, 40, MetaStructureEntryDataType.Array, 0, 5, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.components, 56, MetaStructureEntryDataType.Array, 0, 7, 0)
                     );
                 case MetaName.CPedPropExpressionData:
@@ -547,13 +547,13 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.pedPropID, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.pedPropVarIndex, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.pedPropExpressionIndex, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.tracks, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ids, 40, MetaStructureEntryDataType.Array, 0, 5, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.types, 56, MetaStructureEntryDataType.Array, 0, 7, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.components, 72, MetaStructureEntryDataType.Array, 0, 9, 0)
                     );
                 case MetaName.CPedCompExpressionData:
@@ -561,47 +561,47 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.pedCompID, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.pedCompVarIndex, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.pedCompExpressionIndex, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.tracks, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ids, 40, MetaStructureEntryDataType.Array, 0, 5, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.types, 56, MetaStructureEntryDataType.Array, 0, 7, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.components, 72, MetaStructureEntryDataType.Array, 0, 9, 0)
                     );
                 case MetaName.rage__fwInstancedMapData:
                     return new MetaStructureInfo(MetaName.rage__fwInstancedMapData, 1836780118, 768, 48,
                      new MetaStructureEntryInfo_s(MetaName.ImapLink, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwPropInstanceListDef),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwPropInstanceListDef),
                      new MetaStructureEntryInfo_s(MetaName.PropInstanceList, 16, MetaStructureEntryDataType.Array, 0, 1, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwGrassInstanceListDef),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwGrassInstanceListDef),
                      new MetaStructureEntryInfo_s(MetaName.GrassInstanceList, 32, MetaStructureEntryDataType.Array, 0, 3, 0)
                     );
                 case MetaName.CLODLight:
                     return new MetaStructureInfo(MetaName.CLODLight, 2325189228, 768, 136,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.VECTOR3),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)MetaTypeName.VECTOR3),
                      new MetaStructureEntryInfo_s(MetaName.direction, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.falloff, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.falloffExponent, 40, MetaStructureEntryDataType.Array, 0, 4, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.timeAndStateFlags, 56, MetaStructureEntryDataType.Array, 0, 6, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.hash, 72, MetaStructureEntryDataType.Array, 0, 8, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.HASH, 72, MetaStructureEntryDataType.Array, 0, 8, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.coneInnerAngle, 88, MetaStructureEntryDataType.Array, 0, 10, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.coneOuterAngleOrCapExt, 104, MetaStructureEntryDataType.Array, 0, 12, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.coronaIntensity, 120, MetaStructureEntryDataType.Array, 0, 14, 0)
                     );
                 case MetaName.CDistantLODLight:
                     return new MetaStructureInfo(MetaName.CDistantLODLight, 2820908419, 768, 48,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.VECTOR3),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)MetaTypeName.VECTOR3),
                      new MetaStructureEntryInfo_s(MetaName.position, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.RGBI, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
                      new MetaStructureEntryInfo_s(MetaName.numStreetLights, 40, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.category, 42, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0)
@@ -625,20 +625,20 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.streamingExtentsMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.entitiesExtentsMin, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.entitiesExtentsMax, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.entities, 96, MetaStructureEntryDataType.Array, 0, 8, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwContainerLodDef),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwContainerLodDef),
                      new MetaStructureEntryInfo_s(MetaName.containerLods, 112, MetaStructureEntryDataType.Array, 0, 10, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.BoxOccluder),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.BoxOccluder),
                      new MetaStructureEntryInfo_s(MetaName.boxOccluders, 128, MetaStructureEntryDataType.Array, 4, 12, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.OccludeModel),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.OccludeModel),
                      new MetaStructureEntryInfo_s(MetaName.occludeModels, 144, MetaStructureEntryDataType.Array, 4, 14, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.physicsDictionaries, 160, MetaStructureEntryDataType.Array, 0, 16, 0),
                      new MetaStructureEntryInfo_s(MetaName.instancedData, 176, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwInstancedMapData),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CTimeCycleModifier),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CTimeCycleModifier),
                      new MetaStructureEntryInfo_s(MetaName.timeCycleModifiers, 224, MetaStructureEntryDataType.Array, 0, 19, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCarGen),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCarGen),
                      new MetaStructureEntryInfo_s(MetaName.carGenerators, 240, MetaStructureEntryDataType.Array, 0, 21, 0),
                      new MetaStructureEntryInfo_s(MetaName.LODLightsSOA, 256, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CLODLight),
                      new MetaStructureEntryInfo_s(MetaName.DistantLODLightsSOA, 392, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CDistantLODLight),
@@ -659,7 +659,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__eLodType),
                      new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__ePriorityLevel),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
                      new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
@@ -692,7 +692,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
                      new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
                      new MetaStructureEntryInfo_s(MetaName.timeFlags, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
                     );
@@ -700,14 +700,14 @@ namespace CodeWalker.GameFiles
                     return new MetaStructureInfo(MetaName.CExtensionDefLightEffect, 2436199897, 1024, 48,
                      new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CLightAttrDef),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CLightAttrDef),
                      new MetaStructureEntryInfo_s(MetaName.instances, 32, MetaStructureEntryDataType.Array, 0, 2, 0)
                     );
                 case MetaName.CLightAttrDef:
                     return new MetaStructureInfo(MetaName.CLightAttrDef, 2363260268, 768, 160,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.posn, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 0, (MetaName)3),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.colour, 20, MetaStructureEntryDataType.ArrayOfBytes, 0, 2, (MetaName)3),
                      new MetaStructureEntryInfo_s(MetaName.flashiness, 23, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.intensity, 24, MetaStructureEntryDataType.Float, 0, 0, 0),
@@ -718,7 +718,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.timeFlags, 36, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.falloff, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.falloffExponent, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.cullingPlane, 48, MetaStructureEntryDataType.ArrayOfBytes, 0, 13, (MetaName)4),
                      new MetaStructureEntryInfo_s(MetaName.shadowBlur, 64, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.padding1, 65, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
@@ -726,7 +726,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.padding3, 68, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.volIntensity, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.volSizeScale, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.volOuterColour, 80, MetaStructureEntryDataType.ArrayOfBytes, 0, 21, (MetaName)3),
                      new MetaStructureEntryInfo_s(MetaName.lightHash, 83, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.volOuterIntensity, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
@@ -739,13 +739,13 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.shadowNearClip, 100, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.coronaIntensity, 104, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.coronaZBias, 108, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.direction, 112, MetaStructureEntryDataType.ArrayOfBytes, 0, 34, (MetaName)3),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.tangent, 124, MetaStructureEntryDataType.ArrayOfBytes, 0, 36, (MetaName)3),
                      new MetaStructureEntryInfo_s(MetaName.coneInnerAngle, 136, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.coneOuterAngle, 140, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extents, 144, MetaStructureEntryDataType.ArrayOfBytes, 0, 40, (MetaName)3),
                      new MetaStructureEntryInfo_s(MetaName.projectedTextureKey, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
                     );
@@ -764,14 +764,14 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__eLodType),
                      new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__ePriorityLevel),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
                      new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.tintValue, 120, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.groupId, 128, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.floorId, 132, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.defaultEntitySets, 136, MetaStructureEntryDataType.Array, 0, 20, 0),
                      new MetaStructureEntryInfo_s(MetaName.numExitPortals, 152, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.MLOInstflags, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
@@ -792,7 +792,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.bmin, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.bmax, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.dataSize, 32, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.verts, 40, MetaStructureEntryDataType.DataBlockPointer, 4, 3, (MetaName)2),
                      new MetaStructureEntryInfo_s(MetaName.numVertsInBytes, 48, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.numTris, 50, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
@@ -815,18 +815,18 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
                      new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
                      new MetaStructureEntryInfo_s(MetaName.mloFlags, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.entities, 152, MetaStructureEntryDataType.Array, 0, 18, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloRoomDef),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloRoomDef),
                      new MetaStructureEntryInfo_s(MetaName.rooms, 168, MetaStructureEntryDataType.Array, 0, 20, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloPortalDef),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloPortalDef),
                      new MetaStructureEntryInfo_s(MetaName.portals, 184, MetaStructureEntryDataType.Array, 0, 22, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloEntitySet),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloEntitySet),
                      new MetaStructureEntryInfo_s(MetaName.entitySets, 200, MetaStructureEntryDataType.Array, 0, 24, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloTimeCycleModifier),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloTimeCycleModifier),
                      new MetaStructureEntryInfo_s(MetaName.timeCycleModifiers, 216, MetaStructureEntryDataType.Array, 0, 26, 0)
                     );
                 case MetaName.CMloRoomDef:
@@ -841,7 +841,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.portalCount, 80, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.floorId, 84, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.exteriorVisibiltyDepth, 88, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.attachedObjects, 96, MetaStructureEntryDataType.Array, 0, 10, 0)
                     );
                 case MetaName.CMloPortalDef:
@@ -852,9 +852,9 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.mirrorPriority, 20, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.opacity, 24, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.audioOcclusion, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.corners, 32, MetaStructureEntryDataType.Array, 0, 6, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.attachedObjects, 48, MetaStructureEntryDataType.Array, 0, 8, 0)
                     );
                 case MetaName.CMloTimeCycleModifier:
@@ -894,7 +894,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.StartImapFile, 264, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.EndImapFile, 268, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.PtFxAssetName, 272, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompEntityAnims),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompEntityAnims),
                      new MetaStructureEntryInfo_s(MetaName.Animations, 280, MetaStructureEntryDataType.Array, 0, 13, 0)
                     );
                 case MetaName.CCompEntityAnims:
@@ -904,7 +904,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.AnimatedModel, 128, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
                      new MetaStructureEntryInfo_s(MetaName.punchInPhase, 192, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.punchOutPhase, 196, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompEntityEffectsData),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompEntityEffectsData),
                      new MetaStructureEntryInfo_s(MetaName.effectsData, 200, MetaStructureEntryDataType.Array, 0, 5, 0)
                     );
                 case MetaName.CCompEntityEffectsData:
@@ -1001,8 +1001,8 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.softness, 168, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.scaleBySunIntensity, 172, MetaStructureEntryDataType.Boolean, 0, 0, 0)
                     );
-                case MetaName.VECTOR3:
-                    return new MetaStructureInfo(MetaName.VECTOR3, 2751397072, 512, 12,
+                case (MetaName)MetaTypeName.VECTOR3:
+                    return new MetaStructureInfo((MetaName)MetaTypeName.VECTOR3, 2751397072, 512, 12,
                      new MetaStructureEntryInfo_s(MetaName.x, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.y, 4, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.z, 8, MetaStructureEntryDataType.Float, 0, 0, 0)
@@ -1010,9 +1010,9 @@ namespace CodeWalker.GameFiles
                 case MetaName.CPedPropInfo:
                     return new MetaStructureInfo(MetaName.CPedPropInfo, 1792487819, 768, 40,
                      new MetaStructureEntryInfo_s((MetaName)2598445407, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropMetaData),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropMetaData),
                      new MetaStructureEntryInfo_s((MetaName)3902803273, 8, MetaStructureEntryDataType.Array, 0, 1, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CAnchorProps),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CAnchorProps),
                      new MetaStructureEntryInfo_s(MetaName.aAnchors, 24, MetaStructureEntryDataType.Array, 0, 3, 0)
                     );
                 case MetaName.CPedVariationInfo:
@@ -1021,13 +1021,13 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s((MetaName)4086467184, 1, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)911147899, 2, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)315291935, 3, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)2996560424, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, MetaName.PsoPOINTER),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)3538495220),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)2996560424, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, (MetaName)MetaTypeName.PsoPOINTER),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)3538495220),
                      new MetaStructureEntryInfo_s((MetaName)3796409423, 16, MetaStructureEntryDataType.Array, 0, 6, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedSelectionSet),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedSelectionSet),
                      new MetaStructureEntryInfo_s(MetaName.aSelectionSets, 32, MetaStructureEntryDataType.Array, 0, 8, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CComponentInfo),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CComponentInfo),
                      new MetaStructureEntryInfo_s(MetaName.compInfos, 48, MetaStructureEntryDataType.Array, 0, 10, 0),
                      new MetaStructureEntryInfo_s(MetaName.propInfo, 64, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropInfo),
                      new MetaStructureEntryInfo_s(MetaName.dlcName, 104, MetaStructureEntryDataType.Hash, 0, 0, 0)
@@ -1035,7 +1035,7 @@ namespace CodeWalker.GameFiles
                 case (MetaName)3538495220:
                     return new MetaStructureInfo((MetaName)3538495220, 2024084511, 768, 24,
                      new MetaStructureEntryInfo_s((MetaName)3371516811, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1535046754),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1535046754),
                      new MetaStructureEntryInfo_s((MetaName)1756136273, 8, MetaStructureEntryDataType.Array, 0, 1, 0)
                     );
                 case (MetaName)2236980467:
@@ -1046,7 +1046,7 @@ namespace CodeWalker.GameFiles
                     return new MetaStructureInfo((MetaName)1535046754, 124073662, 768, 48,
                      new MetaStructureEntryInfo_s(MetaName.propMask, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)2806194106, 1, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1036962405),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1036962405),
                      new MetaStructureEntryInfo_s(MetaName.aTexData, 8, MetaStructureEntryDataType.Array, 0, 2, 0),
                      new MetaStructureEntryInfo_s(MetaName.clothData, 24, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)2236980467)
                     );
@@ -1059,7 +1059,7 @@ namespace CodeWalker.GameFiles
                     return new MetaStructureInfo(MetaName.CComponentInfo, 3693847250, 512, 48,
                      new MetaStructureEntryInfo_s((MetaName)802196719, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)4233133352, 4, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)128864925, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 2, (MetaName)5),
                      new MetaStructureEntryInfo_s(MetaName.flags, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.inclusions, 32, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
@@ -1072,9 +1072,9 @@ namespace CodeWalker.GameFiles
                 case MetaName.CPedPropMetaData:
                     return new MetaStructureInfo(MetaName.CPedPropMetaData, 2029738350, 768, 56,
                      new MetaStructureEntryInfo_s(MetaName.audioId, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.expressionMods, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, (MetaName)5),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)254518642),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)254518642),
                      new MetaStructureEntryInfo_s(MetaName.texData, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
                      new MetaStructureEntryInfo_s(MetaName.renderFlags, 40, MetaStructureEntryDataType.IntFlags1, 0, 3, (MetaName)4212977111),
                      new MetaStructureEntryInfo_s(MetaName.propFlags, 44, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
@@ -1094,22 +1094,22 @@ namespace CodeWalker.GameFiles
                     );
                 case MetaName.CAnchorProps:
                     return new MetaStructureInfo(MetaName.CAnchorProps, 403574180, 768, 24,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.props, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.anchor, 16, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)2834549053)
                     );
                 case MetaName.CPedSelectionSet:
                     return new MetaStructureInfo(MetaName.CPedSelectionSet, 3120284999, 512, 48,
                      new MetaStructureEntryInfo_s(MetaName.name, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)173599222, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, MetaName.PsoPOINTER),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)2991454271, 16, MetaStructureEntryDataType.ArrayOfBytes, 0, 3, MetaName.PsoPOINTER),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)173599222, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, (MetaName)MetaTypeName.PsoPOINTER),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)2991454271, 16, MetaStructureEntryDataType.ArrayOfBytes, 0, 3, (MetaName)MetaTypeName.PsoPOINTER),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)3598106198, 28, MetaStructureEntryDataType.ArrayOfBytes, 0, 5, (MetaName)6),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)2095974912, 34, MetaStructureEntryDataType.ArrayOfBytes, 0, 7, (MetaName)6),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)672172037, 40, MetaStructureEntryDataType.ArrayOfBytes, 0, 9, (MetaName)6)
                     );
                 case MetaName.CExtensionDefDoor:
@@ -1126,9 +1126,9 @@ namespace CodeWalker.GameFiles
                 case MetaName.CMloEntitySet:
                     return new MetaStructureInfo(MetaName.CMloEntitySet, 4180211587, 768, 48,
                      new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.locations, 16, MetaStructureEntryDataType.Array, 0, 1, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.entities, 32, MetaStructureEntryDataType.Array, 0, 3, 0)
                     );
                 case MetaName.CExtensionDefSpawnPointOverride:
@@ -1185,20 +1185,20 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.LodFadeStartDist, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.LodInstFadeRange, 60, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.OrientToTerrain, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwGrassInstanceListDef__InstanceData),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwGrassInstanceListDef__InstanceData),
                      new MetaStructureEntryInfo_s(MetaName.InstanceList, 72, MetaStructureEntryDataType.Array, 36, 7, 0)
                     );
                 case MetaName.rage__fwGrassInstanceListDef__InstanceData:
                     return new MetaStructureInfo(MetaName.rage__fwGrassInstanceListDef__InstanceData, 2740378365, 256, 16,
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.Position, 0, MetaStructureEntryDataType.ArrayOfBytes, 0, 0, (MetaName)3),
                      new MetaStructureEntryInfo_s(MetaName.NormalX, 6, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.NormalY, 7, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.Color, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, (MetaName)3),
                      new MetaStructureEntryInfo_s(MetaName.Scale, 11, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.Ao, 12, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.Pad, 13, MetaStructureEntryDataType.ArrayOfBytes, 0, 8, (MetaName)3)
                     );
                 case MetaName.CExtensionDefProcObject:
@@ -1220,7 +1220,7 @@ namespace CodeWalker.GameFiles
                 case MetaName.rage__phVerletClothCustomBounds:
                     return new MetaStructureInfo(MetaName.rage__phVerletClothCustomBounds, 2075461750, 768, 32,
                      new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1701774085),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1701774085),
                      new MetaStructureEntryInfo_s(MetaName.CollisionData, 16, MetaStructureEntryDataType.Array, 0, 1, 0)
                     );
                 case (MetaName)1701774085:/*.SectionUNKNOWN1*/
@@ -1675,7 +1675,7 @@ namespace CodeWalker.GameFiles
             int ptrsize = Marshal.SizeOf(typeof(MetaPOINTER));
             int ptroffset = (int)array.PointerDataOffset;
             var ptrblock = meta.GetBlock((int)array.PointerDataId);
-            if ((ptrblock == null) || (ptrblock.Data == null) || (ptrblock.StructureNameHash != MetaName.POINTER))
+            if ((ptrblock == null) || (ptrblock.Data == null) || (ptrblock.StructureNameHash != (MetaName)MetaTypeName.POINTER))
             { return null; }
 
             for (int i = 0; i < count; i++)
@@ -1691,27 +1691,27 @@ namespace CodeWalker.GameFiles
 
         public static MetaHash[] GetHashArray(Meta meta, Array_uint array)
         {
-            return ConvertDataArray<MetaHash>(meta, MetaName.HASH, array.Pointer, array.Count1);
+            return ConvertDataArray<MetaHash>(meta, (MetaName)MetaTypeName.HASH, array.Pointer, array.Count1);
         }
         public static Vector4[] GetPaddedVector3Array(Meta meta, Array_Vector3 array)
         {
-            return ConvertDataArray<Vector4>(meta, MetaName.VECTOR4, array.Pointer, array.Count1);
+            return ConvertDataArray<Vector4>(meta, (MetaName)MetaTypeName.VECTOR4, array.Pointer, array.Count1);
         }
         public static uint[] GetUintArray(Meta meta, Array_uint array)
         {
-            return ConvertDataArray<uint>(meta, MetaName.UINT, array.Pointer, array.Count1);
+            return ConvertDataArray<uint>(meta, (MetaName)MetaTypeName.UINT, array.Pointer, array.Count1);
         }
         public static ushort[] GetUshortArray(Meta meta, Array_ushort array)
         {
-            return ConvertDataArray<ushort>(meta, MetaName.USHORT, array.Pointer, array.Count1);
+            return ConvertDataArray<ushort>(meta, (MetaName)MetaTypeName.USHORT, array.Pointer, array.Count1);
         }
         public static short[] GetShortArray(Meta meta, Array_ushort array)
         {
-            return ConvertDataArray<short>(meta, MetaName.USHORT, array.Pointer, array.Count1);
+            return ConvertDataArray<short>(meta, (MetaName)MetaTypeName.USHORT, array.Pointer, array.Count1);
         }
         public static float[] GetFloatArray(Meta meta, Array_float array)
         {
-            return ConvertDataArray<float>(meta, MetaName.FLOAT, array.Pointer, array.Count1);
+            return ConvertDataArray<float>(meta, (MetaName)MetaTypeName.FLOAT, array.Pointer, array.Count1);
         }
         public static byte[] GetByteArray(Meta meta, Array_byte array)
         {
@@ -1813,7 +1813,7 @@ namespace CodeWalker.GameFiles
             for (int i = 0; i < datablocks.Count; i++)
             {
                 var block = datablocks[i];
-                if (block.StructureNameHash == MetaName.STRING)
+                if (block.StructureNameHash == (MetaName)MetaTypeName.STRING)
                 {
                     startblock = block;
                     startblockind = i;
@@ -1865,7 +1865,7 @@ namespace CodeWalker.GameFiles
                 currentblockind++;
                 if (currentblockind >= datablocks.Count) break; //last block, can't go any further
                 currentblock = datablocks[currentblockind];
-                if (currentblock.StructureNameHash != MetaName.STRING) break; //not the right block type, can't go further
+                if (currentblock.StructureNameHash != (MetaName)MetaTypeName.STRING) break; //not the right block type, can't go further
             }
 
 
@@ -1882,7 +1882,7 @@ namespace CodeWalker.GameFiles
             if ((blocki < 0) || (blocki >= meta.DataBlocks.BlockLength))
             { return null; }
             var block = meta.DataBlocks[blocki];
-            if (block.StructureNameHash != MetaName.STRING)
+            if (block.StructureNameHash != (MetaName)MetaTypeName.STRING)
             { return null; }
             //var byteoffset = offset * 16 + offset2;
             var length = ptr.Count1;
@@ -2058,6 +2058,36 @@ namespace CodeWalker.GameFiles
             var w = SwapBytes(v.W);
             return new Vector4(x, y, z, w);
         }
+    }
+
+
+
+
+
+    public enum MetaTypeName : uint
+    {
+        //SectionUNKNOWN1 = 1701774085, //cloth CollisionData (child of rage__phVerletClothCustomBounds)
+        ////SectionUNKNOWN2 = 1185771007, //CCompositeEntityType
+        //SectionUNKNOWN3 = 1980345114,
+        ////SectionUNKNOWN4 = 2085051229,
+        //SectionUNKNOWN5 = 2741784237, //OccludeModel
+        ////SectionUNKNOWN6 = 3985044770,
+        //SectionUNKNOWN7 = 975711773, //BoxOccluder
+        //SectionUNKNOWN8 = 3430328684,//0xCC76A96C,
+        VECTOR3 = 3805007828,//0xe2cbcfd4, //this hash isn't correct, but is a placeholder used in various places, incl CDistantLODLight - TODO: figure out the actual name for this and add it to MetaNames!!!
+
+        VECTOR4 = 0x33, //(was SectionUNKNOWN12)
+        HASH = 0x4a,
+        STRING = 0x10,
+        POINTER = 0x7,
+        USHORT = 0x13,
+        UINT = 0x15,
+        ARRAYINFO = 0x100,
+        BYTE = 17,
+        FLOAT = 33, //0x21
+
+        PsoPOINTER = 12,
+
     }
 
 
@@ -4195,8 +4225,8 @@ namespace CodeWalker.GameFiles
         {
 
             var sprb = mb.EnsureBlock(MetaName.CScenarioPointRegion);
-            //var hashb = mb.EnsureBlock(MetaName.HASH);
-            //var ushb = mb.EnsureBlock(MetaName.USHORT);
+            //var hashb = mb.EnsureBlock((MetaName)MetaTypeName.HASH);
+            //var ushb = mb.EnsureBlock((MetaName)MetaTypeName.USHORT);
             //var pntb = mb.EnsureBlock(MetaName.CScenarioPoint);
 
             mb.AddStructureInfo(MetaName.CScenarioPointContainer);
@@ -5525,8 +5555,8 @@ namespace CodeWalker.GameFiles
             //TODO!
             //if (EdgeIds != null)
             //{
-            //    mb.AddStructureInfo(MetaName.ushort);
-            //    _Data.EdgeIds = mb.AddItemArrayPtr(MetaName.ushort, EdgeIds);
+            //    mb.AddStructureInfo((MetaName)MetaTypeName.USHORT);
+            //    _Data.EdgeIds = mb.AddItemArrayPtr((MetaName)MetaTypeName.USHORT, EdgeIds);
             //}
 
             mb.AddStructureInfo(MetaName.CScenarioChain);

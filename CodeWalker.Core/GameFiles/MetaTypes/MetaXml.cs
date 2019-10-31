@@ -183,7 +183,7 @@ namespace CodeWalker.GameFiles
             for (int i = 0; i < structInfo.Entries.Length; i++)
             {
                 var entry = structInfo.Entries[i];
-                if (entry.EntryNameHash == MetaName.ARRAYINFO)
+                if (entry.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO)
                 {
                     arrEntry = entry;
                     continue;
@@ -418,7 +418,7 @@ namespace CodeWalker.GameFiles
                     break;
                 case MetaStructureEntryDataType.Float_XYZ:
                     var arrV3 = MetaTypes.ConvertData<Array_Vector3>(data, eoffset);
-                    var v4Arr = MetaTypes.ConvertDataArray<Vector4>(cont.Meta, MetaName.VECTOR4, arrV3.Pointer, arrV3.Count1);
+                    var v4Arr = MetaTypes.ConvertDataArray<Vector4>(cont.Meta, (MetaName)MetaTypeName.VECTOR4, arrV3.Pointer, arrV3.Count1);
                     WriteItemArray(sb, v4Arr, indent, ename, "Vector3/4", FormatVector4);
                     break;
                 case MetaStructureEntryDataType.CharPointer:
@@ -684,7 +684,7 @@ namespace CodeWalker.GameFiles
             for (int i = 0; i < structInfo.Entries.Length; i++)
             {
                 var entry = structInfo.Entries[i];
-                if (entry.EntryNameHash == MetaName.ARRAYINFO)
+                if (entry.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO)
                 {
                     continue;
                 }
@@ -741,7 +741,7 @@ namespace CodeWalker.GameFiles
                         uint fEntry = (entry.ReferenceKey & 0xFFF);
                         var fEnt = (fEntry != 0xFFF) ? structInfo.GetEntry((int)fEntry) : null;
                         PsoEnumInfo flagsInfo = null;
-                        if ((fEnt != null) && (fEnt.EntryNameHash == MetaName.ARRAYINFO))
+                        if ((fEnt != null) && (fEnt.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO))
                         {
                             flagsInfo = cont.GetEnumInfo((MetaName)fEnt.ReferenceKey);
                         }
@@ -1068,7 +1068,7 @@ namespace CodeWalker.GameFiles
                         {
                             ErrorXml(sb, indent, ename + ": Array block not found: " + aBlockId.ToString());
                         }
-                        else if (aBlock.NameHash != MetaName.PsoPOINTER)
+                        else if (aBlock.NameHash != (MetaName)MetaTypeName.PsoPOINTER)
                         {
                             OpenTag(sb, indent, arrTag);
                             if (atyp == null)
@@ -1255,7 +1255,7 @@ namespace CodeWalker.GameFiles
                             {
                                 ErrorXml(sb, aind, ename + ": Map struct type not found: " + HashString(xBlock.NameHash));
                             }
-                            else if ((xStruct.IndexInfo == null))// || (xStruct.IndexInfo.NameHash != MetaName.ARRAYINFO))
+                            else if ((xStruct.IndexInfo == null))// || (xStruct.IndexInfo.NameHash != (MetaName)MetaTypeName.ARRAYINFO))
                             {
                                 ErrorXml(sb, aind, ename + ": Map struct was missing IndexInfo! " + (xStruct == null ? "" : xStruct.ToString()));
                             }
@@ -1289,7 +1289,7 @@ namespace CodeWalker.GameFiles
                                     var kOffset = sOffset + kEntry.DataOffset;
                                     var iOffset = sOffset + iEntry.DataOffset;
                                     var kStr = GetStringValue(cont.Pso, kEntry, data, kOffset);
-                                    if (iEntry.ReferenceKey != 0)//(xBlock.NameHash != MetaName.ARRAYINFO)//257,258,259
+                                    if (iEntry.ReferenceKey != 0)//(xBlock.NameHash != (MetaName)MetaTypeName.ARRAYINFO)//257,258,259
                                     {
                                         //embedded map values
                                         var vOffset = xOffset2 + iEntry.DataOffset;
