@@ -339,10 +339,10 @@ namespace CodeWalker.GameFiles
             //        case MetaName.CExtensionDefWindDisturbance:
             //        case MetaName.CExtensionDefProcObject:
             //        case MetaName.CLightAttrDef:
-            //        case MetaName.STRING:
-            //        case MetaName.POINTER:
-            //        case MetaName.UINT:
-            //        case MetaName.VECTOR4:
+            //        case (MetaName)MetaTypeName.STRING:
+            //        case (MetaName)MetaTypeName.POINTER:
+            //        case (MetaName)MetaTypeName.UINT:
+            //        case (MetaName)MetaTypeName.VECTOR4:
             //            break;
             //        default:
             //            break;

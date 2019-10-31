@@ -241,25 +241,25 @@ namespace CodeWalker.Rendering
                     var ihash = geom.TextureParamHashes[i];
                     switch (ihash)
                     {
-                        case MetaName.DensitySampler:
+                        case ShaderParamNames.DensitySampler:
                             DensitySampler = itex;
                             break;
-                        case MetaName.normalSampler:
+                        case ShaderParamNames.normalSampler:
                             NormalSampler = itex;
                             break;
-                        case MetaName.DetailDensitySampler:
+                        case ShaderParamNames.DetailDensitySampler:
                             DetailDensitySampler = itex;
                             break;
-                        case MetaName.DetailNormalSampler:
+                        case ShaderParamNames.DetailNormalSampler:
                             DetailNormalSampler = itex;
                             break;
-                        case MetaName.DetailDensity2Sampler:
+                        case ShaderParamNames.DetailDensity2Sampler:
                             DetailDensity2Sampler = itex;
                             break;
-                        case MetaName.DetailNormal2Sampler:
+                        case ShaderParamNames.DetailNormal2Sampler:
                             DetailNormal2Sampler = itex;
                             break;
-                        case MetaName.DepthMapTexSampler:
+                        case ShaderParamNames.DepthMapTexSampler:
                             DepthMapTexSampler = itex;
                             break;
                         default:

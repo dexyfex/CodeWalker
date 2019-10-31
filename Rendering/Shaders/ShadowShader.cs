@@ -213,11 +213,11 @@ namespace CodeWalker.Rendering
                     var ihash = geom.TextureParamHashes[i];
                     switch (ihash)
                     {
-                        case MetaName.DiffuseSampler:
-                        case MetaName.TextureSampler_layer0:
-                        case MetaName.TextureSampler_layer1:
-                        case MetaName.TextureSampler_layer2:
-                        case MetaName.TextureSampler_layer3:
+                        case ShaderParamNames.DiffuseSampler:
+                        case ShaderParamNames.TextureSampler_layer0:
+                        case ShaderParamNames.TextureSampler_layer1:
+                        case ShaderParamNames.TextureSampler_layer2:
+                        case ShaderParamNames.TextureSampler_layer3:
                             texture = itex;
                             break;
                     }

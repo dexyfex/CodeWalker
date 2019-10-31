@@ -77,7 +77,7 @@ namespace CodeWalker.Rendering
         public int RenderVertexColourIndex = 1;
         public int RenderTextureCoordIndex = 1;
         public int RenderTextureSamplerCoord = 1;
-        public MetaName RenderTextureSampler = MetaName.DiffuseSampler;
+        public ShaderParamNames RenderTextureSampler = ShaderParamNames.DiffuseSampler;
         public double CurrentRealTime = 0;
         public float CurrentElapsedTime = 0;
 

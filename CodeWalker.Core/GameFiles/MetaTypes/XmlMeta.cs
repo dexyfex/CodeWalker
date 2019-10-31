@@ -61,7 +61,7 @@ namespace CodeWalker.GameFiles
 
                     var cnode = GetEntryNode(node.ChildNodes, entry);
 
-                    if (entry.EntryNameHash == MetaName.ARRAYINFO)
+                    if (entry.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO)
                     {
                         arrEntry = entry;
                         continue;
@@ -145,7 +145,7 @@ namespace CodeWalker.GameFiles
                                         bytes.Add(val);
                                     }
                                 }
-                                var ptr = mb.AddDataBlockPtr(bytes.ToArray(), MetaName.BYTE);
+                                var ptr = mb.AddDataBlockPtr(bytes.ToArray(), (MetaName)MetaTypeName.BYTE);
                                 var byt = MetaTypes.ConvertToBytes(ptr);
                                 Buffer.BlockCopy(byt, 0, data, entry.DataOffset, byt.Length);
                                 break;

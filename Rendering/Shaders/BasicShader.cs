@@ -159,7 +159,7 @@ namespace CodeWalker.Rendering
         public int RenderVertexColourIndex = 1;
         public int RenderTextureCoordIndex = 1;
         public int RenderTextureSamplerCoord = 1;
-        public MetaName RenderTextureSampler = MetaName.DiffuseSampler;
+        public ShaderParamNames RenderTextureSampler = ShaderParamNames.DiffuseSampler;
         public bool SpecularEnable = true;
 
 
@@ -549,21 +549,21 @@ namespace CodeWalker.Rendering
                         if (itex.Key?.NameHash == 1678728908 /*"blank"*/) continue;
                         switch (ihash)
                         {
-                            case MetaName.DiffuseSampler:
-                            case MetaName.PlateBgSampler:
+                            case ShaderParamNames.DiffuseSampler:
+                            case ShaderParamNames.PlateBgSampler:
                                 texture = itex;
                                 break;
-                            case MetaName.BumpSampler:
-                            case MetaName.PlateBgBumpSampler:
+                            case ShaderParamNames.BumpSampler:
+                            case ShaderParamNames.PlateBgBumpSampler:
                                 bumptex = itex;
                                 break;
-                            case MetaName.SpecSampler:
+                            case ShaderParamNames.SpecSampler:
                                 spectex = itex;
                                 break;
-                            case MetaName.DetailSampler:
+                            case ShaderParamNames.DetailSampler:
                                 detltex = itex;
                                 break;
-                            case MetaName.TintPaletteSampler:
+                            case ShaderParamNames.TintPaletteSampler:
                                 tintpal = itex;
                                 if (tintpal.Key != null)
                                 {
@@ -571,24 +571,24 @@ namespace CodeWalker.Rendering
                                     tntpalind = (VSEntityVars.Vars.TintPaletteIndex + 0.5f) / tintpal.Key.Height;
                                 }
                                 break;
-                            case MetaName.distanceMapSampler:
+                            case ShaderParamNames.distanceMapSampler:
                                 texture = itex;
                                 isdistmap = true;
                                 break;
-                            case MetaName.DiffuseSampler2:
+                            case ShaderParamNames.DiffuseSampler2:
                                 texture2 = itex;
                                 break;
-                            case MetaName.heightSampler:
-                            case MetaName.EnvironmentSampler:
+                            case ShaderParamNames.heightSampler:
+                            case ShaderParamNames.EnvironmentSampler:
                             //case MetaName.SnowSampler0:
                             //case MetaName.SnowSampler1:
                             //case MetaName.DiffuseSampler3:
                             //case MetaName.DirtSampler:
                             //case MetaName.DirtBumpSampler:
                                 break;
-                            case MetaName.FlowSampler:
-                            case MetaName.FogSampler:
-                            case MetaName.FoamSampler:
+                            case ShaderParamNames.FlowSampler:
+                            case ShaderParamNames.FogSampler:
+                            case ShaderParamNames.FoamSampler:
                                 if (texture == null) texture = itex;
                                 break;
                             default:

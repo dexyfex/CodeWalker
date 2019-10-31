@@ -139,11 +139,11 @@ namespace CodeWalker.GameFiles
             //{
             //    switch (block.StructureNameHash)
             //    {
-            //        case MetaName.STRING:
-            //        case MetaName.POINTER:
-            //        case MetaName.HASH:
-            //        case MetaName.UINT:
-            //        case MetaName.VECTOR3: //distant lod lights uses this
+            //        case (MetaName)MetaTypeName.STRING:
+            //        case (MetaName)MetaTypeName.POINTER:
+            //        case (MetaName)MetaTypeName.HASH:
+            //        case (MetaName)MetaTypeName.UINT:
+            //        case (MetaName)MetaTypeName.VECTOR3: //distant lod lights uses this
             //        case MetaName.CMapData:
             //        case MetaName.CEntityDef:
             //        case MetaName.CTimeCycleModifier: //these sections are handled already
@@ -389,7 +389,7 @@ namespace CodeWalker.GameFiles
                 LODLights = new YmapLODLights();
                 LODLights.Ymap = this;
                 LODLights.CLODLight = soa;
-                LODLights.direction = MetaTypes.ConvertDataArray<MetaVECTOR3>(Meta, MetaName.VECTOR3, soa.direction);
+                LODLights.direction = MetaTypes.ConvertDataArray<MetaVECTOR3>(Meta, (MetaName)MetaTypeName.VECTOR3, soa.direction);
                 LODLights.falloff = MetaTypes.GetFloatArray(Meta, soa.falloff);
                 LODLights.falloffExponent = MetaTypes.GetFloatArray(Meta, soa.falloffExponent);
                 LODLights.timeAndStateFlags = MetaTypes.GetUintArray(Meta, soa.timeAndStateFlags);
@@ -409,7 +409,7 @@ namespace CodeWalker.GameFiles
                 DistantLODLights.Ymap = this;
                 DistantLODLights.CDistantLODLight = soa;
                 DistantLODLights.colours = MetaTypes.GetUintArray(Meta, soa.RGBI);
-                DistantLODLights.positions = MetaTypes.ConvertDataArray<MetaVECTOR3>(Meta, MetaName.VECTOR3, soa.position);
+                DistantLODLights.positions = MetaTypes.ConvertDataArray<MetaVECTOR3>(Meta, (MetaName)MetaTypeName.VECTOR3, soa.position);
                 DistantLODLights.CalcBB();
             }
         }
@@ -678,7 +678,7 @@ namespace CodeWalker.GameFiles
             if ((LODLights != null) && (LODLights.direction != null))
             {
                 var soa = new CLODLight();
-                soa.direction = mb.AddItemArrayPtr(MetaName.VECTOR3, LODLights.direction);
+                soa.direction = mb.AddItemArrayPtr((MetaName)MetaTypeName.VECTOR3, LODLights.direction);
                 soa.falloff = mb.AddFloatArrayPtr(LODLights.falloff);
                 soa.falloffExponent = mb.AddFloatArrayPtr(LODLights.falloffExponent);
                 soa.timeAndStateFlags = mb.AddUintArrayPtr(LODLights.timeAndStateFlags);
@@ -695,7 +695,7 @@ namespace CodeWalker.GameFiles
             if ((DistantLODLights != null) && (DistantLODLights.positions != null))
             {
                 var soa = DistantLODLights.CDistantLODLight;//to copy base vars
-                soa.position = mb.AddItemArrayPtr(MetaName.VECTOR3, DistantLODLights.positions);
+                soa.position = mb.AddItemArrayPtr((MetaName)MetaTypeName.VECTOR3, DistantLODLights.positions);
                 soa.RGBI = mb.AddUintArrayPtr(DistantLODLights.colours);
                 mapdata.DistantLODLightsSOA = soa;
             }
@@ -744,11 +744,11 @@ namespace CodeWalker.GameFiles
             }
             if ((LODLights != null) && (LODLights.direction != null))
             {
-                mb.AddStructureInfo(MetaName.VECTOR3);
+                mb.AddStructureInfo((MetaName)MetaTypeName.VECTOR3);
             }
             if ((DistantLODLights != null) && (DistantLODLights.positions != null))
             {
-                mb.AddStructureInfo(MetaName.VECTOR3);
+                mb.AddStructureInfo((MetaName)MetaTypeName.VECTOR3);
             }
 
             mb.AddEnumInfo(MetaName.rage__eLodType); //LODTYPES_

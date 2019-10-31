@@ -105,6 +105,7 @@
     <Compile Include="GameFiles\Resources\ResourceBuilder.cs" />
     <Compile Include="GameFiles\Resources\ResourceData.cs" />
     <Compile Include="GameFiles\Resources\ResourceFile.cs" />
+    <Compile Include="GameFiles\Resources\ShaderParams.cs" />
     <Compile Include="GameFiles\Resources\Texture.cs" />
     <Compile Include="GameFiles\Resources\VehicleRecord.cs" />
     <Compile Include="GameFiles\Resources\VertexType.cs" />

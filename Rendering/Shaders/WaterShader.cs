@@ -103,7 +103,7 @@ namespace CodeWalker.Rendering
         public int RenderVertexColourIndex = 1;
         public int RenderTextureCoordIndex = 1;
         public int RenderTextureSamplerCoord = 1;
-        public MetaName RenderTextureSampler = MetaName.DiffuseSampler;
+        public ShaderParamNames RenderTextureSampler = ShaderParamNames.DiffuseSampler;
         public double CurrentRealTime = 0;
         public float CurrentElapsedTime = 0;
         public bool SpecularEnable = true;
@@ -351,19 +351,19 @@ namespace CodeWalker.Rendering
                         if (itex == null) continue;
                         switch (ihash)
                         {
-                            case MetaName.DiffuseSampler:
+                            case ShaderParamNames.DiffuseSampler:
                                 texture = itex;
                                 break;
-                            case MetaName.BumpSampler:
+                            case ShaderParamNames.BumpSampler:
                                 bumptex = itex;
                                 break;
-                            case MetaName.FlowSampler:
+                            case ShaderParamNames.FlowSampler:
                                 flowtex = itex;
                                 break;
-                            case MetaName.FoamSampler:
+                            case ShaderParamNames.FoamSampler:
                                 foamtex = itex;
                                 break;
-                            case MetaName.FogSampler:
+                            case ShaderParamNames.FogSampler:
                                 fogtex = itex;
                                 break;
                             default:
