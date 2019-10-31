@@ -408,7 +408,8 @@ namespace CodeWalker.Project.Panels
                     }
                     else
                     {
-                        CurrentEntity.SetOrientation(q, true);
+                        bool useInverse = (CurrentEntity.MloInstance == null);
+                        CurrentEntity.SetOrientation(q, useInverse);
                     }
 
                     ProjectItemChanged();

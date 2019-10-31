@@ -1489,15 +1489,22 @@ namespace CodeWalker.GameFiles
             }
             else
             {
-                Quaternion inv = inverse ? ori : Quaternion.Normalize(Quaternion.Invert(ori));
-                ori = inverse ? Quaternion.Normalize(Quaternion.Invert(ori)) : ori;
-                Orientation = ori;
-                _CEntityDef.rotation = inv.ToVector4();
+                Orientation = inverse ? Quaternion.Normalize(Quaternion.Invert(ori)) : ori;
+                if (MloInstance != null)
+                {
+                    _CEntityDef.rotation = Orientation.ToVector4();
+                }
+                else
+                {
+                    Quaternion inv = inverse ? ori : Quaternion.Normalize(Quaternion.Invert(ori));
+                    _CEntityDef.rotation = inv.ToVector4();
+                }
             }
 
             if (MloInstance != null)
             {
                 MloInstance.SetOrientation(ori);
+                MloInstance.UpdateEntities();
             }
 
             if (Archetype != null)
