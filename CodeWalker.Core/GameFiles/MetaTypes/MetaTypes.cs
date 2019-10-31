@@ -580,7 +580,7 @@ namespace CodeWalker.GameFiles
                     );
                 case MetaName.CLODLight:
                     return new MetaStructureInfo(MetaName.CLODLight, 2325189228, 768, 136,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)MetaTypeName.VECTOR3),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.FloatXYZ),
                      new MetaStructureEntryInfo_s(MetaName.direction, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.falloff, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
@@ -599,7 +599,7 @@ namespace CodeWalker.GameFiles
                     );
                 case MetaName.CDistantLODLight:
                     return new MetaStructureInfo(MetaName.CDistantLODLight, 2820908419, 768, 48,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)MetaTypeName.VECTOR3),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.FloatXYZ),
                      new MetaStructureEntryInfo_s(MetaName.position, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.RGBI, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
@@ -1001,8 +1001,8 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.softness, 168, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.scaleBySunIntensity, 172, MetaStructureEntryDataType.Boolean, 0, 0, 0)
                     );
-                case (MetaName)MetaTypeName.VECTOR3:
-                    return new MetaStructureInfo((MetaName)MetaTypeName.VECTOR3, 2751397072, 512, 12,
+                case MetaName.FloatXYZ:
+                    return new MetaStructureInfo(MetaName.FloatXYZ, 2751397072, 512, 12,
                      new MetaStructureEntryInfo_s(MetaName.x, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.y, 4, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.z, 8, MetaStructureEntryDataType.Float, 0, 0, 0)
@@ -2067,14 +2067,6 @@ namespace CodeWalker.GameFiles
     public enum MetaTypeName : uint
     {
         //SectionUNKNOWN1 = 1701774085, //cloth CollisionData (child of rage__phVerletClothCustomBounds)
-        ////SectionUNKNOWN2 = 1185771007, //CCompositeEntityType
-        //SectionUNKNOWN3 = 1980345114,
-        ////SectionUNKNOWN4 = 2085051229,
-        //SectionUNKNOWN5 = 2741784237, //OccludeModel
-        ////SectionUNKNOWN6 = 3985044770,
-        //SectionUNKNOWN7 = 975711773, //BoxOccluder
-        //SectionUNKNOWN8 = 3430328684,//0xCC76A96C,
-        VECTOR3 = 3805007828,//0xe2cbcfd4, //this hash isn't correct, but is a placeholder used in various places, incl CDistantLODLight - TODO: figure out the actual name for this and add it to MetaNames!!!
 
         VECTOR4 = 0x33, //(was SectionUNKNOWN12)
         HASH = 0x4a,
