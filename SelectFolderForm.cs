@@ -21,11 +21,12 @@ namespace CodeWalker
         public SelectFolderForm()
         {
             InitializeComponent();
+            SelectedFolder = GTAFolder.CurrentGTAFolder;
         }
 
         private void SelectFolderForm_Load(object sender, EventArgs e)
         {
-            FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
+            FolderTextBox.Text = SelectedFolder;
             RememberFolderCheckbox.Checked = Settings.Default.RememberGTAFolder;
         }
 
