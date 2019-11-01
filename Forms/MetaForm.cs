@@ -303,6 +303,20 @@ namespace CodeWalker.Forms
                 if (cut.Pso != null) metaFormat = MetaFormat.PSO;
             }
         }
+        public void LoadMeta(YndFile ynd)
+        {
+            var fn = ((ynd?.RpfFileEntry?.Name) ?? "") + ".xml";
+            Xml = MetaXml.GetXml(ynd, out fn);
+            FileName = fn;
+            RawPropertyGrid.SelectedObject = ynd;
+            rpfFileEntry = ynd?.RpfFileEntry;
+            modified = false;
+            metaFormat = MetaFormat.XML;
+            if (ynd?.RpfFileEntry != null)
+            {
+                metaFormat = MetaFormat.Ynd;
+            }
+        }
         public void LoadMeta(CacheDatFile cachedat)
         {
             var fn = ((cachedat?.FileEntry?.Name) ?? "") + ".xml";
@@ -364,6 +378,15 @@ namespace CodeWalker.Forms
                     case MetaFormat.CacheFile:
                         MessageBox.Show("Sorry, CacheFile import is not supported.", "Cannot import CacheFile XML");
                         return false;
+                    case MetaFormat.Ynd:
+                        var ynd = XmlYnd.GetYnd(doc);
+                        if (ynd.NodeDictionary == null)
+                        {
+                            MessageBox.Show("Schema not supported.", "Cannot import YND XML");
+                            return false;
+                        }
+                        data = ynd.Save();
+                        break;
                 }
             }
 #if !DEBUG
