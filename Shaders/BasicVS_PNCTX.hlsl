@@ -28,7 +28,7 @@ VS_OUTPUT main(VS_INPUT input, uint iid : SV_InstanceID)
     output.Position = cpos;
     output.CamRelPos = opos;
     output.Normal = bnorm;
-    output.Texcoord0 = input.Texcoord0;
+    output.Texcoord0 = GlobalUVAnim(input.Texcoord0);
     output.Texcoord1 = 0.5;// input.Texcoord;
     output.Texcoord2 = 0.5;// input.Texcoord;
     output.Colour0 = input.Colour0;

@@ -43,6 +43,8 @@ namespace CodeWalker.Rendering
         public uint IsDecal;
         public uint EnableWind;
         public Vector4 WindOverrideParams;
+        public Vector4 globalAnimUV0;
+        public Vector4 globalAnimUV1;
     }
     public struct BasicShaderPSSceneVars
     {
@@ -695,6 +697,8 @@ namespace CodeWalker.Rendering
             VSGeomVars.Vars.IsDecal = DecalMode ? 1u : 0u;
             VSGeomVars.Vars.EnableWind = windflag;
             VSGeomVars.Vars.WindOverrideParams = geom.WindOverrideParams;
+            VSGeomVars.Vars.globalAnimUV0 = geom.globalAnimUV0;
+            VSGeomVars.Vars.globalAnimUV1 = geom.globalAnimUV1;
             VSGeomVars.Update(context);
             VSGeomVars.SetVSCBuffer(context, 4);
 
@@ -811,6 +815,8 @@ namespace CodeWalker.Rendering
             VSGeomVars.Vars.IsDecal = 0;
             VSGeomVars.Vars.EnableWind = 0;
             VSGeomVars.Vars.WindOverrideParams = Vector4.Zero;
+            VSGeomVars.Vars.globalAnimUV0 = new Vector4(1.0f, 0.0f, 0.0f, 0.0f);
+            VSGeomVars.Vars.globalAnimUV1 = new Vector4(0.0f, 1.0f, 0.0f, 0.0f);
             VSGeomVars.Update(context);
             VSGeomVars.SetVSCBuffer(context, 4);
 
