@@ -71,6 +71,14 @@ namespace CodeWalker.Rendering
         public bool HasSkeleton;
         public bool HasTransforms;
 
+        public bool HasAnims = false;
+        public double CurrentAnimTime = 0;
+        public YcdFile ClipDict;
+        public ClipMapEntry ClipMapEntry;
+        public ClipMapEntry ClipMapEntryUV0;
+        public ClipMapEntry ClipMapEntryUV1;
+
+
 
         public override void Init(DrawableBase drawable)
         {
@@ -119,7 +127,7 @@ namespace CodeWalker.Rendering
                 VlowModels = new RenderableModel[vlow.Length];
                 for (int i = 0; i < vlow.Length; i++)
                 {
-                    VlowModels[i] =  InitModel(vlow[i]);
+                    VlowModels[i] = InitModel(vlow[i]);
                     AllModels[curmodel + i] = VlowModels[i];
                 }
                 curmodel += vlow.Length;
@@ -330,6 +338,106 @@ namespace CodeWalker.Rendering
             return Key.ToString();
         }
 
+
+
+        public void UpdateAnims(double realTime)
+        {
+            if (CurrentAnimTime == realTime) return;//already updated this!
+            CurrentAnimTime = realTime;
+
+            if (ClipMapEntry != null)
+            {
+                UpdateAnim(ClipMapEntry); //animate skeleton/models here
+            }
+            if (ClipMapEntryUV0 != null)
+            {
+                UpdateAnimUV(ClipMapEntryUV0); //animate UVs
+            }
+            if (ClipMapEntryUV1 != null)
+            {
+                UpdateAnimUV(ClipMapEntryUV1); //animate UVs
+            }
+        }
+        private void UpdateAnim(ClipMapEntry cme)
+        {
+            var clipanim = cme.Clip as ClipAnimation;//maybe ClipAnimationList?
+            var anim = clipanim?.Animation;
+            if (anim == null)
+            { return; }
+
+            //TODO........
+        }
+        private void UpdateAnimUV(ClipMapEntry cme)
+        {
+            if (cme.Next != null) //is this a "chain" of clips to play..?
+            {
+                //cme = cme.Next;
+            }
+
+            var clipanim = cme.Clip as ClipAnimation;//maybe ClipAnimationList?
+            var anim = clipanim?.Animation;
+            if (anim == null)
+            { return; }
+            if (anim.BoneIds?.data_items == null)
+            { return; }
+            if (anim.Sequences?.data_items == null)
+            { return; }
+
+            bool interpolate = true; //how to know? eg. cs4_14_hickbar_anim shouldn't
+            bool lastFrameSameAsFirst = true;//if last frame is equivalent to the first one, eg rollercoaster small light "globes" don't
+
+            var duration = anim.Duration;
+            var frames = anim.Frames;
+            var nframes = (lastFrameSameAsFirst) ? (frames - 1) : frames;
+
+            var curPos = ((CurrentAnimTime % duration) / duration) * nframes;
+            var frame0 = ((ushort)curPos) % frames;
+            var frame1 = (frame0 + 1) % frames;
+            var falpha = (float)(curPos - Math.Floor(curPos));
+            var ialpha = 1.0f - falpha;
+
+            var globalAnimUV0 = new Vector4(1.0f, 0.0f, 0.0f, 0.0f);
+            var globalAnimUV1 = new Vector4(0.0f, 1.0f, 0.0f, 0.0f);
+
+
+            for (int i = 0; i < anim.BoneIds.data_items.Length; i++)
+            {
+                var boneiditem = anim.BoneIds.data_items[i];
+                var track = boneiditem.Track;
+                if ((track != 17) && (track != 18))
+                { continue; }//17 and 18 would be UV0 and UV1
+
+                for (int s = 0; s < anim.Sequences.data_items.Length; s++)
+                {
+                    var seq = anim.Sequences.data_items[s];
+                    var aseq = seq.Sequences[i];
+                    var v0 = aseq.EvaluateVector(frame0);
+                    var v1 = aseq.EvaluateVector(frame1);
+                    var v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
+                    switch (track)
+                    {
+                        case 17: globalAnimUV0 = v; break; //could be overwriting values here...
+                        case 18: globalAnimUV1 = v; break;
+                    }
+                }
+            }
+
+            foreach (var model in HDModels) //TODO: figure out which models/geometries this should be applying to!
+            {
+                if (model == null) continue;
+                foreach (var geom in model.Geometries)
+                {
+                    if (geom == null) continue;
+                    if (geom.globalAnimUVEnable)
+                    {
+                        geom.globalAnimUV0 = globalAnimUV0;
+                        geom.globalAnimUV1 = globalAnimUV1;
+                    }
+                }
+            }
+
+        }
+
     }
 
     public class RenderableModel
@@ -424,8 +532,8 @@ namespace CodeWalker.Rendering
         public float RippleBumpiness { get; set; } = 1.0f;
         public Vector4 WindGlobalParams { get; set; } = Vector4.Zero;
         public Vector4 WindOverrideParams { get; set; } = Vector4.One;
-        public Vector4 globalAnimUV0 { get; set; } = Vector4.Zero;
-        public Vector4 globalAnimUV1 { get; set; } = Vector4.Zero;
+        public Vector4 globalAnimUV0 { get; set; } = new Vector4(1.0f, 0.0f, 0.0f, 0.0f);
+        public Vector4 globalAnimUV1 { get; set; } = new Vector4(0.0f, 1.0f, 0.0f, 0.0f);
         public Vector4 DirtDecalMask { get; set; } = Vector4.Zero;
         public bool SpecOnly { get; set; } = false;
         public float WaveOffset { get; set; } = 0; //for terrainfoam
@@ -433,6 +541,7 @@ namespace CodeWalker.Rendering
         public float WaveMovement { get; set; } = 0; //for terrainfoam
         public float HeightOpacity { get; set; } = 0; //for terrainfoam
         public bool HDTextureEnable = true;
+        public bool globalAnimUVEnable = false;
 
 
         public static ShaderParamNames[] GetTextureSamplerList()
@@ -612,9 +721,11 @@ namespace CodeWalker.Rendering
                                 break;
                             case ShaderParamNames.globalAnimUV0:
                                 globalAnimUV0 = (Vector4)param.Data;
+                                globalAnimUVEnable = true;
                                 break;
                             case ShaderParamNames.globalAnimUV1:
                                 globalAnimUV1 = (Vector4)param.Data;
+                                globalAnimUVEnable = true;
                                 break;
                             case ShaderParamNames.WaveOffset:
                                 WaveOffset = ((Vector4)param.Data).X;

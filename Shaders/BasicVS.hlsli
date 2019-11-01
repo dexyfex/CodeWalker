@@ -28,6 +28,8 @@ cbuffer VSGeomVars : register(b4)
     uint IsDecal;
     uint EnableWind;
     float4 WindOverrideParams;
+    float4 globalAnimUV0;
+    float4 globalAnimUV1;
 }
 cbuffer VSInstGlobals : register(b5)
 {
@@ -312,7 +314,14 @@ float4 ColourTint(float tx, float tx2, uint iid)
 
 
 
-
+float2 GlobalUVAnim(float2 uv)
+{
+    float2 r;
+    float3 uvw = float3(uv, 1);
+    r.x = dot(globalAnimUV0.xyz, uvw);
+    r.y = dot(globalAnimUV1.xyz, uvw);
+    return r;
+}
 
 
 

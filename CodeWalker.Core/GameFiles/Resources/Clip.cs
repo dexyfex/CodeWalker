@@ -503,7 +503,9 @@ namespace CodeWalker.GameFiles
 
         public override float EvaluateFloat(int frame)
         {
-            return Values[Frames[frame]];
+            if(frame<Frames?.Length) return Values[Frames[frame]];
+            if (Values?.Length > 0) return Values[0];
+            return Offset;
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimChannelQuantizeFloat : AnimChannel
@@ -531,7 +533,9 @@ namespace CodeWalker.GameFiles
 
         public override float EvaluateFloat(int frame)
         {
-            return Values[frame];
+            if (frame < Values?.Length) return Values[frame];
+            if (Values?.Length > 0) return Values[0];
+            return Offset;
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimChannelLinearFloat : AnimChannel
@@ -640,7 +644,9 @@ namespace CodeWalker.GameFiles
 
         public override float EvaluateFloat(int frame)
         {
-            return Values[frame];
+            if (frame < Values?.Length) return Values[frame];
+            if (Values?.Length > 0) return Values[0];
+            return Offset;
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimChannelType7 : AnimChannel
@@ -737,6 +743,46 @@ namespace CodeWalker.GameFiles
                     return Quaternion.Identity;
             }
         }
+
+        public Vector4 EvaluateVector(int frame)
+        {
+            if (Channels == null) return Vector4.Zero;
+            var v = Vector4.Zero;
+            int c = 0;
+            for (int i = 0; i < Channels.Length; i++)
+            {
+                if (c >= 4) break;
+                var channel = Channels[i];
+                var sv3c = channel as AnimChannelStaticVector3;
+                var ssqc = channel as AnimChannelStaticSmallestThreeQuaternion;
+                if (sv3c != null)
+                {
+                    for (int n = 0; n < 3; n++)
+                    {
+                        if ((c + n) >= 4) break;
+                        v[c + n] = sv3c.Value[n];
+                    }
+                    c += 3;
+                }
+                else if (ssqc != null)
+                {
+                    for (int n = 0; n < 4; n++)
+                    {
+                        if ((c + n) >= 4) break;
+                        v[c + n] = sv3c.Value[n];
+                    }
+                    c += 4;
+                }
+                else
+                {
+                    v[c] = channel.EvaluateFloat(frame);
+                    c++;
+                }
+            }
+            return v;
+        }
+
+
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Sequence : ResourceSystemBlock
     {

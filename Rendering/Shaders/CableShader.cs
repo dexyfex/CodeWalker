@@ -40,7 +40,10 @@ namespace CodeWalker.Rendering
         public uint EnableTint;
         public float TintYVal;
         public uint IsDecal;
-        public uint Pad5;
+        public uint EnableWind;
+        public Vector4 WindOverrideParams;
+        public Vector4 globalAnimUV0;
+        public Vector4 globalAnimUV1;
     }
     public struct CableShaderPSSceneVars
     {
@@ -273,6 +276,10 @@ namespace CodeWalker.Rendering
             VSGeomVars.Vars.EnableTint = 0u;
             VSGeomVars.Vars.TintYVal = 0u;
             VSGeomVars.Vars.IsDecal = 0u;
+            VSGeomVars.Vars.EnableWind = 0u;
+            VSGeomVars.Vars.WindOverrideParams = Vector4.Zero;
+            VSGeomVars.Vars.globalAnimUV0 = Vector4.Zero;
+            VSGeomVars.Vars.globalAnimUV1 = Vector4.Zero;
             VSGeomVars.Update(context);
             VSGeomVars.SetVSCBuffer(context, 4);
 

@@ -2534,6 +2534,13 @@ namespace CodeWalker.Rendering
 
 
 
+            if (rndbl.HasAnims)
+            {
+                rndbl.UpdateAnims(currentRealTime);
+            }
+
+
+
             if ((rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision)) && rendercollisionmeshlayerdrawable)
             {
                 Drawable sdrawable = rndbl.Key as Drawable;
@@ -2779,31 +2786,18 @@ namespace CodeWalker.Rendering
             Renderable rndbl = renderableCache.GetRenderable(drawable);
             if (rndbl == null) return null;
 
-            if (clipDict != 0)
+            if ((clipDict != 0) && (rndbl.ClipDict == null))
             {
                 YcdFile ycd = gameFileCache.GetYcd(clipDict);
                 if ((ycd != null) && (ycd.Loaded))
                 {
+                    rndbl.ClipDict = ycd;
                     MetaHash ahash = arche.Hash;
-                    MetaHash ahashuv1 = ahash + 1;
-                    MetaHash ahashuv2 = ahash + 2;
-                    ClipMapEntry cme, cmeuv1, cmeuv2; //this goes to at least uv5! (from uv0) - see hw1_09.ycd
-                    bool found = false;
-                    if (ycd.ClipMap.TryGetValue(ahash, out cme))
-                    {
-                        found = true;
-                    }
-                    if (ycd.ClipMap.TryGetValue(ahashuv1, out cmeuv1))
-                    {
-                        found = true;
-                    }
-                    if (ycd.ClipMap.TryGetValue(ahashuv2, out cmeuv2))
-                    {
-                        found = true;
-                    }
-                    if (!found)
-                    {
-                    }
+                    MetaHash ahashuv0 = ahash + 1; //this goes to at least uv5! (from uv0) - see hw1_09.ycd
+                    MetaHash ahashuv1 = ahash + 2;
+                    if (ycd.ClipMap.TryGetValue(ahash, out rndbl.ClipMapEntry)) rndbl.HasAnims = true;
+                    if (ycd.ClipMap.TryGetValue(ahashuv0, out rndbl.ClipMapEntryUV0)) rndbl.HasAnims = true;
+                    if (ycd.ClipMap.TryGetValue(ahashuv1, out rndbl.ClipMapEntryUV1)) rndbl.HasAnims = true;
                 }
             }
 
