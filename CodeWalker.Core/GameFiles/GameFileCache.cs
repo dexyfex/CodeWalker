@@ -228,6 +228,9 @@ namespace CodeWalker.GameFiles
             UpdateStatus("Loading archetypes...");
             InitArchetypeDicts();
 
+            UpdateStatus("Loading strings...");
+            InitStringDicts();
+
             IsInited = true;
         }
 

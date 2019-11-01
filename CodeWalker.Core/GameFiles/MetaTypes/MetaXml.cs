@@ -51,6 +51,11 @@ namespace CodeWalker.GameFiles
                 RelFile rel = RpfFile.GetFile<RelFile>(e, data);
                 return GetXml(rel, out filename);
             }
+            else if (fnl.EndsWith(".ynd"))
+            {
+                YndFile ynd = RpfFile.GetFile<YndFile>(e, data);
+                return GetXml(ynd, out filename);
+            }
             filename = fn;
             return string.Empty;
         }
@@ -109,6 +114,12 @@ namespace CodeWalker.GameFiles
             var fn = (rel?.RpfFileEntry?.Name) ?? "";
             filename = fn + ".xml";
             return RelXml.GetXml(rel);
+        }
+        public static string GetXml(YndFile ynd, out string filename)
+        {
+            var fn = (ynd?.RpfFileEntry?.Name) ?? "";
+            filename = fn + ".xml";
+            return YndXml.GetXml(ynd);
         }
 
 
@@ -1073,7 +1084,7 @@ namespace CodeWalker.GameFiles
                             OpenTag(sb, indent, arrTag);
                             if (atyp == null)
                             {
-                                ErrorXml(sb, indent, ename + ": Array type not found: " + HashString(arrEntry.ReferenceKey));
+                                ErrorXml(sb, indent, ename + ": Array type not found: " + HashString((MetaHash)arrEntry.ReferenceKey));
                             }
                             else
                             {
@@ -1367,7 +1378,7 @@ namespace CodeWalker.GameFiles
                     return strval ?? "";
                 case 7:
                 case 8:
-                    var hashVal = MetaTypes.SwapBytes(MetaTypes.ConvertData<MetaHash>(data, eoffset));
+                    var hashVal = (MetaHash)MetaTypes.SwapBytes(MetaTypes.ConvertData<MetaHash>(data, eoffset));
                     return HashString(hashVal);
             }
 
@@ -1813,13 +1824,13 @@ namespace CodeWalker.GameFiles
 
         public static string HashString(MetaName h)
         {
+            uint uh = (uint)h;
+            if (uh == 0) return "";
+
             if (Enum.IsDefined(typeof(MetaName), h))
             {
                 return h.ToString();
             }
-
-            uint uh = (uint)h;
-            if (uh == 0) return "";
 
             var str = JenkIndex.TryGetString(uh);
             if (!string.IsNullOrEmpty(str)) return str;
@@ -1832,6 +1843,8 @@ namespace CodeWalker.GameFiles
         }
         public static string HashString(MetaHash h)
         {
+            if (h == 0) return "";
+
             var str = JenkIndex.TryGetString(h);
 
             if (string.IsNullOrEmpty(str))
@@ -1846,11 +1859,22 @@ namespace CodeWalker.GameFiles
             //todo: make sure JenkIndex is built!
             //todo: do extra hash lookup here
 
-            if (h == 0) return "";
-
 
             if (!string.IsNullOrEmpty(str)) return str;
             return "hash_" + h.Hex;
+        }
+        public static string HashString(TextHash h)
+        {
+            uint uh = h.Hash;
+            if (uh == 0) return "";
+
+            var str = GlobalText.TryGetString(uh);
+            if (!string.IsNullOrEmpty(str)) return str;
+
+            //TODO: do extra hash lookup here
+            //if(Lookup.TryGetValue(uh, out str)) ...
+
+            return "hash_" + uh.ToString("X").PadLeft(8, '0');
         }
 
 
@@ -1900,6 +1924,7 @@ namespace CodeWalker.GameFiles
         RBF = 3,
         CacheFile = 4,
         AudioRel = 5,
+        Ynd = 6,
     }
 
 }

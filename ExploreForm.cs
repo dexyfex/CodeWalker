@@ -231,7 +231,7 @@ namespace CodeWalker
             InitFileType(".ymt", "Metadata (Binary)", 6, FileTypeAction.ViewYmt);
             InitFileType(".pso", "Metadata (PSO)", 6, FileTypeAction.ViewJPso);
             InitFileType(".gfx", "Scaleform Flash", 7);
-            InitFileType(".ynd", "Path Nodes", 8);
+            InitFileType(".ynd", "Path Nodes", 8, FileTypeAction.ViewYnd);
             InitFileType(".ynv", "Nav Mesh", 9, FileTypeAction.ViewModel);
             InitFileType(".yvr", "Vehicle Record", 9, FileTypeAction.ViewYvr);
             InitFileType(".ywr", "Waypoint Record", 9, FileTypeAction.ViewYwr);
@@ -1302,6 +1302,7 @@ namespace CodeWalker
                 case FileTypeAction.ViewYwr:
                 case FileTypeAction.ViewYvr:
                 case FileTypeAction.ViewYcd:
+                case FileTypeAction.ViewYnd:
                 case FileTypeAction.ViewCacheDat:
                     return true;
                 case FileTypeAction.ViewHex:
@@ -1324,6 +1325,7 @@ namespace CodeWalker
                 case FileTypeAction.ViewJPso:
                 case FileTypeAction.ViewCut:
                 case FileTypeAction.ViewRel:
+                case FileTypeAction.ViewYnd:
                     return true;
             }
             return false;
@@ -1424,6 +1426,9 @@ namespace CodeWalker
                         break;
                     case FileTypeAction.ViewYcd:
                         ViewYcd(name, path, data, fe);
+                        break;
+                    case FileTypeAction.ViewYnd:
+                        ViewYnd(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewCacheDat:
                         ViewCacheDat(name, path, data, fe);
@@ -1626,6 +1631,13 @@ namespace CodeWalker
             YcdForm f = new YcdForm();
             f.Show();
             f.LoadYcd(ycd);
+        }
+        private void ViewYnd(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var ynd = RpfFile.GetFile<YndFile>(e, data);
+            MetaForm f = new MetaForm(this);
+            f.Show();
+            f.LoadMeta(ynd);
         }
         private void ViewCacheDat(string name, string path, byte[] data, RpfFileEntry e)
         {
@@ -2407,6 +2419,10 @@ namespace CodeWalker
                     {
                         mformat = MetaFormat.AudioRel;
                     }
+                    if (fnamel.EndsWith(".ynd.xml"))
+                    {
+                        mformat = MetaFormat.Ynd;
+                    }
 
                     fname = fname.Substring(0, fname.Length - trimlength);
                     fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
@@ -2458,6 +2474,17 @@ namespace CodeWalker
                                     continue;
                                 }
                                 data = rel.Save();
+                                break;
+                            }
+                        case MetaFormat.Ynd:
+                            {
+                                var ynd = XmlYnd.GetYnd(doc);
+                                if (ynd.NodeDictionary == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YND XML");
+                                    continue;
+                                }
+                                data = ynd.Save();
                                 break;
                             }
                     }
@@ -4131,7 +4158,8 @@ namespace CodeWalker
         ViewYwr = 15,
         ViewYvr = 16,
         ViewYcd = 17,
-        ViewCacheDat = 18,
+        ViewYnd = 18,
+        ViewCacheDat = 19,
     }
 
 
