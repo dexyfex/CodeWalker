@@ -93,7 +93,7 @@ namespace CodeWalker.GameFiles
 
         private string GTAFolder;
         private string ExcludeFolders;
-
+        private bool OnlyMods = false;
 
 
         public int QueueLength
@@ -120,7 +120,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public GameFileCache(long size, double cacheTime, string folder, string dlc, bool mods, string excludeFolders)
+        public GameFileCache(long size, double cacheTime, string folder, string dlc, bool mods, string excludeFolders, bool onlyMods = false)
         {
             mainCache = new Cache<GameFileCacheKey, GameFile>(size, cacheTime);//2GB is good as default
             SelectedDlc = dlc;
@@ -128,6 +128,7 @@ namespace CodeWalker.GameFiles
             EnableMods = mods;
             GTAFolder = folder;
             ExcludeFolders = excludeFolders;
+            OnlyMods = onlyMods;
         }
 
 
@@ -961,6 +962,7 @@ namespace CodeWalker.GameFiles
                         RpfFileEntry fentry = entry as RpfFileEntry;
                         if (entry.NameLower.EndsWith(".ymap"))
                         {
+                            if (OnlyMods && !entry.Path.Contains("mods")) continue;
                             //YmapDict[entry.NameHash] = fentry;
                             YmapDict[entry.ShortNameHash] = fentry;
                         }
@@ -971,6 +973,7 @@ namespace CodeWalker.GameFiles
                         }
                         else if (entry.NameLower.EndsWith(".ynv"))
                         {
+                            if (OnlyMods && !entry.Path.Contains("mods")) continue;
                             YnvDict[entry.ShortNameHash] = fentry;
                         }
                     }
@@ -988,6 +991,7 @@ namespace CodeWalker.GameFiles
                         RpfFileEntry fentry = entry as RpfFileEntry;
                         if (entry.NameLower.EndsWith(".ymap"))
                         {
+                            if (OnlyMods && !entry.Path.Contains("mods")) continue;
                             AllYmapsDict[entry.ShortNameHash] = fentry;
                         }
                     }
