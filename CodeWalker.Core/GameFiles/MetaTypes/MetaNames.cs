@@ -3462,6 +3462,10 @@ namespace CodeWalker.GameFiles
 
 
 
+        FloatXYZ = 3805007828,
+
+
+
 
 
 

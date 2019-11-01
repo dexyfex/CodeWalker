@@ -14101,7 +14101,7 @@ namespace CodeWalker.GameFiles
                     );
                 case MetaName.CLODLight:
                     return new PsoStructureInfo(MetaName.CLODLight, 0, 0, 136,
-                     new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)MetaTypeName.VECTOR3),
+                     new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.FloatXYZ),
                      new PsoStructureEntryInfo(MetaName.direction, PsoDataType.Array, 8, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Float, 0, 0, 0),
                      new PsoStructureEntryInfo(MetaName.falloff, PsoDataType.Array, 24, 0, (MetaName)2),
@@ -14150,7 +14150,7 @@ namespace CodeWalker.GameFiles
                     );
                 case MetaName.CDistantLODLight:
                     return new PsoStructureInfo(MetaName.CDistantLODLight, 0, 0, 48,
-                     new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)MetaTypeName.VECTOR3),
+                     new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.FloatXYZ),
                      new PsoStructureEntryInfo(MetaName.position, PsoDataType.Array, 8, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.UInt, 0, 0, 0),
                      new PsoStructureEntryInfo(MetaName.RGBI, PsoDataType.Array, 24, 0, (MetaName)2),
