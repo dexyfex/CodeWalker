@@ -381,12 +381,15 @@ namespace CodeWalker.Forms
         {
             //move the camera to a default place where the given sphere is fully visible.
 
-            rad = Math.Max(0.5f, rad);
+            rad = Math.Max(0.01f, rad);
 
             camera.FollowEntity.Position = pos;
             camera.TargetDistance = rad * 1.6f;
             camera.CurrentDistance = rad * 1.6f;
 
+            camera.ZFar = Math.Min(rad * 200.0f, 12000.0f);
+            camera.ZNear = Math.Min(camera.ZFar * 5e-5f, 0.5f);
+            camera.UpdateProj = true;
         }
 
 
@@ -590,6 +593,16 @@ namespace CodeWalker.Forms
             Ydd = ydd;
             rpfFileEntry = Ydd.RpfFileEntry;
 
+            if (Ydd.Drawables != null)
+            {
+                float maxrad = 0.01f;
+                foreach (var d in Ydd.Drawables)
+                {
+                    maxrad = Math.Max(maxrad, d.BoundingSphereRadius);
+                }
+                MoveCameraToView(Vector3.Zero, maxrad);
+            }
+
             UpdateModelsUI(ydd.Dict);
 
             DetailsPropertyGrid.SelectedObject = ydd;
@@ -632,6 +645,16 @@ namespace CodeWalker.Forms
             FileName = ypt.Name;
             Ypt = ypt;
             rpfFileEntry = Ypt.RpfFileEntry;
+
+            if (ypt.DrawableDict != null)
+            {
+                float maxrad = 0.01f;
+                foreach (var d in ypt.DrawableDict.Values)
+                {
+                    maxrad = Math.Max(maxrad, d.BoundingSphereRadius);
+                }
+                MoveCameraToView(Vector3.Zero, maxrad);
+            }
 
             UpdateModelsUI(ypt.DrawableDict);
 

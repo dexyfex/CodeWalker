@@ -136,6 +136,7 @@ namespace CodeWalker
             this.TimedEntitiesCheckBox = new System.Windows.Forms.CheckBox();
             this.FieldOfViewTrackBar = new System.Windows.Forms.TrackBar();
             this.tabPage14 = new System.Windows.Forms.TabPage();
+            this.HDTexturesCheckBox = new System.Windows.Forms.CheckBox();
             this.WireframeCheckBox = new System.Windows.Forms.CheckBox();
             this.RenderModeComboBox = new System.Windows.Forms.ComboBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -287,7 +288,10 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
-            this.HDTexturesCheckBox = new System.Windows.Forms.CheckBox();
+            this.NearClipUpDown = new System.Windows.Forms.NumericUpDown();
+            this.label31 = new System.Windows.Forms.Label();
+            this.FarClipUpDown = new System.Windows.Forms.NumericUpDown();
+            this.label32 = new System.Windows.Forms.Label();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -329,6 +333,8 @@ namespace CodeWalker
             this.ToolsMenu.SuspendLayout();
             this.Toolbar.SuspendLayout();
             this.ToolbarPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.NearClipUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.FarClipUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // StatusStrip
@@ -1645,6 +1651,10 @@ namespace CodeWalker
             // 
             // tabPage14
             // 
+            this.tabPage14.Controls.Add(this.FarClipUpDown);
+            this.tabPage14.Controls.Add(this.label32);
+            this.tabPage14.Controls.Add(this.NearClipUpDown);
+            this.tabPage14.Controls.Add(this.label31);
             this.tabPage14.Controls.Add(this.HDTexturesCheckBox);
             this.tabPage14.Controls.Add(this.WireframeCheckBox);
             this.tabPage14.Controls.Add(this.RenderModeComboBox);
@@ -1662,6 +1672,19 @@ namespace CodeWalker
             this.tabPage14.TabIndex = 3;
             this.tabPage14.Text = "Render";
             this.tabPage14.UseVisualStyleBackColor = true;
+            // 
+            // HDTexturesCheckBox
+            // 
+            this.HDTexturesCheckBox.AutoSize = true;
+            this.HDTexturesCheckBox.Checked = true;
+            this.HDTexturesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.HDTexturesCheckBox.Location = new System.Drawing.Point(10, 231);
+            this.HDTexturesCheckBox.Name = "HDTexturesCheckBox";
+            this.HDTexturesCheckBox.Size = new System.Drawing.Size(82, 17);
+            this.HDTexturesCheckBox.TabIndex = 57;
+            this.HDTexturesCheckBox.Text = "HD textures";
+            this.HDTexturesCheckBox.UseVisualStyleBackColor = true;
+            this.HDTexturesCheckBox.CheckedChanged += new System.EventHandler(this.HDTexturesCheckBox_CheckedChanged);
             // 
             // WireframeCheckBox
             // 
@@ -2883,112 +2906,112 @@ namespace CodeWalker
             this.ToolbarSelectEntityButton.Checked = true;
             this.ToolbarSelectEntityButton.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ToolbarSelectEntityButton.Name = "ToolbarSelectEntityButton";
-            this.ToolbarSelectEntityButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectEntityButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectEntityButton.Text = "Entity";
             this.ToolbarSelectEntityButton.Click += new System.EventHandler(this.ToolbarSelectEntityButton_Click);
             // 
             // ToolbarSelectEntityExtensionButton
             // 
             this.ToolbarSelectEntityExtensionButton.Name = "ToolbarSelectEntityExtensionButton";
-            this.ToolbarSelectEntityExtensionButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectEntityExtensionButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectEntityExtensionButton.Text = "Entity Extension";
             this.ToolbarSelectEntityExtensionButton.Click += new System.EventHandler(this.ToolbarSelectEntityExtensionButton_Click);
             // 
             // ToolbarSelectArchetypeExtensionButton
             // 
             this.ToolbarSelectArchetypeExtensionButton.Name = "ToolbarSelectArchetypeExtensionButton";
-            this.ToolbarSelectArchetypeExtensionButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectArchetypeExtensionButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectArchetypeExtensionButton.Text = "Archetype Extension";
             this.ToolbarSelectArchetypeExtensionButton.Click += new System.EventHandler(this.ToolbarSelectArchetypeExtensionButton_Click);
             // 
             // ToolbarSelectTimeCycleModifierButton
             // 
             this.ToolbarSelectTimeCycleModifierButton.Name = "ToolbarSelectTimeCycleModifierButton";
-            this.ToolbarSelectTimeCycleModifierButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectTimeCycleModifierButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectTimeCycleModifierButton.Text = "Time Cycle Modifier";
             this.ToolbarSelectTimeCycleModifierButton.Click += new System.EventHandler(this.ToolbarSelectTimeCycleModifierButton_Click);
             // 
             // ToolbarSelectCarGeneratorButton
             // 
             this.ToolbarSelectCarGeneratorButton.Name = "ToolbarSelectCarGeneratorButton";
-            this.ToolbarSelectCarGeneratorButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectCarGeneratorButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectCarGeneratorButton.Text = "Car Generator";
             this.ToolbarSelectCarGeneratorButton.Click += new System.EventHandler(this.ToolbarSelectCarGeneratorButton_Click);
             // 
             // ToolbarSelectGrassButton
             // 
             this.ToolbarSelectGrassButton.Name = "ToolbarSelectGrassButton";
-            this.ToolbarSelectGrassButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectGrassButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectGrassButton.Text = "Grass";
             this.ToolbarSelectGrassButton.Click += new System.EventHandler(this.ToolbarSelectGrassButton_Click);
             // 
             // ToolbarSelectWaterQuadButton
             // 
             this.ToolbarSelectWaterQuadButton.Name = "ToolbarSelectWaterQuadButton";
-            this.ToolbarSelectWaterQuadButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectWaterQuadButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectWaterQuadButton.Text = "Water Quad";
             this.ToolbarSelectWaterQuadButton.Click += new System.EventHandler(this.ToolbarSelectWaterQuadButton_Click);
             // 
             // ToolbarSelectCollisionButton
             // 
             this.ToolbarSelectCollisionButton.Name = "ToolbarSelectCollisionButton";
-            this.ToolbarSelectCollisionButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectCollisionButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectCollisionButton.Text = "Collision";
             this.ToolbarSelectCollisionButton.Click += new System.EventHandler(this.ToolbarSelectCollisionButton_Click);
             // 
             // ToolbarSelectNavMeshButton
             // 
             this.ToolbarSelectNavMeshButton.Name = "ToolbarSelectNavMeshButton";
-            this.ToolbarSelectNavMeshButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectNavMeshButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectNavMeshButton.Text = "Nav Mesh";
             this.ToolbarSelectNavMeshButton.Click += new System.EventHandler(this.ToolbarSelectNavMeshButton_Click);
             // 
             // ToolbarSelectPathButton
             // 
             this.ToolbarSelectPathButton.Name = "ToolbarSelectPathButton";
-            this.ToolbarSelectPathButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectPathButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectPathButton.Text = "Traffic Path";
             this.ToolbarSelectPathButton.Click += new System.EventHandler(this.ToolbarSelectPathButton_Click);
             // 
             // ToolbarSelectTrainTrackButton
             // 
             this.ToolbarSelectTrainTrackButton.Name = "ToolbarSelectTrainTrackButton";
-            this.ToolbarSelectTrainTrackButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectTrainTrackButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectTrainTrackButton.Text = "Train Track";
             this.ToolbarSelectTrainTrackButton.Click += new System.EventHandler(this.ToolbarSelectTrainTrackButton_Click);
             // 
             // ToolbarSelectDistantLodLightsButton
             // 
             this.ToolbarSelectDistantLodLightsButton.Name = "ToolbarSelectDistantLodLightsButton";
-            this.ToolbarSelectDistantLodLightsButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectDistantLodLightsButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectDistantLodLightsButton.Text = "Distant Lod Lights";
             this.ToolbarSelectDistantLodLightsButton.Click += new System.EventHandler(this.ToolbarSelectDistantLodLightsButton_Click);
             // 
             // ToolbarSelectMloInstanceButton
             // 
             this.ToolbarSelectMloInstanceButton.Name = "ToolbarSelectMloInstanceButton";
-            this.ToolbarSelectMloInstanceButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectMloInstanceButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectMloInstanceButton.Text = "Interior Instance";
             this.ToolbarSelectMloInstanceButton.Click += new System.EventHandler(this.ToolbarSelectMloInstanceButton_Click);
             // 
             // ToolbarSelectScenarioButton
             // 
             this.ToolbarSelectScenarioButton.Name = "ToolbarSelectScenarioButton";
-            this.ToolbarSelectScenarioButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectScenarioButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectScenarioButton.Text = "Scenario";
             this.ToolbarSelectScenarioButton.Click += new System.EventHandler(this.ToolbarSelectScenarioButton_Click);
             // 
             // ToolbarSelectAudioButton
             // 
             this.ToolbarSelectAudioButton.Name = "ToolbarSelectAudioButton";
-            this.ToolbarSelectAudioButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectAudioButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectAudioButton.Text = "Audio";
             this.ToolbarSelectAudioButton.Click += new System.EventHandler(this.ToolbarSelectAudioButton_Click);
             // 
             // ToolbarSelectOcclusionButton
             // 
             this.ToolbarSelectOcclusionButton.Name = "ToolbarSelectOcclusionButton";
-            this.ToolbarSelectOcclusionButton.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarSelectOcclusionButton.Size = new System.Drawing.Size(182, 22);
             this.ToolbarSelectOcclusionButton.Text = "Occlusion";
             this.ToolbarSelectOcclusionButton.Click += new System.EventHandler(this.ToolbarSelectOcclusionButton_Click);
             // 
@@ -3283,18 +3306,80 @@ namespace CodeWalker
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
             // 
-            // HDTexturesCheckBox
+            // NearClipUpDown
             // 
-            this.HDTexturesCheckBox.AutoSize = true;
-            this.HDTexturesCheckBox.Checked = true;
-            this.HDTexturesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.HDTexturesCheckBox.Location = new System.Drawing.Point(10, 231);
-            this.HDTexturesCheckBox.Name = "HDTexturesCheckBox";
-            this.HDTexturesCheckBox.Size = new System.Drawing.Size(82, 17);
-            this.HDTexturesCheckBox.TabIndex = 57;
-            this.HDTexturesCheckBox.Text = "HD textures";
-            this.HDTexturesCheckBox.UseVisualStyleBackColor = true;
-            this.HDTexturesCheckBox.CheckedChanged += new System.EventHandler(this.HDTexturesCheckBox_CheckedChanged);
+            this.NearClipUpDown.DecimalPlaces = 3;
+            this.NearClipUpDown.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.NearClipUpDown.Location = new System.Drawing.Point(80, 320);
+            this.NearClipUpDown.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.NearClipUpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            196608});
+            this.NearClipUpDown.Name = "NearClipUpDown";
+            this.NearClipUpDown.Size = new System.Drawing.Size(114, 20);
+            this.NearClipUpDown.TabIndex = 59;
+            this.NearClipUpDown.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            65536});
+            this.NearClipUpDown.ValueChanged += new System.EventHandler(this.NearClipUpDown_ValueChanged);
+            // 
+            // label31
+            // 
+            this.label31.AutoSize = true;
+            this.label31.Location = new System.Drawing.Point(4, 322);
+            this.label31.Name = "label31";
+            this.label31.Size = new System.Drawing.Size(53, 13);
+            this.label31.TabIndex = 58;
+            this.label31.Text = "Near Clip:";
+            // 
+            // FarClipUpDown
+            // 
+            this.FarClipUpDown.Increment = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.FarClipUpDown.Location = new System.Drawing.Point(80, 346);
+            this.FarClipUpDown.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.FarClipUpDown.Minimum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.FarClipUpDown.Name = "FarClipUpDown";
+            this.FarClipUpDown.Size = new System.Drawing.Size(114, 20);
+            this.FarClipUpDown.TabIndex = 61;
+            this.FarClipUpDown.Value = new decimal(new int[] {
+            12000,
+            0,
+            0,
+            0});
+            this.FarClipUpDown.ValueChanged += new System.EventHandler(this.FarClipUpDown_ValueChanged);
+            // 
+            // label32
+            // 
+            this.label32.AutoSize = true;
+            this.label32.Location = new System.Drawing.Point(4, 348);
+            this.label32.Name = "label32";
+            this.label32.Size = new System.Drawing.Size(45, 13);
+            this.label32.TabIndex = 60;
+            this.label32.Text = "Far Clip:";
             // 
             // WorldForm
             // 
@@ -3377,6 +3462,8 @@ namespace CodeWalker
             this.Toolbar.PerformLayout();
             this.ToolbarPanel.ResumeLayout(false);
             this.ToolbarPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.NearClipUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.FarClipUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -3640,5 +3727,9 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectOcclusionButton;
         private System.Windows.Forms.CheckBox CarGeneratorsCheckBox;
         private System.Windows.Forms.CheckBox HDTexturesCheckBox;
+        private System.Windows.Forms.NumericUpDown FarClipUpDown;
+        private System.Windows.Forms.Label label32;
+        private System.Windows.Forms.NumericUpDown NearClipUpDown;
+        private System.Windows.Forms.Label label31;
     }
 }

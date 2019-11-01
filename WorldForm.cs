@@ -6649,6 +6649,18 @@ namespace CodeWalker
             Renderer.renderhdtextures = HDTexturesCheckBox.Checked;
         }
 
+        private void NearClipUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            camera.ZNear = (float)NearClipUpDown.Value;
+            camera.UpdateProj = true;
+        }
+
+        private void FarClipUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            camera.ZFar = (float)FarClipUpDown.Value;
+            camera.UpdateProj = true;
+        }
+
         private void PathsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             renderpaths = PathsCheckBox.Checked;
