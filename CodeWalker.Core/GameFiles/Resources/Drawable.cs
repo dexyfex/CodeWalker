@@ -802,7 +802,7 @@ namespace CodeWalker.GameFiles
         //used by CW for animating skeletons.
         public Quaternion AnimRotation;
         public Vector3 AnimTranslation;
-
+        public Matrix AnimTransform;
 
 
         /// <summary>
@@ -844,6 +844,7 @@ namespace CodeWalker.GameFiles
 
             AnimRotation = Rotation;
             AnimTranslation = Translation;
+            AnimTransform = Matrix.AffineTransformation(1.0f, AnimRotation, AnimTranslation);
         }
 
         /// <summary>

@@ -52,6 +52,48 @@ namespace CodeWalker.Rendering
         }
     }
 
+
+    public class GpuABuffer<T> where T : struct //Dynamic GPU buffer of items updated by CPU, for array of structs used as a constant buffer
+    {
+        public int StructSize;
+        public int StructCount;
+        public int BufferSize;
+        public Buffer Buffer;
+
+        public GpuABuffer(Device device, int count)
+        {
+            StructCount = count;
+            StructSize = System.Runtime.InteropServices.Marshal.SizeOf<T>();
+            BufferSize = StructCount * StructSize;
+            Buffer = new Buffer(device, BufferSize, ResourceUsage.Dynamic, BindFlags.ConstantBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
+        }
+        public void Dispose()
+        {
+            if (Buffer != null)
+            {
+                Buffer.Dispose();
+                Buffer = null;
+            }
+        }
+        public void Update(DeviceContext context, T[] data)
+        {
+            var dataBox = context.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
+            Utilities.Write(dataBox.DataPointer, data, 0, data.Length);
+            context.UnmapSubresource(Buffer, 0);
+        }
+
+        public void SetVSCBuffer(DeviceContext context, int slot)
+        {
+            context.VertexShader.SetConstantBuffer(slot, Buffer);
+        }
+        public void SetPSCBuffer(DeviceContext context, int slot)
+        {
+            context.PixelShader.SetConstantBuffer(slot, Buffer);
+        }
+
+    }
+
+
     public class GpuSBuffer<T> where T : struct //for static struct data as resource view
     {
         public int StructSize;
@@ -145,6 +187,12 @@ namespace CodeWalker.Rendering
             }
             var dataBox = context.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
             Utilities.Write(dataBox.DataPointer, DataArray, 0, CurrentCount);
+            context.UnmapSubresource(Buffer, 0);
+        }
+        public void Update(DeviceContext context, T[] data)
+        {
+            var dataBox = context.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
+            Utilities.Write(dataBox.DataPointer, data, 0, data.Length);
             context.UnmapSubresource(Buffer, 0);
         }
 
