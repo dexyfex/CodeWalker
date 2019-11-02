@@ -809,16 +809,17 @@ namespace CodeWalker.GameFiles
         public byte[] Data { get; set; }
 
 
-        public SequencePart1[] FrameData { get; set; }
-        public ushort[] Part2 { get; set; }
-        public int Part2Count { get; set; }
-        public int Part2Offset { get; set; }
 
         // parsed data
         public AnimSequence[] Sequences { get; set; }
 
-        //public static Dictionary<ushort, int> SeqDict = new Dictionary<ushort, int>();
 
+        // //Original testing parsed data
+        //public SequencePart1[] FrameData { get; set; }
+        //public ushort[] Part2 { get; set; }
+        //public int Part2Count { get; set; }
+        //public int Part2Offset { get; set; }
+        //public static Dictionary<ushort, int> SeqDict = new Dictionary<ushort, int>();
 
 
         class AnimChannelListItem
@@ -854,20 +855,16 @@ namespace CodeWalker.GameFiles
 
             this.Data = reader.ReadBytes((int)DataLength);
 
-
+            #region //old dexyfex testing code
+            /* 
             if (Unused_08h != 0)
             { }
-
             if (Unused_14h != 0)
             { }
-
             if (UnkLength != (DataLength + 32)) //sometimes this is true
             { }
-
-
             if ((FrameLength % 4) > 0)
             { }
-
             int offset = (int)FrameOffset;
             if (FrameLength > 0)
             {
@@ -882,7 +879,6 @@ namespace CodeWalker.GameFiles
             }
             else if (NumFrames != 0)
             { }
-
             int brem = (int)DataLength - offset;
             int p2cnt = brem / 2;
             if (p2cnt > 0)
@@ -898,22 +894,14 @@ namespace CodeWalker.GameFiles
             }
             else
             { }
-
             if (offset != DataLength)
             { } //no hits here!
-
-
             //if (SeqDict.ContainsKey(Unknown_1Ah)) SeqDict[Unknown_1Ah]++;
             //else SeqDict[Unknown_1Ah] = 1;
-
             if ((Unknown_1Ah != 0) && (Unknown_1Ah > FrameOffset))
             { }
-
             if ((Unknown_1Ch != 0) && (Unknown_1Ch > FrameOffset))
             { }
-
-
-
             switch (ChunkSize)
             {
                 case 64: //0x40
@@ -922,7 +910,6 @@ namespace CodeWalker.GameFiles
                 default://no hits
                     break;
             }
-
             switch (Unknown_1Fh_Type)
             {
                 case 0:
@@ -936,6 +923,21 @@ namespace CodeWalker.GameFiles
                 default: //no hits
                     break;
             }
+            */
+            #endregion
+
+
+            int Part2Offset = 0;//replacement calculation from old dexyfex parsing code
+            int offset = (int)FrameOffset + (FrameLength * NumFrames);
+            int p2cnt = ((int)DataLength - offset) / 2;
+            if (p2cnt > 0)
+            {
+                Part2Offset = offset;
+            }
+
+
+
+
 
             int channelBitOffset = 0;
             int channelFrameOffset = unchecked((int)(FrameOffset * 8));
@@ -992,6 +994,8 @@ namespace CodeWalker.GameFiles
                             // unknown extra
                             // kind of the same as above but different at runtime?
                             channel = new AnimChannelType7();
+                            break;
+                        default:
                             break;
                     }
 
