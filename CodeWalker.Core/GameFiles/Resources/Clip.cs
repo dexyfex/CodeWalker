@@ -697,7 +697,9 @@ namespace CodeWalker.GameFiles
 
         public override float EvaluateFloat(int frame)
         {
-            return Values[frame];
+            if (frame < Values?.Length) return Values[frame];
+            if (Values?.Length > 0) return Values[0];
+            return 0.0f;
         }
 
         public override void Read(Sequence blockStream, ref int channelOffset)
@@ -769,7 +771,7 @@ namespace CodeWalker.GameFiles
                     for (int n = 0; n < 4; n++)
                     {
                         if ((c + n) >= 4) break;
-                        v[c + n] = sv3c.Value[n];
+                        v[c + n] = ssqc.Value[n];
                     }
                     c += 4;
                 }

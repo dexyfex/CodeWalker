@@ -550,6 +550,10 @@ namespace CodeWalker.GameFiles
         private ResourceSystemStructBlock<ushort> Unknown_40h_DataBlock = null;
 
 
+        public Dictionary<ushort, Bone> BonesMap { get; set; }//for convienience finding bones by tag
+
+
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
@@ -608,6 +612,16 @@ namespace CodeWalker.GameFiles
                     {
                         bone.Parent = Bones[pind];
                     }
+                }
+            }
+
+            BonesMap = new Dictionary<ushort, Bone>();
+            if (Bones != null)
+            {
+                for (int i = 0; i < Bones.Count; i++)
+                {
+                    var bone = Bones[i];
+                    BonesMap[bone.Id] = bone;
                 }
             }
 
@@ -784,6 +798,13 @@ namespace CodeWalker.GameFiles
 
         private string_r NameBlock = null;
 
+
+        //used by CW for animating skeletons.
+        public Quaternion AnimRotation;
+        public Vector3 AnimTranslation;
+
+
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
@@ -819,6 +840,10 @@ namespace CodeWalker.GameFiles
             this.Name = reader.ReadStringAt(//BlockAt<string_r>(
                 this.NamePointer // offset
             );
+
+
+            AnimRotation = Rotation;
+            AnimTranslation = Translation;
         }
 
         /// <summary>
