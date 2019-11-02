@@ -405,8 +405,6 @@ namespace CodeWalker.Rendering
             if (bones == null)
             { return; }
 
-            //TODO: fragments! see eg.  p_oil_pjack_03_s
-
             for (int i = 0; i < anim.BoneIds.data_items.Length; i++)
             {
                 var boneiditem = anim.BoneIds.data_items[i];
@@ -451,6 +449,9 @@ namespace CodeWalker.Rendering
                 RenderableModel bmodel = null;
                 ModelBoneLinks?.TryGetValue(bone.Id, out bmodel);
                 if (bmodel == null)
+                { continue; }
+
+                if (((bmodel.SkeletonBinding >> 8) & 0xFF) > 0) //skin mesh? //TODO: see eg.  p_oil_pjack_03_s
                 { continue; }
 
                 //update model's transform from animated bone

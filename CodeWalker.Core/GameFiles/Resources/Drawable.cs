@@ -1291,6 +1291,7 @@ namespace CodeWalker.GameFiles
         public ushort[] BoneIds { get; set; }
         public VertexData VertexData { get; set; }
         public ShaderFX Shader { get; set; }
+        public ushort ShaderID { get; set; }
 
         private ResourceSystemStructBlock<ushort> BoneIdsBlock = null;//for saving only
 
@@ -2371,6 +2372,7 @@ namespace CodeWalker.GameFiles
                         var geom = model.Geometries.data_items[i];
                         ushort sid = (i < model.ShaderMapping.Length) ? model.ShaderMapping[i] : (ushort)0;
                         geom.Shader = (sid < shaders.Length) ? shaders[sid] : null;
+                        geom.ShaderID = sid;
                     }
                 }
             }
