@@ -2795,7 +2795,6 @@ namespace CodeWalker.Rendering
                     MetaHash ahash = arche.Hash;
                     if (ycd.ClipMap.TryGetValue(ahash, out rndbl.ClipMapEntry)) rndbl.HasAnims = true;
 
-                    uint cmeindex = 1;
                     foreach (var model in rndbl.HDModels)
                     {
                         if (model == null) continue;
@@ -2804,9 +2803,9 @@ namespace CodeWalker.Rendering
                             if (geom == null) continue;
                             if (geom.globalAnimUVEnable)
                             {
+                                uint cmeindex = geom.DrawableGeom.ShaderID + 1u;
                                 MetaHash cmehash = ahash + cmeindex; //this goes to at least uv5! (from uv0) - see hw1_09.ycd
                                 if (ycd.ClipMap.TryGetValue(cmehash, out geom.ClipMapEntryUV)) rndbl.HasAnims = true;
-                                cmeindex++;
                             }
                         }
                     }
