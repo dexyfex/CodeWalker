@@ -1072,9 +1072,13 @@ namespace CodeWalker.GameFiles
 
             for (int i = 0; i < Sequences.Length; i++)
             {
-                var thisSeq = animChannelList.Where(a => a.Sequence == i);
-
                 Sequences[i] = new AnimSequence();
+
+                var thisSeq = animChannelList.Where(a => a.Sequence == i);
+                if (thisSeq.Count() == 0)
+                { continue; }
+
+
                 Sequences[i].Channels = new AnimChannel[thisSeq.Max(a => a.Index) + 1];
                 
                 for (int j = 0; j < Sequences[i].Channels.Length; j++)

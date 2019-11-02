@@ -430,6 +430,8 @@ namespace CodeWalker.Rendering
                             var q = interpolate ? Quaternion.Slerp(q0, q1, falpha) : q0;
                             bone.AnimRotation = q;
                             break;
+                        case 2: //scale?
+                            break;
                         default:
                             break;
                     }
