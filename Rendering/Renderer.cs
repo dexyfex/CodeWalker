@@ -1141,11 +1141,11 @@ namespace CodeWalker.Rendering
 
                     //draw line from bone's position to parent position...
                     Vector3 lbeg = Vector3.Zero;
-                    Vector3 lend = bone.Translation;// bone.Rotation.Multiply();
+                    Vector3 lend = bone.AnimTranslation;// bone.Rotation.Multiply();
                     while (pbone != null)
                     {
-                        lbeg = pbone.Rotation.Multiply(lbeg) + pbone.Translation;
-                        lend = pbone.Rotation.Multiply(lend) + pbone.Translation;
+                        lbeg = pbone.AnimRotation.Multiply(lbeg) + pbone.AnimTranslation;
+                        lend = pbone.AnimRotation.Multiply(lend) + pbone.AnimTranslation;
                         pbone = pbone.Parent;
                     }
 

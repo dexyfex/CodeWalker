@@ -78,6 +78,7 @@ namespace CodeWalker.Rendering
         public ClipMapEntry ClipMapEntryUV0;
         public ClipMapEntry ClipMapEntryUV1;
 
+        public Dictionary<ushort, RenderableModel> ModelBoneLinks;
 
 
         public override void Init(DrawableBase drawable)
@@ -254,6 +255,17 @@ namespace CodeWalker.Rendering
                     Matrix trans = (boneidx < modeltransforms.Length) ? modeltransforms[boneidx] : Matrix.Identity;
                     Bone bone = (hasbones && (boneidx < bones.Count)) ? bones[boneidx] : null;
 
+                    if (mi < HDModels.Length) //populate bone links map for hd models
+                    {
+                        if (bone != null)
+                        {
+                            if (ModelBoneLinks == null) ModelBoneLinks = new Dictionary<ushort, RenderableModel>();
+                            ModelBoneLinks[bone.Id] = model;
+                        }
+                    }
+
+
+
                     if ((fragtransforms != null))// && (fragtransformid < fragtransforms.Length))
                     {
                         if (fragtransformid < fragtransforms.Length)
@@ -364,8 +376,92 @@ namespace CodeWalker.Rendering
             var anim = clipanim?.Animation;
             if (anim == null)
             { return; }
+            if (anim.BoneIds?.data_items == null)
+            { return; }
+            if (anim.Sequences?.data_items == null)
+            { return; }
 
-            //TODO........
+            bool interpolate = true; //how to know? eg. cs4_14_hickbar_anim shouldn't
+            bool ignoreLastFrame = true;//if last frame is equivalent to the first one, eg rollercoaster small light "globes" don't
+
+            var duration = anim.Duration;
+            var frames = anim.Frames;
+            var nframes = (ignoreLastFrame) ? (frames - 1) : frames;
+
+            var curPos = ((CurrentAnimTime % duration) / duration) * nframes;
+            var frame0 = ((ushort)curPos) % frames;
+            var frame1 = (frame0 + 1) % frames;
+            var falpha = (float)(curPos - Math.Floor(curPos));
+            var ialpha = 1.0f - falpha;
+
+
+            var dwbl = this.Key;
+            var skel = dwbl?.Skeleton;
+            var bones = skel?.Bones;
+            if (bones == null)
+            { return; }
+
+            for (int i = 0; i < anim.BoneIds.data_items.Length; i++)
+            {
+                var boneiditem = anim.BoneIds.data_items[i];
+                var track = boneiditem.Track;
+
+                Bone bone = null;
+                skel?.BonesMap?.TryGetValue(boneiditem.BoneId, out bone);
+                if (bone == null)
+                { continue; }
+
+
+                for (int s = 0; s < anim.Sequences.data_items.Length; s++)
+                {
+                    var seq = anim.Sequences.data_items[s];
+                    var aseq = seq.Sequences[i];
+                    switch (track)
+                    {
+                        case 0: //bone position
+                            var v0 = aseq.EvaluateVector(frame0);
+                            var v1 = aseq.EvaluateVector(frame1);
+                            var v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
+                            bone.AnimTranslation = v.XYZ();
+                            break;
+                        case 1: //bone orientation
+                            var q0 = new Quaternion(aseq.EvaluateVector(frame0));
+                            var q1 = new Quaternion(aseq.EvaluateVector(frame1));
+                            var q = interpolate ? Quaternion.Slerp(q0, q1, falpha) : q0;
+                            bone.AnimRotation = q;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            for (int i = 0; i < bones.Count; i++)
+            {
+                var bone = bones[i];
+
+                RenderableModel bmodel = null;
+                ModelBoneLinks?.TryGetValue(bone.Id, out bmodel);
+                if (bmodel == null)
+                { continue; }
+
+                //update model's transform from animated bone
+
+                var pos = bone.AnimTranslation;
+                var ori = bone.AnimRotation;
+                var pbone = bone.Parent;
+                while (pbone != null)
+                {
+                    pos = pbone.AnimRotation.Multiply(pos) + pbone.AnimTranslation;
+                    ori = pbone.AnimRotation * ori;
+                    pbone = pbone.Parent;
+                }
+
+                bmodel.Transform = Matrix.AffineTransformation(1.0f, ori, pos);
+
+            }
+
+
         }
         private void UpdateAnimUV(ClipMapEntry cme)
         {
@@ -384,11 +480,11 @@ namespace CodeWalker.Rendering
             { return; }
 
             bool interpolate = true; //how to know? eg. cs4_14_hickbar_anim shouldn't
-            bool lastFrameSameAsFirst = true;//if last frame is equivalent to the first one, eg rollercoaster small light "globes" don't
+            bool ignoreLastFrame = true;//if last frame is equivalent to the first one, eg rollercoaster small light "globes" don't
 
             var duration = anim.Duration;
             var frames = anim.Frames;
-            var nframes = (lastFrameSameAsFirst) ? (frames - 1) : frames;
+            var nframes = (ignoreLastFrame) ? (frames - 1) : frames;
 
             var curPos = ((CurrentAnimTime % duration) / duration) * nframes;
             var frame0 = ((ushort)curPos) % frames;
