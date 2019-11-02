@@ -77,6 +77,8 @@ namespace CodeWalker.Rendering
         public ClipMapEntry ClipMapEntry;
         public Dictionary<ushort, RenderableModel> ModelBoneLinks;
 
+        public Matrix3_s[] BoneTransforms;
+
 
         public override void Init(DrawableBase drawable)
         {
@@ -297,6 +299,28 @@ namespace CodeWalker.Rendering
                     }
                 }
             }
+
+
+
+
+
+            //populate the bonetransforms array
+            Matrix[] bonetrans = (fragtransforms != null) ? fragtransforms : (modeltransforms != null) ? modeltransforms : null;
+            if (bonetrans != null)
+            {
+                BoneTransforms = new Matrix3_s[bonetrans.Length];
+                for (int i = 0; i < bonetrans.Length; i++)
+                {
+                    Matrix b = bonetrans[i];
+                    Matrix3_s bt = new Matrix3_s();
+                    bt.Row1 = b.Row1;
+                    bt.Row2 = b.Row2;
+                    bt.Row3 = b.Row3;
+                    BoneTransforms[i] = bt;
+                }
+            }
+
+
         }
 
         private RenderableModel InitModel(DrawableModel dm)
@@ -445,17 +469,6 @@ namespace CodeWalker.Rendering
             for (int i = 0; i < bones.Count; i++)
             {
                 var bone = bones[i];
-
-                RenderableModel bmodel = null;
-                ModelBoneLinks?.TryGetValue(bone.Id, out bmodel);
-                if (bmodel == null)
-                { continue; }
-
-                if (((bmodel.SkeletonBinding >> 8) & 0xFF) > 0) //skin mesh? //TODO: see eg.  p_oil_pjack_03_s
-                { continue; }
-
-                //update model's transform from animated bone
-
                 var pos = bone.AnimTranslation;
                 var ori = bone.AnimRotation;
                 var pbone = bone.Parent;
@@ -465,8 +478,19 @@ namespace CodeWalker.Rendering
                     ori = pbone.AnimRotation * ori;
                     pbone = pbone.Parent;
                 }
+                bone.AnimTransform = Matrix.AffineTransformation(1.0f, ori, pos);
 
-                bmodel.Transform = Matrix.AffineTransformation(1.0f, ori, pos);
+
+                //update model's transform from animated bone
+                RenderableModel bmodel = null;
+                ModelBoneLinks?.TryGetValue(bone.Id, out bmodel);
+                if (bmodel == null)
+                { continue; }
+
+                if (((bmodel.SkeletonBinding >> 8) & 0xFF) > 0) //skin mesh? //TODO: see eg.  p_oil_pjack_03_s
+                { continue; }
+
+                bmodel.Transform = bone.AnimTransform;
 
             }
 

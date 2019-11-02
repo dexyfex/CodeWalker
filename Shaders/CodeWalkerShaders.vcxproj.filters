@@ -66,6 +66,14 @@
     <FxCompile Include="SkyMoonVS.hlsl" />
     <FxCompile Include="SkyMoonPS.hlsl" />
     <FxCompile Include="PathDynVS.hlsl" />
+    <FxCompile Include="BasicVS_PBBNCT.hlsl" />
+    <FxCompile Include="BasicVS_PBBNCTX.hlsl" />
+    <FxCompile Include="BasicVS_PBBNCTT.hlsl" />
+    <FxCompile Include="BasicVS_PBBNCTTT.hlsl" />
+    <FxCompile Include="BasicVS_PNCTTT.hlsl" />
+    <FxCompile Include="BasicVS_PBBNCCT.hlsl" />
+    <FxCompile Include="BasicVS_PBBNCCTX.hlsl" />
+    <FxCompile Include="BasicVS_PBBNCTTX.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Quaternion.hlsli" />

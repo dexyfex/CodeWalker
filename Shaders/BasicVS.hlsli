@@ -56,7 +56,10 @@ cbuffer VSInstLocals : register(b6)
     float3 gLodFadeInstRange;          // Offset:  352 Size:    12 [unused]
     uint gUseComputeShaderOutputBuffer;// Offset:  364 Size:     4
 }
-
+cbuffer BoneMatrices : register(b7) //rage_bonemtx
+{
+    row_major float3x4 gBoneMtx[255]; // Offset:    0 Size: 12240
+}
 
 struct VS_OUTPUT
 {
@@ -254,6 +257,35 @@ float3 GetGrassInstancePosition(float3 ipos, float3 vc0, float3 vc1, uint iid)
 }
 
 
+float3x4 BoneMatrix(float4 weights, float4 indices)
+{
+    uint4 binds = (uint4)(indices * 255.001953);
+    float3x4 b0 = gBoneMtx[binds.x];
+    float3x4 b1 = gBoneMtx[binds.y];
+    float3x4 b2 = gBoneMtx[binds.z];
+    float3x4 b3 = gBoneMtx[binds.w];
+    float4 t0 = b0[0]*weights.x + b1[0]*weights.y + b2[0]*weights.z + b3[0]*weights.w;
+    float4 t1 = b0[1]*weights.x + b1[1]*weights.y + b2[1]*weights.z + b3[1]*weights.w;
+    float4 t2 = b0[2]*weights.x + b1[2]*weights.y + b2[2]*weights.z + b3[2]*weights.w;
+    return float3x4(t0, t1, t2);
+}
+float3 BoneTransform(float3 ipos, float3x4 m)
+{
+    float3 r;
+    float4 p = float4(ipos, 1);
+    r.x = dot(m[0], p);
+    r.y = dot(m[1], p);
+    r.z = dot(m[2], p);
+    return r;
+}
+float3 BoneTransformNormal(float3 inorm, float3x4 m)
+{
+    float3 r;
+    r.x = dot(m[0].xyz, inorm);
+    r.y = dot(m[1].xyz, inorm);
+    r.z = dot(m[2].xyz, inorm);
+    return r;
+}
 float3 ModelTransform(float3 ipos, float3 vc0, float3 vc1, uint iid)
 {
     if (IsInstanced)

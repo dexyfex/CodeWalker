@@ -122,6 +122,7 @@ namespace CodeWalker.Rendering
 
         VertexShader basicvspnct;
         VertexShader basicvspnctt;
+        VertexShader basicvspncttt;
         VertexShader basicvspncct;
         VertexShader basicvspncctt;
         VertexShader basicvspnccttt;
@@ -131,6 +132,13 @@ namespace CodeWalker.Rendering
         VertexShader basicvspnccttx;
         VertexShader basicvspnctttx;
         VertexShader basicvspncctttx;
+        VertexShader basicvspbbnct;
+        VertexShader basicvspbbnctx;
+        VertexShader basicvspbbnctt;
+        VertexShader basicvspbbncttt;
+        VertexShader basicvspbbncct;
+        VertexShader basicvspbbncctx;
+        VertexShader basicvspbbncttx;
         VertexShader basicvsbox;
         VertexShader basicvssphere;
         VertexShader basicvscapsule;
@@ -144,6 +152,7 @@ namespace CodeWalker.Rendering
         GpuVarsBuffer<BasicShaderPSGeomVars> PSGeomVars;
         GpuVarsBuffer<BasicShaderInstGlobals> InstGlobalVars;
         GpuVarsBuffer<BasicShaderInstLocals> InstLocalVars;
+        GpuABuffer<Matrix3_s> BoneMatrices;
         SamplerState texsampler;
         SamplerState texsampleranis;
         SamplerState texsamplertnt;
@@ -172,6 +181,7 @@ namespace CodeWalker.Rendering
         {
             byte[] vspnctbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCT.cso");
             byte[] vspncttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCTT.cso");
+            byte[] vspnctttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCTTT.cso");
             byte[] vspncctbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCT.cso");
             byte[] vspnccttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTT.cso");
             byte[] vspncctttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTTT.cso");
@@ -181,6 +191,15 @@ namespace CodeWalker.Rendering
             byte[] vspnccttxbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTTX.cso");
             byte[] vspnctttxbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCTTTX.cso");
             byte[] vspncctttxbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTTTX.cso");
+
+            byte[] vspbbnctbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCT.cso");
+            byte[] vspbbnctxbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCTX.cso");
+            byte[] vspbbncttbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCTT.cso");
+            byte[] vspbbnctttbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCTTT.cso");
+            byte[] vspbbncctbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCCT.cso");
+            byte[] vspbbncctxbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCCTX.cso");
+            byte[] vspbbncttxbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCTTX.cso");
+
             byte[] vsboxbytes = File.ReadAllBytes("Shaders\\BasicVS_Box.cso");
             byte[] vsspherebytes = File.ReadAllBytes("Shaders\\BasicVS_Sphere.cso");
             byte[] vscapsulebytes = File.ReadAllBytes("Shaders\\BasicVS_Capsule.cso");
@@ -189,6 +208,7 @@ namespace CodeWalker.Rendering
 
             basicvspnct = new VertexShader(device, vspnctbytes);
             basicvspnctt = new VertexShader(device, vspncttbytes);
+            basicvspncttt = new VertexShader(device, vspnctttbytes);
             basicvspncct = new VertexShader(device, vspncctbytes);
             basicvspncctt = new VertexShader(device, vspnccttbytes);
             basicvspnccttt = new VertexShader(device, vspncctttbytes);
@@ -198,6 +218,13 @@ namespace CodeWalker.Rendering
             basicvspnccttx = new VertexShader(device, vspnccttxbytes);
             basicvspnctttx = new VertexShader(device, vspnctttxbytes);
             basicvspncctttx = new VertexShader(device, vspncctttxbytes);
+            basicvspbbnct = new VertexShader(device, vspbbnctbytes);
+            basicvspbbnctx = new VertexShader(device, vspbbnctxbytes);
+            basicvspbbnctt = new VertexShader(device, vspbbncttbytes);
+            basicvspbbncttt = new VertexShader(device, vspbbnctttbytes);
+            basicvspbbncct = new VertexShader(device, vspbbncctbytes);
+            basicvspbbncctx = new VertexShader(device, vspbbncctxbytes);
+            basicvspbbncttx = new VertexShader(device, vspbbncttxbytes);
             basicvsbox = new VertexShader(device, vsboxbytes);
             basicvssphere = new VertexShader(device, vsspherebytes);
             basicvscapsule = new VertexShader(device, vscapsulebytes);
@@ -212,49 +239,47 @@ namespace CodeWalker.Rendering
             PSGeomVars = new GpuVarsBuffer<BasicShaderPSGeomVars>(device);
             InstGlobalVars = new GpuVarsBuffer<BasicShaderInstGlobals>(device);
             InstLocalVars = new GpuVarsBuffer<BasicShaderInstLocals>(device);
+            BoneMatrices = new GpuABuffer<Matrix3_s>(device, 255);
 
             InitInstGlobalVars();
 
 
             //supported layouts - requires Position, Normal, Colour, Texcoord
             layouts.Add(VertexType.Default, new InputLayout(device, vspnctbytes, VertexTypeDefault.GetLayout()));
-            layouts.Add(VertexType.PNCH2, new InputLayout(device, vspnctbytes, VertexTypePNCH2.GetLayout()));
-            layouts.Add(VertexType.PBBNCT, new InputLayout(device, vspnctbytes, VertexTypePBBNCT.GetLayout()));
-
+            layouts.Add(VertexType.PNCH2, new InputLayout(device, vspnctbytes, VertexTypePNCH2.GetLayout()));//TODO?
             layouts.Add(VertexType.PNCTT, new InputLayout(device, vspncttbytes, VertexTypePNCTT.GetLayout()));
-            layouts.Add(VertexType.PNCTTT, new InputLayout(device, vspncttbytes, VertexTypePNCTTT.GetLayout()));
-            layouts.Add(VertexType.PBBNCTT, new InputLayout(device, vspncttbytes, VertexTypePBBNCTT.GetLayout()));
-            layouts.Add(VertexType.PBBNCTTT, new InputLayout(device, vspncttbytes, VertexTypePBBNCTTT.GetLayout()));
-
+            layouts.Add(VertexType.PNCTTT, new InputLayout(device, vspnctttbytes, VertexTypePNCTTT.GetLayout()));
             layouts.Add(VertexType.PNCCT, new InputLayout(device, vspncctbytes, VertexTypePNCCT.GetLayout()));
-            layouts.Add(VertexType.PBBNCCT, new InputLayout(device, vspncctbytes, VertexTypePBBNCCT.GetLayout()));
-
             layouts.Add(VertexType.PNCCTT, new InputLayout(device, vspnccttbytes, VertexTypePNCCTT.GetLayout()));
-
-            layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vspncctttbytes, VertexTypePNCCTTTT.GetLayout()));
+            layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vspncctttbytes, VertexTypePNCCTTTT.GetLayout()));//TODO..?
 
 
 
             //normalmap layouts - requires Position, Normal, Colour, Texcoord, Tangent (X)
             layouts.Add(VertexType.DefaultEx, new InputLayout(device, vspnctxbytes, VertexTypeDefaultEx.GetLayout()));
             layouts.Add(VertexType.PCCH2H4, new InputLayout(device, vspnctxbytes, VertexTypePCCH2H4.GetLayout()));
-            layouts.Add(VertexType.PBBNCTX, new InputLayout(device, vspnctxbytes, VertexTypePBBNCTX.GetLayout()));
-
             layouts.Add(VertexType.PNCCTX, new InputLayout(device, vspncctxbytes, VertexTypePNCCTX.GetLayout()));
-            layouts.Add(VertexType.PBBNCCTX, new InputLayout(device, vspncctxbytes, VertexTypePBBNCCTX.GetLayout()));
-
             layouts.Add(VertexType.PNCTTX, new InputLayout(device, vspncttxbytes, VertexTypePNCTTX.GetLayout()));
-            layouts.Add(VertexType.PBBNCTTX, new InputLayout(device, vspncttxbytes, VertexTypePBBNCTTX.GetLayout()));
-            layouts.Add(VertexType.PBBNCTTTX, new InputLayout(device, vspncttxbytes, VertexTypePBBNCTTTX.GetLayout()));
-
             layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vspnccttxbytes, VertexTypePNCCTTX.GetLayout()));
             layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vspnccttxbytes, VertexTypePNCCTTX_2.GetLayout()));
             layouts.Add(VertexType.PNCTTTX, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTX.GetLayout()));
             layouts.Add(VertexType.PNCTTTX_2, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTX_2.GetLayout()));
             layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTX_3.GetLayout()));
-            layouts.Add(VertexType.PNCTTTTX, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTTX.GetLayout()));
+            layouts.Add(VertexType.PNCTTTTX, new InputLayout(device, vspnctttxbytes, VertexTypePNCTTTTX.GetLayout()));//TODO
             layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vspncctttxbytes, VertexTypePNCCTTTX.GetLayout()));
-            layouts.Add(VertexType.PBBNCCTTX, new InputLayout(device, vspnccttxbytes, VertexTypePBBNCCTTX.GetLayout()));
+
+
+
+            //skinned layouts
+            layouts.Add(VertexType.PBBNCT, new InputLayout(device, vspbbnctbytes, VertexTypePBBNCT.GetLayout()));
+            layouts.Add(VertexType.PBBNCTX, new InputLayout(device, vspbbnctxbytes, VertexTypePBBNCTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCTT, new InputLayout(device, vspbbncttbytes, VertexTypePBBNCTT.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTT, new InputLayout(device, vspbbnctttbytes, VertexTypePBBNCTTT.GetLayout()));
+            layouts.Add(VertexType.PBBNCCT, new InputLayout(device, vspbbncctbytes, VertexTypePBBNCCT.GetLayout()));
+            layouts.Add(VertexType.PBBNCCTX, new InputLayout(device, vspbbncctxbytes, VertexTypePBBNCCTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTX, new InputLayout(device, vspbbncttxbytes, VertexTypePBBNCTTX.GetLayout()));
+            layouts.Add(VertexType.PBBNCTTTX, new InputLayout(device, vspbbncttxbytes, VertexTypePBBNCTTTX.GetLayout()));//TODO
+            layouts.Add(VertexType.PBBNCCTTX, new InputLayout(device, vspbbncctxbytes, VertexTypePBBNCCTTX.GetLayout()));//TODO
 
 
 
@@ -366,17 +391,15 @@ namespace CodeWalker.Rendering
             {
                 case VertexType.Default:
                 case VertexType.PNCH2:
-                case VertexType.PBBNCT:
                     vs = basicvspnct;
                     break;
                 case VertexType.PNCTT:
-                case VertexType.PNCTTT:
-                case VertexType.PBBNCTT:
-                case VertexType.PBBNCTTT:
                     vs = basicvspnctt;
                     break;
+                case VertexType.PNCTTT:
+                    vs = basicvspncttt;
+                    break;
                 case VertexType.PNCCT:
-                case VertexType.PBBNCCT:
                     vs = basicvspncct;
                     break;
                 case VertexType.PNCCTT://not used?
@@ -387,23 +410,16 @@ namespace CodeWalker.Rendering
                     break;
                 case VertexType.DefaultEx:
                 case VertexType.PCCH2H4:
-                case VertexType.PBBNCTX:
                     vs = basicvspnctx;
                     break;
-
-                case VertexType.PBBNCCTX:
                 case VertexType.PNCCTX:
                     vs = basicvspncctx;
                     break;
-
                 case VertexType.PNCTTX:
-                case VertexType.PBBNCTTX:
                     vs = basicvspncttx;
                     break;
-
                 case VertexType.PNCCTTX://not used?
                 case VertexType.PNCCTTX_2://not used?
-                case VertexType.PBBNCCTTX://not used?
                     vs = basicvspnccttx;
                     break;
 
@@ -411,12 +427,39 @@ namespace CodeWalker.Rendering
                 case VertexType.PNCTTTX_2:
                 case VertexType.PNCTTTX_3:
                 case VertexType.PNCTTTTX: //not using last texcoords!
-                case VertexType.PBBNCTTTX:
                     vs = basicvspnctttx;
                     break;
 
                 case VertexType.PNCCTTTX://not used?
                     vs = basicvspncctttx;
+                    break;
+
+                case VertexType.PBBNCT:
+                    vs = basicvspbbnct;
+                    break;
+                case VertexType.PBBNCTT:
+                    vs = basicvspbbnctt;
+                    break;
+                case VertexType.PBBNCTTT:
+                    vs = basicvspbbncttt;
+                    break;
+                case VertexType.PBBNCCT:
+                    vs = basicvspbbncct;
+                    break;
+                case VertexType.PBBNCTX:
+                    vs = basicvspbbnctx;
+                    break;
+                case VertexType.PBBNCCTX:
+                    vs = basicvspbbncctx;
+                    break;
+                case VertexType.PBBNCTTX:
+                    vs = basicvspbbncttx;
+                    break;
+                case VertexType.PBBNCCTTX://not used?
+                    vs = basicvspbbncctx;//TODO
+                    break;
+                case VertexType.PBBNCTTTX:
+                    vs = basicvspbbncttx;//TODO
                     break;
 
                 default:
@@ -514,6 +557,14 @@ namespace CodeWalker.Rendering
 
         public override void SetModelVars(DeviceContext context, RenderableModel model)
         {
+            if (((model.SkeletonBinding >> 8) & 0xFF) > 0)
+            {
+                if (model.Owner.BoneTransforms != null)
+                {
+                    SetBoneMatrices(context, model.Owner.BoneTransforms);
+                }
+            }
+
             if (!model.UseTransform) return;
             VSModelVars.Vars.Transform = Matrix.Transpose(model.Transform);
             VSModelVars.Update(context);
@@ -730,6 +781,12 @@ namespace CodeWalker.Rendering
             }
         }
 
+        public void SetBoneMatrices(DeviceContext context, Matrix3_s[] matrices)
+        {
+            BoneMatrices.Update(context, matrices);
+            BoneMatrices.SetVSCBuffer(context, 7);
+        }
+
 
         public void SetInstanceVars(DeviceContext context, RenderableInstanceBatch batch)
         {
@@ -920,10 +977,12 @@ namespace CodeWalker.Rendering
             PSGeomVars.Dispose();
             InstGlobalVars.Dispose();
             InstLocalVars.Dispose();
+            BoneMatrices.Dispose();
 
             basicps.Dispose();
             basicvspnct.Dispose();
             basicvspnctt.Dispose();
+            basicvspncttt.Dispose();
             basicvspncct.Dispose();
             basicvspncctt.Dispose();
             basicvspnccttt.Dispose();
@@ -933,6 +992,13 @@ namespace CodeWalker.Rendering
             basicvspnccttx.Dispose();
             basicvspnctttx.Dispose();
             basicvspncctttx.Dispose();
+            basicvspbbnct.Dispose();
+            basicvspbbnctx.Dispose();
+            basicvspbbnctt.Dispose();
+            basicvspbbncttt.Dispose();
+            basicvspbbncct.Dispose();
+            basicvspbbncctx.Dispose();
+            basicvspbbncttx.Dispose();
             basicvsbox.Dispose();
             basicvssphere.Dispose();
             basicvscapsule.Dispose();
