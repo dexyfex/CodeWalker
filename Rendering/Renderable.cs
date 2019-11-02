@@ -75,9 +75,6 @@ namespace CodeWalker.Rendering
         public double CurrentAnimTime = 0;
         public YcdFile ClipDict;
         public ClipMapEntry ClipMapEntry;
-        public ClipMapEntry ClipMapEntryUV0;
-        public ClipMapEntry ClipMapEntryUV1;
-
         public Dictionary<ushort, RenderableModel> ModelBoneLinks;
 
 
@@ -359,16 +356,23 @@ namespace CodeWalker.Rendering
 
             if (ClipMapEntry != null)
             {
-                UpdateAnim(ClipMapEntry); //animate skeleton/models here
+                UpdateAnim(ClipMapEntry); //animate skeleton/models
             }
-            if (ClipMapEntryUV0 != null)
+
+            foreach (var model in HDModels)
             {
-                UpdateAnimUV(ClipMapEntryUV0); //animate UVs
+                if (model == null) continue;
+                foreach (var geom in model.Geometries)
+                {
+                    if (geom == null) continue;
+                    if (geom.ClipMapEntryUV != null)
+                    {
+                        UpdateAnimUV(geom.ClipMapEntryUV, geom); //animate UVs
+                    }
+                }
             }
-            if (ClipMapEntryUV1 != null)
-            {
-                UpdateAnimUV(ClipMapEntryUV1); //animate UVs
-            }
+
+
         }
         private void UpdateAnim(ClipMapEntry cme)
         {
@@ -400,6 +404,8 @@ namespace CodeWalker.Rendering
             var bones = skel?.Bones;
             if (bones == null)
             { return; }
+
+            //TODO: fragments! see eg.  p_oil_pjack_03_s
 
             for (int i = 0; i < anim.BoneIds.data_items.Length; i++)
             {
@@ -465,7 +471,7 @@ namespace CodeWalker.Rendering
 
 
         }
-        private void UpdateAnimUV(ClipMapEntry cme)
+        private void UpdateAnimUV(ClipMapEntry cme, RenderableGeometry rgeom = null)
         {
             if (cme.Next != null) //is this a "chain" of clips to play..?
             {
@@ -520,16 +526,24 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            foreach (var model in HDModels) //TODO: figure out which models/geometries this should be applying to!
+            if (rgeom != null)
             {
-                if (model == null) continue;
-                foreach (var geom in model.Geometries)
+                rgeom.globalAnimUV0 = globalAnimUV0;
+                rgeom.globalAnimUV1 = globalAnimUV1;
+            }
+            else
+            {
+                foreach (var model in HDModels) //TODO: figure out which models/geometries this should be applying to!
                 {
-                    if (geom == null) continue;
-                    if (geom.globalAnimUVEnable)
+                    if (model == null) continue;
+                    foreach (var geom in model.Geometries)
                     {
-                        geom.globalAnimUV0 = globalAnimUV0;
-                        geom.globalAnimUV1 = globalAnimUV1;
+                        if (geom == null) continue;
+                        if (geom.globalAnimUVEnable)
+                        {
+                            geom.globalAnimUV0 = globalAnimUV0;
+                            geom.globalAnimUV1 = globalAnimUV1;
+                        }
                     }
                 }
             }
@@ -640,7 +654,7 @@ namespace CodeWalker.Rendering
         public float HeightOpacity { get; set; } = 0; //for terrainfoam
         public bool HDTextureEnable = true;
         public bool globalAnimUVEnable = false;
-
+        public ClipMapEntry ClipMapEntryUV = null;
 
         public static ShaderParamNames[] GetTextureSamplerList()
         {

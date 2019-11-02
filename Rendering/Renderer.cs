@@ -2793,11 +2793,23 @@ namespace CodeWalker.Rendering
                 {
                     rndbl.ClipDict = ycd;
                     MetaHash ahash = arche.Hash;
-                    MetaHash ahashuv0 = ahash + 1; //this goes to at least uv5! (from uv0) - see hw1_09.ycd
-                    MetaHash ahashuv1 = ahash + 2;
                     if (ycd.ClipMap.TryGetValue(ahash, out rndbl.ClipMapEntry)) rndbl.HasAnims = true;
-                    if (ycd.ClipMap.TryGetValue(ahashuv0, out rndbl.ClipMapEntryUV0)) rndbl.HasAnims = true;
-                    if (ycd.ClipMap.TryGetValue(ahashuv1, out rndbl.ClipMapEntryUV1)) rndbl.HasAnims = true;
+
+                    uint cmeindex = 1;
+                    foreach (var model in rndbl.HDModels)
+                    {
+                        if (model == null) continue;
+                        foreach (var geom in model.Geometries)
+                        {
+                            if (geom == null) continue;
+                            if (geom.globalAnimUVEnable)
+                            {
+                                MetaHash cmehash = ahash + cmeindex; //this goes to at least uv5! (from uv0) - see hw1_09.ycd
+                                if (ycd.ClipMap.TryGetValue(cmehash, out geom.ClipMapEntryUV)) rndbl.HasAnims = true;
+                                cmeindex++;
+                            }
+                        }
+                    }
                 }
             }
 
