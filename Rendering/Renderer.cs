@@ -1119,6 +1119,8 @@ namespace CodeWalker.Rendering
                 Skeleton skeleton = drawable?.Skeleton;
                 if (skeleton == null) continue;
 
+                Vector3 campos = camera.Position - (entity?.Position ?? Vector3.Zero);
+
                 var pinds = skeleton.ParentIndices;
                 var bones = skeleton.Bones;
                 if ((pinds == null) || (bones == null)) continue;
@@ -1145,8 +1147,7 @@ namespace CodeWalker.Rendering
                     Vector3 lbeg = Vector3.Zero;
                     Vector3 lend = bone.AnimTranslation;// bone.Rotation.Multiply();
 
-
-                    float starsize = (bone.AnimTransform.TranslationVector-camera.Position).Length() * 0.011f;
+                    float starsize = (bone.AnimTransform.TranslationVector-campos).Length() * 0.011f;
                     Vector3[] starverts0 = { Vector3.UnitX * starsize, Vector3.UnitY * starsize, Vector3.UnitZ * starsize };
                     Vector3[] starverts1 = { Vector3.UnitX * -starsize, Vector3.UnitY * -starsize, Vector3.UnitZ * -starsize };
                     for (int j = 0; j < 3; j++) starverts0[j] = bone.AnimTransform.MultiplyW(starverts0[j]);
