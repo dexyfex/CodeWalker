@@ -1102,12 +1102,15 @@ namespace CodeWalker.Rendering
 
             skeletonLineVerts.Clear();
 
+            const uint cred = 4278190335;// (uint)new Color4(1.0f, 0.0f, 0.0f, 1.0f).ToRgba();
             const uint cgrn = 4278255360;// (uint)new Color4(0.0f, 1.0f, 0.0f, 1.0f).ToRgba();
             const uint cblu = 4294901760;// (uint)new Color4(0.0f, 0.0f, 1.0f, 1.0f).ToRgba();
-            VertexTypePC v1 = new VertexTypePC();
-            VertexTypePC v2 = new VertexTypePC();
-            v1.Colour = cgrn;
-            v2.Colour = cblu;
+            VertexTypePC vr = new VertexTypePC();
+            VertexTypePC vg = new VertexTypePC();
+            VertexTypePC vb = new VertexTypePC();
+            vr.Colour = cred;
+            vg.Colour = cgrn;
+            vb.Colour = cblu;
 
             foreach (var item in renderskeletonlist)
             {
@@ -1127,7 +1130,6 @@ namespace CodeWalker.Rendering
                     var pind = pinds[i];
                     var bone = bones[i];
                     var pbone = bone.Parent;
-                    if (pbone == null) continue; //nothing to draw for the root bone
 
                     if (xforms != null)//how to use xforms? bind pose?
                     {
@@ -1142,24 +1144,44 @@ namespace CodeWalker.Rendering
                     //draw line from bone's position to parent position...
                     Vector3 lbeg = Vector3.Zero;
                     Vector3 lend = bone.AnimTranslation;// bone.Rotation.Multiply();
-                    while (pbone != null)
-                    {
-                        lbeg = pbone.AnimRotation.Multiply(lbeg) + pbone.AnimTranslation;
-                        lend = pbone.AnimRotation.Multiply(lend) + pbone.AnimTranslation;
-                        pbone = pbone.Parent;
-                    }
 
+
+                    float starsize = (bone.AnimTransform.TranslationVector-camera.Position).Length() * 0.011f;
+                    Vector3[] starverts0 = { Vector3.UnitX * starsize, Vector3.UnitY * starsize, Vector3.UnitZ * starsize };
+                    Vector3[] starverts1 = { Vector3.UnitX * -starsize, Vector3.UnitY * -starsize, Vector3.UnitZ * -starsize };
+                    for (int j = 0; j < 3; j++) starverts0[j] = bone.AnimTransform.MultiplyW(starverts0[j]);
+                    for (int j = 0; j < 3; j++) starverts1[j] = bone.AnimTransform.MultiplyW(starverts1[j]);
+
+                    if (pbone != null)
+                    {
+                        lbeg = pbone.AnimTransform.MultiplyW(lbeg);
+                        lend = pbone.AnimTransform.MultiplyW(lend);
+                    }
 
                     if (entity != null)
                     {
                         lbeg = entity.Position + entity.Orientation.Multiply(lbeg * entity.Scale);
                         lend = entity.Position + entity.Orientation.Multiply(lend * entity.Scale);
+
+                        for (int j = 0; j < 3; j++) starverts0[j] = entity.Position + entity.Orientation.Multiply(starverts0[j] * entity.Scale);
+                        for (int j = 0; j < 3; j++) starverts1[j] = entity.Position + entity.Orientation.Multiply(starverts1[j] * entity.Scale);
                     }
 
-                    v1.Position = lbeg;
-                    v2.Position = lend;
-                    skeletonLineVerts.Add(v1);
-                    skeletonLineVerts.Add(v2);
+                    vr.Position = starverts0[0]; skeletonLineVerts.Add(vr);
+                    vr.Position = starverts1[0]; skeletonLineVerts.Add(vr);
+                    vg.Position = starverts0[1]; skeletonLineVerts.Add(vg);
+                    vg.Position = starverts1[1]; skeletonLineVerts.Add(vg);
+                    vb.Position = starverts0[2]; skeletonLineVerts.Add(vb);
+                    vb.Position = starverts1[2]; skeletonLineVerts.Add(vb);
+
+
+                    if (pbone != null) //don't draw the origin to root bone line
+                    {
+                        vg.Position = lbeg;
+                        vb.Position = lend;
+                        skeletonLineVerts.Add(vg);
+                        skeletonLineVerts.Add(vb);
+                    }
 
                 }
 

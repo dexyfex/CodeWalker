@@ -173,7 +173,8 @@ namespace CodeWalker.Rendering
         public ShaderParamNames RenderTextureSampler = ShaderParamNames.DiffuseSampler;
         public bool SpecularEnable = true;
 
-
+        Matrix3_s[] defaultBoneMatrices;
+        bool defaultBoneMatricesBound = false;
 
         private Dictionary<VertexType, InputLayout> layouts = new Dictionary<VertexType, InputLayout>();
 
@@ -276,11 +277,13 @@ namespace CodeWalker.Rendering
             layouts.Add(VertexType.PBBNCTT, new InputLayout(device, vspbbncttbytes, VertexTypePBBNCTT.GetLayout()));
             layouts.Add(VertexType.PBBNCTTT, new InputLayout(device, vspbbnctttbytes, VertexTypePBBNCTTT.GetLayout()));
             layouts.Add(VertexType.PBBNCCT, new InputLayout(device, vspbbncctbytes, VertexTypePBBNCCT.GetLayout()));
+            layouts.Add(VertexType.PBBNCCTT, new InputLayout(device, vspbbncctbytes, VertexTypePBBNCCTT.GetLayout()));//TODO
             layouts.Add(VertexType.PBBNCCTX, new InputLayout(device, vspbbncctxbytes, VertexTypePBBNCCTX.GetLayout()));
             layouts.Add(VertexType.PBBNCTTX, new InputLayout(device, vspbbncttxbytes, VertexTypePBBNCTTX.GetLayout()));
             layouts.Add(VertexType.PBBNCTTTX, new InputLayout(device, vspbbncttxbytes, VertexTypePBBNCTTTX.GetLayout()));//TODO
             layouts.Add(VertexType.PBBNCCTTX, new InputLayout(device, vspbbncctxbytes, VertexTypePBBNCCTTX.GetLayout()));//TODO
-
+            //PBBCCT todo
+            //PBBNC todo
 
 
 
@@ -343,6 +346,14 @@ namespace CodeWalker.Rendering
             sphere = new UnitSphere(device, vsspherebytes, 4);
             capsule = new UnitCapsule(device, vscapsulebytes, 4);
             cylinder = new UnitCylinder(device, vscylinderbytes, 8);
+
+            defaultBoneMatrices = new Matrix3_s[255];
+            for (int i = 0; i < 255; i++)
+            {
+                defaultBoneMatrices[i].Row1 = Vector4.UnitX;
+                defaultBoneMatrices[i].Row2 = Vector4.UnitY;
+                defaultBoneMatrices[i].Row3 = Vector4.UnitZ;
+            }
         }
 
         private void InitInstGlobalVars()
@@ -444,6 +455,9 @@ namespace CodeWalker.Rendering
                     vs = basicvspbbncttt;
                     break;
                 case VertexType.PBBNCCT:
+                    vs = basicvspbbncct;
+                    break;
+                case VertexType.PBBNCCTT://todo
                     vs = basicvspbbncct;
                     break;
                 case VertexType.PBBNCTX:
@@ -557,12 +571,15 @@ namespace CodeWalker.Rendering
 
         public override void SetModelVars(DeviceContext context, RenderableModel model)
         {
-            if (((model.SkeletonBinding >> 8) & 0xFF) > 0)
+            if (model.Owner.BoneTransforms != null)
             {
-                if (model.Owner.BoneTransforms != null)
-                {
-                    SetBoneMatrices(context, model.Owner.BoneTransforms);
-                }
+                SetBoneMatrices(context, model.Owner.BoneTransforms);
+                defaultBoneMatricesBound = false;
+            }
+            else if (!defaultBoneMatricesBound)
+            {
+                SetBoneMatrices(context, defaultBoneMatrices);
+                defaultBoneMatricesBound = true;
             }
 
             if (!model.UseTransform) return;

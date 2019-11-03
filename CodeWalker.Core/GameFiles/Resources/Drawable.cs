@@ -622,6 +622,11 @@ namespace CodeWalker.GameFiles
                 {
                     var bone = Bones[i];
                     BonesMap[bone.Id] = bone;
+
+                    bone.BindTransformInv = (i < TransformationsInverted?.Length) ? TransformationsInverted[i] : Matrix.Invert(bone.AnimTransform);
+                    bone.BindTransformInv.M44 = 1.0f;
+
+                    bone.UpdateAnimTransform();
                 }
             }
 
@@ -776,9 +781,7 @@ namespace CodeWalker.GameFiles
         public Quaternion Rotation { get; set; }
         public Vector3 Translation { get; set; }
         public uint Unknown_1Ch { get; set; } // 0x00000000 RHW?
-        public float ScaleX { get; set; } // 1.0
-        public float ScaleY { get; set; } // 1.0
-        public float ScaleZ { get; set; } // 1.0
+        public Vector3 Scale { get; set; }
         public float Unknown_2Ch { get; set; } // 1.0  RHW?
         public ushort NextSiblingIndex { get; set; } //limb end index? IK chain?
         public short ParentIndex { get; set; }
@@ -800,10 +803,12 @@ namespace CodeWalker.GameFiles
 
 
         //used by CW for animating skeletons.
-        public Quaternion AnimRotation;
-        public Vector3 AnimTranslation;
-        public Matrix AnimTransform;
-
+        public Quaternion AnimRotation;//relative to parent
+        public Vector3 AnimTranslation;//relative to parent
+        public Vector3 AnimScale;
+        public Matrix AnimTransform;//absolute world transform, animated
+        public Matrix BindTransformInv;//inverse of bind pose transform
+        public Matrix SkinTransform;//transform to use for skin meshes
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -811,19 +816,10 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            //this.RotationX = reader.ReadSingle();
-            //this.RotationY = reader.ReadSingle();
-            //this.RotationZ = reader.ReadSingle();
-            //this.RotationW = reader.ReadSingle();
             this.Rotation = new Quaternion(reader.ReadVector4());
             this.Translation = reader.ReadVector3();
-            //this.TranslationX = reader.ReadSingle();
-            //this.TranslationY = reader.ReadSingle();
-            //this.TranslationZ = reader.ReadSingle();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.ScaleX = reader.ReadSingle();
-            this.ScaleY = reader.ReadSingle();
-            this.ScaleZ = reader.ReadSingle();
+            this.Scale = reader.ReadVector3();
             this.Unknown_2Ch = reader.ReadSingle();
             this.NextSiblingIndex = reader.ReadUInt16();
             this.ParentIndex = reader.ReadInt16();
@@ -844,7 +840,7 @@ namespace CodeWalker.GameFiles
 
             AnimRotation = Rotation;
             AnimTranslation = Translation;
-            AnimTransform = Matrix.AffineTransformation(1.0f, AnimRotation, AnimTranslation);
+            AnimScale = Scale;
         }
 
         /// <summary>
@@ -859,9 +855,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Rotation.ToVector4());
             writer.Write(this.Translation);
             writer.Write(this.Unknown_1Ch);
-            writer.Write(this.ScaleX);
-            writer.Write(this.ScaleY);
-            writer.Write(this.ScaleZ);
+            writer.Write(this.Scale);
             writer.Write(this.Unknown_2Ch);
             writer.Write(this.NextSiblingIndex);
             writer.Write(this.ParentIndex);
@@ -892,6 +886,26 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             return Id.ToString() + ": " + Name;
+        }
+
+
+        public void UpdateAnimTransform()
+        {
+            //AnimTransform = Matrix.AffineTransformation(1.0f, AnimRotation, AnimTranslation);//(local transform)
+            var pos = AnimTranslation;
+            var ori = AnimRotation;
+            var sca = AnimScale;
+            var pbone = Parent;
+            while (pbone != null)
+            {
+                pos = pbone.AnimRotation.Multiply(pos) + pbone.AnimTranslation;
+                ori = pbone.AnimRotation * ori;
+                pbone = pbone.Parent;
+            }
+            AnimTransform = Matrix.AffineTransformation(1.0f, ori, pos);//(global transform)
+            AnimTransform.ScaleVector *= sca;
+            SkinTransform = BindTransformInv * AnimTransform;
+            //SkinTransform = Matrix.Identity;//(for testing)
         }
     }
 

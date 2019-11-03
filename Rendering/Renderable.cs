@@ -78,7 +78,7 @@ namespace CodeWalker.Rendering
         public Dictionary<ushort, RenderableModel> ModelBoneLinks;
 
         public Matrix3_s[] BoneTransforms;
-
+        public List<Bone> Bones;
 
         public override void Init(DrawableBase drawable)
         {
@@ -238,6 +238,7 @@ namespace CodeWalker.Rendering
             HasSkeleton = hasskeleton;
             HasTransforms = hastransforms;
 
+            Bones = skeleton?.Bones?.Data;
 
 
             //calculate transforms for the models if there are any. (TODO: move this to a method for re-use...)
@@ -249,7 +250,7 @@ namespace CodeWalker.Rendering
                 if (hastransforms)
                 {
 
-                    int boneidx = (int)((model.SkeletonBinding >> 24) & 0xFF);
+                    int boneidx = model.BoneIndex;
 
                     Matrix trans = (boneidx < modeltransforms.Length) ? modeltransforms[boneidx] : Matrix.Identity;
                     Bone bone = (hasbones && (boneidx < bones.Count)) ? bones[boneidx] : null;
@@ -289,7 +290,7 @@ namespace CodeWalker.Rendering
                         }
                     }
 
-                    if (((model.SkeletonBinding >> 8) & 0xFF) > 0) //skin mesh?
+                    if (model.IsSkinMesh)
                     {
                         model.Transform = Matrix.Identity;
                     }
@@ -304,22 +305,7 @@ namespace CodeWalker.Rendering
 
 
 
-            //populate the bonetransforms array
-            Matrix[] bonetrans = (fragtransforms != null) ? fragtransforms : (modeltransforms != null) ? modeltransforms : null;
-            if (bonetrans != null)
-            {
-                BoneTransforms = new Matrix3_s[bonetrans.Length];
-                for (int i = 0; i < bonetrans.Length; i++)
-                {
-                    Matrix b = bonetrans[i];
-                    Matrix3_s bt = new Matrix3_s();
-                    bt.Row1 = b.Row1;
-                    bt.Row2 = b.Row2;
-                    bt.Row3 = b.Row3;
-                    BoneTransforms[i] = bt;
-                }
-            }
-
+            UpdateBoneTransforms();
 
         }
 
@@ -369,6 +355,27 @@ namespace CodeWalker.Rendering
         public override string ToString()
         {
             return Key.ToString();
+        }
+
+
+
+        private void UpdateBoneTransforms()
+        {
+            if (Bones == null) return;
+            if ((BoneTransforms == null) || (BoneTransforms.Length != Bones.Count))
+            {
+                BoneTransforms = new Matrix3_s[Bones.Count];
+            }
+            for (int i = 0; i < Bones.Count; i++)
+            {
+                var bone = Bones[i];
+                Matrix b = bone.SkinTransform;
+                Matrix3_s bt = new Matrix3_s();
+                bt.Row1 = b.Column1;
+                bt.Row2 = b.Column2;
+                bt.Row3 = b.Column3;
+                BoneTransforms[i] = bt;
+            }
         }
 
 
@@ -469,31 +476,25 @@ namespace CodeWalker.Rendering
             for (int i = 0; i < bones.Count; i++)
             {
                 var bone = bones[i];
-                var pos = bone.AnimTranslation;
-                var ori = bone.AnimRotation;
-                var pbone = bone.Parent;
-                while (pbone != null)
-                {
-                    pos = pbone.AnimRotation.Multiply(pos) + pbone.AnimTranslation;
-                    ori = pbone.AnimRotation * ori;
-                    pbone = pbone.Parent;
-                }
-                bone.AnimTransform = Matrix.AffineTransformation(1.0f, ori, pos);
+                bone.UpdateAnimTransform();
 
 
                 //update model's transform from animated bone
                 RenderableModel bmodel = null;
                 ModelBoneLinks?.TryGetValue(bone.Id, out bmodel);
+
+
                 if (bmodel == null)
                 { continue; }
-
-                if (((bmodel.SkeletonBinding >> 8) & 0xFF) > 0) //skin mesh? //TODO: see eg.  p_oil_pjack_03_s
+                if (bmodel.IsSkinMesh) //don't transform model for skin mesh
                 { continue; }
 
                 bmodel.Transform = bone.AnimTransform;
 
             }
 
+
+            UpdateBoneTransforms();
 
         }
         private void UpdateAnimUV(ClipMapEntry cme, RenderableGeometry rgeom = null)
@@ -591,11 +592,16 @@ namespace CodeWalker.Rendering
         public bool UseTransform;
         public Matrix Transform;
 
+        public int BoneIndex = 0;
+        public bool IsSkinMesh = false;
+
         public void Init(DrawableModel dmodel)
         {
             SkeletonBinding = dmodel.SkeletonBinding;//4th byte is bone index, 2nd byte for skin meshes
             RenderMaskFlags = dmodel.RenderMaskFlags; //only the first byte seems be related to this
 
+            IsSkinMesh = ((SkeletonBinding >> 8) & 0xFF) > 0;
+            BoneIndex = (int)((SkeletonBinding >> 24) & 0xFF);
 
             DrawableModel = dmodel;
             long geomcount = dmodel.Geometries.data_items.Length;
