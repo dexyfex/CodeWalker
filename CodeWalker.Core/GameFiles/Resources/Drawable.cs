@@ -623,10 +623,10 @@ namespace CodeWalker.GameFiles
                     var bone = Bones[i];
                     BonesMap[bone.Id] = bone;
 
+                    bone.UpdateAnimTransform();
                     bone.BindTransformInv = (i < TransformationsInverted?.Length) ? TransformationsInverted[i] : Matrix.Invert(bone.AnimTransform);
                     bone.BindTransformInv.M44 = 1.0f;
-
-                    bone.UpdateAnimTransform();
+                    bone.UpdateSkinTransform();
                 }
             }
 
@@ -904,6 +904,9 @@ namespace CodeWalker.GameFiles
             }
             AnimTransform = Matrix.AffineTransformation(1.0f, ori, pos);//(global transform)
             AnimTransform.ScaleVector *= sca;
+        }
+        public void UpdateSkinTransform()
+        {
             SkinTransform = BindTransformInv * AnimTransform;
             //SkinTransform = Matrix.Identity;//(for testing)
         }

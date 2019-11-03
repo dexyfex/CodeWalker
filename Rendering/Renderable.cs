@@ -477,7 +477,7 @@ namespace CodeWalker.Rendering
             {
                 var bone = bones[i];
                 bone.UpdateAnimTransform();
-
+                bone.UpdateSkinTransform();
 
                 //update model's transform from animated bone
                 RenderableModel bmodel = null;
