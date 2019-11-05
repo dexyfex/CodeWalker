@@ -88,7 +88,7 @@ namespace CodeWalker.Rendering
             PSEntityVars = new GpuVarsBuffer<TreesLodShaderPSEntityVars>(device);
 
             //layouts.Add(VertexType.PNCCT, new InputLayout(device, vsbytes, VertexTypePNCCT.GetLayout()));
-            layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vsbytes, VertexTypePNCCTTTT.GetLayout()));
+            layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCCTTTT)));
 
 
 

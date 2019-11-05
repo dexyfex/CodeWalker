@@ -97,35 +97,35 @@ namespace CodeWalker.Rendering
 
 
             //supported layouts - requires Position, Normal, Colour, Texcoord
-            layouts.Add(VertexType.Default, new InputLayout(device, vsbytes, VertexTypeDefault.GetLayout()));
-            layouts.Add(VertexType.DefaultEx, new InputLayout(device, vsbytes, VertexTypeDefaultEx.GetLayout()));
-            layouts.Add(VertexType.PNCCT, new InputLayout(device, vsbytes, VertexTypePNCCT.GetLayout()));
-            layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vsbytes, VertexTypePNCCTTTT.GetLayout()));
-            layouts.Add(VertexType.PNCTTTX, new InputLayout(device, vsbytes, VertexTypePNCTTTX.GetLayout()));
-            layouts.Add(VertexType.PNCTTTX_2, new InputLayout(device, vsbytes, VertexTypePNCTTTX_2.GetLayout()));
-            layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vsbytes, VertexTypePNCTTTX_3.GetLayout()));
-            layouts.Add(VertexType.PNCTTTTX, new InputLayout(device, vsbytes, VertexTypePNCTTTTX.GetLayout()));
-            layouts.Add(VertexType.PNCTTX, new InputLayout(device, vsbytes, VertexTypePNCTTX.GetLayout()));
-            layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vsbytes, VertexTypePNCCTTX.GetLayout()));
-            layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vsbytes, VertexTypePNCCTTX_2.GetLayout()));
-            layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vsbytes, VertexTypePNCCTTTX.GetLayout()));
-            layouts.Add(VertexType.PNCCTT, new InputLayout(device, vsbytes, VertexTypePNCCTT.GetLayout()));
-            layouts.Add(VertexType.PNCCTX, new InputLayout(device, vsbytes, VertexTypePNCCTX.GetLayout()));
-            layouts.Add(VertexType.PNCH2, new InputLayout(device, vsbytes, VertexTypePNCH2.GetLayout()));
-            layouts.Add(VertexType.PCCH2H4, new InputLayout(device, vsbytes, VertexTypePCCH2H4.GetLayout()));
-            layouts.Add(VertexType.PNCTT, new InputLayout(device, vsbytes, VertexTypePNCTT.GetLayout()));
-            layouts.Add(VertexType.PNCTTT, new InputLayout(device, vsbytes, VertexTypePNCTTT.GetLayout()));
+            layouts.Add(VertexType.Default, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.Default)));
+            layouts.Add(VertexType.DefaultEx, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.DefaultEx)));
+            layouts.Add(VertexType.PNCCT, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCCT)));
+            layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCCTTTT)));
+            layouts.Add(VertexType.PNCTTTX, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCTTTX)));
+            layouts.Add(VertexType.PNCTTTX_2, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCTTTX_2)));
+            layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCTTTX_3)));
+            layouts.Add(VertexType.PNCTTTTX, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCTTTTX)));
+            layouts.Add(VertexType.PNCTTX, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCTTX)));
+            layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCCTTX)));
+            layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCCTTX_2)));
+            layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCCTTTX)));
+            layouts.Add(VertexType.PNCCTT, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCCTT)));
+            layouts.Add(VertexType.PNCCTX, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCCTX)));
+            layouts.Add(VertexType.PNCH2, new InputLayout(device, vsbytes, GTA5_VertexType_3.GetLayout((uint)VertexType.PNCH2)));
+            layouts.Add(VertexType.PCCH2H4, new InputLayout(device, vsbytes, GTA5_VertexType_2.GetLayout((uint)VertexType.PCCH2H4)));
+            layouts.Add(VertexType.PNCTT, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCTT)));
+            layouts.Add(VertexType.PNCTTT, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PNCTTT)));
 
-            layouts.Add(VertexType.PBBNCT, new InputLayout(device, vssbytes, VertexTypePBBNCT.GetLayout()));
-            layouts.Add(VertexType.PBBNCTX, new InputLayout(device, vssbytes, VertexTypePBBNCTX.GetLayout()));
-            layouts.Add(VertexType.PBBNCTT, new InputLayout(device, vssbytes, VertexTypePBBNCTT.GetLayout()));
-            layouts.Add(VertexType.PBBNCTTT, new InputLayout(device, vssbytes, VertexTypePBBNCTTT.GetLayout()));
-            layouts.Add(VertexType.PBBNCCT, new InputLayout(device, vssbytes, VertexTypePBBNCCT.GetLayout()));
-            layouts.Add(VertexType.PBBNCCTT, new InputLayout(device, vssbytes, VertexTypePBBNCCTT.GetLayout()));//TODO
-            layouts.Add(VertexType.PBBNCCTX, new InputLayout(device, vssbytes, VertexTypePBBNCCTX.GetLayout()));
-            layouts.Add(VertexType.PBBNCTTX, new InputLayout(device, vssbytes, VertexTypePBBNCTTX.GetLayout()));
-            layouts.Add(VertexType.PBBNCTTTX, new InputLayout(device, vssbytes, VertexTypePBBNCTTTX.GetLayout()));//TODO
-            layouts.Add(VertexType.PBBNCCTTX, new InputLayout(device, vssbytes, VertexTypePBBNCCTTX.GetLayout()));//TODO
+            layouts.Add(VertexType.PBBNCT, new InputLayout(device, vssbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PBBNCT)));
+            layouts.Add(VertexType.PBBNCTX, new InputLayout(device, vssbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PBBNCTX)));
+            layouts.Add(VertexType.PBBNCTT, new InputLayout(device, vssbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PBBNCTT)));
+            layouts.Add(VertexType.PBBNCTTT, new InputLayout(device, vssbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PBBNCTTT)));
+            layouts.Add(VertexType.PBBNCCT, new InputLayout(device, vssbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PBBNCCT)));
+            layouts.Add(VertexType.PBBNCCTT, new InputLayout(device, vssbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PBBNCCTT)));//TODO
+            layouts.Add(VertexType.PBBNCCTX, new InputLayout(device, vssbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PBBNCCTX)));
+            layouts.Add(VertexType.PBBNCTTX, new InputLayout(device, vssbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PBBNCTTX)));
+            layouts.Add(VertexType.PBBNCTTTX, new InputLayout(device, vssbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PBBNCTTTX)));//TODO
+            layouts.Add(VertexType.PBBNCCTTX, new InputLayout(device, vssbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PBBNCCTTX)));//TODO
             //PBBCCT todo
             //PBBNC todo
 
