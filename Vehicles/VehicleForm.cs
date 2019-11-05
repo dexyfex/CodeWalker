@@ -69,7 +69,7 @@ namespace CodeWalker.Vehicles
         bool enableGrid = false;
         float gridSize = 1.0f;
         int gridCount = 40;
-        List<VertexTypePC> gridVerts = new List<VertexTypePC>();
+        List<EditorVertex> gridVerts = new List<EditorVertex>();
         object gridSyncRoot = new object();
 
 
@@ -850,10 +850,10 @@ namespace CodeWalker.Vehicles
                     float o = (gridSize * i) - s;
                     if ((i % interval) != 0)
                     {
-                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(o, -s, 0), Colour = cgray });
-                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(o, s, 0), Colour = cgray });
-                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(-s, o, 0), Colour = cgray });
-                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(s, o, 0), Colour = cgray });
+                        gridVerts.Add(new EditorVertex() { Position = new Vector3(o, -s, 0), Colour = cgray });
+                        gridVerts.Add(new EditorVertex() { Position = new Vector3(o, s, 0), Colour = cgray });
+                        gridVerts.Add(new EditorVertex() { Position = new Vector3(-s, o, 0), Colour = cgray });
+                        gridVerts.Add(new EditorVertex() { Position = new Vector3(s, o, 0), Colour = cgray });
                     }
                 }
                 for (int i = 0; i <= gridCount; i++) //draw main lines last, so they are on top
@@ -863,10 +863,10 @@ namespace CodeWalker.Vehicles
                     {
                         var cx = (o == 0) ? cred : cblack;
                         var cy = (o == 0) ? cgrn : cblack;
-                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(o, -s, 0), Colour = cy });
-                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(o, s, 0), Colour = cy });
-                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(-s, o, 0), Colour = cx });
-                        gridVerts.Add(new VertexTypePC() { Position = new Vector3(s, o, 0), Colour = cx });
+                        gridVerts.Add(new EditorVertex() { Position = new Vector3(o, -s, 0), Colour = cy });
+                        gridVerts.Add(new EditorVertex() { Position = new Vector3(o, s, 0), Colour = cy });
+                        gridVerts.Add(new EditorVertex() { Position = new Vector3(-s, o, 0), Colour = cx });
+                        gridVerts.Add(new EditorVertex() { Position = new Vector3(s, o, 0), Colour = cx });
                     }
                 }
 

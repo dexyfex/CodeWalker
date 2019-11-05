@@ -41,7 +41,7 @@ namespace CodeWalker.Rendering
         UnitCube cube;
 
         bool UseDynamicVerts = false;
-        GpuCBuffer<VertexTypePC> vertices; //for selection polys/lines use
+        GpuCBuffer<EditorVertex> vertices; //for selection polys/lines use
 
 
         public PathShader(Device device)
@@ -61,11 +61,11 @@ namespace CodeWalker.Rendering
 
             VSSceneVars = new GpuVarsBuffer<PathShaderVSSceneVars>(device);
 
-            layout = new InputLayout(device, vsbytes, VertexTypePC.GetLayout());
+            layout = new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PC));
 
             cube = new UnitCube(device, boxvsbytes, true, false, true);
 
-            vertices = new GpuCBuffer<VertexTypePC>(device, 1000); //should be more than needed....
+            vertices = new GpuCBuffer<EditorVertex>(device, 1000); //should be more than needed....
         }
 
 
@@ -171,7 +171,7 @@ namespace CodeWalker.Rendering
             UnbindResources(context);
         }
 
-        public void RenderTriangles(DeviceContext context, List<VertexTypePC> verts, Camera camera, ShaderGlobalLights lights)
+        public void RenderTriangles(DeviceContext context, List<EditorVertex> verts, Camera camera, ShaderGlobalLights lights)
         {
             UseDynamicVerts = true;
             SetShader(context);
@@ -205,7 +205,7 @@ namespace CodeWalker.Rendering
 
         }
 
-        public void RenderLines(DeviceContext context, List<VertexTypePC> verts, Camera camera, ShaderGlobalLights lights)
+        public void RenderLines(DeviceContext context, List<EditorVertex> verts, Camera camera, ShaderGlobalLights lights)
         {
             UseDynamicVerts = true;
             SetShader(context);

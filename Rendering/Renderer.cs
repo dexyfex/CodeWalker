@@ -109,7 +109,7 @@ namespace CodeWalker.Rendering
 
         public bool renderskeletons = false;
         private List<RenderSkeletonItem> renderskeletonlist = new List<RenderSkeletonItem>();
-        private List<VertexTypePC> skeletonLineVerts = new List<VertexTypePC>();
+        private List<EditorVertex> skeletonLineVerts = new List<EditorVertex>();
 
         public bool renderhdtextures = true;
 
@@ -129,8 +129,8 @@ namespace CodeWalker.Rendering
         public List<MapBox> WhiteBoxes = new List<MapBox>();
         public List<MapSphere> SelectionSpheres = new List<MapSphere>();
         public List<MapSphere> WhiteSpheres = new List<MapSphere>();
-        public List<VertexTypePC> SelectionLineVerts = new List<VertexTypePC>();
-        public List<VertexTypePC> SelectionTriVerts = new List<VertexTypePC>();
+        public List<EditorVertex> SelectionLineVerts = new List<EditorVertex>();
+        public List<EditorVertex> SelectionTriVerts = new List<EditorVertex>();
 
 
         private YmapEntityDef SelectedCarGenEntity = new YmapEntityDef(); //placeholder entity object for drawing cars
@@ -701,7 +701,7 @@ namespace CodeWalker.Rendering
             const float Ang = MaxDeg / Reso;
 
             var axis = Vector3.Cross(dir, up);
-            var c = new VertexTypePC[Reso];
+            var c = new EditorVertex[Reso];
 
             for (var i = 0; i < Reso; i++)
             {
@@ -716,8 +716,8 @@ namespace CodeWalker.Rendering
                 SelectionLineVerts.Add(c[(i + 1) % c.Length]);
             }
 
-            SelectionLineVerts.Add(new VertexTypePC{Colour = col, Position = position});
-            SelectionLineVerts.Add(new VertexTypePC { Colour = col, Position = position + dir * 2f});
+            SelectionLineVerts.Add(new EditorVertex { Colour = col, Position = position});
+            SelectionLineVerts.Add(new EditorVertex { Colour = col, Position = position + dir * 2f});
         }
 
         public void RenderSelectionArrowOutline(Vector3 pos, Vector3 dir, Vector3 up, Quaternion ori, float len, float rad, uint colour)
@@ -726,7 +726,7 @@ namespace CodeWalker.Rendering
             Vector3 sx = ax * rad;
             Vector3 sy = up * rad;
             Vector3 sz = dir * len;
-            VertexTypePC[] c = new VertexTypePC[8];
+            EditorVertex[] c = new EditorVertex[8];
             Vector3 d0 = -sx - sy;
             Vector3 d1 = -sx + sy;
             Vector3 d2 = +sx - sy;
@@ -807,9 +807,9 @@ namespace CodeWalker.Rendering
             var lastid = endid - 1;
             var vc = ynv.Vertices.Count;
             var startind = ynv.Indices[startid];
-            VertexTypePC v0 = new VertexTypePC();
-            VertexTypePC v1 = new VertexTypePC();
-            VertexTypePC v2 = new VertexTypePC();
+            EditorVertex v0 = new EditorVertex();
+            EditorVertex v1 = new EditorVertex();
+            EditorVertex v2 = new EditorVertex();
             v0.Position = ynv.Vertices[startind];
             v0.Colour = colourval;
             v1.Colour = colourval;
@@ -845,9 +845,9 @@ namespace CodeWalker.Rendering
             var startind = ynv.Indices[startid];
 
             ////draw poly outline
-            VertexTypePC v = new VertexTypePC();
+            EditorVertex v = new EditorVertex();
             v.Colour = colourval;
-            VertexTypePC v0 = new VertexTypePC();
+            EditorVertex v0 = new EditorVertex();
             for (int id = startid; id < endid; id++)
             {
                 var ind = ynv.Indices[id];
@@ -1105,9 +1105,9 @@ namespace CodeWalker.Rendering
             const uint cred = 4278190335;// (uint)new Color4(1.0f, 0.0f, 0.0f, 1.0f).ToRgba();
             const uint cgrn = 4278255360;// (uint)new Color4(0.0f, 1.0f, 0.0f, 1.0f).ToRgba();
             const uint cblu = 4294901760;// (uint)new Color4(0.0f, 0.0f, 1.0f, 1.0f).ToRgba();
-            VertexTypePC vr = new VertexTypePC();
-            VertexTypePC vg = new VertexTypePC();
-            VertexTypePC vb = new VertexTypePC();
+            EditorVertex vr = new EditorVertex();
+            EditorVertex vg = new EditorVertex();
+            EditorVertex vb = new EditorVertex();
             vr.Colour = cred;
             vg.Colour = cgrn;
             vb.Colour = cblu;
@@ -1202,7 +1202,7 @@ namespace CodeWalker.Rendering
 
 
 
-        public void RenderLines(List<VertexTypePC> linelist, DepthStencilMode dsmode = DepthStencilMode.Enabled)
+        public void RenderLines(List<EditorVertex> linelist, DepthStencilMode dsmode = DepthStencilMode.Enabled)
         {
             shaders.SetDepthStencilMode(context, dsmode);
             shaders.Paths.RenderLines(context, linelist, camera, shaders.GlobalLights);

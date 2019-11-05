@@ -1397,8 +1397,8 @@ namespace CodeWalker
                 var mloa = mlo.Archetype as MloArchetype;
                 if (mloa != null)
                 {
-                    VertexTypePC p1 = new VertexTypePC();
-                    VertexTypePC p2 = new VertexTypePC();
+                    EditorVertex p1 = new EditorVertex();
+                    EditorVertex p2 = new EditorVertex();
                     if (mloa.portals != null)
                     {
                         for (int ip = 0; ip < mloa.portals.Length; ip++)

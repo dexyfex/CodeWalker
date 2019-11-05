@@ -1401,7 +1401,7 @@ namespace CodeWalker.Rendering
 
     public class RenderableWaterQuad : RenderableCacheItem<WaterQuad>
     {
-        public VertexTypePCT[] Vertices;
+        public EditorVertexPCT[] Vertices;
         public uint[] Indices;
         public int IndexCount { get; set; }
         public int VertexCount { get; set; }
@@ -1419,7 +1419,7 @@ namespace CodeWalker.Rendering
             float sy = key.maxY - key.minY;
 
             VertexCount = 4;
-            Vertices = new VertexTypePCT[4];
+            Vertices = new EditorVertexPCT[4];
             Vertices[0].Position = new Vector3(key.minX, key.minY, key.z);
             Vertices[0].Texcoord = new Vector2(0.0f, 0.0f);
             Vertices[0].Colour = (uint)new Color4(key.a1 / 255.0f).ToRgba();
@@ -1612,7 +1612,7 @@ namespace CodeWalker.Rendering
         public int VertexCount { get; set; } = 0;
         public uint VertexDataSize { get; set; } = 0;
         public uint TotalDataSize { get; set; } = 0;
-        public VertexTypeDefault[] Vertices { get; set; }
+        public EditorVertexPNCT[] Vertices { get; set; }
 
         public RenderableBox[] Boxes { get; set; }
         public RenderableSphere[] Spheres { get; set; }
@@ -1660,7 +1660,7 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            VertexTypeDefault[] rverts = (rvertcount > 0) ? new VertexTypeDefault[rvertcount] : null;
+            EditorVertexPNCT[] rverts = (rvertcount > 0) ? new EditorVertexPNCT[rvertcount] : null;
             RenderableBox[] rboxes = (rboxcount > 0) ? new RenderableBox[rboxcount] : null;
             RenderableSphere[] rspheres = (rspherecount > 0) ? new RenderableSphere[rspherecount] : null;
             RenderableCapsule[] rcapsules = (rcapsulecount > 0) ? new RenderableCapsule[rcapsulecount] : null;
@@ -1763,23 +1763,23 @@ namespace CodeWalker.Rendering
 
         }
 
-        private ushort AddVertex(Vector3 pos, Vector3 norm, uint colour, List<VertexTypeDefault> list)
+        private ushort AddVertex(Vector3 pos, Vector3 norm, uint colour, List<EditorVertexPNCT> list)
         {
-            VertexTypeDefault v = new VertexTypeDefault();
+            EditorVertexPNCT v = new EditorVertexPNCT();
             v.Position = pos;
             v.Normal = norm;
             v.Colour = colour;
-            v.Texcoord = Vector2.Zero;
+            v.Texcoord = Vector2.Zero; 
             var rv = list.Count;
             list.Add(v);
             return (ushort)rv;
         }
-        private void AddVertex(Vector3 pos, Vector3 norm, uint colour, VertexTypeDefault[] arr, ref int index)
+        private void AddVertex(Vector3 pos, Vector3 norm, uint colour, EditorVertexPNCT[] arr, ref int index)
         {
             arr[index].Position = pos;
             arr[index].Normal = norm;
             arr[index].Colour = colour;
-            arr[index].Texcoord = Vector2.Zero;
+            arr[index].Texcoord = Vector2.Zero; 
             index++;
         }
 
