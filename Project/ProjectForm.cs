@@ -4263,9 +4263,9 @@ namespace CodeWalker.Project
                 if (vals[0].StartsWith("X")) continue;
                 Vector3 pos = Vector3.Zero;
                 float dir = 0;
-                var action = Unk_3609807418.Move;
-                var navMode = Unk_3971773454.Direct;
-                var navSpeed = Unk_941086046.Unk_00_3279574318;
+                var action = CScenarioChainingEdge__eAction.Move;
+                var navMode = CScenarioChainingEdge__eNavMode.Direct;
+                var navSpeed = CScenarioChainingEdge__eNavSpeed.Unk_00_3279574318;
                 var stype = new ScenarioTypeRef(defaulttype);
                 var modelset = defaultmodelset;
                 var flags = defaultflags;
@@ -4284,15 +4284,15 @@ namespace CodeWalker.Project
                     byte nsb = 0;
                     byte.TryParse(vals[4].Trim(), out nsb);
                     if (nsb > 15) nsb = 15;
-                    navSpeed = (Unk_941086046)nsb;
+                    navSpeed = (CScenarioChainingEdge__eNavSpeed)nsb;
                 }
                 if (vals.Length > 5)
                 {
                     switch (vals[5].Trim())
                     {
-                        case "Direct": navMode = Unk_3971773454.Direct; break;
-                        case "NavMesh": navMode = Unk_3971773454.NavMesh; break;
-                        case "Roads": navMode = Unk_3971773454.Roads; break;
+                        case "Direct": navMode = CScenarioChainingEdge__eNavMode.Direct; break;
+                        case "NavMesh": navMode = CScenarioChainingEdge__eNavMode.NavMesh; break;
+                        case "Roads": navMode = CScenarioChainingEdge__eNavMode.Roads; break;
                     }
                 }
                 if (vals.Length > 6)

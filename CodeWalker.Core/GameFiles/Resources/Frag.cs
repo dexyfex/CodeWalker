@@ -55,9 +55,9 @@ namespace CodeWalker.GameFiles
         public float Unknown_28h { get; set; }
         public float Unknown_2Ch { get; set; }
         public ulong DrawablePointer { get; set; }
-        public ulong Unknown_28h_Pointer { get; set; }
-        public ulong Unknown_30h_Pointer { get; set; }
-        public uint Count0 { get; set; }
+        public ulong DrawableArrayPointer { get; set; }
+        public ulong DrawableArrayNamesPointer { get; set; }
+        public uint DrawableArrayCount { get; set; }
         public uint Unknown_4Ch { get; set; } //pointer? 
         public uint Unknown_50h { get; set; } // 0x00000000
         public uint Unknown_54h { get; set; } // 0x00000000
@@ -77,7 +77,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_9Ch { get; set; } // 0x00000000
         public uint Unknown_A0h { get; set; } // 0x00000000
         public uint Unknown_A4h { get; set; } // 0x00000000
-        public ulong Unknown_A8h_Pointer { get; set; }
+        public ulong BoneTransformsPointer { get; set; }
         public uint Unknown_B0h { get; set; } // 0x00000000
         public uint Unknown_B4h { get; set; } // 0x00000000
         public uint Unknown_B8h { get; set; }
@@ -89,10 +89,10 @@ namespace CodeWalker.GameFiles
         public float Unknown_D0h { get; set; }
         public float Unknown_D4h { get; set; }
         public byte Unknown_D8h { get; set; }
-        public byte Count3 { get; set; }
+        public byte GlassWindowsCount { get; set; }
         public ushort Unknown_DAh { get; set; }
         public uint Unknown_DCh { get; set; } // 0x00000000
-        public ulong Unknown_E0h_Pointer { get; set; }
+        public ulong GlassWindowsPointer { get; set; }
         public uint Unknown_E8h { get; set; } // 0x00000000
         public uint Unknown_ECh { get; set; } // 0x00000000
         public ulong PhysicsLODGroupPointer { get; set; }
@@ -102,23 +102,26 @@ namespace CodeWalker.GameFiles
         public uint Unknown_108h { get; set; } // 0x00000000
         public uint Unknown_10Ch { get; set; } // 0x00000000
         public ResourceSimpleList64_s<LightAttributes_s> LightAttributes { get; set; }
-        public ulong Unknown_120h_Pointer { get; set; }
+        public ulong VehicleGlassWindowsPointer { get; set; }
         public uint Unknown_128h { get; set; } // 0x00000000
         public uint Unknown_12Ch { get; set; } // 0x00000000
 
         // reference data
         public FragDrawable Drawable { get; set; }
-        public ResourcePointerArray64<FragDrawable> Unknown_28h_Data { get; set; }
-        public ResourcePointerArray64<string_r> Unknown_30h_Data { get; set; }
+        public ResourcePointerArray64<FragDrawable> DrawableArray { get; set; }
+        public ResourcePointerArray64<string_r> DrawableArrayNames { get; set; }
         public string Name { get; set; }
-        public FragUnknown_F_004 Unknown_A8h_Data { get; set; }
-        public ResourcePointerArray64<FragUnknown_F_006> Unknown_E0h_Data { get; set; }
+        public FragBoneTransforms BoneTransforms { get; set; }
+        public ResourcePointerArray64<FragGlassWindow> GlassWindows { get; set; }
         public FragPhysicsLODGroup PhysicsLODGroup { get; set; }
         public FragDrawable Drawable2 { get; set; }
-        public FragUnknown_F_003 Unknown_120h_Data { get; set; }
+        public FragVehicleGlassWindows VehicleGlassWindows { get; set; }
 
 
         private string_r NameBlock = null; //only used for saving
+
+        public YftFile Yft { get; set; }
+
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -137,9 +140,9 @@ namespace CodeWalker.GameFiles
             this.Unknown_28h = reader.ReadSingle();
             this.Unknown_2Ch = reader.ReadSingle();
             this.DrawablePointer = reader.ReadUInt64();
-            this.Unknown_28h_Pointer = reader.ReadUInt64();
-            this.Unknown_30h_Pointer = reader.ReadUInt64();
-            this.Count0 = reader.ReadUInt32();
+            this.DrawableArrayPointer = reader.ReadUInt64();
+            this.DrawableArrayNamesPointer = reader.ReadUInt64();
+            this.DrawableArrayCount = reader.ReadUInt32();
             this.Unknown_4Ch = reader.ReadUInt32();
             this.Unknown_50h = reader.ReadUInt32();
             this.Unknown_54h = reader.ReadUInt32();
@@ -159,7 +162,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_9Ch = reader.ReadUInt32();
             this.Unknown_A0h = reader.ReadUInt32();
             this.Unknown_A4h = reader.ReadUInt32();
-            this.Unknown_A8h_Pointer = reader.ReadUInt64();
+            this.BoneTransformsPointer = reader.ReadUInt64();
             this.Unknown_B0h = reader.ReadUInt32();
             this.Unknown_B4h = reader.ReadUInt32();
             this.Unknown_B8h = reader.ReadUInt32();
@@ -171,10 +174,10 @@ namespace CodeWalker.GameFiles
             this.Unknown_D0h = reader.ReadSingle();
             this.Unknown_D4h = reader.ReadSingle();
             this.Unknown_D8h = reader.ReadByte();
-            this.Count3 = reader.ReadByte();
+            this.GlassWindowsCount = reader.ReadByte();
             this.Unknown_DAh = reader.ReadUInt16();
             this.Unknown_DCh = reader.ReadUInt32();
-            this.Unknown_E0h_Pointer = reader.ReadUInt64();
+            this.GlassWindowsPointer = reader.ReadUInt64();
             this.Unknown_E8h = reader.ReadUInt32();
             this.Unknown_ECh = reader.ReadUInt32();
             this.PhysicsLODGroupPointer = reader.ReadUInt64();
@@ -184,64 +187,48 @@ namespace CodeWalker.GameFiles
             this.Unknown_108h = reader.ReadUInt32();
             this.Unknown_10Ch = reader.ReadUInt32();
             this.LightAttributes = reader.ReadBlock<ResourceSimpleList64_s<LightAttributes_s>>();
-            this.Unknown_120h_Pointer = reader.ReadUInt64();
+            this.VehicleGlassWindowsPointer = reader.ReadUInt64();
             this.Unknown_128h = reader.ReadUInt32();
             this.Unknown_12Ch = reader.ReadUInt32();
 
             // read reference data
-            this.Drawable = reader.ReadBlockAt<FragDrawable>(
-                this.DrawablePointer // offset
-            );
-            if (this.Drawable != null)
+            Drawable = reader.ReadBlockAt<FragDrawable>(this.DrawablePointer);
+            if (Drawable != null)
             {
-                this.Drawable.OwnerFragment = this;
+                Drawable.OwnerFragment = this;
             }
 
-            this.Unknown_28h_Data = reader.ReadBlockAt<ResourcePointerArray64<FragDrawable>>(
-                this.Unknown_28h_Pointer, // offset
-                this.Count0
-            );
-            if ((this.Unknown_28h_Data != null) && (this.Unknown_28h_Data.data_items != null))
+            DrawableArray = reader.ReadBlockAt<ResourcePointerArray64<FragDrawable>>(DrawableArrayPointer, DrawableArrayCount);
+            if ((DrawableArray != null) && (DrawableArray.data_items != null))
             {
-                for (int i = 0; i < this.Unknown_28h_Data.data_items.Length; i++)
+                for (int i = 0; i < DrawableArray.data_items.Length; i++)
                 {
-                    var drwbl = Unknown_28h_Data.data_items[i];
+                    var drwbl = DrawableArray.data_items[i];
                     if (drwbl != null)
                     {
                         drwbl.OwnerFragment = this;
                     }
                 }
             }
-            this.Unknown_30h_Data = reader.ReadBlockAt<ResourcePointerArray64<string_r>>(
-                this.Unknown_30h_Pointer, // offset
-                this.Count0
-            );
-            this.Name = reader.ReadStringAt(//BlockAt<string_r>(
-                this.NamePointer // offset
-            );
-            this.Unknown_A8h_Data = reader.ReadBlockAt<FragUnknown_F_004>(
-                this.Unknown_A8h_Pointer // offset
-            );
-            this.Unknown_E0h_Data = reader.ReadBlockAt<ResourcePointerArray64<FragUnknown_F_006>>(
-                this.Unknown_E0h_Pointer, // offset
-                this.Count3
-            );
-            this.PhysicsLODGroup = reader.ReadBlockAt<FragPhysicsLODGroup>(
-                this.PhysicsLODGroupPointer // offset
-            );
-            this.Drawable2 = reader.ReadBlockAt<FragDrawable>(
-                this.Drawable2Pointer // offset
-            );
-            if (this.Drawable2 != null)
+            DrawableArrayNames = reader.ReadBlockAt<ResourcePointerArray64<string_r>>(DrawableArrayNamesPointer, DrawableArrayCount);
+            Name = reader.ReadStringAt(NamePointer);
+            BoneTransforms = reader.ReadBlockAt<FragBoneTransforms>(BoneTransformsPointer);
+            GlassWindows = reader.ReadBlockAt<ResourcePointerArray64<FragGlassWindow>>(GlassWindowsPointer, GlassWindowsCount);
+            PhysicsLODGroup = reader.ReadBlockAt<FragPhysicsLODGroup>(PhysicsLODGroupPointer);
+            Drawable2 = reader.ReadBlockAt<FragDrawable>(Drawable2Pointer);
+            if (Drawable2 != null)
             {
-                this.Drawable2.OwnerFragment = this;
+                Drawable2.OwnerFragment = this;
             }
 
-            this.Unknown_120h_Data = reader.ReadBlockAt<FragUnknown_F_003>(
-                this.Unknown_120h_Pointer // offset
-            );
+            VehicleGlassWindows = reader.ReadBlockAt<FragVehicleGlassWindows>(VehicleGlassWindowsPointer);
 
 
+
+            if (GlassWindows != null)
+            { }
+            if (VehicleGlassWindows != null)
+            { }
 
 
             //for vehicle wheels, the shaderGroup in the model seems to be missing, but have to use the main drawable's shaders.
@@ -273,16 +260,16 @@ namespace CodeWalker.GameFiles
 
             // update structure data
             this.DrawablePointer = (ulong)(this.Drawable != null ? this.Drawable.FilePosition : 0);
-            this.Unknown_28h_Pointer = (ulong)(this.Unknown_28h_Data != null ? this.Unknown_28h_Data.FilePosition : 0);
-            this.Unknown_30h_Pointer = (ulong)(this.Unknown_30h_Data != null ? this.Unknown_30h_Data.FilePosition : 0);
-            this.Count0 = (uint)(this.Unknown_28h_Data != null ? this.Unknown_28h_Data.Count : 0);
+            this.DrawableArrayPointer = (ulong)(this.DrawableArray != null ? this.DrawableArray.FilePosition : 0);
+            this.DrawableArrayNamesPointer = (ulong)(this.DrawableArrayNames != null ? this.DrawableArrayNames.FilePosition : 0);
+            this.DrawableArrayCount = (uint)(this.DrawableArray != null ? this.DrawableArray.Count : 0);
             this.NamePointer = (ulong)(this.NameBlock != null ? this.NameBlock.FilePosition : 0);
-            this.Unknown_A8h_Pointer = (ulong)(this.Unknown_A8h_Data != null ? this.Unknown_A8h_Data.FilePosition : 0);
-            this.Count3 = (byte)(this.Unknown_E0h_Data != null ? this.Unknown_E0h_Data.Count : 0);
-            this.Unknown_E0h_Pointer = (ulong)(this.Unknown_E0h_Data != null ? this.Unknown_E0h_Data.FilePosition : 0);
+            this.BoneTransformsPointer = (ulong)(this.BoneTransforms != null ? this.BoneTransforms.FilePosition : 0);
+            this.GlassWindowsCount = (byte)(this.GlassWindows != null ? this.GlassWindows.Count : 0);
+            this.GlassWindowsPointer = (ulong)(this.GlassWindows != null ? this.GlassWindows.FilePosition : 0);
             this.PhysicsLODGroupPointer = (ulong)(this.PhysicsLODGroup != null ? this.PhysicsLODGroup.FilePosition : 0);
             this.Drawable2Pointer = (ulong)(this.Drawable2 != null ? this.Drawable2.FilePosition : 0);
-            this.Unknown_120h_Pointer = (ulong)(this.Unknown_120h_Data != null ? this.Unknown_120h_Data.FilePosition : 0);
+            this.VehicleGlassWindowsPointer = (ulong)(this.VehicleGlassWindows != null ? this.VehicleGlassWindows.FilePosition : 0);
 
             // write structure data
             writer.Write(this.Unknown_10h);
@@ -294,9 +281,9 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_28h);
             writer.Write(this.Unknown_2Ch);
             writer.Write(this.DrawablePointer);
-            writer.Write(this.Unknown_28h_Pointer);
-            writer.Write(this.Unknown_30h_Pointer);
-            writer.Write(this.Count0);
+            writer.Write(this.DrawableArrayPointer);
+            writer.Write(this.DrawableArrayNamesPointer);
+            writer.Write(this.DrawableArrayCount);
             writer.Write(this.Unknown_4Ch);
             writer.Write(this.Unknown_50h);
             writer.Write(this.Unknown_54h);
@@ -316,7 +303,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_9Ch);
             writer.Write(this.Unknown_A0h);
             writer.Write(this.Unknown_A4h);
-            writer.Write(this.Unknown_A8h_Pointer);
+            writer.Write(this.BoneTransformsPointer);
             writer.Write(this.Unknown_B0h);
             writer.Write(this.Unknown_B4h);
             writer.Write(this.Unknown_B8h);
@@ -328,10 +315,10 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_D0h);
             writer.Write(this.Unknown_D4h);
             writer.Write(this.Unknown_D8h);
-            writer.Write(this.Count3);
+            writer.Write(this.GlassWindowsCount);
             writer.Write(this.Unknown_DAh);
             writer.Write(this.Unknown_DCh);
-            writer.Write(this.Unknown_E0h_Pointer);
+            writer.Write(this.GlassWindowsPointer);
             writer.Write(this.Unknown_E8h);
             writer.Write(this.Unknown_ECh);
             writer.Write(this.PhysicsLODGroupPointer);
@@ -341,7 +328,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_108h);
             writer.Write(this.Unknown_10Ch);
             writer.WriteBlock(this.LightAttributes);
-            writer.Write(this.Unknown_120h_Pointer);
+            writer.Write(this.VehicleGlassWindowsPointer);
             writer.Write(this.Unknown_128h);
             writer.Write(this.Unknown_12Ch);
         }
@@ -353,18 +340,18 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>(base.GetReferences());
             if (Drawable != null) list.Add(Drawable);
-            if (Unknown_28h_Data != null) list.Add(Unknown_28h_Data);
-            if (Unknown_30h_Data != null) list.Add(Unknown_30h_Data);
+            if (DrawableArray != null) list.Add(DrawableArray);
+            if (DrawableArrayNames != null) list.Add(DrawableArrayNames);
             if (Name != null)
             {
                 NameBlock = (string_r)Name;
                 list.Add(NameBlock);
             }
-            if (Unknown_A8h_Data != null) list.Add(Unknown_A8h_Data);
-            if (Unknown_E0h_Data != null) list.Add(Unknown_E0h_Data);
+            if (BoneTransforms != null) list.Add(BoneTransforms);
+            if (GlassWindows != null) list.Add(GlassWindows);
             if (PhysicsLODGroup != null) list.Add(PhysicsLODGroup);
             if (Drawable2 != null) list.Add(Drawable2);
-            if (Unknown_120h_Data != null) list.Add(Unknown_120h_Data);
+            if (VehicleGlassWindows != null) list.Add(VehicleGlassWindows);
             return list.ToArray();
         }
 
@@ -1699,13 +1686,13 @@ namespace CodeWalker.GameFiles
         // structure data
         public uint Unknown_0A8h { get; set; }
         public uint Unknown_0ACh { get; set; }
-        public Matrix Unknown_0B0h { get; set; }
+        public Matrix FragMatrix { get; set; } //unknown?
         public ulong BoundPointer { get; set; }
-        public ulong Unknown_0F8h_Pointer { get; set; }
-        public ushort Count1 { get; set; }
-        public ushort Count2 { get; set; }
+        public ulong FragMatricesIndsPointer { get; set; }
+        public ushort FragMatricesIndsCount { get; set; }
+        public ushort FragMatricesCount { get; set; }
         public uint Unknown_104h { get; set; } // 0x00000000
-        public ulong Unknown_108h_Pointer { get; set; }
+        public ulong FragMatricesPointer { get; set; }
         public ushort Count3 { get; set; }
         public ushort Count4 { get; set; }
         public uint Unknown_114h { get; set; } // 0x00000000
@@ -1725,8 +1712,8 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public Bounds Bound { get; set; }
-        public ulong[] Unknown_F8h_Data { get; set; }
-        public Matrix[] Unknown_108h_Data { get; set; }
+        public ulong[] FragMatricesInds { get; set; }
+        public Matrix[] FragMatrices { get; set; }
         public string Name { get; set; }
 
         public FragType OwnerFragment { get; set; } //for handy use
@@ -1748,13 +1735,13 @@ namespace CodeWalker.GameFiles
             // read structure data
             this.Unknown_0A8h = reader.ReadUInt32();
             this.Unknown_0ACh = reader.ReadUInt32();
-            this.Unknown_0B0h = reader.ReadStruct<Matrix>();
+            this.FragMatrix = reader.ReadStruct<Matrix>();
             this.BoundPointer = reader.ReadUInt64();
-            this.Unknown_0F8h_Pointer = reader.ReadUInt64();
-            this.Count1 = reader.ReadUInt16();
-            this.Count2 = reader.ReadUInt16();
+            this.FragMatricesIndsPointer = reader.ReadUInt64();
+            this.FragMatricesIndsCount = reader.ReadUInt16();
+            this.FragMatricesCount = reader.ReadUInt16();
             this.Unknown_104h = reader.ReadUInt32();
-            this.Unknown_108h_Pointer = reader.ReadUInt64();
+            this.FragMatricesPointer = reader.ReadUInt64();
             this.Count3 = reader.ReadUInt16();
             this.Count4 = reader.ReadUInt16();
             this.Unknown_114h = reader.ReadUInt32();
@@ -1773,14 +1760,17 @@ namespace CodeWalker.GameFiles
             this.Unknown_14Ch = reader.ReadUInt32();
 
             // read reference data
-            this.Bound = reader.ReadBlockAt<Bounds>(
-                this.BoundPointer // offset
-            );
-            this.Unknown_F8h_Data = reader.ReadUlongsAt(this.Unknown_0F8h_Pointer, this.Count1);
-            this.Unknown_108h_Data = reader.ReadStructsAt<Matrix>(this.Unknown_108h_Pointer, this.Count2);
-            this.Name = reader.ReadStringAt(//BlockAt<string_r>(
-                this.NamePointer // offset
-            );
+            Bound = reader.ReadBlockAt<Bounds>(BoundPointer);
+            FragMatricesInds = reader.ReadUlongsAt(FragMatricesIndsPointer, FragMatricesIndsCount);
+            FragMatrices = reader.ReadStructsAt<Matrix>(FragMatricesPointer, FragMatricesCount);
+            Name = reader.ReadStringAt(NamePointer);
+
+            if ((Count3 != Count4)&&(Count4!=1)&&(Count3!=0))
+            { }
+            if (FragMatricesInds != null)
+            { }
+            if (FragMatrices != null)
+            { }
         }
 
         /// <summary>
@@ -1792,22 +1782,22 @@ namespace CodeWalker.GameFiles
 
             // update structure data
             this.BoundPointer = (ulong)(this.Bound != null ? this.Bound.FilePosition : 0);
-            this.Unknown_0F8h_Pointer = (ulong)(this.Unknown_F8h_DataBlock != null ? this.Unknown_F8h_DataBlock.FilePosition : 0);
-            this.Count1 = (ushort)(this.Unknown_F8h_DataBlock != null ? this.Unknown_F8h_DataBlock.ItemCount : 0);
-            this.Count2 = (ushort)(this.Unknown_108h_DataBlock != null ? this.Unknown_108h_DataBlock.ItemCount : 0);
-            this.Unknown_108h_Pointer = (ulong)(this.Unknown_108h_DataBlock != null ? this.Unknown_108h_DataBlock.FilePosition : 0);
+            this.FragMatricesIndsPointer = (ulong)(this.Unknown_F8h_DataBlock != null ? this.Unknown_F8h_DataBlock.FilePosition : 0);
+            this.FragMatricesIndsCount = (ushort)(this.Unknown_F8h_DataBlock != null ? this.Unknown_F8h_DataBlock.ItemCount : 0);
+            this.FragMatricesCount = (ushort)(this.Unknown_108h_DataBlock != null ? this.Unknown_108h_DataBlock.ItemCount : 0);
+            this.FragMatricesPointer = (ulong)(this.Unknown_108h_DataBlock != null ? this.Unknown_108h_DataBlock.FilePosition : 0);
             this.NamePointer = (ulong)(this.NameBlock != null ? this.NameBlock.FilePosition : 0);
 
             // write structure data
             writer.Write(this.Unknown_0A8h);
             writer.Write(this.Unknown_0ACh);
-            writer.Write(this.Unknown_0B0h);
+            writer.Write(this.FragMatrix);
             writer.Write(this.BoundPointer);
-            writer.Write(this.Unknown_0F8h_Pointer);
-            writer.Write(this.Count1);
-            writer.Write(this.Count2);
+            writer.Write(this.FragMatricesIndsPointer);
+            writer.Write(this.FragMatricesIndsCount);
+            writer.Write(this.FragMatricesCount);
             writer.Write(this.Unknown_104h);
-            writer.Write(this.Unknown_108h_Pointer);
+            writer.Write(this.FragMatricesPointer);
             writer.Write(this.Count3);
             writer.Write(this.Count4);
             writer.Write(this.Unknown_114h);
@@ -1833,14 +1823,14 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>(base.GetReferences());
             if (Bound != null) list.Add(Bound);
-            if (Unknown_F8h_Data != null)
+            if (FragMatricesInds != null)
             {
-                Unknown_F8h_DataBlock = new ResourceSystemStructBlock<ulong>(Unknown_F8h_Data);
+                Unknown_F8h_DataBlock = new ResourceSystemStructBlock<ulong>(FragMatricesInds);
                 list.Add(Unknown_F8h_DataBlock);
             }
-            if (Unknown_108h_Data != null)
+            if (FragMatrices != null)
             {
-                Unknown_108h_DataBlock = new ResourceSystemStructBlock<Matrix>(Unknown_108h_Data);
+                Unknown_108h_DataBlock = new ResourceSystemStructBlock<Matrix>(FragMatrices);
                 list.Add(Unknown_108h_DataBlock);
             }
             if (Name != null)
@@ -1852,11 +1842,11 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FragUnknown_F_004 : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class FragBoneTransforms : ResourceSystemBlock
     {
         public override long BlockLength
         {
-            get { return 32 + ((Data?.Length ?? 0) * 48); }
+            get { return 32 + ((Items?.Length ?? 0) * 48); }
         }
 
         // structure data
@@ -1864,13 +1854,13 @@ namespace CodeWalker.GameFiles
         public uint Unknown_04h { get; set; } // 0x00000000
         public uint Unknown_08h { get; set; } // 0x00000000
         public uint Unknown_0Ch { get; set; } // 0x00000000
-        public byte DataCount1 { get; set; }
-        public byte DataCount2 { get; set; }
+        public byte ItemCount1 { get; set; }
+        public byte ItemCount2 { get; set; }
         public ushort Unknown_12h { get; set; }
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000000
         public uint Unknown_1Ch { get; set; } // 0x00000000
-        public Matrix3_s[] Data { get; set; }
+        public Matrix3_s[] Items { get; set; }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -1882,14 +1872,16 @@ namespace CodeWalker.GameFiles
             this.Unknown_04h = reader.ReadUInt32();
             this.Unknown_08h = reader.ReadUInt32();
             this.Unknown_0Ch = reader.ReadUInt32();
-            this.DataCount1 = reader.ReadByte();
-            this.DataCount2 = reader.ReadByte();
+            this.ItemCount1 = reader.ReadByte();
+            this.ItemCount2 = reader.ReadByte();
             this.Unknown_12h = reader.ReadUInt16();
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.Data = reader.ReadStructs<Matrix3_s>(DataCount1);
+            this.Items = reader.ReadStructs<Matrix3_s>(ItemCount1);
 
+            if ((Unknown_12h != 0) && (Unknown_12h != 1))
+            { }
         }
 
         /// <summary>
@@ -1902,17 +1894,18 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_04h);
             writer.Write(this.Unknown_08h);
             writer.Write(this.Unknown_0Ch);
-            writer.Write(this.DataCount1);
-            writer.Write(this.DataCount2);
+            writer.Write(this.ItemCount1);
+            writer.Write(this.ItemCount2);
             writer.Write(this.Unknown_12h);
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
-            writer.WriteStructs(Data);
+            writer.WriteStructs(Items);
         }
 
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FragUnknown_F_006 : ResourceSystemBlock
+
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class FragGlassWindow : ResourceSystemBlock
     {
         public override long BlockLength
         {
@@ -1920,34 +1913,35 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint Unknown_00h { get; set; }
-        public uint Unknown_04h { get; set; }
-        public uint Unknown_08h { get; set; }
-        public uint Unknown_0Ch { get; set; } // 0x7F800001
-        public uint Unknown_10h { get; set; }
-        public uint Unknown_14h { get; set; }
-        public uint Unknown_18h { get; set; }
-        public uint Unknown_1Ch { get; set; } // 0x7F800001
-        public uint Unknown_20h { get; set; }
-        public uint Unknown_24h { get; set; }
-        public uint Unknown_28h { get; set; }
-        public uint Unknown_2Ch { get; set; } // 0x7F800001
-        public uint Unknown_30h { get; set; }
-        public uint Unknown_34h { get; set; }
-        public uint Unknown_38h { get; set; }
-        public uint Unknown_3Ch { get; set; }
-        public uint Unknown_40h { get; set; } // 0x000000D9
-        public uint Unknown_44h { get; set; } // 0x0500002C
-        public uint Unknown_48h { get; set; } // 0x55996996 looks like vertex types
-        public uint Unknown_4Ch { get; set; } // 0x76555555
-        public uint Unknown_50h { get; set; }
-        public uint Unknown_54h { get; set; }
-        public uint Unknown_58h { get; set; }
-        public uint Unknown_5Ch { get; set; }
-        public uint Unknown_60h { get; set; }
-        public uint Unknown_64h { get; set; }
-        public uint Unknown_68h { get; set; }
-        public uint Unknown_6Ch { get; set; } // 0x7F800001
+        public Matrix Matrix { get; set; } //column 4 is NaN,NaN,NaN,1
+        public uint VertexDeclFlags { get; set; } // 0x000000D9
+        public ushort VertexDeclStride { get; set; } // 0x002C
+        public byte VertexDeclUnk { get; set; } //0x00
+        public byte VertexDeclCount { get; set; } //0x05
+        public ulong VertexDeclTypes { get; set; } // 0x7655555555996996
+        public MetaHash Unknown_50h { get; set; } //looks floaty? flagsy? 0xXXXX0000
+        public ushort Unknown_54h { get; set; }//2
+        public ushort Flags { get; set; }//512, 768, 1280 etc ... flags
+        public Vector3 Vector1 { get; set; }
+        public Vector3 Vector2 { get; set; } // z = 0x7F800001 (NaN)
+
+
+        public ulong VertexDeclId //this all equates to VertexTypePNCTT
+        {
+            get
+            {
+                ulong res = 0;
+                for (int i = 0; i < 16; i++)
+                {
+                    if (((VertexDeclFlags >> i) & 1) == 1)
+                    {
+                        res += (VertexDeclTypes & (0xFu << (i * 4)));
+                    }
+                }
+                return res;
+            }
+        }
+        public VertexType VertexType { get { return (VertexType)VertexDeclFlags; } }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -1955,34 +1949,22 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_00h = reader.ReadUInt32();
-            this.Unknown_04h = reader.ReadUInt32();
-            this.Unknown_08h = reader.ReadUInt32();
-            this.Unknown_0Ch = reader.ReadUInt32();
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt32();
-            this.Unknown_24h = reader.ReadUInt32();
-            this.Unknown_28h = reader.ReadUInt32();
-            this.Unknown_2Ch = reader.ReadUInt32();
-            this.Unknown_30h = reader.ReadUInt32();
-            this.Unknown_34h = reader.ReadUInt32();
-            this.Unknown_38h = reader.ReadUInt32();
-            this.Unknown_3Ch = reader.ReadUInt32();
-            this.Unknown_40h = reader.ReadUInt32();
-            this.Unknown_44h = reader.ReadUInt32();
-            this.Unknown_48h = reader.ReadUInt32();
-            this.Unknown_4Ch = reader.ReadUInt32();
+            this.Matrix = reader.ReadStruct<Matrix>();
+            this.VertexDeclFlags = reader.ReadUInt32();
+            this.VertexDeclStride = reader.ReadUInt16();
+            this.VertexDeclUnk = reader.ReadByte();
+            this.VertexDeclCount = reader.ReadByte();
+            this.VertexDeclTypes = reader.ReadUInt64();
             this.Unknown_50h = reader.ReadUInt32();
-            this.Unknown_54h = reader.ReadUInt32();
-            this.Unknown_58h = reader.ReadUInt32();
-            this.Unknown_5Ch = reader.ReadUInt32();
-            this.Unknown_60h = reader.ReadUInt32();
-            this.Unknown_64h = reader.ReadUInt32();
-            this.Unknown_68h = reader.ReadUInt32();
-            this.Unknown_6Ch = reader.ReadUInt32();
+            this.Unknown_54h = reader.ReadUInt16();
+            this.Flags = reader.ReadUInt16();
+            this.Vector1 = reader.ReadStruct<Vector3>();
+            this.Vector2 = reader.ReadStruct<Vector3>();
+
+            if (Unknown_50h != 0)
+            { }
+            if (Unknown_54h != 2)
+            { }
         }
 
         /// <summary>
@@ -1991,49 +1973,248 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.Unknown_00h);
-            writer.Write(this.Unknown_04h);
-            writer.Write(this.Unknown_08h);
-            writer.Write(this.Unknown_0Ch);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_2Ch);
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_34h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_3Ch);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_44h);
-            writer.Write(this.Unknown_48h);
-            writer.Write(this.Unknown_4Ch);
+            writer.Write(this.Matrix);
+            writer.Write(this.VertexDeclFlags);
+            writer.Write(this.VertexDeclStride);
+            writer.Write(this.VertexDeclUnk);
+            writer.Write(this.VertexDeclCount);
+            writer.Write(this.VertexDeclTypes);
             writer.Write(this.Unknown_50h);
             writer.Write(this.Unknown_54h);
-            writer.Write(this.Unknown_58h);
-            writer.Write(this.Unknown_5Ch);
-            writer.Write(this.Unknown_60h);
-            writer.Write(this.Unknown_64h);
-            writer.Write(this.Unknown_68h);
-            writer.Write(this.Unknown_6Ch);
+            writer.Write(this.Flags);
+            writer.Write(this.Vector1);
+            writer.Write(this.Vector2);
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FragUnknown_F_003 : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class FragVehicleGlassWindows : ResourceSystemBlock
     {
         public override long BlockLength
         {
-            get { return 16 + (Data?.Length ?? 0); }
+            get { return TotalLength; }
         }
 
+        [TypeConverter(typeof(ExpandableObjectConverter))] public struct ItemOffsetStruct
+        {
+            public uint Item { get; set; }
+            public uint Offset { get; set; }
+            public override string ToString()
+            {
+                return Item.ToString() + ": " + Offset.ToString();
+            }
+        }
+        [TypeConverter(typeof(ExpandableObjectConverter))] public class ItemStruct
+        {
+            public Matrix UnkMatrix { get; set; }
+            public uint UnkUint1 { get; set; } = 0x56475743; // "VGWC"    vehicle glass window C..?
+            public ushort ItemID { get; set; } //matches UnkStruct1.Item
+            public ushort UnkUshort1 { get; set; }
+            public ushort UnkUshort2 { get; set; }
+            public ushort ItemDataCount { get; set; }//count of item data arrays
+            public ushort ItemDataByteLength { get; set; }//total byte length of ItemDatas plus byte length of ItemDataOffsets
+            public ushort UnkUshort3 { get; set; }
+            public uint UnkUint2 { get; set; } = 0; //0
+            public uint UnkUint3 { get; set; } = 0; //0
+            public float UnkFloat0 { get; set; }
+            public float UnkFloat1 { get; set; }
+            public ushort UnkUshort4 { get; set; } //0, 1
+            public ushort UnkUshort5 { get; set; } //2, 2050
+            public float UnkFloat2 { get; set; }
+            public uint UnkUint4 { get; set; } = 0; //0
+            public uint UnkUint5 { get; set; } = 0; //0
+            public ushort[] ItemDataOffsets { get; set; }//byte offsets for following array
+            public ItemDataStruct[] ItemDatas { get; set; }
+
+            public byte[] Leftovers { get; set; }//should just be leftover padding, TODO: getrid of this
+
+            public uint TotalLength
+            {
+                get
+                {
+                    uint bc = 112;
+                    bc += ItemDataCount*2u;
+                    bc += (uint)(Leftovers?.Length??0);
+                    if (ItemDatas != null)
+                    {
+                        foreach (var u in ItemDatas)
+                        {
+                            bc += u.TotalLength;
+                        }
+                    }
+                    return bc;
+                }
+            }
+
+            public void Read(ResourceDataReader reader)
+            {
+                UnkMatrix = reader.ReadStruct<Matrix>();
+                UnkUint1 = reader.ReadUInt32(); //0x56475743 "VGWC"
+                ItemID = reader.ReadUInt16();
+                UnkUshort1 = reader.ReadUInt16();
+                UnkUshort2 = reader.ReadUInt16();
+                ItemDataCount = reader.ReadUInt16();//count of item data arrays
+                ItemDataByteLength = reader.ReadUInt16();//total byte length of ItemDatas plus byte length of ItemDataOffsets
+                UnkUshort3 = reader.ReadUInt16();
+                UnkUint2 = reader.ReadUInt32();//0
+                UnkUint3 = reader.ReadUInt32();//0
+                UnkFloat0 = reader.ReadSingle();
+                UnkFloat1 = reader.ReadSingle();
+                UnkUshort4 = reader.ReadUInt16();//0, 1
+                UnkUshort5 = reader.ReadUInt16();//2, 2050
+                UnkFloat2 = reader.ReadSingle();
+                UnkUint4 = reader.ReadUInt32();//0
+                UnkUint5 = reader.ReadUInt32();//0
+
+
+                if (ItemDataByteLength != 0)//sometimes this is 0 and UnkUshort3>0, which is weird
+                {
+                    ItemDataOffsets = reader.ReadStructs<ushort>(ItemDataCount);//byte offsets for following array
+
+                    long coffset = 0;
+                    ItemDatas = new ItemDataStruct[ItemDataCount];
+                    for (int i = 0; i < ItemDataCount; i++)
+                    {
+                        var toffset = ItemDataOffsets[i];
+                        var cbrem = toffset - coffset;
+                        if (cbrem > 0)
+                        {
+                            var leftovers = reader.ReadBytes((int)cbrem);
+                            if (i > 0)
+                            {
+                                ItemDatas[i - 1].Leftovers = leftovers;
+                            }
+                            else
+                            { }
+                            coffset += cbrem;
+                        }
+                        else if (cbrem < 0)
+                        { }
+
+                        var rpos = reader.Position;
+                        var u = new ItemDataStruct();
+                        u.Read(reader);
+                        ItemDatas[i] = u;
+                        coffset += reader.Position - rpos;
+                    }
+
+                }
+                else
+                { }
+
+
+                if ((UnkUint2 != 0) || (UnkUint3 != 0) || (UnkUint4 != 0) || (UnkUint5 != 0))
+                { }
+                if ((UnkUshort4 != 0) && (UnkUshort4 != 1))  //1 in carbonrs.yft, policeb.yft, vader.yft
+                { }
+                if ((UnkUshort5 != 2) && (UnkUshort5 != 2050))  //2050 in cablecar.yft, submersible2.yft 
+                { }
+
+            }
+            public void Write(ResourceDataWriter writer)
+            {
+                writer.Write(UnkMatrix);
+                writer.Write(UnkUint1);
+                writer.Write(ItemID);
+                writer.Write(UnkUshort1);
+                writer.Write(UnkUshort2);
+                writer.Write(ItemDataCount);
+                writer.Write(ItemDataByteLength);
+                writer.Write(UnkUshort3);
+                writer.Write(UnkUint2);
+                writer.Write(UnkUint3);
+                writer.Write(UnkFloat0);
+                writer.Write(UnkFloat1);
+                writer.Write(UnkUshort4);
+                writer.Write(UnkUshort5);
+                writer.Write(UnkFloat2);
+                writer.Write(UnkUint4);
+                writer.Write(UnkUint5);
+                writer.WriteStructs(ItemDataOffsets);
+
+                if (ItemDatas != null)
+                {
+                    foreach (var ud in ItemDatas)
+                    {
+                        ud.Write(writer);
+                    }
+                }
+
+                if (Leftovers != null)
+                {
+                    writer.Write(Leftovers);
+                }
+
+            }
+
+            public override string ToString()
+            {
+                return ItemID.ToString() + ": " + UnkUshort1.ToString() + ": " + UnkUshort2.ToString() + ": " + ItemDataCount.ToString() + ": " + ItemDataByteLength.ToString() + ": " + UnkUshort3.ToString();
+            }
+        }
+        [TypeConverter(typeof(ExpandableObjectConverter))] public class ItemDataStruct
+        {
+            public byte UnkByte0 { get; set; }
+            public byte UnkByte1 { get; set; }
+            public byte[] UnkBytes { get; set; }
+            public byte[] Leftovers { get; set; }//still contains some data. how to read it properly? TODO: getrid of this
+
+            public uint TotalLength
+            {
+                get
+                {
+                    uint bc = 2;
+                    bc += (uint)(UnkBytes?.Length ?? 0);
+                    bc += (uint)(Leftovers?.Length ?? 0);
+                    return bc;
+                }
+            }
+
+            public void Read(ResourceDataReader reader)
+            {
+                UnkByte0 = reader.ReadByte();//start?
+                UnkByte1 = reader.ReadByte();//end?
+
+                int n = (UnkByte1 - UnkByte0) + 2;
+                if (n > 0)
+                {
+                    UnkBytes = reader.ReadBytes(n);
+                }
+                else if (n < 0)
+                { }
+
+            }
+            public void Write(ResourceDataWriter writer)
+            {
+                writer.Write(UnkByte0);
+                writer.Write(UnkByte1);
+
+                if (UnkBytes != null)
+                {
+                    writer.Write(UnkBytes);
+                }
+                if (Leftovers != null)
+                {
+                    writer.Write(Leftovers);
+                }
+            }
+
+            public override string ToString()
+            {
+                return UnkByte0.ToString() + ": " + UnkByte1.ToString();
+            }
+        }
+
+
         // structure data
-        public uint Unknown_0h { get; set; } // 0x56475748
-        public uint Unknown_4h { get; set; }
+        public uint Unknown_0h { get; set; } = 0x56475748; // "VGWH"   ...vehicle glass window H..?
+        public ushort Unknown_4h { get; set; } = 112;// = length of item headers
+        public ushort ItemCount { get; set; }
         public uint TotalLength { get; set; }
-        public uint Unknown_Ch { get; set; }
-        public byte[] Data { get; set; }
+        public ItemOffsetStruct[] ItemOffsets { get; set; }
+        public uint UnkUint0 { get; set; } = 0;
+        public ItemStruct[] Items { get; set; }
+
+        public byte[] Leftovers { get; set; } //leftover (unparsed) data, should just be padding. TODO: getrid of this!
+
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -2041,11 +2222,62 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.TotalLength = reader.ReadUInt32();
-            this.Unknown_Ch = reader.ReadUInt32();
-            this.Data = reader.ReadBytes((int)TotalLength - 16);
+            Unknown_0h = reader.ReadUInt32(); // "VGWH"   ...vehicle glass window H..?
+            Unknown_4h = reader.ReadUInt16(); //112 = length of item headers
+            ItemCount = reader.ReadUInt16();
+            TotalLength = reader.ReadUInt32();
+            ItemOffsets = reader.ReadStructs<ItemOffsetStruct>(ItemCount + (ItemCount & 1u)); //offsets in here start at just after UnkUint0
+            UnkUint0 = reader.ReadUInt32();//0
+
+            long coffset = 16 + ItemOffsets.Length*8;
+
+            Items = new ItemStruct[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
+            {
+                var us1 = ItemOffsets[i];
+                var cbrem = us1.Offset - coffset;
+                if (cbrem > 0)
+                {
+                    var leftovers = reader.ReadBytes((int)cbrem);
+                    if (i > 0)
+                    {
+                        Items[i - 1].Leftovers = leftovers;
+                    }
+                    else
+                    { }
+                    coffset += cbrem;
+                }
+                else if (cbrem < 0)
+                { }
+
+                var rpos = reader.Position;
+                var u = new ItemStruct();
+                u.Read(reader);
+                Items[i] = u;
+                coffset += reader.Position - rpos;
+            }
+
+            var leftover = (int)(TotalLength - coffset);
+            if (leftover > 0)
+            {
+                Leftovers = reader.ReadBytes(leftover);
+                if (ItemCount > 0)
+                {
+                    Items[ItemCount - 1].Leftovers = Leftovers;
+                    Leftovers = null;//hackity hack
+                }
+                else
+                { }
+            }
+            else if (leftover < 0)
+            { }
+
+
+            if (Unknown_4h != 112)
+            { }
+            if (UnkUint0 != 0)
+            { }
+
         }
 
         /// <summary>
@@ -2053,14 +2285,35 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            TotalLength = (uint)(Data?.Length ?? 0) + 16;
+            long bc = 16;
+            bc += ItemOffsets.Length*8;
+            foreach (var ud2 in Items)
+            {
+                bc += ud2.TotalLength;
+            }
+            bc += (uint)(Leftovers?.Length ?? 0);
+
+            TotalLength = (uint)bc;
 
             // write structure data
             writer.Write(this.Unknown_0h);
             writer.Write(this.Unknown_4h);
+            writer.Write(this.ItemCount);
             writer.Write(this.TotalLength);
-            writer.Write(this.Unknown_Ch);
-            writer.Write(Data);
+
+
+            writer.WriteStructs(ItemOffsets);
+            writer.Write(UnkUint0);
+
+            foreach (var ud2 in Items)
+            {
+                ud2.Write(writer);
+            }
+
+            if (Leftovers != null)
+            {
+                writer.Write(Leftovers);
+            }
         }
 
     }

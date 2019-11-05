@@ -492,7 +492,7 @@ namespace CodeWalker.World
                                 byte cr2 = (v2.NotFirst) ? (byte)255 : (byte)0;
                                 byte cg = 0;// (chain._Data.Unk_1156691834 > 1) ? (byte)255 : (byte)0;
                                 //cg = ((v1.Unk1 != 0) || (v2.Unk1 != 0)) ? (byte)255 : (byte)0;
-                                //cg = (edge.Action == Unk_3609807418.Unk_7865678) ? (byte)255 : (byte)0;
+                                //cg = (edge.Action == CScenarioChainingEdge__eAction.Unk_7865678) ? (byte)255 : (byte)0;
                                 //cg = ((v1.UnkValTest != 0) || (v2.UnkValTest != 0)) ? (byte)255 : (byte)0;
 
                                 byte cb1 = (byte)(255 - cr1);
