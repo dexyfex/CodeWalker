@@ -79,7 +79,7 @@ namespace CodeWalker.GameFiles
         public Dictionary<uint, World.TimecycleMod> TimeCycleModsDict = new Dictionary<uint, World.TimecycleMod>();
 
         public Dictionary<MetaHash, VehicleInitData> VehiclesInitDict { get; set; }
-
+        public Dictionary<MetaHash, CPedModelInfo__InitData> PedsInitDict { get; set; }
 
         public List<RpfFile> BaseRpfs { get; private set; }
         public List<RpfFile> AllRpfs { get; private set; }
@@ -89,6 +89,7 @@ namespace CodeWalker.GameFiles
         public bool BuildExtendedJenkIndex = true;
         public bool LoadArchetypes = true;
         public bool LoadVehicles = false;
+        public bool LoadPeds = false;
         private bool PreloadedMode = false;
 
         private string GTAFolder;
@@ -273,6 +274,10 @@ namespace CodeWalker.GameFiles
 
             UpdateStatus("Loading vehicles...");
             InitVehicles();
+
+            UpdateStatus("Loading peds...");
+            InitPeds();
+
         }
 
         private void InitDlcList()
@@ -1589,6 +1594,69 @@ namespace CodeWalker.GameFiles
 
 
             VehiclesInitDict = allVehicles;
+
+        }
+
+        public void InitPeds()
+        {
+            if (!LoadPeds) return;
+
+            IEnumerable<RpfFile> rpfs = PreloadedMode ? AllRpfs : (IEnumerable<RpfFile>)ActiveMapRpfFiles.Values;
+
+            var allPeds = new Dictionary<MetaHash, CPedModelInfo__InitData>();
+            var allPedsFiles = new List<PedsFile>();
+
+            var addPedsFiles = new Action<IEnumerable<RpfFile>>((from) =>
+            {
+                foreach (RpfFile file in from)
+                {
+                    if (file.AllEntries == null) continue;
+                    foreach (RpfEntry entry in file.AllEntries)
+                    {
+#if !DEBUG
+                        try
+#endif
+                        {
+                            if ((entry.NameLower == "peds.ymt") || (entry.NameLower == "peds.meta"))
+                            {
+                                var pf = RpfMan.GetFile<PedsFile>(entry);
+                                if (pf.InitDataList?.InitDatas != null)
+                                {
+                                    foreach (var initData in pf.InitDataList.InitDatas)
+                                    {
+                                        var name = initData.Name.ToLowerInvariant();
+                                        var hash = JenkHash.GenHash(name);
+                                        if (allPeds.ContainsKey(hash))
+                                        { }
+                                        allPeds[hash] = initData;
+                                    }
+                                }
+                                allPedsFiles.Add(pf);
+                            }
+                        }
+#if !DEBUG
+                        catch (Exception ex)
+                        {
+                            string errstr = entry.Path + "\n" + ex.ToString();
+                            ErrorLog(errstr);
+                        }
+#endif
+                    }
+                }
+
+            });
+
+
+            addPedsFiles(rpfs);
+
+            if (EnableDlc)
+            {
+                addPedsFiles(DlcActiveRpfs);
+            }
+
+
+            PedsInitDict = allPeds;
+
 
         }
 

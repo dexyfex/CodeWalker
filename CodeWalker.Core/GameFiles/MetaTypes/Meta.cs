@@ -1110,10 +1110,7 @@ namespace CodeWalker.GameFiles
         {
             var str = JenkIndex.TryGetString(Hash);
             if (!string.IsNullOrEmpty(str)) return str;
-            if (Enum.IsDefined(typeof(MetaName), Hash))
-            {
-                return ((MetaName)Hash).ToString();
-            }
+            if (MetaNames.TryGetString(Hash, out str)) return str;
             return GlobalText.GetString(Hash);
         }
 

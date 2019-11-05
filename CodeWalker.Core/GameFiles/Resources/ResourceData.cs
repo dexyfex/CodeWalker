@@ -266,6 +266,15 @@ namespace CodeWalker.GameFiles
             //Position = posbackup;
             return result;
         }
+        public short[] ReadShortsAt(ulong position, uint count)
+        {
+            if ((position <= 0) || (count == 0)) return null;
+            var result = new short[count];
+            var length = count * 2;
+            byte[] data = ReadBytesAt(position, length);
+            Buffer.BlockCopy(data, 0, result, 0, (int)length);
+            return result;
+        }
         public uint[] ReadUintsAt(ulong position, uint count)
         {
             if ((position <= 0) || (count == 0)) return null;

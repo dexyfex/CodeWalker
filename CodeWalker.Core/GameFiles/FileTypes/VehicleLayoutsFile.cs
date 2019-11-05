@@ -26,7 +26,7 @@ namespace CodeWalker.GameFiles
 
 
             //always XML .meta
-            Xml = Encoding.UTF8.GetString(data);
+            Xml = TextUtil.GetUTF8Text(data);
 
             //TODO: parse CVehicleMetadataMgr XML
 

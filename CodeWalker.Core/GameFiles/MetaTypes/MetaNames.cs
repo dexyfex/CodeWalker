@@ -8,6 +8,21 @@ using System.Threading.Tasks;
 namespace CodeWalker.GameFiles
 {
 
+    public static class MetaNames
+    {
+        public static bool TryGetString(uint h, out string str)
+        {
+            if (Enum.IsDefined(typeof(MetaName), h))
+            {
+                str = ((MetaName)h).ToString();
+                if (str.StartsWith("@")) str = str.Substring(1); //mainly to handle the @null entry
+                return true;
+            }
+            str = null;
+            return false;
+        }
+    }
+
     
     public class MetaNamesUtil
     {
@@ -3468,10 +3483,59 @@ namespace CodeWalker.GameFiles
         ePedVarComp = 884254308,
         ePropRenderFlags = 4212977111,
         CPedPropTexData = 254518642,
+        eScenarioPopStreamingSlot = 3029795674,
+        eFadeCurveType = 3057039286,
+        eSuperlodType = 4015041481,
+        ePedRadioGenre = 2942646938,
+        eSexinessFlags = 374769227,
+        eExternallyDrivenDOFs = 637184392,
+        SpecialAbilityType = 2011786168,
+        DefaultSpawnPreference = 888587604,
 
         CScenarioChainingEdge__eAction = 3609807418,
         CScenarioChainingEdge__eNavMode = 3971773454,
         CScenarioChainingEdge__eNavSpeed = 941086046,
+
+        standard_ped = 2703423328, //in peds.ymt
+        standard_male = 1860494962, //in peds.ymt PedCapsuleName
+        standard_female = 3778684510, //in peds.ymt PedCapsuleName
+        facial_clipset_group_gen_male = 2968316036, //in peds.ymt FacialClipsetGroupName
+        facial_clipset_group_gen_female = 984918963, //in peds.ymt FacialClipsetGroupName
+        facial_clipset_group_p_m_zero = 3839850645, //in peds.ymt FacialClipsetGroupName
+        facial_clipset_group_p_m_one = 3697506179, //in peds.ymt FacialClipsetGroupName
+        facial_clipset_group_p_m_two = 3958944905, //in peds.ymt FacialClipsetGroupName
+        anim_group_gesture_m_generic = 4080627616, //in peds.ymt DefaultGestureClipSet
+        anim_group_gesture_f_generic = 1375166916, //in peds.ymt DefaultGestureClipSet
+        anim_group_visemes_m_lo = 3326036851, //in peds.ymt DefaultVisemeClipSet
+        anim_group_visemes_f_lo = 2783456433, //in peds.ymt DefaultVisemeClipSet
+        nmbs_slow_getups = 69709351, //peds.ymt GetupSetHash
+        clip_set_id_invalid = 2106583169, //in peds.ymt
+        move_strafe_injured = 1434752434, //in peds.ymt InjuredStrafeClipSet
+        move_ped_to_strafe = 3943634031, //in peds.ymt MovementToStrafeClipSet
+        move_ped_strafing = 2464962150, //in peds.ymt StrafeClipSet
+        civmale = 45677184, //in peds.ymt Pedtype
+        civfemale = 1191392768, //in peds.ymt Pedtype
+        vfxpedinfo_human_generic = 1167185222, //in peds.ymt VfxInfoName
+        expr_set_ambient_male = 2495275024, //in peds.ymt ExpressionSetName
+        expr_set_ambient_female = 3793172393, //in peds.ymt ExpressionSetName
+        default_perception = 3537703288, //in peds.ymt PerceptionInfo
+        streamed_male = 4014297412, //in peds.ymt Personality
+        streamed_female = 991949850, //in peds.ymt Personality
+        fitnessmale = 921466782, //in peds.ymt Personality
+        fitnessfemale = 419688606, //in peds.ymt Personality
+        youngrichman = 3818603935, //in peds.ymt Personality
+        youngrichwoman = 367809573, //in peds.ymt Personality
+        youngaverageweakman = 3971800366, //in peds.ymt Personality
+        youngaverageweakwoman = 806694113, //in peds.ymt Personality
+        bs_ai = 2150391885,  //in peds.ymt DefaultBrawlingStyle
+        bs_franklin = 1037948029, //in peds.ymt DefaultBrawlingStyle
+        bs_michael = 2057220685, //in peds.ymt DefaultBrawlingStyle
+        bs_trevor = 1249954968, //in peds.ymt DefaultBrawlingStyle
+        weapon_unarmed = 2725352035,  //in peds.ymt DefaultUnarmedWeapon
+        silent_pvg = 423993118,  //in peds.ymt PedVoiceGroup
+        silent_cutscene_pvg = 1896822940,  //in peds.ymt PedVoiceGroup
+
+        @null = 987444055, // how best to handle this? C# doesn't like it
 
 
 

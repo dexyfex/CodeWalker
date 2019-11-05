@@ -541,13 +541,13 @@ namespace CodeWalker.GameFiles
 
         public Matrix[] TransformationsInverted { get; set; }
         public Matrix[] Transformations { get; set; }
-        public ushort[] ParentIndices { get; set; }
-        public ushort[] ChildIndices { get; set; }//mapping child->parent indices, first child index, then parent
+        public short[] ParentIndices { get; set; }
+        public short[] ChildIndices { get; set; }//mapping child->parent indices, first child index, then parent
 
         private ResourceSystemStructBlock<Matrix> TransformationsInvertedBlock = null;//for saving only
         private ResourceSystemStructBlock<Matrix> TransformationsBlock = null;
-        private ResourceSystemStructBlock<ushort> ParentIndicesBlock = null;
-        private ResourceSystemStructBlock<ushort> ChildIndicesBlock = null;
+        private ResourceSystemStructBlock<short> ParentIndicesBlock = null;
+        private ResourceSystemStructBlock<short> ChildIndicesBlock = null;
 
 
         public Dictionary<ushort, Bone> BonesMap { get; set; }//for convienience finding bones by tag
@@ -597,8 +597,8 @@ namespace CodeWalker.GameFiles
             );
             this.TransformationsInverted = reader.ReadStructsAt<Matrix>(this.TransformationsInvertedPointer, this.BonesCount);
             this.Transformations = reader.ReadStructsAt<Matrix>(this.TransformationsPointer, this.BonesCount);
-            this.ParentIndices = reader.ReadUshortsAt(this.ParentIndicesPointer, this.BonesCount);
-            this.ChildIndices = reader.ReadUshortsAt(this.ChildIndicesPointer, this.ChildIndicesCount);
+            this.ParentIndices = reader.ReadShortsAt(this.ParentIndicesPointer, this.BonesCount);
+            this.ChildIndices = reader.ReadShortsAt(this.ChildIndicesPointer, this.ChildIndicesCount);
 
 
             if ((Bones != null) && (ParentIndices != null))
@@ -608,7 +608,7 @@ namespace CodeWalker.GameFiles
                 {
                     var bone = Bones[i];
                     var pind = ParentIndices[i];
-                    if (pind < Bones.Count)
+                    if ((pind >= 0) && (pind < Bones.Count))
                     {
                         bone.Parent = Bones[pind];
                     }
@@ -698,12 +698,12 @@ namespace CodeWalker.GameFiles
             }
             if (ParentIndices != null)
             {
-                ParentIndicesBlock = new ResourceSystemStructBlock<ushort>(ParentIndices);
+                ParentIndicesBlock = new ResourceSystemStructBlock<short>(ParentIndices);
                 list.Add(ParentIndicesBlock);
             }
             if (ChildIndices != null)
             {
-                ChildIndicesBlock = new ResourceSystemStructBlock<ushort>(ChildIndices);
+                ChildIndicesBlock = new ResourceSystemStructBlock<short>(ChildIndices);
                 list.Add(ChildIndicesBlock);
             }
             return list.ToArray();
@@ -771,6 +771,27 @@ namespace CodeWalker.GameFiles
         }
     }
 
+    [Flags] public enum EBoneFlags : ushort
+    {
+        None = 0,
+        RotX = 0x1,
+        RotY = 0x2,
+        RotZ = 0x4,
+        LimitRotation = 0x8,
+        TransX = 0x10,
+        TransY = 0x20,
+        TransZ = 0x40,
+        LimitTranslation = 0x80,
+        ScaleX = 0x100,
+        ScaleY = 0x200,
+        ScaleZ = 0x400,
+        LimitScale = 0x800,
+        Unk0 = 0x1000,
+        Unk1 = 0x2000,
+        Unk2 = 0x4000,
+        Unk3 = 0x8000,
+    }
+
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Bone : ResourceSystemBlock
     {
         public override long BlockLength
@@ -788,14 +809,14 @@ namespace CodeWalker.GameFiles
         public uint Unknown_1Ch { get; set; } // 0x00000000 RHW?
         public Vector3 Scale { get; set; }
         public float Unknown_2Ch { get; set; } // 1.0  RHW?
-        public ushort NextSiblingIndex { get; set; } //limb end index? IK chain?
+        public short NextSiblingIndex { get; set; } //limb end index? IK chain?
         public short ParentIndex { get; set; }
         public uint Unknown_34h { get; set; } // 0x00000000
         public ulong NamePointer { get; set; }
-        public ushort Flags { get; set; }
-        public ushort Index { get; set; }
+        public EBoneFlags Flags { get; set; }
+        public short Index { get; set; }
         public ushort Tag { get; set; }
-        public ushort Index2 { get; set; }//same as Index?
+        public short Index2 { get; set; }//same as Index?
         public uint Unknown_48h { get; set; } // 0x00000000
         public uint Unknown_4Ch { get; set; } // 0x00000000
 
@@ -826,14 +847,14 @@ namespace CodeWalker.GameFiles
             this.Unknown_1Ch = reader.ReadUInt32();
             this.Scale = reader.ReadVector3();
             this.Unknown_2Ch = reader.ReadSingle();
-            this.NextSiblingIndex = reader.ReadUInt16();
+            this.NextSiblingIndex = reader.ReadInt16();
             this.ParentIndex = reader.ReadInt16();
             this.Unknown_34h = reader.ReadUInt32();
             this.NamePointer = reader.ReadUInt64();
-            this.Flags = reader.ReadUInt16();
-            this.Index = reader.ReadUInt16();
+            this.Flags = (EBoneFlags)reader.ReadUInt16();
+            this.Index = reader.ReadInt16();
             this.Tag = reader.ReadUInt16();
-            this.Index2 = reader.ReadUInt16();
+            this.Index2 = reader.ReadInt16();
             this.Unknown_48h = reader.ReadUInt32();
             this.Unknown_4Ch = reader.ReadUInt32();
 
@@ -866,7 +887,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.ParentIndex);
             writer.Write(this.Unknown_34h);
             writer.Write(this.NamePointer);
-            writer.Write(this.Flags);
+            writer.Write((ushort)this.Flags);
             writer.Write(this.Index);
             writer.Write(this.Tag);
             writer.Write(this.Index2);
