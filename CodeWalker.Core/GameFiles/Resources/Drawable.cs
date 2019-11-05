@@ -915,6 +915,40 @@ namespace CodeWalker.GameFiles
             SkinTransform = BindTransformInv * AnimTransform;
             //SkinTransform = Matrix.Identity;//(for testing)
         }
+
+
+
+
+
+        public static uint ElfHash_Uppercased(string str)
+        {
+            uint hash = 0;
+            uint x = 0;
+            uint i = 0;
+
+            for (i = 0; i < str.Length; i++)
+            {
+                var c = ((byte)str[(int)i]);
+                if ((byte)(c - 'a') <= 25u) // to uppercase
+                    c -= 32;
+
+                hash = (hash << 4) + c;
+
+                if ((x = hash & 0xF0000000) != 0)
+                {
+                    hash ^= (x >> 24);
+                }
+
+                hash &= ~x;
+            }
+
+            return hash;
+        }
+        public static ushort CalculateBoneHash(string boneName)
+        {
+            return (ushort)(ElfHash_Uppercased(boneName) % 0xFE8F + 0x170);
+        }
+
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Joints : ResourceSystemBlock
