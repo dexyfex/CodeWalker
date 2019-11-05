@@ -57,6 +57,16 @@ namespace CodeWalker.GameFiles
     {
         public Vector3 Position;
         public uint Colour;
+
+        // TODO: Find a way to add this without adding dependency to SharpDX.Direct3D11 or CW main assembly
+        /*public static InputElement[] GetLayout()
+        {
+            return new[]
+            {
+                new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
+            };
+        }*/
     }
 
 

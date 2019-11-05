@@ -162,6 +162,18 @@ namespace CodeWalker.Rendering
         public Vector3 Normal;
         public uint Colour;
         public Vector2 Texcoord;
+
+        public static InputElement[] GetLayout()
+        {
+            return new[]
+            {
+                new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
+                new InputElement("NORMAL", 0, Format.R32G32B32_Float, 12, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 24, 0),
+                new InputElement("TEXCOORD", 0, Format.R32G32_Float, 28, 0),
+            };
+        }
+
     }
 
     // used to draw WaterQuads
@@ -170,6 +182,16 @@ namespace CodeWalker.Rendering
         public Vector3 Position;
         public uint Colour;
         public Vector2 Texcoord;
+
+        public static InputElement[] GetLayout()
+        {
+            return new[]
+            {
+                new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0),
+                new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 12, 0),
+                new InputElement("TEXCOORD", 0, Format.R32G32_Float, 16, 0),
+            };
+        }
     }
 
     /*public struct VertexTypeDefault //id: 84500486, stride: 36, flags: 89, refs: 76099
