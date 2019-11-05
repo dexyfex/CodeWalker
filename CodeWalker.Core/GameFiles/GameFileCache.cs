@@ -3536,9 +3536,9 @@ namespace CodeWalker.GameFiles
                                     }
                                 }
                             }
-                            if ((yft.Fragment.Unknown_28h_Data != null) && (yft.Fragment.Unknown_28h_Data.data_items != null))
+                            if ((yft.Fragment.DrawableArray != null) && (yft.Fragment.DrawableArray.data_items != null))
                             {
-                                foreach (var drawable in yft.Fragment.Unknown_28h_Data.data_items)
+                                foreach (var drawable in yft.Fragment.DrawableArray.data_items)
                                 {
                                     drawablecount++;
                                     foreach (var kvp in drawable.VertexDecls)

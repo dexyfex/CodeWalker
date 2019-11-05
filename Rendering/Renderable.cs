@@ -165,10 +165,10 @@ namespace CodeWalker.Rendering
                 if (fd != null)
                 {
                     var frag = fd.OwnerFragment;
-                    var pose = frag?.Unknown_A8h_Data;
-                    if ((pose != null) && (pose.Data != null)) //seems to be the default pose
+                    var pose = frag?.BoneTransforms;
+                    if ((pose != null) && (pose.Items != null)) //seems to be the default pose
                     {
-                        var posebonecount = pose.Data.Length;
+                        var posebonecount = pose.Items.Length;
                         if ((modeltransforms == null))// || (modeltransforms.Length != posebonecount))
                         {
                             modeltransforms = new Matrix[posebonecount];
@@ -177,7 +177,7 @@ namespace CodeWalker.Rendering
                         var maxbonecount = Math.Min(posebonecount, modelbonecount);
                         for (int i = 0; i < maxbonecount; i++)
                         {
-                            var p = pose.Data[i];
+                            var p = pose.Items[i];
                             Vector4 r1 = p.Row1;
                             Vector4 r2 = p.Row2;
                             Vector4 r3 = p.Row3;
@@ -260,7 +260,7 @@ namespace CodeWalker.Rendering
                         if (bone != null)
                         {
                             if (ModelBoneLinks == null) ModelBoneLinks = new Dictionary<ushort, RenderableModel>();
-                            ModelBoneLinks[bone.Id] = model;
+                            ModelBoneLinks[bone.Tag] = model;
                         }
                     }
 
@@ -481,7 +481,7 @@ namespace CodeWalker.Rendering
 
                 //update model's transform from animated bone
                 RenderableModel bmodel = null;
-                ModelBoneLinks?.TryGetValue(bone.Id, out bmodel);
+                ModelBoneLinks?.TryGetValue(bone.Tag, out bmodel);
 
 
                 if (bmodel == null)

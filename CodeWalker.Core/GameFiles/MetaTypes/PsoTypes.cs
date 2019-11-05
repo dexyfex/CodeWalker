@@ -9023,13 +9023,13 @@ namespace CodeWalker.GameFiles
                     );
                 case (MetaName)2354064210:
                     return new PsoStructureInfo((MetaName)2354064210, 0, 0, 24,
-                     new PsoStructureEntryInfo(MetaName.Component, PsoDataType.Enum, 8, 0, (MetaName)884254308),
+                     new PsoStructureEntryInfo(MetaName.Component, PsoDataType.Enum, 8, 0, MetaName.ePedVarComp),
                      new PsoStructureEntryInfo(MetaName.DrawableId, PsoDataType.UInt, 12, 0, 0),
                      new PsoStructureEntryInfo(MetaName.DrawableAltId, PsoDataType.UInt, 16, 0, 0)
                     );
                 case (MetaName)2469984956:
                     return new PsoStructureInfo((MetaName)2469984956, 0, 0, 32,
-                     new PsoStructureEntryInfo(MetaName.Component, PsoDataType.Enum, 8, 0, (MetaName)884254308),
+                     new PsoStructureEntryInfo(MetaName.Component, PsoDataType.Enum, 8, 0, MetaName.ePedVarComp),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.UInt, 0, 0, 0),
                      new PsoStructureEntryInfo(MetaName.DrawableIds, PsoDataType.Array, 16, 0, (MetaName)1)
                     );
@@ -9697,14 +9697,14 @@ namespace CodeWalker.GameFiles
                     );
                 case (MetaName)3901274641:
                     return new PsoStructureInfo((MetaName)3901274641, 0, 0, 24,
-                     new PsoStructureEntryInfo(MetaName.Component, PsoDataType.Enum, 8, 0, (MetaName)884254308),
+                     new PsoStructureEntryInfo(MetaName.Component, PsoDataType.Enum, 8, 0, MetaName.ePedVarComp),
                      new PsoStructureEntryInfo(MetaName.DrawableId, PsoDataType.UInt, 12, 0, 0),
                      new PsoStructureEntryInfo(MetaName.DrawableAltId, PsoDataType.UInt, 16, 0, 0),
                      new PsoStructureEntryInfo(MetaName.TexId, PsoDataType.UInt, 20, 0, 0)
                     );
                 case (MetaName)3788247444:
                     return new PsoStructureInfo((MetaName)3788247444, 0, 0, 32,
-                     new PsoStructureEntryInfo(MetaName.Component, PsoDataType.Enum, 8, 0, (MetaName)884254308),
+                     new PsoStructureEntryInfo(MetaName.Component, PsoDataType.Enum, 8, 0, MetaName.ePedVarComp),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.UInt, 0, 0, 0),
                      new PsoStructureEntryInfo(MetaName.DrawableIds, PsoDataType.Array, 16, 0, (MetaName)1)
                     );
@@ -13062,7 +13062,7 @@ namespace CodeWalker.GameFiles
                     );
                 case (MetaName)3553377863:
                     return new PsoStructureInfo((MetaName)3553377863, 0, 0, 12,
-                     new PsoStructureEntryInfo(MetaName.Component, PsoDataType.Enum, 0, 0, (MetaName)884254308),
+                     new PsoStructureEntryInfo(MetaName.Component, PsoDataType.Enum, 0, 0, MetaName.ePedVarComp),
                      new PsoStructureEntryInfo(MetaName.DrawableIndex, PsoDataType.SInt, 4, 0, 0),
                      new PsoStructureEntryInfo(MetaName.Restriction, PsoDataType.Enum, 8, 0, (MetaName)2065671281)
                     );
@@ -13207,8 +13207,8 @@ namespace CodeWalker.GameFiles
                     return new PsoStructureInfo(MetaName.CScenarioChainingEdge, 0, 0, 16,
                      new PsoStructureEntryInfo(MetaName.NodeIndexFrom, PsoDataType.UShort, 8, 0, 0),
                      new PsoStructureEntryInfo(MetaName.NodeIndexTo, PsoDataType.UShort, 10, 0, 0),
-                     new PsoStructureEntryInfo(MetaName.NavMode, PsoDataType.Enum, 12, 2, (MetaName)3971773454),
-                     new PsoStructureEntryInfo(MetaName.NavSpeed, PsoDataType.Enum, 13, 2, (MetaName)941086046)
+                     new PsoStructureEntryInfo(MetaName.NavMode, PsoDataType.Enum, 12, 2, MetaName.CScenarioChainingEdge__eNavMode),
+                     new PsoStructureEntryInfo(MetaName.NavSpeed, PsoDataType.Enum, 13, 2, MetaName.CScenarioChainingEdge__eNavSpeed)
                     );
                 case MetaName.CPedVariationInfo:
                     return new PsoStructureInfo(MetaName.CPedVariationInfo, 0, 0, 112,
@@ -13231,7 +13231,7 @@ namespace CodeWalker.GameFiles
                     return new PsoStructureInfo(MetaName.CPedPropInfo, 0, 0, 40,
                      new PsoStructureEntryInfo((MetaName)2598445407, PsoDataType.UByte, 0, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CPedPropMetaData),
-                     new PsoStructureEntryInfo((MetaName)3902803273, PsoDataType.Array, 8, 0, (MetaName)1),
+                     new PsoStructureEntryInfo(MetaName.aPropMetaData, PsoDataType.Array, 8, 0, (MetaName)1),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CAnchorProps),
                      new PsoStructureEntryInfo(MetaName.aAnchors, PsoDataType.Array, 24, 0, (MetaName)3)
                     );
@@ -13267,7 +13267,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.flags, PsoDataType.UInt, 28, 0, 0),
                      new PsoStructureEntryInfo(MetaName.inclusions, PsoDataType.Flags, 32, 0, (MetaName)2101247),
                      new PsoStructureEntryInfo(MetaName.exclusions, PsoDataType.Flags, 36, 0, (MetaName)2101247),
-                     new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Enum, 0, 0, (MetaName)884254308),
+                     new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Enum, 0, 0, MetaName.ePedVarComp),
                      new PsoStructureEntryInfo((MetaName)1613922652, PsoDataType.Flags, 40, 1, (MetaName)1048583),
                      new PsoStructureEntryInfo((MetaName)2114993291, PsoDataType.UShort, 42, 0, 0),
                      new PsoStructureEntryInfo((MetaName)3509540765, PsoDataType.UByte, 44, 0, 0),
@@ -15540,8 +15540,8 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo((MetaName)3999177563, 1),
                      new PsoEnumEntryInfo((MetaName)3250863043, 2)
                     );
-                case (MetaName)884254308:
-                    return new PsoEnumInfo((MetaName)884254308, 1,
+                case MetaName.ePedVarComp:
+                    return new PsoEnumInfo(MetaName.ePedVarComp, 1,
                      new PsoEnumEntryInfo(MetaName.PV_COMP_INVALID, -1),
                      new PsoEnumEntryInfo(MetaName.PV_COMP_HEAD, 0),
                      new PsoEnumEntryInfo(MetaName.PV_COMP_BERD, 1),
@@ -15741,14 +15741,14 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo(MetaName.NoSpawn, 1),
                      new PsoEnumEntryInfo(MetaName.StationaryReactions, 2)
                     );
-                case (MetaName)3971773454:
-                    return new PsoEnumInfo((MetaName)3971773454, 1,
+                case MetaName.CScenarioChainingEdge__eNavMode:
+                    return new PsoEnumInfo(MetaName.CScenarioChainingEdge__eNavMode, 1,
                      new PsoEnumEntryInfo(MetaName.Direct, 0),
                      new PsoEnumEntryInfo(MetaName.NavMesh, 1),
                      new PsoEnumEntryInfo(MetaName.Roads, 2)
                     );
-                case (MetaName)941086046:
-                    return new PsoEnumInfo((MetaName)941086046, 1,
+                case MetaName.CScenarioChainingEdge__eNavSpeed:
+                    return new PsoEnumInfo(MetaName.CScenarioChainingEdge__eNavSpeed, 1,
                      new PsoEnumEntryInfo((MetaName)3279574318, 0),
                      new PsoEnumEntryInfo((MetaName)2212923970, 1),
                      new PsoEnumEntryInfo((MetaName)4022799658, 2),

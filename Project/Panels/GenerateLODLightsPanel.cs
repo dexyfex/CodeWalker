@@ -154,7 +154,7 @@ namespace CodeWalker.Project.Panels
                                         for (int j = 0; j < skeleton.Bones.Data.Count; j++)
                                         {
                                             var tbone = skeleton.Bones.Data[j];
-                                            if (tbone.Id == la.BoneId)
+                                            if (tbone.Tag == la.BoneId)
                                             {
                                                 boneidx = j;
                                                 bone = tbone;

@@ -3464,11 +3464,14 @@ namespace CodeWalker.GameFiles
 
         FloatXYZ = 3805007828,
 
+        aPropMetaData = 3902803273,
+        ePedVarComp = 884254308,
+        ePropRenderFlags = 4212977111,
+        CPedPropTexData = 254518642,
 
-
-
-
-
+        CScenarioChainingEdge__eAction = 3609807418,
+        CScenarioChainingEdge__eNavMode = 3971773454,
+        CScenarioChainingEdge__eNavSpeed = 941086046,
 
 
 

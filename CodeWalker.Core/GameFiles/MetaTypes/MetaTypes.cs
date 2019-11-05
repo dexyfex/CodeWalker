@@ -411,9 +411,9 @@ namespace CodeWalker.GameFiles
                     return new MetaStructureInfo(MetaName.CScenarioChainingEdge, 2004985940, 256, 8,
                      new MetaStructureEntryInfo_s(MetaName.NodeIndexFrom, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.NodeIndexTo, 2, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Action, 4, MetaStructureEntryDataType.ByteEnum, 0, 0, (MetaName)3609807418),
-                     new MetaStructureEntryInfo_s(MetaName.NavMode, 5, MetaStructureEntryDataType.ByteEnum, 0, 0, (MetaName)3971773454),
-                     new MetaStructureEntryInfo_s(MetaName.NavSpeed, 6, MetaStructureEntryDataType.ByteEnum, 0, 0, (MetaName)941086046)
+                     new MetaStructureEntryInfo_s(MetaName.Action, 4, MetaStructureEntryDataType.ByteEnum, 0, 0, MetaName.CScenarioChainingEdge__eAction),
+                     new MetaStructureEntryInfo_s(MetaName.NavMode, 5, MetaStructureEntryDataType.ByteEnum, 0, 0, MetaName.CScenarioChainingEdge__eNavMode),
+                     new MetaStructureEntryInfo_s(MetaName.NavSpeed, 6, MetaStructureEntryDataType.ByteEnum, 0, 0, MetaName.CScenarioChainingEdge__eNavSpeed)
                     );
                 case MetaName.CScenarioChain:
                     return new MetaStructureInfo(MetaName.CScenarioChain, 2751910366, 768, 40,
@@ -1011,7 +1011,7 @@ namespace CodeWalker.GameFiles
                     return new MetaStructureInfo(MetaName.CPedPropInfo, 1792487819, 768, 40,
                      new MetaStructureEntryInfo_s((MetaName)2598445407, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropMetaData),
-                     new MetaStructureEntryInfo_s((MetaName)3902803273, 8, MetaStructureEntryDataType.Array, 0, 1, 0),
+                     new MetaStructureEntryInfo_s(MetaName.aPropMetaData, 8, MetaStructureEntryDataType.Array, 0, 1, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CAnchorProps),
                      new MetaStructureEntryInfo_s(MetaName.aAnchors, 24, MetaStructureEntryDataType.Array, 0, 3, 0)
                     );
@@ -1064,7 +1064,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.flags, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.inclusions, 32, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
                      new MetaStructureEntryInfo_s(MetaName.exclusions, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
-                     new MetaStructureEntryInfo_s((MetaName)1613922652, 40, MetaStructureEntryDataType.ShortFlags, 0, 16, (MetaName)884254308),
+                     new MetaStructureEntryInfo_s((MetaName)1613922652, 40, MetaStructureEntryDataType.ShortFlags, 0, 16, MetaName.ePedVarComp),
                      new MetaStructureEntryInfo_s((MetaName)2114993291, 42, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)3509540765, 44, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)4196345791, 45, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
@@ -1074,17 +1074,17 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.audioId, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.expressionMods, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, (MetaName)5),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)254518642),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropTexData),
                      new MetaStructureEntryInfo_s(MetaName.texData, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
-                     new MetaStructureEntryInfo_s(MetaName.renderFlags, 40, MetaStructureEntryDataType.IntFlags1, 0, 3, (MetaName)4212977111),
+                     new MetaStructureEntryInfo_s(MetaName.renderFlags, 40, MetaStructureEntryDataType.IntFlags1, 0, 3, MetaName.ePropRenderFlags),
                      new MetaStructureEntryInfo_s(MetaName.propFlags, 44, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.flags, 48, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.anchorId, 50, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.propId, 51, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)2894625425, 52, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
                     );
-                case (MetaName)254518642:
-                    return new MetaStructureInfo((MetaName)254518642, 2767296137, 512, 12,
+                case MetaName.CPedPropTexData:
+                    return new MetaStructureInfo(MetaName.CPedPropTexData, 2767296137, 512, 12,
                      new MetaStructureEntryInfo_s(MetaName.inclusions, 0, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
                      new MetaStructureEntryInfo_s(MetaName.exclusions, 4, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
                      new MetaStructureEntryInfo_s(MetaName.texId, 8, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
@@ -1285,20 +1285,20 @@ namespace CodeWalker.GameFiles
                      new MetaEnumEntryInfo_s(MetaName.kOnlySp, 1),
                      new MetaEnumEntryInfo_s(MetaName.kOnlyMp, 2)
                     );
-                case (MetaName)3609807418:
-                    return new MetaEnumInfo((MetaName)3609807418, 3326075799,
+                case MetaName.CScenarioChainingEdge__eAction:
+                    return new MetaEnumInfo(MetaName.CScenarioChainingEdge__eAction, 3326075799,
                      new MetaEnumEntryInfo_s(MetaName.Move, 0),
                      new MetaEnumEntryInfo_s((MetaName)7865678, 1),
                      new MetaEnumEntryInfo_s(MetaName.MoveFollowMaster, 2)
                     );
-                case (MetaName)3971773454:
-                    return new MetaEnumInfo((MetaName)3971773454, 3016128742,
+                case MetaName.CScenarioChainingEdge__eNavMode:
+                    return new MetaEnumInfo(MetaName.CScenarioChainingEdge__eNavMode, 3016128742,
                      new MetaEnumEntryInfo_s(MetaName.Direct, 0),
                      new MetaEnumEntryInfo_s(MetaName.NavMesh, 1),
                      new MetaEnumEntryInfo_s(MetaName.Roads, 2)
                     );
-                case (MetaName)941086046:
-                    return new MetaEnumInfo((MetaName)941086046, 1112851290,
+                case MetaName.CScenarioChainingEdge__eNavSpeed:
+                    return new MetaEnumInfo(MetaName.CScenarioChainingEdge__eNavSpeed, 1112851290,
                      new MetaEnumEntryInfo_s((MetaName)3279574318, 0),
                      new MetaEnumEntryInfo_s((MetaName)2212923970, 1),
                      new MetaEnumEntryInfo_s((MetaName)4022799658, 2),
@@ -1363,8 +1363,8 @@ namespace CodeWalker.GameFiles
                      new MetaEnumEntryInfo_s((MetaName)665241531, 0),
                      new MetaEnumEntryInfo_s((MetaName)462992848, 1)
                     );
-                case (MetaName)884254308:
-                    return new MetaEnumInfo((MetaName)884254308, 3472084374,
+                case MetaName.ePedVarComp:
+                    return new MetaEnumInfo(MetaName.ePedVarComp, 3472084374,
                      new MetaEnumEntryInfo_s(MetaName.PV_COMP_INVALID, -1),
                      new MetaEnumEntryInfo_s(MetaName.PV_COMP_HEAD, 0),
                      new MetaEnumEntryInfo_s(MetaName.PV_COMP_BERD, 1),
@@ -1380,8 +1380,8 @@ namespace CodeWalker.GameFiles
                      new MetaEnumEntryInfo_s(MetaName.PV_COMP_JBIB, 11),
                      new MetaEnumEntryInfo_s(MetaName.PV_COMP_MAX, 12)
                     );
-                case (MetaName)4212977111:
-                    return new MetaEnumInfo((MetaName)4212977111, 1551913633,
+                case MetaName.ePropRenderFlags:
+                    return new MetaEnumInfo(MetaName.ePropRenderFlags, 1551913633,
                      new MetaEnumEntryInfo_s((MetaName)3757767268, 0),
                      new MetaEnumEntryInfo_s((MetaName)3735238938, 1),
                      new MetaEnumEntryInfo_s((MetaName)3395845123, 2)
@@ -2141,7 +2141,7 @@ namespace CodeWalker.GameFiles
         kOnlyMp = 2,
     }
 
-    public enum Unk_3609807418 //SCENARIO (Path) Edge Action
+    public enum CScenarioChainingEdge__eAction //SCENARIO (Path) Edge Action
         : byte //Key:3326075799
     {
         Move = 0,
@@ -2149,7 +2149,7 @@ namespace CodeWalker.GameFiles
         MoveFollowMaster = 2,
     }
 
-    public enum Unk_3971773454 //SCENARIO (Path) Edge nav mode
+    public enum CScenarioChainingEdge__eNavMode //SCENARIO (Path) Edge nav mode
         : byte //Key:3016128742
     {
         Direct = 0,
@@ -2157,7 +2157,7 @@ namespace CodeWalker.GameFiles
         Roads = 2,
     }
 
-    public enum Unk_941086046 //SCENARIO (Path) Edge nav speed
+    public enum CScenarioChainingEdge__eNavSpeed //SCENARIO (Path) Edge nav speed
         : byte //Key:1112851290
     {
         Unk_00_3279574318 = 0,
@@ -2237,7 +2237,7 @@ namespace CodeWalker.GameFiles
         Unk_462992848 = 1,
     }
 
-    public enum Unk_884254308 //component peds CComponentInfo ped accessory / variations slot
+    public enum ePedVarComp //component peds CComponentInfo ped accessory / variations slot
         : short //Key:3472084374
     {
         PV_COMP_INVALID = -1,
@@ -2256,7 +2256,7 @@ namespace CodeWalker.GameFiles
         PV_COMP_MAX = 2048,//12,
     }
 
-    public enum Unk_4212977111 //component peds CPedPropMetaData renderFlags
+    public enum ePropRenderFlags //component peds CPedPropMetaData renderFlags
         : int //Key:1551913633
     {
         Unk_3757767268 = 0,
@@ -4300,9 +4300,9 @@ namespace CodeWalker.GameFiles
                 if (edges != null)
                 {
                     mb.AddStructureInfo(MetaName.CScenarioChainingEdge);
-                    mb.AddEnumInfo((MetaName)3609807418);
-                    mb.AddEnumInfo((MetaName)3971773454);
-                    mb.AddEnumInfo((MetaName)941086046);
+                    mb.AddEnumInfo(MetaName.CScenarioChainingEdge__eAction);
+                    mb.AddEnumInfo(MetaName.CScenarioChainingEdge__eNavMode);
+                    mb.AddEnumInfo(MetaName.CScenarioChainingEdge__eNavSpeed);
                     pd.Edges = mb.AddItemArrayPtr(MetaName.CScenarioChainingEdge, edges);
                 }
                 if (Paths.Chains != null)
@@ -5380,9 +5380,9 @@ namespace CodeWalker.GameFiles
     {
         public ushort NodeIndexFrom { get; set; } //0   0: UnsignedShort: 0: NodeIndexFrom//3236798246
         public ushort NodeIndexTo { get; set; } //2   2: UnsignedShort: 0: NodeIndexTo//2851806039
-        public Unk_3609807418 Action { get; set; } //4   4: ByteEnum: 3609807418: Action
-        public Unk_3971773454 NavMode { get; set; } //5   5: ByteEnum: 3971773454: NavMode//859022269
-        public Unk_941086046 NavSpeed { get; set; } //6   6: ByteEnum: 941086046: NavSpeed//1419316113
+        public CScenarioChainingEdge__eAction Action { get; set; } //4   4: ByteEnum: CScenarioChainingEdge__eAction: Action
+        public CScenarioChainingEdge__eNavMode NavMode { get; set; } //5   5: ByteEnum: CScenarioChainingEdge__eNavMode: NavMode
+        public CScenarioChainingEdge__eNavSpeed NavSpeed { get; set; } //6   6: ByteEnum: CScenarioChainingEdge__eNavSpeed: NavSpeed
         public byte Unused0 { get; set; }//7
 
         public override string ToString()
@@ -5401,9 +5401,9 @@ namespace CodeWalker.GameFiles
         public MCScenarioChainingNode NodeTo { get; set; }
         public ushort NodeIndexFrom { get { return _Data.NodeIndexFrom; } set { _Data.NodeIndexFrom = value; } }
         public ushort NodeIndexTo { get { return _Data.NodeIndexTo; } set { _Data.NodeIndexTo = value; } }
-        public Unk_3609807418 Action { get { return _Data.Action; } set { _Data.Action = value; } }
-        public Unk_3971773454 NavMode { get { return _Data.NavMode; } set { _Data.NavMode = value; } }
-        public Unk_941086046 NavSpeed { get { return _Data.NavSpeed; } set { _Data.NavSpeed = value; } }
+        public CScenarioChainingEdge__eAction Action { get { return _Data.Action; } set { _Data.Action = value; } }
+        public CScenarioChainingEdge__eNavMode NavMode { get { return _Data.NavMode; } set { _Data.NavMode = value; } }
+        public CScenarioChainingEdge__eNavSpeed NavSpeed { get { return _Data.NavSpeed; } set { _Data.NavSpeed = value; } }
 
 
         public int EdgeIndex { get; set; }
@@ -6067,7 +6067,7 @@ namespace CodeWalker.GameFiles
         public uint flags { get; set; } //28   28: UnsignedInt: 0: flags
         public int inclusions { get; set; } //32   32: IntFlags2: 0: inclusions//2172318933
         public int exclusions { get; set; } //36   36: IntFlags2: 0: exclusions
-        public Unk_884254308 Unk_1613922652 { get; set; } //40   40: ShortFlags: 884254308: 1613922652
+        public ePedVarComp Unk_1613922652 { get; set; } //40   40: ShortFlags: ePedVarComp: 1613922652
         public ushort Unk_2114993291 { get; set; } //42   42: UnsignedShort: 0: 2114993291
         public byte Unk_3509540765 { get; set; } //44   44: UnsignedByte: 0: 3509540765
         public byte Unk_4196345791 { get; set; } //45   45: UnsignedByte: 0: 4196345791
@@ -6080,11 +6080,11 @@ namespace CodeWalker.GameFiles
         public byte Unused0 { get; set; }//1
         public ushort Unused1 { get; set; }//2
         public uint Unused2 { get; set; }//4
-        public Array_Structure Unk_3902803273 { get; set; } //8   8: Array: 0: 3902803273  {0: Structure: 94549140: 256}
-        public Array_Structure aAnchors { get; set; } //24   24: Array: 0: aAnchors//162345210  {0: Structure: CAnchorProps//2170383875: 256}
+        public Array_Structure aPropMetaData { get; set; } //8   8: Array: 0: aPropMetaData  {0: Structure: CPedPropMetaData: 256}
+        public Array_Structure aAnchors { get; set; } //24   24: Array: 0: aAnchors  {0: Structure: CAnchorProps: 256}
     }
 
-    public struct CPedPropMetaData //56 bytes, Key:2029738350  //COMPONENT PEDS unknown
+    public struct CPedPropMetaData //56 bytes, Key:2029738350  //COMPONENT PEDS prop metadata
     {
         public MetaHash audioId { get; set; } //0   0: Hash: 0: audioId
         public ArrayOfBytes5 expressionMods { get; set; } //4   4: ArrayOfBytes: 5: expressionMods//942761829
@@ -6093,25 +6093,25 @@ namespace CodeWalker.GameFiles
         public uint Unused2 { get; set; }//12
         public uint Unused3 { get; set; }//16
         public uint Unused4 { get; set; }//20
-        public Array_Structure texData { get; set; } //24   24: Array: 0: texData//4088935562  {0: Structure: 254518642: 256}
-        public Unk_4212977111 renderFlags { get; set; } //40   40: IntFlags1: 4212977111: renderFlags//4239582912
-        public uint propFlags { get; set; } //44   44: UnsignedInt: 0: propFlags//1066841901
+        public Array_Structure texData { get; set; } //24   24: Array: 0: texData  {0: Structure: CPedPropTexData: 256}
+        public ePropRenderFlags renderFlags { get; set; } //40   40: IntFlags1: ePropRenderFlags: renderFlags
+        public uint propFlags { get; set; } //44   44: UnsignedInt: 0: propFlags
         public ushort flags { get; set; } //48   48: UnsignedShort: 0: flags
-        public byte anchorId { get; set; } //50   50: UnsignedByte: 0: anchorId//2731224028
-        public byte propId { get; set; } //51   51: UnsignedByte: 0: propId//3817142252
+        public byte anchorId { get; set; } //50   50: UnsignedByte: 0: anchorId
+        public byte propId { get; set; } //51   51: UnsignedByte: 0: propId
         public byte Unk_2894625425 { get; set; } //52   52: UnsignedByte: 0: 2894625425
         public byte Unused5 { get; set; }//53
         public ushort Unused6 { get; set; }//54
     }
 
-    public struct Unk_254518642 //12 bytes, Key:2767296137  //COMPONENT PEDS (expression?) texData
+    public struct CPedPropTexData //12 bytes, Key:2767296137  //COMPONENT PEDS prop texData
     {
-        public int inclusions { get; set; } //0   0: IntFlags2: 0: inclusions//2172318933
+        public int inclusions { get; set; } //0   0: IntFlags2: 0: inclusions
         public int exclusions { get; set; } //4   4: IntFlags2: 0: exclusions
         public byte texId { get; set; } //8   8: UnsignedByte: 0: texId
-        public byte inclusionId { get; set; } //9   9: UnsignedByte: 0: inclusionId//1938349561
-        public byte exclusionId { get; set; } //10   10: UnsignedByte: 0: exclusionId//3819522186
-        public byte distribution { get; set; } //11   11: UnsignedByte: 0: distribution//914976023
+        public byte inclusionId { get; set; } //9   9: UnsignedByte: 0: inclusionId
+        public byte exclusionId { get; set; } //10   10: UnsignedByte: 0: exclusionId
+        public byte distribution { get; set; } //11   11: UnsignedByte: 0: distribution
     }
 
     public struct CAnchorProps //24 bytes, Key:403574180  //COMPONENT PEDS CAnchorProps
