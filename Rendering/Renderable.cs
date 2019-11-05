@@ -279,14 +279,14 @@ namespace CodeWalker.Rendering
                     else if (!usepose) //when using the skeleton's matrices, they need to be transformed by parent
                     {
                         trans.Column4 = Vector4.UnitW;
-                        ushort[] pinds = skeleton.ParentIndices;
-                        ushort parentind = ((pinds != null) && (boneidx < pinds.Length)) ? pinds[boneidx] : (ushort)65535;
-                        while (parentind < pinds.Length)
+                        short[] pinds = skeleton.ParentIndices;
+                        short parentind = ((pinds != null) && (boneidx < pinds.Length)) ? pinds[boneidx] : (short)-1;
+                        while ((parentind >= 0) && (parentind < pinds.Length))
                         {
                             Matrix ptrans = (parentind < modeltransforms.Length) ? modeltransforms[parentind] : Matrix.Identity;
                             ptrans.Column4 = Vector4.UnitW;
                             trans = Matrix.Multiply(ptrans, trans);
-                            parentind = ((pinds != null) && (parentind < pinds.Length)) ? pinds[parentind] : (ushort)65535;
+                            parentind = ((pinds != null) && (parentind < pinds.Length)) ? pinds[parentind] : (short)-1;
                         }
                     }
 

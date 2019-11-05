@@ -81,6 +81,25 @@ namespace CodeWalker
             // Return formatted number with suffix
             return readable.ToString(fmt) + suffix;
         }
+
+
+
+        public static string GetUTF8Text(byte[] bytes)
+        {
+            if (bytes == null)
+            { return string.Empty; } //file not found..
+            if ((bytes.Length > 3) && (bytes[0] == 0xEF) && (bytes[1] == 0xBB) && (bytes[2] == 0xBF))
+            {
+                byte[] newb = new byte[bytes.Length - 3];
+                for (int i = 3; i < bytes.Length; i++)
+                {
+                    newb[i - 3] = bytes[i];
+                }
+                bytes = newb; //trim starting byte order mark
+            }
+            return Encoding.UTF8.GetString(bytes);
+        }
+
     }
 
 

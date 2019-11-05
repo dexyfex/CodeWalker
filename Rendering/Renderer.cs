@@ -1136,7 +1136,7 @@ namespace CodeWalker.Rendering
                     if (xforms != null)//how to use xforms? bind pose?
                     {
                         var xform = (i < xforms.Length) ? xforms[i] : Matrix.Identity;
-                        var pxform = (pind < xforms.Length) ? xforms[pind] : Matrix.Identity;
+                        var pxform = ((pind >= 0) && (pind < xforms.Length)) ? xforms[pind] : Matrix.Identity;
                     }
                     else
                     {

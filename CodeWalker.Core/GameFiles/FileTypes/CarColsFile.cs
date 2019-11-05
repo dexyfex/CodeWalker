@@ -44,7 +44,7 @@ namespace CodeWalker.GameFiles
             }
             else
             {
-                Xml = Encoding.UTF8.GetString(data);
+                Xml = TextUtil.GetUTF8Text(data);
             }
 
             XmlDocument xdoc = new XmlDocument();

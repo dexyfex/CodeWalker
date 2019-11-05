@@ -1827,12 +1827,10 @@ namespace CodeWalker.GameFiles
             uint uh = (uint)h;
             if (uh == 0) return "";
 
-            if (Enum.IsDefined(typeof(MetaName), h))
-            {
-                return h.ToString();
-            }
+            string str;
+            if (MetaNames.TryGetString(uh, out str)) return str;
 
-            var str = JenkIndex.TryGetString(uh);
+            str = JenkIndex.TryGetString(uh);
             if (!string.IsNullOrEmpty(str)) return str;
 
             //TODO: do extra hash lookup here
@@ -1849,11 +1847,7 @@ namespace CodeWalker.GameFiles
 
             if (string.IsNullOrEmpty(str))
             {
-                var nh = (MetaName)(uint)h;
-                if (Enum.IsDefined(typeof(MetaName), nh))
-                {
-                    return nh.ToString();
-                }
+                if (MetaNames.TryGetString(h, out str)) return str;
             }
 
             //todo: make sure JenkIndex is built!
@@ -1880,12 +1874,10 @@ namespace CodeWalker.GameFiles
 
         public static string UintString(uint h)
         {
-            if (Enum.IsDefined(typeof(MetaName), h))
-            {
-                return ((MetaName)h).ToString();
-            }
+            string str;
+            if (MetaNames.TryGetString(h, out str)) return str;
 
-            var str = JenkIndex.TryGetString(h);
+            str = JenkIndex.TryGetString(h);
             if (!string.IsNullOrEmpty(str)) return str;
 
             //TODO: do extra hash lookup here

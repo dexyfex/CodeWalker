@@ -283,18 +283,7 @@ namespace CodeWalker.GameFiles
         public string GetFileUTF8Text(string path)
         {
             byte[] bytes = GetFileData(path);
-            if (bytes == null)
-            { return string.Empty; } //file not found..
-            if ((bytes.Length > 3) && (bytes[0] == 0xEF) && (bytes[1] == 0xBB) && (bytes[2] == 0xBF))
-            {
-                byte[] newb = new byte[bytes.Length - 3];
-                for (int i = 3; i < bytes.Length; i++)
-                {
-                    newb[i - 3] = bytes[i];
-                }
-                bytes = newb; //trim starting 3 "magic" bytes?
-            }
-            return Encoding.UTF8.GetString(bytes);
+            return TextUtil.GetUTF8Text(bytes);
         }
         public XmlDocument GetFileXml(string path)
         {
