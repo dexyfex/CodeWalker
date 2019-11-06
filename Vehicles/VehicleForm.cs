@@ -680,7 +680,7 @@ namespace CodeWalker.Vehicles
                 SelectedVehicleHash = modelhash;
                 SelectedVehicleInit = vid;
                 SelectedVehicleYft = GameFileCache.GetYft(SelectedModelHash);
-                while (!SelectedVehicleYft.Loaded)
+                while ((SelectedVehicleYft != null) && (!SelectedVehicleYft.Loaded))
                 {
                     Thread.Sleep(20);//kinda hacky
                     SelectedVehicleYft = GameFileCache.GetYft(SelectedModelHash);

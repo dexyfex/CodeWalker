@@ -76,6 +76,7 @@ namespace CodeWalker.GameFiles
         CarVariations = 20,
         VehicleLayouts = 21,
         Peds = 22,
+        Ped = 23,
     }
 
 

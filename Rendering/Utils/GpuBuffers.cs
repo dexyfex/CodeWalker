@@ -78,7 +78,7 @@ namespace CodeWalker.Rendering
         public void Update(DeviceContext context, T[] data)
         {
             var dataBox = context.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
-            Utilities.Write(dataBox.DataPointer, data, 0, data.Length);
+            Utilities.Write(dataBox.DataPointer, data, 0, Math.Min(data.Length, StructCount));
             context.UnmapSubresource(Buffer, 0);
         }
 

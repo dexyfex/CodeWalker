@@ -80,6 +80,9 @@ namespace CodeWalker.GameFiles
 
         public Dictionary<MetaHash, VehicleInitData> VehiclesInitDict { get; set; }
         public Dictionary<MetaHash, CPedModelInfo__InitData> PedsInitDict { get; set; }
+        public Dictionary<MetaHash, PedFile> PedVariationsDict { get; set; }
+        public Dictionary<MetaHash, Dictionary<MetaHash, RpfFileEntry>> PedDrawableDicts { get; set; }
+        public Dictionary<MetaHash, Dictionary<MetaHash, RpfFileEntry>> PedTextureDicts { get; set; }
 
         public List<RpfFile> BaseRpfs { get; private set; }
         public List<RpfFile> AllRpfs { get; private set; }
@@ -1602,9 +1605,72 @@ namespace CodeWalker.GameFiles
             if (!LoadPeds) return;
 
             IEnumerable<RpfFile> rpfs = PreloadedMode ? AllRpfs : (IEnumerable<RpfFile>)ActiveMapRpfFiles.Values;
+            List<RpfFile> dlcrpfs = new List<RpfFile>();
+            if (EnableDlc)
+            {
+                foreach (var rpf in DlcActiveRpfs)
+                {
+                    dlcrpfs.Add(rpf);
+                    if (rpf.Children == null) continue;
+                    foreach (var crpf in rpf.Children)
+                    {
+                        dlcrpfs.Add(crpf);
+                        if (crpf.Children?.Count > 0)
+                        { }
+                    }
+                }
+            }
+
+
 
             var allPeds = new Dictionary<MetaHash, CPedModelInfo__InitData>();
             var allPedsFiles = new List<PedsFile>();
+            var allPedYmts = new Dictionary<MetaHash, PedFile>();
+            var allPedDrwDicts = new Dictionary<MetaHash, Dictionary<MetaHash, RpfFileEntry>>();
+            var allPedTexDicts = new Dictionary<MetaHash, Dictionary<MetaHash, RpfFileEntry>>();
+
+
+            var addPedDicts = new Action<string, MetaHash, RpfDirectoryEntry>((namel, hash, dir)=>
+            {
+                if (dir?.Directories != null)
+                {
+                    foreach (var cdir in dir.Directories)
+                    {
+                        if (cdir.NameLower == namel)
+                        {
+                            dir = cdir;
+                            break;
+                        }
+                    }
+                    var files = dir?.Files;
+                    if (files != null)
+                    {
+                        Dictionary<MetaHash, RpfFileEntry> dict = null;
+                        foreach (var file in files)
+                        {
+                            if (file?.NameLower == null) continue;
+                            if (file.NameLower.EndsWith(".ydd"))
+                            {
+                                if (!allPedDrwDicts.TryGetValue(hash, out dict))
+                                {
+                                    dict = new Dictionary<MetaHash, RpfFileEntry>();
+                                    allPedDrwDicts[hash] = dict;
+                                }
+                                dict[file.ShortNameHash] = file;
+                            }
+                            else if (file.NameLower.EndsWith(".ytd"))
+                            {
+                                if (!allPedTexDicts.TryGetValue(hash, out dict))
+                                {
+                                    dict = new Dictionary<MetaHash, RpfFileEntry>();
+                                    allPedTexDicts[hash] = dict;
+                                }
+                                dict[file.ShortNameHash] = file;
+                            }
+                        }
+                    }
+                }
+            });
 
             var addPedsFiles = new Action<IEnumerable<RpfFile>>((from) =>
             {
@@ -1643,19 +1709,66 @@ namespace CodeWalker.GameFiles
 #endif
                     }
                 }
+            });
 
+            var addPedFiles = new Action<IEnumerable<RpfFile>>((from) =>
+            {
+                foreach (RpfFile file in from)
+                {
+                    if (file.AllEntries == null) continue;
+                    foreach (RpfEntry entry in file.AllEntries)
+                    {
+#if !DEBUG
+                        try
+#endif
+                        {
+                            if (entry.NameLower.EndsWith(".ymt"))
+                            {
+                                var testname = entry.GetShortNameLower();
+                                var testhash = JenkHash.GenHash(testname);
+                                if (allPeds.ContainsKey(testhash))
+                                {
+                                    var pf = RpfMan.GetFile<PedFile>(entry);
+                                    if (pf != null)
+                                    {
+                                        allPedYmts[testhash] = pf;
+                                        addPedDicts(testname, testhash, entry.Parent);
+                                    }
+                                }
+                            }
+                        }
+#if !DEBUG
+                        catch (Exception ex)
+                        {
+                            string errstr = entry.Path + "\n" + ex.ToString();
+                            ErrorLog(errstr);
+                        }
+#endif
+                    }
+                }
             });
 
 
-            addPedsFiles(rpfs);
 
-            if (EnableDlc)
-            {
-                addPedsFiles(DlcActiveRpfs);
-            }
+            addPedsFiles(rpfs);
+            addPedsFiles(dlcrpfs);
+
+            addPedFiles(rpfs);
+            addPedFiles(dlcrpfs);
+
 
 
             PedsInitDict = allPeds;
+            PedVariationsDict = allPedYmts;
+            PedDrawableDicts = allPedDrwDicts;
+            PedTextureDicts = allPedTexDicts;
+
+
+            foreach (var kvp in PedsInitDict)
+            {
+                if (!PedVariationsDict.ContainsKey(kvp.Key))
+                { }//checking we found them all!
+            }
 
 
         }
@@ -1726,7 +1839,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        private void TryLoadEnqueue(GameFile gf)
+        public void TryLoadEnqueue(GameFile gf)
         {
             if (((!gf.Loaded)) && (requestQueue.Count < 10))// && (!gf.LoadQueued)
             {
@@ -2099,6 +2212,13 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public T GetFileUncached<T>(RpfFileEntry e) where T : GameFile, new()
+        {
+            var f = new T();
+            f.RpfFileEntry = e;
+            TryLoadEnqueue(f);
+            return f;
+        }
 
 
 

@@ -23,8 +23,7 @@ namespace CodeWalker.GameFiles
         public PedsFile() : base(null, GameFileType.Peds)
         { }
         public PedsFile(RpfFileEntry entry) : base(entry, GameFileType.Peds)
-        {
-        }
+        { }
 
         public void Load(byte[] data, RpfFileEntry entry)
         {
