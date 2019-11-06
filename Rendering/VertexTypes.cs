@@ -120,56 +120,6 @@ namespace CodeWalker.Rendering
         Unk5 = 15,
     }
 
-    //0x7755555555996996
-    public struct VertexTypeGTAV1
-    {
-        public static ulong Types = 0x7755555555996996;
-
-        public Vector3 Position;
-        public uint BlendWeights;
-        public uint BlendIndices;
-        public Vector3 Normal;
-        public uint Colour0;
-        public uint Colour1;
-        public Vector2 Texcoord0;
-        public Vector2 Texcoord1;
-        public Vector2 Texcoord2;
-        public Vector2 Texcoord3;
-        public Vector2 Texcoord4;
-        public Vector2 Texcoord5;
-        public Vector2 Texcoord6;
-        public Vector2 Texcoord7;
-        public Vector4 Tangents;
-        public Vector4 Binormals;
-    }
-
-    //0x030000000199A006
-    public struct VertexTypeGTAV2
-    {
-        public static ulong Types = 0x030000000199A006;
-
-        public Vector3 Position;
-        public uint Unknown0; //Dec3N //Normals?
-        public uint Unknown1; //Colour0?
-        public uint Unknown2;  //Colour1?
-        public Half2 Unknown3; //Texcoords0?
-        public Half4 Unknown4; //Tangents?
-    }
-
-    //0x0300000001996006
-    public struct VertexTypeGTAV3
-    {
-        public static ulong Types = 0x0300000001996006;
-
-        public Vector3 Position;
-        public Vector3 Unknown0; //Normals?
-        public uint Unknown1;  //Colour0?
-        public uint Unknown2;  //Colour1?
-        public Half2 Unknown3; //Texcoords0?
-        public Half4 Unknown4; //Tangents?
-    }
-
-
     // These 2 vertex types are used by CW, should probably be called like CW_VertexType and move them somewhere with EditorVertex type
 
     // Used to draw Bounds
