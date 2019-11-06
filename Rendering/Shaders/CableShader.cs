@@ -102,7 +102,7 @@ namespace CodeWalker.Rendering
 
 
             //supported layout - requires Position, Normal, Colour, Texcoord
-            layouts.Add(VertexType.Default, new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.Default)));
+            layouts.Add(VertexType.Default, new InputLayout(device, vsbytes, VertexTypeGTAV1.GetLayout(VertexType.Default)));
 
 
 

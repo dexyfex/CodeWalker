@@ -138,10 +138,10 @@ namespace CodeWalker.Rendering
             PSSceneVars = new GpuVarsBuffer<WaterShaderPSSceneVars>(device);
             PSGeomVars = new GpuVarsBuffer<WaterShaderPSGeomVars>(device);
 
-            layouts.Add(VertexType.PT, new InputLayout(device, vsptbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PT)));
-            layouts.Add(VertexType.PCT, new InputLayout(device, vspctbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.PCT)));
-            layouts.Add(VertexType.Default, new InputLayout(device, vspnctbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.Default)));
-            layouts.Add(VertexType.DefaultEx, new InputLayout(device, vspnctxbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.DefaultEx)));
+            layouts.Add(VertexType.PT, new InputLayout(device, vsptbytes, VertexTypeGTAV1.GetLayout(VertexType.PT)));
+            layouts.Add(VertexType.PCT, new InputLayout(device, vspctbytes, VertexTypeGTAV1.GetLayout(VertexType.PCT)));
+            layouts.Add(VertexType.Default, new InputLayout(device, vspnctbytes, VertexTypeGTAV1.GetLayout(VertexType.Default)));
+            layouts.Add(VertexType.DefaultEx, new InputLayout(device, vspnctxbytes, VertexTypeGTAV1.GetLayout(VertexType.DefaultEx)));
 
             texsampler = new SamplerState(device, new SamplerStateDescription()
             {

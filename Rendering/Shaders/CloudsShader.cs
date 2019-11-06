@@ -118,7 +118,7 @@ namespace CodeWalker.Rendering
             VSModelVars = new GpuVarsBuffer<CloudsShaderVSModelVars>(device);
             PSSceneVars = new GpuVarsBuffer<CloudsShaderPSSceneVars>(device);
 
-            layout = new InputLayout(device, vsbytes, GTA5_VertexType_1.GetLayout((uint)VertexType.DefaultEx));
+            layout = new InputLayout(device, vsbytes, VertexTypeGTAV1.GetLayout(VertexType.DefaultEx));
 
             texsampler = new SamplerState(device, new SamplerStateDescription()
             {

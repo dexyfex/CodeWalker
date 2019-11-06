@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using CodeWalker.GameFiles;
+using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using System;
@@ -25,7 +26,7 @@ namespace CodeWalker.Rendering
     }
 
     //0x7755555555996996
-    public struct GTA5_VertexType_1
+    public struct VertexTypeGTAV1
     {
         public static ulong Types = 0x7755555555996996;
 
@@ -46,8 +47,9 @@ namespace CodeWalker.Rendering
         public Vector4 Tangents;
         public Vector4 Binormals;
 
-        public static InputElement[] GetLayout(uint flags)
+        public static InputElement[] GetLayout(VertexType mask)
         {
+            var flags = (uint)mask;
             bool[] IsUsed = new bool[16];
             for (int k = 0; k < 16; k++)
                 IsUsed[k] = ((flags >> k) & 0x1) == 1;
@@ -83,7 +85,7 @@ namespace CodeWalker.Rendering
     }
 
     //0x030000000199A006
-    public struct GTA5_VertexType_2
+    public struct VertexTypeGTAV2
     {
         public static ulong Types = 0x030000000199A006;
 
@@ -94,8 +96,9 @@ namespace CodeWalker.Rendering
         public Half2 Unknown3; //Texcoords0?
         public Half4 Unknown4; //Tangents?
 
-        public static InputElement[] GetLayout(uint flags)
+        public static InputElement[] GetLayout(VertexType mask)
         {
+            var flags = (uint)mask;
             bool[] IsUsed = new bool[16];
             for (int k = 0; k < 16; k++)
                 IsUsed[k] = ((flags >> k) & 0x1) == 1;
@@ -118,7 +121,7 @@ namespace CodeWalker.Rendering
     }
 
     //0x0300000001996006
-    public struct GTA5_VertexType_3
+    public struct VertexTypeGTAV3
     {
         public static ulong Types = 0x0300000001996006;
 
@@ -129,8 +132,9 @@ namespace CodeWalker.Rendering
         public Half2 Unknown3; //Texcoords0?
         public Half4 Unknown4; //Tangents?
 
-        public static InputElement[] GetLayout(uint flags)
+        public static InputElement[] GetLayout(VertexType mask)
         {
+            var flags = (uint)mask;
             bool[] IsUsed = new bool[16];
             for (int k = 0; k < 16; k++)
                 IsUsed[k] = ((flags >> k) & 0x1) == 1;
