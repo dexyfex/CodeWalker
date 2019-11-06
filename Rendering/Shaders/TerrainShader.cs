@@ -125,14 +125,14 @@ namespace CodeWalker.Rendering
             PSGeomVars = new GpuVarsBuffer<TerrainShaderPSGeomVars>(device);
 
             //supported layouts - requires Position, Normal, Colour, Texcoord
-            layouts.Add(VertexType.PNCCT, new InputLayout(device, vspncct, VertexTypeGTAV1.GetLayout(VertexType.PNCCT)));
-            layouts.Add(VertexType.PNCCTT, new InputLayout(device, vspncctt, VertexTypeGTAV1.GetLayout(VertexType.PNCCTT)));
-            layouts.Add(VertexType.PNCTTX, new InputLayout(device, vspncttx, VertexTypeGTAV1.GetLayout(VertexType.PNCTTX)));
-            layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vspnctttx, VertexTypeGTAV1.GetLayout(VertexType.PNCTTTX_3)));
-            layouts.Add(VertexType.PNCCTX, new InputLayout(device, vspncctx, VertexTypeGTAV1.GetLayout(VertexType.PNCCTX)));
-            layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vspnccttx, VertexTypeGTAV1.GetLayout(VertexType.PNCCTTX)));
-            layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vspnccttx, VertexTypeGTAV1.GetLayout(VertexType.PNCCTTX_2)));
-            layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vspncctttx, VertexTypeGTAV1.GetLayout(VertexType.PNCCTTTX)));
+            layouts.Add(VertexType.PNCCT, new InputLayout(device, vspncct, VertexTypeGTAV.GetLayout(VertexDecl.Type1, VertexType.PNCCT)));
+            layouts.Add(VertexType.PNCCTT, new InputLayout(device, vspncctt, VertexTypeGTAV.GetLayout(VertexDecl.Type1, VertexType.PNCCTT)));
+            layouts.Add(VertexType.PNCTTX, new InputLayout(device, vspncttx, VertexTypeGTAV.GetLayout(VertexDecl.Type1, VertexType.PNCTTX)));
+            layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vspnctttx, VertexTypeGTAV.GetLayout(VertexDecl.Type1, VertexType.PNCTTTX_3)));
+            layouts.Add(VertexType.PNCCTX, new InputLayout(device, vspncctx, VertexTypeGTAV.GetLayout(VertexDecl.Type1, VertexType.PNCCTX)));
+            layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vspnccttx, VertexTypeGTAV.GetLayout(VertexDecl.Type1, VertexType.PNCCTTX)));
+            layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vspnccttx, VertexTypeGTAV.GetLayout(VertexDecl.Type1, VertexType.PNCCTTX_2)));
+            layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vspncctttx, VertexTypeGTAV.GetLayout(VertexDecl.Type1, VertexType.PNCCTTTX)));
 
 
 

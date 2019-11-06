@@ -10,7 +10,95 @@ using System.Threading.Tasks;
 
 namespace CodeWalker.Rendering
 {
-    public enum FVFType
+    public static class VertexTypeGTAV
+    {
+        public static int GetFVFTypeSize(FVFType fvf)
+        {
+            switch(fvf)
+            {
+                case FVFType.Nothing: return 0;
+                case FVFType.Float16Two: return 4;
+                case FVFType.Float: return 4;
+                case FVFType.Float16Four: return 8;
+                case FVFType.Float_unk: return 0;
+                case FVFType.Float2: return 8;
+                case FVFType.Float3: return 12;
+                case FVFType.Float4: return 16;
+                case FVFType.UByte4: return 4;
+                case FVFType.Color: return 4;
+                case FVFType.Dec3N: return 4;
+                default: return 0;
+            }
+        }
+
+        public static Format GetFormat(FVFType fvf)
+        {
+            switch (fvf)
+            {
+                case FVFType.Nothing: return Format.Unknown;
+                case FVFType.Float16Two: return Format.R16G16_Float;
+                case FVFType.Float: return Format.R32_Float;
+                case FVFType.Float16Four: return Format.R16G16B16A16_Float;
+                case FVFType.Float_unk: return Format.Unknown;
+                case FVFType.Float2: return Format.R32G32_Float;
+                case FVFType.Float3: return Format.R32G32B32_Float;
+                case FVFType.Float4: return Format.R32G32B32A32_Float;
+                case FVFType.UByte4: return Format.R8G8B8A8_UInt;
+                case FVFType.Color: return Format.R8G8B8A8_UNorm;
+                case FVFType.Dec3N: return Format.R10G10B10A2_UNorm;
+                default: return Format.Unknown;
+            }
+        }
+
+        public static InputElement[] GetLayout(VertexDecl declaration, VertexType mask)
+        {
+            List<InputElement> inputElements = new List<InputElement>();
+
+            var semantics = new string[16]
+            {
+                "POSITION",
+                "BLENDWEIGHTS",
+                "BLENDINDICES",
+                "NORMAL",
+                "COLOR",
+                "COLOR",
+                "TEXCOORD",
+                "TEXCOORD",
+                "TEXCOORD",
+                "TEXCOORD",
+                "TEXCOORD",
+                "TEXCOORD",
+                "TEXCOORD",
+                "TEXCOORD",
+                "TANGENT",
+                "BINORMAL",
+            };
+
+            var types = (ulong)declaration;
+            var flags = (uint)mask;
+
+            var offset = 0;
+
+            for (int k = 0; k < 16; k++)
+            {
+                if (((flags >> k) & 0x1) == 1)
+                {
+                    var fvf = (FVFType)((types >> k * 4) & 0x0000000F);
+                    var fvfsize = GetFVFTypeSize(fvf);
+                    var format = GetFormat(fvf);
+
+                    int index = inputElements.Where(e => e.SemanticName.Equals(semantics[k])).Count();
+                    inputElements.Add(new InputElement(semantics[k], index, format, offset, 0));
+
+                    offset += fvfsize;
+                }
+            }
+
+            return inputElements.ToArray();
+        }
+    }
+
+    public enum FVFType : ushort
     {
         Nothing = 0,
         Float16Two = 1,
@@ -22,7 +110,12 @@ namespace CodeWalker.Rendering
         Float4 = 7,
         UByte4 = 8,
         Color = 9,
-        Dec3N = 10
+        Dec3N = 10,
+        Unk1 = 11,
+        Unk2 = 12,
+        Unk3 = 13,
+        Unk4 = 14,
+        Unk5 = 15,
     }
 
     //0x7755555555996996
@@ -46,42 +139,6 @@ namespace CodeWalker.Rendering
         public Vector2 Texcoord7;
         public Vector4 Tangents;
         public Vector4 Binormals;
-
-        public static InputElement[] GetLayout(VertexType mask)
-        {
-            var flags = (uint)mask;
-            bool[] IsUsed = new bool[16];
-            for (int k = 0; k < 16; k++)
-                IsUsed[k] = ((flags >> k) & 0x1) == 1;
-
-            //Only used to have continuous texcoords indices (actually DX shouldn't even care about it)
-            //Sometimes the geometries use texcoord0-texcoord1-texcoord3 while texcoord2 isn't used, so we shift it
-            //This is just for compatibility with the shaders
-            int uvIndex = 0;
-            int colorIndex = 0; //shouldn't happen for color channels anyways but just to be safe
-
-            int offset = 0;
-            List<InputElement> inputElements = new List<InputElement>();
-
-            if (IsUsed[0])  { inputElements.Add(new InputElement("POSITION", 0, Format.R32G32B32_Float, offset, 0)); offset += 12; }
-            if (IsUsed[1])  { inputElements.Add(new InputElement("BLENDWEIGHTS", 0, Format.R8G8B8A8_UNorm, offset, 0)); offset += 4; }
-            if (IsUsed[2])  { inputElements.Add(new InputElement("BLENDINDICES", 0, Format.R8G8B8A8_UNorm, offset, 0)); offset += 4; }
-            if (IsUsed[3])  { inputElements.Add(new InputElement("NORMAL", 0, Format.R32G32B32_Float, offset, 0)); offset += 12; }
-            if (IsUsed[4])  { inputElements.Add(new InputElement("COLOR", colorIndex, Format.R8G8B8A8_UNorm, offset, 0)); offset += 4; colorIndex++; }
-            if (IsUsed[5])  { inputElements.Add(new InputElement("COLOR", colorIndex, Format.R8G8B8A8_UNorm, offset, 0)); offset += 4; colorIndex++; }
-            if (IsUsed[6])  { inputElements.Add(new InputElement("TEXCOORD", uvIndex, Format.R32G32_Float, offset, 0)); uvIndex++; offset += 8; }
-            if (IsUsed[7])  { inputElements.Add(new InputElement("TEXCOORD", uvIndex, Format.R32G32_Float, offset, 0)); uvIndex++; offset += 8; }
-            if (IsUsed[8])  { inputElements.Add(new InputElement("TEXCOORD", uvIndex, Format.R32G32_Float, offset, 0)); uvIndex++; offset += 8; }
-            if (IsUsed[9])  { inputElements.Add(new InputElement("TEXCOORD", uvIndex, Format.R32G32_Float, offset, 0)); uvIndex++; offset += 8; }
-            if (IsUsed[10]) { inputElements.Add(new InputElement("TEXCOORD", uvIndex, Format.R32G32_Float, offset, 0)); uvIndex++; offset += 8; }
-            if (IsUsed[11]) { inputElements.Add(new InputElement("TEXCOORD", uvIndex, Format.R32G32_Float, offset, 0)); uvIndex++; offset += 8; }
-            if (IsUsed[12]) { inputElements.Add(new InputElement("TEXCOORD", uvIndex, Format.R32G32_Float, offset, 0)); uvIndex++; offset += 8; }
-            if (IsUsed[13]) { inputElements.Add(new InputElement("TEXCOORD", uvIndex, Format.R32G32_Float, offset, 0)); uvIndex++; offset += 8; }
-            if (IsUsed[14]) { inputElements.Add(new InputElement("TANGENT", 0, Format.R32G32B32A32_Float, offset, 0)); offset += 16; }
-            if (IsUsed[15]) { inputElements.Add(new InputElement("BINORMAL", 0, Format.R32G32B32A32_Float, offset, 0)); offset += 16; }
-
-            return inputElements.ToArray();
-        }
     }
 
     //0x030000000199A006
@@ -95,29 +152,6 @@ namespace CodeWalker.Rendering
         public uint Unknown2;  //Colour1?
         public Half2 Unknown3; //Texcoords0?
         public Half4 Unknown4; //Tangents?
-
-        public static InputElement[] GetLayout(VertexType mask)
-        {
-            var flags = (uint)mask;
-            bool[] IsUsed = new bool[16];
-            for (int k = 0; k < 16; k++)
-                IsUsed[k] = ((flags >> k) & 0x1) == 1;
-
-            int colorIndex = 0;
-            int offset = 0;
-            List<InputElement> inputElements = new List<InputElement>();
-
-            // TODO: Research semantics
-
-            if (IsUsed[0])  { inputElements.Add(new InputElement("POSITION", 0, Format.R32G32B32_Float, offset, 0)); offset += 12; }
-            if (IsUsed[3])  { inputElements.Add(new InputElement("NORMAL", 0, Format.R10G10B10A2_UNorm, offset, 0)); offset += 4; } //dexy used Format.R8G8B8A8_SNorm in his old type
-            if (IsUsed[4])  { inputElements.Add(new InputElement("COLOR", colorIndex, Format.R8G8B8A8_UNorm, offset, 0)); colorIndex++; offset += 4; }
-            if (IsUsed[5])  { inputElements.Add(new InputElement("COLOR", colorIndex, Format.R8G8B8A8_UNorm, offset, 0)); colorIndex++; offset += 4; }
-            if (IsUsed[6])  { inputElements.Add(new InputElement("TEXCOORD", 0, Format.R16G16_Float, offset, 0)); offset += 4; }
-            if (IsUsed[14]) { inputElements.Add(new InputElement("TANGENT", 0, Format.R16G16B16A16_Float, offset, 0)); offset += 8; }
-
-            return inputElements.ToArray();
-        }
     }
 
     //0x0300000001996006
@@ -131,29 +165,6 @@ namespace CodeWalker.Rendering
         public uint Unknown2;  //Colour1?
         public Half2 Unknown3; //Texcoords0?
         public Half4 Unknown4; //Tangents?
-
-        public static InputElement[] GetLayout(VertexType mask)
-        {
-            var flags = (uint)mask;
-            bool[] IsUsed = new bool[16];
-            for (int k = 0; k < 16; k++)
-                IsUsed[k] = ((flags >> k) & 0x1) == 1;
-
-            int colorIndex = 0;
-            int offset = 0;
-            List<InputElement> inputElements = new List<InputElement>();
-
-            // TODO: Research semantics
-
-            if (IsUsed[0])  { inputElements.Add(new InputElement("POSITION", 0, Format.R32G32B32_Float, offset, 0)); offset += 12; }
-            if (IsUsed[3])  { inputElements.Add(new InputElement("NORMAL", 0, Format.R32G32B32_Float, offset, 0)); offset += 12; }
-            if (IsUsed[4])  { inputElements.Add(new InputElement("COLOR", colorIndex, Format.R8G8B8A8_UNorm, offset, 0)); colorIndex++; offset += 4; }
-            if (IsUsed[5])  { inputElements.Add(new InputElement("COLOR", colorIndex, Format.R8G8B8A8_UNorm, offset, 0)); colorIndex++; offset += 4; }
-            if (IsUsed[6])  { inputElements.Add(new InputElement("TEXCOORD", 0, Format.R16G16_Float, offset, 0)); offset += 4; }
-            if (IsUsed[14]) { inputElements.Add(new InputElement("TANGENT", 0, Format.R16G16B16A16_Float, offset, 0)); offset += 8; }
-
-            return inputElements.ToArray();
-        }
     }
 
 

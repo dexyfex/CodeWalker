@@ -8,6 +8,12 @@ using System.Threading.Tasks;
 namespace CodeWalker.GameFiles
 {
 
+    public enum VertexDecl : ulong
+    {
+        Type1 = 0x7755555555996996,
+        Type2 = 0x030000000199A006,
+        Type3 = 0x0300000001996006,
+    }
 
     public enum VertexType : uint
     {
