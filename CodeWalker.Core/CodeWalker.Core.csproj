@@ -61,6 +61,7 @@
     <Compile Include="GameFiles\FileTypes\GtxdFile.cs" />
     <Compile Include="GameFiles\FileTypes\Gxt2File.cs" />
     <Compile Include="GameFiles\FileTypes\JPsoFile.cs" />
+    <Compile Include="GameFiles\FileTypes\PedFile.cs" />
     <Compile Include="GameFiles\FileTypes\PedsFile.cs" />
     <Compile Include="GameFiles\FileTypes\RelFile.cs" />
     <Compile Include="GameFiles\FileTypes\Stats.cs" />

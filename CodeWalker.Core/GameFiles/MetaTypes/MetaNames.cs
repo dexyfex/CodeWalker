@@ -3489,16 +3489,23 @@ namespace CodeWalker.GameFiles
         ePedRadioGenre = 2942646938,
         eSexinessFlags = 374769227,
         eExternallyDrivenDOFs = 637184392,
+        eAnchorPoints = 2834549053,
         SpecialAbilityType = 2011786168,
         DefaultSpawnPreference = 888587604,
+        numAlternatives = 2806194106,
 
         CScenarioChainingEdge__eAction = 3609807418,
         CScenarioChainingEdge__eNavMode = 3971773454,
         CScenarioChainingEdge__eNavSpeed = 941086046,
+        CStreamingRequestCommonSet = 1358189812,
 
+        animal = 974042365, //in peds.ymt
         standard_ped = 2703423328, //in peds.ymt
-        standard_male = 1860494962, //in peds.ymt PedCapsuleName
+        standard_male = 1860494962, //in peds.ymt PedCapsuleName - from pedbounds.xml
         standard_female = 3778684510, //in peds.ymt PedCapsuleName
+        standard_player_male = 190297546, //in peds.ymt PedCapsuleName
+        standard_player_female = 3813733509, //in peds.ymt PedCapsuleName
+        large_male = 2182606047, //in peds.ymt PedCapsuleName
         facial_clipset_group_gen_male = 2968316036, //in peds.ymt FacialClipsetGroupName
         facial_clipset_group_gen_female = 984918963, //in peds.ymt FacialClipsetGroupName
         facial_clipset_group_p_m_zero = 3839850645, //in peds.ymt FacialClipsetGroupName
@@ -3537,6 +3544,17 @@ namespace CodeWalker.GameFiles
 
         @null = 987444055, // how best to handle this? C# doesn't like it
 
+
+
+
+
+
+        //ped ymt's hashes from Siprus
+        numAvailProps = 2598445407,
+        numAvailTex = 3371516811,
+        ownsCloth = 2828247905,
+        aComponentData3 = 3796409423, //is this a collision? it's good enough for now!
+        bHasTexVariations = 1235281004,
 
 
 

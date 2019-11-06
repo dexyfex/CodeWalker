@@ -653,13 +653,14 @@ namespace CodeWalker.GameFiles
             Unk1 = 0;
         }
 
-        public void SwapEnd()
+        public Array_Structure SwapEnd()
         {
             Pointer = MetaTypes.SwapBytes(Pointer);
             Unk0 = MetaTypes.SwapBytes(Unk0);
             Count1 = MetaTypes.SwapBytes(Count1);
             Count2 = MetaTypes.SwapBytes(Count2);
             Unk1 = MetaTypes.SwapBytes(Unk1);
+            return this;
         }
         public override string ToString()
         {
@@ -963,6 +964,10 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public struct ArrayOfBytes3 //array of 3 bytes
     {
         public byte b0, b1, b2;
+        public byte[] GetArray()
+        {
+            return new[] { b0, b1, b2 };
+        }
         public override string ToString()
         {
             return b0.ToString() + ", " + b1.ToString() + ", " + b2.ToString();
@@ -971,6 +976,10 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public struct ArrayOfBytes4 //array of 4 bytes
     {
         public byte b0, b1, b2, b3;
+        public byte[] GetArray()
+        {
+            return new[] { b0, b1, b2, b3 };
+        }
         public override string ToString()
         {
             return b0.ToString() + ", " + b1.ToString() + ", " + b2.ToString() + ", " + b3.ToString();
@@ -979,14 +988,26 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public struct ArrayOfBytes5 //array of 5 bytes
     {
         public byte b0, b1, b2, b3, b4;
+        public byte[] GetArray()
+        {
+            return new[] { b0, b1, b2, b3, b4 };
+        }
     }
     [TC(typeof(EXP))] public struct ArrayOfBytes6 //array of 6 bytes
     {
         public byte b0, b1, b2, b3, b4, b5;
+        public byte[] GetArray()
+        {
+            return new[] { b0, b1, b2, b3, b4, b5 };
+        }
     }
     [TC(typeof(EXP))] public struct ArrayOfBytes12 //array of 12 bytes
     {
         public byte b00, b01, b02, b03, b04, b05, b06, b07, b08, b09, b10, b11;
+        public byte[] GetArray()
+        {
+            return new[] { b00, b01, b02, b03, b04, b05, b06, b07, b08, b09, b10, b11 };
+        }
     }
     [TC(typeof(EXP))] public struct ArrayOfChars64 //array of 64 chars (bytes)
     {

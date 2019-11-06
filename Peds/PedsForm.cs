@@ -74,6 +74,32 @@ namespace CodeWalker.Peds
 
 
 
+        string SelectedPedName = string.Empty;
+        MetaHash SelectedPedHash = 0;//ped name hash
+        CPedModelInfo__InitData SelectedPedInit = null; //ped init data
+        YddFile SelectedPedYdd = null; //ped drawables
+        YftFile SelectedPedYft = null; //ped skeleton YFT
+        PedFile SelectedPedYmt = null; //ped variation info
+
+        Drawable SelectedHead = null;
+        Drawable SelectedBerd = null;
+        Drawable SelectedHair = null;
+        Drawable SelectedUppr = null;
+        Drawable SelectedLowr = null;
+        Drawable SelectedHand = null;
+        Drawable SelectedFeet = null;
+        Drawable SelectedTeef = null;
+        Drawable SelectedAccs = null;
+        Drawable SelectedTask = null;
+        Drawable SelectedDecl = null;
+        Drawable SelectedJbib = null;
+
+
+
+
+
+
+
         public PedsForm()
         {
             InitializeComponent();
@@ -92,7 +118,7 @@ namespace CodeWalker.Peds
             //Renderer.renderclouds = true;
             //Renderer.individualcloudfrag = "Contrails";
             Renderer.rendermoon = false;
-            Renderer.renderskeletons = false;
+            Renderer.renderskeletons = true;
             Renderer.SelectionFlagsTestAll = true;
 
         }
@@ -425,7 +451,7 @@ namespace CodeWalker.Peds
         {
             //move the camera to a default place where the given sphere is fully visible.
 
-            rad = Math.Max(0.01f, rad);
+            rad = Math.Max(0.01f, rad*0.1f);
 
             camera.FollowEntity.Position = pos;
             camera.TargetDistance = rad * 1.6f;
@@ -662,36 +688,70 @@ namespace CodeWalker.Peds
             var pednamel = pedname.ToLowerInvariant();
             MetaHash pedhash = JenkHash.GenHash(pednamel);
 
+            SelectedPedName = string.Empty;
+            SelectedPedHash = 0;
+            SelectedPedInit = null;
+            SelectedPedYdd = null;
+            SelectedPedYft = null;
+            SelectedPedYmt = null;
+            ClearCombo(CompHeadComboBox); SelectedHead = null;
+            ClearCombo(CompBerdComboBox); SelectedBerd = null;
+            ClearCombo(CompHairComboBox); SelectedHair = null;
+            ClearCombo(CompUpprComboBox); SelectedUppr = null;
+            ClearCombo(CompLowrComboBox); SelectedLowr = null;
+            ClearCombo(CompHandComboBox); SelectedHand = null;
+            ClearCombo(CompFeetComboBox); SelectedFeet = null;
+            ClearCombo(CompTeefComboBox); SelectedTeef = null;
+            ClearCombo(CompAccsComboBox); SelectedAccs = null;
+            ClearCombo(CompTaskComboBox); SelectedTask = null;
+            ClearCombo(CompDeclComboBox); SelectedDecl = null;
+            ClearCombo(CompJbibComboBox); SelectedJbib = null;
 
-            //MetaHash modelhashhi = JenkHash.GenHash(pednamel + "_hi");
-            //bool hidet = VehicleHighDetailCheckBox.Checked;
-            //var yfthash = hidet ? modelhashhi : pedhash;
-            //VehicleInitData vid = null;
-            //if (GameFileCache.VehiclesInitDict.TryGetValue(pedhash, out vid))
-            //{
-            //    bool vehiclechange = SelectedVehicleHash != pedhash;
-            //    SelectedModelHash = yfthash;
-            //    SelectedVehicleHash = pedhash;
-            //    SelectedVehicleInit = vid;
-            //    SelectedVehicleYft = GameFileCache.GetYft(SelectedModelHash);
-            //    while (!SelectedVehicleYft.Loaded)
-            //    {
-            //        Thread.Sleep(20);//kinda hacky
-            //        SelectedVehicleYft = GameFileCache.GetYft(SelectedModelHash);
-            //    }
-            //    LoadModel(SelectedVehicleYft, vehiclechange);
-            //    VehicleMakeLabel.Text = GlobalText.TryGetString(JenkHash.GenHash(vid.vehicleMakeName.ToLower()));
-            //    VehicleNameLabel.Text = GlobalText.TryGetString(JenkHash.GenHash(vid.gameName.ToLower()));
-            //}
-            //else
-            //{
-            //    SelectedModelHash = 0;
-            //    SelectedVehicleHash = 0;
-            //    SelectedVehicleInit = null;
-            //    SelectedVehicleYft = null;
-            //    VehicleMakeLabel.Text = "-";
-            //    VehicleNameLabel.Text = "-";
-            //}
+            CPedModelInfo__InitData initdata = null;
+            if (!GameFileCache.PedsInitDict.TryGetValue(pedhash, out initdata)) return;
+            
+
+            bool pedchange = SelectedPedHash != pedhash;
+            SelectedPedName = pedname;
+            SelectedPedHash = pedhash;
+            SelectedPedInit = initdata;
+            SelectedPedYdd = GameFileCache.GetYdd(pedhash);
+            SelectedPedYft = GameFileCache.GetYft(pedhash);
+            GameFileCache.PedVariationsDict?.TryGetValue(pedhash, out SelectedPedYmt);
+
+            while ((SelectedPedYdd != null) && (!SelectedPedYdd.Loaded))
+            {
+                Thread.Sleep(20);//kinda hacky
+                SelectedPedYdd = GameFileCache.GetYdd(SelectedPedHash);
+            }
+            while ((SelectedPedYft != null) && (!SelectedPedYft.Loaded))
+            {
+                Thread.Sleep(20);//kinda hacky
+                SelectedPedYft = GameFileCache.GetYft(SelectedPedHash);
+            }
+
+            LoadModel(SelectedPedYft, pedchange);
+
+
+            var vi = SelectedPedYmt?.VariationInfo;
+            if (vi != null)
+            {
+                PopulateCompCombo(CompHeadComboBox, vi.GetVariations(0));
+                PopulateCompCombo(CompBerdComboBox, vi.GetVariations(1));
+                PopulateCompCombo(CompHairComboBox, vi.GetVariations(2));
+                PopulateCompCombo(CompUpprComboBox, vi.GetVariations(3));
+                PopulateCompCombo(CompLowrComboBox, vi.GetVariations(4));
+                PopulateCompCombo(CompHandComboBox, vi.GetVariations(5));
+                PopulateCompCombo(CompFeetComboBox, vi.GetVariations(6));
+                PopulateCompCombo(CompTeefComboBox, vi.GetVariations(7));
+                PopulateCompCombo(CompAccsComboBox, vi.GetVariations(8));
+                PopulateCompCombo(CompTaskComboBox, vi.GetVariations(9));
+                PopulateCompCombo(CompDeclComboBox, vi.GetVariations(10));
+                PopulateCompCombo(CompJbibComboBox, vi.GetVariations(11));
+            }
+
+
+
         }
 
         public void LoadModel(YftFile yft, bool movecamera = true)
@@ -709,6 +769,68 @@ namespace CodeWalker.Peds
 
             UpdateModelsUI(yft.Fragment.Drawable);
         }
+
+
+
+        private void ClearCombo(ComboBox c)
+        {
+            c.Items.Clear();
+            c.Text = string.Empty;
+        }
+        private void PopulateCompCombo(ComboBox c, MUnk_3538495220 vars)
+        {
+            if (vars?.Variations == null) return;
+            foreach (var item in vars.Variations)
+            {
+                c.Items.Add(item.GetDrawableName());
+            }
+            if (vars.Variations.Length > 0)
+            {
+                c.SelectedIndex = 0;
+            }
+        }
+
+
+
+        private Drawable GetComponentDrawable(string name)
+        {
+            var namel = name.ToLowerInvariant();
+            MetaHash hash = JenkHash.GenHash(namel);
+            Drawable d;
+
+            if (SelectedPedYdd?.Dict != null)
+            {
+                if (SelectedPedYdd.Dict.TryGetValue(hash, out d)) return d;
+            }
+
+            Dictionary<MetaHash, RpfFileEntry> peddict = null;
+            if (GameFileCache.PedDrawableDicts.TryGetValue(SelectedPedHash, out peddict))
+            {
+                RpfFileEntry file = null;
+                if (peddict.TryGetValue(hash, out file))
+                {
+                    var ydd = GameFileCache.GetFileUncached<YddFile>(file);
+                    while ((ydd != null) && (!ydd.Loaded))
+                    {
+                        Thread.Sleep(20);//kinda hacky
+                        GameFileCache.TryLoadEnqueue(ydd);
+                    }
+                    if (ydd?.Drawables?.Length > 0)
+                    {
+                        return ydd.Drawables[0];//should only be one in this dict
+                    }
+                }
+            }
+
+            return null;
+        }
+
+
+
+
+
+
+
 
 
 
@@ -889,31 +1011,26 @@ namespace CodeWalker.Peds
         private void RenderPed()
         {
 
-            //YftFile yft = GameFileCache.GetYft(SelectedModelHash);
-            //if (yft != null)
-            //{
-            //    if (yft.Loaded)
-            //    {
-            //        if (yft.Fragment != null)
-            //        {
-            //            var f = yft.Fragment;
+            YftFile yft = SelectedPedYft;// GameFileCache.GetYft(SelectedModelHash);
+            if (yft != null)
+            {
+                if (yft.Loaded)
+                {
+                    if (yft.Fragment != null)
+                    {
+                        var f = yft.Fragment;
 
-            //            var txdhash = SelectedVehicleHash;// yft.RpfFileEntry?.ShortNameHash ?? 0;
+                        var txdhash = 0u;// SelectedVehicleHash;// yft.RpfFileEntry?.ShortNameHash ?? 0;
+                        //var namelower = yft.RpfFileEntry?.GetShortNameLower();
 
-            //            var namelower = yft.RpfFileEntry?.GetShortNameLower();
-            //            if (namelower?.EndsWith("_hi") ?? false)
-            //            {
-            //                txdhash = JenkHash.GenHash(namelower.Substring(0, namelower.Length - 3));
-            //            }
+                        Archetype arch = null;// TryGetArchetype(hash);
 
-            //            Archetype arch = null;// TryGetArchetype(hash);
+                        Renderer.RenderFragment(arch, null, f, txdhash);
 
-            //            Renderer.RenderFragment(arch, null, f, txdhash);
-
-            //            //seldrwbl = f.Drawable;
-            //        }
-            //    }
-            //}
+                        //seldrwbl = f.Drawable;
+                    }
+                }
+            }
 
         }
 
@@ -1410,6 +1527,76 @@ namespace CodeWalker.Peds
             //}
         }
 
+
+
+
+
+        private void PedNameComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!GameFileCache.IsInited) return;
+
+            LoadPed();
+        }
+
+        private void CompHeadComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedHead = GetComponentDrawable(CompHeadComboBox.Text);
+        }
+
+        private void CompBerdComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedBerd = GetComponentDrawable(CompBerdComboBox.Text);
+        }
+
+        private void CompHairComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedHair = GetComponentDrawable(CompHairComboBox.Text);
+        }
+
+        private void CompUpprComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedUppr = GetComponentDrawable(CompUpprComboBox.Text);
+        }
+
+        private void CompLowrComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedLowr = GetComponentDrawable(CompLowrComboBox.Text);
+        }
+
+        private void CompHandComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedHand = GetComponentDrawable(CompHandComboBox.Text);
+        }
+
+        private void CompFeetComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedFeet = GetComponentDrawable(CompFeetComboBox.Text);
+        }
+
+        private void CompTeefComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedTeef = GetComponentDrawable(CompTeefComboBox.Text);
+        }
+
+        private void CompAccsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedAccs = GetComponentDrawable(CompAccsComboBox.Text);
+        }
+
+        private void CompTaskComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedTask = GetComponentDrawable(CompTaskComboBox.Text);
+        }
+
+        private void CompDeclComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedDecl = GetComponentDrawable(CompDeclComboBox.Text);
+        }
+
+        private void CompJbibComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedJbib = GetComponentDrawable(CompJbibComboBox.Text);
+        }
 
 
 

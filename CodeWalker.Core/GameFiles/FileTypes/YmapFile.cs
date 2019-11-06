@@ -89,12 +89,13 @@ namespace CodeWalker.GameFiles
             if (resentry == null)
             {
                 NonMetaLoad(data);
+                Loaded = true;
                 return;
             }
 
             ResourceDataReader rd = new ResourceDataReader(resentry, data);
 
-            Meta = rd.ReadBlock<Meta>();
+            Meta = rd.ReadBlock<Meta>();//maybe null this after load to reduce memory consumption?
 
 
 
@@ -232,12 +233,12 @@ namespace CodeWalker.GameFiles
             MemoryStream ms = new MemoryStream(data);
             if (RbfFile.IsRBF(ms))
             {
-                var Rbf = new RbfFile();
+                Rbf = new RbfFile();
                 Rbf.Load(ms);
             }
             else if (PsoFile.IsPSO(ms))
             {
-                var Pso = new PsoFile();
+                Pso = new PsoFile();
                 Pso.Load(ms);
                 //PsoTypes.EnsurePsoTypes(Pso);
             }
