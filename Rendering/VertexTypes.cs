@@ -87,6 +87,8 @@ namespace CodeWalker.Rendering
                     var fvfsize = GetFVFTypeSize(fvf);
                     var format = GetFormat(fvf);
 
+                    if (fvfsize == 0 || format == Format.Unknown) continue;
+
                     int index = inputElements.Where(e => e.SemanticName.Equals(semantics[k])).Count();
                     inputElements.Add(new InputElement(semantics[k], index, format, offset, 0));
 
