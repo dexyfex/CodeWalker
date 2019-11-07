@@ -7,14 +7,15 @@ using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
 {
-
+    // TODO: Rename to VertexType
     public enum VertexDecl : ulong
     {
-        Type1 = 0x7755555555996996,
-        Type2 = 0x030000000199A006,
-        Type3 = 0x0300000001996006,
+        Type1 = 0x7755555555996996, // used by almost all GTAV drawables
+        Type2 = 0x030000000199A006, // used on cloth?
+        Type3 = 0x0300000001996006, // used on cloth?
     }
 
+    // TODO: Rename to VertexFlags
     public enum VertexType : uint
     {
         Default = 89, //PNCT
