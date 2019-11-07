@@ -3558,6 +3558,16 @@ namespace CodeWalker.GameFiles
         aDrawblData3 = 1756136273,
         bHasTexVariations = 1235281004,
 
+        //occlusion ymt's from Siprus
+        DestRoomIdx = 1028873946,
+        PortalInfoIdx = 1084559223,
+        DestInteriorHash = 57503776,
+        InteriorProxyHash = 3748344047,
+        PathNodeList = 1142266249,
+        PathNodeKey = 2721898107,
+        PathNodeChildList = 3530626268,
+        PortalEntityList = 3203972140,
+        PortalInfoList = 3085292924,
 
 
 
