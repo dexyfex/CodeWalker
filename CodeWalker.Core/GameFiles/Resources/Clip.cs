@@ -1368,9 +1368,9 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public ulong AnimationPointer { get; set; }
-        public float Unknown_58h { get; set; }
-        public float Unknown_5Ch { get; set; }
-        public float Unknown_60h { get; set; }
+        public float StartTime { get; set; } //start time
+        public float EndTime { get; set; } //end time
+        public float Rate { get; set; } //1.0  rate..?
         public uint Unknown_64h { get; set; } // 0x00000000
         public uint Unknown_68h { get; set; } // 0x00000000
         public uint Unknown_6Ch { get; set; } // 0x00000000
@@ -1382,9 +1382,9 @@ namespace CodeWalker.GameFiles
         {
             base.Read(reader, parameters);
             this.AnimationPointer = reader.ReadUInt64();
-            this.Unknown_58h = reader.ReadSingle();
-            this.Unknown_5Ch = reader.ReadSingle();
-            this.Unknown_60h = reader.ReadSingle();
+            this.StartTime = reader.ReadSingle();
+            this.EndTime = reader.ReadSingle();
+            this.Rate = reader.ReadSingle();
             this.Unknown_64h = reader.ReadUInt32();
             this.Unknown_68h = reader.ReadUInt32();
             this.Unknown_6Ch = reader.ReadUInt32();
@@ -1401,9 +1401,9 @@ namespace CodeWalker.GameFiles
             this.AnimationPointer = (ulong)(this.Animation != null ? this.Animation.FilePosition : 0);
 
             writer.Write(this.AnimationPointer);
-            writer.Write(this.Unknown_58h);
-            writer.Write(this.Unknown_5Ch);
-            writer.Write(this.Unknown_60h);
+            writer.Write(this.StartTime);
+            writer.Write(this.EndTime);
+            writer.Write(this.Rate);
             writer.Write(this.Unknown_64h);
             writer.Write(this.Unknown_68h);
             writer.Write(this.Unknown_6Ch);
@@ -1415,6 +1415,14 @@ namespace CodeWalker.GameFiles
             list.AddRange(base.GetReferences());
             if (Animation != null) list.Add(Animation);
             return list.ToArray();
+        }
+
+        public float GetPlaybackTime(double currentTime)
+        {
+            double scaledTime = currentTime * Rate;
+            double duration = EndTime - StartTime;
+            double curpos = scaledTime % duration;
+            return StartTime + (float)curpos;
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipAnimationList : ClipBase
@@ -1531,6 +1539,15 @@ namespace CodeWalker.GameFiles
             var list = new List<IResourceBlock>();
             if (Animation != null) list.Add(Animation);
             return list.ToArray();
+        }
+
+
+        public float GetPlaybackTime(double currentTime)
+        {
+            double scaledTime = currentTime * Rate;
+            double duration = EndTime - StartTime;
+            double curpos = scaledTime % duration;
+            return StartTime + (float)curpos;
         }
     }
 

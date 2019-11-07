@@ -403,37 +403,33 @@ namespace CodeWalker.Rendering
                 }
             }
 
-
         }
         private void UpdateAnim(ClipMapEntry cme)
         {
+            if (cme.Next != null)
+            {
+                UpdateAnim(cme.Next);
+            }
+
             var clipanim = cme.Clip as ClipAnimation;
             var anim = clipanim?.Animation;
             if (anim != null)
             {
-                UpdateAnim(anim);
+                UpdateAnim(anim, clipanim.GetPlaybackTime(CurrentAnimTime));
             }
 
             var clipanimlist = cme.Clip as ClipAnimationList;
             if (clipanimlist?.Animations != null)
             {
-                if (clipanimlist.Animations.Count > 0)
+                foreach (var canim in clipanimlist.Animations)
                 {
-                    UpdateAnim(clipanimlist.Animations[0].Animation);
+                    if (canim?.Animation == null) continue;
+                    UpdateAnim(canim.Animation, canim.GetPlaybackTime(CurrentAnimTime));
                 }
-
-
-                ////needs more work to synchronise these... seems to be multi layers, but timings are different
-                ////sort of represents animations LODs, higher detail stuff like fingers and feet movements in the layers
-                //foreach (var canim in clipanimlist.Animations)
-                //{
-                //    if (canim?.Animation == null) continue;
-                //    UpdateAnim(canim.Animation);
-                //    //break;
-                //}
             }
+
         }
-        private void UpdateAnim(Animation anim)
+        private void UpdateAnim(Animation anim, float t)
         { 
             if (anim == null)
             { return; }
@@ -449,7 +445,7 @@ namespace CodeWalker.Rendering
             var frames = anim.Frames;
             var nframes = (ignoreLastFrame) ? (frames - 1) : frames;
 
-            var curPos = ((CurrentAnimTime % duration) / duration) * nframes;
+            var curPos = (t/duration) * nframes;
             var frame0 = ((ushort)curPos) % frames;
             var frame1 = (frame0 + 1) % frames;
             var falpha = (float)(curPos - Math.Floor(curPos));
@@ -543,13 +539,30 @@ namespace CodeWalker.Rendering
         }
         private void UpdateAnimUV(ClipMapEntry cme, RenderableGeometry rgeom = null)
         {
-            if (cme.Next != null) //is this a "chain" of clips to play..?
+            if (cme.Next != null)
             {
-                //cme = cme.Next;
+                UpdateAnimUV(cme.Next, rgeom);
             }
 
-            var clipanim = cme.Clip as ClipAnimation;//maybe ClipAnimationList?
-            var anim = clipanim?.Animation;
+            var clipanim = cme.Clip as ClipAnimation;
+            if (clipanim?.Animation != null)
+            {
+                UpdateAnimUV(clipanim.Animation, clipanim.GetPlaybackTime(CurrentAnimTime), rgeom);
+            }
+
+            var clipanimlist = cme.Clip as ClipAnimationList;
+            if (clipanimlist?.Animations != null)
+            {
+                foreach (var canim in clipanimlist.Animations)
+                {
+                    if (canim?.Animation == null) continue;
+                    UpdateAnimUV(canim.Animation, canim.GetPlaybackTime(CurrentAnimTime), rgeom);
+                }
+            }
+
+        }
+        private void UpdateAnimUV(Animation anim, float t, RenderableGeometry rgeom = null)
+        {
             if (anim == null)
             { return; }
             if (anim.BoneIds?.data_items == null)
@@ -564,7 +577,7 @@ namespace CodeWalker.Rendering
             var frames = anim.Frames;
             var nframes = (ignoreLastFrame) ? (frames - 1) : frames;
 
-            var curPos = ((CurrentAnimTime % duration) / duration) * nframes;
+            var curPos = (t / duration) * nframes;
             var frame0 = ((ushort)curPos) % frames;
             var frame1 = (frame0 + 1) % frames;
             var falpha = (float)(curPos - Math.Floor(curPos));
