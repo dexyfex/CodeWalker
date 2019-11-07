@@ -407,8 +407,34 @@ namespace CodeWalker.Rendering
         }
         private void UpdateAnim(ClipMapEntry cme)
         {
-            var clipanim = cme.Clip as ClipAnimation;//maybe ClipAnimationList?
+            var clipanim = cme.Clip as ClipAnimation;
             var anim = clipanim?.Animation;
+            if (anim != null)
+            {
+                UpdateAnim(anim);
+            }
+
+            var clipanimlist = cme.Clip as ClipAnimationList;
+            if (clipanimlist?.Animations != null)
+            {
+                if (clipanimlist.Animations.Count > 0)
+                {
+                    UpdateAnim(clipanimlist.Animations[0].Animation);
+                }
+
+
+                ////needs more work to synchronise these... seems to be multi layers, but timings are different
+                ////sort of represents animations LODs, higher detail stuff like fingers and feet movements in the layers
+                //foreach (var canim in clipanimlist.Animations)
+                //{
+                //    if (canim?.Animation == null) continue;
+                //    UpdateAnim(canim.Animation);
+                //    //break;
+                //}
+            }
+        }
+        private void UpdateAnim(Animation anim)
+        { 
             if (anim == null)
             { return; }
             if (anim.BoneIds?.data_items == null)
@@ -436,6 +462,9 @@ namespace CodeWalker.Rendering
             if (bones == null)
             { return; }
 
+            Vector4 v0, v1, v;
+            Quaternion q0, q1, q;
+
             for (int i = 0; i < anim.BoneIds.data_items.Length; i++)
             {
                 var boneiditem = anim.BoneIds.data_items[i];
@@ -454,18 +483,33 @@ namespace CodeWalker.Rendering
                     switch (track)
                     {
                         case 0: //bone position
-                            var v0 = aseq.EvaluateVector(frame0);
-                            var v1 = aseq.EvaluateVector(frame1);
-                            var v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
+                            v0 = aseq.EvaluateVector(frame0);
+                            v1 = aseq.EvaluateVector(frame1);
+                            v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
                             bone.AnimTranslation = v.XYZ();
                             break;
                         case 1: //bone orientation
-                            var q0 = new Quaternion(aseq.EvaluateVector(frame0));
-                            var q1 = new Quaternion(aseq.EvaluateVector(frame1));
-                            var q = interpolate ? Quaternion.Slerp(q0, q1, falpha) : q0;
+                            q0 = new Quaternion(aseq.EvaluateVector(frame0));
+                            q1 = new Quaternion(aseq.EvaluateVector(frame1));
+                            q = interpolate ? Quaternion.Slerp(q0, q1, falpha) : q0;
                             bone.AnimRotation = q;
                             break;
                         case 2: //scale?
+                            break;
+                        case 5://vector3...
+                            //v0 = aseq.EvaluateVector(frame0);
+                            //v1 = aseq.EvaluateVector(frame1);
+                            //v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
+                            //bone.AnimScale = v.XYZ();
+                            break;
+                        case 6://quaternion...
+                            break;
+                        case 134://single float?
+                        case 136:
+                        case 137:
+                        case 138:
+                        case 139:
+                        case 140:
                             break;
                         default:
                             break;

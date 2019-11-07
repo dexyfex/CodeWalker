@@ -3493,6 +3493,7 @@ namespace CodeWalker.GameFiles
         SpecialAbilityType = 2011786168,
         DefaultSpawnPreference = 888587604,
         numAlternatives = 2806194106,
+        bHasDrawblVariations = 4086467184,
 
         CScenarioChainingEdge__eAction = 3609807418,
         CScenarioChainingEdge__eNavMode = 3971773454,
@@ -3553,9 +3554,9 @@ namespace CodeWalker.GameFiles
         numAvailProps = 2598445407,
         numAvailTex = 3371516811,
         ownsCloth = 2828247905,
-        aComponentData3 = 3796409423, //is this a collision? it's good enough for now!
+        aComponentData3 = 3796409423,
+        aDrawblData3 = 1756136273,
         bHasTexVariations = 1235281004,
-
 
 
 

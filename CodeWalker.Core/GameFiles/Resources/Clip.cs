@@ -749,6 +749,7 @@ namespace CodeWalker.GameFiles
         public Vector4 EvaluateVector(int frame)
         {
             if (Channels == null) return Vector4.Zero;
+            if (IsType7Quat) return EvaluateQuaternion(frame).ToVector4();
             var v = Vector4.Zero;
             int c = 0;
             for (int i = 0; i < Channels.Length; i++)

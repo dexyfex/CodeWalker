@@ -76,33 +76,38 @@
             this.PedNameComboBox = new System.Windows.Forms.ComboBox();
             this.StatsUpdateTimer = new System.Windows.Forms.Timer(this.components);
             this.ToolsPedTabPage = new System.Windows.Forms.TabPage();
-            this.ToolsTabControl = new System.Windows.Forms.TabControl();
-            this.ToolsPanel = new System.Windows.Forms.Panel();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.CompHeadComboBox = new System.Windows.Forms.ComboBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.CompBerdComboBox = new System.Windows.Forms.ComboBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.CompHairComboBox = new System.Windows.Forms.ComboBox();
-            this.label8 = new System.Windows.Forms.Label();
-            this.CompUpprComboBox = new System.Windows.Forms.ComboBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.CompLowrComboBox = new System.Windows.Forms.ComboBox();
-            this.label12 = new System.Windows.Forms.Label();
-            this.CompHandComboBox = new System.Windows.Forms.ComboBox();
-            this.label13 = new System.Windows.Forms.Label();
-            this.CompFeetComboBox = new System.Windows.Forms.ComboBox();
-            this.label15 = new System.Windows.Forms.Label();
-            this.CompTeefComboBox = new System.Windows.Forms.ComboBox();
-            this.label16 = new System.Windows.Forms.Label();
-            this.CompAccsComboBox = new System.Windows.Forms.ComboBox();
-            this.label17 = new System.Windows.Forms.Label();
-            this.CompTaskComboBox = new System.Windows.Forms.ComboBox();
-            this.label18 = new System.Windows.Forms.Label();
-            this.CompDeclComboBox = new System.Windows.Forms.ComboBox();
             this.label20 = new System.Windows.Forms.Label();
             this.CompJbibComboBox = new System.Windows.Forms.ComboBox();
+            this.label18 = new System.Windows.Forms.Label();
+            this.CompDeclComboBox = new System.Windows.Forms.ComboBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.CompTaskComboBox = new System.Windows.Forms.ComboBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.CompAccsComboBox = new System.Windows.Forms.ComboBox();
+            this.label15 = new System.Windows.Forms.Label();
+            this.CompTeefComboBox = new System.Windows.Forms.ComboBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.CompFeetComboBox = new System.Windows.Forms.ComboBox();
+            this.label12 = new System.Windows.Forms.Label();
+            this.CompHandComboBox = new System.Windows.Forms.ComboBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.CompLowrComboBox = new System.Windows.Forms.ComboBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.CompUpprComboBox = new System.Windows.Forms.ComboBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.CompHairComboBox = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.CompBerdComboBox = new System.Windows.Forms.ComboBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.CompHeadComboBox = new System.Windows.Forms.ComboBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.ToolsTabControl = new System.Windows.Forms.TabControl();
+            this.ToolsPanel = new System.Windows.Forms.Panel();
+            this.label21 = new System.Windows.Forms.Label();
+            this.ClipDictComboBox = new System.Windows.Forms.ComboBox();
+            this.label22 = new System.Windows.Forms.Label();
+            this.ClipComboBox = new System.Windows.Forms.ComboBox();
+            this.label23 = new System.Windows.Forms.Label();
             this.ConsolePanel.SuspendLayout();
             this.ToolsOptionsTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
@@ -651,6 +656,11 @@
             // 
             // ToolsPedTabPage
             // 
+            this.ToolsPedTabPage.Controls.Add(this.label23);
+            this.ToolsPedTabPage.Controls.Add(this.label22);
+            this.ToolsPedTabPage.Controls.Add(this.ClipComboBox);
+            this.ToolsPedTabPage.Controls.Add(this.label21);
+            this.ToolsPedTabPage.Controls.Add(this.ClipDictComboBox);
             this.ToolsPedTabPage.Controls.Add(this.label20);
             this.ToolsPedTabPage.Controls.Add(this.CompJbibComboBox);
             this.ToolsPedTabPage.Controls.Add(this.label18);
@@ -685,6 +695,279 @@
             this.ToolsPedTabPage.Text = "Ped";
             this.ToolsPedTabPage.UseVisualStyleBackColor = true;
             // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(22, 373);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(29, 13);
+            this.label20.TabIndex = 26;
+            this.label20.Text = "Jbib:";
+            // 
+            // CompJbibComboBox
+            // 
+            this.CompJbibComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompJbibComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CompJbibComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompJbibComboBox.FormattingEnabled = true;
+            this.CompJbibComboBox.Location = new System.Drawing.Point(54, 370);
+            this.CompJbibComboBox.Name = "CompJbibComboBox";
+            this.CompJbibComboBox.Size = new System.Drawing.Size(182, 21);
+            this.CompJbibComboBox.TabIndex = 25;
+            this.CompJbibComboBox.SelectedIndexChanged += new System.EventHandler(this.CompJbibComboBox_SelectedIndexChanged);
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(19, 346);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(32, 13);
+            this.label18.TabIndex = 24;
+            this.label18.Text = "Decl:";
+            // 
+            // CompDeclComboBox
+            // 
+            this.CompDeclComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompDeclComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CompDeclComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompDeclComboBox.FormattingEnabled = true;
+            this.CompDeclComboBox.Location = new System.Drawing.Point(54, 343);
+            this.CompDeclComboBox.Name = "CompDeclComboBox";
+            this.CompDeclComboBox.Size = new System.Drawing.Size(182, 21);
+            this.CompDeclComboBox.TabIndex = 23;
+            this.CompDeclComboBox.SelectedIndexChanged += new System.EventHandler(this.CompDeclComboBox_SelectedIndexChanged);
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(17, 319);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(34, 13);
+            this.label17.TabIndex = 22;
+            this.label17.Text = "Task:";
+            // 
+            // CompTaskComboBox
+            // 
+            this.CompTaskComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompTaskComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CompTaskComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompTaskComboBox.FormattingEnabled = true;
+            this.CompTaskComboBox.Location = new System.Drawing.Point(54, 316);
+            this.CompTaskComboBox.Name = "CompTaskComboBox";
+            this.CompTaskComboBox.Size = new System.Drawing.Size(182, 21);
+            this.CompTaskComboBox.TabIndex = 21;
+            this.CompTaskComboBox.SelectedIndexChanged += new System.EventHandler(this.CompTaskComboBox_SelectedIndexChanged);
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(17, 292);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(34, 13);
+            this.label16.TabIndex = 20;
+            this.label16.Text = "Accs:";
+            // 
+            // CompAccsComboBox
+            // 
+            this.CompAccsComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompAccsComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CompAccsComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompAccsComboBox.FormattingEnabled = true;
+            this.CompAccsComboBox.Location = new System.Drawing.Point(54, 289);
+            this.CompAccsComboBox.Name = "CompAccsComboBox";
+            this.CompAccsComboBox.Size = new System.Drawing.Size(182, 21);
+            this.CompAccsComboBox.TabIndex = 19;
+            this.CompAccsComboBox.SelectedIndexChanged += new System.EventHandler(this.CompAccsComboBox_SelectedIndexChanged);
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(19, 265);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(32, 13);
+            this.label15.TabIndex = 18;
+            this.label15.Text = "Teef:";
+            // 
+            // CompTeefComboBox
+            // 
+            this.CompTeefComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompTeefComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CompTeefComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompTeefComboBox.FormattingEnabled = true;
+            this.CompTeefComboBox.Location = new System.Drawing.Point(54, 262);
+            this.CompTeefComboBox.Name = "CompTeefComboBox";
+            this.CompTeefComboBox.Size = new System.Drawing.Size(182, 21);
+            this.CompTeefComboBox.TabIndex = 17;
+            this.CompTeefComboBox.SelectedIndexChanged += new System.EventHandler(this.CompTeefComboBox_SelectedIndexChanged);
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(20, 238);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(31, 13);
+            this.label13.TabIndex = 16;
+            this.label13.Text = "Feet:";
+            // 
+            // CompFeetComboBox
+            // 
+            this.CompFeetComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompFeetComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CompFeetComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompFeetComboBox.FormattingEnabled = true;
+            this.CompFeetComboBox.Location = new System.Drawing.Point(54, 235);
+            this.CompFeetComboBox.Name = "CompFeetComboBox";
+            this.CompFeetComboBox.Size = new System.Drawing.Size(182, 21);
+            this.CompFeetComboBox.TabIndex = 15;
+            this.CompFeetComboBox.SelectedIndexChanged += new System.EventHandler(this.CompFeetComboBox_SelectedIndexChanged);
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(15, 211);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(36, 13);
+            this.label12.TabIndex = 14;
+            this.label12.Text = "Hand:";
+            // 
+            // CompHandComboBox
+            // 
+            this.CompHandComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompHandComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CompHandComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompHandComboBox.FormattingEnabled = true;
+            this.CompHandComboBox.Location = new System.Drawing.Point(54, 208);
+            this.CompHandComboBox.Name = "CompHandComboBox";
+            this.CompHandComboBox.Size = new System.Drawing.Size(182, 21);
+            this.CompHandComboBox.TabIndex = 13;
+            this.CompHandComboBox.SelectedIndexChanged += new System.EventHandler(this.CompHandComboBox_SelectedIndexChanged);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(18, 184);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(33, 13);
+            this.label9.TabIndex = 12;
+            this.label9.Text = "Lowr:";
+            // 
+            // CompLowrComboBox
+            // 
+            this.CompLowrComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompLowrComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CompLowrComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompLowrComboBox.FormattingEnabled = true;
+            this.CompLowrComboBox.Location = new System.Drawing.Point(54, 181);
+            this.CompLowrComboBox.Name = "CompLowrComboBox";
+            this.CompLowrComboBox.Size = new System.Drawing.Size(182, 21);
+            this.CompLowrComboBox.TabIndex = 11;
+            this.CompLowrComboBox.SelectedIndexChanged += new System.EventHandler(this.CompLowrComboBox_SelectedIndexChanged);
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(18, 157);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(33, 13);
+            this.label8.TabIndex = 10;
+            this.label8.Text = "Uppr:";
+            // 
+            // CompUpprComboBox
+            // 
+            this.CompUpprComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompUpprComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CompUpprComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompUpprComboBox.FormattingEnabled = true;
+            this.CompUpprComboBox.Location = new System.Drawing.Point(54, 154);
+            this.CompUpprComboBox.Name = "CompUpprComboBox";
+            this.CompUpprComboBox.Size = new System.Drawing.Size(182, 21);
+            this.CompUpprComboBox.TabIndex = 9;
+            this.CompUpprComboBox.SelectedIndexChanged += new System.EventHandler(this.CompUpprComboBox_SelectedIndexChanged);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(22, 130);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(29, 13);
+            this.label7.TabIndex = 8;
+            this.label7.Text = "Hair:";
+            // 
+            // CompHairComboBox
+            // 
+            this.CompHairComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompHairComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CompHairComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompHairComboBox.FormattingEnabled = true;
+            this.CompHairComboBox.Location = new System.Drawing.Point(54, 127);
+            this.CompHairComboBox.Name = "CompHairComboBox";
+            this.CompHairComboBox.Size = new System.Drawing.Size(182, 21);
+            this.CompHairComboBox.TabIndex = 7;
+            this.CompHairComboBox.SelectedIndexChanged += new System.EventHandler(this.CompHairComboBox_SelectedIndexChanged);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(19, 103);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(32, 13);
+            this.label6.TabIndex = 6;
+            this.label6.Text = "Berd:";
+            // 
+            // CompBerdComboBox
+            // 
+            this.CompBerdComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompBerdComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CompBerdComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompBerdComboBox.FormattingEnabled = true;
+            this.CompBerdComboBox.Location = new System.Drawing.Point(54, 100);
+            this.CompBerdComboBox.Name = "CompBerdComboBox";
+            this.CompBerdComboBox.Size = new System.Drawing.Size(182, 21);
+            this.CompBerdComboBox.TabIndex = 5;
+            this.CompBerdComboBox.SelectedIndexChanged += new System.EventHandler(this.CompBerdComboBox_SelectedIndexChanged);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(15, 76);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(36, 13);
+            this.label5.TabIndex = 4;
+            this.label5.Text = "Head:";
+            // 
+            // CompHeadComboBox
+            // 
+            this.CompHeadComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompHeadComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CompHeadComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompHeadComboBox.FormattingEnabled = true;
+            this.CompHeadComboBox.Location = new System.Drawing.Point(54, 73);
+            this.CompHeadComboBox.Name = "CompHeadComboBox";
+            this.CompHeadComboBox.Size = new System.Drawing.Size(182, 21);
+            this.CompHeadComboBox.TabIndex = 3;
+            this.CompHeadComboBox.SelectedIndexChanged += new System.EventHandler(this.CompHeadComboBox_SelectedIndexChanged);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(3, 53);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(69, 13);
+            this.label4.TabIndex = 2;
+            this.label4.Text = "Components:";
+            // 
             // ToolsTabControl
             // 
             this.ToolsTabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -715,278 +998,59 @@
             this.ToolsPanel.TabIndex = 7;
             this.ToolsPanel.Visible = false;
             // 
-            // label4
+            // label21
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(3, 53);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(69, 13);
-            this.label4.TabIndex = 2;
-            this.label4.Text = "Components:";
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(2, 445);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(49, 13);
+            this.label21.TabIndex = 28;
+            this.label21.Text = "Clip Dict:";
             // 
-            // label5
+            // ClipDictComboBox
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 76);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(36, 13);
-            this.label5.TabIndex = 4;
-            this.label5.Text = "Head:";
-            // 
-            // CompHeadComboBox
-            // 
-            this.CompHeadComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.ClipDictComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompHeadComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.CompHeadComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.CompHeadComboBox.FormattingEnabled = true;
-            this.CompHeadComboBox.Location = new System.Drawing.Point(54, 73);
-            this.CompHeadComboBox.Name = "CompHeadComboBox";
-            this.CompHeadComboBox.Size = new System.Drawing.Size(182, 21);
-            this.CompHeadComboBox.TabIndex = 3;
-            this.CompHeadComboBox.SelectedIndexChanged += new System.EventHandler(this.CompHeadComboBox_SelectedIndexChanged);
+            this.ClipDictComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.ClipDictComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
+            this.ClipDictComboBox.FormattingEnabled = true;
+            this.ClipDictComboBox.Location = new System.Drawing.Point(54, 442);
+            this.ClipDictComboBox.Name = "ClipDictComboBox";
+            this.ClipDictComboBox.Size = new System.Drawing.Size(182, 21);
+            this.ClipDictComboBox.TabIndex = 27;
+            this.ClipDictComboBox.TextChanged += new System.EventHandler(this.ClipDictComboBox_TextChanged);
             // 
-            // label6
+            // label22
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(16, 103);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(32, 13);
-            this.label6.TabIndex = 6;
-            this.label6.Text = "Berd:";
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(24, 472);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(27, 13);
+            this.label22.TabIndex = 30;
+            this.label22.Text = "Clip:";
             // 
-            // CompBerdComboBox
+            // ClipComboBox
             // 
-            this.CompBerdComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.ClipComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompBerdComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.CompBerdComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.CompBerdComboBox.FormattingEnabled = true;
-            this.CompBerdComboBox.Location = new System.Drawing.Point(54, 100);
-            this.CompBerdComboBox.Name = "CompBerdComboBox";
-            this.CompBerdComboBox.Size = new System.Drawing.Size(182, 21);
-            this.CompBerdComboBox.TabIndex = 5;
-            this.CompBerdComboBox.SelectedIndexChanged += new System.EventHandler(this.CompBerdComboBox_SelectedIndexChanged);
+            this.ClipComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.ClipComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.ClipComboBox.FormattingEnabled = true;
+            this.ClipComboBox.Location = new System.Drawing.Point(54, 469);
+            this.ClipComboBox.Name = "ClipComboBox";
+            this.ClipComboBox.Size = new System.Drawing.Size(182, 21);
+            this.ClipComboBox.TabIndex = 29;
+            this.ClipComboBox.SelectedIndexChanged += new System.EventHandler(this.ClipComboBox_SelectedIndexChanged);
+            this.ClipComboBox.TextChanged += new System.EventHandler(this.ClipComboBox_TextChanged);
             // 
-            // label7
+            // label23
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(19, 130);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(29, 13);
-            this.label7.TabIndex = 8;
-            this.label7.Text = "Hair:";
-            // 
-            // CompHairComboBox
-            // 
-            this.CompHairComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompHairComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.CompHairComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.CompHairComboBox.FormattingEnabled = true;
-            this.CompHairComboBox.Location = new System.Drawing.Point(54, 127);
-            this.CompHairComboBox.Name = "CompHairComboBox";
-            this.CompHairComboBox.Size = new System.Drawing.Size(182, 21);
-            this.CompHairComboBox.TabIndex = 7;
-            this.CompHairComboBox.SelectedIndexChanged += new System.EventHandler(this.CompHairComboBox_SelectedIndexChanged);
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(15, 157);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(33, 13);
-            this.label8.TabIndex = 10;
-            this.label8.Text = "Uppr:";
-            // 
-            // CompUpprComboBox
-            // 
-            this.CompUpprComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompUpprComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.CompUpprComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.CompUpprComboBox.FormattingEnabled = true;
-            this.CompUpprComboBox.Location = new System.Drawing.Point(54, 154);
-            this.CompUpprComboBox.Name = "CompUpprComboBox";
-            this.CompUpprComboBox.Size = new System.Drawing.Size(182, 21);
-            this.CompUpprComboBox.TabIndex = 9;
-            this.CompUpprComboBox.SelectedIndexChanged += new System.EventHandler(this.CompUpprComboBox_SelectedIndexChanged);
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(15, 184);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(33, 13);
-            this.label9.TabIndex = 12;
-            this.label9.Text = "Lowr:";
-            // 
-            // CompLowrComboBox
-            // 
-            this.CompLowrComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompLowrComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.CompLowrComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.CompLowrComboBox.FormattingEnabled = true;
-            this.CompLowrComboBox.Location = new System.Drawing.Point(54, 181);
-            this.CompLowrComboBox.Name = "CompLowrComboBox";
-            this.CompLowrComboBox.Size = new System.Drawing.Size(182, 21);
-            this.CompLowrComboBox.TabIndex = 11;
-            this.CompLowrComboBox.SelectedIndexChanged += new System.EventHandler(this.CompLowrComboBox_SelectedIndexChanged);
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(12, 211);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(36, 13);
-            this.label12.TabIndex = 14;
-            this.label12.Text = "Hand:";
-            // 
-            // CompHandComboBox
-            // 
-            this.CompHandComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompHandComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.CompHandComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.CompHandComboBox.FormattingEnabled = true;
-            this.CompHandComboBox.Location = new System.Drawing.Point(54, 208);
-            this.CompHandComboBox.Name = "CompHandComboBox";
-            this.CompHandComboBox.Size = new System.Drawing.Size(182, 21);
-            this.CompHandComboBox.TabIndex = 13;
-            this.CompHandComboBox.SelectedIndexChanged += new System.EventHandler(this.CompHandComboBox_SelectedIndexChanged);
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(17, 238);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(31, 13);
-            this.label13.TabIndex = 16;
-            this.label13.Text = "Feet:";
-            // 
-            // CompFeetComboBox
-            // 
-            this.CompFeetComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompFeetComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.CompFeetComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.CompFeetComboBox.FormattingEnabled = true;
-            this.CompFeetComboBox.Location = new System.Drawing.Point(54, 235);
-            this.CompFeetComboBox.Name = "CompFeetComboBox";
-            this.CompFeetComboBox.Size = new System.Drawing.Size(182, 21);
-            this.CompFeetComboBox.TabIndex = 15;
-            this.CompFeetComboBox.SelectedIndexChanged += new System.EventHandler(this.CompFeetComboBox_SelectedIndexChanged);
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(16, 265);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(32, 13);
-            this.label15.TabIndex = 18;
-            this.label15.Text = "Teef:";
-            // 
-            // CompTeefComboBox
-            // 
-            this.CompTeefComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompTeefComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.CompTeefComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.CompTeefComboBox.FormattingEnabled = true;
-            this.CompTeefComboBox.Location = new System.Drawing.Point(54, 262);
-            this.CompTeefComboBox.Name = "CompTeefComboBox";
-            this.CompTeefComboBox.Size = new System.Drawing.Size(182, 21);
-            this.CompTeefComboBox.TabIndex = 17;
-            this.CompTeefComboBox.SelectedIndexChanged += new System.EventHandler(this.CompTeefComboBox_SelectedIndexChanged);
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(14, 292);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(34, 13);
-            this.label16.TabIndex = 20;
-            this.label16.Text = "Accs:";
-            // 
-            // CompAccsComboBox
-            // 
-            this.CompAccsComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompAccsComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.CompAccsComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.CompAccsComboBox.FormattingEnabled = true;
-            this.CompAccsComboBox.Location = new System.Drawing.Point(54, 289);
-            this.CompAccsComboBox.Name = "CompAccsComboBox";
-            this.CompAccsComboBox.Size = new System.Drawing.Size(182, 21);
-            this.CompAccsComboBox.TabIndex = 19;
-            this.CompAccsComboBox.SelectedIndexChanged += new System.EventHandler(this.CompAccsComboBox_SelectedIndexChanged);
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(14, 319);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(34, 13);
-            this.label17.TabIndex = 22;
-            this.label17.Text = "Task:";
-            // 
-            // CompTaskComboBox
-            // 
-            this.CompTaskComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompTaskComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.CompTaskComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.CompTaskComboBox.FormattingEnabled = true;
-            this.CompTaskComboBox.Location = new System.Drawing.Point(54, 316);
-            this.CompTaskComboBox.Name = "CompTaskComboBox";
-            this.CompTaskComboBox.Size = new System.Drawing.Size(182, 21);
-            this.CompTaskComboBox.TabIndex = 21;
-            this.CompTaskComboBox.SelectedIndexChanged += new System.EventHandler(this.CompTaskComboBox_SelectedIndexChanged);
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(16, 346);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(32, 13);
-            this.label18.TabIndex = 24;
-            this.label18.Text = "Decl:";
-            // 
-            // CompDeclComboBox
-            // 
-            this.CompDeclComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompDeclComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.CompDeclComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.CompDeclComboBox.FormattingEnabled = true;
-            this.CompDeclComboBox.Location = new System.Drawing.Point(54, 343);
-            this.CompDeclComboBox.Name = "CompDeclComboBox";
-            this.CompDeclComboBox.Size = new System.Drawing.Size(182, 21);
-            this.CompDeclComboBox.TabIndex = 23;
-            this.CompDeclComboBox.SelectedIndexChanged += new System.EventHandler(this.CompDeclComboBox_SelectedIndexChanged);
-            // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(19, 373);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(29, 13);
-            this.label20.TabIndex = 26;
-            this.label20.Text = "Jbib:";
-            // 
-            // CompJbibComboBox
-            // 
-            this.CompJbibComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompJbibComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.CompJbibComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.CompJbibComboBox.FormattingEnabled = true;
-            this.CompJbibComboBox.Location = new System.Drawing.Point(54, 370);
-            this.CompJbibComboBox.Name = "CompJbibComboBox";
-            this.CompJbibComboBox.Size = new System.Drawing.Size(182, 21);
-            this.CompJbibComboBox.TabIndex = 25;
-            this.CompJbibComboBox.SelectedIndexChanged += new System.EventHandler(this.CompJbibComboBox_SelectedIndexChanged);
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(3, 422);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(56, 13);
+            this.label23.TabIndex = 31;
+            this.label23.Text = "Animation:";
             // 
             // PedsForm
             // 
@@ -1103,5 +1167,10 @@
         private System.Windows.Forms.ComboBox CompJbibComboBox;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.ComboBox CompDeclComboBox;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.ComboBox ClipComboBox;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.ComboBox ClipDictComboBox;
+        private System.Windows.Forms.Label label23;
     }
 }
