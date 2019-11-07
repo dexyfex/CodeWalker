@@ -113,6 +113,8 @@ namespace CodeWalker.Rendering
 
         public bool renderhdtextures = true;
 
+        public bool swaphemisphere = false;//can be used to get better lighting in model viewers
+
 
         public MapSelectionMode SelectionMode = MapSelectionMode.Entity; //to assist in rendering embedded collisions properly...
 
@@ -497,6 +499,11 @@ namespace CodeWalker.Rendering
                 moondir = Vector3.Normalize(maxis.Multiply(mdir));
                 moonax = Vector3.Normalize(maxis.Multiply(Vector3.UnitY));
                 //bool usemoon = false;
+
+                if (swaphemisphere)
+                {
+                    sundir.Y = -sundir.Y;
+                }
 
                 lightdir = sundir;
 
@@ -2488,16 +2495,23 @@ namespace CodeWalker.Rendering
             return res;
         }
 
-        public bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, uint txdHash = 0)
+        public bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, uint txdHash = 0, TextureDictionary txdExtra = null, ClipMapEntry animClip = null)
         {
             //enqueue a single drawable for rendering.
 
             if (drawable == null)
                 return false;
 
-            Renderable rndbl = TryGetRenderable(arche, drawable, txdHash);
+            Renderable rndbl = TryGetRenderable(arche, drawable, txdHash, txdExtra);
             if (rndbl == null)
                 return false;
+
+            if (animClip != null)
+            {
+                rndbl.ClipMapEntry = animClip;
+                rndbl.ClipDict = animClip.Clip?.Ycd;
+                rndbl.HasAnims = true;
+            }
 
             return RenderRenderable(rndbl, arche, entity);
         }
@@ -2784,7 +2798,7 @@ namespace CodeWalker.Rendering
 
 
 
-        private Renderable TryGetRenderable(Archetype arche, DrawableBase drawable, uint txdHash = 0)
+        private Renderable TryGetRenderable(Archetype arche, DrawableBase drawable, uint txdHash = 0, TextureDictionary txdExtra = null)
         {
             if (drawable == null) return null;
             //BUG: only last texdict used!! needs to cache textures per archetype........
@@ -2836,7 +2850,8 @@ namespace CodeWalker.Rendering
             }
 
 
-            var yptTexDict = (drawable.Owner as YptFile)?.PtfxList?.TextureDictionary;
+            var extraTexDict = (drawable.Owner as YptFile)?.PtfxList?.TextureDictionary;
+            if (extraTexDict == null) extraTexDict = txdExtra;
 
             bool cacheSD = (rndbl.SDtxds == null);
             bool cacheHD = (renderhdtextures && (rndbl.HDtxds == null));
@@ -2939,9 +2954,9 @@ namespace CodeWalker.Rendering
                             if ((tex != null) && (ttex == null))
                             {
                                 //TextureRef means this RenderableTexture needs to be loaded from texture dict...
-                                if (yptTexDict != null) //for ypt files, first try the embedded tex dict..
+                                if (extraTexDict != null) //for ypt files, first try the embedded tex dict..
                                 {
-                                    dtex = yptTexDict.Lookup(tex.NameHash);
+                                    dtex = extraTexDict.Lookup(tex.NameHash);
                                 }
 
                                 if (dtex == null) //else //if (texDict != 0)

@@ -74,12 +74,6 @@ namespace CodeWalker.Peds
 
 
 
-        string SelectedPedName = string.Empty;
-        MetaHash SelectedPedHash = 0;//ped name hash
-        CPedModelInfo__InitData SelectedPedInit = null; //ped init data
-        YddFile SelectedPedYdd = null; //ped drawables
-        YftFile SelectedPedYft = null; //ped skeleton YFT
-        PedFile SelectedPedYmt = null; //ped variation info
 
         Drawable SelectedHead = null;
         Drawable SelectedBerd = null;
@@ -94,8 +88,24 @@ namespace CodeWalker.Peds
         Drawable SelectedDecl = null;
         Drawable SelectedJbib = null;
 
+        [TypeConverter(typeof(ExpandableObjectConverter))] public class PedSelection
+        {
+            public string Name { get; set; } = string.Empty;
+            public MetaHash NameHash { get; set; } = 0;//ped name hash
+            public CPedModelInfo__InitData InitData { get; set; } = null; //ped init data
+            public YddFile Ydd { get; set; } = null; //ped drawables
+            public YtdFile Ytd { get; set; } = null; //ped textures
+            public YcdFile Ycd { get; set; } = null; //ped animations
+            public YftFile Yft { get; set; } = null; //ped skeleton YFT
+            public PedFile Ymt { get; set; } = null; //ped variation info
+            public Dictionary<MetaHash, RpfFileEntry> DrawableFilesDict { get; set; } = null;
+            public Dictionary<MetaHash, RpfFileEntry> TextureFilesDict { get; set; } = null;
+            public RpfFileEntry[] DrawableFiles { get; set; } = null;
+            public RpfFileEntry[] TextureFiles { get; set; } = null;
+            public ClipMapEntry AnimClip { get; set; } = null;
+        }
 
-
+        PedSelection SelectedPed = new PedSelection();
 
 
 
@@ -118,9 +128,9 @@ namespace CodeWalker.Peds
             //Renderer.renderclouds = true;
             //Renderer.individualcloudfrag = "Contrails";
             Renderer.rendermoon = false;
-            Renderer.renderskeletons = true;
-            Renderer.SelectionFlagsTestAll = true;
-
+            Renderer.renderskeletons = false;
+            //Renderer.SelectionFlagsTestAll = true;
+            Renderer.swaphemisphere = true;
         }
 
         public void InitScene(Device device)
@@ -146,8 +156,8 @@ namespace CodeWalker.Peds
             camera.CurrentDistance = 2.0f;
             camera.TargetRotation.Y = 0.2f;
             camera.CurrentRotation.Y = 0.2f;
-            camera.TargetRotation.X = 0.5f * (float)Math.PI;
-            camera.CurrentRotation.X = 0.5f * (float)Math.PI;
+            camera.TargetRotation.X = 1.0f * (float)Math.PI;
+            camera.CurrentRotation.X = 1.0f * (float)Math.PI;
 
 
             LoadSettings();
@@ -454,8 +464,8 @@ namespace CodeWalker.Peds
             rad = Math.Max(0.01f, rad*0.1f);
 
             camera.FollowEntity.Position = pos;
-            camera.TargetDistance = rad * 1.6f;
-            camera.CurrentDistance = rad * 1.6f;
+            camera.TargetDistance = rad * 1.2f;
+            camera.CurrentDistance = rad * 1.2f;
 
             camera.ZFar = Math.Min(rad * 200.0f, 12000.0f);
             camera.ZNear = Math.Min(camera.ZFar * 5e-5f, 0.5f);
@@ -614,8 +624,23 @@ namespace CodeWalker.Peds
             }
             else
             {
-                PedNameComboBox.Items.Clear();
 
+                ClipComboBox.Items.Clear();
+                ClipDictComboBox.Items.Clear();
+                var ycds = GameFileCache.YcdDict.Values.ToList();
+                ycds.Sort((a, b) => { return a.Name.CompareTo(b.Name); });
+                ClipDictComboBox.AutoCompleteCustomSource.Clear();
+                List<string> ycdlist = new List<string>();
+                foreach (var ycde in ycds)
+                {
+                    ycdlist.Add(ycde.GetShortName());
+                }
+                ClipDictComboBox.AutoCompleteCustomSource.AddRange(ycdlist.ToArray());
+                ClipDictComboBox.Text = "";
+
+
+
+                PedNameComboBox.Items.Clear();
                 var peds = GameFileCache.PedsInitDict.Values.ToList();
                 peds.Sort((a, b) => { return a.Name.CompareTo(b.Name); });
                 foreach (var ped in peds)
@@ -624,7 +649,9 @@ namespace CodeWalker.Peds
                 }
                 if (peds.Count > 0)
                 {
-                    PedNameComboBox.SelectedIndex = 0;
+                    var ind = PedNameComboBox.FindString("A_F_M_Beach_01"); // //A_C_Pug
+                    PedNameComboBox.SelectedIndex = Math.Max(ind, 0);
+                    //PedNameComboBox.SelectedIndex = 0;
                 }
 
             }
@@ -688,12 +715,15 @@ namespace CodeWalker.Peds
             var pednamel = pedname.ToLowerInvariant();
             MetaHash pedhash = JenkHash.GenHash(pednamel);
 
-            SelectedPedName = string.Empty;
-            SelectedPedHash = 0;
-            SelectedPedInit = null;
-            SelectedPedYdd = null;
-            SelectedPedYft = null;
-            SelectedPedYmt = null;
+            SelectedPed.Name = string.Empty;
+            SelectedPed.NameHash = 0;
+            SelectedPed.InitData = null;
+            SelectedPed.Ydd = null;
+            SelectedPed.Ytd = null;
+            SelectedPed.Ycd = null;
+            SelectedPed.Yft = null;
+            SelectedPed.Ymt = null;
+            SelectedPed.AnimClip = null;
             ClearCombo(CompHeadComboBox); SelectedHead = null;
             ClearCombo(CompBerdComboBox); SelectedBerd = null;
             ClearCombo(CompHairComboBox); SelectedHair = null;
@@ -707,50 +737,88 @@ namespace CodeWalker.Peds
             ClearCombo(CompDeclComboBox); SelectedDecl = null;
             ClearCombo(CompJbibComboBox); SelectedJbib = null;
 
+            DetailsPropertyGrid.SelectedObject = null;
+
+
             CPedModelInfo__InitData initdata = null;
             if (!GameFileCache.PedsInitDict.TryGetValue(pedhash, out initdata)) return;
-            
 
-            bool pedchange = SelectedPedHash != pedhash;
-            SelectedPedName = pedname;
-            SelectedPedHash = pedhash;
-            SelectedPedInit = initdata;
-            SelectedPedYdd = GameFileCache.GetYdd(pedhash);
-            SelectedPedYft = GameFileCache.GetYft(pedhash);
-            GameFileCache.PedVariationsDict?.TryGetValue(pedhash, out SelectedPedYmt);
+            var ycdhash = JenkHash.GenHash(initdata.ClipDictionaryName.ToLowerInvariant());
 
-            while ((SelectedPedYdd != null) && (!SelectedPedYdd.Loaded))
+            bool pedchange = SelectedPed.NameHash != pedhash;
+            SelectedPed.Name = pedname;
+            SelectedPed.NameHash = pedhash;
+            SelectedPed.InitData = initdata;
+            SelectedPed.Ydd = GameFileCache.GetYdd(pedhash);
+            SelectedPed.Ytd = GameFileCache.GetYtd(pedhash);
+            SelectedPed.Ycd = GameFileCache.GetYcd(ycdhash);
+            SelectedPed.Yft = GameFileCache.GetYft(pedhash);
+
+            PedFile pedFile = null;
+            GameFileCache.PedVariationsDict?.TryGetValue(pedhash, out pedFile);
+            SelectedPed.Ymt = pedFile;
+
+            Dictionary<MetaHash, RpfFileEntry> peddict = null;
+            GameFileCache.PedDrawableDicts.TryGetValue(SelectedPed.NameHash, out peddict);
+            SelectedPed.DrawableFilesDict = peddict;
+            SelectedPed.DrawableFiles = SelectedPed.DrawableFilesDict?.Values.ToArray();
+            GameFileCache.PedTextureDicts.TryGetValue(SelectedPed.NameHash, out peddict);
+            SelectedPed.TextureFilesDict = peddict;
+            SelectedPed.TextureFiles = SelectedPed.TextureFilesDict?.Values.ToArray();
+
+
+            while ((SelectedPed.Ydd != null) && (!SelectedPed.Ydd.Loaded))
             {
                 Thread.Sleep(20);//kinda hacky
-                SelectedPedYdd = GameFileCache.GetYdd(SelectedPedHash);
+                SelectedPed.Ydd = GameFileCache.GetYdd(pedhash);
             }
-            while ((SelectedPedYft != null) && (!SelectedPedYft.Loaded))
+            while ((SelectedPed.Ytd != null) && (!SelectedPed.Ytd.Loaded))
             {
                 Thread.Sleep(20);//kinda hacky
-                SelectedPedYft = GameFileCache.GetYft(SelectedPedHash);
+                SelectedPed.Ytd = GameFileCache.GetYtd(pedhash);
+            }
+            while ((SelectedPed.Ycd != null) && (!SelectedPed.Ycd.Loaded))
+            {
+                Thread.Sleep(20);//kinda hacky
+                SelectedPed.Ycd = GameFileCache.GetYcd(ycdhash);
+            }
+            while ((SelectedPed.Yft != null) && (!SelectedPed.Yft.Loaded))
+            {
+                Thread.Sleep(20);//kinda hacky
+                SelectedPed.Yft = GameFileCache.GetYft(pedhash);
             }
 
-            LoadModel(SelectedPedYft, pedchange);
+            LoadModel(SelectedPed.Yft, pedchange);
 
 
-            var vi = SelectedPedYmt?.VariationInfo;
+            var vi = SelectedPed.Ymt?.VariationInfo;
             if (vi != null)
             {
-                PopulateCompCombo(CompHeadComboBox, vi.GetVariations(0));
-                PopulateCompCombo(CompBerdComboBox, vi.GetVariations(1));
-                PopulateCompCombo(CompHairComboBox, vi.GetVariations(2));
-                PopulateCompCombo(CompUpprComboBox, vi.GetVariations(3));
-                PopulateCompCombo(CompLowrComboBox, vi.GetVariations(4));
-                PopulateCompCombo(CompHandComboBox, vi.GetVariations(5));
-                PopulateCompCombo(CompFeetComboBox, vi.GetVariations(6));
-                PopulateCompCombo(CompTeefComboBox, vi.GetVariations(7));
-                PopulateCompCombo(CompAccsComboBox, vi.GetVariations(8));
-                PopulateCompCombo(CompTaskComboBox, vi.GetVariations(9));
-                PopulateCompCombo(CompDeclComboBox, vi.GetVariations(10));
-                PopulateCompCombo(CompJbibComboBox, vi.GetVariations(11));
+                PopulateCompCombo(CompHeadComboBox, vi.GetComponentData(0));
+                PopulateCompCombo(CompBerdComboBox, vi.GetComponentData(1));
+                PopulateCompCombo(CompHairComboBox, vi.GetComponentData(2));
+                PopulateCompCombo(CompUpprComboBox, vi.GetComponentData(3));
+                PopulateCompCombo(CompLowrComboBox, vi.GetComponentData(4));
+                PopulateCompCombo(CompHandComboBox, vi.GetComponentData(5));
+                PopulateCompCombo(CompFeetComboBox, vi.GetComponentData(6));
+                PopulateCompCombo(CompTeefComboBox, vi.GetComponentData(7));
+                PopulateCompCombo(CompAccsComboBox, vi.GetComponentData(8));
+                PopulateCompCombo(CompTaskComboBox, vi.GetComponentData(9));
+                PopulateCompCombo(CompDeclComboBox, vi.GetComponentData(10));
+                PopulateCompCombo(CompJbibComboBox, vi.GetComponentData(11));
             }
 
 
+
+            ClipDictComboBox.Text = SelectedPed.InitData?.ClipDictionaryName ?? "";
+            ClipComboBox.Text = "idle";
+            MetaHash cliphash = JenkHash.GenHash("idle");
+            ClipMapEntry cme = null;
+            SelectedPed.Ycd?.ClipMap?.TryGetValue(cliphash, out cme);
+            SelectedPed.AnimClip = cme;
+
+
+            DetailsPropertyGrid.SelectedObject = SelectedPed;
 
         }
 
@@ -775,18 +843,19 @@ namespace CodeWalker.Peds
         private void ClearCombo(ComboBox c)
         {
             c.Items.Clear();
+            c.Items.Add("");
             c.Text = string.Empty;
         }
-        private void PopulateCompCombo(ComboBox c, MUnk_3538495220 vars)
+        private void PopulateCompCombo(ComboBox c, MUnk_3538495220 compData)
         {
-            if (vars?.Variations == null) return;
-            foreach (var item in vars.Variations)
+            if (compData?.DrawblData3 == null) return;
+            foreach (var item in compData.DrawblData3)
             {
                 c.Items.Add(item.GetDrawableName());
             }
-            if (vars.Variations.Length > 0)
+            if (compData.DrawblData3.Length > 0)
             {
-                c.SelectedIndex = 0;
+                c.SelectedIndex = 1;
             }
         }
 
@@ -794,20 +863,21 @@ namespace CodeWalker.Peds
 
         private Drawable GetComponentDrawable(string name)
         {
+            if (string.IsNullOrEmpty(name)) return null;
+
             var namel = name.ToLowerInvariant();
             MetaHash hash = JenkHash.GenHash(namel);
             Drawable d;
 
-            if (SelectedPedYdd?.Dict != null)
+            if (SelectedPed.Ydd?.Dict != null)
             {
-                if (SelectedPedYdd.Dict.TryGetValue(hash, out d)) return d;
+                if (SelectedPed.Ydd.Dict.TryGetValue(hash, out d)) return d;
             }
 
-            Dictionary<MetaHash, RpfFileEntry> peddict = null;
-            if (GameFileCache.PedDrawableDicts.TryGetValue(SelectedPedHash, out peddict))
+            if (SelectedPed.DrawableFilesDict != null)
             {
                 RpfFileEntry file = null;
-                if (peddict.TryGetValue(hash, out file))
+                if (SelectedPed.DrawableFilesDict.TryGetValue(hash, out file))
                 {
                     var ydd = GameFileCache.GetFileUncached<YddFile>(file);
                     while ((ydd != null) && (!ydd.Loaded))
@@ -1011,30 +1081,64 @@ namespace CodeWalker.Peds
         private void RenderPed()
         {
 
-            YftFile yft = SelectedPedYft;// GameFileCache.GetYft(SelectedModelHash);
+            YftFile yft = SelectedPed.Yft;// GameFileCache.GetYft(SelectedModelHash);
             if (yft != null)
             {
                 if (yft.Loaded)
                 {
                     if (yft.Fragment != null)
                     {
-                        var f = yft.Fragment;
-
-                        var txdhash = 0u;// SelectedVehicleHash;// yft.RpfFileEntry?.ShortNameHash ?? 0;
+                        //var f = yft.Fragment;
+                        //var txdhash = 0u;// SelectedVehicleHash;// yft.RpfFileEntry?.ShortNameHash ?? 0;
                         //var namelower = yft.RpfFileEntry?.GetShortNameLower();
-
-                        Archetype arch = null;// TryGetArchetype(hash);
-
-                        Renderer.RenderFragment(arch, null, f, txdhash);
-
+                        //Archetype arch = null;// TryGetArchetype(hash);
+                        //Renderer.RenderFragment(arch, null, f, txdhash);
                         //seldrwbl = f.Drawable;
                     }
                 }
-            }
 
+
+                var vi = SelectedPed.Ymt?.VariationInfo;
+                if (vi != null)
+                {
+                    RenderPedComponent(SelectedHead, vi.GetComponentData(0));
+                    RenderPedComponent(SelectedBerd, vi.GetComponentData(1));
+                    RenderPedComponent(SelectedHair, vi.GetComponentData(2));
+                    RenderPedComponent(SelectedUppr, vi.GetComponentData(3));
+                    RenderPedComponent(SelectedLowr, vi.GetComponentData(4));
+                    RenderPedComponent(SelectedHand, vi.GetComponentData(5));
+                    RenderPedComponent(SelectedFeet, vi.GetComponentData(6));
+                    RenderPedComponent(SelectedTeef, vi.GetComponentData(7));
+                    RenderPedComponent(SelectedAccs, vi.GetComponentData(8));
+                    RenderPedComponent(SelectedTask, vi.GetComponentData(9));
+                    RenderPedComponent(SelectedDecl, vi.GetComponentData(10));
+                    RenderPedComponent(SelectedJbib, vi.GetComponentData(11));
+                }
+
+            }
+            
         }
 
+        private void RenderPedComponent(Drawable drawable, MUnk_3538495220 compData)
+        {
+            if (drawable == null) return;
+            if (compData == null) return;
 
+
+            var td = SelectedPed.Ytd?.TextureDict;
+            var ac = SelectedPed.AnimClip;
+
+            var skel = SelectedPed.Yft?.Fragment?.Drawable?.Skeleton;
+            if (skel != null)
+            {
+                drawable.Skeleton = skel;
+            }
+
+
+            Renderer.RenderDrawable(drawable, null, null, 0, td, ac);
+
+
+        }
 
 
 
@@ -1598,7 +1702,63 @@ namespace CodeWalker.Peds
             SelectedJbib = GetComponentDrawable(CompJbibComboBox.Text);
         }
 
+        private void ClipDictComboBox_TextChanged(object sender, EventArgs e)
+        {
+
+            var ycdhash = JenkHash.GenHash(ClipDictComboBox.Text.ToLowerInvariant());
+            var ycd = GameFileCache.GetYcd(ycdhash);
+            while ((ycd != null) && (!ycd.Loaded))
+            {
+                Thread.Sleep(20);//kinda hacky
+                ycd = GameFileCache.GetYcd(ycdhash);
+            }
+
+            SelectedPed.Ycd = ycd;
+
+            ClipComboBox.Items.Clear();
+            ClipComboBox.Items.Add("");
+
+            if (ycd?.ClipMapEntries == null)
+            {
+                ClipComboBox.SelectedIndex = 0;
+                SelectedPed.AnimClip = null;
+                return;
+            }
+
+            foreach (var cme in ycd.ClipMapEntries)
+            {
+                var animclip = cme.Clip as ClipAnimation;
+                if (animclip != null)
+                {
+                    ClipComboBox.Items.Add(animclip.ShortName);
+                    continue;
+                }
+                var animcliplist = cme.Clip as ClipAnimationList;
+                if (animcliplist?.Animations?.Data != null)
+                {
+                    ClipComboBox.Items.Add(animcliplist.ShortName);
+                    continue;
+                }
+            }
 
 
+
+        }
+
+        private void ClipComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+            var name = ClipComboBox.Text;
+
+            MetaHash cliphash = JenkHash.GenHash(name);
+            ClipMapEntry cme = null;
+            SelectedPed.Ycd?.ClipMap?.TryGetValue(cliphash, out cme);
+            SelectedPed.AnimClip = cme;
+        }
+
+        private void ClipComboBox_TextChanged(object sender, EventArgs e)
+        {
+            ClipComboBox_SelectedIndexChanged(sender, e);
+        }
     }
 }

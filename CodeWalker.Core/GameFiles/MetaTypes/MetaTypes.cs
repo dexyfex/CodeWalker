@@ -1018,7 +1018,7 @@ namespace CodeWalker.GameFiles
                 case MetaName.CPedVariationInfo:
                     return new MetaStructureInfo(MetaName.CPedVariationInfo, 4030871161, 768, 112,
                      new MetaStructureEntryInfo_s(MetaName.bHasTexVariations, 0, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)4086467184, 1, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bHasDrawblVariations, 1, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)911147899, 2, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)315291935, 3, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
@@ -1036,7 +1036,7 @@ namespace CodeWalker.GameFiles
                     return new MetaStructureInfo((MetaName)3538495220, 2024084511, 768, 24,
                      new MetaStructureEntryInfo_s(MetaName.numAvailTex, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1535046754),
-                     new MetaStructureEntryInfo_s((MetaName)1756136273, 8, MetaStructureEntryDataType.Array, 0, 1, 0)
+                     new MetaStructureEntryInfo_s(MetaName.aDrawblData3, 8, MetaStructureEntryDataType.Array, 0, 1, 0)
                     );
                 case (MetaName)2236980467:
                     return new MetaStructureInfo((MetaName)2236980467, 508935687, 0, 24,
@@ -5993,7 +5993,7 @@ namespace CodeWalker.GameFiles
     public struct CPedVariationInfo : IPsoSwapEnd //112 bytes, Key:4030871161  //COMPONENT PEDS YMT ROOT  - in componentpeds .rpf's
     {
         public byte bHasTexVariations { get; set; } //0   0: Boolean: 0: bHasTexVariations
-        public byte Unk_4086467184 { get; set; } //1   1: Boolean: 0: 4086467184
+        public byte bHasDrawblVariations { get; set; } //1   1: Boolean: 0: bHasDrawblVariations
         public byte Unk_911147899 { get; set; } //2   2: Boolean: 0: 911147899
         public byte Unk_315291935 { get; set; } //3   3: Boolean: 0: 315291935
         public ArrayOfBytes12 Unk_2996560424 { get; set; } //4   4: ArrayOfBytes: 12: 2996560424
@@ -6019,7 +6019,7 @@ namespace CodeWalker.GameFiles
         public CPedVariationInfo Data { get { return _Data; } }
 
         public byte[] ComponentIndices { get; set; }
-        public MUnk_3538495220[] ComponentVariations { get; set; }
+        public MUnk_3538495220[] ComponentData3 { get; set; }
         public MCPedSelectionSet[] SelectionSets { get; set; }
         public MCComponentInfo[] CompInfos { get; set; }
         public MCPedPropInfo PropInfo { get; set; }
@@ -6040,13 +6040,13 @@ namespace CodeWalker.GameFiles
             ComponentIndices = data.Unk_2996560424.GetArray();
 
 
-            var vComponentVariations = MetaTypes.ConvertDataArray<Unk_3538495220>(meta, (MetaName)3538495220, _Data.aComponentData3);
-            if (vComponentVariations != null)
+            var aComponentData3 = MetaTypes.ConvertDataArray<Unk_3538495220>(meta, (MetaName)3538495220, _Data.aComponentData3);
+            if (aComponentData3 != null)
             {
-                ComponentVariations = new MUnk_3538495220[vComponentVariations.Length];
-                for (int i = 0; i < vComponentVariations.Length; i++)
+                ComponentData3 = new MUnk_3538495220[aComponentData3.Length];
+                for (int i = 0; i < aComponentData3.Length; i++)
                 {
-                    ComponentVariations[i] = new MUnk_3538495220(meta, vComponentVariations[i], this);
+                    ComponentData3[i] = new MUnk_3538495220(meta, aComponentData3[i], this);
                 }
             }
 
@@ -6077,14 +6077,14 @@ namespace CodeWalker.GameFiles
             for (int i = 0; i < 12; i++) //set the component type indices on all the component variants, for them to use
             {
                 var compInd = ComponentIndices[i];
-                if ((compInd > 0) && (compInd < ComponentVariations?.Length))
+                if ((compInd > 0) && (compInd < ComponentData3?.Length))
                 {
-                    var compvar = ComponentVariations[compInd];
+                    var compvar = ComponentData3[compInd];
                     compvar.ComponentType = i;
 
-                    if (compvar.Variations != null)
+                    if (compvar.DrawblData3 != null)
                     {
-                        foreach (var cvp in compvar.Variations)
+                        foreach (var cvp in compvar.DrawblData3)
                         {
                             cvp.ComponentType = i;
                             //cvp.GetDrawableName();//testing
@@ -6108,13 +6108,13 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public MUnk_3538495220 GetVariations(int componentType)
+        public MUnk_3538495220 GetComponentData(int componentType)
         {
             if ((componentType < 0) || (componentType > 11)) return null;
             if (ComponentIndices == null) return null;
             var index = ComponentIndices[componentType];
-            if (index > ComponentVariations?.Length) return null;
-            return ComponentVariations[index];
+            if (index > ComponentData3?.Length) return null;
+            return ComponentData3[index];
         }
 
     }
@@ -6125,7 +6125,7 @@ namespace CodeWalker.GameFiles
         public byte Unused0 { get; set; }//1
         public ushort Unused1 { get; set; }//2
         public uint Unused2 { get; set; }//4
-        public Array_Structure Unk_1756136273 { get; set; } //8   8: Array: 0: 1756136273  {0: Structure: 1535046754: 256}
+        public Array_Structure aDrawblData3 { get; set; } //8   8: Array: 0: aDrawblData3  {0: Structure: 1535046754: 256}
     }
     public class MUnk_3538495220 : MetaWrapper
     {
@@ -6135,7 +6135,7 @@ namespace CodeWalker.GameFiles
         public Unk_3538495220 Data { get { return _Data; } }
 
 
-        public MUnk_1535046754[] Variations { get; set; }
+        public MUnk_1535046754[] DrawblData3 { get; set; }
 
         public int ComponentType { get; set; } = 0;
         public static string[] ComponentTypeNames { get; } =
@@ -6166,13 +6166,13 @@ namespace CodeWalker.GameFiles
 
         private void Init(Meta meta)
         {
-            var vVariations = MetaTypes.ConvertDataArray<Unk_1535046754>(meta, (MetaName)1535046754, _Data.Unk_1756136273);
-            if (vVariations != null)
+            var aDrawblData3 = MetaTypes.ConvertDataArray<Unk_1535046754>(meta, (MetaName)1535046754, _Data.aDrawblData3);
+            if (aDrawblData3 != null)
             {
-                Variations = new MUnk_1535046754[vVariations.Length];
-                for (int i = 0; i < vVariations.Length; i++)
+                DrawblData3 = new MUnk_1535046754[aDrawblData3.Length];
+                for (int i = 0; i < aDrawblData3.Length; i++)
                 {
-                    Variations[i] = new MUnk_1535046754(meta, vVariations[i], this, i);
+                    DrawblData3[i] = new MUnk_1535046754(meta, aDrawblData3[i], this, i);
                 }
             }
         }
@@ -6192,7 +6192,7 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             string r = (ComponentType < 12) ? ComponentTypeNames[ComponentType] : "error";
-            return r + " : " + Variations?.Length.ToString() ?? base.ToString();
+            return r + " : " + DrawblData3?.Length.ToString() ?? base.ToString();
         }
     }
 

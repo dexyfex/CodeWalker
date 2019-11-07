@@ -13213,7 +13213,7 @@ namespace CodeWalker.GameFiles
                 case MetaName.CPedVariationInfo:
                     return new PsoStructureInfo(MetaName.CPedVariationInfo, 0, 0, 112,
                      new PsoStructureEntryInfo(MetaName.bHasTexVariations, PsoDataType.Bool, 0, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)4086467184, PsoDataType.Bool, 1, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.bHasDrawblVariations, PsoDataType.Bool, 1, 0, 0),
                      new PsoStructureEntryInfo((MetaName)911147899, PsoDataType.Bool, 2, 0, 0),
                      new PsoStructureEntryInfo((MetaName)315291935, PsoDataType.Bool, 3, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.UByte, 0, 0, 0),
@@ -13239,7 +13239,7 @@ namespace CodeWalker.GameFiles
                     return new PsoStructureInfo((MetaName)3538495220, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.numAvailTex, PsoDataType.UByte, 0, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)1535046754),
-                     new PsoStructureEntryInfo((MetaName)1756136273, PsoDataType.Array, 8, 0, (MetaName)1)
+                     new PsoStructureEntryInfo(MetaName.aDrawblData3, PsoDataType.Array, 8, 0, (MetaName)1)
                     );
                 case (MetaName)1535046754:
                     return new PsoStructureInfo((MetaName)1535046754, 0, 0, 48,
