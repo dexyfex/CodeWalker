@@ -14160,19 +14160,19 @@ namespace CodeWalker.GameFiles
                 case (MetaName)3730683074:
                     return new PsoStructureInfo((MetaName)3730683074, 0, 0, 32,
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2166096847),
-                     new PsoStructureEntryInfo((MetaName)3085292924, PsoDataType.Array, 0, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.PortalInfoList, PsoDataType.Array, 0, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)1998468471),
-                     new PsoStructureEntryInfo((MetaName)1142266249, PsoDataType.Array, 16, 0, (MetaName)2)
+                     new PsoStructureEntryInfo(MetaName.PathNodeList, PsoDataType.Array, 16, 0, (MetaName)2)
                     );
                 case (MetaName)2166096847:
                     return new PsoStructureInfo((MetaName)2166096847, 0, 0, 40,
-                     new PsoStructureEntryInfo((MetaName)3748344047, PsoDataType.UInt, 0, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.InteriorProxyHash, PsoDataType.UInt, 0, 0, 0),
                      new PsoStructureEntryInfo(MetaName.PortalIdx, PsoDataType.SInt, 4, 0, 0),
                      new PsoStructureEntryInfo(MetaName.RoomIdx, PsoDataType.SInt, 8, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)57503776, PsoDataType.UInt, 12, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)1028873946, PsoDataType.SInt, 16, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.DestInteriorHash, PsoDataType.UInt, 12, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.DestRoomIdx, PsoDataType.SInt, 16, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)4133637881),
-                     new PsoStructureEntryInfo((MetaName)3203972140, PsoDataType.Array, 24, 0, (MetaName)5)
+                     new PsoStructureEntryInfo(MetaName.PortalEntityList, PsoDataType.Array, 24, 0, (MetaName)5)
                     );
                 case (MetaName)4133637881:
                     return new PsoStructureInfo((MetaName)4133637881, 0, 0, 16,
@@ -14186,12 +14186,12 @@ namespace CodeWalker.GameFiles
                     return new PsoStructureInfo((MetaName)1998468471, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.Key, PsoDataType.UInt, 0, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2301425487),
-                     new PsoStructureEntryInfo((MetaName)3530626268, PsoDataType.Array, 8, 0, (MetaName)1)
+                     new PsoStructureEntryInfo(MetaName.PathNodeChildList, PsoDataType.Array, 8, 0, (MetaName)1)
                     );
                 case (MetaName)2301425487:
                     return new PsoStructureInfo((MetaName)2301425487, 0, 0, 8,
-                     new PsoStructureEntryInfo((MetaName)2721898107, PsoDataType.UInt, 0, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)1084559223, PsoDataType.SInt, 4, 0, 0)
+                     new PsoStructureEntryInfo(MetaName.PathNodeKey, PsoDataType.UInt, 0, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.PortalInfoIdx, PsoDataType.SInt, 4, 0, 0)
                     );
                 case MetaName.camMotionBlurSettingsMetadata:
                     return new PsoStructureInfo(MetaName.camMotionBlurSettingsMetadata, 0, 0, 64,
