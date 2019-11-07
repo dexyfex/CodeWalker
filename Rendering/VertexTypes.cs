@@ -50,7 +50,7 @@ namespace CodeWalker.Rendering
             }
         }
 
-        public static InputElement[] GetLayout(VertexDecl declaration, VertexType mask)
+        public static InputElement[] GetLayout(VertexType componentsFlags, VertexDecl componentsTypes = VertexDecl.Type1)
         {
             List<InputElement> inputElements = new List<InputElement>();
 
@@ -74,8 +74,8 @@ namespace CodeWalker.Rendering
                 "BINORMAL",
             };
 
-            var types = (ulong)declaration;
-            var flags = (uint)mask;
+            var types = (ulong)componentsTypes;
+            var flags = (uint)componentsFlags;
 
             var offset = 0;
 
