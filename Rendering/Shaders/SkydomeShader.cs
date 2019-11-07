@@ -156,7 +156,7 @@ namespace CodeWalker.Rendering
 
             sundisc = new UnitDisc(device, 30, true);
             sunlayout = new InputLayout(device, sunvsbytes, sundisc.GetLayout());
-            skylayout = new InputLayout(device, skyvsbytes, VertexTypeGTAV1.GetLayout(VertexType.PTT));
+            skylayout = new InputLayout(device, skyvsbytes, VertexTypeGTAV.GetLayout(VertexType.PTT));
 
             moonquad = new UnitQuad(device, true);
             moonlayout = new InputLayout(device, moonvsbytes, moonquad.GetLayout());

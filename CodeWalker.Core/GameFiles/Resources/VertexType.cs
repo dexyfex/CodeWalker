@@ -7,8 +7,15 @@ using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
 {
+    // TODO: Rename to VertexType
+    public enum VertexDecl : ulong
+    {
+        Type1 = 0x7755555555996996, // used by almost all GTAV drawables
+        Type2 = 0x030000000199A006, // used on cloth?
+        Type3 = 0x0300000001996006, // used on cloth?
+    }
 
-
+    // TODO: Rename to VertexFlags
     public enum VertexType : uint
     {
         Default = 89, //PNCT
@@ -51,6 +58,48 @@ namespace CodeWalker.GameFiles
         PBBNCTTTX = 16863,
     }
 
+    //0x7755555555996996
+    public struct VertexTypeGTAV1
+    {
+        public Vector3 Position;
+        public uint BlendWeights;
+        public uint BlendIndices;
+        public Vector3 Normals;
+        public uint Colour0;
+        public uint Colour1;
+        public Vector2 Texcoords0;
+        public Vector2 Texcoords1;
+        public Vector2 Texcoords2;
+        public Vector2 Texcoords3;
+        public Vector2 Texcoords4;
+        public Vector2 Texcoords5;
+        public Vector2 Texcoords6;
+        public Vector2 Texcoords7;
+        public Vector4 Tangents;
+        public Vector4 Binormals;
+    }
+
+    //0x030000000199A006
+    public struct VertexTypeGTAV2
+    {
+        public Vector3 Position;
+        public uint Normals; // Packed as Dec3N 
+        public uint Colour0;
+        public uint Colour1;
+        public Half2 Texcoords0;
+        public Half4 Tangents;
+    }
+
+    //0x0300000001996006
+    public struct VertexTypeGTAV3
+    {
+        public Vector3 Position;
+        public Vector3 Normals;
+        public uint Colour0;
+        public uint Colour1;
+        public Half2 Texcoords0;
+        public Half4 Tangents;
+    }
 
     //vertex data to be used by the editor. TODO: maybe move somewhere else.
     public struct EditorVertex

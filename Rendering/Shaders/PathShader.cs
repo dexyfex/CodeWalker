@@ -61,7 +61,8 @@ namespace CodeWalker.Rendering
 
             VSSceneVars = new GpuVarsBuffer<PathShaderVSSceneVars>(device);
 
-            layout = new InputLayout(device, vsbytes, VertexTypeGTAV1.GetLayout(VertexType.PC));
+            // TODO: Replace this EditorVertex.GetLayout() as this shouldn't use GTA vertex types
+            layout = new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PC));
 
             cube = new UnitCube(device, boxvsbytes, true, false, true);
 
