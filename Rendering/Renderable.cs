@@ -743,6 +743,8 @@ namespace CodeWalker.Rendering
         public bool HDTextureEnable = true;
         public bool globalAnimUVEnable = false;
         public ClipMapEntry ClipMapEntryUV = null;
+        public bool isHair = false;
+        public bool disableRendering = false;
 
         public static ShaderParamNames[] GetTextureSamplerList()
         {
@@ -854,6 +856,9 @@ namespace CodeWalker.Rendering
                     case 600733812://{decal_amb_only.sps}
                         SpecOnly = true; //this needs more work.
                         break;
+                    case 100720695://{ped_hair_spiked.sps}
+                        isHair = true;
+                        break;
                 }
 
 
@@ -941,6 +946,10 @@ namespace CodeWalker.Rendering
                                 break;
                             case ShaderParamNames.DirtDecalMask:
                                 DirtDecalMask = ((Vector4)param.Data);
+                                break;
+                            case ShaderParamNames.orderNumber:
+                                //stops drawing hair geoms that apparently shouldn't be rendered... any better way to do this?
+                                if (isHair && (((Vector4)param.Data).X > 0.0f)) disableRendering = true;
                                 break;
                         }
 

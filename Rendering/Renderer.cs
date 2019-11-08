@@ -2652,6 +2652,11 @@ namespace CodeWalker.Rendering
                             if (SelectionGeometryDrawFlags.ContainsKey(dgeom))
                             { continue; } //filter out geometries in selected item that aren't flagged for drawing.
                         }
+                        else
+                        {
+                            if (geom.disableRendering)
+                            { continue; } //filter out certain geometries like certain hair parts that shouldn't render by default
+                        }
 
                         rginst.Geom = geom;
 
