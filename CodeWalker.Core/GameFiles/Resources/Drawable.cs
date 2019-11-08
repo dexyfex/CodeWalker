@@ -937,9 +937,14 @@ namespace CodeWalker.GameFiles
             //SkinTransform = Matrix.Identity;//(for testing)
         }
 
-
-
-
+        public void ResetAnimTransform()
+        {
+            AnimRotation = Rotation;
+            AnimTranslation = Translation;
+            AnimScale = Scale;
+            UpdateAnimTransform();
+            UpdateSkinTransform();
+        }
 
         public static uint ElfHash_Uppercased(string str)
         {

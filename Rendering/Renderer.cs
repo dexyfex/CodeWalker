@@ -2512,6 +2512,13 @@ namespace CodeWalker.Rendering
                 rndbl.ClipDict = animClip.Clip?.Ycd;
                 rndbl.HasAnims = true;
             }
+            else if ((arche == null) && (rndbl.ClipMapEntry != null))
+            {
+                rndbl.ClipMapEntry = null;
+                rndbl.ClipDict = null;
+                rndbl.HasAnims = false;
+                rndbl.ResetBoneTransforms();
+            }
 
             return RenderRenderable(rndbl, arche, entity);
         }

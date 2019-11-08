@@ -358,7 +358,15 @@ namespace CodeWalker.Rendering
         }
 
 
-
+        public void ResetBoneTransforms()
+        {
+            if (Bones == null) return;
+            foreach (var bone in Bones)
+            {
+                bone.ResetAnimTransform();
+            }
+            UpdateBoneTransforms();
+        }
         private void UpdateBoneTransforms()
         {
             if (Bones == null) return;
@@ -389,6 +397,8 @@ namespace CodeWalker.Rendering
             {
                 UpdateAnim(ClipMapEntry); //animate skeleton/models
             }
+
+            UpdateBoneTransforms();
 
             foreach (var model in HDModels)
             {
@@ -533,8 +543,6 @@ namespace CodeWalker.Rendering
 
             }
 
-
-            UpdateBoneTransforms();
 
         }
         private void UpdateAnimUV(ClipMapEntry cme, RenderableGeometry rgeom = null)
