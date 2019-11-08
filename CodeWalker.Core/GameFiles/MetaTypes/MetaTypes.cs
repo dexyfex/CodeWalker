@@ -5878,7 +5878,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    public struct CStreamingRequestRecord //40 bytes, Key:3825587854  //SRL YMT ROOT - in /streaming/ folder
+    [TC(typeof(EXP))] public struct CStreamingRequestRecord //40 bytes, Key:3825587854  //SRL YMT ROOT - in /streaming/ folder
     {
         public Array_Structure Frames { get; set; } //0   0: Array: 0: Frames  {0: Structure: CStreamingRequestFrame: 256}
         public Array_Structure CommonSets { get; set; } //16   16: Array: 0: CommonSets  {0: Structure: CStreamingRequestCommonSet: 256}
@@ -5888,7 +5888,7 @@ namespace CodeWalker.GameFiles
         public uint Unused2 { get; set; }//36
     }
 
-    public struct CStreamingRequestFrame //112 bytes, Key:1112444512  //SRL frame...
+    [TC(typeof(EXP))] public struct CStreamingRequestFrame //112 bytes, Key:1112444512  //SRL frame...
     {
         public Array_uint AddList { get; set; } //0   0: Array: 0: AddList//327274266  {0: Hash: 0: 256}
         public Array_uint RemoveList { get; set; } //16   16: Array: 0: RemoveList//3372321331  {0: Hash: 0: 256}
@@ -5904,7 +5904,7 @@ namespace CodeWalker.GameFiles
         public uint Unused4 { get; set; }//108
     }
 
-    public struct CStreamingRequestFrame_v2 //96 bytes, Key:3672937465  //SRL frame...
+    [TC(typeof(EXP))] public struct CStreamingRequestFrame_v2 //96 bytes, Key:3672937465  //SRL frame...
     {
         public Array_uint AddList { get; set; } //0   0: Array: 0: AddList//327274266  {0: Hash: 0: 256}
         public Array_uint RemoveList { get; set; } //16   16: Array: 0: RemoveList//3372321331  {0: Hash: 0: 256}
@@ -5919,7 +5919,7 @@ namespace CodeWalker.GameFiles
         public uint Unused4 { get; set; }//92
     }
 
-    public struct CStreamingRequestCommonSet //16 bytes, Key:3710200606   //SRL common set
+    [TC(typeof(EXP))] public struct CStreamingRequestCommonSet //16 bytes, Key:3710200606   //SRL common set
     {
         public Array_uint Requests { get; set; } //0   0: Array: 0: Requests  {0: Hash: 0: 256}
     }
@@ -5937,7 +5937,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    public struct CCreatureMetaData //56 bytes, Key:2181653572
+    [TC(typeof(EXP))] public struct CCreatureMetaData //56 bytes, Key:2181653572
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -5946,7 +5946,7 @@ namespace CodeWalker.GameFiles
         public Array_Structure pedCompExpressions { get; set; } //40   40: Array: 0: pedCompExpressions  {0: Structure: CPedCompExpressionData: 256}
     }
 
-    public struct CShaderVariableComponent //72 bytes, Key:3085831725
+    [TC(typeof(EXP))] public struct CShaderVariableComponent //72 bytes, Key:3085831725
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -5959,7 +5959,7 @@ namespace CodeWalker.GameFiles
         public Array_byte components { get; set; } //56   56: Array: 0: components  {0: UnsignedByte: 0: 256}
     }
 
-    public struct CPedPropExpressionData //88 bytes, Key:1355135810
+    [TC(typeof(EXP))] public struct CPedPropExpressionData //88 bytes, Key:1355135810
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -5973,7 +5973,7 @@ namespace CodeWalker.GameFiles
         public Array_byte components { get; set; } //72   72: Array: 0: components  {0: UnsignedByte: 0: 256}
     }
 
-    public struct CPedCompExpressionData //88 bytes, Key:3458164745
+    [TC(typeof(EXP))] public struct CPedCompExpressionData //88 bytes, Key:3458164745
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -5990,7 +5990,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    public struct CPedVariationInfo : IPsoSwapEnd //112 bytes, Key:4030871161  //COMPONENT PEDS YMT ROOT  - in componentpeds .rpf's
+    [TC(typeof(EXP))] public struct CPedVariationInfo : IPsoSwapEnd //112 bytes, Key:4030871161  //COMPONENT PEDS YMT ROOT  - in componentpeds .rpf's
     {
         public byte bHasTexVariations { get; set; } //0   0: Boolean: 0: bHasTexVariations
         public byte bHasDrawblVariations { get; set; } //1   1: Boolean: 0: bHasDrawblVariations
@@ -6013,7 +6013,7 @@ namespace CodeWalker.GameFiles
             dlcName = MetaTypes.SwapBytes(dlcName);
         }
     }
-    public class MCPedVariationInfo : MetaWrapper
+    [TC(typeof(EXP))] public class MCPedVariationInfo : MetaWrapper
     {
         public CPedVariationInfo _Data;
         public CPedVariationInfo Data { get { return _Data; } }
@@ -6119,7 +6119,7 @@ namespace CodeWalker.GameFiles
 
     }
 
-    public struct Unk_3538495220 //24 bytes, Key:2024084511  //COMPONENT PEDS component variations item
+    [TC(typeof(EXP))] public struct Unk_3538495220 //24 bytes, Key:2024084511  //COMPONENT PEDS component variations item
     {
         public byte numAvailTex { get; set; } //0   0: UnsignedByte: 0: numAvailTex
         public byte Unused0 { get; set; }//1
@@ -6127,7 +6127,7 @@ namespace CodeWalker.GameFiles
         public uint Unused2 { get; set; }//4
         public Array_Structure aDrawblData3 { get; set; } //8   8: Array: 0: aDrawblData3  {0: Structure: 1535046754: 256}
     }
-    public class MUnk_3538495220 : MetaWrapper
+    [TC(typeof(EXP))] public class MUnk_3538495220 : MetaWrapper
     {
         public MCPedVariationInfo Owner { get; set; }
 
@@ -6196,7 +6196,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    public struct Unk_1535046754 //48 bytes, Key:124073662  //COMPONENT PEDS drawable info
+    [TC(typeof(EXP))] public struct Unk_1535046754 //48 bytes, Key:124073662  //COMPONENT PEDS drawable info
     {
         public byte propMask { get; set; } //0   0: UnsignedByte: 0: propMask
         public byte numAlternatives { get; set; } //1   1: UnsignedByte: 0: 2806194106
@@ -6205,7 +6205,7 @@ namespace CodeWalker.GameFiles
         public Array_Structure aTexData { get; set; } //8   8: Array: 0: aTexData  {0: Structure: 1036962405: 256}
         public Unk_2236980467 clothData { get; set; } //24   24: Structure: 2236980467: clothData
     }
-    public class MUnk_1535046754 : MetaWrapper
+    [TC(typeof(EXP))] public class MUnk_1535046754 : MetaWrapper
     {
         public MUnk_3538495220 Owner { get; set; }
 
@@ -6273,14 +6273,14 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    public struct Unk_1036962405 //3 bytes, Key:4272717794  //COMPONENT PEDS (cloth?) aTexData
+    [TC(typeof(EXP))] public struct Unk_1036962405 //3 bytes, Key:4272717794  //COMPONENT PEDS (cloth?) aTexData
     {
         public byte texId { get; set; } //0   0: UnsignedByte: 0: texId
         public byte distribution { get; set; } //1   1: UnsignedByte: 0: distribution//914976023
         public byte Unused0 { get; set; }//2
     }
 
-    public struct Unk_2236980467 //24 bytes, Key:508935687  //COMPONENT PEDS clothData
+    [TC(typeof(EXP))] public struct Unk_2236980467 //24 bytes, Key:508935687  //COMPONENT PEDS clothData
     {
         public byte ownsCloth { get; set; } //0   0: Boolean: 0: ownsCloth
         public byte Unused0 { get; set; }//1
@@ -6292,7 +6292,7 @@ namespace CodeWalker.GameFiles
         public uint Unused6 { get; set; }//20
     }
 
-    public struct CPedSelectionSet //48 bytes, Key:3120284999  //COMPONENT PEDS 
+    [TC(typeof(EXP))] public struct CPedSelectionSet //48 bytes, Key:3120284999  //COMPONENT PEDS 
     {
         public MetaHash name { get; set; } //0   0: Hash: 0: name
         public ArrayOfBytes12 Unk_173599222 { get; set; } //4   4: ArrayOfBytes: 12: 173599222
@@ -6302,7 +6302,7 @@ namespace CodeWalker.GameFiles
         public ArrayOfBytes6 Unk_672172037 { get; set; } //40   40: ArrayOfBytes: 6: 672172037
         public ushort Unused0 { get; set; }//46
     }
-    public class MCPedSelectionSet : MetaWrapper
+    [TC(typeof(EXP))] public class MCPedSelectionSet : MetaWrapper
     {
         public MCPedVariationInfo Owner { get; set; }
 
@@ -6327,7 +6327,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    public struct CComponentInfo //48 bytes, Key:3693847250  //COMPONENT PEDS 
+    [TC(typeof(EXP))] public struct CComponentInfo //48 bytes, Key:3693847250  //COMPONENT PEDS 
     {
         public MetaHash Unk_802196719 { get; set; } //0   0: Hash: 0: 802196719
         public MetaHash Unk_4233133352 { get; set; } //4   4: Hash: 0: 4233133352
@@ -6346,7 +6346,7 @@ namespace CodeWalker.GameFiles
         public byte Unk_4196345791 { get; set; } //45   45: UnsignedByte: 0: 4196345791
         public ushort Unused5 { get; set; }//46
     }
-    public class MCComponentInfo : MetaWrapper
+    [TC(typeof(EXP))] public class MCComponentInfo : MetaWrapper
     {
         public MCPedVariationInfo Owner { get; set; }
 
@@ -6381,7 +6381,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    public struct CPedPropInfo //40 bytes, Key:1792487819  //COMPONENT PEDS 
+    [TC(typeof(EXP))] public struct CPedPropInfo //40 bytes, Key:1792487819  //COMPONENT PEDS 
     {
         public byte numAvailProps { get; set; } //0   0: UnsignedByte: 0: numAvailProps
         public byte Unused0 { get; set; }//1
@@ -6396,7 +6396,7 @@ namespace CodeWalker.GameFiles
             return this;
         }
     }
-    public class MCPedPropInfo : MetaWrapper
+    [TC(typeof(EXP))] public class MCPedPropInfo : MetaWrapper
     {
         public MCPedVariationInfo Owner { get; set; }
 
@@ -6447,7 +6447,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    public struct CPedPropMetaData //56 bytes, Key:2029738350  //COMPONENT PEDS 
+    [TC(typeof(EXP))] public struct CPedPropMetaData //56 bytes, Key:2029738350  //COMPONENT PEDS 
     {
         public MetaHash audioId { get; set; } //0   0: Hash: 0: audioId
         public ArrayOfBytes5 expressionMods { get; set; } //4   4: ArrayOfBytes: 5: expressionMods//942761829
@@ -6466,7 +6466,7 @@ namespace CodeWalker.GameFiles
         public byte Unused5 { get; set; }//53
         public ushort Unused6 { get; set; }//54
     }
-    public class MCPedPropMetaData : MetaWrapper
+    [TC(typeof(EXP))] public class MCPedPropMetaData : MetaWrapper
     {
         public MCPedPropInfo Owner { get; set; }
 
@@ -6494,7 +6494,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    public struct CPedPropTexData //12 bytes, Key:2767296137  //COMPONENT PEDS 
+    [TC(typeof(EXP))] public struct CPedPropTexData //12 bytes, Key:2767296137  //COMPONENT PEDS 
     {
         public int inclusions { get; set; } //0   0: IntFlags2: 0: inclusions
         public int exclusions { get; set; } //4   4: IntFlags2: 0: exclusions
@@ -6504,13 +6504,13 @@ namespace CodeWalker.GameFiles
         public byte distribution { get; set; } //11   11: UnsignedByte: 0: distribution
     }
 
-    public struct CAnchorProps //24 bytes, Key:403574180  //COMPONENT PEDS CAnchorProps
+    [TC(typeof(EXP))] public struct CAnchorProps //24 bytes, Key:403574180  //COMPONENT PEDS CAnchorProps
     {
         public Array_byte props { get; set; } //0   0: Array: 0: props  {0: UnsignedByte: 0: 256}
         public eAnchorPoints anchor { get; set; } //16   16: IntEnum: eAnchorPoints: anchor
         public uint Unused0 { get; set; }//20
     }
-    public class MCAnchorProps : MetaWrapper
+    [TC(typeof(EXP))] public class MCAnchorProps : MetaWrapper
     {
         public MCPedPropInfo Owner { get; set; }
 
