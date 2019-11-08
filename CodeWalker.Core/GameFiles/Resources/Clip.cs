@@ -804,13 +804,6 @@ namespace CodeWalker.GameFiles
         public AnimSequence[] Sequences { get; set; }
 
 
-        // //Original testing parsed data
-        //public SequencePart1[] FrameData { get; set; }
-        //public ushort[] Part2 { get; set; }
-        //public int Part2Count { get; set; }
-        //public int Part2Offset { get; set; }
-        //public static Dictionary<ushort, int> SeqDict = new Dictionary<ushort, int>();
-
 
         class AnimChannelListItem
         {
@@ -844,77 +837,6 @@ namespace CodeWalker.GameFiles
 
 
             this.Data = reader.ReadBytes((int)DataLength);
-
-            #region //old dexyfex testing code
-            /* 
-            if (Unused_08h != 0)
-            { }
-            if (Unused_14h != 0)
-            { }
-            if (UnkLength != (DataLength + 32)) //sometimes this is true
-            { }
-            if ((FrameLength % 4) > 0)
-            { }
-            int offset = (int)FrameOffset;
-            if (FrameLength > 0)
-            {
-                FrameData = new SequencePart1[NumFrames];
-                for (int i = 0; i < NumFrames; i++)
-                {
-                    var sp = new SequencePart1();
-                    sp.Init(Data, offset, FrameLength);
-                    FrameData[i] = sp;
-                    offset += FrameLength;
-                }
-            }
-            else if (NumFrames != 0)
-            { }
-            int brem = (int)DataLength - offset;
-            int p2cnt = brem / 2;
-            if (p2cnt > 0)
-            {
-                Part2Offset = offset;
-                Part2Count = p2cnt;
-                Part2 = new ushort[p2cnt];
-                for (int i = 0; i < p2cnt; i++)
-                {
-                    Part2[i] = BitConverter.ToUInt16(Data, offset);
-                    offset += 2;
-                }
-            }
-            else
-            { }
-            if (offset != DataLength)
-            { } //no hits here!
-            //if (SeqDict.ContainsKey(Unknown_1Ah)) SeqDict[Unknown_1Ah]++;
-            //else SeqDict[Unknown_1Ah] = 1;
-            if ((Unknown_1Ah != 0) && (Unknown_1Ah > FrameOffset))
-            { }
-            if ((Unknown_1Ch != 0) && (Unknown_1Ch > FrameOffset))
-            { }
-            switch (ChunkSize)
-            {
-                case 64: //0x40
-                case 255: //0xFF
-                    break;
-                default://no hits
-                    break;
-            }
-            switch (Unknown_1Fh_Type)
-            {
-                case 0:
-                case 17: //0x11
-                case 20: //0x14
-                case 21: //0x15
-                case 49: //0x31
-                case 52: //0x34
-                case 53: //0x35
-                    break;
-                default: //no hits
-                    break;
-            }
-            */
-            #endregion
 
 
             int Part2Offset = 0;//replacement calculation from old dexyfex parsing code
