@@ -279,10 +279,7 @@ namespace CodeWalker.GameFiles
         public ushort Frames { get; set; }
         public ushort SequenceFrameLimit { get; set; }
         public float Duration { get; set; }
-        public byte Unknown_1Ch { get; set; }
-        public byte Unknown_1Dh { get; set; }
-        public byte Unknown_1Eh { get; set; }
-        public byte Unknown_1Fh { get; set; }
+        public MetaHash Unknown_1Ch { get; set; }
         public uint Unknown_20h { get; set; } // 0x00000000
         public uint Unknown_24h { get; set; } // 0x00000000
         public uint Unknown_28h { get; set; } // 0x00000000
@@ -311,10 +308,7 @@ namespace CodeWalker.GameFiles
             this.Frames = reader.ReadUInt16(); //221   17      151     201     frames
             this.SequenceFrameLimit = reader.ReadUInt16(); //223   31      159     207     sequence limit?
             this.Duration = reader.ReadSingle(); //7.34  0.53    5.0     6.66    duration
-            this.Unknown_1Ch = reader.ReadByte();   //118   0       216     116
-            this.Unknown_1Dh = reader.ReadByte();   //152   36      130     182
-            this.Unknown_1Eh = reader.ReadByte();   //99    0       66      180
-            this.Unknown_1Fh = reader.ReadByte();   //205   107     44      26
+            this.Unknown_1Ch = reader.ReadUInt32();
             this.Unknown_20h = reader.ReadUInt32(); //0     0       0       0
             this.Unknown_24h = reader.ReadUInt32(); //0     0       0       0
             this.Unknown_28h = reader.ReadUInt32(); //0     0       0       0
@@ -343,7 +337,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.SequenceFrameLimit);
             writer.Write(this.Duration);
             writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_1Eh);
             writer.Write(this.Unknown_20h);
             writer.Write(this.Unknown_24h);
             writer.Write(this.Unknown_28h);
@@ -749,7 +742,7 @@ namespace CodeWalker.GameFiles
         public Vector4 EvaluateVector(int frame)
         {
             if (Channels == null) return Vector4.Zero;
-            if (IsType7Quat) return EvaluateQuaternion(frame).ToVector4();
+            if (IsType7Quat) return Quaternion.Normalize(EvaluateQuaternion(frame)).ToVector4();//normalization shouldn't be necessary, but saves explosions in case of incorrectness
             var v = Vector4.Zero;
             int c = 0;
             for (int i = 0; i < Channels.Length; i++)
@@ -1140,32 +1133,6 @@ namespace CodeWalker.GameFiles
         };
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class SequencePart1
-    {
-        public byte[] Data { get; set; }
-
-        public void Init(byte[] data, int offset, int length)
-        {
-            Data = new byte[length];
-            Buffer.BlockCopy(data, offset, Data, 0, length);
-        }
-
-
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            if (Data != null)
-            {
-                foreach (var b in Data)
-                {
-                    if (sb.Length > 0) sb.Append(" ");
-                    sb.Append(b.ToString().PadLeft(3, '0'));
-                }
-            }
-            return sb.ToString();
-        }
-    }
-
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipMapEntry : ResourceSystemBlock
     {
@@ -1232,6 +1199,7 @@ namespace CodeWalker.GameFiles
         {
             return Clip?.Name ?? Hash.ToString();
         }
+
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipBase : ResourceSystemBlock, IResourceXXSystemBlock
     {
@@ -1487,6 +1455,15 @@ namespace CodeWalker.GameFiles
             list.AddRange(base.GetReferences());
             if (Animations != null) list.Add(Animations);
             return list.ToArray();
+        }
+
+
+        public float GetPlaybackTime(double currentTime)
+        {
+            double scaledTime = currentTime;// * Rate;
+            double duration = Duration;// EndTime - StartTime;
+            double curpos = scaledTime % duration;
+            return /*StartTime +*/ (float)curpos;
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipAnimationsEntry : ResourceSystemBlock
