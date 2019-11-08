@@ -3569,6 +3569,62 @@ namespace CodeWalker.GameFiles
         PortalEntityList = 3203972140,
         PortalInfoList = 3085292924,
 
+        //vfxinteriorinfo ymt's from Siprus
+        CVfxInteriorSetup = 128879576,
+        CVfxRoomSetup = 769638437,
+        dustPtFxEnabled = 1270885502,
+        dustPtFxEvo = 3916956310,
+        dustPtFxName = 4061889016,
+        interiorInfoName = 3197750225,
+        smokePtFxEnabled = 174438245,
+        smokePtFxLevelOverride = 1794720348,
+        smokePtFxName = 2216385556,
+        vfxInteriorSetups = 3147314065,
+        vfxRoomSetups = 70742260,
+
+        //entries for vfxinteriorinfo values from Siprus
+        vfxinteriorinfo_club_bar = 3012126598,
+        vfxinteriorinfo_default = 2186191160,
+        vfxinteriorinfo_disabled = 4043117346,
+        vfxinteriorinfo_factory = 3704850198,
+        vfxinteriorinfo_factory2 = 789288375,
+        vfxinteriorinfo_foundry = 3102010781,
+        vfxinteriorinfo_methlab = 1747000990,
+        vfxinteriorinfo_michael_mansion = 2503389540,
+        vfxinteriorinfo_recycle = 3828623237,
+        env_bar_haze = 2464653728,
+        env_dust_motes_int_hvy = 2388998730,
+        env_dust_motes_int_recycle = 1189228428,
+        env_gunsmoke = 1283110988,
+        env_gunsmoke_paper_factory = 2917372338,
+        env_stripclub_haze = 3512462560,
+        v_34_deliveryrm = 1873829195,
+        v_34_processrm = 2131172512,
+        v_64_back = 291590403,
+        v_64_back_lower = 2635531210,
+        v_64_base2 = 2901364601,
+        v_64_cloak = 2699110422,
+        v_64_dance = 1921450756,
+        v_64_entry = 209242346,
+        v_64_entry_trans = 3070346248,
+        v_64_rear = 4193595779,
+        v_64_rear_trans = 1532913744,
+        v_64_side = 2526696518,
+        v_64_side_upper = 593969979,
+        v_64_upper = 182753347,
+        v_recycle_chopper = 2694641996,
+        v_recycle_cor1 = 2624371671,
+        v_recycle_door = 4022865356,
+        v_recycle_main = 1108714138,
+        v_recycle_office1 = 4228826032,
+        v_recycle_shield = 2720085499,
+        v_recycle_stair2 = 3998905162,
+        v_recycle_window = 2808950336,
+
+
+
+
+
 
 
         //GranularSound dat54.rel FileName hashes from NotGigo

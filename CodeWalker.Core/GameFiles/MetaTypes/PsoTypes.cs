@@ -1094,30 +1094,30 @@ namespace CodeWalker.GameFiles
                     return new PsoStructureInfo(MetaName.CVfxInteriorInfoMgr, 0, 0, 56,
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.String, 0, 7, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 3, 0),
-                     new PsoStructureEntryInfo((MetaName)3147314065, PsoDataType.Map, 8, 1, (MetaName)1),
+                     new PsoStructureEntryInfo(MetaName.vfxInteriorSetups, PsoDataType.Map, 8, 1, (MetaName)1),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.String, 0, 7, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 3, 0),
                      new PsoStructureEntryInfo(MetaName.vfxInteriorInfos, PsoDataType.Map, 32, 1, (MetaName)196612)
                     );
-                case (MetaName)128879576:
-                    return new PsoStructureInfo((MetaName)128879576, 0, 0, 40,
-                     new PsoStructureEntryInfo((MetaName)3197750225, PsoDataType.String, 8, 7, 0),
+                case MetaName.CVfxInteriorSetup:
+                    return new PsoStructureInfo(MetaName.CVfxInteriorSetup, 0, 0, 40,
+                     new PsoStructureEntryInfo(MetaName.interiorInfoName, PsoDataType.String, 8, 7, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.String, 0, 7, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 3, 0),
-                     new PsoStructureEntryInfo((MetaName)70742260, PsoDataType.Map, 16, 1, (MetaName)65538)
+                     new PsoStructureEntryInfo(MetaName.vfxRoomSetups, PsoDataType.Map, 16, 1, (MetaName)65538)
                     );
-                case (MetaName)769638437:
-                    return new PsoStructureInfo((MetaName)769638437, 0, 0, 16,
-                     new PsoStructureEntryInfo((MetaName)3197750225, PsoDataType.String, 8, 7, 0)
+                case MetaName.CVfxRoomSetup:
+                    return new PsoStructureInfo(MetaName.CVfxRoomSetup, 0, 0, 16,
+                     new PsoStructureEntryInfo(MetaName.interiorInfoName, PsoDataType.String, 8, 7, 0)
                     );
                 case MetaName.CVfxInteriorInfo:
                     return new PsoStructureInfo(MetaName.CVfxInteriorInfo, 0, 0, 32,
-                     new PsoStructureEntryInfo((MetaName)174438245, PsoDataType.Bool, 8, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)2216385556, PsoDataType.String, 12, 7, 0),
-                     new PsoStructureEntryInfo((MetaName)1794720348, PsoDataType.Float, 16, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)1270885502, PsoDataType.Bool, 20, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)4061889016, PsoDataType.String, 24, 7, 0),
-                     new PsoStructureEntryInfo((MetaName)3916956310, PsoDataType.Float, 28, 0, 0)
+                     new PsoStructureEntryInfo(MetaName.smokePtFxEnabled, PsoDataType.Bool, 8, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.smokePtFxName, PsoDataType.String, 12, 7, 0),
+                     new PsoStructureEntryInfo(MetaName.smokePtFxLevelOverride, PsoDataType.Float, 16, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.dustPtFxEnabled, PsoDataType.Bool, 20, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.dustPtFxName, PsoDataType.String, 24, 7, 0),
+                     new PsoStructureEntryInfo(MetaName.dustPtFxEvo, PsoDataType.Float, 28, 0, 0)
                     );
                 case MetaName.CVfxPedInfoMgr:
                     return new PsoStructureInfo(MetaName.CVfxPedInfoMgr, 0, 0, 224,
