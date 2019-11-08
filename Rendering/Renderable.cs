@@ -430,11 +430,9 @@ namespace CodeWalker.Rendering
             var clipanimlist = cme.Clip as ClipAnimationList;
             if (clipanimlist?.Animations != null)
             {
-                //float t = clipanimlist.GetPlaybackTime(CurrentAnimTime);
                 foreach (var canim in clipanimlist.Animations)
                 {
                     if (canim?.Animation == null) continue;
-                    //UpdateAnim(canim.Animation, t*canim.Rate + canim.StartTime);
                     UpdateAnim(canim.Animation, canim.GetPlaybackTime(CurrentAnimTime));
                 }
             }
@@ -458,7 +456,7 @@ namespace CodeWalker.Rendering
 
             var curPos = (t/duration) * nframes;
             var frame0 = ((ushort)curPos) % frames;
-            var frame1 = (frame0 + 1) % frames;
+            var frame1 = (frame0 + 1);// % frames;
             var falpha = (float)(curPos - Math.Floor(curPos));
             var ialpha = 1.0f - falpha;
 
@@ -482,45 +480,46 @@ namespace CodeWalker.Rendering
                 if (bone == null)
                 { continue; }
 
+                var sfl = anim.SequenceFrameLimit;
+                var s = frame0 / sfl;
+                int f0 = frame0 % sfl;
+                int f1 = f0 + 1;
 
-                for (int s = 0; s < anim.Sequences.data_items.Length; s++)
+                var seq = anim.Sequences.data_items[s];
+                var aseq = seq.Sequences[i];
+                switch (track)
                 {
-                    var seq = anim.Sequences.data_items[s];
-                    var aseq = seq.Sequences[i];
-                    switch (track)
-                    {
-                        case 0: //bone position
-                            v0 = aseq.EvaluateVector(frame0);
-                            v1 = aseq.EvaluateVector(frame1);
-                            v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
-                            bone.AnimTranslation = v.XYZ();
-                            break;
-                        case 1: //bone orientation
-                            q0 = new Quaternion(aseq.EvaluateVector(frame0));
-                            q1 = new Quaternion(aseq.EvaluateVector(frame1));
-                            q = interpolate ? Quaternion.Slerp(q0, q1, falpha) : q0;
-                            bone.AnimRotation = q;
-                            break;
-                        case 2: //scale?
-                            break;
-                        case 5://vector3...
-                            //v0 = aseq.EvaluateVector(frame0);
-                            //v1 = aseq.EvaluateVector(frame1);
-                            //v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
-                            //bone.AnimScale = v.XYZ();
-                            break;
-                        case 6://quaternion...
-                            break;
-                        case 134://single float?
-                        case 136:
-                        case 137:
-                        case 138:
-                        case 139:
-                        case 140:
-                            break;
-                        default:
-                            break;
-                    }
+                    case 0: //bone position
+                        v0 = aseq.EvaluateVector(f0);
+                        v1 = aseq.EvaluateVector(f1);
+                        v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
+                        bone.AnimTranslation = v.XYZ();
+                        break;
+                    case 1: //bone orientation
+                        q0 = new Quaternion(aseq.EvaluateVector(f0));
+                        q1 = new Quaternion(aseq.EvaluateVector(f1));
+                        q = interpolate ? Quaternion.Slerp(q0, q1, falpha) : q0;
+                        bone.AnimRotation = q;
+                        break;
+                    case 2: //scale?
+                        break;
+                    case 5://vector3...
+                           //v0 = aseq.EvaluateVector(f0);
+                           //v1 = aseq.EvaluateVector(f1);
+                           //v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
+                           //bone.AnimScale = v.XYZ();
+                        break;
+                    case 6://quaternion...
+                        break;
+                    case 134://single float?
+                    case 136:
+                    case 137:
+                    case 138:
+                    case 139:
+                    case 140:
+                        break;
+                    default:
+                        break;
                 }
             }
 
@@ -562,11 +561,9 @@ namespace CodeWalker.Rendering
             var clipanimlist = cme.Clip as ClipAnimationList;
             if (clipanimlist?.Animations != null)
             {
-                //float t = clipanimlist.GetPlaybackTime(CurrentAnimTime);
                 foreach (var canim in clipanimlist.Animations)
                 {
                     if (canim?.Animation == null) continue;
-                    //UpdateAnimUV(canim.Animation, t * canim.Rate + canim.StartTime, rgeom);
                     UpdateAnimUV(canim.Animation, canim.GetPlaybackTime(CurrentAnimTime), rgeom);
                 }
             }
@@ -590,7 +587,7 @@ namespace CodeWalker.Rendering
 
             var curPos = (t / duration) * nframes;
             var frame0 = ((ushort)curPos) % frames;
-            var frame1 = (frame0 + 1) % frames;
+            var frame1 = (frame0 + 1);// % frames;
             var falpha = (float)(curPos - Math.Floor(curPos));
             var ialpha = 1.0f - falpha;
 
@@ -605,18 +602,20 @@ namespace CodeWalker.Rendering
                 if ((track != 17) && (track != 18))
                 { continue; }//17 and 18 would be UV0 and UV1
 
-                for (int s = 0; s < anim.Sequences.data_items.Length; s++)
+                var sfl = anim.SequenceFrameLimit;
+                var s = frame0 / sfl;
+                int f0 = frame0 % sfl;
+                int f1 = f0 + 1;
+
+                var seq = anim.Sequences.data_items[s];
+                var aseq = seq.Sequences[i];
+                var v0 = aseq.EvaluateVector(f0);
+                var v1 = aseq.EvaluateVector(f1);
+                var v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
+                switch (track)
                 {
-                    var seq = anim.Sequences.data_items[s];
-                    var aseq = seq.Sequences[i];
-                    var v0 = aseq.EvaluateVector(frame0);
-                    var v1 = aseq.EvaluateVector(frame1);
-                    var v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
-                    switch (track)
-                    {
-                        case 17: globalAnimUV0 = v; break; //could be overwriting values here...
-                        case 18: globalAnimUV1 = v; break;
-                    }
+                    case 17: globalAnimUV0 = v; break; //could be overwriting values here...
+                    case 18: globalAnimUV1 = v; break;
                 }
             }
 
