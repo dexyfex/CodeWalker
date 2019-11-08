@@ -7,7 +7,27 @@ using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
 {
+    public enum VertexComponentType : ushort
+    {
+        Nothing = 0,
+        Float16Two = 1,
+        Float = 2,
+        Float16Four = 3,
+        Float_unk = 4,
+        Float2 = 5,
+        Float3 = 6,
+        Float4 = 7,
+        UByte4 = 8,
+        Color = 9,
+        Dec3N = 10,
+    }
 
+    public enum VertexDeclarationTypes : ulong
+    {
+        Types1 = 0x7755555555996996, // GTAV used by most drawables
+        Types2 = 0x030000000199A006, // GTAV used on cloth?
+        Types3 = 0x0300000001996006, // GTAV used on cloth?
+    }
 
     public enum VertexType : uint
     {
@@ -51,6 +71,49 @@ namespace CodeWalker.GameFiles
         PBBNCTTTX = 16863,
     }
 
+
+    //0x7755555555996996
+    public struct VertexTypeGTAV1
+    {
+        public Vector3 Position;
+        public uint BlendWeights;
+        public uint BlendIndices;
+        public Vector3 Normals;
+        public uint Colour0;
+        public uint Colour1;
+        public Vector2 Texcoords0;
+        public Vector2 Texcoords1;
+        public Vector2 Texcoords2;
+        public Vector2 Texcoords3;
+        public Vector2 Texcoords4;
+        public Vector2 Texcoords5;
+        public Vector2 Texcoords6;
+        public Vector2 Texcoords7;
+        public Vector4 Tangents;
+        public Vector4 Binormals;
+    }
+
+    //0x030000000199A006
+    public struct VertexTypeGTAV2
+    {
+        public Vector3 Position;
+        public uint Normals; // Packed as Dec3N 
+        public uint Colour0;
+        public uint Colour1;
+        public Half2 Texcoords0;
+        public Half4 Tangents;
+    }
+
+    //0x0300000001996006
+    public struct VertexTypeGTAV3
+    {
+        public Vector3 Position;
+        public Vector3 Normals;
+        public uint Colour0;
+        public uint Colour1;
+        public Half2 Texcoords0;
+        public Half4 Tangents;
+    }
 
     //vertex data to be used by the editor. TODO: maybe move somewhere else.
     public struct EditorVertex
