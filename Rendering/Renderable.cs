@@ -430,11 +430,12 @@ namespace CodeWalker.Rendering
             var clipanimlist = cme.Clip as ClipAnimationList;
             if (clipanimlist?.Animations != null)
             {
-                float t = clipanimlist.GetPlaybackTime(CurrentAnimTime);
+                //float t = clipanimlist.GetPlaybackTime(CurrentAnimTime);
                 foreach (var canim in clipanimlist.Animations)
                 {
                     if (canim?.Animation == null) continue;
-                    UpdateAnim(canim.Animation, t*canim.Rate + canim.StartTime);
+                    //UpdateAnim(canim.Animation, t*canim.Rate + canim.StartTime);
+                    UpdateAnim(canim.Animation, canim.GetPlaybackTime(CurrentAnimTime));
                 }
             }
 
@@ -561,11 +562,12 @@ namespace CodeWalker.Rendering
             var clipanimlist = cme.Clip as ClipAnimationList;
             if (clipanimlist?.Animations != null)
             {
-                float t = clipanimlist.GetPlaybackTime(CurrentAnimTime);
+                //float t = clipanimlist.GetPlaybackTime(CurrentAnimTime);
                 foreach (var canim in clipanimlist.Animations)
                 {
                     if (canim?.Animation == null) continue;
-                    UpdateAnimUV(canim.Animation, t*canim.Rate + canim.StartTime, rgeom);
+                    //UpdateAnimUV(canim.Animation, t * canim.Rate + canim.StartTime, rgeom);
+                    UpdateAnimUV(canim.Animation, canim.GetPlaybackTime(CurrentAnimTime), rgeom);
                 }
             }
 

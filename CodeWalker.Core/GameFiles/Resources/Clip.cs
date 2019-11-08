@@ -496,8 +496,7 @@ namespace CodeWalker.GameFiles
 
         public override float EvaluateFloat(int frame)
         {
-            if(frame<Frames?.Length) return Values[Frames[frame]];
-            if (Values?.Length > 0) return Values[0];
+            if (Frames?.Length > 0) return Values[Frames[frame % Frames.Length]];
             return Offset;
         }
     }
@@ -526,8 +525,7 @@ namespace CodeWalker.GameFiles
 
         public override float EvaluateFloat(int frame)
         {
-            if (frame < Values?.Length) return Values[frame];
-            if (Values?.Length > 0) return Values[0];
+            if (Values?.Length > 0) return Values[frame%Values.Length];
             return Offset;
         }
     }
@@ -637,8 +635,7 @@ namespace CodeWalker.GameFiles
 
         public override float EvaluateFloat(int frame)
         {
-            if (frame < Values?.Length) return Values[frame];
-            if (Values?.Length > 0) return Values[0];
+            if (Values?.Length > 0) return Values[frame % Values.Length];
             return Offset;
         }
     }
@@ -690,8 +687,7 @@ namespace CodeWalker.GameFiles
 
         public override float EvaluateFloat(int frame)
         {
-            if (frame < Values?.Length) return Values[frame];
-            if (Values?.Length > 0) return Values[0];
+            if (Values?.Length > 0) return Values[frame % Values.Length];
             return 0.0f;
         }
 
