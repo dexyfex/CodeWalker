@@ -1197,7 +1197,25 @@ namespace CodeWalker.Peds
             var skel = SelectedPed.Yft?.Fragment?.Drawable?.Skeleton;
             if (skel != null)
             {
-                drawable.Skeleton = skel;//force the drawable to use this skeleton.
+                if (drawable.Skeleton == null)
+                {
+                    drawable.Skeleton = skel;//force the drawable to use this skeleton.
+                }
+                else if (drawable.Skeleton != skel)
+                {
+                    var dskel = drawable.Skeleton; //put the bones of the fragment into the drawable. drawable's bones in this case seem messed up!
+                    for (int b = 0; b < skel.Bones.Count; b++)
+                    {
+                        var srcbone = skel.Bones[b];
+                        var dstbone = srcbone;
+                        if (dskel.BonesMap.TryGetValue(srcbone.Tag, out dstbone))
+                        {
+                            if (srcbone == dstbone) break; //bone reassignment already done!
+                            dskel.Bones[dstbone.Index] = srcbone;
+                            dskel.BonesMap[srcbone.Tag] = srcbone;
+                        }
+                    }
+                }
             }
 
 
