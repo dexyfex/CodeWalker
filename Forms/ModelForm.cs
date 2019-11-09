@@ -946,7 +946,13 @@ namespace CodeWalker.Forms
             bool check = true;
             if (dict != null)
             {
+                List<KeyValuePair<uint, Drawable>> items = new List<KeyValuePair<uint, Drawable>>();
                 foreach (var kvp in dict)
+                {
+                    items.Add(kvp);
+                }
+                items.Sort((a, b) => { return a.Value?.Name?.CompareTo(b.Value?.Name ?? "") ?? 0; });
+                foreach (var kvp in items)
                 {
                     AddDrawableTreeNode(kvp.Value, kvp.Key, check);
                     check = false;
