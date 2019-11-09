@@ -537,24 +537,65 @@ namespace CodeWalker.Rendering
                         bone.AnimRotation = q;
                         break;
                     case 2: //scale?
+                        v0 = aseq.EvaluateVector(f0);
+                        v1 = aseq.EvaluateVector(f1);
+                        v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
+                        bone.AnimScale = v.XYZ();
                         break;
-                    case 5://vector3...
-                           //v0 = aseq.EvaluateVector(f0);
-                           //v1 = aseq.EvaluateVector(f1);
-                           //v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
-                           //bone.AnimScale = v.XYZ();
+                    case 5://root motion vector
+                        if (bone.Tag != 0)
+                        { }
+                        //v0 = aseq.EvaluateVector(f0);
+                        //v1 = aseq.EvaluateVector(f1);
+                        //v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
+                        //bone.AnimTranslation += v.XYZ();
                         break;
-                    case 6://quaternion...
+                    case 6://quaternion... root rotation?
+                        if (bone.Tag != 0)
+                        { }
+                        //q0 = new Quaternion(aseq.EvaluateVector(f0));
+                        //q1 = new Quaternion(aseq.EvaluateVector(f1));
+                        //q = interpolate ? Quaternion.Slerp(q0, q1, falpha) : q0;
+                        //bone.AnimRotation *= q;
                         break;
+                    case 7://vector3... (camera position?)
+                        break;
+                    case 8://quaternion... (camera rotation?)
+                        break;
+                    case 27:
+                    case 50:
                     case 134://single float?
                     case 136:
                     case 137:
                     case 138:
                     case 139:
                     case 140:
+                        if (bone.Tag != 0)
+                        { }
                         break;
                     default:
                         break;
+                }
+            }
+
+            for (int i = 0; i < bones.Count; i++)
+            {
+                var bone = bones[i];
+                var tag = bone.Tag;
+                switch (bone.Tag)
+                {
+                    case 23639: tag = 58271; break; //RB_L_ThighRoll: SKEL_L_Thigh
+                    case 6442:  tag = 51826; break; //RB_R_ThighRoll: SKEL_R_Thigh
+                    //case 61007: tag = 61163; break; //RB_L_ForeArmRoll: SKEL_L_Forearm //NOT GOOD
+                    //case 5232: tag = 45509; break; //RB_L_ArmRoll: SKEL_L_UpperArm
+                }
+                if (tag != bone.Tag)
+                {
+                    var obone = bone;
+                    if (skel.BonesMap.TryGetValue(tag, out obone))
+                    {
+                        bone.AnimRotation = obone.AnimRotation;
+                    }
                 }
             }
 
