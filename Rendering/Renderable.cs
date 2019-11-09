@@ -384,6 +384,41 @@ namespace CodeWalker.Rendering
                 bt.Row3 = b.Column3;
                 BoneTransforms[i] = bt;
             }
+
+            //var drawbl = Key;
+            //if (AllModels == null) return;
+            //for (int i = 0; i < AllModels.Length; i++)
+            //{
+            //    var model = AllModels[i];
+            //    if (model?.Geometries == null) continue;
+            //    for (int g = 0; g < model.Geometries.Length; g++)
+            //    {
+            //        var geom = model.Geometries[g];
+            //        var boneids = geom?.DrawableGeom?.BoneIds;
+            //        if (boneids == null) continue;
+            //        if (boneids.Length != Bones.Count)
+            //        {
+            //            var idc = boneids.Length;
+            //            if (geom.BoneTransforms == null)
+            //            {
+            //                geom.BoneTransforms = new Matrix3_s[idc];
+            //            }
+            //            for (int b = 0; b < idc; b++)
+            //            {
+            //                var id = boneids[b];
+            //                if (id < BoneTransforms.Length)
+            //                {
+            //                    geom.BoneTransforms[b] = BoneTransforms[id];
+            //                    if (id != b)
+            //                    { }
+            //                }
+            //                else
+            //                { }
+            //            }
+            //        }
+            //    }
+            //}
+
         }
 
 
@@ -755,6 +790,8 @@ namespace CodeWalker.Rendering
         public ClipMapEntry ClipMapEntryUV = null;
         public bool isHair = false;
         public bool disableRendering = false;
+
+        //public Matrix3_s[] BoneTransforms = null;
 
         public static ShaderParamNames[] GetTextureSamplerList()
         {

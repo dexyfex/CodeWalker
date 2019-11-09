@@ -356,6 +356,14 @@ namespace CodeWalker.Rendering
             {
                 texture.SetPSResource(context, 0);
             }
+
+
+            //if (geom.BoneTransforms != null)
+            //{
+            //    SetBoneMatrices(context, geom.BoneTransforms);
+            //    defaultBoneMatricesBound = false;
+            //}
+
         }
 
         public void SetBoneMatrices(DeviceContext context, Matrix3_s[] matrices)
