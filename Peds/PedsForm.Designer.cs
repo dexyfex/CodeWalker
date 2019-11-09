@@ -76,6 +76,11 @@
             this.PedNameComboBox = new System.Windows.Forms.ComboBox();
             this.StatsUpdateTimer = new System.Windows.Forms.Timer(this.components);
             this.ToolsPedTabPage = new System.Windows.Forms.TabPage();
+            this.label23 = new System.Windows.Forms.Label();
+            this.label22 = new System.Windows.Forms.Label();
+            this.ClipComboBox = new System.Windows.Forms.ComboBox();
+            this.label21 = new System.Windows.Forms.Label();
+            this.ClipDictComboBox = new System.Windows.Forms.ComboBox();
             this.label20 = new System.Windows.Forms.Label();
             this.CompJbibComboBox = new System.Windows.Forms.ComboBox();
             this.label18 = new System.Windows.Forms.Label();
@@ -103,11 +108,6 @@
             this.label4 = new System.Windows.Forms.Label();
             this.ToolsTabControl = new System.Windows.Forms.TabControl();
             this.ToolsPanel = new System.Windows.Forms.Panel();
-            this.label21 = new System.Windows.Forms.Label();
-            this.ClipDictComboBox = new System.Windows.Forms.ComboBox();
-            this.label22 = new System.Windows.Forms.Label();
-            this.ClipComboBox = new System.Windows.Forms.ComboBox();
-            this.label23 = new System.Windows.Forms.Label();
             this.ConsolePanel.SuspendLayout();
             this.ToolsOptionsTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
@@ -695,6 +695,60 @@
             this.ToolsPedTabPage.Text = "Ped";
             this.ToolsPedTabPage.UseVisualStyleBackColor = true;
             // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(3, 422);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(56, 13);
+            this.label23.TabIndex = 31;
+            this.label23.Text = "Animation:";
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(24, 472);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(27, 13);
+            this.label22.TabIndex = 30;
+            this.label22.Text = "Clip:";
+            // 
+            // ClipComboBox
+            // 
+            this.ClipComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ClipComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.ClipComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.ClipComboBox.FormattingEnabled = true;
+            this.ClipComboBox.Location = new System.Drawing.Point(54, 469);
+            this.ClipComboBox.Name = "ClipComboBox";
+            this.ClipComboBox.Size = new System.Drawing.Size(182, 21);
+            this.ClipComboBox.TabIndex = 29;
+            this.ClipComboBox.SelectedIndexChanged += new System.EventHandler(this.ClipComboBox_SelectedIndexChanged);
+            this.ClipComboBox.TextChanged += new System.EventHandler(this.ClipComboBox_TextChanged);
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(2, 445);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(49, 13);
+            this.label21.TabIndex = 28;
+            this.label21.Text = "Clip Dict:";
+            // 
+            // ClipDictComboBox
+            // 
+            this.ClipDictComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ClipDictComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.ClipDictComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
+            this.ClipDictComboBox.FormattingEnabled = true;
+            this.ClipDictComboBox.Location = new System.Drawing.Point(54, 442);
+            this.ClipDictComboBox.Name = "ClipDictComboBox";
+            this.ClipDictComboBox.Size = new System.Drawing.Size(182, 21);
+            this.ClipDictComboBox.TabIndex = 27;
+            this.ClipDictComboBox.TextChanged += new System.EventHandler(this.ClipDictComboBox_TextChanged);
+            // 
             // label20
             // 
             this.label20.AutoSize = true;
@@ -710,6 +764,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CompJbibComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CompJbibComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompJbibComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompJbibComboBox.FormattingEnabled = true;
             this.CompJbibComboBox.Location = new System.Drawing.Point(54, 370);
             this.CompJbibComboBox.Name = "CompJbibComboBox";
@@ -732,6 +787,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CompDeclComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CompDeclComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompDeclComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompDeclComboBox.FormattingEnabled = true;
             this.CompDeclComboBox.Location = new System.Drawing.Point(54, 343);
             this.CompDeclComboBox.Name = "CompDeclComboBox";
@@ -754,6 +810,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CompTaskComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CompTaskComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompTaskComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompTaskComboBox.FormattingEnabled = true;
             this.CompTaskComboBox.Location = new System.Drawing.Point(54, 316);
             this.CompTaskComboBox.Name = "CompTaskComboBox";
@@ -776,6 +833,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CompAccsComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CompAccsComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompAccsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompAccsComboBox.FormattingEnabled = true;
             this.CompAccsComboBox.Location = new System.Drawing.Point(54, 289);
             this.CompAccsComboBox.Name = "CompAccsComboBox";
@@ -798,6 +856,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CompTeefComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CompTeefComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompTeefComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompTeefComboBox.FormattingEnabled = true;
             this.CompTeefComboBox.Location = new System.Drawing.Point(54, 262);
             this.CompTeefComboBox.Name = "CompTeefComboBox";
@@ -820,6 +879,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CompFeetComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CompFeetComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompFeetComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompFeetComboBox.FormattingEnabled = true;
             this.CompFeetComboBox.Location = new System.Drawing.Point(54, 235);
             this.CompFeetComboBox.Name = "CompFeetComboBox";
@@ -842,6 +902,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CompHandComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CompHandComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompHandComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompHandComboBox.FormattingEnabled = true;
             this.CompHandComboBox.Location = new System.Drawing.Point(54, 208);
             this.CompHandComboBox.Name = "CompHandComboBox";
@@ -864,6 +925,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CompLowrComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CompLowrComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompLowrComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompLowrComboBox.FormattingEnabled = true;
             this.CompLowrComboBox.Location = new System.Drawing.Point(54, 181);
             this.CompLowrComboBox.Name = "CompLowrComboBox";
@@ -886,6 +948,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CompUpprComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CompUpprComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompUpprComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompUpprComboBox.FormattingEnabled = true;
             this.CompUpprComboBox.Location = new System.Drawing.Point(54, 154);
             this.CompUpprComboBox.Name = "CompUpprComboBox";
@@ -908,6 +971,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CompHairComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CompHairComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompHairComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompHairComboBox.FormattingEnabled = true;
             this.CompHairComboBox.Location = new System.Drawing.Point(54, 127);
             this.CompHairComboBox.Name = "CompHairComboBox";
@@ -930,6 +994,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CompBerdComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CompBerdComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompBerdComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompBerdComboBox.FormattingEnabled = true;
             this.CompBerdComboBox.Location = new System.Drawing.Point(54, 100);
             this.CompBerdComboBox.Name = "CompBerdComboBox";
@@ -952,6 +1017,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CompHeadComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.CompHeadComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.CompHeadComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompHeadComboBox.FormattingEnabled = true;
             this.CompHeadComboBox.Location = new System.Drawing.Point(54, 73);
             this.CompHeadComboBox.Name = "CompHeadComboBox";
@@ -997,60 +1063,6 @@
             this.ToolsPanel.Size = new System.Drawing.Size(252, 666);
             this.ToolsPanel.TabIndex = 7;
             this.ToolsPanel.Visible = false;
-            // 
-            // label21
-            // 
-            this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(2, 445);
-            this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(49, 13);
-            this.label21.TabIndex = 28;
-            this.label21.Text = "Clip Dict:";
-            // 
-            // ClipDictComboBox
-            // 
-            this.ClipDictComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ClipDictComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.ClipDictComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
-            this.ClipDictComboBox.FormattingEnabled = true;
-            this.ClipDictComboBox.Location = new System.Drawing.Point(54, 442);
-            this.ClipDictComboBox.Name = "ClipDictComboBox";
-            this.ClipDictComboBox.Size = new System.Drawing.Size(182, 21);
-            this.ClipDictComboBox.TabIndex = 27;
-            this.ClipDictComboBox.TextChanged += new System.EventHandler(this.ClipDictComboBox_TextChanged);
-            // 
-            // label22
-            // 
-            this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(24, 472);
-            this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(27, 13);
-            this.label22.TabIndex = 30;
-            this.label22.Text = "Clip:";
-            // 
-            // ClipComboBox
-            // 
-            this.ClipComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ClipComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.ClipComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.ClipComboBox.FormattingEnabled = true;
-            this.ClipComboBox.Location = new System.Drawing.Point(54, 469);
-            this.ClipComboBox.Name = "ClipComboBox";
-            this.ClipComboBox.Size = new System.Drawing.Size(182, 21);
-            this.ClipComboBox.TabIndex = 29;
-            this.ClipComboBox.SelectedIndexChanged += new System.EventHandler(this.ClipComboBox_SelectedIndexChanged);
-            this.ClipComboBox.TextChanged += new System.EventHandler(this.ClipComboBox_TextChanged);
-            // 
-            // label23
-            // 
-            this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(3, 422);
-            this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(56, 13);
-            this.label23.TabIndex = 31;
-            this.label23.Text = "Animation:";
             // 
             // PedsForm
             // 

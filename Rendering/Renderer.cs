@@ -2495,14 +2495,14 @@ namespace CodeWalker.Rendering
             return res;
         }
 
-        public bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, uint txdHash = 0, TextureDictionary txdExtra = null, ClipMapEntry animClip = null)
+        public bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, uint txdHash = 0, TextureDictionary txdExtra = null, Texture diffOverride = null, ClipMapEntry animClip = null)
         {
             //enqueue a single drawable for rendering.
 
             if (drawable == null)
                 return false;
 
-            Renderable rndbl = TryGetRenderable(arche, drawable, txdHash, txdExtra);
+            Renderable rndbl = TryGetRenderable(arche, drawable, txdHash, txdExtra, diffOverride);
             if (rndbl == null)
                 return false;
 
@@ -2810,7 +2810,7 @@ namespace CodeWalker.Rendering
 
 
 
-        private Renderable TryGetRenderable(Archetype arche, DrawableBase drawable, uint txdHash = 0, TextureDictionary txdExtra = null)
+        private Renderable TryGetRenderable(Archetype arche, DrawableBase drawable, uint txdHash = 0, TextureDictionary txdExtra = null, Texture diffOverride = null)
         {
             if (drawable == null) return null;
             //BUG: only last texdict used!! needs to cache textures per archetype........
@@ -2959,6 +2959,15 @@ namespace CodeWalker.Rendering
                     {
                         for (int i = 0; i < geom.Textures.Length; i++)
                         {
+                            if (diffOverride != null)
+                            {
+                                var texParamHash = (i < geom.TextureParamHashes?.Length) ? geom.TextureParamHashes[i] : 0;
+                                if (texParamHash == ShaderParamNames.DiffuseSampler)
+                                {
+                                    geom.Textures[i] = diffOverride;
+                                }
+                            }
+
                             var tex = geom.Textures[i];
                             var ttex = tex as Texture;
                             Texture dtex = null;

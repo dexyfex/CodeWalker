@@ -6134,6 +6134,7 @@ namespace CodeWalker.GameFiles
         public Unk_3538495220 _Data;
         public Unk_3538495220 Data { get { return _Data; } }
 
+        public byte numAvailTex { get { return _Data.numAvailTex; } set { _Data.numAvailTex = value; } }
 
         public MUnk_1535046754[] DrawblData3 { get; set; }
 
@@ -6244,6 +6245,59 @@ namespace CodeWalker.GameFiles
             return r;
         }
 
+        public string GetTextureName(int texnum = 0)
+        {
+            return GetTexturePrefix() + GetTextureSuffix(texnum);
+        }
+        public string GetTexturePrefix()
+        {
+            string r = (ComponentType < 12) ? MUnk_3538495220.ComponentTypeNames[ComponentType] : "error";
+            r += "_diff_"; //are there variations of this?
+            r += DrawableIndex.ToString("000");
+            r += "_";
+            return r;
+        }
+        public string GetTextureSuffix(int texnum)
+        {
+            const string alphas = "abcdefghijklmnopqrstuvwxyz";
+            var tex = TexData[texnum];
+            var texid = tex.texId;
+            var distr = tex.distribution;//what does this do?
+            var r = string.Empty;
+            r += alphas[texnum % 26];
+            r += "_";
+            switch (texid)
+            {
+                case 0:
+                    r += "uni";
+                    break;
+                case 1:
+                    r += "whi";
+                    break;
+                case 2:
+                    r += "bla";
+                    break;
+                case 3:
+                    r += "chi";
+                    break;
+                case 4:
+                    r += "lat";
+                    break;
+                case 5:
+                    r += "ara";
+                    break;
+                case 8:
+                    r += "kor";
+                    break;
+                case 10:
+                    r += "pak";
+                    break;
+                default:
+                    r += "whi";
+                    break;
+            }
+            return r;
+        }
 
 
         public MUnk_1535046754() { }

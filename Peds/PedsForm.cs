@@ -75,19 +75,6 @@ namespace CodeWalker.Peds
 
 
 
-        Drawable SelectedHead = null;
-        Drawable SelectedBerd = null;
-        Drawable SelectedHair = null;
-        Drawable SelectedUppr = null;
-        Drawable SelectedLowr = null;
-        Drawable SelectedHand = null;
-        Drawable SelectedFeet = null;
-        Drawable SelectedTeef = null;
-        Drawable SelectedAccs = null;
-        Drawable SelectedTask = null;
-        Drawable SelectedDecl = null;
-        Drawable SelectedJbib = null;
-
         [TypeConverter(typeof(ExpandableObjectConverter))] public class PedSelection
         {
             public string Name { get; set; } = string.Empty;
@@ -103,16 +90,70 @@ namespace CodeWalker.Peds
             public RpfFileEntry[] DrawableFiles { get; set; } = null;
             public RpfFileEntry[] TextureFiles { get; set; } = null;
             public ClipMapEntry AnimClip { get; set; } = null;
+            public Drawable[] Drawables { get; set; } = new Drawable[12];
+            public Texture[] Textures { get; set; } = new Texture[12];
         }
 
         PedSelection SelectedPed = new PedSelection();
 
+
+        ComboBox[] ComponentComboBoxes = null;
+        public class ComponentComboItem
+        {
+            public MUnk_1535046754 DrawableData { get; set; }
+            public int AlternativeIndex { get; set; }
+            public int TextureIndex { get; set; }
+            public ComponentComboItem(MUnk_1535046754 drawableData, int altIndex = 0, int textureIndex = -1)
+            {
+                DrawableData = drawableData;
+                AlternativeIndex = altIndex;
+                TextureIndex = textureIndex;
+            }
+            public override string ToString()
+            {
+                if (DrawableData == null) return TextureIndex.ToString();
+                var itemname = DrawableData.GetDrawableName(AlternativeIndex);
+                if (DrawableData.TexData?.Length > 0) return itemname + " + " + DrawableData.GetTextureSuffix(TextureIndex);
+                return itemname;
+            }
+            public string DrawableName
+            {
+                get
+                {
+                    return DrawableData?.GetDrawableName(AlternativeIndex) ?? "error";
+                }
+            }
+            public string TextureName
+            {
+                get
+                {
+                    return DrawableData?.GetTextureName(TextureIndex);
+                }
+            }
+        }
 
 
 
         public PedsForm()
         {
             InitializeComponent();
+
+            ComponentComboBoxes = new[]
+            {
+                CompHeadComboBox,
+                CompBerdComboBox,
+                CompHairComboBox,
+                CompUpprComboBox,
+                CompLowrComboBox,
+                CompHandComboBox,
+                CompFeetComboBox,
+                CompTeefComboBox,
+                CompAccsComboBox,
+                CompTaskComboBox,
+                CompDeclComboBox,
+                CompJbibComboBox
+            };
+
 
             Renderer = new Renderer(this, GameFileCache);
             camera = Renderer.camera;
@@ -724,18 +765,12 @@ namespace CodeWalker.Peds
             SelectedPed.Yft = null;
             SelectedPed.Ymt = null;
             SelectedPed.AnimClip = null;
-            ClearCombo(CompHeadComboBox); SelectedHead = null;
-            ClearCombo(CompBerdComboBox); SelectedBerd = null;
-            ClearCombo(CompHairComboBox); SelectedHair = null;
-            ClearCombo(CompUpprComboBox); SelectedUppr = null;
-            ClearCombo(CompLowrComboBox); SelectedLowr = null;
-            ClearCombo(CompHandComboBox); SelectedHand = null;
-            ClearCombo(CompFeetComboBox); SelectedFeet = null;
-            ClearCombo(CompTeefComboBox); SelectedTeef = null;
-            ClearCombo(CompAccsComboBox); SelectedAccs = null;
-            ClearCombo(CompTaskComboBox); SelectedTask = null;
-            ClearCombo(CompDeclComboBox); SelectedDecl = null;
-            ClearCombo(CompJbibComboBox); SelectedJbib = null;
+            for (int i = 0; i < 12; i++)
+            {
+                ClearCombo(ComponentComboBoxes[i]);
+                SelectedPed.Drawables[i] = null;
+                SelectedPed.Textures[i] = null;
+            }
 
             DetailsPropertyGrid.SelectedObject = null;
 
@@ -794,18 +829,10 @@ namespace CodeWalker.Peds
             var vi = SelectedPed.Ymt?.VariationInfo;
             if (vi != null)
             {
-                PopulateCompCombo(CompHeadComboBox, vi.GetComponentData(0));
-                PopulateCompCombo(CompBerdComboBox, vi.GetComponentData(1));
-                PopulateCompCombo(CompHairComboBox, vi.GetComponentData(2));
-                PopulateCompCombo(CompUpprComboBox, vi.GetComponentData(3));
-                PopulateCompCombo(CompLowrComboBox, vi.GetComponentData(4));
-                PopulateCompCombo(CompHandComboBox, vi.GetComponentData(5));
-                PopulateCompCombo(CompFeetComboBox, vi.GetComponentData(6));
-                PopulateCompCombo(CompTeefComboBox, vi.GetComponentData(7));
-                PopulateCompCombo(CompAccsComboBox, vi.GetComponentData(8));
-                PopulateCompCombo(CompTaskComboBox, vi.GetComponentData(9));
-                PopulateCompCombo(CompDeclComboBox, vi.GetComponentData(10));
-                PopulateCompCombo(CompJbibComboBox, vi.GetComponentData(11));
+                for (int i = 0; i < 12; i++)
+                {
+                    PopulateCompCombo(ComponentComboBoxes[i], vi.GetComponentData(i));
+                }
             }
 
 
@@ -851,7 +878,20 @@ namespace CodeWalker.Peds
             if (compData?.DrawblData3 == null) return;
             foreach (var item in compData.DrawblData3)
             {
-                c.Items.Add(item.GetDrawableName());
+                for (int alt = 0; alt <= item.NumAlternatives; alt++)
+                {
+                    if (item.TexData?.Length > 0)
+                    {
+                        for (int tex = 0; tex < item.TexData.Length; tex++)
+                        {
+                            c.Items.Add(new ComponentComboItem(item, alt, tex));
+                        }
+                    }
+                    else
+                    {
+                        c.Items.Add(new ComponentComboItem(item));
+                    }
+                }
             }
             if (compData.DrawblData3.Length > 0)
             {
@@ -859,25 +899,28 @@ namespace CodeWalker.Peds
             }
         }
 
-
-
-        private Drawable GetComponentDrawable(string name)
+        private void SetComponentDrawable(int index, object comboObj)
         {
-            if (string.IsNullOrEmpty(name)) return null;
 
-            var namel = name.ToLowerInvariant();
-            MetaHash hash = JenkHash.GenHash(namel);
-            Drawable d;
-
-            if (SelectedPed.Ydd?.Dict != null)
+            var comboItem = comboObj as ComponentComboItem;
+            var name = comboItem?.DrawableName;
+            if (string.IsNullOrEmpty(name))
             {
-                if (SelectedPed.Ydd.Dict.TryGetValue(hash, out d)) return d;
+                SelectedPed.Drawables[index] = null;
+                SelectedPed.Textures[index] = null;
+                return;
             }
 
-            if (SelectedPed.DrawableFilesDict != null)
+            MetaHash namehash = JenkHash.GenHash(name.ToLowerInvariant());
+            Drawable d = null;
+            if (SelectedPed.Ydd?.Dict != null)
+            {
+                SelectedPed.Ydd.Dict.TryGetValue(namehash, out d);
+            }
+            if ((d == null) && (SelectedPed.DrawableFilesDict != null))
             {
                 RpfFileEntry file = null;
-                if (SelectedPed.DrawableFilesDict.TryGetValue(hash, out file))
+                if (SelectedPed.DrawableFilesDict.TryGetValue(namehash, out file))
                 {
                     var ydd = GameFileCache.GetFileUncached<YddFile>(file);
                     while ((ydd != null) && (!ydd.Loaded))
@@ -887,12 +930,40 @@ namespace CodeWalker.Peds
                     }
                     if (ydd?.Drawables?.Length > 0)
                     {
-                        return ydd.Drawables[0];//should only be one in this dict
+                        d = ydd.Drawables[0];//should only be one in this dict
                     }
                 }
             }
 
-            return null;
+
+            var tex = comboItem.TextureName;
+            MetaHash texhash = JenkHash.GenHash(tex.ToLowerInvariant());
+            Texture t = null;
+            if (SelectedPed.Ytd?.TextureDict?.Dict != null)
+            {
+                SelectedPed.Ytd.TextureDict.Dict.TryGetValue(texhash, out t);
+            }
+            if ((t == null) && (SelectedPed.TextureFilesDict != null))
+            {
+                RpfFileEntry file = null;
+                if (SelectedPed.TextureFilesDict.TryGetValue(texhash, out file))
+                {
+                    var ytd = GameFileCache.GetFileUncached<YtdFile>(file);
+                    while ((ytd != null) && (!ytd.Loaded))
+                    {
+                        Thread.Sleep(20);//kinda hacky
+                        GameFileCache.TryLoadEnqueue(ytd);
+                    }
+                    if (ytd?.TextureDict?.Textures?.data_items.Length > 0)
+                    {
+                        t = ytd.TextureDict.Textures.data_items[0];//should only be one in this dict
+                    }
+                }
+            }
+
+
+            if (d != null) SelectedPed.Drawables[index] = d;
+            if (t != null) SelectedPed.Textures[index] = t;
         }
 
 
@@ -1101,29 +1172,24 @@ namespace CodeWalker.Peds
                 var vi = SelectedPed.Ymt?.VariationInfo;
                 if (vi != null)
                 {
-                    RenderPedComponent(SelectedHead, vi.GetComponentData(0));
-                    RenderPedComponent(SelectedBerd, vi.GetComponentData(1));
-                    RenderPedComponent(SelectedHair, vi.GetComponentData(2));
-                    RenderPedComponent(SelectedUppr, vi.GetComponentData(3));
-                    RenderPedComponent(SelectedLowr, vi.GetComponentData(4));
-                    RenderPedComponent(SelectedHand, vi.GetComponentData(5));
-                    RenderPedComponent(SelectedFeet, vi.GetComponentData(6));
-                    RenderPedComponent(SelectedTeef, vi.GetComponentData(7));
-                    RenderPedComponent(SelectedAccs, vi.GetComponentData(8));
-                    RenderPedComponent(SelectedTask, vi.GetComponentData(9));
-                    RenderPedComponent(SelectedDecl, vi.GetComponentData(10));
-                    RenderPedComponent(SelectedJbib, vi.GetComponentData(11));
+                    for (int i = 0; i < 12; i++)
+                    {
+                        RenderPedComponent(i);
+                    }
                 }
 
             }
             
         }
 
-        private void RenderPedComponent(Drawable drawable, MUnk_3538495220 compData)
+        private void RenderPedComponent(int i)
         {
-            if (drawable == null) return;
-            if (compData == null) return;
+            //var compData = SelectedPed.Ymt?.VariationInfo?.GetComponentData(i);
+            var drawable = SelectedPed.Drawables[i];
+            var texture = SelectedPed.Textures[i];
 
+            //if (compData == null) return;
+            if (drawable == null) return;
 
             var td = SelectedPed.Ytd?.TextureDict;
             var ac = SelectedPed.AnimClip;
@@ -1131,11 +1197,11 @@ namespace CodeWalker.Peds
             var skel = SelectedPed.Yft?.Fragment?.Drawable?.Skeleton;
             if (skel != null)
             {
-                drawable.Skeleton = skel;
+                drawable.Skeleton = skel;//force the drawable to use this skeleton.
             }
 
 
-            Renderer.RenderDrawable(drawable, null, null, 0, td, ac);
+            Renderer.RenderDrawable(drawable, null, null, 0, td, texture, ac);
 
 
         }
@@ -1644,62 +1710,62 @@ namespace CodeWalker.Peds
 
         private void CompHeadComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedHead = GetComponentDrawable(CompHeadComboBox.Text);
+            SetComponentDrawable(0, CompHeadComboBox.SelectedItem);
         }
 
         private void CompBerdComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedBerd = GetComponentDrawable(CompBerdComboBox.Text);
+            SetComponentDrawable(1, CompBerdComboBox.SelectedItem);
         }
 
         private void CompHairComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedHair = GetComponentDrawable(CompHairComboBox.Text);
+            SetComponentDrawable(2, CompHairComboBox.SelectedItem);
         }
 
         private void CompUpprComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedUppr = GetComponentDrawable(CompUpprComboBox.Text);
+            SetComponentDrawable(3, CompUpprComboBox.SelectedItem);
         }
 
         private void CompLowrComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedLowr = GetComponentDrawable(CompLowrComboBox.Text);
+            SetComponentDrawable(4, CompLowrComboBox.SelectedItem);
         }
 
         private void CompHandComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedHand = GetComponentDrawable(CompHandComboBox.Text);
+            SetComponentDrawable(5, CompHandComboBox.SelectedItem);
         }
 
         private void CompFeetComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedFeet = GetComponentDrawable(CompFeetComboBox.Text);
+            SetComponentDrawable(6, CompFeetComboBox.SelectedItem);
         }
 
         private void CompTeefComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedTeef = GetComponentDrawable(CompTeefComboBox.Text);
+            SetComponentDrawable(7, CompTeefComboBox.SelectedItem);
         }
 
         private void CompAccsComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedAccs = GetComponentDrawable(CompAccsComboBox.Text);
+            SetComponentDrawable(8, CompAccsComboBox.SelectedItem);
         }
 
         private void CompTaskComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedTask = GetComponentDrawable(CompTaskComboBox.Text);
+            SetComponentDrawable(9, CompTaskComboBox.SelectedItem);
         }
 
         private void CompDeclComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedDecl = GetComponentDrawable(CompDeclComboBox.Text);
+            SetComponentDrawable(10, CompDeclComboBox.SelectedItem);
         }
 
         private void CompJbibComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedJbib = GetComponentDrawable(CompJbibComboBox.Text);
+            SetComponentDrawable(11, CompJbibComboBox.SelectedItem);
         }
 
         private void ClipDictComboBox_TextChanged(object sender, EventArgs e)
@@ -1725,22 +1791,30 @@ namespace CodeWalker.Peds
                 return;
             }
 
+            List<string> items = new List<string>();
+
             foreach (var cme in ycd.ClipMapEntries)
             {
                 var animclip = cme.Clip as ClipAnimation;
                 if (animclip != null)
                 {
-                    ClipComboBox.Items.Add(animclip.ShortName);
+                    items.Add(animclip.ShortName);
                     continue;
                 }
                 var animcliplist = cme.Clip as ClipAnimationList;
                 if (animcliplist?.Animations?.Data != null)
                 {
-                    ClipComboBox.Items.Add(animcliplist.ShortName);
+                    items.Add(animcliplist.ShortName);
                     continue;
                 }
             }
 
+
+            items.Sort();
+            foreach (var item in items)
+            {
+                ClipComboBox.Items.Add(item);
+            }
 
 
         }
