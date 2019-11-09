@@ -223,8 +223,8 @@ namespace CodeWalker.World
                     else
                     { }
                 }
-                
-                isveh = scp.Type.Value.IsVehicle;
+
+                isveh = scp.Type?.IsVehicle ?? false; //TODO: make a warning about this if scp.Type is null?
             }
             else
             { }
