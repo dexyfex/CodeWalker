@@ -138,6 +138,7 @@ namespace CodeWalker.Rendering
         VertexShader basicvspbbncttt;
         VertexShader basicvspbbncct;
         VertexShader basicvspbbncctx;
+        VertexShader basicvspbbnccttx;
         VertexShader basicvspbbncttx;
         VertexShader basicvsbox;
         VertexShader basicvssphere;
@@ -199,6 +200,7 @@ namespace CodeWalker.Rendering
             byte[] vspbbnctttbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCTTT.cso");
             byte[] vspbbncctbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCCT.cso");
             byte[] vspbbncctxbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCCTX.cso");
+            byte[] vspbbnccttxbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCCTTX.cso");
             byte[] vspbbncttxbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCTTX.cso");
 
             byte[] vsboxbytes = File.ReadAllBytes("Shaders\\BasicVS_Box.cso");
@@ -225,6 +227,7 @@ namespace CodeWalker.Rendering
             basicvspbbncttt = new VertexShader(device, vspbbnctttbytes);
             basicvspbbncct = new VertexShader(device, vspbbncctbytes);
             basicvspbbncctx = new VertexShader(device, vspbbncctxbytes);
+            basicvspbbnccttx = new VertexShader(device, vspbbnccttxbytes);
             basicvspbbncttx = new VertexShader(device, vspbbncttxbytes);
             basicvsbox = new VertexShader(device, vsboxbytes);
             basicvssphere = new VertexShader(device, vsspherebytes);
@@ -281,7 +284,7 @@ namespace CodeWalker.Rendering
             layouts.Add(VertexType.PBBNCCTX, new InputLayout(device, vspbbncctxbytes, VertexTypePBBNCCTX.GetLayout()));
             layouts.Add(VertexType.PBBNCTTX, new InputLayout(device, vspbbncttxbytes, VertexTypePBBNCTTX.GetLayout()));
             layouts.Add(VertexType.PBBNCTTTX, new InputLayout(device, vspbbncttxbytes, VertexTypePBBNCTTTX.GetLayout()));//TODO
-            layouts.Add(VertexType.PBBNCCTTX, new InputLayout(device, vspbbncctxbytes, VertexTypePBBNCCTTX.GetLayout()));//TODO
+            layouts.Add(VertexType.PBBNCCTTX, new InputLayout(device, vspbbnccttxbytes, VertexTypePBBNCCTTX.GetLayout()));
             //PBBCCT todo
             //PBBNC todo
 
@@ -469,8 +472,8 @@ namespace CodeWalker.Rendering
                 case VertexType.PBBNCTTX:
                     vs = basicvspbbncttx;
                     break;
-                case VertexType.PBBNCCTTX://not used?
-                    vs = basicvspbbncctx;//TODO
+                case VertexType.PBBNCCTTX:
+                    vs = basicvspbbnccttx;
                     break;
                 case VertexType.PBBNCTTTX:
                     vs = basicvspbbncttx;//TODO
@@ -1023,6 +1026,7 @@ namespace CodeWalker.Rendering
             basicvspbbncttt.Dispose();
             basicvspbbncct.Dispose();
             basicvspbbncctx.Dispose();
+            basicvspbbnccttx.Dispose();
             basicvspbbncttx.Dispose();
             basicvsbox.Dispose();
             basicvssphere.Dispose();

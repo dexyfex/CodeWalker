@@ -924,7 +924,7 @@ namespace CodeWalker.GameFiles
             var pbone = Parent;
             while (pbone != null)
             {
-                pos = pbone.AnimRotation.Multiply(pos * pbone.AnimScale) + pbone.AnimTranslation;
+                pos = pbone.AnimRotation.Multiply(pos /** pbone.AnimScale*/) + pbone.AnimTranslation;
                 ori = pbone.AnimRotation * ori;
                 pbone = pbone.Parent;
             }

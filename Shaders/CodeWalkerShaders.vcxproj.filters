@@ -75,6 +75,7 @@
     <FxCompile Include="BasicVS_PBBNCCTX.hlsl" />
     <FxCompile Include="BasicVS_PBBNCTTX.hlsl" />
     <FxCompile Include="ShadowVS_Skin.hlsl" />
+    <FxCompile Include="BasicVS_PBBNCCTTX.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Quaternion.hlsli" />
