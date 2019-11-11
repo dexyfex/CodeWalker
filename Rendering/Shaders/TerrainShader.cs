@@ -125,14 +125,14 @@ namespace CodeWalker.Rendering
             PSGeomVars = new GpuVarsBuffer<TerrainShaderPSGeomVars>(device);
 
             //supported layouts - requires Position, Normal, Colour, Texcoord
-            layouts.Add(VertexType.PNCCT, new InputLayout(device, vspncct, VertexTypePNCCT.GetLayout()));
-            layouts.Add(VertexType.PNCCTT, new InputLayout(device, vspncctt, VertexTypePNCCTT.GetLayout()));
-            layouts.Add(VertexType.PNCTTX, new InputLayout(device, vspncttx, VertexTypePNCTTX.GetLayout()));
-            layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vspnctttx, VertexTypePNCTTTX_3.GetLayout()));
-            layouts.Add(VertexType.PNCCTX, new InputLayout(device, vspncctx, VertexTypePNCCTX.GetLayout()));
-            layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vspnccttx, VertexTypePNCCTTX.GetLayout()));
-            layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vspnccttx, VertexTypePNCCTTX_2.GetLayout()));
-            layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vspncctttx, VertexTypePNCCTTTX.GetLayout()));
+            layouts.Add(VertexType.PNCCT, new InputLayout(device, vspncct, VertexTypeGTAV.GetLayout(VertexType.PNCCT)));
+            layouts.Add(VertexType.PNCCTT, new InputLayout(device, vspncctt, VertexTypeGTAV.GetLayout(VertexType.PNCCTT)));
+            layouts.Add(VertexType.PNCTTX, new InputLayout(device, vspncttx, VertexTypeGTAV.GetLayout(VertexType.PNCTTX)));
+            layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vspnctttx, VertexTypeGTAV.GetLayout(VertexType.PNCTTTX_3)));
+            layouts.Add(VertexType.PNCCTX, new InputLayout(device, vspncctx, VertexTypeGTAV.GetLayout(VertexType.PNCCTX)));
+            layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vspnccttx, VertexTypeGTAV.GetLayout(VertexType.PNCCTTX)));
+            layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vspnccttx, VertexTypeGTAV.GetLayout(VertexType.PNCCTTX_2)));
+            layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vspncctttx, VertexTypeGTAV.GetLayout(VertexType.PNCCTTTX)));
 
 
 
