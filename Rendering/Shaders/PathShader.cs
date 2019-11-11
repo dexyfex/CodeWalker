@@ -61,7 +61,7 @@ namespace CodeWalker.Rendering
 
             VSSceneVars = new GpuVarsBuffer<PathShaderVSSceneVars>(device);
 
-            layout = new InputLayout(device, vsbytes, VertexTypePC.GetLayout());
+            layout = new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PC));
 
             cube = new UnitCube(device, boxvsbytes, true, false, true);
 
