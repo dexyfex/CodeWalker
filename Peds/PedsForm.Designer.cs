@@ -108,6 +108,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.ToolsTabControl = new System.Windows.Forms.TabControl();
             this.ToolsPanel = new System.Windows.Forms.Panel();
+            this.EnableRootMotionCheckBox = new System.Windows.Forms.CheckBox();
             this.ConsolePanel.SuspendLayout();
             this.ToolsOptionsTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
@@ -656,6 +657,7 @@
             // 
             // ToolsPedTabPage
             // 
+            this.ToolsPedTabPage.Controls.Add(this.EnableRootMotionCheckBox);
             this.ToolsPedTabPage.Controls.Add(this.label23);
             this.ToolsPedTabPage.Controls.Add(this.label22);
             this.ToolsPedTabPage.Controls.Add(this.ClipComboBox);
@@ -1064,6 +1066,17 @@
             this.ToolsPanel.TabIndex = 7;
             this.ToolsPanel.Visible = false;
             // 
+            // EnableRootMotionCheckBox
+            // 
+            this.EnableRootMotionCheckBox.AutoSize = true;
+            this.EnableRootMotionCheckBox.Location = new System.Drawing.Point(54, 503);
+            this.EnableRootMotionCheckBox.Name = "EnableRootMotionCheckBox";
+            this.EnableRootMotionCheckBox.Size = new System.Drawing.Size(114, 17);
+            this.EnableRootMotionCheckBox.TabIndex = 32;
+            this.EnableRootMotionCheckBox.Text = "Enable root motion";
+            this.EnableRootMotionCheckBox.UseVisualStyleBackColor = true;
+            this.EnableRootMotionCheckBox.CheckedChanged += new System.EventHandler(this.EnableRootMotionCheckBox_CheckedChanged);
+            // 
             // PedsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1184,5 +1197,6 @@
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.ComboBox ClipDictComboBox;
         private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.CheckBox EnableRootMotionCheckBox;
     }
 }

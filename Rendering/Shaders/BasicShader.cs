@@ -801,11 +801,11 @@ namespace CodeWalker.Rendering
             }
 
 
-            //if (geom.BoneTransforms != null)
-            //{
-            //    SetBoneMatrices(context, geom.BoneTransforms);
-            //    defaultBoneMatricesBound = false;
-            //}
+            if (geom.BoneTransforms != null)
+            {
+                SetBoneMatrices(context, geom.BoneTransforms);
+                defaultBoneMatricesBound = false;
+            }
 
         }
 

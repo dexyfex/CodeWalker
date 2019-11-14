@@ -92,6 +92,7 @@ namespace CodeWalker.Peds
             public ClipMapEntry AnimClip { get; set; } = null;
             public Drawable[] Drawables { get; set; } = new Drawable[12];
             public Texture[] Textures { get; set; } = new Texture[12];
+            public bool EnableRootMotion { get; set; } = false; //used to toggle whether or not to include root motion when playing animations
         }
 
         PedSelection SelectedPed = new PedSelection();
@@ -971,6 +972,80 @@ namespace CodeWalker.Peds
 
 
 
+        private void LoadClipDict(string name)
+        {
+            var ycdhash = JenkHash.GenHash(name.ToLowerInvariant());
+            var ycd = GameFileCache.GetYcd(ycdhash);
+            while ((ycd != null) && (!ycd.Loaded))
+            {
+                Thread.Sleep(20);//kinda hacky
+                ycd = GameFileCache.GetYcd(ycdhash);
+            }
+
+
+
+            //if (ycd != null)
+            //{
+            //    ////// TESTING XML CONVERSIONS
+            //    var xml = YcdXml.GetXml(ycd);
+            //    var ycd2 = XmlYcd.GetYcd(xml);
+            //    var data = ycd2.Save();
+            //    var ycd3 = new YcdFile();
+            //    RpfFile.LoadResourceFile(ycd3, data, 46);
+            //    //var xml2 = YcdXml.GetXml(ycd3);
+            //    //if (xml != xml2)
+            //    //{ }
+            //    ycd = ycd3;
+            //}
+
+
+
+            SelectedPed.Ycd = ycd;
+
+            ClipComboBox.Items.Clear();
+            ClipComboBox.Items.Add("");
+
+            if (ycd?.ClipMapEntries == null)
+            {
+                ClipComboBox.SelectedIndex = 0;
+                SelectedPed.AnimClip = null;
+                return;
+            }
+
+            List<string> items = new List<string>();
+
+            foreach (var cme in ycd.ClipMapEntries)
+            {
+                var animclip = cme.Clip as ClipAnimation;
+                if (animclip != null)
+                {
+                    items.Add(animclip.ShortName);
+                    continue;
+                }
+                var animcliplist = cme.Clip as ClipAnimationList;
+                if (animcliplist?.Animations?.Data != null)
+                {
+                    items.Add(animcliplist.ShortName);
+                    continue;
+                }
+            }
+
+
+            items.Sort();
+            foreach (var item in items)
+            {
+                ClipComboBox.Items.Add(item);
+            }
+        }
+
+        private void SelectClip(string name)
+        {
+            MetaHash cliphash = JenkHash.GenHash(name);
+            ClipMapEntry cme = null;
+            SelectedPed.Ycd?.ClipMap?.TryGetValue(cliphash, out cme);
+            SelectedPed.AnimClip = cme;
+        }
+
 
 
 
@@ -1193,6 +1268,10 @@ namespace CodeWalker.Peds
 
             var td = SelectedPed.Ytd?.TextureDict;
             var ac = SelectedPed.AnimClip;
+            if (ac != null)
+            {
+                ac.EnableRootMotion = SelectedPed.EnableRootMotion;
+            }
 
             var skel = SelectedPed.Yft?.Fragment?.Drawable?.Skeleton;
             if (skel != null)
@@ -1788,69 +1867,22 @@ namespace CodeWalker.Peds
 
         private void ClipDictComboBox_TextChanged(object sender, EventArgs e)
         {
-
-            var ycdhash = JenkHash.GenHash(ClipDictComboBox.Text.ToLowerInvariant());
-            var ycd = GameFileCache.GetYcd(ycdhash);
-            while ((ycd != null) && (!ycd.Loaded))
-            {
-                Thread.Sleep(20);//kinda hacky
-                ycd = GameFileCache.GetYcd(ycdhash);
-            }
-
-            SelectedPed.Ycd = ycd;
-
-            ClipComboBox.Items.Clear();
-            ClipComboBox.Items.Add("");
-
-            if (ycd?.ClipMapEntries == null)
-            {
-                ClipComboBox.SelectedIndex = 0;
-                SelectedPed.AnimClip = null;
-                return;
-            }
-
-            List<string> items = new List<string>();
-
-            foreach (var cme in ycd.ClipMapEntries)
-            {
-                var animclip = cme.Clip as ClipAnimation;
-                if (animclip != null)
-                {
-                    items.Add(animclip.ShortName);
-                    continue;
-                }
-                var animcliplist = cme.Clip as ClipAnimationList;
-                if (animcliplist?.Animations?.Data != null)
-                {
-                    items.Add(animcliplist.ShortName);
-                    continue;
-                }
-            }
-
-
-            items.Sort();
-            foreach (var item in items)
-            {
-                ClipComboBox.Items.Add(item);
-            }
-
-
+            LoadClipDict(ClipDictComboBox.Text);
         }
 
         private void ClipComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-
-            var name = ClipComboBox.Text;
-
-            MetaHash cliphash = JenkHash.GenHash(name);
-            ClipMapEntry cme = null;
-            SelectedPed.Ycd?.ClipMap?.TryGetValue(cliphash, out cme);
-            SelectedPed.AnimClip = cme;
+            SelectClip(ClipComboBox.Text);
         }
 
         private void ClipComboBox_TextChanged(object sender, EventArgs e)
         {
-            ClipComboBox_SelectedIndexChanged(sender, e);
+            SelectClip(ClipComboBox.Text);
+        }
+
+        private void EnableRootMotionCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            SelectedPed.EnableRootMotion = EnableRootMotionCheckBox.Checked;
         }
     }
 }
