@@ -218,11 +218,35 @@ namespace CodeWalker
             return GetRawByteArray(cnode);
         }
 
+        public static uint[] GetRawUintArray(XmlNode node)
+        {
+            if (node == null) return new uint[0];
+            var data = new List<uint>();
+            var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");
+            for (int i = 0; i < split.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(split[i]))
+                {
+                    var str = split[i];
+                    if (string.IsNullOrEmpty(str)) continue;
+                    var val = 0u;
+                    uint.TryParse(str, out val);
+                    data.Add(val);
+                }
+            }
+            return data.ToArray();
+        }
+        public static uint[] GetChildRawUintArray(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            return GetRawUintArray(cnode);
+        }
+
         public static float[] GetRawFloatArray(XmlNode node)
         {
             if (node == null) return new float[0];
             var items = new List<float>();
-            var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
+            var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");//node.InnerText.Split('\n');// 
             for (int i = 0; i < split.Length; i++)
             {
                 var s = split[i]?.Trim();

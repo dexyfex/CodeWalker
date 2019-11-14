@@ -1384,18 +1384,6 @@ namespace CodeWalker.GameFiles
 
         }
 
-        public static string XmlEscape(string unescaped)
-        {
-            if (unescaped == null) return null;
-            XmlDocument doc = new XmlDocument();
-            XmlNode node = doc.CreateElement("root");
-            node.InnerText = unescaped;
-            var escaped = node.InnerXml;
-            if (escaped != unescaped)
-            { }
-            return node.InnerXml;
-        }
-
 
         public class PsoCont
         {
@@ -1742,9 +1730,16 @@ namespace CodeWalker.GameFiles
                 var cind2 = ind + 2;
                 for (int i = 0; i < itemCount; i++)
                 {
-                    OpenTag(sb, cind, "Item");
-                    arr[i].WriteXml(sb, cind2);
-                    CloseTag(sb, cind, "Item");
+                    if (arr[i] != null)
+                    {
+                        OpenTag(sb, cind, "Item");
+                        arr[i].WriteXml(sb, cind2);
+                        CloseTag(sb, cind, "Item");
+                    }
+                    else
+                    {
+                        SelfClosingTag(sb, cind, "Item");
+                    }
                 }
                 CloseTag(sb, ind, name);
             }
@@ -1888,6 +1883,22 @@ namespace CodeWalker.GameFiles
             return "0x" + h.ToString("X");
 
         }
+
+
+
+
+        public static string XmlEscape(string unescaped)
+        {
+            if (unescaped == null) return null;
+            XmlDocument doc = new XmlDocument();
+            XmlNode node = doc.CreateElement("root");
+            node.InnerText = unescaped;
+            var escaped = node.InnerXml;
+            if (escaped != unescaped)
+            { }
+            return node.InnerXml;
+        }
+
 
 
 
