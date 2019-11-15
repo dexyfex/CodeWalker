@@ -1326,6 +1326,7 @@ namespace CodeWalker
                 case FileTypeAction.ViewCut:
                 case FileTypeAction.ViewRel:
                 case FileTypeAction.ViewYnd:
+                case FileTypeAction.ViewYcd:
                     return true;
             }
             return false;
@@ -2423,6 +2424,10 @@ namespace CodeWalker
                     {
                         mformat = MetaFormat.Ynd;
                     }
+                    if (fnamel.EndsWith(".ycd.xml"))
+                    {
+                        mformat = MetaFormat.Ycd;
+                    }
 
                     fname = fname.Substring(0, fname.Length - trimlength);
                     fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
@@ -2485,6 +2490,17 @@ namespace CodeWalker
                                     continue;
                                 }
                                 data = ynd.Save();
+                                break;
+                            }
+                        case MetaFormat.Ycd:
+                            {
+                                var ycd = XmlYcd.GetYcd(doc);
+                                if (ycd.ClipDictionary == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YCD XML");
+                                    continue;
+                                }
+                                data = ycd.Save();
                                 break;
                             }
                     }

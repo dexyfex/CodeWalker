@@ -353,6 +353,7 @@ namespace CodeWalker.Peds
             }
 
             GameFileCache.EnableDlc = true;
+            GameFileCache.EnableMods = true;
             GameFileCache.LoadPeds = true;
             GameFileCache.LoadArchetypes = false;//to speed things up a little
             GameFileCache.BuildExtendedJenkIndex = false;//to speed things up a little
@@ -987,6 +988,7 @@ namespace CodeWalker.Peds
             //if (ycd != null)
             //{
             //    ////// TESTING XML CONVERSIONS
+            //    //var data = ycd.Save();
             //    var xml = YcdXml.GetXml(ycd);
             //    var ycd2 = XmlYcd.GetYcd(xml);
             //    var data = ycd2.Save();
