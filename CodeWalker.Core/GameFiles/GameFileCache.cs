@@ -2990,6 +2990,8 @@ namespace CodeWalker.GameFiles
                             if (ycd1.ClipDictionary == null)
                             { continue; }
 
+                            var data1 = ycd1.Save();
+
                             var t = true;
                             if (t)//just here to test loading only
                             { continue; }
@@ -3000,207 +3002,210 @@ namespace CodeWalker.GameFiles
                             var ycd2 = new YcdFile();
                             RpfFile.LoadResourceFile(ycd2, data, 46);//full roundtrip
 
-
-                            if (ycd2 == null)
-                            { continue; }
-                            if (ycd2.ClipDictionary == null)
-                            { continue; }
-
-                            var c1 = ycd1.ClipDictionary.Clips?.data_items;
-                            var c2 = ycd2.ClipDictionary.Clips?.data_items;
-                            if ((c1 == null) || (c2 == null))
-                            { continue; }
-                            if (c1.Length != c2.Length)
-                            { continue; }
-
-                            var a1 = ycd1.ClipDictionary.Animations?.Animations?.data_items;
-                            var a2 = ycd2.ClipDictionary.Animations?.Animations?.data_items;
-                            if ((a1 == null) || (a2 == null))
-                            { continue; }
-                            if (a1.Length != a2.Length)
-                            { continue; }
-
-                            var m1 = ycd1.AnimMap;
-                            var m2 = ycd2.AnimMap;
-                            if ((m1 == null) || (m2 == null))
-                            { continue; }
-                            if (m1.Count != m2.Count)
-                            { continue; }
-                            foreach (var kvp1 in m1)
                             {
-                                var an1 = kvp1.Value;
-                                var an2 = an1;
-                                if(!m2.TryGetValue(kvp1.Key, out an2))
+                                if (ycd2 == null)
+                                { continue; }
+                                if (ycd2.ClipDictionary == null)
                                 { continue; }
 
-                                var sa1 = an1?.Animation?.Sequences?.data_items;
-                                var sa2 = an2?.Animation?.Sequences?.data_items;
-                                if ((sa1 == null) || (sa2 == null))
+                                var c1 = ycd1.ClipDictionary.Clips?.data_items;
+                                var c2 = ycd2.ClipDictionary.Clips?.data_items;
+                                if ((c1 == null) || (c2 == null))
                                 { continue; }
-                                if (sa1.Length != sa2.Length)
+                                if (c1.Length != c2.Length)
                                 { continue; }
-                                for (int s = 0; s < sa1.Length; s++)
+
+                                var a1 = ycd1.ClipDictionary.Animations?.Animations?.data_items;
+                                var a2 = ycd2.ClipDictionary.Animations?.Animations?.data_items;
+                                if ((a1 == null) || (a2 == null))
+                                { continue; }
+                                if (a1.Length != a2.Length)
+                                { continue; }
+
+                                var m1 = ycd1.AnimMap;
+                                var m2 = ycd2.AnimMap;
+                                if ((m1 == null) || (m2 == null))
+                                { continue; }
+                                if (m1.Count != m2.Count)
+                                { continue; }
+                                foreach (var kvp1 in m1)
                                 {
-                                    var s1 = sa1[s];
-                                    var s2 = sa2[s];
-                                    if ((s1?.Sequences == null) || (s2?.Sequences == null))
+                                    var an1 = kvp1.Value;
+                                    var an2 = an1;
+                                    if (!m2.TryGetValue(kvp1.Key, out an2))
                                     { continue; }
 
-                                    if (s1.NumFrames != s2.NumFrames)
-                                    { }
-                                    if (s1.ChunkSize != s2.ChunkSize)
-                                    { }
-                                    if (s1.FrameOffset != s2.FrameOffset)
-                                    { }
-                                    if (s1.DataLength != s2.DataLength)
-                                    { }
-                                    else
+                                    var sa1 = an1?.Animation?.Sequences?.data_items;
+                                    var sa2 = an2?.Animation?.Sequences?.data_items;
+                                    if ((sa1 == null) || (sa2 == null))
+                                    { continue; }
+                                    if (sa1.Length != sa2.Length)
+                                    { continue; }
+                                    for (int s = 0; s < sa1.Length; s++)
                                     {
-                                        //for (int b = 0; b < s1.DataLength; b++)
-                                        //{
-                                        //    var b1 = s1.Data[b];
-                                        //    var b2 = s2.Data[b];
-                                        //    if (b1 != b2)
-                                        //    { }
-                                        //}
-                                    }
-
-                                    for (int ss = 0; ss < s1.Sequences.Length; ss++)
-                                    {
-                                        var ss1 = s1.Sequences[ss];
-                                        var ss2 = s2.Sequences[ss];
-                                        if ((ss1?.Channels == null) || (ss2?.Channels == null))
-                                        { continue; }
-                                        if (ss1.Channels.Length != ss2.Channels.Length)
+                                        var s1 = sa1[s];
+                                        var s2 = sa2[s];
+                                        if ((s1?.Sequences == null) || (s2?.Sequences == null))
                                         { continue; }
 
-
-                                        for (int c = 0; c < ss1.Channels.Length; c++)
+                                        if (s1.NumFrames != s2.NumFrames)
+                                        { }
+                                        if (s1.ChunkSize != s2.ChunkSize)
+                                        { }
+                                        if (s1.FrameOffset != s2.FrameOffset)
+                                        { }
+                                        if (s1.DataLength != s2.DataLength)
+                                        { }
+                                        else
                                         {
-                                            var sc1 = ss1.Channels[c];
-                                            var sc2 = ss2.Channels[c];
-                                            if ((sc1 == null) || (sc2 == null))
+                                            //for (int b = 0; b < s1.DataLength; b++)
+                                            //{
+                                            //    var b1 = s1.Data[b];
+                                            //    var b2 = s2.Data[b];
+                                            //    if (b1 != b2)
+                                            //    { }
+                                            //}
+                                        }
+
+                                        for (int ss = 0; ss < s1.Sequences.Length; ss++)
+                                        {
+                                            var ss1 = s1.Sequences[ss];
+                                            var ss2 = s2.Sequences[ss];
+                                            if ((ss1?.Channels == null) || (ss2?.Channels == null))
                                             { continue; }
-                                            if (sc1.Type == AnimChannelType.LinearFloat)
+                                            if (ss1.Channels.Length != ss2.Channels.Length)
                                             { continue; }
-                                            if (sc1.Type != sc2.Type)
-                                            { continue; }
-                                            if (sc1.Index != sc2.Index)
-                                            { continue; }
-                                            if (sc1.Type == AnimChannelType.StaticQuaternion)
+
+
+                                            for (int c = 0; c < ss1.Channels.Length; c++)
                                             {
-                                                var acsq1 = sc1 as AnimChannelStaticQuaternion;
-                                                var acsq2 = sc2 as AnimChannelStaticQuaternion;
-                                                var vdiff = acsq1.Value - acsq2.Value;
-                                                var len = vdiff.Length();
-                                                var v1len = Math.Max(acsq1.Value.Length(), 1);
-                                                if (len > 1e-2f * v1len)
+                                                var sc1 = ss1.Channels[c];
+                                                var sc2 = ss2.Channels[c];
+                                                if ((sc1 == null) || (sc2 == null))
                                                 { continue; }
-                                            }
-                                            else if (sc1.Type == AnimChannelType.StaticVector3)
-                                            {
-                                                var acsv1 = sc1 as AnimChannelStaticVector3;
-                                                var acsv2 = sc2 as AnimChannelStaticVector3;
-                                                var vdiff = acsv1.Value - acsv2.Value;
-                                                var len = vdiff.Length();
-                                                var v1len = Math.Max(acsv1.Value.Length(), 1);
-                                                if (len > 1e-2f * v1len)
+                                                if (sc1.Type == AnimChannelType.LinearFloat)
                                                 { continue; }
-                                            }
-                                            else if (sc1.Type == AnimChannelType.StaticFloat)
-                                            {
-                                                var acsf1 = sc1 as AnimChannelStaticFloat;
-                                                var acsf2 = sc2 as AnimChannelStaticFloat;
-                                                var vdiff = Math.Abs(acsf1.Value - acsf2.Value);
-                                                var v1len = Math.Max(Math.Abs(acsf1.Value), 1);
-                                                if (vdiff > 1e-2f * v1len)
+                                                if (sc1.Type != sc2.Type)
                                                 { continue; }
-                                            }
-                                            else if (sc1.Type == AnimChannelType.RawFloat)
-                                            {
-                                                var acrf1 = sc1 as AnimChannelRawFloat;
-                                                var acrf2 = sc2 as AnimChannelRawFloat;
-                                                for (int v = 0; v < acrf1.Values.Length; v++)
+                                                if (sc1.Index != sc2.Index)
+                                                { continue; }
+                                                if (sc1.Type == AnimChannelType.StaticQuaternion)
                                                 {
-                                                    var v1 = acrf1.Values[v];
-                                                    var v2 = acrf2.Values[v];
-                                                    var vdiff = Math.Abs(v1 - v2);
-                                                    var v1len = Math.Max(Math.Abs(v1), 1);
+                                                    var acsq1 = sc1 as AnimChannelStaticQuaternion;
+                                                    var acsq2 = sc2 as AnimChannelStaticQuaternion;
+                                                    var vdiff = acsq1.Value - acsq2.Value;
+                                                    var len = vdiff.Length();
+                                                    var v1len = Math.Max(acsq1.Value.Length(), 1);
+                                                    if (len > 1e-2f * v1len)
+                                                    { continue; }
+                                                }
+                                                else if (sc1.Type == AnimChannelType.StaticVector3)
+                                                {
+                                                    var acsv1 = sc1 as AnimChannelStaticVector3;
+                                                    var acsv2 = sc2 as AnimChannelStaticVector3;
+                                                    var vdiff = acsv1.Value - acsv2.Value;
+                                                    var len = vdiff.Length();
+                                                    var v1len = Math.Max(acsv1.Value.Length(), 1);
+                                                    if (len > 1e-2f * v1len)
+                                                    { continue; }
+                                                }
+                                                else if (sc1.Type == AnimChannelType.StaticFloat)
+                                                {
+                                                    var acsf1 = sc1 as AnimChannelStaticFloat;
+                                                    var acsf2 = sc2 as AnimChannelStaticFloat;
+                                                    var vdiff = Math.Abs(acsf1.Value - acsf2.Value);
+                                                    var v1len = Math.Max(Math.Abs(acsf1.Value), 1);
                                                     if (vdiff > 1e-2f * v1len)
-                                                    { break; }
+                                                    { continue; }
                                                 }
-                                            }
-                                            else if (sc1.Type == AnimChannelType.QuantizeFloat)
-                                            {
-                                                var acqf1 = sc1 as AnimChannelQuantizeFloat;
-                                                var acqf2 = sc2 as AnimChannelQuantizeFloat;
-                                                if (acqf1.ValueBits != acqf2.ValueBits)
-                                                { continue; }
-                                                if (Math.Abs(acqf1.Offset - acqf2.Offset) > (0.001f * Math.Abs(acqf1.Offset)))
-                                                { continue; }
-                                                if (Math.Abs(acqf1.Quantum - acqf2.Quantum) > 0.00001f)
-                                                { continue; }
-                                                for (int v = 0; v < acqf1.Values.Length; v++)
+                                                else if (sc1.Type == AnimChannelType.RawFloat)
                                                 {
-                                                    var v1 = acqf1.Values[v];
-                                                    var v2 = acqf2.Values[v];
-                                                    var vdiff = Math.Abs(v1 - v2);
-                                                    var v1len = Math.Max(Math.Abs(v1), 1);
-                                                    if (vdiff > 1e-2f * v1len)
-                                                    { break; }
+                                                    var acrf1 = sc1 as AnimChannelRawFloat;
+                                                    var acrf2 = sc2 as AnimChannelRawFloat;
+                                                    for (int v = 0; v < acrf1.Values.Length; v++)
+                                                    {
+                                                        var v1 = acrf1.Values[v];
+                                                        var v2 = acrf2.Values[v];
+                                                        var vdiff = Math.Abs(v1 - v2);
+                                                        var v1len = Math.Max(Math.Abs(v1), 1);
+                                                        if (vdiff > 1e-2f * v1len)
+                                                        { break; }
+                                                    }
                                                 }
-                                            }
-                                            else if (sc1.Type == AnimChannelType.IndirectQuantizeFloat)
-                                            {
-                                                var aciqf1 = sc1 as AnimChannelIndirectQuantizeFloat;
-                                                var aciqf2 = sc2 as AnimChannelIndirectQuantizeFloat;
-                                                if (aciqf1.FrameBits != aciqf2.FrameBits)
-                                                { continue; }
-                                                if (aciqf1.ValueBits != aciqf2.ValueBits)
-                                                { continue; }
-                                                if (Math.Abs(aciqf1.Offset - aciqf2.Offset) > (0.001f * Math.Abs(aciqf1.Offset)))
-                                                { continue; }
-                                                if (Math.Abs(aciqf1.Quantum - aciqf2.Quantum) > 0.00001f)
-                                                { continue; }
-                                                for (int f = 0; f < aciqf1.Frames.Length; f++)
+                                                else if (sc1.Type == AnimChannelType.QuantizeFloat)
                                                 {
-                                                    if (aciqf1.Frames[f] != aciqf2.Frames[f])
-                                                    { break; }
+                                                    var acqf1 = sc1 as AnimChannelQuantizeFloat;
+                                                    var acqf2 = sc2 as AnimChannelQuantizeFloat;
+                                                    if (acqf1.ValueBits != acqf2.ValueBits)
+                                                    { continue; }
+                                                    if (Math.Abs(acqf1.Offset - acqf2.Offset) > (0.001f * Math.Abs(acqf1.Offset)))
+                                                    { continue; }
+                                                    if (Math.Abs(acqf1.Quantum - acqf2.Quantum) > 0.00001f)
+                                                    { continue; }
+                                                    for (int v = 0; v < acqf1.Values.Length; v++)
+                                                    {
+                                                        var v1 = acqf1.Values[v];
+                                                        var v2 = acqf2.Values[v];
+                                                        var vdiff = Math.Abs(v1 - v2);
+                                                        var v1len = Math.Max(Math.Abs(v1), 1);
+                                                        if (vdiff > 1e-2f * v1len)
+                                                        { break; }
+                                                    }
                                                 }
-                                                for (int v = 0; v < aciqf1.Values.Length; v++)
+                                                else if (sc1.Type == AnimChannelType.IndirectQuantizeFloat)
                                                 {
-                                                    var v1 = aciqf1.Values[v];
-                                                    var v2 = aciqf2.Values[v];
-                                                    var vdiff = Math.Abs(v1 - v2);
-                                                    var v1len = Math.Max(Math.Abs(v1), 1);
-                                                    if (vdiff > 1e-2f * v1len)
-                                                    { break; }
+                                                    var aciqf1 = sc1 as AnimChannelIndirectQuantizeFloat;
+                                                    var aciqf2 = sc2 as AnimChannelIndirectQuantizeFloat;
+                                                    if (aciqf1.FrameBits != aciqf2.FrameBits)
+                                                    { continue; }
+                                                    if (aciqf1.ValueBits != aciqf2.ValueBits)
+                                                    { continue; }
+                                                    if (Math.Abs(aciqf1.Offset - aciqf2.Offset) > (0.001f * Math.Abs(aciqf1.Offset)))
+                                                    { continue; }
+                                                    if (Math.Abs(aciqf1.Quantum - aciqf2.Quantum) > 0.00001f)
+                                                    { continue; }
+                                                    for (int f = 0; f < aciqf1.Frames.Length; f++)
+                                                    {
+                                                        if (aciqf1.Frames[f] != aciqf2.Frames[f])
+                                                        { break; }
+                                                    }
+                                                    for (int v = 0; v < aciqf1.Values.Length; v++)
+                                                    {
+                                                        var v1 = aciqf1.Values[v];
+                                                        var v2 = aciqf2.Values[v];
+                                                        var vdiff = Math.Abs(v1 - v2);
+                                                        var v1len = Math.Max(Math.Abs(v1), 1);
+                                                        if (vdiff > 1e-2f * v1len)
+                                                        { break; }
+                                                    }
                                                 }
+                                                else if ((sc1.Type == AnimChannelType.CachedQuaternion1) || (sc1.Type == AnimChannelType.CachedQuaternion2))
+                                                {
+                                                    var acrf1 = sc1 as AnimChannelCachedQuaternion;
+                                                    var acrf2 = sc2 as AnimChannelCachedQuaternion;
+                                                    if (acrf1.QuatIndex != acrf2.QuatIndex)
+                                                    { continue; }
+                                                }
+
+
+
+
                                             }
-                                            else if ((sc1.Type == AnimChannelType.CachedQuaternion1)||(sc1.Type == AnimChannelType.CachedQuaternion2))
-                                            {
-                                                var acrf1 = sc1 as AnimChannelCachedQuaternion;
-                                                var acrf2 = sc2 as AnimChannelCachedQuaternion;
-                                                if (acrf1.QuatIndex != acrf2.QuatIndex)
-                                                { continue; }
-                                            }
 
 
-
-
+                                            //for (int f = 0; f < s1.NumFrames; f++)
+                                            //{
+                                            //    var v1 = ss1.EvaluateVector(f);
+                                            //    var v2 = ss2.EvaluateVector(f);
+                                            //    var vdiff = v1 - v2;
+                                            //    var len = vdiff.Length();
+                                            //    var v1len = Math.Max(v1.Length(), 1);
+                                            //    if (len > 1e-2f*v1len)
+                                            //    { }
+                                            //}
                                         }
 
 
-                                        //for (int f = 0; f < s1.NumFrames; f++)
-                                        //{
-                                        //    var v1 = ss1.EvaluateVector(f);
-                                        //    var v2 = ss2.EvaluateVector(f);
-                                        //    var vdiff = v1 - v2;
-                                        //    var len = vdiff.Length();
-                                        //    var v1len = Math.Max(v1.Length(), 1);
-                                        //    if (len > 1e-2f*v1len)
-                                        //    { }
-                                        //}
                                     }
 
 
@@ -3208,9 +3213,6 @@ namespace CodeWalker.GameFiles
 
 
                             }
-
-
-
 
                         }
                     }

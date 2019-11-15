@@ -121,6 +121,12 @@ namespace CodeWalker.GameFiles
             filename = fn + ".xml";
             return YndXml.GetXml(ynd);
         }
+        public static string GetXml(YcdFile ycd, out string filename)
+        {
+            var fn = (ycd?.RpfFileEntry?.Name) ?? "";
+            filename = fn + ".xml";
+            return YcdXml.GetXml(ycd);
+        }
 
 
 
@@ -1928,6 +1934,7 @@ namespace CodeWalker.GameFiles
         CacheFile = 4,
         AudioRel = 5,
         Ynd = 6,
+        Ycd = 7,
     }
 
 }
