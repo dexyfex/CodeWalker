@@ -197,7 +197,7 @@ namespace CodeWalker.GameFiles
                             // actually we should only export Static for 'real' channels, but as mapping for these is stupid, we'll just repeat the same value even if one channel is supposed to be static
                             if (seq.Sequences[i].Channels[0] is AnimChannelStaticFloat && seq.Sequences[i].Channels[1] is AnimChannelStaticFloat && seq.Sequences[i].Channels[2] is AnimChannelStaticFloat)
                             {
-                                var q = seq.Sequences[i].EvaluateQuaternion(0);
+                                var q = seq.Sequences[i].EvaluateQuaternionType7(0);
 
                                 return $"					{q[index]}\r\n";
                             }
@@ -205,7 +205,7 @@ namespace CodeWalker.GameFiles
                             StringBuilder db = new StringBuilder();
                             for (int f = 0; f < seq.NumFrames; f++)
                             {
-                                db.AppendLine($"					{seq.Sequences[i].EvaluateQuaternion(f)[index]}");
+                                db.AppendLine($"					{seq.Sequences[i].EvaluateQuaternionType7(f)[index]}");
                             }
 
                             return db.ToString();

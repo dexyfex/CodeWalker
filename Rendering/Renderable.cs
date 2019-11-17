@@ -536,8 +536,8 @@ namespace CodeWalker.Rendering
                         bone.AnimTranslation = v.XYZ();
                         break;
                     case 1: //bone orientation
-                        q0 = new Quaternion(aseq.EvaluateVector(f0));
-                        q1 = new Quaternion(aseq.EvaluateVector(f1));
+                        q0 = aseq.EvaluateQuaternion(f0);
+                        q1 = aseq.EvaluateQuaternion(f1);
                         q = interpolate ? Quaternion.Slerp(q0, q1, falpha) : q0;
                         bone.AnimRotation = q;
                         break;
@@ -548,8 +548,6 @@ namespace CodeWalker.Rendering
                         bone.AnimScale = v.XYZ();
                         break;
                     case 5://root motion vector
-                        if (bone.Tag != 0)
-                        { }
                         if (EnableRootMotion)
                         {
                             v0 = aseq.EvaluateVector(f0);
@@ -558,13 +556,14 @@ namespace CodeWalker.Rendering
                             bone.AnimTranslation += v.XYZ();
                         }
                         break;
-                    case 6://quaternion... root rotation?
-                        if (bone.Tag != 0)
-                        { }
-                        //q0 = new Quaternion(aseq.EvaluateVector(f0));
-                        //q1 = new Quaternion(aseq.EvaluateVector(f1));
-                        //q = interpolate ? Quaternion.Slerp(q0, q1, falpha) : q0;
-                        //bone.AnimRotation *= q;
+                    case 6://quaternion... root rotation
+                        if (EnableRootMotion)
+                        {
+                            q0 = aseq.EvaluateQuaternion(f0);
+                            q1 = aseq.EvaluateQuaternion(f1);
+                            q = interpolate ? Quaternion.Slerp(q0, q1, falpha) : q0;
+                            bone.AnimRotation = q * bone.AnimRotation;
+                        }
                         break;
                     case 7://vector3... (camera position?)
                         break;
