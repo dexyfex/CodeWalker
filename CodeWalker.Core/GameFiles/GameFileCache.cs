@@ -2990,7 +2990,7 @@ namespace CodeWalker.GameFiles
                             if (ycd1.ClipDictionary == null)
                             { continue; }
 
-                            var data1 = ycd1.Save();
+                            //var data1 = ycd1.Save();
 
                             var t = true;
                             if (t)//just here to test loading only
