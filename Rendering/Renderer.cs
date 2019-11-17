@@ -2656,7 +2656,7 @@ namespace CodeWalker.Rendering
 
                         if (isselected)
                         {
-                            if (SelectionGeometryDrawFlags.ContainsKey(dgeom))
+                            if (geom.disableRendering || SelectionGeometryDrawFlags.ContainsKey(dgeom))
                             { continue; } //filter out geometries in selected item that aren't flagged for drawing.
                         }
                         else

@@ -90,6 +90,7 @@ namespace CodeWalker.Peds
             public RpfFileEntry[] DrawableFiles { get; set; } = null;
             public RpfFileEntry[] TextureFiles { get; set; } = null;
             public ClipMapEntry AnimClip { get; set; } = null;
+            public string[] DrawableNames { get; set; } = new string[12];
             public Drawable[] Drawables { get; set; } = new Drawable[12];
             public Texture[] Textures { get; set; } = new Texture[12];
             public bool EnableRootMotion { get; set; } = false; //used to toggle whether or not to include root motion when playing animations
@@ -171,7 +172,7 @@ namespace CodeWalker.Peds
             //Renderer.individualcloudfrag = "Contrails";
             Renderer.rendermoon = false;
             Renderer.renderskeletons = false;
-            //Renderer.SelectionFlagsTestAll = true;
+            Renderer.SelectionFlagsTestAll = true;
             Renderer.swaphemisphere = true;
         }
 
@@ -522,37 +523,36 @@ namespace CodeWalker.Peds
 
 
 
-        private void AddDrawableTreeNode(DrawableBase drawable, uint hash, bool check)
+        private void AddDrawableTreeNode(DrawableBase drawable, string name, bool check)
         {
-            MetaHash mhash = new MetaHash(hash);
-
-            var dnode = ModelsTreeView.Nodes.Add(mhash.ToString());
+            var tnode = TexturesTreeView.Nodes.Add(name);
+            var dnode = ModelsTreeView.Nodes.Add(name);
             dnode.Tag = drawable;
             dnode.Checked = check;
 
-            AddDrawableModelsTreeNodes(drawable.DrawableModelsHigh, "High Detail", true, dnode);
-            AddDrawableModelsTreeNodes(drawable.DrawableModelsMedium, "Medium Detail", false, dnode);
-            AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", false, dnode);
-            AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", false, dnode);
-            //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false, dnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModelsHigh?.data_items, "High Detail", true, dnode, tnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModelsMedium?.data_items, "Medium Detail", false, dnode, tnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModelsLow?.data_items, "Low Detail", false, dnode, tnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow?.data_items, "Very Low Detail", false, dnode, tnode);
+            //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false, dnode, tnode);
 
         }
-        private void AddDrawableModelsTreeNodes(ResourcePointerList64<DrawableModel> models, string prefix, bool check, TreeNode parentDrawableNode = null)
+        private void AddDrawableModelsTreeNodes(DrawableModel[] models, string prefix, bool check, TreeNode parentDrawableNode = null, TreeNode parentTextureNode = null)
         {
             if (models == null) return;
-            if (models.data_items == null) return;
 
-            for (int mi = 0; mi < models.data_items.Length; mi++)
+            for (int mi = 0; mi < models.Length; mi++)
             {
                 var tnc = (parentDrawableNode != null) ? parentDrawableNode.Nodes : ModelsTreeView.Nodes;
 
-                var model = models.data_items[mi];
+                var model = models[mi];
                 string mprefix = prefix + " " + (mi + 1).ToString();
                 var mnode = tnc.Add(mprefix + " " + model.ToString());
                 mnode.Tag = model;
                 mnode.Checked = check;
 
-                var tmnode = TexturesTreeView.Nodes.Add(mprefix + " " + model.ToString());
+                var ttnc = (parentTextureNode != null) ? parentTextureNode.Nodes : TexturesTreeView.Nodes;
+                var tmnode = ttnc.Add(mprefix + " " + model.ToString());
                 tmnode.Tag = model;
 
                 if (!check)
@@ -705,50 +705,34 @@ namespace CodeWalker.Peds
 
 
 
-        private void UpdateModelsUI(DrawableBase drawable)
+        private void UpdateModelsUI()
         {
-            DetailsPropertyGrid.SelectedObject = drawable;
+            //TODO: change to go through each component and add/update/remove treeview item accordingly?
 
             DrawableDrawFlags.Clear();
             Renderer.SelectionModelDrawFlags.Clear();
             Renderer.SelectionGeometryDrawFlags.Clear();
             ModelsTreeView.Nodes.Clear();
-            ModelsTreeView.ShowRootLines = false;
+            ModelsTreeView.ShowRootLines = true;
             TexturesTreeView.Nodes.Clear();
-            if (drawable != null)
+            TexturesTreeView.ShowRootLines = true;
+
+            if (SelectedPed == null) return;
+
+
+            for (int i = 0; i < 12; i++)
             {
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsHigh, "High Detail", true);
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsMedium, "Medium Detail", false);
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", false);
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", false);
-                //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false);
+                var drawable = SelectedPed.Drawables[i];
+                var drawablename = SelectedPed.DrawableNames[i];
 
-
-                var fdrawable = drawable as FragDrawable;
-                if (fdrawable != null)
+                if (drawable != null)
                 {
-                    var plod1 = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1;
-                    if ((plod1 != null) && (plod1.Children?.data_items != null))
-                    {
-                        foreach (var child in plod1.Children.data_items)
-                        {
-                            var cdrwbl = child.Drawable1;
-                            if ((cdrwbl != null) && (cdrwbl.AllModels?.Length > 0))
-                            {
-                                if (cdrwbl.Owner is FragDrawable) continue; //it's a copied drawable... eg a wheel
-
-                                var dname = child.GroupNameHash.ToString();
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsHigh, dname + " - High Detail", true);
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsMedium, dname + " - Medium Detail", false);
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsLow, dname + " - Low Detail", false);
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsVeryLow, dname + " - Very Low Detail", false);
-                            }
-                        }
-                    }
+                    AddDrawableTreeNode(drawable, drawablename, true);
                 }
-
             }
+
         }
+
 
 
 
@@ -849,6 +833,8 @@ namespace CodeWalker.Peds
 
             DetailsPropertyGrid.SelectedObject = SelectedPed;
 
+            UpdateModelsUI();
+
         }
 
         public void LoadModel(YftFile yft, bool movecamera = true)
@@ -864,7 +850,7 @@ namespace CodeWalker.Peds
                 MoveCameraToView(dr.BoundingCenter, dr.BoundingSphereRadius);
             }
 
-            UpdateModelsUI(yft.Fragment.Drawable);
+            //UpdateModelsUI(yft.Fragment.Drawable);
         }
 
 
@@ -908,8 +894,10 @@ namespace CodeWalker.Peds
             var name = comboItem?.DrawableName;
             if (string.IsNullOrEmpty(name))
             {
+                SelectedPed.DrawableNames[index] = null;
                 SelectedPed.Drawables[index] = null;
                 SelectedPed.Textures[index] = null;
+                UpdateModelsUI();
                 return;
             }
 
@@ -966,6 +954,10 @@ namespace CodeWalker.Peds
 
             if (d != null) SelectedPed.Drawables[index] = d;
             if (t != null) SelectedPed.Textures[index] = t;
+
+            SelectedPed.DrawableNames[index] = name;
+
+            UpdateModelsUI();
         }
 
 
@@ -1300,7 +1292,14 @@ namespace CodeWalker.Peds
             }
 
 
-            Renderer.RenderDrawable(drawable, null, null, 0, td, texture, ac);
+            bool drawFlag = true;
+            if (!DrawableDrawFlags.TryGetValue(drawable, out drawFlag))
+            { drawFlag = true; }
+
+            if (drawFlag)
+            {
+                Renderer.RenderDrawable(drawable, null, null, 0, td, texture, ac);
+            }
 
 
         }
