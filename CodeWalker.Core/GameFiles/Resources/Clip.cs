@@ -251,15 +251,11 @@ namespace CodeWalker.GameFiles
             {
                 Animations.Animations = new ResourcePointerArray64<AnimationMapEntry>();
                 Animations.Animations.data_items = animmap;
-                Animations.AnimationsMapCapacity = (ushort)(animmap?.Length ?? 0);
-                Animations.AnimationsMapEntries = (ushort)(animmap?.Length ?? 0);
             }
             if (clipmap != null)
             {
                 Clips = new ResourcePointerArray64<ClipMapEntry>();
                 Clips.data_items = clipmap;
-                ClipsMapCapacity = (ushort)(clipmap?.Length ?? 0);
-                ClipsMapEntries = (ushort)(clipmap?.Length ?? 0);
             }
 
 
@@ -2915,7 +2911,6 @@ namespace CodeWalker.GameFiles
             YcdXml.StringTag(sb, indent, "Name", MetaXml.XmlEscape(Name));
             YcdXml.ValueTag(sb, indent, "Type", Type.ToString());
             YcdXml.ValueTag(sb, indent, "Unknown30", Unknown_30h.ToString());
-            YcdXml.ValueTag(sb, indent, "TagsUnknown10", Tags?.Unknown_10h.ToString() ?? "0");
             YcdXml.WriteItemArray(sb, Tags?.Tags?.data_items, indent, "Tags");
             YcdXml.WriteItemArray(sb, Properties?.Properties?.data_items, indent, "Properties");
         }
@@ -2926,7 +2921,6 @@ namespace CodeWalker.GameFiles
 
             var tags = XmlMeta.ReadItemArrayNullable<ClipTag>(node, "Tags");
             Tags = new ClipTagList();
-            Tags.Unknown_10h = Xml.GetChildUIntAttribute(node, "TagsUnknown10", "value");
             if (tags != null)
             {
                 Tags.Tags = new ResourcePointerArray64<ClipTag>();
@@ -4037,7 +4031,7 @@ namespace CodeWalker.GameFiles
         public ushort TagCount1 { get; set; }
         public ushort TagCount2 { get; set; }
         public uint Unknown_0Ch { get; set; } // 0x00000000
-        public uint Unknown_10h { get; set; } // 0, 1
+        public uint HasBlockTag { get; set; } // 0, 1
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000000
         public uint Unknown_1Ch { get; set; } // 0x00000000
@@ -4055,7 +4049,7 @@ namespace CodeWalker.GameFiles
             this.TagCount1 = reader.ReadUInt16();
             this.TagCount2 = reader.ReadUInt16();
             this.Unknown_0Ch = reader.ReadUInt32();
-            this.Unknown_10h = reader.ReadUInt32();
+            this.HasBlockTag = reader.ReadUInt32();
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
@@ -4070,15 +4064,6 @@ namespace CodeWalker.GameFiles
 
             if (TagCount1 != TagCount2)
             { }
-
-            switch (Unknown_10h)
-            {
-                case 0:
-                case 1:
-                    break;
-                default:
-                    break;
-            }
         }
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -4088,12 +4073,14 @@ namespace CodeWalker.GameFiles
             this.TagCount1 = (ushort)(this.Tags != null ? this.Tags.Count : 0);
             this.TagCount2 = this.TagCount1;
 
+            BuildAllTags(); //just in case? updates HasBlockTag
+
             // write structure data
             writer.Write(this.TagsPointer);
             writer.Write(this.TagCount1);
             writer.Write(this.TagCount2);
             writer.Write(this.Unknown_0Ch);
-            writer.Write(this.Unknown_10h);
+            writer.Write(this.HasBlockTag);
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
@@ -4128,6 +4115,20 @@ namespace CodeWalker.GameFiles
                 }
                 AllTags = tl.ToArray();
             }
+
+
+            uint hasBlock = 0;
+            if (AllTags != null)
+            {
+                foreach (var tag in AllTags)
+                {
+                    if (tag.NameHash == (uint)MetaName.block)
+                    { hasBlock = 1; break; }
+                }
+            }
+            if (HasBlockTag != hasBlock)
+            { }
+            HasBlockTag = hasBlock;
 
         }
 
