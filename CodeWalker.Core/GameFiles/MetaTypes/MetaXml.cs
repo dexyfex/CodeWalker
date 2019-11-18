@@ -56,6 +56,11 @@ namespace CodeWalker.GameFiles
                 YndFile ynd = RpfFile.GetFile<YndFile>(e, data);
                 return GetXml(ynd, out filename);
             }
+            else if (fnl.EndsWith(".ycd"))
+            {
+                YcdFile ycd = RpfFile.GetFile<YcdFile>(e, data);
+                return GetXml(ycd, out filename);
+            }
             filename = fn;
             return string.Empty;
         }
