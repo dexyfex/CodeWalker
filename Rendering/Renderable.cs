@@ -456,11 +456,6 @@ namespace CodeWalker.Rendering
         private void UpdateAnim(ClipMapEntry cme)
         {
 
-            if (cme.Next != null)
-            {
-                UpdateAnim(cme.Next);
-            }
-
             var clipanim = cme.Clip as ClipAnimation;
             if (clipanim?.Animation != null)
             {
@@ -632,10 +627,6 @@ namespace CodeWalker.Rendering
         }
         private void UpdateAnimUV(ClipMapEntry cme, RenderableGeometry rgeom = null)
         {
-            if (cme.Next != null)
-            {
-                UpdateAnimUV(cme.Next, rgeom);
-            }
 
             var clipanim = cme.Clip as ClipAnimation;
             if (clipanim?.Animation != null)
