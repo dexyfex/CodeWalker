@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using WeifenLuo.WinFormsUI.Docking;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace CodeWalker
 {
@@ -48,6 +49,7 @@ namespace CodeWalker
 
         public ThemeBase Theme { get; private set; }
 
+        public CommonOpenFileDialog FolderBrowserDialog = new CommonOpenFileDialog("Select a Folder") { IsFolderPicker = true, Multiselect = false, EnsurePathExists = true };
 
         public ExploreForm()
         {
@@ -1928,8 +1930,8 @@ namespace CodeWalker
             }
             else
             {
-                if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return;
-                string folderpath = FolderBrowserDialog.SelectedPath;
+                if (FolderBrowserDialog.ShowDialog() != CommonFileDialogResult.Ok) return;
+                string folderpath = FolderBrowserDialog.FileName;
                 if (!folderpath.EndsWith("\\")) folderpath += "\\";
 
                 StringBuilder errors = new StringBuilder();
@@ -2011,8 +2013,8 @@ namespace CodeWalker
             }
             else
             {
-                if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return;
-                string folderpath = FolderBrowserDialog.SelectedPath;
+                if (FolderBrowserDialog.ShowDialog() != CommonFileDialogResult.Ok) return;
+                string folderpath = FolderBrowserDialog.FileName;
                 if (!folderpath.EndsWith("\\")) folderpath += "\\";
 
                 StringBuilder errors = new StringBuilder();
@@ -2083,8 +2085,8 @@ namespace CodeWalker
             }
             else
             {
-                if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return;
-                string folderpath = FolderBrowserDialog.SelectedPath;
+                if (FolderBrowserDialog.ShowDialog() != CommonFileDialogResult.Ok) return;
+                string folderpath = FolderBrowserDialog.FileName;
                 if (!folderpath.EndsWith("\\")) folderpath += "\\";
 
                 StringBuilder errors = new StringBuilder();
@@ -2124,8 +2126,8 @@ namespace CodeWalker
         private void ExtractAll()
         {
             if (CurrentFiles == null) return;
-            if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return;
-            string folderpath = FolderBrowserDialog.SelectedPath;
+            if (FolderBrowserDialog.ShowDialog() != CommonFileDialogResult.Ok) return;
+            string folderpath = FolderBrowserDialog.FileName;
             if (!folderpath.EndsWith("\\")) folderpath += "\\";
 
             StringBuilder errors = new StringBuilder();
