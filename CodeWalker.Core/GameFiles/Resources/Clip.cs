@@ -210,6 +210,77 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public void UpdateUsageCounts()
+        {
+
+            var usages = new Dictionary<MetaHash, uint>();
+
+            void addUsage(MetaHash h)
+            {
+                uint u = 0;
+                usages.TryGetValue(h, out u);
+                u++;
+                usages[h] = u;
+            }
+
+            if ((Animations != null) && (Animations.Animations != null) && (Animations.Animations.data_items != null))
+            {
+                foreach (var ame in Animations.Animations.data_items)
+                {
+                    if (ame != null)
+                    {
+                        addUsage(ame.Hash);
+                        var nxt = ame.NextEntry;
+                        while (nxt != null)
+                        {
+                            addUsage(nxt.Hash);
+                            nxt = nxt.NextEntry;
+                        }
+                    }
+                }
+            }
+
+            foreach (var cme in ClipMap.Values)
+            {
+                var ca = cme.Clip as ClipAnimation;
+                var cal = cme.Clip as ClipAnimationList;
+                if (ca?.Animation != null)
+                {
+                    addUsage(ca.Animation.AnimationHash);
+                }
+                if (cal?.Animations != null)
+                {
+                    foreach (var cae in cal.Animations)
+                    {
+                        if (cae?.Animation != null)
+                        {
+                            addUsage(cae.Animation.AnimationHash);
+                        }
+                    }
+                }
+            }
+
+
+
+
+            foreach (var ame in AnimMap.Values)
+            {
+                if (ame.Animation != null)
+                {
+                    uint u = 0;
+                    if (usages.TryGetValue(ame.Animation.AnimationHash, out u))
+                    {
+                        if (ame.Animation.UsageCount != u)
+                        { }
+                        ame.Animation.UsageCount = u;
+                    }
+                    else
+                    { }
+                }
+            }
+
+
+        }
 
 
         public void WriteXml(StringBuilder sb, int indent)
@@ -338,7 +409,7 @@ namespace CodeWalker.GameFiles
 
 
             BuildMaps();
-
+            UpdateUsageCounts();
         }
 
     }
@@ -526,20 +597,21 @@ namespace CodeWalker.GameFiles
         // structure data
         public uint VFT { get; set; }
         public uint Unknown_04h { get; set; } = 1; // 0x00000001
-        public uint Unknown_08h { get; set; } // 0x00000000
-        public uint Unknown_0Ch { get; set; } // 0x00000000
-        public ushort Unknown_10h { get; set; }
-        public ushort Unknown_12h { get; set; } // 0x0000
+        public uint Unused_08h { get; set; } // 0x00000000
+        public uint Unused_0Ch { get; set; } // 0x00000000
+        public byte Unknown_10h { get; set; }
+        public byte Unknown_11h { get; set; } = 1; // 0x01
+        public ushort Unused_12h { get; set; } // 0x0000
         public ushort Frames { get; set; }
         public ushort SequenceFrameLimit { get; set; }
         public float Duration { get; set; }
         public MetaHash Unknown_1Ch { get; set; }
-        public uint Unknown_20h { get; set; } // 0x00000000
-        public uint Unknown_24h { get; set; } // 0x00000000
-        public uint Unknown_28h { get; set; } // 0x00000000
-        public uint Unknown_2Ch { get; set; } // 0x00000000
-        public uint Unknown_30h { get; set; } // 0x00000000
-        public uint Unknown_34h { get; set; } // 0x00000000
+        public uint Unused_20h { get; set; } // 0x00000000
+        public uint Unused_24h { get; set; } // 0x00000000
+        public uint Unused_28h { get; set; } // 0x00000000
+        public uint Unused_2Ch { get; set; } // 0x00000000
+        public uint Unused_30h { get; set; } // 0x00000000
+        public uint Unused_34h { get; set; } // 0x00000000
         public uint MaxSeqBlockLength { get; set; }
         public uint UsageCount { get; set; }
         public ResourcePointerList64<Sequence> Sequences { get; set; }
@@ -554,40 +626,101 @@ namespace CodeWalker.GameFiles
             // read structure data
             this.VFT = reader.ReadUInt32();
             this.Unknown_04h = reader.ReadUInt32();  //1     1       1       1
-            this.Unknown_08h = reader.ReadUInt32();  //0     0       0       0
-            this.Unknown_0Ch = reader.ReadUInt32();  //0     0       0       0
-            this.Unknown_10h = reader.ReadUInt16(); //257   257     257     257     flags?
-            this.Unknown_12h = reader.ReadUInt16(); //0     0       0       0
+            this.Unused_08h = reader.ReadUInt32();  //0     0       0       0
+            this.Unused_0Ch = reader.ReadUInt32();  //0     0       0       0
+            this.Unknown_10h = reader.ReadByte();   //1     1       1       1     
+            this.Unknown_11h = reader.ReadByte();   //1
+            this.Unused_12h = reader.ReadUInt16(); //0     0       0       0
             this.Frames = reader.ReadUInt16(); //221   17      151     201     frames
-            this.SequenceFrameLimit = reader.ReadUInt16(); //223   31      159     207     sequence limit?
+            this.SequenceFrameLimit = reader.ReadUInt16(); //223   31      159     207     sequence limit
             this.Duration = reader.ReadSingle(); //7.34  0.53    5.0     6.66    duration
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt32(); //0     0       0       0
-            this.Unknown_24h = reader.ReadUInt32(); //0     0       0       0
-            this.Unknown_28h = reader.ReadUInt32(); //0     0       0       0
-            this.Unknown_2Ch = reader.ReadUInt32(); //0     0       0       0
-            this.Unknown_30h = reader.ReadUInt32(); //0     0       0       0
-            this.Unknown_34h = reader.ReadUInt32(); //0     0       0       0
+            this.Unused_20h = reader.ReadUInt32(); //0     0       0       0
+            this.Unused_24h = reader.ReadUInt32(); //0     0       0       0
+            this.Unused_28h = reader.ReadUInt32(); //0     0       0       0
+            this.Unused_2Ch = reader.ReadUInt32(); //0     0       0       0
+            this.Unused_30h = reader.ReadUInt32(); //0     0       0       0
+            this.Unused_34h = reader.ReadUInt32(); //0     0       0       0
             this.MaxSeqBlockLength = reader.ReadUInt32(); //314   174     1238    390     maximum sequence block size
-            this.UsageCount = reader.ReadUInt32(); //2     2       2       2       material/type?
+            this.UsageCount = reader.ReadUInt32(); //2     2       2       2      
             this.Sequences = reader.ReadBlock<ResourcePointerList64<Sequence>>();
             this.BoneIds = reader.ReadBlock<ResourceSimpleList64_s<AnimationBoneId>>();
 
             AssignSequenceBoneIds();
 
 
-            switch (Unknown_10h)
-            {
-                case 256://0
-                case 257://1
-                case 264://8
-                case 272://16
-                case 280://24
-                    break;
-                default: break;
-            }
-            if (Unknown_12h != 0)
-            { }
+
+            //bool hasUVs = false;
+            //if (BoneIds?.data_items != null)
+            //{
+            //    foreach (var boneid in BoneIds.data_items)
+            //    {
+            //        if (boneid.Track == 17)//UV0
+            //        { hasUVs = true; }
+            //        if (boneid.Track == 18)//UV1
+            //        { hasUVs = true; }
+            //    }
+            //}
+
+            //bool hasRootMotion = false;  // (Unknown_10h & 16) == hasRootMotion
+            //if (Sequences?.data_items != null)
+            //{
+            //    foreach (var seq in Sequences.data_items)
+            //    {
+            //        if (seq == null) continue;
+            //        if (seq.RootMotionRefCounts != 0) { hasRootMotion = true; }
+            //    }
+            //}
+
+            //var b0 = (Unknown_1Ch) & 0xFF;
+            //var b1 = (Unknown_1Ch >> 8) & 0xFF;
+            //var b2 = (Unknown_1Ch >> 16) & 0xFF;
+            //var b3 = (Unknown_1Ch >> 24) & 0xFF;
+            //if (hasUVs)
+            //{
+            //    if (Unknown_1Ch != 0x6B002400)
+            //    { }
+            //}
+            //else
+            //{
+            //}
+
+
+            //switch (Unknown_10h)
+            //{
+            //    case 0:
+            //        if (hasRootMotion) { }
+            //        break;
+            //    case 1://is prop?
+            //        if (hasRootMotion) { }
+            //        break;
+            //    case 8:
+            //        if (hasRootMotion) { }
+            //        break;
+            //    case 16:
+            //        if (!hasRootMotion) { }
+            //        break;
+            //    case 24:
+            //        if (!hasRootMotion) { }
+            //        break;
+            //    default: break;
+            //}
+
+
+
+
+
+
+
+            //if (Unknown_04h != 1)
+            //{ }
+            //if (Unknown_11h != 1)
+            //{ }
+
+
+
+
+
         }
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -597,20 +730,21 @@ namespace CodeWalker.GameFiles
             // write structure data
             writer.Write(this.VFT);
             writer.Write(this.Unknown_04h);
-            writer.Write(this.Unknown_08h);
-            writer.Write(this.Unknown_0Ch);
+            writer.Write(this.Unused_08h);
+            writer.Write(this.Unused_0Ch);
             writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_12h);
+            writer.Write(this.Unknown_11h);
+            writer.Write(this.Unused_12h);
             writer.Write(this.Frames);
             writer.Write(this.SequenceFrameLimit);
             writer.Write(this.Duration);
             writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_2Ch);
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_34h);
+            writer.Write(this.Unused_20h);
+            writer.Write(this.Unused_24h);
+            writer.Write(this.Unused_28h);
+            writer.Write(this.Unused_2Ch);
+            writer.Write(this.Unused_30h);
+            writer.Write(this.Unused_34h);
             writer.Write(this.MaxSeqBlockLength);
             writer.Write(this.UsageCount);
             writer.WriteBlock(this.Sequences);
@@ -682,19 +816,17 @@ namespace CodeWalker.GameFiles
             YcdXml.ValueTag(sb, indent, "SequenceFrameLimit", SequenceFrameLimit.ToString());//sequences should be transparent to this!
             YcdXml.ValueTag(sb, indent, "Duration", FloatUtil.ToString(Duration));
             YcdXml.StringTag(sb, indent, "Unknown1C", YcdXml.HashString(Unknown_1Ch));
-            YcdXml.ValueTag(sb, indent, "UsageCount", UsageCount.ToString());//is this needed?
             YcdXml.WriteItemArray(sb, BoneIds?.data_items, indent, "BoneIds");
             YcdXml.WriteItemArray(sb, Sequences?.data_items, indent, "Sequences");
         }
         public void ReadXml(XmlNode node)
         {
             AnimationHash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Hash"));
-            Unknown_10h = (ushort)Xml.GetChildUIntAttribute(node, "Unknown10", "value");
+            Unknown_10h = (byte)Xml.GetChildUIntAttribute(node, "Unknown10", "value");
             Frames = (ushort)Xml.GetChildUIntAttribute(node, "FrameCount", "value");
             SequenceFrameLimit = (ushort)Xml.GetChildUIntAttribute(node, "SequenceFrameLimit", "value");
             Duration = Xml.GetChildFloatAttribute(node, "Duration", "value");
             Unknown_1Ch = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Unknown1C"));
-            UsageCount = Xml.GetChildUIntAttribute(node, "UsageCount", "value");
 
             BoneIds = new ResourceSimpleList64_s<AnimationBoneId>();
             BoneIds.data_items = XmlMeta.ReadItemArray<AnimationBoneId>(node, "BoneIds");
@@ -2119,7 +2251,7 @@ namespace CodeWalker.GameFiles
         public uint DataLength { get; set; }
         public uint Unused_08h { get; set; } // 0x00000000
         public uint FrameOffset { get; set; } //offset to frame data items / bytes
-        public uint TotalLength { get; set; } //total block length, usually == BlockLength
+        public uint RootMotionRefsOffset { get; set; } //offset to root motion items (relative to start of the chunk, -32), ==BlockLength when no root motion
         public ushort Unused_14h { get; set; } //0x0000
         public ushort NumFrames { get; set; } // count of frame data items
         public ushort FrameLength { get; set; } //stride of frame data item
@@ -2177,7 +2309,7 @@ namespace CodeWalker.GameFiles
             this.DataLength = reader.ReadUInt32();              //282        142        1206       358
             this.Unused_08h = reader.ReadUInt32();              //0          0          0          0
             this.FrameOffset = reader.ReadUInt32();             //224 (E0)   32 (20)    536 (218)  300    
-            this.TotalLength = reader.ReadUInt32();             //314        174        1238       390 (=Length)
+            this.RootMotionRefsOffset = reader.ReadUInt32();             //314        174        1238       390 (=Length)
             this.Unused_14h = reader.ReadUInt16();              //0          0          0          0
             this.NumFrames = reader.ReadUInt16();               //221 (DD)   17 (11)    151 (97)   201
             this.FrameLength = reader.ReadUInt16();             //0          4          4          0      
@@ -2201,7 +2333,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.DataLength);
             writer.Write(this.Unused_08h);
             writer.Write(this.FrameOffset);
-            writer.Write(this.TotalLength);
+            writer.Write(this.RootMotionRefsOffset);
             writer.Write(this.Unused_14h);
             writer.Write(this.NumFrames);
             writer.Write(this.FrameLength);
@@ -2475,12 +2607,12 @@ namespace CodeWalker.GameFiles
             Data = data;
             DataLength = (uint)data.Length;
             FrameOffset = (uint)mainData.Length;
-            TotalLength = (uint)BlockLength;
             FrameLength = writer.FrameLength;
             ChunkSize = (writer.ChunkSize > 0) ? writer.ChunkSize : (byte)255;
             QuantizeFloatValueBits = GetQuantizeFloatValueBits();
             IndirectQuantizeFloatNumInts = GetIndirectQuantizeFloatNumInts();
             RootMotionRefCounts = (byte)((((uint)(RootPositionRefs?.Length??0))<<4) | ((uint)(RootRotationRefs?.Length ?? 0)));
+            RootMotionRefsOffset = (uint)(BlockLength - ((RootPositionRefCount + RootRotationRefCount) * 6));
         }
 
 
