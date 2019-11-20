@@ -178,22 +178,8 @@ namespace CodeWalker.GameFiles
             {
                 var clip = cme.Clip;
                 if (clip == null) continue;
-                if (string.IsNullOrEmpty(clip.Name)) continue;
-                string name = clip.Name.Replace('\\', '/');
-                var slidx = name.LastIndexOf('/');
-                if ((slidx >= 0) && (slidx < name.Length - 1))
-                {
-                    name = name.Substring(slidx + 1);
-                }
-                var didx = name.LastIndexOf('.');
-                if ((didx > 0) && (didx < name.Length))
-                {
-                    name = name.Substring(0, didx);
-                }
-                clip.ShortName = name;
-                name = name.ToLowerInvariant();
-                JenkIndex.Ensure(name);
 
+                var name = clip.ShortName; //just to make sure ShortName is generated and in JenkIndex...
 
                 //if (name.EndsWith("_uv_0")) //hash for these entries match string with this removed, +1
                 //{
@@ -203,11 +189,11 @@ namespace CodeWalker.GameFiles
                 //}
 
             }
-            foreach (var ame in AnimMap.Values)
-            {
-                var anim = ame.Animation;
-                if (anim == null) continue;
-            }
+            //foreach (var ame in AnimMap.Values)
+            //{
+            //    var anim = ame.Animation;
+            //    if (anim == null) continue;
+            //}
         }
 
         public void UpdateUsageCounts()
@@ -246,7 +232,7 @@ namespace CodeWalker.GameFiles
                 var cal = cme.Clip as ClipAnimationList;
                 if (ca?.Animation != null)
                 {
-                    addUsage(ca.Animation.AnimationHash);
+                    addUsage(ca.Animation.Hash);
                 }
                 if (cal?.Animations != null)
                 {
@@ -254,7 +240,7 @@ namespace CodeWalker.GameFiles
                     {
                         if (cae?.Animation != null)
                         {
-                            addUsage(cae.Animation.AnimationHash);
+                            addUsage(cae.Animation.Hash);
                         }
                     }
                 }
@@ -268,7 +254,7 @@ namespace CodeWalker.GameFiles
                 if (ame.Animation != null)
                 {
                     uint u = 0;
-                    if (usages.TryGetValue(ame.Animation.AnimationHash, out u))
+                    if (usages.TryGetValue(ame.Animation.Hash, out u))
                     {
                         if (ame.Animation.UsageCount != u)
                         { }
@@ -285,15 +271,6 @@ namespace CodeWalker.GameFiles
 
         public void WriteXml(StringBuilder sb, int indent)
         {
-            var anims = new List<Animation>();
-            if (AnimMap != null)
-            {
-                foreach (var ame in AnimMap.Values)
-                {
-                    if (ame?.Animation == null) continue;
-                    anims.Add(ame.Animation);
-                }
-            }
             var clips = new List<ClipBase>();
             if (ClipMap != null)
             {
@@ -303,35 +280,24 @@ namespace CodeWalker.GameFiles
                     clips.Add(cme.Clip);
                 }
             }
+            var anims = new List<Animation>();
+            if (AnimMap != null)
+            {
+                foreach (var ame in AnimMap.Values)
+                {
+                    if (ame?.Animation == null) continue;
+                    anims.Add(ame.Animation);
+                }
+            }
 
-            YcdXml.WriteItemArray(sb, Clips?.data_items, indent, "ClipMap");
             YcdXml.WriteItemArray(sb, clips.ToArray(), indent, "Clips");
-            YcdXml.WriteItemArray(sb, Animations?.Animations?.data_items, indent, "AnimationMap");
             YcdXml.WriteItemArray(sb, anims.ToArray(), indent, "Animations");
 
         }
         public void ReadXml(XmlNode node)
         {
 
-
-            var animmap = XmlMeta.ReadItemArrayNullable<AnimationMapEntry>(node, "AnimationMap");
-            var clipmap = XmlMeta.ReadItemArrayNullable<ClipMapEntry>(node, "ClipMap");
-
-            Animations = new AnimationMap();
-            if (animmap != null)
-            {
-                Animations.Animations = new ResourcePointerArray64<AnimationMapEntry>();
-                Animations.Animations.data_items = animmap;
-            }
-            if (clipmap != null)
-            {
-                Clips = new ResourcePointerArray64<ClipMapEntry>();
-                Clips.data_items = clipmap;
-            }
-
-
-            var animDict = new Dictionary<MetaHash, Animation>();
-            var clipDict = new Dictionary<string, ClipBase>();
+            var clipList = new List<ClipMapEntry>();
             var clipsNode = node.SelectSingleNode("Clips");
             if (clipsNode != null)
             {
@@ -343,73 +309,169 @@ namespace CodeWalker.GameFiles
                         var type = Xml.GetEnumValue<ClipType>(Xml.GetChildStringAttribute(inode, "Type", "value"));
                         var c = ClipBase.ConstructClip(type);
                         c.ReadXml(inode);
-                        clipDict[c.Name?.ToLowerInvariant()] = c;
+
+                        var cme = new ClipMapEntry();
+                        cme.Hash = c.Hash;
+                        cme.Clip = c;
+                        clipList.Add(cme);
                     }
                 }
             }
+
+            var animDict = new Dictionary<MetaHash, Animation>();
+            var animList = new List<AnimationMapEntry>();
             var anims = XmlMeta.ReadItemArrayNullable<Animation>(node, "Animations");
             if (anims != null)
             {
                 foreach (var anim in anims)
                 {
-                    animDict[anim.AnimationHash] = anim;
+                    animDict[anim.Hash] = anim;
+
+                    var ame = new AnimationMapEntry();
+                    ame.Hash = anim.Hash;
+                    ame.Animation = anim;
+                    animList.Add(ame);
                 }
             }
 
-
-            if (animmap != null)
+            foreach (var cme in clipList)
             {
-                foreach (var anim in animmap)
+                var cb = cme?.Clip;
+                var clipanim = cb as ClipAnimation;
+                if (clipanim != null)
                 {
-                    var a = anim;
-                    while (a != null)
+                    animDict.TryGetValue(clipanim.AnimationHash, out Animation a);
+                    clipanim.Animation = a;
+                }
+                var clipanimlist = cb as ClipAnimationList;
+                if (clipanimlist?.Animations?.Data != null)
+                {
+                    foreach (var cae in clipanimlist.Animations.Data)
                     {
-                        Animation aa = null;
-                        animDict.TryGetValue(a.Hash, out aa);
-                        a.Animation = aa;
-                        if (aa == null)
-                        { }
-                        a = a.NextEntry;
+                        animDict.TryGetValue(cae.AnimationHash, out Animation a);
+                        cae.Animation = a;
                     }
                 }
             }
-            if (clipmap != null)
-            {
-                foreach (var clip in clipmap)
-                {
-                    var c = clip;
-                    while (c != null)
-                    {
-                        ClipBase cb = null;
-                        clipDict.TryGetValue(c.ClipName?.ToLowerInvariant(), out cb);
-                        c.Clip = cb;
-                        if (cb == null)
-                        { }
 
-                        var clipanim = cb as ClipAnimation;
-                        if (clipanim != null)
-                        {
-                            animDict.TryGetValue(clipanim.AnimationHash, out Animation a);
-                            clipanim.Animation = a;
-                        }
-                        var clipanimlist = cb as ClipAnimationList;
-                        if (clipanimlist?.Animations?.Data != null)
-                        {
-                            foreach (var cae in clipanimlist.Animations.Data)
-                            {
-                                animDict.TryGetValue(cae.AnimationHash, out Animation a);
-                                cae.Animation = a;
-                            }
-                        }
+            CreateAnimationsMap(animList.ToArray());
+            CreateClipsMap(clipList.ToArray());
 
-                        c = c.Next;
-                    }
-                }
-            }
 
 
             BuildMaps();
             UpdateUsageCounts();
+        }
+
+
+
+
+        public void CreateClipsMap(ClipMapEntry[] clips)
+        {
+            var numClipBuckets = GetNumHashBuckets(clips?.Length ?? 0);
+            var clipBuckets = new List<ClipMapEntry>[numClipBuckets];
+            if (clips != null)
+            {
+                foreach (var cme in clips)
+                {
+                    var b = cme.Hash % numClipBuckets;
+                    var bucket = clipBuckets[b];
+                    if (bucket == null)
+                    {
+                        bucket = new List<ClipMapEntry>();
+                        clipBuckets[b] = bucket;
+                    }
+                    bucket.Add(cme);
+                }
+            }
+
+            var newClips = new List<ClipMapEntry>();
+            foreach (var b in clipBuckets)
+            {
+                if ((b?.Count ?? 0) == 0) newClips.Add(null);
+                else
+                {
+                    newClips.Add(b[0]);
+                    var p = b[0];
+                    for (int i = 1; i < b.Count; i++)
+                    {
+                        var c = b[i];
+                        c.Next = null;
+                        p.Next = c;
+                        p = c;
+                    }
+                }
+            }
+
+            Clips = new ResourcePointerArray64<ClipMapEntry>();
+            Clips.data_items = newClips.ToArray();
+
+        }
+        public void CreateAnimationsMap(AnimationMapEntry[] anims)
+        {
+            var numAnimBuckets = GetNumHashBuckets(anims?.Length ?? 0);
+            var animBuckets = new List<AnimationMapEntry>[numAnimBuckets];
+            if (anims != null)
+            {
+                foreach (var ame in anims)
+                {
+                    var b = ame.Hash % numAnimBuckets;
+                    var bucket = animBuckets[b];
+                    if (bucket == null)
+                    {
+                        bucket = new List<AnimationMapEntry>();
+                        animBuckets[b] = bucket;
+                    }
+                    bucket.Add(ame);
+                }
+            }
+
+            var newAnims = new List<AnimationMapEntry>();
+            foreach (var b in animBuckets)
+            {
+                if ((b?.Count ?? 0) == 0) newAnims.Add(null);
+                else
+                {
+                    newAnims.Add(b[0]);
+                    var p = b[0];
+                    for (int i = 1; i < b.Count; i++)
+                    {
+                        var c = b[i];
+                        c.NextEntry = null;
+                        p.NextEntry = c;
+                        p = c;
+                    }
+                }
+            }
+
+            Animations = new AnimationMap();
+            Animations.Animations = new ResourcePointerArray64<AnimationMapEntry>();
+            Animations.Animations.data_items = newAnims.ToArray();
+
+
+
+        }
+
+        public static uint GetNumHashBuckets(int nHashes)
+        {
+            if (nHashes < 11) return 11;
+            else if (nHashes < 29) return 29;
+            else if (nHashes < 59) return 59;
+            else if (nHashes < 107) return 107;
+            else if (nHashes < 191) return 191;
+            else if (nHashes < 331) return 331;
+            else if (nHashes < 563) return 563;
+            else if (nHashes < 953) return 953;
+            else if (nHashes < 1609) return 1609;
+            else if (nHashes < 2729) return 2729;
+            else if (nHashes < 4621) return 4621;
+            else if (nHashes < 7841) return 7841;
+            else if (nHashes < 13297) return 13297;
+            else if (nHashes < 22571) return 22571;
+            else if (nHashes < 38351) return 38351;
+            else if (nHashes < 65167) return 65167;
+            else /*if (nHashes < 65521)*/ return 65521;
+            //return ((uint)nHashes / 4) * 4 + 3;
         }
 
     }
@@ -491,7 +553,7 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimationMapEntry : ResourceSystemBlock, IMetaXmlItem
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimationMapEntry : ResourceSystemBlock
     {
         public override long BlockLength
         {
@@ -530,9 +592,9 @@ namespace CodeWalker.GameFiles
 
             if (Animation != null)
             {
-                if (Animation.AnimationHash != 0)
+                if (Animation.Hash != 0)
                 { }
-                Animation.AnimationHash = Hash;
+                Animation.Hash = Hash;
             }
         }
 
@@ -564,28 +626,6 @@ namespace CodeWalker.GameFiles
             return Hash.ToString();
         }
 
-
-        public void WriteXml(StringBuilder sb, int indent)
-        {
-            YcdXml.StringTag(sb, indent, "Hash", YcdXml.HashString(Hash));
-            if (NextEntry != null)
-            {
-                YcdXml.OpenTag(sb, indent, "Next");
-                NextEntry.WriteXml(sb, indent + 1);
-                YcdXml.CloseTag(sb, indent, "Next");
-            }
-        }
-        public void ReadXml(XmlNode node)
-        {
-            Hash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Hash"));
-            var nextnode = node.SelectSingleNode("Next");
-            if (nextnode != null)
-            {
-                var next = new AnimationMapEntry();
-                next.ReadXml(nextnode);
-                NextEntry = next;
-            }
-        }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Animation : ResourceSystemBlock, IMetaXmlItem
     {
@@ -619,7 +659,7 @@ namespace CodeWalker.GameFiles
 
         public YcdFile Ycd { get; set; }
 
-        public MetaHash AnimationHash { get; set; } //updated by CW, for use when reading/writing files
+        public MetaHash Hash { get; set; } //updated by CW, for use when reading/writing files
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -810,7 +850,7 @@ namespace CodeWalker.GameFiles
 
         public void WriteXml(StringBuilder sb, int indent)
         {
-            YcdXml.StringTag(sb, indent, "Hash", YcdXml.HashString(AnimationHash));
+            YcdXml.StringTag(sb, indent, "Hash", YcdXml.HashString(Hash));
             YcdXml.ValueTag(sb, indent, "Unknown10", Unknown_10h.ToString());
             YcdXml.ValueTag(sb, indent, "FrameCount", Frames.ToString());
             YcdXml.ValueTag(sb, indent, "SequenceFrameLimit", SequenceFrameLimit.ToString());//sequences should be transparent to this!
@@ -821,7 +861,7 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node)
         {
-            AnimationHash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Hash"));
+            Hash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Hash"));
             Unknown_10h = (byte)Xml.GetChildUIntAttribute(node, "Unknown10", "value");
             Frames = (ushort)Xml.GetChildUIntAttribute(node, "FrameCount", "value");
             SequenceFrameLimit = (ushort)Xml.GetChildUIntAttribute(node, "SequenceFrameLimit", "value");
@@ -1660,7 +1700,7 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public int QuatIndex { get; internal set; }
+        public int QuatIndex { get; set; }
 
         public AnimChannelCachedQuaternion(AnimChannelType type)
         {
@@ -2778,7 +2818,7 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipMapEntry : ResourceSystemBlock, IMetaXmlItem
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipMapEntry : ResourceSystemBlock
     {
         public override long BlockLength
         {
@@ -2796,8 +2836,6 @@ namespace CodeWalker.GameFiles
         // reference data
         public ClipBase Clip { get; set; }
         public ClipMapEntry Next { get; set; }
-
-        public string ClipName { get; set; } //used when reading XML.
 
         public bool EnableRootMotion { get; set; } = false; //used by CW to toggle whether or not to include root motion when playing animations
 
@@ -2819,6 +2857,14 @@ namespace CodeWalker.GameFiles
             this.Next = reader.ReadBlockAt<ClipMapEntry>(
                 this.NextPointer // offset
             );
+
+
+            if (Clip != null)
+            {
+                Clip.Hash = Hash;
+            }
+            else
+            { }
         }
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -2849,33 +2895,6 @@ namespace CodeWalker.GameFiles
             return Clip?.Name ?? Hash.ToString();
         }
 
-
-
-        public void WriteXml(StringBuilder sb, int indent)
-        {
-            YcdXml.StringTag(sb, indent, "Hash", YcdXml.HashString(Hash));
-            YcdXml.StringTag(sb, indent, "ClipName", MetaXml.XmlEscape(Clip?.Name));
-            
-            if (Next != null)
-            {
-                YcdXml.OpenTag(sb, indent, "Next");
-                Next.WriteXml(sb, indent + 1);
-                YcdXml.CloseTag(sb, indent, "Next");
-            }
-        }
-        public void ReadXml(XmlNode node)
-        {
-            Hash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Hash"));
-            ClipName = Xml.GetChildInnerText(node, "ClipName");
-
-            var nextnode = node.SelectSingleNode("Next");
-            if (nextnode != null)
-            {
-                var next = new ClipMapEntry();
-                next.ReadXml(nextnode);
-                Next = next;
-            }
-        }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipBase : ResourceSystemBlock, IResourceXXSystemBlock, IMetaXmlItem
     {
@@ -2911,7 +2930,33 @@ namespace CodeWalker.GameFiles
         private string_r NameBlock = null;
 
         public YcdFile Ycd { get; set; }
-        public string ShortName { get; set; }
+        public string ShortName
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_ShortName)) return _ShortName;
+                if (string.IsNullOrEmpty(Name)) return null;
+
+                string name = Name.Replace('\\', '/');
+                var slidx = name.LastIndexOf('/');
+                if ((slidx >= 0) && (slidx < name.Length - 1))
+                {
+                    name = name.Substring(slidx + 1);
+                }
+                var didx = name.LastIndexOf('.');
+                if ((didx > 0) && (didx < name.Length))
+                {
+                    name = name.Substring(0, didx);
+                }
+                _ShortName = name.ToLowerInvariant();
+                JenkIndex.Ensure(_ShortName);
+                return _ShortName;
+            }
+        }
+        private string _ShortName;
+
+        public MetaHash Hash { get; set; } //used by CW when reading/writing
+
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -3040,14 +3085,16 @@ namespace CodeWalker.GameFiles
 
         public virtual void WriteXml(StringBuilder sb, int indent)
         {
+            YcdXml.StringTag(sb, indent, "Hash", YcdXml.HashString(Hash));
             YcdXml.StringTag(sb, indent, "Name", MetaXml.XmlEscape(Name));
             YcdXml.ValueTag(sb, indent, "Type", Type.ToString());
             YcdXml.ValueTag(sb, indent, "Unknown30", Unknown_30h.ToString());
             YcdXml.WriteItemArray(sb, Tags?.Tags?.data_items, indent, "Tags");
-            YcdXml.WriteItemArray(sb, Properties?.Properties?.data_items, indent, "Properties");
+            YcdXml.WriteItemArray(sb, Properties?.AllProperties, indent, "Properties");
         }
         public virtual void ReadXml(XmlNode node)
         {
+            Hash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Hash"));
             Name = Xml.GetChildInnerText(node, "Name");
             Unknown_30h = Xml.GetChildUIntAttribute(node, "Unknown30", "value");
 
@@ -3061,14 +3108,9 @@ namespace CodeWalker.GameFiles
                 Tags.AssignTagOwners();
             }
 
-            var props = XmlMeta.ReadItemArrayNullable<ClipPropertyMapEntry>(node, "Properties");
+            var props = XmlMeta.ReadItemArrayNullable<ClipProperty>(node, "Properties");
             Properties = new ClipPropertyMap();
-            if (props != null)
-            {
-                Properties.Properties = new ResourcePointerArray64<ClipPropertyMapEntry>();
-                Properties.Properties.data_items = props;
-                Properties.BuildPropertyMap();
-            }
+            Properties.CreatePropertyMap(props);
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipAnimation : ClipBase
@@ -3146,7 +3188,7 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             base.WriteXml(sb, indent);
-            YcdXml.StringTag(sb, indent, "AnimationHash", YcdXml.HashString(Animation?.AnimationHash ?? 0));
+            YcdXml.StringTag(sb, indent, "AnimationHash", YcdXml.HashString(Animation?.Hash ?? 0));
             YcdXml.ValueTag(sb, indent, "StartTime", FloatUtil.ToString(StartTime));
             YcdXml.ValueTag(sb, indent, "EndTime", FloatUtil.ToString(EndTime));
             YcdXml.ValueTag(sb, indent, "Rate", FloatUtil.ToString(Rate));
@@ -3323,7 +3365,7 @@ namespace CodeWalker.GameFiles
 
         public void WriteXml(StringBuilder sb, int indent)
         {
-            YcdXml.StringTag(sb, indent, "AnimationHash", YcdXml.HashString(Animation?.AnimationHash ?? 0));
+            YcdXml.StringTag(sb, indent, "AnimationHash", YcdXml.HashString(Animation?.Hash ?? 0));
             YcdXml.ValueTag(sb, indent, "StartTime", FloatUtil.ToString(StartTime));
             YcdXml.ValueTag(sb, indent, "EndTime", FloatUtil.ToString(EndTime));
             YcdXml.ValueTag(sb, indent, "Rate", FloatUtil.ToString(Rate));
@@ -3429,11 +3471,57 @@ namespace CodeWalker.GameFiles
                     PropertyMap[cp.NameHash] = cp;
                 }
             }
+        }
 
+
+        public void CreatePropertyMap(ClipProperty[] properties)
+        {
+            var numBuckets = ClipDictionary.GetNumHashBuckets(properties?.Length ?? 0);
+            var buckets = new List<ClipPropertyMapEntry>[numBuckets];
+            if (properties != null)
+            {
+                foreach (var prop in properties)
+                {
+                    var b = prop.NameHash % numBuckets;
+                    var bucket = buckets[b];
+                    if (bucket == null)
+                    {
+                        bucket = new List<ClipPropertyMapEntry>();
+                        buckets[b] = bucket;
+                    }
+                    var pme = new ClipPropertyMapEntry();
+                    pme.PropertyNameHash = prop.NameHash;
+                    pme.Data = prop;
+                    bucket.Add(pme);
+                }
+            }
+
+            var newProperties = new List<ClipPropertyMapEntry>();
+            foreach (var b in buckets)
+            {
+                if ((b?.Count ?? 0) == 0) newProperties.Add(null);
+                else
+                {
+                    newProperties.Add(b[0]);
+                    var p = b[0];
+                    for (int i = 1; i < b.Count; i++)
+                    {
+                        var c = b[i];
+                        c.Next = null;
+                        p.Next = c;
+                        p = c;
+                    }
+                }
+            }
+
+            Properties = new ResourcePointerArray64<ClipPropertyMapEntry>();
+            Properties.data_items = newProperties.ToArray();
+
+            AllProperties = properties;
         }
 
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyMapEntry : ResourceSystemBlock, IMetaXmlItem
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyMapEntry : ResourceSystemBlock
     {
         public override long BlockLength
         {
@@ -3494,40 +3582,6 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
 
-
-        public void WriteXml(StringBuilder sb, int indent)
-        {
-            YcdXml.StringTag(sb, indent, "NameHash", YcdXml.HashString(PropertyNameHash));
-            if (Data != null)
-            {
-                YcdXml.OpenTag(sb, indent, "PropertyData");
-                Data.WriteXml(sb, indent + 1);
-                YcdXml.CloseTag(sb, indent, "PropertyData");
-            }
-            if (Next != null)
-            {
-                YcdXml.OpenTag(sb, indent, "Next");
-                Next.WriteXml(sb, indent + 1);
-                YcdXml.CloseTag(sb, indent, "Next");
-            }
-        }
-        public void ReadXml(XmlNode node)
-        {
-            PropertyNameHash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "NameHash"));
-            var datanode = node.SelectSingleNode("PropertyData");
-            if (datanode != null)
-            {
-                Data = new ClipProperty();
-                Data.ReadXml(datanode);
-            }
-            var nextnode = node.SelectSingleNode("Next");
-            if (nextnode != null)
-            {
-                var next = new ClipPropertyMapEntry();
-                next.ReadXml(nextnode);
-                Next = next;
-            }
-        }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipProperty : ResourceSystemBlock, IMetaXmlItem
     {
