@@ -13217,8 +13217,8 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo((MetaName)911147899, PsoDataType.Bool, 2, 0, 0),
                      new PsoStructureEntryInfo((MetaName)315291935, PsoDataType.Bool, 3, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.UByte, 0, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)2996560424, PsoDataType.Array, 4, 4, (MetaName)786436),
-                     new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)3538495220),
+                     new PsoStructureEntryInfo(MetaName.availComp, PsoDataType.Array, 4, 4, (MetaName)786436),
+                     new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CPVComponentData),
                      new PsoStructureEntryInfo(MetaName.aComponentData3, PsoDataType.Array, 16, 0, (MetaName)6),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CPedSelectionSet),
                      new PsoStructureEntryInfo(MetaName.aSelectionSets, PsoDataType.Array, 32, 0, (MetaName)8),
@@ -13235,17 +13235,17 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CAnchorProps),
                      new PsoStructureEntryInfo(MetaName.aAnchors, PsoDataType.Array, 24, 0, (MetaName)3)
                     );
-                case (MetaName)3538495220:
-                    return new PsoStructureInfo((MetaName)3538495220, 0, 0, 24,
+                case MetaName.CPVComponentData:
+                    return new PsoStructureInfo(MetaName.CPVComponentData, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.numAvailTex, PsoDataType.UByte, 0, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)1535046754),
+                     new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CPVDrawblData),
                      new PsoStructureEntryInfo(MetaName.aDrawblData3, PsoDataType.Array, 8, 0, (MetaName)1)
                     );
-                case (MetaName)1535046754:
-                    return new PsoStructureInfo((MetaName)1535046754, 0, 0, 48,
+                case MetaName.CPVDrawblData:
+                    return new PsoStructureInfo(MetaName.CPVDrawblData, 0, 0, 48,
                      new PsoStructureEntryInfo(MetaName.propMask, PsoDataType.UByte, 0, 0, 0),
                      new PsoStructureEntryInfo(MetaName.numAlternatives, PsoDataType.UByte, 1, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)1036962405),
+                     new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CPVTextureData),
                      new PsoStructureEntryInfo(MetaName.aTexData, PsoDataType.Array, 8, 0, (MetaName)2),
                      new PsoStructureEntryInfo(MetaName.clothData, PsoDataType.Structure, 24, 0, (MetaName)2236980467)
                     );
@@ -13253,8 +13253,8 @@ namespace CodeWalker.GameFiles
                     return new PsoStructureInfo((MetaName)2236980467, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.ownsCloth, PsoDataType.Bool, 0, 0, 0)
                     );
-                case (MetaName)1036962405:
-                    return new PsoStructureInfo((MetaName)1036962405, 0, 0, 3,
+                case MetaName.CPVTextureData:
+                    return new PsoStructureInfo(MetaName.CPVTextureData, 0, 0, 3,
                      new PsoStructureEntryInfo(MetaName.texId, PsoDataType.UByte, 0, 0, 0),
                      new PsoStructureEntryInfo(MetaName.distribution, PsoDataType.UByte, 1, 0, 0)
                     );

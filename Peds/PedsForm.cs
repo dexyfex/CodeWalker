@@ -102,10 +102,10 @@ namespace CodeWalker.Peds
         ComboBox[] ComponentComboBoxes = null;
         public class ComponentComboItem
         {
-            public MUnk_1535046754 DrawableData { get; set; }
+            public MCPVDrawblData DrawableData { get; set; }
             public int AlternativeIndex { get; set; }
             public int TextureIndex { get; set; }
-            public ComponentComboItem(MUnk_1535046754 drawableData, int altIndex = 0, int textureIndex = -1)
+            public ComponentComboItem(MCPVDrawblData drawableData, int altIndex = 0, int textureIndex = -1)
             {
                 DrawableData = drawableData;
                 AlternativeIndex = altIndex;
@@ -861,7 +861,7 @@ namespace CodeWalker.Peds
             c.Items.Add("");
             c.Text = string.Empty;
         }
-        private void PopulateCompCombo(ComboBox c, MUnk_3538495220 compData)
+        private void PopulateCompCombo(ComboBox c, MCPVComponentData compData)
         {
             if (compData?.DrawblData3 == null) return;
             foreach (var item in compData.DrawblData3)
