@@ -1022,8 +1022,8 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s((MetaName)911147899, 2, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)315291935, 3, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)2996560424, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, (MetaName)MetaTypeName.PsoPOINTER),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)3538495220),
+                     new MetaStructureEntryInfo_s(MetaName.availComp, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, (MetaName)MetaTypeName.PsoPOINTER),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPVComponentData),
                      new MetaStructureEntryInfo_s(MetaName.aComponentData3, 16, MetaStructureEntryDataType.Array, 0, 6, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedSelectionSet),
                      new MetaStructureEntryInfo_s(MetaName.aSelectionSets, 32, MetaStructureEntryDataType.Array, 0, 8, 0),
@@ -1032,26 +1032,26 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.propInfo, 64, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropInfo),
                      new MetaStructureEntryInfo_s(MetaName.dlcName, 104, MetaStructureEntryDataType.Hash, 0, 0, 0)
                     );
-                case (MetaName)3538495220:
-                    return new MetaStructureInfo((MetaName)3538495220, 2024084511, 768, 24,
+                case MetaName.CPVComponentData:
+                    return new MetaStructureInfo(MetaName.CPVComponentData, 2024084511, 768, 24,
                      new MetaStructureEntryInfo_s(MetaName.numAvailTex, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1535046754),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPVDrawblData),
                      new MetaStructureEntryInfo_s(MetaName.aDrawblData3, 8, MetaStructureEntryDataType.Array, 0, 1, 0)
                     );
                 case (MetaName)2236980467:
                     return new MetaStructureInfo((MetaName)2236980467, 508935687, 0, 24,
                      new MetaStructureEntryInfo_s(MetaName.ownsCloth, 0, MetaStructureEntryDataType.Boolean, 0, 0, 0)
                     );
-                case (MetaName)1535046754:
-                    return new MetaStructureInfo((MetaName)1535046754, 124073662, 768, 48,
+                case MetaName.CPVDrawblData:
+                    return new MetaStructureInfo(MetaName.CPVDrawblData, 124073662, 768, 48,
                      new MetaStructureEntryInfo_s(MetaName.propMask, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.numAlternatives, 1, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)1036962405),
+                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPVTextureData),
                      new MetaStructureEntryInfo_s(MetaName.aTexData, 8, MetaStructureEntryDataType.Array, 0, 2, 0),
                      new MetaStructureEntryInfo_s(MetaName.clothData, 24, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)2236980467)
                     );
-                case (MetaName)1036962405:
-                    return new MetaStructureInfo((MetaName)1036962405, 4272717794, 0, 3,
+                case MetaName.CPVTextureData:
+                    return new MetaStructureInfo(MetaName.CPVTextureData, 4272717794, 0, 3,
                      new MetaStructureEntryInfo_s(MetaName.texId, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.distribution, 1, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
                     );
@@ -1102,15 +1102,15 @@ namespace CodeWalker.GameFiles
                     return new MetaStructureInfo(MetaName.CPedSelectionSet, 3120284999, 512, 48,
                      new MetaStructureEntryInfo_s(MetaName.name, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)173599222, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, (MetaName)MetaTypeName.PsoPOINTER),
+                     new MetaStructureEntryInfo_s(MetaName.compDrawableId, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, (MetaName)MetaTypeName.PsoPOINTER),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)2991454271, 16, MetaStructureEntryDataType.ArrayOfBytes, 0, 3, (MetaName)MetaTypeName.PsoPOINTER),
+                     new MetaStructureEntryInfo_s(MetaName.compTexId, 16, MetaStructureEntryDataType.ArrayOfBytes, 0, 3, (MetaName)MetaTypeName.PsoPOINTER),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)3598106198, 28, MetaStructureEntryDataType.ArrayOfBytes, 0, 5, (MetaName)6),
+                     new MetaStructureEntryInfo_s(MetaName.propAnchorId, 28, MetaStructureEntryDataType.ArrayOfBytes, 0, 5, (MetaName)6),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)2095974912, 34, MetaStructureEntryDataType.ArrayOfBytes, 0, 7, (MetaName)6),
+                     new MetaStructureEntryInfo_s(MetaName.propDrawableId, 34, MetaStructureEntryDataType.ArrayOfBytes, 0, 7, (MetaName)6),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)672172037, 40, MetaStructureEntryDataType.ArrayOfBytes, 0, 9, (MetaName)6)
+                     new MetaStructureEntryInfo_s(MetaName.propTexId, 40, MetaStructureEntryDataType.ArrayOfBytes, 0, 9, (MetaName)6)
                     );
                 case MetaName.CExtensionDefDoor:
                     return new MetaStructureInfo(MetaName.CExtensionDefDoor, 2671601385, 1024, 48,
@@ -5996,8 +5996,8 @@ namespace CodeWalker.GameFiles
         public byte bHasDrawblVariations { get; set; } //1   1: Boolean: 0: bHasDrawblVariations
         public byte Unk_911147899 { get; set; } //2   2: Boolean: 0: 911147899
         public byte Unk_315291935 { get; set; } //3   3: Boolean: 0: 315291935
-        public ArrayOfBytes12 Unk_2996560424 { get; set; } //4   4: ArrayOfBytes: 12: 2996560424
-        public Array_Structure aComponentData3 { get; set; } //16   16: Array: 0: aComponentData3  {0: Structure: 3538495220: 256}
+        public ArrayOfBytes12 availComp { get; set; } //4   4: ArrayOfBytes: 12: availComp
+        public Array_Structure aComponentData3 { get; set; } //16   16: Array: 0: aComponentData3  {0: Structure: CPVComponentData: 256}
         public Array_Structure aSelectionSets { get; set; } //32   32: Array: 0: aSelectionSets  {0: Structure: CPedSelectionSet: 256}
         public Array_Structure compInfos { get; set; } //48   48: Array: 0: compInfos  {0: Structure: CComponentInfo: 256}
         public CPedPropInfo propInfo { get; set; } //64   64: Structure: CPedPropInfo: propInfo
@@ -6019,7 +6019,7 @@ namespace CodeWalker.GameFiles
         public CPedVariationInfo Data { get { return _Data; } }
 
         public byte[] ComponentIndices { get; set; }
-        public MUnk_3538495220[] ComponentData3 { get; set; }
+        public MCPVComponentData[] ComponentData3 { get; set; }
         public MCPedSelectionSet[] SelectionSets { get; set; }
         public MCComponentInfo[] CompInfos { get; set; }
         public MCPedPropInfo PropInfo { get; set; }
@@ -6037,16 +6037,16 @@ namespace CodeWalker.GameFiles
 
             _Data = data;
 
-            ComponentIndices = data.Unk_2996560424.GetArray();
+            ComponentIndices = data.availComp.GetArray();
 
 
-            var aComponentData3 = MetaTypes.ConvertDataArray<Unk_3538495220>(meta, (MetaName)3538495220, _Data.aComponentData3);
+            var aComponentData3 = MetaTypes.ConvertDataArray<CPVComponentData>(meta, MetaName.CPVComponentData, _Data.aComponentData3);
             if (aComponentData3 != null)
             {
-                ComponentData3 = new MUnk_3538495220[aComponentData3.Length];
+                ComponentData3 = new MCPVComponentData[aComponentData3.Length];
                 for (int i = 0; i < aComponentData3.Length; i++)
                 {
-                    ComponentData3[i] = new MUnk_3538495220(meta, aComponentData3[i], this);
+                    ComponentData3[i] = new MCPVComponentData(meta, aComponentData3[i], this);
                 }
             }
 
@@ -6108,7 +6108,7 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public MUnk_3538495220 GetComponentData(int componentType)
+        public MCPVComponentData GetComponentData(int componentType)
         {
             if ((componentType < 0) || (componentType > 11)) return null;
             if (ComponentIndices == null) return null;
@@ -6119,24 +6119,24 @@ namespace CodeWalker.GameFiles
 
     }
 
-    [TC(typeof(EXP))] public struct Unk_3538495220 //24 bytes, Key:2024084511  //COMPONENT PEDS component variations item
+    [TC(typeof(EXP))] public struct CPVComponentData //24 bytes, Key:2024084511  //COMPONENT PEDS component variations item
     {
         public byte numAvailTex { get; set; } //0   0: UnsignedByte: 0: numAvailTex
         public byte Unused0 { get; set; }//1
         public ushort Unused1 { get; set; }//2
         public uint Unused2 { get; set; }//4
-        public Array_Structure aDrawblData3 { get; set; } //8   8: Array: 0: aDrawblData3  {0: Structure: 1535046754: 256}
+        public Array_Structure aDrawblData3 { get; set; } //8   8: Array: 0: aDrawblData3  {0: Structure: CPVDrawblData: 256}
     }
-    [TC(typeof(EXP))] public class MUnk_3538495220 : MetaWrapper
+    [TC(typeof(EXP))] public class MCPVComponentData : MetaWrapper
     {
         public MCPedVariationInfo Owner { get; set; }
 
-        public Unk_3538495220 _Data;
-        public Unk_3538495220 Data { get { return _Data; } }
+        public CPVComponentData _Data;
+        public CPVComponentData Data { get { return _Data; } }
 
         public byte numAvailTex { get { return _Data.numAvailTex; } set { _Data.numAvailTex = value; } }
 
-        public MUnk_1535046754[] DrawblData3 { get; set; }
+        public MCPVDrawblData[] DrawblData3 { get; set; }
 
         public int ComponentType { get; set; } = 0;
         public static string[] ComponentTypeNames { get; } =
@@ -6156,8 +6156,8 @@ namespace CodeWalker.GameFiles
         };
 
 
-        public MUnk_3538495220() { }
-        public MUnk_3538495220(Meta meta, Unk_3538495220 data, MCPedVariationInfo owner)
+        public MCPVComponentData() { }
+        public MCPVComponentData(Meta meta, CPVComponentData data, MCPedVariationInfo owner)
         {
             _Data = data;
             Owner = owner;
@@ -6167,13 +6167,13 @@ namespace CodeWalker.GameFiles
 
         private void Init(Meta meta)
         {
-            var aDrawblData3 = MetaTypes.ConvertDataArray<Unk_1535046754>(meta, (MetaName)1535046754, _Data.aDrawblData3);
+            var aDrawblData3 = MetaTypes.ConvertDataArray<CPVDrawblData>(meta, MetaName.CPVDrawblData, _Data.aDrawblData3);
             if (aDrawblData3 != null)
             {
-                DrawblData3 = new MUnk_1535046754[aDrawblData3.Length];
+                DrawblData3 = new MCPVDrawblData[aDrawblData3.Length];
                 for (int i = 0; i < aDrawblData3.Length; i++)
                 {
-                    DrawblData3[i] = new MUnk_1535046754(meta, aDrawblData3[i], this, i);
+                    DrawblData3[i] = new MCPVDrawblData(meta, aDrawblData3[i], this, i);
                 }
             }
         }
@@ -6181,7 +6181,7 @@ namespace CodeWalker.GameFiles
 
         public override void Load(Meta meta, MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<Unk_3538495220>(meta, ptr);
+            _Data = MetaTypes.GetData<CPVComponentData>(meta, ptr);
             Init(meta);
         }
 
@@ -6197,23 +6197,23 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct Unk_1535046754 //48 bytes, Key:124073662  //COMPONENT PEDS drawable info
+    [TC(typeof(EXP))] public struct CPVDrawblData //48 bytes, Key:124073662  //COMPONENT PEDS drawable info
     {
         public byte propMask { get; set; } //0   0: UnsignedByte: 0: propMask
         public byte numAlternatives { get; set; } //1   1: UnsignedByte: 0: 2806194106
         public ushort Unused0 { get; set; }//2
         public uint Unused1 { get; set; }//4
-        public Array_Structure aTexData { get; set; } //8   8: Array: 0: aTexData  {0: Structure: 1036962405: 256}
+        public Array_Structure aTexData { get; set; } //8   8: Array: 0: aTexData  {0: Structure: CPVTextureData: 256}
         public Unk_2236980467 clothData { get; set; } //24   24: Structure: 2236980467: clothData
     }
-    [TC(typeof(EXP))] public class MUnk_1535046754 : MetaWrapper
+    [TC(typeof(EXP))] public class MCPVDrawblData : MetaWrapper
     {
-        public MUnk_3538495220 Owner { get; set; }
+        public MCPVComponentData Owner { get; set; }
 
-        public Unk_1535046754 _Data;
-        public Unk_1535046754 Data { get { return _Data; } }
+        public CPVDrawblData _Data;
+        public CPVDrawblData Data { get { return _Data; } }
 
-        public Unk_1036962405[] TexData { get; set; }
+        public CPVTextureData[] TexData { get; set; }
 
         public int ComponentType { get; set; } = 0;
         public int DrawableIndex { get; set; } = 0;
@@ -6224,7 +6224,7 @@ namespace CodeWalker.GameFiles
 
         public string GetDrawableName(int altnum = 0)
         {
-            string r = (ComponentType < 12) ? MUnk_3538495220.ComponentTypeNames[ComponentType] : "error";
+            string r = (ComponentType < 12) ? MCPVComponentData.ComponentTypeNames[ComponentType] : "error";
             r += "_";
             r += DrawableIndex.ToString("000");
             r += "_";
@@ -6251,7 +6251,7 @@ namespace CodeWalker.GameFiles
         }
         public string GetTexturePrefix()
         {
-            string r = (ComponentType < 12) ? MUnk_3538495220.ComponentTypeNames[ComponentType] : "error";
+            string r = (ComponentType < 12) ? MCPVComponentData.ComponentTypeNames[ComponentType] : "error";
             r += "_diff_"; //are there variations of this?
             r += DrawableIndex.ToString("000");
             r += "_";
@@ -6300,14 +6300,14 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public MUnk_1535046754() { }
-        public MUnk_1535046754(Meta meta, Unk_1535046754 data, MUnk_3538495220 owner, int index)
+        public MCPVDrawblData() { }
+        public MCPVDrawblData(Meta meta, CPVDrawblData data, MCPVComponentData owner, int index)
         {
             _Data = data;
             Owner = owner;
             DrawableIndex = index;
 
-            TexData = MetaTypes.ConvertDataArray<Unk_1036962405>(meta, (MetaName)1036962405, _Data.aTexData);
+            TexData = MetaTypes.ConvertDataArray<CPVTextureData>(meta, MetaName.CPVTextureData, _Data.aTexData);
         }
 
 
@@ -6327,7 +6327,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct Unk_1036962405 //3 bytes, Key:4272717794  //COMPONENT PEDS (cloth?) aTexData
+    [TC(typeof(EXP))] public struct CPVTextureData //3 bytes, Key:4272717794  //COMPONENT PEDS (cloth?) aTexData
     {
         public byte texId { get; set; } //0   0: UnsignedByte: 0: texId
         public byte distribution { get; set; } //1   1: UnsignedByte: 0: distribution//914976023
@@ -6349,11 +6349,11 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public struct CPedSelectionSet //48 bytes, Key:3120284999  //COMPONENT PEDS 
     {
         public MetaHash name { get; set; } //0   0: Hash: 0: name
-        public ArrayOfBytes12 Unk_173599222 { get; set; } //4   4: ArrayOfBytes: 12: 173599222
-        public ArrayOfBytes12 Unk_2991454271 { get; set; } //16   16: ArrayOfBytes: 12: 2991454271
-        public ArrayOfBytes6 Unk_3598106198 { get; set; } //28   28: ArrayOfBytes: 6: 3598106198
-        public ArrayOfBytes6 Unk_2095974912 { get; set; } //34   34: ArrayOfBytes: 6: 2095974912
-        public ArrayOfBytes6 Unk_672172037 { get; set; } //40   40: ArrayOfBytes: 6: 672172037
+        public ArrayOfBytes12 compDrawableId { get; set; } //4   4: ArrayOfBytes: 12: compDrawableId
+        public ArrayOfBytes12 compTexId { get; set; } //16   16: ArrayOfBytes: 12: compTexId
+        public ArrayOfBytes6 propAnchorId { get; set; } //28   28: ArrayOfBytes: 6: propAnchorId
+        public ArrayOfBytes6 propDrawableId { get; set; } //34   34: ArrayOfBytes: 6: propDrawableId
+        public ArrayOfBytes6 propTexId { get; set; } //40   40: ArrayOfBytes: 6: propTexId
         public ushort Unused0 { get; set; }//46
     }
     [TC(typeof(EXP))] public class MCPedSelectionSet : MetaWrapper
@@ -6431,7 +6431,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return (ComponentType < 12) ? MUnk_3538495220.ComponentTypeNames[ComponentType] + "_" + ComponentIndex.ToString("000") : base.ToString();
+            return (ComponentType < 12) ? MCPVComponentData.ComponentTypeNames[ComponentType] + "_" + ComponentIndex.ToString("000") : base.ToString();
         }
     }
 
