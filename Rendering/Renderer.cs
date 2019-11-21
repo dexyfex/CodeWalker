@@ -2255,14 +2255,14 @@ namespace CodeWalker.Rendering
 
 
 
-        public bool RenderFragment(Archetype arch, YmapEntityDef ent, FragType f, uint txdhash = 0)
+        public bool RenderFragment(Archetype arch, YmapEntityDef ent, FragType f, uint txdhash = 0, ClipMapEntry animClip = null)
         {
 
-            RenderDrawable(f.Drawable, arch, ent, txdhash);
+            RenderDrawable(f.Drawable, arch, ent, txdhash, null, null, animClip);
 
             if (f.Drawable2 != null) //cloth
             {
-                RenderDrawable(f.Drawable2, arch, ent, txdhash);
+                RenderDrawable(f.Drawable2, arch, ent, txdhash, null, null, animClip);
             }
 
             //vehicle wheels...
@@ -2308,7 +2308,7 @@ namespace CodeWalker.Rendering
                                     break;
                                 default:
 
-                                    RenderDrawable(pch.Drawable1, arch, ent, txdhash);
+                                    RenderDrawable(pch.Drawable1, arch, ent, txdhash, null, null, animClip);
 
                                     break;
                             }
@@ -2318,7 +2318,7 @@ namespace CodeWalker.Rendering
                         { }
                         if ((pch.Drawable2 != null) && (pch.Drawable2.AllModels.Length != 0))
                         {
-                            RenderDrawable(pch.Drawable2, arch, ent, txdhash);
+                            RenderDrawable(pch.Drawable2, arch, ent, txdhash, null, null, animClip);
                         }
                         else
                         { }
@@ -2385,7 +2385,7 @@ namespace CodeWalker.Rendering
                                         //dwbl.VertexDecls = dwblcopy.VertexDecls;
                                     }
 
-                                    RenderDrawable(dwbl, arch, ent, txdhash);
+                                    RenderDrawable(dwbl, arch, ent, txdhash /*, null, null, animClip*/);
 
                                 }
                                 else
