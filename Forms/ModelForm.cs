@@ -113,6 +113,7 @@ namespace CodeWalker.Forms
 
         MetaHash ModelHash;
         Archetype ModelArchetype = null;
+        bool EnableRootMotion = false;
 
 
 
@@ -520,6 +521,11 @@ namespace CodeWalker.Forms
 
         private void RenderSingleItem()
         {
+            if (AnimClip != null)
+            {
+                AnimClip.EnableRootMotion = EnableRootMotion;
+            }
+
 
             if (Ydr != null)
             {
@@ -1984,6 +1990,11 @@ namespace CodeWalker.Forms
         private void ClipComboBox_TextChanged(object sender, EventArgs e)
         {
             SelectClip(ClipComboBox.Text);
+        }
+
+        private void EnableRootMotionCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            EnableRootMotion = EnableRootMotionCheckBox.Checked;
         }
     }
 }
