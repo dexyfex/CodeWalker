@@ -82,6 +82,11 @@
             this.ToolsDragPanel = new System.Windows.Forms.Panel();
             this.ToolsPanelShowButton = new System.Windows.Forms.Button();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.EnableRootMotionCheckBox = new System.Windows.Forms.CheckBox();
+            this.label22 = new System.Windows.Forms.Label();
+            this.ClipComboBox = new System.Windows.Forms.ComboBox();
+            this.label21 = new System.Windows.Forms.Label();
+            this.ClipDictComboBox = new System.Windows.Forms.ComboBox();
             this.StatusStrip.SuspendLayout();
             this.ConsolePanel.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
@@ -172,7 +177,7 @@
             this.ToolsPanel.Controls.Add(this.ToolsDragPanel);
             this.ToolsPanel.Location = new System.Drawing.Point(12, 12);
             this.ToolsPanel.Name = "ToolsPanel";
-            this.ToolsPanel.Size = new System.Drawing.Size(218, 559);
+            this.ToolsPanel.Size = new System.Drawing.Size(230, 559);
             this.ToolsPanel.TabIndex = 2;
             this.ToolsPanel.Visible = false;
             // 
@@ -181,7 +186,7 @@
             this.MainToolbarPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.MainToolbarPanel.BackColor = System.Drawing.SystemColors.ControlDark;
             this.MainToolbarPanel.Controls.Add(this.MainToolbar);
-            this.MainToolbarPanel.Location = new System.Drawing.Point(181, 2);
+            this.MainToolbarPanel.Location = new System.Drawing.Point(193, 2);
             this.MainToolbarPanel.Name = "MainToolbarPanel";
             this.MainToolbarPanel.Size = new System.Drawing.Size(34, 24);
             this.MainToolbarPanel.TabIndex = 4;
@@ -238,16 +243,21 @@
             this.ToolsTabControl.Location = new System.Drawing.Point(2, 30);
             this.ToolsTabControl.Name = "ToolsTabControl";
             this.ToolsTabControl.SelectedIndex = 0;
-            this.ToolsTabControl.Size = new System.Drawing.Size(213, 526);
+            this.ToolsTabControl.Size = new System.Drawing.Size(225, 526);
             this.ToolsTabControl.TabIndex = 1;
             // 
             // ToolsModelsTabPage
             // 
+            this.ToolsModelsTabPage.Controls.Add(this.EnableRootMotionCheckBox);
+            this.ToolsModelsTabPage.Controls.Add(this.label22);
+            this.ToolsModelsTabPage.Controls.Add(this.ClipComboBox);
+            this.ToolsModelsTabPage.Controls.Add(this.label21);
+            this.ToolsModelsTabPage.Controls.Add(this.ClipDictComboBox);
             this.ToolsModelsTabPage.Controls.Add(this.ModelsTreeView);
             this.ToolsModelsTabPage.Location = new System.Drawing.Point(4, 22);
             this.ToolsModelsTabPage.Name = "ToolsModelsTabPage";
             this.ToolsModelsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.ToolsModelsTabPage.Size = new System.Drawing.Size(205, 500);
+            this.ToolsModelsTabPage.Size = new System.Drawing.Size(217, 500);
             this.ToolsModelsTabPage.TabIndex = 0;
             this.ToolsModelsTabPage.Text = "Models";
             this.ToolsModelsTabPage.UseVisualStyleBackColor = true;
@@ -261,7 +271,7 @@
             this.ModelsTreeView.Location = new System.Drawing.Point(0, 3);
             this.ModelsTreeView.Name = "ModelsTreeView";
             this.ModelsTreeView.ShowRootLines = false;
-            this.ModelsTreeView.Size = new System.Drawing.Size(205, 497);
+            this.ModelsTreeView.Size = new System.Drawing.Size(217, 422);
             this.ModelsTreeView.TabIndex = 1;
             this.ModelsTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.ModelsTreeView_AfterCheck);
             this.ModelsTreeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.ModelsTreeView_NodeMouseDoubleClick);
@@ -680,7 +690,7 @@
             this.ToolsDragPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ToolsDragPanel.Cursor = System.Windows.Forms.Cursors.VSplit;
-            this.ToolsDragPanel.Location = new System.Drawing.Point(215, 0);
+            this.ToolsDragPanel.Location = new System.Drawing.Point(227, 0);
             this.ToolsDragPanel.Name = "ToolsDragPanel";
             this.ToolsDragPanel.Size = new System.Drawing.Size(4, 559);
             this.ToolsDragPanel.TabIndex = 17;
@@ -701,6 +711,63 @@
             // SaveFileDialog
             // 
             this.SaveFileDialog.Filter = "All files|*.*";
+            // 
+            // EnableRootMotionCheckBox
+            // 
+            this.EnableRootMotionCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.EnableRootMotionCheckBox.AutoSize = true;
+            this.EnableRootMotionCheckBox.Location = new System.Drawing.Point(50, 483);
+            this.EnableRootMotionCheckBox.Name = "EnableRootMotionCheckBox";
+            this.EnableRootMotionCheckBox.Size = new System.Drawing.Size(114, 17);
+            this.EnableRootMotionCheckBox.TabIndex = 37;
+            this.EnableRootMotionCheckBox.Text = "Enable root motion";
+            this.EnableRootMotionCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // label22
+            // 
+            this.label22.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(23, 461);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(27, 13);
+            this.label22.TabIndex = 36;
+            this.label22.Text = "Clip:";
+            // 
+            // ClipComboBox
+            // 
+            this.ClipComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ClipComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.ClipComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.ClipComboBox.FormattingEnabled = true;
+            this.ClipComboBox.Location = new System.Drawing.Point(50, 458);
+            this.ClipComboBox.Name = "ClipComboBox";
+            this.ClipComboBox.Size = new System.Drawing.Size(167, 21);
+            this.ClipComboBox.TabIndex = 35;
+            this.ClipComboBox.TextChanged += new System.EventHandler(this.ClipComboBox_TextChanged);
+            // 
+            // label21
+            // 
+            this.label21.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(1, 434);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(49, 13);
+            this.label21.TabIndex = 34;
+            this.label21.Text = "Clip Dict:";
+            // 
+            // ClipDictComboBox
+            // 
+            this.ClipDictComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ClipDictComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.ClipDictComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
+            this.ClipDictComboBox.FormattingEnabled = true;
+            this.ClipDictComboBox.Location = new System.Drawing.Point(50, 431);
+            this.ClipDictComboBox.Name = "ClipDictComboBox";
+            this.ClipDictComboBox.Size = new System.Drawing.Size(167, 21);
+            this.ClipDictComboBox.TabIndex = 33;
+            this.ClipDictComboBox.TextChanged += new System.EventHandler(this.ClipDictComboBox_TextChanged);
             // 
             // ModelForm
             // 
@@ -734,6 +801,7 @@
             this.MainToolbar.PerformLayout();
             this.ToolsTabControl.ResumeLayout(false);
             this.ToolsModelsTabPage.ResumeLayout(false);
+            this.ToolsModelsTabPage.PerformLayout();
             this.ToolsMaterialsTabPage.ResumeLayout(false);
             this.ToolsDetailsTabPage.ResumeLayout(false);
             this.ToolsOptionsTabPage.ResumeLayout(false);
@@ -798,5 +866,10 @@
         private System.Windows.Forms.ToolStripMenuItem SaveMenuButton;
         private System.Windows.Forms.ToolStripMenuItem SaveAsMenuButton;
         private System.Windows.Forms.SaveFileDialog SaveFileDialog;
+        private System.Windows.Forms.CheckBox EnableRootMotionCheckBox;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.ComboBox ClipComboBox;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.ComboBox ClipDictComboBox;
     }
 }

@@ -76,6 +76,7 @@
             this.PedNameComboBox = new System.Windows.Forms.ComboBox();
             this.StatsUpdateTimer = new System.Windows.Forms.Timer(this.components);
             this.ToolsPedTabPage = new System.Windows.Forms.TabPage();
+            this.EnableRootMotionCheckBox = new System.Windows.Forms.CheckBox();
             this.label23 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.ClipComboBox = new System.Windows.Forms.ComboBox();
@@ -108,7 +109,6 @@
             this.label4 = new System.Windows.Forms.Label();
             this.ToolsTabControl = new System.Windows.Forms.TabControl();
             this.ToolsPanel = new System.Windows.Forms.Panel();
-            this.EnableRootMotionCheckBox = new System.Windows.Forms.CheckBox();
             this.ConsolePanel.SuspendLayout();
             this.ToolsOptionsTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
@@ -697,6 +697,17 @@
             this.ToolsPedTabPage.Text = "Ped";
             this.ToolsPedTabPage.UseVisualStyleBackColor = true;
             // 
+            // EnableRootMotionCheckBox
+            // 
+            this.EnableRootMotionCheckBox.AutoSize = true;
+            this.EnableRootMotionCheckBox.Location = new System.Drawing.Point(54, 503);
+            this.EnableRootMotionCheckBox.Name = "EnableRootMotionCheckBox";
+            this.EnableRootMotionCheckBox.Size = new System.Drawing.Size(114, 17);
+            this.EnableRootMotionCheckBox.TabIndex = 32;
+            this.EnableRootMotionCheckBox.Text = "Enable root motion";
+            this.EnableRootMotionCheckBox.UseVisualStyleBackColor = true;
+            this.EnableRootMotionCheckBox.CheckedChanged += new System.EventHandler(this.EnableRootMotionCheckBox_CheckedChanged);
+            // 
             // label23
             // 
             this.label23.AutoSize = true;
@@ -726,7 +737,6 @@
             this.ClipComboBox.Name = "ClipComboBox";
             this.ClipComboBox.Size = new System.Drawing.Size(182, 21);
             this.ClipComboBox.TabIndex = 29;
-            this.ClipComboBox.SelectedIndexChanged += new System.EventHandler(this.ClipComboBox_SelectedIndexChanged);
             this.ClipComboBox.TextChanged += new System.EventHandler(this.ClipComboBox_TextChanged);
             // 
             // label21
@@ -1065,17 +1075,6 @@
             this.ToolsPanel.Size = new System.Drawing.Size(252, 666);
             this.ToolsPanel.TabIndex = 7;
             this.ToolsPanel.Visible = false;
-            // 
-            // EnableRootMotionCheckBox
-            // 
-            this.EnableRootMotionCheckBox.AutoSize = true;
-            this.EnableRootMotionCheckBox.Location = new System.Drawing.Point(54, 503);
-            this.EnableRootMotionCheckBox.Name = "EnableRootMotionCheckBox";
-            this.EnableRootMotionCheckBox.Size = new System.Drawing.Size(114, 17);
-            this.EnableRootMotionCheckBox.TabIndex = 32;
-            this.EnableRootMotionCheckBox.Text = "Enable root motion";
-            this.EnableRootMotionCheckBox.UseVisualStyleBackColor = true;
-            this.EnableRootMotionCheckBox.CheckedChanged += new System.EventHandler(this.EnableRootMotionCheckBox_CheckedChanged);
             // 
             // PedsForm
             // 

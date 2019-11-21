@@ -1007,23 +1007,13 @@ namespace CodeWalker.Peds
             }
 
             List<string> items = new List<string>();
-
             foreach (var cme in ycd.ClipMapEntries)
             {
-                var animclip = cme.Clip as ClipAnimation;
-                if (animclip != null)
+                if (cme.Clip != null)
                 {
-                    items.Add(animclip.ShortName);
-                    continue;
-                }
-                var animcliplist = cme.Clip as ClipAnimationList;
-                if (animcliplist?.Animations?.Data != null)
-                {
-                    items.Add(animcliplist.ShortName);
-                    continue;
+                    items.Add(cme.Clip.ShortName);
                 }
             }
-
 
             items.Sort();
             foreach (var item in items)
@@ -1869,11 +1859,6 @@ namespace CodeWalker.Peds
         private void ClipDictComboBox_TextChanged(object sender, EventArgs e)
         {
             LoadClipDict(ClipDictComboBox.Text);
-        }
-
-        private void ClipComboBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            SelectClip(ClipComboBox.Text);
         }
 
         private void ClipComboBox_TextChanged(object sender, EventArgs e)
