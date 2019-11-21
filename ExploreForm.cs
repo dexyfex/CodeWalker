@@ -236,7 +236,9 @@ namespace CodeWalker
             InitFileType(".yvr", "Vehicle Record", 9, FileTypeAction.ViewYvr);
             InitFileType(".ywr", "Waypoint Record", 9, FileTypeAction.ViewYwr);
             InitFileType(".fxc", "Compiled Shaders", 9, FileTypeAction.ViewFxc);
-            InitFileType(".yed", "Expression Dictionary", 9);
+            InitFileType(".yed", "Expression Dictionary", 9, FileTypeAction.ViewYed);
+            InitFileType(".yld", "Cloth Dictionary", 9, FileTypeAction.ViewYld);
+            InitFileType(".yfd", "Frame Filter Dictionary", 9, FileTypeAction.ViewYfd);
             InitFileType(".asi", "ASI Plugin", 9);
             InitFileType(".dll", "Dynamic Link Library", 9);
             InitFileType(".exe", "Executable", 10);
@@ -1304,6 +1306,9 @@ namespace CodeWalker
                 case FileTypeAction.ViewYcd:
                 case FileTypeAction.ViewYnd:
                 case FileTypeAction.ViewCacheDat:
+                case FileTypeAction.ViewYed:
+                case FileTypeAction.ViewYld:
+                case FileTypeAction.ViewYfd:
                     return true;
                 case FileTypeAction.ViewHex:
                 default:
@@ -1433,6 +1438,15 @@ namespace CodeWalker
                         break;
                     case FileTypeAction.ViewCacheDat:
                         ViewCacheDat(name, path, data, fe);
+                        break;
+                    case FileTypeAction.ViewYed:
+                        ViewYed(name, path, data, fe);
+                        break;
+                    case FileTypeAction.ViewYld:
+                        ViewYld(name, path, data, fe);
+                        break;
+                    case FileTypeAction.ViewYfd:
+                        ViewYfd(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewHex:
                     default:
@@ -1639,6 +1653,27 @@ namespace CodeWalker
             MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(ynd);
+        }
+        private void ViewYed(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var yed = RpfFile.GetFile<YedFile>(e, data);
+            GenericForm f = new GenericForm(this);
+            f.Show();
+            f.LoadFile(yed, yed.RpfFileEntry);
+        }
+        private void ViewYld(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var yld = RpfFile.GetFile<YldFile>(e, data);
+            GenericForm f = new GenericForm(this);
+            f.Show();
+            f.LoadFile(yld, yld.RpfFileEntry);
+        }
+        private void ViewYfd(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var yfd = RpfFile.GetFile<YfdFile>(e, data);
+            GenericForm f = new GenericForm(this);
+            f.Show();
+            f.LoadFile(yfd, yfd.RpfFileEntry);
         }
         private void ViewCacheDat(string name, string path, byte[] data, RpfFileEntry e)
         {
@@ -4176,6 +4211,9 @@ namespace CodeWalker
         ViewYcd = 17,
         ViewYnd = 18,
         ViewCacheDat = 19,
+        ViewYed = 20,
+        ViewYld = 21,
+        ViewYfd = 22,
     }
 
 

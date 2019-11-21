@@ -77,6 +77,9 @@ namespace CodeWalker.GameFiles
         VehicleLayouts = 21,
         Peds = 22,
         Ped = 23,
+        Yed = 24,
+        Yld = 25,
+        Yfd = 26,
     }
 
 
