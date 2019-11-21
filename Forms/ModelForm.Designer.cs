@@ -722,6 +722,7 @@
             this.EnableRootMotionCheckBox.TabIndex = 37;
             this.EnableRootMotionCheckBox.Text = "Enable root motion";
             this.EnableRootMotionCheckBox.UseVisualStyleBackColor = true;
+            this.EnableRootMotionCheckBox.CheckedChanged += new System.EventHandler(this.EnableRootMotionCheckBox_CheckedChanged);
             // 
             // label22
             // 
