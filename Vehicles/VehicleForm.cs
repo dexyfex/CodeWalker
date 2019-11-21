@@ -80,6 +80,9 @@ namespace CodeWalker.Vehicles
         VehicleInitData SelectedVehicleInit = null;
         YftFile SelectedVehicleYft = null;
 
+        YcdFile ConvRoofDict = null;
+        ClipMapEntry ConvRoofClip = null;
+        bool PlayConvRoofAnim = false;
 
 
 
@@ -676,6 +679,8 @@ namespace CodeWalker.Vehicles
             if (GameFileCache.VehiclesInitDict.TryGetValue(modelhash, out vid))
             {
                 bool vehiclechange = SelectedVehicleHash != modelhash;
+                ConvRoofDict = null;
+                ConvRoofClip = null;
                 SelectedModelHash = yfthash;
                 SelectedVehicleHash = modelhash;
                 SelectedVehicleInit = vid;
@@ -688,6 +693,30 @@ namespace CodeWalker.Vehicles
                 LoadModel(SelectedVehicleYft, vehiclechange);
                 VehicleMakeLabel.Text = GlobalText.TryGetString(JenkHash.GenHash(vid.vehicleMakeName.ToLower()));
                 VehicleNameLabel.Text = GlobalText.TryGetString(JenkHash.GenHash(vid.gameName.ToLower()));
+
+                if (!string.IsNullOrEmpty(vid.animConvRoofDictName) && (vid.animConvRoofDictName.ToLowerInvariant() != "null"))
+                {
+                    ConvRoofDictNameLabel.Text = vid.animConvRoofDictName;
+                    ConvRoofNameLabel.Text = vid.animConvRoofName;
+
+                    var ycdhash = JenkHash.GenHash(vid.animConvRoofDictName.ToLowerInvariant());
+                    var cliphash = JenkHash.GenHash(vid.animConvRoofName?.ToLowerInvariant());
+                    ConvRoofDict = GameFileCache.GetYcd(ycdhash);
+                    while ((ConvRoofDict != null) && (!ConvRoofDict.Loaded))
+                    {
+                        Thread.Sleep(20);//kinda hacky
+                        ConvRoofDict = GameFileCache.GetYcd(ycdhash);
+                    }
+                    ClipMapEntry cme = null;
+                    ConvRoofDict?.ClipMap?.TryGetValue(cliphash, out cme);
+                    ConvRoofClip = cme;
+
+                    ConvRoofPanel.Visible = true;
+                }
+                else
+                {
+                    ConvRoofPanel.Visible = false;
+                }
             }
             else
             {
@@ -697,6 +726,9 @@ namespace CodeWalker.Vehicles
                 SelectedVehicleYft = null;
                 VehicleMakeLabel.Text = "-";
                 VehicleNameLabel.Text = "-";
+                ConvRoofPanel.Visible = false;
+                ConvRoofDict = null;
+                ConvRoofClip = null;
             }
         }
 
@@ -914,7 +946,13 @@ namespace CodeWalker.Vehicles
 
                         Archetype arch = null;// TryGetArchetype(hash);
 
-                        Renderer.RenderFragment(arch, null, f, txdhash);
+                        ClipMapEntry clip = null;
+                        if (PlayConvRoofAnim)
+                        {
+                            clip = ConvRoofClip;
+                        }
+
+                        Renderer.RenderFragment(arch, null, f, txdhash, clip);
 
                         //seldrwbl = f.Drawable;
                     }
@@ -1428,6 +1466,20 @@ namespace CodeWalker.Vehicles
             if (!GameFileCache.IsInited) return;
 
             LoadVehicle();
+        }
+
+        private void ConvRoofButton_Click(object sender, EventArgs e)
+        {
+            if (PlayConvRoofAnim)
+            {
+                ConvRoofButton.Text = "Play";
+                PlayConvRoofAnim = false;
+            }
+            else
+            {
+                ConvRoofButton.Text = "Stop";
+                PlayConvRoofAnim = true;
+            }
         }
     }
 }

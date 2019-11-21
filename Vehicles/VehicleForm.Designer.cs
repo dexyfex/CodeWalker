@@ -38,6 +38,11 @@
             this.ToolsPanel = new System.Windows.Forms.Panel();
             this.ToolsTabControl = new System.Windows.Forms.TabControl();
             this.ToolsVehicleTabPage = new System.Windows.Forms.TabPage();
+            this.VehicleHighDetailCheckBox = new System.Windows.Forms.CheckBox();
+            this.VehicleNameLabel = new System.Windows.Forms.Label();
+            this.VehicleMakeLabel = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.VehicleModelComboBox = new System.Windows.Forms.ComboBox();
             this.ToolsModelsTabPage = new System.Windows.Forms.TabPage();
@@ -78,11 +83,13 @@
             this.ToolsPanelShowButton = new System.Windows.Forms.Button();
             this.ConsolePanel = new System.Windows.Forms.Panel();
             this.ConsoleTextBox = new CodeWalker.WinForms.TextBoxFix();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.VehicleMakeLabel = new System.Windows.Forms.Label();
-            this.VehicleNameLabel = new System.Windows.Forms.Label();
-            this.VehicleHighDetailCheckBox = new System.Windows.Forms.CheckBox();
+            this.ConvRoofPanel = new System.Windows.Forms.Panel();
+            this.ConvRoofButton = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.ConvRoofDictNameLabel = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.ConvRoofNameLabel = new System.Windows.Forms.Label();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -93,6 +100,7 @@
             this.ToolsOptionsTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
             this.ConsolePanel.SuspendLayout();
+            this.ConvRoofPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // StatusStrip
@@ -169,6 +177,7 @@
             // 
             // ToolsVehicleTabPage
             // 
+            this.ToolsVehicleTabPage.Controls.Add(this.ConvRoofPanel);
             this.ToolsVehicleTabPage.Controls.Add(this.VehicleHighDetailCheckBox);
             this.ToolsVehicleTabPage.Controls.Add(this.VehicleNameLabel);
             this.ToolsVehicleTabPage.Controls.Add(this.VehicleMakeLabel);
@@ -182,6 +191,55 @@
             this.ToolsVehicleTabPage.TabIndex = 4;
             this.ToolsVehicleTabPage.Text = "Vehicle";
             this.ToolsVehicleTabPage.UseVisualStyleBackColor = true;
+            // 
+            // VehicleHighDetailCheckBox
+            // 
+            this.VehicleHighDetailCheckBox.AutoSize = true;
+            this.VehicleHighDetailCheckBox.Checked = true;
+            this.VehicleHighDetailCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.VehicleHighDetailCheckBox.Location = new System.Drawing.Point(54, 90);
+            this.VehicleHighDetailCheckBox.Name = "VehicleHighDetailCheckBox";
+            this.VehicleHighDetailCheckBox.Size = new System.Drawing.Size(120, 17);
+            this.VehicleHighDetailCheckBox.TabIndex = 6;
+            this.VehicleHighDetailCheckBox.Text = "High detail fragment";
+            this.VehicleHighDetailCheckBox.UseVisualStyleBackColor = true;
+            this.VehicleHighDetailCheckBox.CheckedChanged += new System.EventHandler(this.VehicleHighDetailCheckBox_CheckedChanged);
+            // 
+            // VehicleNameLabel
+            // 
+            this.VehicleNameLabel.AutoSize = true;
+            this.VehicleNameLabel.Location = new System.Drawing.Point(51, 63);
+            this.VehicleNameLabel.Name = "VehicleNameLabel";
+            this.VehicleNameLabel.Size = new System.Drawing.Size(10, 13);
+            this.VehicleNameLabel.TabIndex = 5;
+            this.VehicleNameLabel.Text = "-";
+            // 
+            // VehicleMakeLabel
+            // 
+            this.VehicleMakeLabel.AutoSize = true;
+            this.VehicleMakeLabel.Location = new System.Drawing.Point(51, 41);
+            this.VehicleMakeLabel.Name = "VehicleMakeLabel";
+            this.VehicleMakeLabel.Size = new System.Drawing.Size(10, 13);
+            this.VehicleMakeLabel.TabIndex = 4;
+            this.VehicleMakeLabel.Text = "-";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(3, 63);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(38, 13);
+            this.label5.TabIndex = 3;
+            this.label5.Text = "Name:";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(3, 41);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(37, 13);
+            this.label4.TabIndex = 2;
+            this.label4.Text = "Make:";
             // 
             // label3
             // 
@@ -675,54 +733,74 @@
             this.ConsoleTextBox.Size = new System.Drawing.Size(695, 95);
             this.ConsoleTextBox.TabIndex = 0;
             // 
-            // label4
+            // ConvRoofPanel
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(3, 41);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(37, 13);
-            this.label4.TabIndex = 2;
-            this.label4.Text = "Make:";
+            this.ConvRoofPanel.Controls.Add(this.ConvRoofNameLabel);
+            this.ConvRoofPanel.Controls.Add(this.label8);
+            this.ConvRoofPanel.Controls.Add(this.ConvRoofDictNameLabel);
+            this.ConvRoofPanel.Controls.Add(this.label7);
+            this.ConvRoofPanel.Controls.Add(this.label6);
+            this.ConvRoofPanel.Controls.Add(this.ConvRoofButton);
+            this.ConvRoofPanel.Location = new System.Drawing.Point(3, 164);
+            this.ConvRoofPanel.Name = "ConvRoofPanel";
+            this.ConvRoofPanel.Size = new System.Drawing.Size(233, 89);
+            this.ConvRoofPanel.TabIndex = 7;
+            this.ConvRoofPanel.Visible = false;
             // 
-            // label5
+            // ConvRoofButton
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(3, 63);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(38, 13);
-            this.label5.TabIndex = 3;
-            this.label5.Text = "Name:";
+            this.ConvRoofButton.Location = new System.Drawing.Point(13, 63);
+            this.ConvRoofButton.Name = "ConvRoofButton";
+            this.ConvRoofButton.Size = new System.Drawing.Size(75, 23);
+            this.ConvRoofButton.TabIndex = 0;
+            this.ConvRoofButton.Text = "Play";
+            this.ConvRoofButton.UseVisualStyleBackColor = true;
+            this.ConvRoofButton.Click += new System.EventHandler(this.ConvRoofButton_Click);
             // 
-            // VehicleMakeLabel
+            // label6
             // 
-            this.VehicleMakeLabel.AutoSize = true;
-            this.VehicleMakeLabel.Location = new System.Drawing.Point(51, 41);
-            this.VehicleMakeLabel.Name = "VehicleMakeLabel";
-            this.VehicleMakeLabel.Size = new System.Drawing.Size(10, 13);
-            this.VehicleMakeLabel.TabIndex = 4;
-            this.VehicleMakeLabel.Text = "-";
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(4, 4);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(86, 13);
+            this.label6.TabIndex = 1;
+            this.label6.Text = "Convertible Roof";
             // 
-            // VehicleNameLabel
+            // label7
             // 
-            this.VehicleNameLabel.AutoSize = true;
-            this.VehicleNameLabel.Location = new System.Drawing.Point(51, 63);
-            this.VehicleNameLabel.Name = "VehicleNameLabel";
-            this.VehicleNameLabel.Size = new System.Drawing.Size(10, 13);
-            this.VehicleNameLabel.TabIndex = 5;
-            this.VehicleNameLabel.Text = "-";
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(10, 21);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(47, 13);
+            this.label7.TabIndex = 2;
+            this.label7.Text = "Clip dict:";
             // 
-            // VehicleHighDetailCheckBox
+            // ConvRoofDictNameLabel
             // 
-            this.VehicleHighDetailCheckBox.AutoSize = true;
-            this.VehicleHighDetailCheckBox.Checked = true;
-            this.VehicleHighDetailCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.VehicleHighDetailCheckBox.Location = new System.Drawing.Point(54, 90);
-            this.VehicleHighDetailCheckBox.Name = "VehicleHighDetailCheckBox";
-            this.VehicleHighDetailCheckBox.Size = new System.Drawing.Size(120, 17);
-            this.VehicleHighDetailCheckBox.TabIndex = 6;
-            this.VehicleHighDetailCheckBox.Text = "High detail fragment";
-            this.VehicleHighDetailCheckBox.UseVisualStyleBackColor = true;
-            this.VehicleHighDetailCheckBox.CheckedChanged += new System.EventHandler(this.VehicleHighDetailCheckBox_CheckedChanged);
+            this.ConvRoofDictNameLabel.AutoSize = true;
+            this.ConvRoofDictNameLabel.Location = new System.Drawing.Point(60, 21);
+            this.ConvRoofDictNameLabel.Name = "ConvRoofDictNameLabel";
+            this.ConvRoofDictNameLabel.Size = new System.Drawing.Size(124, 13);
+            this.ConvRoofDictNameLabel.TabIndex = 3;
+            this.ConvRoofDictNameLabel.Text = "animConvRoofDictName";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(10, 41);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(27, 13);
+            this.label8.TabIndex = 4;
+            this.label8.Text = "Clip:";
+            // 
+            // ConvRoofNameLabel
+            // 
+            this.ConvRoofNameLabel.AutoSize = true;
+            this.ConvRoofNameLabel.Location = new System.Drawing.Point(40, 41);
+            this.ConvRoofNameLabel.Name = "ConvRoofNameLabel";
+            this.ConvRoofNameLabel.Size = new System.Drawing.Size(105, 13);
+            this.ConvRoofNameLabel.TabIndex = 5;
+            this.ConvRoofNameLabel.Text = "animConvRoofName";
             // 
             // VehicleForm
             // 
@@ -759,6 +837,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).EndInit();
             this.ConsolePanel.ResumeLayout(false);
             this.ConsolePanel.PerformLayout();
+            this.ConvRoofPanel.ResumeLayout(false);
+            this.ConvRoofPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -819,5 +899,12 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.CheckBox VehicleHighDetailCheckBox;
+        private System.Windows.Forms.Panel ConvRoofPanel;
+        private System.Windows.Forms.Label ConvRoofDictNameLabel;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button ConvRoofButton;
+        private System.Windows.Forms.Label ConvRoofNameLabel;
+        private System.Windows.Forms.Label label8;
     }
 }
