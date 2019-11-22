@@ -884,6 +884,24 @@ namespace CodeWalker.GameFiles
             }
             return null;
         }
+        public static string[] ReadStringItemArray(XmlNode node, string name)
+        {
+            var vnode = node.SelectSingleNode(name);
+            if (vnode != null)
+            {
+                var inodes = vnode.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    var vlist = new List<string>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        vlist.Add(inode.InnerText);
+                    }
+                    return vlist.ToArray();
+                }
+            }
+            return null;
+        }
 
     }
 
