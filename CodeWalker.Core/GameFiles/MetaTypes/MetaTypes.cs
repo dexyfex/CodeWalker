@@ -1349,19 +1349,19 @@ namespace CodeWalker.GameFiles
                     );
                 case (MetaName)1931949281:
                     return new MetaEnumInfo((MetaName)1931949281, 3539601182,
-                     new MetaEnumEntryInfo_s((MetaName)676250331, 0),
-                     new MetaEnumEntryInfo_s((MetaName)2399586564, 1),
-                     new MetaEnumEntryInfo_s((MetaName)2057886646, 2),
-                     new MetaEnumEntryInfo_s((MetaName)1816804348, 3),
-                     new MetaEnumEntryInfo_s((MetaName)152140774, 4),
-                     new MetaEnumEntryInfo_s((MetaName)2088805984, 5),
-                     new MetaEnumEntryInfo_s((MetaName)1098824079, 6),
-                     new MetaEnumEntryInfo_s((MetaName)1492299290, 7)
+                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_CONSTANT, 0),
+                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_SOFT, 1),
+                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_SOFT_SHADOW, 2),
+                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_SOFT_SHADOW_HD, 3),
+                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_LINEAR, 4),
+                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_LINEAR_GRADIENT, 5),
+                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_QUADRATIC, 6),
+                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_QUADRATIC_GRADIENT, 7)
                     );
                 case (MetaName)2266515059:
                     return new MetaEnumInfo((MetaName)2266515059, 4287472345,
                      new MetaEnumEntryInfo_s((MetaName)665241531, 0),
-                     new MetaEnumEntryInfo_s((MetaName)462992848, 1)
+                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_VOLUMETYPE_CYLINDER, 1)
                     );
                 case MetaName.ePedVarComp:
                     return new MetaEnumInfo(MetaName.ePedVarComp, 3472084374,
@@ -1382,9 +1382,9 @@ namespace CodeWalker.GameFiles
                     );
                 case MetaName.ePropRenderFlags:
                     return new MetaEnumInfo(MetaName.ePropRenderFlags, 1551913633,
-                     new MetaEnumEntryInfo_s((MetaName)3757767268, 0),
-                     new MetaEnumEntryInfo_s((MetaName)3735238938, 1),
-                     new MetaEnumEntryInfo_s((MetaName)3395845123, 2)
+                     new MetaEnumEntryInfo_s(MetaName.PRF_ALPHA, 0),
+                     new MetaEnumEntryInfo_s(MetaName.PRF_DECAL, 1),
+                     new MetaEnumEntryInfo_s(MetaName.PRF_CUTOUT, 2)
                     );
                 case MetaName.eAnchorPoints:
                     return new MetaEnumInfo(MetaName.eAnchorPoints, 1309372691,
@@ -1399,8 +1399,8 @@ namespace CodeWalker.GameFiles
                      new MetaEnumEntryInfo_s(MetaName.ANCHOR_HIP, 8),
                      new MetaEnumEntryInfo_s(MetaName.ANCHOR_LEFT_FOOT, 9),
                      new MetaEnumEntryInfo_s(MetaName.ANCHOR_RIGHT_FOOT, 10),
-                     new MetaEnumEntryInfo_s((MetaName)604819740, 11),
-                     new MetaEnumEntryInfo_s((MetaName)2358626934, 12),
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_PH_L_HAND, 11),
+                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_PH_R_HAND, 12),
                      new MetaEnumEntryInfo_s(MetaName.NUM_ANCHORS, 13)
                     );
                 case (MetaName)3044470860:
@@ -2220,21 +2220,21 @@ namespace CodeWalker.GameFiles
     public enum Unk_1931949281 //archetype CExtensionDefLightShaft densityType
         : int //Key:3539601182
     {
-        Unk_676250331 = 0,
-        Unk_2399586564 = 1,
-        Unk_2057886646 = 2,
-        Unk_1816804348 = 3,
-        Unk_152140774 = 4,
-        Unk_2088805984 = 5,
-        Unk_1098824079 = 6,
-        Unk_1492299290 = 7,
+        LIGHTSHAFT_DENSITYTYPE_CONSTANT = 0,
+        LIGHTSHAFT_DENSITYTYPE_SOFT = 1,
+        LIGHTSHAFT_DENSITYTYPE_SOFT_SHADOW = 2,
+        LIGHTSHAFT_DENSITYTYPE_SOFT_SHADOW_HD = 3,
+        LIGHTSHAFT_DENSITYTYPE_LINEAR = 4,
+        LIGHTSHAFT_DENSITYTYPE_LINEAR_GRADIENT = 5,
+        LIGHTSHAFT_DENSITYTYPE_QUADRATIC = 6,
+        LIGHTSHAFT_DENSITYTYPE_QUADRATIC_GRADIENT = 7,
     }
 
     public enum Unk_2266515059 //archetype CExtensionDefLightShaft volumeType
         : int //Key:4287472345
     {
         Unk_665241531 = 0,
-        Unk_462992848 = 1,
+        LIGHTSHAFT_VOLUMETYPE_CYLINDER = 1,
     }
 
     public enum ePedVarComp //component peds CComponentInfo ped accessory / variations slot
@@ -2259,9 +2259,9 @@ namespace CodeWalker.GameFiles
     public enum ePropRenderFlags //component peds CPedPropMetaData renderFlags
         : int //Key:1551913633
     {
-        Unk_3757767268 = 0,
-        Unk_3735238938 = 1,
-        Unk_3395845123 = 2,
+        PRF_ALPHA = 0,
+        PRF_DECAL = 1,
+        PRF_CUTOUT = 2,
     }
 
     public enum eAnchorPoints //component peds CAnchorProps eAnchorPoints
@@ -2278,8 +2278,8 @@ namespace CodeWalker.GameFiles
         ANCHOR_HIP = 8,
         ANCHOR_LEFT_FOOT = 9,
         ANCHOR_RIGHT_FOOT = 10,
-        Unk_604819740 = 11,
-        Unk_2358626934 = 12,
+        ANCHOR_PH_L_HAND = 11,
+        ANCHOR_PH_R_HAND = 12,
         NUM_ANCHORS = 13,
     }
 
