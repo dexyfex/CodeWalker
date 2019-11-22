@@ -8335,6 +8335,7 @@ namespace CodeWalker.GameFiles
         fInitialSearchRadius = 2790363538,
         fInjuredGetupImpulseMag2 = 461478411,
         fInputMax = 541735427,
+        fIntensity = 3937240636,
         fJumpDescendRate = 564993371,
         fJumpToSmashWindowPhaseChange = 3670878450,
         fLifeTime = 2257773206,

@@ -180,6 +180,7 @@ namespace CodeWalker.GameFiles
                 //TestAudioYmts();
                 //TestMetas();
                 //TestPsos();
+                //TestCuts();
                 //TestYcds();
                 //TestYtds();
                 //TestYbns();
@@ -2957,6 +2958,47 @@ namespace CodeWalker.GameFiles
             string allpsopaths = string.Join("\r\n", allpsos);
             string diffpsopaths = string.Join("\r\n", diffpsos);
 
+            string str = PsoTypes.GetTypesInitString();
+            if (!string.IsNullOrEmpty(str))
+            {
+            }
+        }
+        public void TestCuts()
+        {
+
+            var exceptions = new List<Exception>();
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+#if !DEBUG
+                    try
+#endif
+                    {
+                        var rfe = entry as RpfFileEntry;
+                        if (rfe == null) continue;
+
+                        if (rfe.NameLower.EndsWith(".cut"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+
+                            CutFile cut = new CutFile(rfe);
+                            RpfMan.LoadFile(cut, rfe);
+
+                            //PsoTypes.EnsurePsoTypes(cut.Pso);
+                        }
+                    }
+#if !DEBUG
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                        exceptions.Add(ex);
+                    }
+#endif
+                }
+            }
+            
             string str = PsoTypes.GetTypesInitString();
             if (!string.IsNullOrEmpty(str))
             {
