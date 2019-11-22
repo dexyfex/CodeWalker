@@ -13490,7 +13490,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.vDirection, PsoDataType.Float3, 112, 0, 0),
                      new PsoStructureEntryInfo(MetaName.vColour, PsoDataType.Float3, 128, 0, 0),
                      new PsoStructureEntryInfo(MetaName.vPosition, PsoDataType.Float3, 144, 0, 0),
-                     new PsoStructureEntryInfo(MetaName.fintensity, PsoDataType.Float, 160, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.fIntensity, PsoDataType.Float, 160, 0, 0),
                      new PsoStructureEntryInfo(MetaName.fFallOff, PsoDataType.Float, 164, 0, 0),
                      new PsoStructureEntryInfo(MetaName.fConeAngle, PsoDataType.Float, 168, 0, 0),
                      new PsoStructureEntryInfo(MetaName.fVolumeIntensity, PsoDataType.Float, 172, 0, 0),
@@ -13519,7 +13519,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.vDirection, PsoDataType.Float3, 64, 0, 0),
                      new PsoStructureEntryInfo(MetaName.vColour, PsoDataType.Float3, 80, 0, 0),
                      new PsoStructureEntryInfo(MetaName.vPosition, PsoDataType.Float3, 96, 0, 0),
-                     new PsoStructureEntryInfo(MetaName.fintensity, PsoDataType.Float, 112, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.fIntensity, PsoDataType.Float, 112, 0, 0),
                      new PsoStructureEntryInfo(MetaName.fFallOff, PsoDataType.Float, 116, 0, 0),
                      new PsoStructureEntryInfo(MetaName.fConeAngle, PsoDataType.Float, 120, 0, 0),
                      new PsoStructureEntryInfo(MetaName.fVolumeIntensity, PsoDataType.Float, 124, 0, 0),
@@ -13651,7 +13651,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.bUseTimeCycleValues, PsoDataType.Bool, 8, 0, 0),
                      new PsoStructureEntryInfo(MetaName.vDirection, PsoDataType.Float3, 16, 0, 0),
                      new PsoStructureEntryInfo(MetaName.vColour, PsoDataType.Float3, 32, 0, 0),
-                     new PsoStructureEntryInfo(MetaName.fintensity, PsoDataType.Float, 48, 0, 0)
+                     new PsoStructureEntryInfo(MetaName.fIntensity, PsoDataType.Float, 48, 0, 0)
                     );
                 case MetaName.rage__cutfSubtitleEventArgs:
                     return new PsoStructureInfo(MetaName.rage__cutfSubtitleEventArgs, 0, 0, 64,
