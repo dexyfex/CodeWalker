@@ -242,6 +242,30 @@ namespace CodeWalker
             return GetRawUintArray(cnode);
         }
 
+        public static int[] GetRawIntArray(XmlNode node)
+        {
+            if (node == null) return new int[0];
+            var data = new List<int>();
+            var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");
+            for (int i = 0; i < split.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(split[i]))
+                {
+                    var str = split[i];
+                    if (string.IsNullOrEmpty(str)) continue;
+                    var val = 0;
+                    int.TryParse(str, out val);
+                    data.Add(val);
+                }
+            }
+            return data.ToArray();
+        }
+        public static int[] GetChildRawIntArray(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            return GetRawIntArray(cnode);
+        }
+
         public static float[] GetRawFloatArray(XmlNode node)
         {
             if (node == null) return new float[0];
