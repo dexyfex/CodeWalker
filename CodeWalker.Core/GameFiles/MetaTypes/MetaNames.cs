@@ -3566,6 +3566,11 @@ namespace CodeWalker.GameFiles
         compDrawableId = 173599222,
         propAnchorId = 3598106198,
         compTexId = 2991454271,
+        PRF_CUTOUT = 3395845123,
+        PRF_DECAL = 3735238938,
+        PRF_ALPHA = 3757767268,
+        ANCHOR_PH_L_HAND = 604819740,
+        ANCHOR_PH_R_HAND = 2358626934,
 
         //occlusion ymt's from Siprus
         DestRoomIdx = 1028873946,
@@ -3692,6 +3697,16 @@ namespace CodeWalker.GameFiles
         cloth_upper_waterproof = 3748562816,
         upper_cotton = 3438959116,
 
+        //CExtensionDefLightShaft enum value hashes from Siprus
+        LIGHTSHAFT_VOLUMETYPE_CYLINDER = 462992848,
+        LIGHTSHAFT_DENSITYTYPE_LINEAR = 152140774,
+        LIGHTSHAFT_DENSITYTYPE_CONSTANT = 676250331,
+        LIGHTSHAFT_DENSITYTYPE_QUADRATIC = 1098824079,
+        LIGHTSHAFT_DENSITYTYPE_QUADRATIC_GRADIENT = 1492299290,
+        LIGHTSHAFT_DENSITYTYPE_SOFT_SHADOW_HD = 1816804348,
+        LIGHTSHAFT_DENSITYTYPE_SOFT_SHADOW = 2057886646,
+        LIGHTSHAFT_DENSITYTYPE_LINEAR_GRADIENT = 2088805984,
+        LIGHTSHAFT_DENSITYTYPE_SOFT = 2399586564,
 
 
 
