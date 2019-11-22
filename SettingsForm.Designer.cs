@@ -47,6 +47,7 @@
             this.KeyBindButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.AdvancedTabPage = new System.Windows.Forms.TabPage();
+            this.label24 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.CollisionCacheSizeUpDown = new System.Windows.Forms.NumericUpDown();
             this.label23 = new System.Windows.Forms.Label();
@@ -80,6 +81,7 @@
             this.DoneButton = new System.Windows.Forms.Button();
             this.SaveButton = new System.Windows.Forms.Button();
             this.ResetButton = new System.Windows.Forms.Button();
+            this.checkboxMods = new System.Windows.Forms.CheckBox();
             this.MainTabControl.SuspendLayout();
             this.ControlsTabPage.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -296,6 +298,10 @@
             // 
             // AdvancedTabPage
             // 
+            this.AdvancedTabPage.AutoScroll = true;
+            this.AdvancedTabPage.AutoScrollMargin = new System.Drawing.Size(0, 200);
+            this.AdvancedTabPage.Controls.Add(this.checkboxMods);
+            this.AdvancedTabPage.Controls.Add(this.label24);
             this.AdvancedTabPage.Controls.Add(this.label22);
             this.AdvancedTabPage.Controls.Add(this.CollisionCacheSizeUpDown);
             this.AdvancedTabPage.Controls.Add(this.label23);
@@ -326,6 +332,7 @@
             this.AdvancedTabPage.Controls.Add(this.FolderBrowseButton);
             this.AdvancedTabPage.Controls.Add(this.FolderTextBox);
             this.AdvancedTabPage.Controls.Add(this.label5);
+            this.AdvancedTabPage.ImeMode = System.Windows.Forms.ImeMode.On;
             this.AdvancedTabPage.Location = new System.Drawing.Point(4, 22);
             this.AdvancedTabPage.Name = "AdvancedTabPage";
             this.AdvancedTabPage.Padding = new System.Windows.Forms.Padding(3);
@@ -333,6 +340,15 @@
             this.AdvancedTabPage.TabIndex = 1;
             this.AdvancedTabPage.Text = "Advanced";
             this.AdvancedTabPage.UseVisualStyleBackColor = true;
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(6, 364);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(56, 13);
+            this.label24.TabIndex = 79;
+            this.label24.Text = "Only mods";
             // 
             // label22
             // 
@@ -584,7 +600,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ExcludeFoldersTextBox.Location = new System.Drawing.Point(110, 61);
             this.ExcludeFoldersTextBox.Name = "ExcludeFoldersTextBox";
-            this.ExcludeFoldersTextBox.Size = new System.Drawing.Size(303, 20);
+            this.ExcludeFoldersTextBox.Size = new System.Drawing.Size(295, 20);
             this.ExcludeFoldersTextBox.TabIndex = 50;
             this.ExcludeFoldersTextBox.TextChanged += new System.EventHandler(this.ExcludeFoldersTextBox_TextChanged);
             // 
@@ -735,7 +751,7 @@
             // FolderBrowseButton
             // 
             this.FolderBrowseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.FolderBrowseButton.Location = new System.Drawing.Point(419, 27);
+            this.FolderBrowseButton.Location = new System.Drawing.Point(411, 27);
             this.FolderBrowseButton.Name = "FolderBrowseButton";
             this.FolderBrowseButton.Size = new System.Drawing.Size(27, 23);
             this.FolderBrowseButton.TabIndex = 49;
@@ -750,7 +766,7 @@
             this.FolderTextBox.Location = new System.Drawing.Point(110, 28);
             this.FolderTextBox.Name = "FolderTextBox";
             this.FolderTextBox.ReadOnly = true;
-            this.FolderTextBox.Size = new System.Drawing.Size(303, 20);
+            this.FolderTextBox.Size = new System.Drawing.Size(295, 20);
             this.FolderTextBox.TabIndex = 48;
             // 
             // label5
@@ -794,6 +810,17 @@
             this.ResetButton.Text = "Reset all settings";
             this.ResetButton.UseVisualStyleBackColor = true;
             this.ResetButton.Click += new System.EventHandler(this.ResetButton_Click);
+            // 
+            // checkboxMods
+            // 
+            this.checkboxMods.AutoSize = true;
+            this.checkboxMods.Location = new System.Drawing.Point(110, 364);
+            this.checkboxMods.Name = "checkboxMods";
+            this.checkboxMods.Size = new System.Drawing.Size(281, 17);
+            this.checkboxMods.TabIndex = 80;
+            this.checkboxMods.Text = "Disable ymap/ynd/popzone/navmeshes from other rpf";
+            this.checkboxMods.UseVisualStyleBackColor = true;
+            this.checkboxMods.CheckedChanged += new System.EventHandler(this.checkboxMods_CheckedChanged);
             // 
             // SettingsForm
             // 
@@ -883,5 +910,7 @@
         private System.Windows.Forms.NumericUpDown TextureCacheSizeUpDown;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.CheckBox MouseInvertCheckBox;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.CheckBox checkboxMods;
     }
 }

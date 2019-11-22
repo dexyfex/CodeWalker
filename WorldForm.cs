@@ -4147,7 +4147,7 @@ namespace CodeWalker
             audiozones.Init(gameFileCache, UpdateStatus);
 
             UpdateStatus("Loading world...");
-            space.Init(gameFileCache, UpdateStatus);
+            space.Init(gameFileCache, UpdateStatus, Settings.Default.OnlyMods);
 
             UpdateStatus("World loaded");
 

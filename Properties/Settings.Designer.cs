@@ -734,5 +734,20 @@ namespace CodeWalker.Properties {
                 this["ExplorerWindowTheme"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool OnlyMods
+        {
+            get
+            {
+                return ((bool)(this["OnlyMods"]));
+            }
+            set
+            {
+                this["OnlyMods"] = value;
+            }
+        }
     }
 }
