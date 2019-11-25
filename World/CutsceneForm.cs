@@ -50,10 +50,6 @@ namespace CodeWalker.World
                 if (Playing)
                 {
                     var newt = Cutscene.PlaybackTime + elapsed;
-                    if (newt > Cutscene.Duration)
-                    {
-                        newt = 0.0f; //stop or loop?
-                    }
                     Cutscene.Update(newt);
                 }
 
@@ -371,6 +367,11 @@ namespace CodeWalker.World
 
         public void Update(float newTime)
         {
+            if (newTime > Duration)
+            {
+                newTime = 0.0f; //stop or loop?
+            }
+
             if (newTime >= PlaybackTime)
             {
                 RaiseEvents(newTime);
@@ -378,7 +379,12 @@ namespace CodeWalker.World
             else
             {
                 //reset playback to beginning, and seek to newTime
-
+                RaiseEvents(Duration);//raise all events up to the end first
+                PlaybackTime = 0.0f;
+                NextLoadEvent = 0;
+                NextPlayEvent = 0;
+                NextCameraCut = 0;
+                RaiseEvents(newTime);
             }
 
             PlaybackTime = newTime;
