@@ -117,5 +117,100 @@ namespace CodeWalker.World
 
 
 
+
+
+        public void SetComponentDrawable(int index, string name, string tex, GameFileCache gfc)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                DrawableNames[index] = null;
+                Drawables[index] = null;
+                Textures[index] = null;
+                return;
+            }
+
+            MetaHash namehash = JenkHash.GenHash(name.ToLowerInvariant());
+            Drawable d = null;
+            if (Ydd?.Dict != null)
+            {
+                Ydd.Dict.TryGetValue(namehash, out d);
+            }
+            if ((d == null) && (DrawableFilesDict != null))
+            {
+                RpfFileEntry file = null;
+                if (DrawableFilesDict.TryGetValue(namehash, out file))
+                {
+                    var ydd = gfc.GetFileUncached<YddFile>(file);
+                    while ((ydd != null) && (!ydd.Loaded))
+                    {
+                        Thread.Sleep(20);//kinda hacky
+                        gfc.TryLoadEnqueue(ydd);
+                    }
+                    if (ydd?.Drawables?.Length > 0)
+                    {
+                        d = ydd.Drawables[0];//should only be one in this dict
+                    }
+                }
+            }
+
+            MetaHash texhash = JenkHash.GenHash(tex.ToLowerInvariant());
+            Texture t = null;
+            if (Ytd?.TextureDict?.Dict != null)
+            {
+                Ytd.TextureDict.Dict.TryGetValue(texhash, out t);
+            }
+            if ((t == null) && (TextureFilesDict != null))
+            {
+                RpfFileEntry file = null;
+                if (TextureFilesDict.TryGetValue(texhash, out file))
+                {
+                    var ytd = gfc.GetFileUncached<YtdFile>(file);
+                    while ((ytd != null) && (!ytd.Loaded))
+                    {
+                        Thread.Sleep(20);//kinda hacky
+                        gfc.TryLoadEnqueue(ytd);
+                    }
+                    if (ytd?.TextureDict?.Textures?.data_items.Length > 0)
+                    {
+                        t = ytd.TextureDict.Textures.data_items[0];//should only be one in this dict
+                    }
+                }
+            }
+
+
+            if (d != null) Drawables[index] = d;
+            if (t != null) Textures[index] = t;
+
+            DrawableNames[index] = name;
+        }
+
+        public void SetComponentDrawable(int index, int drawbl, int alt, int tex, GameFileCache gfc)
+        {
+            var vi = Ymt?.VariationInfo;
+            if (vi != null)
+            {
+                var compData = vi.GetComponentData(index);
+                if (compData?.DrawblData3 != null)
+                {
+                    var item = (drawbl < (compData.DrawblData3?.Length ?? 0)) ? compData.DrawblData3[drawbl] : null;
+                    if (item != null)
+                    {
+                        var name = item?.GetDrawableName(alt);
+                        var texn = item?.GetTextureName(tex);
+                        SetComponentDrawable(index, name, texn, gfc);
+                    }
+                }
+            }
+        }
+
+        public void LoadDefaultComponents(GameFileCache gfc)
+        {
+            for (int i = 0; i < 12; i++)
+            {
+                SetComponentDrawable(i, 0, 0, 0, gfc);
+            }
+        }
+
+
     }
 }

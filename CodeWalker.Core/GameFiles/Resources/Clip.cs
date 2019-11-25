@@ -2902,6 +2902,8 @@ namespace CodeWalker.GameFiles
         public ClipMapEntry Next { get; set; }
 
         public bool EnableRootMotion { get; set; } = false; //used by CW to toggle whether or not to include root motion when playing animations
+        public bool OverridePlayTime { get; set; } = false; //used by CW to manually override the animation playback time
+        public float PlayTime { get; set; } = 0.0f;
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)

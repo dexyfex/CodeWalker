@@ -93,7 +93,7 @@ namespace CodeWalker.GameFiles
         public bool BuildExtendedJenkIndex = true;
         public bool LoadArchetypes = true;
         public bool LoadVehicles = false;
-        public bool LoadPeds = false;
+        public bool LoadPeds = true;
         private bool PreloadedMode = false;
 
         private string GTAFolder;

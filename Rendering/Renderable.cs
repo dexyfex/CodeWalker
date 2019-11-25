@@ -427,6 +427,11 @@ namespace CodeWalker.Rendering
 
         public void UpdateAnims(double realTime)
         {
+            if (ClipMapEntry?.OverridePlayTime ?? false)
+            {
+                realTime = ClipMapEntry.PlayTime;
+            }
+
             if (CurrentAnimTime == realTime) return;//already updated this!
             CurrentAnimTime = realTime;
 

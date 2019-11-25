@@ -807,70 +807,9 @@ namespace CodeWalker.Peds
 
             var comboItem = comboObj as ComponentComboItem;
             var name = comboItem?.DrawableName;
-            if (string.IsNullOrEmpty(name))
-            {
-                SelectedPed.DrawableNames[index] = null;
-                SelectedPed.Drawables[index] = null;
-                SelectedPed.Textures[index] = null;
-                UpdateModelsUI();
-                return;
-            }
+            var tex = comboItem?.TextureName;
 
-            MetaHash namehash = JenkHash.GenHash(name.ToLowerInvariant());
-            Drawable d = null;
-            if (SelectedPed.Ydd?.Dict != null)
-            {
-                SelectedPed.Ydd.Dict.TryGetValue(namehash, out d);
-            }
-            if ((d == null) && (SelectedPed.DrawableFilesDict != null))
-            {
-                RpfFileEntry file = null;
-                if (SelectedPed.DrawableFilesDict.TryGetValue(namehash, out file))
-                {
-                    var ydd = GameFileCache.GetFileUncached<YddFile>(file);
-                    while ((ydd != null) && (!ydd.Loaded))
-                    {
-                        Thread.Sleep(20);//kinda hacky
-                        GameFileCache.TryLoadEnqueue(ydd);
-                    }
-                    if (ydd?.Drawables?.Length > 0)
-                    {
-                        d = ydd.Drawables[0];//should only be one in this dict
-                    }
-                }
-            }
-
-
-            var tex = comboItem.TextureName;
-            MetaHash texhash = JenkHash.GenHash(tex.ToLowerInvariant());
-            Texture t = null;
-            if (SelectedPed.Ytd?.TextureDict?.Dict != null)
-            {
-                SelectedPed.Ytd.TextureDict.Dict.TryGetValue(texhash, out t);
-            }
-            if ((t == null) && (SelectedPed.TextureFilesDict != null))
-            {
-                RpfFileEntry file = null;
-                if (SelectedPed.TextureFilesDict.TryGetValue(texhash, out file))
-                {
-                    var ytd = GameFileCache.GetFileUncached<YtdFile>(file);
-                    while ((ytd != null) && (!ytd.Loaded))
-                    {
-                        Thread.Sleep(20);//kinda hacky
-                        GameFileCache.TryLoadEnqueue(ytd);
-                    }
-                    if (ytd?.TextureDict?.Textures?.data_items.Length > 0)
-                    {
-                        t = ytd.TextureDict.Textures.data_items[0];//should only be one in this dict
-                    }
-                }
-            }
-
-
-            if (d != null) SelectedPed.Drawables[index] = d;
-            if (t != null) SelectedPed.Textures[index] = t;
-
-            SelectedPed.DrawableNames[index] = name;
+            SelectedPed.SetComponentDrawable(index, name, tex, GameFileCache);
 
             UpdateModelsUI();
         }
