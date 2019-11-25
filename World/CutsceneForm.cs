@@ -58,8 +58,10 @@ namespace CodeWalker.World
                 {
                     var cori = Quaternion.RotationAxis(Vector3.UnitX, -1.57079632679f) * Quaternion.RotationAxis(Vector3.UnitZ, 3.141592653f);
 
-                    var pos = Cutscene.Position + Cutscene.CameraObject.Position;
-                    var rot = Cutscene.Rotation * Cutscene.CameraObject.Rotation * cori;
+                    var pos = Cutscene.Position;
+                    var rot = Cutscene.Rotation;
+                    pos = pos + rot.Multiply(Cutscene.CameraObject.Position);
+                    rot = rot * Cutscene.CameraObject.Rotation * cori;
 
                     WorldForm.SetCameraTransform(pos, rot);
 
@@ -304,10 +306,12 @@ namespace CodeWalker.World
         public Dictionary<int, CutsceneObject> SceneObjects { get; set; } = null;
         public CutEvent[] LoadEvents { get; set; } = null;
         public CutEvent[] PlayEvents { get; set; } = null;
+        public CutConcatData[] ConcatDatas { get; set; } = null;
 
         public int NextLoadEvent { get; set; } = 0;
         public int NextPlayEvent { get; set; } = 0;
         public int NextCameraCut { get; set; } = 0;
+        public int NextConcatData { get; set; } = 0;
 
         public Gxt2File Gxt2File { get; set; } = null;
 
@@ -338,6 +342,7 @@ namespace CodeWalker.World
             Objects = csf.ObjectsDict;
             LoadEvents = RecastArray<CutEvent>(csf.pCutsceneLoadEventList);
             PlayEvents = RecastArray<CutEvent>(csf.pCutsceneEventList);
+            ConcatDatas = csf.concatDataList;
 
 
             LoadYcds();
@@ -391,6 +396,7 @@ namespace CodeWalker.World
                 NextLoadEvent = 0;
                 NextPlayEvent = 0;
                 NextCameraCut = 0;
+                NextConcatData = 0;
                 RaiseEvents(newTime);
             }
 
@@ -473,7 +479,7 @@ namespace CodeWalker.World
 
                                 updateObjectTransform(obj, cme, 0, 5, 6);
 
-                                pos = pos + obj.Position;
+                                pos = pos + rot.Multiply(obj.Position);
                                 rot = rot * obj.Rotation;
                             }
                             obj.Ped.Position = pos;
@@ -544,6 +550,18 @@ namespace CodeWalker.World
                 if (c > upToTime) break;
             }
             NextCameraCut = i;
+
+            for (i = NextConcatData; i < ConcatDatas?.Length; i++)
+            {
+                var c = ConcatDatas[i];
+                if (c.fStartTime > upToTime) break;
+                if (c.cSceneName == 0) break;
+
+                Position = c.vOffset;
+                Rotation = Quaternion.RotationAxis(Vector3.UnitZ, c.fRotation * 0.0174532925f); //is this right?
+            }
+            NextConcatData = i;
+
 
         }
         private void RaiseEvent(CutEvent e)
