@@ -2403,7 +2403,7 @@ namespace CodeWalker.Rendering
             return true;
         }
 
-        public bool RenderArchetype(Archetype arche, YmapEntityDef entity, Renderable rndbl = null, bool cull = true)
+        public bool RenderArchetype(Archetype arche, YmapEntityDef entity, Renderable rndbl = null, bool cull = true, ClipMapEntry animClip = null)
         {
             //enqueue a single archetype for rendering.
 
@@ -2472,6 +2472,14 @@ namespace CodeWalker.Rendering
 
             if (rndbl != null)
             {
+                if (animClip != null)
+                {
+                    rndbl.ClipMapEntry = animClip;
+                    rndbl.ClipDict = animClip.Clip?.Ycd;
+                    rndbl.HasAnims = true;
+                }
+
+
                 res = RenderRenderable(rndbl, arche, entity);
 
 

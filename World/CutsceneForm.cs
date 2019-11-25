@@ -503,6 +503,7 @@ namespace CodeWalker.World
                             }
                             obj.Prop.Position = pos;
                             obj.Prop.Orientation = rot;
+                            obj.AnimClip = cme;
                         }
 
                     }
@@ -530,7 +531,7 @@ namespace CodeWalker.World
                     }
                     if (obj.Prop != null)
                     {
-                        renderer.RenderArchetype(obj.Prop.Archetype, obj.Prop);
+                        renderer.RenderArchetype(obj.Prop.Archetype, obj.Prop, null, true, obj.AnimClip);
                     }
                 }
             }
@@ -993,6 +994,7 @@ namespace CodeWalker.World
 
         public YmapEntityDef Prop { get; set; }
 
+        public ClipMapEntry AnimClip { get; set; }
 
 
         public void Init(CutObject obj, GameFileCache gfc)
