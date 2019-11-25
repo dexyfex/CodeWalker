@@ -136,6 +136,10 @@ namespace CodeWalker
             this.TimedEntitiesCheckBox = new System.Windows.Forms.CheckBox();
             this.FieldOfViewTrackBar = new System.Windows.Forms.TrackBar();
             this.tabPage14 = new System.Windows.Forms.TabPage();
+            this.FarClipUpDown = new System.Windows.Forms.NumericUpDown();
+            this.label32 = new System.Windows.Forms.Label();
+            this.NearClipUpDown = new System.Windows.Forms.NumericUpDown();
+            this.label31 = new System.Windows.Forms.Label();
             this.HDTexturesCheckBox = new System.Windows.Forms.CheckBox();
             this.WireframeCheckBox = new System.Windows.Forms.CheckBox();
             this.RenderModeComboBox = new System.Windows.Forms.ComboBox();
@@ -288,10 +292,7 @@ namespace CodeWalker
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarPanel = new System.Windows.Forms.Panel();
-            this.NearClipUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label31 = new System.Windows.Forms.Label();
-            this.FarClipUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label32 = new System.Windows.Forms.Label();
+            this.ToolsMenuCutsceneViewer = new System.Windows.Forms.ToolStripMenuItem();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -321,6 +322,8 @@ namespace CodeWalker
             ((System.ComponentModel.ISupportInitialize)(this.CollisionMeshRangeTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FieldOfViewTrackBar)).BeginInit();
             this.tabPage14.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.FarClipUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.NearClipUpDown)).BeginInit();
             this.tabPage9.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BoundsRangeTrackBar)).BeginInit();
@@ -333,8 +336,6 @@ namespace CodeWalker
             this.ToolsMenu.SuspendLayout();
             this.Toolbar.SuspendLayout();
             this.ToolbarPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.NearClipUpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.FarClipUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // StatusStrip
@@ -1673,6 +1674,81 @@ namespace CodeWalker
             this.tabPage14.Text = "Render";
             this.tabPage14.UseVisualStyleBackColor = true;
             // 
+            // FarClipUpDown
+            // 
+            this.FarClipUpDown.Increment = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.FarClipUpDown.Location = new System.Drawing.Point(80, 346);
+            this.FarClipUpDown.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.FarClipUpDown.Minimum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.FarClipUpDown.Name = "FarClipUpDown";
+            this.FarClipUpDown.Size = new System.Drawing.Size(114, 20);
+            this.FarClipUpDown.TabIndex = 61;
+            this.FarClipUpDown.Value = new decimal(new int[] {
+            12000,
+            0,
+            0,
+            0});
+            this.FarClipUpDown.ValueChanged += new System.EventHandler(this.FarClipUpDown_ValueChanged);
+            // 
+            // label32
+            // 
+            this.label32.AutoSize = true;
+            this.label32.Location = new System.Drawing.Point(4, 348);
+            this.label32.Name = "label32";
+            this.label32.Size = new System.Drawing.Size(45, 13);
+            this.label32.TabIndex = 60;
+            this.label32.Text = "Far Clip:";
+            // 
+            // NearClipUpDown
+            // 
+            this.NearClipUpDown.DecimalPlaces = 3;
+            this.NearClipUpDown.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.NearClipUpDown.Location = new System.Drawing.Point(80, 320);
+            this.NearClipUpDown.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.NearClipUpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            196608});
+            this.NearClipUpDown.Name = "NearClipUpDown";
+            this.NearClipUpDown.Size = new System.Drawing.Size(114, 20);
+            this.NearClipUpDown.TabIndex = 59;
+            this.NearClipUpDown.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            65536});
+            this.NearClipUpDown.ValueChanged += new System.EventHandler(this.NearClipUpDown_ValueChanged);
+            // 
+            // label31
+            // 
+            this.label31.AutoSize = true;
+            this.label31.Location = new System.Drawing.Point(4, 322);
+            this.label31.Name = "label31";
+            this.label31.Size = new System.Drawing.Size(53, 13);
+            this.label31.TabIndex = 58;
+            this.label31.Text = "Near Clip:";
+            // 
             // HDTexturesCheckBox
             // 
             this.HDTexturesCheckBox.AutoSize = true;
@@ -2594,6 +2670,7 @@ namespace CodeWalker
             this.ToolsMenuRPFExplorer,
             this.ToolsMenuSelectionInfo,
             this.ToolsMenuProjectWindow,
+            this.ToolsMenuCutsceneViewer,
             this.ToolsMenuWorldSearch,
             this.ToolsMenuBinarySearch,
             this.ToolsMenuJenkGen,
@@ -2604,12 +2681,12 @@ namespace CodeWalker
             this.ToolsMenuExtractShaders,
             this.ToolsMenuOptions});
             this.ToolsMenu.Name = "ToolsMenu";
-            this.ToolsMenu.Size = new System.Drawing.Size(166, 290);
+            this.ToolsMenu.Size = new System.Drawing.Size(181, 334);
             // 
             // ToolsMenuRPFBrowser
             // 
             this.ToolsMenuRPFBrowser.Name = "ToolsMenuRPFBrowser";
-            this.ToolsMenuRPFBrowser.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuRPFBrowser.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuRPFBrowser.Text = "RPF Browser...";
             this.ToolsMenuRPFBrowser.Visible = false;
             this.ToolsMenuRPFBrowser.Click += new System.EventHandler(this.ToolsMenuRPFBrowser_Click);
@@ -2617,14 +2694,14 @@ namespace CodeWalker
             // ToolsMenuRPFExplorer
             // 
             this.ToolsMenuRPFExplorer.Name = "ToolsMenuRPFExplorer";
-            this.ToolsMenuRPFExplorer.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuRPFExplorer.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuRPFExplorer.Text = "RPF Explorer...";
             this.ToolsMenuRPFExplorer.Click += new System.EventHandler(this.ToolsMenuRPFExplorer_Click);
             // 
             // ToolsMenuSelectionInfo
             // 
             this.ToolsMenuSelectionInfo.Name = "ToolsMenuSelectionInfo";
-            this.ToolsMenuSelectionInfo.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuSelectionInfo.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuSelectionInfo.Text = "Selection info...";
             this.ToolsMenuSelectionInfo.Click += new System.EventHandler(this.ToolsMenuSelectionInfo_Click);
             // 
@@ -2632,14 +2709,14 @@ namespace CodeWalker
             // 
             this.ToolsMenuProjectWindow.Enabled = false;
             this.ToolsMenuProjectWindow.Name = "ToolsMenuProjectWindow";
-            this.ToolsMenuProjectWindow.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuProjectWindow.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuProjectWindow.Text = "Project window...";
             this.ToolsMenuProjectWindow.Click += new System.EventHandler(this.ToolsMenuProjectWindow_Click);
             // 
             // ToolsMenuWorldSearch
             // 
             this.ToolsMenuWorldSearch.Name = "ToolsMenuWorldSearch";
-            this.ToolsMenuWorldSearch.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuWorldSearch.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuWorldSearch.Text = "World search...";
             this.ToolsMenuWorldSearch.Click += new System.EventHandler(this.ToolsMenuWorldSearch_Click);
             // 
@@ -2647,14 +2724,14 @@ namespace CodeWalker
             // 
             this.ToolsMenuBinarySearch.Enabled = false;
             this.ToolsMenuBinarySearch.Name = "ToolsMenuBinarySearch";
-            this.ToolsMenuBinarySearch.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuBinarySearch.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuBinarySearch.Text = "Binary search...";
             this.ToolsMenuBinarySearch.Click += new System.EventHandler(this.ToolsMenuBinarySearch_Click);
             // 
             // ToolsMenuJenkGen
             // 
             this.ToolsMenuJenkGen.Name = "ToolsMenuJenkGen";
-            this.ToolsMenuJenkGen.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuJenkGen.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuJenkGen.Text = "JenkGen...";
             this.ToolsMenuJenkGen.Click += new System.EventHandler(this.ToolsMenuJenkGen_Click);
             // 
@@ -2662,42 +2739,42 @@ namespace CodeWalker
             // 
             this.ToolsMenuJenkInd.Enabled = false;
             this.ToolsMenuJenkInd.Name = "ToolsMenuJenkInd";
-            this.ToolsMenuJenkInd.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuJenkInd.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuJenkInd.Text = "JenkInd...";
             this.ToolsMenuJenkInd.Click += new System.EventHandler(this.ToolsMenuJenkInd_Click);
             // 
             // ToolsMenuExtractScripts
             // 
             this.ToolsMenuExtractScripts.Name = "ToolsMenuExtractScripts";
-            this.ToolsMenuExtractScripts.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuExtractScripts.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuExtractScripts.Text = "Extract scripts...";
             this.ToolsMenuExtractScripts.Click += new System.EventHandler(this.ToolsMenuExtractScripts_Click);
             // 
             // ToolsMenuExtractTextures
             // 
             this.ToolsMenuExtractTextures.Name = "ToolsMenuExtractTextures";
-            this.ToolsMenuExtractTextures.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuExtractTextures.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuExtractTextures.Text = "Extract textures...";
             this.ToolsMenuExtractTextures.Click += new System.EventHandler(this.ToolsMenuExtractTextures_Click);
             // 
             // ToolsMenuExtractRawFiles
             // 
             this.ToolsMenuExtractRawFiles.Name = "ToolsMenuExtractRawFiles";
-            this.ToolsMenuExtractRawFiles.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuExtractRawFiles.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuExtractRawFiles.Text = "Extract raw files...";
             this.ToolsMenuExtractRawFiles.Click += new System.EventHandler(this.ToolsMenuExtractRawFiles_Click);
             // 
             // ToolsMenuExtractShaders
             // 
             this.ToolsMenuExtractShaders.Name = "ToolsMenuExtractShaders";
-            this.ToolsMenuExtractShaders.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuExtractShaders.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuExtractShaders.Text = "Extract shaders...";
             this.ToolsMenuExtractShaders.Click += new System.EventHandler(this.ToolsMenuExtractShaders_Click);
             // 
             // ToolsMenuOptions
             // 
             this.ToolsMenuOptions.Name = "ToolsMenuOptions";
-            this.ToolsMenuOptions.Size = new System.Drawing.Size(165, 22);
+            this.ToolsMenuOptions.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuOptions.Text = "Options...";
             this.ToolsMenuOptions.Click += new System.EventHandler(this.ToolsMenuOptions_Click);
             // 
@@ -3306,80 +3383,13 @@ namespace CodeWalker
             this.ToolbarPanel.TabIndex = 7;
             this.ToolbarPanel.Visible = false;
             // 
-            // NearClipUpDown
+            // ToolsMenuCutsceneViewer
             // 
-            this.NearClipUpDown.DecimalPlaces = 3;
-            this.NearClipUpDown.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            65536});
-            this.NearClipUpDown.Location = new System.Drawing.Point(80, 320);
-            this.NearClipUpDown.Maximum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.NearClipUpDown.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            196608});
-            this.NearClipUpDown.Name = "NearClipUpDown";
-            this.NearClipUpDown.Size = new System.Drawing.Size(114, 20);
-            this.NearClipUpDown.TabIndex = 59;
-            this.NearClipUpDown.Value = new decimal(new int[] {
-            5,
-            0,
-            0,
-            65536});
-            this.NearClipUpDown.ValueChanged += new System.EventHandler(this.NearClipUpDown_ValueChanged);
-            // 
-            // label31
-            // 
-            this.label31.AutoSize = true;
-            this.label31.Location = new System.Drawing.Point(4, 322);
-            this.label31.Name = "label31";
-            this.label31.Size = new System.Drawing.Size(53, 13);
-            this.label31.TabIndex = 58;
-            this.label31.Text = "Near Clip:";
-            // 
-            // FarClipUpDown
-            // 
-            this.FarClipUpDown.Increment = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            this.FarClipUpDown.Location = new System.Drawing.Point(80, 346);
-            this.FarClipUpDown.Maximum = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
-            this.FarClipUpDown.Minimum = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            this.FarClipUpDown.Name = "FarClipUpDown";
-            this.FarClipUpDown.Size = new System.Drawing.Size(114, 20);
-            this.FarClipUpDown.TabIndex = 61;
-            this.FarClipUpDown.Value = new decimal(new int[] {
-            12000,
-            0,
-            0,
-            0});
-            this.FarClipUpDown.ValueChanged += new System.EventHandler(this.FarClipUpDown_ValueChanged);
-            // 
-            // label32
-            // 
-            this.label32.AutoSize = true;
-            this.label32.Location = new System.Drawing.Point(4, 348);
-            this.label32.Name = "label32";
-            this.label32.Size = new System.Drawing.Size(45, 13);
-            this.label32.TabIndex = 60;
-            this.label32.Text = "Far Clip:";
+            this.ToolsMenuCutsceneViewer.Enabled = false;
+            this.ToolsMenuCutsceneViewer.Name = "ToolsMenuCutsceneViewer";
+            this.ToolsMenuCutsceneViewer.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuCutsceneViewer.Text = "Cutscene viewer...";
+            this.ToolsMenuCutsceneViewer.Click += new System.EventHandler(this.ToolsMenuCutsceneViewer_Click);
             // 
             // WorldForm
             // 
@@ -3444,6 +3454,8 @@ namespace CodeWalker
             ((System.ComponentModel.ISupportInitialize)(this.FieldOfViewTrackBar)).EndInit();
             this.tabPage14.ResumeLayout(false);
             this.tabPage14.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.FarClipUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.NearClipUpDown)).EndInit();
             this.tabPage9.ResumeLayout(false);
             this.tabPage9.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).EndInit();
@@ -3462,8 +3474,6 @@ namespace CodeWalker
             this.Toolbar.PerformLayout();
             this.ToolbarPanel.ResumeLayout(false);
             this.ToolbarPanel.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.NearClipUpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.FarClipUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -3731,5 +3741,6 @@ namespace CodeWalker
         private System.Windows.Forms.Label label32;
         private System.Windows.Forms.NumericUpDown NearClipUpDown;
         private System.Windows.Forms.Label label31;
+        private System.Windows.Forms.ToolStripMenuItem ToolsMenuCutsceneViewer;
     }
 }

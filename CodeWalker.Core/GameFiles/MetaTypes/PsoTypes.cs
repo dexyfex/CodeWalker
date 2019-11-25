@@ -16276,7 +16276,7 @@ namespace CodeWalker.GameFiles
     {
         public MetaHash Name { get; set; } //0   Name: INT_0Bh: 0
         public uint Unused0 { get; set; } //4
-        public Array_uint Bounds { get; set; } //8   Bounds//3298223272: Array: 8: 1  {256: INT_0Bh: 0}
+        public Array_uint Bounds { get; set; } //8   Bounds: Array: 8: 1  {256: INT_0Bh: 0}
         public ushort Flags { get; set; } //24   Flags: SHORT_0Fh: 24: 2097155
         public ushort Unused1 { get; set; }//26
         public uint Unused2 { get; set; }//28
@@ -16379,7 +16379,7 @@ namespace CodeWalker.GameFiles
     {
         public MetaHash Name { get; set; } //0   Name: INT_0Bh: 0
         public uint Unused0 { get; set; } //4
-        public Array_uint Bounds { get; set; } //8   Bounds//3298223272: Array: 8: 1  {256: INT_0Bh: 0}
+        public Array_uint Bounds { get; set; } //8   Bounds: Array: 8: 1  {256: INT_0Bh: 0}
 
         public override string ToString()
         {

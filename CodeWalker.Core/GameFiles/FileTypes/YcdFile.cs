@@ -16,6 +16,7 @@ namespace CodeWalker.GameFiles
 
         public Dictionary<MetaHash, ClipMapEntry> ClipMap { get; set; }
         public Dictionary<MetaHash, AnimationMapEntry> AnimMap { get; set; }
+        public Dictionary<MetaHash, ClipMapEntry> CutsceneMap { get; set; } //used for ycd's that are indexed in cutscenes, since name hashes all appended with -n
 
         public ClipMapEntry[] ClipMapEntries { get; set; }
         public AnimationMapEntry[] AnimMapEntries { get; set; }
@@ -76,6 +77,29 @@ namespace CodeWalker.GameFiles
             ClipMapEntries = ClipMap.Values.ToArray();
             AnimMapEntries = AnimMap.Values.ToArray();
 
+        }
+
+        public void BuildCutsceneMap(int cutIndex)
+        {
+            CutsceneMap = new Dictionary<MetaHash, ClipMapEntry>();
+
+            var replstr = "-" + cutIndex.ToString();
+
+            foreach (var cme in ClipMapEntries)
+            {
+                var sn = cme?.Clip?.ShortName ?? "";
+                if (sn.EndsWith(replstr))
+                {
+                    sn = sn.Substring(0, sn.Length - replstr.Length);
+                }
+                if (sn.EndsWith("_dual"))
+                {
+                    sn = sn.Substring(0, sn.Length - 5);
+                }
+                JenkIndex.Ensure(sn);
+                var h = JenkHash.GenHash(sn);
+                CutsceneMap[h] = cme;
+            }
         }
 
 

@@ -119,14 +119,14 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public ulong ParametersPointer { get; set; }
-        public MetaHash Name { get; set; } //530103687, 2401522793, 1912906641
+        public MetaHash Name { get; set; } //decal_emissive_only, emissive, spec
         public uint Unknown_Ch { get; set; } // 0x00000000
         public byte ParameterCount { get; set; }
         public byte RenderBucket { get; set; } // 2, 0, 
         public ushort Unknown_12h { get; set; } // 32768    HasComment?
         public ushort ParameterSize { get; set; } //112, 208, 320    (with 16h) 10485872, 17826000, 26214720
         public ushort ParameterDataSize { get; set; } //160, 272, 400 
-        public MetaHash FileName { get; set; } //2918136469, 2635608835, 2247429097
+        public MetaHash FileName { get; set; } //decal_emissive_only.sps, emissive.sps, spec.sps
         public uint Unknown_1Ch { get; set; } // 0x00000000
         public uint RenderBucketMask { get; set; } //65284, 65281  DrawBucketMask?   (1<<bucket) | 0xFF00
         public ushort Unknown_24h { get; set; } //0   Instanced?

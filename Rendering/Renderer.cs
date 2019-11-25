@@ -138,6 +138,7 @@ namespace CodeWalker.Rendering
         private YmapEntityDef SelectedCarGenEntity = new YmapEntityDef(); //placeholder entity object for drawing cars
 
         public DrawableBase SelectedDrawable = null;
+        public Dictionary<DrawableBase, bool> SelectionDrawableDrawFlags = new Dictionary<DrawableBase, bool>();
         public Dictionary<DrawableModel, bool> SelectionModelDrawFlags = new Dictionary<DrawableModel, bool>();
         public Dictionary<DrawableGeometry, bool> SelectionGeometryDrawFlags = new Dictionary<DrawableGeometry, bool>();
         public bool SelectionFlagsTestAll = false; //to test all renderables for draw flags; for model form
@@ -2715,6 +2716,97 @@ namespace CodeWalker.Rendering
                 RenderFragment(null, SelectedCarGenEntity, caryft.Fragment, carhash);
             }
         }
+
+
+
+        public void RenderPed(Ped ped)
+        {
+
+            YftFile yft = ped.Yft;// GameFileCache.GetYft(SelectedModelHash);
+            if (yft != null)
+            {
+                if (yft.Loaded)
+                {
+                    if (yft.Fragment != null)
+                    {
+                        //var f = yft.Fragment;
+                        //var txdhash = 0u;// SelectedVehicleHash;// yft.RpfFileEntry?.ShortNameHash ?? 0;
+                        //var namelower = yft.RpfFileEntry?.GetShortNameLower();
+                        //Archetype arch = null;// TryGetArchetype(hash);
+                        //Renderer.RenderFragment(arch, null, f, txdhash);
+                        //seldrwbl = f.Drawable;
+                    }
+                }
+
+
+                var vi = ped.Ymt?.VariationInfo;
+                if (vi != null)
+                {
+                    for (int i = 0; i < 12; i++)
+                    {
+                        RenderPedComponent(ped, i);
+                    }
+                }
+
+            }
+
+        }
+
+        private void RenderPedComponent(Ped ped, int i)
+        {
+            //var compData = ped.Ymt?.VariationInfo?.GetComponentData(i);
+            var drawable = ped.Drawables[i];
+            var texture = ped.Textures[i];
+
+            //if (compData == null) return;
+            if (drawable == null) return;
+
+            var td = ped.Ytd?.TextureDict;
+            var ac = ped.AnimClip;
+            if (ac != null)
+            {
+                ac.EnableRootMotion = ped.EnableRootMotion;
+            }
+
+            var skel = ped.Yft?.Fragment?.Drawable?.Skeleton;
+            if (skel != null)
+            {
+                if (drawable.Skeleton == null)
+                {
+                    drawable.Skeleton = skel;//force the drawable to use this skeleton.
+                }
+                else if (drawable.Skeleton != skel)
+                {
+                    var dskel = drawable.Skeleton; //put the bones of the fragment into the drawable. drawable's bones in this case seem messed up!
+                    for (int b = 0; b < skel.Bones.Count; b++)
+                    {
+                        var srcbone = skel.Bones[b];
+                        var dstbone = srcbone;
+                        if (dskel.BonesMap.TryGetValue(srcbone.Tag, out dstbone))
+                        {
+                            if (srcbone == dstbone) break; //bone reassignment already done!
+                            dskel.Bones[dstbone.Index] = srcbone;
+                            dskel.BonesMap[srcbone.Tag] = srcbone;
+                        }
+                    }
+                }
+            }
+
+
+            bool drawFlag = true;
+            if (!SelectionDrawableDrawFlags.TryGetValue(drawable, out drawFlag))
+            { drawFlag = true; }
+
+            if (drawFlag)
+            {
+                RenderDrawable(drawable, null, null, 0, td, texture, ac);
+            }
+
+
+        }
+
+
+
 
 
 

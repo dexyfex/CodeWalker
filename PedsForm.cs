@@ -64,7 +64,6 @@ namespace CodeWalker.Peds
         int toolsPanelResizeStartLeft = 0;
         int toolsPanelResizeStartRight = 0;
 
-        Dictionary<DrawableBase, bool> DrawableDrawFlags = new Dictionary<DrawableBase, bool>();
 
         bool enableGrid = false;
         float gridSize = 1.0f;
@@ -75,28 +74,8 @@ namespace CodeWalker.Peds
 
 
 
-        [TypeConverter(typeof(ExpandableObjectConverter))] public class PedSelection
-        {
-            public string Name { get; set; } = string.Empty;
-            public MetaHash NameHash { get; set; } = 0;//ped name hash
-            public CPedModelInfo__InitData InitData { get; set; } = null; //ped init data
-            public YddFile Ydd { get; set; } = null; //ped drawables
-            public YtdFile Ytd { get; set; } = null; //ped textures
-            public YcdFile Ycd { get; set; } = null; //ped animations
-            public YftFile Yft { get; set; } = null; //ped skeleton YFT
-            public PedFile Ymt { get; set; } = null; //ped variation info
-            public Dictionary<MetaHash, RpfFileEntry> DrawableFilesDict { get; set; } = null;
-            public Dictionary<MetaHash, RpfFileEntry> TextureFilesDict { get; set; } = null;
-            public RpfFileEntry[] DrawableFiles { get; set; } = null;
-            public RpfFileEntry[] TextureFiles { get; set; } = null;
-            public ClipMapEntry AnimClip { get; set; } = null;
-            public string[] DrawableNames { get; set; } = new string[12];
-            public Drawable[] Drawables { get; set; } = new Drawable[12];
-            public Texture[] Textures { get; set; } = new Texture[12];
-            public bool EnableRootMotion { get; set; } = false; //used to toggle whether or not to include root motion when playing animations
-        }
 
-        PedSelection SelectedPed = new PedSelection();
+        Ped SelectedPed = new Ped();
 
 
         ComboBox[] ComponentComboBoxes = null;
@@ -256,7 +235,7 @@ namespace CodeWalker.Peds
             Renderer.SelectedDrawable = null;// SelectedItem.Drawable;
 
 
-            RenderPed();
+            Renderer.RenderPed(SelectedPed);
 
             //UpdateMouseHitsFromRenderer();
             //RenderSelection();
@@ -616,14 +595,14 @@ namespace CodeWalker.Peds
                 {
                     if (rem)
                     {
-                        if (DrawableDrawFlags.ContainsKey(drwbl))
+                        if (Renderer.SelectionDrawableDrawFlags.ContainsKey(drwbl))
                         {
-                            DrawableDrawFlags.Remove(drwbl);
+                            Renderer.SelectionDrawableDrawFlags.Remove(drwbl);
                         }
                     }
                     else
                     {
-                        DrawableDrawFlags[drwbl] = false;
+                        Renderer.SelectionDrawableDrawFlags[drwbl] = false;
                     }
                 }
                 if (model != null)
@@ -709,7 +688,7 @@ namespace CodeWalker.Peds
         {
             //TODO: change to go through each component and add/update/remove treeview item accordingly?
 
-            DrawableDrawFlags.Clear();
+            Renderer.SelectionDrawableDrawFlags.Clear();
             Renderer.SelectionModelDrawFlags.Clear();
             Renderer.SelectionGeometryDrawFlags.Clear();
             ModelsTreeView.Nodes.Clear();
@@ -739,75 +718,17 @@ namespace CodeWalker.Peds
         public void LoadPed()
         {
             var pedname = PedNameComboBox.Text;
-            var pednamel = pedname.ToLowerInvariant();
-            MetaHash pedhash = JenkHash.GenHash(pednamel);
+            var pedhash = JenkHash.GenHash(pedname.ToLowerInvariant());
+            var pedchange = SelectedPed.NameHash != pedhash;
 
-            SelectedPed.Name = string.Empty;
-            SelectedPed.NameHash = 0;
-            SelectedPed.InitData = null;
-            SelectedPed.Ydd = null;
-            SelectedPed.Ytd = null;
-            SelectedPed.Ycd = null;
-            SelectedPed.Yft = null;
-            SelectedPed.Ymt = null;
-            SelectedPed.AnimClip = null;
             for (int i = 0; i < 12; i++)
             {
                 ClearCombo(ComponentComboBoxes[i]);
-                SelectedPed.Drawables[i] = null;
-                SelectedPed.Textures[i] = null;
             }
 
             DetailsPropertyGrid.SelectedObject = null;
 
-
-            CPedModelInfo__InitData initdata = null;
-            if (!GameFileCache.PedsInitDict.TryGetValue(pedhash, out initdata)) return;
-
-            var ycdhash = JenkHash.GenHash(initdata.ClipDictionaryName.ToLowerInvariant());
-
-            bool pedchange = SelectedPed.NameHash != pedhash;
-            SelectedPed.Name = pedname;
-            SelectedPed.NameHash = pedhash;
-            SelectedPed.InitData = initdata;
-            SelectedPed.Ydd = GameFileCache.GetYdd(pedhash);
-            SelectedPed.Ytd = GameFileCache.GetYtd(pedhash);
-            SelectedPed.Ycd = GameFileCache.GetYcd(ycdhash);
-            SelectedPed.Yft = GameFileCache.GetYft(pedhash);
-
-            PedFile pedFile = null;
-            GameFileCache.PedVariationsDict?.TryGetValue(pedhash, out pedFile);
-            SelectedPed.Ymt = pedFile;
-
-            Dictionary<MetaHash, RpfFileEntry> peddict = null;
-            GameFileCache.PedDrawableDicts.TryGetValue(SelectedPed.NameHash, out peddict);
-            SelectedPed.DrawableFilesDict = peddict;
-            SelectedPed.DrawableFiles = SelectedPed.DrawableFilesDict?.Values.ToArray();
-            GameFileCache.PedTextureDicts.TryGetValue(SelectedPed.NameHash, out peddict);
-            SelectedPed.TextureFilesDict = peddict;
-            SelectedPed.TextureFiles = SelectedPed.TextureFilesDict?.Values.ToArray();
-
-
-            while ((SelectedPed.Ydd != null) && (!SelectedPed.Ydd.Loaded))
-            {
-                Thread.Sleep(20);//kinda hacky
-                SelectedPed.Ydd = GameFileCache.GetYdd(pedhash);
-            }
-            while ((SelectedPed.Ytd != null) && (!SelectedPed.Ytd.Loaded))
-            {
-                Thread.Sleep(20);//kinda hacky
-                SelectedPed.Ytd = GameFileCache.GetYtd(pedhash);
-            }
-            while ((SelectedPed.Ycd != null) && (!SelectedPed.Ycd.Loaded))
-            {
-                Thread.Sleep(20);//kinda hacky
-                SelectedPed.Ycd = GameFileCache.GetYcd(ycdhash);
-            }
-            while ((SelectedPed.Yft != null) && (!SelectedPed.Yft.Loaded))
-            {
-                Thread.Sleep(20);//kinda hacky
-                SelectedPed.Yft = GameFileCache.GetYft(pedhash);
-            }
+            SelectedPed.Init(pedname, GameFileCache);
 
             LoadModel(SelectedPed.Yft, pedchange);
 
@@ -821,14 +742,8 @@ namespace CodeWalker.Peds
                 }
             }
 
-
-
             ClipDictComboBox.Text = SelectedPed.InitData?.ClipDictionaryName ?? "";
             ClipComboBox.Text = "idle";
-            MetaHash cliphash = JenkHash.GenHash("idle");
-            ClipMapEntry cme = null;
-            SelectedPed.Ycd?.ClipMap?.TryGetValue(cliphash, out cme);
-            SelectedPed.AnimClip = cme;
 
 
             DetailsPropertyGrid.SelectedObject = SelectedPed;
@@ -1203,96 +1118,6 @@ namespace CodeWalker.Peds
         }
 
 
-
-
-
-
-
-        private void RenderPed()
-        {
-
-            YftFile yft = SelectedPed.Yft;// GameFileCache.GetYft(SelectedModelHash);
-            if (yft != null)
-            {
-                if (yft.Loaded)
-                {
-                    if (yft.Fragment != null)
-                    {
-                        //var f = yft.Fragment;
-                        //var txdhash = 0u;// SelectedVehicleHash;// yft.RpfFileEntry?.ShortNameHash ?? 0;
-                        //var namelower = yft.RpfFileEntry?.GetShortNameLower();
-                        //Archetype arch = null;// TryGetArchetype(hash);
-                        //Renderer.RenderFragment(arch, null, f, txdhash);
-                        //seldrwbl = f.Drawable;
-                    }
-                }
-
-
-                var vi = SelectedPed.Ymt?.VariationInfo;
-                if (vi != null)
-                {
-                    for (int i = 0; i < 12; i++)
-                    {
-                        RenderPedComponent(i);
-                    }
-                }
-
-            }
-            
-        }
-
-        private void RenderPedComponent(int i)
-        {
-            //var compData = SelectedPed.Ymt?.VariationInfo?.GetComponentData(i);
-            var drawable = SelectedPed.Drawables[i];
-            var texture = SelectedPed.Textures[i];
-
-            //if (compData == null) return;
-            if (drawable == null) return;
-
-            var td = SelectedPed.Ytd?.TextureDict;
-            var ac = SelectedPed.AnimClip;
-            if (ac != null)
-            {
-                ac.EnableRootMotion = SelectedPed.EnableRootMotion;
-            }
-
-            var skel = SelectedPed.Yft?.Fragment?.Drawable?.Skeleton;
-            if (skel != null)
-            {
-                if (drawable.Skeleton == null)
-                {
-                    drawable.Skeleton = skel;//force the drawable to use this skeleton.
-                }
-                else if (drawable.Skeleton != skel)
-                {
-                    var dskel = drawable.Skeleton; //put the bones of the fragment into the drawable. drawable's bones in this case seem messed up!
-                    for (int b = 0; b < skel.Bones.Count; b++)
-                    {
-                        var srcbone = skel.Bones[b];
-                        var dstbone = srcbone;
-                        if (dskel.BonesMap.TryGetValue(srcbone.Tag, out dstbone))
-                        {
-                            if (srcbone == dstbone) break; //bone reassignment already done!
-                            dskel.Bones[dstbone.Index] = srcbone;
-                            dskel.BonesMap[srcbone.Tag] = srcbone;
-                        }
-                    }
-                }
-            }
-
-
-            bool drawFlag = true;
-            if (!DrawableDrawFlags.TryGetValue(drawable, out drawFlag))
-            { drawFlag = true; }
-
-            if (drawFlag)
-            {
-                Renderer.RenderDrawable(drawable, null, null, 0, td, texture, ac);
-            }
-
-
-        }
 
 
 

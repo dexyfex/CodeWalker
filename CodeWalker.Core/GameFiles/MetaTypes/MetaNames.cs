@@ -3546,6 +3546,14 @@ namespace CodeWalker.GameFiles
         @null = 987444055, // how best to handle this? C# doesn't like it
 
 
+        exportcamera = 962998194, //cutscene related stuff
+
+
+
+
+
+
+
 
 
 
