@@ -876,6 +876,70 @@ namespace CodeWalker.GameFiles
 
             AssignSequenceBoneIds();
         }
+
+
+
+        public struct FramePosition
+        {
+            public int Frame0;
+            public int Frame1;
+            public float Alpha0;
+            public float Alpha1;
+        }
+        public FramePosition GetFramePosition(float t)
+        {
+            bool ignoreLastFrame = true;//if last frame is equivalent to the first one, eg rollercoaster small light "globes" don't
+
+            FramePosition p = new FramePosition();
+            var nframes = (ignoreLastFrame) ? (Frames - 1) : Frames;
+
+            var curPos = (t / Duration) * nframes;
+            p.Frame0 = ((ushort)curPos) % Frames;
+            p.Frame1 = (p.Frame0 + 1);// % frames;
+            p.Alpha1 = (float)(curPos - Math.Floor(curPos));
+            p.Alpha0 = 1.0f - p.Alpha1;
+
+            return p;
+        }
+        public Vector4 EvaluateVector4(FramePosition frame, int boneIndex, bool interpolate)
+        {
+            var s = frame.Frame0 / SequenceFrameLimit;
+            int f0 = frame.Frame0 % SequenceFrameLimit;
+            int f1 = f0 + 1;
+            var seq = Sequences.data_items[s];
+            var aseq = seq.Sequences[boneIndex];
+            var v0 = aseq.EvaluateVector(f0);
+            var v1 = aseq.EvaluateVector(f1);
+            var v = interpolate ? (v0 * frame.Alpha0) + (v1 * frame.Alpha1) : v0;
+            return v;
+        }
+        public Quaternion EvaluateQuaternion(FramePosition frame, int boneIndex, bool interpolate)
+        {
+            var s = frame.Frame0 / SequenceFrameLimit;
+            int f0 = frame.Frame0 % SequenceFrameLimit;
+            int f1 = f0 + 1;
+            var seq = Sequences.data_items[s];
+            var aseq = seq.Sequences[boneIndex];
+            var q0 = aseq.EvaluateQuaternion(f0);
+            var q1 = aseq.EvaluateQuaternion(f1);
+            var q = interpolate ? Quaternion.Slerp(q0, q1, frame.Alpha1) : q0;
+            return q;
+        }
+
+        public int FindBoneIndex(ushort boneTag, byte track)
+        {
+            //TODO: make this use a dict??
+            if (BoneIds?.data_items != null)
+            {
+                for (int i = 0; i < BoneIds.data_items.Length; i++)
+                {
+                    var b = BoneIds.data_items[i];
+                    if ((b.BoneId == boneTag) && (b.Track == track)) return i;
+                }
+            }
+            return -1;
+        }
+
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct AnimationBoneId : IMetaXmlItem
     {

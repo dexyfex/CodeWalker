@@ -48,6 +48,7 @@ namespace CodeWalker.GameFiles
         public Dictionary<uint, RpfFileEntry> YbnDict { get; private set; }
         public Dictionary<uint, RpfFileEntry> YcdDict { get; private set; }
         public Dictionary<uint, RpfFileEntry> YnvDict { get; private set; }
+        public Dictionary<uint, RpfFileEntry> Gxt2Dict { get; private set; }
 
 
         public Dictionary<uint, RpfFileEntry> AllYmapsDict { get; private set; }
@@ -1202,7 +1203,7 @@ namespace CodeWalker.GameFiles
                     {
                         var dat = RpfMan.GetFile<CacheDatFile>(dlccachefile);
                         if (dat == null)
-                        { continue; } //update\\x64\\dlcpacks\\mpspecialraces\\dlc.rpf\\x64\\data\\cacheloaderdata_dlc\\mpspecialraces_3336915258_cache_y.dat
+                        { continue; } //update\\x64\\dlcpacks\\mpspecialraces\\dlc.rpf\\x64\\data\\cacheloaderdata_dlc\\mpspecialraces_3336915258_cache_y.dat (hash of: mpspecialraces_interior_additions)
                         AllCacheFiles.Add(dat);
                         foreach (var node in dat.AllMapNodes)
                         {
@@ -1402,6 +1403,24 @@ namespace CodeWalker.GameFiles
             string langstr2 = "americandlc.rpf";
             string langstr3 = "american.rpf";
 
+            Gxt2Dict = new Dictionary<uint, RpfFileEntry>();
+            foreach (var rpf in AllRpfs)
+            {
+                foreach (var entry in rpf.AllEntries)
+                {
+                    if (entry is RpfFileEntry fentry)
+                    {
+                        var p = entry.Path;
+                        if (entry.NameLower.EndsWith(".gxt2") && (p.Contains(langstr) || p.Contains(langstr2) || p.Contains(langstr3)))
+                        {
+                            Gxt2Dict[entry.ShortNameHash] = fentry;
+                        }
+                    }
+                }
+            }
+
+
+
             if (!DoFullStringIndex)
             {
                 string globalgxt2path = "x64b.rpf\\data\\lang\\" + langstr + ".rpf\\global.gxt2";
@@ -1419,24 +1438,17 @@ namespace CodeWalker.GameFiles
 
 
             List<Gxt2File> gxt2files = new List<Gxt2File>();
-            foreach (var rpf in AllRpfs)
+            foreach (var entry in Gxt2Dict.Values)
             {
-                foreach (var entry in rpf.AllEntries)
+                var gxt2 = RpfMan.GetFile<Gxt2File>(entry);
+                if (gxt2 != null)
                 {
-                    var p = entry.Path;
-                    if (entry.NameLower.EndsWith(".gxt2") && (p.Contains(langstr)|| p.Contains(langstr2)|| p.Contains(langstr3)))
+                    for (int i = 0; i < gxt2.TextEntries.Length; i++)
                     {
-                        var gxt2 = RpfMan.GetFile<Gxt2File>(entry);
-                        if (gxt2 != null)
-                        {
-                            for (int i = 0; i < gxt2.TextEntries.Length; i++)
-                            {
-                                var e = gxt2.TextEntries[i];
-                                GlobalText.Ensure(e.Text, e.Hash);
-                            }
-                            gxt2files.Add(gxt2);
-                        }
+                        var e = gxt2.TextEntries[i];
+                        GlobalText.Ensure(e.Text, e.Hash);
                     }
+                    gxt2files.Add(gxt2);
                 }
             }
 

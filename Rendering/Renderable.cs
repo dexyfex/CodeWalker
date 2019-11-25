@@ -483,18 +483,8 @@ namespace CodeWalker.Rendering
             { return; }
 
             bool interpolate = true; //how to know? eg. cs4_14_hickbar_anim shouldn't
-            bool ignoreLastFrame = true;//if last frame is equivalent to the first one, eg rollercoaster small light "globes" don't
 
-            var duration = anim.Duration;
-            var frames = anim.Frames;
-            var nframes = (ignoreLastFrame) ? (frames - 1) : frames;
-
-            var curPos = (t/duration) * nframes;
-            var frame0 = ((ushort)curPos) % frames;
-            var frame1 = (frame0 + 1);// % frames;
-            var falpha = (float)(curPos - Math.Floor(curPos));
-            var ialpha = 1.0f - falpha;
-
+            var frame = anim.GetFramePosition(t);
 
             var dwbl = this.Key;
             var skel = dwbl?.Skeleton;
@@ -502,8 +492,8 @@ namespace CodeWalker.Rendering
             if (bones == null)
             { return; }
 
-            Vector4 v0, v1, v;
-            Quaternion q0, q1, q;
+            Vector4 v;
+            Quaternion q;
 
             for (int i = 0; i < anim.BoneIds.data_items.Length; i++)
             {
@@ -513,56 +503,50 @@ namespace CodeWalker.Rendering
                 Bone bone = null;
                 skel?.BonesMap?.TryGetValue(boneiditem.BoneId, out bone);
                 if (bone == null)
-                { continue; }
+                {
+                    continue;
+                    //skel.BoneTagsMap?.TryGetValue(boneiditem.BoneId, out bone);
+                    //if (bone == null)
+                    //{ continue; }
+                }
 
-                var sfl = anim.SequenceFrameLimit;
-                var s = frame0 / sfl;
-                int f0 = frame0 % sfl;
-                int f1 = f0 + 1;
-
-                var seq = anim.Sequences.data_items[s];
-                var aseq = seq.Sequences[i];
                 switch (track)
                 {
                     case 0: //bone position
-                        v0 = aseq.EvaluateVector(f0);
-                        v1 = aseq.EvaluateVector(f1);
-                        v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
+                        v = anim.EvaluateVector4(frame, i, interpolate);
                         bone.AnimTranslation = v.XYZ();
                         break;
                     case 1: //bone orientation
-                        q0 = aseq.EvaluateQuaternion(f0);
-                        q1 = aseq.EvaluateQuaternion(f1);
-                        q = interpolate ? Quaternion.Slerp(q0, q1, falpha) : q0;
+                        q = anim.EvaluateQuaternion(frame, i, interpolate);
                         bone.AnimRotation = q;
                         break;
                     case 2: //scale?
-                        v0 = aseq.EvaluateVector(f0);
-                        v1 = aseq.EvaluateVector(f1);
-                        v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
+                        v = anim.EvaluateVector4(frame, i, interpolate);
                         bone.AnimScale = v.XYZ();
                         break;
                     case 5://root motion vector
                         if (EnableRootMotion)
                         {
-                            v0 = aseq.EvaluateVector(f0);
-                            v1 = aseq.EvaluateVector(f1);
-                            v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
+                            v = anim.EvaluateVector4(frame, i, interpolate);
                             bone.AnimTranslation += v.XYZ();
                         }
                         break;
                     case 6://quaternion... root rotation
                         if (EnableRootMotion)
                         {
-                            q0 = aseq.EvaluateQuaternion(f0);
-                            q1 = aseq.EvaluateQuaternion(f1);
-                            q = interpolate ? Quaternion.Slerp(q0, q1, falpha) : q0;
+                            q = anim.EvaluateQuaternion(frame, i, interpolate);
                             bone.AnimRotation = q * bone.AnimRotation;
                         }
                         break;
                     case 7://vector3... (camera position?)
                         break;
                     case 8://quaternion... (camera rotation?)
+                        break;
+                    case 24://face stuff?
+                        break;
+                    case 25://face stuff?
+                        break;
+                    case 26://face stuff?
                         break;
                     case 27:
                     case 50:
@@ -655,17 +639,8 @@ namespace CodeWalker.Rendering
             { return; }
 
             bool interpolate = true; //how to know? eg. cs4_14_hickbar_anim shouldn't
-            bool ignoreLastFrame = true;//if last frame is equivalent to the first one, eg rollercoaster small light "globes" don't
 
-            var duration = anim.Duration;
-            var frames = anim.Frames;
-            var nframes = (ignoreLastFrame) ? (frames - 1) : frames;
-
-            var curPos = (t / duration) * nframes;
-            var frame0 = ((ushort)curPos) % frames;
-            var frame1 = (frame0 + 1);// % frames;
-            var falpha = (float)(curPos - Math.Floor(curPos));
-            var ialpha = 1.0f - falpha;
+            var frame = anim.GetFramePosition(t);
 
             var globalAnimUV0 = new Vector4(1.0f, 0.0f, 0.0f, 0.0f);
             var globalAnimUV1 = new Vector4(0.0f, 1.0f, 0.0f, 0.0f);
@@ -678,16 +653,8 @@ namespace CodeWalker.Rendering
                 if ((track != 17) && (track != 18))
                 { continue; }//17 and 18 would be UV0 and UV1
 
-                var sfl = anim.SequenceFrameLimit;
-                var s = frame0 / sfl;
-                int f0 = frame0 % sfl;
-                int f1 = f0 + 1;
+                var v = anim.EvaluateVector4(frame, i, interpolate);
 
-                var seq = anim.Sequences.data_items[s];
-                var aseq = seq.Sequences[i];
-                var v0 = aseq.EvaluateVector(f0);
-                var v1 = aseq.EvaluateVector(f1);
-                var v = interpolate ? (v0 * ialpha) + (v1 * falpha) : v0;
                 switch (track)
                 {
                     case 17: globalAnimUV0 = v; break; //could be overwriting values here...

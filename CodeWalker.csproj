@@ -540,6 +540,12 @@
       <DependentUpon>SelectFolderForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs" />
+    <Compile Include="World\CutsceneForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="World\CutsceneForm.Designer.cs">
+      <DependentUpon>CutsceneForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="World\SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -793,6 +799,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Utils\SelectFolderForm.resx">
       <DependentUpon>SelectFolderForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="World\CutsceneForm.resx">
+      <DependentUpon>CutsceneForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="World\SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>

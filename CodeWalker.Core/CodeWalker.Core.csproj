@@ -143,6 +143,7 @@
     <Compile Include="World\Camera.cs" />
     <Compile Include="World\Clouds.cs" />
     <Compile Include="World\Entity.cs" />
+    <Compile Include="World\Ped.cs" />
     <Compile Include="World\PopZones.cs" />
     <Compile Include="World\Scenarios.cs" />
     <Compile Include="World\Space.cs" />

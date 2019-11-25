@@ -118,7 +118,7 @@ namespace CodeWalker.GameFiles
                             { } //just testing
                             else
                             {
-                                dates.Add(new CacheFileDate(line));//eg: 2740459947 130680580712018938 8944
+                                dates.Add(new CacheFileDate(line));//eg: 2740459947 (hash of: platform:/data/cdimages/scaleform_frontend.rpf) 130680580712018938 8944
                             }
                             break;
                     }

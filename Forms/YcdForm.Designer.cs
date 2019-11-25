@@ -160,7 +160,7 @@
             this.XmlTextBox.AutoIndentChars = false;
             this.XmlTextBox.AutoIndentCharsPatterns = "";
             this.XmlTextBox.AutoIndentExistingLines = false;
-            this.XmlTextBox.AutoScrollMinSize = new System.Drawing.Size(27, 14);
+            this.XmlTextBox.AutoScrollMinSize = new System.Drawing.Size(2, 14);
             this.XmlTextBox.BackBrush = null;
             this.XmlTextBox.CharHeight = 14;
             this.XmlTextBox.CharWidth = 8;
@@ -169,7 +169,6 @@
             this.XmlTextBox.DelayedEventsInterval = 1;
             this.XmlTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.XmlTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.XmlTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.XmlTextBox.IsReplaceMode = false;
             this.XmlTextBox.Language = FastColoredTextBoxNS.Language.XML;
             this.XmlTextBox.LeftBracket = '<';

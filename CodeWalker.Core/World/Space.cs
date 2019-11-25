@@ -150,9 +150,9 @@ namespace CodeWalker.World
             //foreach (var dg in dataGroupDict.Values)
             //{
             //    sb.AppendLine(dg.ToString());
-            //    if (dg.YBNHashes_3298223272 != null)
+            //    if (dg.Bounds != null)
             //    {
-            //        foreach (var ybnh in dg.YBNHashes_3298223272)
+            //        foreach (var ybnh in dg.Bounds)
             //        {
             //            sb.AppendLine("   " + ybnh.ToString());
             //        }

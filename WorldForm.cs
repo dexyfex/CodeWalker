@@ -197,6 +197,7 @@ namespace CodeWalker
 
         WorldSearchForm SearchForm = null;
 
+        CutsceneForm CutsceneForm = null;
 
         InputManager Input = new InputManager();
 
@@ -404,7 +405,10 @@ namespace CodeWalker
 
             space.Update(elapsed);
 
-
+            if (CutsceneForm != null)
+            {
+                CutsceneForm.UpdateAnimation(elapsed);
+            }
 
             Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
 
@@ -678,6 +682,10 @@ namespace CodeWalker
                 ProjectForm.GetVisibleYmaps(camera, renderworldVisibleYmapDict);
             }
 
+            if (CutsceneForm != null)
+            {
+                CutsceneForm.GetVisibleYmaps(camera, renderworldVisibleYmapDict);
+            }
 
             Renderer.RenderWorld(renderworldVisibleYmapDict, spaceEnts);
 
@@ -1875,6 +1883,15 @@ namespace CodeWalker
             audiozones.PlacementsDict.Remove(rel); //should cause a rebuild to add/remove items
         }
 
+
+        public void SetCameraTransform(Vector3 pos, Quaternion rot)
+        {
+            camera.FollowEntity.Position = pos;
+            camera.FollowEntity.Orientation = rot;
+            camera.FollowEntity.OrientationInv = Quaternion.Invert(rot);
+            camera.TargetRotation = Vector3.Zero;
+            camera.TargetDistance = 0.01f;
+        }
 
         public Vector3 GetCameraPosition()
         {
@@ -4098,6 +4115,29 @@ namespace CodeWalker
             //ToolbarSearchWindowButton.Checked = false;
         }
 
+        private void ShowCutsceneForm()
+        {
+            if (CutsceneForm == null)
+            {
+                CutsceneForm = new CutsceneForm(this);
+                CutsceneForm.Show(this);
+            }
+            else
+            {
+                if (CutsceneForm.WindowState == FormWindowState.Minimized)
+                {
+                    CutsceneForm.WindowState = FormWindowState.Normal;
+                }
+                CutsceneForm.Focus();
+            }
+            //ToolbarCutsceneWindowButton.Checked = true;
+        }
+        public void OnCutsceneFormClosed()
+        {
+            CutsceneForm = null;
+            //ToolbarCutsceneWindowButton.Checked = false;
+        }
+
         public void ShowModel(string name)
         {
             ViewModeComboBox.Text = "Model view";
@@ -4904,6 +4944,7 @@ namespace CodeWalker
                     ToolbarOpenButton.Enabled = true;
                     ToolbarProjectWindowButton.Enabled = true;
                     ToolsMenuProjectWindow.Enabled = true;
+                    ToolsMenuCutsceneViewer.Enabled = true;
                     ToolsMenuBinarySearch.Enabled = true;
                     ToolsMenuJenkInd.Enabled = true;
                 }
@@ -6982,6 +7023,11 @@ namespace CodeWalker
         private void ToolsMenuProjectWindow_Click(object sender, EventArgs e)
         {
             ShowProjectForm();
+        }
+
+        private void ToolsMenuCutsceneViewer_Click(object sender, EventArgs e)
+        {
+            ShowCutsceneForm();
         }
 
         private void ToolsMenuWorldSearch_Click(object sender, EventArgs e)
