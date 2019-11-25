@@ -486,6 +486,25 @@ namespace CodeWalker.World
                             obj.Ped.Rotation = rot;
                             obj.Ped.AnimClip = cme;
                         }
+                        if (obj.Prop != null)
+                        {
+                            ycd.CutsceneMap.TryGetValue(obj.Prop.Archetype?.Hash ?? 0, out cme);
+                            var pos = Position;
+                            var rot = Rotation;
+                            if (cme != null)
+                            {
+                                cme.OverridePlayTime = true;
+                                cme.PlayTime = cutOffset;
+
+                                updateObjectTransform(obj, cme, 0, 5, 6);
+
+                                pos = pos + rot.Multiply(obj.Position);
+                                rot = rot * obj.Rotation;
+                            }
+                            obj.Prop.Position = pos;
+                            obj.Prop.Orientation = rot;
+                        }
+
                     }
                 }
 
@@ -508,6 +527,10 @@ namespace CodeWalker.World
                     if (obj.Ped != null)
                     {
                         renderer.RenderPed(obj.Ped);
+                    }
+                    if (obj.Prop != null)
+                    {
+                        renderer.RenderArchetype(obj.Prop.Archetype, obj.Prop);
                     }
                 }
             }
@@ -968,6 +991,9 @@ namespace CodeWalker.World
 
         public Ped Ped { get; set; }
 
+        public YmapEntityDef Prop { get; set; }
+
+
 
         public void Init(CutObject obj, GameFileCache gfc)
         {
@@ -1066,6 +1092,10 @@ namespace CodeWalker.World
 
         private void InitProp(CutPropModelObject prop, GameFileCache gfc)
         {
+            var archetypeName = prop.StreamingName;
+
+            Prop = new YmapEntityDef();
+            Prop.SetArchetype(gfc.GetArchetype(archetypeName));
 
         }
 
