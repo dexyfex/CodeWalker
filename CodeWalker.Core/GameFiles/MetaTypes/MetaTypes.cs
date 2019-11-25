@@ -6259,6 +6259,7 @@ namespace CodeWalker.GameFiles
         }
         public string GetTextureSuffix(int texnum)
         {
+            if (texnum < 0) texnum = 0;
             const string alphas = "abcdefghijklmnopqrstuvwxyz";
             var tex = TexData[texnum];
             var texid = tex.texId;

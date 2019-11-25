@@ -1,4 +1,5 @@
 ﻿using CodeWalker.GameFiles;
+using CodeWalker.Rendering;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -69,7 +70,13 @@ namespace CodeWalker.World
 
         public void GetVisibleYmaps(Camera camera, Dictionary<MetaHash, YmapFile> ymaps)
         {
-            //use a temporary ymap for entities.
+            //use a temporary ymap for entities?
+
+            var renderer = WorldForm?.Renderer;
+            if (renderer == null) return;
+
+            if (Cutscene == null) return;
+            Cutscene.Render(renderer);
 
         }
 
@@ -140,12 +147,12 @@ namespace CodeWalker.World
                 var csnode = CutsceneTreeView.Nodes.Add(cutFile.FileEntry?.Name);
                 csnode.Tag = cs;
 
-                if (cf.pCutsceneObjects != null)
+                if (cs.SceneObjects != null)
                 {
                     var objsnode = csnode.Nodes.Add("Objects");
                     objsnode.Name = "Objects";
 
-                    foreach (var obj in cf.pCutsceneObjects)
+                    foreach (var obj in cs.SceneObjects.Values)
                     {
                         var objnode = objsnode.Nodes.Add(obj.ToString());
                         objnode.Tag = obj;
@@ -400,43 +407,109 @@ namespace CodeWalker.World
 
             float cutOffset = newTime - cutStart;//offset into the current cut
 
+
+            void updateObjectTransform(CutsceneObject obj, ClipMapEntry cme, ushort boneTag, byte posTrack, byte rotTrack)
+            {
+                if (cme != null)
+                {
+                    if (cme.Clip is ClipAnimation canim)
+                    {
+                        if (canim.Animation != null)
+                        {
+                            var t = canim.GetPlaybackTime(cutOffset);
+                            var f = canim.Animation.GetFramePosition(t);
+                            var p = canim.Animation.FindBoneIndex(boneTag, posTrack);
+                            var r = canim.Animation.FindBoneIndex(boneTag, rotTrack);
+                            if (p >= 0) obj.Position = canim.Animation.EvaluateVector4(f, p, true).XYZ();
+                            if (r >= 0) obj.Rotation = canim.Animation.EvaluateQuaternion(f, r, true);
+                        }
+                    }
+                    else if (cme.Clip is ClipAnimationList alist)
+                    {
+                        if (alist.Animations?.Data != null)
+                        {
+                            foreach (var anim in alist.Animations.Data)
+                            {
+                                var t = anim.GetPlaybackTime(cutOffset);
+                                var f = anim.Animation.GetFramePosition(t);
+                                var p = anim.Animation.FindBoneIndex(boneTag, posTrack);
+                                var r = anim.Animation.FindBoneIndex(boneTag, rotTrack);
+                                if (p >= 0) obj.Position = anim.Animation.EvaluateVector4(f, p, true).XYZ();
+                                if (r >= 0) obj.Rotation = anim.Animation.EvaluateQuaternion(f, r, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+
             var ycd = (cutIndex < (Ycds?.Length ?? 0)) ? Ycds[cutIndex] : null;
             if (ycd?.CutsceneMap != null)
             {
+                ClipMapEntry cme = null;
+
                 if (CameraObject != null)
                 {
-                    ClipMapEntry cme = null;
                     ycd.CutsceneMap.TryGetValue(CameraObject.Name, out cme);
 
-                    if (cme != null)
-                    {
-                        if (cme.Clip is ClipAnimation canim)
-                        {
-                            if (canim.Animation != null)
-                            {
-                                var t = canim.GetPlaybackTime(PlaybackTime);
-                                var f = canim.Animation.GetFramePosition(t);
-                                var p = canim.Animation.FindBoneIndex(0, 7);//camera position
-                                var r = canim.Animation.FindBoneIndex(0, 8);//camera rotation
-                                if (p >= 0) CameraObject.Position = canim.Animation.EvaluateVector4(f, p, true).XYZ();
-                                if (r >= 0) CameraObject.Rotation = canim.Animation.EvaluateQuaternion(f, r, true);
-                            }
-
-                        }
-
-                    }
-
-                    //var animname = CameraObject.Name.ToString() + "-" + cutIndex.ToString();
-                    //MetaHash animhash = JenkHash.GenHash()
-
-
+                    updateObjectTransform(CameraObject, cme, 0, 7, 8);
                 }
+
+                if (SceneObjects != null)
+                {
+                    foreach (var obj in SceneObjects.Values)
+                    {
+                        if (obj.Ped != null)
+                        {
+                            ycd.CutsceneMap.TryGetValue(obj.Ped.NameHash, out cme);
+                            var pos = Position;
+                            var rot = Rotation;
+                            if (cme != null)
+                            {
+                                cme.OverridePlayTime = true;
+                                cme.PlayTime = cutOffset;
+
+                                updateObjectTransform(obj, cme, 0, 5, 6);
+
+                                pos = pos + obj.Position;
+                                rot = rot * obj.Rotation;
+                            }
+                            obj.Ped.Position = pos;
+                            obj.Ped.Rotation = rot;
+                            obj.Ped.AnimClip = cme;
+                        }
+                    }
+                }
+
+
 
 
             }
 
 
         }
+
+
+        public void Render(Renderer renderer)
+        {
+
+            if (SceneObjects != null)
+            {
+                foreach (var obj in SceneObjects.Values)
+                {
+                    if (obj.Ped != null)
+                    {
+                        renderer.RenderPed(obj.Ped);
+                    }
+                }
+            }
+
+        }
+
+
+
 
 
         private void RaiseEvents(float upToTime)
@@ -747,8 +820,10 @@ namespace CodeWalker.World
                 var dur = args.fSubtitleDuration;
 
                 txt = txt.Replace("~z~", "");
+                txt = txt.Replace("~c~~n~", "\n - ");
                 txt = txt.Replace("~n~", "\n");
                 txt = txt.Replace("~c~", " - ");
+                txt = txt.Replace("~t~", " - ");
 
                 WorldForm.ShowSubtitle(txt, dur);
             }
@@ -858,7 +933,7 @@ namespace CodeWalker.World
             foreach (var obj in Objects.Values)
             {
                 var sobj = new CutsceneObject();
-                sobj.Init(obj);
+                sobj.Init(obj, GameFileCache);
                 SceneObjects[sobj.ObjectID] = sobj;
             }
         }
@@ -873,8 +948,10 @@ namespace CodeWalker.World
         public Vector3 Position { get; set; }
         public Quaternion Rotation { get; set; }
 
+        public Ped Ped { get; set; }
 
-        public void Init(CutObject obj)
+
+        public void Init(CutObject obj, GameFileCache gfc)
         {
             CutObject = obj;
             ObjectID = obj?.iObjectId ?? -1;
@@ -895,18 +972,23 @@ namespace CodeWalker.World
             }
             else if (obj is CutPedModelObject ped)
             {
+                InitPed(ped, gfc);
             }
             else if (obj is CutPropModelObject prop)
             {
+                InitProp(prop, gfc);
             }
             else if (obj is CutVehicleModelObject veh)
             {
+                InitVehicle(veh, gfc);
             }
             else if (obj is CutWeaponModelObject weap)
             {
+                InitWeapon(weap, gfc);
             }
             else if (obj is CutHiddenModelObject hid)
             {
+                InitHiddenModel(hid, gfc);
             }
             else if (obj is CutFixupModelObject fix)
             {
@@ -948,6 +1030,41 @@ namespace CodeWalker.World
             { }
         }
 
+        private void InitPed(CutPedModelObject ped, GameFileCache gfc)
+        {
+
+            Ped = new Ped();
+            Ped.Init(ped.StreamingName, gfc);
+            Ped.LoadDefaultComponents(gfc);
+
+            if (ped.StreamingName == JenkHash.GenHash("player_zero"))
+            {
+                //for michael, switch his outfit so it's not glitching everywhere (until it's fixed?)
+                Ped.SetComponentDrawable(3, 27, 0, 0, gfc);
+                Ped.SetComponentDrawable(4, 19, 0, 0, gfc);
+                Ped.SetComponentDrawable(6, null, null, gfc);
+            }
+        }
+
+        private void InitProp(CutPropModelObject prop, GameFileCache gfc)
+        {
+
+        }
+
+        private void InitVehicle(CutVehicleModelObject veh, GameFileCache gfc)
+        {
+
+        }
+
+        private void InitWeapon(CutWeaponModelObject weap, GameFileCache gfc)
+        {
+
+        }
+
+        private void InitHiddenModel(CutHiddenModelObject hid, GameFileCache gfc)
+        {
+
+        }
 
 
         public override string ToString()

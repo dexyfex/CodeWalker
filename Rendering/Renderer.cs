@@ -2496,7 +2496,7 @@ namespace CodeWalker.Rendering
             return res;
         }
 
-        public bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, uint txdHash = 0, TextureDictionary txdExtra = null, Texture diffOverride = null, ClipMapEntry animClip = null)
+        public bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, uint txdHash = 0, TextureDictionary txdExtra = null, Texture diffOverride = null, ClipMapEntry animClip = null, Ped ped = null)
         {
             //enqueue a single drawable for rendering.
 
@@ -2521,10 +2521,10 @@ namespace CodeWalker.Rendering
                 rndbl.ResetBoneTransforms();
             }
 
-            return RenderRenderable(rndbl, arche, entity);
+            return RenderRenderable(rndbl, arche, entity, ped);
         }
 
-        private bool RenderRenderable(Renderable rndbl, Archetype arche, YmapEntityDef entity)
+        private bool RenderRenderable(Renderable rndbl, Archetype arche, YmapEntityDef entity, Ped ped = null)
         {
             //enqueue a single renderable for rendering.
 
@@ -2563,6 +2563,15 @@ namespace CodeWalker.Rendering
                 bscen = entity.BSCenter;
                 camrel += position;
                 distance = entity.Distance;
+            }
+            else if (ped != null)
+            {
+                position = ped.Position;
+                orientation = ped.Rotation;
+                bbmin += position;
+                bbmax += position;
+                camrel += position;
+                distance = (camrel + bscen).Length();
             }
             else
             {
@@ -2799,7 +2808,7 @@ namespace CodeWalker.Rendering
 
             if (drawFlag)
             {
-                RenderDrawable(drawable, null, null, 0, td, texture, ac);
+                RenderDrawable(drawable, null, null, 0, td, texture, ac, ped);
             }
 
 
