@@ -16,7 +16,6 @@ namespace CodeWalker.World
     public partial class CutsceneForm : Form
     {
         private WorldForm WorldForm;
-
         private GameFileCache GameFileCache;
 
         private Cutscene Cutscene = null;
@@ -100,7 +99,7 @@ namespace CodeWalker.World
                         GameFileCache.RpfMan.LoadFile(cutFile, entry);
 
                         cutscene = new Cutscene();
-                        cutscene.Init(cutFile, GameFileCache);
+                        cutscene.Init(cutFile, GameFileCache, WorldForm);
 
                     }
                 }
@@ -288,6 +287,7 @@ namespace CodeWalker.World
     {
         public CutFile CutFile { get; set; } = null;
         private GameFileCache GameFileCache = null;
+        private WorldForm WorldForm = null;
 
         public float[] CameraCutList { get; set; } = null;
         public YcdFile[] Ycds { get; set; } = null;
@@ -317,10 +317,11 @@ namespace CodeWalker.World
 
 
 
-        public void Init(CutFile cutFile, GameFileCache gfc)
+        public void Init(CutFile cutFile, GameFileCache gfc, WorldForm wf)
         {
             CutFile = cutFile;
             GameFileCache = gfc;
+            WorldForm = wf;
 
             var csf = cutFile?.CutsceneFile2;
             if (csf == null) return;
@@ -734,6 +735,17 @@ namespace CodeWalker.World
             if (args == null)
             { return; }
 
+            if (WorldForm != null)
+            {
+                var txt = args.cName.ToString();
+                var dur = args.fSubtitleDuration;
+
+                txt = txt.Replace("~z~", "");
+                txt = txt.Replace("~n~", "\n");
+                txt = txt.Replace("~c~", " - ");
+
+                WorldForm.ShowSubtitle(txt, dur);
+            }
         }
         private void PedVariation(CutEvent e)
         {

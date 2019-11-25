@@ -6111,6 +6111,35 @@ namespace CodeWalker
         }
 
 
+
+
+        public void ShowSubtitle(string text, float duration)
+        {
+            if (InvokeRequired)
+            {
+                try
+                {
+                    BeginInvoke(new Action(() => { ShowSubtitle(text, duration); }));
+                }
+                catch { }
+                return;
+            }
+
+            SubtitleLabel.Text = text;
+            SubtitleLabel.Visible = true;
+            SubtitleTimer.Interval = (int)(duration * 1000.0f);
+            SubtitleTimer.Enabled = true;
+
+        }
+
+
+
+
+
+
+
+
+
         private void StatsUpdateTimer_Tick(object sender, EventArgs e)
         {
 
@@ -7889,6 +7918,17 @@ namespace CodeWalker
         {
             var statsForm = new StatisticsForm(this);
             statsForm.Show(this);
+        }
+
+        private void SubtitleLabel_SizeChanged(object sender, EventArgs e)
+        {
+            SubtitleLabel.Left = (ClientSize.Width - SubtitleLabel.Size.Width) / 2; //keep subtitle label centered
+        }
+
+        private void SubtitleTimer_Tick(object sender, EventArgs e)
+        {
+            SubtitleTimer.Enabled = false;
+            SubtitleLabel.Visible = false;
         }
     }
 
