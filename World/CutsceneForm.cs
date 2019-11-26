@@ -880,6 +880,23 @@ namespace CodeWalker.World
             if (oe == null)
             { return; }
 
+
+            CutsceneObject cso = null;
+            SceneObjects.TryGetValue(oe.iObjectId, out cso);
+
+            if (cso?.Ped != null)
+            {
+                int comp = args.iComponent;
+                int drbl = args.iDrawable;
+                int texx = args.iTexture;
+
+                Task.Run(() =>
+                {
+                    cso.Ped.SetComponentDrawable(comp, drbl, 0, texx, GameFileCache);
+                });
+            }
+
+
         }
         private void CameraCut(CutEvent e)
         {
