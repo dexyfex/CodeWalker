@@ -510,7 +510,7 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public uint VFT { get; set; }
-        public uint Unknown_4h { get; set; } // 0x00000001
+        public uint Unknown_4h { get; set; } = 1; // 0x00000001
         public uint Unknown_8h { get; set; } // 0x00000000
         public uint Unknown_Ch { get; set; } // 0x00000000
         public ulong BoneTagsPointer { get; set; }
@@ -527,7 +527,7 @@ namespace CodeWalker.GameFiles
         public MetaHash Unknown_50h { get; set; }
         public MetaHash Unknown_54h { get; set; }
         public MetaHash Unknown_58h { get; set; }
-        public ushort Unknown_5Ch { get; set; } // 0x0001
+        public ushort Unknown_5Ch { get; set; } = 1; // 0x0001
         public ushort BonesCount { get; set; }
         public ushort ChildIndicesCount { get; set; }
         public ushort Unknown_62h { get; set; } // 0x0000
@@ -551,6 +551,9 @@ namespace CodeWalker.GameFiles
 
 
         public Dictionary<ushort, Bone> BonesMap { get; set; }//for convienience finding bones by tag
+
+
+        public Matrix3_s[] BoneTransforms; //for rendering
 
 
 
@@ -601,35 +604,9 @@ namespace CodeWalker.GameFiles
             this.ChildIndices = reader.ReadShortsAt(this.ChildIndicesPointer, this.ChildIndicesCount);
 
 
-            if ((Bones != null) && (ParentIndices != null))
-            {
-                var maxcnt = Math.Min(Bones.Count, ParentIndices.Length);
-                for (int i = 0; i < maxcnt; i++)
-                {
-                    var bone = Bones[i];
-                    var pind = ParentIndices[i];
-                    if ((pind >= 0) && (pind < Bones.Count))
-                    {
-                        bone.Parent = Bones[pind];
-                    }
-                }
-            }
+            AssignBoneParents();
 
-            BonesMap = new Dictionary<ushort, Bone>();
-            if (Bones != null)
-            {
-                for (int i = 0; i < Bones.Count; i++)
-                {
-                    var bone = Bones[i];
-                    BonesMap[bone.Tag] = bone;
-
-                    bone.UpdateAnimTransform();
-                    bone.BindTransformInv = (i < TransformationsInverted?.Length) ? TransformationsInverted[i] : Matrix.Invert(bone.AnimTransform);
-                    bone.BindTransformInv.M44 = 1.0f;
-                    bone.UpdateSkinTransform();
-                }
-            }
-
+            BuildBonesMap();
         }
 
         /// <summary>
@@ -708,6 +685,165 @@ namespace CodeWalker.GameFiles
             }
             return list.ToArray();
         }
+
+
+
+
+
+
+        public void AssignBoneParents()
+        {
+            if ((Bones != null) && (ParentIndices != null))
+            {
+                var maxcnt = Math.Min(Bones.Count, ParentIndices.Length);
+                for (int i = 0; i < maxcnt; i++)
+                {
+                    var bone = Bones[i];
+                    var pind = ParentIndices[i];
+                    if ((pind >= 0) && (pind < Bones.Count))
+                    {
+                        bone.Parent = Bones[pind];
+                    }
+                }
+            }
+        }
+
+        public void BuildBonesMap()
+        {
+            BonesMap = new Dictionary<ushort, Bone>();
+            if (Bones != null)
+            {
+                for (int i = 0; i < Bones.Count; i++)
+                {
+                    var bone = Bones[i];
+                    BonesMap[bone.Tag] = bone;
+
+                    bone.UpdateAnimTransform();
+                    bone.BindTransformInv = (i < TransformationsInverted?.Length) ? TransformationsInverted[i] : Matrix.Invert(bone.AnimTransform);
+                    bone.BindTransformInv.M44 = 1.0f;
+                    bone.UpdateSkinTransform();
+                }
+            }
+        }
+
+
+
+        public void ResetBoneTransforms()
+        {
+            if (Bones?.Data == null) return;
+            foreach (var bone in Bones.Data)
+            {
+                bone.ResetAnimTransform();
+            }
+            UpdateBoneTransforms();
+        }
+        public void UpdateBoneTransforms()
+        {
+            if (Bones?.Data == null) return;
+            if ((BoneTransforms == null) || (BoneTransforms.Length != Bones.Data.Count))
+            {
+                BoneTransforms = new Matrix3_s[Bones.Data.Count];
+            }
+            for (int i = 0; i < Bones.Data.Count; i++)
+            {
+                var bone = Bones.Data[i];
+                Matrix b = bone.SkinTransform;
+                Matrix3_s bt = new Matrix3_s();
+                bt.Row1 = b.Column1;
+                bt.Row2 = b.Column2;
+                bt.Row3 = b.Column3;
+                BoneTransforms[i] = bt;
+            }
+        }
+
+
+
+
+
+
+        public Skeleton Clone()
+        {
+            var skel = new Skeleton();
+
+            skel.Count1 = Count1;
+            skel.Count2 = Count2;
+            skel.Unknown_1Ch = Unknown_1Ch;
+            skel.Unknown_50h = Unknown_50h;
+            skel.Unknown_54h = Unknown_54h;
+            skel.Unknown_58h = Unknown_58h;
+            skel.BonesCount = BonesCount;
+            skel.ChildIndicesCount = ChildIndicesCount;
+
+            if (BoneTags != null)
+            {
+                skel.BoneTags = new ResourcePointerArray64<SkeletonBoneTag>();
+                if (BoneTags.data_items != null)
+                {
+                    skel.BoneTags.data_items = new SkeletonBoneTag[BoneTags.data_items.Length];
+                    for (int i = 0; i < BoneTags.data_items.Length; i++)
+                    {
+                        var obt = BoneTags.data_items[i];
+                        var nbt = new SkeletonBoneTag();
+                        skel.BoneTags.data_items[i] = nbt;
+                        while (obt != null)
+                        {
+                            nbt.BoneTag = obt.BoneTag;
+                            nbt.BoneIndex = obt.BoneIndex;
+                            obt = obt.LinkedTag;
+                            if (obt != null)
+                            {
+                                var nxt = new SkeletonBoneTag();
+                                nbt.LinkedTag = nxt;
+                                nbt = nxt;
+                            }
+                        }
+                    }
+                }
+            }
+            if (Bones != null)
+            {
+                skel.Bones = new ResourceSimpleArray<Bone>();
+                if (Bones.Data != null)
+                {
+                    skel.Bones.Data = new List<Bone>();
+                    for (int i = 0; i < Bones.Data.Count; i++)
+                    {
+                        var ob = Bones.Data[i];
+                        var nb = new Bone();
+                        nb.Rotation = ob.Rotation;
+                        nb.Translation = ob.Translation;
+                        nb.Scale = ob.Scale;
+                        nb.NextSiblingIndex = ob.NextSiblingIndex;
+                        nb.ParentIndex = ob.ParentIndex;
+                        nb.Flags = ob.Flags;
+                        nb.Index = ob.Index;
+                        nb.Tag = ob.Tag;
+                        nb.Index2 = ob.Index2;
+                        nb.Name = ob.Name;
+                        nb.AnimRotation = ob.AnimRotation;
+                        nb.AnimTranslation = ob.AnimTranslation;
+                        nb.AnimScale = ob.AnimScale;
+                        nb.AnimTransform = ob.AnimTransform;
+                        nb.BindTransformInv = ob.BindTransformInv;
+                        nb.SkinTransform = ob.SkinTransform;
+                        skel.Bones.Data.Add(nb);
+                    }
+                }
+            }
+
+            skel.TransformationsInverted = (Matrix[])TransformationsInverted.Clone();
+            skel.Transformations = (Matrix[])Transformations.Clone();
+            skel.ParentIndices = (short[])ParentIndices.Clone();
+            skel.ChildIndices = (short[])ChildIndices.Clone();
+
+            skel.AssignBoneParents();
+            skel.BuildBonesMap();
+
+            return skel;
+        }
+
+
+
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class SkeletonBoneTag : ResourceSystemBlock
@@ -800,15 +936,11 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        //public float RotationX { get; set; }
-        //public float RotationY { get; set; }
-        //public float RotationZ { get; set; }
-        //public float RotationW { get; set; }
         public Quaternion Rotation { get; set; }
         public Vector3 Translation { get; set; }
         public uint Unknown_1Ch { get; set; } // 0x00000000 RHW?
         public Vector3 Scale { get; set; }
-        public float Unknown_2Ch { get; set; } // 1.0  RHW?
+        public float Unknown_2Ch { get; set; } = 1.0f; // 1.0  RHW?
         public short NextSiblingIndex { get; set; } //limb end index? IK chain?
         public short ParentIndex { get; set; }
         public uint Unknown_34h { get; set; } // 0x00000000
