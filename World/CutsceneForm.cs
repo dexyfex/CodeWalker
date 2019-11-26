@@ -467,6 +467,8 @@ namespace CodeWalker.World
                 {
                     foreach (var obj in SceneObjects.Values)
                     {
+                        if (obj.Enabled == false) continue;
+
                         var pos = Position;
                         var rot = Rotation;
                         var animate = (obj.Ped != null) || (obj.Prop != null) || (obj.Vehicle != null);
@@ -521,6 +523,8 @@ namespace CodeWalker.World
             {
                 foreach (var obj in SceneObjects.Values)
                 {
+                    if (obj.Enabled == false) continue;
+
                     if (obj.Ped != null)
                     {
                         renderer.RenderPed(obj.Ped);
@@ -677,6 +681,17 @@ namespace CodeWalker.World
             if (args == null)
             { return; }
 
+            if (args.iObjectIdList == null) return;
+
+            foreach (var objid in args.iObjectIdList)
+            {
+                CutsceneObject obj = null;
+                SceneObjects.TryGetValue(objid, out obj);
+                if (obj != null)
+                {
+                    obj.Enabled = true;
+                }
+            }
         }
         private void LoadRayfireDes(CutEvent e)
         {
@@ -733,6 +748,17 @@ namespace CodeWalker.World
             if (args == null)
             { return; }
 
+            if (args.iObjectIdList == null) return;
+
+            foreach (var objid in args.iObjectIdList)
+            {
+                CutsceneObject obj = null;
+                SceneObjects.TryGetValue(objid, out obj);
+                if (obj != null)
+                {
+                    obj.Enabled = false;
+                }
+            }
         }
         private void UnloadRayfireDes(CutEvent e)
         {
@@ -1032,7 +1058,7 @@ namespace CodeWalker.World
         public MetaHash AnimHash { get; set; }
         public ClipMapEntry AnimClip { get; set; }
 
-        
+        public bool Enabled { get; set; } = false;
 
 
         public void Init(CutObject obj, GameFileCache gfc)
