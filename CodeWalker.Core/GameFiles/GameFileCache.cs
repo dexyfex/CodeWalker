@@ -92,7 +92,7 @@ namespace CodeWalker.GameFiles
         public bool DoFullStringIndex = false;
         public bool BuildExtendedJenkIndex = true;
         public bool LoadArchetypes = true;
-        public bool LoadVehicles = false;
+        public bool LoadVehicles = true;
         public bool LoadPeds = true;
         private bool PreloadedMode = false;
 
@@ -1404,6 +1404,7 @@ namespace CodeWalker.GameFiles
             string langstr3 = "american.rpf";
 
             Gxt2Dict = new Dictionary<uint, RpfFileEntry>();
+            var gxt2files = new List<Gxt2File>();
             foreach (var rpf in AllRpfs)
             {
                 foreach (var entry in rpf.AllEntries)
@@ -1414,12 +1415,24 @@ namespace CodeWalker.GameFiles
                         if (entry.NameLower.EndsWith(".gxt2") && (p.Contains(langstr) || p.Contains(langstr2) || p.Contains(langstr3)))
                         {
                             Gxt2Dict[entry.ShortNameHash] = fentry;
+
+                            if (DoFullStringIndex)
+                            {
+                                var gxt2 = RpfMan.GetFile<Gxt2File>(entry);
+                                if (gxt2 != null)
+                                {
+                                    for (int i = 0; i < gxt2.TextEntries.Length; i++)
+                                    {
+                                        var e = gxt2.TextEntries[i];
+                                        GlobalText.Ensure(e.Text, e.Hash);
+                                    }
+                                    gxt2files.Add(gxt2);
+                                }
+                            }
                         }
                     }
                 }
             }
-
-
 
             if (!DoFullStringIndex)
             {
@@ -1436,21 +1449,6 @@ namespace CodeWalker.GameFiles
                 return;
             }
 
-
-            List<Gxt2File> gxt2files = new List<Gxt2File>();
-            foreach (var entry in Gxt2Dict.Values)
-            {
-                var gxt2 = RpfMan.GetFile<Gxt2File>(entry);
-                if (gxt2 != null)
-                {
-                    for (int i = 0; i < gxt2.TextEntries.Length; i++)
-                    {
-                        var e = gxt2.TextEntries[i];
-                        GlobalText.Ensure(e.Text, e.Hash);
-                    }
-                    gxt2files.Add(gxt2);
-                }
-            }
 
             GlobalText.FullIndexBuilt = true;
 
