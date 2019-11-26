@@ -335,6 +335,7 @@ namespace CodeWalker.Peds
             GameFileCache.EnableDlc = true;
             GameFileCache.EnableMods = true;
             GameFileCache.LoadPeds = true;
+            GameFileCache.LoadVehicles = false;
             GameFileCache.LoadArchetypes = false;//to speed things up a little
             GameFileCache.BuildExtendedJenkIndex = false;//to speed things up a little
             GameFileCache.DoFullStringIndex = true;//to get all global text from DLC...

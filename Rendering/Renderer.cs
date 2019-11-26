@@ -2734,6 +2734,22 @@ namespace CodeWalker.Rendering
             }
         }
 
+        public void RenderVehicle(Vehicle vehicle, ClipMapEntry animClip = null)
+        {
+
+            YftFile yft = vehicle.Yft;
+            if ((yft != null) && (yft.Loaded) && (yft.Fragment != null))
+            {
+                var f = yft.Fragment;
+                var txdhash = vehicle.NameHash;
+
+                RenderFragment(null, vehicle.RenderEntity, f, txdhash, animClip);
+
+            }
+
+        }
+
+
 
 
         public void RenderPed(Ped ped)

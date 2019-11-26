@@ -75,13 +75,8 @@ namespace CodeWalker.Vehicles
 
 
 
-        MetaHash SelectedVehicleHash = 0;//base vehicle name hash
-        MetaHash SelectedModelHash = 0;//yft name hash, can be _hi
-        VehicleInitData SelectedVehicleInit = null;
-        YftFile SelectedVehicleYft = null;
+        Vehicle SelectedVehicle = new Vehicle();
 
-        YcdFile ConvRoofDict = null;
-        ClipMapEntry ConvRoofClip = null;
         bool PlayConvRoofAnim = false;
 
 
@@ -289,6 +284,7 @@ namespace CodeWalker.Vehicles
             }
 
             GameFileCache.EnableDlc = true;
+            GameFileCache.LoadPeds = false;
             GameFileCache.LoadVehicles = true;
             GameFileCache.LoadArchetypes = false;//to speed things up a little
             GameFileCache.BuildExtendedJenkIndex = false;//to speed things up a little
@@ -668,68 +664,22 @@ namespace CodeWalker.Vehicles
 
         public void LoadVehicle()
         {
-            var modelname = VehicleModelComboBox.Text;
-            var modelnamel = modelname.ToLowerInvariant();
-            MetaHash modelhash = JenkHash.GenHash(modelnamel);
-            MetaHash modelhashhi = JenkHash.GenHash(modelnamel + "_hi");
+            var name = VehicleModelComboBox.Text;
             bool hidet = VehicleHighDetailCheckBox.Checked;
-            var yfthash = hidet ? modelhashhi : modelhash;
+            bool vehiclechange = SelectedVehicle.Name != name;
 
-            VehicleInitData vid = null;
-            if (GameFileCache.VehiclesInitDict.TryGetValue(modelhash, out vid))
+            SelectedVehicle.Init(name, GameFileCache, hidet);
+
+            if (SelectedVehicle.InitData != null)
             {
-                bool vehiclechange = SelectedVehicleHash != modelhash;
-                ConvRoofDict = null;
-                ConvRoofClip = null;
-                SelectedModelHash = yfthash;
-                SelectedVehicleHash = modelhash;
-                SelectedVehicleInit = vid;
-                SelectedVehicleYft = GameFileCache.GetYft(SelectedModelHash);
-                while ((SelectedVehicleYft != null) && (!SelectedVehicleYft.Loaded))
-                {
-                    Thread.Sleep(20);//kinda hacky
-                    SelectedVehicleYft = GameFileCache.GetYft(SelectedModelHash);
-                }
-                LoadModel(SelectedVehicleYft, vehiclechange);
-                VehicleMakeLabel.Text = GlobalText.TryGetString(JenkHash.GenHash(vid.vehicleMakeName.ToLower()));
-                VehicleNameLabel.Text = GlobalText.TryGetString(JenkHash.GenHash(vid.gameName.ToLower()));
-
-                if (!string.IsNullOrEmpty(vid.animConvRoofDictName) && (vid.animConvRoofDictName.ToLowerInvariant() != "null"))
-                {
-                    ConvRoofDictNameLabel.Text = vid.animConvRoofDictName;
-                    ConvRoofNameLabel.Text = vid.animConvRoofName;
-
-                    var ycdhash = JenkHash.GenHash(vid.animConvRoofDictName.ToLowerInvariant());
-                    var cliphash = JenkHash.GenHash(vid.animConvRoofName?.ToLowerInvariant());
-                    ConvRoofDict = GameFileCache.GetYcd(ycdhash);
-                    while ((ConvRoofDict != null) && (!ConvRoofDict.Loaded))
-                    {
-                        Thread.Sleep(20);//kinda hacky
-                        ConvRoofDict = GameFileCache.GetYcd(ycdhash);
-                    }
-                    ClipMapEntry cme = null;
-                    ConvRoofDict?.ClipMap?.TryGetValue(cliphash, out cme);
-                    ConvRoofClip = cme;
-
-                    ConvRoofPanel.Visible = true;
-                }
-                else
-                {
-                    ConvRoofPanel.Visible = false;
-                }
+                LoadModel(SelectedVehicle.Yft, vehiclechange);
+                ConvRoofDictNameLabel.Text = SelectedVehicle.InitData.animConvRoofDictName;
+                ConvRoofNameLabel.Text = SelectedVehicle.InitData.animConvRoofName;
             }
-            else
-            {
-                SelectedModelHash = 0;
-                SelectedVehicleHash = 0;
-                SelectedVehicleInit = null;
-                SelectedVehicleYft = null;
-                VehicleMakeLabel.Text = "-";
-                VehicleNameLabel.Text = "-";
-                ConvRoofPanel.Visible = false;
-                ConvRoofDict = null;
-                ConvRoofClip = null;
-            }
+            VehicleMakeLabel.Text = SelectedVehicle.DisplayMake;
+            VehicleNameLabel.Text = SelectedVehicle.DisplayName;
+            ConvRoofPanel.Visible = SelectedVehicle.ConvRoofClip != null;
+
         }
 
         public void LoadModel(YftFile yft, bool movecamera = true)
@@ -926,38 +876,13 @@ namespace CodeWalker.Vehicles
 
         private void RenderVehicle()
         {
-
-            YftFile yft = GameFileCache.GetYft(SelectedModelHash);
-            if (yft != null)
+            ClipMapEntry clip = null;
+            if (PlayConvRoofAnim)
             {
-                if (yft.Loaded)
-                {
-                    if (yft.Fragment != null)
-                    {
-                        var f = yft.Fragment;
-
-                        var txdhash = SelectedVehicleHash;// yft.RpfFileEntry?.ShortNameHash ?? 0;
-
-                        var namelower = yft.RpfFileEntry?.GetShortNameLower();
-                        if (namelower?.EndsWith("_hi") ?? false)
-                        {
-                            txdhash = JenkHash.GenHash(namelower.Substring(0, namelower.Length - 3));
-                        }
-
-                        Archetype arch = null;// TryGetArchetype(hash);
-
-                        ClipMapEntry clip = null;
-                        if (PlayConvRoofAnim)
-                        {
-                            clip = ConvRoofClip;
-                        }
-
-                        Renderer.RenderFragment(arch, null, f, txdhash, clip);
-
-                        //seldrwbl = f.Drawable;
-                    }
-                }
+                clip = SelectedVehicle.ConvRoofClip;
             }
+
+            Renderer.RenderVehicle(SelectedVehicle, clip);
 
         }
 

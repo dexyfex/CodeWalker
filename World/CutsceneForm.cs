@@ -467,42 +467,38 @@ namespace CodeWalker.World
                 {
                     foreach (var obj in SceneObjects.Values)
                     {
-                        if (obj.Ped != null)
+                        var pos = Position;
+                        var rot = Rotation;
+                        var animate = (obj.Ped != null) || (obj.Prop != null) || (obj.Vehicle != null);
+                        if (animate)
                         {
                             ycd.CutsceneMap.TryGetValue(obj.AnimHash, out cme);
-                            var pos = Position;
-                            var rot = Rotation;
                             if (cme != null)
                             {
                                 cme.OverridePlayTime = true;
                                 cme.PlayTime = cutOffset;
-
-                                updateObjectTransform(obj, cme, 0, 5, 6);
-
+                                updateObjectTransform(obj, cme, 0, 5, 6); //using root animation bone ids
                                 pos = pos + rot.Multiply(obj.Position);
                                 rot = rot * obj.Rotation;
                             }
+                        }
+                        if (obj.Ped != null)
+                        {
                             obj.Ped.Position = pos;
                             obj.Ped.Rotation = rot;
                             obj.Ped.AnimClip = cme;
                         }
                         if (obj.Prop != null)
                         {
-                            ycd.CutsceneMap.TryGetValue(obj.AnimHash, out cme);
-                            var pos = Position;
-                            var rot = Rotation;
-                            if (cme != null)
-                            {
-                                cme.OverridePlayTime = true;
-                                cme.PlayTime = cutOffset;
-
-                                updateObjectTransform(obj, cme, 0, 5, 6);
-
-                                pos = pos + rot.Multiply(obj.Position);
-                                rot = rot * obj.Rotation;
-                            }
                             obj.Prop.Position = pos;
                             obj.Prop.Orientation = rot;
+                            obj.AnimClip = cme;
+                        }
+                        if (obj.Vehicle != null)
+                        {
+                            obj.Vehicle.Position = pos;
+                            obj.Vehicle.Rotation = rot;
+                            obj.Vehicle.UpdateEntity();
                             obj.AnimClip = cme;
                         }
 
@@ -532,6 +528,10 @@ namespace CodeWalker.World
                     if (obj.Prop != null)
                     {
                         renderer.RenderArchetype(obj.Prop.Archetype, obj.Prop, null, true, obj.AnimClip);
+                    }
+                    if (obj.Vehicle != null)
+                    {
+                        renderer.RenderVehicle(obj.Vehicle, obj.AnimClip);
                     }
                 }
             }
@@ -1026,11 +1026,13 @@ namespace CodeWalker.World
         public Quaternion Rotation { get; set; }
 
         public Ped Ped { get; set; }
-
         public YmapEntityDef Prop { get; set; }
+        public Vehicle Vehicle { get; set; }
 
         public MetaHash AnimHash { get; set; }
         public ClipMapEntry AnimClip { get; set; }
+
+        
 
 
         public void Init(CutObject obj, GameFileCache gfc)
@@ -1141,7 +1143,12 @@ namespace CodeWalker.World
 
         private void InitVehicle(CutVehicleModelObject veh, GameFileCache gfc)
         {
+            var name = veh.StreamingName.ToString();
 
+            Vehicle = new Vehicle();
+            Vehicle.Init(name, gfc);
+
+            AnimHash = veh.StreamingName;
         }
 
         private void InitWeapon(CutWeaponModelObject weap, GameFileCache gfc)
