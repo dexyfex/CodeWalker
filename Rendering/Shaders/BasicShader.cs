@@ -574,9 +574,9 @@ namespace CodeWalker.Rendering
 
         public override void SetModelVars(DeviceContext context, RenderableModel model)
         {
-            if (model.Owner.BoneTransforms != null)
+            if (model.Owner.Skeleton?.BoneTransforms != null)
             {
-                SetBoneMatrices(context, model.Owner.BoneTransforms);
+                SetBoneMatrices(context, model.Owner.Skeleton.BoneTransforms);
                 defaultBoneMatricesBound = false;
             }
             else if (!defaultBoneMatricesBound)

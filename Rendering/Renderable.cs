@@ -68,6 +68,7 @@ namespace CodeWalker.Rendering
         //public Dictionary<uint, Texture> TextureDict { get; private set; }
         //public long EmbeddedTextureSize { get; private set; }
 
+        public Skeleton Skeleton { get; set; } = null;
         public bool HasSkeleton;
         public bool HasTransforms;
 
@@ -77,8 +78,6 @@ namespace CodeWalker.Rendering
         public ClipMapEntry ClipMapEntry;
         public Dictionary<ushort, RenderableModel> ModelBoneLinks;
 
-        public Matrix3_s[] BoneTransforms;
-        public List<Bone> Bones;
         public bool EnableRootMotion = false; //used to toggle whether or not to include root motion when playing animations
 
 
@@ -240,7 +239,7 @@ namespace CodeWalker.Rendering
             HasSkeleton = hasskeleton;
             HasTransforms = hastransforms;
 
-            Bones = skeleton?.Bones?.Data;
+            Skeleton = skeleton;
 
 
             //calculate transforms for the models if there are any. (TODO: move this to a method for re-use...)
@@ -362,30 +361,18 @@ namespace CodeWalker.Rendering
 
         public void ResetBoneTransforms()
         {
-            if (Bones == null) return;
-            foreach (var bone in Bones)
-            {
-                bone.ResetAnimTransform();
-            }
+            if (Skeleton == null) return;
+            Skeleton.ResetBoneTransforms();
             UpdateBoneTransforms();
         }
         private void UpdateBoneTransforms()
         {
-            if (Bones == null) return;
-            if ((BoneTransforms == null) || (BoneTransforms.Length != Bones.Count))
-            {
-                BoneTransforms = new Matrix3_s[Bones.Count];
-            }
-            for (int i = 0; i < Bones.Count; i++)
-            {
-                var bone = Bones[i];
-                Matrix b = bone.SkinTransform;
-                Matrix3_s bt = new Matrix3_s();
-                bt.Row1 = b.Column1;
-                bt.Row2 = b.Column2;
-                bt.Row3 = b.Column3;
-                BoneTransforms[i] = bt;
-            }
+            if (Skeleton?.Bones?.Data == null) return;
+
+            Skeleton.UpdateBoneTransforms();
+
+            var bones = Skeleton.Bones?.Data;
+            var bonetransforms = Skeleton.BoneTransforms;
 
             var drawbl = Key;
             if (AllModels == null) return;
@@ -398,7 +385,7 @@ namespace CodeWalker.Rendering
                     var geom = model.Geometries[g];
                     var boneids = geom?.DrawableGeom?.BoneIds;
                     if (boneids == null) continue;
-                    if (boneids.Length != Bones.Count)
+                    if (boneids.Length != bones.Count)
                     {
                         var idc = boneids.Length;
                         if (geom.BoneTransforms == null)
@@ -408,9 +395,9 @@ namespace CodeWalker.Rendering
                         for (int b = 0; b < idc; b++)
                         {
                             var id = boneids[b];
-                            if (id < BoneTransforms.Length)
+                            if (id < bonetransforms.Length)
                             {
-                                geom.BoneTransforms[b] = BoneTransforms[id];
+                                geom.BoneTransforms[b] = bonetransforms[id];
                                 if (id != b)
                                 { }
                             }
@@ -492,7 +479,7 @@ namespace CodeWalker.Rendering
             var frame = anim.GetFramePosition(t);
 
             var dwbl = this.Key;
-            var skel = dwbl?.Skeleton;
+            var skel = Skeleton;
             var bones = skel?.Bones;
             if (bones == null)
             { return; }

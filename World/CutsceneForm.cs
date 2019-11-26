@@ -469,7 +469,7 @@ namespace CodeWalker.World
                     {
                         if (obj.Ped != null)
                         {
-                            ycd.CutsceneMap.TryGetValue(obj.Ped.NameHash, out cme);
+                            ycd.CutsceneMap.TryGetValue(obj.AnimHash, out cme);
                             var pos = Position;
                             var rot = Rotation;
                             if (cme != null)
@@ -488,7 +488,7 @@ namespace CodeWalker.World
                         }
                         if (obj.Prop != null)
                         {
-                            ycd.CutsceneMap.TryGetValue(obj.Prop.Archetype?.Hash ?? 0, out cme);
+                            ycd.CutsceneMap.TryGetValue(obj.AnimHash, out cme);
                             var pos = Position;
                             var rot = Rotation;
                             if (cme != null)
@@ -989,11 +989,29 @@ namespace CodeWalker.World
 
             if (Objects == null) return;
 
+
+            var refCounts = new Dictionary<MetaHash, int>();
+
             foreach (var obj in Objects.Values)
             {
                 var sobj = new CutsceneObject();
                 sobj.Init(obj, GameFileCache);
                 SceneObjects[sobj.ObjectID] = sobj;
+
+                if (sobj.AnimHash != 0)
+                {
+                    int refcount = 0;
+                    var hash = sobj.AnimHash;
+                    refCounts.TryGetValue(hash, out refcount);
+                    if (refcount > 0)
+                    {
+                        var newstr = hash.ToString() + "^" + refcount.ToString();
+                        sobj.AnimHash = JenkHash.GenHash(newstr);
+                    }
+                    refcount++;
+                    refCounts[hash] = refcount;
+                }
+
             }
         }
     }
@@ -1011,6 +1029,7 @@ namespace CodeWalker.World
 
         public YmapEntityDef Prop { get; set; }
 
+        public MetaHash AnimHash { get; set; }
         public ClipMapEntry AnimClip { get; set; }
 
 
@@ -1107,15 +1126,17 @@ namespace CodeWalker.World
                 Ped.SetComponentDrawable(4, 19, 0, 0, gfc);
                 Ped.SetComponentDrawable(6, null, null, gfc);
             }
+
+            AnimHash = ped.StreamingName;
         }
 
         private void InitProp(CutPropModelObject prop, GameFileCache gfc)
         {
-            var archetypeName = prop.StreamingName;
 
             Prop = new YmapEntityDef();
-            Prop.SetArchetype(gfc.GetArchetype(archetypeName));
+            Prop.SetArchetype(gfc.GetArchetype(prop.StreamingName));
 
+            AnimHash = prop.StreamingName;
         }
 
         private void InitVehicle(CutVehicleModelObject veh, GameFileCache gfc)

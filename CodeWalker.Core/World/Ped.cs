@@ -29,9 +29,11 @@ namespace CodeWalker.World
         public Drawable[] Drawables { get; set; } = new Drawable[12];
         public Texture[] Textures { get; set; } = new Texture[12];
         public bool EnableRootMotion { get; set; } = false; //used to toggle whether or not to include root motion when playing animations
+        public Skeleton Skeleton { get; set; } = null;
 
         public Vector3 Position { get; set; } = Vector3.Zero;
         public Quaternion Rotation { get; set; } = Quaternion.Identity;
+
 
 
         public void Init(string name, GameFileCache gfc)
@@ -107,6 +109,8 @@ namespace CodeWalker.World
                 Yft = gfc.GetYft(pedhash);
             }
 
+
+            Skeleton = Yft?.Fragment?.Drawable?.Skeleton?.Clone();
 
             MetaHash cliphash = JenkHash.GenHash("idle");
             ClipMapEntry cme = null;

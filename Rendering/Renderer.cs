@@ -2785,7 +2785,7 @@ namespace CodeWalker.Rendering
                 ac.EnableRootMotion = ped.EnableRootMotion;
             }
 
-            var skel = ped.Yft?.Fragment?.Drawable?.Skeleton;
+            var skel = ped.Skeleton;
             if (skel != null)
             {
                 if (drawable.Skeleton == null)
