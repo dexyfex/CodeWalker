@@ -5,6 +5,7 @@ Texture2D<float4> Bumpmap : register(t2);
 Texture2D<float4> Specmap : register(t3);
 Texture2D<float4> Detailmap : register(t4);
 Texture2D<float4> Colourmap2 : register(t5);
+Texture2D<float4> TintPalette : register(t6);
 SamplerState TextureSS : register(s0);
 
 
@@ -19,7 +20,7 @@ cbuffer PSSceneVars : register(b0)
 cbuffer PSGeomVars : register(b2)
 {
     uint EnableTexture;//1+=diffuse1, 2+=diffuse2
-    uint EnableTint;
+    uint EnableTint;//1=default, 2=weapons (use diffuse.a for tint lookup)
     uint EnableNormalMap;
     uint EnableSpecMap;
     uint EnableDetailMap;
@@ -80,6 +81,15 @@ float4 main(VS_OUTPUT input) : SV_TARGET
             float4 c2 = Colourmap2.Sample(TextureSS, input.Texcoord1);
             c = c2.a * c2 + (1 - c2.a) * c;
         }
+        if (EnableTint == 2)
+        {
+            //weapon tint
+            float tx = (round(c.a * 255.009995) - 32.0) * 0.007813; //okay R* this is just silly
+            float ty = 0.03125 * 0.5;// //1;//what to use for Y value? cb12[2].w in R* shader
+            float4 c3 = TintPalette.Sample(TextureSS, float2(tx, ty));
+            c.rgb *= c3.rgb;
+            c.a = 1;
+        }
 
         if (IsDistMap) c = float4(c.rgb*2, (c.r+c.g+c.b) - 1);
         if ((IsDecal == 0) && (c.a <= 0.33)) discard;
@@ -93,7 +103,7 @@ float4 main(VS_OUTPUT input) : SV_TARGET
 		}
         c.a = saturate(c.a*AlphaScale);
     }
-    if (EnableTint > 0)
+    if (EnableTint == 1)
     {
         c.rgb *= input.Tint.rgb;
     }

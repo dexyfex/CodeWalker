@@ -637,6 +637,7 @@ namespace CodeWalker.Rendering
                                 detltex = itex;
                                 break;
                             case ShaderParamNames.TintPaletteSampler:
+                            case ShaderParamNames.TextureSamplerDiffPal:
                                 tintpal = itex;
                                 if (tintpal.Key != null)
                                 {
@@ -649,6 +650,7 @@ namespace CodeWalker.Rendering
                                 isdistmap = true;
                                 break;
                             case ShaderParamNames.DiffuseSampler2:
+                            case ShaderParamNames.DiffuseExtraSampler:
                                 texture2 = itex;
                                 break;
                             case ShaderParamNames.heightSampler:
@@ -709,6 +711,14 @@ namespace CodeWalker.Rendering
                 case 3334613197: //trees_tnt.sps
                 case 1229591973://{trees_normal_spec_tnt.sps}
                     if (usetint) tintflag = 2; //use 2nd vertex colour channel for tint...
+                    break;
+                case 3267631682: //weapon_normal_spec_detail_tnt.sps
+                case 14185869:   //weapon_normal_spec_tnt.sps
+                    break; //regular tinting?
+                case 231364109: //weapon_normal_spec_cutout_palette.sps
+                case 3294641629://weapon_normal_spec_detail_palette.sps
+                case 731050667: //weapon_normal_spec_palette.sps
+                    if (usetint) { tintflag = 0; pstintflag = 2; } //use diffuse sampler alpha for tint lookup!
                     break;
                 case 3880384844://{decal_spec_only.sps}w
                 case 600733812://{decal_amb_only.sps}
@@ -798,6 +808,10 @@ namespace CodeWalker.Rendering
             if (usetint)
             {
                 tintpal.SetVSResource(context, 0);
+            }
+            if (pstintflag == 2)
+            {
+                tintpal.SetPSResource(context, 6);
             }
 
 
