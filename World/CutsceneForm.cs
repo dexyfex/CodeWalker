@@ -471,7 +471,7 @@ namespace CodeWalker.World
 
                         var pos = Position;
                         var rot = Rotation;
-                        var animate = (obj.Ped != null) || (obj.Prop != null) || (obj.Vehicle != null);
+                        var animate = (obj.Ped != null) || (obj.Prop != null) || (obj.Vehicle != null) || (obj.Weapon != null);
                         if (animate)
                         {
                             ycd.CutsceneMap.TryGetValue(obj.AnimHash, out cme);
@@ -483,6 +483,7 @@ namespace CodeWalker.World
                                 pos = pos + rot.Multiply(obj.Position);
                                 rot = rot * obj.Rotation;
                             }
+                            obj.AnimClip = cme;
                         }
                         if (obj.Ped != null)
                         {
@@ -494,16 +495,19 @@ namespace CodeWalker.World
                         {
                             obj.Prop.Position = pos;
                             obj.Prop.Orientation = rot;
-                            obj.AnimClip = cme;
                         }
                         if (obj.Vehicle != null)
                         {
                             obj.Vehicle.Position = pos;
                             obj.Vehicle.Rotation = rot;
                             obj.Vehicle.UpdateEntity();
-                            obj.AnimClip = cme;
                         }
-
+                        if (obj.Weapon != null)
+                        {
+                            obj.Weapon.Position = pos;
+                            obj.Weapon.Rotation = rot;
+                            obj.Weapon.UpdateEntity();
+                        }
                     }
                 }
 
@@ -536,6 +540,10 @@ namespace CodeWalker.World
                     if (obj.Vehicle != null)
                     {
                         renderer.RenderVehicle(obj.Vehicle, obj.AnimClip);
+                    }
+                    if (obj.Weapon != null)
+                    {
+                        renderer.RenderWeapon(obj.Weapon, obj.AnimClip);
                     }
                 }
             }
@@ -1054,6 +1062,7 @@ namespace CodeWalker.World
         public Ped Ped { get; set; }
         public YmapEntityDef Prop { get; set; }
         public Vehicle Vehicle { get; set; }
+        public Weapon Weapon { get; set; }
 
         public MetaHash AnimHash { get; set; }
         public ClipMapEntry AnimClip { get; set; }
@@ -1179,7 +1188,12 @@ namespace CodeWalker.World
 
         private void InitWeapon(CutWeaponModelObject weap, GameFileCache gfc)
         {
+            var name = weap.StreamingName.ToString();
 
+            Weapon = new Weapon();
+            Weapon.Init(name, gfc);
+
+            AnimHash = weap.StreamingName;
         }
 
         private void InitHiddenModel(CutHiddenModelObject hid, GameFileCache gfc)

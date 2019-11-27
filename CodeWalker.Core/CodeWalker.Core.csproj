@@ -152,6 +152,7 @@
     <Compile Include="World\Trains.cs" />
     <Compile Include="World\Vehicle.cs" />
     <Compile Include="World\Water.cs" />
+    <Compile Include="World\Weapon.cs" />
     <Compile Include="World\Weather.cs" />
   </ItemGroup>
   <ItemGroup>

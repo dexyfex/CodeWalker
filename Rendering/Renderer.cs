@@ -2749,6 +2749,23 @@ namespace CodeWalker.Rendering
 
         }
 
+        public void RenderWeapon(Weapon weapon, ClipMapEntry animClip = null)
+        {
+
+            YdrFile ydr = gameFileCache.GetYdr(weapon.ModelHash);
+            if (ydr == null)
+            {
+                ydr = gameFileCache.GetYdr(weapon.NameHash);//fallback to low def version?
+            }
+
+            if ((ydr != null) && (ydr.Loaded) && (ydr.Drawable != null))
+            {
+                var d = ydr.Drawable;
+                var txdhash = weapon.NameHash;
+
+                RenderDrawable(d, null, weapon.RenderEntity, txdhash, null, null, animClip);
+            }
+        }
 
 
 
