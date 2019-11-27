@@ -34,6 +34,7 @@ namespace CodeWalker.World
         public Vector3 Position { get; set; } = Vector3.Zero;
         public Quaternion Rotation { get; set; } = Quaternion.Identity;
 
+        public YmapEntityDef RenderEntity = new YmapEntityDef(); //placeholder entity object for rendering
 
 
         public void Init(string name, GameFileCache gfc)
@@ -117,6 +118,8 @@ namespace CodeWalker.World
             Ycd?.ClipMap?.TryGetValue(cliphash, out cme);
             AnimClip = cme;
 
+
+            UpdateEntity();
         }
 
 
@@ -182,7 +185,7 @@ namespace CodeWalker.World
             }
 
 
-            if (d != null) Drawables[index] = d;
+            if (d != null) Drawables[index] = d.ShallowCopy() as Drawable;
             if (t != null) Textures[index] = t;
 
             DrawableNames[index] = name;
@@ -215,6 +218,14 @@ namespace CodeWalker.World
             }
         }
 
+
+
+
+        public void UpdateEntity()
+        {
+            RenderEntity.SetPosition(Position);
+            RenderEntity.SetOrientation(Rotation);
+        }
 
     }
 }

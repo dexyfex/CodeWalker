@@ -2504,7 +2504,7 @@ namespace CodeWalker.Rendering
             return res;
         }
 
-        public bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, uint txdHash = 0, TextureDictionary txdExtra = null, Texture diffOverride = null, ClipMapEntry animClip = null, Ped ped = null)
+        public bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, uint txdHash = 0, TextureDictionary txdExtra = null, Texture diffOverride = null, ClipMapEntry animClip = null)
         {
             //enqueue a single drawable for rendering.
 
@@ -2529,10 +2529,10 @@ namespace CodeWalker.Rendering
                 rndbl.ResetBoneTransforms();
             }
 
-            return RenderRenderable(rndbl, arche, entity, ped);
+            return RenderRenderable(rndbl, arche, entity);
         }
 
-        private bool RenderRenderable(Renderable rndbl, Archetype arche, YmapEntityDef entity, Ped ped = null)
+        private bool RenderRenderable(Renderable rndbl, Archetype arche, YmapEntityDef entity)
         {
             //enqueue a single renderable for rendering.
 
@@ -2571,15 +2571,6 @@ namespace CodeWalker.Rendering
                 bscen = entity.BSCenter;
                 camrel += position;
                 distance = entity.Distance;
-            }
-            else if (ped != null)
-            {
-                position = ped.Position;
-                orientation = ped.Rotation;
-                bbmin += position;
-                bbmax += position;
-                camrel += position;
-                distance = (camrel + bscen).Length();
             }
             else
             {
@@ -2751,18 +2742,10 @@ namespace CodeWalker.Rendering
 
         public void RenderWeapon(Weapon weapon, ClipMapEntry animClip = null)
         {
-
-            YdrFile ydr = gameFileCache.GetYdr(weapon.ModelHash);
-            if (ydr == null)
+            if (weapon?.Drawable != null)
             {
-                ydr = gameFileCache.GetYdr(weapon.NameHash);//fallback to low def version?
-            }
-
-            if ((ydr != null) && (ydr.Loaded) && (ydr.Drawable != null))
-            {
-                var d = ydr.Drawable;
+                var d = weapon.Drawable;
                 var txdhash = weapon.NameHash;
-
                 RenderDrawable(d, null, weapon.RenderEntity, txdhash, null, null, animClip);
             }
         }
@@ -2849,7 +2832,7 @@ namespace CodeWalker.Rendering
 
             if (drawFlag)
             {
-                RenderDrawable(drawable, null, null, 0, td, texture, ac, ped);
+                RenderDrawable(drawable, null, ped.RenderEntity, 0, td, texture, ac);
             }
 
 

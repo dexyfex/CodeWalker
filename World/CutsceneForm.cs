@@ -489,6 +489,7 @@ namespace CodeWalker.World
                         {
                             obj.Ped.Position = pos;
                             obj.Ped.Rotation = rot;
+                            obj.Ped.UpdateEntity();
                             obj.Ped.AnimClip = cme;
                         }
                         if (obj.Prop != null)
