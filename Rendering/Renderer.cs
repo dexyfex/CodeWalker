@@ -86,6 +86,7 @@ namespace CodeWalker.Rendering
         private List<YmapEntityDef> renderworldentities = new List<YmapEntityDef>(); //used when rendering world view.
         private List<RenderableEntity> renderworldrenderables = new List<RenderableEntity>();
 
+        public Dictionary<uint, YmapEntityDef> HideEntities = new Dictionary<uint, YmapEntityDef>();//dictionary of entities to hide, for cutscenes to use 
 
         public bool ShowScriptedYmaps = true;
         public List<YmapFile> VisibleYmaps = new List<YmapFile>();
@@ -294,6 +295,8 @@ namespace CodeWalker.Rendering
             RenderedBoundComps.Clear();
 
             renderskeletonlist.Clear();
+
+            HideEntities.Clear();
         }
 
         public void RenderSkyAndClouds()
@@ -1641,6 +1644,8 @@ namespace CodeWalker.Rendering
                     var ent = rent.Entity;
                     var arch = ent.Archetype;
 
+                    if (HideEntities.ContainsKey(ent.EntityHash)) continue; //don't render hidden entities!
+
                     RenderArchetype(arch, ent, rent.Renderable, false);
                 }
             }
@@ -2838,6 +2843,14 @@ namespace CodeWalker.Rendering
 
         }
 
+
+        public void RenderHideEntity(YmapEntityDef ent)
+        {
+            var hash = ent?.EntityHash ?? 0;
+            if (hash == 0) return;
+
+            HideEntities[hash] = ent;
+        }
 
 
 
