@@ -323,6 +323,7 @@ namespace CodeWalker.Rendering
 
 
             uint windflag = 0;
+            uint tintflag = 0;
             var shaderFile = geom.DrawableGeom.Shader.FileName;
             switch (shaderFile.Hash)
             {
@@ -335,13 +336,18 @@ namespace CodeWalker.Rendering
                 case 4265705004://{trees_normal_diffspec.sps}
                     windflag = 1;
                     break;
+                case 231364109: //weapon_normal_spec_cutout_palette.sps
+                case 3294641629://weapon_normal_spec_detail_palette.sps
+                case 731050667: //weapon_normal_spec_palette.sps
+                    tintflag = 2; //use diffuse sampler alpha for tint lookup! (ignore texture alpha in PS)
+                    break;
             }
 
 
 
 
             GeomVars.Vars.EnableTexture = usediff ? 1u : 0u;
-            GeomVars.Vars.EnableTint = 0u;// usetint ? 1u : 0u;
+            GeomVars.Vars.EnableTint = tintflag;// usetint ? 1u : 0u;
             GeomVars.Vars.IsDecal = 0u;// DecalMode ? 1u : 0u;
             GeomVars.Vars.EnableWind = windflag;
             GeomVars.Vars.WindOverrideParams = geom.WindOverrideParams;
