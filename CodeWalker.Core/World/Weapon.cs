@@ -16,6 +16,9 @@ namespace CodeWalker.World
         public MetaHash NameHash { get; set; } = 0;//base weapon name hash
         public MetaHash ModelHash { get; set; } = 0;//weapon model name hash, can be _hi
 
+        public YdrFile Ydr { get; set; } = null;
+        public Drawable Drawable { get; set; } = null;
+
         public YmapEntityDef RenderEntity = new YmapEntityDef(); //placeholder entity object for rendering
 
         public Vector3 Position { get; set; } = Vector3.Zero;
@@ -32,6 +35,25 @@ namespace CodeWalker.World
 
             NameHash = modelhash;
             ModelHash = ydrhash;
+
+            var useHash = ModelHash;
+            Ydr = gfc.GetYdr(ModelHash);
+            if (Ydr == null)
+            {
+                useHash = NameHash;
+                Ydr = gfc.GetYdr(NameHash);
+            }
+
+            while ((Ydr != null) && (!Ydr.Loaded))
+            {
+                Thread.Sleep(20);//kinda hacky
+                Ydr = gfc.GetYdr(useHash);
+            }
+
+            if (Ydr != null)
+            {
+                Drawable = Ydr.Drawable?.ShallowCopy() as Drawable;
+            }
 
 
             UpdateEntity();

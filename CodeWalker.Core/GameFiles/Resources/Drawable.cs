@@ -831,10 +831,10 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            skel.TransformationsInverted = (Matrix[])TransformationsInverted.Clone();
-            skel.Transformations = (Matrix[])Transformations.Clone();
-            skel.ParentIndices = (short[])ParentIndices.Clone();
-            skel.ChildIndices = (short[])ChildIndices.Clone();
+            skel.TransformationsInverted = (Matrix[])TransformationsInverted?.Clone();
+            skel.Transformations = (Matrix[])Transformations?.Clone();
+            skel.ParentIndices = (short[])ParentIndices?.Clone();
+            skel.ChildIndices = (short[])ChildIndices?.Clone();
 
             skel.AssignBoneParents();
             skel.BuildBonesMap();
@@ -2657,6 +2657,70 @@ namespace CodeWalker.GameFiles
             if (DrawableModelsX != null) list.Add(DrawableModelsX);
             return list.ToArray();
         }
+
+
+
+        public DrawableBase ShallowCopy()
+        {
+            DrawableBase r = null;
+            if (this is FragDrawable fd)
+            {
+                var f = new FragDrawable();
+                f.Unknown_0A8h = fd.Unknown_0A8h;
+                f.Unknown_0ACh = fd.Unknown_0ACh;
+                f.FragMatrix = fd.FragMatrix;
+                f.FragMatricesIndsCount = fd.FragMatricesIndsCount;
+                f.FragMatricesCount = fd.FragMatricesCount;
+                f.Count3 = fd.Count3;
+                f.Count4 = fd.Count4;
+                f.Bound = fd.Bound;
+                f.FragMatricesInds = fd.FragMatricesInds;
+                f.FragMatrices = fd.FragMatrices;
+                f.Name = fd.Name;
+                f.OwnerFragment = fd.OwnerFragment;
+                f.OwnerFragmentCloth = fd.OwnerFragmentCloth;
+                f.OwnerFragmentPhys = fd.OwnerFragmentPhys;
+                r = f;
+            }
+            if (this is Drawable dd)
+            {
+                var d = new Drawable();
+                d.LightAttributes = dd.LightAttributes;
+                d.Name = dd.Name;
+                d.Bound = dd.Bound;
+                r = d;
+            }
+            if (r != null)
+            {
+                r.BoundingCenter = BoundingCenter;
+                r.BoundingSphereRadius = BoundingSphereRadius;
+                r.BoundingBoxMin = BoundingBoxMin;
+                r.BoundingBoxMax = BoundingBoxMax;
+                r.LodDistHigh = LodDistHigh;
+                r.LodDistMed = LodDistMed;
+                r.LodDistLow = LodDistLow;
+                r.LodDistVlow = LodDistVlow;
+                r.Unknown_80h = Unknown_80h;
+                r.Unknown_84h = Unknown_84h;
+                r.Unknown_88h = Unknown_88h;
+                r.Unknown_8Ch = Unknown_8Ch;
+                r.Unknown_98h = Unknown_98h;
+                r.Unknown_9Ah = Unknown_9Ah;
+                r.ShaderGroup = ShaderGroup;
+                r.Skeleton = Skeleton?.Clone();
+                r.DrawableModelsHigh = DrawableModelsHigh;
+                r.DrawableModelsMedium = DrawableModelsMedium;
+                r.DrawableModelsLow = DrawableModelsLow;
+                r.DrawableModelsVeryLow = DrawableModelsVeryLow;
+                r.DrawableModelsX = DrawableModelsX;
+                r.Joints = Joints;
+                r.AllModels = AllModels;
+                r.VertexDecls = VertexDecls;
+                r.Owner = Owner;
+            }
+            return r;
+        }
+
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Drawable : DrawableBase
