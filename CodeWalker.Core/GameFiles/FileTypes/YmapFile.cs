@@ -1312,6 +1312,8 @@ namespace CodeWalker.GameFiles
         public Vector3 WidgetPosition = Vector3.Zero;
         public Quaternion WidgetOrientation = Quaternion.Identity;
 
+        public uint EntityHash { get; set; } = 0; //used by CW as a unique position+name identifier
+
 
         public string Name
         {
@@ -1344,6 +1346,7 @@ namespace CodeWalker.GameFiles
 
             UpdateWidgetPosition();
             UpdateWidgetOrientation();
+            UpdateEntityHash();
         }
 
         public YmapEntityDef(YmapFile ymap, int index, ref CMloInstanceDef mlo)
@@ -1456,6 +1459,7 @@ namespace CodeWalker.GameFiles
                 MloInstance.UpdateEntities();
             }
 
+            UpdateEntityHash();
             UpdateWidgetPosition();
         }
 
@@ -1475,6 +1479,30 @@ namespace CodeWalker.GameFiles
                 BBMin = Position - (BSRadius);
                 BBMax = Position + (BSRadius);
                 ////not ideal: should transform all 8 corners!
+            }
+        }
+
+        public void UpdateEntityHash()
+        {
+            unchecked
+            {
+                var ints = new int[4];
+                var pv = Position;
+                ints[0] = (int)pv.X;
+                ints[1] = (int)pv.Y;
+                ints[2] = (int)pv.Z;
+                ints[3] = (int)_CEntityDef.archetypeName.Hash;
+                var bytes = new byte[16];
+                for (int i = 0; i < 4; i++)
+                {
+                    var ib = i * 4;
+                    var b = BitConverter.GetBytes(ints[i]);
+                    bytes[ib + 0] = b[0];
+                    bytes[ib + 1] = b[1];
+                    bytes[ib + 2] = b[2];
+                    bytes[ib + 3] = b[3];
+                }
+                EntityHash = JenkHash.GenHash(bytes);
             }
         }
 

@@ -603,7 +603,7 @@ namespace CodeWalker.GameFiles
             e.Orientation = Quaternion.Multiply(owner.Orientation, e.MloRefOrientation);
             e.UpdateWidgetPosition();
             e.UpdateWidgetOrientation();
-
+            e.UpdateEntityHash();
             return e;
         }
 

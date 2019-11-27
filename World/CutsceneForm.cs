@@ -547,6 +547,15 @@ namespace CodeWalker.World
                         renderer.RenderWeapon(obj.Weapon, obj.AnimClip);
                     }
                 }
+                foreach (var obj in SceneObjects.Values)
+                {
+                    if (obj.Enabled == false) continue;
+
+                    if (obj.HideEntity != null)
+                    {
+                        renderer.RenderHideEntity(obj.HideEntity);
+                    }
+                }
             }
 
         }
@@ -774,23 +783,23 @@ namespace CodeWalker.World
         }
         private void EnableHideObject(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectIdEventArgs;
-            if (args == null)
-            { return; }
+            var oe = e as CutObjectIdEvent;
+            if (oe == null) return;
 
-            var obj = args.Object;
-
+            CutsceneObject cso = null;
+            SceneObjects.TryGetValue(oe.iObjectId, out cso);
+            if (cso != null)
+            {
+                cso.Enabled = true;
+            }
         }
         private void EnableFixupModel(CutEvent e)
         {
         }
         private void EnableBlockBounds(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectIdEventArgs;
-            if (args == null)
-            { return; }
-
-            var obj = args.Object;
+            var oe = e as CutObjectIdEvent;
+            if (oe == null) return;
 
         }
         private void EnableScreenFade(CutEvent e)
@@ -798,11 +807,8 @@ namespace CodeWalker.World
         }
         private void EnableAnimation(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectIdEventArgs;
-            if (args == null)
-            { return; }
-
-            var obj = args.Object;
+            var oe = e as CutObjectIdEvent;
+            if (oe == null) return;
 
         }
         private void EnableParticleEffect(CutEvent e)
@@ -820,11 +826,8 @@ namespace CodeWalker.World
         }
         private void EnableCamera(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectIdEventArgs;
-            if (args == null)
-            { return; }
-
-            var obj = args.Object;
+            var oe = e as CutObjectIdEvent;
+            if (oe == null) return;
 
         }
         private void EnableLight(CutEvent e)
@@ -832,20 +835,20 @@ namespace CodeWalker.World
         }
         private void DisableHideObject(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectIdEventArgs;
-            if (args == null)
-            { return; }
+            var oe = e as CutObjectIdEvent;
+            if (oe == null) return;
 
-            var obj = args.Object;
-
+            CutsceneObject cso = null;
+            SceneObjects.TryGetValue(oe.iObjectId, out cso);
+            if (cso != null)
+            {
+                cso.Enabled = false;
+            }
         }
         private void DisableBlockBounds(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectIdEventArgs;
-            if (args == null)
-            { return; }
-
-            var obj = args.Object;
+            var oe = e as CutObjectIdEvent;
+            if (oe == null) return;
 
         }
         private void DisableScreenFade(CutEvent e)
@@ -853,11 +856,8 @@ namespace CodeWalker.World
         }
         private void DisableAnimation(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectIdEventArgs;
-            if (args == null)
-            { return; }
-
-            var obj = args.Object;
+            var oe = e as CutObjectIdEvent;
+            if (oe == null) return;
 
         }
         private void DisableParticleEffect(CutEvent e)
@@ -875,11 +875,8 @@ namespace CodeWalker.World
         }
         private void DisableCamera(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectIdEventArgs;
-            if (args == null)
-            { return; }
-
-            var obj = args.Object;
+            var oe = e as CutObjectIdEvent;
+            if (oe == null) return;
 
         }
         private void DisableLight(CutEvent e)
@@ -1064,6 +1061,7 @@ namespace CodeWalker.World
         public YmapEntityDef Prop { get; set; }
         public Vehicle Vehicle { get; set; }
         public Weapon Weapon { get; set; }
+        public YmapEntityDef HideEntity { get; set; }
 
         public MetaHash AnimHash { get; set; }
         public ClipMapEntry AnimClip { get; set; }
@@ -1199,6 +1197,10 @@ namespace CodeWalker.World
 
         private void InitHiddenModel(CutHiddenModelObject hid, GameFileCache gfc)
         {
+
+            HideEntity = new YmapEntityDef();
+            HideEntity._CEntityDef.archetypeName = hid.cName;
+            HideEntity.SetPosition(hid.vPosition);
 
         }
 
