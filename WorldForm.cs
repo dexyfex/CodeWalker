@@ -1892,6 +1892,20 @@ namespace CodeWalker
             camera.TargetRotation = Vector3.Zero;
             camera.TargetDistance = 0.01f;
         }
+        public void SetCameraClipPlanes(float znear, float zfar)
+        {
+            //sets the camera clip planes to the specified values, for use in eg cutscenes
+            camera.ZNear = znear;
+            camera.ZFar = zfar;
+            camera.UpdateProj = true;
+        }
+        public void ResetCameraClipPlanes()
+        {
+            //resets the camera clip planes to the values in the UI controls.
+            camera.ZNear = (float)NearClipUpDown.Value;
+            camera.ZFar = (float)FarClipUpDown.Value;
+            camera.UpdateProj = true;
+        }
 
         public Vector3 GetCameraPosition()
         {
