@@ -61,6 +61,11 @@ namespace CodeWalker.World
 
                     WorldForm.SetCameraTransform(pos, rot);
 
+                    if (Cutscene.CameraClipUpdate)
+                    {
+                        WorldForm.SetCameraClipPlanes(Cutscene.CameraNearClip, Cutscene.CameraFarClip);
+                        Cutscene.CameraClipUpdate = false;
+                    }
                 }
 
             }
@@ -254,6 +259,18 @@ namespace CodeWalker.World
         private void AnimateCameraCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             AnimateCamera = AnimateCameraCheckBox.Checked;
+
+            if (!AnimateCamera)
+            {
+                WorldForm?.ResetCameraClipPlanes();
+            }
+            else
+            {
+                if (Cutscene != null)
+                {
+                    Cutscene.CameraClipUpdate = true;
+                }
+            }
         }
 
         private void PlayStopButton_Click(object sender, EventArgs e)
@@ -316,7 +333,9 @@ namespace CodeWalker.World
 
 
         public CutsceneObject CameraObject = null;
-
+        public float CameraNearClip { get; set; } = 0.5f;
+        public float CameraFarClip { get; set; } = 12000.0f;
+        public bool CameraClipUpdate = false;//signal to the form to update the camera clip planes
         public Quaternion CameraRotationOffset = Quaternion.RotationAxis(Vector3.UnitX, -1.57079632679f) * Quaternion.RotationAxis(Vector3.UnitZ, 3.141592653f);
 
 
@@ -962,6 +981,9 @@ namespace CodeWalker.World
             obj.Position = pos + rot.Multiply(args.vPosition);
             obj.Rotation = rot * args.vRotationQuaternion;
 
+            CameraNearClip = (args.fNearDrawDistance > 0) ? Math.Min(args.fNearDrawDistance, 0.5f) : 0.5f;
+            CameraFarClip = (args.fFarDrawDistance > 0) ? Math.Max(args.fFarDrawDistance, 1000.0f) : 12000.0f;
+            CameraClipUpdate = true;
             CameraObject = obj;
         }
         private void CameraShadowCascade(CutEvent e)
