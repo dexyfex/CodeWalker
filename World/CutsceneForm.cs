@@ -56,12 +56,8 @@ namespace CodeWalker.World
 
                 if (AnimateCamera && (Cutscene.CameraObject != null))
                 {
-                    var cori = Quaternion.RotationAxis(Vector3.UnitX, -1.57079632679f) * Quaternion.RotationAxis(Vector3.UnitZ, 3.141592653f);
-
-                    var pos = Cutscene.Position;
-                    var rot = Cutscene.Rotation;
-                    pos = pos + rot.Multiply(Cutscene.CameraObject.Position);
-                    rot = rot * Cutscene.CameraObject.Rotation * cori;
+                    var pos = Cutscene.CameraObject.Position;
+                    var rot = Cutscene.CameraObject.Rotation;
 
                     WorldForm.SetCameraTransform(pos, rot);
 
@@ -321,6 +317,8 @@ namespace CodeWalker.World
 
         public CutsceneObject CameraObject = null;
 
+        public Quaternion CameraRotationOffset = Quaternion.RotationAxis(Vector3.UnitX, -1.57079632679f) * Quaternion.RotationAxis(Vector3.UnitZ, 3.141592653f);
+
 
 
 
@@ -461,6 +459,18 @@ namespace CodeWalker.World
                     ycd.CutsceneMap.TryGetValue(CameraObject.Name, out cme);
 
                     updateObjectTransform(CameraObject, cme, 0, 7, 8);
+
+
+                    if (cme != null)
+                    {
+                        var pos = Position;
+                        var rot = Rotation;
+                        pos = pos + rot.Multiply(CameraObject.Position);
+                        rot = rot * CameraObject.Rotation * CameraRotationOffset;
+                        CameraObject.Position = pos;
+                        CameraObject.Rotation = rot;
+                    }
+
                 }
 
                 if (SceneObjects != null)
@@ -947,8 +957,10 @@ namespace CodeWalker.World
             { return; }
 
 
-            obj.Position = args.vPosition;
-            obj.Rotation = args.vRotationQuaternion;
+            var pos = Position;
+            var rot = Rotation * Quaternion.RotationAxis(Vector3.UnitX, 1.57079632679f);
+            obj.Position = pos + rot.Multiply(args.vPosition);
+            obj.Rotation = rot * args.vRotationQuaternion;
 
             CameraObject = obj;
         }
