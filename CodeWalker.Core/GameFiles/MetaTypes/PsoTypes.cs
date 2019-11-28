@@ -16211,6 +16211,25 @@ namespace CodeWalker.GameFiles
             return Encoding.ASCII.GetString(bytes).Replace("\0", string.Empty);
         }
     }
+    public struct PsoChar32
+    {
+        public byte b00, b01, b02, b03, b04, b05, b06, b07, b08, b09,
+                    b10, b11, b12, b13, b14, b15, b16, b17, b18, b19,
+                    b20, b21, b22, b23, b24, b25, b26, b27, b28, b29,
+                    b30, b31;
+
+        public override string ToString()
+        {
+            byte[] bytes = new byte[]
+            {
+                b00, b01, b02, b03, b04, b05, b06, b07, b08, b09,
+                b10, b11, b12, b13, b14, b15, b16, b17, b18, b19,
+                b20, b21, b22, b23, b24, b25, b26, b27, b28, b29,
+                b30, b31
+            };
+            return Encoding.ASCII.GetString(bytes).Replace("\0", string.Empty);
+        }
+    }
 
 
 
