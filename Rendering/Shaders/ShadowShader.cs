@@ -65,6 +65,7 @@ namespace CodeWalker.Rendering
         GpuVarsBuffer<ShadowShaderVSModelVars> VSModelVars;
         GpuVarsBuffer<ShadowShaderGeomVars> GeomVars;
         GpuABuffer<Matrix3_s> BoneMatrices;
+        GpuABuffer<Vector4> ClothVertices;
 
         SamplerState texsampler;
         SamplerState texsamplerc;
@@ -94,6 +95,7 @@ namespace CodeWalker.Rendering
             VSModelVars = new GpuVarsBuffer<ShadowShaderVSModelVars>(device);
             GeomVars = new GpuVarsBuffer<ShadowShaderGeomVars>(device);
             BoneMatrices = new GpuABuffer<Matrix3_s>(device, 255);
+            ClothVertices = new GpuABuffer<Vector4>(device, 254);
 
 
             //supported layouts - requires Position, Normal, Colour, Texcoord
@@ -243,6 +245,10 @@ namespace CodeWalker.Rendering
                 SetBoneMatrices(context, defaultBoneMatrices);
                 defaultBoneMatricesBound = true;
             }
+            if (model.Owner.Cloth?.Vertices != null)
+            {
+                SetClothVertices(context, model.Owner.Cloth.Vertices);
+            }
 
             if (!model.UseTransform) return;
             VSModelVars.Vars.Transform = Matrix.Transpose(model.Transform);
@@ -378,6 +384,12 @@ namespace CodeWalker.Rendering
             BoneMatrices.SetVSCBuffer(context, 7);
         }
 
+        public void SetClothVertices(DeviceContext context, Vector4[] vertices)
+        {
+            ClothVertices.Update(context, vertices);
+            ClothVertices.SetVSCBuffer(context, 8);
+        }
+
 
         public override void UnbindResources(DeviceContext context)
         {
@@ -415,6 +427,7 @@ namespace CodeWalker.Rendering
             VSModelVars.Dispose();
             GeomVars.Dispose();
             BoneMatrices.Dispose();
+            ClothVertices.Dispose();
 
 
             shadowps.Dispose();

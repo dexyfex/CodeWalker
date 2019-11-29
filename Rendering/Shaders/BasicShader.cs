@@ -154,6 +154,7 @@ namespace CodeWalker.Rendering
         GpuVarsBuffer<BasicShaderInstGlobals> InstGlobalVars;
         GpuVarsBuffer<BasicShaderInstLocals> InstLocalVars;
         GpuABuffer<Matrix3_s> BoneMatrices;
+        GpuABuffer<Vector4> ClothVertices;
         SamplerState texsampler;
         SamplerState texsampleranis;
         SamplerState texsamplertnt;
@@ -244,6 +245,7 @@ namespace CodeWalker.Rendering
             InstGlobalVars = new GpuVarsBuffer<BasicShaderInstGlobals>(device);
             InstLocalVars = new GpuVarsBuffer<BasicShaderInstLocals>(device);
             BoneMatrices = new GpuABuffer<Matrix3_s>(device, 255);
+            ClothVertices = new GpuABuffer<Vector4>(device, 254);
 
             InitInstGlobalVars();
 
@@ -584,6 +586,10 @@ namespace CodeWalker.Rendering
                 SetBoneMatrices(context, defaultBoneMatrices);
                 defaultBoneMatricesBound = true;
             }
+            if (model.Owner.Cloth?.Vertices != null)
+            {
+                SetClothVertices(context, model.Owner.Cloth.Vertices);
+            }
 
             if (!model.UseTransform) return;
             VSModelVars.Vars.Transform = Matrix.Transpose(model.Transform);
@@ -829,6 +835,12 @@ namespace CodeWalker.Rendering
             BoneMatrices.SetVSCBuffer(context, 7);
         }
 
+        public void SetClothVertices(DeviceContext context, Vector4[] vertices)
+        {
+            ClothVertices.Update(context, vertices);
+            ClothVertices.SetVSCBuffer(context, 8);
+        }
+
 
         public void SetInstanceVars(DeviceContext context, RenderableInstanceBatch batch)
         {
@@ -1020,6 +1032,7 @@ namespace CodeWalker.Rendering
             InstGlobalVars.Dispose();
             InstLocalVars.Dispose();
             BoneMatrices.Dispose();
+            ClothVertices.Dispose();
 
             basicps.Dispose();
             basicvspnct.Dispose();

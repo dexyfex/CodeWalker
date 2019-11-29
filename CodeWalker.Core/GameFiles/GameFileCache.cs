@@ -84,6 +84,7 @@ namespace CodeWalker.GameFiles
         public Dictionary<MetaHash, PedFile> PedVariationsDict { get; set; }
         public Dictionary<MetaHash, Dictionary<MetaHash, RpfFileEntry>> PedDrawableDicts { get; set; }
         public Dictionary<MetaHash, Dictionary<MetaHash, RpfFileEntry>> PedTextureDicts { get; set; }
+        public Dictionary<MetaHash, Dictionary<MetaHash, RpfFileEntry>> PedClothDicts { get; set; }
 
         public List<RpfFile> BaseRpfs { get; private set; }
         public List<RpfFile> AllRpfs { get; private set; }
@@ -182,6 +183,7 @@ namespace CodeWalker.GameFiles
                 //TestMetas();
                 //TestPsos();
                 //TestCuts();
+                //TestYlds();
                 //TestYcds();
                 //TestYtds();
                 //TestYbns();
@@ -1639,10 +1641,36 @@ namespace CodeWalker.GameFiles
             var allPedYmts = new Dictionary<MetaHash, PedFile>();
             var allPedDrwDicts = new Dictionary<MetaHash, Dictionary<MetaHash, RpfFileEntry>>();
             var allPedTexDicts = new Dictionary<MetaHash, Dictionary<MetaHash, RpfFileEntry>>();
+            var allPedClothDicts = new Dictionary<MetaHash, Dictionary<MetaHash, RpfFileEntry>>();
 
+
+            Dictionary<MetaHash, RpfFileEntry> ensureDict(Dictionary<MetaHash, Dictionary<MetaHash, RpfFileEntry>> coll, MetaHash hash)
+            {
+                Dictionary<MetaHash, RpfFileEntry> dict;
+                if (!coll.TryGetValue(hash, out dict))
+                {
+                    dict = new Dictionary<MetaHash, RpfFileEntry>();
+                    coll[hash] = dict;
+                }
+                return dict;
+            }
 
             var addPedDicts = new Action<string, MetaHash, RpfDirectoryEntry>((namel, hash, dir)=>
             {
+                Dictionary<MetaHash, RpfFileEntry> dict = null;
+                var files = dir?.Files;
+                if (files != null)
+                {
+                    foreach (var file in files)
+                    {
+                        if (file.NameLower == namel + ".yld")
+                        {
+                            dict = ensureDict(allPedClothDicts, hash);
+                            dict[file.ShortNameHash] = file;
+                        }
+                    }
+                }
+
                 if (dir?.Directories != null)
                 {
                     foreach (var cdir in dir.Directories)
@@ -1653,29 +1681,25 @@ namespace CodeWalker.GameFiles
                             break;
                         }
                     }
-                    var files = dir?.Files;
+                    files = dir?.Files;
                     if (files != null)
                     {
-                        Dictionary<MetaHash, RpfFileEntry> dict = null;
                         foreach (var file in files)
                         {
                             if (file?.NameLower == null) continue;
                             if (file.NameLower.EndsWith(".ydd"))
                             {
-                                if (!allPedDrwDicts.TryGetValue(hash, out dict))
-                                {
-                                    dict = new Dictionary<MetaHash, RpfFileEntry>();
-                                    allPedDrwDicts[hash] = dict;
-                                }
+                                dict = ensureDict(allPedDrwDicts, hash);
                                 dict[file.ShortNameHash] = file;
                             }
                             else if (file.NameLower.EndsWith(".ytd"))
                             {
-                                if (!allPedTexDicts.TryGetValue(hash, out dict))
-                                {
-                                    dict = new Dictionary<MetaHash, RpfFileEntry>();
-                                    allPedTexDicts[hash] = dict;
-                                }
+                                dict = ensureDict(allPedTexDicts, hash);
+                                dict[file.ShortNameHash] = file;
+                            }
+                            else if (file.NameLower.EndsWith(".yld"))
+                            {
+                                dict = ensureDict(allPedClothDicts, hash);
                                 dict[file.ShortNameHash] = file;
                             }
                         }
@@ -1773,6 +1797,7 @@ namespace CodeWalker.GameFiles
             PedVariationsDict = allPedYmts;
             PedDrawableDicts = allPedDrwDicts;
             PedTextureDicts = allPedTexDicts;
+            PedClothDicts = allPedClothDicts;
 
 
             foreach (var kvp in PedsInitDict)
@@ -2286,6 +2311,9 @@ namespace CodeWalker.GameFiles
                         break;
                     case GameFileType.Ynv:
                         req.Loaded = LoadFile(req as YnvFile);
+                        break;
+                    case GameFileType.Yld:
+                        req.Loaded = LoadFile(req as YldFile);
                         break;
                     default:
                         break;
@@ -3014,6 +3042,44 @@ namespace CodeWalker.GameFiles
             {
             }
         }
+        public void TestYlds()
+        {
+
+            var exceptions = new List<Exception>();
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+#if !DEBUG
+                    try
+#endif
+                    {
+                        var rfe = entry as RpfFileEntry;
+                        if (rfe == null) continue;
+
+                        if (rfe.NameLower.EndsWith(".yld"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+
+                            YldFile yld = new YldFile(rfe);
+                            RpfMan.LoadFile(yld, rfe);
+
+                        }
+                    }
+#if !DEBUG
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                        exceptions.Add(ex);
+                    }
+#endif
+                }
+            }
+
+            if (exceptions.Count > 0)
+            { }
+        }
         public void TestYcds()
         {
             var errorfiles = new List<YcdFile>();
@@ -3621,6 +3687,8 @@ namespace CodeWalker.GameFiles
         }
         public void TestYfts()
         {
+            bool savetest = true;
+
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {
@@ -3646,6 +3714,8 @@ namespace CodeWalker.GameFiles
                                 var fentry = entry as RpfFileEntry;
                                 if (fentry == null)
                                 { continue; } //shouldn't happen
+
+                                if (!savetest) continue;
 
                                 var bytes = yft.Save();
 

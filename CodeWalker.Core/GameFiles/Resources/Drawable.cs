@@ -2678,7 +2678,6 @@ namespace CodeWalker.GameFiles
                 f.FragMatrices = fd.FragMatrices;
                 f.Name = fd.Name;
                 f.OwnerFragment = fd.OwnerFragment;
-                f.OwnerFragmentCloth = fd.OwnerFragmentCloth;
                 f.OwnerFragmentPhys = fd.OwnerFragmentPhys;
                 r = f;
             }

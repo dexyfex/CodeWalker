@@ -60,6 +60,10 @@ cbuffer BoneMatrices : register(b7) //rage_bonemtx
 {
     row_major float3x4 gBoneMtx[255]; // Offset:    0 Size: 12240
 }
+cbuffer ClothVertices : register(b8) //pedcloth
+{
+    float4 clothVertices[254]; // Offset:   64 Size:  4060
+}
 
 struct VS_OUTPUT
 {
@@ -257,34 +261,44 @@ float3 GetGrassInstancePosition(float3 ipos, float3 vc0, float3 vc1, uint iid)
 }
 
 
-float3x4 BoneMatrix(float4 weights, float4 indices)
+
+
+void BoneTransform(float4 weights, float4 indices, float3 ipos, float3 inorm, float3 itang, out float3 opos, out float3 onorm, out float3 otang)
 {
     uint4 binds = (uint4)(indices * 255.001953);
-    float3x4 b0 = gBoneMtx[binds.x];
-    float3x4 b1 = gBoneMtx[binds.y];
-    float3x4 b2 = gBoneMtx[binds.z];
-    float3x4 b3 = gBoneMtx[binds.w];
-    float4 t0 = b0[0]*weights.x + b1[0]*weights.y + b2[0]*weights.z + b3[0]*weights.w;
-    float4 t1 = b0[1]*weights.x + b1[1]*weights.y + b2[1]*weights.z + b3[1]*weights.w;
-    float4 t2 = b0[2]*weights.x + b1[2]*weights.y + b2[2]*weights.z + b3[2]*weights.w;
-    return float3x4(t0, t1, t2);
-}
-float3 BoneTransform(float3 ipos, float3x4 m)
-{
-    float3 r;
-    float4 p = float4(ipos, 1);
-    r.x = dot(m[0], p);
-    r.y = dot(m[1], p);
-    r.z = dot(m[2], p);
-    return r;
-}
-float3 BoneTransformNormal(float3 inorm, float3x4 m)
-{
-    float3 r;
-    r.x = dot(m[0].xyz, inorm);
-    r.y = dot(m[1].xyz, inorm);
-    r.z = dot(m[2].xyz, inorm);
-    return r;
+    if (binds.z > 254) //this is the signal to use clothVertices!
+    {
+        float4 cv0 = clothVertices[binds.w];
+        float4 cv1 = clothVertices[binds.x];
+        float4 cv2 = clothVertices[binds.y];
+        float3 r0 = cv0.zxy - cv1.zxy;
+        float3 r8 = cv2.yzx - cv1.yzx;
+        float3 r4 = normalize((r0.zxy * r8.yzx) - (r0.xyz * r8.xyz));
+        float3 r5 = (cv2.xyz*weights.x) + (cv1.xyz*weights.y) + (cv0.xyz*weights.z);
+        float r0w = (weights.w - 0.5) * 0.1;
+        r5 = (r0w * -r4) + r5;
+        opos = r5;
+        onorm = r4;
+        
+        float3 r7 = r4.yzx * itang.zxy;//itang? transformed by bone?? weird
+        float3 r9 = r4.zxy * itang.yzx;
+        otang = (r9 - r7);
+    }
+    else
+    {
+        float3x4 b0 = gBoneMtx[binds.x];
+        float3x4 b1 = gBoneMtx[binds.y];
+        float3x4 b2 = gBoneMtx[binds.z];
+        float3x4 b3 = gBoneMtx[binds.w];
+        float4 t0 = b0[0]*weights.x + b1[0]*weights.y + b2[0]*weights.z + b3[0]*weights.w;
+        float4 t1 = b0[1]*weights.x + b1[1]*weights.y + b2[1]*weights.z + b3[1]*weights.w;
+        float4 t2 = b0[2]*weights.x + b1[2]*weights.y + b2[2]*weights.z + b3[2]*weights.w;
+        float3x4 m = float3x4(t0, t1, t2);
+        float4 p = float4(ipos, 1);
+        opos = float3(dot(m[0], p), dot(m[1], p), dot(m[2], p));
+        onorm = float3(dot(m[0].xyz, inorm), dot(m[1].xyz, inorm), dot(m[2].xyz, inorm));
+        otang = float3(dot(m[0].xyz, itang), dot(m[1].xyz, itang), dot(m[2].xyz, itang));
+    }
 }
 float3 ModelTransform(float3 ipos, float3 vc0, float3 vc1, uint iid)
 {

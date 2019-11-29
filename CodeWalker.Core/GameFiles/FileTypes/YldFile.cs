@@ -12,6 +12,9 @@ namespace CodeWalker.GameFiles
     {
         public ClothDictionary ClothDictionary { get; set; }
 
+        public Dictionary<uint, CharacterCloth> Dict { get; set; }
+
+
         public string LoadException { get; set; }
 
 
@@ -48,6 +51,23 @@ namespace CodeWalker.GameFiles
 
             ClothDictionary = rd?.ReadBlock<ClothDictionary>();
 
+
+            if (ClothDictionary != null)
+            {
+                Dict = new Dictionary<uint, CharacterCloth>();
+                int n = ClothDictionary.ClothNameHashes?.data_items?.Length ?? 0;
+                for (int i = 0; i < n; i++)
+                {
+                    if (i >= (ClothDictionary.Clothes?.data_items?.Length ?? 0)) break;
+
+                    var hash = ClothDictionary.ClothNameHashes.data_items[i];
+                    var cloth = ClothDictionary.Clothes.data_items[i];
+
+                    Dict[hash] = cloth;
+                }
+            }
+
+            Loaded = true;
         }
     }
 }

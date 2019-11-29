@@ -80,6 +80,8 @@ namespace CodeWalker.Rendering
 
         public bool EnableRootMotion = false; //used to toggle whether or not to include root motion when playing animations
 
+        public ClothInstance Cloth;
+
 
         public override void Init(DrawableBase drawable)
         {
