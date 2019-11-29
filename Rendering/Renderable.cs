@@ -571,7 +571,7 @@ namespace CodeWalker.Rendering
                     //case 61007: tag = 61163; break; //RB_L_ForeArmRoll: SKEL_L_Forearm //NOT GOOD
                     //case 5232: tag = 45509; break; //RB_L_ArmRoll: SKEL_L_UpperArm
                 }
-                if (tag != bone.Tag)
+                if ((tag != bone.Tag) && (tag != bone.Parent?.Tag))
                 {
                     var obone = bone;
                     if (skel.BonesMap.TryGetValue(tag, out obone))
