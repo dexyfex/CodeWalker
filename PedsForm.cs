@@ -672,7 +672,7 @@ namespace CodeWalker.Peds
                 }
                 if (peds.Count > 0)
                 {
-                    var ind = PedNameComboBox.FindString("A_F_M_Beach_01"); // //A_C_Pug
+                    var ind = PedNameComboBox.FindString("A_F_Y_Beach_01"); // //A_C_Pug
                     PedNameComboBox.SelectedIndex = Math.Max(ind, 0);
                     //PedNameComboBox.SelectedIndex = 0;
                 }

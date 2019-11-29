@@ -16,12 +16,10 @@ struct VS_INPUT
 VS_OUTPUT main(VS_INPUT input, uint iid : SV_InstanceID)
 {
     VS_OUTPUT output;
-    float3x4 bone = BoneMatrix(input.BlendWeights, input.BlendIndices);
-    float3 bpos = BoneTransform(input.Position.xyz, bone);
+    float3 bpos, bnorm, btang;
+    BoneTransform(input.BlendWeights, input.BlendIndices, input.Position.xyz, input.Normal, input.Tangent.xyz, bpos, bnorm, btang);
     float3 opos = ModelTransform(bpos, input.Colour0.xyz, input.Colour0.xyz, iid);
     float4 cpos = ScreenTransform(opos);
-    float3 bnorm = BoneTransformNormal(input.Normal.xyz, bone);
-    float3 btang = BoneTransformNormal(input.Tangent.xyz, bone);
     float3 onorm = NormalTransform(bnorm);
     float3 otang = NormalTransform(btang);
 

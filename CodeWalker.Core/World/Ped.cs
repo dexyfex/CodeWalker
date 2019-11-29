@@ -17,17 +17,21 @@ namespace CodeWalker.World
         public CPedModelInfo__InitData InitData { get; set; } = null; //ped init data
         public YddFile Ydd { get; set; } = null; //ped drawables
         public YtdFile Ytd { get; set; } = null; //ped textures
+        public YldFile Yld { get; set; } = null; //ped clothes
         public YcdFile Ycd { get; set; } = null; //ped animations
         public YftFile Yft { get; set; } = null; //ped skeleton YFT
         public PedFile Ymt { get; set; } = null; //ped variation info
         public Dictionary<MetaHash, RpfFileEntry> DrawableFilesDict { get; set; } = null;
         public Dictionary<MetaHash, RpfFileEntry> TextureFilesDict { get; set; } = null;
+        public Dictionary<MetaHash, RpfFileEntry> ClothFilesDict { get; set; } = null;
         public RpfFileEntry[] DrawableFiles { get; set; } = null;
         public RpfFileEntry[] TextureFiles { get; set; } = null;
+        public RpfFileEntry[] ClothFiles { get; set; } = null;
         public ClipMapEntry AnimClip { get; set; } = null;
         public string[] DrawableNames { get; set; } = new string[12];
         public Drawable[] Drawables { get; set; } = new Drawable[12];
         public Texture[] Textures { get; set; } = new Texture[12];
+        public ClothInstance[] Clothes { get; set; } = new ClothInstance[12];
         public bool EnableRootMotion { get; set; } = false; //used to toggle whether or not to include root motion when playing animations
         public Skeleton Skeleton { get; set; } = null;
 
@@ -87,6 +91,21 @@ namespace CodeWalker.World
             gfc.PedTextureDicts.TryGetValue(NameHash, out peddict);
             TextureFilesDict = peddict;
             TextureFiles = TextureFilesDict?.Values.ToArray();
+            gfc.PedClothDicts.TryGetValue(NameHash, out peddict);
+            ClothFilesDict = peddict;
+            ClothFiles = ClothFilesDict?.Values.ToArray();
+
+            RpfFileEntry clothFile = null;
+            if (ClothFilesDict?.TryGetValue(pedhash, out clothFile) ?? false)
+            {
+                Yld = gfc.GetFileUncached<YldFile>(clothFile);
+                while ((Yld != null) && (!Yld.Loaded))
+                {
+                    Thread.Sleep(20);//kinda hacky
+                    gfc.TryLoadEnqueue(Yld);
+                }
+            }
+
 
 
             while ((Ydd != null) && (!Ydd.Loaded))
@@ -184,9 +203,39 @@ namespace CodeWalker.World
                 }
             }
 
+            CharacterCloth cc = null;
+            if (Yld?.Dict != null)
+            {
+                Yld.Dict.TryGetValue(namehash, out cc);
+            }
+            if ((cc == null) && (ClothFilesDict != null))
+            {
+                RpfFileEntry file = null;
+                if (ClothFilesDict.TryGetValue(namehash, out file))
+                {
+                    var yld = gfc.GetFileUncached<YldFile>(file);
+                    while ((yld != null) && (!yld.Loaded))
+                    {
+                        Thread.Sleep(20);//kinda hacky
+                        gfc.TryLoadEnqueue(yld);
+                    }
+                    if (yld?.ClothDictionary?.Clothes?.data_items?.Length > 0)
+                    {
+                        cc = yld.ClothDictionary.Clothes.data_items[0];//should only be one in this dict
+                    }
+                }
+            }
+            ClothInstance c = null;
+            if (cc != null)
+            {
+                c = new ClothInstance();
+                c.Init(cc, Skeleton);
+            }
+
 
             if (d != null) Drawables[index] = d.ShallowCopy() as Drawable;
             if (t != null) Textures[index] = t;
+            if (c != null) Clothes[index] = c;
 
             DrawableNames[index] = name;
         }
