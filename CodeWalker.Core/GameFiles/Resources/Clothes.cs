@@ -479,14 +479,10 @@ namespace CodeWalker.GameFiles
         public uint Unknown_24h { get; set; } // 0x00000000
         public uint Unknown_28h { get; set; } // 0x00000000
         public uint Unknown_2Ch { get; set; } // 0x00000000
-        public uint Unknown_30h { get; set; }
-        public uint Unknown_34h { get; set; }
-        public uint Unknown_38h { get; set; }
-        public uint Unknown_3Ch { get; set; }
-        public uint Unknown_40h { get; set; }
-        public uint Unknown_44h { get; set; }
-        public uint Unknown_48h { get; set; }
-        public uint Unknown_4Ch { get; set; }
+        public Vector3 Unknown_30h { get; set; }    //bbmin?
+        public MetaHash Unknown_3Ch { get; set; }   //mask? shorts?
+        public Vector3 Unknown_40h { get; set; }    //bbmax?
+        public MetaHash Unknown_4Ch { get; set; }   //mask? shorts?
         public float Unknown_50h { get; set; }
         public uint Unknown_54h { get; set; } // 0x00000001
         public uint Unknown_58h { get; set; } // 0x00000000
@@ -495,16 +491,16 @@ namespace CodeWalker.GameFiles
         public uint Unknown_64h { get; set; } // 0x00000000
         public uint Unknown_68h { get; set; } // 0x00000000
         public uint Unknown_6Ch { get; set; } // 0x00000000
-        public ResourceSimpleList64_s<Vector4> Unknown_70h { get; set; }
-        public ResourceSimpleList64_s<Vector4> Unknown_80h { get; set; }
+        public ResourceSimpleList64_s<Vector4> Unknown_70h { get; set; } //vertex infos? original positions..?
+        public ResourceSimpleList64_s<Vector4> Unknown_80h { get; set; } //vertex positions  (in bind pose?)
         public uint Unknown_90h { get; set; } // 0x00000000
         public uint Unknown_94h { get; set; } // 0x00000000
         public uint Unknown_98h { get; set; } // 0x00000000
         public uint Unknown_9Ch { get; set; } // 0x00000000
         public uint Unknown_A0h { get; set; } // 0x00000000
         public uint Unknown_A4h { get; set; } // 0x00000000
-        public float Unknown_A8h { get; set; }
-        public float Unknown_ACh { get; set; }
+        public float Unknown_A8h { get; set; }      //9999, 100
+        public float Unknown_ACh { get; set; }      //9999, 0
         public uint Unknown_B0h { get; set; } // 0x00000000
         public uint Unknown_B4h { get; set; } // 0x00000000
         public uint Unknown_B8h { get; set; } // 0x00000000
@@ -519,11 +515,11 @@ namespace CodeWalker.GameFiles
         public uint Unknown_DCh { get; set; } // 0x00000000
         public uint Unknown_E0h { get; set; } // 0x00000000
         public uint Unknown_E4h { get; set; } // 0x00000000
-        public uint Unknown_E8h { get; set; }
-        public uint Unknown_ECh { get; set; }
-        public uint Unknown_F0h { get; set; }
+        public uint Unknown_E8h { get; set; }       // ?
+        public uint Unknown_ECh { get; set; }       //unk110h count  (constraints?)
+        public uint Unknown_F0h { get; set; }       //vertices count
         public uint Unknown_F4h { get; set; } // 0x00000000
-        public uint Unknown_F8h { get; set; }
+        public uint Unknown_F8h { get; set; }       // 3 
         public uint Unknown_FCh { get; set; } // 0x00000000
         public ResourceSimpleList64_s<Unknown_C_004> Unknown_100h { get; set; }
         public ResourceSimpleList64_s<Unknown_C_004> Unknown_110h { get; set; }
@@ -535,8 +531,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_138h { get; set; } // 0x00100000
         public uint Unknown_13Ch { get; set; } // 0x00000000
         public ulong Unknown_140h_Pointer { get; set; }
-        public ushort Unknown_148h { get; set; }
-        public ushort Unknown_14Ah { get; set; }
+        public ushort Unknown_148h { get; set; }    // ?  min:1, max:31
+        public ushort Unknown_14Ah { get; set; }    //also vertices count?
         public uint Unknown_14Ch { get; set; } // 0x00000000
         public uint Unknown_150h { get; set; } // 0x00000000
         public uint Unknown_154h { get; set; } // 0x00000000
@@ -573,13 +569,9 @@ namespace CodeWalker.GameFiles
             this.Unknown_24h = reader.ReadUInt32();
             this.Unknown_28h = reader.ReadUInt32();
             this.Unknown_2Ch = reader.ReadUInt32();
-            this.Unknown_30h = reader.ReadUInt32();
-            this.Unknown_34h = reader.ReadUInt32();
-            this.Unknown_38h = reader.ReadUInt32();
+            this.Unknown_30h = reader.ReadVector3();
             this.Unknown_3Ch = reader.ReadUInt32();
-            this.Unknown_40h = reader.ReadUInt32();
-            this.Unknown_44h = reader.ReadUInt32();
-            this.Unknown_48h = reader.ReadUInt32();
+            this.Unknown_40h = reader.ReadVector3();
             this.Unknown_4Ch = reader.ReadUInt32();
             this.Unknown_50h = reader.ReadSingle();
             this.Unknown_54h = reader.ReadUInt32();
@@ -665,6 +657,43 @@ namespace CodeWalker.GameFiles
             if (Unknown_110h?.data_items?.Length > 0)
             { }
 
+            switch (Unknown_148h)
+            {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8://ped cloth only up to 8
+                case 9:
+                case 10:
+                case 11:
+                case 12:
+                case 13:
+                case 14:
+                case 15:
+                case 16:
+                case 17:
+                case 18:
+                case 19:
+                case 20:
+                case 21:
+                case 22:
+                case 23:
+                case 24:
+                case 25:
+                case 26:
+                case 27:
+                case 28:
+                case 30:
+                case 31:
+                    break;
+                default:
+                    break;
+            }
+
         }
 
         /// <summary>
@@ -690,12 +719,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_28h);
             writer.Write(this.Unknown_2Ch);
             writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_34h);
-            writer.Write(this.Unknown_38h);
             writer.Write(this.Unknown_3Ch);
             writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_44h);
-            writer.Write(this.Unknown_48h);
             writer.Write(this.Unknown_4Ch);
             writer.Write(this.Unknown_50h);
             writer.Write(this.Unknown_54h);
@@ -1042,7 +1067,7 @@ namespace CodeWalker.GameFiles
         public ResourceSimpleList64_s<Vector4> Unknown_10h { get; set; }
         public ulong ControllerPointer { get; set; }
         public ulong BoundPointer { get; set; }
-        public ResourceSimpleList64_uint Unknown_30h { get; set; }
+        public ResourceSimpleList64_uint Unknown_30h { get; set; } //bone ids - maps to items in Bound.Children
         public uint Unknown_40h { get; set; } // 0x00000000
         public uint Unknown_44h { get; set; } // 0x00000000
         public uint Unknown_48h { get; set; } // 0x00000000
@@ -1181,8 +1206,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_A4h { get; set; } // 0x00000000
         public uint Unknown_A8h { get; set; } // 0x00000000
         public uint Unknown_ACh { get; set; } // 0x00000000
-        public ResourceSimpleList64_uint Unknown_B0h { get; set; }
-        public ResourceSimpleList64_s<Unknown_C_003> Unknown_C0h { get; set; }
+        public ResourceSimpleList64_uint Unknown_B0h { get; set; }// related to BridgeSimGfx.Unknown_E0h? same count as boneids...  anchor verts..?
+        public ResourceSimpleList64_s<CharClothBoneWeightsInds> BoneWeightsInds { get; set; }//bone weights / indices
         public uint Unknown_D0h { get; set; } // 0x00000000
         public uint Unknown_D4h { get; set; } // 0x00000000
         public uint Unknown_D8h { get; set; } // 0x00000000
@@ -1204,12 +1229,21 @@ namespace CodeWalker.GameFiles
             this.Unknown_A8h = reader.ReadUInt32();
             this.Unknown_ACh = reader.ReadUInt32();
             this.Unknown_B0h = reader.ReadBlock<ResourceSimpleList64_uint>();
-            this.Unknown_C0h = reader.ReadBlock<ResourceSimpleList64_s<Unknown_C_003>>();
+            this.BoneWeightsInds = reader.ReadBlock<ResourceSimpleList64_s<CharClothBoneWeightsInds>>();
             this.Unknown_D0h = reader.ReadUInt32();
             this.Unknown_D4h = reader.ReadUInt32();
             this.Unknown_D8h = reader.ReadUInt32();
             this.Unknown_DCh = reader.ReadSingle();
             this.BoneIds = reader.ReadBlock<ResourceSimpleList64_uint>();
+
+
+
+            if (Unknown_B0h?.data_items?.Length != BoneIds?.data_items?.Length)
+            { }
+
+            if (BoneWeightsInds?.data_items?.Length != Vertices?.data_items?.Length)
+            { }//2 hits here, where BoneWeightsInds only 1 less than vertex count
+
         }
 
         /// <summary>
@@ -1227,7 +1261,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_A8h);
             writer.Write(this.Unknown_ACh);
             writer.WriteBlock(this.Unknown_B0h);
-            writer.WriteBlock(this.Unknown_C0h);
+            writer.WriteBlock(this.BoneWeightsInds);
             writer.Write(this.Unknown_D0h);
             writer.Write(this.Unknown_D4h);
             writer.Write(this.Unknown_D8h);
@@ -1241,7 +1275,7 @@ namespace CodeWalker.GameFiles
                 new Tuple<long, IResourceBlock>(0x80, Indices),
                 new Tuple<long, IResourceBlock>(0x90, Vertices),
                 new Tuple<long, IResourceBlock>(0xB0, Unknown_B0h),
-                new Tuple<long, IResourceBlock>(0xC0, Unknown_C0h),
+                new Tuple<long, IResourceBlock>(0xC0, BoneWeightsInds),
                 new Tuple<long, IResourceBlock>(0xE0, BoneIds)
             };
         }
@@ -1346,14 +1380,17 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct Unknown_C_003
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct CharClothBoneWeightsInds
     {
-        public Vector4 Unknown0 { get; set; }
-        public Vector4 Unknown1 { get; set; }
+        public Vector4 Weights { get; set; }
+        public uint Index0 { get; set; }
+        public uint Index1 { get; set; }
+        public uint Index2 { get; set; }
+        public uint Index3 { get; set; }
 
         public override string ToString()
         {
-            return Unknown0.ToString() + "   :   " + Unknown1.ToString();
+            return Weights.ToString() + "   :   " + Index0.ToString() + ", " + Index1.ToString() + ", " + Index2.ToString() + ", " + Index3.ToString();
         }
     }
 
@@ -1671,10 +1708,12 @@ namespace CodeWalker.GameFiles
         public EnvironmentCloth EnvCloth { get; set; }
         public ClothController Controller { get; set; }
 
+        public Bone[] Bones { get; set; }
         public Matrix Transform { get; set; } = Matrix.Identity;
         public Vector4[] Vertices { get; set; }
 
         public Skeleton Skeleton { get; set; }
+
 
         double CurrentTime = 0.0;
 
@@ -1688,9 +1727,9 @@ namespace CodeWalker.GameFiles
             var verts = cc?.Vertices?.data_items;
             if (verts != null)
             {
-                if (verts.Length == Vertices?.Length)
+                if (verts.Length >= Vertices?.Length)
                 {
-                    for (int i = 0; i < verts.Length; i++)
+                    for (int i = 0; i < Vertices.Length; i++)
                     {
                         Vertices[i] = verts[i];
                     }
@@ -1702,6 +1741,21 @@ namespace CodeWalker.GameFiles
             var t = c.Transform;
             t.M44 = 1.0f;
             Transform = t;
+
+
+            var boneIds = cc.BoneIds?.data_items;
+            if ((boneIds != null) && (Skeleton != null))
+            {
+                Bones = new Bone[boneIds.Length];
+                for (int i = 0; i < Bones.Length; i++)
+                {
+                    var boneid = (ushort)boneIds[i];
+                    Bone bone = null;
+                    Skeleton.BonesMap.TryGetValue(boneid, out bone);
+                    Bones[i] = bone;
+                }
+            }
+
 
 
         }
@@ -1721,24 +1775,6 @@ namespace CodeWalker.GameFiles
             {
                 Vertices = new Vector4[vc];
 
-                var unk02 = bg.Unknown_20h?.data_items;//float  //// ??
-                var unk03 = bg.Unknown_30h?.data_items;//float
-                var unk04 = bg.Unknown_40h?.data_items;//float
-                var unk06 = bg.Unknown_60h?.data_items;//float  ////// cloth thickness?
-                var unk07 = bg.Unknown_70h?.data_items;//uint
-                var unk08 = bg.Unknown_80h?.data_items;//uint
-                var unk0A = bg.Unknown_A0h?.data_items;//float  //// ??
-                var unk0B = bg.Unknown_B0h?.data_items;//uint
-                var unk0C = bg.Unknown_C0h?.data_items;//uint
-                var unk0E = bg.Unknown_E0h?.data_items;//ushort  //some sort of indexes? nearest neighbour?
-                var unk0F = bg.Unknown_F0h?.data_items;//ushort
-                var unk10 = bg.Unknown_100h?.data_items;//ushort
-                //var unk12 = bg.Unknown_128h?.data_items;//uint
-
-
-
-
-
             }
 
 
@@ -1752,47 +1788,68 @@ namespace CodeWalker.GameFiles
             if (Vertices == null) return;
             if (CurrentTime == t) return;
 
-            var elapsed = (t - CurrentTime);
-            CurrentTime = t;
+            var elapsed = (float)(t - CurrentTime);
 
             var charCont = CharCloth?.Controller;
             if (charCont != null)
             {
-                var cv = charCont?.Vertices?.data_items;
-                if (Vertices.Length != cv?.Length)
-                { return; }
-
-                var boneIds = charCont.BoneIds?.data_items;
-                if (boneIds == null)
-                { return; }
-
-                for (int i = 0; i < boneIds.Length; i++)
-                {
-                    var boneid = (ushort)boneIds[i];
-                    Bone bone = null;
-                    Skeleton.BonesMap.TryGetValue(boneid, out bone);
-                    if (bone == null)
-                    { continue; }
-
-                    var xform = bone.SkinTransform;
-
-                    for (int v = 0; v < Vertices.Length; v++)
-                    {
-                        var nv = xform.MultiplyW(cv[v].XYZ());
-                        Vertices[v] = new Vector4(nv, 0);
-                    }
-
-                    break;//hackity yak
-                }
-                if (boneIds.Length > 1)
-                { }
-
-
+                Update(charCont, elapsed);
             }
 
+            CurrentTime = t;
         }
 
+        private void Update(CharacterClothController charCont, float elapsed)
+        {
+            if (Bones == null)
+            { return; }
 
+            var cv = charCont?.Vertices?.data_items;
+            if (Vertices.Length > cv?.Length)
+            { return; }
+
+            var bounds = CharCloth.Bound as BoundComposite;
+            var capsules = bounds?.Children?.data_items;
+            var capsuleBoneIds = CharCloth.Unknown_30h?.data_items;
+            if (capsules?.Length != capsuleBoneIds?.Length)
+            { }
+
+            var bsg = charCont.BridgeSimGfx;
+            var vc1 = charCont.VerletCloth1;
+            var unk00 = charCont.Unknown_B0h?.data_items;//anchor verts/constraints..? related to bsg.Unknown_E0h? same count as boneids
+            var winds = charCont.BoneWeightsInds?.data_items;//bone weights/indices   - numverts
+            var cons1 = vc1?.Unknown_100h?.data_items;//constraints? less than numverts
+            var cons2 = vc1?.Unknown_110h?.data_items;//constraints? more than numverts
+            var unk0 = bsg?.Unknown_20h?.data_items;// 0-1 weights values for something?
+            var unk1 = bsg?.Unknown_60h?.data_items;// cloth thickness?
+            var unk2 = bsg?.Unknown_A0h?.data_items;//numverts zeroes?
+            var unk3 = bsg?.Unknown_E0h?.data_items;//mapping? connections?
+            var unk4 = bsg?.Unknown_128h?.data_items;//(boneids+1?) zeroes? has numverts capacity?
+
+
+            for (int v = 0; v < Vertices.Length; v++)
+            {
+                //transform the vertices using the bone weights/indices. this should provide positions for anchored verts
+                var ov = cv[v].XYZ();
+                var wind = (v < winds?.Length) ? winds[v] : new CharClothBoneWeightsInds();
+                var b0 = (wind.Index0 < Bones.Length) ? Bones[wind.Index0] : null;
+                var b1 = (wind.Index1 < Bones.Length) ? Bones[wind.Index1] : null;
+                var b2 = (wind.Index2 < Bones.Length) ? Bones[wind.Index2] : null;
+                var b3 = (wind.Index3 < Bones.Length) ? Bones[wind.Index3] : null;
+                var w0 = wind.Weights.X;
+                var w1 = wind.Weights.Y;
+                var w2 = wind.Weights.Z;
+                var w3 = wind.Weights.W;
+                var v0 = ((w0 > 0) ? b0 : null)?.SkinTransform.MultiplyW(ov) ?? ov;
+                var v1 = ((w1 > 0) ? b1 : null)?.SkinTransform.MultiplyW(ov) ?? ov;
+                var v2 = ((w2 > 0) ? b2 : null)?.SkinTransform.MultiplyW(ov) ?? ov;
+                var v3 = ((w3 > 0) ? b3 : null)?.SkinTransform.MultiplyW(ov) ?? ov;
+                var nv = v0*w0 + v1*w1 + v2*w2 + v3*w3;
+                Vertices[v] = new Vector4(nv, 0);
+            }
+
+
+        }
 
     }
 
