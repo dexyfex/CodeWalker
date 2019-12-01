@@ -24,8 +24,8 @@ namespace CodeWalker.World
         public float FieldOfView;// 1.0f;
         public float FieldOfViewFactor = 0.5f / (float)Math.Tan(/*FieldOfView*/ 1.0f * 0.5f);
         public float AspectRatio = 1920.0f / 1080.0f;
-        public float ZNear = 0.5f;
-        public float ZFar = 12000.0f;
+        public float ZNear = 0.01f;
+        public float ZFar = 100000.0f;
         public Entity FollowEntity = null;
         public Vector3 LocalLookAt = Vector3.ForwardLH;
         public float VOffset = 0.0f;
@@ -176,15 +176,15 @@ namespace CodeWalker.World
         {
             if (IsMapView)
             {
-                ProjMatrix = Matrix.OrthoRH(AspectRatio * OrthographicSize, OrthographicSize, 1.0f, 3000.0f);
+                ProjMatrix = Matrix.OrthoRH(AspectRatio * OrthographicSize, OrthographicSize, 3000.0f, 1.0f);
             }
             else if (IsOrthographic)
             {
-                ProjMatrix = Matrix.OrthoRH(AspectRatio * OrthographicSize, OrthographicSize, ZNear, ZFar);
+                ProjMatrix = Matrix.OrthoRH(AspectRatio * OrthographicSize, OrthographicSize, ZFar, ZNear);
             }
             else
             {
-                ProjMatrix = Matrix.PerspectiveFovRH(FieldOfView, AspectRatio, ZNear, ZFar);
+                ProjMatrix = Matrix.PerspectiveFovRH(FieldOfView, AspectRatio, ZFar, ZNear);
             }
             //ProjMatrix._33/=ZFar;
             //ProjMatrix._43/=ZFar;
@@ -301,8 +301,8 @@ namespace CodeWalker.World
             Planes[1] = Plane.Normalize(new Plane((vp.M14 - vp.M11), (vp.M24 - vp.M21), (vp.M34 - vp.M31), (vp.M44 - vp.M41)));
             Planes[2] = Plane.Normalize(new Plane((vp.M14 - vp.M12), (vp.M24 - vp.M22), (vp.M34 - vp.M32), (vp.M44 - vp.M42)));
             Planes[3] = Plane.Normalize(new Plane((vp.M14 + vp.M12), (vp.M24 + vp.M22), (vp.M34 + vp.M32), (vp.M44 + vp.M42)));
-            Planes[4] = Plane.Normalize(new Plane((vp.M13), (vp.M23), (vp.M33), 0.0f));//(vp.M43));
-            Planes[5] = Plane.Normalize(new Plane((vp.M14 - vp.M13), (vp.M24 - vp.M23), (vp.M34 - vp.M33), (vp.M44 - vp.M43)));
+            Planes[4] = Plane.Normalize(new Plane((vp.M14 - vp.M13), (vp.M24 - vp.M23), (vp.M34 - vp.M33), (vp.M44 - vp.M43)));
+            Planes[5] = Plane.Normalize(new Plane((vp.M13), (vp.M23), (vp.M33), 0.0f));//(vp.M43));
         }
 
         //public bool ContainsSphere(ref Vector3 c, float cls, float r)
