@@ -441,8 +441,6 @@ namespace CodeWalker.Vehicles
             camera.TargetDistance = rad * 1.6f;
             camera.CurrentDistance = rad * 1.6f;
 
-            camera.ZFar = Math.Min(rad * 200.0f, 12000.0f);
-            camera.ZNear = Math.Min(camera.ZFar * 5e-5f, 0.5f);
             camera.UpdateProj = true;
 
         }

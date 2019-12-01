@@ -176,16 +176,16 @@ namespace CodeWalker.Rendering
             {
                 BackFace = new DepthStencilOperationDescription()
                 {
-                    Comparison = Comparison.LessEqual,
+                    Comparison = Comparison.GreaterEqual,
                     DepthFailOperation = StencilOperation.Zero,
                     FailOperation = StencilOperation.Zero,
                     PassOperation = StencilOperation.Zero,
                 },
-                DepthComparison = Comparison.LessEqual,
+                DepthComparison = Comparison.GreaterEqual,
                 DepthWriteMask = DepthWriteMask.All,
                 FrontFace = new DepthStencilOperationDescription()
                 {
-                    Comparison = Comparison.LessEqual,
+                    Comparison = Comparison.GreaterEqual,
                     DepthFailOperation = StencilOperation.Zero,
                     FailOperation = StencilOperation.Zero,
                     PassOperation = StencilOperation.Zero

@@ -1698,7 +1698,7 @@ namespace CodeWalker
             this.FarClipUpDown.Size = new System.Drawing.Size(114, 20);
             this.FarClipUpDown.TabIndex = 61;
             this.FarClipUpDown.Value = new decimal(new int[] {
-            12000,
+            100000,
             0,
             0,
             0});
@@ -1736,10 +1736,10 @@ namespace CodeWalker
             this.NearClipUpDown.Size = new System.Drawing.Size(114, 20);
             this.NearClipUpDown.TabIndex = 59;
             this.NearClipUpDown.Value = new decimal(new int[] {
-            5,
+            1,
             0,
             0,
-            65536});
+            131072});
             this.NearClipUpDown.ValueChanged += new System.EventHandler(this.NearClipUpDown_ValueChanged);
             // 
             // label31

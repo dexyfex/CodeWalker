@@ -322,11 +322,11 @@ namespace CodeWalker.Rendering
         public void ClearRenderTarget(DeviceContext ctx)
         {
             ctx.ClearRenderTargetView(targetview, clearcolour);
-            ctx.ClearDepthStencilView(depthview, DepthStencilClearFlags.Depth, 1.0f, 0);
+            ctx.ClearDepthStencilView(depthview, DepthStencilClearFlags.Depth, 0.0f, 0);
         }
         public void ClearDepth(DeviceContext ctx)
         {
-            ctx.ClearDepthStencilView(depthview, DepthStencilClearFlags.Depth, 1.0f, 0);
+            ctx.ClearDepthStencilView(depthview, DepthStencilClearFlags.Depth, 0.0f, 0);
         }
         public void SetDefaultRenderTarget(DeviceContext ctx)
         {

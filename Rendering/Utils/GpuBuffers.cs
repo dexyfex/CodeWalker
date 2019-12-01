@@ -380,7 +380,7 @@ namespace CodeWalker.Rendering
                 context.ClearRenderTargetView(MSRTV, colour);
                 if (UseDepth)
                 {
-                    context.ClearDepthStencilView(MSDSV, DepthStencilClearFlags.Depth, 1.0f, 0);
+                    context.ClearDepthStencilView(MSDSV, DepthStencilClearFlags.Depth, 0.0f, 0);
                 }
             }
             else
@@ -388,7 +388,7 @@ namespace CodeWalker.Rendering
                 context.ClearRenderTargetView(RTV, colour);
                 if (UseDepth)
                 {
-                    context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 1.0f, 0);
+                    context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 0.0f, 0);
                 }
             }
         }
@@ -398,11 +398,11 @@ namespace CodeWalker.Rendering
             if (!UseDepth) return;
             if (Multisampled)
             {
-                context.ClearDepthStencilView(MSDSV, DepthStencilClearFlags.Depth, 1.0f, 0);
+                context.ClearDepthStencilView(MSDSV, DepthStencilClearFlags.Depth, 0.0f, 0);
             }
             else
             {
-                context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 1.0f, 0);
+                context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 0.0f, 0);
             }
         }
 
