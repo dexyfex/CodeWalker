@@ -1395,17 +1395,13 @@ namespace CodeWalker.GameFiles
                 {
                     //transform interior entities into world space...
                     var mloa = Archetype as MloArchetype;
-                    if (MloInstance == null)
-                    {
-                        MloInstance = new MloInstanceData();
-                    }
+                    MloInstance = new MloInstanceData();
+                    MloInstance._Instance = new CMloInstanceDef { CEntityDef = _CEntityDef };
                     if (mloa != null)
                     {
                         if (!IsMlo)
                         {
                             IsMlo = true;
-                            MloInstance._Instance = new CMloInstanceDef { CEntityDef = _CEntityDef };
-
                             List<YmapEntityDef> mloEntities = Ymap.MloEntities?.ToList() ?? new List<YmapEntityDef>();
                             mloEntities.Add(this);
                             Ymap.MloEntities = mloEntities.ToArray();
