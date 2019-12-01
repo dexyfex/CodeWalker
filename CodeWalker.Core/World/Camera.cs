@@ -196,8 +196,8 @@ namespace CodeWalker.World
             float my = MouseY;
             ViewProjMatrix = Matrix.Multiply(ViewMatrix, ProjMatrix);
             ViewProjInvMatrix = Matrix.Invert(ViewProjMatrix);
-            MouseRayNear = ViewProjInvMatrix.MultiplyW(new Vector3(mx, my, 0.0f));
-            MouseRayFar = ViewProjInvMatrix.MultiplyW(new Vector3(mx, my, 1.0f));
+            MouseRayNear = ViewProjInvMatrix.MultiplyW(new Vector3(mx, my, 1.0f));
+            MouseRayFar = ViewProjInvMatrix.MultiplyW(new Vector3(mx, my, 0.0f));
             MouseRay.Position = Vector3.Zero;
             MouseRay.Direction = Vector3.Normalize(MouseRayFar - MouseRayNear);
             if (IsMapView || IsOrthographic)
