@@ -1420,7 +1420,7 @@ namespace CodeWalker.Rendering
                 light.TangentX = new Vector4(Vector3.Normalize(light.Direction.GetPerpVec()), 0.0f);
                 light.TangentY = new Vector4(Vector3.Cross(light.Direction, light.TangentX.XYZ()), 0.0f);
                 light.Falloff = ll.falloff[i];
-                light.FalloffExponent = ll.falloffExponent[i];
+                light.FalloffExponent = Math.Max(ll.falloffExponent[i]*0.01f, 0.5f);//is this right?
                 light.InnerAngle = ll.coneInnerAngle[i];
                 light.OuterAngleOrCapExt = ll.coneOuterAngleOrCapExt[i];
                 var type = (LightType)((light.TimeAndStateFlags >> 26) & 7);
