@@ -1355,6 +1355,136 @@ namespace CodeWalker.Rendering
         }
     }
 
+
+    public class RenderableLODLights : RenderableCacheItem<YmapFile>
+    {
+        public struct LODLight
+        {
+            public Vector3 Position;
+            public uint Colour;
+            public Vector3 Direction;
+            public uint TimeAndStateFlags;
+            public Vector4 TangentX;
+            public Vector4 TangentY;
+            public float Falloff;
+            public float FalloffExponent;
+            public float InnerAngle;//for cone
+            public float OuterAngleOrCapExt;//outer angle for cone, cap extent for capsule
+        }
+
+        public LODLight[] Points;
+        public LODLight[] Spots;
+        public LODLight[] Caps;
+
+        public GpuSBuffer<LODLight> PointsBuffer { get; set; }
+        public GpuSBuffer<LODLight> SpotsBuffer { get; set; }
+        public GpuSBuffer<LODLight> CapsBuffer { get; set; }
+
+
+        public override void Init(YmapFile key)
+        {
+            Key = key;
+
+            var ll = key.LODLights;
+            var dll = key.Parent?.DistantLODLights;
+
+            if (ll == null) return;
+            if (dll == null) return;
+
+            var n = dll.positions?.Length ?? 0;
+            n = Math.Min(n, dll.colours?.Length ?? 0);
+            n = Math.Min(n, ll.direction?.Length ?? 0);
+            n = Math.Min(n, ll.falloff?.Length ?? 0);
+            n = Math.Min(n, ll.falloffExponent?.Length ?? 0);
+            n = Math.Min(n, ll.timeAndStateFlags?.Length ?? 0);
+            n = Math.Min(n, ll.hash?.Length ?? 0);
+            n = Math.Min(n, ll.coneInnerAngle?.Length ?? 0);
+            n = Math.Min(n, ll.coneOuterAngleOrCapExt?.Length ?? 0);
+            n = Math.Min(n, ll.coronaIntensity?.Length ?? 0);
+
+            if (n <= 0)
+            { return; }
+
+
+            var points = new List<LODLight>();
+            var spots = new List<LODLight>();
+            var caps = new List<LODLight>();
+
+            for (int i = 0; i < n; i++)
+            {
+                var light = new LODLight();
+                light.Position = dll.positions[i].ToVector3();
+                light.Colour = dll.colours[i];
+                light.Direction = ll.direction[i].ToVector3();
+                light.TimeAndStateFlags = ll.timeAndStateFlags[i];
+                light.TangentX = new Vector4(Vector3.Normalize(light.Direction.GetPerpVec()), 0.0f);
+                light.TangentY = new Vector4(Vector3.Cross(light.Direction, light.TangentX.XYZ()), 0.0f);
+                light.Falloff = ll.falloff[i];
+                light.FalloffExponent = ll.falloffExponent[i];
+                light.InnerAngle = ll.coneInnerAngle[i];
+                light.OuterAngleOrCapExt = ll.coneOuterAngleOrCapExt[i];
+                var type = (LightType)((light.TimeAndStateFlags >> 26) & 7);
+                switch (type)
+                {
+                    case LightType.Point:
+                        points.Add(light);
+                        break;
+                    case LightType.Spot:
+                        spots.Add(light);
+                        break;
+                    case LightType.Capsule:
+                        caps.Add(light);
+                        break;
+                    default: break;//just checking...
+                }
+            }
+
+            Points = points.ToArray();
+            Spots = spots.ToArray();
+            Caps = caps.ToArray();
+
+        }
+
+        public override void Load(Device device)
+        {
+            if ((Points != null) && (Points.Length > 0))
+            {
+                PointsBuffer = new GpuSBuffer<LODLight>(device, Points);
+            }
+            if ((Spots != null) && (Spots.Length > 0))
+            {
+                SpotsBuffer = new GpuSBuffer<LODLight>(device, Spots);
+            }
+            if ((Caps != null) && (Caps.Length > 0))
+            {
+                CapsBuffer = new GpuSBuffer<LODLight>(device, Caps);
+            }
+
+            IsLoaded = true;
+        }
+
+        public override void Unload()
+        {
+            IsLoaded = false;
+
+            if (PointsBuffer != null)
+            {
+                PointsBuffer.Dispose();
+                PointsBuffer = null;
+            }
+            if (SpotsBuffer != null)
+            {
+                SpotsBuffer.Dispose();
+                SpotsBuffer = null;
+            }
+            if (CapsBuffer != null)
+            {
+                CapsBuffer.Dispose();
+                CapsBuffer = null;
+            }
+        }
+    }
+
     public class RenderableDistantLODLights : RenderableCacheItem<YmapDistantLODLights>
     {
         public struct DistLODLight
@@ -1815,7 +1945,7 @@ namespace CodeWalker.Rendering
                         p2 = bgeom.GetVertex(bcap.capsuleIndex2);
                         a1 = p2 - p1;
                         n1 = Vector3.Normalize(a1);
-                        p3 = Vector3.Normalize(GetPerpVec(n1));
+                        p3 = Vector3.Normalize(n1.GetPerpVec());
                         //p4 = Vector3.Normalize(Vector3.Cross(n1, p3));
                         Quaternion q1 = Quaternion.Invert(Quaternion.LookAtRH(Vector3.Zero, p3, n1));
                         rcapsules[curcapsule].Point1 = p1;
@@ -1848,7 +1978,7 @@ namespace CodeWalker.Rendering
                         p2 = bgeom.GetVertex(pcyl.cylinderIndex2);
                         a1 = p2 - p1;
                         n1 = Vector3.Normalize(a1);
-                        p3 = Vector3.Normalize(GetPerpVec(n1));
+                        p3 = Vector3.Normalize(n1.GetPerpVec());
                         //p4 = Vector3.Normalize(Vector3.Cross(n1, p3));
                         Quaternion q2 = Quaternion.Invert(Quaternion.LookAtRH(Vector3.Zero, p3, n1));
                         rcylinders[curcylinder].Point1 = p1;
@@ -1896,26 +2026,6 @@ namespace CodeWalker.Rendering
             arr[index].Colour = colour;
             arr[index].Texcoord = Vector2.Zero;
             index++;
-        }
-
-        private Vector3 GetPerpVec(Vector3 n)
-        {
-            //make a vector perpendicular to the given one
-            float nx = Math.Abs(n.X);
-            float ny = Math.Abs(n.Y);
-            float nz = Math.Abs(n.Z);
-            if ((nx < ny) && (nx < nz))
-            {
-                return Vector3.Cross(n, Vector3.Right);
-            }
-            else if (ny < nz)
-            {
-                return Vector3.Cross(n, Vector3.Up);
-            }
-            else
-            {
-                return Vector3.Cross(n, Vector3.ForwardLH);
-            }
         }
 
 

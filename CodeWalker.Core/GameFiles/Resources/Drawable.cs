@@ -2335,14 +2335,19 @@ namespace CodeWalker.GameFiles
     }
 
 
+    public enum LightType : byte
+    {
+        Point = 1,
+        Spot = 2,
+        Capsule = 4,
+    }
+
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct LightAttributes_s
     {
         // structure data
         public uint Unknown_0h { get; set; } // 0x00000000
         public uint Unknown_4h { get; set; } // 0x00000000
-        public float PositionX { get; set; }
-        public float PositionY { get; set; }
-        public float PositionZ { get; set; }
+        public Vector3 Position { get; set; }
         public uint Unknown_14h { get; set; } // 0x00000000
         public byte ColorR { get; set; }
         public byte ColorG { get; set; }
@@ -2351,14 +2356,12 @@ namespace CodeWalker.GameFiles
         public float Intensity { get; set; }
         public uint Flags { get; set; }
         public ushort BoneId { get; set; }
-        public byte Type { get; set; }
+        public LightType Type { get; set; }
         public byte GroupId { get; set; }
         public uint TimeFlags { get; set; }
         public float Falloff { get; set; }
         public float FalloffExponent { get; set; }
-        public float CullingPlaneNormalX { get; set; }
-        public float CullingPlaneNormalY { get; set; }
-        public float CullingPlaneNormalZ { get; set; }
+        public Vector3 CullingPlaneNormal { get; set; }
         public float CullingPlaneOffset { get; set; }
         public byte ShadowBlur { get; set; }
         public byte Unknown_45h { get; set; }
@@ -2380,17 +2383,11 @@ namespace CodeWalker.GameFiles
         public float ShadowNearClip { get; set; }
         public float CoronaIntensity { get; set; }
         public float CoronaZBias { get; set; }
-        public float DirectionX { get; set; }
-        public float DirectionY { get; set; }
-        public float DirectionZ { get; set; }
-        public float TangentX { get; set; }
-        public float TangentY { get; set; }
-        public float TangentZ { get; set; }
+        public Vector3 Direction { get; set; }
+        public Vector3 Tangent { get; set; }
         public float ConeInnerAngle { get; set; }
         public float ConeOuterAngle { get; set; }
-        public float ExtentX { get; set; }
-        public float ExtentY { get; set; }
-        public float ExtentZ { get; set; }
+        public Vector3 Extent { get; set; }
         public uint ProjectedTextureHash { get; set; }
         public uint Unknown_A4h { get; set; } // 0x00000000
     }

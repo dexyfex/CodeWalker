@@ -4659,6 +4659,7 @@ namespace CodeWalker
             WindowState = s.WindowMaximized ? FormWindowState.Maximized : WindowState;
             FullScreenCheckBox.Checked = s.FullScreen;
             WireframeCheckBox.Checked = s.Wireframe;
+            DeferredShadingCheckBox.Checked = s.Deferred;
             HDRRenderingCheckBox.Checked = s.HDR;
             ShadowsCheckBox.Checked = s.Shadows;
             SkydomeCheckBox.Checked = s.Skydome;
@@ -4693,6 +4694,7 @@ namespace CodeWalker
             s.WindowMaximized = (WindowState == FormWindowState.Maximized);
             s.FullScreen = FullScreenCheckBox.Checked;
             s.Wireframe = WireframeCheckBox.Checked;
+            s.Deferred = DeferredShadingCheckBox.Checked;
             s.HDR = HDRRenderingCheckBox.Checked;
             s.Shadows = ShadowsCheckBox.Checked;
             s.Skydome = SkydomeCheckBox.Checked;
@@ -7256,6 +7258,14 @@ namespace CodeWalker
         private void ShowYmapChildrenCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Renderer.renderchildents = ShowYmapChildrenCheckBox.Checked;
+        }
+
+        private void DeferredShadingCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            lock (Renderer.RenderSyncRoot)
+            {
+                Renderer.shaders.deferred = DeferredShadingCheckBox.Checked;
+            }
         }
 
         private void HDRRenderingCheckBox_CheckedChanged(object sender, EventArgs e)

@@ -38,6 +38,7 @@ namespace CodeWalker.GameFiles
         public YmapEntityDef[] RootEntities;
         public YmapEntityDef[] MloEntities;
 
+        public YmapFile Parent { get; set; }
         public YmapFile[] ChildYmaps = null;
         public bool MergedWithParent = false;
 

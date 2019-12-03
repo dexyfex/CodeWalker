@@ -195,8 +195,8 @@ namespace CodeWalker.Project.Panels
 
 
 
-                                    Vector3 lpos = new Vector3(la.PositionX, la.PositionY, la.PositionZ);
-                                    Vector3 ldir = new Vector3(la.DirectionX, la.DirectionY, la.DirectionZ);
+                                    Vector3 lpos = la.Position;
+                                    Vector3 ldir = la.Direction;
                                     Vector3 bpos = xform.Multiply(lpos);
                                     Vector3 bdir = xform.MultiplyRot(ldir);
                                     Vector3 epos = ent.Orientation.Multiply(bpos) + ent.Position;
@@ -229,11 +229,11 @@ namespace CodeWalker.Project.Panels
                                     //1 = point
                                     //2 = spot
                                     //4 = capsule
-                                    uint type = la.Type;
+                                    uint type = (uint)la.Type;
                                     uint unk = isStreetLight ? 1u : 0;//2 bits - isStreetLight low bit, unk high bit
                                     uint t = la.TimeFlags | (type << 26) | (unk << 24);
 
-                                    var maxext = (byte)Math.Max(Math.Max(la.ExtentX, la.ExtentY), la.ExtentZ);
+                                    var maxext = (byte)Math.Max(Math.Max(la.Extent.X, la.Extent.Y), la.Extent.Z);
 
 
 

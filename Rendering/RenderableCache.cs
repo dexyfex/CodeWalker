@@ -29,8 +29,9 @@ namespace CodeWalker.Rendering
                 return renderables.CacheUse
                     + textures.CacheUse 
                     + boundcomps.CacheUse 
-                    + instbatches.CacheUse 
-                    + distlodlights.CacheUse 
+                    + instbatches.CacheUse
+                    + lodlights.CacheUse
+                    + distlodlights.CacheUse
                     + pathbatches.CacheUse 
                     + waterquads.CacheUse;
             }
@@ -43,6 +44,7 @@ namespace CodeWalker.Rendering
                     + textures.CurrentLoadedCount
                     + boundcomps.CurrentLoadedCount
                     + instbatches.CurrentLoadedCount
+                    + lodlights.CurrentLoadedCount
                     + distlodlights.CurrentLoadedCount
                     + pathbatches.CurrentLoadedCount
                     + waterquads.CurrentLoadedCount;
@@ -56,6 +58,7 @@ namespace CodeWalker.Rendering
                     + textures.QueueLength
                     + boundcomps.QueueLength
                     + instbatches.QueueLength
+                    + lodlights.QueueLength
                     + distlodlights.QueueLength
                     + pathbatches.QueueLength
                     + waterquads.QueueLength;
@@ -95,6 +98,7 @@ namespace CodeWalker.Rendering
         private RenderableCacheLookup<Texture, RenderableTexture> textures = new RenderableCacheLookup<Texture, RenderableTexture>(Settings.Default.GPUTextureCacheSize, Settings.Default.GPUCacheTime);
         private RenderableCacheLookup<BoundComposite, RenderableBoundComposite> boundcomps = new RenderableCacheLookup<BoundComposite, RenderableBoundComposite>(Settings.Default.GPUBoundCompCacheSize, Settings.Default.GPUCacheTime);
         private RenderableCacheLookup<YmapGrassInstanceBatch, RenderableInstanceBatch> instbatches = new RenderableCacheLookup<YmapGrassInstanceBatch, RenderableInstanceBatch>(67108864, Settings.Default.GPUCacheTime); //64MB - todo: make this a setting
+        private RenderableCacheLookup<YmapFile, RenderableLODLights> lodlights = new RenderableCacheLookup<YmapFile, RenderableLODLights>(33554432, Settings.Default.GPUCacheTime); //32MB - todo: make this a setting
         private RenderableCacheLookup<YmapDistantLODLights, RenderableDistantLODLights> distlodlights = new RenderableCacheLookup<YmapDistantLODLights, RenderableDistantLODLights>(33554432, Settings.Default.GPUCacheTime); //32MB - todo: make this a setting
         private RenderableCacheLookup<BasePathData, RenderablePathBatch> pathbatches = new RenderableCacheLookup<BasePathData, RenderablePathBatch>(536870912 /*33554432*/, Settings.Default.GPUCacheTime); // 512MB /*32MB*/ - todo: make this a setting
         private RenderableCacheLookup<WaterQuad, RenderableWaterQuad> waterquads = new RenderableCacheLookup<WaterQuad, RenderableWaterQuad>(4194304, Settings.Default.GPUCacheTime); //4MB - todo: make this a setting
@@ -117,6 +121,7 @@ namespace CodeWalker.Rendering
             textures.Clear();
             boundcomps.Clear();
             instbatches.Clear();
+            lodlights.Clear();
             distlodlights.Clear();
             pathbatches.Clear();
             waterquads.Clear();
@@ -134,6 +139,7 @@ namespace CodeWalker.Rendering
             int texturecount = textures.LoadProc(currentDevice, MaxItemsPerLoop);
             int boundcompcount = boundcomps.LoadProc(currentDevice, MaxItemsPerLoop);
             int instbatchcount = instbatches.LoadProc(currentDevice, MaxItemsPerLoop);
+            int lodlightcount = lodlights.LoadProc(currentDevice, MaxItemsPerLoop);
             int distlodlightcount = distlodlights.LoadProc(currentDevice, MaxItemsPerLoop);
             int pathbatchcount = pathbatches.LoadProc(currentDevice, MaxItemsPerLoop);
             int waterquadcount = waterquads.LoadProc(currentDevice, MaxItemsPerLoop);
@@ -144,6 +150,7 @@ namespace CodeWalker.Rendering
                 (texturecount >= MaxItemsPerLoop) ||
                 (boundcompcount >= MaxItemsPerLoop) ||
                 (instbatchcount >= MaxItemsPerLoop) ||
+                (lodlightcount >= MaxItemsPerLoop) ||
                 (distlodlightcount >= MaxItemsPerLoop) ||
                 (pathbatchcount >= MaxItemsPerLoop) ||
                 (waterquadcount >= MaxItemsPerLoop);
@@ -161,6 +168,7 @@ namespace CodeWalker.Rendering
                 textures.UnloadProc();
                 boundcomps.UnloadProc();
                 instbatches.UnloadProc();
+                lodlights.UnloadProc();
                 distlodlights.UnloadProc();
                 pathbatches.UnloadProc();
                 waterquads.UnloadProc();
@@ -182,6 +190,7 @@ namespace CodeWalker.Rendering
             textures.RenderThreadSync();
             boundcomps.RenderThreadSync();
             instbatches.RenderThreadSync();
+            lodlights.RenderThreadSync();
             distlodlights.RenderThreadSync();
             pathbatches.RenderThreadSync();
             waterquads.RenderThreadSync();
@@ -206,6 +215,10 @@ namespace CodeWalker.Rendering
         public RenderableDistantLODLights GetRenderableDistantLODLights(YmapDistantLODLights lights)
         {
             return distlodlights.Get(lights);
+        }
+        public RenderableLODLights GetRenderableLODLights(YmapFile ymap)
+        {
+            return lodlights.Get(ymap);
         }
         public RenderablePathBatch GetRenderablePathBatch(BasePathData pathdata)
         {

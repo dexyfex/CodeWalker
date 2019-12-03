@@ -139,7 +139,7 @@ float3 GlobalLighting(float3 diff, float3 norm, float4 vc0, float lf, uniform Sh
 {
     float3 c = saturate(diff);
     float3 fc = c;
-    float naturalDiffuseFactor = 1.0;
+    float naturalDiffuseFactor = vc0.r;
     float artificialDiffuseFactor = saturate(vc0.g);
     c *= BasicLighting(globalLights.LightDirColour, globalLights.LightDirAmbColour, lf);
     c += AmbientLight(fc, norm.z, globalLights.LightNaturalAmbUp, globalLights.LightNaturalAmbDown, naturalDiffuseFactor);

@@ -132,6 +132,8 @@ namespace CodeWalker.Vehicles
             camera.TargetRotation.X = 0.5f * (float)Math.PI;
             camera.CurrentRotation.X = 0.5f * (float)Math.PI;
 
+            Renderer.shaders.deferred = false; //no point using this here yet
+
 
             LoadSettings();
 

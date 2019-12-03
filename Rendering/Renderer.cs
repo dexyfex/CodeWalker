@@ -102,7 +102,9 @@ namespace CodeWalker.Rendering
         public bool renderchildents = false;//when rendering single ymap, render root only or not...
         public bool renderentities = true;
         public bool rendergrass = true;
-        public bool renderdistlodlights = true;
+        public bool renderlights = false; //render individual drawable lights (TODO!)
+        public bool renderlodlights = true; //render LOD lights from ymaps
+        public bool renderdistlodlights = true; //render distant lod lights (coronas)
         public bool rendercars = false;
 
         public bool rendercollisionmeshes = Settings.Default.ShowCollisionMeshes;
@@ -1575,10 +1577,14 @@ namespace CodeWalker.Rendering
             for (int y = 0; y < VisibleYmaps.Count; y++)
             {
                 var ymap = VisibleYmaps[y];
+                YmapFile pymap = ymap.Parent;
+                if ((pymap == null) && (ymap._CMapData.parent != 0))
+                {
+                    renderworldVisibleYmapDict.TryGetValue(ymap._CMapData.parent, out pymap);
+                    ymap.Parent = pymap;
+                }
                 if (ymap.RootEntities != null)
                 {
-                    YmapFile pymap;
-                    renderworldVisibleYmapDict.TryGetValue(ymap._CMapData.parent, out pymap);
                     for (int i = 0; i < ymap.RootEntities.Length; i++)
                     {
                         var ent = ymap.RootEntities[i];
@@ -1696,6 +1702,17 @@ namespace CodeWalker.Rendering
                     if (ymap.DistantLODLights != null)
                     {
                         RenderYmapDistantLODLights(ymap);
+                    }
+                }
+            }
+            if (renderlodlights && shaders.deferred)
+            {
+                for (int y = 0; y < VisibleYmaps.Count; y++)
+                {
+                    var ymap = VisibleYmaps[y];
+                    if (ymap.LODLights != null)
+                    {
+                        RenderYmapLODLights(ymap);
                     }
                 }
             }
@@ -2185,6 +2202,20 @@ namespace CodeWalker.Rendering
 
         }
 
+
+
+        private void RenderYmapLODLights(YmapFile ymap)
+        {
+            if (ymap.LODLights == null) return;
+            if (ymap.Parent?.DistantLODLights == null) return; //need to get lodlights positions from parent (distlodlights)
+
+            RenderableLODLights lights = renderableCache.GetRenderableLODLights(ymap);
+            if (!lights.IsLoaded) return;
+
+            shaders.Enqueue(lights);
+
+        }
+
         private void RenderYmapDistantLODLights(YmapFile ymap)
         {
             //enqueue ymap DistantLODLights instance batch for rendering
@@ -2211,7 +2242,7 @@ namespace CodeWalker.Rendering
             Texture lighttex = null;
             if ((graphicsytd != null) && (graphicsytd.Loaded) && (graphicsytd.TextureDict != null) && (graphicsytd.TextureDict.Dict != null))
             {
-                graphicsytd.TextureDict.Dict.TryGetValue(texhash, out lighttex); //starfield hash
+                graphicsytd.TextureDict.Dict.TryGetValue(texhash, out lighttex);
             }
 
             if (lighttex == null) return;

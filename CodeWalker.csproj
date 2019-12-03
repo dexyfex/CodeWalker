@@ -137,6 +137,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Rendering\Shaders\DeferredScene.cs" />
+    <Compile Include="Rendering\Utils\UnitCone.cs" />
     <Compile Include="Tools\AboutForm.cs">
       <SubType>Form</SubType>
     </Compile>
