@@ -247,6 +247,9 @@
     <FxCompile Include="DistantLightsVS.hlsl">
       <Filter>Lights</Filter>
     </FxCompile>
+    <FxCompile Include="PPMSAAPS.hlsl">
+      <Filter>PostProcessor</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="BasicPS.hlsli">
