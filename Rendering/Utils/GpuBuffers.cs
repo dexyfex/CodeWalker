@@ -421,4 +421,133 @@ namespace CodeWalker.Rendering
     }
 
 
+    public class GpuMultiTexture //multiple texture and render targets (depth).
+    {
+        public Texture2D[] Textures;
+        public Texture2D Depth;
+        public RenderTargetView[] RTVs;
+        public DepthStencilView DSV;
+        public ShaderResourceView[] SRVs;
+        public ShaderResourceView DepthSRV;
+        public int VramUsage;
+        public bool UseDepth;
+        public int Count;
+
+        public void Init(Device device, int w, int h, int count, Format f, bool depth, Format df)
+        {
+            Count = count;
+            VramUsage = 0;
+            UseDepth = depth;
+            ResourceUsage u = ResourceUsage.Default;
+            BindFlags b = BindFlags.RenderTarget | BindFlags.ShaderResource;
+            RenderTargetViewDimension rtvd = RenderTargetViewDimension.Texture2D;
+            ShaderResourceViewDimension srvd = ShaderResourceViewDimension.Texture2D;// D3D11_SRV_DIMENSION_TEXTURE2D;
+            int fs = DXUtility.ElementSize(f);
+            int wh = w * h;
+            BindFlags db = BindFlags.DepthStencil | BindFlags.ShaderResource;// D3D11_BIND_DEPTH_STENCIL;
+            DepthStencilViewDimension dsvd = DepthStencilViewDimension.Texture2D;
+
+            Textures = new Texture2D[count];
+            RTVs = new RenderTargetView[count];
+            SRVs = new ShaderResourceView[count];
+
+            for (int i = 0; i < count; i++)
+            {
+                Textures[i] = DXUtility.CreateTexture2D(device, w, h, 1, 1, f, 1, 0, u, b, 0, 0);
+                RTVs[i] = DXUtility.CreateRenderTargetView(device, Textures[i], f, rtvd, 0, 0, 0);
+                SRVs[i] = DXUtility.CreateShaderResourceView(device, Textures[i], f, srvd, 1, 0, 0, 0);
+                VramUsage += (wh * fs);
+            }
+            if (depth)
+            {
+                Format dtexf = Format.R32_Typeless;
+                Format dsrvf = Format.R32_Float;
+                switch (df)
+                {
+                    case Format.D16_UNorm:
+                        dtexf = Format.R16_Typeless;
+                        dsrvf = Format.R16_UNorm;
+                        break;
+                    case Format.D24_UNorm_S8_UInt:
+                        dtexf = Format.R24G8_Typeless;
+                        dsrvf = Format.R24_UNorm_X8_Typeless;
+                        break;
+                    case Format.D32_Float:
+                        dtexf = Format.R32_Typeless;
+                        dsrvf = Format.R32_Float;
+                        break;
+                    case Format.D32_Float_S8X24_UInt:
+                        dtexf = Format.R32G8X24_Typeless;//is this right? who uses this anyway??
+                        dsrvf = Format.R32_Float_X8X24_Typeless;
+                        break;
+                }
+
+                Depth = DXUtility.CreateTexture2D(device, w, h, 1, 1, dtexf, 1, 0, u, db, 0, 0);
+                DSV = DXUtility.CreateDepthStencilView(device, Depth, df, dsvd);
+                DepthSRV = DXUtility.CreateShaderResourceView(device, Depth, dsrvf, srvd, 1, 0, 0, 0);
+                VramUsage += (wh * DXUtility.ElementSize(df));
+            }
+        }
+        public void Dispose()
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                SRVs[i].Dispose();
+                RTVs[i].Dispose();
+                Textures[i].Dispose();
+            }
+            SRVs = null;
+            RTVs = null;
+            Textures = null;
+
+            if (DSV != null)
+            {
+                DSV.Dispose();
+                DSV = null;
+            }
+            if (DepthSRV != null)
+            {
+                DepthSRV.Dispose();
+                DepthSRV = null;
+            }
+            if (Depth != null)
+            {
+                Depth.Dispose();
+                Depth = null;
+            }
+        }
+        public GpuMultiTexture(Device device, int w, int h, int count, Format f, bool depth, Format df)
+        {
+            Init(device, w, h, count, f, depth, df);
+        }
+        public GpuMultiTexture(Device device, int w, int h, int count, Format f)
+        {
+            Init(device, w, h, count, f, false, Format.Unknown);
+        }
+
+        public void Clear(DeviceContext context, Color4 colour)
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                context.ClearRenderTargetView(RTVs[i], colour);
+            }
+            if (UseDepth)
+            {
+                context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 0.0f, 0);
+            }
+        }
+
+        public void ClearDepth(DeviceContext context)
+        {
+            if (!UseDepth) return;
+            context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 0.0f, 0);
+        }
+
+        public void SetRenderTargets(DeviceContext context)
+        {
+            context.OutputMerger.SetRenderTargets(UseDepth ? DSV : null, RTVs);
+        }
+
+    }
+
 }

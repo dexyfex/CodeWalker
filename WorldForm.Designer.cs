@@ -295,6 +295,7 @@ namespace CodeWalker
             this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.SubtitleLabel = new System.Windows.Forms.Label();
             this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
+            this.DeferredShadingCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -2200,6 +2201,7 @@ namespace CodeWalker
             // 
             // tabPage10
             // 
+            this.tabPage10.Controls.Add(this.DeferredShadingCheckBox);
             this.tabPage10.Controls.Add(this.WeatherRegionComboBox);
             this.tabPage10.Controls.Add(this.label29);
             this.tabPage10.Controls.Add(this.CloudParamTrackBar);
@@ -2361,7 +2363,7 @@ namespace CodeWalker
             this.ArtificialAmbientLightCheckBox.AutoSize = true;
             this.ArtificialAmbientLightCheckBox.Checked = true;
             this.ArtificialAmbientLightCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ArtificialAmbientLightCheckBox.Location = new System.Drawing.Point(10, 129);
+            this.ArtificialAmbientLightCheckBox.Location = new System.Drawing.Point(10, 137);
             this.ArtificialAmbientLightCheckBox.Name = "ArtificialAmbientLightCheckBox";
             this.ArtificialAmbientLightCheckBox.Size = new System.Drawing.Size(124, 17);
             this.ArtificialAmbientLightCheckBox.TabIndex = 36;
@@ -2374,7 +2376,7 @@ namespace CodeWalker
             this.NaturalAmbientLightCheckBox.AutoSize = true;
             this.NaturalAmbientLightCheckBox.Checked = true;
             this.NaturalAmbientLightCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.NaturalAmbientLightCheckBox.Location = new System.Drawing.Point(10, 106);
+            this.NaturalAmbientLightCheckBox.Location = new System.Drawing.Point(10, 115);
             this.NaturalAmbientLightCheckBox.Name = "NaturalAmbientLightCheckBox";
             this.NaturalAmbientLightCheckBox.Size = new System.Drawing.Size(122, 17);
             this.NaturalAmbientLightCheckBox.TabIndex = 35;
@@ -2387,7 +2389,7 @@ namespace CodeWalker
             this.DistantLODLightsCheckBox.AutoSize = true;
             this.DistantLODLightsCheckBox.Checked = true;
             this.DistantLODLightsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.DistantLODLightsCheckBox.Location = new System.Drawing.Point(10, 83);
+            this.DistantLODLightsCheckBox.Location = new System.Drawing.Point(10, 93);
             this.DistantLODLightsCheckBox.Name = "DistantLODLightsCheckBox";
             this.DistantLODLightsCheckBox.Size = new System.Drawing.Size(111, 17);
             this.DistantLODLightsCheckBox.TabIndex = 34;
@@ -2400,7 +2402,7 @@ namespace CodeWalker
             this.HDRRenderingCheckBox.AutoSize = true;
             this.HDRRenderingCheckBox.Checked = true;
             this.HDRRenderingCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.HDRRenderingCheckBox.Location = new System.Drawing.Point(10, 9);
+            this.HDRRenderingCheckBox.Location = new System.Drawing.Point(10, 27);
             this.HDRRenderingCheckBox.Name = "HDRRenderingCheckBox";
             this.HDRRenderingCheckBox.Size = new System.Drawing.Size(97, 17);
             this.HDRRenderingCheckBox.TabIndex = 31;
@@ -2413,7 +2415,7 @@ namespace CodeWalker
             this.ControlTimeOfDayCheckBox.AutoSize = true;
             this.ControlTimeOfDayCheckBox.Checked = true;
             this.ControlTimeOfDayCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ControlTimeOfDayCheckBox.Location = new System.Drawing.Point(10, 180);
+            this.ControlTimeOfDayCheckBox.Location = new System.Drawing.Point(10, 181);
             this.ControlTimeOfDayCheckBox.Name = "ControlTimeOfDayCheckBox";
             this.ControlTimeOfDayCheckBox.Size = new System.Drawing.Size(166, 17);
             this.ControlTimeOfDayCheckBox.TabIndex = 38;
@@ -2479,7 +2481,7 @@ namespace CodeWalker
             // ControlLightDirectionCheckBox
             // 
             this.ControlLightDirectionCheckBox.AutoSize = true;
-            this.ControlLightDirectionCheckBox.Location = new System.Drawing.Point(10, 157);
+            this.ControlLightDirectionCheckBox.Location = new System.Drawing.Point(10, 159);
             this.ControlLightDirectionCheckBox.Name = "ControlLightDirectionCheckBox";
             this.ControlLightDirectionCheckBox.Size = new System.Drawing.Size(177, 17);
             this.ControlLightDirectionCheckBox.TabIndex = 37;
@@ -2492,7 +2494,7 @@ namespace CodeWalker
             this.SkydomeCheckBox.AutoSize = true;
             this.SkydomeCheckBox.Checked = true;
             this.SkydomeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.SkydomeCheckBox.Location = new System.Drawing.Point(10, 55);
+            this.SkydomeCheckBox.Location = new System.Drawing.Point(10, 71);
             this.SkydomeCheckBox.Name = "SkydomeCheckBox";
             this.SkydomeCheckBox.Size = new System.Drawing.Size(70, 17);
             this.SkydomeCheckBox.TabIndex = 33;
@@ -2503,7 +2505,7 @@ namespace CodeWalker
             // ShadowsCheckBox
             // 
             this.ShadowsCheckBox.AutoSize = true;
-            this.ShadowsCheckBox.Location = new System.Drawing.Point(10, 32);
+            this.ShadowsCheckBox.Location = new System.Drawing.Point(10, 49);
             this.ShadowsCheckBox.Name = "ShadowsCheckBox";
             this.ShadowsCheckBox.Size = new System.Drawing.Size(70, 17);
             this.ShadowsCheckBox.TabIndex = 32;
@@ -3413,6 +3415,19 @@ namespace CodeWalker
             // 
             this.SubtitleTimer.Tick += new System.EventHandler(this.SubtitleTimer_Tick);
             // 
+            // DeferredShadingCheckBox
+            // 
+            this.DeferredShadingCheckBox.AutoSize = true;
+            this.DeferredShadingCheckBox.Checked = true;
+            this.DeferredShadingCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.DeferredShadingCheckBox.Location = new System.Drawing.Point(10, 5);
+            this.DeferredShadingCheckBox.Name = "DeferredShadingCheckBox";
+            this.DeferredShadingCheckBox.Size = new System.Drawing.Size(107, 17);
+            this.DeferredShadingCheckBox.TabIndex = 30;
+            this.DeferredShadingCheckBox.Text = "Deferred shading";
+            this.DeferredShadingCheckBox.UseVisualStyleBackColor = true;
+            this.DeferredShadingCheckBox.CheckedChanged += new System.EventHandler(this.DeferredShadingCheckBox_CheckedChanged);
+            // 
             // WorldForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3767,5 +3782,6 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolsMenuCutsceneViewer;
         private System.Windows.Forms.Label SubtitleLabel;
         private System.Windows.Forms.Timer SubtitleTimer;
+        private System.Windows.Forms.CheckBox DeferredShadingCheckBox;
     }
 }

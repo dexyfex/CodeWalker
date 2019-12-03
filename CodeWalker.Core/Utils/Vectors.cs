@@ -20,6 +20,27 @@ namespace CodeWalker
             return new Vector3((float)Math.Round(v.X), (float)Math.Round(v.Y), (float)Math.Round(v.Z));
         }
 
+        public static Vector3 GetPerpVec(this Vector3 n)
+        {
+            //make a vector perpendicular to the given one
+            float nx = Math.Abs(n.X);
+            float ny = Math.Abs(n.Y);
+            float nz = Math.Abs(n.Z);
+            if ((nx < ny) && (nx < nz))
+            {
+                return Vector3.Cross(n, Vector3.Right);
+            }
+            else if (ny < nz)
+            {
+                return Vector3.Cross(n, Vector3.Up);
+            }
+            else
+            {
+                return Vector3.Cross(n, Vector3.ForwardLH);
+            }
+        }
+
+
         public static Vector4 Floor(this Vector4 v)
         {
             return new Vector4((float)Math.Floor(v.X), (float)Math.Floor(v.Y), (float)Math.Floor(v.Z), (float)Math.Floor(v.W));

@@ -32,9 +32,11 @@ namespace CodeWalker.Rendering
         DepthStencilState dsDisableAll;
         DepthStencilState dsDisableComp;
         DepthStencilState dsDisableWrite;
+        DepthStencilState dsDisableWriteRev;
 
 
 
+        public DeferredScene DefScene { get; set; }
         public PostProcessor HDR { get; set; }
         public BasicShader Basic { get; set; }
         public CableShader Cable { get; set; }
@@ -57,6 +59,7 @@ namespace CodeWalker.Rendering
         List<ShaderBatch> shadowbatches = new List<ShaderBatch>();
         int shadowcastercount = 0; //total casters rendered
 
+        public bool deferred = Settings.Default.Deferred;
         public bool hdr = Settings.Default.HDR;
         public float hdrLumBlendSpeed = 1.0f;
         int Width;
@@ -68,6 +71,7 @@ namespace CodeWalker.Rendering
         public List<ShaderRenderBucket> RenderBuckets = new List<ShaderRenderBucket>();
         public List<RenderableBoundGeometryInst> RenderBoundGeoms = new List<RenderableBoundGeometryInst>();
         public List<RenderableInstanceBatchInst> RenderInstBatches = new List<RenderableInstanceBatchInst>();
+        public List<RenderableLODLights> RenderLODLights = new List<RenderableLODLights>();
         public List<RenderableDistantLODLights> RenderDistLODLights = new List<RenderableDistantLODLights>();
         public List<RenderablePathBatch> RenderPathBatches = new List<RenderablePathBatch>();
         public List<RenderableWaterQuad> RenderWaterQuads = new List<RenderableWaterQuad>();
@@ -94,6 +98,10 @@ namespace CodeWalker.Rendering
             get
             {
                 long u = 0;
+                if (DefScene != null)
+                {
+                    u += DefScene.VramUsage;
+                }
                 if (HDR != null)
                 {
                     u += HDR.VramUsage;
@@ -163,6 +171,9 @@ namespace CodeWalker.Rendering
             bsd.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
             bsd.RenderTarget[0].SourceAlphaBlend = BlendOption.Zero;
             bsd.RenderTarget[0].SourceBlend = BlendOption.SourceAlpha;
+            bsd.RenderTarget[1] = bsd.RenderTarget[0];
+            bsd.RenderTarget[2] = bsd.RenderTarget[0];
+            bsd.RenderTarget[3] = bsd.RenderTarget[0];
             bsDefault = new BlendState(device, bsd);
 
             bsd.AlphaToCoverageEnable = true;
@@ -198,6 +209,8 @@ namespace CodeWalker.Rendering
             dsEnabled = new DepthStencilState(device, dsd);
             dsd.DepthWriteMask = DepthWriteMask.Zero;
             dsDisableWrite = new DepthStencilState(device, dsd);
+            dsd.DepthComparison = Comparison.LessEqual;
+            dsDisableWriteRev = new DepthStencilState(device, dsd);
             dsd.DepthComparison = Comparison.Always;
             dsDisableComp = new DepthStencilState(device, dsd);
             dsd.IsDepthEnabled = false;
@@ -212,6 +225,7 @@ namespace CodeWalker.Rendering
             disposed = true;
 
             dsEnabled.Dispose();
+            dsDisableWriteRev.Dispose();
             dsDisableWrite.Dispose();
             dsDisableComp.Dispose();
             dsDisableAll.Dispose();
@@ -234,6 +248,13 @@ namespace CodeWalker.Rendering
             Basic.Dispose();
             Cable.Dispose();
             Water.Dispose();
+
+
+            if (DefScene != null)
+            {
+                DefScene.Dispose();
+                DefScene = null;
+            }
 
             if (HDR != null)
             {
@@ -286,6 +307,16 @@ namespace CodeWalker.Rendering
                 HDR.Dispose();
                 HDR = null;
             }
+            if (deferred && (DefScene == null))
+            {
+                DefScene = new DeferredScene(DXMan);
+                DefScene.OnWindowResize(DXMan);
+            }
+            if (!deferred && (DefScene != null))
+            {
+                DefScene.Dispose();
+                DefScene = null;
+            }
 
 
             foreach (var bucket in RenderBuckets)
@@ -295,10 +326,16 @@ namespace CodeWalker.Rendering
 
             RenderBoundGeoms.Clear();
             RenderInstBatches.Clear();
+            RenderLODLights.Clear();
             RenderDistLODLights.Clear();
             RenderPathBatches.Clear();
             RenderWaterQuads.Clear();
 
+
+            if (DefScene != null)
+            {
+                DefScene.Clear(context);
+            }
             if (HDR != null)
             {
                 HDR.Clear(context);
@@ -312,6 +349,12 @@ namespace CodeWalker.Rendering
 
             Skydome.EnableHDR = hdr;
             Clouds.EnableHDR = hdr;
+
+            Basic.Deferred = deferred;
+            Cable.Deferred = deferred;
+            Water.Deferred = deferred;
+            Terrain.Deferred = deferred;
+            TreesLod.Deferred = deferred;
         }
 
 
@@ -384,7 +427,11 @@ namespace CodeWalker.Rendering
             }
 
 
-            if (HDR != null)
+            if (DefScene != null)
+            {
+                DefScene.SetPrimary(context);
+            }
+            else if (HDR != null)
             {
                 HDR.SetPrimary(context);
             }
@@ -459,22 +506,6 @@ namespace CodeWalker.Rendering
                 context.OutputMerger.BlendState = bsDefault;
             }
 
-            if (RenderDistLODLights.Count > 0) //LOD lights pass
-            {
-                context.Rasterizer.State = rsSolidDblSided;
-                context.OutputMerger.BlendState = bsAdd; //additive blend for distant lod lights...
-                context.OutputMerger.DepthStencilState = dsDisableWrite;
-                DistLights.SetShader(context);
-                DistLights.SetSceneVars(context, Camera, Shadowmap, GlobalLights);
-                for (int i = 0; i < RenderDistLODLights.Count; i++)
-                {
-                    DistLights.RenderBatch(context, RenderDistLODLights[i]);
-                }
-                DistLights.UnbindResources(context);
-                context.OutputMerger.BlendState = bsDefault;
-                context.OutputMerger.DepthStencilState = dsEnabled;
-            }
-
 
 
 
@@ -505,6 +536,9 @@ namespace CodeWalker.Rendering
                 Water.UnbindResources(context);
             }
 
+
+
+            //TODO: needs second gbuffer pass?
             Basic.DecalMode = true;
             for (int i = 0; i < RenderBuckets.Count; i++) //alphablended and glass pass
             {
@@ -522,6 +556,54 @@ namespace CodeWalker.Rendering
             }
             Basic.DecalMode = false;
             context.OutputMerger.DepthStencilState = dsEnabled;
+
+
+
+
+
+            if (DefScene != null)
+            {
+                if (HDR != null)
+                {
+                    HDR.SetPrimary(context);
+                }
+                else
+                {
+                    DXMan.SetDefaultRenderTarget(context);
+                }
+
+                DefScene.RenderLights(context, camera, Shadowmap, GlobalLights);
+
+                if (RenderLODLights.Count > 0) //LOD lights pass
+                {
+                    context.Rasterizer.State = rsSolid;
+                    context.OutputMerger.BlendState = bsAdd; //additive blend for lights...
+                    context.OutputMerger.DepthStencilState = dsDisableWriteRev;//only render parts behind or at surface
+                    DefScene.RenderLights(context, camera, RenderLODLights);
+                }
+            }
+
+            Basic.Deferred = false;
+
+
+
+
+
+            if (RenderDistLODLights.Count > 0) //distant LOD lights pass
+            {
+                context.Rasterizer.State = rsSolidDblSided;
+                context.OutputMerger.BlendState = bsAdd; //additive blend for distant lod lights...
+                context.OutputMerger.DepthStencilState = dsDisableWrite;
+                DistLights.SetShader(context);
+                DistLights.SetSceneVars(context, Camera, Shadowmap, GlobalLights);
+                for (int i = 0; i < RenderDistLODLights.Count; i++)
+                {
+                    DistLights.RenderBatch(context, RenderDistLODLights[i]);
+                }
+                DistLights.UnbindResources(context);
+                context.OutputMerger.BlendState = bsDefault;
+                context.OutputMerger.DepthStencilState = dsEnabled;
+            }
 
 
 
@@ -549,6 +631,8 @@ namespace CodeWalker.Rendering
             }
 
 
+
+            Basic.Deferred = deferred;
 
             RenderedGeometries = GeometryCount;
 
@@ -696,7 +780,7 @@ namespace CodeWalker.Rendering
         {
             Basic.RenderMode = WorldRenderMode.VertexColour;
             Basic.SetShader(context);
-            Basic.SetSceneVars(context, Camera, Shadowmap, GlobalLights);
+            Basic.SetSceneVars(context, Camera, /*Shadowmap*/ null, GlobalLights);//should this be using shadows??
             Basic.SetInputLayout(context, VertexType.Default);
 
             GeometryCount += batch.Count;
@@ -763,6 +847,10 @@ namespace CodeWalker.Rendering
         public void Enqueue(ref RenderableInstanceBatchInst batch)
         {
             RenderInstBatches.Add(batch);
+        }
+        public void Enqueue(RenderableLODLights lights)
+        {
+            RenderLODLights.Add(lights);
         }
         public void Enqueue(RenderableDistantLODLights lights)
         {
@@ -880,6 +968,10 @@ namespace CodeWalker.Rendering
         {
             Width = w;
             Height = h;
+            if (DefScene != null)
+            {
+                DefScene.OnWindowResize(DXMan);
+            }
             if (HDR != null)
             {
                 HDR.OnWindowResize(DXMan);

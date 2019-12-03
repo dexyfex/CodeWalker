@@ -145,6 +145,7 @@ namespace CodeWalker.Rendering
         VertexShader basicvscapsule;
         VertexShader basicvscylinder;
         PixelShader basicps;
+        PixelShader basicpsdef;
         GpuVarsBuffer<BasicShaderVSSceneVars> VSSceneVars;
         GpuVarsBuffer<BasicShaderVSEntityVars> VSEntityVars;
         GpuVarsBuffer<BasicShaderVSModelVars> VSModelVars;
@@ -174,6 +175,7 @@ namespace CodeWalker.Rendering
         public int RenderTextureSamplerCoord = 1;
         public ShaderParamNames RenderTextureSampler = ShaderParamNames.DiffuseSampler;
         public bool SpecularEnable = true;
+        public bool Deferred = false;
 
         Matrix3_s[] defaultBoneMatrices;
         bool defaultBoneMatricesBound = false;
@@ -209,6 +211,7 @@ namespace CodeWalker.Rendering
             byte[] vscapsulebytes = File.ReadAllBytes("Shaders\\BasicVS_Capsule.cso");
             byte[] vscylinderbytes = File.ReadAllBytes("Shaders\\BasicVS_Cylinder.cso");
             byte[] psbytes = File.ReadAllBytes("Shaders\\BasicPS.cso");
+            byte[] psdefbytes = File.ReadAllBytes("Shaders\\BasicPS_Deferred.cso");
 
             basicvspnct = new VertexShader(device, vspnctbytes);
             basicvspnctt = new VertexShader(device, vspncttbytes);
@@ -235,6 +238,7 @@ namespace CodeWalker.Rendering
             basicvscapsule = new VertexShader(device, vscapsulebytes);
             basicvscylinder = new VertexShader(device, vscylinderbytes);
             basicps = new PixelShader(device, psbytes);
+            basicpsdef = new PixelShader(device, psdefbytes);
 
             VSSceneVars = new GpuVarsBuffer<BasicShaderVSSceneVars>(device);
             VSEntityVars = new GpuVarsBuffer<BasicShaderVSEntityVars>(device);
@@ -491,7 +495,7 @@ namespace CodeWalker.Rendering
 
         public override void SetShader(DeviceContext context)
         {
-            context.PixelShader.Set(basicps);
+            context.PixelShader.Set(Deferred ? basicpsdef : basicps);
         }
 
         public override bool SetInputLayout(DeviceContext context, VertexType type)
@@ -1035,6 +1039,7 @@ namespace CodeWalker.Rendering
             ClothVertices.Dispose();
 
             basicps.Dispose();
+            basicpsdef.Dispose();
             basicvspnct.Dispose();
             basicvspnctt.Dispose();
             basicvspncttt.Dispose();

@@ -84,6 +84,7 @@ namespace CodeWalker.Rendering
         VertexShader vspnct;
         VertexShader vspnctx;
         PixelShader ps;
+        PixelShader psdef;
 
         GpuVarsBuffer<WaterShaderVSSceneVars> VSSceneVars;
         GpuVarsBuffer<WaterShaderVSEntityVars> VSEntityVars;
@@ -107,6 +108,7 @@ namespace CodeWalker.Rendering
         public double CurrentRealTime = 0;
         public float CurrentElapsedTime = 0;
         public bool SpecularEnable = true;
+        public bool Deferred = false;
 
 
         public RenderableTexture waterbump { get; set; }
@@ -124,6 +126,7 @@ namespace CodeWalker.Rendering
             byte[] vspnctbytes = File.ReadAllBytes("Shaders\\WaterVS_PNCT.cso");
             byte[] vspnctxbytes = File.ReadAllBytes("Shaders\\WaterVS_PNCTX.cso");
             byte[] psbytes = File.ReadAllBytes("Shaders\\WaterPS.cso");
+            byte[] psdefbytes = File.ReadAllBytes("Shaders\\WaterPS_Deferred.cso");
 
 
             vspt = new VertexShader(device, vsptbytes);
@@ -131,6 +134,7 @@ namespace CodeWalker.Rendering
             vspnct = new VertexShader(device, vspnctbytes);
             vspnctx = new VertexShader(device, vspnctxbytes);
             ps = new PixelShader(device, psbytes);
+            psdef = new PixelShader(device, psdefbytes);
 
             VSSceneVars = new GpuVarsBuffer<WaterShaderVSSceneVars>(device);
             VSEntityVars = new GpuVarsBuffer<WaterShaderVSEntityVars>(device);
@@ -213,7 +217,7 @@ namespace CodeWalker.Rendering
 
         public override void SetShader(DeviceContext context)
         {
-            context.PixelShader.Set(ps);
+            context.PixelShader.Set(Deferred ? psdef : ps);
         }
 
         public override bool SetInputLayout(DeviceContext context, VertexType type)
@@ -552,6 +556,7 @@ namespace CodeWalker.Rendering
             PSGeomVars.Dispose();
 
             ps.Dispose();
+            psdef.Dispose();
             vspt.Dispose();
             vspct.Dispose();
             vspnct.Dispose();

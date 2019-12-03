@@ -78,6 +78,7 @@ namespace CodeWalker.Rendering
         VertexShader pnctttxvs;
         VertexShader pncttxvs;
         PixelShader terrainps;
+        PixelShader terrainpsdef;
         GpuVarsBuffer<TerrainShaderVSSceneVars> VSSceneVars;
         GpuVarsBuffer<TerrainShaderVSEntityVars> VSEntityVars;
         GpuVarsBuffer<TerrainShaderVSModelVars> VSModelVars;
@@ -93,6 +94,7 @@ namespace CodeWalker.Rendering
         public int RenderTextureCoordIndex = 1;
         public int RenderTextureSamplerCoord = 1;
         public ShaderParamNames RenderTextureSampler = ShaderParamNames.DiffuseSampler;
+        public bool Deferred = false;
 
         private Dictionary<VertexType, InputLayout> layouts = new Dictionary<VertexType, InputLayout>();
 
@@ -107,6 +109,7 @@ namespace CodeWalker.Rendering
             byte[] vspnctttx = File.ReadAllBytes("Shaders\\TerrainVS_PNCTTTX.cso");
             byte[] vspncttx = File.ReadAllBytes("Shaders\\TerrainVS_PNCTTX.cso");
             byte[] psbytes = File.ReadAllBytes("Shaders\\TerrainPS.cso");
+            byte[] psdefbytes = File.ReadAllBytes("Shaders\\TerrainPS_Deferred.cso");
 
             pncctvs = new VertexShader(device, vspncct);
             pnccttvs = new VertexShader(device, vspncctt);
@@ -116,6 +119,7 @@ namespace CodeWalker.Rendering
             pnctttxvs = new VertexShader(device, vspnctttx);
             pncttxvs = new VertexShader(device, vspncttx);
             terrainps = new PixelShader(device, psbytes);
+            terrainpsdef = new PixelShader(device, psdefbytes);
 
             VSSceneVars = new GpuVarsBuffer<TerrainShaderVSSceneVars>(device);
             VSEntityVars = new GpuVarsBuffer<TerrainShaderVSEntityVars>(device);
@@ -259,7 +263,7 @@ namespace CodeWalker.Rendering
 
         public override void SetShader(DeviceContext context)
         {
-            context.PixelShader.Set(terrainps);
+            context.PixelShader.Set(Deferred ? terrainpsdef : terrainps);
         }
 
         public override bool SetInputLayout(DeviceContext context, VertexType type)
@@ -639,6 +643,7 @@ namespace CodeWalker.Rendering
             PSGeomVars.Dispose();
 
             terrainps.Dispose();
+            terrainpsdef.Dispose();
             pncctvs.Dispose();
             pnccttvs.Dispose();
             pnccttxvs.Dispose();

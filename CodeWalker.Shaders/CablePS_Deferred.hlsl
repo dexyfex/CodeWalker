@@ -1,7 +1,7 @@
 #include "CablePS.hlsli"
 
 
-float4 main(VS_OUTPUT input) : SV_TARGET
+PS_OUTPUT main(VS_OUTPUT input)
 {
     float4 c = float4(0.2, 0.2, 0.2, 1);
     if (EnableTexture == 1)
@@ -57,9 +57,15 @@ float4 main(VS_OUTPUT input) : SV_TARGET
 
 
 
-    c.rgb = FullLighting(c.rgb, 0, norm, input.Colour0, GlobalLights, EnableShadows, input.Shadows.x, input.LightShadow);
+    float3 spec = 0;
 
     c.a = saturate(c.a);
+    
+    PS_OUTPUT output;
+    output.Diffuse = c;
+    output.Normal = float4(saturate(norm * 0.5 + 0.5), c.a);
+    output.Specular = float4(spec, c.a);
+    output.Irradiance = float4(input.Colour0.rg, 0, c.a);
 
-    return c;
+    return output;
 }

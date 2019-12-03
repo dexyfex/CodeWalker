@@ -181,6 +181,8 @@ namespace CodeWalker.Peds
             camera.TargetRotation.X = 1.0f * (float)Math.PI;
             camera.CurrentRotation.X = 1.0f * (float)Math.PI;
 
+            Renderer.shaders.deferred = false; //no point using this here yet
+
 
             LoadSettings();
 

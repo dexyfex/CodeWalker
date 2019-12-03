@@ -1,7 +1,7 @@
 #include "TerrainPS.hlsli"
 
 
-float4 main(VS_OUTPUT input) : SV_TARGET
+PS_OUTPUT main(VS_OUTPUT input)
 {
     float4 vc0 = input.Colour0;
     float4 vc1 = input.Colour1;
@@ -212,10 +212,16 @@ float4 main(VS_OUTPUT input) : SV_TARGET
         norm = NormalMap(nv.xy, bumpiness, input.Normal.xyz, input.Tangent.xyz, input.Bitangent.xyz);
     }
 
-    float3 spec = 0;
+    float3 spec = float3(0, 0, 1);
 
-    tv.rgb = FullLighting(tv.rgb, spec, norm, vc0, GlobalLights, EnableShadows, input.Shadows.x, input.LightShadow);
+    tv.a = saturate(tv.a);
+    
+    
+    PS_OUTPUT output;
+    output.Diffuse = tv;
+    output.Normal = float4(saturate(norm * 0.5 + 0.5), tv.a);
+    output.Specular = float4(spec, tv.a);
+    output.Irradiance = float4(input.Colour0.rg, 0, tv.a);
 
-
-    return float4(tv.rgb, saturate(tv.a));
+    return output;
 }

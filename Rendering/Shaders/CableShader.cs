@@ -67,6 +67,7 @@ namespace CodeWalker.Rendering
 
         VertexShader vs;
         PixelShader ps;
+        PixelShader psdef;
         GpuVarsBuffer<CableShaderVSSceneVars> VSSceneVars;
         GpuVarsBuffer<CableShaderVSEntityVars> VSEntityVars;
         GpuVarsBuffer<CableShaderVSModelVars> VSModelVars;
@@ -80,6 +81,7 @@ namespace CodeWalker.Rendering
         public int RenderTextureCoordIndex = 1;
         public int RenderTextureSamplerCoord = 1;
         public ShaderParamNames RenderTextureSampler = ShaderParamNames.DiffuseSampler;
+        public bool Deferred = false;
 
 
         private Dictionary<VertexType, InputLayout> layouts = new Dictionary<VertexType, InputLayout>();
@@ -88,9 +90,11 @@ namespace CodeWalker.Rendering
         {
             byte[] vsbytes = File.ReadAllBytes("Shaders\\CableVS.cso");
             byte[] psbytes = File.ReadAllBytes("Shaders\\CablePS.cso");
+            byte[] psdefbytes = File.ReadAllBytes("Shaders\\CablePS_Deferred.cso");
 
             vs = new VertexShader(device, vsbytes);
             ps = new PixelShader(device, psbytes);
+            psdef = new PixelShader(device, psdefbytes);
 
 
             VSSceneVars = new GpuVarsBuffer<CableShaderVSSceneVars>(device);
@@ -137,7 +141,7 @@ namespace CodeWalker.Rendering
 
         public override void SetShader(DeviceContext context)
         {
-            context.PixelShader.Set(ps);
+            context.PixelShader.Set(Deferred ? psdef : ps);
         }
 
         public override bool SetInputLayout(DeviceContext context, VertexType type)
@@ -344,6 +348,7 @@ namespace CodeWalker.Rendering
 
 
             ps.Dispose();
+            psdef.Dispose();
             vs.Dispose();
 
             disposed = true;
