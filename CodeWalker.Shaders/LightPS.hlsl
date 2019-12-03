@@ -114,7 +114,7 @@ PS_OUTPUT main(VS_Output input)
     if (ldist <= 0) discard;
     
     float4 rgbi = Unpack4x8UNF(lodlight.Colour).gbar;
-    float3 lcol = rgbi.rgb * rgbi.a * 5.0f;
+    float3 lcol = rgbi.rgb * rgbi.a * 10.0f;
     
     float3 ldir = srpos / ldist;
     float pclit = saturate(dot(ldir, norm));
@@ -122,7 +122,7 @@ PS_OUTPUT main(VS_Output input)
     
     if (LightType == 1)//point (sphere)
     {
-        lamt *= saturate(1 - (ldist / lodlight.Falloff));
+        lamt *= pow(saturate(1 - (ldist / lodlight.Falloff)), lodlight.FalloffExponent);
     }
     else if (LightType == 2)//spot (cone)
     {
@@ -131,11 +131,11 @@ PS_OUTPUT main(VS_Output input)
         float oang = lodlight.OuterAngleOrCapExt * 0.01745329 * 0.5;
         if (ang > oang) discard;
         lamt *= saturate(1 - ((ang - iang) / (oang - iang)));
-        lamt *= saturate(1 - (ldist / lodlight.Falloff));
+        lamt *= pow(saturate(1 - (ldist / lodlight.Falloff)), lodlight.FalloffExponent);
     }
     else if (LightType == 4)//capsule
     {
-        lamt *= saturate(1 - (ldist / lodlight.Falloff)); //TODO! proper capsule lighting... (use point-line dist!)
+        lamt *= pow(saturate(1 - (ldist / lodlight.Falloff)), lodlight.FalloffExponent); //TODO! proper capsule lighting... (use point-line dist!)
     }
     
     pclit *= lamt;
