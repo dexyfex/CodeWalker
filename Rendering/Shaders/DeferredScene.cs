@@ -41,12 +41,20 @@ namespace CodeWalker.Rendering
         public uint Pad1;
     }
 
+    public struct DeferredMSAAPSVars
+    {
+        public uint SampleCount;
+        public float SampleMult;
+        public float TexelSizeX;
+        public float TexelSizeY;
+    }
 
 
     public class DeferredScene
     {
 
         public GpuMultiTexture GBuffers; // diffuse, normals, specular, irradiance
+        public GpuTexture SceneColour; //final scene colour buffer
 
         SamplerState SampleStatePoint;
         SamplerState SampleStateLinear;
@@ -69,6 +77,13 @@ namespace CodeWalker.Rendering
         GpuVarsBuffer<DeferredLightPSVars> LightPSVars;
 
 
+        int MSAASampleCount = 1;
+
+        VertexShader FinalVS;
+        PixelShader MSAAPS;
+
+        GpuVarsBuffer<DeferredMSAAPSVars> MSAAPSVars;
+
 
         public long VramUsage
         {
@@ -86,6 +101,8 @@ namespace CodeWalker.Rendering
 
             byte[] bLightVS = File.ReadAllBytes("Shaders\\LightVS.cso");
             byte[] bLightPS = File.ReadAllBytes("Shaders\\LightPS.cso");
+            byte[] bFinalVS = File.ReadAllBytes("Shaders\\PPFinalPassVS.cso");
+            byte[] bMSAAPS = File.ReadAllBytes("Shaders\\PPMSAAPS.cso");
 
             LightVS = new VertexShader(device, bLightVS);
             LightPS = new PixelShader(device, bLightPS);
@@ -101,6 +118,12 @@ namespace CodeWalker.Rendering
 
             LightVSVars = new GpuVarsBuffer<DeferredLightVSVars>(device);
             LightPSVars = new GpuVarsBuffer<DeferredLightPSVars>(device);
+
+
+            FinalVS = new VertexShader(device, bFinalVS);
+            MSAAPS = new PixelShader(device, bMSAAPS);
+
+            MSAAPSVars = new GpuVarsBuffer<DeferredMSAAPSVars>(device);
 
             TextureAddressMode a = TextureAddressMode.Clamp;
             Color4 b = new Color4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -175,6 +198,21 @@ namespace CodeWalker.Rendering
                 LightVS.Dispose();
                 LightVS = null;
             }
+            if (MSAAPSVars != null)
+            {
+                MSAAPSVars.Dispose();
+                MSAAPSVars = null;
+            }
+            if (MSAAPS != null)
+            {
+                MSAAPS.Dispose();
+                MSAAPS = null;
+            }
+            if (FinalVS != null)
+            {
+                FinalVS.Dispose();
+                FinalVS = null;
+            }
         }
 
         public void OnWindowResize(DXManager dxman)
@@ -185,8 +223,8 @@ namespace CodeWalker.Rendering
 
 
 
-            int uw = Width = dxman.backbuffer.Description.Width;
-            int uh = Height = dxman.backbuffer.Description.Height;
+            int uw = Width = dxman.backbuffer.Description.Width * MSAASampleCount;
+            int uh = Height = dxman.backbuffer.Description.Height * MSAASampleCount;
             Viewport = new ViewportF();
             Viewport.Width = (float)uw;
             Viewport.Height = (float)uh;
@@ -199,6 +237,8 @@ namespace CodeWalker.Rendering
             GBuffers = new GpuMultiTexture(device, uw, uh, 4, Format.R8G8B8A8_UNorm, true, Format.D32_Float);
             WindowSizeVramUsage += GBuffers.VramUsage;
 
+            SceneColour = new GpuTexture(device, uw, uh, Format.R32G32B32A32_Float, 1, 0, true, Format.D32_Float);
+            WindowSizeVramUsage += SceneColour.VramUsage;
         }
         public void DisposeBuffers()
         {
@@ -207,23 +247,32 @@ namespace CodeWalker.Rendering
                 GBuffers.Dispose();
                 GBuffers = null;
             }
+            if (SceneColour != null)
+            {
+                SceneColour.Dispose();
+                SceneColour = null;
+            }
             WindowSizeVramUsage = 0;
         }
 
         public void Clear(DeviceContext context)
         {
-            //Color4 clearColour = new Color4(0.2f, 0.4f, 0.6f, 0.0f);
-            Color4 clearColour = new Color4(0.0f, 0.0f, 0.0f, 0.0f);
-
-            GBuffers.Clear(context, clearColour);
+            GBuffers.Clear(context, new Color4(0.0f, 0.0f, 0.0f, 0.0f));
+            SceneColour.Clear(context, new Color4(0.2f, 0.4f, 0.6f, 0.0f));
         }
         public void ClearDepth(DeviceContext context)
         {
             GBuffers.ClearDepth(context);
+            SceneColour.ClearDepth(context);
         }
-        public void SetPrimary(DeviceContext context)
+        public void SetGBuffers(DeviceContext context)
         {
             GBuffers.SetRenderTargets(context);
+            context.Rasterizer.SetViewport(Viewport);
+        }
+        public void SetSceneColour(DeviceContext context)
+        {
+            SceneColour.SetRenderTarget(context);
             context.Rasterizer.SetViewport(Viewport);
         }
 
@@ -369,6 +418,35 @@ namespace CodeWalker.Rendering
 
         }
 
+
+
+
+        public void FinalPass(DeviceContext context)
+        {
+            //do antialiasing from SceneColour into HDR primary
+
+            context.VertexShader.Set(FinalVS);
+            context.PixelShader.Set(MSAAPS);
+
+            context.PixelShader.SetShaderResources(0, SceneColour.SRV);
+            context.PixelShader.SetSamplers(0, SampleStatePoint);
+
+            MSAAPSVars.Vars.SampleCount = (uint)MSAASampleCount;
+            MSAAPSVars.Vars.SampleMult = 1.0f / (MSAASampleCount * MSAASampleCount);
+            MSAAPSVars.Vars.TexelSizeX = 1.0f / Width;
+            MSAAPSVars.Vars.TexelSizeY = 1.0f / Height;
+            MSAAPSVars.Update(context);
+            MSAAPSVars.SetPSCBuffer(context, 0);
+
+            context.InputAssembler.InputLayout = LightQuadLayout;
+            LightQuad.Draw(context);
+
+            context.VertexShader.Set(null);
+            context.PixelShader.Set(null);
+            context.PixelShader.SetShaderResources(0, null, null, null);
+            context.PixelShader.SetSamplers(0, null, null);
+
+        }
 
 
     }

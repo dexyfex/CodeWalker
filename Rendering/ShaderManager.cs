@@ -335,11 +335,20 @@ namespace CodeWalker.Rendering
             if (DefScene != null)
             {
                 DefScene.Clear(context);
+                DefScene.ClearDepth(context);
             }
             if (HDR != null)
             {
                 HDR.Clear(context);
                 HDR.ClearDepth(context);
+            }
+
+            if (DefScene != null)
+            {
+                DefScene.SetSceneColour(context);
+            }
+            else if (HDR != null)
+            {
                 HDR.SetPrimary(context); //for rendering some things before shadowmaps... (eg sky)
             }
             else
@@ -429,7 +438,7 @@ namespace CodeWalker.Rendering
 
             if (DefScene != null)
             {
-                DefScene.SetPrimary(context);
+                DefScene.SetGBuffers(context);
             }
             else if (HDR != null)
             {
@@ -563,14 +572,7 @@ namespace CodeWalker.Rendering
 
             if (DefScene != null)
             {
-                if (HDR != null)
-                {
-                    HDR.SetPrimary(context);
-                }
-                else
-                {
-                    DXMan.SetDefaultRenderTarget(context);
-                }
+                DefScene.SetSceneColour(context);
 
                 DefScene.RenderLights(context, camera, Shadowmap, GlobalLights);
 
@@ -632,7 +634,6 @@ namespace CodeWalker.Rendering
 
 
 
-            Basic.Deferred = deferred;
 
             RenderedGeometries = GeometryCount;
 
@@ -642,13 +643,27 @@ namespace CodeWalker.Rendering
         {
             context.Rasterizer.State = rsSolid;
             context.OutputMerger.BlendState = bsDefault;
-            context.OutputMerger.DepthStencilState = dsEnabled;
+            context.OutputMerger.DepthStencilState = dsDisableAll;
 
+            if (DefScene != null)
+            {
+                if (HDR != null)
+                {
+                    HDR.SetPrimary(context);
+                }
+                else
+                {
+                    DXMan.SetDefaultRenderTarget(context);
+                }
+
+                DefScene.FinalPass(context);
+            }
             if (HDR != null)
             {
                 HDR.Render(DXMan, CurrentElapsedTime);
             }
 
+            Basic.Deferred = deferred;
         }
 
         private void RenderShadowmap(DeviceContext context)
