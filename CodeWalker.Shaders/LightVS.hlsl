@@ -50,8 +50,8 @@ VS_Output main(float4 ipos : POSITION, uint iid : SV_InstanceID)
         }
         else if (LightType == 2)//spot (cone)
         {
-            float arads = lodlight.OuterAngleOrCapExt * 0.01745329 * 1.5;//is this right?
-            float3 cpos = ipos.xyz * (atan(arads) * extent);
+            float arads = lodlight.OuterAngleOrCapExt * 0.01745329 * 0.5;  // deg -> rad
+            float3 cpos = ipos.xyz * (tan(arads) * extent);
             cpos.y += ipos.w * extent;
             opos = (cpos.x * lodlight.TangentX.xyz) + (cpos.y * lodlight.Direction.xyz) + (cpos.z * lodlight.TangentY.xyz);
         }
