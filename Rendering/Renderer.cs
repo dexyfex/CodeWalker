@@ -102,7 +102,7 @@ namespace CodeWalker.Rendering
         public bool renderchildents = false;//when rendering single ymap, render root only or not...
         public bool renderentities = true;
         public bool rendergrass = true;
-        public bool renderlights = false; //render individual drawable lights (TODO!)
+        public bool renderlights = true; //render individual drawable lights
         public bool renderlodlights = true; //render LOD lights from ymaps
         public bool renderdistlodlights = true; //render distant lod lights (coronas)
         public bool rendercars = false;
@@ -1292,6 +1292,7 @@ namespace CodeWalker.Rendering
                 rinst.Orientation = Quaternion.Identity;
                 rinst.Scale = Vector3.One;
                 rinst.TintPaletteIndex = 0;
+                rinst.CastShadow = false;
                 rinst.Renderable = sdrnd;
                 shader.SetShader(context);
                 shader.SetInputLayout(context, VertexType.PTT);
@@ -1383,6 +1384,7 @@ namespace CodeWalker.Rendering
                     rinst.Orientation = Quaternion.Identity;
                     rinst.Scale = frag.Scale;// Vector3.One;
                     rinst.TintPaletteIndex = 0;
+                    rinst.CastShadow = false;
                     rinst.Renderable = rnd;
 
                     shader.SetEntityVars(context, ref rinst);
@@ -2599,6 +2601,9 @@ namespace CodeWalker.Rendering
             Vector3 bscen = (arche != null) ? arche.BSCenter : rndbl.Key.BoundingCenter;
             float radius = (arche != null) ? arche.BSRadius : rndbl.Key.BoundingSphereRadius;
             float distance = 0;// (camrel + bscen).Length();
+            bool interiorent = false;
+            bool castshadow = true;
+
             if (entity != null)
             {
                 position = entity.Position;
@@ -2610,6 +2615,8 @@ namespace CodeWalker.Rendering
                 bscen = entity.BSCenter;
                 camrel += position;
                 distance = entity.Distance;
+                castshadow = (entity.MloParent == null);//don't cast sun/moon shadows if this is an interior entity - optimisation!
+                interiorent = (entity.MloParent != null);
             }
             else
             {
@@ -2663,8 +2670,22 @@ namespace CodeWalker.Rendering
                 RenderSkeleton(rndbl, entity);
             }
 
+
+            if (renderlights && shaders.deferred && (rndbl.Lights != null) && interiorent)//only interior ents making lights! todo: fix LOD lights
+            {
+                var linst = new RenderableLightInst();
+                for (int i = 0; i < rndbl.Lights.Length; i++)
+                {
+                    linst.EntityPosition = position;
+                    linst.EntityRotation = orientation;
+                    linst.Light = rndbl.Lights[i];
+                    shaders.Enqueue(ref linst);
+                }
+            }
+
+
             bool retval = true;// false;
-            if (rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
+            if ((rndbl.AllTexturesLoaded || !waitforchildrentoload))
             {
                 RenderableGeometryInst rginst = new RenderableGeometryInst();
                 rginst.Inst.Renderable = rndbl;
@@ -2678,6 +2699,7 @@ namespace CodeWalker.Rendering
                 rginst.Inst.BSCenter = bscen;
                 rginst.Inst.Radius = radius;
                 rginst.Inst.Distance = distance;
+                rginst.Inst.CastShadow = castshadow;
 
 
                 RenderableModel[] models = isselected ? rndbl.AllModels : rndbl.HDModels;

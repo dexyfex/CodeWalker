@@ -1,28 +1,10 @@
 #include "Common.hlsli"
 
-//currently unused - TODO: implement individual HD lights here
-
-
-
-struct LODLight
-{
-    float3 Position;
-    uint Colour;
-    float3 Direction;
-    uint TimeAndStateFlags;
-    float4 TangentX;
-    float4 TangentY;
-    float Falloff;
-    float FalloffExponent;
-    float InnerAngle; //for cone
-    float OuterAngleOrCapExt; //outer angle for cone, cap extent for capsule
-};
 
 struct VS_Output
 {
     float4 Pos : SV_POSITION;
     float4 Screen : TEXCOORD0;
-    uint IID : SV_INSTANCEID;
 };
 
 
@@ -36,44 +18,51 @@ cbuffer VSLightVars : register(b0)
     uint Pad1;
 }
 
-StructuredBuffer<LODLight> LODLights : register(t0);
+cbuffer VSLightInstVars : register(b1)
+{
+    float3 InstPosition;//camera relative
+    float InstIntensity;
+    float3 InstColour;
+    float InstFalloff;
+    float3 InstDirection;
+    float InstFalloffExponent;
+    float3 InstTangentX;
+    float InstConeInnerAngle;
+    float3 InstTangentY;
+    float InstConeOuterAngle;
+    float3 InstCapsuleExtent;
+    uint InstType;
+    float3 InstCullingPlaneNormal;
+    float InstCullingPlaneOffset;
+}
 
 
 VS_Output main(float4 ipos : POSITION, uint iid : SV_InstanceID)
 {
     float3 opos = 0;
-    if (LightType > 0)
+    
+    float extent = InstFalloff;
+    if (InstType == 1)//point (sphere)
     {
-        LODLight lodlight = LODLights[iid];
-        float extent = lodlight.Falloff;
-        
-        if (LightType == 1)//point (sphere)
-        {
-            opos = ipos.xyz * extent;
-        }
-        else if (LightType == 2)//spot (cone)
-        {
-            float arads = lodlight.OuterAngleOrCapExt * 0.01745329 * 0.5;  // deg -> rad
-            float3 cpos = ipos.xyz * (tan(arads) * extent);
-            cpos.y += ipos.w * extent;
-            opos = (cpos.x * lodlight.TangentX.xyz) + (cpos.y * lodlight.Direction.xyz) + (cpos.z * lodlight.TangentY.xyz);
-        }
-        else if (LightType == 4)//capsule
-        {
-            float3 cpos = ipos.xyz * extent;
-            cpos.y += (ipos.w*2-1) * lodlight.OuterAngleOrCapExt * 0.1;
-            opos = (cpos.x * lodlight.TangentX.xyz) + (cpos.y * lodlight.Direction.xyz) + (cpos.z * lodlight.TangentY.xyz);
-        }
-        opos += (lodlight.Position - CameraPos.xyz);
+        opos = ipos.xyz * extent;
     }
-    else
+    else if (InstType == 2)//spot (cone)
     {
-        opos = ipos.xyz;
+        float arads = InstConeOuterAngle * 0.01745329 * 0.5; // deg -> rad
+        float3 cpos = ipos.xyz * (tan(arads) * extent);
+        cpos.y += ipos.w * extent;
+        opos = (cpos.x * InstTangentX) + (cpos.y * InstDirection) + (cpos.z * InstTangentY);
     }
-    float4 spos = mul(float4(opos, 1), ViewProj);
+    else if (InstType == 4)//capsule
+    {
+        float3 cpos = ipos.xyz * extent;
+        cpos += InstCapsuleExtent * (ipos.w * 2 - 1) * 0.1;
+        opos = (cpos.x * InstTangentX.xyz) + (cpos.y * InstDirection.xyz) + (cpos.z * InstTangentY.xyz);
+    }
+    
+    float4 spos = mul(float4(opos + InstPosition, 1), ViewProj);
     VS_Output output;
     output.Pos = spos;
     output.Screen = spos;
-    output.IID = iid;
     return output;
 }

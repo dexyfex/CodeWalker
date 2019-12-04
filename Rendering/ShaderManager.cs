@@ -71,6 +71,7 @@ namespace CodeWalker.Rendering
         public List<ShaderRenderBucket> RenderBuckets = new List<ShaderRenderBucket>();
         public List<RenderableBoundGeometryInst> RenderBoundGeoms = new List<RenderableBoundGeometryInst>();
         public List<RenderableInstanceBatchInst> RenderInstBatches = new List<RenderableInstanceBatchInst>();
+        public List<RenderableLightInst> RenderLights = new List<RenderableLightInst>();
         public List<RenderableLODLights> RenderLODLights = new List<RenderableLODLights>();
         public List<RenderableDistantLODLights> RenderDistLODLights = new List<RenderableDistantLODLights>();
         public List<RenderablePathBatch> RenderPathBatches = new List<RenderablePathBatch>();
@@ -326,6 +327,7 @@ namespace CodeWalker.Rendering
 
             RenderBoundGeoms.Clear();
             RenderInstBatches.Clear();
+            RenderLights.Clear();
             RenderLODLights.Clear();
             RenderDistLODLights.Clear();
             RenderPathBatches.Clear();
@@ -583,6 +585,14 @@ namespace CodeWalker.Rendering
                     context.OutputMerger.DepthStencilState = dsDisableWriteRev;//only render parts behind or at surface
                     DefScene.RenderLights(context, camera, RenderLODLights);
                 }
+
+                if (RenderLights.Count > 0)
+                {
+                    context.Rasterizer.State = rsSolid;
+                    context.OutputMerger.BlendState = bsAdd; //additive blend for lights...
+                    context.OutputMerger.DepthStencilState = dsDisableWriteRev;//only render parts behind or at surface
+                    DefScene.RenderLights(context, camera, RenderLights);
+                }
             }
 
             Basic.Deferred = false;
@@ -682,10 +692,13 @@ namespace CodeWalker.Rendering
                 for (int g = 0; g < sbgeoms.Count; g++)
                 {
                     var sbgeom = sbgeoms[g];
-                    float idist = sbgeom.Inst.Distance - sbgeom.Inst.Radius;
-                    if (idist <= maxdist)
+                    if (sbgeom.Inst.CastShadow)
                     {
-                        shadowcasters.Add(sbgeom);
+                        float idist = sbgeom.Inst.Distance - sbgeom.Inst.Radius;
+                        if (idist <= maxdist)
+                        {
+                            shadowcasters.Add(sbgeom);
+                        }
                     }
                 }
             }
@@ -852,6 +865,10 @@ namespace CodeWalker.Rendering
             }
 
             batch.Geometries.Add(geom);
+        }
+        public void Enqueue(ref RenderableLightInst light)
+        {
+            RenderLights.Add(light);
         }
         public void Enqueue(ref RenderableBoundGeometryInst geom)
         {

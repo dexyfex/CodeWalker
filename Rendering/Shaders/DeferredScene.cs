@@ -40,6 +40,23 @@ namespace CodeWalker.Rendering
         public uint SampleCount;//for MSAA
         public float SampleMult;//for MSAA
     }
+    public struct DeferredLightInstVars
+    {
+        public Vector3 InstPosition;
+        public float InstIntensity;
+        public Vector3 InstColour;
+        public float InstFalloff;
+        public Vector3 InstDirection;
+        public float InstFalloffExponent;
+        public Vector3 InstTangentX;
+        public float InstConeInnerAngle;
+        public Vector3 InstTangentY;
+        public float InstConeOuterAngle;
+        public Vector3 InstCapsuleExtent;
+        public uint InstType;
+        public Vector3 InstCullingPlaneNormal;
+        public float InstCullingPlaneOffset;
+    }
 
     public struct DeferredSSAAPSVars
     {
@@ -70,6 +87,9 @@ namespace CodeWalker.Rendering
         VertexShader LodLightVS;
         PixelShader LodLightPS;
         PixelShader LodLightMSPS;
+        VertexShader LightVS;
+        PixelShader LightPS;
+        PixelShader LightMSPS;
         UnitCone LightCone;
         UnitSphere LightSphere;
         UnitCapsule LightCapsule;
@@ -79,6 +99,7 @@ namespace CodeWalker.Rendering
 
         GpuVarsBuffer<DeferredLightVSVars> LightVSVars;
         GpuVarsBuffer<DeferredLightPSVars> LightPSVars;
+        GpuVarsBuffer<DeferredLightInstVars> LightInstVars;
 
 
 
@@ -113,6 +134,9 @@ namespace CodeWalker.Rendering
             byte[] bLodLightVS = File.ReadAllBytes("Shaders\\LodLightsVS.cso");
             byte[] bLodLightPS = File.ReadAllBytes("Shaders\\LodLightsPS.cso");
             byte[] bLodLightMSPS = File.ReadAllBytes("Shaders\\LodLightsPS_MS.cso");
+            byte[] bLightVS = File.ReadAllBytes("Shaders\\LightVS.cso");
+            byte[] bLightPS = File.ReadAllBytes("Shaders\\LightPS.cso");
+            byte[] bLightMSPS = File.ReadAllBytes("Shaders\\LightPS_MS.cso");
             byte[] bFinalVS = File.ReadAllBytes("Shaders\\PPFinalPassVS.cso");
             byte[] bSSAAPS = File.ReadAllBytes("Shaders\\PPSSAAPS.cso");
 
@@ -120,12 +144,15 @@ namespace CodeWalker.Rendering
             DirLightPS = new PixelShader(device, bDirLightPS);
             LodLightVS = new VertexShader(device, bLodLightVS);
             LodLightPS = new PixelShader(device, bLodLightPS);
+            LightVS = new VertexShader(device, bLightVS);
+            LightPS = new PixelShader(device, bLightPS);
 
             try
             {
                 //error could happen here if the device isn't supporting feature level 10.1
                 DirLightMSPS = new PixelShader(device, bDirLightMSPS);
                 LodLightMSPS = new PixelShader(device, bLodLightMSPS);
+                LightMSPS = new PixelShader(device, bLightMSPS);
             }
             catch
             {
@@ -145,6 +172,7 @@ namespace CodeWalker.Rendering
 
             LightVSVars = new GpuVarsBuffer<DeferredLightVSVars>(device);
             LightPSVars = new GpuVarsBuffer<DeferredLightPSVars>(device);
+            LightInstVars = new GpuVarsBuffer<DeferredLightInstVars>(device);
 
 
             FinalVS = new VertexShader(device, bFinalVS);
@@ -189,6 +217,11 @@ namespace CodeWalker.Rendering
             {
                 LightPSVars.Dispose();
                 LightPSVars = null;
+            }
+            if (LightInstVars != null)
+            {
+                LightInstVars.Dispose();
+                LightInstVars = null;
             }
             if (LightQuadLayout != null)
             {
@@ -244,6 +277,21 @@ namespace CodeWalker.Rendering
             {
                 LodLightVS.Dispose();
                 LodLightVS = null;
+            }
+            if (LightPS != null)
+            {
+                LightPS.Dispose();
+                LightPS = null;
+            }
+            if (LightMSPS != null)
+            {
+                LightMSPS.Dispose();
+                LightMSPS = null;
+            }
+            if (LightVS != null)
+            {
+                LightVS.Dispose();
+                LightVS = null;
             }
             if (SSAAPSVars != null)
             {
@@ -376,7 +424,6 @@ namespace CodeWalker.Rendering
             context.PixelShader.SetSamplers(0, null, null);
         }
 
-
         public void RenderLights(DeviceContext context, Camera camera, List<RenderableLODLights> lodlights)
         {
             //instanced rendering of all other lights, using appropriate shapes
@@ -456,7 +503,89 @@ namespace CodeWalker.Rendering
             context.PixelShader.SetSamplers(0, null, null);
         }
 
+        public void RenderLights(DeviceContext context, Camera camera, List<RenderableLightInst> lights)
+        {
+            //instanced rendering of all other lights, using appropriate shapes
+            //blend mode: additive
 
+
+            var ps = (MSAASampleCount > 1) ? LightMSPS : LightPS;
+
+            context.VertexShader.Set(LightVS);
+            context.PixelShader.Set(ps);
+
+            LightVSVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
+            LightVSVars.Vars.CameraPos = new Vector4(camera.Position, 0.0f);
+            LightVSVars.Vars.LightType = 0;
+            LightVSVars.Vars.IsLOD = 0;
+            LightVSVars.Vars.Pad0 = 0;
+            LightVSVars.Vars.Pad1 = 0;
+            LightVSVars.Update(context);
+            LightVSVars.SetVSCBuffer(context, 0);
+
+            LightPSVars.Vars.ViewProjInv = Matrix.Transpose(camera.ViewProjInvMatrix);
+            LightPSVars.Vars.CameraPos = new Vector4(camera.Position, 0.0f);
+            LightPSVars.Vars.EnableShadows = 0;
+            LightPSVars.Vars.RenderMode = 0;
+            LightPSVars.Vars.RenderModeIndex = 1;
+            LightPSVars.Vars.RenderSamplerCoord = 0;
+            LightPSVars.Vars.LightType = 0;
+            LightPSVars.Vars.IsLOD = 0;
+            LightPSVars.Vars.SampleCount = (uint)MSAASampleCount;
+            LightPSVars.Vars.SampleMult = 1.0f / MSAASampleCount;
+            LightPSVars.Update(context);
+            LightPSVars.SetPSCBuffer(context, 0);
+
+            context.PixelShader.SetShaderResources(0, GBuffers.DepthSRV);
+            context.PixelShader.SetShaderResources(2, GBuffers.SRVs);
+
+
+            for (int i = 0; i < lights.Count; i++)
+            {
+                var li = lights[i];
+                var rl = li.Light;
+
+                LightInstVars.Vars.InstPosition = li.EntityPosition + li.EntityRotation.Multiply(rl.Position) - camera.Position;
+                LightInstVars.Vars.InstDirection = li.EntityRotation.Multiply(rl.Direction);
+                LightInstVars.Vars.InstTangentX = li.EntityRotation.Multiply(rl.TangentX);
+                LightInstVars.Vars.InstTangentY = li.EntityRotation.Multiply(rl.TangentY);
+                LightInstVars.Vars.InstCapsuleExtent = li.EntityRotation.Multiply(rl.CapsuleExtent);
+                LightInstVars.Vars.InstCullingPlaneNormal = li.EntityRotation.Multiply(rl.CullingPlaneNormal);
+                LightInstVars.Vars.InstColour = rl.Colour;
+                LightInstVars.Vars.InstIntensity = rl.Intensity;
+                LightInstVars.Vars.InstFalloff = rl.Falloff;
+                LightInstVars.Vars.InstFalloffExponent = rl.FalloffExponent;
+                LightInstVars.Vars.InstConeInnerAngle = rl.ConeInnerAngle;
+                LightInstVars.Vars.InstConeOuterAngle = rl.ConeOuterAngle;
+                LightInstVars.Vars.InstType = (uint)rl.Type;
+                LightInstVars.Vars.InstCullingPlaneOffset = rl.CullingPlaneOffset;
+                LightInstVars.Update(context);
+                LightInstVars.SetVSCBuffer(context, 1);
+                LightInstVars.SetPSCBuffer(context, 2);
+
+                switch (rl.Type)
+                {
+                    case LightType.Point:
+                        LightSphere.Draw(context);
+                        break;
+                    case LightType.Spot:
+                        LightCone.Draw(context);
+                        break;
+                    case LightType.Capsule:
+                        LightCapsule.Draw(context);
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+
+
+            context.VertexShader.Set(null);
+            context.PixelShader.Set(null);
+            context.PixelShader.SetShaderResources(0, null, null, null);
+            context.PixelShader.SetSamplers(0, null, null);
+        }
 
 
         public void SSAAPass(DeviceContext context)
