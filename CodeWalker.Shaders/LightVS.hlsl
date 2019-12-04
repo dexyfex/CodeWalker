@@ -1,5 +1,8 @@
 #include "Common.hlsli"
 
+//currently unused - TODO: implement individual HD lights here
+
+
 
 struct LODLight
 {

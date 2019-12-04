@@ -165,6 +165,23 @@ namespace CodeWalker.Rendering
 
         RawViewportF[] vpOld = new RawViewportF[15];
 
+        DeferredScene DefScene;
+        bool UsePrimary = true;
+
+        ShaderResourceView SceneColourSRV
+        {
+            get
+            {
+                var srv = DefScene?.SceneColour?.SRV;
+                if (UsePrimary || (srv == null))
+                {
+                    srv = Primary.SRV;
+                }
+                return srv;
+            }
+        }
+
+
         public PostProcessor(DXManager dxman)
         {
             var device = dxman.device;
@@ -417,13 +434,15 @@ namespace CodeWalker.Rendering
             context.Rasterizer.SetViewport(Viewport);
         }
 
-        public void Render(DXManager dxman, float elapsed)
+        public void Render(DXManager dxman, float elapsed, DeferredScene defScene)
         {
             ElapsedTime = elapsed;
+            DefScene = defScene;
+            UsePrimary = ((defScene?.SSAASampleCount ?? 2) > 1) || (defScene?.SceneColour == null);
 
             var context = dxman.context;
 
-            if (Multisampled)
+            if (Multisampled && UsePrimary)
             {
                 int sr = 0;// D3D11CalcSubresource(0, 0, 1);
                 context.ResolveSubresource(Primary.TextureMS, sr, Primary.Texture, sr, Format.R32G32B32A32_Float);
@@ -442,6 +461,8 @@ namespace CodeWalker.Rendering
 
         private void ProcessLuminance(DeviceContext context)
         {
+            var srv = SceneColourSRV;
+
             uint dimx, dimy;
             if (CS_FULL_PIXEL_REDUCTION)
             {
@@ -462,7 +483,8 @@ namespace CodeWalker.Rendering
             ReduceCSVars.Vars.Height = (uint)Height;
             ReduceCSVars.Update(context);
 
-            Compute(context, ReduceTo1DCS, ReduceCSVars.Buffer, Reduction0.UAV, (int)dimx, (int)dimy, 1, Primary.SRV);
+
+            Compute(context, ReduceTo1DCS, ReduceCSVars.Buffer, Reduction0.UAV, (int)dimx, (int)dimy, 1, srv);
 
             uint dim = dimx * dimy;
             uint nNumToReduce = dim;
@@ -506,13 +528,10 @@ namespace CodeWalker.Rendering
         {
             if (EnableBloom)
             {
+                var srv = SceneColourSRV;
 
                 // Bright pass and horizontal blur
 
-                ShaderResourceView view = Primary.SRV;
-
-                ShaderResourceView[] aRViews = { view, LumBlendResult.SRV };
-                //BloomFilterShaderVars cbFilter;
                 //GetSampleWeights(cbFilter.avSampleWeights, 3.0f, 1.25f);
                 FilterBPHCSVars.Vars.outputwidth = (uint)(Width / 8);
                 if (CS_FULL_PIXEL_REDUCTION)
@@ -529,7 +548,7 @@ namespace CodeWalker.Rendering
 
                 int x = (int)(Math.Ceiling((float)FilterBPHCSVars.Vars.outputwidth / (128 - 7 * 2)));
                 int y = (Height / 8);
-                Compute(context, BloomFilterBPHCS, FilterBPHCSVars.Buffer, Bloom1.UAV, x, y, 1, view, LumBlendResult.SRV);
+                Compute(context, BloomFilterBPHCS, FilterBPHCSVars.Buffer, Bloom1.UAV, x, y, 1, srv, LumBlendResult.SRV);
 
                 // Vertical blur
                 FilterVCSVars.Vars.outputsize0 = (int)(Width / 8);
@@ -552,16 +571,16 @@ namespace CodeWalker.Rendering
             context.VertexShader.Set(FinalPassVS);
             context.PixelShader.Set(FinalPassPS);
 
-            context.PixelShader.SetShaderResources(0, Primary.SRV, LumBlendResult.SRV, EnableBloom ? Bloom.SRV : null);
+            var srv = SceneColourSRV;
+
+            context.PixelShader.SetShaderResources(0, srv, LumBlendResult.SRV, EnableBloom ? Bloom.SRV : null);
 
             if (CS_FULL_PIXEL_REDUCTION)
             {
-                //pcbCS[0] = 1.0f / (Width * Height);
                 FinalPSVars.Vars.invPixelCount = new Vector4(1.0f / (Width * Height));
             }
             else
             {
-                //pcbCS[0] = 1.0f / (81 * 81); //ToneMappingTexSize*ToneMappingTexSize
                 FinalPSVars.Vars.invPixelCount = new Vector4(1.0f / (81 * 81));
             }
             FinalPSVars.Update(context);
