@@ -1,9 +1,6 @@
 #include "LightPS.hlsli"
 
 
-//currently unused - TODO: implement individual HD lights here
-
-
 Texture2D DepthTex : register(t0);
 Texture2D DiffuseTex : register(t2);
 Texture2D NormalTex : register(t3);
@@ -14,9 +11,7 @@ struct VS_Output
 {
     float4 Pos : SV_POSITION;
     float4 Screen : TEXCOORD0;
-    uint IID : SV_INSTANCEID;
 };
-
 
 PS_OUTPUT main(VS_Output input)
 {
@@ -29,7 +24,6 @@ PS_OUTPUT main(VS_Output input)
     float4 specular = SpecularTex.Load(ssloc);
     float4 irradiance = IrradianceTex.Load(ssloc);
     
-    
     PS_OUTPUT output;
     output.Depth = input.Pos.z;
     
@@ -40,28 +34,15 @@ PS_OUTPUT main(VS_Output input)
         case 7: output.Colour = float4(specular.rgb, 1); return output;
     }
     
-    
     float4 spos = float4(input.Screen.xy/input.Screen.w, depth, 1);
     float4 cpos = mul(spos, ViewProjInv);
     float3 camRel = cpos.xyz * (1/cpos.w);
     float3 norm = normal.xyz * 2 - 1;
     
-    
-    if (LightType == 0) //directional light
-    {
-        float3 c = DeferredDirectionalLight(camRel, norm, diffuse, specular, irradiance);
+    float3 c = DeferredDirectionalLight(camRel, norm, diffuse, specular, irradiance);
         
-        PS_OUTPUT output;
-        output.Colour = float4(c, 1);
-        output.Depth = depth;
-        return output;
-    }
-    
-    
-    float4 lcol = DeferredLODLight(camRel, norm, diffuse, specular, irradiance, input.IID);
-    if (lcol.a <= 0) discard;
-
-    output.Colour = lcol;
+    output.Colour = float4(c, 1);
+    output.Depth = depth;
     return output;
 }
 

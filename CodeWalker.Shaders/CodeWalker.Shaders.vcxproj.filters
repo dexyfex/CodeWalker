@@ -247,8 +247,20 @@
     <FxCompile Include="DistantLightsVS.hlsl">
       <Filter>Lights</Filter>
     </FxCompile>
-    <FxCompile Include="PPMSAAPS.hlsl">
+    <FxCompile Include="PPSSAAPS.hlsl">
       <Filter>PostProcessor</Filter>
+    </FxCompile>
+    <FxCompile Include="DirLightVS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="DirLightPS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="LodLightsVS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="LodLightsPS.hlsl">
+      <Filter>Lights</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -290,6 +302,9 @@
     </None>
     <None Include="WaterVS.hlsli">
       <Filter>Water</Filter>
+    </None>
+    <None Include="LightPS.hlsli">
+      <Filter>Lights</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

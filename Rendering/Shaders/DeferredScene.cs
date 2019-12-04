@@ -41,7 +41,7 @@ namespace CodeWalker.Rendering
         public uint Pad1;
     }
 
-    public struct DeferredMSAAPSVars
+    public struct DeferredSSAAPSVars
     {
         public uint SampleCount;
         public float SampleMult;
@@ -64,8 +64,10 @@ namespace CodeWalker.Rendering
         int Height = 0;
         ViewportF Viewport;
 
-        VertexShader LightVS;
-        PixelShader LightPS;
+        VertexShader DirLightVS;
+        PixelShader DirLightPS;
+        VertexShader LodLightVS;
+        PixelShader LodLightPS;
         UnitCone LightCone;
         UnitSphere LightSphere;
         UnitCapsule LightCapsule;
@@ -77,12 +79,11 @@ namespace CodeWalker.Rendering
         GpuVarsBuffer<DeferredLightPSVars> LightPSVars;
 
 
-        int MSAASampleCount = 1;
 
         VertexShader FinalVS;
-        PixelShader MSAAPS;
-
-        GpuVarsBuffer<DeferredMSAAPSVars> MSAAPSVars;
+        PixelShader SSAAPS;
+        GpuVarsBuffer<DeferredSSAAPSVars> SSAAPSVars;
+        public int SSAASampleCount = 1;
 
 
         public long VramUsage
@@ -99,18 +100,22 @@ namespace CodeWalker.Rendering
         {
             var device = dxman.device;
 
-            byte[] bLightVS = File.ReadAllBytes("Shaders\\LightVS.cso");
-            byte[] bLightPS = File.ReadAllBytes("Shaders\\LightPS.cso");
+            byte[] bDirLightVS = File.ReadAllBytes("Shaders\\DirLightVS.cso");
+            byte[] bDirLightPS = File.ReadAllBytes("Shaders\\DirLightPS.cso");
+            byte[] bLodLightVS = File.ReadAllBytes("Shaders\\LodLightsVS.cso");
+            byte[] bLodLightPS = File.ReadAllBytes("Shaders\\LodLightsPS.cso");
             byte[] bFinalVS = File.ReadAllBytes("Shaders\\PPFinalPassVS.cso");
-            byte[] bMSAAPS = File.ReadAllBytes("Shaders\\PPMSAAPS.cso");
+            byte[] bSSAAPS = File.ReadAllBytes("Shaders\\PPSSAAPS.cso");
 
-            LightVS = new VertexShader(device, bLightVS);
-            LightPS = new PixelShader(device, bLightPS);
-            LightCone = new UnitCone(device, bLightVS, 4, false);
-            LightSphere = new UnitSphere(device, bLightVS, 4, true);
-            LightCapsule = new UnitCapsule(device, bLightVS, 4, false);
+            DirLightVS = new VertexShader(device, bDirLightVS);
+            DirLightPS = new PixelShader(device, bDirLightPS);
+            LodLightVS = new VertexShader(device, bLodLightVS);
+            LodLightPS = new PixelShader(device, bLodLightPS);
+            LightCone = new UnitCone(device, bLodLightVS, 4, false);
+            LightSphere = new UnitSphere(device, bLodLightVS, 4, true);
+            LightCapsule = new UnitCapsule(device, bLodLightVS, 4, false);
             LightQuad = new UnitQuad(device, true);
-            LightQuadLayout = new InputLayout(device, bLightVS, new[]
+            LightQuadLayout = new InputLayout(device, bDirLightVS, new[]
             {
                 new InputElement("POSITION", 0, Format.R32G32B32A32_Float, 0, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float, 16, 0),
@@ -121,9 +126,9 @@ namespace CodeWalker.Rendering
 
 
             FinalVS = new VertexShader(device, bFinalVS);
-            MSAAPS = new PixelShader(device, bMSAAPS);
+            SSAAPS = new PixelShader(device, bSSAAPS);
 
-            MSAAPSVars = new GpuVarsBuffer<DeferredMSAAPSVars>(device);
+            SSAAPSVars = new GpuVarsBuffer<DeferredSSAAPSVars>(device);
 
             TextureAddressMode a = TextureAddressMode.Clamp;
             Color4 b = new Color4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -188,25 +193,35 @@ namespace CodeWalker.Rendering
                 LightCapsule.Dispose();
                 LightCapsule = null;
             }
-            if (LightPS != null)
+            if (DirLightPS != null)
             {
-                LightPS.Dispose();
-                LightPS = null;
+                DirLightPS.Dispose();
+                DirLightPS = null;
             }
-            if (LightVS != null)
+            if (DirLightVS != null)
             {
-                LightVS.Dispose();
-                LightVS = null;
+                DirLightVS.Dispose();
+                DirLightVS = null;
             }
-            if (MSAAPSVars != null)
+            if (LodLightPS != null)
             {
-                MSAAPSVars.Dispose();
-                MSAAPSVars = null;
+                LodLightPS.Dispose();
+                LodLightPS = null;
             }
-            if (MSAAPS != null)
+            if (LodLightVS != null)
             {
-                MSAAPS.Dispose();
-                MSAAPS = null;
+                LodLightVS.Dispose();
+                LodLightVS = null;
+            }
+            if (SSAAPSVars != null)
+            {
+                SSAAPSVars.Dispose();
+                SSAAPSVars = null;
+            }
+            if (SSAAPS != null)
+            {
+                SSAAPS.Dispose();
+                SSAAPS = null;
             }
             if (FinalVS != null)
             {
@@ -223,8 +238,8 @@ namespace CodeWalker.Rendering
 
 
 
-            int uw = Width = dxman.backbuffer.Description.Width * MSAASampleCount;
-            int uh = Height = dxman.backbuffer.Description.Height * MSAASampleCount;
+            int uw = Width = dxman.backbuffer.Description.Width * SSAASampleCount;
+            int uh = Height = dxman.backbuffer.Description.Height * SSAASampleCount;
             Viewport = new ViewportF();
             Viewport.Width = (float)uw;
             Viewport.Height = (float)uh;
@@ -285,8 +300,8 @@ namespace CodeWalker.Rendering
             //discard pixels where scene depth is 0, since nothing was rendered there
             //blend mode: overwrite
 
-            context.VertexShader.Set(LightVS);
-            context.PixelShader.Set(LightPS);
+            context.VertexShader.Set(DirLightVS);
+            context.PixelShader.Set(DirLightPS);
 
             LightVSVars.Vars.ViewProj = Matrix.Identity; //Matrix.Transpose(camera.ViewProjMatrix);
             LightVSVars.Vars.CameraPos = Vector4.Zero;   //new Vector4(camera.Position, 0.0f);
@@ -336,8 +351,8 @@ namespace CodeWalker.Rendering
             //blend mode: additive
 
 
-            context.VertexShader.Set(LightVS);
-            context.PixelShader.Set(LightPS);
+            context.VertexShader.Set(LodLightVS);
+            context.PixelShader.Set(LodLightPS);
 
             LightVSVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             LightVSVars.Vars.CameraPos = new Vector4(camera.Position, 0.0f);
@@ -421,22 +436,22 @@ namespace CodeWalker.Rendering
 
 
 
-        public void FinalPass(DeviceContext context)
+        public void SSAAPass(DeviceContext context)
         {
-            //do antialiasing from SceneColour into HDR primary
+            //do antialiasing from SceneColour
 
             context.VertexShader.Set(FinalVS);
-            context.PixelShader.Set(MSAAPS);
+            context.PixelShader.Set(SSAAPS);
 
             context.PixelShader.SetShaderResources(0, SceneColour.SRV);
             context.PixelShader.SetSamplers(0, SampleStatePoint);
 
-            MSAAPSVars.Vars.SampleCount = (uint)MSAASampleCount;
-            MSAAPSVars.Vars.SampleMult = 1.0f / (MSAASampleCount * MSAASampleCount);
-            MSAAPSVars.Vars.TexelSizeX = 1.0f / Width;
-            MSAAPSVars.Vars.TexelSizeY = 1.0f / Height;
-            MSAAPSVars.Update(context);
-            MSAAPSVars.SetPSCBuffer(context, 0);
+            SSAAPSVars.Vars.SampleCount = (uint)SSAASampleCount;
+            SSAAPSVars.Vars.SampleMult = 1.0f / (SSAASampleCount * SSAASampleCount);
+            SSAAPSVars.Vars.TexelSizeX = 1.0f / Width;
+            SSAAPSVars.Vars.TexelSizeY = 1.0f / Height;
+            SSAAPSVars.Update(context);
+            SSAAPSVars.SetPSCBuffer(context, 0);
 
             context.InputAssembler.InputLayout = LightQuadLayout;
             LightQuad.Draw(context);

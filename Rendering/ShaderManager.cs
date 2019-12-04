@@ -61,7 +61,7 @@ namespace CodeWalker.Rendering
 
         public bool deferred = Settings.Default.Deferred;
         public bool hdr = Settings.Default.HDR;
-        public float hdrLumBlendSpeed = 1.0f;
+        public float hdrLumBlendSpeed = 2.0f;
         int Width;
         int Height;
 
@@ -645,22 +645,20 @@ namespace CodeWalker.Rendering
             context.OutputMerger.BlendState = bsDefault;
             context.OutputMerger.DepthStencilState = dsDisableAll;
 
-            if (DefScene != null)
-            {
-                if (HDR != null)
-                {
-                    HDR.SetPrimary(context);
-                }
-                else
-                {
-                    DXMan.SetDefaultRenderTarget(context);
-                }
-
-                DefScene.FinalPass(context);
-            }
             if (HDR != null)
             {
-                HDR.Render(DXMan, CurrentElapsedTime);
+                if ((DefScene?.SSAASampleCount ?? 1) > 1)
+                {
+                    HDR.SetPrimary(context);
+                    DefScene.SSAAPass(context);
+                }
+
+                HDR.Render(DXMan, CurrentElapsedTime, DefScene);
+            }
+            else if (DefScene != null)
+            {
+                DXMan.SetDefaultRenderTarget(context);
+                DefScene.SSAAPass(context);
             }
 
             Basic.Deferred = deferred;
