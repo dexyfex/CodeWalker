@@ -22,6 +22,23 @@ cbuffer PSLightVars : register(b0)
     float SampleMult;//for MSAA
 }
 
+cbuffer PSLightInstVars : register(b2)
+{
+    float3 InstPosition;//camera relative
+    float InstIntensity;
+    float3 InstColour;
+    float InstFalloff;
+    float3 InstDirection;
+    float InstFalloffExponent;
+    float3 InstTangentX;
+    float InstConeInnerAngle;
+    float3 InstTangentY;
+    float InstConeOuterAngle;
+    float3 InstCapsuleExtent;
+    uint InstType;
+    float3 InstCullingPlaneNormal;
+    float InstCullingPlaneOffset;
+}
 
 
 
@@ -50,8 +67,6 @@ float3 GetReflectedDir(float3 camRel, float3 norm)
     float3 refl = normalize(reflect(incident, norm));
     return refl;
 }
-
-
 
 
 float3 DeferredDirectionalLight(float3 camRel, float3 norm, float4 diffuse, float4 specular, float4 irradiance)
@@ -88,7 +103,7 @@ float4 DeferredLODLight(float3 camRel, float3 norm, float4 diffuse, float4 specu
     else if (LightType == 2)//spot (cone)
     {
         float ang = acos(-dot(ldir, lodlight.Direction));
-        float iang = lodlight.InnerAngle * 0.01745329;
+        float iang = lodlight.InnerAngle * 0.01745329 * 0.5;
         float oang = lodlight.OuterAngleOrCapExt * 0.01745329 * 0.5;
         if (ang > oang) return 0;
         lamt *= saturate(1 - ((ang - iang) / (oang - iang)));
@@ -112,6 +127,53 @@ float4 DeferredLODLight(float3 camRel, float3 norm, float4 diffuse, float4 specu
 
     return float4(lcol, 1);
 }
+
+float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular, float4 irradiance)
+{
+    float3 srpos = InstPosition - camRel; //light position relative to surface position
+    float ldist = length(srpos);
+    if (ldist > InstFalloff) return 0; //out of range of the light... TODO: capsules!
+    if (ldist <= 0) return 0;
+    
+    float4 rgbi = float4(InstColour, InstIntensity);
+    float3 lcol = rgbi.rgb;// * rgbi.a; // * 5.0f;
+    float3 ldir = srpos / ldist;
+    float pclit = saturate(dot(ldir, norm));
+    float lamt = 1;
+    
+    if (InstType == 1)//point (sphere)
+    {
+        lamt *= pow(saturate(1 - (ldist / InstFalloff)), InstFalloffExponent);
+    }
+    else if (InstType == 2)//spot (cone)
+    {
+        float ang = acos(-dot(ldir, InstDirection));
+        float iang = InstConeInnerAngle * 0.01745329 * 0.5;
+        float oang = InstConeOuterAngle * 0.01745329 * 0.5;
+        if (ang > oang) return 0;
+        lamt *= saturate(1 - ((ang - iang) / (oang - iang)));
+        lamt *= pow(saturate(1 - (ldist / InstFalloff)), InstFalloffExponent);
+    }
+    else if (InstType == 4)//capsule
+    {
+        lamt *= pow(saturate(1 - (ldist / InstFalloff)), InstFalloffExponent); //TODO! proper capsule lighting... (use point-line dist!)
+    }
+    
+    pclit *= lamt;
+    
+    if (pclit <= 0) return 0;
+    
+    float3 refl = GetReflectedDir(camRel, norm);
+    float specb = saturate(dot(refl, ldir));
+    float specp = max(exp(specb * 10) - 1, 0);
+    float3 spec = lcol * (0.00006 * specp * specular.r * lamt);
+
+    lcol = lcol * diffuse.rgb * pclit + spec;
+
+    return float4(lcol, 1);
+}
+
+
 
 
 

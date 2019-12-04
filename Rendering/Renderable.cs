@@ -26,11 +26,18 @@ namespace CodeWalker.Rendering
         public Quaternion Orientation;
         public Vector3 Scale;
         public uint TintPaletteIndex;
+        public bool CastShadow;
     }
     public struct RenderableGeometryInst
     {
         public RenderableGeometry Geom;
         public RenderableInst Inst;
+    }
+    public struct RenderableLightInst
+    {
+        public RenderableLight Light;
+        public Vector3 EntityPosition;
+        public Quaternion EntityRotation;
     }
 
     public struct RenderableBoundCompositeInst
@@ -81,6 +88,10 @@ namespace CodeWalker.Rendering
         public bool EnableRootMotion = false; //used to toggle whether or not to include root motion when playing animations
 
         public ClothInstance Cloth;
+
+
+        public RenderableLight[] Lights;
+
 
 
         public override void Init(DrawableBase drawable)
@@ -146,6 +157,8 @@ namespace CodeWalker.Rendering
 
 
 
+            var fd = drawable as FragDrawable;
+            var dd = drawable as Drawable;
 
 
             bool hasskeleton = false;
@@ -164,7 +177,6 @@ namespace CodeWalker.Rendering
                 modeltransforms = skeleton.Transformations;
 
                 //for fragments, get the default pose from the root fragment...
-                var fd = drawable as FragDrawable;
                 if (fd != null)
                 {
                     var frag = fd.OwnerFragment;
@@ -306,6 +318,23 @@ namespace CodeWalker.Rendering
 
 
 
+            var lights = dd?.LightAttributes?.data_items;
+            if ((lights == null) && (fd != null) && (fd?.OwnerFragment?.Drawable == fd))
+            {
+                lights = fd.OwnerFragment.LightAttributes?.data_items;
+            }
+            if (lights != null)
+            {
+                var rlights = new RenderableLight[lights.Length];
+                for (int i = 0; i < lights.Length; i++)
+                {
+                    var rlight = new RenderableLight();
+                    rlight.Owner = this;
+                    rlight.Init(ref lights[i]);
+                    rlights[i] = rlight;
+                }
+                Lights = rlights;
+            }
 
 
             UpdateBoneTransforms();
@@ -1297,6 +1326,47 @@ namespace CodeWalker.Rendering
         public override string ToString()
         {
             return (Key != null) ? Key.ToString() : base.ToString();
+        }
+    }
+
+    public class RenderableLight
+    {
+        public Renderable Owner;
+        public Vector3 Position;
+        public Vector3 Colour;
+        public Vector3 Direction;
+        public Vector3 TangentX;
+        public Vector3 TangentY;
+        public LightType Type;
+        public float Intensity;
+        public float Falloff;
+        public float FalloffExponent;
+        public float ConeInnerAngle;
+        public float ConeOuterAngle;
+        public Vector3 CapsuleExtent;
+        public Vector3 CullingPlaneNormal;
+        public float CullingPlaneOffset;
+        public uint TimeFlags;
+        public MetaHash TextureHash;
+
+        public void Init(ref LightAttributes_s l)
+        {
+            Position = l.Position;
+            Colour = new Vector3(l.ColorR, l.ColorG, l.ColorB) * ((l.Intensity * 5.0f)  / 255.0f);
+            Direction = l.Direction;
+            TangentX = l.Tangent;
+            TangentY = Vector3.Cross(l.Direction, l.Tangent);
+            Type = l.Type;
+            Intensity = l.Intensity;
+            Falloff = l.Falloff;
+            FalloffExponent = l.FalloffExponent;
+            ConeInnerAngle = l.ConeInnerAngle;
+            ConeOuterAngle = l.ConeOuterAngle;
+            CapsuleExtent = l.Extent;
+            CullingPlaneNormal = l.CullingPlaneNormal;
+            CullingPlaneOffset = l.CullingPlaneOffset;
+            TimeFlags = l.TimeFlags;
+            TextureHash = l.ProjectedTextureHash;
         }
     }
 
