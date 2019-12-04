@@ -37,8 +37,8 @@ namespace CodeWalker.Rendering
         public uint RenderSamplerCoord; //which texcoord to use in single texture mode
         public uint LightType; //0=directional, 1=Point, 2=Spot, 4=Capsule
         public uint IsLOD; //useful or not?
-        public uint Pad0;
-        public uint Pad1;
+        public uint SampleCount;//for MSAA
+        public float SampleMult;//for MSAA
     }
 
     public struct DeferredSSAAPSVars
@@ -66,8 +66,10 @@ namespace CodeWalker.Rendering
 
         VertexShader DirLightVS;
         PixelShader DirLightPS;
+        PixelShader DirLightMSPS;
         VertexShader LodLightVS;
         PixelShader LodLightPS;
+        PixelShader LodLightMSPS;
         UnitCone LightCone;
         UnitSphere LightSphere;
         UnitCapsule LightCapsule;
@@ -86,6 +88,11 @@ namespace CodeWalker.Rendering
         public int SSAASampleCount = 1;
 
 
+        public int MSAASampleCount = 4;
+
+
+
+
         public long VramUsage
         {
             get
@@ -102,8 +109,10 @@ namespace CodeWalker.Rendering
 
             byte[] bDirLightVS = File.ReadAllBytes("Shaders\\DirLightVS.cso");
             byte[] bDirLightPS = File.ReadAllBytes("Shaders\\DirLightPS.cso");
+            byte[] bDirLightMSPS = File.ReadAllBytes("Shaders\\DirLightPS_MS.cso");
             byte[] bLodLightVS = File.ReadAllBytes("Shaders\\LodLightsVS.cso");
             byte[] bLodLightPS = File.ReadAllBytes("Shaders\\LodLightsPS.cso");
+            byte[] bLodLightMSPS = File.ReadAllBytes("Shaders\\LodLightsPS_MS.cso");
             byte[] bFinalVS = File.ReadAllBytes("Shaders\\PPFinalPassVS.cso");
             byte[] bSSAAPS = File.ReadAllBytes("Shaders\\PPSSAAPS.cso");
 
@@ -111,6 +120,19 @@ namespace CodeWalker.Rendering
             DirLightPS = new PixelShader(device, bDirLightPS);
             LodLightVS = new VertexShader(device, bLodLightVS);
             LodLightPS = new PixelShader(device, bLodLightPS);
+
+            try
+            {
+                //error could happen here if the device isn't supporting feature level 10.1
+                DirLightMSPS = new PixelShader(device, bDirLightMSPS);
+                LodLightMSPS = new PixelShader(device, bLodLightMSPS);
+            }
+            catch
+            {
+                MSAASampleCount = 1; //can't do MSAA without at least 10.1 support
+            }
+
+
             LightCone = new UnitCone(device, bLodLightVS, 4, false);
             LightSphere = new UnitSphere(device, bLodLightVS, 4, true);
             LightCapsule = new UnitCapsule(device, bLodLightVS, 4, false);
@@ -198,6 +220,11 @@ namespace CodeWalker.Rendering
                 DirLightPS.Dispose();
                 DirLightPS = null;
             }
+            if (DirLightMSPS != null)
+            {
+                DirLightMSPS.Dispose();
+                DirLightMSPS = null;
+            }
             if (DirLightVS != null)
             {
                 DirLightVS.Dispose();
@@ -207,6 +234,11 @@ namespace CodeWalker.Rendering
             {
                 LodLightPS.Dispose();
                 LodLightPS = null;
+            }
+            if (LodLightMSPS != null)
+            {
+                LodLightMSPS.Dispose();
+                LodLightMSPS = null;
             }
             if (LodLightVS != null)
             {
@@ -249,7 +281,7 @@ namespace CodeWalker.Rendering
             Viewport.Y = 0.0f;
 
 
-            GBuffers = new GpuMultiTexture(device, uw, uh, 4, Format.R8G8B8A8_UNorm, true, Format.D32_Float);
+            GBuffers = new GpuMultiTexture(device, uw, uh, 4, Format.R8G8B8A8_UNorm, true, Format.D32_Float, MSAASampleCount);
             WindowSizeVramUsage += GBuffers.VramUsage;
 
             SceneColour = new GpuTexture(device, uw, uh, Format.R32G32B32A32_Float, 1, 0, true, Format.D32_Float);
@@ -293,18 +325,18 @@ namespace CodeWalker.Rendering
 
         public void RenderLights(DeviceContext context, Camera camera, Shadowmap globalShadows, ShaderGlobalLights globalLights)
         {
-            uint rendermode = 0;
-            uint rendermodeind = 1;
 
             //first full-screen directional light pass, for sun/moon
             //discard pixels where scene depth is 0, since nothing was rendered there
             //blend mode: overwrite
 
-            context.VertexShader.Set(DirLightVS);
-            context.PixelShader.Set(DirLightPS);
+            var ps = (MSAASampleCount > 1) ? DirLightMSPS : DirLightPS;
 
-            LightVSVars.Vars.ViewProj = Matrix.Identity; //Matrix.Transpose(camera.ViewProjMatrix);
-            LightVSVars.Vars.CameraPos = Vector4.Zero;   //new Vector4(camera.Position, 0.0f);
+            context.VertexShader.Set(DirLightVS);
+            context.PixelShader.Set(ps);
+
+            LightVSVars.Vars.ViewProj = Matrix.Identity;
+            LightVSVars.Vars.CameraPos = Vector4.Zero;
             LightVSVars.Vars.LightType = 0;
             LightVSVars.Vars.IsLOD = 0;
             LightVSVars.Vars.Pad0 = 0;
@@ -314,15 +346,15 @@ namespace CodeWalker.Rendering
 
             LightPSVars.Vars.GlobalLights = globalLights.Params;
             LightPSVars.Vars.ViewProjInv = Matrix.Transpose(camera.ViewProjInvMatrix);
-            LightPSVars.Vars.CameraPos = Vector4.Zero;   //new Vector4(camera.Position, 0.0f);
+            LightPSVars.Vars.CameraPos = Vector4.Zero;
             LightPSVars.Vars.EnableShadows = (globalShadows != null) ? 1u : 0u;
-            LightPSVars.Vars.RenderMode = rendermode;
-            LightPSVars.Vars.RenderModeIndex = rendermodeind;
-            LightPSVars.Vars.RenderSamplerCoord = 0;// (uint)RenderTextureSamplerCoord;
+            LightPSVars.Vars.RenderMode = 0;
+            LightPSVars.Vars.RenderModeIndex = 1;
+            LightPSVars.Vars.RenderSamplerCoord = 0;
             LightPSVars.Vars.LightType = 0;
             LightPSVars.Vars.IsLOD = 0;
-            LightPSVars.Vars.Pad0 = 0;
-            LightPSVars.Vars.Pad1 = 0;
+            LightPSVars.Vars.SampleCount = (uint)MSAASampleCount;
+            LightPSVars.Vars.SampleMult = 1.0f / MSAASampleCount;
             LightPSVars.Update(context);
             LightPSVars.SetPSCBuffer(context, 0);
 
@@ -350,9 +382,10 @@ namespace CodeWalker.Rendering
             //instanced rendering of all other lights, using appropriate shapes
             //blend mode: additive
 
+            var ps = (MSAASampleCount > 1) ? LodLightMSPS : LodLightPS;
 
             context.VertexShader.Set(LodLightVS);
-            context.PixelShader.Set(LodLightPS);
+            context.PixelShader.Set(ps);
 
             LightVSVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             LightVSVars.Vars.CameraPos = new Vector4(camera.Position, 0.0f);
@@ -361,25 +394,19 @@ namespace CodeWalker.Rendering
             LightVSVars.Vars.Pad0 = 0;
             LightVSVars.Vars.Pad1 = 0;
 
-            //LightPSVars.Vars.GlobalLights = globalLights.Params;
             LightPSVars.Vars.ViewProjInv = Matrix.Transpose(camera.ViewProjInvMatrix);
             LightPSVars.Vars.CameraPos = new Vector4(camera.Position, 0.0f);
-            LightPSVars.Vars.EnableShadows = 0;// (globalShadows != null) ? 1u : 0u;
-            LightPSVars.Vars.RenderMode = 0;// rendermode;
-            LightPSVars.Vars.RenderModeIndex = 1;// rendermodeind;
-            LightPSVars.Vars.RenderSamplerCoord = 0;// (uint)RenderTextureSamplerCoord;
+            LightPSVars.Vars.EnableShadows = 0;
+            LightPSVars.Vars.RenderMode = 0;
+            LightPSVars.Vars.RenderModeIndex = 1;
+            LightPSVars.Vars.RenderSamplerCoord = 0;
             LightPSVars.Vars.LightType = 0;
             LightPSVars.Vars.IsLOD = 0;
-            LightPSVars.Vars.Pad0 = 0;
-            LightPSVars.Vars.Pad1 = 0;
+            LightPSVars.Vars.SampleCount = (uint)MSAASampleCount;
+            LightPSVars.Vars.SampleMult = 1.0f / MSAASampleCount;
 
             context.PixelShader.SetShaderResources(0, GBuffers.DepthSRV);
             context.PixelShader.SetShaderResources(2, GBuffers.SRVs);
-
-            //if (globalShadows != null)
-            //{
-            //    globalShadows.SetFinalRenderResources(context);
-            //}
 
 
             foreach (var rll in lodlights)
@@ -427,10 +454,6 @@ namespace CodeWalker.Rendering
             context.PixelShader.Set(null);
             context.PixelShader.SetShaderResources(0, null, null, null);
             context.PixelShader.SetSamplers(0, null, null);
-
-
-
-
         }
 
 

@@ -262,6 +262,12 @@
     <FxCompile Include="LodLightsPS.hlsl">
       <Filter>Lights</Filter>
     </FxCompile>
+    <FxCompile Include="DirLightPS_MS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="LodLightsPS_MS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="BasicPS.hlsli">

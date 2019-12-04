@@ -18,8 +18,8 @@ cbuffer PSLightVars : register(b0)
     uint RenderSamplerCoord;
     uint LightType; //0=directional, 1=Point, 2=Spot, 4=Capsule
     uint IsLOD; //useful or not?
-    uint Pad0;
-    uint Pad1;
+    uint SampleCount;//for MSAA
+    float SampleMult;//for MSAA
 }
 
 
