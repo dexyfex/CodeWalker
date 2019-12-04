@@ -293,13 +293,13 @@ namespace CodeWalker.Rendering
 
                 TextureMS = DXUtility.CreateTexture2D(device, w, h, 1, 1, f, sc, sq, u, b, 0, 0);
                 MSRTV = DXUtility.CreateRenderTargetView(device, TextureMS, f, rtvd, 0, 0, 0);
-                VramUsage += (wh * fs);
+                VramUsage += (wh * fs) * sc;
 
                 if (depth)
                 {
                     DepthMS = DXUtility.CreateTexture2D(device, w, h, 1, 1, df, sc, sq, u, db, 0, 0);
                     MSDSV = DXUtility.CreateDepthStencilView(device, DepthMS, df, dsvd);
-                    VramUsage += (wh * DXUtility.ElementSize(df));
+                    VramUsage += (wh * DXUtility.ElementSize(df)) * sc;
                 }
             }
             else
@@ -432,20 +432,31 @@ namespace CodeWalker.Rendering
         public int VramUsage;
         public bool UseDepth;
         public int Count;
+        public bool Multisampled;
+        public int MultisampleCount;
 
-        public void Init(Device device, int w, int h, int count, Format f, bool depth, Format df)
+        public void Init(Device device, int w, int h, int count, Format f, bool depth, Format df, int multisamplecount)
         {
             Count = count;
             VramUsage = 0;
             UseDepth = depth;
+            MultisampleCount = multisamplecount;
+            Multisampled = (multisamplecount > 1);
             ResourceUsage u = ResourceUsage.Default;
             BindFlags b = BindFlags.RenderTarget | BindFlags.ShaderResource;
-            RenderTargetViewDimension rtvd = RenderTargetViewDimension.Texture2D;
-            ShaderResourceViewDimension srvd = ShaderResourceViewDimension.Texture2D;// D3D11_SRV_DIMENSION_TEXTURE2D;
             int fs = DXUtility.ElementSize(f);
             int wh = w * h;
             BindFlags db = BindFlags.DepthStencil | BindFlags.ShaderResource;// D3D11_BIND_DEPTH_STENCIL;
+            RenderTargetViewDimension rtvd = RenderTargetViewDimension.Texture2D;
+            ShaderResourceViewDimension srvd = ShaderResourceViewDimension.Texture2D;// D3D11_SRV_DIMENSION_TEXTURE2D;
             DepthStencilViewDimension dsvd = DepthStencilViewDimension.Texture2D;
+
+            if (Multisampled)
+            {
+                rtvd = RenderTargetViewDimension.Texture2DMultisampled;
+                srvd = ShaderResourceViewDimension.Texture2DMultisampled;
+                dsvd = DepthStencilViewDimension.Texture2DMultisampled;
+            }
 
             Textures = new Texture2D[count];
             RTVs = new RenderTargetView[count];
@@ -453,10 +464,10 @@ namespace CodeWalker.Rendering
 
             for (int i = 0; i < count; i++)
             {
-                Textures[i] = DXUtility.CreateTexture2D(device, w, h, 1, 1, f, 1, 0, u, b, 0, 0);
+                Textures[i] = DXUtility.CreateTexture2D(device, w, h, 1, 1, f, multisamplecount, 0, u, b, 0, 0);
                 RTVs[i] = DXUtility.CreateRenderTargetView(device, Textures[i], f, rtvd, 0, 0, 0);
                 SRVs[i] = DXUtility.CreateShaderResourceView(device, Textures[i], f, srvd, 1, 0, 0, 0);
-                VramUsage += (wh * fs);
+                VramUsage += (wh * fs) * multisamplecount;
             }
             if (depth)
             {
@@ -482,10 +493,10 @@ namespace CodeWalker.Rendering
                         break;
                 }
 
-                Depth = DXUtility.CreateTexture2D(device, w, h, 1, 1, dtexf, 1, 0, u, db, 0, 0);
+                Depth = DXUtility.CreateTexture2D(device, w, h, 1, 1, dtexf, multisamplecount, 0, u, db, 0, 0);
                 DSV = DXUtility.CreateDepthStencilView(device, Depth, df, dsvd);
                 DepthSRV = DXUtility.CreateShaderResourceView(device, Depth, dsrvf, srvd, 1, 0, 0, 0);
-                VramUsage += (wh * DXUtility.ElementSize(df));
+                VramUsage += (wh * DXUtility.ElementSize(df)) * multisamplecount;
             }
         }
         public void Dispose()
@@ -516,13 +527,13 @@ namespace CodeWalker.Rendering
                 Depth = null;
             }
         }
-        public GpuMultiTexture(Device device, int w, int h, int count, Format f, bool depth, Format df)
+        public GpuMultiTexture(Device device, int w, int h, int count, Format f, bool depth, Format df, int msc = 1)
         {
-            Init(device, w, h, count, f, depth, df);
+            Init(device, w, h, count, f, depth, df, msc);
         }
-        public GpuMultiTexture(Device device, int w, int h, int count, Format f)
+        public GpuMultiTexture(Device device, int w, int h, int count, Format f, int msc = 1)
         {
-            Init(device, w, h, count, f, false, Format.Unknown);
+            Init(device, w, h, count, f, false, Format.Unknown, msc);
         }
 
         public void Clear(DeviceContext context, Color4 colour)

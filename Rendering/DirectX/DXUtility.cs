@@ -132,6 +132,10 @@ namespace CodeWalker.Rendering
                     srvd.Texture3D.MipLevels = mipLevels;
                     srvd.Texture3D.MostDetailedMip = mostDetailedMip;
                     break;
+                case ShaderResourceViewDimension.Texture2DMultisampled:
+                case ShaderResourceViewDimension.Texture2DMultisampledArray:
+                    //nothing to do here
+                    break;
                 default:
                     throw new Exception(); //not implemented....
             }

@@ -63,7 +63,7 @@ namespace CodeWalker.Rendering
                     Usage = Usage.RenderTargetOutput
                 };
 
-                FeatureLevel[] levels = new FeatureLevel[] { FeatureLevel.Level_10_0 };
+                FeatureLevel[] levels = new FeatureLevel[] { FeatureLevel.Level_11_0, FeatureLevel.Level_10_1, FeatureLevel.Level_10_0 };
 
                 DeviceCreationFlags flags = DeviceCreationFlags.None;
                 //#if DEBUG
