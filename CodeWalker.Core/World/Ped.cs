@@ -101,7 +101,7 @@ namespace CodeWalker.World
                 Yld = gfc.GetFileUncached<YldFile>(clothFile);
                 while ((Yld != null) && (!Yld.Loaded))
                 {
-                    Thread.Sleep(20);//kinda hacky
+                    Thread.Sleep(1);//kinda hacky
                     gfc.TryLoadEnqueue(Yld);
                 }
             }
@@ -110,22 +110,22 @@ namespace CodeWalker.World
 
             while ((Ydd != null) && (!Ydd.Loaded))
             {
-                Thread.Sleep(20);//kinda hacky
+                Thread.Sleep(1);//kinda hacky
                 Ydd = gfc.GetYdd(pedhash);
             }
             while ((Ytd != null) && (!Ytd.Loaded))
             {
-                Thread.Sleep(20);//kinda hacky
+                Thread.Sleep(1);//kinda hacky
                 Ytd = gfc.GetYtd(pedhash);
             }
             while ((Ycd != null) && (!Ycd.Loaded))
             {
-                Thread.Sleep(20);//kinda hacky
+                Thread.Sleep(1);//kinda hacky
                 Ycd = gfc.GetYcd(ycdhash);
             }
             while ((Yft != null) && (!Yft.Loaded))
             {
-                Thread.Sleep(20);//kinda hacky
+                Thread.Sleep(1);//kinda hacky
                 Yft = gfc.GetYft(pedhash);
             }
 
@@ -169,7 +169,7 @@ namespace CodeWalker.World
                     var ydd = gfc.GetFileUncached<YddFile>(file);
                     while ((ydd != null) && (!ydd.Loaded))
                     {
-                        Thread.Sleep(20);//kinda hacky
+                        Thread.Sleep(1);//kinda hacky
                         gfc.TryLoadEnqueue(ydd);
                     }
                     if (ydd?.Drawables?.Length > 0)
@@ -193,7 +193,7 @@ namespace CodeWalker.World
                     var ytd = gfc.GetFileUncached<YtdFile>(file);
                     while ((ytd != null) && (!ytd.Loaded))
                     {
-                        Thread.Sleep(20);//kinda hacky
+                        Thread.Sleep(1);//kinda hacky
                         gfc.TryLoadEnqueue(ytd);
                     }
                     if (ytd?.TextureDict?.Textures?.data_items.Length > 0)
@@ -216,7 +216,7 @@ namespace CodeWalker.World
                     var yld = gfc.GetFileUncached<YldFile>(file);
                     while ((yld != null) && (!yld.Loaded))
                     {
-                        Thread.Sleep(20);//kinda hacky
+                        Thread.Sleep(1);//kinda hacky
                         gfc.TryLoadEnqueue(yld);
                     }
                     if (yld?.ClothDictionary?.Clothes?.data_items?.Length > 0)

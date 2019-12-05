@@ -800,7 +800,7 @@ namespace CodeWalker.Forms
             var ycd = gameFileCache.GetYcd(ycdhash);
             while ((ycd != null) && (!ycd.Loaded))
             {
-                Thread.Sleep(20);//kinda hacky
+                Thread.Sleep(1);//kinda hacky
                 ycd = gameFileCache.GetYcd(ycdhash);
             }
 

@@ -51,7 +51,7 @@ namespace CodeWalker.World
                 Yft = gfc.GetYft(ModelHash);
                 while ((Yft != null) && (!Yft.Loaded))
                 {
-                    Thread.Sleep(20);//kinda hacky
+                    Thread.Sleep(1);//kinda hacky
                     Yft = gfc.GetYft(ModelHash);
                 }
 
@@ -65,7 +65,7 @@ namespace CodeWalker.World
                     ConvRoofDict = gfc.GetYcd(ycdhash);
                     while ((ConvRoofDict != null) && (!ConvRoofDict.Loaded))
                     {
-                        Thread.Sleep(20);//kinda hacky
+                        Thread.Sleep(1);//kinda hacky
                         ConvRoofDict = gfc.GetYcd(ycdhash);
                     }
                     ClipMapEntry cme = null;

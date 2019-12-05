@@ -625,6 +625,22 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public void GetVisibleChildren(ref Vector3 p, List<MapDataStoreNode> items)
+        {
+            if (Children == null) return;
+            for (int i = 0; i < Children.Length; i++)
+            {
+                var c = Children[i];
+                if (c == null) continue;
+                var cmin = c.streamingExtentsMin;
+                var cmax = c.streamingExtentsMax;
+                if ((p.X >= cmin.X) && (p.X <= cmax.X) && (p.Y >= cmin.Y) && (p.Y <= cmax.Y))
+                {
+                    items.Add(c);
+                    c.GetVisibleChildren(ref p, items);
+                }
+            }
+        }
 
         public override string ToString()
         {

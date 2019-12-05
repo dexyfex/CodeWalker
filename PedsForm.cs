@@ -826,7 +826,7 @@ namespace CodeWalker.Peds
             var ycd = GameFileCache.GetYcd(ycdhash);
             while ((ycd != null) && (!ycd.Loaded))
             {
-                Thread.Sleep(20);//kinda hacky
+                Thread.Sleep(1);//kinda hacky
                 ycd = GameFileCache.GetYcd(ycdhash);
             }
 

@@ -46,7 +46,7 @@ namespace CodeWalker.World
 
             while ((Ydr != null) && (!Ydr.Loaded))
             {
-                Thread.Sleep(20);//kinda hacky
+                Thread.Sleep(1);//kinda hacky
                 Ydr = gfc.GetYdr(useHash);
             }
 

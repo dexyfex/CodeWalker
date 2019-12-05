@@ -2213,7 +2213,7 @@ namespace CodeWalker
         public SpaceRayIntersectResult GetSpaceMouseRay()
         {
             SpaceRayIntersectResult ret = new SpaceRayIntersectResult();
-            if (space.Inited && space.Grid != null)
+            if (space.Inited && space.BoundsStore != null)
             {
                 Ray mray = new Ray();
                 mray.Position = camera.MouseRay.Position + camera.Position;
