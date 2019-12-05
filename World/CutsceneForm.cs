@@ -381,7 +381,7 @@ namespace CodeWalker.World
                     var ycd = GameFileCache.GetYcd(ycdhash);
                     while ((ycd != null) && (!ycd.Loaded))
                     {
-                        Thread.Sleep(20);//bite me
+                        Thread.Sleep(1);//bite me
                         ycd = GameFileCache.GetYcd(ycdhash);
                     }
                     if (ycd != null)
