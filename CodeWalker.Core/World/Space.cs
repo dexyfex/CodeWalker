@@ -327,29 +327,7 @@ namespace CodeWalker.World
 
             MapDataStore = new SpaceMapDataStore();
 
-            List<MapDataStoreNode> rootnodes = new List<MapDataStoreNode>();
-            List<MapDataStoreNode> lodnodes = new List<MapDataStoreNode>();
-            List<MapDataStoreNode> orphnodes = new List<MapDataStoreNode>();
-
-            foreach (var node in nodedict.Values)
-            {
-                if (node.ParentName == 0)
-                {
-                    rootnodes.Add(node);
-                    if (((node.ContentFlags & 2) > 0) || ((node.ContentFlags & 4) > 0) || ((node.ContentFlags & 16) > 0))
-                    {
-                        lodnodes.Add(node);
-                    }
-                    else
-                    {
-                        orphnodes.Add(node);
-                    }
-                }
-            }
-
-
-            MapDataStore.Init(rootnodes);
-
+            MapDataStore.Init(nodedict.Values.ToList());
 
         }
 
@@ -1706,7 +1684,6 @@ namespace CodeWalker.World
                         if ((p.X >= imin.X) && (p.X <= imax.X) && (p.Y >= imin.Y) && (p.Y <= imax.Y))
                         {
                             items.Add(item);
-                            item.GetVisibleChildren(ref p, items);
                         }
                     }
                 }
