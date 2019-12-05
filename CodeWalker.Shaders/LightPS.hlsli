@@ -103,8 +103,8 @@ float4 DeferredLODLight(float3 camRel, float3 norm, float4 diffuse, float4 specu
     else if (LightType == 2)//spot (cone)
     {
         float ang = acos(-dot(ldir, lodlight.Direction));
-        float iang = lodlight.InnerAngle * 0.01745329 * 0.5;
-        float oang = lodlight.OuterAngleOrCapExt * 0.01745329 * 0.5;
+        float iang = lodlight.InnerAngle;
+        float oang = lodlight.OuterAngleOrCapExt;
         if (ang > oang) return 0;
         lamt *= saturate(1 - ((ang - iang) / (oang - iang)));
         lamt *= pow(saturate(1 - (ldist / lodlight.Falloff)), lodlight.FalloffExponent);
@@ -148,8 +148,8 @@ float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular
     else if (InstType == 2)//spot (cone)
     {
         float ang = acos(-dot(ldir, InstDirection));
-        float iang = InstConeInnerAngle * 0.01745329 * 0.5;
-        float oang = InstConeOuterAngle * 0.01745329 * 0.5;
+        float iang = InstConeInnerAngle;
+        float oang = InstConeOuterAngle;
         if (ang > oang) return 0;
         lamt *= saturate(1 - ((ang - iang) / (oang - iang)));
         lamt *= pow(saturate(1 - (ldist / InstFalloff)), InstFalloffExponent);

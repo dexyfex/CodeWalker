@@ -46,7 +46,7 @@ VS_Output main(float4 ipos : POSITION, uint iid : SV_InstanceID)
     }
     else if (LightType == 2)//spot (cone)
     {
-        float arads = lodlight.OuterAngleOrCapExt * 0.01745329 * 0.5; // deg -> rad
+        float arads = lodlight.OuterAngleOrCapExt;
         float3 cpos = ipos.xyz * (tan(arads) * extent);
         cpos.y += ipos.w * extent;
         opos = (cpos.x * lodlight.TangentX.xyz) + (cpos.y * lodlight.Direction.xyz) + (cpos.z * lodlight.TangentY.xyz);
@@ -54,7 +54,7 @@ VS_Output main(float4 ipos : POSITION, uint iid : SV_InstanceID)
     else if (LightType == 4)//capsule
     {
         float3 cpos = ipos.xyz * extent;
-        cpos.y += (ipos.w * 2 - 1) * lodlight.OuterAngleOrCapExt * 0.1;
+        cpos.y += (ipos.w * 2 - 1) * lodlight.OuterAngleOrCapExt;
         opos = (cpos.x * lodlight.TangentX.xyz) + (cpos.y * lodlight.Direction.xyz) + (cpos.z * lodlight.TangentY.xyz);
     }
     opos += (lodlight.Position - CameraPos.xyz);

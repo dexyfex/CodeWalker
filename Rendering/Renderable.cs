@@ -1359,9 +1359,9 @@ namespace CodeWalker.Rendering
             Type = l.Type;
             Intensity = l.Intensity;
             Falloff = l.Falloff;
-            FalloffExponent = l.FalloffExponent;
-            ConeInnerAngle = l.ConeInnerAngle;
-            ConeOuterAngle = l.ConeOuterAngle;
+            FalloffExponent = Math.Max(l.FalloffExponent * 0.25f, 0.5f);//is this right?
+            ConeInnerAngle = l.ConeInnerAngle * 0.01745329f; //is this right??
+            ConeOuterAngle = l.ConeOuterAngle * 0.01745329f; //pi/180
             CapsuleExtent = l.Extent;
             CullingPlaneNormal = l.CullingPlaneNormal;
             CullingPlaneOffset = l.CullingPlaneOffset;
@@ -1491,8 +1491,8 @@ namespace CodeWalker.Rendering
                 light.TangentY = new Vector4(Vector3.Cross(light.Direction, light.TangentX.XYZ()), 0.0f);
                 light.Falloff = ll.falloff[i];
                 light.FalloffExponent = Math.Max(ll.falloffExponent[i]*0.01f, 0.5f);//is this right?
-                light.InnerAngle = ll.coneInnerAngle[i];
-                light.OuterAngleOrCapExt = ll.coneOuterAngleOrCapExt[i];
+                light.InnerAngle = ll.coneInnerAngle[i] * 0.0087266462f; //pi/360
+                light.OuterAngleOrCapExt = ll.coneOuterAngleOrCapExt[i] * 0.0087266462f; //pi/360
                 var type = (LightType)((light.TimeAndStateFlags >> 26) & 7);
                 switch (type)
                 {
@@ -1503,6 +1503,7 @@ namespace CodeWalker.Rendering
                         spots.Add(light);
                         break;
                     case LightType.Capsule:
+                        light.OuterAngleOrCapExt = ll.coneOuterAngleOrCapExt[i] * 0.1f;//is this right?
                         caps.Add(light);
                         break;
                     default: break;//just checking...

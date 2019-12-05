@@ -48,7 +48,7 @@ VS_Output main(float4 ipos : POSITION, uint iid : SV_InstanceID)
     }
     else if (InstType == 2)//spot (cone)
     {
-        float arads = InstConeOuterAngle * 0.01745329 * 0.5; // deg -> rad
+        float arads = InstConeOuterAngle;
         float3 cpos = ipos.xyz * (tan(arads) * extent);
         cpos.y += ipos.w * extent;
         opos = (cpos.x * InstTangentX) + (cpos.y * InstDirection) + (cpos.z * InstTangentY);
