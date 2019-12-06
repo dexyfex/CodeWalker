@@ -965,7 +965,12 @@ namespace CodeWalker.GameFiles
             arrStruc.Count1 = arrStruc.Count2 = (ushort)aCount;
             var aind = indent + 1;
             string arrTag = ename;
-            PsoStructureEntryInfo arrEntry = estruct.GetEntry((int)(entry.ReferenceKey & 0xFFFF));
+            var arrEntInd = (entry.ReferenceKey & 0xFFFF);
+            if (arrEntInd >= estruct.EntriesCount)
+            {
+                arrEntInd = (entry.ReferenceKey & 0xFFF);
+            }
+            PsoStructureEntryInfo arrEntry = estruct.GetEntry((int)arrEntInd);
             if (arrEntry == null)
             {
                 ErrorXml(sb, indent, "ARRAYINFO not found for " + ename + "!");
@@ -1269,6 +1274,11 @@ namespace CodeWalker.GameFiles
                             var kEntry = xStruct?.FindEntry(MetaName.Key);
                             var iEntry = xStruct?.FindEntry(MetaName.Item);
 
+                            if (xOffset1 >= xBlock.Length)
+                            {
+                                xOffset1 = xOffset1 >> 8; //how to tell when to do this??
+                            }
+
                             if ((xStruct == null) && (xBlock.NameHash == 0))
                             {
                                 SelfClosingTag(sb, cind, ename);
@@ -1289,9 +1299,9 @@ namespace CodeWalker.GameFiles
                             {
                                 ErrorXml(sb, aind, ename + ": Map Key was not a string!");
                             }
-                            else if (iEntry.Type != PsoDataType.Structure)
+                            else if ((iEntry.Type != PsoDataType.Structure) && (iEntry.Type != PsoDataType.String))
                             {
-                                ErrorXml(sb, aind, ename + ": Map Item was not a structure!");
+                                ErrorXml(sb, aind, ename + ": Map Item was not a structure or string!");
                             }
                             //else if (iEntry.Unk_5h != 3)
                             //{
@@ -1305,13 +1315,25 @@ namespace CodeWalker.GameFiles
 
                                 for (int n = 0; n < xCount; n++)
                                 {
+                                    if (xOffset2 >= xBlock.Length)
+                                    {
+                                        ErrorXml(sb, aind, "Offset out of range! Count is " + xCount.ToString());
+                                        break; //out of range...
+                                    }
                                     //WriteNode(sb, aind, cont, xBlockId, xOffset, XmlTagMode.Item, xStruct.IndexInfo.NameHash);
 
                                     int sOffset = xOffset2 + xBlock.Offset;
                                     var kOffset = sOffset + kEntry.DataOffset;
                                     var iOffset = sOffset + iEntry.DataOffset;
                                     var kStr = GetStringValue(cont.Pso, kEntry, data, kOffset);
-                                    if (iEntry.ReferenceKey != 0)//(xBlock.NameHash != (MetaName)MetaTypeName.ARRAYINFO)//257,258,259
+                                    if (iEntry.Type == PsoDataType.String)
+                                    {
+                                        var iStr = GetStringValue(cont.Pso, iEntry, data, iOffset);
+                                        OpenTag(sb, aind, "Item type=\"String\" key=\"" + kStr + "\"", false);
+                                        sb.Append(XmlEscape(iStr));
+                                        CloseTag(sb, 0, "Item");
+                                    }
+                                    else if (iEntry.ReferenceKey != 0)//(xBlock.NameHash != (MetaName)MetaTypeName.ARRAYINFO)//257,258,259
                                     {
                                         //embedded map values
                                         var vOffset = xOffset2 + iEntry.DataOffset;
@@ -1340,18 +1362,18 @@ namespace CodeWalker.GameFiles
                                             }
                                             else
                                             {
+                                                var iOff = (int)iPtr.ItemOffset;
+                                                if (iOff >= iBlock.Length)
+                                                {
+                                                    iOff = iOff >> 8; //how to tell when to do this??
+                                                }
                                                 OpenTag(sb, aind, iStr);
-                                                WriteNode(sb, aind, cont, iPtr.BlockID, (int)iPtr.ItemOffset, XmlTagMode.None);//, (MetaName)entry.ReferenceKey);
+                                                WriteNode(sb, aind, cont, iPtr.BlockID, iOff, XmlTagMode.None);//, (MetaName)entry.ReferenceKey);
                                                 CloseTag(sb, aind, "Item");
                                             }
                                         }
                                     }
                                     xOffset2 += xStruct.StructureLength;
-                                    if ((n < (xCount - 1)) && (xBlock != null) && (xOffset >= xBlock.Length))
-                                    {
-                                        ErrorXml(sb, aind, "Offset out of range! Count is " + xCount.ToString());
-                                        break; //out of range...
-                                    }
                                 }
                                 CloseTag(sb, xind, ename);
                             }
