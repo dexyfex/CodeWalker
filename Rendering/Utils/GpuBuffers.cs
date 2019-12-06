@@ -262,6 +262,7 @@ namespace CodeWalker.Rendering
         public RenderTargetView MSRTV;
         public DepthStencilView MSDSV;
         public ShaderResourceView SRV;
+        public ShaderResourceView DepthSRV;
         public int VramUsage;
         public bool Multisampled;
         public bool UseDepth;
@@ -277,8 +278,10 @@ namespace CodeWalker.Rendering
             ShaderResourceViewDimension srvd = ShaderResourceViewDimension.Texture2D;// D3D11_SRV_DIMENSION_TEXTURE2D;
             int fs = DXUtility.ElementSize(f);
             int wh = w * h;
-            BindFlags db = BindFlags.DepthStencil;// D3D11_BIND_DEPTH_STENCIL;
+            BindFlags db = BindFlags.DepthStencil | BindFlags.ShaderResource;// D3D11_BIND_DEPTH_STENCIL;
             DepthStencilViewDimension dsvd = DepthStencilViewDimension.Texture2D;
+            Format dtexf = GetDepthTexFormat(df);
+            Format dsrvf = GetDepthSrvFormat(df);
 
             Texture = DXUtility.CreateTexture2D(device, w, h, 1, 1, f, 1, 0, u, b, 0, 0);
             RTV = DXUtility.CreateRenderTargetView(device, Texture, f, rtvd, 0, 0, 0);
@@ -290,6 +293,7 @@ namespace CodeWalker.Rendering
                 b = BindFlags.RenderTarget;
                 rtvd = RenderTargetViewDimension.Texture2DMultisampled;
                 dsvd = DepthStencilViewDimension.Texture2DMultisampled;
+                srvd = ShaderResourceViewDimension.Texture2DMultisampled;
 
                 TextureMS = DXUtility.CreateTexture2D(device, w, h, 1, 1, f, sc, sq, u, b, 0, 0);
                 MSRTV = DXUtility.CreateRenderTargetView(device, TextureMS, f, rtvd, 0, 0, 0);
@@ -297,8 +301,9 @@ namespace CodeWalker.Rendering
 
                 if (depth)
                 {
-                    DepthMS = DXUtility.CreateTexture2D(device, w, h, 1, 1, df, sc, sq, u, db, 0, 0);
+                    DepthMS = DXUtility.CreateTexture2D(device, w, h, 1, 1, dtexf, sc, sq, u, db, 0, 0);
                     MSDSV = DXUtility.CreateDepthStencilView(device, DepthMS, df, dsvd);
+                    DepthSRV = DXUtility.CreateShaderResourceView(device, DepthMS, dsrvf, srvd, 1, 0, 0, 0);
                     VramUsage += (wh * DXUtility.ElementSize(df)) * sc;
                 }
             }
@@ -306,8 +311,9 @@ namespace CodeWalker.Rendering
             {
                 if (depth)
                 {
-                    Depth = DXUtility.CreateTexture2D(device, w, h, 1, 1, df, sc, sq, u, db, 0, 0);
+                    Depth = DXUtility.CreateTexture2D(device, w, h, 1, 1, dtexf, sc, sq, u, db, 0, 0);
                     DSV = DXUtility.CreateDepthStencilView(device, Depth, df, dsvd);
+                    DepthSRV = DXUtility.CreateShaderResourceView(device, Depth, dsrvf, srvd, 1, 0, 0, 0);
                     VramUsage += (wh * DXUtility.ElementSize(df));
                 }
             }
@@ -418,6 +424,49 @@ namespace CodeWalker.Rendering
             }
         }
 
+
+
+        public static Format GetDepthTexFormat(Format df)
+        {
+            Format dtexf = Format.R32_Typeless;
+            switch (df)
+            {
+                case Format.D16_UNorm:
+                    dtexf = Format.R16_Typeless;
+                    break;
+                case Format.D24_UNorm_S8_UInt:
+                    dtexf = Format.R24G8_Typeless;
+                    break;
+                case Format.D32_Float:
+                    dtexf = Format.R32_Typeless;
+                    break;
+                case Format.D32_Float_S8X24_UInt:
+                    dtexf = Format.R32G8X24_Typeless;//is this right? who uses this anyway??
+                    break;
+            }
+            return dtexf;
+        }
+        public static Format GetDepthSrvFormat(Format df)
+        {
+            Format dsrvf = Format.R32_Float;
+            switch (df)
+            {
+                case Format.D16_UNorm:
+                    dsrvf = Format.R16_UNorm;
+                    break;
+                case Format.D24_UNorm_S8_UInt:
+                    dsrvf = Format.R24_UNorm_X8_Typeless;
+                    break;
+                case Format.D32_Float:
+                    dsrvf = Format.R32_Float;
+                    break;
+                case Format.D32_Float_S8X24_UInt:
+                    dsrvf = Format.R32_Float_X8X24_Typeless;
+                    break;
+            }
+            return dsrvf;
+        }
+
     }
 
 
@@ -471,28 +520,8 @@ namespace CodeWalker.Rendering
             }
             if (depth)
             {
-                Format dtexf = Format.R32_Typeless;
-                Format dsrvf = Format.R32_Float;
-                switch (df)
-                {
-                    case Format.D16_UNorm:
-                        dtexf = Format.R16_Typeless;
-                        dsrvf = Format.R16_UNorm;
-                        break;
-                    case Format.D24_UNorm_S8_UInt:
-                        dtexf = Format.R24G8_Typeless;
-                        dsrvf = Format.R24_UNorm_X8_Typeless;
-                        break;
-                    case Format.D32_Float:
-                        dtexf = Format.R32_Typeless;
-                        dsrvf = Format.R32_Float;
-                        break;
-                    case Format.D32_Float_S8X24_UInt:
-                        dtexf = Format.R32G8X24_Typeless;//is this right? who uses this anyway??
-                        dsrvf = Format.R32_Float_X8X24_Typeless;
-                        break;
-                }
-
+                Format dtexf = GpuTexture.GetDepthTexFormat(df);
+                Format dsrvf = GpuTexture.GetDepthSrvFormat(df);
                 Depth = DXUtility.CreateTexture2D(device, w, h, 1, 1, dtexf, multisamplecount, 0, u, db, 0, 0);
                 DSV = DXUtility.CreateDepthStencilView(device, Depth, df, dsvd);
                 DepthSRV = DXUtility.CreateShaderResourceView(device, Depth, dsrvf, srvd, 1, 0, 0, 0);
