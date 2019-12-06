@@ -621,7 +621,14 @@ namespace CodeWalker.Rendering
 
             if (RenderBoundGeoms.Count > 0) //collision meshes pass
             {
-                ClearDepth(context); //draw over everything else
+                if (DefScene != null)
+                {
+                    DefScene.ClearDepth(context);
+                }
+                else
+                {
+                    ClearDepth(context); //draw over everything else
+                }
 
                 context.OutputMerger.BlendState = bsDefault;
                 context.OutputMerger.DepthStencilState = dsEnabled;
@@ -643,6 +650,7 @@ namespace CodeWalker.Rendering
             }
 
 
+            context.OutputMerger.BlendState = bsDefault;
 
 
             RenderedGeometries = GeometryCount;
