@@ -1534,7 +1534,7 @@ namespace CodeWalker.GameFiles
         {
             return ConvertDataArray<T>(meta, name, array.Pointer, array.Count1);
         }
-        public static T[] ConvertDataArray<T>(Meta meta, MetaName name, uint pointer, uint count) where T : struct
+        public static T[] ConvertDataArray<T>(Meta meta, MetaName name, ulong pointer, uint count) where T : struct
         {
             if (count == 0) return null;
 
@@ -1542,8 +1542,8 @@ namespace CodeWalker.GameFiles
             int itemsize = Marshal.SizeOf(typeof(T));
             int itemsleft = (int)count; //large arrays get split into chunks...
 
-            uint ptrindex = (pointer & 0xFFF) - 1;
-            uint ptroffset = ((pointer >> 12) & 0xFFFFF);
+            uint ptrindex = (uint)(pointer & 0xFFF) - 1;
+            uint ptroffset = (uint)((pointer >> 12) & 0xFFFFF);
             var ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
             if ((ptrblock == null) || (ptrblock.Data == null) || (ptrblock.StructureNameHash != name))
             { return null; } //no block or wrong block? shouldn't happen!
@@ -1715,9 +1715,8 @@ namespace CodeWalker.GameFiles
         }
         public static byte[] GetByteArray(Meta meta, Array_byte array)
         {
-            var pointer = array.Pointer;
-            uint ptrindex = (pointer & 0xFFF) - 1;
-            uint ptroffset = ((pointer >> 12) & 0xFFFFF);
+            uint ptrindex = array.PointerDataIndex;
+            uint ptroffset = array.PointerDataOffset;
             var ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
             if ((ptrblock == null) || (ptrblock.Data == null))// || (ptrblock.StructureNameHash != name))
             { return null; } //no block or wrong block? shouldn't happen!
@@ -1987,9 +1986,6 @@ namespace CodeWalker.GameFiles
         {
             if (block == null) return -1;
             var offset = ptr.Offset;
-            if (ptr.ExtraOffset != 0)
-            { }
-            //offset += (int)ptr.ExtraOffset;
             if ((offset < 0) || (block.Data == null) || (offset >= block.Data.Length))
             { return -1; }
             return offset;
@@ -2024,8 +2020,9 @@ namespace CodeWalker.GameFiles
         }
         public static ulong SwapBytes(ulong x)
         {
-            // swap adjacent 32-bit blocks
-            x = (x >> 32) | (x << 32);
+            //////// [not swapping 32bit blocks! careful!]
+            ////// swap adjacent 32-bit blocks
+            ////x = (x >> 32) | (x << 32);
             // swap adjacent 16-bit blocks
             x = ((x & 0xFFFF0000FFFF0000) >> 16) | ((x & 0x0000FFFF0000FFFF) << 16);
             // swap adjacent 8-bit blocks
