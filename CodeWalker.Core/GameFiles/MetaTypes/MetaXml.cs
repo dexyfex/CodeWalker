@@ -661,6 +661,10 @@ namespace CodeWalker.GameFiles
                 return;
             }
 
+            if (offset >= block.Length)
+            {
+                offset = offset >> 8; //how to tell when to do this??
+            }
 
             var boffset = offset + block.Offset;
 
@@ -1245,7 +1249,20 @@ namespace CodeWalker.GameFiles
 
 
                     if (x1 != 0x1000000)
-                    { }
+                    {
+                        var c1 = MetaTypes.SwapBytes(BitConverter.ToUInt16(data, eoffset));
+                        var c2 = MetaTypes.SwapBytes(BitConverter.ToUInt16(data, eoffset + 2));
+                        var u1 = MetaTypes.SwapBytes(BitConverter.ToUInt32(data, eoffset + 4));
+                        var c3 = MetaTypes.SwapBytes(BitConverter.ToUInt16(data, eoffset + 8));
+                        var c4 = MetaTypes.SwapBytes(BitConverter.ToUInt16(data, eoffset + 10));
+                        var u3 = MetaTypes.SwapBytes(BitConverter.ToUInt32(data, eoffset + 12));
+                        ulong ptr = MetaTypes.SwapBytes(BitConverter.ToUInt64(data, eoffset + 16));
+                        sptr = new Array_Structure(ptr, c2);
+                        if (c3 != 256)
+                        { }
+                        if (c1 != c2)
+                        { }
+                    }
                     if (x2 != 0)
                     { }
                     if (mapreftype2.ReferenceKey != 0)
@@ -1268,15 +1285,14 @@ namespace CodeWalker.GameFiles
                         if (xCount1 > 0)
                         {
                             var xStruct = cont.GetStructureInfo(xBlock.NameHash);
-                            var xOffset1 = xOffset;
                             var xind = indent + 1;
                             var aind = indent + 2;
                             var kEntry = xStruct?.FindEntry(MetaName.Key);
                             var iEntry = xStruct?.FindEntry(MetaName.Item);
 
-                            if (xOffset1 >= xBlock.Length)
+                            if (xOffset >= xBlock.Length)
                             {
-                                xOffset1 = xOffset1 >> 8; //how to tell when to do this??
+                                xOffset = xOffset >> 8; //how to tell when to do this??
                             }
 
                             if ((xStruct == null) && (xBlock.NameHash == 0))
@@ -1310,19 +1326,17 @@ namespace CodeWalker.GameFiles
                             else
                             {
                                 OpenTag(sb, xind, ename);
-                                int xOffset2 = (int)xOffset1;
-                                int xCount = xCount1;
 
-                                for (int n = 0; n < xCount; n++)
+                                for (int n = 0; n < xCount1; n++)
                                 {
-                                    if (xOffset2 >= xBlock.Length)
+                                    if (xOffset >= xBlock.Length)
                                     {
-                                        ErrorXml(sb, aind, "Offset out of range! Count is " + xCount.ToString());
+                                        ErrorXml(sb, aind, "Offset out of range! Count is " + xCount1.ToString());
                                         break; //out of range...
                                     }
                                     //WriteNode(sb, aind, cont, xBlockId, xOffset, XmlTagMode.Item, xStruct.IndexInfo.NameHash);
 
-                                    int sOffset = xOffset2 + xBlock.Offset;
+                                    int sOffset = (int)xOffset + xBlock.Offset;
                                     var kOffset = sOffset + kEntry.DataOffset;
                                     var iOffset = sOffset + iEntry.DataOffset;
                                     var kStr = GetStringValue(cont.Pso, kEntry, data, kOffset);
@@ -1336,7 +1350,7 @@ namespace CodeWalker.GameFiles
                                     else if (iEntry.ReferenceKey != 0)//(xBlock.NameHash != (MetaName)MetaTypeName.ARRAYINFO)//257,258,259
                                     {
                                         //embedded map values
-                                        var vOffset = xOffset2 + iEntry.DataOffset;
+                                        var vOffset = (int)xOffset + iEntry.DataOffset;
                                         OpenTag(sb, aind, "Item type=\"" + HashString((MetaName)iEntry.ReferenceKey) + "\" key=\"" + kStr + "\"");
                                         WriteNode(sb, aind, cont, xBlockId, vOffset, XmlTagMode.None, (MetaName)iEntry.ReferenceKey);
                                         CloseTag(sb, aind, "Item");
@@ -1363,17 +1377,13 @@ namespace CodeWalker.GameFiles
                                             else
                                             {
                                                 var iOff = (int)iPtr.ItemOffset;
-                                                if (iOff >= iBlock.Length)
-                                                {
-                                                    iOff = iOff >> 8; //how to tell when to do this??
-                                                }
                                                 OpenTag(sb, aind, iStr);
                                                 WriteNode(sb, aind, cont, iPtr.BlockID, iOff, XmlTagMode.None);//, (MetaName)entry.ReferenceKey);
                                                 CloseTag(sb, aind, "Item");
                                             }
                                         }
                                     }
-                                    xOffset2 += xStruct.StructureLength;
+                                    xOffset += (uint)xStruct.StructureLength;
                                 }
                                 CloseTag(sb, xind, ename);
                             }
