@@ -82,6 +82,7 @@ namespace CodeWalker.Rendering
         public bool markerdepthclip = Settings.Default.MarkerDepthClip;
 
 
+        private RenderLodManager LodManager = new RenderLodManager();
 
         private List<YmapEntityDef> renderworldentities = new List<YmapEntityDef>(); //used when rendering world view.
         private List<RenderableEntity> renderworldrenderables = new List<RenderableEntity>();
@@ -1520,6 +1521,11 @@ namespace CodeWalker.Rendering
             renderworldentities.Clear();
             renderworldrenderables.Clear();
 
+
+            //LodManager.Update(renderworldVisibleYmapDict, ref camera.Position, currentElapsedTime);
+
+
+
             VisibleYmaps.Clear();
             foreach (var ymap in renderworldVisibleYmapDict.Values)
             {
@@ -1839,11 +1845,10 @@ namespace CodeWalker.Rendering
                 {
                     if (!RenderIsEntityFinalRender(ent)) return;
 
-                    var bscent = ent.Position + ent.BSCenter - camera.Position;
-                    float bsrad = ent.BSRadius;
-                    if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref bscent, bsrad))
+
+                    if (!camera.ViewFrustum.ContainsAABBNoClip(ref ent.BBCenter, ref ent.BBExtent))
                     {
-                        return; //frustum cull
+                        return;
                     }
 
 
@@ -3344,6 +3349,102 @@ namespace CodeWalker.Rendering
         VertexColour = 4,
         TextureCoord = 5,
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public class RenderLodManager
+    {
+
+
+        private Dictionary<YmapEntityDef, int> EntityDict = new Dictionary<YmapEntityDef, int>(); //visible entities and their current child counts
+
+
+        public void Update(Dictionary<MetaHash, YmapFile> ymaps, ref Vector3 position, float elapsed)
+        {
+            EntityDict.Clear();
+
+            foreach (var ymap in ymaps.Values)
+            {
+                YmapFile pymap = ymap.Parent;
+                if (ymap._CMapData.parent != 0) //ensure parent references on ymaps
+                {
+                    ymaps.TryGetValue(ymap._CMapData.parent, out pymap);
+                    if (ymap.Parent != pymap)
+                    {
+                        ymap.Parent = pymap;
+                        if (ymap.RootEntities != null) //parent changed or first set, make sure to link entities hierarchy
+                        {
+                            for (int i = 0; i < ymap.RootEntities.Length; i++)
+                            {
+                                var ent = ymap.RootEntities[i];
+                                int pind = ent._CEntityDef.parentIndex;
+                                if (pind >= 0) //connect root entities to parents if they have them..
+                                {
+                                    YmapEntityDef p = null;
+                                    if ((pymap != null) && (pymap.AllEntities != null))
+                                    {
+                                        if ((pind < pymap.AllEntities.Length))
+                                        {
+                                            p = pymap.AllEntities[pind];
+                                            ent.Parent = p;
+                                            ent.ParentName = p._CEntityDef.archetypeName;
+                                        }
+                                    }
+                                    else
+                                    { }//should only happen if parent ymap not loaded yet...
+                                }
+                            }
+                        }
+                    }
+                }
+                if (ymap.AllEntities != null) //add visible entities to the dict, increment entity parent child counts
+                {
+                    for (int i = 0; i < ymap.AllEntities.Length; i++)
+                    {
+                        var ent = ymap.AllEntities[i];
+                        //ent.BBMin
+
+
+                    }
+
+                }
+            }
+
+
+
+
+        }
+
+
+    }
+
+
+
+
+
+
 
 
 

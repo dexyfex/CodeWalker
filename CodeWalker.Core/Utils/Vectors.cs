@@ -40,6 +40,11 @@ namespace CodeWalker
             }
         }
 
+        public static Vector3 Abs(this Vector3 v)
+        {
+            return new Vector3(Math.Abs(v.X), Math.Abs(v.Y), Math.Abs(v.Z));
+        }
+
 
         public static Vector4 Floor(this Vector4 v)
         {

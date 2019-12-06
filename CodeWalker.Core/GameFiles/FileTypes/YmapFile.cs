@@ -1279,6 +1279,8 @@ namespace CodeWalker.GameFiles
         public Archetype Archetype { get; set; } //cached by GameFileCache on loading...
         public Vector3 BBMin;//oriented archetype AABBmin
         public Vector3 BBMax;//oriented archetype AABBmax
+        public Vector3 BBCenter; //oriented archetype AABB center
+        public Vector3 BBExtent; //oriented archetype AABB extent
         public Vector3 BSCenter; //oriented archetype BS center
         public float BSRadius;//cached from archetype
 
@@ -1377,20 +1379,7 @@ namespace CodeWalker.GameFiles
             Archetype = arch;
             if (Archetype != null)
             {
-                float smax = Math.Max(Scale.X, Scale.Z);
-                BSRadius = Archetype.BSRadius * smax;
-                BSCenter = Orientation.Multiply(Archetype.BSCenter) * Scale;
-                if (Orientation == Quaternion.Identity)
-                {
-                    BBMin = (Archetype.BBMin * Scale) + Position;
-                    BBMax = (Archetype.BBMax * Scale) + Position;
-                }
-                else
-                {
-                    BBMin = Position - BSRadius;
-                    BBMax = Position + BSRadius;
-                    ////not ideal: should transform all 8 corners!
-                }
+                UpdateBB();
 
                 if (Archetype.Type == MetaName.CMloArchetypeDef)
                 {
@@ -1414,6 +1403,13 @@ namespace CodeWalker.GameFiles
                     if (BSRadius == 0.0f)
                     {
                         BSRadius = _CEntityDef.lodDist;//need something so it doesn't get culled...
+                    }
+                    if (BBMin == BBMax)
+                    {
+                        BBMin = Position - BSRadius;
+                        BBMax = Position + BSRadius;//it's not ideal
+                        BBCenter = (BBMax + BBMin) * 0.5f;
+                        BBExtent = (BBMax - BBMin) * 0.5f;
                     }
                 }
                 else if (IsMlo) // archetype is no longer an mlo
@@ -1465,17 +1461,32 @@ namespace CodeWalker.GameFiles
             if (Archetype != null)
             {
                 BSCenter = Orientation.Multiply(Archetype.BSCenter) * Scale;
-            }
-            if ((Archetype != null) && (Orientation == Quaternion.Identity))
-            {
-                BBMin = (Archetype.BBMin * Scale) + Position;
-                BBMax = (Archetype.BBMax * Scale) + Position;
-            }
-            else
-            {
-                BBMin = Position - (BSRadius);
-                BBMax = Position + (BSRadius);
-                ////not ideal: should transform all 8 corners!
+                BSRadius = Archetype.BSRadius * Math.Max(Scale.X, Scale.Z);
+                if (Orientation == Quaternion.Identity)
+                {
+                    BBMin = (Archetype.BBMin * Scale) + Position;
+                    BBMax = (Archetype.BBMax * Scale) + Position;
+                    BBCenter = (BBMax + BBMin) * 0.5f;
+                    BBExtent = (BBMax - BBMin) * 0.5f;
+                    BBExtent = BBExtent.Abs();
+                }
+                else
+                {
+                    var mat = Matrix.Transformation(Vector3.Zero, Quaternion.Identity, Scale, Vector3.Zero, Orientation, Position);
+                    var matabs = mat;
+                    matabs.Column1 = mat.Column1.Abs();
+                    matabs.Column2 = mat.Column2.Abs();
+                    matabs.Column3 = mat.Column3.Abs();
+                    matabs.Column4 = mat.Column4.Abs();
+                    var bbcenter = (Archetype.BBMax + Archetype.BBMin) * 0.5f;
+                    var bbextent = (Archetype.BBMax - Archetype.BBMin) * 0.5f;
+                    var ncenter = Vector3.TransformCoordinate(bbcenter, mat);
+                    var nextent = Vector3.TransformNormal(bbextent, matabs);
+                    BBCenter = ncenter;
+                    BBExtent = nextent;
+                    BBMin = ncenter - nextent;
+                    BBMax = ncenter + nextent;
+                }
             }
         }
 
@@ -1533,11 +1544,7 @@ namespace CodeWalker.GameFiles
                 MloInstance.UpdateEntities();
             }
 
-            if (Archetype != null)
-            {
-                BSCenter = Orientation.Multiply(Archetype.BSCenter) * Scale;
-            }
-
+            UpdateBB();
             UpdateWidgetPosition();
             UpdateWidgetOrientation();
         }
