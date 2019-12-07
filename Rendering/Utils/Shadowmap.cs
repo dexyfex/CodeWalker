@@ -45,6 +45,10 @@ namespace CodeWalker.Rendering
         Vector3 SceneCenter;
         Vector3 SceneExtent;
 
+        float[] fCascadeIntervals = { 7.0f, 20.0f, 65.0f, 160.0f, 600.0f, 3000.0f, 5000.0f, 10000.0f };
+        float maxShadowDistance = 3000.0f;
+
+
         long graphicsMemoryUsage = 0;
         public long VramUsage
         {
@@ -215,8 +219,8 @@ namespace CodeWalker.Rendering
             float fFrustumIntervalBegin, fFrustumIntervalEnd;
             Vector4 vLightCameraOrthographicMin;  // light space frustrum aabb 
             Vector4 vLightCameraOrthographicMax;
-            float fCameraNearFarRange = 1000.0f; //(far - near) //1000m in planet space
-            float[] fCascadeIntervals = { 0.0075f, 0.02f, 0.06f, 0.15f, 0.5f, 1.0f, 1.5f, 2.5f };
+            //float[] fCascadeIntervals = { 7.5f, 20.0f, 60.0f, 150.0f, 500.0f, 1000.0f, 1500.0f, 2500.0f };
+            //float[] fCascadeIntervals = { 7.0f, 20.0f, 65.0f, 160.0f, 650.0f, 2000.0f, 5000.0f, 10000.0f };
 
             Vector4 vWorldUnitsPerTexel = Vector4.Zero;
             float fInvTexelCount = 1.0f / (float)TextureSize;
@@ -229,8 +233,8 @@ namespace CodeWalker.Rendering
                 fFrustumIntervalBegin = 0.0f;
                 // Scale the intervals between 0 and 1. They are now percentages that we can scale with.
                 fFrustumIntervalEnd = fCascadeIntervals[iCascadeIndex];
-                fFrustumIntervalBegin = fFrustumIntervalBegin * fCameraNearFarRange;
-                fFrustumIntervalEnd = fFrustumIntervalEnd * fCameraNearFarRange;
+                //fFrustumIntervalBegin = fFrustumIntervalBegin * fCameraNearFarRange;
+                //fFrustumIntervalEnd = fFrustumIntervalEnd * fCameraNearFarRange;
                 Vector4[] vFrustumPoints = new Vector4[8];
 
 
@@ -380,6 +384,7 @@ namespace CodeWalker.Rendering
             ShadowVars.Vars.CascadeCountInv = 1.0f / (float)CascadeCount;
             ShadowVars.Vars.TexelSize = 1.0f / txs;
             ShadowVars.Vars.TexelSizeX = ShadowVars.Vars.TexelSize / (float)CascadeCount;
+            ShadowVars.Vars.ShadowMaxDistance = maxShadowDistance;
 
             ShadowVars.Update(context);
 
@@ -831,7 +836,7 @@ namespace CodeWalker.Rendering
         public float CascadeCountInv;
         public float TexelSize;
         public float TexelSizeX;
-        public float Pad2;
+        public float ShadowMaxDistance;
     }
 
     public struct ShadowmapVarsCascadeData

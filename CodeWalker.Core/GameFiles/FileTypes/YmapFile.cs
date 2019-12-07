@@ -42,6 +42,8 @@ namespace CodeWalker.GameFiles
         public YmapFile[] ChildYmaps = null;
         public bool MergedWithParent = false;
 
+        public bool IsScripted { get { return (_CMapData.flags & 1) > 0; } }
+
         public YmapGrassInstanceBatch[] GrassInstanceBatches { get; set; }
         public YmapPropInstanceBatch[] PropInstanceBatches { get; set; }
 
@@ -1283,6 +1285,8 @@ namespace CodeWalker.GameFiles
         public Vector3 BBExtent; //oriented archetype AABB extent
         public Vector3 BSCenter; //oriented archetype BS center
         public float BSRadius;//cached from archetype
+        public float LodDist;
+        public float ChildLodDist;
 
         public CEntityDef _CEntityDef;
         public CEntityDef CEntityDef { get { return _CEntityDef; } set { _CEntityDef = value; } }
@@ -1402,7 +1406,7 @@ namespace CodeWalker.GameFiles
 
                     if (BSRadius == 0.0f)
                     {
-                        BSRadius = _CEntityDef.lodDist;//need something so it doesn't get culled...
+                        BSRadius = LodDist;//need something so it doesn't get culled...
                     }
                     if (BBMin == BBMax)
                     {
@@ -1486,6 +1490,16 @@ namespace CodeWalker.GameFiles
                     BBExtent = nextent;
                     BBMin = ncenter - nextent;
                     BBMax = ncenter + nextent;
+                }
+                LodDist = _CEntityDef.lodDist;
+                if (LodDist <= 0)
+                {
+                    LodDist = Archetype.LodDist;
+                }
+                ChildLodDist = _CEntityDef.childLodDist;
+                if (ChildLodDist < 0)
+                {
+                    ChildLodDist = LodDist * 0.5f;
                 }
             }
         }

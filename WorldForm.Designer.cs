@@ -176,6 +176,7 @@ namespace CodeWalker
             this.BoundsStyleComboBox = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.tabPage10 = new System.Windows.Forms.TabPage();
+            this.DeferredShadingCheckBox = new System.Windows.Forms.CheckBox();
             this.WeatherRegionComboBox = new System.Windows.Forms.ComboBox();
             this.label29 = new System.Windows.Forms.Label();
             this.CloudParamTrackBar = new System.Windows.Forms.TrackBar();
@@ -295,7 +296,6 @@ namespace CodeWalker
             this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.SubtitleLabel = new System.Windows.Forms.Label();
             this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
-            this.DeferredShadingCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -665,7 +665,7 @@ namespace CodeWalker
             this.WorldDetailDistTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.WorldDetailDistTrackBar.LargeChange = 10;
             this.WorldDetailDistTrackBar.Location = new System.Drawing.Point(6, 110);
-            this.WorldDetailDistTrackBar.Maximum = 30;
+            this.WorldDetailDistTrackBar.Maximum = 50;
             this.WorldDetailDistTrackBar.Name = "WorldDetailDistTrackBar";
             this.WorldDetailDistTrackBar.Size = new System.Drawing.Size(182, 45);
             this.WorldDetailDistTrackBar.TabIndex = 62;
@@ -2233,6 +2233,19 @@ namespace CodeWalker
             this.tabPage10.Text = "Lighting";
             this.tabPage10.UseVisualStyleBackColor = true;
             // 
+            // DeferredShadingCheckBox
+            // 
+            this.DeferredShadingCheckBox.AutoSize = true;
+            this.DeferredShadingCheckBox.Checked = true;
+            this.DeferredShadingCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.DeferredShadingCheckBox.Location = new System.Drawing.Point(10, 5);
+            this.DeferredShadingCheckBox.Name = "DeferredShadingCheckBox";
+            this.DeferredShadingCheckBox.Size = new System.Drawing.Size(107, 17);
+            this.DeferredShadingCheckBox.TabIndex = 30;
+            this.DeferredShadingCheckBox.Text = "Deferred shading";
+            this.DeferredShadingCheckBox.UseVisualStyleBackColor = true;
+            this.DeferredShadingCheckBox.CheckedChanged += new System.EventHandler(this.DeferredShadingCheckBox_CheckedChanged);
+            // 
             // WeatherRegionComboBox
             // 
             this.WeatherRegionComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -3414,19 +3427,6 @@ namespace CodeWalker
             // SubtitleTimer
             // 
             this.SubtitleTimer.Tick += new System.EventHandler(this.SubtitleTimer_Tick);
-            // 
-            // DeferredShadingCheckBox
-            // 
-            this.DeferredShadingCheckBox.AutoSize = true;
-            this.DeferredShadingCheckBox.Checked = true;
-            this.DeferredShadingCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.DeferredShadingCheckBox.Location = new System.Drawing.Point(10, 5);
-            this.DeferredShadingCheckBox.Name = "DeferredShadingCheckBox";
-            this.DeferredShadingCheckBox.Size = new System.Drawing.Size(107, 17);
-            this.DeferredShadingCheckBox.TabIndex = 30;
-            this.DeferredShadingCheckBox.Text = "Deferred shading";
-            this.DeferredShadingCheckBox.UseVisualStyleBackColor = true;
-            this.DeferredShadingCheckBox.CheckedChanged += new System.EventHandler(this.DeferredShadingCheckBox_CheckedChanged);
             // 
             // WorldForm
             // 
