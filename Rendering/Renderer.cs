@@ -1517,69 +1517,122 @@ namespace CodeWalker.Rendering
 
         public void RenderWorld(Dictionary<MetaHash, YmapFile> renderworldVisibleYmapDict, IEnumerable<Entity> spaceEnts)
         {
-
             renderworldentities.Clear();
             renderworldrenderables.Clear();
-
-
-            //LodManager.Update(renderworldVisibleYmapDict, ref camera.Position, currentElapsedTime);
-
-
-
             VisibleYmaps.Clear();
-            foreach (var ymap in renderworldVisibleYmapDict.Values)
+
+
+            LodManager.MaxLOD = renderworldMaxLOD;
+            LodManager.LodDistMult = renderworldDetailDistMult;
+            LodManager.MapViewEnabled = MapViewEnabled;
+            LodManager.MapViewDist = camera.OrthographicSize / MapViewDetail;
+            LodManager.ShowScriptedYmaps = ShowScriptedYmaps;
+            LodManager.Update(renderworldVisibleYmapDict, ref camera.Position, currentElapsedTime);
+
+            if (MapViewEnabled)
             {
-                if (!RenderWorldYmapIsVisible(ymap)) continue;
-                VisibleYmaps.Add(ymap);
+
+                foreach (var ymap in renderworldVisibleYmapDict.Values)
+                {
+                    if (!RenderWorldYmapIsVisible(ymap)) continue;
+                    VisibleYmaps.Add(ymap);
+                }
+                RenderWorldAdjustMapViewCamera();
             }
+            else
+            {
+                foreach (var ymap in LodManager.CurrentYmaps.Values)
+                {
+                    if (!RenderWorldYmapIsVisible(ymap)) continue;
+                    VisibleYmaps.Add(ymap);
+                }
+            }
+
+
+            var ents = LodManager.VisibleLeaves;// LodManager.GetVisibleEntities(camera);
+
+            foreach (var ent in ents)
+            {
+                if (!RenderIsEntityFinalRender(ent))
+                { continue; }
+
+                if (MapViewEnabled)
+                {
+                    if (!camera.ViewFrustum.ContainsAABBNoFrontClipNoOpt(ref ent.BBMin, ref ent.BBMax))
+                    { continue; }
+                }
+                else
+                {
+                    if (!camera.ViewFrustum.ContainsAABBNoClip(ref ent.BBCenter, ref ent.BBExtent))
+                    { continue; }
+                }
+
+                renderworldentities.Add(ent);
+
+                if (renderinteriors && ent.IsMlo && (ent.MloInstance != null)) //render Mlo child entities...
+                {
+                    RenderWorldAddInteriorEntities(ent);
+                }
+            }
+
+
+
+
 
             if (spaceEnts != null)
             {
                 foreach (var ae in spaceEnts) //used by active space entities (eg "bullets")
                 {
                     if (ae.EntityDef == null) continue; //nothing to render...
-                    RenderWorldCalcEntityVisibility(ae.EntityDef);
+                    ae.EntityDef.Distance = (ae.EntityDef.Position - camera.Position).Length();
                     renderworldentities.Add(ae.EntityDef);
                 }
             }
 
-            if (MapViewEnabled)
-            {
-                //find the max Z value for positioning camera in map view, to help shadows
-                //float minZ = float.MaxValue;
-                float maxZ = float.MinValue;
-                float cvwidth = camera.OrthographicSize * camera.AspectRatio * 0.5f;
-                float cvheight = camera.OrthographicSize * 0.5f;
-                float cvwmin = camera.Position.X - cvwidth; //TODO:make all these vars global...
-                float cvwmax = camera.Position.X + cvwidth;
-                float cvhmin = camera.Position.Y - cvheight;
-                float cvhmax = camera.Position.Y + cvheight;
 
-                for (int y = 0; y < VisibleYmaps.Count; y++)
+
+            if (renderentities)
+            {
+                for (int i = 0; i < renderworldentities.Count; i++)
                 {
-                    var ymap = VisibleYmaps[y];
-                    if (ymap.AllEntities != null)
+                    var ent = renderworldentities[i];
+                    var arch = ent.Archetype;
+                    var pent = ent.Parent;
+                    var drawable = gameFileCache.TryGetDrawable(arch);
+                    Renderable rndbl = TryGetRenderable(arch, drawable);
+                    if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
                     {
-                        for (int i = 0; i < ymap.AllEntities.Length; i++)
-                        {
-                            var ent = ymap.AllEntities[i];
-                            if ((ent.Position.Z < 1000.0f) && (ent.BSRadius < 500.0f))
-                            {
-                                float r = ent.BSRadius;
-                                if (((ent.Position.X + r) > cvwmin) && ((ent.Position.X - r) < cvwmax) && ((ent.Position.Y + r) > cvhmin) && ((ent.Position.Y - r) < cvhmax))
-                                {
-                                    //minZ = Math.Min(minZ, ent.BBMin.Z);
-                                    maxZ = Math.Max(maxZ, ent.BBMax.Z + 50.0f);//add some bias to avoid clipping things...
-                                }
-                            }
-                        }
+                        RenderableEntity rent = new RenderableEntity();
+                        rent.Entity = ent;
+                        rent.Renderable = rndbl;
+
+                        if (HideEntities.ContainsKey(ent.EntityHash)) continue; //don't render hidden entities!
+
+                        RenderArchetype(arch, ent, rent.Renderable, false);
                     }
                 }
-
-                //move the camera closer to the geometry, to help shadows in map view.
-                if (maxZ == float.MinValue) maxZ = 1000.0f;
-                camera.Position.Z = Math.Min(maxZ, 1000.0f);
             }
+
+
+
+            RenderWorldYmapExtras();
+        }
+
+        public void RenderWorld_Orig(Dictionary<MetaHash, YmapFile> renderworldVisibleYmapDict, IEnumerable<Entity> spaceEnts)
+        {
+            renderworldentities.Clear();
+            renderworldrenderables.Clear();
+            VisibleYmaps.Clear();
+
+
+            foreach (var ymap in renderworldVisibleYmapDict.Values)
+            {
+                if (!RenderWorldYmapIsVisible(ymap)) continue;
+                VisibleYmaps.Add(ymap);
+            }
+
+            RenderWorldAdjustMapViewCamera();
+
 
 
             for (int y = 0; y < VisibleYmaps.Count; y++)
@@ -1631,6 +1684,19 @@ namespace CodeWalker.Rendering
             }
 
 
+
+
+            if (spaceEnts != null)
+            {
+                foreach (var ae in spaceEnts) //used by active space entities (eg "bullets")
+                {
+                    if (ae.EntityDef == null) continue; //nothing to render...
+                    RenderWorldCalcEntityVisibility(ae.EntityDef);
+                    renderworldentities.Add(ae.EntityDef);
+                }
+            }
+
+
             if (renderentities)
             {
                 for (int i = 0; i < renderworldentities.Count; i++)
@@ -1664,95 +1730,7 @@ namespace CodeWalker.Rendering
                 }
             }
 
-
-
-            if (renderinteriors && (rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision)))
-            {
-                for (int i = 0; i < renderworldentities.Count; i++)
-                {
-                    var ent = renderworldentities[i];
-                    if (ent.IsMlo)
-                    {
-                        RenderInteriorCollisionMesh(ent);
-                    }
-                }
-            }
-
-
-
-            if (rendercars)
-            {
-                for (int y = 0; y < VisibleYmaps.Count; y++)
-                {
-                    var ymap = VisibleYmaps[y];
-                    if (ymap.CarGenerators != null)
-                    {
-                        RenderYmapCarGenerators(ymap);
-                    }
-                }
-            }
-            if (rendergrass)
-            {
-                for (int y = 0; y < VisibleYmaps.Count; y++)
-                {
-                    var ymap = VisibleYmaps[y];
-                    if (ymap.GrassInstanceBatches != null)
-                    {
-                        RenderYmapGrass(ymap);
-                    }
-                }
-            }
-            if (renderdistlodlights && timecycle.IsNightTime)
-            {
-                for (int y = 0; y < VisibleYmaps.Count; y++)
-                {
-                    var ymap = VisibleYmaps[y];
-                    if (ymap.DistantLODLights != null)
-                    {
-                        RenderYmapDistantLODLights(ymap);
-                    }
-                }
-            }
-            if (renderlodlights && shaders.deferred)
-            {
-                for (int y = 0; y < VisibleYmaps.Count; y++)
-                {
-                    var ymap = VisibleYmaps[y];
-                    if (ymap.LODLights != null)
-                    {
-                        RenderYmapLODLights(ymap);
-                    }
-                }
-            }
-        }
-        private bool RenderWorldYmapIsVisible(YmapFile ymap)
-        {
-            if (!ShowScriptedYmaps)
-            {
-                if ((ymap._CMapData.flags & 1) > 0)
-                    return false;
-            }
-
-            if (!ymap.HasChanged)//don't cull edited project ymaps, because extents may not have been updated!
-            {
-                var eemin = ymap._CMapData.entitiesExtentsMin;
-                var eemax = ymap._CMapData.entitiesExtentsMax;
-                bool visible = false;
-                if (MapViewEnabled)//don't do front clipping in 2D mode
-                {
-                    visible = camera.ViewFrustum.ContainsAABBNoFrontClipNoOpt(ref eemin, ref eemax);
-                }
-                else
-                {
-                    visible = camera.ViewFrustum.ContainsAABBNoClipNoOpt(ref eemin, ref eemax);
-                }
-                if (!visible)
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            RenderWorldYmapExtras();
         }
         private void RenderWorldCalcEntityVisibility(YmapEntityDef ent)
         {
@@ -1874,6 +1852,36 @@ namespace CodeWalker.Rendering
                 }
             }
         }
+
+        private bool RenderWorldYmapIsVisible(YmapFile ymap)
+        {
+            if (!ShowScriptedYmaps)
+            {
+                if ((ymap._CMapData.flags & 1) > 0)
+                    return false;
+            }
+
+            if (!ymap.HasChanged)//don't cull edited project ymaps, because extents may not have been updated!
+            {
+                var eemin = ymap._CMapData.entitiesExtentsMin;
+                var eemax = ymap._CMapData.entitiesExtentsMax;
+                bool visible = false;
+                if (MapViewEnabled)//don't do front clipping in 2D mode
+                {
+                    visible = camera.ViewFrustum.ContainsAABBNoFrontClipNoOpt(ref eemin, ref eemax);
+                }
+                else
+                {
+                    visible = camera.ViewFrustum.ContainsAABBNoClipNoOpt(ref eemin, ref eemax);
+                }
+                if (!visible)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
         private void RenderWorldAddInteriorEntities(YmapEntityDef ent)
         {
             if (ent.MloInstance.Entities != null)
@@ -1886,9 +1894,7 @@ namespace CodeWalker.Rendering
 
                     intent.IsVisible = true;
 
-                    var iebscent = intent.Position + intent.BSCenter - camera.Position;
-                    float iebsrad = intent.BSRadius;
-                    if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
+                    if (!camera.ViewFrustum.ContainsAABBNoClip(ref intent.BBCenter, ref intent.BBExtent))
                     {
                         continue; //frustum cull interior ents
                     }
@@ -1912,9 +1918,7 @@ namespace CodeWalker.Rendering
 
                         intent.IsVisible = true;
 
-                        var iebscent = intent.Position + intent.BSCenter - camera.Position;
-                        float iebsrad = intent.BSRadius;
-                        if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref iebscent, iebsrad))
+                        if (!camera.ViewFrustum.ContainsAABBNoClip(ref intent.BBCenter, ref intent.BBExtent))
                         {
                             continue; //frustum cull interior ents
                         }
@@ -1925,7 +1929,104 @@ namespace CodeWalker.Rendering
                 }
             }
         }
+        private void RenderWorldAdjustMapViewCamera()
+        {
+            if (MapViewEnabled)
+            {
+                //find the max Z value for positioning camera in map view, to help shadows
+                //float minZ = float.MaxValue;
+                float maxZ = float.MinValue;
+                float cvwidth = camera.OrthographicSize * camera.AspectRatio * 0.5f;
+                float cvheight = camera.OrthographicSize * 0.5f;
+                float cvwmin = camera.Position.X - cvwidth; //TODO:make all these vars global...
+                float cvwmax = camera.Position.X + cvwidth;
+                float cvhmin = camera.Position.Y - cvheight;
+                float cvhmax = camera.Position.Y + cvheight;
 
+                for (int y = 0; y < VisibleYmaps.Count; y++)
+                {
+                    var ymap = VisibleYmaps[y];
+                    if (ymap.AllEntities != null)
+                    {
+                        for (int i = 0; i < ymap.AllEntities.Length; i++)//this is bad
+                        {
+                            var ent = ymap.AllEntities[i];
+                            if ((ent.Position.Z < 1000.0f) && (ent.BSRadius < 500.0f))
+                            {
+                                if ((ent.BBMax.X > cvwmin) && (ent.BBMin.X < cvwmax) && (ent.BBMax.Y > cvhmin) && (ent.BBMin.Y < cvhmax))
+                                {
+                                    //minZ = Math.Min(minZ, ent.BBMin.Z);
+                                    maxZ = Math.Max(maxZ, ent.BBMax.Z + 50.0f);//add some bias to avoid clipping things...
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //move the camera closer to the geometry, to help shadows in map view.
+                if (maxZ == float.MinValue) maxZ = 1000.0f;
+                camera.Position.Z = Math.Min(maxZ, 1000.0f);
+                camera.ViewFrustum.Position = camera.Position;
+            }
+        }
+        private void RenderWorldYmapExtras()
+        {
+            if (renderinteriors && (rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision)))
+            {
+                for (int i = 0; i < renderworldentities.Count; i++)
+                {
+                    var ent = renderworldentities[i];
+                    if (ent.IsMlo)
+                    {
+                        RenderInteriorCollisionMesh(ent);
+                    }
+                }
+            }
+            if (rendercars)
+            {
+                for (int y = 0; y < VisibleYmaps.Count; y++)
+                {
+                    var ymap = VisibleYmaps[y];
+                    if (ymap.CarGenerators != null)
+                    {
+                        RenderYmapCarGenerators(ymap);
+                    }
+                }
+            }
+            if (rendergrass && (renderworldMaxLOD == rage__eLodType.LODTYPES_DEPTH_ORPHANHD)) //hide grass with orphans
+            {
+                for (int y = 0; y < VisibleYmaps.Count; y++)
+                {
+                    var ymap = VisibleYmaps[y];
+                    if (ymap.GrassInstanceBatches != null)
+                    {
+                        RenderYmapGrass(ymap);
+                    }
+                }
+            }
+            if (renderdistlodlights && timecycle.IsNightTime)
+            {
+                for (int y = 0; y < VisibleYmaps.Count; y++)
+                {
+                    var ymap = VisibleYmaps[y];
+                    if (ymap.DistantLODLights != null)
+                    {
+                        RenderYmapDistantLODLights(ymap);
+                    }
+                }
+            }
+            if (renderlodlights && shaders.deferred)
+            {
+                for (int y = 0; y < VisibleYmaps.Count; y++)
+                {
+                    var ymap = VisibleYmaps[y];
+                    if (ymap.LODLights != null)
+                    {
+                        RenderYmapLODLights(ymap);
+                    }
+                }
+            }
+        }
 
 
 
@@ -3376,18 +3477,26 @@ namespace CodeWalker.Rendering
 
     public class RenderLodManager
     {
+        public rage__eLodType MaxLOD = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
+        public float LodDistMult = 1.0f;
+        public bool MapViewEnabled = false;
+        public float MapViewDist = 1.0f;
+        public bool ShowScriptedYmaps = true;
 
-
-        private Dictionary<YmapEntityDef, int> EntityDict = new Dictionary<YmapEntityDef, int>(); //visible entities and their current child counts
-
+        public Dictionary<MetaHash, YmapFile> CurrentYmaps = new Dictionary<MetaHash, YmapFile>();
+        private List<MetaHash> RemoveYmaps = new List<MetaHash>();
+        public Dictionary<YmapEntityDef, LinkedList<YmapEntityDef>> EntityTree = new Dictionary<YmapEntityDef, LinkedList<YmapEntityDef>>();
+        private Dictionary<YmapEntityDef, LinkedList<YmapEntityDef>> RootEntities = new Dictionary<YmapEntityDef, LinkedList<YmapEntityDef>>();
+        public Dictionary<YmapEntityDef, LinkedList<YmapEntityDef>> VisibleRoots = new Dictionary<YmapEntityDef, LinkedList<YmapEntityDef>>();
+        public List<YmapEntityDef> VisibleLeaves = new List<YmapEntityDef>();
 
         public void Update(Dictionary<MetaHash, YmapFile> ymaps, ref Vector3 position, float elapsed)
         {
-            EntityDict.Clear();
 
-            foreach (var ymap in ymaps.Values)
+            foreach (var kvp in ymaps)
             {
-                YmapFile pymap = ymap.Parent;
+                var ymap = kvp.Value;
+                var pymap = ymap.Parent;
                 if (ymap._CMapData.parent != 0) //ensure parent references on ymaps
                 {
                     ymaps.TryGetValue(ymap._CMapData.parent, out pymap);
@@ -3419,22 +3528,172 @@ namespace CodeWalker.Rendering
                         }
                     }
                 }
-                if (ymap.AllEntities != null) //add visible entities to the dict, increment entity parent child counts
+            }
+
+
+            RemoveYmaps.Clear();
+            foreach (var kvp in CurrentYmaps)
+            {
+                YmapFile ymap = null;
+                if (!ymaps.TryGetValue(kvp.Key, out ymap) || (ymap != kvp.Value) || (ymap.IsScripted && !ShowScriptedYmaps))
+                {
+                    RemoveYmaps.Add(kvp.Key);
+                }
+            }
+            foreach (var remYmap in RemoveYmaps)
+            {
+                var ymap = CurrentYmaps[remYmap];
+                CurrentYmaps.Remove(remYmap);
+                if (ymap.AllEntities != null)    // remove this ymap's entities from the tree.....
                 {
                     for (int i = 0; i < ymap.AllEntities.Length; i++)
                     {
                         var ent = ymap.AllEntities[i];
-                        //ent.BBMin
-
-
+                        EntityTree.Remove(ent);
+                        RootEntities.Remove(ent);
+                        if ((ent.Parent != null) && (ent.Parent.Ymap != ymap))
+                        {
+                            LinkedList<YmapEntityDef> clist = null;
+                            if (EntityTree.TryGetValue(ent.Parent, out clist))
+                            {
+                                clist.Remove(ent);
+                            }
+                        }
                     }
+                }
+            }
+            foreach (var kvp in ymaps)
+            {
+                var ymap = kvp.Value;
+                if (ymap.IsScripted && !ShowScriptedYmaps)
+                { continue; }
+                if (!CurrentYmaps.ContainsKey(kvp.Key))
+                {
+                    CurrentYmaps.Add(kvp.Key, kvp.Value);
+                    if (ymap.AllEntities != null)    // add this ymap's entities to the tree...
+                    {
+                        for (int i = 0; i < ymap.AllEntities.Length; i++)
+                        {
+                            var ent = ymap.AllEntities[i];
+                            if (ent.Parent != null)
+                            {
+                                LinkedList<YmapEntityDef> clist = null;
+                                if (!EntityTree.TryGetValue(ent.Parent, out clist))
+                                {
+                                    clist = new LinkedList<YmapEntityDef>();
+                                    EntityTree[ent.Parent] = clist;
+                                }
+                                clist.AddLast(ent);
+                            }
+                            else
+                            {
+                                LinkedList<YmapEntityDef> clist = null;
+                                if ((ent._CEntityDef.lodLevel != rage__eLodType.LODTYPES_DEPTH_ORPHANHD) && (ent._CEntityDef.lodLevel != rage__eLodType.LODTYPES_DEPTH_HD))
+                                {
+                                    if (!EntityTree.TryGetValue(ent, out clist))
+                                    {
+                                        clist = new LinkedList<YmapEntityDef>();
+                                        EntityTree[ent] = clist;
+                                    }
+                                }
+                                RootEntities[ent] = clist;
+                            }
+                        }
+                    }
+                }
+            }
 
+
+            VisibleRoots.Clear();
+            VisibleLeaves.Clear();
+            foreach (var kvp in RootEntities)
+            {
+                var ent = kvp.Key;
+                if (EntityVisibleAtMaxLodLevel(ent))
+                {
+                    ent.Distance = MapViewEnabled ? MapViewDist : (ent.Position - position).Length();
+                    if(ent.Distance <= (ent.LodDist * LodDistMult))
+                    {
+                        VisibleRoots[ent] = kvp.Value;
+                        RecurseAddVisibleLeaves(ent, ref position);
+                    }
                 }
             }
 
 
 
 
+        }
+
+        private void RecurseAddVisibleLeaves(YmapEntityDef ent, ref Vector3 position)
+        {
+            var clist = GetEntityChildren(ent, ref position);
+            if (clist != null)
+            {
+                foreach (var child in clist)
+                {
+                    RecurseAddVisibleLeaves(child, ref position);
+                }
+            }
+            else
+            {
+                VisibleLeaves.Add(ent);
+            }
+        }
+
+
+        private LinkedList<YmapEntityDef> GetEntityChildren(YmapEntityDef ent, ref Vector3 position)
+        {
+            //get the children list for this entity, if all the hcildren are available, and they are within range
+            if (!EntityChildrenVisibleAtMaxLodLevel(ent)) return null;
+            LinkedList<YmapEntityDef> clist = null;
+            EntityTree.TryGetValue(ent, out clist);
+            if ((clist != null) && (clist.Count >= ent._CEntityDef.numChildren))
+            {
+                ent.Distance = MapViewEnabled ? MapViewDist : (ent.Position - position).Length();
+                if (ent.Distance <= (ent.ChildLodDist * LodDistMult))
+                {
+                    return clist;
+                }
+                else
+                {
+                    foreach (var child in clist)
+                    {
+                        child.Distance = MapViewEnabled ? MapViewDist : (child.Position - position).Length();
+                        if (child.Distance <= (child.LodDist * LodDistMult))
+                        {
+                            return clist;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+
+        private bool EntityVisibleAtMaxLodLevel(YmapEntityDef ent)
+        {
+            if (MaxLOD != rage__eLodType.LODTYPES_DEPTH_ORPHANHD)
+            {
+                if ((ent._CEntityDef.lodLevel == rage__eLodType.LODTYPES_DEPTH_ORPHANHD) ||
+                    (ent._CEntityDef.lodLevel < MaxLOD))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        private bool EntityChildrenVisibleAtMaxLodLevel(YmapEntityDef ent)
+        {
+            if (MaxLOD != rage__eLodType.LODTYPES_DEPTH_ORPHANHD)
+            {
+                if ((ent._CEntityDef.lodLevel == rage__eLodType.LODTYPES_DEPTH_ORPHANHD) ||
+                    (ent._CEntityDef.lodLevel <= MaxLOD))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
 

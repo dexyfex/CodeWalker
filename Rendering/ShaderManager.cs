@@ -720,7 +720,7 @@ namespace CodeWalker.Rendering
                 Shadowmap.BeginDepthRender(context, i);
 
                 float worldtocascade = cascade.WorldUnitsToCascadeUnits * 2.0f;
-                float minrad = cascade.WorldUnitsPerTexel * 3.0f;
+                float minrad = cascade.WorldUnitsPerTexel * 5.0f;
 
                 shadowbatch.Clear();
                 for (int c = 0; c < shadowcasters.Count; c++)

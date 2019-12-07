@@ -25,7 +25,7 @@ cbuffer ShadowmapVars : register(b1)
     float CascadeCountInv;
     float TexelSize;
     float TexelSizeX;
-    float Pad20;
+    float ShadowMaxDistance; //2000 or so
 };
 
 
@@ -233,7 +233,7 @@ float3 FullLighting(float3 diff, float3 spec, float3 norm, float4 vc0, uniform S
     if (enableShadows == 1)
     {
         //float shadowdepth = input.Shadows.x;// *0.000001;
-        if (abs(shadowdepth) < 2000)//2km
+        if (abs(shadowdepth) < ShadowMaxDistance)//2km
         {
             //float4 shadowcoord = input.LightShadow;
             //float4 shadowcolour = (float4)1;
