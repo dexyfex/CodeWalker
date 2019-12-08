@@ -86,6 +86,9 @@ namespace CodeWalker.Rendering
 
         private List<YmapEntityDef> renderworldentities = new List<YmapEntityDef>(); //used when rendering world view.
         private List<RenderableEntity> renderworldrenderables = new List<RenderableEntity>();
+        private Dictionary<Archetype, Renderable> ArchetypeRenderables = new Dictionary<Archetype, Renderable>();
+        private Dictionary<YmapEntityDef, Renderable> RequiredParents = new Dictionary<YmapEntityDef, Renderable>();
+        private List<YmapEntityDef> RenderEntities = new List<YmapEntityDef>();
 
         public Dictionary<uint, YmapEntityDef> HideEntities = new Dictionary<uint, YmapEntityDef>();//dictionary of entities to hide, for cutscenes to use 
 
@@ -1520,6 +1523,9 @@ namespace CodeWalker.Rendering
             renderworldentities.Clear();
             renderworldrenderables.Clear();
             VisibleYmaps.Clear();
+            ArchetypeRenderables.Clear();
+            RequiredParents.Clear();
+            RenderEntities.Clear();
 
             foreach (var ymap in renderworldVisibleYmapDict.Values)
             {
@@ -1534,46 +1540,64 @@ namespace CodeWalker.Rendering
             LodManager.MapViewEnabled = MapViewEnabled;
             LodManager.MapViewDist = camera.OrthographicSize / MapViewDetail;
             LodManager.ShowScriptedYmaps = ShowScriptedYmaps;
-            LodManager.Update(renderworldVisibleYmapDict, ref camera.Position, currentElapsedTime);
+            LodManager.Update(renderworldVisibleYmapDict, camera, currentElapsedTime);
 
 
 
-            var ents = LodManager.GetVisibleLeaves(camera);
+            var ents = LodManager.GetVisibleLeaves();
 
-
-            //foreach (var ent in ents)
-            //{
-            //    if (!RenderIsEntityFinalRender(ent))
-            //    { continue; }
-            //    var arch = ent.Archetype;
-            //    var drawable = gameFileCache.TryGetDrawable(arch);
-            //    var rndbl = TryGetRenderable(arch, drawable);
-            //    var ready = ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload));
-            //}
-
-            foreach (var ent in ents)
+            for (int i = 0; i < ents.Count; i++)
             {
+                var ent = ents[i];
+
                 if (!RenderIsEntityFinalRender(ent))
                 { continue; }
 
-                //if (MapViewEnabled)
-                //{
-                //    if (!camera.ViewFrustum.ContainsAABBNoFrontClipNoOpt(ref ent.BBMin, ref ent.BBMax))
-                //    { continue; }
-                //}
-                //else
-                //{
-                //    if (!camera.ViewFrustum.ContainsAABBNoClip(ref ent.BBCenter, ref ent.BBExtent))
-                //    { continue; }
-                //}
-
-
-
-                renderworldentities.Add(ent);
-
-                if (renderinteriors && ent.IsMlo && (ent.MloInstance != null)) //render Mlo child entities...
+                if (ent.IsMlo)
                 {
-                    RenderWorldAddInteriorEntities(ent);
+                    if (renderinteriors && (ent.MloInstance != null) && !MapViewEnabled) //render Mlo child entities...
+                    {
+                        RenderWorldAddInteriorEntities(ent);
+                    }
+                }
+                else
+                {
+                    var rndbl = GetArchetypeRenderable(ent.Archetype);
+                    ent.LodManagerRenderable = rndbl;
+                    if (rndbl != null)
+                    {
+                        RenderEntities.Add(ent);
+                    }
+
+                    var pent = ent.Parent;
+                    if (waitforchildrentoload && (pent != null))
+                    {
+                        if (!RequiredParents.ContainsKey(pent))
+                        {
+                            bool allok = true;
+                            var pcnode = pent.LodManagerChildren?.First;
+                            while (pcnode != null)
+                            {
+                                var pcent = pcnode.Value;
+                                var pcrndbl = (pcent == ent) ? rndbl : GetArchetypeRenderable(pcent.Archetype);
+                                pcent.LodManagerRenderable = pcrndbl;
+                                pcnode = pcnode.Next;
+                                allok = allok && (pcrndbl != null);
+                            }
+                            if (!allok)
+                            {
+                                rndbl = GetArchetypeRenderable(pent.Archetype);
+                                pent.LodManagerRenderable = rndbl;
+                                if (rndbl != null)
+                                {
+                                    RenderEntities.Add(pent);
+                                }
+                            }
+                            RequiredParents[pent] = rndbl;
+                        }
+                    }
+
+
                 }
             }
 
@@ -1598,10 +1622,21 @@ namespace CodeWalker.Rendering
                 for (int i = 0; i < renderworldentities.Count; i++)
                 {
                     var ent = renderworldentities[i];
-                    var arch = ent.Archetype;
-                    var drawable = gameFileCache.TryGetDrawable(arch);
-                    var rndbl = TryGetRenderable(arch, drawable);
-                    if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
+                    var rndbl = GetArchetypeRenderable(ent.Archetype);
+                    ent.LodManagerRenderable = rndbl;
+                    if (rndbl != null)
+                    {
+                        RenderEntities.Add(ent);
+                    }
+                }
+
+                for (int i = 0; i < RenderEntities.Count; i++)
+                {
+                    var ent = RenderEntities[i];
+
+                    var rndbl = ent.LodManagerRenderable as Renderable;
+
+                    if (rndbl != null)
                     {
                         var rent = new RenderableEntity();
                         rent.Entity = ent;
@@ -1609,7 +1644,7 @@ namespace CodeWalker.Rendering
 
                         if (HideEntities.ContainsKey(ent.EntityHash)) continue; //don't render hidden entities!
 
-                        RenderArchetype(arch, ent, rent.Renderable, false);
+                        RenderArchetype(ent.Archetype, ent, rent.Renderable, false);
                     }
                 }
             }
@@ -2115,6 +2150,21 @@ namespace CodeWalker.Rendering
 
 
 
+        private Renderable GetArchetypeRenderable(Archetype arch)
+        {
+            Renderable rndbl = null;
+            if (!ArchetypeRenderables.TryGetValue(arch, out rndbl))
+            {
+                var drawable = gameFileCache.TryGetDrawable(arch);
+                rndbl = TryGetRenderable(arch, drawable);
+                ArchetypeRenderables[arch] = rndbl;
+            }
+            if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
+            {
+                return rndbl;
+            }
+            return null;
+        }
 
 
 
@@ -3484,6 +3534,7 @@ namespace CodeWalker.Rendering
         public float MapViewDist = 1.0f;
         public bool ShowScriptedYmaps = true;
 
+        public Camera Camera = null;
         public Vector3 Position = Vector3.Zero;
 
         public Dictionary<MetaHash, YmapFile> CurrentYmaps = new Dictionary<MetaHash, YmapFile>();
@@ -3491,9 +3542,10 @@ namespace CodeWalker.Rendering
         public Dictionary<YmapEntityDef, YmapEntityDef> RootEntities = new Dictionary<YmapEntityDef, YmapEntityDef>();
         public List<YmapEntityDef> VisibleLeaves = new List<YmapEntityDef>();
 
-        public void Update(Dictionary<MetaHash, YmapFile> ymaps, ref Vector3 position, float elapsed)
+        public void Update(Dictionary<MetaHash, YmapFile> ymaps, Camera camera, float elapsed)
         {
-            Position = position;
+            Camera = camera;
+            Position = camera.Position;
 
             foreach (var kvp in ymaps)
             {
@@ -3594,7 +3646,7 @@ namespace CodeWalker.Rendering
             foreach (var kvp in RootEntities)
             {
                 var ent = kvp.Key;
-                if (EntityVisibleAtMaxLodLevel(ent))
+                if (EntityVisibleAtMaxLodLevel(ent) && EntityVisible(ent))
                 {
                     ent.Distance = MapViewEnabled ? MapViewDist : (ent.Position - Position).Length();
                     if (ent.Distance <= (ent.LodDist * LodDistMult))
@@ -3619,45 +3671,10 @@ namespace CodeWalker.Rendering
             }
             else
             {
-                VisibleLeaves.Add(ent);
-            }
-        }
-
-        public List<YmapEntityDef> GetVisibleLeaves(Camera cam)
-        {
-            VisibleLeaves.Clear();
-            foreach (var kvp in RootEntities)
-            {
-                var ent = kvp.Key;
-                if (EntityVisibleAtMaxLodLevel(ent) && EntityVisible(ent, cam))
+                if ((ent.Parent == null) || EntityVisible(ent))
                 {
-                    ent.Distance = MapViewEnabled ? MapViewDist : (ent.Position - Position).Length();
-                    if (ent.Distance <= (ent.LodDist * LodDistMult))
-                    {
-                        RecurseAddVisibleLeaves(ent, cam);
-                    }
+                    VisibleLeaves.Add(ent);
                 }
-            }
-            return VisibleLeaves;
-        }
-        private void RecurseAddVisibleLeaves(YmapEntityDef ent, Camera cam)
-        {
-            var clist = GetEntityChildren(ent);
-            if (clist != null)
-            {
-                var cnode = clist.First;
-                while (cnode != null)
-                {
-                    if (EntityVisible(cnode.Value, cam))
-                    {
-                        RecurseAddVisibleLeaves(cnode.Value, cam);
-                    }
-                    cnode = cnode.Next;
-                }
-            }
-            else
-            {
-                VisibleLeaves.Add(ent);
             }
         }
 
@@ -3696,15 +3713,15 @@ namespace CodeWalker.Rendering
             return null;
         }
 
-        private bool EntityVisible(YmapEntityDef ent, Camera cam)
+        private bool EntityVisible(YmapEntityDef ent)
         {
             if (MapViewEnabled)
             {
-                return cam.ViewFrustum.ContainsAABBNoFrontClipNoOpt(ref ent.BBMin, ref ent.BBMax);
+                return Camera.ViewFrustum.ContainsAABBNoFrontClipNoOpt(ref ent.BBMin, ref ent.BBMax);
             }
             else
             {
-                return cam.ViewFrustum.ContainsAABBNoClip(ref ent.BBCenter, ref ent.BBExtent);
+                return Camera.ViewFrustum.ContainsAABBNoClip(ref ent.BBCenter, ref ent.BBExtent);
             }
         }
         private bool EntityVisibleAtMaxLodLevel(YmapEntityDef ent)
