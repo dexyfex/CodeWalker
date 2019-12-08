@@ -1322,6 +1322,7 @@ namespace CodeWalker.GameFiles
         public uint EntityHash { get; set; } = 0; //used by CW as a unique position+name identifier
 
         public LinkedList<YmapEntityDef> LodManagerChildren = null;
+        public object LodManagerRenderable = null;
 
 
         public string Name
