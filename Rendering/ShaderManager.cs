@@ -688,7 +688,7 @@ namespace CodeWalker.Rendering
             context.OutputMerger.DepthStencilState = dsEnabled;
             context.Rasterizer.State = rsSolid;
 
-            float maxdist = 3000.0f;// cascade.IntervalFar * 5.0f;
+            float maxdist = Shadowmap.maxShadowDistance;// 3000.0f;// cascade.IntervalFar * 5.0f;
 
             //find the casters within range
             shadowcasters.Clear();

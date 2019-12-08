@@ -1321,6 +1321,8 @@ namespace CodeWalker.GameFiles
 
         public uint EntityHash { get; set; } = 0; //used by CW as a unique position+name identifier
 
+        public LinkedList<YmapEntityDef> LodManagerChildren = null;
+
 
         public string Name
         {
@@ -1694,6 +1696,21 @@ namespace CodeWalker.GameFiles
             ChildList.Clear();
             ChildList = null;
         }
+
+
+        public void LodManagerAddChild(YmapEntityDef child)
+        {
+            if (LodManagerChildren == null)
+            {
+                LodManagerChildren = new LinkedList<YmapEntityDef>();
+            }
+            LodManagerChildren.AddLast(child);
+        }
+        public void LodManagerRemoveChild(YmapEntityDef child)
+        {
+            LodManagerChildren?.Remove(child);//could improve this by caching the list node....
+        }
+
 
         public override string ToString()
         {

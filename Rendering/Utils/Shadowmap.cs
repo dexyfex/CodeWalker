@@ -46,7 +46,7 @@ namespace CodeWalker.Rendering
         Vector3 SceneExtent;
 
         float[] fCascadeIntervals = { 7.0f, 20.0f, 65.0f, 160.0f, 600.0f, 3000.0f, 5000.0f, 10000.0f };
-        float maxShadowDistance = 3000.0f;
+        public float maxShadowDistance = 3000.0f;
 
 
         long graphicsMemoryUsage = 0;
