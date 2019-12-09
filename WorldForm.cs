@@ -628,6 +628,7 @@ namespace CodeWalker
                 Vector3 move = lftxy * movecontrol.X + fwdxy * movecontrol.Y;
                 Vector2 movexy = new Vector2(move.X, move.Y);
 
+                movexy *= (1.0f + (Input.xblt * 15.0f)); //boost with left trigger
 
                 pedEntity.ControlMovement = movexy;
                 pedEntity.ControlJump = Input.kbjump || Input.ControllerButtonPressed(GamepadButtonFlags.X);
