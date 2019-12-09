@@ -1007,7 +1007,7 @@ namespace CodeWalker.World
             var pos = cam.Position;
             var min = pos - dist;
             var max = pos + dist;
-            var items = BoundsStore.GetItems(ref min, ref max);
+            var items = BoundsStore.GetItems(ref min, ref max, layers);
             boundslist.AddRange(items);
         }
 
@@ -1721,24 +1721,24 @@ namespace CodeWalker.World
             RootNode.TrySplit(SplitThreshold);
         }
 
-        public List<BoundsStoreItem> GetItems(ref Vector3 min, ref Vector3 max)
+        public List<BoundsStoreItem> GetItems(ref Vector3 min, ref Vector3 max, bool[] layers = null)
         {
             VisibleItems.Clear();
 
             if (RootNode != null)
             {
-                RootNode.GetItems(ref min, ref max, VisibleItems);
+                RootNode.GetItems(ref min, ref max, VisibleItems, layers);
             }
 
             return VisibleItems;
         }
-        public List<BoundsStoreItem> GetItems(ref Ray ray)
+        public List<BoundsStoreItem> GetItems(ref Ray ray, bool[] layers = null)
         {
             VisibleItems.Clear();
 
             if (RootNode != null)
             {
-                RootNode.GetItems(ref ray, VisibleItems);
+                RootNode.GetItems(ref ray, VisibleItems, layers);
             }
 
             return VisibleItems;
@@ -1817,7 +1817,7 @@ namespace CodeWalker.World
             Items = newItems;
         }
 
-        public void GetItems(ref Vector3 min, ref Vector3 max, List<BoundsStoreItem> items)
+        public void GetItems(ref Vector3 min, ref Vector3 max, List<BoundsStoreItem> items, bool[] layers = null)
         {
             if ((max.X >= BBMin.X) && (min.X <= BBMax.X) && (max.Y >= BBMin.Y) && (min.Y <= BBMax.Y))
             {
@@ -1826,6 +1826,10 @@ namespace CodeWalker.World
                     for (int i = 0; i < Items.Count; i++)
                     {
                         var item = Items[i];
+
+                        if ((layers != null) && (item.Layer < 3) && (!layers[item.Layer]))
+                        { continue; }
+
                         if ((max.X >= item.Min.X) && (min.X <= item.Max.X) && (max.Y >= item.Min.Y) && (min.Y <= item.Max.Y))
                         {
                             items.Add(item);
@@ -1839,13 +1843,13 @@ namespace CodeWalker.World
                         var c = Children[i];
                         if (c != null)
                         {
-                            c.GetItems(ref min, ref max, items);
+                            c.GetItems(ref min, ref max, items, layers);
                         }
                     }
                 }
             }
         }
-        public void GetItems(ref Ray ray, List<BoundsStoreItem> items)
+        public void GetItems(ref Ray ray, List<BoundsStoreItem> items, bool[] layers = null)
         {
             var box = new BoundingBox(BBMin, BBMax);
             if (ray.Intersects(ref box))
@@ -1855,6 +1859,10 @@ namespace CodeWalker.World
                     for (int i = 0; i < Items.Count; i++)
                     {
                         var item = Items[i];
+
+                        if ((layers != null) && (item.Layer < 3) && (!layers[item.Layer]))
+                        { continue; }
+
                         box = new BoundingBox(item.Min, item.Max);
                         if (ray.Intersects(box))
                         {
@@ -1869,7 +1877,7 @@ namespace CodeWalker.World
                         var c = Children[i];
                         if (c != null)
                         {
-                            c.GetItems(ref ray, items);
+                            c.GetItems(ref ray, items, layers);
                         }
                     }
                 }

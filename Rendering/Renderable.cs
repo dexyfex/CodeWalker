@@ -1846,37 +1846,96 @@ namespace CodeWalker.Rendering
     }
 
 
-    public class RenderableBoundComposite : RenderableCacheItem<BoundComposite>
+    public class RenderableBoundComposite : RenderableCacheItem<Bounds>
     {
         public RenderableBoundGeometry[] Geometries;
 
 
-        public override void Init(BoundComposite bound)
+        public override void Init(Bounds bound)
         {
             Key = bound;
 
+            if (bound is BoundComposite boundcomp)
+            {
+                InitBoundComp(boundcomp);
+            }
+            else
+            {
+                var rgeom = new RenderableBoundGeometry(this);
+                var xform = Matrix.Identity;
+                if (bound is BoundBox boundbox)
+                {
+                    rgeom.Init(boundbox, ref xform);
+                }
+                else if (bound is BoundSphere boundsph)
+                {
+                    rgeom.Init(boundsph, ref xform);
+                }
+                else if (bound is BoundCylinder boundcyl)
+                {
+                    rgeom.Init(boundcyl, ref xform);
+                }
+                else if (bound is BoundCapsule boundcap)
+                {
+                    rgeom.Init(boundcap, ref xform);
+                }
+                else if (bound is BoundDisc boundisc)
+                {
+                    rgeom.Init(boundisc, ref xform);
+                }
+                else
+                { }
+
+                Geometries = new[] { rgeom };
+                DataSize = 64;//just a guesstimate
+            }
+        }
+
+        private void InitBoundComp(BoundComposite bound)
+        { 
             if (bound.Children == null)
             {
                 return;
             }
 
             RenderableBoundGeometry[] geoms = new RenderableBoundGeometry[bound.Children.data_items.Length];
+            var childTransforms = bound.ChildrenTransformation1 ?? bound.ChildrenTransformation2;
             long dsize = 0;
             for (int i = 0; i < bound.Children.data_items.Length; i++)
             {
+                var rgeom = new RenderableBoundGeometry(this);
                 var child = bound.Children.data_items[i];
-                if (child is BoundGeometry)
+                var xform = ((childTransforms != null) && (i < childTransforms.Length)) ? childTransforms[i] : Matrix.Identity; xform.Column4 = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+                if (child is BoundGeometry bgeom)
                 {
-                    var rgeom = new RenderableBoundGeometry();
-                    rgeom.Init(child as BoundGeometry);
-                    rgeom.Owner = this;
+                    rgeom.Init(bgeom);
+                }
+                else if (child is BoundCapsule bcap)
+                {
+                    rgeom.Init(bcap, ref xform);
+                }
+                else if (child is BoundSphere bsph)
+                {
+                    rgeom.Init(bsph, ref xform);
+                }
+                else if (child is BoundBox bbox)
+                {
+                    rgeom.Init(bbox, ref xform);
+                }
+                else if (child is BoundCylinder bcyl)
+                {
+                    rgeom.Init(bcyl, ref xform);
+                }
+                else if (child is BoundDisc bdisc)
+                {
+                    rgeom.Init(bdisc, ref xform);
+                }
+                else if (child != null)
+                { }
+                if (rgeom.Initialised)
+                {
                     geoms[i] = rgeom;
                     dsize += rgeom.TotalDataSize;
-                }
-                else
-                {
-                    //other types of bound might be here, eg BoundBox
-                    geoms[i] = null;//not really necessary
                 }
             }
 
@@ -1888,11 +1947,13 @@ namespace CodeWalker.Rendering
 
         public override void Load(Device device)
         {
-            if (Geometries == null) return;
-            foreach (var geom in Geometries)
+            if (Geometries != null)
             {
-                if (geom == null) continue;
-                geom.Load(device);
+                foreach (var geom in Geometries)
+                {
+                    if (geom == null) continue;
+                    geom.Load(device);
+                }
             }
             //LastUseTime = DateTime.Now; //reset usage timer
             IsLoaded = true;
@@ -1901,11 +1962,13 @@ namespace CodeWalker.Rendering
         public override void Unload()
         {
             IsLoaded = false;
-            if (Geometries == null) return;
-            foreach (var geom in Geometries)
+            if (Geometries != null)
             {
-                if (geom == null) continue;
-                geom.Unload();
+                foreach (var geom in Geometries)
+                {
+                    if (geom == null) continue;
+                    geom.Unload();
+                }
             }
             LoadQueued = false;
         }
@@ -1922,7 +1985,6 @@ namespace CodeWalker.Rendering
         public Buffer VertexBuffer { get; set; }
         //public Buffer IndexBuffer { get; set; }
         public VertexBufferBinding VBBinding;
-        public BoundGeometry BoundGeom;
         public VertexType VertexType { get; set; } = VertexType.Default;
         public int VertexStride { get; set; } = 36;
         public int VertexCount { get; set; } = 0;
@@ -1939,9 +2001,30 @@ namespace CodeWalker.Rendering
         public GpuSBuffer<RenderableCapsule> CapsuleBuffer { get; set; }
         public GpuSBuffer<RenderableCylinder> CylinderBuffer { get; set; }
 
+
+        public Bounds Bound;
+        public BoundGeometry BoundGeom;
+        public Vector3 CenterGeom;
+        public Vector3 BBMin;
+        public Vector3 BBMax;
+        public Vector3 BBOffset = Vector3.Zero;
+        public Quaternion BBOrientation = Quaternion.Identity;
+
+        public bool Initialised = false;
+
+
+        public RenderableBoundGeometry(RenderableBoundComposite owner)
+        {
+            Owner = owner;
+        }
+
         public void Init(BoundGeometry bgeom)
         {
+            Bound = bgeom;
             BoundGeom = bgeom;
+            CenterGeom = bgeom.CenterGeom;
+            BBMin = bgeom.BoundingBoxMin;
+            BBMax = bgeom.BoundingBoxMax;
 
             if ((bgeom.Polygons == null) || (bgeom.Vertices == null))
             {
@@ -2077,7 +2160,141 @@ namespace CodeWalker.Rendering
             VertexDataSize = (uint)(VertexCount * VertexStride);
             TotalDataSize = VertexDataSize;
 
+            Initialised = true;
         }
+        public void Init(BoundCapsule bcap, ref Matrix xform)
+        {
+            Matrix rmat = xform;
+            rmat.TranslationVector = Vector3.Zero;
+
+            Bound = bcap;
+            BBMin = bcap.BoundingBoxMin;
+            BBMax = bcap.BoundingBoxMax;
+            BBOffset = xform.TranslationVector;
+            BBOrientation = Quaternion.RotationMatrix(rmat);
+
+            var mat = (BoundsMaterialType)bcap.MaterialIndex;
+            var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
+            var colour = (uint)colourf.ToRgba();
+
+            float extent = bcap.BoundingSphereRadius - bcap.Margin;
+
+            var rcap = new RenderableCapsule();
+            rcap.Colour = colour;
+            rcap.Point1 = Vector3.TransformCoordinate(bcap.Center - new Vector3(0, extent, 0), xform);
+            rcap.Orientation = BBOrientation;
+            rcap.Length = extent * 2.0f;
+            rcap.Radius = bcap.Margin;
+
+            Capsules = new[] { rcap };
+
+            Initialised = true;
+        }
+        public void Init(BoundSphere bsph, ref Matrix xform)
+        {
+            Bound = bsph;
+            BBMin = bsph.BoundingBoxMin;
+            BBMax = bsph.BoundingBoxMax;
+            BBOffset = xform.TranslationVector;
+
+            var mat = (BoundsMaterialType)bsph.MaterialIndex;
+            var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
+            var colour = (uint)colourf.ToRgba();
+
+            var rsph = new RenderableSphere();
+            rsph.Colour = colour;
+            rsph.Center = Vector3.TransformCoordinate(bsph.Center, xform);
+            rsph.Radius = bsph.BoundingSphereRadius;
+
+            Spheres = new[] { rsph };
+
+            Initialised = true;
+        }
+        public void Init(BoundBox bbox, ref Matrix xform)
+        {
+            Matrix rmat = xform;
+            rmat.TranslationVector = Vector3.Zero;
+
+            Bound = bbox;
+            BBMin = bbox.BoundingBoxMin;
+            BBMax = bbox.BoundingBoxMax;
+            BBOffset = xform.TranslationVector;
+            BBOrientation = Quaternion.RotationMatrix(rmat);
+
+            var mat = (BoundsMaterialType)bbox.MaterialIndex;
+            var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
+            var colour = (uint)colourf.ToRgba();
+
+            var extent = (bbox.BoundingBoxMax - bbox.BoundingBoxMin).Abs();
+
+            var rbox = new RenderableBox();
+            rbox.Colour = colour;
+            rbox.Corner = Vector3.TransformCoordinate(bbox.BoundingBoxMin, xform);
+            rbox.Edge1 = Vector3.TransformNormal(new Vector3(extent.X, 0, 0), xform);
+            rbox.Edge2 = Vector3.TransformNormal(new Vector3(0, extent.Y, 0), xform);
+            rbox.Edge3 = Vector3.TransformNormal(new Vector3(0, 0, extent.Z), xform);
+
+            Boxes = new[] { rbox };
+
+            Initialised = true;
+        }
+        public void Init(BoundCylinder bcyl, ref Matrix xform)
+        {
+            Matrix rmat = xform;
+            rmat.TranslationVector = Vector3.Zero;
+
+            Bound = bcyl;
+            BBMin = bcyl.BoundingBoxMin;
+            BBMax = bcyl.BoundingBoxMax;
+            BBOffset = xform.TranslationVector;
+            BBOrientation = Quaternion.RotationMatrix(rmat);
+
+            var mat = (BoundsMaterialType)bcyl.MaterialIndex;
+            var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
+            var colour = (uint)colourf.ToRgba();
+
+            var extent = (bcyl.BoundingBoxMax - bcyl.BoundingBoxMin).Abs();
+            var length = extent.Y;
+            var radius = extent.X * 0.5f;
+
+            var rcyl = new RenderableCylinder();
+            rcyl.Colour = colour;
+            rcyl.Point1 = Vector3.TransformCoordinate(bcyl.Center - new Vector3(0, length * 0.5f, 0), xform);
+            rcyl.Orientation = BBOrientation;
+            rcyl.Length = length;
+            rcyl.Radius = radius;
+
+            Cylinders = new[] { rcyl };
+
+            Initialised = true;
+        }
+        public void Init(BoundDisc bdisc, ref Matrix xform)
+        {
+            Matrix rmat = xform;
+            rmat.TranslationVector = Vector3.Zero;
+
+            Bound = bdisc;
+            BBMin = bdisc.BoundingBoxMin;
+            BBMax = bdisc.BoundingBoxMax;
+            BBOffset = xform.TranslationVector;
+            BBOrientation = Quaternion.LookAtLH(Vector3.Zero, Vector3.UnitX, Vector3.UnitZ) * Quaternion.RotationMatrix(rmat);
+
+            var mat = (BoundsMaterialType)bdisc.MaterialIndex;
+            var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
+            var colour = (uint)colourf.ToRgba();
+
+            var rcyl = new RenderableCylinder();
+            rcyl.Colour = colour;
+            rcyl.Point1 = Vector3.TransformCoordinate(bdisc.Center - new Vector3(bdisc.Margin, 0, 0), xform);
+            rcyl.Orientation = BBOrientation;
+            rcyl.Length = bdisc.Margin * 2.0f;
+            rcyl.Radius = bdisc.BoundingSphereRadius;
+
+            Cylinders = new[] { rcyl };
+
+            Initialised = true;
+        }
+
 
         private ushort AddVertex(Vector3 pos, Vector3 norm, uint colour, List<VertexTypeDefault> list)
         {
