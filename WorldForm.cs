@@ -154,7 +154,7 @@ namespace CodeWalker
         MapSelection PrevMouseHit = new MapSelection();
 
         bool MouseRayCollisionEnabled = true;
-        bool MouseRayCollisionVisible = true;
+        bool MouseRayCollisionVisible = false;
         SpaceRayIntersectResult MouseRayCollision = new SpaceRayIntersectResult();
 
         string SelectionModeStr = "Entity";
@@ -628,7 +628,7 @@ namespace CodeWalker
                 Vector3 move = lftxy * movecontrol.X + fwdxy * movecontrol.Y;
                 Vector2 movexy = new Vector2(move.X, move.Y);
 
-                movexy *= (1.0f + (Input.xblt * 15.0f)); //boost with left trigger
+                movexy *= (1.0f + (Math.Min(Math.Max(Input.xblt, 0.0f), 1.0f) * 15.0f)); //boost with left trigger
 
                 pedEntity.ControlMovement = movexy;
                 pedEntity.ControlJump = Input.kbjump || Input.ControllerButtonPressed(GamepadButtonFlags.X);
@@ -1281,13 +1281,15 @@ namespace CodeWalker
             const uint caqu = 4294967040;// (uint)new Color4(0.0f, 1.0f, 1.0f, 1.0f).ToRgba();
             //const uint cyel = 4278255615;//
 
-            if (MouseRayCollisionEnabled && MouseRayCollisionVisible)
+            if (ControlBrushEnabled && MouseRayCollision.Hit)
             {
-                if (MouseRayCollision.Hit)
-                {
-                    var arup = GetPerpVec(MouseRayCollision.Normal);
-                    Renderer.RenderBrushRadiusOutline(MouseRayCollision.Position, MouseRayCollision.Normal, arup, ProjectForm.GetInstanceBrushRadius(), cgrn);
-                }
+                var arup = GetPerpVec(MouseRayCollision.Normal);
+                Renderer.RenderBrushRadiusOutline(MouseRayCollision.Position, MouseRayCollision.Normal, arup, ProjectForm.GetInstanceBrushRadius(), cgrn);
+            }
+            if (MouseRayCollisionVisible && MouseRayCollision.Hit)
+            {
+                var arup = GetPerpVec(MouseRayCollision.Normal);
+                Renderer.RenderSelectionArrowOutline(MouseRayCollision.Position, MouseRayCollision.Normal, arup, Quaternion.Identity, 1.0f, 0.05f, cgrn);
             }
 
             if (!ShowSelectionBounds)
@@ -2200,13 +2202,21 @@ namespace CodeWalker
             if (Input.CtrlPressed && ProjectForm != null && ProjectForm.CanPaintInstances())
             {
                 ControlBrushEnabled = true;
-                MouseRayCollisionEnabled = true;
+                MouseRayCollisionVisible = false;
                 MouseRayCollision = GetSpaceMouseRay();
             }
-            else if (MouseRayCollisionEnabled)
+            else
             {
                 ControlBrushEnabled = false;
-                MouseRayCollisionEnabled = false;
+                if (Input.CtrlPressed && MouseRayCollisionEnabled)
+                {
+                    MouseRayCollisionVisible = true;
+                    MouseRayCollision = GetSpaceMouseRay();
+                }
+                else
+                {
+                    MouseRayCollisionVisible = false;
+                }
             }
 
 

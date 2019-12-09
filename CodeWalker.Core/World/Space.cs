@@ -860,14 +860,14 @@ namespace CodeWalker.World
 
             if (!r.SphereHit.Hit)
             {
-                if (absdisp > (e.Radius * 2.0f)) //fast-moving... do a ray test to make sure it's not tunnelling
+                if (absdisp > e.Radius) //fast-moving... do a ray test to make sure it's not tunnelling
                 {
                     Ray rayt = new Ray(sphpos, r.HitVelDir);
                     float rayl = absdisp + e.Radius * 4.0f; //include some extra incase of glancing hit
                     var rayhit = RayIntersect(rayt, rayl);
                     if (rayhit.Hit) //looks like it is tunnelling... need to find the sphere hit point
                     {
-                        sph.Center = rayhit.Position;
+                        sph.Center = rayhit.Position - (r.HitVelDir*Math.Min(e.Radius*0.5f, rayhit.HitDist));
                         float hitd = rayhit.HitDist;
                         r.HitT = hitd / absdisp;
                         if (r.HitT > 1.0f)
@@ -1066,24 +1066,9 @@ namespace CodeWalker.World
         {
             var res = new SpaceRayIntersectResult();
             if (GameFileCache == null) return res;
-            int polytestcount = 0;
-            int nodetestcount = 0;
             bool testcomplete = true;
+            res.HitDist = float.MaxValue;
             var box = new BoundingBox();
-            var tsph = new BoundingSphere();
-            var rayt = new Ray();
-            var rp = ray.Position;
-            var rd = ray.Direction;
-            var boxhitdist = float.MaxValue;
-            var itemhitdist = float.MaxValue;
-            Vector3 p1, p2, p3, p4, a1, a2, a3;
-            Vector3 n1 = Vector3.Zero;
-            float polyhittestdist = 0;
-            bool hit = false;
-            BoundPolygon hitpoly = null;
-            BoundMaterial_s hitmat = new BoundMaterial_s();
-            Vector3 hitnorm = Vector3.Zero;
-            Vector3 hitpos = Vector3.Zero;
 
             if (BoundsStore == null) return res;
             var boundslist = BoundsStore.GetItems(ref ray);
@@ -1101,216 +1086,51 @@ namespace CodeWalker.World
                 float boxhitdisttest;
                 if (ray.Intersects(ref box, out boxhitdisttest))
                 {
+                    if (boxhitdisttest > res.HitDist)
+                    { continue; } //already a closer hit
+                    if (boxhitdisttest > maxdist)
+                    { continue; }
+
                     YbnFile ybn = GameFileCache.GetYbn(bound.Name);
                     if (ybn == null)
                     { continue; } //ybn not found?
                     if (!ybn.Loaded)
                     { testcomplete = false; continue; } //ybn not loaded yet...
 
-                    bool ybnhit = false;
                     var b = ybn.Bounds;
-                    box.Minimum = b.BoundingBoxMin;
-                    box.Maximum = b.BoundingBoxMax;
-                    float itemboxhitdisttest;
-                    if (!ray.Intersects(ref box, out itemboxhitdisttest))
-                    { continue; } //ray doesn't hit this ybn
-                    if (itemboxhitdisttest > itemhitdist)
-                    { continue; } //already a closer hit.
-                    if (itemboxhitdisttest > maxdist)
-                    { continue; }
 
-                    switch (b.Type)
+                    //box.Minimum = b.BoundingBoxMin;
+                    //box.Maximum = b.BoundingBoxMax;
+                    //float itemboxhitdisttest;
+                    //if (!ray.Intersects(ref box, out itemboxhitdisttest))
+                    //{ continue; } //ray doesn't hit this ybn
+                    //if (itemboxhitdisttest > res.HitDist)
+                    //{ continue; } //already a closer hit.
+                    //if (itemboxhitdisttest > maxdist)
+                    //{ continue; }
+
+                    var bhit = b.RayIntersect(ref ray, maxdist, res.HitDist);
+                    if (bhit.Hit)
                     {
-                        case 10: //BoundComposite
-                            BoundComposite boundcomp = b as BoundComposite;
-                            if (boundcomp == null)
-                            { continue; }
-                            var compchilds = boundcomp.Children?.data_items;
-                            if (compchilds == null)
-                            { continue; }
-                            for (int i = 0; i < compchilds.Length; i++)
-                            {
-                                BoundBVH bgeom = compchilds[i] as BoundBVH;
-                                if (bgeom == null)
-                                { continue; }
-                                if (bgeom.Polygons == null)
-                                { continue; }
-                                if ((bgeom.BVH?.Nodes?.data_items == null) || (bgeom.BVH?.Trees?.data_items == null))
-                                { continue; }
-
-                                box.Minimum = bgeom.BoundingBoxMin;
-                                box.Maximum = bgeom.BoundingBoxMax;
-                                float bvhboxhittest;
-                                if (!ray.Intersects(ref box, out bvhboxhittest))
-                                { continue; }
-                                if (bvhboxhittest > itemhitdist)
-                                { continue; } //already a closer hit.
-
-                                var q = bgeom.BVH.Quantum.XYZ();
-                                var c = bgeom.BVH.BoundingBoxCenter.XYZ();
-                                var cg = bgeom.CenterGeom;
-                                for (int t = 0; t < bgeom.BVH.Trees.data_items.Length; t++)
-                                {
-                                    var tree = bgeom.BVH.Trees.data_items[t];
-                                    box.Minimum = new Vector3(tree.MinX, tree.MinY, tree.MinZ) * q + c;
-                                    box.Maximum = new Vector3(tree.MaxX, tree.MaxY, tree.MaxZ) * q + c;
-                                    if (!ray.Intersects(ref box, out bvhboxhittest))
-                                    { continue; }
-                                    if (bvhboxhittest > itemhitdist)
-                                    { continue; } //already a closer hit.
-                                    if (bvhboxhittest > maxdist)
-                                    { continue; }
-
-                                    int nodeind = tree.NodeIndex1;
-                                    int lastind = tree.NodeIndex2;
-                                    while (nodeind < lastind)
-                                    {
-                                        var node = bgeom.BVH.Nodes.data_items[nodeind];
-                                        box.Minimum = new Vector3(node.MinX, node.MinY, node.MinZ) * q + c;
-                                        box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
-                                        bool nodehit = ray.Intersects(ref box, out bvhboxhittest);
-                                        bool nodeskip = !nodehit || (bvhboxhittest > itemhitdist);
-                                        if (node.PolyCount <= 0) //intermediate node with child nodes
-                                        {
-                                            if (nodeskip)
-                                            {
-                                                nodeind += node.PolyId; //(child node count)
-                                            }
-                                            else
-                                            {
-                                                nodeind++;
-                                            }
-                                        }
-                                        else //leaf node, with polygons
-                                        {
-                                            if (!nodeskip)
-                                            {
-                                                var lastp = node.PolyId + node.PolyCount;
-                                                lastp = Math.Min(lastp, (int)bgeom.PolygonsCount);
-                                                for (int p = node.PolyId; p < lastp; p++)
-                                                {
-                                                    var polygon = bgeom.Polygons[p];
-                                                    bool polyhit = false;
-                                                    switch (polygon.Type)
-                                                    {
-                                                        case BoundPolygonType.Triangle:
-                                                            var ptri = polygon as BoundPolygonTriangle;
-                                                            p1 = bgeom.GetVertex(ptri.vertIndex1) + cg;
-                                                            p2 = bgeom.GetVertex(ptri.vertIndex2) + cg;
-                                                            p3 = bgeom.GetVertex(ptri.vertIndex3) + cg;
-                                                            polyhit = ray.Intersects(ref p1, ref p2, ref p3, out polyhittestdist);
-                                                            if (polyhit) n1 = Vector3.Normalize(Vector3.Cross(p2 - p1, p3 - p1));
-                                                            break;
-                                                        case BoundPolygonType.Sphere:
-                                                            var psph = polygon as BoundPolygonSphere;
-                                                            tsph.Center = bgeom.GetVertex(psph.sphereIndex) + cg;
-                                                            tsph.Radius = psph.sphereRadius;
-                                                            polyhit = ray.Intersects(ref tsph, out polyhittestdist);
-                                                            if (polyhit) n1 = Vector3.Normalize((ray.Position + ray.Direction * polyhittestdist) - tsph.Center);
-                                                            break;
-                                                        case BoundPolygonType.Capsule:
-                                                            //TODO
-                                                            break;
-                                                        case BoundPolygonType.Box:
-                                                            var pbox = polygon as BoundPolygonBox;
-                                                            p1 = bgeom.GetVertex(pbox.boxIndex1);// + cg; //corner
-                                                            p2 = bgeom.GetVertex(pbox.boxIndex2);// + cg;
-                                                            p3 = bgeom.GetVertex(pbox.boxIndex3);// + cg;
-                                                            p4 = bgeom.GetVertex(pbox.boxIndex4);// + cg;
-                                                            a1 = ((p3 + p4) - (p1 + p2)) * 0.5f;
-                                                            a2 = p3 - (p1 + a1);
-                                                            a3 = p4 - (p1 + a1);
-                                                            Vector3 bs = new Vector3(a1.Length(), a2.Length(), a3.Length());
-                                                            Vector3 m1 = a1 / bs.X;
-                                                            Vector3 m2 = a2 / bs.Y;
-                                                            Vector3 m3 = a3 / bs.Z;
-                                                            if ((bs.X < bs.Y) && (bs.X < bs.Z)) m1 = Vector3.Cross(m2, m3);
-                                                            else if (bs.Y < bs.Z) m2 = Vector3.Cross(m1, m3);
-                                                            else m3 = Vector3.Cross(m1, m2);
-                                                            Vector3 tp = rp - (p1 + cg);
-                                                            rayt.Position = new Vector3(Vector3.Dot(tp, m1), Vector3.Dot(tp, m2), Vector3.Dot(tp, m3));
-                                                            rayt.Direction = new Vector3(Vector3.Dot(rd, m1), Vector3.Dot(rd, m2), Vector3.Dot(rd, m3));
-                                                            box.Minimum = Vector3.Zero;
-                                                            box.Maximum = bs;
-                                                            polyhit = rayt.Intersects(ref box, out polyhittestdist);
-                                                            if (polyhit)
-                                                            {
-                                                                Vector3 hpt = rayt.Position + rayt.Direction * polyhittestdist;
-                                                                const float eps = 0.002f;
-                                                                if (Math.Abs(hpt.X) < eps) n1 = -m1;
-                                                                else if (Math.Abs(hpt.X - bs.X) < eps) n1 = m1;
-                                                                else if (Math.Abs(hpt.Y) < eps) n1 = -m2;
-                                                                else if (Math.Abs(hpt.Y - bs.Y) < eps) n1 = m2;
-                                                                else if (Math.Abs(hpt.Z) < eps) n1 = -m3;
-                                                                else if (Math.Abs(hpt.Z - bs.Z) < eps) n1 = m3;
-                                                                else
-                                                                { n1 = Vector3.UnitZ; } //ray starts inside the box...
-                                                            }
-                                                            break;
-                                                        case BoundPolygonType.Cylinder:
-                                                            //TODO
-                                                            break;
-                                                    }
-                                                    if (polyhit && (polyhittestdist < itemhitdist) && (polyhittestdist < maxdist))
-                                                    {
-                                                        itemhitdist = polyhittestdist;
-                                                        ybnhit = true;
-                                                        hit = true;
-                                                        hitnorm = n1;
-                                                        hitpoly = polygon;
-
-                                                        byte matind = ((bgeom.PolygonMaterialIndices != null) && (p < bgeom.PolygonMaterialIndices.Length)) ? bgeom.PolygonMaterialIndices[p] : (byte)0;
-                                                        BoundMaterial_s mat = ((bgeom.Materials != null) && (matind < bgeom.Materials.Length)) ? bgeom.Materials[matind] : new BoundMaterial_s();
-                                                        hitmat = mat;
-                                                    }
-                                                    polytestcount++;
-                                                }
-                                            }
-                                            nodeind++;
-                                        }
-                                        nodetestcount++;
-                                    }
-                                }
-                            }
-                            break;
-                        case 3: //BoundBox - found in drawables - TODO
-                            BoundBox boundbox = b as BoundBox;
-                            if (boundbox == null)
-                            { continue; }
-                            break;
-                        case 0: //BoundSphere - found in drawables - TODO
-                            BoundSphere boundsphere = b as BoundSphere;
-                            if (boundsphere == null)
-                            { continue; }
-                            break;
-                        default:
-                            break;
+                        res.Hit = true;
+                        res.HitDist = bhit.HitDist;
+                        res.HitPolygon = bhit.HitPolygon;
+                        res.Material = bhit.Material;
+                        res.Normal = bhit.Normal;
                     }
 
-
-                    if (ybnhit)
-                    {
-                        boxhitdist = boxhitdisttest;
-                        //hit = true;
-                    }
+                    res.TestedNodeCount += bhit.TestedNodeCount;
+                    res.TestedPolyCount += bhit.TestedPolyCount;
 
                 }
             }
 
-            if (hit)
+            if (res.Hit)
             {
-                hitpos = ray.Position + ray.Direction * itemhitdist;
+                res.Position = ray.Position + ray.Direction * res.HitDist;
             }
 
-            res.TestedNodeCount = nodetestcount;
-            res.TestedPolyCount = polytestcount;
             res.TestComplete = testcomplete;
-            res.Hit = hit;
-            res.HitDist = itemhitdist;
-            res.HitPolygon = hitpoly;
-            res.Material = hitmat;
-            res.Position = hitpos;
-            res.Normal = hitnorm;
 
             return res;
         }
@@ -1325,20 +1145,6 @@ namespace CodeWalker.World
             Vector3 sphmin = sph.Center - sph.Radius;
             Vector3 sphmax = sph.Center + sph.Radius;
             var box = new BoundingBox();
-            var tsph = new BoundingSphere();
-            var spht = new BoundingSphere();
-            var sp = sph.Center;
-            var sr = sph.Radius;
-            //var boxhitdist = float.MaxValue;
-            //var itemhitdist = float.MaxValue;
-            Vector3 p1, p2, p3, p4, a1, a2, a3;
-            Vector3 n1 = Vector3.Zero;
-            //float polyhittestdist = 0;
-            bool hit = false;
-            BoundPolygon hitpoly = null;
-            Vector3 hitnorm = Vector3.Zero;
-            Vector3 hitpos = Vector3.Zero;
-
 
             if (BoundsStore == null) return res;
             var boundslist = BoundsStore.GetItems(ref sphmin, ref sphmax);
@@ -1356,183 +1162,24 @@ namespace CodeWalker.World
                     if (!ybn.Loaded)
                     { testcomplete = false; continue; } //ybn not loaded yet...
 
-                    //bool ybnhit = false;
                     var b = ybn.Bounds;
-                    box.Minimum = b.BoundingBoxMin;
-                    box.Maximum = b.BoundingBoxMax;
-                    if (!sph.Intersects(ref box))
-                    { continue; } //ray doesn't hit this ybn
 
-                    switch (b.Type)
+                    //box.Minimum = b.BoundingBoxMin;
+                    //box.Maximum = b.BoundingBoxMax;
+                    //if (!sph.Intersects(ref box))
+                    //{ continue; } //ray doesn't hit this ybn
+
+                    var bhit = b.SphereIntersect(ref sph);
+                    if (bhit.Hit)
                     {
-                        case 10: //BoundComposite
-                            BoundComposite boundcomp = b as BoundComposite;
-                            if (boundcomp == null)
-                            { continue; }
-                            var compchilds = boundcomp.Children?.data_items;
-                            if (compchilds == null)
-                            { continue; }
-                            for (int i = 0; i < compchilds.Length; i++)
-                            {
-                                BoundBVH bgeom = compchilds[i] as BoundBVH;
-                                if (bgeom == null)
-                                { continue; }
-                                if (bgeom.Polygons == null)
-                                { continue; }
-                                if ((bgeom.BVH?.Nodes?.data_items == null) || (bgeom.BVH?.Trees?.data_items == null))
-                                { continue; }
-
-                                box.Minimum = bgeom.BoundingBoxMin;
-                                box.Maximum = bgeom.BoundingBoxMax;
-                                if (!sph.Intersects(ref box))
-                                { continue; }
-
-                                var q = bgeom.BVH.Quantum.XYZ();
-                                var c = bgeom.BVH.BoundingBoxCenter.XYZ();
-                                var cg = bgeom.CenterGeom;
-                                for (int t = 0; t < bgeom.BVH.Trees.data_items.Length; t++)
-                                {
-                                    var tree = bgeom.BVH.Trees.data_items[t];
-                                    box.Minimum = new Vector3(tree.MinX, tree.MinY, tree.MinZ) * q + c;
-                                    box.Maximum = new Vector3(tree.MaxX, tree.MaxY, tree.MaxZ) * q + c;
-                                    if (!sph.Intersects(ref box))
-                                    { continue; }
-
-                                    int nodeind = tree.NodeIndex1;
-                                    int lastind = tree.NodeIndex2;
-                                    while (nodeind < lastind)
-                                    {
-                                        var node = bgeom.BVH.Nodes.data_items[nodeind];
-                                        box.Minimum = new Vector3(node.MinX, node.MinY, node.MinZ) * q + c;
-                                        box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
-                                        bool nodehit = sph.Intersects(ref box);
-                                        bool nodeskip = !nodehit;
-                                        if (node.PolyCount <= 0) //intermediate node with child nodes
-                                        {
-                                            if (nodeskip)
-                                            {
-                                                nodeind += node.PolyId; //(child node count)
-                                            }
-                                            else
-                                            {
-                                                nodeind++;
-                                            }
-                                        }
-                                        else //leaf node, with polygons
-                                        {
-                                            if (!nodeskip)
-                                            {
-                                                var lastp = node.PolyId + node.PolyCount;
-                                                lastp = Math.Min(lastp, (int)bgeom.PolygonsCount);
-                                                for (int p = node.PolyId; p < lastp; p++)
-                                                {
-                                                    var polygon = bgeom.Polygons[p];
-                                                    bool polyhit = false;
-                                                    switch (polygon.Type)
-                                                    {
-                                                        case BoundPolygonType.Triangle:
-                                                            var ptri = polygon as BoundPolygonTriangle;
-                                                            p1 = bgeom.GetVertex(ptri.vertIndex1) + cg;
-                                                            p2 = bgeom.GetVertex(ptri.vertIndex2) + cg;
-                                                            p3 = bgeom.GetVertex(ptri.vertIndex3) + cg;
-                                                            polyhit = sph.Intersects(ref p1, ref p2, ref p3);
-                                                            if (polyhit) n1 = Vector3.Normalize(Vector3.Cross(p2 - p1, p3 - p1));
-                                                            break;
-                                                        case BoundPolygonType.Sphere:
-                                                            var psph = polygon as BoundPolygonSphere;
-                                                            tsph.Center = bgeom.GetVertex(psph.sphereIndex) + cg;
-                                                            tsph.Radius = psph.sphereRadius;
-                                                            polyhit = sph.Intersects(ref tsph);
-                                                            if (polyhit) n1 = Vector3.Normalize(sph.Center - tsph.Center);
-                                                            break;
-                                                        case BoundPolygonType.Capsule:
-                                                            //TODO
-                                                            break;
-                                                        case BoundPolygonType.Box:
-                                                            var pbox = polygon as BoundPolygonBox;
-                                                            p1 = bgeom.GetVertex(pbox.boxIndex1);// + cg; //corner
-                                                            p2 = bgeom.GetVertex(pbox.boxIndex2);// + cg;
-                                                            p3 = bgeom.GetVertex(pbox.boxIndex3);// + cg;
-                                                            p4 = bgeom.GetVertex(pbox.boxIndex4);// + cg;
-                                                            a1 = ((p3 + p4) - (p1 + p2)) * 0.5f;
-                                                            a2 = p3 - (p1 + a1);
-                                                            a3 = p4 - (p1 + a1);
-                                                            Vector3 bs = new Vector3(a1.Length(), a2.Length(), a3.Length());
-                                                            Vector3 m1 = a1 / bs.X;
-                                                            Vector3 m2 = a2 / bs.Y;
-                                                            Vector3 m3 = a3 / bs.Z;
-                                                            if ((bs.X < bs.Y) && (bs.X < bs.Z)) m1 = Vector3.Cross(m2, m3);
-                                                            else if (bs.Y < bs.Z) m2 = Vector3.Cross(m1, m3);
-                                                            else m3 = Vector3.Cross(m1, m2);
-                                                            Vector3 tp = sp - (p1 + cg);
-                                                            spht.Center = new Vector3(Vector3.Dot(tp, m1), Vector3.Dot(tp, m2), Vector3.Dot(tp, m3));
-                                                            spht.Radius = sph.Radius;
-                                                            box.Minimum = Vector3.Zero;
-                                                            box.Maximum = bs;
-                                                            polyhit = spht.Intersects(ref box);
-                                                            if (polyhit)
-                                                            {
-                                                                Vector3 smin = spht.Center - spht.Radius;
-                                                                Vector3 smax = spht.Center + spht.Radius;
-                                                                float eps = spht.Radius * 0.8f;
-                                                                n1 = Vector3.Zero;
-                                                                if (Math.Abs(smax.X) < eps) n1 -= m1;
-                                                                else if (Math.Abs(smin.X - bs.X) < eps) n1 += m1;
-                                                                if (Math.Abs(smax.Y) < eps) n1 -= m2;
-                                                                else if (Math.Abs(smin.Y - bs.Y) < eps) n1 += m2;
-                                                                if (Math.Abs(smax.Z) < eps) n1 -= m3;
-                                                                else if (Math.Abs(smin.Z - bs.Z) < eps) n1 += m3;
-                                                                float n1l = n1.Length();
-                                                                if (n1l > 0.0f) n1 = n1 / n1l;
-                                                                else n1 = Vector3.UnitZ;
-                                                            }
-                                                            break;
-                                                        case BoundPolygonType.Cylinder:
-                                                            //TODO
-                                                            break;
-                                                    }
-                                                    if (polyhit) // && (polyhittestdist < itemhitdist) && (polyhittestdist < maxdist))
-                                                    {
-                                                        hitpoly = polygon;
-                                                        //itemhitdist = polyhittestdist;
-                                                        //ybnhit = true;
-                                                        hit = true;
-                                                        hitnorm = n1;
-                                                    }
-                                                    polytestcount++;
-                                                }
-                                            }
-                                            nodeind++;
-                                        }
-                                        nodetestcount++;
-                                    }
-                                }
-                            }
-                            break;
-                        case 3: //BoundBox - found in drawables - TODO
-                            BoundBox boundbox = b as BoundBox;
-                            if (boundbox == null)
-                            { continue; }
-                            break;
-                        case 0: //BoundSphere - found in drawables - TODO
-                            BoundSphere boundsphere = b as BoundSphere;
-                            if (boundsphere == null)
-                            { continue; }
-                            break;
-                        default:
-                            break;
+                        res.Hit = true;
+                        res.HitPolygon = bhit.HitPolygon;
+                        res.Normal = bhit.Normal;
                     }
-
-
-                    //if (ybnhit)
-                    //{
-                    //    //boxhitdist = boxhitdisttest;
-                    //    //hit = true;
-                    //}
-
+                    polytestcount += bhit.TestedPolyCount;
+                    nodetestcount += bhit.TestedNodeCount;
                 }
             }
-
 
             //if (hit)
             //{
@@ -1542,11 +1189,6 @@ namespace CodeWalker.World
             res.TestedNodeCount = nodetestcount;
             res.TestedPolyCount = polytestcount;
             res.TestComplete = testcomplete;
-            res.Hit = hit;
-            res.HitDist = 0;// itemhitdist;
-            res.HitPolygon = hitpoly;
-            res.Position = hitpos;
-            res.Normal = hitnorm;
 
             return res;
         }
