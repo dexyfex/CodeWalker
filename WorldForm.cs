@@ -1248,6 +1248,10 @@ namespace CodeWalker
                     mode = BoundsShaderMode.Sphere;
                 }
             }
+            if (CurMouseHit.CollisionBounds != null)
+            {
+                ori = ori * CurMouseHit.BBOrientation;
+            }
 
 
             Renderer.RenderMouseHit(mode, clip, ref camrel, ref bbmin, ref bbmax, ref scale, ref ori, bsphrad);
@@ -1533,6 +1537,11 @@ namespace CodeWalker
                     wbox.Scale = scale;
                     Renderer.WhiteBoxes.Add(wbox);
                 }
+            }
+            if (selectionItem.CollisionBounds != null)
+            {
+                camrel += ori.Multiply(selectionItem.BBOffset);
+                ori = ori * selectionItem.BBOrientation;
             }
 
             if (mode == BoundsShaderMode.Box)
@@ -2562,10 +2571,8 @@ namespace CodeWalker
             mray.Position = camera.MouseRay.Position + camera.Position;
             mray.Direction = camera.MouseRay.Direction;
             float hitdist = float.MaxValue;
-            Quaternion orinv = Quaternion.Invert(orientation);
+
             Ray mraytrn = new Ray();
-            mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - camrel);
-            mraytrn.Direction = orinv.Multiply(mray.Direction);
 
             MapBox mb = new MapBox();
             mb.CamRelPos = camrel;// rbginst.Inst.CamRel;
@@ -2576,23 +2583,31 @@ namespace CodeWalker
             {
                 if (geom == null) continue;
 
-                mb.BBMin = geom.BoundGeom.BoundingBoxMin;
-                mb.BBMax = geom.BoundGeom.BoundingBoxMax;
+                mb.BBMin = geom.BBMin;
+                mb.BBMax = geom.BBMax;
+                mb.CamRelPos = camrel + orientation.Multiply(geom.BBOffset);
+                mb.Orientation = orientation * geom.BBOrientation;
 
-                var cent = camrel + (mb.BBMin + mb.BBMax) * 0.5f;
+                var cent = mb.CamRelPos + (mb.BBMin + mb.BBMax) * 0.5f;
                 if (cent.Length() > Renderer.renderboundsmaxdist) continue;
 
                 Renderer.BoundingBoxes.Add(mb);
+
+                Quaternion orinv = Quaternion.Invert(mb.Orientation);
+                mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos);
+                mraytrn.Direction = orinv.Multiply(mray.Direction);
 
                 bbox.Minimum = mb.BBMin * scale;
                 bbox.Maximum = mb.BBMax * scale;
                 if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
                 {
-                    CurMouseHit.CollisionBounds = geom.BoundGeom;
+                    CurMouseHit.CollisionBounds = geom.Bound;
                     CurMouseHit.EntityDef = entity;
                     CurMouseHit.Archetype = entity?.Archetype;
                     CurMouseHit.HitDist = hitdist;
-                    CurMouseHit.CamRel = camrel;
+                    CurMouseHit.CamRel = mb.CamRelPos;
+                    CurMouseHit.BBOffset = geom.BBOffset;
+                    CurMouseHit.BBOrientation = geom.BBOrientation;
                     CurMouseHit.AABB = bbox;
                 }
             }

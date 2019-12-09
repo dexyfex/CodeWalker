@@ -200,6 +200,8 @@ namespace CodeWalker
         public bool MultipleSelection { get; set; }
         public Vector3 MultipleSelectionCenter { get; set; }
 
+        public Vector3 BBOffset { get; set; }
+        public Quaternion BBOrientation { get; set; }
         public BoundingBox AABB { get; set; }
         public BoundingSphere BSphere { get; set; }
         public int GeometryIndex { get; set; }

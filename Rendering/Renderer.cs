@@ -1557,6 +1557,7 @@ namespace CodeWalker.Rendering
                 {
                     if (renderinteriors && (ent.MloInstance != null) && !MapViewEnabled) //render Mlo child entities...
                     {
+                        renderworldentities.Add(ent);//collisions rendering needs this
                         RenderWorldAddInteriorEntities(ent);
                     }
                 }
@@ -2808,19 +2809,19 @@ namespace CodeWalker.Rendering
                 {
                     RenderCollisionMesh(sdrawable.Bound, entity);
                 }
-                //FragDrawable fdrawable = rndbl.Key as FragDrawable;
-                //if (fdrawable != null)
-                //{
-                //    if (fdrawable.Bound != null)
-                //    {
-                //        RenderCollisionMesh(fdrawable.Bound, entity);
-                //    }
-                //    var fbound = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1?.Bound;
-                //    if (fbound != null)
-                //    {
-                //        RenderCollisionMesh(fbound, entity);
-                //    }
-                //}
+                FragDrawable fdrawable = rndbl.Key as FragDrawable;
+                if (fdrawable != null)
+                {
+                    if (fdrawable.Bound != null)
+                    {
+                        RenderCollisionMesh(fdrawable.Bound, entity);
+                    }
+                    var fbound = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1?.Bound;
+                    if (fbound != null)
+                    {
+                        RenderCollisionMesh(fbound, entity);//TODO: these probably have extra transforms..!
+                    }
+                }
             }
             if (renderskeletons && rndbl.HasSkeleton)
             {
@@ -3111,53 +3112,31 @@ namespace CodeWalker.Rendering
                 orientation = Quaternion.Identity;
             }
 
-            switch (bounds.Type)
+            RenderableBoundComposite rndbc = renderableCache.GetRenderableBoundComp(bounds);
+            if (rndbc.IsLoaded)
             {
-                case 10: //BoundComposite
-                    BoundComposite boundcomp = bounds as BoundComposite;
-                    if (boundcomp != null)
-                    {
-                        RenderableBoundComposite rndbc = renderableCache.GetRenderableBoundComp(boundcomp);
-                        if (rndbc.IsLoaded)
-                        {
-                            RenderableBoundGeometryInst rbginst = new RenderableBoundGeometryInst();
-                            rbginst.Inst.Renderable = rndbc;
-                            rbginst.Inst.Orientation = orientation;
-                            rbginst.Inst.Scale = scale;
-                            foreach (var geom in rndbc.Geometries)
-                            {
-                                if (geom == null) continue;
-                                rbginst.Geom = geom;
-                                rbginst.Inst.Position = position + orientation.Multiply(geom.BoundGeom.CenterGeom * scale);
-                                rbginst.Inst.CamRel = rbginst.Inst.Position - camera.Position;
-                                shaders.Enqueue(ref rbginst);
-                            }
+                RenderableBoundGeometryInst rbginst = new RenderableBoundGeometryInst();
+                rbginst.Inst.Renderable = rndbc;
+                rbginst.Inst.Orientation = orientation;
+                rbginst.Inst.Scale = scale;
+                foreach (var geom in rndbc.Geometries)
+                {
+                    if (geom == null) continue;
+                    rbginst.Geom = geom;
+                    rbginst.Inst.Position = position + orientation.Multiply(geom.CenterGeom * scale);
+                    rbginst.Inst.CamRel = rbginst.Inst.Position - camera.Position;
+                    shaders.Enqueue(ref rbginst);
+                }
 
-                            if (RenderedBoundCompsListEnable) //for later hit tests
-                            {
-                                var rb = new RenderedBoundComposite();
-                                rb.BoundComp = rndbc;
-                                rb.Entity = entity;
-                                RenderedBoundComps.Add(rb);
-                            }
-                        }
-                    }
-                    else
-                    { }
-                    break;
-                case 3: //BoundBox - found in drawables - TODO
-                    BoundBox boundbox = bounds as BoundBox;
-                    if (boundbox == null)
-                    { }
-                    break;
-                case 0: //BoundSphere - found in drawables - TODO
-                    BoundSphere boundsphere = bounds as BoundSphere;
-                    if (boundsphere == null)
-                    { }
-                    break;
-                default:
-                    break;
+                if (RenderedBoundCompsListEnable) //for later hit tests
+                {
+                    var rb = new RenderedBoundComposite();
+                    rb.BoundComp = rndbc;
+                    rb.Entity = entity;
+                    RenderedBoundComps.Add(rb);
+                }
             }
+
         }
 
 

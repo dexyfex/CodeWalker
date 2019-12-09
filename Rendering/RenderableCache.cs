@@ -96,7 +96,7 @@ namespace CodeWalker.Rendering
 
         private RenderableCacheLookup<DrawableBase, Renderable> renderables = new RenderableCacheLookup<DrawableBase, Renderable>(Settings.Default.GPUGeometryCacheSize, Settings.Default.GPUCacheTime);
         private RenderableCacheLookup<Texture, RenderableTexture> textures = new RenderableCacheLookup<Texture, RenderableTexture>(Settings.Default.GPUTextureCacheSize, Settings.Default.GPUCacheTime);
-        private RenderableCacheLookup<BoundComposite, RenderableBoundComposite> boundcomps = new RenderableCacheLookup<BoundComposite, RenderableBoundComposite>(Settings.Default.GPUBoundCompCacheSize, Settings.Default.GPUCacheTime);
+        private RenderableCacheLookup<Bounds, RenderableBoundComposite> boundcomps = new RenderableCacheLookup<Bounds, RenderableBoundComposite>(Settings.Default.GPUBoundCompCacheSize, Settings.Default.GPUCacheTime);
         private RenderableCacheLookup<YmapGrassInstanceBatch, RenderableInstanceBatch> instbatches = new RenderableCacheLookup<YmapGrassInstanceBatch, RenderableInstanceBatch>(67108864, Settings.Default.GPUCacheTime); //64MB - todo: make this a setting
         private RenderableCacheLookup<YmapFile, RenderableLODLights> lodlights = new RenderableCacheLookup<YmapFile, RenderableLODLights>(33554432, Settings.Default.GPUCacheTime); //32MB - todo: make this a setting
         private RenderableCacheLookup<YmapDistantLODLights, RenderableDistantLODLights> distlodlights = new RenderableCacheLookup<YmapDistantLODLights, RenderableDistantLODLights>(33554432, Settings.Default.GPUCacheTime); //32MB - todo: make this a setting
@@ -204,9 +204,9 @@ namespace CodeWalker.Rendering
         {
             return textures.Get(texture);
         }
-        public RenderableBoundComposite GetRenderableBoundComp(BoundComposite boundcomp)
+        public RenderableBoundComposite GetRenderableBoundComp(Bounds bound)
         {
-            return boundcomps.Get(boundcomp);
+            return boundcomps.Get(bound);
         }
         public RenderableInstanceBatch GetRenderableInstanceBatch(YmapGrassInstanceBatch batch)
         {
