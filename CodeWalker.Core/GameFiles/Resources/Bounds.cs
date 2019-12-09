@@ -32,10 +32,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using CodeWalker.World;
 
 using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
-
 
 namespace CodeWalker.GameFiles
 {
@@ -231,9 +231,29 @@ namespace CodeWalker.GameFiles
                 default: return null; // throw new Exception("Unknown bound type");
             }
         }
+
+
+        public virtual SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
+        {
+            return new SpaceSphereIntersectResult();
+        }
+        public virtual SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue, float itemhitdist = float.MaxValue)
+        {
+            return new SpaceRayIntersectResult();
+        }
+
     }
     [TC(typeof(EXP))] public class BoundSphere : Bounds
-    { }
+    {
+        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
+        {
+            return base.SphereIntersect(ref sph);
+        }
+        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue, float itemhitdist = float.MaxValue)
+        {
+            return base.RayIntersect(ref ray, maxdist, itemhitdist);
+        }
+    }
     [TC(typeof(EXP))] public class BoundCapsule : Bounds
     {
         public override long BlockLength
@@ -274,9 +294,27 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_78h);
             writer.Write(this.Unknown_7Ch);
         }
+
+        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
+        {
+            return base.SphereIntersect(ref sph);
+        }
+        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue, float itemhitdist = float.MaxValue)
+        {
+            return base.RayIntersect(ref ray, maxdist, itemhitdist);
+        }
     }
     [TC(typeof(EXP))] public class BoundBox : Bounds
-    { }
+    {
+        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
+        {
+            return base.SphereIntersect(ref sph);
+        }
+        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue, float itemhitdist = float.MaxValue)
+        {
+            return base.RayIntersect(ref ray, maxdist, itemhitdist);
+        }
+    }
     [TC(typeof(EXP))] public class BoundDisc : Bounds
     {
         public override long BlockLength
@@ -316,6 +354,15 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_74h);
             writer.Write(this.Unknown_78h);
             writer.Write(this.Unknown_7Ch);
+        }
+
+        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
+        {
+            return base.SphereIntersect(ref sph);
+        }
+        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue, float itemhitdist = float.MaxValue)
+        {
+            return base.RayIntersect(ref ray, maxdist, itemhitdist);
         }
     }
     [TC(typeof(EXP))] public class BoundCylinder : Bounds
@@ -357,6 +404,15 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_74h);
             writer.Write(this.Unknown_78h);
             writer.Write(this.Unknown_7Ch);
+        }
+
+        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
+        {
+            return base.SphereIntersect(ref sph);
+        }
+        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue, float itemhitdist = float.MaxValue)
+        {
+            return base.RayIntersect(ref ray, maxdist, itemhitdist);
         }
     }
     [TC(typeof(EXP))] public class BoundGeometry : Bounds
@@ -698,6 +754,15 @@ namespace CodeWalker.GameFiles
                 list.Add(PolygonMaterialIndicesBlock);
             }
             return list.ToArray();
+        }
+
+        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
+        {
+            return base.SphereIntersect(ref sph);
+        }
+        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue, float itemhitdist = float.MaxValue)
+        {
+            return base.RayIntersect(ref ray, maxdist, itemhitdist);
         }
     }
 
@@ -1186,6 +1251,345 @@ namespace CodeWalker.GameFiles
             if (BVH != null) list.Add(BVH);
             return list.ToArray();
         }
+
+
+
+        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
+        {
+            var res = new SpaceSphereIntersectResult();
+            var box = new BoundingBox();
+            Vector3 p1, p2, p3, p4, a1, a2, a3;
+            Vector3 n1 = Vector3.Zero;
+            var tsph = new BoundingSphere();
+            var spht = new BoundingSphere();
+            var sp = sph.Center;
+            var sr = sph.Radius;
+
+
+            if (Polygons == null)
+            { return res; }
+            if ((BVH?.Nodes?.data_items == null) || (BVH?.Trees?.data_items == null))
+            { return res; }
+
+            box.Minimum = BoundingBoxMin;
+            box.Maximum = BoundingBoxMax;
+            if (!sph.Intersects(ref box))
+            { return res; }
+
+            var q = BVH.Quantum.XYZ();
+            var c = BVH.BoundingBoxCenter.XYZ();
+            var cg = CenterGeom;
+            for (int t = 0; t < BVH.Trees.data_items.Length; t++)
+            {
+                var tree = BVH.Trees.data_items[t];
+                box.Minimum = new Vector3(tree.MinX, tree.MinY, tree.MinZ) * q + c;
+                box.Maximum = new Vector3(tree.MaxX, tree.MaxY, tree.MaxZ) * q + c;
+                if (!sph.Intersects(ref box))
+                { continue; }
+
+                int nodeind = tree.NodeIndex1;
+                int lastind = tree.NodeIndex2;
+                while (nodeind < lastind)
+                {
+                    var node = BVH.Nodes.data_items[nodeind];
+                    box.Minimum = new Vector3(node.MinX, node.MinY, node.MinZ) * q + c;
+                    box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
+                    bool nodehit = sph.Intersects(ref box);
+                    bool nodeskip = !nodehit;
+                    if (node.PolyCount <= 0) //intermediate node with child nodes
+                    {
+                        if (nodeskip)
+                        {
+                            nodeind += node.PolyId; //(child node count)
+                        }
+                        else
+                        {
+                            nodeind++;
+                        }
+                    }
+                    else //leaf node, with polygons
+                    {
+                        if (!nodeskip)
+                        {
+                            var lastp = node.PolyId + node.PolyCount;
+                            lastp = Math.Min(lastp, (int)PolygonsCount);
+                            for (int p = node.PolyId; p < lastp; p++)
+                            {
+                                var polygon = Polygons[p];
+                                bool polyhit = false;
+                                switch (polygon.Type)
+                                {
+                                    case BoundPolygonType.Triangle:
+                                        var ptri = polygon as BoundPolygonTriangle;
+                                        p1 = GetVertex(ptri.vertIndex1) + cg;
+                                        p2 = GetVertex(ptri.vertIndex2) + cg;
+                                        p3 = GetVertex(ptri.vertIndex3) + cg;
+                                        polyhit = sph.Intersects(ref p1, ref p2, ref p3);
+                                        if (polyhit) n1 = Vector3.Normalize(Vector3.Cross(p2 - p1, p3 - p1));
+                                        break;
+                                    case BoundPolygonType.Sphere:
+                                        var psph = polygon as BoundPolygonSphere;
+                                        tsph.Center = GetVertex(psph.sphereIndex) + cg;
+                                        tsph.Radius = psph.sphereRadius;
+                                        polyhit = sph.Intersects(ref tsph);
+                                        if (polyhit) n1 = Vector3.Normalize(sph.Center - tsph.Center);
+                                        break;
+                                    case BoundPolygonType.Capsule:
+                                        var pcap = polygon as BoundPolygonCapsule;
+                                        var tcap = new BoundingCapsule();
+                                        tcap.PointA = GetVertex(pcap.capsuleIndex1) + cg;
+                                        tcap.PointB = GetVertex(pcap.capsuleIndex2) + cg;
+                                        tcap.Radius = pcap.capsuleRadius;
+                                        polyhit = sph.Intersects(ref tcap, out n1);
+                                        break;
+                                    case BoundPolygonType.Box:
+                                        var pbox = polygon as BoundPolygonBox;
+                                        p1 = GetVertex(pbox.boxIndex1);// + cg; //corner
+                                        p2 = GetVertex(pbox.boxIndex2);// + cg;
+                                        p3 = GetVertex(pbox.boxIndex3);// + cg;
+                                        p4 = GetVertex(pbox.boxIndex4);// + cg;
+                                        a1 = ((p3 + p4) - (p1 + p2)) * 0.5f;
+                                        a2 = p3 - (p1 + a1);
+                                        a3 = p4 - (p1 + a1);
+                                        Vector3 bs = new Vector3(a1.Length(), a2.Length(), a3.Length());
+                                        Vector3 m1 = a1 / bs.X;
+                                        Vector3 m2 = a2 / bs.Y;
+                                        Vector3 m3 = a3 / bs.Z;
+                                        if ((bs.X < bs.Y) && (bs.X < bs.Z)) m1 = Vector3.Cross(m2, m3);
+                                        else if (bs.Y < bs.Z) m2 = Vector3.Cross(m3, m1);
+                                        else m3 = Vector3.Cross(m1, m2);
+                                        Vector3 tp = sp - (p1 + cg);
+                                        spht.Center = new Vector3(Vector3.Dot(tp, m1), Vector3.Dot(tp, m2), Vector3.Dot(tp, m3));
+                                        spht.Radius = sph.Radius;
+                                        box.Minimum = Vector3.Zero;
+                                        box.Maximum = bs;
+                                        polyhit = spht.Intersects(ref box);
+                                        if (polyhit)
+                                        {
+                                            Vector3 smin = spht.Center - spht.Radius;
+                                            Vector3 smax = spht.Center + spht.Radius;
+                                            float eps = spht.Radius * 0.8f;
+                                            n1 = Vector3.Zero;
+                                            if (Math.Abs(smax.X) < eps) n1 -= m1;
+                                            else if (Math.Abs(smin.X - bs.X) < eps) n1 += m1;
+                                            if (Math.Abs(smax.Y) < eps) n1 -= m2;
+                                            else if (Math.Abs(smin.Y - bs.Y) < eps) n1 += m2;
+                                            if (Math.Abs(smax.Z) < eps) n1 -= m3;
+                                            else if (Math.Abs(smin.Z - bs.Z) < eps) n1 += m3;
+                                            float n1l = n1.Length();
+                                            if (n1l > 0.0f) n1 = n1 / n1l;
+                                            else n1 = Vector3.UnitZ;
+                                        }
+                                        break;
+                                    case BoundPolygonType.Cylinder:
+                                        var pcyl = polygon as BoundPolygonCylinder;
+                                        //var tcyl = new BoundingCylinder();
+                                        //tcyl.PointA = GetVertex(pcyl.cylinderIndex1) + cg;
+                                        //tcyl.PointB = GetVertex(pcyl.cylinderIndex2) + cg;
+                                        //tcyl.Radius = pcyl.cylinderRadius;
+                                        //////polyhit = ray.Intersects(ref tcyl, out polyhittestdist, out n1);
+                                        ////////TODO
+                                        var ttcap = new BoundingCapsule();//just use the capsule intersection for now...
+                                        ttcap.PointA = GetVertex(pcyl.cylinderIndex1) + cg;
+                                        ttcap.PointB = GetVertex(pcyl.cylinderIndex2) + cg;
+                                        ttcap.Radius = pcyl.cylinderRadius;
+                                        polyhit = sph.Intersects(ref ttcap, out n1);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                if (polyhit) // && (polyhittestdist < itemhitdist) && (polyhittestdist < maxdist))
+                                {
+                                    res.HitPolygon = polygon;
+                                    //itemhitdist = polyhittestdist;
+                                    //ybnhit = true;
+                                    res.Hit = true;
+                                    res.Normal = n1;
+                                }
+                                res.TestedPolyCount++;
+                            }
+                        }
+                        nodeind++;
+                    }
+                    res.TestedNodeCount++;
+                }
+            }
+
+            return res;
+        }
+
+        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue, float itemhitdist = float.MaxValue)
+        {
+            var res = new SpaceRayIntersectResult();
+            var box = new BoundingBox();
+            var tsph = new BoundingSphere();
+            var rayt = new Ray();
+            Vector3 p1, p2, p3, p4, a1, a2, a3;
+            Vector3 n1 = Vector3.Zero;
+            var rp = ray.Position;
+            var rd = ray.Direction;
+
+
+
+            if (Polygons == null)
+            { return res; }
+            if ((BVH?.Nodes?.data_items == null) || (BVH?.Trees?.data_items == null))
+            { return res; }
+
+            box.Minimum = BoundingBoxMin;
+            box.Maximum = BoundingBoxMax;
+            float bvhboxhittest;
+            if (!ray.Intersects(ref box, out bvhboxhittest))
+            { return res; }
+            if (bvhboxhittest > itemhitdist)
+            { return res; } //already a closer hit.
+
+            res.HitDist = itemhitdist;
+
+            var q = BVH.Quantum.XYZ();
+            var c = BVH.BoundingBoxCenter.XYZ();
+            var cg = CenterGeom;
+            for (int t = 0; t < BVH.Trees.data_items.Length; t++)
+            {
+                var tree = BVH.Trees.data_items[t];
+                box.Minimum = new Vector3(tree.MinX, tree.MinY, tree.MinZ) * q + c;
+                box.Maximum = new Vector3(tree.MaxX, tree.MaxY, tree.MaxZ) * q + c;
+                if (!ray.Intersects(ref box, out bvhboxhittest))
+                { continue; }
+                if (bvhboxhittest > res.HitDist)
+                { continue; } //already a closer hit.
+                if (bvhboxhittest > maxdist)
+                { continue; }
+
+                int nodeind = tree.NodeIndex1;
+                int lastind = tree.NodeIndex2;
+                while (nodeind < lastind)
+                {
+                    var node = BVH.Nodes.data_items[nodeind];
+                    box.Minimum = new Vector3(node.MinX, node.MinY, node.MinZ) * q + c;
+                    box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
+                    bool nodehit = ray.Intersects(ref box, out bvhboxhittest);
+                    bool nodeskip = !nodehit || (bvhboxhittest > res.HitDist);
+                    if (node.PolyCount <= 0) //intermediate node with child nodes
+                    {
+                        if (nodeskip)
+                        {
+                            nodeind += node.PolyId; //(child node count)
+                        }
+                        else
+                        {
+                            nodeind++;
+                        }
+                    }
+                    else //leaf node, with polygons
+                    {
+                        if (!nodeskip)
+                        {
+                            var lastp = node.PolyId + node.PolyCount;
+                            lastp = Math.Min(lastp, (int)PolygonsCount);
+                            for (int p = node.PolyId; p < lastp; p++)
+                            {
+                                var polygon = Polygons[p];
+                                float polyhittestdist = float.MaxValue;
+                                bool polyhit = false;
+                                switch (polygon.Type)
+                                {
+                                    case BoundPolygonType.Triangle:
+                                        var ptri = polygon as BoundPolygonTriangle;
+                                        p1 = GetVertex(ptri.vertIndex1) + cg;
+                                        p2 = GetVertex(ptri.vertIndex2) + cg;
+                                        p3 = GetVertex(ptri.vertIndex3) + cg;
+                                        polyhit = ray.Intersects(ref p1, ref p2, ref p3, out polyhittestdist);
+                                        if (polyhit) n1 = Vector3.Normalize(Vector3.Cross(p2 - p1, p3 - p1));
+                                        break;
+                                    case BoundPolygonType.Sphere:
+                                        var psph = polygon as BoundPolygonSphere;
+                                        tsph.Center = GetVertex(psph.sphereIndex) + cg;
+                                        tsph.Radius = psph.sphereRadius;
+                                        polyhit = ray.Intersects(ref tsph, out polyhittestdist);
+                                        if (polyhit) n1 = Vector3.Normalize((ray.Position + ray.Direction * polyhittestdist) - tsph.Center);
+                                        break;
+                                    case BoundPolygonType.Capsule:
+                                        var pcap = polygon as BoundPolygonCapsule;
+                                        var tcap = new BoundingCapsule();
+                                        tcap.PointA = GetVertex(pcap.capsuleIndex1) + cg;
+                                        tcap.PointB = GetVertex(pcap.capsuleIndex2) + cg;
+                                        tcap.Radius = pcap.capsuleRadius;
+                                        polyhit = ray.Intersects(ref tcap, out polyhittestdist);
+                                        res.Position = (ray.Position + ray.Direction * polyhittestdist);
+                                        if (polyhit) n1 = tcap.Normal(ref res.Position);
+                                        break;
+                                    case BoundPolygonType.Box:
+                                        var pbox = polygon as BoundPolygonBox;
+                                        p1 = GetVertex(pbox.boxIndex1);// + cg; //corner
+                                        p2 = GetVertex(pbox.boxIndex2);// + cg;
+                                        p3 = GetVertex(pbox.boxIndex3);// + cg;
+                                        p4 = GetVertex(pbox.boxIndex4);// + cg;
+                                        a1 = ((p3 + p4) - (p1 + p2)) * 0.5f;
+                                        a2 = p3 - (p1 + a1);
+                                        a3 = p4 - (p1 + a1);
+                                        Vector3 bs = new Vector3(a1.Length(), a2.Length(), a3.Length());
+                                        Vector3 m1 = a1 / bs.X;
+                                        Vector3 m2 = a2 / bs.Y;
+                                        Vector3 m3 = a3 / bs.Z;
+                                        if ((bs.X < bs.Y) && (bs.X < bs.Z)) m1 = Vector3.Cross(m2, m3);
+                                        else if (bs.Y < bs.Z) m2 = Vector3.Cross(m3, m1);
+                                        else m3 = Vector3.Cross(m1, m2);
+                                        Vector3 tp = rp - (p1 + cg);
+                                        rayt.Position = new Vector3(Vector3.Dot(tp, m1), Vector3.Dot(tp, m2), Vector3.Dot(tp, m3));
+                                        rayt.Direction = new Vector3(Vector3.Dot(rd, m1), Vector3.Dot(rd, m2), Vector3.Dot(rd, m3));
+                                        box.Minimum = Vector3.Zero;
+                                        box.Maximum = bs;
+                                        polyhit = rayt.Intersects(ref box, out polyhittestdist);
+                                        if (polyhit)
+                                        {
+                                            Vector3 hpt = rayt.Position + rayt.Direction * polyhittestdist;
+                                            const float eps = 0.002f;
+                                            if (Math.Abs(hpt.X) < eps) n1 = -m1;
+                                            else if (Math.Abs(hpt.X - bs.X) < eps) n1 = m1;
+                                            else if (Math.Abs(hpt.Y) < eps) n1 = -m2;
+                                            else if (Math.Abs(hpt.Y - bs.Y) < eps) n1 = m2;
+                                            else if (Math.Abs(hpt.Z) < eps) n1 = -m3;
+                                            else if (Math.Abs(hpt.Z - bs.Z) < eps) n1 = m3;
+                                            else
+                                            { n1 = Vector3.UnitZ; } //ray starts inside the box...
+                                        }
+                                        break;
+                                    case BoundPolygonType.Cylinder:
+                                        var pcyl = polygon as BoundPolygonCylinder;
+                                        var tcyl = new BoundingCylinder();
+                                        tcyl.PointA = GetVertex(pcyl.cylinderIndex1) + cg;
+                                        tcyl.PointB = GetVertex(pcyl.cylinderIndex2) + cg;
+                                        tcyl.Radius = pcyl.cylinderRadius;
+                                        polyhit = ray.Intersects(ref tcyl, out polyhittestdist, out n1);
+                                        if (polyhit) n1.Normalize();
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                if (polyhit && (polyhittestdist < res.HitDist) && (polyhittestdist < maxdist))
+                                {
+                                    res.HitDist = polyhittestdist;
+                                    res.Hit = true;
+                                    res.Normal = n1;
+                                    res.HitPolygon = polygon;
+
+                                    byte matind = ((PolygonMaterialIndices != null) && (p < PolygonMaterialIndices.Length)) ? PolygonMaterialIndices[p] : (byte)0;
+                                    BoundMaterial_s mat = ((Materials != null) && (matind < Materials.Length)) ? Materials[matind] : new BoundMaterial_s();
+                                    res.Material = mat;
+                                }
+                                res.TestedPolyCount++;
+                            }
+                        }
+                        nodeind++;
+                    }
+                    res.TestedNodeCount++;
+                }
+            }
+
+            return res;
+        }
+
     }
     [TC(typeof(EXP))] public class BoundComposite : Bounds
     {
@@ -1334,6 +1738,69 @@ namespace CodeWalker.GameFiles
             if (BVH != null) list.Add(BVH);
             return list.ToArray();
         }
+
+
+
+
+        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
+        {
+            var res = new SpaceSphereIntersectResult();
+
+            var compchilds = Children?.data_items;
+            if (compchilds == null)
+            { return res; }
+
+            for (int i = 0; i < compchilds.Length; i++)
+            {
+                var c = compchilds[i];
+
+                var chit = c.SphereIntersect(ref sph);
+                if (chit.Hit)
+                {
+                    res.Hit = true;
+                    res.HitPolygon = chit.HitPolygon;
+                    res.Normal = chit.Normal;
+                }
+                res.TestedPolyCount += chit.TestedPolyCount;
+                res.TestedNodeCount += chit.TestedNodeCount;
+            }
+
+            res.TestComplete = true;
+
+            return res;
+        }
+
+        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue, float itemhitdist = float.MaxValue)
+        {
+            var res = new SpaceRayIntersectResult();
+            res.HitDist = itemhitdist;
+
+            var compchilds = Children?.data_items;
+            if (compchilds == null)
+            { return res; }
+            for (int i = 0; i < compchilds.Length; i++)
+            {
+                Bounds c = compchilds[i];
+                if (c == null)
+                { continue; }
+
+                var bghit = c.RayIntersect(ref ray, maxdist, res.HitDist);
+                if (bghit.Hit)
+                {
+                    res.Hit = true;
+                    res.HitDist = bghit.HitDist;
+                    res.HitPolygon = bghit.HitPolygon;
+                    res.Material = bghit.Material;
+                    res.Normal = bghit.Normal;
+                }
+                res.TestedNodeCount += bghit.TestedNodeCount;
+                res.TestedPolyCount += bghit.TestedPolyCount;
+
+            }
+
+            return res;
+        }
+
     }
 
     [Flags] public enum EBoundCompositeFlags
