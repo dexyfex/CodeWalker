@@ -44,7 +44,11 @@ namespace CodeWalker.World
 
         public SpaceNavGrid NavGrid;
 
-        public List<SpaceEntityCollision> Collisions = new List<SpaceEntityCollision>(); 
+        public List<SpaceEntityCollision> Collisions = new List<SpaceEntityCollision>();
+        private bool[] CollisionLayers = new[] { true, false, false };
+
+        private int CurrentHour;
+        private MetaHash CurrentWeather;
 
 
         public void Init(GameFileCache gameFileCache, Action<string> updateStatus)
@@ -749,6 +753,7 @@ namespace CodeWalker.World
 
                 e.Velocity += dvgrav; //apply gravity
                 e.Momentum = e.Velocity * e.Mass;
+                e.Age += elapsed;
 
                 e.PreUpdate(elapsed);
 
@@ -831,6 +836,11 @@ namespace CodeWalker.World
                 }
 
 
+                if ((e.Lifetime > 0.0f) && (e.Age > e.Lifetime))
+                {
+                    TemporaryEntities.Remove(e);
+                }
+
             }
 
 
@@ -856,7 +866,7 @@ namespace CodeWalker.World
 
             BoundingSphere sph = new BoundingSphere(r.HitPos + e.Center, e.Radius);
 
-            r.SphereHit = SphereIntersect(sph);
+            r.SphereHit = SphereIntersect(sph, CollisionLayers);
 
             if (!r.SphereHit.Hit)
             {
@@ -876,7 +886,7 @@ namespace CodeWalker.World
                             sph.Center = r.HitPos + e.Center; //this really shouldn't happen... but just in case of glancing hit..
                         }
 
-                        r.SphereHit = SphereIntersect(sph); //this really should be a hit!
+                        r.SphereHit = SphereIntersect(sph, CollisionLayers); //this really should be a hit!
                     }
                 }
             }
@@ -891,7 +901,7 @@ namespace CodeWalker.World
                 while (curiter < maxiter) //iterate to find a closer hit time... improve this!
                 {
                     sph.Center = sphpos + disp * curt;
-                    var tcollres = SphereIntersect(sph);
+                    var tcollres = SphereIntersect(sph, CollisionLayers);
                     if (tcollres.Hit)
                     {
                         r.HitT = curt;
@@ -977,6 +987,8 @@ namespace CodeWalker.World
         {
             if (!Inited) return;
             if (MapDataStore == null) return;
+            CurrentHour = hour;
+            CurrentWeather = weather;
             var items = MapDataStore.GetItems(ref cam.Position);
             for (int i = 0; i < items.Count; i++)
             {
@@ -1067,29 +1079,24 @@ namespace CodeWalker.World
             var res = new SpaceRayIntersectResult();
             if (GameFileCache == null) return res;
             bool testcomplete = true;
-            res.HitDist = float.MaxValue;
+            res.HitDist = maxdist;
             var box = new BoundingBox();
+            float boxhitdisttest;
 
-            if (BoundsStore == null) return res;
-            var boundslist = BoundsStore.GetItems(ref ray);
+            if ((BoundsStore == null) || (MapDataStore == null)) return res;
 
-            foreach (var bound in boundslist)
+            var boundslist = BoundsStore.GetItems(ref ray, layers);
+            var mapdatalist = MapDataStore.GetItems(ref ray);
+
+            for (int i = 0; i < boundslist.Count; i++)
             {
-                uint l = bound.Layer;
-                if ((layers != null) && (l < 3))
-                {
-                    if (!layers[l]) continue;
-                }
-
+                var bound = boundslist[i];
                 box.Minimum = bound.Min;
                 box.Maximum = bound.Max;
-                float boxhitdisttest;
                 if (ray.Intersects(ref box, out boxhitdisttest))
                 {
                     if (boxhitdisttest > res.HitDist)
                     { continue; } //already a closer hit
-                    if (boxhitdisttest > maxdist)
-                    { continue; }
 
                     YbnFile ybn = GameFileCache.GetYbn(bound.Name);
                     if (ybn == null)
@@ -1098,32 +1105,67 @@ namespace CodeWalker.World
                     { testcomplete = false; continue; } //ybn not loaded yet...
 
                     var b = ybn.Bounds;
-
-                    //box.Minimum = b.BoundingBoxMin;
-                    //box.Maximum = b.BoundingBoxMax;
-                    //float itemboxhitdisttest;
-                    //if (!ray.Intersects(ref box, out itemboxhitdisttest))
-                    //{ continue; } //ray doesn't hit this ybn
-                    //if (itemboxhitdisttest > res.HitDist)
-                    //{ continue; } //already a closer hit.
-                    //if (itemboxhitdisttest > maxdist)
-                    //{ continue; }
-
-                    var bhit = b.RayIntersect(ref ray, maxdist, res.HitDist);
-                    if (bhit.Hit)
-                    {
-                        res.Hit = true;
-                        res.HitDist = bhit.HitDist;
-                        res.HitPolygon = bhit.HitPolygon;
-                        res.Material = bhit.Material;
-                        res.Normal = bhit.Normal;
-                    }
-
-                    res.TestedNodeCount += bhit.TestedNodeCount;
-                    res.TestedPolyCount += bhit.TestedPolyCount;
-
+                    var bhit = b.RayIntersect(ref ray, res.HitDist);
+                    res.TryUpdate(ref bhit);
                 }
             }
+
+            for (int i = 0; i < mapdatalist.Count; i++)
+            {
+                var mapdata = mapdatalist[i];
+                if ((mapdata.ContentFlags & 1) == 0)
+                { continue; } //only test HD ymaps
+
+                box.Minimum = mapdata.entitiesExtentsMin;
+                box.Maximum = mapdata.entitiesExtentsMax;
+                if (ray.Intersects(ref box, out boxhitdisttest))
+                {
+                    if (boxhitdisttest > res.HitDist)
+                    { continue; } //already a closer hit
+
+                    var hash = mapdata.Name;
+                    var ymap = (hash > 0) ? GameFileCache.GetYmap(hash) : null;
+                    if ((ymap != null) && (ymap.Loaded) && (ymap.AllEntities != null))
+                    {
+                        if (!IsYmapAvailable(hash, CurrentHour, CurrentWeather))
+                        { continue; }
+
+                        for (int e = 0; e < ymap.AllEntities.Length; e++)
+                        {
+                            var ent = ymap.AllEntities[e];
+
+                            if (!EntityCollisionsEnabled(ent))
+                            { continue; }
+
+                            box.Minimum = ent.BBMin;
+                            box.Maximum = ent.BBMax;
+                            if (ray.Intersects(ref box, out boxhitdisttest))
+                            {
+                                if (boxhitdisttest > res.HitDist)
+                                { continue; } //already a closer hit
+
+                                if (ent.IsMlo)
+                                {
+                                    var ihit = RayIntersectInterior(ref ray, ent, res.HitDist);
+                                    res.TryUpdate(ref ihit);
+                                }
+                                else
+                                {
+                                    var ehit = RayIntersectEntity(ref ray, ent, res.HitDist);
+                                    res.TryUpdate(ref ehit);
+                                }
+                            }
+                        }
+                    }
+                    else if ((ymap != null) && (!ymap.Loaded))
+                    {
+                        testcomplete = false;
+                    }
+                }
+            }
+
+
+
 
             if (res.Hit)
             {
@@ -1134,24 +1176,163 @@ namespace CodeWalker.World
 
             return res;
         }
+        public SpaceRayIntersectResult RayIntersectEntity(ref Ray ray, YmapEntityDef ent, float maxdist = float.MaxValue)
+        {
+            var res = new SpaceRayIntersectResult();
+            res.HitDist = maxdist;
 
-        public SpaceSphereIntersectResult SphereIntersect(BoundingSphere sph)
+            var drawable = GameFileCache.TryGetDrawable(ent.Archetype);
+            if (drawable != null)
+            {
+                var eori = ent.Orientation;
+                var eorinv = Quaternion.Invert(ent.Orientation);
+                var eray = new Ray();
+                eray.Position = eorinv.Multiply(ray.Position - ent.Position);
+                eray.Direction = eorinv.Multiply(ray.Direction);
+
+                if ((drawable is Drawable sdrawable) && (sdrawable.Bound != null))
+                {
+                    var dhit = sdrawable.Bound.RayIntersect(ref eray, res.HitDist);
+                    if (dhit.Hit)
+                    {
+                        dhit.Position = eori.Multiply(dhit.Position) + ent.Position;
+                        dhit.Normal = eori.Multiply(dhit.Normal);
+                    }
+                    res.TryUpdate(ref dhit);
+                }
+                else if (drawable is FragDrawable fdrawable)
+                {
+                    if (fdrawable.Bound != null)
+                    {
+                        var fhit = fdrawable.Bound.RayIntersect(ref eray, res.HitDist);
+                        if (fhit.Hit)
+                        {
+                            fhit.Position = eori.Multiply(fhit.Position) + ent.Position;
+                            fhit.Normal = eori.Multiply(fhit.Normal);
+                        }
+                        res.TryUpdate(ref fhit);
+                    }
+                    var fbound = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1?.Bound;
+                    if (fbound != null)
+                    {
+                        var fhit = fbound.RayIntersect(ref eray, res.HitDist);//TODO: these probably have extra transforms..!
+                        if (fhit.Hit)
+                        {
+                            fhit.Position = eori.Multiply(fhit.Position) + ent.Position;
+                            fhit.Normal = eori.Multiply(fhit.Normal);
+                        }
+                        res.TryUpdate(ref fhit);
+                    }
+                }
+            }
+
+            return res;
+        }
+        public SpaceRayIntersectResult RayIntersectInterior(ref Ray ray, YmapEntityDef mlo, float maxdist = float.MaxValue)
+        {
+            var res = new SpaceRayIntersectResult();
+            res.HitDist = maxdist;
+
+            if (mlo.Archetype == null)
+            { return res; }
+
+            var iori = mlo.Orientation;
+            var iorinv = Quaternion.Invert(mlo.Orientation);
+            var iray = new Ray();
+            iray.Position = iorinv.Multiply(ray.Position - mlo.Position);
+            iray.Direction = iorinv.Multiply(ray.Direction);
+
+            var hash = mlo.Archetype.Hash;
+            var ybn = GameFileCache.GetYbn(hash);
+            if ((ybn != null) && (ybn.Loaded))
+            {
+                var ihit = ybn.Bounds.RayIntersect(ref iray, res.HitDist);
+                if (ihit.Hit)
+                {
+                    ihit.Position = iori.Multiply(ihit.Position) + mlo.Position;
+                    ihit.Normal = iori.Multiply(ihit.Normal);
+                }
+                res.TryUpdate(ref ihit);
+            }
+
+            var mlodat = mlo.MloInstance;
+            if (mlodat == null)
+            { return res; }
+
+            var box = new BoundingBox();
+            float boxhitdisttest;
+
+            if (mlodat.Entities != null)
+            {
+                for (int j = 0; j < mlodat.Entities.Length; j++) //should really improve this by using rooms!
+                {
+                    var intent = mlodat.Entities[j];
+                    if (intent.Archetype == null) continue; //missing archetype...
+
+                    if (!EntityCollisionsEnabled(intent))
+                    { continue; }
+
+                    box.Minimum = intent.BBMin;
+                    box.Maximum = intent.BBMax;
+                    if (ray.Intersects(ref box, out boxhitdisttest))
+                    {
+                        if (boxhitdisttest > res.HitDist)
+                        { continue; } //already a closer hit
+
+                        var ehit = RayIntersectEntity(ref ray, intent, res.HitDist);
+                        res.TryUpdate(ref ehit);
+                    }
+                }
+            }
+            if (mlodat.EntitySets != null)
+            {
+                foreach (var entitysets in mlodat.EntitySets)
+                {
+                    var entityset = entitysets.Value;
+                    if (!entityset.Visible) continue;
+                    var entities = entityset.Entities;
+                    for (int i = 0; i < entities.Count; i++) //should really improve this by using rooms!
+                    {
+                        var intent = entities[i];
+                        if (intent.Archetype == null) continue; //missing archetype...
+
+                        if (!EntityCollisionsEnabled(intent))
+                        { continue; }
+
+                        box.Minimum = intent.BBMin;
+                        box.Maximum = intent.BBMax;
+                        if (ray.Intersects(ref box, out boxhitdisttest))
+                        {
+                            if (boxhitdisttest > res.HitDist)
+                            { continue; } //already a closer hit
+
+                            var ehit = RayIntersectEntity(ref ray, intent, res.HitDist);
+                            res.TryUpdate(ref ehit);
+                        }
+                    }
+                }
+            }
+
+            return res;
+        }
+
+        public SpaceSphereIntersectResult SphereIntersect(BoundingSphere sph, bool[] layers = null)
         {
             var res = new SpaceSphereIntersectResult();
             if (GameFileCache == null) return res;
-            int polytestcount = 0;
-            int nodetestcount = 0;
             bool testcomplete = true;
             Vector3 sphmin = sph.Center - sph.Radius;
             Vector3 sphmax = sph.Center + sph.Radius;
             var box = new BoundingBox();
 
-            if (BoundsStore == null) return res;
-            var boundslist = BoundsStore.GetItems(ref sphmin, ref sphmax);
+            if ((BoundsStore == null) || (MapDataStore == null)) return res;
 
+            var boundslist = BoundsStore.GetItems(ref sphmin, ref sphmax, layers);
+            var mapdatalist = MapDataStore.GetItems(ref sphmin, ref sphmax);
 
-            foreach (var bound in boundslist)
+            for (int i = 0; i < boundslist.Count; i++)
             {
+                var bound = boundslist[i];
                 box.Minimum = bound.Min;
                 box.Maximum = bound.Max;
                 if (sph.Intersects(ref box))
@@ -1163,34 +1344,207 @@ namespace CodeWalker.World
                     { testcomplete = false; continue; } //ybn not loaded yet...
 
                     var b = ybn.Bounds;
-
-                    //box.Minimum = b.BoundingBoxMin;
-                    //box.Maximum = b.BoundingBoxMax;
-                    //if (!sph.Intersects(ref box))
-                    //{ continue; } //ray doesn't hit this ybn
-
                     var bhit = b.SphereIntersect(ref sph);
-                    if (bhit.Hit)
-                    {
-                        res.Hit = true;
-                        res.HitPolygon = bhit.HitPolygon;
-                        res.Normal = bhit.Normal;
-                    }
-                    polytestcount += bhit.TestedPolyCount;
-                    nodetestcount += bhit.TestedNodeCount;
+                    res.TryUpdate(ref bhit);
                 }
             }
+
+            for (int i = 0; i < mapdatalist.Count; i++)
+            {
+                var mapdata = mapdatalist[i];
+                if ((mapdata.ContentFlags & 1) == 0)
+                { continue; } //only test HD ymaps
+
+                box.Minimum = mapdata.entitiesExtentsMin;
+                box.Maximum = mapdata.entitiesExtentsMax;
+                if (sph.Intersects(ref box))
+                {
+                    var hash = mapdata.Name;
+                    var ymap = (hash > 0) ? GameFileCache.GetYmap(hash) : null;
+                    if ((ymap != null) && (ymap.Loaded) && (ymap.AllEntities != null))
+                    {
+                        if (!IsYmapAvailable(hash, CurrentHour, CurrentWeather))
+                        { continue; }
+
+                        for (int e = 0; e < ymap.AllEntities.Length; e++)
+                        {
+                            var ent = ymap.AllEntities[e];
+
+                            if (!EntityCollisionsEnabled(ent))
+                            { continue; }
+
+                            box.Minimum = ent.BBMin;
+                            box.Maximum = ent.BBMax;
+                            if (sph.Intersects(ref box))
+                            {
+                                if (ent.IsMlo)
+                                {
+                                    var ihit = SphereIntersectInterior(ref sph, ent);
+                                    res.TryUpdate(ref ihit);
+                                }
+                                else
+                                {
+                                    var ehit = SphereIntersectEntity(ref sph, ent);
+                                    res.TryUpdate(ref ehit);
+                                }
+                            }
+                        }
+                    }
+                    else if ((ymap != null) && (!ymap.Loaded))
+                    {
+                        testcomplete = false;
+                    }
+                }
+            }
+
 
             //if (hit)
             //{
             //    hitpos = ray.Position + ray.Direction * itemhitdist;
             //}
 
-            res.TestedNodeCount = nodetestcount;
-            res.TestedPolyCount = polytestcount;
             res.TestComplete = testcomplete;
 
             return res;
+        }
+        public SpaceSphereIntersectResult SphereIntersectEntity(ref BoundingSphere sph, YmapEntityDef ent)
+        {
+            var res = new SpaceSphereIntersectResult();
+
+            var drawable = GameFileCache.TryGetDrawable(ent.Archetype);
+            if (drawable != null)
+            {
+                var eori = ent.Orientation;
+                var eorinv = Quaternion.Invert(ent.Orientation);
+                var esph = sph;
+                esph.Center = eorinv.Multiply(sph.Center - ent.Position);
+
+                if ((drawable is Drawable sdrawable) && (sdrawable.Bound != null))
+                {
+                    var dhit = sdrawable.Bound.SphereIntersect(ref esph);
+                    if (dhit.Hit)
+                    {
+                        dhit.Position = eori.Multiply(dhit.Position) + ent.Position;
+                        dhit.Normal = eori.Multiply(dhit.Normal);
+                    }
+                    res.TryUpdate(ref dhit);
+                }
+                else if (drawable is FragDrawable fdrawable)
+                {
+                    if (fdrawable.Bound != null)
+                    {
+                        var fhit = fdrawable.Bound.SphereIntersect(ref esph);
+                        if (fhit.Hit)
+                        {
+                            fhit.Position = eori.Multiply(fhit.Position) + ent.Position;
+                            fhit.Normal = eori.Multiply(fhit.Normal);
+                        }
+                        res.TryUpdate(ref fhit);
+                    }
+                    var fbound = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1?.Bound;
+                    if (fbound != null)
+                    {
+                        var fhit = fbound.SphereIntersect(ref esph);//TODO: these probably have extra transforms..!
+                        if (fhit.Hit)
+                        {
+                            fhit.Position = eori.Multiply(fhit.Position) + ent.Position;
+                            fhit.Normal = eori.Multiply(fhit.Normal);
+                        }
+                        res.TryUpdate(ref fhit);
+                    }
+                }
+            }
+
+            return res;
+        }
+        public SpaceSphereIntersectResult SphereIntersectInterior(ref BoundingSphere sph, YmapEntityDef mlo)
+        {
+            var res = new SpaceSphereIntersectResult();
+
+            if (mlo.Archetype == null)
+            { return res; }
+
+            var iori = mlo.Orientation;
+            var iorinv = Quaternion.Invert(mlo.Orientation);
+            var isph = sph;
+            isph.Center = iorinv.Multiply(sph.Center - mlo.Position);
+
+            var hash = mlo.Archetype.Hash;
+            var ybn = GameFileCache.GetYbn(hash);
+            if ((ybn != null) && (ybn.Loaded))
+            {
+                var ihit = ybn.Bounds.SphereIntersect(ref isph);
+                if (ihit.Hit)
+                {
+                    ihit.Position = iori.Multiply(ihit.Position) + mlo.Position;
+                    ihit.Normal = iori.Multiply(ihit.Normal);
+                }
+                res.TryUpdate(ref ihit);
+            }
+
+            var mlodat = mlo.MloInstance;
+            if (mlodat == null)
+            { return res; }
+
+            var box = new BoundingBox();
+
+            if (mlodat.Entities != null)
+            {
+                for (int j = 0; j < mlodat.Entities.Length; j++) //should really improve this by using rooms!
+                {
+                    var intent = mlodat.Entities[j];
+                    if (intent.Archetype == null) continue; //missing archetype...
+
+                    if (!EntityCollisionsEnabled(intent))
+                    { continue; }
+
+                    box.Minimum = intent.BBMin;
+                    box.Maximum = intent.BBMax;
+                    if (sph.Intersects(ref box))
+                    {
+                        var ehit = SphereIntersectEntity(ref sph, intent);
+                        res.TryUpdate(ref ehit);
+                    }
+                }
+            }
+            if (mlodat.EntitySets != null)
+            {
+                foreach (var entitysets in mlodat.EntitySets)
+                {
+                    var entityset = entitysets.Value;
+                    if (!entityset.Visible) continue;
+                    var entities = entityset.Entities;
+                    for (int i = 0; i < entities.Count; i++) //should really improve this by using rooms!
+                    {
+                        var intent = entities[i];
+                        if (intent.Archetype == null) continue; //missing archetype...
+
+                        if (!EntityCollisionsEnabled(intent))
+                        { continue; }
+
+                        box.Minimum = intent.BBMin;
+                        box.Maximum = intent.BBMax;
+                        if (sph.Intersects(ref box))
+                        {
+                            var ehit = SphereIntersectEntity(ref sph, intent);
+                            res.TryUpdate(ref ehit);
+                        }
+                    }
+                }
+            }
+
+            return res;
+        }
+
+        private bool EntityCollisionsEnabled(YmapEntityDef ent)
+        {
+            if ((ent._CEntityDef.lodLevel != rage__eLodType.LODTYPES_DEPTH_ORPHANHD) && (ent._CEntityDef.lodLevel != rage__eLodType.LODTYPES_DEPTH_HD))
+            { return false; } //only test HD entities
+
+            if ((ent._CEntityDef.flags & 4) > 0)
+            { return false; } //embedded collisions disabled
+
+            return true;
         }
 
     }
@@ -1227,13 +1581,35 @@ namespace CodeWalker.World
             RootNode.TrySplit(SplitThreshold);
         }
 
-        public List<MapDataStoreNode> GetItems(ref Vector3 p)
+        public List<MapDataStoreNode> GetItems(ref Vector3 p) //get items at a point, using the streaming extents
         {
             VisibleItems.Clear();
 
             if (RootNode != null)
             {
                 RootNode.GetItems(ref p, VisibleItems);
+            }
+
+            return VisibleItems;
+        }
+        public List<MapDataStoreNode> GetItems(ref Vector3 min, ref Vector3 max) //get items intersecting a box, using the entities extents
+        {
+            VisibleItems.Clear();
+
+            if (RootNode != null)
+            {
+                RootNode.GetItems(ref min, ref max, VisibleItems);
+            }
+
+            return VisibleItems;
+        }
+        public List<MapDataStoreNode> GetItems(ref Ray ray) //get items intersecting a ray, using the entities extents
+        {
+            VisibleItems.Clear();
+
+            if (RootNode != null)
+            {
+                RootNode.GetItems(ref ray, VisibleItems);
             }
 
             return VisibleItems;
@@ -1312,7 +1688,7 @@ namespace CodeWalker.World
             Items = newItems;
         }
 
-        public void GetItems(ref Vector3 p, List<MapDataStoreNode> items)
+        public void GetItems(ref Vector3 p, List<MapDataStoreNode> items) //get items at a point, using the streaming extents
         {
             if ((p.X >= BBMin.X) && (p.X <= BBMax.X) && (p.Y >= BBMin.Y) && (p.Y <= BBMax.Y))
             {
@@ -1337,6 +1713,67 @@ namespace CodeWalker.World
                         if (c != null)
                         {
                             c.GetItems(ref p, items);
+                        }
+                    }
+                }
+            }
+        }
+        public void GetItems(ref Vector3 min, ref Vector3 max, List<MapDataStoreNode> items) //get items intersecting a box, using the entities extents
+        {
+            if ((max.X >= BBMin.X) && (min.X <= BBMax.X) && (max.Y >= BBMin.Y) && (min.Y <= BBMax.Y))
+            {
+                if (Items != null)
+                {
+                    for (int i = 0; i < Items.Count; i++)
+                    {
+                        var item = Items[i];
+                        var imin = item.entitiesExtentsMin;
+                        var imax = item.entitiesExtentsMax;
+                        if ((max.X >= imin.X) && (min.X <= imax.X) && (max.Y >= imin.Y) && (min.Y <= imax.Y))
+                        {
+                            items.Add(item);
+                        }
+                    }
+                }
+                if (Children != null)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        var c = Children[i];
+                        if (c != null)
+                        {
+                            c.GetItems(ref min, ref max, items);
+                        }
+                    }
+                }
+            }
+        }
+        public void GetItems(ref Ray ray, List<MapDataStoreNode> items) //get items intersecting a ray, using the entities extents
+        {
+            var bb = new BoundingBox(BBMin, BBMax);
+            if (ray.Intersects(ref bb))
+            {
+                if (Items != null)
+                {
+                    for (int i = 0; i < Items.Count; i++)
+                    {
+                        var item = Items[i];
+                        bb.Minimum = item.entitiesExtentsMin;
+                        bb.Maximum = item.entitiesExtentsMax;
+                        if (ray.Intersects(ref bb))
+                        {
+                            items.Add(item);
+                        }
+                    }
+                }
+                if (Children != null)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        var c = Children[i];
+                        if (c != null)
+                        {
+                            c.GetItems(ref ray, items);
                         }
                     }
                 }
@@ -1708,6 +2145,21 @@ namespace CodeWalker.World
         public int TestedPolyCount;
         public bool TestComplete;
         public BoundMaterial_s Material;
+
+        public void TryUpdate(ref SpaceRayIntersectResult r)
+        {
+            if (r.Hit)
+            {
+                Hit = true;
+                HitDist = r.HitDist;
+                HitPolygon = r.HitPolygon;
+                Material = r.Material;
+                Position = r.Position;
+                Normal = r.Normal;
+            }
+            TestedNodeCount += r.TestedNodeCount;
+            TestedPolyCount += r.TestedPolyCount;
+        }
     }
     public struct SpaceSphereIntersectResult
     {
@@ -1719,6 +2171,18 @@ namespace CodeWalker.World
         public int TestedNodeCount;
         public int TestedPolyCount;
         public bool TestComplete;
+
+        public void TryUpdate(ref SpaceSphereIntersectResult r)
+        {
+            if (r.Hit)
+            {
+                Hit = true;
+                HitPolygon = r.HitPolygon;
+                Normal = r.Normal;
+            }
+            TestedPolyCount += r.TestedPolyCount;
+            TestedNodeCount += r.TestedNodeCount;
+        }
     }
 
     public struct SpaceEntityCollision

@@ -157,10 +157,10 @@ namespace CodeWalker
         }
         public static Vector3 Normal(this BoundingCapsule c, ref Vector3 position)
         {
-            Vector3  ba = c.PointB - c.PointA;
-            Vector3  pa = position - c.PointA;
-            float h = Math.Min(Math.Max(Vector3.Dot(pa,ba)/Vector3.Dot(ba,ba),0.0f),1.0f);
-            return (pa - h*ba)/c.Radius;
+            Vector3 ba = c.PointB - c.PointA;
+            Vector3 pa = position - c.PointA;
+            float h = Math.Min(Math.Max(Vector3.Dot(pa, ba) / Vector3.Dot(ba, ba), 0.0f), 1.0f);
+            return Vector3.Normalize((pa - h * ba) / c.Radius);
         }
 
 
@@ -222,7 +222,7 @@ namespace CodeWalker
             if (y > 0.0f && y < baba)
             {
                 dist = t;
-                norm = (oc + t * r.Direction - ba * y / baba) / cylinder.Radius;
+                norm = Vector3.Normalize((oc + t * r.Direction - ba * y / baba) / cylinder.Radius);
                 return true;
             }
 
@@ -231,7 +231,7 @@ namespace CodeWalker
             if (Math.Abs(k1 + k2 * t) < h)
             {
                 dist = t;
-                norm = ba * Math.Sign(y) / baba;
+                norm = Vector3.Normalize(ba * Math.Sign(y) / baba);
                 return true;
             }
 
