@@ -165,6 +165,8 @@ namespace CodeWalker
                 {
                     if (FileCache.IsInited)
                     {
+                        FileCache.BeginFrame();
+
                         bool fcItemsPending = FileCache.ContentThreadProc();
 
                         if (!fcItemsPending)

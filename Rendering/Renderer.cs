@@ -1652,6 +1652,23 @@ namespace CodeWalker.Rendering
 
 
 
+            for (int i = 0; i < ents.Count; i++) //make sure to remove the renderable references to avoid hogging memory
+            {
+                var ent = ents[i];
+                ent.LodManagerRenderable = null;
+            }
+            foreach (var ent in RequiredParents.Keys)
+            {
+                var pcnode = ent.LodManagerChildren?.First;
+                while (pcnode != null)//maybe can improve performance of this
+                {
+                    var pcent = pcnode.Value;
+                    pcent.LodManagerRenderable = null;
+                    pcnode = pcnode.Next;
+                }
+            }
+
+
             RenderWorldYmapExtras();
         }
 
@@ -3586,6 +3603,8 @@ namespace CodeWalker.Rendering
                         var ent = ymap.AllEntities[i];
                         RootEntities.Remove(ent);
                         ent.LodManagerChildren?.Clear();
+                        ent.LodManagerChildren = null;
+                        ent.LodManagerRenderable = null;
                         if ((ent.Parent != null) && (ent.Parent.Ymap != ymap))
                         {
                             ent.Parent.LodManagerRemoveChild(ent);

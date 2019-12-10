@@ -11,7 +11,8 @@ namespace CodeWalker
     {
         public long MaxMemoryUsage = 536870912; //512mb
         public long CurrentMemoryUsage = 0;
-        public double CacheTime = 5.0; //seconds to keep something that's not used
+        public double CacheTime = 10.0; //seconds to keep something that's not used
+        public DateTime CurrentTime = DateTime.Now;
 
         private LinkedList<TVal> loadedList = new LinkedList<TVal>();
         private Dictionary<TKey, LinkedListNode<TVal>> loadedListDict = new Dictionary<TKey, LinkedListNode<TVal>>();
@@ -33,6 +34,12 @@ namespace CodeWalker
             CacheTime = cacheTime;
         }
 
+        public void BeginFrame()
+        {
+            CurrentTime = DateTime.Now;
+            Compact();
+        }
+
         public TVal TryGet(TKey key)
         {
             LinkedListNode<TVal> lln = null;
@@ -40,7 +47,7 @@ namespace CodeWalker
             {
                 loadedList.Remove(lln);
                 loadedList.AddLast(lln);
-                lln.Value.LastUseTime = DateTime.Now;
+                lln.Value.LastUseTime = CurrentTime;
             }
             return (lln != null) ? lln.Value : null;
         }
@@ -65,7 +72,7 @@ namespace CodeWalker
                 int iter = 0, maxiter = 2;
                 while (!CanAdd() && (iter<maxiter))
                 {
-                    while ((!CanAdd()) && (oldlln != null) && ((DateTime.Now - oldlln.Value.LastUseTime).TotalSeconds > cachetime))
+                    while ((!CanAdd()) && (oldlln != null) && ((CurrentTime - oldlln.Value.LastUseTime).TotalSeconds > cachetime))
                     {
                         Interlocked.Add(ref CurrentMemoryUsage, -oldlln.Value.MemoryUsage);
                         loadedListDict.Remove(oldlln.Value.Key);
@@ -113,16 +120,33 @@ namespace CodeWalker
             {
                 loadedListDict.Remove(key);
                 loadedList.Remove(n);
-                CurrentMemoryUsage -= n.Value.MemoryUsage;
+                Interlocked.Add(ref CurrentMemoryUsage, -n.Value.MemoryUsage);
             }
         }
+
+
+        public void Compact()
+        {
+            var oldlln = loadedList.First;
+            while (oldlln != null)
+            {
+                if ((CurrentTime - oldlln.Value.LastUseTime).TotalSeconds < CacheTime) break;
+                var nextln = oldlln.Next;
+                Interlocked.Add(ref CurrentMemoryUsage, -oldlln.Value.MemoryUsage);
+                loadedListDict.Remove(oldlln.Value.Key);
+                loadedList.Remove(oldlln); //gc should free up memory later..
+                oldlln.Value = null;
+                oldlln = nextln;
+            }
+        }
+
 
     }
 
     public abstract class Cacheable<TKey>
     {
         public TKey Key;
-        public DateTime LastUseTime = DateTime.Now;
+        public DateTime LastUseTime;
         public long MemoryUsage;
     }
 
