@@ -226,6 +226,10 @@ namespace CodeWalker.GameFiles
             //{ }
 
             #endregion
+
+#if !DEBUG
+            Meta = null;
+#endif
         }
 
 

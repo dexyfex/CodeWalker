@@ -2257,6 +2257,13 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public void BeginFrame()
+        {
+            lock (requestSyncRoot)
+            {
+                mainCache.BeginFrame();
+            }
+        }
 
 
         public bool ContentThreadProc()

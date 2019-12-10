@@ -213,12 +213,13 @@ namespace CodeWalker.Peds
 
             if (pauserendering) return;
 
+            GameFileCache.BeginFrame();
+
             if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
             { return; } //couldn't get a lock, try again next time
 
             UpdateControlInputs(elapsed);
             //space.Update(elapsed);
-
 
             Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
 

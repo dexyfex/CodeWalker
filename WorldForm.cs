@@ -398,6 +398,8 @@ namespace CodeWalker
 
             if (pauserendering) return;
 
+            GameFileCache.BeginFrame();
+
             if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
             { return; } //couldn't get a lock, try again next time
 
