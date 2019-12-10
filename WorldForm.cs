@@ -2119,6 +2119,7 @@ namespace CodeWalker
             e.Radius = arch.BSRadius * 0.7f;
             e.EnableCollisions = true;
             e.Enabled = true;
+            e.Lifetime = 20.0f;
 
             lock (Renderer.RenderSyncRoot)
             {
@@ -2238,14 +2239,14 @@ namespace CodeWalker
                 Ray mray = new Ray();
                 mray.Position = camera.MouseRay.Position + camera.Position;
                 mray.Direction = camera.MouseRay.Direction;
-                return space.RayIntersect(mray);
+                return space.RayIntersect(mray, float.MaxValue, collisionmeshlayers);
             }
             return ret;
         }
 
         public SpaceRayIntersectResult Raycast(Ray ray)
         {
-            return space.RayIntersect(ray);
+            return space.RayIntersect(ray, float.MaxValue, collisionmeshlayers);
         }
 
         private void UpdateMouseHitsFromRenderer()

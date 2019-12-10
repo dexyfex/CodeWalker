@@ -2804,22 +2804,25 @@ namespace CodeWalker.Rendering
 
             if ((rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision)) && rendercollisionmeshlayerdrawable)
             {
-                Drawable sdrawable = rndbl.Key as Drawable;
-                if ((sdrawable != null) && (sdrawable.Bound != null))
+                if ((entity == null) || ((entity._CEntityDef.flags & 4) == 0)) //skip if entity embedded collisions disabled
                 {
-                    RenderCollisionMesh(sdrawable.Bound, entity);
-                }
-                FragDrawable fdrawable = rndbl.Key as FragDrawable;
-                if (fdrawable != null)
-                {
-                    if (fdrawable.Bound != null)
+                    Drawable sdrawable = rndbl.Key as Drawable;
+                    if ((sdrawable != null) && (sdrawable.Bound != null))
                     {
-                        RenderCollisionMesh(fdrawable.Bound, entity);
+                        RenderCollisionMesh(sdrawable.Bound, entity);
                     }
-                    var fbound = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1?.Bound;
-                    if (fbound != null)
+                    FragDrawable fdrawable = rndbl.Key as FragDrawable;
+                    if (fdrawable != null)
                     {
-                        RenderCollisionMesh(fbound, entity);//TODO: these probably have extra transforms..!
+                        if (fdrawable.Bound != null)
+                        {
+                            RenderCollisionMesh(fdrawable.Bound, entity);
+                        }
+                        var fbound = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1?.Bound;
+                        if (fbound != null)
+                        {
+                            RenderCollisionMesh(fbound, entity);//TODO: these probably have extra transforms..!
+                        }
                     }
                 }
             }

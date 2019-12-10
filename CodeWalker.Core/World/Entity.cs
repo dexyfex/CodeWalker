@@ -31,6 +31,8 @@ namespace CodeWalker.World
         public bool EnableCollisions;
         public bool Enabled;
 
+        public float Lifetime;
+        public float Age;
 
         //public CollisionShape ..
 

@@ -1899,13 +1899,12 @@ namespace CodeWalker.Rendering
             }
 
             RenderableBoundGeometry[] geoms = new RenderableBoundGeometry[bound.Children.data_items.Length];
-            var childTransforms = bound.ChildrenTransformation1 ?? bound.ChildrenTransformation2;
             long dsize = 0;
             for (int i = 0; i < bound.Children.data_items.Length; i++)
             {
                 var rgeom = new RenderableBoundGeometry(this);
                 var child = bound.Children.data_items[i];
-                var xform = ((childTransforms != null) && (i < childTransforms.Length)) ? childTransforms[i] : Matrix.Identity; xform.Column4 = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+                var xform = (child != null) ? child.Transform : Matrix.Identity;
                 if (child is BoundGeometry bgeom)
                 {
                     rgeom.Init(bgeom);
