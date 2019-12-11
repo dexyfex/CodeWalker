@@ -1514,6 +1514,8 @@ namespace CodeWalker.Rendering
             Spots = spots.ToArray();
             Caps = caps.ToArray();
 
+            DataSize = (points.Count + spots.Count + caps.Count) * 80;
+
         }
 
         public override void Load(Device device)
