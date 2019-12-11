@@ -910,7 +910,7 @@ namespace CodeWalker.Peds
             float moveSpeed = 2.0f;
 
 
-            Input.Update(elapsed);
+            Input.Update();
 
             if (Input.xbenable)
             {
@@ -932,6 +932,17 @@ namespace CodeWalker.Peds
             }
 
             Vector3 movevec = Input.KeyboardMoveVec(false);
+
+            if (Input.xbenable)
+            {
+                movevec.X += Input.xblx;
+                movevec.Z -= Input.xbly;
+                moveSpeed *= (1.0f + (Math.Min(Math.Max(Input.xblt, 0.0f), 1.0f) * 15.0f)); //boost with left trigger
+                if (Input.ControllerButtonPressed(GamepadButtonFlags.A | GamepadButtonFlags.RightShoulder | GamepadButtonFlags.LeftShoulder))
+                {
+                    moveSpeed *= 5.0f;
+                }
+            }
 
 
             //if (MapViewEnabled == true)
@@ -961,7 +972,7 @@ namespace CodeWalker.Peds
 
             if (Input.xbenable)
             {
-                camera.ControllerRotate(Input.xblx + Input.xbrx, Input.xbly + Input.xbry);
+                camera.ControllerRotate(Input.xbrx, Input.xbry, elapsed);
 
                 float zoom = 0.0f;
                 float zoomspd = s.XInputZoomSpeed;
@@ -970,31 +981,6 @@ namespace CodeWalker.Peds
                 if (Input.ControllerButtonPressed(GamepadButtonFlags.DPadDown)) zoom -= zoomamt;
 
                 camera.ControllerZoom(zoom);
-
-                float acc = 0.0f;
-                float accspd = s.XInputMoveSpeed;//actually accel speed...
-                acc += Input.xbrt * accspd;
-                acc -= Input.xblt * accspd;
-
-                Vector3 newdir = camera.ViewDirection; //maybe use the "vehicle" direction...?
-                Input.xbcontrolvelocity += (acc * elapsed);
-
-                if (Input.ControllerButtonPressed(GamepadButtonFlags.A | GamepadButtonFlags.RightShoulder)) //handbrake...
-                {
-                    Input.xbcontrolvelocity *= Math.Max(0.75f - elapsed, 0);//not ideal for low fps...
-                                                                            //xbcontrolvelocity = 0.0f;
-                    if (Math.Abs(Input.xbcontrolvelocity) < 0.001f) Input.xbcontrolvelocity = 0.0f;
-                }
-
-                camEntity.Velocity = newdir * Input.xbcontrolvelocity;
-                camEntity.Position += camEntity.Velocity * elapsed;
-
-
-                //fire!
-                //if (ControllerButtonJustPressed(GamepadButtonFlags.LeftShoulder))
-                //{
-                //    SpawnTestEntity(true);
-                //}
 
             }
 
