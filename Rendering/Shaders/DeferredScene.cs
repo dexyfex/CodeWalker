@@ -420,7 +420,7 @@ namespace CodeWalker.Rendering
 
             context.VertexShader.Set(null);
             context.PixelShader.Set(null);
-            context.PixelShader.SetShaderResources(0, null, null, null);
+            context.PixelShader.SetShaderResources(0, null, null, null, null, null, null);
             context.PixelShader.SetSamplers(0, null, null);
         }
 
@@ -498,8 +498,9 @@ namespace CodeWalker.Rendering
 
 
             context.VertexShader.Set(null);
+            context.VertexShader.SetShaderResources(0, null, null, null);
             context.PixelShader.Set(null);
-            context.PixelShader.SetShaderResources(0, null, null, null);
+            context.PixelShader.SetShaderResources(0, null, null, null, null, null, null, null);
             context.PixelShader.SetSamplers(0, null, null);
         }
 
@@ -582,8 +583,9 @@ namespace CodeWalker.Rendering
 
 
             context.VertexShader.Set(null);
+            context.VertexShader.SetShaderResources(0, null, null, null);
             context.PixelShader.Set(null);
-            context.PixelShader.SetShaderResources(0, null, null, null);
+            context.PixelShader.SetShaderResources(0, null, null, null, null, null, null, null);
             context.PixelShader.SetSamplers(0, null, null);
         }
 
