@@ -34,8 +34,10 @@ PS_OUTPUT main(VS_OUTPUT input)
         }
 
         if (IsDistMap) c = float4(c.rgb * 2, (c.r + c.g + c.b) - 1);
+        if (IsDecal == 4) c.a = c.r;
         if ((IsDecal == 0) && (c.a <= 0.33)) discard;
         if ((IsDecal == 1) && (c.a <= 0.0)) discard;
+        if ((IsDecal >= 3) && (c.a <= 0.0)) discard;
         if (IsDecal == 0) c.a = 1;
         if (IsDecal == 2)
         {
@@ -49,7 +51,7 @@ PS_OUTPUT main(VS_OUTPUT input)
     {
         c.rgb *= input.Tint.rgb;
     }
-    if (IsDecal == 1)
+    if ((IsDecal == 1) || (IsDecal >= 3))
     {
         c.a *= input.Colour0.a;
     }
@@ -157,12 +159,16 @@ PS_OUTPUT main(VS_OUTPUT input)
     c.a = saturate(c.a);
     
     
+    float4 a = c.aaaa;
+    if(IsDecal==3) a.xzw = 0; //normal_only
+    if(IsDecal==4) a.xyw = 0; //spec_only
+    
     
     PS_OUTPUT output;
-    output.Diffuse = c;
-    output.Normal = float4(saturate(norm * 0.5 + 0.5), c.a);
-    output.Specular = float4(spec, c.a);
-    output.Irradiance = float4(input.Colour0.rg, emiss, c.a);
+    output.Diffuse = float4(c.rgb, a.x);
+    output.Normal = float4(saturate(norm * 0.5 + 0.5), a.y);
+    output.Specular = float4(spec, a.z);
+    output.Irradiance = float4(input.Colour0.rg, emiss, a.w);
 
     return output;
 }

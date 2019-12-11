@@ -730,11 +730,16 @@ namespace CodeWalker.Rendering
                 case 731050667: //weapon_normal_spec_palette.sps
                     if (usetint) { tintflag = 0; pstintflag = 2; } //use diffuse sampler alpha for tint lookup!
                     break;
-                case 3880384844://{decal_spec_only.sps}w
-                case 600733812://{decal_amb_only.sps}
-                case 2842248626://{spec_decal.sps}
-                case 2457676400://{reflect_decal.sps}
+                case 341123999://{decal_normal_only.sps}
                 case 2706821972://{mirror_decal.sps}
+                case 2457676400://{reflect_decal.sps}
+                    decalflag = 3;
+                    break;
+                case 3880384844://{decal_spec_only.sps}
+                case 2842248626://{spec_decal.sps}
+                    decalflag = 4;
+                    break;
+                case 600733812://{decal_amb_only.sps}
                     //if (RenderMode == WorldRenderMode.Default) usediff = false;
                     break;
                 case 2655725442://{decal_dirt.sps}
