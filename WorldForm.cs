@@ -487,7 +487,7 @@ namespace CodeWalker
             float moveSpeed = 50.0f;
 
 
-            Input.Update(elapsed);
+            Input.Update();
 
             if (Input.xbenable)
             {
@@ -510,6 +510,19 @@ namespace CodeWalker
                 }
 
                 Vector3 movevec = Input.KeyboardMoveVec(MapViewEnabled);
+
+                if (Input.xbenable)
+                {
+                    movevec.X += Input.xblx;
+                    if (MapViewEnabled) movevec.Y += Input.xbly;
+                    else movevec.Z -= Input.xbly;
+                    moveSpeed *= (1.0f + (Math.Min(Math.Max(Input.xblt, 0.0f), 1.0f) * 15.0f)); //boost with left trigger
+                    if (Input.ControllerButtonPressed(GamepadButtonFlags.A | GamepadButtonFlags.RightShoulder | GamepadButtonFlags.LeftShoulder))
+                    {
+                        moveSpeed *= 5.0f;
+                    }
+                }
+
 
                 if (MapViewEnabled)
                 {
@@ -540,40 +553,23 @@ namespace CodeWalker
 
                 if (Input.xbenable)
                 {
-                    camera.ControllerRotate(Input.xblx + Input.xbrx, Input.xbly + Input.xbry);
+                    camera.ControllerRotate(Input.xbrx, Input.xbry, elapsed);
 
                     float zoom = 0.0f;
                     float zoomspd = s.XInputZoomSpeed;
                     float zoomamt = zoomspd * elapsed;
                     if (Input.ControllerButtonPressed(GamepadButtonFlags.DPadUp)) zoom += zoomamt;
                     if (Input.ControllerButtonPressed(GamepadButtonFlags.DPadDown)) zoom -= zoomamt;
+                    if (MapViewEnabled) zoom -= zoomamt * Input.xbry;
 
                     camera.ControllerZoom(zoom);
 
-                    float acc = 0.0f;
-                    float accspd = s.XInputMoveSpeed;//actually accel speed...
-                    acc += Input.xbrt * accspd;
-                    acc -= Input.xblt * accspd;
-
-                    Vector3 newdir = camera.ViewDirection; //maybe use the "vehicle" direction...?
-                    Input.xbcontrolvelocity += (acc * elapsed);
-
-                    if (Input.ControllerButtonPressed(GamepadButtonFlags.A | GamepadButtonFlags.RightShoulder)) //handbrake...
-                    {
-                        Input.xbcontrolvelocity *= Math.Max(0.75f - elapsed, 0);//not ideal for low fps...
-                        //Input.xbcontrolvelocity = 0.0f;
-                        if (Math.Abs(Input.xbcontrolvelocity) < 0.001f) Input.xbcontrolvelocity = 0.0f;
-                    }
-
-                    camEntity.Velocity = newdir * Input.xbcontrolvelocity;
-                    camEntity.Position += camEntity.Velocity * elapsed;
-
-
-                    //fire!
-                    if (Input.ControllerButtonJustPressed(GamepadButtonFlags.LeftShoulder))
+                    bool fire = (Input.xbtrigs.Y > 0);
+                    if (fire && !ControlFireToggle)
                     {
                         SpawnTestEntity(true);
                     }
+                    ControlFireToggle = fire;
 
                 }
 
@@ -609,7 +605,7 @@ namespace CodeWalker
 
                 if (Input.xbenable)
                 {
-                    camera.ControllerRotate(Input.xbrx, Input.xbry);
+                    camera.ControllerRotate(Input.xbrx, Input.xbry, elapsed);
                 }
 
 

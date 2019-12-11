@@ -249,12 +249,12 @@ namespace CodeWalker.World
             }
         }
 
-        public void ControllerRotate(float x, float y)
+        public void ControllerRotate(float x, float y, float elapsed)
         {
             lock (syncRoot)
             {
-                TargetRotation.X += x;
-                TargetRotation.Y += y;
+                TargetRotation.X += x*elapsed;
+                TargetRotation.Y += y*elapsed;
             }
         }
 
