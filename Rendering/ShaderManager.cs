@@ -425,7 +425,6 @@ namespace CodeWalker.Rendering
                     shadowbatches.AddRange(bucket.BasicBatches);
                     shadowbatches.AddRange(bucket.TerrainBatches);
                     shadowbatches.AddRange(bucket.CableBatches);
-                    shadowbatches.AddRange(bucket.AlphaBatches);
                     shadowbatches.AddRange(bucket.CutoutBatches);
                     shadowbatches.AddRange(bucket.ClothBatches);
                 }
