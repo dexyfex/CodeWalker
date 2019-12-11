@@ -161,6 +161,23 @@ namespace CodeWalker.World
             {
                 Position = coll.HitPos; //hitpos is the end pos if not hit
                 OnGround = false;
+
+                var raydir = new Vector3(0.0f, 0.0f, -1.0f);
+                var ray = new Ray(Position, raydir);
+                var rayhit = Space.RayIntersect(ray, float.MaxValue);
+                if (!rayhit.Hit && rayhit.TestComplete)
+                {
+                    //must be under the map? try to find the ground...
+                    ray.Position = Position + new Vector3(0.0f, 0.0f, 1000.0f);
+                    rayhit = Space.RayIntersect(ray, float.MaxValue);
+                    if (rayhit.Hit)
+                    {
+                        Position = rayhit.Position + new Vector3(0.0f, 0.0f, Radius) - Center;
+                        OnGround = true;
+                    }
+                    else
+                    { }//didn't find the ground, what to do now?
+                }
             }
 
             CameraEntity.Position = Position;
