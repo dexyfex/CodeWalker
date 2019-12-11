@@ -1475,11 +1475,10 @@ namespace CodeWalker.GameFiles
                 BSRadius = Archetype.BSRadius * Math.Max(Scale.X, Scale.Z);
                 if (Orientation == Quaternion.Identity)
                 {
-                    BBMin = (Archetype.BBMin * Scale) + Position;
-                    BBMax = (Archetype.BBMax * Scale) + Position;
+                    BBMin = (Vector3.Min(Archetype.BBMin, Archetype.BBMax) * Scale) + Position;
+                    BBMax = (Vector3.Max(Archetype.BBMin, Archetype.BBMax) * Scale) + Position;
                     BBCenter = (BBMax + BBMin) * 0.5f;
                     BBExtent = (BBMax - BBMin) * 0.5f;
-                    BBExtent = BBExtent.Abs();
                 }
                 else
                 {
@@ -1492,7 +1491,7 @@ namespace CodeWalker.GameFiles
                     var bbcenter = (Archetype.BBMax + Archetype.BBMin) * 0.5f;
                     var bbextent = (Archetype.BBMax - Archetype.BBMin) * 0.5f;
                     var ncenter = Vector3.TransformCoordinate(bbcenter, mat);
-                    var nextent = Vector3.TransformNormal(bbextent, matabs);
+                    var nextent = Vector3.TransformNormal(bbextent, matabs).Abs();
                     BBCenter = ncenter;
                     BBExtent = nextent;
                     BBMin = ncenter - nextent;

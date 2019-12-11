@@ -3651,7 +3651,7 @@ namespace CodeWalker.Rendering
             foreach (var kvp in RootEntities)
             {
                 var ent = kvp.Key;
-                if (EntityVisibleAtMaxLodLevel(ent) && EntityVisible(ent))
+                if (EntityVisibleAtMaxLodLevel(ent))
                 {
                     ent.Distance = MapViewEnabled ? MapViewDist : (ent.Position - Position).Length();
                     if (ent.Distance <= (ent.LodDist * LodDistMult))
@@ -3676,7 +3676,7 @@ namespace CodeWalker.Rendering
             }
             else
             {
-                if ((ent.Parent == null) || EntityVisible(ent))
+                if (EntityVisible(ent))
                 {
                     VisibleLeaves.Add(ent);
                 }
