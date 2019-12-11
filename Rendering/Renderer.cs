@@ -3553,6 +3553,8 @@ namespace CodeWalker.Rendering
                 if (ymap._CMapData.parent != 0) //ensure parent references on ymaps
                 {
                     ymaps.TryGetValue(ymap._CMapData.parent, out pymap);
+                    if (pymap == null) //skip adding ymaps until parents are available
+                    { continue; }
                     if (ymap.Parent != pymap)
                     {
                         ymap.Parent = pymap;
@@ -3616,6 +3618,8 @@ namespace CodeWalker.Rendering
             {
                 var ymap = kvp.Value;
                 if (ymap.IsScripted && !ShowScriptedYmaps)
+                { continue; }
+                if ((ymap._CMapData.parent != 0) && (ymap.Parent == null)) //skip adding ymaps until parents are available
                 { continue; }
                 if (!CurrentYmaps.ContainsKey(kvp.Key))
                 {
