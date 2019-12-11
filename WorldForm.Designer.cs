@@ -190,7 +190,7 @@ namespace CodeWalker
             this.TimeStartStopButton = new System.Windows.Forms.Button();
             this.ArtificialAmbientLightCheckBox = new System.Windows.Forms.CheckBox();
             this.NaturalAmbientLightCheckBox = new System.Windows.Forms.CheckBox();
-            this.DistantLODLightsCheckBox = new System.Windows.Forms.CheckBox();
+            this.LODLightsCheckBox = new System.Windows.Forms.CheckBox();
             this.HDRRenderingCheckBox = new System.Windows.Forms.CheckBox();
             this.ControlTimeOfDayCheckBox = new System.Windows.Forms.CheckBox();
             this.TimeOfDayLabel = new System.Windows.Forms.Label();
@@ -2215,7 +2215,7 @@ namespace CodeWalker
             this.tabPage10.Controls.Add(this.TimeStartStopButton);
             this.tabPage10.Controls.Add(this.ArtificialAmbientLightCheckBox);
             this.tabPage10.Controls.Add(this.NaturalAmbientLightCheckBox);
-            this.tabPage10.Controls.Add(this.DistantLODLightsCheckBox);
+            this.tabPage10.Controls.Add(this.LODLightsCheckBox);
             this.tabPage10.Controls.Add(this.HDRRenderingCheckBox);
             this.tabPage10.Controls.Add(this.ControlTimeOfDayCheckBox);
             this.tabPage10.Controls.Add(this.TimeOfDayLabel);
@@ -2397,18 +2397,18 @@ namespace CodeWalker
             this.NaturalAmbientLightCheckBox.UseVisualStyleBackColor = true;
             this.NaturalAmbientLightCheckBox.CheckedChanged += new System.EventHandler(this.NaturalAmbientLightCheckBox_CheckedChanged);
             // 
-            // DistantLODLightsCheckBox
+            // LODLightsCheckBox
             // 
-            this.DistantLODLightsCheckBox.AutoSize = true;
-            this.DistantLODLightsCheckBox.Checked = true;
-            this.DistantLODLightsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.DistantLODLightsCheckBox.Location = new System.Drawing.Point(10, 93);
-            this.DistantLODLightsCheckBox.Name = "DistantLODLightsCheckBox";
-            this.DistantLODLightsCheckBox.Size = new System.Drawing.Size(111, 17);
-            this.DistantLODLightsCheckBox.TabIndex = 34;
-            this.DistantLODLightsCheckBox.Text = "Distant LOD lights";
-            this.DistantLODLightsCheckBox.UseVisualStyleBackColor = true;
-            this.DistantLODLightsCheckBox.CheckedChanged += new System.EventHandler(this.DistantLODLightsCheckBox_CheckedChanged);
+            this.LODLightsCheckBox.AutoSize = true;
+            this.LODLightsCheckBox.Checked = true;
+            this.LODLightsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.LODLightsCheckBox.Location = new System.Drawing.Point(10, 93);
+            this.LODLightsCheckBox.Name = "LODLightsCheckBox";
+            this.LODLightsCheckBox.Size = new System.Drawing.Size(75, 17);
+            this.LODLightsCheckBox.TabIndex = 34;
+            this.LODLightsCheckBox.Text = "LOD lights";
+            this.LODLightsCheckBox.UseVisualStyleBackColor = true;
+            this.LODLightsCheckBox.CheckedChanged += new System.EventHandler(this.LODLightsCheckBox_CheckedChanged);
             // 
             // HDRRenderingCheckBox
             // 
@@ -3645,7 +3645,7 @@ namespace CodeWalker
         private System.Windows.Forms.CheckBox HDRRenderingCheckBox;
         private System.Windows.Forms.CheckBox ArtificialAmbientLightCheckBox;
         private System.Windows.Forms.CheckBox NaturalAmbientLightCheckBox;
-        private System.Windows.Forms.CheckBox DistantLODLightsCheckBox;
+        private System.Windows.Forms.CheckBox LODLightsCheckBox;
         private System.Windows.Forms.Label TimeSpeedLabel;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.TrackBar TimeSpeedTrackBar;

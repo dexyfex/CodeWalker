@@ -7429,9 +7429,10 @@ namespace CodeWalker
             //Monitor.Exit(rendersyncroot);
         }
 
-        private void DistantLODLightsCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void LODLightsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            Renderer.renderdistlodlights = DistantLODLightsCheckBox.Checked;
+            Renderer.renderdistlodlights = LODLightsCheckBox.Checked;
+            Renderer.renderlodlights = LODLightsCheckBox.Checked;
         }
 
         private void NaturalAmbientLightCheckBox_CheckedChanged(object sender, EventArgs e)
