@@ -1503,7 +1503,7 @@ namespace CodeWalker.Rendering
                         spots.Add(light);
                         break;
                     case LightType.Capsule:
-                        light.OuterAngleOrCapExt = ll.coneOuterAngleOrCapExt[i] * 0.1f;//is this right?
+                        light.OuterAngleOrCapExt = ll.coneOuterAngleOrCapExt[i] * 0.25f;
                         caps.Add(light);
                         break;
                     default: break;//just checking...

@@ -68,6 +68,30 @@ float3 GetReflectedDir(float3 camRel, float3 norm)
     return refl;
 }
 
+float4 GetLineSegmentNearestPoint(float3 v, float3 a, float3 b)
+{
+    float3 ab = b - a;
+    float3 av = v - a;
+    if (dot(av, ab) <= 0.0f)// Point is lagging behind start of the segment, so perpendicular distance is not viable.
+    {
+        return float4(av, length(av));
+    }
+    else
+    {
+        float3 bv = v - b;
+        if (dot(bv, ab) >= 0.0f)// Point is advanced past the end of the segment, so perpendicular distance is not viable.
+        {
+            return float4(bv, length(bv));
+        }
+        else
+        {
+            float3 abv = cross(ab, av);
+            float d = length(abv) / length(ab);
+            return float4(normalize(cross(abv, ab)) * d, d); //improve this!
+        }
+    }
+}
+
 
 float3 DeferredDirectionalLight(float3 camRel, float3 norm, float4 diffuse, float4 specular, float4 irradiance)
 {
@@ -87,7 +111,15 @@ float4 DeferredLODLight(float3 camRel, float3 norm, float4 diffuse, float4 specu
     LODLight lodlight = LODLights[iid];
     float3 srpos = lodlight.Position - (camRel + CameraPos.xyz); //light position relative to surface position
     float ldist = length(srpos);
-    if (ldist > lodlight.Falloff) return 0; //out of range of the light... TODO: capsules!
+    if (LightType == 4)//capsule
+    {
+        float3 ext = lodlight.Direction.xyz * lodlight.OuterAngleOrCapExt;
+        float4 lsn = GetLineSegmentNearestPoint(srpos, ext, -ext);
+        ldist = lsn.w;
+        srpos.xyz = lsn.xyz;
+    }
+
+    if (ldist > lodlight.Falloff) return 0; //out of range of the light...
     if (ldist <= 0) return 0;
     
     float4 rgbi = Unpack4x8UNF(lodlight.Colour).gbar;
@@ -132,7 +164,14 @@ float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular
 {
     float3 srpos = InstPosition - camRel; //light position relative to surface position
     float ldist = length(srpos);
-    if (ldist > InstFalloff) return 0; //out of range of the light... TODO: capsules!
+    if (InstType == 4)//capsule
+    {
+        float3 ext = InstDirection.xyz * (InstCapsuleExtent.y * 0.5);
+        float4 lsn = GetLineSegmentNearestPoint(srpos, ext, -ext);
+        ldist = lsn.w;
+        srpos.xyz = lsn.xyz;
+    }
+    if (ldist > InstFalloff) return 0;
     if (ldist <= 0) return 0;
     
     float d = dot(srpos, InstCullingPlaneNormal) - InstCullingPlaneOffset;
@@ -159,7 +198,7 @@ float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular
     }
     else if (InstType == 4)//capsule
     {
-        lamt *= pow(saturate(1 - (ldist / InstFalloff)), InstFalloffExponent); //TODO! proper capsule lighting... (use point-line dist!)
+        lamt *= pow(saturate(1 - (ldist / InstFalloff)), InstFalloffExponent);
     }
     
     pclit *= lamt;
