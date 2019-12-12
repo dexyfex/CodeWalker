@@ -135,6 +135,9 @@ float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular
     if (ldist > InstFalloff) return 0; //out of range of the light... TODO: capsules!
     if (ldist <= 0) return 0;
     
+    float d = dot(srpos, InstCullingPlaneNormal) - InstCullingPlaneOffset;
+    if (d > 0) return 0;
+    
     float4 rgbi = float4(InstColour, InstIntensity);
     float3 lcol = rgbi.rgb;// * rgbi.a; // * 5.0f;
     float3 ldir = srpos / ldist;
