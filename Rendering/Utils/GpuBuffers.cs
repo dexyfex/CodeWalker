@@ -262,7 +262,7 @@ namespace CodeWalker.Rendering
         public RenderTargetView MSRTV;
         public DepthStencilView MSDSV;
         public ShaderResourceView SRV;
-        public ShaderResourceView DepthSRV;
+        //public ShaderResourceView DepthSRV; //possibly causing crash on DX10 hardware when multisampled
         public int VramUsage;
         public bool Multisampled;
         public bool UseDepth;
@@ -278,7 +278,7 @@ namespace CodeWalker.Rendering
             ShaderResourceViewDimension srvd = ShaderResourceViewDimension.Texture2D;// D3D11_SRV_DIMENSION_TEXTURE2D;
             int fs = DXUtility.ElementSize(f);
             int wh = w * h;
-            BindFlags db = BindFlags.DepthStencil | BindFlags.ShaderResource;// D3D11_BIND_DEPTH_STENCIL;
+            BindFlags db = BindFlags.DepthStencil;// | BindFlags.ShaderResource;// D3D11_BIND_DEPTH_STENCIL;
             DepthStencilViewDimension dsvd = DepthStencilViewDimension.Texture2D;
             Format dtexf = GetDepthTexFormat(df);
             Format dsrvf = GetDepthSrvFormat(df);
@@ -293,7 +293,7 @@ namespace CodeWalker.Rendering
                 b = BindFlags.RenderTarget;
                 rtvd = RenderTargetViewDimension.Texture2DMultisampled;
                 dsvd = DepthStencilViewDimension.Texture2DMultisampled;
-                srvd = ShaderResourceViewDimension.Texture2DMultisampled;
+                //srvd = ShaderResourceViewDimension.Texture2DMultisampled;
 
                 TextureMS = DXUtility.CreateTexture2D(device, w, h, 1, 1, f, sc, sq, u, b, 0, 0);
                 MSRTV = DXUtility.CreateRenderTargetView(device, TextureMS, f, rtvd, 0, 0, 0);
@@ -303,7 +303,7 @@ namespace CodeWalker.Rendering
                 {
                     DepthMS = DXUtility.CreateTexture2D(device, w, h, 1, 1, dtexf, sc, sq, u, db, 0, 0);
                     MSDSV = DXUtility.CreateDepthStencilView(device, DepthMS, df, dsvd);
-                    DepthSRV = DXUtility.CreateShaderResourceView(device, DepthMS, dsrvf, srvd, 1, 0, 0, 0);
+                    //DepthSRV = DXUtility.CreateShaderResourceView(device, DepthMS, dsrvf, srvd, 1, 0, 0, 0);
                     VramUsage += (wh * DXUtility.ElementSize(df)) * sc;
                 }
             }
@@ -313,7 +313,7 @@ namespace CodeWalker.Rendering
                 {
                     Depth = DXUtility.CreateTexture2D(device, w, h, 1, 1, dtexf, sc, sq, u, db, 0, 0);
                     DSV = DXUtility.CreateDepthStencilView(device, Depth, df, dsvd);
-                    DepthSRV = DXUtility.CreateShaderResourceView(device, Depth, dsrvf, srvd, 1, 0, 0, 0);
+                    //DepthSRV = DXUtility.CreateShaderResourceView(device, Depth, dsrvf, srvd, 1, 0, 0, 0);
                     VramUsage += (wh * DXUtility.ElementSize(df));
                 }
             }
