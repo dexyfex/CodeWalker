@@ -62,8 +62,8 @@ namespace CodeWalker.GameFiles
         //fields used by the editor:
         public bool HasChanged { get; set; } = false;
         public List<string> SaveWarnings = null;
-
-
+        public bool LodManagerUpdate = false; //forces the LOD manager to refresh this ymap when rendering
+        public YmapEntityDef[] LodManagerOldEntities = null; //when entities are removed, need the old ones to remove from lod manager
 
 
         public YmapFile() : base(null, GameFileType.Ymap)
@@ -900,6 +900,7 @@ namespace CodeWalker.GameFiles
             }
 
             HasChanged = true;
+            LodManagerUpdate = true;
         }
 
         public bool RemoveEntity(YmapEntityDef ent)
@@ -934,10 +935,12 @@ namespace CodeWalker.GameFiles
                 res = false;
             }
 
+            LodManagerOldEntities = AllEntities;
             AllEntities = newAllEntities.ToArray();
             RootEntities = newRootEntities.ToArray();
 
             HasChanged = true;
+            LodManagerUpdate = true;
 
             return res;
         }

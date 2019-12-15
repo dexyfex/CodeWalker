@@ -3589,7 +3589,7 @@ namespace CodeWalker.Rendering
             foreach (var kvp in CurrentYmaps)
             {
                 YmapFile ymap = null;
-                if (!ymaps.TryGetValue(kvp.Key, out ymap) || (ymap != kvp.Value) || (ymap.IsScripted && !ShowScriptedYmaps))
+                if (!ymaps.TryGetValue(kvp.Key, out ymap) || (ymap != kvp.Value) || (ymap.IsScripted && !ShowScriptedYmaps) || (ymap.LodManagerUpdate))
                 {
                     RemoveYmaps.Add(kvp.Key);
                 }
@@ -3598,11 +3598,12 @@ namespace CodeWalker.Rendering
             {
                 var ymap = CurrentYmaps[remYmap];
                 CurrentYmaps.Remove(remYmap);
-                if (ymap.AllEntities != null)    // remove this ymap's entities from the tree.....
+                var remEnts = ymap.LodManagerOldEntities ?? ymap.AllEntities;
+                if (remEnts != null)    // remove this ymap's entities from the tree.....
                 {
-                    for (int i = 0; i < ymap.AllEntities.Length; i++)
+                    for (int i = 0; i < remEnts.Length; i++)
                     {
-                        var ent = ymap.AllEntities[i];
+                        var ent = remEnts[i];
                         RootEntities.Remove(ent);
                         ent.LodManagerChildren?.Clear();
                         ent.LodManagerChildren = null;
@@ -3613,6 +3614,8 @@ namespace CodeWalker.Rendering
                         }
                     }
                 }
+                ymap.LodManagerUpdate = false;
+                ymap.LodManagerOldEntities = null;
             }
             foreach (var kvp in ymaps)
             {
