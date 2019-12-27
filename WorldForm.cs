@@ -1274,6 +1274,7 @@ namespace CodeWalker
         {
             //immediately render the bounding box of the current selection. also, arrows.
 
+            const uint cred = 4278190335;// (uint)new Color4(1.0f, 0.0f, 0.0f, 1.0f).ToRgba();
             const uint cgrn = 4278255360;// (uint)new Color4(0.0f, 1.0f, 0.0f, 1.0f).ToRgba();
             const uint cblu = 4294901760;// (uint)new Color4(0.0f, 0.0f, 1.0f, 1.0f).ToRgba();
             const uint caqu = 4294967040;// (uint)new Color4(0.0f, 1.0f, 1.0f, 1.0f).ToRgba();
@@ -1418,18 +1419,18 @@ namespace CodeWalker
                         {
                             var portal = mloa.portals[ip];
                             if (portal.Corners == null) continue;
-                            p1.Colour = caqu;
                             p2.Colour = caqu;
                             if ((portal._Data.flags & 4) > 0)
                             {
-                                p1.Colour = cblu;
                                 p2.Colour = cblu;
                             }
-                            for (int ic = 0; ic < portal.Corners.Length; ic++)
+                            var pcl = portal.Corners.Length;
+                            for (int ic = 0; ic < pcl; ic++)
                             {
-                                int il = ((ic==0)? portal.Corners.Length : ic) - 1;
-                                p1.Position = mlop + mlo.Orientation.Multiply(portal.Corners[il].XYZ());
-                                p2.Position = mlop + mlo.Orientation.Multiply(portal.Corners[ic].XYZ());
+                                var icn = ic + 1; if (icn >= pcl) icn = 0;
+                                p1.Colour = (ic == 0) ? cred : p2.Colour;//highlight index 0 and winding direction
+                                p1.Position = mlop + mlo.Orientation.Multiply(portal.Corners[ic].XYZ());
+                                p2.Position = mlop + mlo.Orientation.Multiply(portal.Corners[icn].XYZ());
                                 Renderer.SelectionLineVerts.Add(p1);
                                 Renderer.SelectionLineVerts.Add(p2);
                             }

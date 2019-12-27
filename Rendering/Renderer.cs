@@ -1961,7 +1961,7 @@ namespace CodeWalker.Rendering
                 foreach (var entitysets in ent.MloInstance.EntitySets)
                 {
                     var entityset = entitysets.Value;
-                    if (!entityset.Visible) continue;
+                    if (!entityset.VisibleOrForced) continue;
 
                     var entities = entityset.Entities;
                     for (int i = 0; i < entities.Count; i++)

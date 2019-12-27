@@ -140,6 +140,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Project\Panels\EditYtypArchetypeMloEntSetPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypeMloEntSetPanel.Designer.cs">
+      <DependentUpon>EditYtypArchetypeMloEntSetPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypeMloPortalPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypArchetypeMloPortalPanel.Designer.cs">
+      <DependentUpon>EditYtypArchetypeMloPortalPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Rendering\Shaders\DeferredScene.cs" />
     <Compile Include="Rendering\Utils\UnitCone.cs" />
     <Compile Include="Tools\AboutForm.cs">
@@ -609,6 +621,12 @@
       <DependentUpon>WorldForm.cs</DependentUpon>
     </Compile>
     <Compile Include="World\Widget.cs" />
+    <EmbeddedResource Include="Project\Panels\EditYtypArchetypeMloEntSetPanel.resx">
+      <DependentUpon>EditYtypArchetypeMloEntSetPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYtypArchetypeMloPortalPanel.resx">
+      <DependentUpon>EditYtypArchetypeMloPortalPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Tools\AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </EmbeddedResource>

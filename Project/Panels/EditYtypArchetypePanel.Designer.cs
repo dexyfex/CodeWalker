@@ -121,7 +121,7 @@
             // ArchetypeDeleteButton
             // 
             this.ArchetypeDeleteButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.ArchetypeDeleteButton.Location = new System.Drawing.Point(270, 450);
+            this.ArchetypeDeleteButton.Location = new System.Drawing.Point(270, 440);
             this.ArchetypeDeleteButton.Name = "ArchetypeDeleteButton";
             this.ArchetypeDeleteButton.Size = new System.Drawing.Size(126, 23);
             this.ArchetypeDeleteButton.TabIndex = 79;
@@ -134,7 +134,7 @@
             this.label13.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(8, 411);
+            this.label13.Location = new System.Drawing.Point(8, 405);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(57, 13);
             this.label13.TabIndex = 78;
@@ -144,7 +144,7 @@
             // 
             this.BSRadiusTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.BSRadiusTextBox.Location = new System.Drawing.Point(71, 408);
+            this.BSRadiusTextBox.Location = new System.Drawing.Point(71, 402);
             this.BSRadiusTextBox.Name = "BSRadiusTextBox";
             this.BSRadiusTextBox.Size = new System.Drawing.Size(552, 20);
             this.BSRadiusTextBox.TabIndex = 77;
@@ -154,7 +154,7 @@
             // 
             this.BSCenterTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.BSCenterTextBox.Location = new System.Drawing.Point(71, 382);
+            this.BSCenterTextBox.Location = new System.Drawing.Point(71, 376);
             this.BSCenterTextBox.Name = "BSCenterTextBox";
             this.BSCenterTextBox.Size = new System.Drawing.Size(552, 20);
             this.BSCenterTextBox.TabIndex = 75;
@@ -164,7 +164,7 @@
             // 
             this.BBMaxTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.BBMaxTextBox.Location = new System.Drawing.Point(71, 356);
+            this.BBMaxTextBox.Location = new System.Drawing.Point(71, 350);
             this.BBMaxTextBox.Name = "BBMaxTextBox";
             this.BBMaxTextBox.Size = new System.Drawing.Size(552, 20);
             this.BBMaxTextBox.TabIndex = 73;
@@ -174,7 +174,7 @@
             // 
             this.BBMinTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.BBMinTextBox.Location = new System.Drawing.Point(71, 330);
+            this.BBMinTextBox.Location = new System.Drawing.Point(71, 324);
             this.BBMinTextBox.Name = "BBMinTextBox";
             this.BBMinTextBox.Size = new System.Drawing.Size(552, 20);
             this.BBMinTextBox.TabIndex = 71;
@@ -249,7 +249,7 @@
             this.label12.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(8, 385);
+            this.label12.Location = new System.Drawing.Point(8, 379);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(55, 13);
             this.label12.TabIndex = 76;
@@ -260,7 +260,7 @@
             this.label11.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(19, 359);
+            this.label11.Location = new System.Drawing.Point(19, 353);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(44, 13);
             this.label11.TabIndex = 74;
@@ -271,7 +271,7 @@
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(24, 333);
+            this.label5.Location = new System.Drawing.Point(24, 327);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(41, 13);
             this.label5.TabIndex = 72;

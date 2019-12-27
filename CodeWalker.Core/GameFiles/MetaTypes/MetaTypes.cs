@@ -2467,7 +2467,7 @@ namespace CodeWalker.GameFiles
         public Vector3 BBMin_CW { get; set; }
         public Vector3 BBMax_CW { get; set; }
         
-        public MloArchetype Archetype { get; set; }
+        public MloArchetype OwnerMlo { get; set; } // for browsing/reference purposes
         public int Index { get; set; }
 
         public MCMloRoomDef() { }
@@ -2558,6 +2558,9 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public MloArchetype OwnerMlo { get; set; } // for browsing/reference purposes
+        public int Index { get; set; }
+
         public MCMloPortalDef() { }
         public MCMloPortalDef(Meta meta, CMloPortalDef data)
         {
@@ -2627,10 +2630,16 @@ namespace CodeWalker.GameFiles
         public uint[] Locations { get; set; }
         public MCEntityDef[] Entities { get; set; }
 
+        public MloArchetype OwnerMlo { get; set; } // for browsing/reference purposes
+        public int Index { get; set; }
+
+        public bool ForceVisible { get; set; } = false; //forces this entity set visible from the project window, for rendering  purpose
+
         public MCMloEntitySet() { }
-        public MCMloEntitySet(Meta meta, CMloEntitySet data)
+        public MCMloEntitySet(Meta meta, CMloEntitySet data, MloArchetype owner)
         {
             _Data = data;
+            OwnerMlo = owner;
             Load(meta);
         }
 
@@ -2650,7 +2659,7 @@ namespace CodeWalker.GameFiles
                 Entities = new MCEntityDef[ents.Length];
                 for (int i = 0; i < ents.Length; i++)
                 {
-                    Entities[i] = new MCEntityDef(meta, ref ents[i]);
+                    Entities[i] = new MCEntityDef(meta, ref ents[i]) { OwnerMlo = OwnerMlo };
                 }
             }
         }
@@ -2794,7 +2803,8 @@ namespace CodeWalker.GameFiles
         public MetaWrapper[] Extensions { get; set; }
 
 
-        public MloArchetype Archetype { get; set; } // for browsing/reference purposes
+        public MloArchetype OwnerMlo { get; set; } // for browsing/reference purposes
+        public int Index { get; set; }
 
         public MCEntityDef(MCEntityDef copy)
         {
@@ -2808,7 +2818,7 @@ namespace CodeWalker.GameFiles
         public MCEntityDef(ref CEntityDef d, MloArchetype arch)
         {
             _Data = d;
-            Archetype = arch;
+            OwnerMlo = arch;
         }
 
         public override void Load(Meta meta, MetaPOINTER ptr)
