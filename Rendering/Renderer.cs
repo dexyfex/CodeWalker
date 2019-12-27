@@ -2088,6 +2088,8 @@ namespace CodeWalker.Rendering
         private bool RenderIsEntityFinalRender(YmapEntityDef ent)
         {
             var arch = ent.Archetype;
+            if (arch == null) return false;
+
             bool isshadowproxy = false;
             bool isreflproxy = false;
             uint archflags = arch._BaseArchetypeDef.flags;
@@ -2170,6 +2172,8 @@ namespace CodeWalker.Rendering
 
         private Renderable GetArchetypeRenderable(Archetype arch)
         {
+            if (arch == null) return null;
+
             Renderable rndbl = null;
             if (!ArchetypeRenderables.TryGetValue(arch, out rndbl))
             {
