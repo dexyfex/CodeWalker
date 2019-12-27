@@ -45,6 +45,8 @@ namespace CodeWalker.Project
         private Archetype CurrentArchetype;
         private MCEntityDef CurrentMloEntity;
         private MCMloRoomDef CurrentMloRoom;
+        private MCMloPortalDef CurrentMloPortal;
+        private MCMloEntitySet CurrentMloEntitySet;
 
         private YndFile CurrentYndFile;
         private YndNode CurrentPathNode;
@@ -462,6 +464,20 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetRoom(CurrentMloRoom); }, //updateFunc
                 (panel) => { return panel.CurrentRoom == CurrentMloRoom; }); //findFunc
         }
+        public void ShowEditYtypArchetypeMloPortalPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYtypArchetypeMloPortalPanel(this); }, //createFunc
+                (panel) => { panel.SetPortal(CurrentMloPortal); }, //updateFunc
+                (panel) => { return panel.CurrentPortal == CurrentMloPortal; }); //findFunc
+        }
+        public void ShowEditYtypArchetypeMloEntSetPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYtypArchetypeMloEntSetPanel(this); }, //createFunc
+                (panel) => { panel.SetEntitySet(CurrentMloEntitySet); }, //updateFunc
+                (panel) => { return panel.CurrentEntitySet == CurrentMloEntitySet; }); //findFunc
+        }
         public void ShowEditAudioFilePanel(bool promote)
         {
             ShowPanel(promote,
@@ -521,6 +537,14 @@ namespace CodeWalker.Project
             else if (CurrentMloRoom != null)
             {
                 ShowEditYtypArchetypeMloRoomPanel(promote);
+            }
+            else if (CurrentMloPortal != null)
+            {
+                ShowEditYtypArchetypeMloPortalPanel(promote);
+            }
+            else if (CurrentMloEntitySet != null)
+            {
+                ShowEditYtypArchetypeMloEntSetPanel(promote);
             }
             else if (CurrentEntity != null)
             {
@@ -661,6 +685,8 @@ namespace CodeWalker.Project
             CurrentAudioInterior = item as Dat151Interior;
             CurrentAudioInteriorRoom = item as Dat151InteriorRoom;
             CurrentMloRoom = item as MCMloRoomDef;
+            CurrentMloPortal = item as MCMloPortalDef;
+            CurrentMloEntitySet = item as MCMloEntitySet;
 
             if (CurrentAudioZone?.AudioZone == null) CurrentAudioZone = null;
             if (CurrentAudioEmitter?.AudioEmitter == null) CurrentAudioEmitter = null;
@@ -675,7 +701,7 @@ namespace CodeWalker.Project
 
             if (CurrentMloEntity != null)
             {
-                MloInstanceData instance = TryGetMloInstance(CurrentMloEntity.Archetype);
+                MloInstanceData instance = TryGetMloInstance(CurrentMloEntity.OwnerMlo);
 
                 if (instance != null)
                 {
@@ -2289,7 +2315,7 @@ namespace CodeWalker.Project
         {
             if ((CurrentArchetype == null) || !(CurrentArchetype is MloArchetype mloArch))
             {
-                var arch = CurrentEntity?.MloParent.Archetype ?? CurrentMloRoom?.Archetype;
+                var arch = CurrentEntity?.MloParent.Archetype ?? CurrentMloRoom?.OwnerMlo;
                 if (arch == null)
                     return;
 
@@ -5442,7 +5468,7 @@ namespace CodeWalker.Project
                     var scenarioedge = sel.ScenarioEdge;
                     var audiopl = sel.Audio;
                     Archetype arch = mlo?.Archetype ?? ent?.MloParent?.Archetype ?? ent?.Archetype;
-                    YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.Archetype?.Ytyp;
+                    YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.OwnerMlo?.Ytyp;
                     YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
                     YndFile ynd = pathnode?.Ynd;
                     YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
@@ -5542,6 +5568,8 @@ namespace CodeWalker.Project
                     }
 
                     CurrentMloRoom = room;
+                    CurrentMloPortal = null;
+                    CurrentMloEntitySet = null;
                     CurrentYmapFile = ymap;
                     CurrentYtypFile = ytyp;
                     CurrentArchetype = arch;
@@ -6368,7 +6396,7 @@ namespace CodeWalker.Project
         {
             bool enable = (CurrentYtypFile != null);
             bool inproj = YtypExistsInProject(CurrentYtypFile);
-            bool ismlo = ((CurrentEntity != null) && (CurrentEntity.MloParent != null) || (CurrentMloRoom != null)) || (CurrentArchetype is MloArchetype);
+            bool ismlo = ((CurrentEntity != null) && (CurrentEntity.MloParent != null)) || (CurrentMloRoom != null) || (CurrentMloPortal != null) || (CurrentMloEntitySet != null) || (CurrentArchetype is MloArchetype);
 
             YtypNewArchetypeMenu.Enabled = enable && inproj;
             YtypMloToolStripMenuItem.Enabled = enable && inproj && ismlo;
