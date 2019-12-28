@@ -1274,11 +1274,11 @@ namespace CodeWalker
         {
             //immediately render the bounding box of the current selection. also, arrows.
 
-            const uint cred = 4278190335;// (uint)new Color4(1.0f, 0.0f, 0.0f, 1.0f).ToRgba();
-            const uint cgrn = 4278255360;// (uint)new Color4(0.0f, 1.0f, 0.0f, 1.0f).ToRgba();
-            const uint cblu = 4294901760;// (uint)new Color4(0.0f, 0.0f, 1.0f, 1.0f).ToRgba();
-            const uint caqu = 4294967040;// (uint)new Color4(0.0f, 1.0f, 1.0f, 1.0f).ToRgba();
-            //const uint cyel = 4278255615;//
+            const uint cred = 0xFF0000FF;
+            const uint cgrn = 0xFF00FF00;
+            const uint cblu = 0xFFFF0000;
+            const uint caqu = 0xFFFFFF00;
+            //const uint cyel = 0xFF00FFFF;
 
             if (ControlBrushEnabled && MouseRayCollision.Hit)
             {

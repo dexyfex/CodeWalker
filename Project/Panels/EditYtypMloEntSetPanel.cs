@@ -166,6 +166,18 @@ namespace CodeWalker.Project.Panels
 
         }
 
+        private void AddEntityButton_Click(object sender, EventArgs e)
+        {
+            ProjectForm.SetProjectItem(CurrentEntitySet);
+            ProjectForm.NewMloEntity();
+        }
+
+        private void DeleteButton_Click(object sender, EventArgs e)
+        {
+            ProjectForm.SetProjectItem(CurrentEntitySet);
+            ProjectForm.DeleteMloEntitySet();
+        }
+
 
 
 

@@ -894,9 +894,9 @@ namespace CodeWalker.Project
 
         //######## Public methods
 
-        // Possibly future proofing for procedural prop instances
         public bool CanPaintInstances()
         {
+            // Possibly future proofing for procedural prop instances
             if (CurrentGrassBatch != null)
             {
                 if (CurrentGrassBatch.BrushEnabled)
@@ -1657,7 +1657,7 @@ namespace CodeWalker.Project
         public bool DeleteEntity()
         {
             if (CurrentEntity == null) return false;
-            return CurrentYmapFile != null ? DeleteYmapEntity() : DeleteMloArchetypeEntity();
+            return CurrentYmapFile != null ? DeleteYmapEntity() : DeleteMloEntity();
         }
 
         private bool DeleteYmapEntity()
@@ -2327,47 +2327,60 @@ namespace CodeWalker.Project
         {
             if ((CurrentArchetype == null) || !(CurrentArchetype is MloArchetype mloArch))
             {
-                var arch = CurrentEntity?.MloParent.Archetype ?? CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo;
-                if (arch == null)
-                    return;
-
-                mloArch = arch as MloArchetype;
-                if (mloArch == null)
-                    return;
-
+                mloArch = (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo;
+                if (mloArch == null) return;
                 CurrentArchetype = mloArch;
             }
 
-            if (CurrentMloRoom == null) CurrentMloRoom = mloArch?.GetEntityRoom(CurrentMloEntity);
-            if (CurrentMloRoom == null)
+            var mloInstance = TryGetMloInstance(mloArch);
+            if (mloInstance == null)
             {
+                MessageBox.Show("Unable to find MLO instance for this interior! Try adding an MLO instance ymap to the project.");
                 return;
             }
 
-            MloInstanceData mloInstance = TryGetMloInstance(mloArch);
-            if (mloInstance == null) return;
-
-            if (mloArch.rooms.Length <= 0)
+            if ((CurrentMloRoom == null) && (CurrentMloPortal == null) && (CurrentMloEntitySet == null))
             {
-                MessageBox.Show($@"Mlo {mloArch.Name} has no rooms! Cannot create entity.");
-                return;
+                if ((mloArch.rooms?.Length??0) <= 0)
+                {
+                    MessageBox.Show($@"Mlo {mloArch.Name} has no rooms! Cannot create entity.");
+                    return;
+                }
+                CurrentMloRoom = mloArch?.GetEntityRoom(CurrentMloEntity);
             }
 
-            int roomIndex = CurrentMloRoom.Index;
-            if (roomIndex < 0)
+
+            int roomIndex = CurrentMloRoom?.Index ?? -1;
+            if (roomIndex >= 0)
             {
-                MessageBox.Show(@"Invalid room index.");
-                return;
+                if (roomIndex >= (mloArch.rooms?.Length??0))
+                {
+                    MessageBox.Show($@"Room at index {roomIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.rooms?.Length??0)} rooms.");
+                    return;
+                }
             }
-            if (roomIndex >= mloArch.rooms.Length)
+
+            int portalIndex = CurrentMloPortal?.Index ?? -1;
+            if (portalIndex >= 0)
             {
-                MessageBox.Show(
-                    $@"Room at index {roomIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {
-                            mloArch.rooms.Length
-                        } rooms.");
-                return;
+                if (portalIndex >= (mloArch.portals?.Length??0))
+                {
+                    MessageBox.Show($@"Portal at index {portalIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.portals?.Length??0)} portals.");
+                    return;
+                }
             }
-            
+
+            int entsetIndex = CurrentMloEntitySet?.Index ?? -1;
+            if (entsetIndex >= 0)
+            {
+                if (entsetIndex >= (mloArch.entitySets?.Length ?? 0))
+                {
+                    MessageBox.Show($@"EntitySet at index {entsetIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.entitySets?.Length ?? 0)} entitySets.");
+                    return;
+                }
+            }
+
+
             float spawndist = 5.0f; //use archetype BSradius if starting with a copy...
             if (copy != null)
             {
@@ -2406,23 +2419,24 @@ namespace CodeWalker.Project
 
             var createindex = mloArch.entities.Length;
             MCEntityDef ment = new MCEntityDef(ref cent, mloArch);
+            YmapEntityDef outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, ment, createindex);
 
-            YmapEntityDef outEnt;
             try
             {
                 if (WorldForm != null)
                 {
                     lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                     {
-                        // Add the entity to the mlo instance and archetype.
-                        outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, ment, createindex);
-                        mloArch.AddEntity(outEnt, roomIndex);
+                        mloArch.AddEntity(outEnt, roomIndex, portalIndex, entsetIndex);
+                        mloInstance.AddEntity(outEnt);//in the case of entitySets, this will add to the archetype entity set... weird and bad - should change this!
+                        outEnt.SetArchetype(GameFileCache.GetArchetype(cent.archetypeName));
                     }
                 }
                 else
                 {
-                    outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, ment, createindex);
-                    mloArch.AddEntity(outEnt, roomIndex);
+                    mloArch.AddEntity(outEnt, roomIndex, portalIndex, entsetIndex);
+                    mloInstance.AddEntity(outEnt);//in the case of entitySets, this will add to the archetype entity set... weird and bad - should change this!
+                    outEnt.SetArchetype(GameFileCache.GetArchetype(cent.archetypeName));
                 }
             }
             catch(Exception e)
@@ -2430,10 +2444,6 @@ namespace CodeWalker.Project
                 MessageBox.Show(this, e.Message, "Create MLO Entity Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
-
-            mloInstance.AddEntity(outEnt);
-            outEnt.SetArchetype(GameFileCache.GetArchetype(cent.archetypeName));
 
             LoadProjectTree();
             ProjectExplorer?.TrySelectMloEntityTreeNode(mloInstance.TryGetArchetypeEntity(outEnt));
@@ -2466,6 +2476,11 @@ namespace CodeWalker.Project
 
             mlo.AddRoom(room);
 
+            var mloInstance = TryGetMloInstance(mlo);
+            if (mloInstance != null)
+            {
+            }
+
             LoadProjectTree();
             ProjectExplorer?.TrySelectMloRoomTreeNode(room);
             CurrentMloRoom = room;
@@ -2495,6 +2510,11 @@ namespace CodeWalker.Project
 
             mlo.AddPortal(portal);
 
+            var mloInstance = TryGetMloInstance(mlo);
+            if (mloInstance != null)
+            {
+            }
+
             LoadProjectTree();
             ProjectExplorer?.TrySelectMloPortalTreeNode(portal);
             CurrentMloPortal = portal;
@@ -2517,17 +2537,66 @@ namespace CodeWalker.Project
             }
             else
             {
-
+                JenkIndex.Ensure("NewEntitySet");//why is this here though
+                set._Data.name = JenkHash.GenHash("NewEntitySet");
             }
 
             mlo.AddEntitySet(set);
+
+            var mloInstance = TryGetMloInstance(mlo);
+            if (mloInstance != null)
+            {
+            }
 
             LoadProjectTree();
             ProjectExplorer?.TrySelectMloEntitySetTreeNode(set);
             CurrentMloEntitySet = set;
             CurrentYtypFile = set?.OwnerMlo?.Ytyp;
         }
-        private bool DeleteMloArchetypeEntity()
+        public bool DeleteArchetype()
+        {
+            if (CurrentArchetype == null) return false;
+            if (CurrentArchetype.Ytyp != CurrentYtypFile) return false;
+
+            if (MessageBox.Show("Are you sure you want to delete this archetype?\n" + CurrentArchetype._BaseArchetypeDef.name.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentArchetype.Ytyp.RemoveArchetype(CurrentArchetype);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentArchetype.Ytyp.RemoveArchetype(CurrentArchetype);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Archetype couldn't be removed!");
+                return false;
+            }
+
+            var delarch = CurrentArchetype;
+            var delytyp = delarch.Ytyp;
+
+            RemoveProjectArchetype(delarch);
+
+            ProjectExplorer?.RemoveArchetypeTreeNode(delarch);
+            ProjectExplorer?.SetYtypHasChanged(delytyp, true);
+
+            ClosePanel((EditYtypArchetypePanel p) => { return p.Tag == delarch; });
+
+            CurrentArchetype = null;
+
+            return true;
+        }
+        public bool DeleteMloEntity()
         {
             if (CurrentEntity?.MloParent?.Archetype?.Ytyp == null) return false;
             if (CurrentEntity.MloParent.Archetype.Ytyp != CurrentYtypFile) return false;
@@ -2584,49 +2653,64 @@ namespace CodeWalker.Project
 
             return true;
         }
-        public bool DeleteArchetype()
+        public bool DeleteMloRoom()
         {
-            if (CurrentArchetype == null) return false;
-            if (CurrentArchetype.Ytyp != CurrentYtypFile) return false;
+            var mlo = CurrentMloRoom?.OwnerMlo;
+            if (mlo == null) return false;
 
-            if (MessageBox.Show("Are you sure you want to delete this archetype?\n" + CurrentArchetype._BaseArchetypeDef.name.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            if (MessageBox.Show("Are you sure you want to delete this room?\n" + CurrentMloRoom.Name + "\n\nDeleting existing rooms is generally not recommended, as it will mess up all the room IDs.\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
             {
                 return true;
             }
 
-            bool res = false;
-            if (WorldForm != null)
+            mlo.RemoveRoom(CurrentMloRoom);
+
+            var mloInstance = TryGetMloInstance(mlo);
+            if (mloInstance != null)
             {
-                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
-                {
-                    res = CurrentArchetype.Ytyp.RemoveArchetype(CurrentArchetype);
-                    //WorldForm.SelectItem(null, null, null);
-                }
             }
-            else
-            {
-                res = CurrentArchetype.Ytyp.RemoveArchetype(CurrentArchetype);
-            }
-            if (!res)
-            {
-                MessageBox.Show("Archetype couldn't be removed!");
-                return false;
-            }
-
-            var delarch = CurrentArchetype;
-            var delytyp = delarch.Ytyp;
-
-            RemoveProjectArchetype(delarch);
-
-            ProjectExplorer?.RemoveArchetypeTreeNode(delarch);
-            ProjectExplorer?.SetYtypHasChanged(delytyp, true);
-
-            ClosePanel((EditYtypArchetypePanel p) => { return p.Tag == delarch; });
-
-            CurrentArchetype = null;
 
             return true;
         }
+        public bool DeleteMloPortal()
+        {
+            var mlo = CurrentMloPortal?.OwnerMlo;
+            if (mlo == null) return false;
+
+            if (MessageBox.Show("Are you sure you want to delete this portal?\n" + CurrentMloPortal.Name + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            mlo.RemovePortal(CurrentMloPortal);
+
+            var mloInstance = TryGetMloInstance(mlo);
+            if (mloInstance != null)
+            {
+            }
+
+            return true;
+        }
+        public bool DeleteMloEntitySet()
+        {
+            var mlo = CurrentMloEntitySet?.OwnerMlo;
+            if (mlo == null) return false;
+
+            if (MessageBox.Show("Are you sure you want to delete this entity set?\n" + CurrentMloEntitySet.Name + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            mlo.RemoveEntitySet(CurrentMloEntitySet);
+
+            var mloInstance = TryGetMloInstance(mlo);
+            if (mloInstance != null)
+            {
+            }
+
+            return true;
+        }
+
         private void AddProjectArchetypes(YtypFile ytyp)
         {
             if (ytyp?.AllArchetypes == null) return;

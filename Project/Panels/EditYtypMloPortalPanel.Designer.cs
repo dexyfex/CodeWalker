@@ -44,6 +44,8 @@
             this.CornersTextBox = new CodeWalker.WinForms.TextBoxFix();
             this.label6 = new System.Windows.Forms.Label();
             this.FlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
+            this.AddEntityButton = new System.Windows.Forms.Button();
+            this.DeleteButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // FlagsTextBox
@@ -175,17 +177,17 @@
             this.FlagsCheckedListBox.CheckOnClick = true;
             this.FlagsCheckedListBox.FormattingEnabled = true;
             this.FlagsCheckedListBox.Items.AddRange(new object[] {
-            "1 - Hide from outside",
-            "2 - Unk02",
+            "1 - Hide inside from outside",
+            "2 - Hide outside from inside",
             "4 - Mirror",
             "8 - Extra bloom",
             "16 - Unk05",
-            "32 - Unk06",
+            "32 - Use exterior LOD",
             "64 - Hide when door closed",
             "128 - Unk08",
-            "256 - Render sky light",
+            "256 - Mirror exterior portals",
             "512 - Unk10",
-            "1024 - Render exterior",
+            "1024 - Mirror limbo entities",
             "2048 - Unk12",
             "4096 - Unk13",
             "8192 - Unk14"});
@@ -195,11 +197,34 @@
             this.FlagsCheckedListBox.TabIndex = 36;
             this.FlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.FlagsCheckedListBox_ItemCheck);
             // 
+            // AddEntityButton
+            // 
+            this.AddEntityButton.Location = new System.Drawing.Point(107, 372);
+            this.AddEntityButton.Name = "AddEntityButton";
+            this.AddEntityButton.Size = new System.Drawing.Size(95, 23);
+            this.AddEntityButton.TabIndex = 37;
+            this.AddEntityButton.Text = "Add Entity";
+            this.AddEntityButton.UseVisualStyleBackColor = true;
+            this.AddEntityButton.Click += new System.EventHandler(this.AddEntityButton_Click);
+            // 
+            // DeleteButton
+            // 
+            this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.DeleteButton.Location = new System.Drawing.Point(348, 372);
+            this.DeleteButton.Name = "DeleteButton";
+            this.DeleteButton.Size = new System.Drawing.Size(95, 23);
+            this.DeleteButton.TabIndex = 38;
+            this.DeleteButton.Text = "Delete Portal";
+            this.DeleteButton.UseVisualStyleBackColor = true;
+            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
+            // 
             // EditYtypMloPortalPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(565, 505);
+            this.Controls.Add(this.AddEntityButton);
+            this.Controls.Add(this.DeleteButton);
             this.Controls.Add(this.FlagsCheckedListBox);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.CornersTextBox);
@@ -240,5 +265,7 @@
         private WinForms.TextBoxFix CornersTextBox;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.CheckedListBox FlagsCheckedListBox;
+        private System.Windows.Forms.Button AddEntityButton;
+        private System.Windows.Forms.Button DeleteButton;
     }
 }
