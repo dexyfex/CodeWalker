@@ -1380,7 +1380,7 @@ namespace CodeWalker.GameFiles
             //}
             IsMlo = true;
 
-            MloInstance = new MloInstanceData();
+            MloInstance = new MloInstanceData(this, null);//is this necessary..? will get created in SetArchetype..
             MloInstance.Instance = mlo;
 
             UpdateWidgetPosition();
@@ -1399,7 +1399,7 @@ namespace CodeWalker.GameFiles
                 {
                     //transform interior entities into world space...
                     var mloa = Archetype as MloArchetype;
-                    MloInstance = new MloInstanceData();
+                    MloInstance = new MloInstanceData(this, mloa);
                     MloInstance._Instance = new CMloInstanceDef { CEntityDef = _CEntityDef };
                     if (mloa != null)
                     {
@@ -1411,7 +1411,7 @@ namespace CodeWalker.GameFiles
                             Ymap.MloEntities = mloEntities.ToArray();
                         }
 
-                        MloInstance.CreateYmapEntities(this, mloa);
+                        MloInstance.CreateYmapEntities();
                     }
 
                     if (BSRadius == 0.0f)

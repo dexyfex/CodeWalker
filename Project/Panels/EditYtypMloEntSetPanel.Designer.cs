@@ -39,6 +39,8 @@
             this.label4 = new System.Windows.Forms.Label();
             this.SelectedLocationEntityLabel = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.AddEntityButton = new System.Windows.Forms.Button();
+            this.DeleteButton = new System.Windows.Forms.Button();
             this.SelectedLocationGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -89,7 +91,7 @@
             this.LocationsListBox.FormattingEnabled = true;
             this.LocationsListBox.Location = new System.Drawing.Point(72, 50);
             this.LocationsListBox.Name = "LocationsListBox";
-            this.LocationsListBox.Size = new System.Drawing.Size(200, 433);
+            this.LocationsListBox.Size = new System.Drawing.Size(200, 381);
             this.LocationsListBox.TabIndex = 10;
             this.LocationsListBox.SelectedIndexChanged += new System.EventHandler(this.LocationsListBox_SelectedIndexChanged);
             // 
@@ -147,11 +149,35 @@
             this.label2.TabIndex = 10;
             this.label2.Text = "Entity:";
             // 
+            // AddEntityButton
+            // 
+            this.AddEntityButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.AddEntityButton.Location = new System.Drawing.Point(72, 453);
+            this.AddEntityButton.Name = "AddEntityButton";
+            this.AddEntityButton.Size = new System.Drawing.Size(95, 23);
+            this.AddEntityButton.TabIndex = 39;
+            this.AddEntityButton.Text = "Add Entity";
+            this.AddEntityButton.UseVisualStyleBackColor = true;
+            this.AddEntityButton.Click += new System.EventHandler(this.AddEntityButton_Click);
+            // 
+            // DeleteButton
+            // 
+            this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.DeleteButton.Location = new System.Drawing.Point(313, 453);
+            this.DeleteButton.Name = "DeleteButton";
+            this.DeleteButton.Size = new System.Drawing.Size(95, 23);
+            this.DeleteButton.TabIndex = 40;
+            this.DeleteButton.Text = "Delete Entity Set";
+            this.DeleteButton.UseVisualStyleBackColor = true;
+            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
+            // 
             // EditYtypMloEntSetPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(565, 505);
+            this.Controls.Add(this.AddEntityButton);
+            this.Controls.Add(this.DeleteButton);
             this.Controls.Add(this.SelectedLocationGroupBox);
             this.Controls.Add(this.LocationsListBox);
             this.Controls.Add(this.label1);
@@ -180,5 +206,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox SelectedLocationRoomCombo;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button AddEntityButton;
+        private System.Windows.Forms.Button DeleteButton;
     }
 }
