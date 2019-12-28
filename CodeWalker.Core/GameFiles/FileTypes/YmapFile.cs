@@ -227,9 +227,9 @@ namespace CodeWalker.GameFiles
 
             #endregion
 
-#if !DEBUG
-            Meta = null;
-#endif
+//#if !DEBUG
+//            Meta = null; //this object is required for XML conversion! can't just let go of it here
+//#endif
         }
 
 
