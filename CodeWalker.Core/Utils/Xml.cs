@@ -87,6 +87,10 @@ namespace CodeWalker
         }
         public static T GetEnumValue<T>(string val) where T : struct
         {
+            if (string.IsNullOrEmpty(val))
+            {
+                return default(T);
+            }
             if (val.StartsWith("hash_"))
             {
                 //convert hash_12ABC to Unk_12345

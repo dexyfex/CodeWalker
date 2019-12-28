@@ -457,24 +457,24 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetScenarioNode(CurrentScenarioNode); }, //updateFunc
                 (panel) => { return panel.CurrentScenarioNode == CurrentScenarioNode; }); //findFunc
         }
-        public void ShowEditYtypArchetypeMloRoomPanel(bool promote)
+        public void ShowEditYtypMloRoomPanel(bool promote)
         {
             ShowPanel(promote,
-                () => { return new EditYtypArchetypeMloRoomPanel(this); }, //createFunc
+                () => { return new EditYtypMloRoomPanel(this); }, //createFunc
                 (panel) => { panel.SetRoom(CurrentMloRoom); }, //updateFunc
                 (panel) => { return panel.CurrentRoom == CurrentMloRoom; }); //findFunc
         }
-        public void ShowEditYtypArchetypeMloPortalPanel(bool promote)
+        public void ShowEditYtypMloPortalPanel(bool promote)
         {
             ShowPanel(promote,
-                () => { return new EditYtypArchetypeMloPortalPanel(this); }, //createFunc
+                () => { return new EditYtypMloPortalPanel(this); }, //createFunc
                 (panel) => { panel.SetPortal(CurrentMloPortal); }, //updateFunc
                 (panel) => { return panel.CurrentPortal == CurrentMloPortal; }); //findFunc
         }
-        public void ShowEditYtypArchetypeMloEntSetPanel(bool promote)
+        public void ShowEditYtypMloEntSetPanel(bool promote)
         {
             ShowPanel(promote,
-                () => { return new EditYtypArchetypeMloEntSetPanel(this); }, //createFunc
+                () => { return new EditYtypMloEntSetPanel(this); }, //createFunc
                 (panel) => { panel.SetEntitySet(CurrentMloEntitySet); }, //updateFunc
                 (panel) => { return panel.CurrentEntitySet == CurrentMloEntitySet; }); //findFunc
         }
@@ -536,15 +536,15 @@ namespace CodeWalker.Project
             }
             else if (CurrentMloRoom != null)
             {
-                ShowEditYtypArchetypeMloRoomPanel(promote);
+                ShowEditYtypMloRoomPanel(promote);
             }
             else if (CurrentMloPortal != null)
             {
-                ShowEditYtypArchetypeMloPortalPanel(promote);
+                ShowEditYtypMloPortalPanel(promote);
             }
             else if (CurrentMloEntitySet != null)
             {
-                ShowEditYtypArchetypeMloEntSetPanel(promote);
+                ShowEditYtypMloEntSetPanel(promote);
             }
             else if (CurrentEntity != null)
             {
@@ -732,6 +732,18 @@ namespace CodeWalker.Project
             else if (CurrentGrassBatch != null)
             {
                 CurrentYmapFile = CurrentGrassBatch.Ymap;
+            }
+            if (CurrentMloRoom != null)
+            {
+                CurrentArchetype = CurrentMloRoom.OwnerMlo;
+            }
+            if (CurrentMloPortal != null)
+            {
+                CurrentArchetype = CurrentMloPortal.OwnerMlo;
+            }
+            if (CurrentMloEntitySet != null)
+            {
+                CurrentArchetype = CurrentMloEntitySet.OwnerMlo;
             }
             if (CurrentArchetype != null)
             {
@@ -2315,7 +2327,7 @@ namespace CodeWalker.Project
         {
             if ((CurrentArchetype == null) || !(CurrentArchetype is MloArchetype mloArch))
             {
-                var arch = CurrentEntity?.MloParent.Archetype ?? CurrentMloRoom?.OwnerMlo;
+                var arch = CurrentEntity?.MloParent.Archetype ?? CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo;
                 if (arch == null)
                     return;
 
@@ -2427,6 +2439,93 @@ namespace CodeWalker.Project
             ProjectExplorer?.TrySelectMloEntityTreeNode(mloInstance.TryGetArchetypeEntity(outEnt));
             CurrentEntity = outEnt;
             CurrentYtypFile = CurrentEntity.MloParent?.Archetype?.Ytyp;
+        }
+        public void NewMloRoom(MCMloRoomDef copy = null)
+        {
+            var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype);
+            if (mlo == null) return;
+
+            if (copy == null)
+            {
+                copy = CurrentMloRoom;
+            }
+
+            var room = new MCMloRoomDef();
+            if (copy != null)
+            {
+                room._Data = copy._Data;
+                room.RoomName = copy.RoomName;
+            }
+            else
+            {
+                room._Data.flags = 96;
+                room._Data.blend = 1.0f;
+                room._Data.exteriorVisibiltyDepth = -1;
+                room.RoomName = "NewRoom";
+            }
+
+            mlo.AddRoom(room);
+
+            LoadProjectTree();
+            ProjectExplorer?.TrySelectMloRoomTreeNode(room);
+            CurrentMloRoom = room;
+            CurrentYtypFile = room?.OwnerMlo?.Ytyp;
+        }
+        public void NewMloPortal(MCMloPortalDef copy = null)
+        {
+            var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype);
+            if (mlo == null) return;
+
+            if (copy == null)
+            {
+                copy = CurrentMloPortal;
+            }
+
+            var portal = new MCMloPortalDef();
+            if (copy != null)
+            {
+                portal._Data = copy._Data;
+                portal.Corners = (Vector4[])copy.Corners.Clone();
+            }
+            else
+            {
+                portal._Data.roomFrom = 1;
+                portal._Data.roomTo = 0;
+            }
+
+            mlo.AddPortal(portal);
+
+            LoadProjectTree();
+            ProjectExplorer?.TrySelectMloPortalTreeNode(portal);
+            CurrentMloPortal = portal;
+            CurrentYtypFile = portal?.OwnerMlo?.Ytyp;
+        }
+        public void NewMloEntitySet(MCMloEntitySet copy = null)
+        {
+            var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype);
+            if (mlo == null) return;
+
+            if (copy == null)
+            {
+                copy = CurrentMloEntitySet;
+            }
+
+            var set = new MCMloEntitySet();
+            if (copy != null)
+            {
+                set._Data.name = copy._Data.name;
+            }
+            else
+            {
+
+            }
+
+            mlo.AddEntitySet(set);
+
+            LoadProjectTree();
+            ProjectExplorer?.TrySelectMloEntitySetTreeNode(set);
+            CurrentMloEntitySet = set;
+            CurrentYtypFile = set?.OwnerMlo?.Ytyp;
         }
         private bool DeleteMloArchetypeEntity()
         {
@@ -6849,6 +6948,18 @@ namespace CodeWalker.Project
         {
             NewMloEntity();
         }
+        private void YtypMloNewRoomToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewMloRoom();
+        }
+        private void YtypMloNewPortalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewMloPortal();
+        }
+        private void YtypMloNewEntitySetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewMloEntitySet();
+        }
 
         private void YndNewNodeMenu_Click(object sender, EventArgs e)
         {
@@ -7070,6 +7181,5 @@ namespace CodeWalker.Project
         {
             SaveAll();
         }
-
     }
 }
