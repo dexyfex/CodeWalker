@@ -140,17 +140,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Project\Panels\EditYtypArchetypeMloEntSetPanel.cs">
+    <Compile Include="Project\Panels\EditYtypMloEntSetPanel.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Project\Panels\EditYtypArchetypeMloEntSetPanel.Designer.cs">
-      <DependentUpon>EditYtypArchetypeMloEntSetPanel.cs</DependentUpon>
+    <Compile Include="Project\Panels\EditYtypMloEntSetPanel.Designer.cs">
+      <DependentUpon>EditYtypMloEntSetPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Project\Panels\EditYtypArchetypeMloPortalPanel.cs">
+    <Compile Include="Project\Panels\EditYtypMloPortalPanel.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Project\Panels\EditYtypArchetypeMloPortalPanel.Designer.cs">
-      <DependentUpon>EditYtypArchetypeMloPortalPanel.cs</DependentUpon>
+    <Compile Include="Project\Panels\EditYtypMloPortalPanel.Designer.cs">
+      <DependentUpon>EditYtypMloPortalPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="Rendering\Shaders\DeferredScene.cs" />
     <Compile Include="Rendering\Utils\UnitCone.cs" />
@@ -416,11 +416,11 @@
     <Compile Include="Project\Panels\EditYmapCarGenPanel.Designer.cs">
       <DependentUpon>EditYmapCarGenPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Project\Panels\EditYtypArchetypeMloRoomPanel.cs">
+    <Compile Include="Project\Panels\EditYtypMloRoomPanel.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Project\Panels\EditYtypArchetypeMloRoomPanel.Designer.cs">
-      <DependentUpon>EditYtypArchetypeMloRoomPanel.cs</DependentUpon>
+    <Compile Include="Project\Panels\EditYtypMloRoomPanel.Designer.cs">
+      <DependentUpon>EditYtypMloRoomPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\Panels\EditYmapEntityPanel.cs">
       <SubType>Form</SubType>
@@ -621,11 +621,11 @@
       <DependentUpon>WorldForm.cs</DependentUpon>
     </Compile>
     <Compile Include="World\Widget.cs" />
-    <EmbeddedResource Include="Project\Panels\EditYtypArchetypeMloEntSetPanel.resx">
-      <DependentUpon>EditYtypArchetypeMloEntSetPanel.cs</DependentUpon>
+    <EmbeddedResource Include="Project\Panels\EditYtypMloEntSetPanel.resx">
+      <DependentUpon>EditYtypMloEntSetPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Project\Panels\EditYtypArchetypeMloPortalPanel.resx">
-      <DependentUpon>EditYtypArchetypeMloPortalPanel.cs</DependentUpon>
+    <EmbeddedResource Include="Project\Panels\EditYtypMloPortalPanel.resx">
+      <DependentUpon>EditYtypMloPortalPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Tools\AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
@@ -756,8 +756,8 @@
     <EmbeddedResource Include="Project\Panels\EditYmapCarGenPanel.resx">
       <DependentUpon>EditYmapCarGenPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Project\Panels\EditYtypArchetypeMloRoomPanel.resx">
-      <DependentUpon>EditYtypArchetypeMloRoomPanel.cs</DependentUpon>
+    <EmbeddedResource Include="Project\Panels\EditYtypMloRoomPanel.resx">
+      <DependentUpon>EditYtypMloRoomPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYmapEntityPanel.resx">
       <DependentUpon>EditYmapEntityPanel.cs</DependentUpon>

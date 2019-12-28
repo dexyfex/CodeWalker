@@ -1340,6 +1340,36 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
+        public void TrySelectMloPortalTreeNode(MCMloPortalDef portal)
+        {
+            TreeNode portalnode = FindMloPortalTreeNode(portal);
+            if (portalnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == portalnode)
+                {
+                    OnItemSelected?.Invoke(portal);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = portalnode;
+                }
+            }
+        }
+        public void TrySelectMloEntitySetTreeNode(MCMloEntitySet set)
+        {
+            TreeNode setnode = FindMloEntitySetTreeNode(set);
+            if (setnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == setnode)
+                {
+                    OnItemSelected?.Invoke(set);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = setnode;
+                }
+            }
+        }
         public void TrySelectArchetypeTreeNode(Archetype archetype)
         {
             TreeNode archetypenode = FindArchetypeTreeNode(archetype);

@@ -261,6 +261,70 @@ namespace CodeWalker.GameFiles
             return false;
         }
 
+
+        public void AddRoom(MCMloRoomDef room)
+        {
+            if (room == null) return;
+
+            room.OwnerMlo = this;
+            room.Index = rooms?.Length ?? 0;
+
+            var newrooms = rooms?.ToList() ?? new List<MCMloRoomDef>();
+            newrooms.Add(room);
+            rooms = newrooms.ToArray();
+        }
+        public void RemoveRoom(MCMloRoomDef room)
+        {
+            if (room == null) return;
+
+            var newrooms = rooms.ToList();
+            newrooms.Remove(room);
+            rooms = newrooms.ToArray();
+        }
+
+        public void AddPortal(MCMloPortalDef portal)
+        {
+            if (portal == null) return;
+
+            portal.OwnerMlo = this;
+            portal.Index = portals?.Length ?? 0;
+
+            var newportals = portals?.ToList() ?? new List<MCMloPortalDef>();
+            newportals.Add(portal);
+            portals = newportals.ToArray();
+        }
+        public void RemovePortal(MCMloPortalDef portal)
+        {
+            if (portal == null) return;
+
+            var newportals = portals.ToList();
+            newportals.Remove(portal);
+            portals = newportals.ToArray();
+        }
+
+        public void AddEntitySet(MCMloEntitySet set)
+        {
+            if (set == null) return;
+
+            set.OwnerMlo = this;
+            set.Index = entitySets?.Length ?? 0;
+
+            var newsets = entitySets?.ToList() ?? new List<MCMloEntitySet>();
+            newsets.Add(set);
+            entitySets = newsets.ToArray();
+        }
+        public void RemoveEntitySet(MCMloEntitySet set)
+        {
+            if (set == null) return;
+
+            var newsets = entitySets.ToList();
+            newsets.Remove(set);
+            entitySets = newsets.ToArray();
+        }
+
+
+
+
         private void FixPortalIndexes(int deletedIndex)
         {
             foreach (var portal in portals)

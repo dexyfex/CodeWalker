@@ -11,14 +11,15 @@ using System.Windows.Forms;
 
 namespace CodeWalker.Project.Panels
 {
-    public partial class EditYtypArchetypeMloEntSetPanel : ProjectPanel
+    public partial class EditYtypMloEntSetPanel : ProjectPanel
     {
         public ProjectForm ProjectForm;
         public MCMloEntitySet CurrentEntitySet { get; set; }
 
+        private bool populatingui = false;
         private bool SelectingLocation = false;
 
-        public EditYtypArchetypeMloEntSetPanel(ProjectForm owner)
+        public EditYtypMloEntSetPanel(ProjectForm owner)
         {
             ProjectForm = owner;
             InitializeComponent();
@@ -39,11 +40,19 @@ namespace CodeWalker.Project.Panels
 
             if (CurrentEntitySet != null)
             {
+                populatingui = true;
                 EntitySetNameTextBox.Text = CurrentEntitySet.Name;
                 ForceVisibleCheckBox.Checked = CurrentEntitySet.ForceVisible;
-
                 SelectedLocationGroupBox.Visible = false;
                 UpdateSelectedLocationRoomCombo();
+                populatingui = false;
+            }
+            else
+            {
+                EntitySetNameTextBox.Text = string.Empty;
+                ForceVisibleCheckBox.Checked = false;
+                SelectedLocationGroupBox.Visible = false;
+                SelectedLocationRoomCombo.Items.Clear();
             }
 
             UpdateLocationsListBox();
@@ -51,7 +60,7 @@ namespace CodeWalker.Project.Panels
         private void UpdateLocationsListBox()
         {
             LocationsListBox.Items.Clear();
-            if (CurrentEntitySet.Locations != null)
+            if (CurrentEntitySet?.Locations != null)
             {
                 for (int i = 0; i < CurrentEntitySet.Locations.Length; i++)
                 {
@@ -65,7 +74,7 @@ namespace CodeWalker.Project.Panels
         private void UpdateSelectedLocationRoomCombo()
         {
             SelectedLocationRoomCombo.Items.Clear();
-            if (CurrentEntitySet.OwnerMlo?.rooms != null)
+            if (CurrentEntitySet?.OwnerMlo?.rooms != null)
             {
                 foreach (var room in CurrentEntitySet.OwnerMlo.rooms)
                 {
@@ -81,6 +90,7 @@ namespace CodeWalker.Project.Panels
 
         private void EntitySetNameTextBox_TextChanged(object sender, EventArgs e)
         {
+            if (populatingui) return;
             if (CurrentEntitySet == null) return;
 
             var str = EntitySetNameTextBox.Text;

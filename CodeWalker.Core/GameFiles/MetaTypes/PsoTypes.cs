@@ -13125,7 +13125,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo((MetaName)1856972365, PsoDataType.Enum, 24, 0, (MetaName)1756502932),
                      new PsoStructureEntryInfo(MetaName.lawResponseTime, PsoDataType.Enum, 28, 0, (MetaName)3204395397),
                      new PsoStructureEntryInfo(MetaName.lawResponseType, PsoDataType.Enum, 32, 0, (MetaName)4286852891),
-                     new PsoStructureEntryInfo((MetaName)218662697, PsoDataType.Enum, 36, 0, (MetaName)4095090001),
+                     new PsoStructureEntryInfo(MetaName.specialZoneAttribute, PsoDataType.Enum, 36, 0, (MetaName)4095090001),
                      new PsoStructureEntryInfo(MetaName.vehDirtMin, PsoDataType.Float, 40, 0, 0),
                      new PsoStructureEntryInfo(MetaName.vehDirtMax, PsoDataType.Float, 44, 0, 0),
                      new PsoStructureEntryInfo(MetaName.vehDirtGrowScale, PsoDataType.Float, 48, 0, 0),

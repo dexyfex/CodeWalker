@@ -1464,6 +1464,11 @@ namespace CodeWalker
                     }
                 }
             }
+            if (selectionItem.MloRoomDef != null)
+            {
+                camrel += ori.Multiply(selectionItem.BBOffset);
+                ori = ori * selectionItem.BBOrientation;
+            }
             if ((selectionItem.ArchetypeExtension != null) || (selectionItem.EntityExtension != null) || (selectionItem.CollisionBounds != null))
             {
                 bbmin = selectionItem.AABB.Minimum;
@@ -3551,9 +3556,9 @@ namespace CodeWalker
             {
                 MapSelection ms = new MapSelection();
                 ms.MloRoomDef = room;
-                Vector3 min = instance.Owner.Position + instance.Owner.Orientation.Multiply(room.BBMin_CW);
-                Vector3 max = instance.Owner.Position + instance.Owner.Orientation.Multiply(room.BBMax_CW);
-                ms.AABB = new BoundingBox(min, max);
+                ms.AABB = new BoundingBox(room.BBMin_CW, room.BBMax_CW);
+                ms.BBOffset = instance.Owner.Position;
+                ms.BBOrientation = instance.Owner.Orientation;
                 SelectItem(ms);
             }
         }

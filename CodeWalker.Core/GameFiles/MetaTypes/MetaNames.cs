@@ -9557,7 +9557,8 @@ namespace CodeWalker.GameFiles
 
 
 
-
+        //Carl Johnson: I discovered  in zonebind
+        specialZoneAttribute = 218662697,
 
     }
 
