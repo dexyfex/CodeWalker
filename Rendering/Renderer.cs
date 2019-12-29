@@ -1958,12 +1958,13 @@ namespace CodeWalker.Rendering
             }
             if (ent.MloInstance.EntitySets != null)
             {
-                foreach (var entitysets in ent.MloInstance.EntitySets)
+                for (int e = 0; e < ent.MloInstance.EntitySets.Length; e++)
                 {
-                    var entityset = entitysets.Value;
+                    var entityset = ent.MloInstance.EntitySets[e];
                     if (!entityset.VisibleOrForced) continue;
 
                     var entities = entityset.Entities;
+                    if (entities == null) continue;
                     for (int i = 0; i < entities.Count; i++)
                     {
                         var intent = entities[i];

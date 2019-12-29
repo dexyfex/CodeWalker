@@ -706,7 +706,6 @@ namespace CodeWalker.Project
                 if (instance != null)
                 {
                     CurrentEntity = instance.TryGetYmapEntity(CurrentMloEntity);
-
                     CurrentYmapFile = instance.Owner?.Ymap;
                 }
 
@@ -721,7 +720,6 @@ namespace CodeWalker.Project
                 else
                 {
                     CurrentArchetype = CurrentEntity.Archetype;
-
                     CurrentYmapFile = CurrentEntity.Ymap;
                 }
             }
@@ -2339,45 +2337,50 @@ namespace CodeWalker.Project
                 return;
             }
 
+            if ((CurrentMloEntity == null) && (CurrentEntity != null))
+            {
+                CurrentMloEntity = mloInstance.TryGetArchetypeEntity(CurrentEntity);
+            }
+
             if ((CurrentMloRoom == null) && (CurrentMloPortal == null) && (CurrentMloEntitySet == null))
             {
-                if ((mloArch.rooms?.Length??0) <= 0)
+                if (CurrentMloEntity != null)
                 {
-                    MessageBox.Show($@"Mlo {mloArch.Name} has no rooms! Cannot create entity.");
-                    return;
+                    CurrentMloRoom = mloArch.GetEntityRoom(CurrentMloEntity);
+                    CurrentMloPortal = mloArch.GetEntityPortal(CurrentMloEntity);
+                    CurrentMloEntitySet = mloArch.GetEntitySet(CurrentMloEntity);
                 }
-                CurrentMloRoom = mloArch?.GetEntityRoom(CurrentMloEntity);
+                else
+                {
+                    if ((mloArch.rooms?.Length??0) <= 0)
+                    {
+                        MessageBox.Show($@"Mlo {mloArch.Name} has no rooms! Cannot create entity.");
+                        return;
+                    }
+                    CurrentMloRoom = mloArch.rooms[0];
+                }
             }
 
 
             int roomIndex = CurrentMloRoom?.Index ?? -1;
-            if (roomIndex >= 0)
+            if (roomIndex >= (mloArch.rooms?.Length ?? 0))
             {
-                if (roomIndex >= (mloArch.rooms?.Length??0))
-                {
-                    MessageBox.Show($@"Room at index {roomIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.rooms?.Length??0)} rooms.");
-                    return;
-                }
+                MessageBox.Show($@"Room at index {roomIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.rooms?.Length ?? 0)} rooms.");
+                return;
             }
 
             int portalIndex = CurrentMloPortal?.Index ?? -1;
-            if (portalIndex >= 0)
+            if (portalIndex >= (mloArch.portals?.Length ?? 0))
             {
-                if (portalIndex >= (mloArch.portals?.Length??0))
-                {
-                    MessageBox.Show($@"Portal at index {portalIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.portals?.Length??0)} portals.");
-                    return;
-                }
+                MessageBox.Show($@"Portal at index {portalIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.portals?.Length ?? 0)} portals.");
+                return;
             }
 
             int entsetIndex = CurrentMloEntitySet?.Index ?? -1;
-            if (entsetIndex >= 0)
+            if (entsetIndex >= (mloArch.entitySets?.Length ?? 0))
             {
-                if (entsetIndex >= (mloArch.entitySets?.Length ?? 0))
-                {
-                    MessageBox.Show($@"EntitySet at index {entsetIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.entitySets?.Length ?? 0)} entitySets.");
-                    return;
-                }
+                MessageBox.Show($@"EntitySet at index {entsetIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.entitySets?.Length ?? 0)} entitySets.");
+                return;
             }
 
 
@@ -2418,8 +2421,8 @@ namespace CodeWalker.Project
             cent.rotation = rot.ToVector4();
 
             var createindex = mloArch.entities.Length;
-            MCEntityDef ment = new MCEntityDef(ref cent, mloArch);
-            YmapEntityDef outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, ment, createindex);
+            var ment = new MCEntityDef(ref cent, mloArch);
+            var outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, ment, createindex);
 
             try
             {
@@ -2428,14 +2431,14 @@ namespace CodeWalker.Project
                     lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                     {
                         mloArch.AddEntity(outEnt, roomIndex, portalIndex, entsetIndex);
-                        mloInstance.AddEntity(outEnt);//in the case of entitySets, this will add to the archetype entity set... weird and bad - should change this!
+                        mloInstance.AddEntity(outEnt);
                         outEnt.SetArchetype(GameFileCache.GetArchetype(cent.archetypeName));
                     }
                 }
                 else
                 {
                     mloArch.AddEntity(outEnt, roomIndex, portalIndex, entsetIndex);
-                    mloInstance.AddEntity(outEnt);//in the case of entitySets, this will add to the archetype entity set... weird and bad - should change this!
+                    mloInstance.AddEntity(outEnt);
                     outEnt.SetArchetype(GameFileCache.GetArchetype(cent.archetypeName));
                 }
             }
@@ -2445,14 +2448,17 @@ namespace CodeWalker.Project
                 return;
             }
 
+            ment = mloInstance.TryGetArchetypeEntity(outEnt);
+
             LoadProjectTree();
-            ProjectExplorer?.TrySelectMloEntityTreeNode(mloInstance.TryGetArchetypeEntity(outEnt));
+            ProjectExplorer?.TrySelectMloEntityTreeNode(ment);
             CurrentEntity = outEnt;
+            CurrentMloEntity = ment;
             CurrentYtypFile = CurrentEntity.MloParent?.Archetype?.Ytyp;
         }
         public void NewMloRoom(MCMloRoomDef copy = null)
         {
-            var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype);
+            var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? (CurrentArchetype as MloArchetype);
             if (mlo == null) return;
 
             if (copy == null)
@@ -2488,7 +2494,7 @@ namespace CodeWalker.Project
         }
         public void NewMloPortal(MCMloPortalDef copy = null)
         {
-            var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype);
+            var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? (CurrentArchetype as MloArchetype);
             if (mlo == null) return;
 
             if (copy == null)
@@ -2500,12 +2506,16 @@ namespace CodeWalker.Project
             if (copy != null)
             {
                 portal._Data = copy._Data;
-                portal.Corners = (Vector4[])copy.Corners.Clone();
+                portal.Corners = (Vector4[])copy.Corners?.Clone();
             }
             else
             {
                 portal._Data.roomFrom = 1;
                 portal._Data.roomTo = 0;
+            }
+            if (portal.Corners == null)
+            {
+                portal.Corners = new[] { new Vector4(0, 0, 0, float.NaN), new Vector4(0, 0, 1, float.NaN), new Vector4(0, 1, 1, float.NaN), new Vector4(0, 1, 0, float.NaN) };
             }
 
             mlo.AddPortal(portal);
@@ -2522,7 +2532,7 @@ namespace CodeWalker.Project
         }
         public void NewMloEntitySet(MCMloEntitySet copy = null)
         {
-            var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype);
+            var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? (CurrentArchetype as MloArchetype);
             if (mlo == null) return;
 
             if (copy == null)
@@ -2546,6 +2556,7 @@ namespace CodeWalker.Project
             var mloInstance = TryGetMloInstance(mlo);
             if (mloInstance != null)
             {
+                mloInstance.AddEntitySet(set);
             }
 
             LoadProjectTree();
@@ -2617,9 +2628,13 @@ namespace CodeWalker.Project
             MloInstanceData mloInstance = CurrentEntity.MloParent.MloInstance;
             if (mloInstance == null) return false;
 
-            var ent = CurrentEntity;
-            var mcEnt = mloInstance.TryGetArchetypeEntity(ent);
+
+            var delent = CurrentEntity; //CurrentEntity could get changed when we remove the tree node..
+            var delytyp = CurrentEntity.MloParent.Archetype.Ytyp;
+            var mcEnt = mloInstance.TryGetArchetypeEntity(CurrentEntity);
+
             ProjectExplorer?.RemoveMloEntityTreeNode(mcEnt);
+            ProjectExplorer?.SetYtypHasChanged(delytyp, true);
 
             try
             {
@@ -2627,13 +2642,15 @@ namespace CodeWalker.Project
                 {
                     lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                     {
-                        mloInstance.DeleteEntity(ent);
+                        mloArchetype.RemoveEntity(delent);
+                        mloInstance.DeleteEntity(delent);
                         //WorldForm.SelectItem(null, null, null);
                     }
                 }
                 else
                 {
-                    mloInstance.DeleteEntity(ent);
+                    mloArchetype.RemoveEntity(delent);
+                    mloInstance.DeleteEntity(delent);
                 }
             }
             catch (Exception e) // various failures could happen so we'll use a trycatch for when an exception is thrown.
@@ -2642,13 +2659,10 @@ namespace CodeWalker.Project
                 return false;
             }
 
-            var delent = ent;
-            var delytyp = delent.MloParent.Archetype.Ytyp;
-
-            ProjectExplorer?.SetYtypHasChanged(delytyp, true);
 
             ClosePanel((EditYmapEntityPanel p) => { return p.Tag == delent; });
             CurrentEntity = null;
+            CurrentMloEntity = null;
             WorldForm.SelectItem(null);
 
             return true;
@@ -2670,6 +2684,11 @@ namespace CodeWalker.Project
             {
             }
 
+            ProjectExplorer?.RemoveMloRoomTreeNode(CurrentMloRoom);
+            ProjectExplorer?.SetYtypHasChanged(mlo.Ytyp, true);
+            ClosePanel((EditYtypMloRoomPanel p) => { return p.Tag == CurrentMloRoom; });
+            CurrentMloRoom = null;
+
             return true;
         }
         public bool DeleteMloPortal()
@@ -2689,6 +2708,11 @@ namespace CodeWalker.Project
             {
             }
 
+            ProjectExplorer?.RemoveMloPortalTreeNode(CurrentMloPortal);
+            ProjectExplorer?.SetYtypHasChanged(mlo.Ytyp, true);
+            ClosePanel((EditYtypMloPortalPanel p) => { return p.Tag == CurrentMloPortal; });
+            CurrentMloPortal = null;
+
             return true;
         }
         public bool DeleteMloEntitySet()
@@ -2706,7 +2730,13 @@ namespace CodeWalker.Project
             var mloInstance = TryGetMloInstance(mlo);
             if (mloInstance != null)
             {
+                mloInstance.DeleteEntitySet(CurrentMloEntitySet);
             }
+
+            ProjectExplorer?.RemoveMloEntitySetTreeNode(CurrentMloEntitySet);
+            ProjectExplorer?.SetYtypHasChanged(mlo.Ytyp, true);
+            ClosePanel((EditYtypMloEntSetPanel p) => { return p.Tag == CurrentMloEntitySet; });
+            CurrentMloEntitySet = null;
 
             return true;
         }

@@ -82,7 +82,7 @@ namespace CodeWalker.Project.Panels
                 TreeNode tn = ProjectForm.ProjectExplorer?.FindMloRoomTreeNode(CurrentRoom);
                 if (tn != null)
                 {
-                    tn.Text = CurrentRoom.RoomName;
+                    tn.Text = CurrentRoom.Index.ToString() + ": " + CurrentRoom.RoomName;
                 }
 
                 UpdateFormTitle();
