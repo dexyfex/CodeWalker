@@ -281,7 +281,7 @@ namespace CodeWalker.Project.Panels
                             for (int j = 0; j < rooms.Length; j++)
                             {
                                 var room = rooms[j];
-                                var roomnode = roomsnode.Nodes.Add(room.RoomName);
+                                var roomnode = roomsnode.Nodes.Add(room.Index.ToString() + ": " + room.RoomName);
                                 roomnode.Tag = room;
                                 var roomentities = room.AttachedObjects;
                                 if ((roomentities != null) && (entities != null))
@@ -646,6 +646,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYmapHasChanged(YmapFile ymap, bool changed)
         {
+            if (ymap != null)
+            {
+                ymap.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -670,6 +674,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYtypHasChanged(YtypFile ytyp, bool changed)
         {
+            if (ytyp != null)
+            {
+                ytyp.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -694,6 +702,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYndHasChanged(YndFile ynd, bool changed)
         {
+            if (ynd != null)
+            {
+                ynd.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -718,6 +730,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYnvHasChanged(YnvFile ynv, bool changed)
         {
+            if (ynv != null)
+            {
+                ynv.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -742,6 +758,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetTrainTrackHasChanged(TrainTrack track, bool changed)
         {
+            if (track != null)
+            {
+                track.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -766,6 +786,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetScenarioHasChanged(YmtFile scenario, bool changed)
         {
+            if (scenario != null)
+            {
+                scenario.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -790,6 +814,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetAudioRelHasChanged(RelFile rel, bool changed)
         {
+            if (rel != null)
+            {
+                rel.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -814,6 +842,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetGrassBatchHasChanged(YmapGrassInstanceBatch batch, bool changed)
         {
+            if (batch?.Ymap != null)
+            {
+                batch.Ymap.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var gbnode = FindGrassTreeNode(batch);
@@ -1788,6 +1820,33 @@ namespace CodeWalker.Project.Panels
             var tn = FindMloEntityTreeNode(ent);
             if ((tn != null) && (tn.Parent != null))
             {
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveMloRoomTreeNode(MCMloRoomDef room)
+        {
+            var tn = FindMloRoomTreeNode(room);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                tn.Parent.Text = "Rooms (" + (room.OwnerMlo?.rooms?.Length.ToString() ?? "0") + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveMloPortalTreeNode(MCMloPortalDef portal)
+        {
+            var tn = FindMloPortalTreeNode(portal);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                tn.Parent.Text = "Portals (" + (portal.OwnerMlo?.portals?.Length.ToString() ?? "0") + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveMloEntitySetTreeNode(MCMloEntitySet set)
+        {
+            var tn = FindMloEntitySetTreeNode(set);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                tn.Parent.Text = "Entity Sets (" + (set.OwnerMlo?.entitySets?.Length.ToString() ?? "0") + ")";
                 tn.Parent.Nodes.Remove(tn);
             }
         }

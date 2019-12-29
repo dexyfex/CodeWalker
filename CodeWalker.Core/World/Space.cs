@@ -1286,11 +1286,12 @@ namespace CodeWalker.World
             }
             if (mlodat.EntitySets != null)
             {
-                foreach (var entitysets in mlodat.EntitySets)
+                for (int e = 0; e < mlodat.EntitySets.Length; e++)
                 {
-                    var entityset = entitysets.Value;
+                    var entityset = mlodat.EntitySets[e];
                     if (!entityset.Visible) continue;
                     var entities = entityset.Entities;
+                    if (entities == null) continue;
                     for (int i = 0; i < entities.Count; i++) //should really improve this by using rooms!
                     {
                         var intent = entities[i];
@@ -1509,11 +1510,12 @@ namespace CodeWalker.World
             }
             if (mlodat.EntitySets != null)
             {
-                foreach (var entitysets in mlodat.EntitySets)
+                for (int e = 0; e < mlodat.EntitySets.Length; e++)
                 {
-                    var entityset = entitysets.Value;
+                    var entityset = mlodat.EntitySets[e];
                     if (!entityset.Visible) continue;
                     var entities = entityset.Entities;
+                    if (entities == null) continue;
                     for (int i = 0; i < entities.Count; i++) //should really improve this by using rooms!
                     {
                         var intent = entities[i];

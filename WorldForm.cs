@@ -5304,7 +5304,7 @@ namespace CodeWalker
             }
             else
             {
-                //project not open, or entity not selected there, just remove the entity from the ymap/nlo...
+                //project not open, or entity not selected there, just remove the entity from the ymap/mlo...
                 var ymap = ent.Ymap;
                 var instance = ent.MloParent?.MloInstance;
                 if (ymap == null)

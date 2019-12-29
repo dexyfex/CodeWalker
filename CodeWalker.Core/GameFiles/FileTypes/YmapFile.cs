@@ -1600,9 +1600,20 @@ namespace CodeWalker.GameFiles
         private void UpdateMloArchetype()
         {
             if (!(MloParent.Archetype is MloArchetype mloArchetype)) return;
-            if (Index >= mloArchetype.entities.Length) return;
 
-            MCEntityDef entity = mloArchetype.entities[Index];
+            MCEntityDef entity = null;
+            if ((MloEntitySet?.Entities != null) && (MloEntitySet?.EntitySet?.Entities != null))
+            {
+                var idx = MloEntitySet.Entities.IndexOf(this);
+                if ((idx < 0) || (idx >= MloEntitySet.EntitySet.Entities.Length)) return;
+                entity = MloEntitySet.EntitySet.Entities[idx];
+            }
+            else
+            {
+                if (Index >= mloArchetype.entities.Length) return;
+                entity = mloArchetype.entities[Index];
+            }
+
             entity._Data.position = _CEntityDef.position;
             entity._Data.rotation = _CEntityDef.rotation;
         }

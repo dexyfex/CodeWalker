@@ -2604,7 +2604,7 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                return _Data.roomFrom.ToString() + " to " + _Data.roomTo.ToString();
+                return Index.ToString() + ": " + _Data.roomFrom.ToString() + " to " + _Data.roomTo.ToString();
             }
         }
 
