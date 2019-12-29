@@ -1019,8 +1019,8 @@ namespace CodeWalker.GameFiles
                     return new MetaStructureInfo(MetaName.CPedVariationInfo, 4030871161, 768, 112,
                      new MetaStructureEntryInfo_s(MetaName.bHasTexVariations, 0, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.bHasDrawblVariations, 1, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)911147899, 2, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)315291935, 3, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bHasLowLODs, 2, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.bIsSuperLOD, 3, MetaStructureEntryDataType.Boolean, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.availComp, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, (MetaName)MetaTypeName.PsoPOINTER),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPVComponentData),
@@ -6001,8 +6001,8 @@ namespace CodeWalker.GameFiles
     {
         public byte bHasTexVariations { get; set; } //0   0: Boolean: 0: bHasTexVariations
         public byte bHasDrawblVariations { get; set; } //1   1: Boolean: 0: bHasDrawblVariations
-        public byte Unk_911147899 { get; set; } //2   2: Boolean: 0: 911147899
-        public byte Unk_315291935 { get; set; } //3   3: Boolean: 0: 315291935
+        public byte bHasLowLODs { get; set; } //2   2: Boolean: 0: bHasLowLODs
+        public byte bIsSuperLOD { get; set; } //3   3: Boolean: 0: bIsSuperLOD
         public ArrayOfBytes12 availComp { get; set; } //4   4: ArrayOfBytes: 12: availComp
         public Array_Structure aComponentData3 { get; set; } //16   16: Array: 0: aComponentData3  {0: Structure: CPVComponentData: 256}
         public Array_Structure aSelectionSets { get; set; } //32   32: Array: 0: aSelectionSets  {0: Structure: CPedSelectionSet: 256}
