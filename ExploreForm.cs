@@ -2504,7 +2504,13 @@ namespace CodeWalker
                             }
                         case MetaFormat.RBF:
                             {
-                                //todo!
+                                var rbf = XmlRbf.GetRbf(doc);
+                                if (rbf.current == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import RBF XML");
+                                    continue;
+                                }
+                                data = rbf.Save();
                                 break;
                             }
                         case MetaFormat.AudioRel:

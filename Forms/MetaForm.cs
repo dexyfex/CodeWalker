@@ -373,11 +373,14 @@ namespace CodeWalker.Forms
                         data = pso.Save();
                         break;
                     case MetaFormat.RBF:
-                        MessageBox.Show("Sorry, RBF import is not supported.", "Cannot import RBF XML");
-                        return false;
-                    case MetaFormat.CacheFile:
-                        MessageBox.Show("Sorry, CacheFile import is not supported.", "Cannot import CacheFile XML");
-                        return false;
+                        var rbf = XmlRbf.GetRbf(doc);
+                        if (rbf.current == null)
+                        {
+                            MessageBox.Show("Schema not supported.", "Cannot import RBF XML");
+                            return false;
+                        }
+                        data = rbf.Save();
+                        break;
                     case MetaFormat.Ynd:
                         var ynd = XmlYnd.GetYnd(doc);
                         if (ynd.NodeDictionary == null)
@@ -387,6 +390,9 @@ namespace CodeWalker.Forms
                         }
                         data = ynd.Save();
                         break;
+                    case MetaFormat.CacheFile:
+                        MessageBox.Show("Sorry, CacheFile import is not supported.", "Cannot import CacheFile XML");
+                        return false;
                 }
             }
 #if !DEBUG

@@ -99,6 +99,7 @@
     <Compile Include="GameFiles\MetaTypes\Rbf.cs" />
     <Compile Include="GameFiles\MetaTypes\XmlMeta.cs" />
     <Compile Include="GameFiles\MetaTypes\XmlPso.cs" />
+    <Compile Include="GameFiles\MetaTypes\XmlRbf.cs" />
     <Compile Include="GameFiles\Resources\Bounds.cs" />
     <Compile Include="GameFiles\Resources\Clip.cs" />
     <Compile Include="GameFiles\Resources\Clothes.cs" />
