@@ -1517,9 +1517,37 @@ namespace CodeWalker.GameFiles
 
         private static void WriteNode(StringBuilder sb, int indent, RbfStructure rs)
         {
+            var attStr = "";
+            if (rs.Attributes.Count > 0)
+            {
+                var asb = new StringBuilder();
+                foreach (var attr in rs.Attributes)
+                {
+                    if (attr is RbfString str)
+                    {
+                        asb.Append($" {attr.Name}=\"{str.Value}\"");
+                    }
+                    else if (attr is RbfFloat flt)
+                    {
+                        asb.Append($" {attr.Name}=\"{FloatUtil.ToString(flt.Value)}\"");
+                    }
+                    else if (attr is RbfUint32 unt)
+                    {
+                        asb.Append($" {attr.Name}=\"{unt.Value.ToString()}\"");
+                    }
+                    else if (attr is RbfBoolean bln)
+                    {
+                        asb.Append($" {attr.Name}=\"{bln.Value.ToString()}\"");
+                    }
+                    else
+                    { }
+                }
+                attStr = $"{asb.ToString()}";
+            }
+
             if (rs.Children.Count == 0)
             {
-                SelfClosingTag(sb, indent, rs.Name);
+                SelfClosingTag(sb, indent, rs.Name + attStr);
                 return;
             }
 
@@ -1527,7 +1555,7 @@ namespace CodeWalker.GameFiles
 
             bool oneline = ((rs.Children.Count == 1) && (rs.Children[0].Name == null));
 
-            OpenTag(sb, indent, rs.Name, !oneline);
+            OpenTag(sb, indent, rs.Name + attStr, !oneline);
 
 
             foreach (var child in rs.Children)
