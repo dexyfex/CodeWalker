@@ -272,6 +272,7 @@ namespace CodeWalker.GameFiles
             {
                 res.Hit = true;
                 res.HitDist = testdist;
+                res.HitBounds = this;
                 res.Position = ray.Position + ray.Direction * testdist;
                 res.Normal = Vector3.Normalize(res.Position - Center);
                 res.Material.Type = MaterialIndex;
@@ -340,6 +341,7 @@ namespace CodeWalker.GameFiles
             {
                 res.Hit = true;
                 res.HitDist = testdist;
+                res.HitBounds = this;
                 res.Position = ray.Position + ray.Direction * testdist;
                 res.Normal = bcap.Normal(ref res.Position);
                 res.Material.Type = MaterialIndex;
@@ -392,6 +394,7 @@ namespace CodeWalker.GameFiles
                 { n = Vector3.UnitZ; } //ray starts inside the box...
                 res.Hit = true;
                 res.HitDist = testdist;
+                res.HitBounds = this;
                 res.Position = hpt;
                 res.Normal = n;
                 res.Material.Type = MaterialIndex;
@@ -461,6 +464,7 @@ namespace CodeWalker.GameFiles
             {
                 res.Hit = true;
                 res.HitDist = testdist;
+                res.HitBounds = this;
                 res.Position = ray.Position + ray.Direction * testdist;
                 res.Normal = n;
                 res.Material.Type = MaterialIndex;
@@ -533,6 +537,7 @@ namespace CodeWalker.GameFiles
             {
                 res.Hit = true;
                 res.HitDist = testdist;
+                res.HitBounds = this;
                 res.Position = ray.Position + ray.Direction * testdist;
                 res.Normal = n;
                 res.Material.Type = MaterialIndex;
@@ -1125,6 +1130,7 @@ namespace CodeWalker.GameFiles
                     res.Hit = true;
                     res.Normal = n1;
                     res.HitPolygon = polygon;
+                    res.HitBounds = this;
 
                     byte matind = ((PolygonMaterialIndices != null) && (p < PolygonMaterialIndices.Length)) ? PolygonMaterialIndices[p] : (byte)0;
                     BoundMaterial_s mat = ((Materials != null) && (matind < Materials.Length)) ? Materials[matind] : new BoundMaterial_s();

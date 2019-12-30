@@ -442,7 +442,7 @@ namespace CodeWalker
                 RenderSingleItem();
             }
 
-            UpdateMouseHitsFromRenderer();
+            UpdateMouseHits();
 
             RenderSelection();
 
@@ -2203,8 +2203,8 @@ namespace CodeWalker
             //reset variables for beginning the mouse hit test
             CurMouseHit.Clear();
 
-            // Get whether or not we can brush from the project form.
-            if (Input.CtrlPressed && ProjectForm != null && ProjectForm.CanPaintInstances())
+         
+            if (Input.CtrlPressed && ProjectForm != null && ProjectForm.CanPaintInstances())   // Get whether or not we can brush from the project form.
             {
                 ControlBrushEnabled = true;
                 MouseRayCollisionVisible = false;
@@ -2253,16 +2253,62 @@ namespace CodeWalker
             return space.RayIntersect(ray, float.MaxValue, collisionmeshlayers);
         }
 
+        private void UpdateMouseHits()
+        {
+            UpdateMouseHitsFromRenderer();
+            UpdateMouseHitsFromSpace();
+        }
         private void UpdateMouseHitsFromRenderer()
         {
             foreach (var rd in Renderer.RenderedDrawables)
             {
                 UpdateMouseHits(rd.Drawable, rd.Archetype, rd.Entity);
             }
-            foreach (var rb in Renderer.RenderedBoundComps)
+            //foreach (var rb in Renderer.RenderedBoundComps)
+            //{
+            //    UpdateMouseHits(rb.BoundComp, rb.Entity);
+            //}
+        }
+        private void UpdateMouseHitsFromSpace()
+        {
+            if (SelectionMode == MapSelectionMode.Collision)
             {
-                UpdateMouseHits(rb.BoundComp, rb.Entity);
+                MouseRayCollision = GetSpaceMouseRay();
+
+                if (MouseRayCollision.Hit)
+                {
+                    Matrix rmat = MouseRayCollision.HitBounds?.Transform ?? Matrix.Identity;
+                    rmat.TranslationVector = Vector3.Zero;
+
+                    var position = MouseRayCollision.HitEntity?.Position ?? Vector3.Zero;
+                    var orientation = MouseRayCollision.HitEntity?.Orientation ?? Quaternion.Identity;
+                    var scale = MouseRayCollision.HitEntity?.Scale ?? Vector3.One;
+                    var camrel = position - camera.Position;
+                    var trans = MouseRayCollision.HitBounds?.Transform.TranslationVector ?? Vector3.Zero;
+
+                    CurMouseHit.CollisionBounds = MouseRayCollision.HitBounds;
+                    CurMouseHit.EntityDef = MouseRayCollision.HitEntity;
+                    CurMouseHit.Archetype = MouseRayCollision.HitEntity?.Archetype;
+                    CurMouseHit.HitDist = MouseRayCollision.HitDist;
+                    CurMouseHit.CamRel = camrel + orientation.Multiply(trans);
+                    CurMouseHit.BBOffset = trans;
+                    CurMouseHit.BBOrientation = Quaternion.RotationMatrix(rmat);
+                    CurMouseHit.AABB = new BoundingBox(MouseRayCollision.HitBounds?.BoundingBoxMin ?? Vector3.Zero, MouseRayCollision.HitBounds?.BoundingBoxMax ?? Vector3.Zero);
+
+
+                    MapBox mb = new MapBox();
+                    mb.CamRelPos = MouseRayCollision.Position - camera.Position;
+                    mb.Orientation = Quaternion.Identity;
+                    mb.Scale = Vector3.One;
+                    mb.BBMin = new Vector3(-0.01f);
+                    mb.BBMax = new Vector3(+0.01f);
+                    Renderer.BoundingBoxes.Add(mb);
+
+
+                }
+
             }
+
         }
         private void UpdateMouseHits(DrawableBase drawable, Archetype arche, YmapEntityDef entity)
         {
