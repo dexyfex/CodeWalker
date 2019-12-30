@@ -44,6 +44,13 @@ namespace CodeWalker.GameFiles
         public List<RbfEntryDescription> descriptors { get; set; }
         public Dictionary<string, int> outDescriptors { get; private set; } = new Dictionary<string, int>();
 
+
+        public void Load(byte[] data)
+        {
+            using (var ms = new MemoryStream(data))
+                Load(ms);
+        }
+
         public RbfStructure Load(string fileName)
         {
             using (var fileStream = new FileStream(fileName, FileMode.Open))
@@ -222,7 +229,7 @@ namespace CodeWalker.GameFiles
 
         public byte GetDescriptorIndex(IRbfType t, out bool isNew)
         {
-            var key = $"{t.Name}_{t.DataType}";
+            var key = t.Name;// $"{t.Name}_{t.DataType}";
             isNew = false;
 
             if (!outDescriptors.TryGetValue(key, out var idx))
@@ -385,6 +392,15 @@ namespace CodeWalker.GameFiles
             {
                 if (child == null) continue;
                 if (child.Name == name) return child;
+            }
+            return null;
+        }
+        public IRbfType FindAttribute(string name)
+        {
+            foreach (var attr in Attributes)
+            {
+                if (attr == null) continue;
+                if (attr.Name == name) return attr;
             }
             return null;
         }

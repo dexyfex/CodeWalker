@@ -182,6 +182,7 @@ namespace CodeWalker.GameFiles
                 //TestAudioYmts();
                 //TestMetas();
                 //TestPsos();
+                //TestRbfs();
                 //TestCuts();
                 //TestYlds();
                 //TestYcds();
@@ -476,11 +477,11 @@ namespace CodeWalker.GameFiles
 
             //filter ActiveMapFiles based on images.meta?
 
-                        //DlcContentDataFile imagesdata;
-                        //if (imagedatafiles.TryGetValue(path, out imagesdata))
-                        //{
-                        //    ActiveMapRpfFiles[path] = baserpf;
-                        //}
+            //DlcContentDataFile imagesdata;
+            //if (imagedatafiles.TryGetValue(path, out imagesdata))
+            //{
+            //    ActiveMapRpfFiles[path] = baserpf;
+            //}
         }
 
         private void InitActiveMapRpfFiles()
@@ -534,9 +535,9 @@ namespace CodeWalker.GameFiles
 
             Dictionary<string, List<string>> overlays = new Dictionary<string, List<string>>();
 
-            foreach(var setupfile in DlcSetupFiles)
-            { 
-                if(setupfile.DlcFile!=null)
+            foreach (var setupfile in DlcSetupFiles)
+            {
+                if (setupfile.DlcFile != null)
                 {
                     //if (setupfile.order > maxdlcorder)
                     //    break;
@@ -628,7 +629,7 @@ namespace CodeWalker.GameFiles
                                 else if (contentfile.RpfDataFiles.TryGetValue(dfn, out rpfdatafile))
                                 {
                                     string phpath = GetDlcRpfPhysicalPath(rpfdatafile.filename, setupfile);
-                                    
+
                                     //if (rpfdatafile.overlay)
                                     AddDlcOverlayRpf(dfn, rpfdatafile.filename, setupfile, overlays);
 
@@ -715,7 +716,7 @@ namespace CodeWalker.GameFiles
             else
             { } //how to handle individual files? eg interiorProxies.meta
         }
-        private void AddDlcOverlayRpf(string path, string umpath, DlcSetupFile setupfile, Dictionary<string,List<string>> overlays)
+        private void AddDlcOverlayRpf(string path, string umpath, DlcSetupFile setupfile, Dictionary<string, List<string>> overlays)
         {
             string opath = GetDlcOverlayPath(umpath, setupfile);
             if (opath == path) return;
@@ -1079,7 +1080,7 @@ namespace CodeWalker.GameFiles
 
             IEnumerable<RpfFile> rpfs = PreloadedMode ? AllRpfs : (IEnumerable<RpfFile>)ActiveMapRpfFiles.Values;
 
-            var addTxdRelationships = new Action<Dictionary<string, string>>((from) => 
+            var addTxdRelationships = new Action<Dictionary<string, string>>((from) =>
             {
                 foreach (var kvp in from)
                 {
@@ -1516,7 +1517,7 @@ namespace CodeWalker.GameFiles
 
 
 
-            IEnumerable <RpfFile> rpfs = PreloadedMode ? AllRpfs : (IEnumerable<RpfFile>)ActiveMapRpfFiles.Values;
+            IEnumerable<RpfFile> rpfs = PreloadedMode ? AllRpfs : (IEnumerable<RpfFile>)ActiveMapRpfFiles.Values;
 
 
             var allVehicles = new Dictionary<MetaHash, VehicleInitData>();
@@ -1655,7 +1656,7 @@ namespace CodeWalker.GameFiles
                 return dict;
             }
 
-            var addPedDicts = new Action<string, MetaHash, RpfDirectoryEntry>((namel, hash, dir)=>
+            var addPedDicts = new Action<string, MetaHash, RpfDirectoryEntry>((namel, hash, dir) =>
             {
                 Dictionary<MetaHash, RpfFileEntry> dict = null;
                 var files = dir?.Files;
@@ -1963,7 +1964,7 @@ namespace CodeWalker.GameFiles
                         //ErrorLog("Drawable dictionary not found: " + JenkIndex.GetString(hash)); //too spammy...
                     }
                 }
-                else if(!ydd.Loaded)
+                else if (!ydd.Loaded)
                 {
                     TryLoadEnqueue(ydd);
                 }
@@ -2236,7 +2237,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public bool LoadFile<T>(T file) where T:GameFile,PackedFile
+        public bool LoadFile<T>(T file) where T : GameFile, PackedFile
         {
             if (file == null) return false;
             RpfFileEntry entry = file.RpfFileEntry;
@@ -2384,7 +2385,7 @@ namespace CodeWalker.GameFiles
         public YtdFile TryGetParentYtd(uint hash)
         {
             MetaHash phash;
-            if(textureParents.TryGetValue(hash, out phash))
+            if (textureParents.TryGetValue(hash, out phash))
             {
                 return GetYtd(phash);
             }
@@ -2890,7 +2891,7 @@ namespace CodeWalker.GameFiles
 
                             if (xml.Length != xml2.Length)
                             { }
-                            if ((xml != xml2)&&(!n.EndsWith("srl.ymt") && !n.StartsWith("des_")))
+                            if ((xml != xml2) && (!n.EndsWith("srl.ymt") && !n.StartsWith("des_")))
                             { }
 
                         }
@@ -2925,7 +2926,7 @@ namespace CodeWalker.GameFiles
 #endif
                     {
                         var n = entry.NameLower;
-                        if (!(n.EndsWith(".pso") || 
+                        if (!(n.EndsWith(".pso") ||
                               n.EndsWith(".ymt") ||
                               n.EndsWith(".ymf") ||
                               n.EndsWith(".ymap") ||
@@ -3007,6 +3008,87 @@ namespace CodeWalker.GameFiles
             if (!string.IsNullOrEmpty(str))
             {
             }
+        }
+        public void TestRbfs()
+        {
+            var exceptions = new List<Exception>();
+            var allrbfs = new List<string>();
+            var diffrbfs = new List<string>();
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    var n = entry.NameLower;
+                    if (!(n.EndsWith(".ymt") ||
+                          n.EndsWith(".ymf") ||
+                          n.EndsWith(".ymap") ||
+                          n.EndsWith(".ytyp") ||
+                          n.EndsWith(".cut")))
+                        continue; //PSO files seem to only have these extensions
+
+                    var fentry = entry as RpfFileEntry;
+                    var data = entry.File.ExtractFile(fentry);
+                    if (data != null)
+                    {
+                        using (MemoryStream ms = new MemoryStream(data))
+                        {
+                            if (RbfFile.IsRBF(ms))
+                            {
+                                UpdateStatus(string.Format(entry.Path));
+
+                                var rbf = new RbfFile();
+                                rbf.Load(ms);
+
+                                allrbfs.Add(fentry.Path);
+
+                                var xml = RbfXml.GetXml(rbf);
+                                if (!string.IsNullOrEmpty(xml))
+                                { }
+
+                                var xdoc = new XmlDocument();
+                                xdoc.LoadXml(xml);
+                                var rbf2 = XmlRbf.GetRbf(xdoc);
+                                var rbf2b = rbf2.Save();
+
+                                var rbf3 = new RbfFile();
+                                rbf3.Load(rbf2b);
+                                var xml3 = RbfXml.GetXml(rbf3);
+
+                                if (xml.Length != xml3.Length)
+                                { }
+                                if (xml != xml3)
+                                {
+                                    diffrbfs.Add(fentry.Path);
+                                }
+
+                                if (data.Length != rbf2b.Length)
+                                {
+                                    //File.WriteAllBytes("C:\\GitHub\\CodeWalkerResearch\\RBF\\" + fentry.Name + ".dat0", data);
+                                    //File.WriteAllBytes("C:\\GitHub\\CodeWalkerResearch\\RBF\\" + fentry.Name + ".dat1", rbf2b);
+                                }
+                                else
+                                {
+                                    for (int i = 0; i < data.Length; i++)
+                                    {
+                                        if (data[i] != rbf2b[i])
+                                        {
+                                            diffrbfs.Add(fentry.Path);
+                                            break;
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            string allrbfpaths = string.Join("\r\n", allrbfs);
+            string diffrbfpaths = string.Join("\r\n", diffrbfs);
+
         }
         public void TestCuts()
         {
