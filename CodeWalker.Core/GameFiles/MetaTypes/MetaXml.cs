@@ -1553,7 +1553,7 @@ namespace CodeWalker.GameFiles
 
             int cind = indent + 1;
 
-            bool oneline = ((rs.Children.Count == 1) && (rs.Children[0].Name == null));
+            bool oneline = ((rs.Children.Count == 1) && (rs.Children[0].Name == null) && (rs.Attributes.Count == 0));
 
             OpenTag(sb, indent, rs.Name + attStr, !oneline);
 
@@ -1563,17 +1563,14 @@ namespace CodeWalker.GameFiles
                 if (child is RbfBytes)
                 {
                     var bytesChild = (RbfBytes)child;
-                    var contentField = rs.FindChild("content") as RbfString;//TODO: fix this to output nicer XML!
+                    var contentField = rs.FindAttribute("content") as RbfString;//TODO: fix this to output nicer XML!
                     if (contentField != null)
                     {
-                        OpenTag(sb, cind, "value");
-                        var aind = cind + 1;
-
                         if (contentField.Value == "char_array")
                         {
                             foreach (byte k in bytesChild.Value)
                             {
-                                Indent(sb, aind);
+                                Indent(sb, cind);
                                 sb.AppendLine(k.ToString());
                             }
                         }
@@ -1582,23 +1579,20 @@ namespace CodeWalker.GameFiles
                             var valueReader = new DataReader(new MemoryStream(bytesChild.Value));
                             while (valueReader.Position < valueReader.Length)
                             {
-                                Indent(sb, aind);
+                                Indent(sb, cind);
                                 var y = valueReader.ReadUInt16();
                                 sb.AppendLine(y.ToString());
                             }
                         }
                         else
                         {
-                            ErrorXml(sb, aind, "Unexpected content type: " + contentField.Value);
+                            ErrorXml(sb, cind, "Unexpected content type: " + contentField.Value);
                         }
-
-                        CloseTag(sb, cind, "value");
                     }
                     else
                     {
                         string stringValue = Encoding.ASCII.GetString(bytesChild.Value);
                         string str = stringValue.Substring(0, stringValue.Length - 1); //removes null terminator
-
                         sb.Append(str);
                     }
                 }
@@ -1609,6 +1603,8 @@ namespace CodeWalker.GameFiles
                 }
                 if (child is RbfString)
                 {
+                    ////// this doesn't seem to be used! it's always using RbfBytes child...
+
                     var stringChild = (RbfString)child;
                     StringTag(sb, cind, stringChild.Name, stringChild.Value);
 
@@ -1940,14 +1936,14 @@ namespace CodeWalker.GameFiles
 
         public static string UintString(uint h)
         {
-            string str;
-            if (MetaNames.TryGetString(h, out str)) return str;
+            //string str;
+            //if (MetaNames.TryGetString(h, out str)) return str;
 
-            str = JenkIndex.TryGetString(h);
-            if (!string.IsNullOrEmpty(str)) return str;
+            //str = JenkIndex.TryGetString(h);
+            //if (!string.IsNullOrEmpty(str)) return str;
 
-            //TODO: do extra hash lookup here
-            //if(Lookup.TryGetValue(uh, out str)) ...
+            ////TODO: do extra hash lookup here
+            ////if(Lookup.TryGetValue(uh, out str)) ...
 
 
             //if (h == 0) return "";

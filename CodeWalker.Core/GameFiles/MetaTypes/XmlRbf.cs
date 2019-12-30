@@ -56,13 +56,15 @@ namespace CodeWalker.GameFiles
                         Z = z
                     };
                 }
-                else if ((element.Elements().Count() == 0) && (element.Attributes().Count() == 0)) //else if (element.Name == "type" || element.Name == "key" || element.Name == "platform")
+                else if ((element.Elements().Count() == 0) && (element.Attributes().Count() == 0) && (!element.IsEmpty)) //else if (element.Name == "type" || element.Name == "key" || element.Name == "platform")
                 {
-                    return new RbfString()
-                    {
-                        Name = element.Name.LocalName,
-                        Value = element.Value
-                    };
+                    var bytearr = Encoding.ASCII.GetBytes(element.Value);
+                    var bytearrnt = new byte[bytearr.Length + 1];
+                    Buffer.BlockCopy(bytearr, 0, bytearrnt, 0, bytearr.Length);
+                    var bytes = new RbfBytes() { Value = bytearrnt };
+                    var struc = new RbfStructure() { Name = element.Name.LocalName };
+                    struc.Children.Add(bytes);
+                    return struc;
                 }
 
                 var n = new RbfStructure();
@@ -83,11 +85,33 @@ namespace CodeWalker.GameFiles
             }
             else if (node is XText text)
             {
-                return new RbfBytes()
+                byte[] bytes = null;
+                var contentAttr = node.Parent?.Attribute("content");
+                if (contentAttr != null)
                 {
-                    Name = "",
-                    Value = Encoding.ASCII.GetBytes(text.Value).Concat(new byte[] { 0x00 }).ToArray()
-                };
+                    if (contentAttr.Value == "char_array")
+                    {
+                        bytes = GetByteArray(text.Value);
+                    }
+                    else if (contentAttr.Value == "short_array")
+                    {
+                        bytes = GetUshortArray(text.Value);
+                    }
+                    else
+                    { }
+                }
+                else
+                {
+                    bytes = Encoding.ASCII.GetBytes(text.Value).Concat(new byte[] { 0x00 }).ToArray();
+                }
+                if (bytes != null)
+                {
+                    return new RbfBytes()
+                    {
+                        Name = "",
+                        Value = bytes
+                    };
+                }
             }
 
             return null;
@@ -138,5 +162,45 @@ namespace CodeWalker.GameFiles
                 };
             }
         }
+
+
+
+
+
+        private static byte[] GetByteArray(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return null;
+            var data = new List<byte>();
+            var split = Regex.Split(text, @"[\s\r\n\t]");
+            for (int i = 0; i < split.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(split[i]))
+                {
+                    var str = split[i];
+                    if (string.IsNullOrEmpty(str)) continue;
+                    var val = Convert.ToByte(str);
+                    data.Add(val);
+                }
+            }
+            return data.ToArray();
+        }
+        private static byte[] GetUshortArray(string text)
+        {
+            var data = new List<byte>();
+            var split = Regex.Split(text, @"[\s\r\n\t]");
+            for (int i = 0; i < split.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(split[i]))
+                {
+                    var str = split[i];
+                    if (string.IsNullOrEmpty(str)) continue;
+                    var val = Convert.ToUInt16(str);
+                    data.Add((byte)((val >> 0) & 0xFF));
+                    data.Add((byte)((val >> 8) & 0xFF));
+                }
+            }
+            return data.ToArray();
+        }
+
     }
 }
