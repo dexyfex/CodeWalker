@@ -1106,6 +1106,10 @@ namespace CodeWalker.World
 
                     var b = ybn.Bounds;
                     var bhit = b.RayIntersect(ref ray, res.HitDist);
+                    if (bhit.Hit)
+                    {
+                        bhit.HitYbn = ybn;
+                    }
                     res.TryUpdate(ref bhit);
                 }
             }
@@ -1225,6 +1229,10 @@ namespace CodeWalker.World
                     }
                 }
             }
+            if (res.Hit)
+            {
+                res.HitEntity = ent;
+            }
 
             return res;
         }
@@ -1249,6 +1257,8 @@ namespace CodeWalker.World
                 var ihit = ybn.Bounds.RayIntersect(ref iray, res.HitDist);
                 if (ihit.Hit)
                 {
+                    ihit.HitYbn = ybn;
+                    ihit.HitEntity = mlo;
                     ihit.Position = iori.Multiply(ihit.Position) + mlo.Position;
                     ihit.Normal = iori.Multiply(ihit.Normal);
                 }
@@ -2141,6 +2151,9 @@ namespace CodeWalker.World
         public bool Hit;
         public float HitDist;
         public BoundPolygon HitPolygon;
+        public Bounds HitBounds;
+        public YbnFile HitYbn;
+        public YmapEntityDef HitEntity;
         public Vector3 Position;
         public Vector3 Normal;
         public int TestedNodeCount;
@@ -2155,6 +2168,9 @@ namespace CodeWalker.World
                 Hit = true;
                 HitDist = r.HitDist;
                 HitPolygon = r.HitPolygon;
+                HitBounds = r.HitBounds;
+                HitYbn = r.HitYbn;
+                HitEntity = r.HitEntity;
                 Material = r.Material;
                 Position = r.Position;
                 Normal = r.Normal;
