@@ -187,6 +187,7 @@ namespace CodeWalker
         public MCMloRoomDef MloRoomDef { get; set; }
         public WaterQuad WaterQuad { get; set; }
         public Bounds CollisionBounds { get; set; }
+        public BoundPolygon CollisionPoly { get; set; }
         public YnvPoly NavPoly { get; set; }
         public YnvPoint NavPoint { get; set; }
         public YnvPortal NavPortal { get; set; }
@@ -224,6 +225,7 @@ namespace CodeWalker
                     (GrassBatch != null) ||
                     (WaterQuad != null) ||
                     (CollisionBounds != null) ||
+                    (CollisionPoly != null) ||
                     (NavPoly != null) ||
                     (NavPoint != null) ||
                     (NavPortal != null) ||
@@ -261,6 +263,7 @@ namespace CodeWalker
                 || (OccludeModel != mhit.OccludeModel)
                 || (WaterQuad != mhit.WaterQuad)
                 || (CollisionBounds != mhit.CollisionBounds)
+                || (CollisionPoly != mhit.CollisionPoly)
                 || (NavPoly != mhit.NavPoly)
                 || (NavPoint != mhit.NavPoint)
                 || (NavPortal != mhit.NavPortal)
@@ -286,6 +289,7 @@ namespace CodeWalker
                 || (OccludeModel != null)
                 || (WaterQuad != null)
                 || (CollisionBounds != null)
+                || (CollisionPoly != null)
                 || (NavPoly != null)
                 || (NavPoint != null)
                 || (NavPortal != null)
@@ -313,6 +317,7 @@ namespace CodeWalker
             OccludeModel = null;
             WaterQuad = null;
             CollisionBounds = null;
+            CollisionPoly = null;
             NavPoly = null;
             NavPoint = null;
             NavPortal = null;
@@ -365,6 +370,10 @@ namespace CodeWalker
             else if (OccludeModel != null)
             {
                 name = "OccludeModel " + (OccludeModel.Ymap?.Name ?? "") + ": " + OccludeModel.Index.ToString();
+            }
+            else if (CollisionPoly != null)
+            {
+                name = "Poly " + CollisionPoly.Index.ToString() + ((CollisionBounds != null) ? (": " + CollisionBounds.GetName()) : string.Empty);
             }
             else if (CollisionBounds != null)
             {
@@ -431,6 +440,10 @@ namespace CodeWalker
             else if (Archetype != null)
             {
                 name = Archetype.Hash.ToString();
+            }
+            else if (CollisionPoly != null)
+            {
+                name = "Poly " + CollisionPoly.Index.ToString() + ((CollisionBounds != null) ? (": " + CollisionBounds.GetName()) : string.Empty);
             }
             else if (CollisionBounds != null)
             {

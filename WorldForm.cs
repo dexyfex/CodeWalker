@@ -446,13 +446,13 @@ namespace CodeWalker
 
             RenderSelection();
 
+            RenderMoused();
+
             Renderer.RenderQueued();
 
             Renderer.RenderBounds(SelectionMode);
 
             Renderer.RenderSelectionGeometry(SelectionMode);
-
-            RenderMoused();
 
             Renderer.RenderFinalPass();
 
@@ -1137,7 +1137,8 @@ namespace CodeWalker
                     change = change || (LastMouseHit.WaterQuad != PrevMouseHit.WaterQuad);
                     break;
                 case MapSelectionMode.Collision:
-                    change = change || (LastMouseHit.CollisionBounds != PrevMouseHit.CollisionBounds);
+                    change = change || (LastMouseHit.CollisionBounds != PrevMouseHit.CollisionBounds)
+                                    || (LastMouseHit.CollisionPoly != PrevMouseHit.CollisionPoly);
                     break;
                 case MapSelectionMode.NavMesh:
                     change = change || (LastMouseHit.NavPoly != PrevMouseHit.NavPoly)
@@ -1168,14 +1169,6 @@ namespace CodeWalker
             if(!CurMouseHit.HasHit)
             { return; }
 
-
-            if ((SelectionMode == MapSelectionMode.NavMesh) && (CurMouseHit.NavPoly != null))
-            {
-                return;//navmesh poly isn't needing a selection box..
-            }
-
-
-            bool clip = Renderer.renderboundsclip;
 
             BoundsShaderMode mode = BoundsShaderMode.Box;
             float bsphrad = CurMouseHit.BSphere.Radius;
@@ -1215,11 +1208,9 @@ namespace CodeWalker
             if (CurMouseHit.MloEntityDef != null)
             {
                 scale = Vector3.One;
-                clip = false;
             }
             if (CurMouseHit.WaterQuad != null)
             {
-                clip = false;
             }
             if (CurMouseHit.ScenarioNode != null)
             {
@@ -1238,6 +1229,11 @@ namespace CodeWalker
             {
                 ori = CurMouseHit.NavPortal.Orientation;
             }
+            if (CurMouseHit.NavPoly != null)
+            {
+                Renderer.RenderSelectionNavPolyOutline(CurMouseHit.NavPoly, 0xFFFFFFFF);
+                return;
+            }
             if (CurMouseHit.Audio != null)
             {
                 ori = CurMouseHit.Audio.Orientation;
@@ -1246,13 +1242,17 @@ namespace CodeWalker
                     mode = BoundsShaderMode.Sphere;
                 }
             }
+            if (CurMouseHit.CollisionPoly != null)
+            {
+                Renderer.RenderSelectionCollisionPolyOutline(CurMouseHit.CollisionPoly, 0xFFFFFFFF, CurMouseHit.EntityDef);
+            }
             if (CurMouseHit.CollisionBounds != null)
             {
                 ori = ori * CurMouseHit.BBOrientation;
             }
 
 
-            Renderer.RenderMouseHit(mode, clip, ref camrel, ref bbmin, ref bbmax, ref scale, ref ori, bsphrad);
+            Renderer.RenderMouseHit(mode, ref camrel, ref bbmin, ref bbmax, ref scale, ref ori, bsphrad);
         }
 
         private void RenderSelection()
@@ -1282,12 +1282,12 @@ namespace CodeWalker
 
             if (ControlBrushEnabled && MouseRayCollision.Hit)
             {
-                var arup = GetPerpVec(MouseRayCollision.Normal);
+                var arup = MouseRayCollision.Normal.GetPerpVec();
                 Renderer.RenderBrushRadiusOutline(MouseRayCollision.Position, MouseRayCollision.Normal, arup, ProjectForm.GetInstanceBrushRadius(), cgrn);
             }
             if (MouseRayCollisionVisible && MouseRayCollision.Hit)
             {
-                var arup = GetPerpVec(MouseRayCollision.Normal);
+                var arup = MouseRayCollision.Normal.GetPerpVec();
                 Renderer.RenderSelectionArrowOutline(MouseRayCollision.Position, MouseRayCollision.Normal, arup, Quaternion.Identity, 1.0f, 0.05f, cgrn);
             }
 
@@ -1543,6 +1543,10 @@ namespace CodeWalker
                     wbox.Scale = scale;
                     Renderer.WhiteBoxes.Add(wbox);
                 }
+            }
+            if (selectionItem.CollisionPoly != null)
+            {
+                Renderer.RenderSelectionCollisionPolyOutline(selectionItem.CollisionPoly, cgrn, selectionItem.EntityDef);
             }
             if (selectionItem.CollisionBounds != null)
             {
@@ -2060,27 +2064,6 @@ namespace CodeWalker
         }
 
 
-        public static Vector3 GetPerpVec(Vector3 n)
-        {
-            //make a vector perpendicular to the given one
-            float nx = Math.Abs(n.X);
-            float ny = Math.Abs(n.Y);
-            float nz = Math.Abs(n.Z);
-            if ((nx < ny) && (nx < nz))
-            {
-                return Vector3.Cross(n, Vector3.Right);
-            }
-            else if (ny < nz)
-            {
-                return Vector3.Cross(n, Vector3.Up);
-            }
-            else
-            {
-                return Vector3.Cross(n, Vector3.ForwardLH);
-            }
-        }
-
-
         private void SpawnTestEntity(bool cameraCenter = false)
         {
             if (!space.Inited) return;
@@ -2264,10 +2247,6 @@ namespace CodeWalker
             {
                 UpdateMouseHits(rd.Drawable, rd.Archetype, rd.Entity);
             }
-            //foreach (var rb in Renderer.RenderedBoundComps)
-            //{
-            //    UpdateMouseHits(rb.BoundComp, rb.Entity);
-            //}
         }
         private void UpdateMouseHitsFromSpace()
         {
@@ -2286,6 +2265,7 @@ namespace CodeWalker
                     var camrel = position - camera.Position;
                     var trans = MouseRayCollision.HitBounds?.Transform.TranslationVector ?? Vector3.Zero;
 
+                    CurMouseHit.CollisionPoly = MouseRayCollision.HitPolygon;
                     CurMouseHit.CollisionBounds = MouseRayCollision.HitBounds;
                     CurMouseHit.EntityDef = MouseRayCollision.HitEntity;
                     CurMouseHit.Archetype = MouseRayCollision.HitEntity?.Archetype;
@@ -2294,21 +2274,8 @@ namespace CodeWalker
                     CurMouseHit.BBOffset = trans;
                     CurMouseHit.BBOrientation = Quaternion.RotationMatrix(rmat);
                     CurMouseHit.AABB = new BoundingBox(MouseRayCollision.HitBounds?.BoundingBoxMin ?? Vector3.Zero, MouseRayCollision.HitBounds?.BoundingBoxMax ?? Vector3.Zero);
-
-
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = MouseRayCollision.Position - camera.Position;
-                    mb.Orientation = Quaternion.Identity;
-                    mb.Scale = Vector3.One;
-                    mb.BBMin = new Vector3(-0.01f);
-                    mb.BBMax = new Vector3(+0.01f);
-                    Renderer.BoundingBoxes.Add(mb);
-
-
                 }
-
             }
-
         }
         private void UpdateMouseHits(DrawableBase drawable, Archetype arche, YmapEntityDef entity)
         {
@@ -2615,65 +2582,6 @@ namespace CodeWalker
 
 
         }
-        private void UpdateMouseHits(RenderableBoundComposite rndbc, YmapEntityDef entity)
-        {
-            if (SelectionMode != MapSelectionMode.Collision) return;
-
-            var position = entity?.Position ?? Vector3.Zero;
-            var orientation = entity?.Orientation ?? Quaternion.Identity;
-            var scale = entity?.Scale ?? Vector3.One;
-
-            var camrel = position - camera.Position;
-
-
-
-            BoundingBox bbox = new BoundingBox();
-            Ray mray = new Ray();
-            mray.Position = camera.MouseRay.Position + camera.Position;
-            mray.Direction = camera.MouseRay.Direction;
-            float hitdist = float.MaxValue;
-
-            Ray mraytrn = new Ray();
-
-            MapBox mb = new MapBox();
-            mb.CamRelPos = camrel;// rbginst.Inst.CamRel;
-            mb.Orientation = orientation;
-            mb.Scale = scale;
-
-            foreach (var geom in rndbc.Geometries)
-            {
-                if (geom == null) continue;
-
-                mb.BBMin = geom.BBMin;
-                mb.BBMax = geom.BBMax;
-                mb.CamRelPos = camrel + orientation.Multiply(geom.BBOffset);
-                mb.Orientation = orientation * geom.BBOrientation;
-
-                var cent = mb.CamRelPos + (mb.BBMin + mb.BBMax) * 0.5f;
-                if (cent.Length() > Renderer.renderboundsmaxdist) continue;
-
-                Renderer.BoundingBoxes.Add(mb);
-
-                Quaternion orinv = Quaternion.Invert(mb.Orientation);
-                mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos);
-                mraytrn.Direction = orinv.Multiply(mray.Direction);
-
-                bbox.Minimum = mb.BBMin * scale;
-                bbox.Maximum = mb.BBMax * scale;
-                if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
-                {
-                    CurMouseHit.CollisionBounds = geom.Bound;
-                    CurMouseHit.EntityDef = entity;
-                    CurMouseHit.Archetype = entity?.Archetype;
-                    CurMouseHit.HitDist = hitdist;
-                    CurMouseHit.CamRel = mb.CamRelPos;
-                    CurMouseHit.BBOffset = geom.BBOffset;
-                    CurMouseHit.BBOrientation = geom.BBOrientation;
-                    CurMouseHit.AABB = bbox;
-                }
-            }
-
-        }
         private void UpdateMouseHits(YmapFile ymap)
         {
             //find mouse hits for things like time cycle mods and car generators in ymaps.
@@ -2952,11 +2860,6 @@ namespace CodeWalker
                 {
                     UpdateMouseHits(ynv, ynv.Nav.SectorTree, ynv.Nav.SectorTree, ref mray);
                 }
-            }
-
-            if ((CurMouseHit.NavPoly != null) && MouseSelectEnabled)
-            {
-                Renderer.RenderSelectionNavPolyOutline(CurMouseHit.NavPoly, 0xFFFFFFFF);
             }
 
         }
@@ -3954,6 +3857,11 @@ namespace CodeWalker
             {
                 SelExtensionPropertyGrid.SelectedObject = item.ArchetypeExtension;
                 ShowSelectedExtensionTab(true);
+            }
+            else if (item.CollisionPoly != null)
+            {
+                SelExtensionPropertyGrid.SelectedObject = item.CollisionPoly;
+                ShowSelectedExtensionTab(true, "Coll");
             }
             else if (item.CollisionBounds != null)
             {
