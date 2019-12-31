@@ -715,14 +715,14 @@ namespace CodeWalker.Rendering
             const int Reso = 36;
             const float MaxDeg = 360f;
             const float DegToRad = 0.0174533f;
-            const float Ang = MaxDeg / Reso;
+            const float Ang = DegToRad * MaxDeg / Reso;
 
             var axis = Vector3.Cross(dir, up);
             var c = new VertexTypePC[Reso];
 
             for (var i = 0; i < Reso; i++)
             {
-                var rDir = Quaternion.RotationAxis(dir, (i * Ang) * DegToRad).Multiply(axis);
+                var rDir = Quaternion.RotationAxis(dir, i * Ang).Multiply(axis);
                 c[i].Position = position + (rDir * radius);
                 c[i].Colour = col;
             }
@@ -735,6 +735,27 @@ namespace CodeWalker.Rendering
 
             SelectionLineVerts.Add(new VertexTypePC{Colour = col, Position = position});
             SelectionLineVerts.Add(new VertexTypePC { Colour = col, Position = position + dir * 2f});
+        }
+
+        public void RenderMouseHit(BoundsShaderMode mode, ref Vector3 camrel, ref Vector3 bbmin, ref Vector3 bbmax, ref Vector3 scale, ref Quaternion ori, float bsphrad)
+        {
+            if (mode == BoundsShaderMode.Box)
+            {
+                var wbox = new MapBox();
+                wbox.CamRelPos = camrel;
+                wbox.BBMin = bbmin;
+                wbox.BBMax = bbmax;
+                wbox.Scale = scale;
+                wbox.Orientation = ori;
+                WhiteBoxes.Add(wbox);
+            }
+            else if (mode == BoundsShaderMode.Sphere)
+            {
+                var wsph = new MapSphere();
+                wsph.CamRelPos = camrel;
+                wsph.Radius = bsphrad;
+                WhiteSpheres.Add(wsph);
+            }
         }
 
         public void RenderSelectionArrowOutline(Vector3 pos, Vector3 dir, Vector3 up, Quaternion ori, float len, float rad, uint colour)
@@ -810,6 +831,63 @@ namespace CodeWalker.Rendering
             SelectionLineVerts.Add(c[7]);
 
 
+        }
+
+        public void RenderSelectionCircle(Vector3 position, float radius, uint col)
+        {
+            const int Reso = 36;
+            const float MaxDeg = 360f;
+            const float DegToRad = 0.0174533f;
+            const float Ang = DegToRad * MaxDeg / Reso;
+
+            var dir = Vector3.Normalize(position - camera.Position);
+            var up = Vector3.Normalize(dir.GetPerpVec());
+            var axis = Vector3.Cross(dir, up);
+            var c = new VertexTypePC[Reso];
+
+            for (var i = 0; i < Reso; i++)
+            {
+                var rDir = Quaternion.RotationAxis(dir, i * Ang).Multiply(axis);
+                c[i].Position = position + (rDir * radius);
+                c[i].Colour = col;
+            }
+
+            for (var i = 0; i < c.Length; i++)
+            {
+                SelectionLineVerts.Add(c[i]);
+                SelectionLineVerts.Add(c[(i + 1) % c.Length]);
+            }
+        }
+
+        public void RenderSelectionBox(Vector3 p1, Vector3 p2, Vector3 a2, Vector3 a3, uint col)
+        {
+            VertexTypePC v = new VertexTypePC();
+            v.Colour = col;
+            var c1 = p1 - a2 - a3;
+            var c2 = p1 - a2 + a3;
+            var c3 = p1 + a2 + a3;
+            var c4 = p1 + a2 - a3;
+            var c5 = p2 - a2 - a3;
+            var c6 = p2 - a2 + a3;
+            var c7 = p2 + a2 + a3;
+            var c8 = p2 + a2 - a3;
+            v.Position = c1; SelectionLineVerts.Add(v);
+            v.Position = c2; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
+            v.Position = c3; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
+            v.Position = c4; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
+            v.Position = c1; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
+            v.Position = c5; SelectionLineVerts.Add(v);
+            v.Position = c2; SelectionLineVerts.Add(v);
+            v.Position = c6; SelectionLineVerts.Add(v);
+            v.Position = c3; SelectionLineVerts.Add(v);
+            v.Position = c7; SelectionLineVerts.Add(v);
+            v.Position = c4; SelectionLineVerts.Add(v);
+            v.Position = c8; SelectionLineVerts.Add(v);
+            v.Position = c5; SelectionLineVerts.Add(v);
+            v.Position = c6; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
+            v.Position = c7; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
+            v.Position = c8; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
+            v.Position = c5; SelectionLineVerts.Add(v);
         }
 
         public void RenderSelectionNavPoly(YnvPoly poly)
@@ -915,6 +993,78 @@ namespace CodeWalker.Rendering
             //}
         }
 
+        public void RenderSelectionCollisionPolyOutline(BoundPolygon poly, uint colourval, YmapEntityDef entity)
+        {
+            var bgeom = poly?.Owner;
+            if (bgeom == null) return;
+
+            VertexTypePC v = new VertexTypePC();
+            v.Colour = colourval;
+
+            var ori = Quaternion.Identity;
+            var pos = Vector3.Zero;
+            var sca = Vector3.One;
+            if (entity != null)
+            {
+                ori = entity.Orientation;
+                pos = entity.Position;
+                sca = entity.Scale;
+            }
+
+            if (poly is BoundPolygonTriangle ptri)
+            {
+                var p1 = pos + (ori.Multiply(ptri.Vertex1) * sca);
+                var p2 = pos + (ori.Multiply(ptri.Vertex2) * sca);
+                var p3 = pos + (ori.Multiply(ptri.Vertex3) * sca);
+                v.Position = p1; SelectionLineVerts.Add(v);
+                v.Position = p2; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
+                v.Position = p3; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
+                v.Position = p1; SelectionLineVerts.Add(v);
+            }
+            else if (poly is BoundPolygonSphere psph)
+            {
+                var p1 = pos + (ori.Multiply(psph.Position) * sca);
+                RenderSelectionCircle(p1, psph.sphereRadius * 1.03f, colourval);//enlarge the circle to make it more visible..
+            }
+            else if (poly is BoundPolygonCapsule pcap)
+            {
+                var p1 = pos + (ori.Multiply(pcap.Vertex1) * sca);
+                var p2 = pos + (ori.Multiply(pcap.Vertex2) * sca);
+                var a1 = Vector3.Normalize(p2 - p1);
+                var a2 = Vector3.Normalize(a1.GetPerpVec());
+                var a3 = Vector3.Normalize(Vector3.Cross(a1, a2));
+                a1 *= pcap.capsuleRadius;
+                a2 *= pcap.capsuleRadius;
+                a3 *= pcap.capsuleRadius;
+                RenderSelectionBox(p1 - a1, p2 + a1, a2, a3, colourval);
+            }
+            else if (poly is BoundPolygonBox pbox)
+            {
+                var p1 = pos + (ori.Multiply(pbox.Vertex1) * sca);
+                var p2 = pos + (ori.Multiply(pbox.Vertex2) * sca);
+                var p3 = pos + (ori.Multiply(pbox.Vertex3) * sca);
+                var p4 = pos + (ori.Multiply(pbox.Vertex4) * sca);
+                var p5 = (p1 + p2) * 0.5f;
+                var p6 = (p3 + p4) * 0.5f;
+                var a1 = (p6 - p5);
+                var a2 = (p3 - (p1 + a1)) * 0.5f;
+                var a3 = (p4 - (p1 + a1)) * 0.5f;
+                RenderSelectionBox(p5, p6, a2, a3, colourval);
+            }
+            else if (poly is BoundPolygonCylinder pcyl)
+            {
+                var p1 = pos + (ori.Multiply(pcyl.Vertex1) * sca);
+                var p2 = pos + (ori.Multiply(pcyl.Vertex2) * sca);
+                var a1 = Vector3.Normalize(p2 - p1);
+                var a2 = Vector3.Normalize(a1.GetPerpVec());
+                var a3 = Vector3.Normalize(Vector3.Cross(a1, a2));
+                a2 *= pcyl.cylinderRadius;
+                a3 *= pcyl.cylinderRadius;
+                RenderSelectionBox(p1, p2, a2, a3, colourval);
+            }
+
+        }
+
         public void RenderSelectionGeometry(MapSelectionMode mode)
         {
 
@@ -954,17 +1104,17 @@ namespace CodeWalker.Rendering
                 shader.SetShader(context);
                 shader.SetInputLayout(context, VertexType.Default);
                 shader.SetSceneVars(context, camera, null, globalLights);
-                shader.SetColourVars(context, new Vector4(colourwht, 1));
-                for (int i = 0; i < WhiteBoxes.Count; i++)
-                {
-                    MapBox mb = WhiteBoxes[i];
-                    shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
-                    shader.DrawBox(context);
-                }
                 shader.SetColourVars(context, new Vector4(coloursel, 1));
                 for (int i = 0; i < SelectionBoxes.Count; i++)
                 {
                     MapBox mb = SelectionBoxes[i];
+                    shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
+                    shader.DrawBox(context);
+                }
+                shader.SetColourVars(context, new Vector4(colourwht, 1));
+                for (int i = 0; i < WhiteBoxes.Count; i++)
+                {
+                    MapBox mb = WhiteBoxes[i];
                     shader.SetBoxVars(context, mb.CamRelPos, mb.BBMin, mb.BBMax, mb.Orientation, mb.Scale);
                     shader.DrawBox(context);
                 }
@@ -977,13 +1127,6 @@ namespace CodeWalker.Rendering
                 shader.SetShader(context);
                 shader.SetInputLayout(context, VertexType.Default);
                 shader.SetSceneVars(context, camera, null, globalLights);
-                shader.SetColourVars(context, new Vector4(colourwht, 1));
-                for (int i = 0; i < WhiteSpheres.Count; i++)
-                {
-                    MapSphere ms = WhiteSpheres[i];
-                    shader.SetSphereVars(context, ms.CamRelPos, ms.Radius);
-                    shader.DrawSphere(context);
-                }
                 shader.SetColourVars(context, new Vector4(coloursel, 1));
                 for (int i = 0; i < SelectionSpheres.Count; i++)
                 {
@@ -991,39 +1134,17 @@ namespace CodeWalker.Rendering
                     shader.SetSphereVars(context, ms.CamRelPos, ms.Radius);
                     shader.DrawSphere(context);
                 }
+                shader.SetColourVars(context, new Vector4(colourwht, 1));
+                for (int i = 0; i < WhiteSpheres.Count; i++)
+                {
+                    MapSphere ms = WhiteSpheres[i];
+                    shader.SetSphereVars(context, ms.CamRelPos, ms.Radius);
+                    shader.DrawSphere(context);
+                }
                 shader.UnbindResources(context);
             }
 
 
-        }
-
-        public void RenderMouseHit(BoundsShaderMode mode, bool clip, ref Vector3 camrel, ref Vector3 bbmin, ref Vector3 bbmax, ref Vector3 scale, ref Quaternion ori, float bsphrad)
-        {
-            Vector3 colour = new Vector3(1, 1, 1);
-            colour *= globalLights.HdrIntensity * 5.0f;
-
-            shaders.SetDepthStencilMode(context, clip ? DepthStencilMode.Enabled : DepthStencilMode.DisableAll);
-
-            //render moused object box.
-            var shader = shaders.Bounds;
-            shader.SetMode(mode);
-            shader.SetShader(context);
-            shader.SetInputLayout(context, VertexType.Default);
-            shader.SetSceneVars(context, camera, null, globalLights);
-            shader.SetColourVars(context, new Vector4(colour, 1)); //white box
-
-            if (mode == BoundsShaderMode.Box)
-            {
-                shader.SetBoxVars(context, camrel, bbmin, bbmax, ori, scale);
-                shader.DrawBox(context);
-            }
-            else if (mode == BoundsShaderMode.Sphere)
-            {
-                shader.SetSphereVars(context, camrel, bsphrad);
-                shader.DrawSphere(context);
-            }
-
-            shader.UnbindResources(context);
         }
 
 

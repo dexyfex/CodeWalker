@@ -727,6 +727,8 @@ namespace CodeWalker.GameFiles
                 }
                 if (p != null)
                 {
+                    p.Owner = this;
+                    p.Index = i;
                     p.Read(polygonData, offset);
                 }
                 Polygons[i] = p;
@@ -736,6 +738,19 @@ namespace CodeWalker.GameFiles
         public Vector3 GetVertex(int index)
         {
             return ((index < 0) || (index >= Vertices.Length)) ? Vector3.Zero : Vertices[index];
+        }
+        public Vector3 GetVertexPos(int index)
+        {
+            var v = GetVertex(index) + CenterGeom;
+            return Vector3.Transform(v, Transform).XYZ();
+        }
+        public void SetVertexPos(int index, Vector3 v)
+        {
+            if ((index >= 0) && (index < Vertices.Length))
+            {
+                var t = Vector3.Transform(v, TransformInv).XYZ() - CenterGeom;
+                Vertices[index] = t;
+            }
         }
 
 
@@ -934,7 +949,6 @@ namespace CodeWalker.GameFiles
             var spht = new BoundingSphere();
             var sp = sph.Center;
             var sr = sph.Radius;
-            var cg = CenterGeom;
             Vector3 p1, p2, p3, p4, a1, a2, a3;
             Vector3 n1 = Vector3.Zero;
 
@@ -946,15 +960,15 @@ namespace CodeWalker.GameFiles
                 {
                     case BoundPolygonType.Triangle:
                         var ptri = polygon as BoundPolygonTriangle;
-                        p1 = GetVertex(ptri.vertIndex1) + cg;
-                        p2 = GetVertex(ptri.vertIndex2) + cg;
-                        p3 = GetVertex(ptri.vertIndex3) + cg;
+                        p1 = GetVertexPos(ptri.vertIndex1);
+                        p2 = GetVertexPos(ptri.vertIndex2);
+                        p3 = GetVertexPos(ptri.vertIndex3);
                         polyhit = sph.Intersects(ref p1, ref p2, ref p3);
                         if (polyhit) n1 = Vector3.Normalize(Vector3.Cross(p2 - p1, p3 - p1));
                         break;
                     case BoundPolygonType.Sphere:
                         var psph = polygon as BoundPolygonSphere;
-                        tsph.Center = GetVertex(psph.sphereIndex) + cg;
+                        tsph.Center = GetVertexPos(psph.sphereIndex);
                         tsph.Radius = psph.sphereRadius;
                         polyhit = sph.Intersects(ref tsph);
                         if (polyhit) n1 = Vector3.Normalize(sph.Center - tsph.Center);
@@ -962,17 +976,17 @@ namespace CodeWalker.GameFiles
                     case BoundPolygonType.Capsule:
                         var pcap = polygon as BoundPolygonCapsule;
                         var tcap = new BoundingCapsule();
-                        tcap.PointA = GetVertex(pcap.capsuleIndex1) + cg;
-                        tcap.PointB = GetVertex(pcap.capsuleIndex2) + cg;
+                        tcap.PointA = GetVertexPos(pcap.capsuleIndex1);
+                        tcap.PointB = GetVertexPos(pcap.capsuleIndex2);
                         tcap.Radius = pcap.capsuleRadius;
                         polyhit = sph.Intersects(ref tcap, out n1);
                         break;
                     case BoundPolygonType.Box:
                         var pbox = polygon as BoundPolygonBox;
-                        p1 = GetVertex(pbox.boxIndex1);// + cg; //corner
-                        p2 = GetVertex(pbox.boxIndex2);// + cg;
-                        p3 = GetVertex(pbox.boxIndex3);// + cg;
-                        p4 = GetVertex(pbox.boxIndex4);// + cg;
+                        p1 = GetVertexPos(pbox.boxIndex1);//corner
+                        p2 = GetVertexPos(pbox.boxIndex2);
+                        p3 = GetVertexPos(pbox.boxIndex3);
+                        p4 = GetVertexPos(pbox.boxIndex4);
                         a1 = ((p3 + p4) - (p1 + p2)) * 0.5f;
                         a2 = p3 - (p1 + a1);
                         a3 = p4 - (p1 + a1);
@@ -983,7 +997,7 @@ namespace CodeWalker.GameFiles
                         if ((bs.X < bs.Y) && (bs.X < bs.Z)) m1 = Vector3.Cross(m2, m3);
                         else if (bs.Y < bs.Z) m2 = Vector3.Cross(m3, m1);
                         else m3 = Vector3.Cross(m1, m2);
-                        Vector3 tp = sp - (p1 + cg);
+                        Vector3 tp = sp - (p1);//+cg
                         spht.Center = new Vector3(Vector3.Dot(tp, m1), Vector3.Dot(tp, m2), Vector3.Dot(tp, m3));
                         spht.Radius = sph.Radius;
                         box.Minimum = Vector3.Zero;
@@ -1009,14 +1023,14 @@ namespace CodeWalker.GameFiles
                     case BoundPolygonType.Cylinder:
                         var pcyl = polygon as BoundPolygonCylinder;
                         //var tcyl = new BoundingCylinder();
-                        //tcyl.PointA = GetVertex(pcyl.cylinderIndex1) + cg;
-                        //tcyl.PointB = GetVertex(pcyl.cylinderIndex2) + cg;
+                        //tcyl.PointA = GetVertexPos(pcyl.cylinderIndex1);
+                        //tcyl.PointB = GetVertexPos(pcyl.cylinderIndex2);
                         //tcyl.Radius = pcyl.cylinderRadius;
-                        //////polyhit = ray.Intersects(ref tcyl, out polyhittestdist, out n1);
+                        //////polyhit = sph.Intersects(ref tcyl, out polyhittestdist, out n1);
                         ////////TODO
                         var ttcap = new BoundingCapsule();//just use the capsule intersection for now...
-                        ttcap.PointA = GetVertex(pcyl.cylinderIndex1) + cg;
-                        ttcap.PointB = GetVertex(pcyl.cylinderIndex2) + cg;
+                        ttcap.PointA = GetVertexPos(pcyl.cylinderIndex1);
+                        ttcap.PointB = GetVertexPos(pcyl.cylinderIndex2);
                         ttcap.Radius = pcyl.cylinderRadius;
                         polyhit = sph.Intersects(ref ttcap, out n1);
                         break;
@@ -1041,7 +1055,6 @@ namespace CodeWalker.GameFiles
             var rayt = new Ray();
             var rp = ray.Position;
             var rd = ray.Direction;
-            var cg = CenterGeom;
             Vector3 p1, p2, p3, p4, a1, a2, a3;
             Vector3 n1 = Vector3.Zero;
 
@@ -1054,15 +1067,15 @@ namespace CodeWalker.GameFiles
                 {
                     case BoundPolygonType.Triangle:
                         var ptri = polygon as BoundPolygonTriangle;
-                        p1 = GetVertex(ptri.vertIndex1) + cg;
-                        p2 = GetVertex(ptri.vertIndex2) + cg;
-                        p3 = GetVertex(ptri.vertIndex3) + cg;
+                        p1 = GetVertexPos(ptri.vertIndex1);
+                        p2 = GetVertexPos(ptri.vertIndex2);
+                        p3 = GetVertexPos(ptri.vertIndex3);
                         polyhit = ray.Intersects(ref p1, ref p2, ref p3, out polyhittestdist);
                         if (polyhit) n1 = Vector3.Normalize(Vector3.Cross(p2 - p1, p3 - p1));
                         break;
                     case BoundPolygonType.Sphere:
                         var psph = polygon as BoundPolygonSphere;
-                        tsph.Center = GetVertex(psph.sphereIndex) + cg;
+                        tsph.Center = GetVertexPos(psph.sphereIndex);
                         tsph.Radius = psph.sphereRadius;
                         polyhit = ray.Intersects(ref tsph, out polyhittestdist);
                         if (polyhit) n1 = Vector3.Normalize((ray.Position + ray.Direction * polyhittestdist) - tsph.Center);
@@ -1070,8 +1083,8 @@ namespace CodeWalker.GameFiles
                     case BoundPolygonType.Capsule:
                         var pcap = polygon as BoundPolygonCapsule;
                         var tcap = new BoundingCapsule();
-                        tcap.PointA = GetVertex(pcap.capsuleIndex1) + cg;
-                        tcap.PointB = GetVertex(pcap.capsuleIndex2) + cg;
+                        tcap.PointA = GetVertexPos(pcap.capsuleIndex1);
+                        tcap.PointB = GetVertexPos(pcap.capsuleIndex2);
                         tcap.Radius = pcap.capsuleRadius;
                         polyhit = ray.Intersects(ref tcap, out polyhittestdist);
                         res.Position = (ray.Position + ray.Direction * polyhittestdist);
@@ -1079,10 +1092,10 @@ namespace CodeWalker.GameFiles
                         break;
                     case BoundPolygonType.Box:
                         var pbox = polygon as BoundPolygonBox;
-                        p1 = GetVertex(pbox.boxIndex1);// + cg; //corner
-                        p2 = GetVertex(pbox.boxIndex2);// + cg;
-                        p3 = GetVertex(pbox.boxIndex3);// + cg;
-                        p4 = GetVertex(pbox.boxIndex4);// + cg;
+                        p1 = GetVertexPos(pbox.boxIndex1);//corner
+                        p2 = GetVertexPos(pbox.boxIndex2);
+                        p3 = GetVertexPos(pbox.boxIndex3);
+                        p4 = GetVertexPos(pbox.boxIndex4);
                         a1 = ((p3 + p4) - (p1 + p2)) * 0.5f;
                         a2 = p3 - (p1 + a1);
                         a3 = p4 - (p1 + a1);
@@ -1093,7 +1106,7 @@ namespace CodeWalker.GameFiles
                         if ((bs.X < bs.Y) && (bs.X < bs.Z)) m1 = Vector3.Cross(m2, m3);
                         else if (bs.Y < bs.Z) m2 = Vector3.Cross(m3, m1);
                         else m3 = Vector3.Cross(m1, m2);
-                        Vector3 tp = rp - (p1 + cg);
+                        Vector3 tp = rp - (p1);//+cg
                         rayt.Position = new Vector3(Vector3.Dot(tp, m1), Vector3.Dot(tp, m2), Vector3.Dot(tp, m3));
                         rayt.Direction = new Vector3(Vector3.Dot(rd, m1), Vector3.Dot(rd, m2), Vector3.Dot(rd, m3));
                         box.Minimum = Vector3.Zero;
@@ -1116,8 +1129,8 @@ namespace CodeWalker.GameFiles
                     case BoundPolygonType.Cylinder:
                         var pcyl = polygon as BoundPolygonCylinder;
                         var tcyl = new BoundingCylinder();
-                        tcyl.PointA = GetVertex(pcyl.cylinderIndex1) + cg;
-                        tcyl.PointB = GetVertex(pcyl.cylinderIndex2) + cg;
+                        tcyl.PointA = GetVertexPos(pcyl.cylinderIndex1);
+                        tcyl.PointB = GetVertexPos(pcyl.cylinderIndex2);
                         tcyl.Radius = pcyl.cylinderRadius;
                         polyhit = ray.Intersects(ref tcyl, out polyhittestdist, out n1);
                         break;
@@ -1350,6 +1363,8 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public abstract class BoundPolygon
     {
         public BoundPolygonType Type { get; set; }
+        public BoundGeometry Owner { get; set; } //for browsing/editing convenience
+        public int Index { get; set; } //for editing convenience, not stored
         public abstract void Read(byte[] bytes, int offset);
         public abstract void Write(BinaryWriter bw);
         public override string ToString()
@@ -1374,6 +1389,21 @@ namespace CodeWalker.GameFiles
         public bool vertFlag2 { get { return (triIndex2 & 0x8000) > 0; } }
         public bool vertFlag3 { get { return (triIndex3 & 0x8000) > 0; } }
 
+        public Vector3 Vertex1
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(vertIndex1) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(vertIndex1, value); }
+        }
+        public Vector3 Vertex2
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(vertIndex2) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(vertIndex2, value); }
+        }
+        public Vector3 Vertex3
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(vertIndex3) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(vertIndex3, value); }
+        }
 
         public BoundPolygonTriangle()
         {
@@ -1412,6 +1442,12 @@ namespace CodeWalker.GameFiles
         public uint unused0 { get; set; }
         public uint unused1 { get; set; }
 
+        public Vector3 Position
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(sphereIndex) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(sphereIndex, value); }
+        }
+
         public BoundPolygonSphere()
         {
             Type = BoundPolygonType.Sphere;
@@ -1445,6 +1481,17 @@ namespace CodeWalker.GameFiles
         public ushort capsuleIndex2 { get; set; }
         public ushort unused0 { get; set; }
         public uint unused1 { get; set; }
+
+        public Vector3 Vertex1
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(capsuleIndex1) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(capsuleIndex1, value); }
+        }
+        public Vector3 Vertex2
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(capsuleIndex2) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(capsuleIndex2, value); }
+        }
 
         public BoundPolygonCapsule()
         {
@@ -1482,6 +1529,27 @@ namespace CodeWalker.GameFiles
         public short boxIndex4 { get; set; }
         public uint unused0 { get; set; }
 
+        public Vector3 Vertex1
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(boxIndex1) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(boxIndex1, value); }
+        }
+        public Vector3 Vertex2
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(boxIndex2) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(boxIndex2, value); }
+        }
+        public Vector3 Vertex3
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(boxIndex3) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(boxIndex3, value); }
+        }
+        public Vector3 Vertex4
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(boxIndex4) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(boxIndex4, value); }
+        }
+
         public BoundPolygonBox()
         {
             Type = BoundPolygonType.Box;
@@ -1517,6 +1585,17 @@ namespace CodeWalker.GameFiles
         public ushort cylinderIndex2 { get; set; }
         public ushort unused0 { get; set; }
         public uint unused1 { get; set; }
+
+        public Vector3 Vertex1
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(cylinderIndex1) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(cylinderIndex1, value); }
+        }
+        public Vector3 Vertex2
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(cylinderIndex2) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(cylinderIndex2, value); }
+        }
 
         public BoundPolygonCylinder()
         {
