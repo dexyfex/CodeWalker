@@ -37,8 +37,8 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
 
 
 
-        private List<YnvPoly> PolyList = new List<YnvPoly>();
-
+        public List<YnvPoly> PolyList = new List<YnvPoly>();
+        public string VehicleName = string.Empty;
         private SpaceNavGrid NavGrid = null;
         private List<YnvFile> YnvFiles = null;
 
@@ -69,7 +69,9 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
 
             if (forVehicle) //for vehicle YNV, only need a single ynv, no splitting
             {
-                //TODO!
+                AddVehiclePolys(PolyList);
+
+                FinalizeYnvs(YnvFiles, true);
             }
             else //for static world ynv, need to split polys and generate a set of ynv's.
             {
@@ -82,7 +84,7 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
 
 
                 //3: fix up generated ynv's
-                FinalizeYnvs(YnvFiles);
+                FinalizeYnvs(YnvFiles, false);
 
             }
 
@@ -402,7 +404,53 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
             }
         }
 
-        private void FinalizeYnvs(List<YnvFile> ynvs)
+        private void AddVehiclePolys(List<YnvPoly> polys)
+        {
+            var bbmin = new Vector3(float.MaxValue);
+            var bbmax = new Vector3(float.MinValue);
+            foreach (var poly in polys)
+            {
+                poly.CalculatePosition();
+                var pos = poly.Position;
+                var verts = poly.Vertices;
+                if (verts != null)
+                {
+                    foreach (var vert in verts)
+                    {
+                        bbmin = Vector3.Min(bbmin, vert);
+                        bbmax = Vector3.Max(bbmax, vert);
+                    }
+                }
+            }
+            var bbsize = bbmax - bbmin;
+
+            var ynv = new YnvFile();
+            ynv.Name = VehicleName;
+            ynv.Nav = new NavMesh();
+            ynv.Nav.SetDefaults(true);
+            ynv.Nav.AABBSize = new Vector3(bbsize.X, bbsize.Y, 0.0f);
+            ynv.Nav.SectorTree = new NavMeshSector();
+            ynv.Nav.SectorTree.AABBMin = new Vector4(bbmin, 0.0f);
+            ynv.Nav.SectorTree.AABBMax = new Vector4(bbmax, 0.0f);
+            ynv.AreaID = 10000;
+            ynv.Polys = new List<YnvPoly>();
+            ynv.HasChanged = true;//mark it for the project window
+            ynv.RpfFileEntry = new RpfResourceFileEntry();
+            ynv.RpfFileEntry.Name = ynv.Name + ".ynv";
+            ynv.RpfFileEntry.Path = string.Empty;
+            YnvFiles.Add(ynv);
+
+            foreach (var poly in polys)
+            {
+                poly.AreaID = (ushort)ynv.AreaID;
+                poly.Index = ynv.Polys.Count;
+                poly.Ynv = ynv;
+                ynv.Polys.Add(poly);
+            }
+        }
+
+
+        private void FinalizeYnvs(List<YnvFile> ynvs, bool vehicle)
         {
 
             foreach (var ynv in ynvs)
@@ -425,7 +473,7 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
                 ys.AABBMax = new Vector4(ys.AABBMax.X, ys.AABBMax.Y, zmax, 0.0f);
 
 
-                ynv.UpdateContentFlags(false);
+                ynv.UpdateContentFlags(vehicle);
 
 
 
