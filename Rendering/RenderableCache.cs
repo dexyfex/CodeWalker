@@ -231,19 +231,17 @@ namespace CodeWalker.Rendering
 
 
 
+        public void Invalidate(Bounds bounds)
+        {
+            boundcomps.Invalidate(bounds);
+        }
         public void Invalidate(BasePathData path)
         {
-            //lock (updateSyncRoot)
-            {
-                pathbatches.Invalidate(path);
-            }
+            pathbatches.Invalidate(path);
         }
         public void Invalidate(YmapGrassInstanceBatch batch)
         {
-            //lock (updateSyncRoot)
-            {
-                instbatches.Invalidate(batch);
-            }
+            instbatches.Invalidate(batch);
         }
 
 

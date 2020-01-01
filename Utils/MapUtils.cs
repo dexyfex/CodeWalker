@@ -540,6 +540,14 @@ namespace CodeWalker
                 {
                     res = true;
                 }
+                else if (CollisionPoly != null)
+                {
+                    res = true;
+                }
+                else if (CollisionBounds != null)
+                {
+                    res = true;
+                }
                 else if (NavPoint != null)
                 {
                     res = true;
@@ -582,6 +590,14 @@ namespace CodeWalker
                 else if (CarGenerator != null)
                 {
                     return CarGenerator.Position;
+                }
+                else if (CollisionPoly != null)
+                {
+                    return CollisionPoly.Position;
+                }
+                else if (CollisionBounds != null)
+                {
+                    return CollisionBounds.Center;
                 }
                 else if (NavPoly != null)
                 {
@@ -630,6 +646,14 @@ namespace CodeWalker
                 {
                     return CarGenerator.Orientation;
                 }
+                else if (CollisionPoly != null)
+                {
+                    return Quaternion.Identity;
+                }
+                else if (CollisionBounds != null)
+                {
+                    return Quaternion.Identity;
+                }
                 else if (NavPoly != null)
                 {
                     return Quaternion.Identity;
@@ -677,6 +701,14 @@ namespace CodeWalker
                 {
                     return WidgetAxis.Z;
                 }
+                else if (CollisionPoly != null)
+                {
+                    return WidgetAxis.XYZ;
+                }
+                else if (CollisionBounds != null)
+                {
+                    return WidgetAxis.XYZ;
+                }
                 else if (NavPoly != null)
                 {
                     return WidgetAxis.XYZ;
@@ -723,6 +755,14 @@ namespace CodeWalker
                 else if (CarGenerator != null)
                 {
                     return new Vector3(CarGenerator.CCarGen.perpendicularLength);
+                }
+                else if (CollisionPoly != null)
+                {
+                    return Vector3.One;
+                }
+                else if (CollisionBounds != null)
+                {
+                    return Vector3.One;
                 }
                 else if (NavPoly != null)
                 {
@@ -784,14 +824,17 @@ namespace CodeWalker
             {
                 PathNode.SetPosition(newpos);
             }
+            else if (CollisionPoly != null)
+            {
+                CollisionPoly.Position = newpos;
+            }
+            else if (CollisionBounds != null)
+            {
+                CollisionBounds.Center = newpos;
+            }
             else if (NavPoly != null)
             {
                 NavPoly.SetPosition(newpos);
-
-                //if (projectForm != null)
-                //{
-                //    projectForm.OnWorldNavPolyModified(NavPoly);
-                //}
             }
             else if (NavPoint != null)
             {

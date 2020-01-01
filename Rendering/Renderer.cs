@@ -395,12 +395,14 @@ namespace CodeWalker.Rendering
 
 
 
+        public void Invalidate(Bounds bounds)
+        {
+            renderableCache.Invalidate(bounds);
+        }
         public void Invalidate(BasePathData path)
         {
-            //used to update path graphics.
             renderableCache.Invalidate(path);
         }
-
         public void Invalidate(YmapGrassInstanceBatch batch)
         {
             renderableCache.Invalidate(batch);
