@@ -130,7 +130,7 @@ namespace CodeWalker.GameFiles
         public float BoundingBoxVolume { get; set; }
 
 
-        public Bounds Parent { get; set; }
+        public BoundComposite Parent { get; set; }
         public string OwnerName { get; set; }
         public string GetName()
         {
@@ -147,6 +147,49 @@ namespace CodeWalker.GameFiles
         public Matrix Transform { get; set; } = Matrix.Identity; //when it's the child of a bound composite
         public Matrix TransformInv { get; set; } = Matrix.Identity;
 
+        public virtual Vector3 Scale
+        {
+            get
+            {
+                return Transform.ScaleVector;
+            }
+            set
+            {
+                var m = Transform;
+                m.ScaleVector = value;
+                Transform = m;
+                TransformInv = Matrix.Invert(m);
+            }
+        }
+        public virtual Vector3 Position
+        {
+            get
+            {
+                return Transform.TranslationVector;
+            }
+            set
+            {
+                var m = Transform;
+                m.TranslationVector = value;
+                Transform = m;
+                TransformInv = Matrix.Invert(m);
+            }
+        }
+        public virtual Quaternion Orientation
+        {
+            get
+            {
+                return Transform.ToQuaternion();
+            }
+            set
+            {
+                var m = value.ToMatrix();
+                m.TranslationVector = Transform.TranslationVector;
+                m.ScaleVector = Transform.ScaleVector;
+                Transform = m;
+                TransformInv = Matrix.Invert(m);
+            }
+        }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -1365,6 +1408,9 @@ namespace CodeWalker.GameFiles
         public BoundPolygonType Type { get; set; }
         public BoundGeometry Owner { get; set; } //for browsing/editing convenience
         public int Index { get; set; } //for editing convenience, not stored
+        public abstract Vector3 Scale { get; set; }
+        public abstract Vector3 Position { get; set; }
+        public abstract Quaternion Orientation { get; set; }
         public abstract void Read(byte[] bytes, int offset);
         public abstract void Write(BinaryWriter bw);
         public override string ToString()
@@ -1405,6 +1451,41 @@ namespace CodeWalker.GameFiles
             set { if (Owner != null) Owner.SetVertexPos(vertIndex3, value); }
         }
 
+        public override Vector3 Scale
+        {
+            get
+            {
+                return Vector3.One;
+            }
+            set
+            {
+            }
+        }
+        public override Vector3 Position
+        {
+            get
+            {
+                return (Vertex1 + Vertex2 + Vertex3) * (1.0f / 3.0f);
+            }
+            set
+            {
+                var offset = value - Position;
+                Vertex1 += offset;
+                Vertex2 += offset;
+                Vertex3 += offset;
+            }
+        }
+        public override Quaternion Orientation
+        {
+            get
+            {
+                return Quaternion.Identity;
+            }
+            set
+            {
+            }
+        }
+
         public BoundPolygonTriangle()
         {
             Type = BoundPolygonType.Triangle;
@@ -1442,10 +1523,30 @@ namespace CodeWalker.GameFiles
         public uint unused0 { get; set; }
         public uint unused1 { get; set; }
 
-        public Vector3 Position
+        public override Vector3 Scale
+        {
+            get
+            {
+                return Vector3.One;
+            }
+            set
+            {
+            }
+        }
+        public override Vector3 Position
         {
             get { return (Owner != null) ? Owner.GetVertexPos(sphereIndex) : Vector3.Zero; }
             set { if (Owner != null) Owner.SetVertexPos(sphereIndex, value); }
+        }
+        public override Quaternion Orientation
+        {
+            get
+            {
+                return Quaternion.Identity;
+            }
+            set
+            {
+            }
         }
 
         public BoundPolygonSphere()
@@ -1491,6 +1592,40 @@ namespace CodeWalker.GameFiles
         {
             get { return (Owner != null) ? Owner.GetVertexPos(capsuleIndex2) : Vector3.Zero; }
             set { if (Owner != null) Owner.SetVertexPos(capsuleIndex2, value); }
+        }
+
+        public override Vector3 Scale
+        {
+            get
+            {
+                return Vector3.One;
+            }
+            set
+            {
+            }
+        }
+        public override Vector3 Position
+        {
+            get
+            {
+                return (Vertex1 + Vertex2) * 0.5f;
+            }
+            set
+            {
+                var offset = value - Position;
+                Vertex1 += offset;
+                Vertex2 += offset;
+            }
+        }
+        public override Quaternion Orientation
+        {
+            get
+            {
+                return Quaternion.Identity;
+            }
+            set
+            {
+            }
         }
 
         public BoundPolygonCapsule()
@@ -1550,6 +1685,42 @@ namespace CodeWalker.GameFiles
             set { if (Owner != null) Owner.SetVertexPos(boxIndex4, value); }
         }
 
+        public override Vector3 Scale
+        {
+            get
+            {
+                return Vector3.One;
+            }
+            set
+            {
+            }
+        }
+        public override Vector3 Position
+        {
+            get
+            {
+                return (Vertex1 + Vertex2 + Vertex3 + Vertex4) * 0.25f;
+            }
+            set
+            {
+                var offset = value - Position;
+                Vertex1 += offset;
+                Vertex2 += offset;
+                Vertex3 += offset;
+                Vertex4 += offset;
+            }
+        }
+        public override Quaternion Orientation
+        {
+            get
+            {
+                return Quaternion.Identity;
+            }
+            set
+            {
+            }
+        }
+
         public BoundPolygonBox()
         {
             Type = BoundPolygonType.Box;
@@ -1595,6 +1766,40 @@ namespace CodeWalker.GameFiles
         {
             get { return (Owner != null) ? Owner.GetVertexPos(cylinderIndex2) : Vector3.Zero; }
             set { if (Owner != null) Owner.SetVertexPos(cylinderIndex2, value); }
+        }
+
+        public override Vector3 Scale
+        {
+            get
+            {
+                return Vector3.One;
+            }
+            set
+            {
+            }
+        }
+        public override Vector3 Position
+        {
+            get
+            {
+                return (Vertex1 + Vertex2) * 0.5f;
+            }
+            set
+            {
+                var offset = value - Position;
+                Vertex1 += offset;
+                Vertex2 += offset;
+            }
+        }
+        public override Quaternion Orientation
+        {
+            get
+            {
+                return Quaternion.Identity;
+            }
+            set
+            {
+            }
         }
 
         public BoundPolygonCylinder()
@@ -1708,6 +1913,14 @@ namespace CodeWalker.GameFiles
 
 
 
+
+        public void BuildBVH()
+        {
+
+        }
+
+
+
         public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
         {
             var res = new SpaceSphereIntersectResult();
@@ -1742,11 +1955,11 @@ namespace CodeWalker.GameFiles
                     box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
                     bool nodehit = sph.Intersects(ref box);
                     bool nodeskip = !nodehit;
-                    if (node.PolyCount <= 0) //intermediate node with child nodes
+                    if (node.ItemCount <= 0) //intermediate node with child nodes
                     {
                         if (nodeskip)
                         {
-                            nodeind += node.PolyId; //(child node count)
+                            nodeind += node.ItemId; //(child node count)
                         }
                         else
                         {
@@ -1757,9 +1970,9 @@ namespace CodeWalker.GameFiles
                     {
                         if (!nodeskip)
                         {
-                            var lastp = Math.Min(node.PolyId + node.PolyCount, (int)PolygonsCount);
+                            var lastp = Math.Min(node.ItemId + node.ItemCount, (int)PolygonsCount);
 
-                            SphereIntersectPolygons(ref sph, ref res, node.PolyId, lastp);
+                            SphereIntersectPolygons(ref sph, ref res, node.ItemId, lastp);
 
                         }
                         nodeind++;
@@ -1812,11 +2025,11 @@ namespace CodeWalker.GameFiles
                     box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
                     bool nodehit = ray.Intersects(ref box, out bvhboxhittest);
                     bool nodeskip = !nodehit || (bvhboxhittest > res.HitDist);
-                    if (node.PolyCount <= 0) //intermediate node with child nodes
+                    if (node.ItemCount <= 0) //intermediate node with child nodes
                     {
                         if (nodeskip)
                         {
-                            nodeind += node.PolyId; //(child node count)
+                            nodeind += node.ItemId; //(child node count)
                         }
                         else
                         {
@@ -1827,9 +2040,9 @@ namespace CodeWalker.GameFiles
                     {
                         if (!nodeskip)
                         {
-                            var lastp = Math.Min(node.PolyId + node.PolyCount, (int)PolygonsCount);
+                            var lastp = Math.Min(node.ItemId + node.ItemCount, (int)PolygonsCount);
 
-                            RayIntersectPolygons(ref ray, ref res, node.PolyId, lastp);
+                            RayIntersectPolygons(ref ray, ref res, node.ItemId, lastp);
 
                         }
                         nodeind++;
@@ -2003,6 +2216,15 @@ namespace CodeWalker.GameFiles
             }
             if (BVH != null) list.Add(BVH);
             return list.ToArray();
+        }
+
+
+
+
+
+        public void BuildBVH()
+        {
+
         }
 
 
@@ -2218,12 +2440,12 @@ namespace CodeWalker.GameFiles
         public short MaxX { get; set; }
         public short MaxY { get; set; }
         public short MaxZ { get; set; }
-        public short PolyId { get; set; }
-        public short PolyCount { get; set; }
+        public short ItemId { get; set; }
+        public short ItemCount { get; set; }
 
         public override string ToString()
         {
-            return PolyId.ToString() + ": " + PolyCount.ToString();
+            return ItemId.ToString() + ": " + ItemCount.ToString();
         }
     }
 
