@@ -3085,7 +3085,7 @@ namespace CodeWalker.Rendering
             {
                 if (valign)
                 {
-                    float minz = caryft.Fragment.PhysicsLODGroup?.PhysicsLOD1?.Bound?.BoundingBoxMin.Z ?? 0.0f;
+                    float minz = caryft.Fragment.PhysicsLODGroup?.PhysicsLOD1?.Bound?.BoxMin.Z ?? 0.0f;
                     pos.Z -= minz;
                 }
 

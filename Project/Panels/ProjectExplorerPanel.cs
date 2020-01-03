@@ -89,6 +89,27 @@ namespace CodeWalker.Project.Panels
                 ytypsnode.Expand();
             }
 
+            if (CurrentProjectFile.YbnFiles.Count > 0)
+            {
+                var ybnsnode = projnode.Nodes.Add("Ybn Files");
+                ybnsnode.Name = "Ybn";
+
+                foreach (var ybnfile in CurrentProjectFile.YbnFiles)
+                {
+                    var ycstr = ybnfile.HasChanged ? "*" : "";
+                    string name = ybnfile.Name;
+                    if (ybnfile.RpfFileEntry != null)
+                    {
+                        name = ybnfile.RpfFileEntry.Name;
+                    }
+                    var yndnode = ybnsnode.Nodes.Add(ycstr + name);
+                    yndnode.Tag = ybnfile;
+
+                    LoadYbnTreeNodes(ybnfile, yndnode);
+                }
+                ybnsnode.Expand();
+            }
+
             if (CurrentProjectFile.YndFiles.Count > 0)
             {
                 var yndsnode = projnode.Nodes.Add("Ynd Files");
@@ -352,6 +373,50 @@ namespace CodeWalker.Project.Panels
                     }
                 }
             }
+        }
+        private void LoadYbnTreeNodes(YbnFile ybn, TreeNode node)
+        {
+            if (ybn == null) return;
+
+            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Nodes
+
+            node.Nodes.Clear();
+
+            if (ybn.Bounds != null)
+            {
+                LoadYbnBoundsTreeNode(ybn.Bounds, node);
+            }
+
+        }
+        private void LoadYbnBoundsTreeNode(Bounds b, TreeNode node)
+        {
+
+            var boundsnode = node.Nodes.Add(b.Type.ToString());
+            boundsnode.Tag = b;
+
+            if (b is BoundComposite bc)
+            {
+                var children = bc.Children?.data_items;
+                if (children != null)
+                {
+                    for (int i = 0; i < children.Length; i++)
+                    {
+                        var child = children[i];
+                        if (child != null)
+                        {
+                            LoadYbnBoundsTreeNode(child, boundsnode);
+                        }
+                    }
+                }
+            }
+            else if (b is BoundGeometry bg)
+            {
+                TreeNode n;
+                n = boundsnode.Nodes.Add("Edit Polygon");
+                n.Name = "EditPoly";
+                n.Tag = b; //this tag should get updated with the selected poly!
+            }
+
         }
         private void LoadYndTreeNodes(YndFile ynd, TreeNode node)
         {
@@ -693,6 +758,34 @@ namespace CodeWalker.Project.Panels
                         if (ytyp.RpfFileEntry != null)
                         {
                             name = ytyp.RpfFileEntry.Name;
+                        }
+                        ynode.Text = changestr + name;
+                        break;
+                    }
+                }
+            }
+        }
+        public void SetYbnHasChanged(YbnFile ybn, bool changed)
+        {
+            if (ybn != null)
+            {
+                ybn.HasChanged = true;
+            }
+            if (ProjectTreeView.Nodes.Count > 0)
+            {
+                var pnode = ProjectTreeView.Nodes[0];
+                var ynnode = GetChildTreeNode(pnode, "Ybn");
+                if (ynnode == null) return;
+                string changestr = changed ? "*" : "";
+                for (int i = 0; i < ynnode.Nodes.Count; i++)
+                {
+                    var ynode = ynnode.Nodes[i];
+                    if (ynode.Tag == ybn)
+                    {
+                        string name = ybn.Name;
+                        if (ybn.RpfFileEntry != null)
+                        {
+                            name = ybn.RpfFileEntry.Name;
                         }
                         ynode.Text = changestr + name;
                         break;
@@ -1059,6 +1152,40 @@ namespace CodeWalker.Project.Panels
 
             return null;
         }
+        public TreeNode FindYbnTreeNode(YbnFile ybn)
+        {
+            if (ProjectTreeView.Nodes.Count <= 0) return null;
+            var projnode = ProjectTreeView.Nodes[0];
+            var ybnsnode = GetChildTreeNode(projnode, "Ybn");
+            if (ybnsnode == null) return null;
+            for (int i = 0; i < ybnsnode.Nodes.Count; i++)
+            {
+                var ybnnode = ybnsnode.Nodes[i];
+                if (ybnnode.Tag == ybn) return ybnnode;
+            }
+            return null;
+        }
+        public TreeNode FindCollisionBoundsTreeNode(Bounds b)
+        {
+            if (b == null) return null;
+            var bnode = (b.Parent != null) ? FindCollisionBoundsTreeNode(b.Parent) : FindYbnTreeNode(b.GetRootYbn());
+            if (bnode == null) return null;
+            for (int i = 0; i < bnode.Nodes.Count; i++)
+            {
+                var nnode = bnode.Nodes[i];
+                if (nnode.Tag == b) return nnode;
+            }
+            return null;
+        }
+        public TreeNode FindCollisionPolyTreeNode(BoundPolygon p)
+        {
+            if (p == null) return null;
+            var ybnnode = FindCollisionBoundsTreeNode(p.Owner);
+            var polynode = GetChildTreeNode(ybnnode, "EditPoly");
+            if (polynode == null) return null;
+            polynode.Tag = p;
+            return polynode;
+        }
         public TreeNode FindYndTreeNode(YndFile ynd)
         {
             if (ProjectTreeView.Nodes.Count <= 0) return null;
@@ -1106,12 +1233,6 @@ namespace CodeWalker.Project.Panels
             if (polynode == null) return null;
             polynode.Tag = p;
             return polynode;
-            //for (int i = 0; i < polysnode.Nodes.Count; i++)
-            //{
-            //    TreeNode pnode = polysnode.Nodes[i];
-            //    if (pnode.Tag == p) return pnode;
-            //}
-            //return null;
         }
         public TreeNode FindNavPointTreeNode(YnvPoint p)
         {
@@ -1414,6 +1535,48 @@ namespace CodeWalker.Project.Panels
                 else
                 {
                     ProjectTreeView.SelectedNode = archetypenode;
+                }
+            }
+        }
+        public void TrySelectCollisionBoundsTreeNode(Bounds bounds)
+        {
+            TreeNode tnode = FindCollisionBoundsTreeNode(bounds);
+            if (tnode == null)
+            {
+                tnode = FindYbnTreeNode(bounds?.GetRootYbn());
+            }
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(bounds);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
+            }
+        }
+        public void TrySelectCollisionPolyTreeNode(BoundPolygon poly)
+        {
+            TreeNode tnode = FindCollisionPolyTreeNode(poly);
+            if (tnode == null)
+            {
+                tnode = FindCollisionBoundsTreeNode(poly?.Owner);
+            }
+            if (tnode == null)
+            {
+                tnode = FindYbnTreeNode(poly?.Owner?.GetRootYbn());
+            }
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(poly);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
                 }
             }
         }
@@ -1786,7 +1949,6 @@ namespace CodeWalker.Project.Panels
                 tn.Parent.Nodes.Remove(tn);
             }
         }
-
         public void RemoveCarGenTreeNode(YmapCarGen cargen)
         {
             var tn = FindCarGenTreeNode(cargen);
@@ -1796,7 +1958,6 @@ namespace CodeWalker.Project.Panels
                 tn.Parent.Nodes.Remove(tn);
             }
         }
-
         public void RemoveGrassBatchTreeNode(YmapGrassInstanceBatch batch)
         {
             var tn = FindGrassTreeNode(batch);
@@ -1847,6 +2008,14 @@ namespace CodeWalker.Project.Panels
             if ((tn != null) && (tn.Parent != null))
             {
                 tn.Parent.Text = "Entity Sets (" + (set.OwnerMlo?.entitySets?.Length.ToString() ?? "0") + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveCollisionBoundsTreeNode(Bounds bounds)
+        {
+            var tn = FindCollisionBoundsTreeNode(bounds);
+            if ((tn != null) && (tn.Parent != null))
+            {
                 tn.Parent.Nodes.Remove(tn);
             }
         }

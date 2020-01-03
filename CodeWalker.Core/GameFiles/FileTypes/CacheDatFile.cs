@@ -327,8 +327,8 @@ namespace CodeWalker.GameFiles
         public BoundsStoreItem(Bounds b)
         {
             Name = 0;
-            Min = b.BoundingBoxMin;
-            Max = b.BoundingBoxMax;
+            Min = b.BoxMin;
+            Max = b.BoxMax;
             Layer = 0;
         }
         public BoundsStoreItem(BinaryReader br)

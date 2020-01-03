@@ -597,7 +597,7 @@ namespace CodeWalker
                 }
                 else if (CollisionBounds != null)
                 {
-                    return CollisionBounds.Center;
+                    return CollisionBounds.Position;
                 }
                 else if (NavPoly != null)
                 {
@@ -830,7 +830,7 @@ namespace CodeWalker
             }
             else if (CollisionBounds != null)
             {
-                CollisionBounds.Center = newpos;
+                CollisionBounds.Position = newpos;
             }
             else if (NavPoly != null)
             {

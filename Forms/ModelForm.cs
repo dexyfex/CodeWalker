@@ -686,7 +686,7 @@ namespace CodeWalker.Forms
 
             if (Ybn.Bounds != null)
             {
-                MoveCameraToView(Ybn.Bounds.BoundingBoxCenter, Ybn.Bounds.BoundingSphereRadius);
+                MoveCameraToView(Ybn.Bounds.SphereCenter, Ybn.Bounds.SphereRadius);
             }
 
             UpdateBoundsUI(ybn);

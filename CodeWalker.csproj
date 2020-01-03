@@ -140,6 +140,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Project\Panels\EditYbnBoundPolyPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYbnBoundPolyPanel.Designer.cs">
+      <DependentUpon>EditYbnBoundPolyPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditYbnBoundsPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYbnBoundsPanel.Designer.cs">
+      <DependentUpon>EditYbnBoundsPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditYbnPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYbnPanel.Designer.cs">
+      <DependentUpon>EditYbnPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\Panels\EditYtypMloEntSetPanel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -621,6 +639,15 @@
       <DependentUpon>WorldForm.cs</DependentUpon>
     </Compile>
     <Compile Include="World\Widget.cs" />
+    <EmbeddedResource Include="Project\Panels\EditYbnBoundPolyPanel.resx">
+      <DependentUpon>EditYbnBoundPolyPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYbnBoundsPanel.resx">
+      <DependentUpon>EditYbnBoundsPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYbnPanel.resx">
+      <DependentUpon>EditYbnPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYtypMloEntSetPanel.resx">
       <DependentUpon>EditYtypMloEntSetPanel.cs</DependentUpon>
     </EmbeddedResource>
