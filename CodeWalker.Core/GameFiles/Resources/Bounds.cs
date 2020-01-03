@@ -97,6 +97,19 @@ namespace CodeWalker.GameFiles
         }
     }
 
+    public enum BoundsType : byte
+    {
+        Sphere = 0,
+        Capsule = 1,
+        Box = 3,
+        Geometry = 4,
+        GeometryBVH = 8,
+        Composite = 10,
+        Disc = 12,
+        Cylinder = 13,
+        Cloth = 15,
+    }
+
     [TC(typeof(EXP))] public class Bounds : ResourceFileBase, IResourceXXSystemBlock
     {
         public override long BlockLength
@@ -105,32 +118,54 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public byte Type { get; set; }
-        public byte Unknown_11h { get; set; }
-        public ushort Unknown_12h { get; set; }
-        public float BoundingSphereRadius { get; set; }
-        public uint Unknown_18h { get; set; }
-        public uint Unknown_1Ch { get; set; }
-        public Vector3 BoundingBoxMax { get; set; }
+        public BoundsType Type { get; set; }
+        public byte Unknown_11h { get; set; } // 0x00000000
+        public ushort Unknown_12h { get; set; } // 0x00000000
+        public float SphereRadius { get; set; }
+        public uint Unknown_18h { get; set; } // 0x00000000
+        public uint Unknown_1Ch { get; set; } // 0x00000000
+        public Vector3 BoxMax { get; set; }
         public float Margin { get; set; }
-        public Vector3 BoundingBoxMin { get; set; }
-        public uint Unknown_3Ch { get; set; }
-        public Vector3 BoundingBoxCenter { get; set; }
+        public Vector3 BoxMin { get; set; }
+        public uint Unknown_3Ch { get; set; } = 1; //1, 2 (yft only)
+        public Vector3 BoxCenter { get; set; }
         public byte MaterialIndex { get; set; }
         public byte ProceduralId { get; set; }
         public byte RoomId_and_PedDensity { get; set; } //5bits for RoomID and then 3bits for PedDensity
-        public byte Unknown_4Fh { get; set; } //flags? (bit5 related to Unknown_5Ch, should be a flag called "Has PolyFlags")<-- i don't remember why i wrote this lol
-        public Vector3 Center { get; set; }
+        public byte UnkFlags { get; set; } //    (bit5 related to PolyFlags, should be a flag called "Has PolyFlags")[check this?]
+        public Vector3 SphereCenter { get; set; }
         public byte PolyFlags { get; set; }
         public byte MaterialColorIndex { get; set; }
-        public ushort Unknown_5Eh { get; set; }
-        public float Unknown_60h { get; set; }
-        public float Unknown_64h { get; set; }
-        public float Unknown_68h { get; set; }
-        public float BoundingBoxVolume { get; set; }
+        public ushort Unknown_5Eh { get; set; } // 0x00000000
+        public Vector3 Unknown_60h { get; set; }
+        public float Volume { get; set; }
 
+        public byte RoomId
+        {
+            get
+            {
+                return (byte)(RoomId_and_PedDensity & 0x1F);
+            }
+            set
+            {
+                RoomId_and_PedDensity = (byte)((RoomId_and_PedDensity & 0xE0) + (value & 0x1F));
+            }
+        }
+        public byte PedDensity
+        {
+            get
+            {
+                return (byte)(RoomId_and_PedDensity >> 5);
+            }
+            set
+            {
+                RoomId_and_PedDensity = (byte)((RoomId_and_PedDensity & 0x1F) + ((value & 0x7) << 5));
+            }
+        }
 
+        public bool HasChanged { get; set; } = false;
         public BoundComposite Parent { get; set; }
+        public YbnFile OwnerYbn { get; set; }
         public string OwnerName { get; set; }
         public string GetName()
         {
@@ -142,6 +177,23 @@ namespace CodeWalker.GameFiles
                 p = p.Parent;
             }
             return n;
+        }
+        public string GetTitle()
+        {
+            var n = GetName();
+            var t = Type.ToString();
+            return t + ": " + n;
+        }
+        public YbnFile GetRootYbn()
+        {
+            var r = OwnerYbn;
+            var p = Parent;
+            while ((p != null) && (r == null))
+            {
+                r = p.OwnerYbn;
+                p = p.Parent;
+            }
+            return r;
         }
 
         public Matrix Transform { get; set; } = Matrix.Identity; //when it's the child of a bound composite
@@ -199,29 +251,106 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.Type = reader.ReadByte();
+            this.Type = (BoundsType)reader.ReadByte();
             this.Unknown_11h = reader.ReadByte();
             this.Unknown_12h = reader.ReadUInt16();
-            this.BoundingSphereRadius = reader.ReadSingle();
+            this.SphereRadius = reader.ReadSingle();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.BoundingBoxMax = reader.ReadStruct<Vector3>();
+            this.BoxMax = reader.ReadVector3();
             this.Margin = reader.ReadSingle();
-            this.BoundingBoxMin = reader.ReadStruct<Vector3>();
+            this.BoxMin = reader.ReadVector3();
             this.Unknown_3Ch = reader.ReadUInt32();
-            this.BoundingBoxCenter = reader.ReadStruct<Vector3>();
+            this.BoxCenter = reader.ReadVector3();
             this.MaterialIndex = reader.ReadByte();
             this.ProceduralId = reader.ReadByte();
             this.RoomId_and_PedDensity = reader.ReadByte();
-            this.Unknown_4Fh = reader.ReadByte();
-            this.Center = reader.ReadStruct<Vector3>();
+            this.UnkFlags = reader.ReadByte();
+            this.SphereCenter = reader.ReadVector3();
             this.PolyFlags = reader.ReadByte();
             this.MaterialColorIndex = reader.ReadByte();
             this.Unknown_5Eh = reader.ReadUInt16();
-            this.Unknown_60h = reader.ReadSingle();
-            this.Unknown_64h = reader.ReadSingle();
-            this.Unknown_68h = reader.ReadSingle();
-            this.BoundingBoxVolume = reader.ReadSingle();
+            this.Unknown_60h = reader.ReadVector3();
+            this.Volume = reader.ReadSingle();
+
+            if (Unknown_11h != 0)
+            { }
+            if (Unknown_12h != 0)
+            { }
+            if (Unknown_18h != 0)
+            { }
+            if (Unknown_1Ch != 0)
+            { }
+            if (Unknown_5Eh != 0)
+            { }
+
+
+            switch (Unknown_3Ch)
+            {
+                case 1:
+                case 2: // only found in .yft
+                    break;
+                default:
+                    break;
+            }
+            switch (UnkFlags)//yeah it's probably flags
+            {
+                case 0://for all .ybn files
+                case 26: //v_corp_banktrolley.ydr
+                case 18: //v_corp_banktrolley.ydr
+                case 16: //v_corp_banktrolley.ydr
+                case 2:  //v_corp_bk_bust.ydr
+                case 10: //v_corp_bk_bust.ydr
+                case 130://v_corp_bk_chair2.ydr
+                case 30: //v_corp_bk_flag.ydr
+                case 144://v_corp_bombbin.ydr
+                case 8:  //v_corp_conftable2.ydr
+                case 12: //v_corp_conftable3.ydr
+                case 4:  //v_corp_cubiclefd.ydr
+                case 22: //v_corp_hicksdoor.ydr
+                case 150://v_corp_hicksdoor.ydr
+                case 128://v_corp_officedesk003.ydr
+                case 24: //v_corp_potplant1.ydr
+                case 14: //v_ind_cm_aircomp.ydr
+                case 146://v_ind_rc_rubbish.ydr
+                case 134://v_ilev_bk_door.ydr
+                case 64: //v_ilev_carmod3lamp.ydr
+                case 28: //v_ilev_cbankvaulgate02.ydr
+                case 132://v_ilev_ch_glassdoor.ydr
+                case 6:  //v_ilev_cs_door01.ydr
+                case 20: //v_ilev_fib_atrgl1s.ydr
+                case 94: //v_ilev_uvcheetah.ydr
+                case 148://v_serv_metro_elecpole_singlel.ydr
+                case 48: //v_serv_metro_statseat1.ydr
+                case 50: //v_serv_securitycam_03.ydr
+                case 80: //prop_bmu_02_ld.ydr
+                case 92: //prop_bmu_02_ld.ydr
+                case 82: //prop_roofvent_08a.ydr
+                case 1:  //prop_portasteps_02.ydr
+                case 65: //prop_storagetank_01_cr.ydr
+                case 90: //prop_storagetank_01_cr.ydr
+                case 68: //prop_sub_frame_01a.ydr
+                case 66: //prop_ld_cable.ydr
+                case 78: //prop_ld_cable.ydr
+                case 72: //prop_snow_oldlight_01b.ydr
+                case 13: //prop_conslift_steps.ydr
+                case 86: //prop_scafold_01a.ydr
+                case 84: //prop_scafold_04a.ydr
+                case 76: //prop_fruitstand_b_nite.ydr
+                case 88: //prop_telegwall_01a.ydr
+                case 17: //prop_air_stair_04a_cr.ydr
+                case 196://prop_dock_rtg_ld.ydr
+                case 70: //prop_fnclink_02gate5.ydr
+                case 214://prop_facgate_04_l.ydr
+                case 198://prop_fncsec_01a.ydr
+                case 210://prop_rub_cardpile_01.yft
+                case 212://prop_streetlight_01b.yft
+                case 208://prop_streetlight_03e.yft
+                    break;
+                default:
+                    break;
+            }
+
         }
 
         /// <summary>
@@ -232,48 +361,46 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.Write(this.Type);
+            writer.Write((byte)this.Type);
             writer.Write(this.Unknown_11h);
             writer.Write(this.Unknown_12h);
-            writer.Write(this.BoundingSphereRadius);
+            writer.Write(this.SphereRadius);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
-            writer.Write(this.BoundingBoxMax);
+            writer.Write(this.BoxMax);
             writer.Write(this.Margin);
-            writer.Write(this.BoundingBoxMin);
+            writer.Write(this.BoxMin);
             writer.Write(this.Unknown_3Ch);
-            writer.Write(this.BoundingBoxCenter);
+            writer.Write(this.BoxCenter);
             writer.Write(this.MaterialIndex);
             writer.Write(this.ProceduralId);
             writer.Write(this.RoomId_and_PedDensity);
-            writer.Write(this.Unknown_4Fh);
-            writer.Write(this.Center);
+            writer.Write(this.UnkFlags);
+            writer.Write(this.SphereCenter);
             writer.Write(this.PolyFlags);
             writer.Write(this.MaterialColorIndex);
             writer.Write(this.Unknown_5Eh);
             writer.Write(this.Unknown_60h);
-            writer.Write(this.Unknown_64h);
-            writer.Write(this.Unknown_68h);
-            writer.Write(this.BoundingBoxVolume);
+            writer.Write(this.Volume);
         }
 
         public IResourceSystemBlock GetType(ResourceDataReader reader, params object[] parameters)
         {
             reader.Position += 16;
-            var type = reader.ReadByte();
+            var type = (BoundsType)reader.ReadByte();
             reader.Position -= 17;
 
             switch (type)
             {
-                case 0: return new BoundSphere();
-                case 1: return new BoundCapsule();
-                case 3: return new BoundBox();
-                case 4: return new BoundGeometry();
-                case 8: return new BoundBVH();
-                case 10: return new BoundComposite();
-                case 12: return new BoundDisc();
-                case 13: return new BoundCylinder();
-                case 15: return null; //TODO: find out what this is!
+                case BoundsType.Sphere: return new BoundSphere();
+                case BoundsType.Capsule: return new BoundCapsule();
+                case BoundsType.Box: return new BoundBox();
+                case BoundsType.Geometry: return new BoundGeometry();
+                case BoundsType.GeometryBVH: return new BoundBVH();
+                case BoundsType.Composite: return new BoundComposite();
+                case BoundsType.Disc: return new BoundDisc();
+                case BoundsType.Cylinder: return new BoundCylinder();
+                case BoundsType.Cloth: return new BoundCloth();
                 default: return null; // throw new Exception("Unknown bound type");
             }
         }
@@ -295,12 +422,12 @@ namespace CodeWalker.GameFiles
         {
             var res = new SpaceSphereIntersectResult();
             var bsph = new BoundingSphere();
-            bsph.Center = Center;
-            bsph.Radius = BoundingSphereRadius;
+            bsph.Center = SphereCenter;
+            bsph.Radius = SphereRadius;
             if (sph.Intersects(ref bsph))
             {
                 res.Hit = true;
-                res.Normal = Vector3.Normalize(sph.Center - Center);
+                res.Normal = Vector3.Normalize(sph.Center - SphereCenter);
             }
             return res;
         }
@@ -308,8 +435,8 @@ namespace CodeWalker.GameFiles
         {
             var res = new SpaceRayIntersectResult();
             var bsph = new BoundingSphere();
-            bsph.Center = Center;
-            bsph.Radius = BoundingSphereRadius;
+            bsph.Center = SphereCenter;
+            bsph.Radius = SphereRadius;
             float testdist;
             if (ray.Intersects(ref bsph, out testdist) && (testdist < maxdist))
             {
@@ -317,7 +444,7 @@ namespace CodeWalker.GameFiles
                 res.HitDist = testdist;
                 res.HitBounds = this;
                 res.Position = ray.Position + ray.Direction * testdist;
-                res.Normal = Vector3.Normalize(res.Position - Center);
+                res.Normal = Vector3.Normalize(res.Position - SphereCenter);
                 res.Material.Type = MaterialIndex;
             }
             return res;
@@ -361,9 +488,9 @@ namespace CodeWalker.GameFiles
         {
             var res = new SpaceSphereIntersectResult();
             var bcap = new BoundingCapsule();
-            var extent = new Vector3(0, BoundingSphereRadius - Margin, 0);
-            bcap.PointA = Center - extent;
-            bcap.PointB = Center + extent;
+            var extent = new Vector3(0, SphereRadius - Margin, 0);
+            bcap.PointA = SphereCenter - extent;
+            bcap.PointB = SphereCenter + extent;
             bcap.Radius = Margin;
             if (sph.Intersects(ref bcap, out res.Normal))
             {
@@ -375,9 +502,9 @@ namespace CodeWalker.GameFiles
         {
             var res = new SpaceRayIntersectResult();
             var bcap = new BoundingCapsule();
-            var extent = new Vector3(0, BoundingSphereRadius - Margin, 0);
-            bcap.PointA = Center - extent;
-            bcap.PointB = Center + extent;
+            var extent = new Vector3(0, SphereRadius - Margin, 0);
+            bcap.PointA = SphereCenter - extent;
+            bcap.PointB = SphereCenter + extent;
             bcap.Radius = Margin;
             float testdist;
             if (ray.Intersects(ref bcap, out testdist) && (testdist < maxdist))
@@ -397,19 +524,19 @@ namespace CodeWalker.GameFiles
         public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
         {
             var res = new SpaceSphereIntersectResult();
-            var bbox = new BoundingBox(BoundingBoxMin, BoundingBoxMax);
+            var bbox = new BoundingBox(BoxMin, BoxMax);
             if (sph.Intersects(ref bbox))
             {
                 var sphmin = sph.Center - sph.Radius;
                 var sphmax = sph.Center + sph.Radius;
                 var n = Vector3.Zero;
                 float eps = sph.Radius * 0.8f;
-                if (Math.Abs(sphmax.X - BoundingBoxMin.X) < eps) n -= Vector3.UnitX;
-                else if (Math.Abs(sphmin.X - BoundingBoxMax.X) < eps) n += Vector3.UnitX;
-                else if (Math.Abs(sphmax.Y - BoundingBoxMin.Y) < eps) n -= Vector3.UnitY;
-                else if (Math.Abs(sphmin.Y - BoundingBoxMax.Y) < eps) n += Vector3.UnitY;
-                else if (Math.Abs(sphmax.Z - BoundingBoxMin.Z) < eps) n -= Vector3.UnitZ;
-                else if (Math.Abs(sphmin.Z - BoundingBoxMax.Z) < eps) n += Vector3.UnitZ;
+                if (Math.Abs(sphmax.X - BoxMin.X) < eps) n -= Vector3.UnitX;
+                else if (Math.Abs(sphmin.X - BoxMax.X) < eps) n += Vector3.UnitX;
+                else if (Math.Abs(sphmax.Y - BoxMin.Y) < eps) n -= Vector3.UnitY;
+                else if (Math.Abs(sphmin.Y - BoxMax.Y) < eps) n += Vector3.UnitY;
+                else if (Math.Abs(sphmax.Z - BoxMin.Z) < eps) n -= Vector3.UnitZ;
+                else if (Math.Abs(sphmin.Z - BoxMax.Z) < eps) n += Vector3.UnitZ;
                 else
                 { n = Vector3.UnitZ; } //ray starts inside the box...
                 res.Normal = Vector3.Normalize(n);
@@ -420,19 +547,19 @@ namespace CodeWalker.GameFiles
         public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue)
         {
             var res = new SpaceRayIntersectResult();
-            var bbox = new BoundingBox(BoundingBoxMin, BoundingBoxMax);
+            var bbox = new BoundingBox(BoxMin, BoxMax);
             float testdist;
             if (ray.Intersects(ref bbox, out testdist) && (testdist < maxdist))
             {
                 const float eps = 0.002f;
                 var n = Vector3.Zero;
                 var hpt = ray.Position + ray.Direction * testdist;
-                if (Math.Abs(hpt.X - BoundingBoxMin.X) < eps) n = -Vector3.UnitX;
-                else if (Math.Abs(hpt.X - BoundingBoxMax.X) < eps) n = Vector3.UnitX;
-                else if (Math.Abs(hpt.Y - BoundingBoxMin.Y) < eps) n = -Vector3.UnitY;
-                else if (Math.Abs(hpt.Y - BoundingBoxMax.Y) < eps) n = Vector3.UnitY;
-                else if (Math.Abs(hpt.Z - BoundingBoxMin.Z) < eps) n = -Vector3.UnitZ;
-                else if (Math.Abs(hpt.Z - BoundingBoxMax.Z) < eps) n = Vector3.UnitZ;
+                if (Math.Abs(hpt.X - BoxMin.X) < eps) n = -Vector3.UnitX;
+                else if (Math.Abs(hpt.X - BoxMax.X) < eps) n = Vector3.UnitX;
+                else if (Math.Abs(hpt.Y - BoxMin.Y) < eps) n = -Vector3.UnitY;
+                else if (Math.Abs(hpt.Y - BoxMax.Y) < eps) n = Vector3.UnitY;
+                else if (Math.Abs(hpt.Z - BoxMin.Z) < eps) n = -Vector3.UnitZ;
+                else if (Math.Abs(hpt.Z - BoxMax.Z) < eps) n = Vector3.UnitZ;
                 else
                 { n = Vector3.UnitZ; } //ray starts inside the box...
                 res.Hit = true;
@@ -484,12 +611,12 @@ namespace CodeWalker.GameFiles
             //as a temporary hack, just use the sphere-sphere intersection //TODO: sphere-disc intersection
             var res = new SpaceSphereIntersectResult();
             var bsph = new BoundingSphere();
-            bsph.Center = Center;
-            bsph.Radius = BoundingSphereRadius;
+            bsph.Center = SphereCenter;
+            bsph.Radius = SphereRadius;
             if (sph.Intersects(ref bsph))
             {
                 res.Hit = true;
-                res.Normal = Vector3.Normalize(sph.Center - Center);
+                res.Normal = Vector3.Normalize(sph.Center - SphereCenter);
             }
             return res;
         }
@@ -498,9 +625,9 @@ namespace CodeWalker.GameFiles
             var res = new SpaceRayIntersectResult();
             var bcyl = new BoundingCylinder();
             var size = new Vector3(Margin, 0, 0);
-            bcyl.PointA = Center - size;
-            bcyl.PointB = Center + size;
-            bcyl.Radius = BoundingSphereRadius;
+            bcyl.PointA = SphereCenter - size;
+            bcyl.PointB = SphereCenter + size;
+            bcyl.Radius = SphereRadius;
             Vector3 n;
             float testdist;
             if (ray.Intersects(ref bcyl, out testdist, out n) && (testdist < maxdist))
@@ -554,10 +681,10 @@ namespace CodeWalker.GameFiles
             //as a temporary hack, just use the sphere-capsule intersection //TODO: sphere-cylinder intersection
             var res = new SpaceSphereIntersectResult();
             var bcap = new BoundingCapsule();
-            var extent = (BoundingBoxMax - BoundingBoxMin).Abs();
+            var extent = (BoxMax - BoxMin).Abs();
             var size = new Vector3(0, extent.Y * 0.5f, 0);
-            bcap.PointA = Center - size;
-            bcap.PointB = Center + size;
+            bcap.PointA = SphereCenter - size;
+            bcap.PointB = SphereCenter + size;
             bcap.Radius = extent.X * 0.5f;
             if (sph.Intersects(ref bcap, out res.Normal))
             {
@@ -569,10 +696,10 @@ namespace CodeWalker.GameFiles
         {
             var res = new SpaceRayIntersectResult();
             var bcyl = new BoundingCylinder();
-            var extent = (BoundingBoxMax - BoundingBoxMin).Abs();
+            var extent = (BoxMax - BoxMin).Abs();
             var size = new Vector3(0, extent.Y * 0.5f, 0);
-            bcyl.PointA = Center - size;
-            bcyl.PointB = Center + size;
+            bcyl.PointA = SphereCenter - size;
+            bcyl.PointB = SphereCenter + size;
             bcyl.Radius = extent.X * 0.5f;
             Vector3 n;
             float testdist;
@@ -588,6 +715,67 @@ namespace CodeWalker.GameFiles
             return res;
         }
     }
+    [TC(typeof(EXP))] public class BoundCloth : Bounds
+    {
+        //public override long BlockLength
+        //{
+        //    get { return 128; }
+        //}
+
+        //// TODO! length currently unknown!
+        //public uint Unknown_70h { get; set; }
+        //public uint Unknown_74h { get; set; }
+        //public uint Unknown_78h { get; set; }
+        //public uint Unknown_7Ch { get; set; }
+
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            base.Read(reader, parameters);
+
+            //// read structure data
+            //this.Unknown_70h = reader.ReadUInt32();
+            //this.Unknown_74h = reader.ReadUInt32();
+            //this.Unknown_78h = reader.ReadUInt32();
+            //this.Unknown_7Ch = reader.ReadUInt32();
+
+
+            // found in eg:
+            //dt1_16_build4_cloth11.yft
+            //dt1_16_build4_cloth12.yft
+            //dt1_16_build4_cloth8.yft
+            //dt1_16_build4_clothb.yft
+            //dt1_17_cloth1.yft
+            //dt1_17_cloth1b.yft
+            //dt1_17_cloth3.yft
+            //dt1_21_dtzz_cloth_a.yft
+            //dt1_21_dtzz_cloth_b.yft
+            //dt1_21_dtzz_cloth_bx.yft
+            //dt1_21_dtzz_cloth_c.yft
+            //dt1_21_dtzz_cloth_d.yft
+        }
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            base.Write(writer, parameters);
+
+            //// write structure data
+            //writer.Write(this.Unknown_70h);
+            //writer.Write(this.Unknown_74h);
+            //writer.Write(this.Unknown_78h);
+            //writer.Write(this.Unknown_7Ch);
+        }
+
+        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
+        {
+            var res = new SpaceSphereIntersectResult(); //TODO...
+            return res;
+        }
+        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue)
+        {
+            var res = new SpaceRayIntersectResult(); //TODO...
+            return res;
+        }
+    }
     [TC(typeof(EXP))] public class BoundGeometry : Bounds
     {
         public override long BlockLength
@@ -596,10 +784,11 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint Unknown_70h { get; set; }
-        public uint Unknown_74h { get; set; }
+        public uint Unknown_70h { get; set; } // 0x00000000
+        public uint Unknown_74h { get; set; } // 0x00000000
         public ulong Unknown_78h_Pointer { get; set; }
-        public uint Unknown_80h { get; set; }
+        public ushort Unknown_80h { get; set; } // 0x0000
+        public ushort Unknown_82h { get; set; } //des_.ydr's? some extra data to read..?? is this some extra poly count?
         public uint Count1 { get; set; }
         public ulong PolygonsPointer { get; set; }
         public Vector3 Quantum { get; set; }
@@ -640,7 +829,7 @@ namespace CodeWalker.GameFiles
         public Vector3[] Vertices { get; set; }
         public uint[] Unknown_B8h_Data { get; set; }
         public uint[] Unknown_C0h_Data { get; set; }
-        public BoundUnknown1 Unknown_C8h_Data { get; set; }
+        public BoundGeomUnknown1 Unknown_C8h_Data { get; set; }
         public BoundMaterial_s[] Materials { get; set; }
         public BoundMaterialColour[] MaterialColours { get; set; }
         public byte[] PolygonMaterialIndices { get; set; }
@@ -664,12 +853,13 @@ namespace CodeWalker.GameFiles
             this.Unknown_70h = reader.ReadUInt32();
             this.Unknown_74h = reader.ReadUInt32();
             this.Unknown_78h_Pointer = reader.ReadUInt64();
-            this.Unknown_80h = reader.ReadUInt32();
+            this.Unknown_80h = reader.ReadUInt16();
+            this.Unknown_82h = reader.ReadUInt16();
             this.Count1 = reader.ReadUInt32();
             this.PolygonsPointer = reader.ReadUInt64();
-            this.Quantum = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-            this.Unknown_9Ch = reader.ReadSingle();//.ReadUInt32();
-            this.CenterGeom = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            this.Quantum = reader.ReadVector3();
+            this.Unknown_9Ch = reader.ReadSingle();
+            this.CenterGeom = reader.ReadVector3();
             this.Unknown_ACh = reader.ReadSingle();
             this.VerticesPointer = reader.ReadUInt64();
             this.Unknown_B8h_Pointer = reader.ReadUInt64();
@@ -722,7 +912,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_C0h_Data = reader.ReadUintsAt(this.Unknown_C0h_Pointer, 8);//item counts
             if (this.Unknown_C0h_Data != null)
             {
-                this.Unknown_C8h_Data = reader.ReadBlockAt<BoundUnknown1>(this.Unknown_C8h_Pointer, this.Unknown_C0h_Data);
+                this.Unknown_C8h_Data = reader.ReadBlockAt<BoundGeomUnknown1>(this.Unknown_C8h_Pointer, this.Unknown_C0h_Data);
             }
 
             this.Materials = reader.ReadStructsAt<BoundMaterial_s>(this.MaterialsPointer, this.MaterialsCount);
@@ -730,6 +920,22 @@ namespace CodeWalker.GameFiles
             this.MaterialColours = reader.ReadStructsAt<BoundMaterialColour>(this.MaterialColoursPointer, this.MaterialColoursCount);
 
             this.PolygonMaterialIndices = reader.ReadBytesAt(this.PolygonMaterialIndicesPointer, (uint)PolygonsCount);
+
+
+
+            if (Unknown_9Ch != 0)
+            { }
+            if (Unknown_ACh != 0)
+            { }
+
+            switch (Unknown_82h)
+            {
+                case 0:
+                case 1://ybns
+                    break;
+                default://des_.ydr's? some extra data to read..?? is this some extra poly count?
+                    break;
+            }
 
         }
 
@@ -825,15 +1031,12 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_74h);
             writer.Write(this.Unknown_78h_Pointer);
             writer.Write(this.Unknown_80h);
+            writer.Write(this.Unknown_82h);
             writer.Write(this.Count1);
             writer.Write(this.PolygonsPointer);
-            writer.Write(this.Quantum.X);// this.Unknown_90h);
-            writer.Write(this.Quantum.Y);// .Unknown_94h);
-            writer.Write(this.Quantum.Z);// .Unknown_98h);
+            writer.Write(this.Quantum);
             writer.Write(this.Unknown_9Ch);
-            writer.Write(this.CenterGeom.X);// .Unknown_A0h);
-            writer.Write(this.CenterGeom.Y);// .Unknown_A4h);
-            writer.Write(this.CenterGeom.Z);// .Unknown_A8h);
+            writer.Write(this.CenterGeom);
             writer.Write(this.Unknown_ACh);
             writer.Write(this.VerticesPointer);
             writer.Write(this.Unknown_B8h_Pointer);
@@ -952,8 +1155,8 @@ namespace CodeWalker.GameFiles
             if (Polygons == null)
             { return res; }
 
-            box.Minimum = BoundingBoxMin;
-            box.Maximum = BoundingBoxMax;
+            box.Minimum = BoxMin;
+            box.Maximum = BoxMax;
             if (!sph.Intersects(ref box))
             { return res; }
 
@@ -969,8 +1172,8 @@ namespace CodeWalker.GameFiles
             if (Polygons == null)
             { return res; }
 
-            box.Minimum = BoundingBoxMin;
-            box.Maximum = BoundingBoxMax;
+            box.Minimum = BoxMin;
+            box.Maximum = BoxMax;
             float bvhboxhittest;
             if (!ray.Intersects(ref box, out bvhboxhittest))
             { return res; }
@@ -1187,213 +1390,472 @@ namespace CodeWalker.GameFiles
                     res.Normal = n1;
                     res.HitPolygon = polygon;
                     res.HitBounds = this;
-
-                    byte matind = ((PolygonMaterialIndices != null) && (p < PolygonMaterialIndices.Length)) ? PolygonMaterialIndices[p] : (byte)0;
-                    BoundMaterial_s mat = ((Materials != null) && (matind < Materials.Length)) ? Materials[matind] : new BoundMaterial_s();
-                    res.Material = mat;
+                    res.Material = polygon?.Material ?? new BoundMaterial_s();
                 }
                 res.TestedPolyCount++;
             }
         }
     }
-
-    [TC(typeof(EXP))] public class BoundUnknown1 : ResourceSystemBlock
+    [TC(typeof(EXP))] public class BoundBVH : BoundGeometry
     {
-        public uint[][] Items { get; private set; }
-
-        private ResourceSystemStructBlock<uint>[] ItemBlocks = null;
-
-
         public override long BlockLength
         {
-            get
-            {
-                return Items != null ? (Items.Length*8) : 0; //main pointer array has 8 items, 8 bytes each
-            }
+            get { return 336; }
         }
 
-        public BoundUnknown1() { }
-        public BoundUnknown1(uint[][] items)
-        {
-            Items = items;
-        }
+        // structure data
+        public ulong BvhPointer { get; set; }
+        public uint Unknown_138h { get; set; } // 0x00000000
+        public uint Unknown_13Ch { get; set; } // 0x00000000
+        public ushort Unknown_140h { get; set; } = 0xFFFF; // 0xFFFF
+        public ushort Unknown_142h { get; set; } // 0x0000
+        public uint Unknown_144h { get; set; } // 0x00000000
+        public uint Unknown_148h { get; set; } // 0x00000000
+        public uint Unknown_14Ch { get; set; } // 0x00000000
 
+        // reference data
+        public BVH BVH { get; set; }
+
+        /// <summary>
+        /// Reads the data-block from a stream.
+        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            if (parameters?.Length < 1)
-            { return; } //shouldn't happen!
+            base.Read(reader, parameters);
 
-            var itemcounts = (uint[])parameters[0];
-            ulong ptr = (ulong)reader.Position; //pointer array pointer
+            // read structure data
+            this.BvhPointer = reader.ReadUInt64();
+            this.Unknown_138h = reader.ReadUInt32();
+            this.Unknown_13Ch = reader.ReadUInt32();
+            this.Unknown_140h = reader.ReadUInt16();
+            this.Unknown_142h = reader.ReadUInt16();
+            this.Unknown_144h = reader.ReadUInt32();
+            this.Unknown_148h = reader.ReadUInt32();
+            this.Unknown_14Ch = reader.ReadUInt32();
 
-            if (itemcounts != null)
+            // read reference data
+            if (this.BvhPointer > 65535)
             {
-                ulong[] ptrlist = reader.ReadUlongsAt(ptr, (uint)itemcounts.Length);
-                Items = new uint[itemcounts.Length][];
-                for (int i = 0; i < itemcounts.Length; i++)
-                {
-                    Items[i] = reader.ReadUintsAt(ptrlist[i], itemcounts[i]);
-                }
+                this.BVH = reader.ReadBlockAt<BVH>(
+                    this.BvhPointer // offset
+                );
+            }
+            else
+            {
+                //this can happen in some ydr's for some reason
             }
         }
 
+        /// <summary>
+        /// Writes the data-block to a stream.
+        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
+            base.Write(writer, parameters);
 
-            //just write the pointer array.
-            if (ItemBlocks != null)
-            {
-                foreach (var item in ItemBlocks)
-                {
-                    writer.Write((ulong)item.FilePosition);
-                }
-            }
-            
+            // update structure data
+            this.BvhPointer = (ulong)(this.BVH != null ? this.BVH.FilePosition : 0);
+
+            // write structure data
+            writer.Write(this.BvhPointer);
+            writer.Write(this.Unknown_138h);
+            writer.Write(this.Unknown_13Ch);
+            writer.Write(this.Unknown_140h);
+            writer.Write(this.Unknown_142h);
+            writer.Write(this.Unknown_144h);
+            writer.Write(this.Unknown_148h);
+            writer.Write(this.Unknown_14Ch);
         }
 
+        /// <summary>
+        /// Returns a list of data blocks which are referenced by this block.
+        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
-
-            var ilist = new List<ResourceSystemStructBlock<uint>>();
-            if (Items != null)
-            {
-                foreach (var item in Items)
-                {
-                    var block = new ResourceSystemStructBlock<uint>(item);
-                    ilist.Add(block);
-                    list.Add(block);
-                }
-            }
-            ItemBlocks = ilist.ToArray();
-
+            if (BVH != null) list.Add(BVH);
             return list.ToArray();
         }
-    }
 
-    [TC(typeof(EXP))] public struct BoundMaterial_s
-    {
 
-        public uint Data1;
-        public uint Data2;
 
-        #region Public Properties
 
-        public BoundsMaterialType Type
+        public void BuildBVH()
         {
-            get => (BoundsMaterialType)(Data1 & 0xFFu);
-            set => Data1 = ((Data1 & 0xFFFFFF00u) | ((byte)value & 0xFFu));
+
         }
 
-        public byte ProceduralId
+
+
+        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
         {
-            get => (byte)((Data1 >> 8) & 0xFFu);
-            set => Data1 = ((Data1 & 0xFFFF00FFu) | ((value & 0xFFu) << 8));
-        }
+            var res = new SpaceSphereIntersectResult();
+            var box = new BoundingBox();
 
-        public byte RoomId
-        {
-            get => (byte)((Data1 >> 16) & 0x1Fu);
-            set => Data1 = ((Data1 & 0xFFE0FFFFu) | ((value & 0x1Fu) << 16));
-        }
+            if (Polygons == null)
+            { return res; }
+            if ((BVH?.Nodes?.data_items == null) || (BVH?.Trees?.data_items == null))
+            { return res; }
 
-        public byte PedDensity
-        {
-            get => (byte)((Data1 >> 21) & 0x7u);
-            set => Data1 = ((Data1 & 0xFF1FFFFFu) | ((value & 0x7u) << 21));
-        }
+            box.Minimum = BoxMin;
+            box.Maximum = BoxMax;
+            if (!sph.Intersects(ref box))
+            { return res; }
 
-        //public byte Flags1
-        //{
-        //    get => (byte)((Data1 >> 24) & 0xFFu);
-        //    set => Data1 = ((Data1 & 0xFFFFFFu) | ((value & 0xFFu) << 24));
-        //}
-
-        //public byte Flags2
-        //{
-        //    get => (byte)((Data2 >> 24) & 0xFFu);
-        //    set => Data2 = ((Data2 & 0xFFFFFFu) | ((value & 0xFFu) << 24));
-        //}
-
-        public EBoundMaterialFlags Flags
-        {
-            get => (EBoundMaterialFlags)(((Data1 >> 24) & 0xFFu) | ((Data2 & 0xFFu) << 8));
-            set
+            var q = BVH.Quantum.XYZ();
+            var c = BVH.BoundingBoxCenter.XYZ();
+            for (int t = 0; t < BVH.Trees.data_items.Length; t++)
             {
-                Data1 = (Data1 & 0x00FFFFFFu) | (((ushort)value & 0x00FFu) << 24);
-                Data2 = (Data2 & 0xFFFFFF00u) | (((ushort)value & 0xFF00u) >> 8);
+                var tree = BVH.Trees.data_items[t];
+                box.Minimum = new Vector3(tree.MinX, tree.MinY, tree.MinZ) * q + c;
+                box.Maximum = new Vector3(tree.MaxX, tree.MaxY, tree.MaxZ) * q + c;
+                if (!sph.Intersects(ref box))
+                { continue; }
+
+                int nodeind = tree.NodeIndex1;
+                int lastind = tree.NodeIndex2;
+                while (nodeind < lastind)
+                {
+                    var node = BVH.Nodes.data_items[nodeind];
+                    box.Minimum = new Vector3(node.MinX, node.MinY, node.MinZ) * q + c;
+                    box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
+                    bool nodehit = sph.Intersects(ref box);
+                    bool nodeskip = !nodehit;
+                    if (node.ItemCount <= 0) //intermediate node with child nodes
+                    {
+                        if (nodeskip)
+                        {
+                            nodeind += node.ItemId; //(child node count)
+                        }
+                        else
+                        {
+                            nodeind++;
+                        }
+                    }
+                    else //leaf node, with polygons
+                    {
+                        if (!nodeskip)
+                        {
+                            var lastp = Math.Min(node.ItemId + node.ItemCount, (int)PolygonsCount);
+
+                            SphereIntersectPolygons(ref sph, ref res, node.ItemId, lastp);
+
+                        }
+                        nodeind++;
+                    }
+                    res.TestedNodeCount++;
+                }
             }
+
+            return res;
         }
 
-        public byte MaterialColorIndex
+        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue)
         {
-            get => (byte)((Data2 >> 8) & 0xFFu);
-            set => Data2 = ((Data2 & 0xFFFF00FFu) | (value & 0xFFu));
+            var res = new SpaceRayIntersectResult();
+            var box = new BoundingBox();
+
+            if (Polygons == null)
+            { return res; }
+            if ((BVH?.Nodes?.data_items == null) || (BVH?.Trees?.data_items == null))
+            { return res; }
+
+            box.Minimum = BoxMin;
+            box.Maximum = BoxMax;
+            float bvhboxhittest;
+            if (!ray.Intersects(ref box, out bvhboxhittest))
+            { return res; }
+            if (bvhboxhittest > maxdist)
+            { return res; } //already a closer hit.
+
+            res.HitDist = maxdist;
+
+            var q = BVH.Quantum.XYZ();
+            var c = BVH.BoundingBoxCenter.XYZ();
+            for (int t = 0; t < BVH.Trees.data_items.Length; t++)
+            {
+                var tree = BVH.Trees.data_items[t];
+                box.Minimum = new Vector3(tree.MinX, tree.MinY, tree.MinZ) * q + c;
+                box.Maximum = new Vector3(tree.MaxX, tree.MaxY, tree.MaxZ) * q + c;
+                if (!ray.Intersects(ref box, out bvhboxhittest))
+                { continue; }
+                if (bvhboxhittest > res.HitDist)
+                { continue; } //already a closer hit.
+
+                int nodeind = tree.NodeIndex1;
+                int lastind = tree.NodeIndex2;
+                while (nodeind < lastind)
+                {
+                    var node = BVH.Nodes.data_items[nodeind];
+                    box.Minimum = new Vector3(node.MinX, node.MinY, node.MinZ) * q + c;
+                    box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
+                    bool nodehit = ray.Intersects(ref box, out bvhboxhittest);
+                    bool nodeskip = !nodehit || (bvhboxhittest > res.HitDist);
+                    if (node.ItemCount <= 0) //intermediate node with child nodes
+                    {
+                        if (nodeskip)
+                        {
+                            nodeind += node.ItemId; //(child node count)
+                        }
+                        else
+                        {
+                            nodeind++;
+                        }
+                    }
+                    else //leaf node, with polygons
+                    {
+                        if (!nodeskip)
+                        {
+                            var lastp = Math.Min(node.ItemId + node.ItemCount, (int)PolygonsCount);
+
+                            RayIntersectPolygons(ref ray, ref res, node.ItemId, lastp);
+
+                        }
+                        nodeind++;
+                    }
+                    res.TestedNodeCount++;
+                }
+            }
+
+            return res;
         }
 
-        public ushort Unk4
-        {
-            get => (ushort)((Data2 >> 16) & 0xFFFFu);
-            set => Data2 = ((Data2 & 0x0000FFFFu) | ((value & 0xFFFFu) << 16));
-        }
-
-        public override string ToString()
-        {
-            return Data1.ToString() + ", " + Data2.ToString() + ", "
-                + Type.ToString() + ", " + ProceduralId.ToString() + ", " + RoomId.ToString() + ", " + PedDensity.ToString() + ", "
-                + Flags.ToString() + ", " + MaterialColorIndex.ToString() + ", " + Unk4.ToString();
-        }
-
-        #endregion
     }
-
-    [Flags] public enum EBoundMaterialFlags : ushort
+    [TC(typeof(EXP))] public class BoundComposite : Bounds
     {
-        NONE = 0,
-        FLAG_STAIRS = 1,
-        FLAG_NOT_CLIMBABLE = 1 << 1,
-        FLAG_SEE_THROUGH = 1 << 2,
-        FLAG_SHOOT_THROUGH = 1 << 3,
-        FLAG_NOT_COVER = 1 << 4,
-        FLAG_WALKABLE_PATH = 1 << 5,
-        FLAG_NO_CAM_COLLISION = 1 << 6,
-        FLAG_SHOOT_THROUGH_FX = 1 << 7,
-        FLAG_NO_DECAL = 1 << 8,
-        FLAG_NO_NAVMESH = 1 << 9,
-        FLAG_NO_RAGDOLL = 1 << 10,
-        FLAG_VEHICLE_WHEEL = 1 << 11,
-        FLAG_NO_PTFX = 1 << 12,
-        FLAG_TOO_STEEP_FOR_PLAYER = 1 << 13,
-        FLAG_NO_NETWORK_SPAWN = 1 << 14,
-        FLAG_NO_CAM_COLLISION_ALLOW_CLIPPING = 1 << 15,
+        public override long BlockLength
+        {
+            get { return 176; }
+        }
+
+        // structure data
+        public ulong ChildrenPointer { get; set; }
+        public ulong ChildrenTransformation1Pointer { get; set; }
+        public ulong ChildrenTransformation2Pointer { get; set; }
+        public ulong ChildrenBoundingBoxesPointer { get; set; }
+        public ulong ChildrenFlags1Pointer { get; set; }
+        public ulong ChildrenFlags2Pointer { get; set; }
+        public ushort ChildrenCount1 { get; set; }
+        public ushort ChildrenCount2 { get; set; }
+        public uint Unknown_A4h { get; set; } // 0x00000000
+        public ulong BVHPointer { get; set; }
+
+        // reference data
+        public ResourcePointerArray64<Bounds> Children { get; set; }
+        public Matrix[] ChildrenTransformation1 { get; set; }
+        public Matrix[] ChildrenTransformation2 { get; set; }
+        public AABB_s[] ChildrenBoundingBoxes { get; set; }
+        public BoundCompositeChildrenFlags[] ChildrenFlags1 { get; set; }
+        public BoundCompositeChildrenFlags[] ChildrenFlags2 { get; set; }
+
+        public BVH BVH { get; set; }
+
+
+        private ResourceSystemStructBlock<Matrix> ChildrenTransformation1Block = null;
+        private ResourceSystemStructBlock<Matrix> ChildrenTransformation2Block = null;
+        private ResourceSystemStructBlock<AABB_s> ChildrenBoundingBoxesBlock = null;
+        private ResourceSystemStructBlock<BoundCompositeChildrenFlags> ChildrenFlags1Block = null;
+        private ResourceSystemStructBlock<BoundCompositeChildrenFlags> ChildrenFlags2Block = null;
+
+
+        /// <summary>
+        /// Reads the data-block from a stream.
+        /// </summary>
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            base.Read(reader, parameters);
+
+            // read structure data
+            this.ChildrenPointer = reader.ReadUInt64();
+            this.ChildrenTransformation1Pointer = reader.ReadUInt64();
+            this.ChildrenTransformation2Pointer = reader.ReadUInt64();
+            this.ChildrenBoundingBoxesPointer = reader.ReadUInt64();
+            this.ChildrenFlags1Pointer = reader.ReadUInt64();
+            this.ChildrenFlags2Pointer = reader.ReadUInt64();
+            this.ChildrenCount1 = reader.ReadUInt16();
+            this.ChildrenCount2 = reader.ReadUInt16();
+            this.Unknown_A4h = reader.ReadUInt32();
+            this.BVHPointer = reader.ReadUInt64();
+
+            // read reference data
+            this.Children = reader.ReadBlockAt<ResourcePointerArray64<Bounds>>(
+                this.ChildrenPointer, // offset
+                this.ChildrenCount1
+            );
+
+            this.ChildrenTransformation1 = reader.ReadStructsAt<Matrix>(this.ChildrenTransformation1Pointer, this.ChildrenCount1);
+            this.ChildrenTransformation2 = reader.ReadStructsAt<Matrix>(this.ChildrenTransformation2Pointer, this.ChildrenCount1);
+            this.ChildrenBoundingBoxes = reader.ReadStructsAt<AABB_s>(this.ChildrenBoundingBoxesPointer, this.ChildrenCount1);
+            this.ChildrenFlags1 = reader.ReadStructsAt<BoundCompositeChildrenFlags>(this.ChildrenFlags1Pointer, this.ChildrenCount1);
+            this.ChildrenFlags2 = reader.ReadStructsAt<BoundCompositeChildrenFlags>(this.ChildrenFlags2Pointer, this.ChildrenCount1);
+
+            this.BVH = reader.ReadBlockAt<BVH>(
+                this.BVHPointer // offset
+            );
+
+
+
+
+            var childTransforms = ChildrenTransformation1 ?? ChildrenTransformation2;
+            if ((Children != null) && (Children.data_items != null))
+            {
+                for (int i = 0; i < Children.data_items.Length; i++)
+                {
+                    var child = Children.data_items[i];
+                    if (child != null)
+                    {
+                        child.Parent = this;
+
+                        var xform = ((childTransforms != null) && (i < childTransforms.Length)) ? childTransforms[i] : Matrix.Identity;
+                        xform.Column4 = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+                        child.Transform = xform;
+                        child.TransformInv = Matrix.Invert(xform);
+                    }
+                }
+            }
+            
+
+        }
+
+        /// <summary>
+        /// Writes the data-block to a stream.
+        /// </summary>
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            base.Write(writer, parameters);
+
+            // update structure data
+            this.ChildrenPointer = (ulong)(this.Children != null ? this.Children.FilePosition : 0);
+            this.ChildrenTransformation1Pointer = (ulong)(this.ChildrenTransformation1Block != null ? this.ChildrenTransformation1Block.FilePosition : 0);
+            this.ChildrenTransformation2Pointer = (ulong)(this.ChildrenTransformation2Block != null ? this.ChildrenTransformation2Block.FilePosition : 0);
+            this.ChildrenBoundingBoxesPointer = (ulong)(this.ChildrenBoundingBoxesBlock != null ? this.ChildrenBoundingBoxesBlock.FilePosition : 0);
+            this.ChildrenFlags1Pointer = (ulong)(this.ChildrenFlags1Block != null ? this.ChildrenFlags1Block.FilePosition : 0);
+            this.ChildrenFlags2Pointer = (ulong)(this.ChildrenFlags2Block != null ? this.ChildrenFlags2Block.FilePosition : 0);
+            this.ChildrenCount1 = (ushort)(this.Children != null ? this.Children.Count : 0);
+            this.ChildrenCount2 = (ushort)(this.Children != null ? this.Children.Count : 0);
+            this.BVHPointer = (ulong)(this.BVH != null ? this.BVH.FilePosition : 0);
+
+            // write structure data
+            writer.Write(this.ChildrenPointer);
+            writer.Write(this.ChildrenTransformation1Pointer);
+            writer.Write(this.ChildrenTransformation2Pointer);
+            writer.Write(this.ChildrenBoundingBoxesPointer);
+            writer.Write(this.ChildrenFlags1Pointer);
+            writer.Write(this.ChildrenFlags2Pointer);
+            writer.Write(this.ChildrenCount1);
+            writer.Write(this.ChildrenCount2);
+            writer.Write(this.Unknown_A4h);
+            writer.Write(this.BVHPointer);
+        }
+
+        /// <summary>
+        /// Returns a list of data blocks which are referenced by this block.
+        /// </summary>
+        public override IResourceBlock[] GetReferences()
+        {
+            var list = new List<IResourceBlock>(base.GetReferences());
+            if (Children != null) list.Add(Children);
+            if (ChildrenTransformation1 != null)
+            {
+                ChildrenTransformation1Block = new ResourceSystemStructBlock<Matrix>(ChildrenTransformation1);
+                list.Add(ChildrenTransformation1Block);
+            }
+            if (ChildrenTransformation2 != null)
+            {
+                ChildrenTransformation2Block = new ResourceSystemStructBlock<Matrix>(ChildrenTransformation2);
+                list.Add(ChildrenTransformation2Block);
+            }
+            if (ChildrenBoundingBoxes != null)
+            {
+                ChildrenBoundingBoxesBlock = new ResourceSystemStructBlock<AABB_s>(ChildrenBoundingBoxes);
+                list.Add(ChildrenBoundingBoxesBlock);
+            }
+            if (ChildrenFlags1 != null)
+            {
+                ChildrenFlags1Block = new ResourceSystemStructBlock<BoundCompositeChildrenFlags>(ChildrenFlags1);
+                list.Add(ChildrenFlags1Block);
+            }
+            if (ChildrenFlags2 != null)
+            {
+                ChildrenFlags2Block = new ResourceSystemStructBlock<BoundCompositeChildrenFlags>(ChildrenFlags2);
+                list.Add(ChildrenFlags2Block);
+            }
+            if (BVH != null) list.Add(BVH);
+            return list.ToArray();
+        }
+
+
+
+
+
+        public void BuildBVH()
+        {
+
+        }
+
+
+
+
+        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
+        {
+            var res = new SpaceSphereIntersectResult();
+            var tsph = sph;
+
+            var compchilds = Children?.data_items;
+            if (compchilds == null)
+            { return res; }
+
+            for (int i = 0; i < compchilds.Length; i++)
+            {
+                var c = compchilds[i];
+                if (c == null) continue;
+
+                tsph.Center = c.TransformInv.Multiply(sph.Center);
+
+                var chit = c.SphereIntersect(ref tsph);
+
+                chit.Normal = c.Transform.MultiplyRot(chit.Normal);
+
+                res.TryUpdate(ref chit);
+            }
+
+            return res;
+        }
+
+        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue)
+        {
+            var res = new SpaceRayIntersectResult();
+            res.HitDist = maxdist;
+
+            var tray = ray;
+
+            var compchilds = Children?.data_items;
+            if (compchilds == null)
+            { return res; }
+
+            for (int i = 0; i < compchilds.Length; i++)
+            {
+                var c = compchilds[i];
+                if (c == null) continue;
+
+                tray.Position = c.TransformInv.Multiply(ray.Position);
+                tray.Direction = c.TransformInv.MultiplyRot(ray.Direction);
+
+                var chit = c.RayIntersect(ref tray, res.HitDist);
+
+                chit.Position = c.Transform.Multiply(chit.Position);
+                chit.Normal = c.Transform.MultiplyRot(chit.Normal);
+
+                res.TryUpdate(ref chit);
+            }
+
+            return res;
+        }
+
     }
 
-    [TC(typeof(EXP))] public struct BoundMaterialColour
-    {
-        //public BoundsMaterialType Type { get; set; }
-        public byte R { get; set; }
-        public byte G { get; set; }
-        public byte B { get; set; }
-        public byte A { get; set; } //GIMS EVO saves this as "opacity" 0-100
-        public override string ToString()
-        {
-            //return Type.ToString() + ", " + Unk0.ToString() + ", " + Unk1.ToString() + ", " + Unk2.ToString();
-            return R.ToString() + ", " + G.ToString() + ", " + B.ToString() + ", " + A.ToString();
-        }
-    }
-    [TC(typeof(EXP))] public struct BoundVertex_s
-    {
-        public short X { get; set; }
-        public short Y { get; set; }
-        public short Z { get; set; }
 
-        public BoundVertex_s(Vector3 v)
-        {
-            X = (short)v.X;
-            Y = (short)v.Y;
-            Z = (short)v.Z;
-        }
-    }
+
 
     public enum BoundPolygonType : byte
     {
@@ -1407,12 +1869,35 @@ namespace CodeWalker.GameFiles
     {
         public BoundPolygonType Type { get; set; }
         public BoundGeometry Owner { get; set; } //for browsing/editing convenience
+        public BoundMaterial_s Material
+        {
+            get
+            {
+                var matind = 0;
+                if ((Owner?.PolygonMaterialIndices != null) && (Index < Owner.PolygonMaterialIndices.Length))
+                {
+                    matind = Owner.PolygonMaterialIndices[Index];
+                }
+                if ((Owner.Materials != null) && (matind < Owner.Materials.Length))
+                {
+                    return Owner.Materials[matind];
+                }
+                return new BoundMaterial_s();
+            }
+        }
         public int Index { get; set; } //for editing convenience, not stored
         public abstract Vector3 Scale { get; set; }
         public abstract Vector3 Position { get; set; }
         public abstract Quaternion Orientation { get; set; }
         public abstract void Read(byte[] bytes, int offset);
         public abstract void Write(BinaryWriter bw);
+        public virtual string Title
+        {
+            get
+            {
+                return Type.ToString() + " " + Index.ToString();
+            }
+        }
         public override string ToString()
         {
             return Type.ToString();
@@ -1428,12 +1913,12 @@ namespace CodeWalker.GameFiles
         public short edgeIndex2 { get; set; }
         public short edgeIndex3 { get; set; }
 
-        public int vertIndex1 { get { return triIndex1 & 0x7FFF; } }
-        public int vertIndex2 { get { return triIndex2 & 0x7FFF; } }
-        public int vertIndex3 { get { return triIndex3 & 0x7FFF; } }
-        public bool vertFlag1 { get { return (triIndex1 & 0x8000) > 0; } }
-        public bool vertFlag2 { get { return (triIndex2 & 0x8000) > 0; } }
-        public bool vertFlag3 { get { return (triIndex3 & 0x8000) > 0; } }
+        public int vertIndex1 { get { return (triIndex1 & 0x7FFF); } }
+        public int vertIndex2 { get { return (triIndex2 & 0x7FFF); } }
+        public int vertIndex3 { get { return (triIndex3 & 0x7FFF); } }
+        public bool vertFlag1 { get { return (triIndex1 & 0x8000) > 0; } set { triIndex1 = (ushort)(vertIndex1 + (value ? 0x8000 : 0)); } }
+        public bool vertFlag2 { get { return (triIndex2 & 0x8000) > 0; } set { triIndex2 = (ushort)(vertIndex2 + (value ? 0x8000 : 0)); } }
+        public bool vertFlag3 { get { return (triIndex3 & 0x8000) > 0; } set { triIndex3 = (ushort)(vertIndex3 + (value ? 0x8000 : 0)); } }
 
         public Vector3 Vertex1
         {
@@ -1830,463 +2315,94 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public class BoundBVH : BoundGeometry
+    [TC(typeof(EXP))] public struct BoundVertex_s
     {
+        public short X { get; set; }
+        public short Y { get; set; }
+        public short Z { get; set; }
+
+        public BoundVertex_s(Vector3 v)
+        {
+            X = (short)v.X;
+            Y = (short)v.Y;
+            Z = (short)v.Z;
+        }
+    }
+
+    [TC(typeof(EXP))] public class BoundGeomUnknown1 : ResourceSystemBlock
+    {
+        public uint[][] Items { get; private set; }
+
+        private ResourceSystemStructBlock<uint>[] ItemBlocks = null;
+
+
         public override long BlockLength
         {
-            get { return 336; }
+            get
+            {
+                return Items != null ? (Items.Length*8) : 0; //main pointer array has 8 items, 8 bytes each
+            }
         }
 
-        // structure data
-        public ulong BvhPointer { get; set; }
-        public uint Unknown_138h { get; set; } // 0x00000000
-        public uint Unknown_13Ch { get; set; } // 0x00000000
-        public ushort Unknown_140h { get; set; } // 0xFFFF
-        public ushort Unknown_142h { get; set; } // 0x0000
-        public uint Unknown_144h { get; set; } // 0x00000000
-        public uint Unknown_148h { get; set; } // 0x00000000
-        public uint Unknown_14Ch { get; set; } // 0x00000000
+        public BoundGeomUnknown1() { }
+        public BoundGeomUnknown1(uint[][] items)
+        {
+            Items = items;
+        }
 
-        // reference data
-        public BVH BVH { get; set; }
-
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            base.Read(reader, parameters);
+            if (parameters?.Length < 1)
+            { return; } //shouldn't happen!
 
-            // read structure data
-            this.BvhPointer = reader.ReadUInt64();
-            this.Unknown_138h = reader.ReadUInt32();
-            this.Unknown_13Ch = reader.ReadUInt32();
-            this.Unknown_140h = reader.ReadUInt16();
-            this.Unknown_142h = reader.ReadUInt16();
-            this.Unknown_144h = reader.ReadUInt32();
-            this.Unknown_148h = reader.ReadUInt32();
-            this.Unknown_14Ch = reader.ReadUInt32();
+            var itemcounts = (uint[])parameters[0];
+            ulong ptr = (ulong)reader.Position; //pointer array pointer
 
-            // read reference data
-            if (this.BvhPointer > 65535)
+            if (itemcounts != null)
             {
-                this.BVH = reader.ReadBlockAt<BVH>(
-                    this.BvhPointer // offset
-                );
-            }
-            else
-            {
-                //this can happen in some ydr's for some reason
+                ulong[] ptrlist = reader.ReadUlongsAt(ptr, (uint)itemcounts.Length);
+                Items = new uint[itemcounts.Length][];
+                for (int i = 0; i < itemcounts.Length; i++)
+                {
+                    Items[i] = reader.ReadUintsAt(ptrlist[i], itemcounts[i]);
+                }
             }
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            base.Write(writer, parameters);
 
-            // update structure data
-            this.BvhPointer = (ulong)(this.BVH != null ? this.BVH.FilePosition : 0);
-
-            // write structure data
-            writer.Write(this.BvhPointer);
-            writer.Write(this.Unknown_138h);
-            writer.Write(this.Unknown_13Ch);
-            writer.Write(this.Unknown_140h);
-            writer.Write(this.Unknown_142h);
-            writer.Write(this.Unknown_144h);
-            writer.Write(this.Unknown_148h);
-            writer.Write(this.Unknown_14Ch);
-        }
-
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
-        public override IResourceBlock[] GetReferences()
-        {
-            var list = new List<IResourceBlock>(base.GetReferences());
-            if (BVH != null) list.Add(BVH);
-            return list.ToArray();
-        }
-
-
-
-
-        public void BuildBVH()
-        {
-
-        }
-
-
-
-        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
-        {
-            var res = new SpaceSphereIntersectResult();
-            var box = new BoundingBox();
-
-            if (Polygons == null)
-            { return res; }
-            if ((BVH?.Nodes?.data_items == null) || (BVH?.Trees?.data_items == null))
-            { return res; }
-
-            box.Minimum = BoundingBoxMin;
-            box.Maximum = BoundingBoxMax;
-            if (!sph.Intersects(ref box))
-            { return res; }
-
-            var q = BVH.Quantum.XYZ();
-            var c = BVH.BoundingBoxCenter.XYZ();
-            for (int t = 0; t < BVH.Trees.data_items.Length; t++)
+            //just write the pointer array.
+            if (ItemBlocks != null)
             {
-                var tree = BVH.Trees.data_items[t];
-                box.Minimum = new Vector3(tree.MinX, tree.MinY, tree.MinZ) * q + c;
-                box.Maximum = new Vector3(tree.MaxX, tree.MaxY, tree.MaxZ) * q + c;
-                if (!sph.Intersects(ref box))
-                { continue; }
-
-                int nodeind = tree.NodeIndex1;
-                int lastind = tree.NodeIndex2;
-                while (nodeind < lastind)
+                foreach (var item in ItemBlocks)
                 {
-                    var node = BVH.Nodes.data_items[nodeind];
-                    box.Minimum = new Vector3(node.MinX, node.MinY, node.MinZ) * q + c;
-                    box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
-                    bool nodehit = sph.Intersects(ref box);
-                    bool nodeskip = !nodehit;
-                    if (node.ItemCount <= 0) //intermediate node with child nodes
-                    {
-                        if (nodeskip)
-                        {
-                            nodeind += node.ItemId; //(child node count)
-                        }
-                        else
-                        {
-                            nodeind++;
-                        }
-                    }
-                    else //leaf node, with polygons
-                    {
-                        if (!nodeskip)
-                        {
-                            var lastp = Math.Min(node.ItemId + node.ItemCount, (int)PolygonsCount);
-
-                            SphereIntersectPolygons(ref sph, ref res, node.ItemId, lastp);
-
-                        }
-                        nodeind++;
-                    }
-                    res.TestedNodeCount++;
-                }
-            }
-
-            return res;
-        }
-
-        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue)
-        {
-            var res = new SpaceRayIntersectResult();
-            var box = new BoundingBox();
-
-            if (Polygons == null)
-            { return res; }
-            if ((BVH?.Nodes?.data_items == null) || (BVH?.Trees?.data_items == null))
-            { return res; }
-
-            box.Minimum = BoundingBoxMin;
-            box.Maximum = BoundingBoxMax;
-            float bvhboxhittest;
-            if (!ray.Intersects(ref box, out bvhboxhittest))
-            { return res; }
-            if (bvhboxhittest > maxdist)
-            { return res; } //already a closer hit.
-
-            res.HitDist = maxdist;
-
-            var q = BVH.Quantum.XYZ();
-            var c = BVH.BoundingBoxCenter.XYZ();
-            for (int t = 0; t < BVH.Trees.data_items.Length; t++)
-            {
-                var tree = BVH.Trees.data_items[t];
-                box.Minimum = new Vector3(tree.MinX, tree.MinY, tree.MinZ) * q + c;
-                box.Maximum = new Vector3(tree.MaxX, tree.MaxY, tree.MaxZ) * q + c;
-                if (!ray.Intersects(ref box, out bvhboxhittest))
-                { continue; }
-                if (bvhboxhittest > res.HitDist)
-                { continue; } //already a closer hit.
-
-                int nodeind = tree.NodeIndex1;
-                int lastind = tree.NodeIndex2;
-                while (nodeind < lastind)
-                {
-                    var node = BVH.Nodes.data_items[nodeind];
-                    box.Minimum = new Vector3(node.MinX, node.MinY, node.MinZ) * q + c;
-                    box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
-                    bool nodehit = ray.Intersects(ref box, out bvhboxhittest);
-                    bool nodeskip = !nodehit || (bvhboxhittest > res.HitDist);
-                    if (node.ItemCount <= 0) //intermediate node with child nodes
-                    {
-                        if (nodeskip)
-                        {
-                            nodeind += node.ItemId; //(child node count)
-                        }
-                        else
-                        {
-                            nodeind++;
-                        }
-                    }
-                    else //leaf node, with polygons
-                    {
-                        if (!nodeskip)
-                        {
-                            var lastp = Math.Min(node.ItemId + node.ItemCount, (int)PolygonsCount);
-
-                            RayIntersectPolygons(ref ray, ref res, node.ItemId, lastp);
-
-                        }
-                        nodeind++;
-                    }
-                    res.TestedNodeCount++;
-                }
-            }
-
-            return res;
-        }
-
-    }
-    [TC(typeof(EXP))] public class BoundComposite : Bounds
-    {
-        public override long BlockLength
-        {
-            get { return 176; }
-        }
-
-        // structure data
-        public ulong ChildrenPointer { get; set; }
-        public ulong ChildrenTransformation1Pointer { get; set; }
-        public ulong ChildrenTransformation2Pointer { get; set; }
-        public ulong ChildrenBoundingBoxesPointer { get; set; }
-        public ulong ChildrenFlags1Pointer { get; set; }
-        public ulong ChildrenFlags2Pointer { get; set; }
-        public ushort ChildrenCount1 { get; set; }
-        public ushort ChildrenCount2 { get; set; }
-        public uint Unknown_A4h { get; set; } // 0x00000000
-        public ulong BVHPointer { get; set; }
-
-        // reference data
-        public ResourcePointerArray64<Bounds> Children { get; set; }
-        public Matrix[] ChildrenTransformation1 { get; set; }
-        public Matrix[] ChildrenTransformation2 { get; set; }
-        public AABB_s[] ChildrenBoundingBoxes { get; set; }
-        public BoundCompositeChildrenFlags[] ChildrenFlags1 { get; set; }
-        public BoundCompositeChildrenFlags[] ChildrenFlags2 { get; set; }
-
-        public BVH BVH { get; set; }
-
-
-        private ResourceSystemStructBlock<Matrix> ChildrenTransformation1Block = null;
-        private ResourceSystemStructBlock<Matrix> ChildrenTransformation2Block = null;
-        private ResourceSystemStructBlock<AABB_s> ChildrenBoundingBoxesBlock = null;
-        private ResourceSystemStructBlock<BoundCompositeChildrenFlags> ChildrenFlags1Block = null;
-        private ResourceSystemStructBlock<BoundCompositeChildrenFlags> ChildrenFlags2Block = null;
-
-
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
-        public override void Read(ResourceDataReader reader, params object[] parameters)
-        {
-            base.Read(reader, parameters);
-
-            // read structure data
-            this.ChildrenPointer = reader.ReadUInt64();
-            this.ChildrenTransformation1Pointer = reader.ReadUInt64();
-            this.ChildrenTransformation2Pointer = reader.ReadUInt64();
-            this.ChildrenBoundingBoxesPointer = reader.ReadUInt64();
-            this.ChildrenFlags1Pointer = reader.ReadUInt64();
-            this.ChildrenFlags2Pointer = reader.ReadUInt64();
-            this.ChildrenCount1 = reader.ReadUInt16();
-            this.ChildrenCount2 = reader.ReadUInt16();
-            this.Unknown_A4h = reader.ReadUInt32();
-            this.BVHPointer = reader.ReadUInt64();
-
-            // read reference data
-            this.Children = reader.ReadBlockAt<ResourcePointerArray64<Bounds>>(
-                this.ChildrenPointer, // offset
-                this.ChildrenCount1
-            );
-
-            this.ChildrenTransformation1 = reader.ReadStructsAt<Matrix>(this.ChildrenTransformation1Pointer, this.ChildrenCount1);
-            this.ChildrenTransformation2 = reader.ReadStructsAt<Matrix>(this.ChildrenTransformation2Pointer, this.ChildrenCount1);
-            this.ChildrenBoundingBoxes = reader.ReadStructsAt<AABB_s>(this.ChildrenBoundingBoxesPointer, this.ChildrenCount1);
-            this.ChildrenFlags1 = reader.ReadStructsAt<BoundCompositeChildrenFlags>(this.ChildrenFlags1Pointer, this.ChildrenCount1);
-            this.ChildrenFlags2 = reader.ReadStructsAt<BoundCompositeChildrenFlags>(this.ChildrenFlags2Pointer, this.ChildrenCount1);
-
-            this.BVH = reader.ReadBlockAt<BVH>(
-                this.BVHPointer // offset
-            );
-
-
-
-
-            var childTransforms = ChildrenTransformation1 ?? ChildrenTransformation2;
-            if ((Children != null) && (Children.data_items != null))
-            {
-                for (int i = 0; i < Children.data_items.Length; i++)
-                {
-                    var child = Children.data_items[i];
-                    if (child != null)
-                    {
-                        child.Parent = this;
-
-                        var xform = ((childTransforms != null) && (i < childTransforms.Length)) ? childTransforms[i] : Matrix.Identity;
-                        xform.Column4 = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
-                        child.Transform = xform;
-                        child.TransformInv = Matrix.Invert(xform);
-                    }
+                    writer.Write((ulong)item.FilePosition);
                 }
             }
             
-
         }
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
-        {
-            base.Write(writer, parameters);
-
-            // update structure data
-            this.ChildrenPointer = (ulong)(this.Children != null ? this.Children.FilePosition : 0);
-            this.ChildrenTransformation1Pointer = (ulong)(this.ChildrenTransformation1Block != null ? this.ChildrenTransformation1Block.FilePosition : 0);
-            this.ChildrenTransformation2Pointer = (ulong)(this.ChildrenTransformation2Block != null ? this.ChildrenTransformation2Block.FilePosition : 0);
-            this.ChildrenBoundingBoxesPointer = (ulong)(this.ChildrenBoundingBoxesBlock != null ? this.ChildrenBoundingBoxesBlock.FilePosition : 0);
-            this.ChildrenFlags1Pointer = (ulong)(this.ChildrenFlags1Block != null ? this.ChildrenFlags1Block.FilePosition : 0);
-            this.ChildrenFlags2Pointer = (ulong)(this.ChildrenFlags2Block != null ? this.ChildrenFlags2Block.FilePosition : 0);
-            this.ChildrenCount1 = (ushort)(this.Children != null ? this.Children.Count : 0);
-            this.ChildrenCount2 = (ushort)(this.Children != null ? this.Children.Count : 0);
-            this.BVHPointer = (ulong)(this.BVH != null ? this.BVH.FilePosition : 0);
-
-            // write structure data
-            writer.Write(this.ChildrenPointer);
-            writer.Write(this.ChildrenTransformation1Pointer);
-            writer.Write(this.ChildrenTransformation2Pointer);
-            writer.Write(this.ChildrenBoundingBoxesPointer);
-            writer.Write(this.ChildrenFlags1Pointer);
-            writer.Write(this.ChildrenFlags2Pointer);
-            writer.Write(this.ChildrenCount1);
-            writer.Write(this.ChildrenCount2);
-            writer.Write(this.Unknown_A4h);
-            writer.Write(this.BVHPointer);
-        }
-
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
-            if (Children != null) list.Add(Children);
-            if (ChildrenTransformation1 != null)
+
+            var ilist = new List<ResourceSystemStructBlock<uint>>();
+            if (Items != null)
             {
-                ChildrenTransformation1Block = new ResourceSystemStructBlock<Matrix>(ChildrenTransformation1);
-                list.Add(ChildrenTransformation1Block);
+                foreach (var item in Items)
+                {
+                    var block = new ResourceSystemStructBlock<uint>(item);
+                    ilist.Add(block);
+                    list.Add(block);
+                }
             }
-            if (ChildrenTransformation2 != null)
-            {
-                ChildrenTransformation2Block = new ResourceSystemStructBlock<Matrix>(ChildrenTransformation2);
-                list.Add(ChildrenTransformation2Block);
-            }
-            if (ChildrenBoundingBoxes != null)
-            {
-                ChildrenBoundingBoxesBlock = new ResourceSystemStructBlock<AABB_s>(ChildrenBoundingBoxes);
-                list.Add(ChildrenBoundingBoxesBlock);
-            }
-            if (ChildrenFlags1 != null)
-            {
-                ChildrenFlags1Block = new ResourceSystemStructBlock<BoundCompositeChildrenFlags>(ChildrenFlags1);
-                list.Add(ChildrenFlags1Block);
-            }
-            if (ChildrenFlags2 != null)
-            {
-                ChildrenFlags2Block = new ResourceSystemStructBlock<BoundCompositeChildrenFlags>(ChildrenFlags2);
-                list.Add(ChildrenFlags2Block);
-            }
-            if (BVH != null) list.Add(BVH);
+            ItemBlocks = ilist.ToArray();
+
             return list.ToArray();
         }
-
-
-
-
-
-        public void BuildBVH()
-        {
-
-        }
-
-
-
-
-        public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
-        {
-            var res = new SpaceSphereIntersectResult();
-            var tsph = sph;
-
-            var compchilds = Children?.data_items;
-            if (compchilds == null)
-            { return res; }
-
-            for (int i = 0; i < compchilds.Length; i++)
-            {
-                var c = compchilds[i];
-                if (c == null) continue;
-
-                tsph.Center = c.TransformInv.Multiply(sph.Center);
-
-                var chit = c.SphereIntersect(ref tsph);
-
-                chit.Normal = c.Transform.MultiplyRot(chit.Normal);
-
-                res.TryUpdate(ref chit);
-            }
-
-            return res;
-        }
-
-        public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue)
-        {
-            var res = new SpaceRayIntersectResult();
-            res.HitDist = maxdist;
-
-            var tray = ray;
-
-            var compchilds = Children?.data_items;
-            if (compchilds == null)
-            { return res; }
-
-            for (int i = 0; i < compchilds.Length; i++)
-            {
-                var c = compchilds[i];
-                if (c == null) continue;
-
-                tray.Position = c.TransformInv.Multiply(ray.Position);
-                tray.Direction = c.TransformInv.MultiplyRot(ray.Direction);
-
-                var chit = c.RayIntersect(ref tray, res.HitDist);
-
-                chit.Position = c.Transform.Multiply(chit.Position);
-                chit.Normal = c.Transform.MultiplyRot(chit.Normal);
-
-                res.TryUpdate(ref chit);
-            }
-
-            return res;
-        }
-
     }
+
 
     [Flags] public enum EBoundCompositeFlags
     {
@@ -2324,7 +2440,6 @@ namespace CodeWalker.GameFiles
         MAP_STAIRS = 1 << 30,
         MAP_DEEP_SURFACE = 1 << 31,
     }
-
     [TC(typeof(EXP))] public struct BoundCompositeChildrenFlags
     {
         public EBoundCompositeFlags Flags1 { get; set; }
@@ -2334,6 +2449,7 @@ namespace CodeWalker.GameFiles
             return Flags1.ToString() + ", " + Flags2.ToString();
         }
     }
+
 
 
     [TC(typeof(EXP))] public class BVH : ResourceSystemBlock
@@ -2451,6 +2567,115 @@ namespace CodeWalker.GameFiles
 
 
 
+
+    [Flags] public enum EBoundMaterialFlags : ushort
+    {
+        NONE = 0,
+        FLAG_STAIRS = 1,
+        FLAG_NOT_CLIMBABLE = 1 << 1,
+        FLAG_SEE_THROUGH = 1 << 2,
+        FLAG_SHOOT_THROUGH = 1 << 3,
+        FLAG_NOT_COVER = 1 << 4,
+        FLAG_WALKABLE_PATH = 1 << 5,
+        FLAG_NO_CAM_COLLISION = 1 << 6,
+        FLAG_SHOOT_THROUGH_FX = 1 << 7,
+        FLAG_NO_DECAL = 1 << 8,
+        FLAG_NO_NAVMESH = 1 << 9,
+        FLAG_NO_RAGDOLL = 1 << 10,
+        FLAG_VEHICLE_WHEEL = 1 << 11,
+        FLAG_NO_PTFX = 1 << 12,
+        FLAG_TOO_STEEP_FOR_PLAYER = 1 << 13,
+        FLAG_NO_NETWORK_SPAWN = 1 << 14,
+        FLAG_NO_CAM_COLLISION_ALLOW_CLIPPING = 1 << 15,
+    }
+    [TC(typeof(EXP))] public struct BoundMaterial_s
+    {
+
+        public uint Data1;
+        public uint Data2;
+
+        #region Public Properties
+
+        public BoundsMaterialType Type
+        {
+            get => (BoundsMaterialType)(Data1 & 0xFFu);
+            set => Data1 = ((Data1 & 0xFFFFFF00u) | ((byte)value & 0xFFu));
+        }
+
+        public byte ProceduralId
+        {
+            get => (byte)((Data1 >> 8) & 0xFFu);
+            set => Data1 = ((Data1 & 0xFFFF00FFu) | ((value & 0xFFu) << 8));
+        }
+
+        public byte RoomId
+        {
+            get => (byte)((Data1 >> 16) & 0x1Fu);
+            set => Data1 = ((Data1 & 0xFFE0FFFFu) | ((value & 0x1Fu) << 16));
+        }
+
+        public byte PedDensity
+        {
+            get => (byte)((Data1 >> 21) & 0x7u);
+            set => Data1 = ((Data1 & 0xFF1FFFFFu) | ((value & 0x7u) << 21));
+        }
+
+        //public byte Flags1
+        //{
+        //    get => (byte)((Data1 >> 24) & 0xFFu);
+        //    set => Data1 = ((Data1 & 0xFFFFFFu) | ((value & 0xFFu) << 24));
+        //}
+
+        //public byte Flags2
+        //{
+        //    get => (byte)((Data2 >> 24) & 0xFFu);
+        //    set => Data2 = ((Data2 & 0xFFFFFFu) | ((value & 0xFFu) << 24));
+        //}
+
+        public EBoundMaterialFlags Flags
+        {
+            get => (EBoundMaterialFlags)(((Data1 >> 24) & 0xFFu) | ((Data2 & 0xFFu) << 8));
+            set
+            {
+                Data1 = (Data1 & 0x00FFFFFFu) | (((ushort)value & 0x00FFu) << 24);
+                Data2 = (Data2 & 0xFFFFFF00u) | (((ushort)value & 0xFF00u) >> 8);
+            }
+        }
+
+        public byte MaterialColorIndex
+        {
+            get => (byte)((Data2 >> 8) & 0xFFu);
+            set => Data2 = ((Data2 & 0xFFFF00FFu) | (value & 0xFFu));
+        }
+
+        public ushort Unk4
+        {
+            get => (ushort)((Data2 >> 16) & 0xFFFFu);
+            set => Data2 = ((Data2 & 0x0000FFFFu) | ((value & 0xFFFFu) << 16));
+        }
+
+        public override string ToString()
+        {
+            return Data1.ToString() + ", " + Data2.ToString() + ", "
+                + Type.ToString() + ", " + ProceduralId.ToString() + ", " + RoomId.ToString() + ", " + PedDensity.ToString() + ", "
+                + Flags.ToString() + ", " + MaterialColorIndex.ToString() + ", " + Unk4.ToString();
+        }
+
+        #endregion
+    }
+    [TC(typeof(EXP))] public struct BoundMaterialColour
+    {
+        //public BoundsMaterialType Type { get; set; }
+        public byte R { get; set; }
+        public byte G { get; set; }
+        public byte B { get; set; }
+        public byte A { get; set; } //GIMS EVO saves this as "opacity" 0-100
+        public override string ToString()
+        {
+            //return Type.ToString() + ", " + Unk0.ToString() + ", " + Unk1.ToString() + ", " + Unk2.ToString();
+            return R.ToString() + ", " + G.ToString() + ", " + B.ToString() + ", " + A.ToString();
+        }
+    }
     [TC(typeof(EXP))] public struct BoundsMaterialType
     {
         public byte Index { get; set; }
@@ -2478,7 +2703,6 @@ namespace CodeWalker.GameFiles
             return new BoundsMaterialType() { Index = b };
         }
     }
-
     [TC(typeof(EXP))] public class BoundsMaterialData
     {
         public string Name { get; set; }
@@ -2516,7 +2740,7 @@ namespace CodeWalker.GameFiles
     public static class BoundsMaterialTypes
     {
         private static Dictionary<string, Color> ColourDict;
-        private static List<BoundsMaterialData> Materials;
+        public static List<BoundsMaterialData> Materials;
 
         public static void Init(GameFileCache gameFileCache)
         {

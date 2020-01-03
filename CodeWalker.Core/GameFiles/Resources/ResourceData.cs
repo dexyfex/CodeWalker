@@ -46,6 +46,8 @@ namespace CodeWalker.GameFiles
         private Stream systemStream;
         private Stream graphicsStream;
 
+        public RpfResourceFileEntry FileEntry { get; set; }
+
         // this is a dictionary that contains all the resource blocks
         // which were read from this resource reader
         private Dictionary<long, List<IResourceBlock>> blockPool;
@@ -84,6 +86,7 @@ namespace CodeWalker.GameFiles
         public ResourceDataReader(RpfResourceFileEntry resentry, byte[] data, Endianess endianess = Endianess.LittleEndian)
             : base((Stream)null, endianess)
         {
+            FileEntry = resentry;
             var systemSize = resentry.SystemSize;
             var graphicsSize = resentry.GraphicsSize;
 

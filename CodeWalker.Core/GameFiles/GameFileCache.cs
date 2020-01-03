@@ -3171,9 +3171,9 @@ namespace CodeWalker.GameFiles
         }
         public void TestYcds()
         {
+            bool savetest = false;
             var errorfiles = new List<YcdFile>();
             var errorentries = new List<RpfEntry>();
-
             foreach (RpfFile file in AllRpfs)
             {
                 foreach (RpfEntry entry in file.AllEntries)
@@ -3192,16 +3192,12 @@ namespace CodeWalker.GameFiles
                         {
                             errorfiles.Add(ycd1);//these ones have file corruption issues and won't load as resource...
                         }
-                        else
+                        else if (savetest)
                         {
                             if (ycd1.ClipDictionary == null)
                             { continue; }
 
                             //var data1 = ycd1.Save();
-
-                            var t = true;
-                            if (t)//just here to test loading only
-                            { continue; }
 
                             var xml = YcdXml.GetXml(ycd1);
                             var ycdX = XmlYcd.GetYcd(xml);
@@ -3444,6 +3440,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYtds()
         {
+            bool savetest = false;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {
@@ -3464,7 +3461,7 @@ namespace CodeWalker.GameFiles
                                 UpdateStatus("Error! " + ex.ToString());
                                 errorfiles.Add(entry);
                             }
-                            if ((ytdfile != null) && (ytdfile.TextureDict != null))
+                            if (savetest && (ytdfile != null) && (ytdfile.TextureDict != null))
                             {
                                 var fentry = entry as RpfFileEntry;
                                 if (fentry == null)
@@ -3519,6 +3516,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYbns()
         {
+            bool savetest = false;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {
@@ -3539,7 +3537,7 @@ namespace CodeWalker.GameFiles
                                 UpdateStatus("Error! " + ex.ToString());
                                 errorfiles.Add(entry);
                             }
-                            if ((ybn != null) && (ybn.Bounds != null))
+                            if (savetest && (ybn != null) && (ybn.Bounds != null))
                             {
                                 var fentry = entry as RpfFileEntry;
                                 if (fentry == null)
@@ -3562,7 +3560,7 @@ namespace CodeWalker.GameFiles
                                 //quick check of roundtrip
                                 switch (ybn2.Bounds.Type)
                                 {
-                                    case 0: //return new BoundSphere();
+                                    case BoundsType.Sphere:
                                         {
                                             var a = ybn.Bounds as BoundSphere;
                                             var b = ybn2.Bounds as BoundSphere;
@@ -3570,7 +3568,7 @@ namespace CodeWalker.GameFiles
                                             { continue; }
                                             break;
                                         }
-                                    case 1: //return new BoundCapsule();
+                                    case BoundsType.Capsule:
                                         {
                                             var a = ybn.Bounds as BoundCapsule;
                                             var b = ybn2.Bounds as BoundCapsule;
@@ -3578,7 +3576,7 @@ namespace CodeWalker.GameFiles
                                             { continue; }
                                             break;
                                         }
-                                    case 3: //return new BoundBox();
+                                    case BoundsType.Box:
                                         {
                                             var a = ybn.Bounds as BoundBox;
                                             var b = ybn2.Bounds as BoundBox;
@@ -3586,7 +3584,7 @@ namespace CodeWalker.GameFiles
                                             { continue; }
                                             break;
                                         }
-                                    case 4: //return new BoundGeometry();
+                                    case BoundsType.Geometry:
                                         {
                                             var a = ybn.Bounds as BoundGeometry;
                                             var b = ybn2.Bounds as BoundGeometry;
@@ -3603,7 +3601,7 @@ namespace CodeWalker.GameFiles
                                             }
                                             break;
                                         }
-                                    case 8: //return new BoundBVH();
+                                    case BoundsType.GeometryBVH:
                                         {
                                             var a = ybn.Bounds as BoundBVH;
                                             var b = ybn2.Bounds as BoundBVH;
@@ -3622,7 +3620,7 @@ namespace CodeWalker.GameFiles
                                             }
                                             break;
                                         }
-                                    case 10: //return new BoundComposite();
+                                    case BoundsType.Composite:
                                         {
                                             var a = ybn.Bounds as BoundComposite;
                                             var b = ybn2.Bounds as BoundComposite;
@@ -3632,7 +3630,7 @@ namespace CodeWalker.GameFiles
                                             { }
                                             break;
                                         }
-                                    case 12: //return new BoundDisc();
+                                    case BoundsType.Disc:
                                         {
                                             var a = ybn.Bounds as BoundDisc;
                                             var b = ybn2.Bounds as BoundDisc;
@@ -3640,7 +3638,7 @@ namespace CodeWalker.GameFiles
                                             { continue; }
                                             break;
                                         }
-                                    case 13: //return new BoundCylinder();
+                                    case BoundsType.Cylinder:
                                         {
                                             var a = ybn.Bounds as BoundCylinder;
                                             var b = ybn2.Bounds as BoundCylinder;
@@ -3648,7 +3646,14 @@ namespace CodeWalker.GameFiles
                                             { continue; }
                                             break;
                                         }
-                                    case 15: //return null; //TODO: find out what this is!
+                                    case BoundsType.Cloth:
+                                        {
+                                            var a = ybn.Bounds as BoundCloth;
+                                            var b = ybn2.Bounds as BoundCloth;
+                                            if (b == null)
+                                            { continue; }
+                                            break;
+                                        }
                                     default: //return null; // throw new Exception("Unknown bound type");
                                         break;
                                 }
@@ -3669,6 +3674,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYdrs()
         {
+            bool savetest = false;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {
@@ -3689,7 +3695,7 @@ namespace CodeWalker.GameFiles
                                 UpdateStatus("Error! " + ex.ToString());
                                 errorfiles.Add(entry);
                             }
-                            if ((ydr != null) && (ydr.Drawable != null))
+                            if (savetest && (ydr != null) && (ydr.Drawable != null))
                             {
                                 var fentry = entry as RpfFileEntry;
                                 if (fentry == null)
@@ -3722,6 +3728,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYdds()
         {
+            bool savetest = false;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {
@@ -3742,7 +3749,7 @@ namespace CodeWalker.GameFiles
                                 UpdateStatus("Error! " + ex.ToString());
                                 errorfiles.Add(entry);
                             }
-                            if ((ydd != null) && (ydd.DrawableDict != null))
+                            if (savetest && (ydd != null) && (ydd.DrawableDict != null))
                             {
                                 var fentry = entry as RpfFileEntry;
                                 if (fentry == null)
@@ -3776,8 +3783,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYfts()
         {
-            bool savetest = true;
-
+            bool savetest = false;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {
@@ -3798,13 +3804,11 @@ namespace CodeWalker.GameFiles
                                 UpdateStatus("Error! " + ex.ToString());
                                 errorfiles.Add(entry);
                             }
-                            if ((yft != null) && (yft.Fragment != null))
+                            if (savetest && (yft != null) && (yft.Fragment != null))
                             {
                                 var fentry = entry as RpfFileEntry;
                                 if (fentry == null)
                                 { continue; } //shouldn't happen
-
-                                if (!savetest) continue;
 
                                 var bytes = yft.Save();
 

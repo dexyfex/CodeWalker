@@ -11,6 +11,11 @@ namespace CodeWalker.GameFiles
     {
         public Bounds Bounds { get; set; }
 
+
+        //used by the editor:
+        public bool HasChanged { get; set; } = false;
+
+
         public YbnFile() : base(null, GameFileType.Ybn)
         {
         }
@@ -18,6 +23,14 @@ namespace CodeWalker.GameFiles
         {
         }
 
+        public void Load(byte[] data)
+        {
+            //direct load from a raw, compressed ybn file
+
+            RpfFile.LoadResourceFile(this, data, 43);
+
+            Loaded = true;
+        }
 
         public void Load(byte[] data, RpfFileEntry entry)
         {
@@ -36,6 +49,7 @@ namespace CodeWalker.GameFiles
 
             Bounds = rd.ReadBlock<Bounds>();
 
+            Bounds.OwnerYbn = this;
             Bounds.OwnerName = entry.Name;
 
             Loaded = true;

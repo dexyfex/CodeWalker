@@ -109,6 +109,7 @@ namespace CodeWalker
 
         bool rendercollisionmeshes = Settings.Default.ShowCollisionMeshes;
         List<BoundsStoreItem> collisionitems = new List<BoundsStoreItem>();
+        List<YbnFile> collisionybns = new List<YbnFile>();
         int collisionmeshrange = Settings.Default.CollisionMeshRange;
         bool[] collisionmeshlayers = { true, true, true };
 
@@ -738,14 +739,23 @@ namespace CodeWalker
             collisionitems.Clear();
             space.GetVisibleBounds(camera, collisionmeshrange, collisionmeshlayers, collisionitems);
 
-            if (ProjectForm != null)
-            {
-                ProjectForm.GetVisibleCollisionMeshes(camera, collisionitems);
-            }
-
+            collisionybns.Clear();
             foreach (var item in collisionitems)
             {
                 YbnFile ybn = gameFileCache.GetYbn(item.Name);
+                if ((ybn != null) && (ybn.Loaded))
+                {
+                    collisionybns.Add(ybn);
+                }
+            }
+
+            if (ProjectForm != null)
+            {
+                ProjectForm.GetVisibleYbns(camera, collisionybns);
+            }
+
+            foreach (var ybn in collisionybns)
+            {
                 if ((ybn != null) && (ybn.Loaded))
                 {
                     Renderer.RenderCollisionMesh(ybn.Bounds, null);
@@ -2293,7 +2303,7 @@ namespace CodeWalker
                     CurMouseHit.CamRel = camrel + orientation.Multiply(trans);
                     CurMouseHit.BBOffset = trans;
                     CurMouseHit.BBOrientation = MouseRayCollision.HitBounds?.Transform.ToQuaternion() ?? Quaternion.Identity;
-                    CurMouseHit.AABB = new BoundingBox(MouseRayCollision.HitBounds?.BoundingBoxMin ?? Vector3.Zero, MouseRayCollision.HitBounds?.BoundingBoxMax ?? Vector3.Zero);
+                    CurMouseHit.AABB = new BoundingBox(MouseRayCollision.HitBounds?.BoxMin ?? Vector3.Zero, MouseRayCollision.HitBounds?.BoxMax ?? Vector3.Zero);
                 }
             }
         }
@@ -3543,7 +3553,7 @@ namespace CodeWalker
                 MapSelection ms = new MapSelection();
                 ms.CollisionBounds = b;
 
-                ms.AABB = new BoundingBox(b.BoundingBoxMin, b.BoundingBoxMax);
+                ms.AABB = new BoundingBox(b.BoxMin, b.BoxMax);
 
                 SelectItem(ms);
             }

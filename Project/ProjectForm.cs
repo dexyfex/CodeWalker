@@ -72,12 +72,17 @@ namespace CodeWalker.Project
         private Dat151Interior CurrentAudioInterior;
         private Dat151InteriorRoom CurrentAudioInteriorRoom;
 
+        private YbnFile CurrentYbnFile;
+        private Bounds CurrentCollisionBounds;
+        private BoundPolygon CurrentCollisionPoly;
+
         private bool renderitems = true;
         private bool hidegtavmap = false;
 
         private object projectsyncroot = new object();
         public object ProjectSyncRoot { get { return projectsyncroot; } }
 
+        private Dictionary<string, YbnFile> visibleybns = new Dictionary<string, YbnFile>();
         private Dictionary<int, YndFile> visibleynds = new Dictionary<int, YndFile>();
         private Dictionary<int, YnvFile> visibleynvs = new Dictionary<int, YnvFile>();
         private Dictionary<string, TrainTrack> visibletrains = new Dictionary<string, TrainTrack>();
@@ -387,6 +392,27 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetArchetype(CurrentArchetype); }, //updateFunc
                 (panel) => { return panel.CurrentArchetype == CurrentArchetype; }); //findFunc
         }
+        public void ShowEditYbnPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYbnPanel(this); }, //createFunc
+                (panel) => { panel.SetYbn(CurrentYbnFile); }, //updateFunc
+                (panel) => { return panel.Ybn == CurrentYbnFile; }); //findFunc
+        }
+        public void ShowEditYbnBoundsPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYbnBoundsPanel(this); }, //createFunc
+                (panel) => { panel.SetCollisionBounds(CurrentCollisionBounds); }, //updateFunc
+                (panel) => { return panel.CollisionBounds == CurrentCollisionBounds; }); //findFunc
+        }
+        public void ShowEditYbnBoundPolyPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYbnBoundPolyPanel(this); }, //createFunc
+                (panel) => { panel.SetCollisionPoly(CurrentCollisionPoly); }, //updateFunc
+                (panel) => { return panel.CollisionPoly == CurrentCollisionPoly; }); //findFunc
+        }
         public void ShowEditYndPanel(bool promote)
         {
             ShowPanel(promote,
@@ -570,6 +596,18 @@ namespace CodeWalker.Project
             {
                 ShowEditYtypPanel(promote);
             }
+            else if (CurrentCollisionPoly != null)
+            {
+                ShowEditYbnBoundPolyPanel(promote);
+            }
+            else if (CurrentCollisionBounds != null)
+            {
+                ShowEditYbnBoundsPanel(promote);
+            }
+            else if (CurrentYbnFile != null)
+            {
+                ShowEditYbnPanel(promote);
+            }
             if (CurrentPathNode != null)
             {
                 ShowEditYndNodePanel(promote);
@@ -666,6 +704,9 @@ namespace CodeWalker.Project
             CurrentGrassBatch = item as YmapGrassInstanceBatch;
             CurrentYtypFile = item as YtypFile;
             CurrentArchetype = item as Archetype;
+            CurrentYbnFile = item as YbnFile;
+            CurrentCollisionBounds = item as Bounds;
+            CurrentCollisionPoly = item as BoundPolygon;
             CurrentYndFile = item as YndFile;
             CurrentPathNode = item as YndNode;
             CurrentYnvFile = item as YnvFile;
@@ -746,6 +787,14 @@ namespace CodeWalker.Project
             if (CurrentArchetype != null)
             {
                 CurrentYtypFile = CurrentEntity?.MloParent?.Archetype?.Ytyp ?? CurrentArchetype?.Ytyp;
+            }
+            if (CurrentCollisionPoly != null)
+            {
+                CurrentCollisionBounds = CurrentCollisionPoly.Owner;
+            }
+            if (CurrentCollisionBounds != null)
+            {
+                CurrentYbnFile = CurrentCollisionBounds.GetRootYbn();
             }
             if (CurrentPathNode != null)
             {
@@ -1092,6 +1141,19 @@ namespace CodeWalker.Project
                 }
             }
 
+            foreach (var ybn in CurrentProjectFile.YbnFiles)
+            {
+                if ((ybn != null) && (ybn.HasChanged))
+                {
+                    //save the current ybn first?
+                    if (MessageBox.Show("Would you like to save " + ybn.Name + " before closing?", "Save .ybn before closing?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        CurrentYbnFile = ybn;
+                        SaveYbn();
+                    }
+                }
+            }
+
             foreach (var ynd in CurrentProjectFile.YndFiles)
             {
                 if ((ynd != null) && (ynd.HasChanged))
@@ -1172,6 +1234,7 @@ namespace CodeWalker.Project
             CurrentProjectFile = null;
             CurrentYmapFile = null;
             CurrentYtypFile = null;
+            CurrentYbnFile = null;
             CurrentYndFile = null;
             CurrentYnvFile = null;
             CurrentTrainTrack = null;
@@ -1214,6 +1277,10 @@ namespace CodeWalker.Project
             else if (CurrentYtypFile != null)
             {
                 SaveYtyp();
+            }
+            else if (CurrentYbnFile != null)
+            {
+                SaveYbn();
             }
             else if (CurrentYndFile != null)
             {
@@ -1266,6 +1333,18 @@ namespace CodeWalker.Project
                     }
                     CurrentYtypFile = cytyp;
                     //ShowEditYtypPanel(false);
+                }
+
+                if (CurrentProjectFile.YbnFiles != null)
+                {
+                    var cybn = CurrentYbnFile;
+                    foreach (var ybn in CurrentProjectFile.YbnFiles)
+                    {
+                        CurrentYbnFile = ybn;
+                        SaveYbn();
+                    }
+                    CurrentYbnFile = cybn;
+                    //ShowEditYbnPanel(false);
                 }
 
                 if (CurrentProjectFile.YndFiles != null)
@@ -1341,6 +1420,10 @@ namespace CodeWalker.Project
             else if (CurrentYtypFile != null)
             {
                 SaveYtyp(saveas);
+            }
+            else if (CurrentYbnFile != null)
+            {
+                SaveYbn(saveas);
             }
             else if (CurrentYndFile != null)
             {
@@ -1488,7 +1571,7 @@ namespace CodeWalker.Project
 
                     if (!CurrentProjectFile.RenameYmap(origpath, newpath))
                     { //couldn't rename it in the project?
-                        MessageBox.Show("Couldn't rename ymap in project! This shouldn't happen - check the project file XML.");
+                        //MessageBox.Show("Couldn't rename ymap in project! This shouldn't happen - check the project file XML.");
                     }
                 }
                 SetProjectHasChanged(true);
@@ -2130,6 +2213,11 @@ namespace CodeWalker.Project
 
 
 
+
+
+
+
+
         public void NewYtyp()
         {
             if (CurrentProjectFile == null)
@@ -2250,7 +2338,7 @@ namespace CodeWalker.Project
 
                     if (!CurrentProjectFile.RenameYtyp(origpath, newpath))
                     { //couldn't rename it in the project?
-                        MessageBox.Show("Couldn't rename ytyp in project! This shouldn't happen - check the project file XML.");
+                        //MessageBox.Show("Couldn't rename ytyp in project! This shouldn't happen - check the project file XML.");
                     }
                 }
                 SetProjectHasChanged(true);
@@ -2780,6 +2868,192 @@ namespace CodeWalker.Project
         }
 
 
+
+
+
+
+
+        public void NewYbn()
+        {
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            if (CurrentProjectFile == null) return;
+
+            int testi = 1;
+            string fname = string.Empty;
+            bool filenameok = false;
+            while (!filenameok)
+            {
+                fname = "bounds" + testi.ToString() + ".ynd";
+                filenameok = !CurrentProjectFile.ContainsYbn(fname);
+                testi++;
+            }
+
+            lock (projectsyncroot)
+            {
+                YbnFile ybn = CurrentProjectFile.AddYbnFile(fname);
+                if (ybn != null)
+                {
+                    ybn.Loaded = true;
+                    ybn.HasChanged = true; //new ynd, flag as not saved
+
+                    //TODO: set new ybn default values...
+                    ybn.Bounds = new Bounds();
+                }
+            }
+
+            CurrentProjectFile.HasChanged = true;
+
+            LoadProjectTree();
+        }
+        public void OpenYbn()
+        {
+            string[] files = ShowOpenDialogMulti("Ybn files|*.ybn", string.Empty);
+            if (files == null)
+            {
+                return;
+            }
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            foreach (string file in files)
+            {
+                if (!File.Exists(file)) continue;
+
+                var ybn = CurrentProjectFile.AddYbnFile(file);
+
+                if (ybn != null)
+                {
+                    SetProjectHasChanged(true);
+
+                    LoadYbnFromFile(ybn, file);
+
+                    LoadProjectTree();
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
+                }
+
+            }
+        }
+        public void SaveYbn(bool saveas = false)
+        {
+            if ((CurrentYbnFile == null) && (CurrentCollisionBounds != null)) CurrentYbnFile = CurrentCollisionBounds.GetRootYbn();
+            if (CurrentYbnFile == null) return;
+
+
+            string ybnname = CurrentYbnFile.Name;
+            string filepath = CurrentYbnFile.FilePath;
+            if (string.IsNullOrEmpty(filepath))
+            {
+                filepath = ybnname;
+            }
+            string origfile = filepath;
+            if (!File.Exists(filepath))
+            {
+                saveas = true;
+            }
+
+
+            byte[] data;
+            lock (projectsyncroot) //need to sync writes to ybn objects...
+            {
+                saveas = saveas || string.IsNullOrEmpty(filepath);
+                if (saveas)
+                {
+                    filepath = ShowSaveDialog("Ybn files|*.ybn", filepath);
+                    if (string.IsNullOrEmpty(filepath))
+                    { return; }
+
+                    string newname = Path.GetFileNameWithoutExtension(filepath);
+                    JenkIndex.Ensure(newname);
+                    CurrentYbnFile.FilePath = filepath;
+                    CurrentYbnFile.RpfFileEntry.Name = new FileInfo(filepath).Name;
+                    CurrentYbnFile.Name = CurrentYbnFile.RpfFileEntry.Name;
+                }
+
+
+                data = CurrentYbnFile.Save();
+            }
+
+
+            if (data != null)
+            {
+                File.WriteAllBytes(filepath, data);
+            }
+
+            SetYbnHasChanged(false);
+
+            if (saveas)
+            {
+                //ShowEditYbnPanel(false);
+                if (CurrentProjectFile != null)
+                {
+                    string origpath = CurrentProjectFile.GetRelativePath(origfile);
+                    string newpath = CurrentProjectFile.GetRelativePath(CurrentYbnFile.FilePath);
+                    if (!CurrentProjectFile.RenameYbn(origpath, newpath))
+                    { //couldn't rename it in the project? happens when project not saved yet...
+                        //MessageBox.Show("Couldn't rename ybn in project! This shouldn't happen - check the project file XML.");
+                    }
+                }
+                SetProjectHasChanged(true);
+                SetCurrentSaveItem();
+            }
+
+        }
+        public void AddYbnToProject(YbnFile ybn)
+        {
+            if (ybn == null) return;
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            if (YbnExistsInProject(ybn)) return;
+            if (CurrentProjectFile.AddYbnFile(ybn))
+            {
+                ybn.HasChanged = true;
+                CurrentProjectFile.HasChanged = true;
+                LoadProjectTree();
+            }
+            CurrentYbnFile = ybn;
+            RefreshUI();
+            if (CurrentCollisionPoly != null)
+            {
+                ProjectExplorer?.TrySelectCollisionPolyTreeNode(CurrentCollisionPoly);
+            }
+            else if (CurrentCollisionBounds != null)
+            {
+                ProjectExplorer?.TrySelectCollisionBoundsTreeNode(CurrentCollisionBounds);
+            }
+        }
+        public void RemoveYbnFromProject()
+        {
+            if (CurrentYbnFile == null) return;
+            if (CurrentProjectFile == null) return;
+            CurrentProjectFile.RemoveYbnFile(CurrentYbnFile);
+            CurrentYbnFile = null;
+            LoadProjectTree();
+            RefreshUI();
+        }
+        public bool YbnExistsInProject(YbnFile ybn)
+        {
+            if (ybn == null) return false;
+            if (CurrentProjectFile == null) return false;
+            return CurrentProjectFile.ContainsYbn(ybn);
+        }
+
+
+
+
+
+
+
         public void NewYnd()
         {
             if (CurrentProjectFile == null)
@@ -3079,6 +3353,11 @@ namespace CodeWalker.Project
 
 
 
+
+
+
+
+
         public void NewYnv()
         {
             if (CurrentProjectFile == null)
@@ -3282,6 +3561,11 @@ namespace CodeWalker.Project
         {
             return portal == CurrentNavPortal;
         }
+
+
+
+
+
 
 
 
@@ -3542,6 +3826,11 @@ namespace CodeWalker.Project
         {
             return node == CurrentTrainNode;
         }
+
+
+
+
+
 
 
 
@@ -5389,6 +5678,12 @@ namespace CodeWalker.Project
 
 
 
+
+
+
+
+
+
         public void GetVisibleYmaps(Camera camera, Dictionary<MetaHash, YmapFile> ymaps)
         {
             if (hidegtavmap)
@@ -5450,19 +5745,40 @@ namespace CodeWalker.Project
                 }
             }
         }
-        public void GetVisibleCollisionMeshes(Camera camera, List<BoundsStoreItem> items)
+        public void GetVisibleYbns(Camera camera, List<YbnFile> ybns)
         {
             if (hidegtavmap)
             {
-                items.Clear();
+                ybns.Clear();
             }
-        }
-        public void GetVisibleWaterQuads(Camera camera, List<WaterQuad> quads)
-        {
-            if (hidegtavmap)
+
+            if (CurrentProjectFile == null) return;
+
+            lock (projectsyncroot)
             {
-                quads.Clear();
+                visibleybns.Clear();
+                for (int i = 0; i < ybns.Count; i++)
+                {
+                    var ybn = ybns[i];
+                    visibleybns[ybn.Name] = ybn;
+                }
+
+                for (int i = 0; i < CurrentProjectFile.YbnFiles.Count; i++)
+                {
+                    var ybn = CurrentProjectFile.YbnFiles[i];
+                    if (ybn.Loaded)
+                    {
+                        visibleybns[ybn.Name] = ybn;
+                    }
+                }
+
+                ybns.Clear();
+                foreach (var ybn in visibleybns.Values)
+                {
+                    ybns.Add(ybn);
+                }
             }
+
         }
         public void GetVisibleYnds(Camera camera, List<YndFile> ynds)
         {
@@ -5642,6 +5958,13 @@ namespace CodeWalker.Project
 
 
         }
+        public void GetVisibleWaterQuads(Camera camera, List<WaterQuad> quads)
+        {
+            if (hidegtavmap)
+            {
+                quads.Clear();
+            }
+        }
 
         public MloInstanceData TryGetMloInstance(MloArchetype arch)
         {
@@ -5671,6 +5994,8 @@ namespace CodeWalker.Project
                     var ent = sel.EntityDef;
                     var cargen = sel.CarGenerator;
                     var grassbatch = sel.GrassBatch;
+                    var collpoly = sel.CollisionPoly;
+                    var collbound = sel.CollisionBounds ?? collpoly?.Owner;
                     var pathnode = sel.PathNode;
                     var pathlink = sel.PathLink;
                     var navpoly = sel.NavPoly;
@@ -5683,6 +6008,7 @@ namespace CodeWalker.Project
                     Archetype arch = mlo?.Archetype ?? ent?.MloParent?.Archetype ?? ent?.Archetype;
                     YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.OwnerMlo?.Ytyp;
                     YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
+                    YbnFile ybn = collbound?.GetRootYbn();
                     YndFile ynd = pathnode?.Ynd;
                     YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
                     TrainTrack traintrack = trainnode?.Track;
@@ -5724,6 +6050,17 @@ namespace CodeWalker.Project
                         if (room != CurrentMloRoom)
                         {
                             ProjectExplorer?.TrySelectMloRoomTreeNode(room);
+                        }
+                    }
+                    else if (YbnExistsInProject(ybn))
+                    {
+                        if (collpoly != CurrentCollisionPoly)
+                        {
+                            ProjectExplorer?.TrySelectCollisionPolyTreeNode(collpoly);
+                        }
+                        if (collbound != CurrentCollisionBounds)
+                        {
+                            ProjectExplorer?.TrySelectCollisionBoundsTreeNode(collbound);
                         }
                     }
                     else if (YndExistsInProject(ynd))
@@ -5789,6 +6126,9 @@ namespace CodeWalker.Project
                     CurrentEntity = ent ?? mlo;
                     CurrentCarGen = cargen;
                     CurrentGrassBatch = grassbatch;
+                    CurrentYbnFile = ybn;
+                    CurrentCollisionPoly = collpoly;
+                    CurrentCollisionBounds = collbound;
                     CurrentYndFile = ynd;
                     CurrentPathNode = pathnode;
                     CurrentPathLink = pathlink;
@@ -5838,6 +6178,14 @@ namespace CodeWalker.Project
                     else if (sel.CarGenerator != null)
                     {
                         OnWorldCarGenModified(sel.CarGenerator);
+                    }
+                    else if (sel.CollisionPoly != null)
+                    {
+                        OnWorldCollisionPolyModified(sel.CollisionPoly);
+                    }
+                    else if (sel.CollisionBounds != null)
+                    {
+                        OnWorldCollisionBoundsModified(sel.CollisionBounds);
                     }
                     else if (sel.PathNode != null)
                     {
@@ -5973,6 +6321,84 @@ namespace CodeWalker.Project
                 if (cargen.Ymap != null)
                 {
                     SetYmapHasChanged(true);
+                }
+            }
+
+        }
+        private void OnWorldCollisionPolyModified(BoundPolygon poly)
+        {
+            var ybn = poly?.Owner?.GetRootYbn();
+            if (ybn == null) return;
+
+            CurrentYbnFile = ybn;
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            if (!YbnExistsInProject(ybn))
+            {
+                ybn.HasChanged = true;
+                poly.Owner.HasChanged = true;
+                AddYbnToProject(ybn);
+                ProjectExplorer?.TrySelectCollisionPolyTreeNode(poly);
+            }
+
+            if (poly != CurrentCollisionPoly)
+            {
+                CurrentCollisionPoly = poly;
+                ProjectExplorer?.TrySelectCollisionPolyTreeNode(poly);
+            }
+
+            if (poly == CurrentCollisionPoly)
+            {
+                ShowEditYbnBoundPolyPanel(false);
+
+                //////UpdateCollisionPolyTreeNode(poly);
+
+                if (ybn != null)
+                {
+                    SetYbnHasChanged(true);
+                }
+            }
+
+        }
+        private void OnWorldCollisionBoundsModified(Bounds bounds)
+        {
+            var ybn = bounds?.GetRootYbn();
+            if (ybn == null) return;
+
+            CurrentYbnFile = ybn;
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            if (!YbnExistsInProject(ybn))
+            {
+                ybn.HasChanged = true;
+                bounds.HasChanged = true;
+                AddYbnToProject(ybn);
+                ProjectExplorer?.TrySelectCollisionBoundsTreeNode(bounds);
+            }
+
+            if (bounds != CurrentCollisionBounds)
+            {
+                CurrentCollisionBounds = bounds;
+                ProjectExplorer?.TrySelectCollisionBoundsTreeNode(bounds);
+            }
+
+            if (bounds == CurrentCollisionBounds)
+            {
+                ShowEditYbnBoundsPanel(false);
+
+                //////UpdateCollisionBoundsTreeNode(bounds);
+
+                if (ybn != null)
+                {
+                    SetYbnHasChanged(true);
                 }
             }
 
@@ -6282,6 +6708,19 @@ namespace CodeWalker.Project
 
             PromoteIfPreviewPanelActive();
         }
+        public void SetYbnHasChanged(bool changed)
+        {
+            if (CurrentYbnFile == null) return;
+
+            bool changechange = changed != CurrentYbnFile.HasChanged;
+            if (!changechange) return;
+
+            CurrentYbnFile.HasChanged = changed;
+
+            ProjectExplorer?.SetYbnHasChanged(CurrentYbnFile, changed);
+
+            PromoteIfPreviewPanelActive();
+        }
         public void SetYndHasChanged(bool changed)
         {
             if (CurrentYndFile == null) return;
@@ -6441,6 +6880,20 @@ namespace CodeWalker.Project
 
             AddProjectArchetypes(ytyp);
         }
+        private void LoadYbnFromFile(YbnFile ybn, string filename)
+        {
+            byte[] data = File.ReadAllBytes(filename);
+
+            ybn.Load(data);
+
+            if (WorldForm != null)
+            {
+                if (ybn?.Bounds != null)
+                {
+                    WorldForm.UpdateCollisionBoundsGraphics(ybn?.Bounds);
+                }
+            }
+        }
         private void LoadYndFromFile(YndFile ynd, string filename)
         {
             byte[] data = File.ReadAllBytes(filename);
@@ -6534,6 +6987,7 @@ namespace CodeWalker.Project
             RefreshEntityUI();
             RefreshCarGenUI();
             RefreshYtypUI();
+            RefreshYbnUI();
             RefreshYndUI();
             RefreshYnvUI();
             RefreshTrainTrackUI();
@@ -6632,6 +7086,13 @@ namespace CodeWalker.Project
             {
                 //WorldForm.EnableYtypUI(enable, CurrentYtypFile?.Name ?? "");
             }
+        }
+        private void RefreshYbnUI()
+        {
+            bool enable = (CurrentYbnFile != null);
+            bool inproj = YbnExistsInProject(CurrentYbnFile);
+
+
         }
         private void RefreshYndUI()
         {
@@ -6780,6 +7241,10 @@ namespace CodeWalker.Project
             else if (CurrentYtypFile != null)
             {
                 filename = CurrentYtypFile.RpfFileEntry?.Name;
+            }
+            else if (CurrentYbnFile != null)
+            {
+                filename = CurrentYbnFile.RpfFileEntry?.Name;
             }
             else if (CurrentYndFile != null)
             {

@@ -2024,15 +2024,15 @@ namespace CodeWalker.Rendering
             Bound = bgeom;
             BoundGeom = bgeom;
             CenterGeom = bgeom.CenterGeom;
-            BBMin = bgeom.BoundingBoxMin;
-            BBMax = bgeom.BoundingBoxMax;
+            BBMin = bgeom.BoxMin;
+            BBMax = bgeom.BoxMax;
 
             if ((bgeom.Polygons == null) || (bgeom.Vertices == null))
             {
                 return;
             }
 
-            Vector3 vbox = (bgeom.BoundingBoxMax - bgeom.BoundingBoxMin);
+            //Vector3 vbox = (bgeom.BoxMax - bgeom.BoxMin);
             //var verts = bgeom.Vertices;
             //int vertcount = bgeom.Vertices.Length;
 
@@ -2069,8 +2069,7 @@ namespace CodeWalker.Rendering
             {
                 var poly = bgeom.Polygons[i];
                 if (poly == null) continue;
-                byte matind = ((bgeom.PolygonMaterialIndices != null) && (i < bgeom.PolygonMaterialIndices.Length)) ? bgeom.PolygonMaterialIndices[i] : (byte)0;
-                BoundMaterial_s mat = ((bgeom.Materials != null) && (matind < bgeom.Materials.Length)) ? bgeom.Materials[matind] : new BoundMaterial_s();
+                BoundMaterial_s mat = poly.Material;
                 Color color = BoundsMaterialTypes.GetMaterialColour(mat.Type);
                 Vector3 p1, p2, p3, p4, a1, n1;//, n2, n3, p5, p7, p8;
                 Vector3 norm = Vector3.Zero;
@@ -2169,8 +2168,8 @@ namespace CodeWalker.Rendering
             rmat.TranslationVector = Vector3.Zero;
 
             Bound = bcap;
-            BBMin = bcap.BoundingBoxMin;
-            BBMax = bcap.BoundingBoxMax;
+            BBMin = bcap.BoxMin;
+            BBMax = bcap.BoxMax;
             BBOffset = xform.TranslationVector;
             BBOrientation = Quaternion.RotationMatrix(rmat);
 
@@ -2178,11 +2177,11 @@ namespace CodeWalker.Rendering
             var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
             var colour = (uint)colourf.ToRgba();
 
-            float extent = bcap.BoundingSphereRadius - bcap.Margin;
+            float extent = bcap.SphereRadius - bcap.Margin;
 
             var rcap = new RenderableCapsule();
             rcap.Colour = colour;
-            rcap.Point1 = Vector3.TransformCoordinate(bcap.Center - new Vector3(0, extent, 0), xform);
+            rcap.Point1 = Vector3.TransformCoordinate(bcap.SphereCenter - new Vector3(0, extent, 0), xform);
             rcap.Orientation = BBOrientation;
             rcap.Length = extent * 2.0f;
             rcap.Radius = bcap.Margin;
@@ -2194,8 +2193,8 @@ namespace CodeWalker.Rendering
         public void Init(BoundSphere bsph, ref Matrix xform)
         {
             Bound = bsph;
-            BBMin = bsph.BoundingBoxMin;
-            BBMax = bsph.BoundingBoxMax;
+            BBMin = bsph.BoxMin;
+            BBMax = bsph.BoxMax;
             BBOffset = xform.TranslationVector;
 
             var mat = (BoundsMaterialType)bsph.MaterialIndex;
@@ -2204,8 +2203,8 @@ namespace CodeWalker.Rendering
 
             var rsph = new RenderableSphere();
             rsph.Colour = colour;
-            rsph.Center = Vector3.TransformCoordinate(bsph.Center, xform);
-            rsph.Radius = bsph.BoundingSphereRadius;
+            rsph.Center = Vector3.TransformCoordinate(bsph.SphereCenter, xform);
+            rsph.Radius = bsph.SphereRadius;
 
             Spheres = new[] { rsph };
 
@@ -2217,8 +2216,8 @@ namespace CodeWalker.Rendering
             rmat.TranslationVector = Vector3.Zero;
 
             Bound = bbox;
-            BBMin = bbox.BoundingBoxMin;
-            BBMax = bbox.BoundingBoxMax;
+            BBMin = bbox.BoxMin;
+            BBMax = bbox.BoxMax;
             BBOffset = xform.TranslationVector;
             BBOrientation = Quaternion.RotationMatrix(rmat);
 
@@ -2226,11 +2225,11 @@ namespace CodeWalker.Rendering
             var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
             var colour = (uint)colourf.ToRgba();
 
-            var extent = (bbox.BoundingBoxMax - bbox.BoundingBoxMin).Abs();
+            var extent = (bbox.BoxMax - bbox.BoxMin).Abs();
 
             var rbox = new RenderableBox();
             rbox.Colour = colour;
-            rbox.Corner = Vector3.TransformCoordinate(bbox.BoundingBoxMin, xform);
+            rbox.Corner = Vector3.TransformCoordinate(bbox.BoxMin, xform);
             rbox.Edge1 = Vector3.TransformNormal(new Vector3(extent.X, 0, 0), xform);
             rbox.Edge2 = Vector3.TransformNormal(new Vector3(0, extent.Y, 0), xform);
             rbox.Edge3 = Vector3.TransformNormal(new Vector3(0, 0, extent.Z), xform);
@@ -2245,8 +2244,8 @@ namespace CodeWalker.Rendering
             rmat.TranslationVector = Vector3.Zero;
 
             Bound = bcyl;
-            BBMin = bcyl.BoundingBoxMin;
-            BBMax = bcyl.BoundingBoxMax;
+            BBMin = bcyl.BoxMin;
+            BBMax = bcyl.BoxMax;
             BBOffset = xform.TranslationVector;
             BBOrientation = Quaternion.RotationMatrix(rmat);
 
@@ -2254,13 +2253,13 @@ namespace CodeWalker.Rendering
             var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
             var colour = (uint)colourf.ToRgba();
 
-            var extent = (bcyl.BoundingBoxMax - bcyl.BoundingBoxMin).Abs();
+            var extent = (bcyl.BoxMax - bcyl.BoxMin).Abs();
             var length = extent.Y;
             var radius = extent.X * 0.5f;
 
             var rcyl = new RenderableCylinder();
             rcyl.Colour = colour;
-            rcyl.Point1 = Vector3.TransformCoordinate(bcyl.Center - new Vector3(0, length * 0.5f, 0), xform);
+            rcyl.Point1 = Vector3.TransformCoordinate(bcyl.SphereCenter - new Vector3(0, length * 0.5f, 0), xform);
             rcyl.Orientation = BBOrientation;
             rcyl.Length = length;
             rcyl.Radius = radius;
@@ -2275,8 +2274,8 @@ namespace CodeWalker.Rendering
             rmat.TranslationVector = Vector3.Zero;
 
             Bound = bdisc;
-            BBMin = bdisc.BoundingBoxMin;
-            BBMax = bdisc.BoundingBoxMax;
+            BBMin = bdisc.BoxMin;
+            BBMax = bdisc.BoxMax;
             BBOffset = xform.TranslationVector;
             BBOrientation = Quaternion.LookAtLH(Vector3.Zero, Vector3.UnitX, Vector3.UnitZ) * Quaternion.RotationMatrix(rmat);
 
@@ -2286,10 +2285,10 @@ namespace CodeWalker.Rendering
 
             var rcyl = new RenderableCylinder();
             rcyl.Colour = colour;
-            rcyl.Point1 = Vector3.TransformCoordinate(bdisc.Center - new Vector3(bdisc.Margin, 0, 0), xform);
+            rcyl.Point1 = Vector3.TransformCoordinate(bdisc.SphereCenter - new Vector3(bdisc.Margin, 0, 0), xform);
             rcyl.Orientation = BBOrientation;
             rcyl.Length = bdisc.Margin * 2.0f;
-            rcyl.Radius = bdisc.BoundingSphereRadius;
+            rcyl.Radius = bdisc.SphereRadius;
 
             Cylinders = new[] { rcyl };
 

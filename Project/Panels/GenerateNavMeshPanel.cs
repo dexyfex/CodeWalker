@@ -150,8 +150,8 @@ namespace CodeWalker.Project.Panels
                     }
                     if (ybn.Loaded && (ybn.Bounds != null))
                     {
-                        bmin.Z = Math.Min(bmin.Z, ybn.Bounds.BoundingBoxMin.Z);
-                        bmax.Z = Math.Max(bmax.Z, ybn.Bounds.BoundingBoxMax.Z);
+                        bmin.Z = Math.Min(bmin.Z, ybn.Bounds.BoxMin.Z);
+                        bmax.Z = Math.Max(bmax.Z, ybn.Bounds.BoxMax.Z);
                     }
                 }
 
