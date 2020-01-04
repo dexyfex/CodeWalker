@@ -6974,5 +6974,28 @@ namespace CodeWalker.Project
             SaveAll();
         }
 
+        private void CalculateExtentsOfAllYmap_Click(object sender, EventArgs e)
+        {
+            foreach (var ymap in CurrentProjectFile.YmapFiles)
+            {
+                if (ymap != null)
+                {
+                    ymap.CalcExtents();
+                    ymap.HasChanged = true;
+                }
+            }
+        }
+
+        private void CalculateFlagsOfAllYmaps_Click(object sender, EventArgs e)
+        {
+            foreach (var ymap in CurrentProjectFile.YmapFiles)
+            {
+                if (ymap != null)
+                {
+                    ymap.CalcFlags();
+                    ymap.HasChanged = true;
+                }
+            }
+        }
     }
 }

@@ -84,6 +84,8 @@
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.YmapAddToProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.YmapRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.CalculateExtentsOfAllYmap = new System.Windows.Forms.ToolStripMenuItem();
+            this.CalculateFlagsOfAllYmaps = new System.Windows.Forms.ToolStripMenuItem();
             this.YtypMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.YtypNameMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
@@ -560,7 +562,9 @@
             this.YmapNewGrassBatchMenu,
             this.toolStripSeparator12,
             this.YmapAddToProjectMenu,
-            this.YmapRemoveFromProjectMenu});
+            this.YmapRemoveFromProjectMenu,
+            this.CalculateExtentsOfAllYmap,
+            this.CalculateFlagsOfAllYmaps});
             this.YmapMenu.Name = "YmapMenu";
             this.YmapMenu.Size = new System.Drawing.Size(49, 20);
             this.YmapMenu.Text = "Ymap";
@@ -622,6 +626,20 @@
             this.YmapRemoveFromProjectMenu.Size = new System.Drawing.Size(199, 22);
             this.YmapRemoveFromProjectMenu.Text = "Remove from Project";
             this.YmapRemoveFromProjectMenu.Click += new System.EventHandler(this.YmapRemoveFromProjectMenu_Click);
+            // 
+            // CalculateExtentsOfAllYmap
+            // 
+            this.CalculateExtentsOfAllYmap.Name = "CalculateExtentsOfAllYmap";
+            this.CalculateExtentsOfAllYmap.Size = new System.Drawing.Size(230, 22);
+            this.CalculateExtentsOfAllYmap.Text = "Calculate Extents of all ymaps";
+            this.CalculateExtentsOfAllYmap.Click += new System.EventHandler(this.CalculateExtentsOfAllYmap_Click);
+            // 
+            // CalculateFlagsOfAllYmaps
+            // 
+            this.CalculateFlagsOfAllYmaps.Name = "CalculateFlagsOfAllYmaps";
+            this.CalculateFlagsOfAllYmaps.Size = new System.Drawing.Size(230, 22);
+            this.CalculateFlagsOfAllYmaps.Text = "Calculate Flags of all ymaps";
+            this.CalculateFlagsOfAllYmaps.Click += new System.EventHandler(this.CalculateFlagsOfAllYmaps_Click);
             // 
             // YtypMenu
             // 
@@ -1511,5 +1529,7 @@
         private System.Windows.Forms.ToolStripMenuItem AudioNewInteriorMenu;
         private System.Windows.Forms.ToolStripMenuItem AudioNewInteriorRoomMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolsLODLightsGeneratorMenu;
+        private System.Windows.Forms.ToolStripMenuItem CalculateExtentsOfAllYmap;
+        private System.Windows.Forms.ToolStripMenuItem CalculateFlagsOfAllYmaps;
     }
 }
