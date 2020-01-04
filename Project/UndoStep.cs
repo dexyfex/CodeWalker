@@ -65,6 +65,7 @@ namespace CodeWalker.Project
             Dictionary<YnvFile, int> navYnvs = new Dictionary<YnvFile, int>();
             Dictionary<TrainTrack, int> trainTracks = new Dictionary<TrainTrack, int>();
             Dictionary<YmtFile, int> scenarioYmts = new Dictionary<YmtFile, int>();
+            Dictionary<Bounds, int> bounds = new Dictionary<Bounds, int>();
 
             if (Items != null)
             {
@@ -94,9 +95,21 @@ namespace CodeWalker.Project
                     {
                         scenarioYmts[item.ScenarioNode.Ymt] = 1;
                     }
+                    if (item.CollisionBounds != null)
+                    {
+                        bounds[item.CollisionBounds] = 1;
+                    }
+                    if (item.CollisionPoly?.Owner != null)
+                    {
+                        bounds[item.CollisionPoly.Owner] = 1;
+                    }
                 }
             }
 
+            foreach (var kvp in bounds)
+            {
+                wf.UpdateCollisionBoundsGraphics(kvp.Key);
+            }
             foreach (var kvp in pathYnds)
             {
                 wf.UpdatePathYndGraphics(kvp.Key, true);
@@ -172,7 +185,6 @@ namespace CodeWalker.Project
             return (Entity?._CEntityDef.archetypeName.ToString() ?? "") + ": Position";
         }
     }
-
     public class EntityRotationUndoStep : UndoStep
     {
         public YmapEntityDef Entity { get; set; }
@@ -211,7 +223,6 @@ namespace CodeWalker.Project
             return (Entity?._CEntityDef.archetypeName.ToString() ?? "") + ": Rotation";
         }
     }
-
     public class EntityScaleUndoStep : UndoStep
     {
         public YmapEntityDef Entity { get; set; }
@@ -252,6 +263,7 @@ namespace CodeWalker.Project
     }
 
 
+
     public class EntityPivotPositionUndoStep : UndoStep
     {
         public YmapEntityDef Entity { get; set; }
@@ -288,7 +300,6 @@ namespace CodeWalker.Project
             return (Entity?._CEntityDef.archetypeName.ToString() ?? "") + ": Pivot Position";
         }
     }
-
     public class EntityPivotRotationUndoStep : UndoStep
     {
         public YmapEntityDef Entity { get; set; }
@@ -366,7 +377,6 @@ namespace CodeWalker.Project
             return "CarGen " + (CarGen?._CCarGen.carModel.ToString() ?? "") + ": Position";
         }
     }
-
     public class CarGenRotationUndoStep : UndoStep
     {
         public YmapCarGen CarGen { get; set; }
@@ -404,7 +414,6 @@ namespace CodeWalker.Project
             return "CarGen " + (CarGen?._CCarGen.carModel.ToString() ?? "") + ": Rotation";
         }
     }
-
     public class CarGenScaleUndoStep : UndoStep
     {
         public YmapCarGen CarGen { get; set; }
@@ -440,6 +449,317 @@ namespace CodeWalker.Project
         public override string ToString()
         {
             return "CarGen " + (CarGen?._CCarGen.carModel.ToString() ?? "") + ": Scale";
+        }
+    }
+
+
+
+    public class CollisionPositionUndoStep : UndoStep
+    {
+        public Bounds Bounds { get; set; }
+        public Vector3 StartPosition { get; set; }
+        public Vector3 EndPosition { get; set; }
+
+        public CollisionPositionUndoStep(Bounds bounds, Vector3 startpos, WorldForm wf)
+        {
+            Bounds = bounds;
+            StartPosition = startpos;
+            EndPosition = bounds?.Position ?? Vector3.Zero;
+
+            UpdateGraphics(wf);
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
+        {
+            if (Bounds != null)
+            {
+                Bounds.Position = p;
+            }
+
+            if (Bounds != sel.CollisionBounds) wf.SelectCollisionBounds(Bounds);
+            wf.SetWidgetPosition(p);
+
+            UpdateGraphics(wf);
+        }
+
+        private void UpdateGraphics(WorldForm wf)
+        {
+            if (Bounds != null)
+            {
+                wf.UpdateCollisionBoundsGraphics(Bounds);
+            }
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartPosition);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndPosition);
+        }
+
+        public override string ToString()
+        {
+            return "Collision " + (Bounds?.GetName() ?? "") + ": Position";
+        }
+    }
+    public class CollisionRotationUndoStep : UndoStep
+    {
+        public Bounds Bounds { get; set; }
+        public Quaternion StartRotation { get; set; }
+        public Quaternion EndRotation { get; set; }
+
+        public CollisionRotationUndoStep(Bounds bounds, Quaternion startrot, WorldForm wf)
+        {
+            Bounds = bounds;
+            StartRotation = startrot;
+            EndRotation = bounds?.Orientation ?? Quaternion.Identity;
+
+            UpdateGraphics(wf);
+        }
+
+
+        private void Update(WorldForm wf, ref MapSelection sel, Quaternion q)
+        {
+            if (Bounds != null)
+            {
+                Bounds.Orientation = q;
+            }
+
+            if (Bounds != sel.CollisionBounds) wf.SelectCollisionBounds(Bounds);
+            wf.SetWidgetRotation(q);
+
+            UpdateGraphics(wf);
+        }
+
+        private void UpdateGraphics(WorldForm wf)
+        {
+            if (Bounds != null)
+            {
+                wf.UpdateCollisionBoundsGraphics(Bounds);
+            }
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartRotation);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndRotation);
+        }
+
+        public override string ToString()
+        {
+            return "Collision " + (Bounds?.GetName() ?? "") + ": Rotation";
+        }
+    }
+    public class CollisionScaleUndoStep : UndoStep
+    {
+        public Bounds Bounds { get; set; }
+        public Vector3 StartScale { get; set; }
+        public Vector3 EndScale { get; set; }
+
+        public CollisionScaleUndoStep(Bounds bounds, Vector3 startsca, WorldForm wf)
+        {
+            Bounds = bounds;
+            StartScale = startsca;
+            EndScale = bounds?.Scale ?? Vector3.One;
+
+            UpdateGraphics(wf);
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 s)
+        {
+            if (Bounds != null)
+            {
+                Bounds.Scale = s;
+            }
+
+            if (Bounds != sel.CollisionBounds) wf.SelectCollisionBounds(Bounds);
+            wf.SetWidgetScale(s);
+
+            UpdateGraphics(wf);
+        }
+
+        private void UpdateGraphics(WorldForm wf)
+        {
+            if (Bounds != null)
+            {
+                wf.UpdateCollisionBoundsGraphics(Bounds);
+            }
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartScale);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndScale);
+        }
+
+        public override string ToString()
+        {
+            return "Collision " + (Bounds?.GetName() ?? "") + ": Scale";
+        }
+    }
+
+    public class CollisionPolyPositionUndoStep : UndoStep
+    {
+        public BoundPolygon Polygon { get; set; }
+        public Vector3 StartPosition { get; set; }
+        public Vector3 EndPosition { get; set; }
+
+        public CollisionPolyPositionUndoStep(BoundPolygon poly, Vector3 startpos, WorldForm wf)
+        {
+            Polygon = poly;
+            StartPosition = startpos;
+            EndPosition = poly?.Position ?? Vector3.Zero;
+
+            UpdateGraphics(wf);
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
+        {
+            if (Polygon != null)
+            {
+                Polygon.Position = p;
+            }
+
+            if (Polygon != sel.CollisionPoly) wf.SelectCollisionPoly(Polygon);
+            wf.SetWidgetPosition(p);
+
+            UpdateGraphics(wf);
+        }
+
+        private void UpdateGraphics(WorldForm wf)
+        {
+            if (Polygon?.Owner != null)
+            {
+                wf.UpdateCollisionBoundsGraphics(Polygon.Owner);
+            }
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartPosition);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndPosition);
+        }
+
+        public override string ToString()
+        {
+            return "Collision Poly " + (Polygon?.Index.ToString() ?? "") + ": Position";
+        }
+    }
+    public class CollisionPolyRotationUndoStep : UndoStep
+    {
+        public BoundPolygon Polygon { get; set; }
+        public Quaternion StartRotation { get; set; }
+        public Quaternion EndRotation { get; set; }
+
+        public CollisionPolyRotationUndoStep(BoundPolygon poly, Quaternion startrot, WorldForm wf)
+        {
+            Polygon = poly;
+            StartRotation = startrot;
+            EndRotation = poly?.Orientation ?? Quaternion.Identity;
+
+            UpdateGraphics(wf);
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Quaternion q)
+        {
+            if (Polygon != null)
+            {
+                Polygon.Orientation = q;
+            }
+
+            if (Polygon != sel.CollisionPoly) wf.SelectCollisionPoly(Polygon);
+            wf.SetWidgetRotation(q);
+
+            UpdateGraphics(wf);
+        }
+
+        private void UpdateGraphics(WorldForm wf)
+        {
+            if (Polygon?.Owner != null)
+            {
+                wf.UpdateCollisionBoundsGraphics(Polygon.Owner);
+            }
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartRotation);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndRotation);
+        }
+
+        public override string ToString()
+        {
+            return "Collision Poly " + (Polygon?.Index.ToString() ?? "") + ": Rotation";
+        }
+    }
+    public class CollisionPolyScaleUndoStep : UndoStep
+    {
+        public BoundPolygon Polygon { get; set; }
+        public Vector3 StartScale { get; set; }
+        public Vector3 EndScale { get; set; }
+
+        public CollisionPolyScaleUndoStep(BoundPolygon poly, Vector3 startsca, WorldForm wf)
+        {
+            Polygon = poly;
+            StartScale = startsca;
+            EndScale = poly?.Scale ?? Vector3.One;
+
+            UpdateGraphics(wf);
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 s)
+        {
+            if (Polygon != null)
+            {
+                Polygon.Scale = s;
+            }
+
+            if (Polygon != sel.CollisionPoly) wf.SelectCollisionPoly(Polygon);
+            wf.SetWidgetScale(s);
+
+            UpdateGraphics(wf);
+        }
+
+        private void UpdateGraphics(WorldForm wf)
+        {
+            if (Polygon?.Owner != null)
+            {
+                wf.UpdateCollisionBoundsGraphics(Polygon.Owner);
+            }
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartScale);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndScale);
+        }
+
+        public override string ToString()
+        {
+            return "Collision Poly " + (Polygon?.Index.ToString() ?? "") + ": Scale";
         }
     }
 
@@ -563,7 +883,6 @@ namespace CodeWalker.Project
             return "NavPoint " + (Point?.ToString() ?? "") + ": Position";
         }
     }
-
     public class NavPointRotationUndoStep : UndoStep
     {
         public YnvPoint Point { get; set; }
@@ -781,7 +1100,6 @@ namespace CodeWalker.Project
 
 
 
-
     public class ScenarioNodePositionUndoStep : UndoStep
     {
         public ScenarioNode ScenarioNode { get; set; }
@@ -831,7 +1149,6 @@ namespace CodeWalker.Project
             return ScenarioNode.ToString() + ": Position";
         }
     }
-
     public class ScenarioNodeRotationUndoStep : UndoStep
     {
         public ScenarioNode ScenarioNode { get; set; }
@@ -886,7 +1203,6 @@ namespace CodeWalker.Project
 
 
 
-
     public class AudioPositionUndoStep : UndoStep
     {
         public AudioPlacement Audio { get; set; }
@@ -923,7 +1239,6 @@ namespace CodeWalker.Project
             return "Audio " + (Audio?.GetNameString() ?? "") + ": Position";
         }
     }
-
     public class AudioRotationUndoStep : UndoStep
     {
         public AudioPlacement Audio { get; set; }

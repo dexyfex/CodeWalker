@@ -1,0 +1,363 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <FxCompile Include="BasicPS.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicPS_Deferred.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_Box.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_Capsule.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_Cylinder.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PBBNCCT.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PBBNCCTTX.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PBBNCCTX.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PBBNCT.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PBBNCTT.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PBBNCTTT.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PBBNCTTX.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PBBNCTX.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PNCCT.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PNCCTT.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PNCCTTT.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PNCCTTTX.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PNCCTTX.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PNCCTX.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PNCT.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PNCTT.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PNCTTT.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PNCTTTX.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PNCTTX.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_PNCTX.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS_Sphere.hlsl">
+      <Filter>Basic</Filter>
+    </FxCompile>
+    <FxCompile Include="BoundsPS.hlsl">
+      <Filter>Bounds</Filter>
+    </FxCompile>
+    <FxCompile Include="BoundingBoxVS.hlsl">
+      <Filter>Bounds</Filter>
+    </FxCompile>
+    <FxCompile Include="BoundingSphereVS.hlsl">
+      <Filter>Bounds</Filter>
+    </FxCompile>
+    <FxCompile Include="CablePS.hlsl">
+      <Filter>Cable</Filter>
+    </FxCompile>
+    <FxCompile Include="CablePS_Deferred.hlsl">
+      <Filter>Cable</Filter>
+    </FxCompile>
+    <FxCompile Include="CableVS.hlsl">
+      <Filter>Cable</Filter>
+    </FxCompile>
+    <FxCompile Include="CloudsPS.hlsl">
+      <Filter>Sky</Filter>
+    </FxCompile>
+    <FxCompile Include="CloudsVS.hlsl">
+      <Filter>Sky</Filter>
+    </FxCompile>
+    <FxCompile Include="SkydomePS.hlsl">
+      <Filter>Sky</Filter>
+    </FxCompile>
+    <FxCompile Include="SkydomeVS.hlsl">
+      <Filter>Sky</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyMoonPS.hlsl">
+      <Filter>Sky</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyMoonVS.hlsl">
+      <Filter>Sky</Filter>
+    </FxCompile>
+    <FxCompile Include="SkySunPS.hlsl">
+      <Filter>Sky</Filter>
+    </FxCompile>
+    <FxCompile Include="SkySunVS.hlsl">
+      <Filter>Sky</Filter>
+    </FxCompile>
+    <FxCompile Include="MarkerPS.hlsl">
+      <Filter>Markers</Filter>
+    </FxCompile>
+    <FxCompile Include="MarkerVS.hlsl">
+      <Filter>Markers</Filter>
+    </FxCompile>
+    <FxCompile Include="PathBoxPS.hlsl">
+      <Filter>Paths</Filter>
+    </FxCompile>
+    <FxCompile Include="PathBoxVS.hlsl">
+      <Filter>Paths</Filter>
+    </FxCompile>
+    <FxCompile Include="PathDynVS.hlsl">
+      <Filter>Paths</Filter>
+    </FxCompile>
+    <FxCompile Include="PathPS.hlsl">
+      <Filter>Paths</Filter>
+    </FxCompile>
+    <FxCompile Include="PathVS.hlsl">
+      <Filter>Paths</Filter>
+    </FxCompile>
+    <FxCompile Include="PPBloomFilterBPHCS.hlsl">
+      <Filter>PostProcessor</Filter>
+    </FxCompile>
+    <FxCompile Include="PPBloomFilterVCS.hlsl">
+      <Filter>PostProcessor</Filter>
+    </FxCompile>
+    <FxCompile Include="PPCopyPixelsPS.hlsl">
+      <Filter>PostProcessor</Filter>
+    </FxCompile>
+    <FxCompile Include="PPFinalPassPS.hlsl">
+      <Filter>PostProcessor</Filter>
+    </FxCompile>
+    <FxCompile Include="PPFinalPassVS.hlsl">
+      <Filter>PostProcessor</Filter>
+    </FxCompile>
+    <FxCompile Include="PPLumBlendCS.hlsl">
+      <Filter>PostProcessor</Filter>
+    </FxCompile>
+    <FxCompile Include="PPReduceTo0DCS.hlsl">
+      <Filter>PostProcessor</Filter>
+    </FxCompile>
+    <FxCompile Include="PPReduceTo1DCS.hlsl">
+      <Filter>PostProcessor</Filter>
+    </FxCompile>
+    <FxCompile Include="ShadowPS.hlsl">
+      <Filter>Shadows</Filter>
+    </FxCompile>
+    <FxCompile Include="ShadowVS.hlsl">
+      <Filter>Shadows</Filter>
+    </FxCompile>
+    <FxCompile Include="ShadowVS_Skin.hlsl">
+      <Filter>Shadows</Filter>
+    </FxCompile>
+    <FxCompile Include="TerrainPS.hlsl">
+      <Filter>Terrain</Filter>
+    </FxCompile>
+    <FxCompile Include="TerrainPS_Deferred.hlsl">
+      <Filter>Terrain</Filter>
+    </FxCompile>
+    <FxCompile Include="TerrainVS_PNCCT.hlsl">
+      <Filter>Terrain</Filter>
+    </FxCompile>
+    <FxCompile Include="TerrainVS_PNCCTT.hlsl">
+      <Filter>Terrain</Filter>
+    </FxCompile>
+    <FxCompile Include="TerrainVS_PNCCTTTX.hlsl">
+      <Filter>Terrain</Filter>
+    </FxCompile>
+    <FxCompile Include="TerrainVS_PNCCTTX.hlsl">
+      <Filter>Terrain</Filter>
+    </FxCompile>
+    <FxCompile Include="TerrainVS_PNCCTX.hlsl">
+      <Filter>Terrain</Filter>
+    </FxCompile>
+    <FxCompile Include="TerrainVS_PNCTTTX.hlsl">
+      <Filter>Terrain</Filter>
+    </FxCompile>
+    <FxCompile Include="TerrainVS_PNCTTX.hlsl">
+      <Filter>Terrain</Filter>
+    </FxCompile>
+    <FxCompile Include="TreesLodPS.hlsl">
+      <Filter>Trees</Filter>
+    </FxCompile>
+    <FxCompile Include="TreesLodPS_Deferred.hlsl">
+      <Filter>Trees</Filter>
+    </FxCompile>
+    <FxCompile Include="TreesLodVS.hlsl">
+      <Filter>Trees</Filter>
+    </FxCompile>
+    <FxCompile Include="WaterPS.hlsl">
+      <Filter>Water</Filter>
+    </FxCompile>
+    <FxCompile Include="WaterPS_Deferred.hlsl">
+      <Filter>Water</Filter>
+    </FxCompile>
+    <FxCompile Include="WaterVS_PCT.hlsl">
+      <Filter>Water</Filter>
+    </FxCompile>
+    <FxCompile Include="WaterVS_PNCT.hlsl">
+      <Filter>Water</Filter>
+    </FxCompile>
+    <FxCompile Include="WaterVS_PNCTX.hlsl">
+      <Filter>Water</Filter>
+    </FxCompile>
+    <FxCompile Include="WaterVS_PT.hlsl">
+      <Filter>Water</Filter>
+    </FxCompile>
+    <FxCompile Include="WidgetPS.hlsl">
+      <Filter>Widget</Filter>
+    </FxCompile>
+    <FxCompile Include="WidgetVS.hlsl">
+      <Filter>Widget</Filter>
+    </FxCompile>
+    <FxCompile Include="LightPS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="LightVS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="DistantLightsPS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="DistantLightsVS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="PPSSAAPS.hlsl">
+      <Filter>PostProcessor</Filter>
+    </FxCompile>
+    <FxCompile Include="DirLightVS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="DirLightPS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="LodLightsVS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="LodLightsPS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="DirLightPS_MS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="LodLightsPS_MS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+    <FxCompile Include="LightPS_MS.hlsl">
+      <Filter>Lights</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BasicPS.hlsli">
+      <Filter>Basic</Filter>
+    </None>
+    <None Include="BasicVS.hlsli">
+      <Filter>Basic</Filter>
+    </None>
+    <None Include="CablePS.hlsli">
+      <Filter>Cable</Filter>
+    </None>
+    <None Include="Clouds.hlsli">
+      <Filter>Sky</Filter>
+    </None>
+    <None Include="Skydome.hlsli">
+      <Filter>Sky</Filter>
+    </None>
+    <None Include="Common.hlsli">
+      <Filter>Common</Filter>
+    </None>
+    <None Include="Quaternion.hlsli">
+      <Filter>Common</Filter>
+    </None>
+    <None Include="Shadowmap.hlsli">
+      <Filter>Shadows</Filter>
+    </None>
+    <None Include="TerrainPS.hlsli">
+      <Filter>Terrain</Filter>
+    </None>
+    <None Include="TerrainVS.hlsli">
+      <Filter>Terrain</Filter>
+    </None>
+    <None Include="TreesLodPS.hlsli">
+      <Filter>Trees</Filter>
+    </None>
+    <None Include="WaterPS.hlsli">
+      <Filter>Water</Filter>
+    </None>
+    <None Include="WaterVS.hlsli">
+      <Filter>Water</Filter>
+    </None>
+    <None Include="LightPS.hlsli">
+      <Filter>Lights</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Basic">
+      <UniqueIdentifier>{2d5fa9c1-ac2c-4820-b3a2-e3417e5b4a75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Bounds">
+      <UniqueIdentifier>{7b12481e-7e7c-45a2-aa19-26cf35acf33d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Cable">
+      <UniqueIdentifier>{2fa3ba6e-67fe-49a0-bd2c-2b3b45702285}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sky">
+      <UniqueIdentifier>{5fdc8b34-5e82-4786-9d6d-1af2248575b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{0b5779e8-ab81-41e3-88e4-849c66a7a171}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Markers">
+      <UniqueIdentifier>{8f404e01-a627-4d6d-9037-c073a687d61d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Paths">
+      <UniqueIdentifier>{6d63039e-7ce7-48f9-a503-76ec3782b5b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PostProcessor">
+      <UniqueIdentifier>{1d840a5b-3c41-4c7a-a363-6607e269b27b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shadows">
+      <UniqueIdentifier>{baaa8dee-0bc4-4b05-95a1-882640344212}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Terrain">
+      <UniqueIdentifier>{03608a54-3337-4feb-b010-3a454a02c4c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Trees">
+      <UniqueIdentifier>{f43e28c7-ea51-4960-a602-db412ac6bd2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Water">
+      <UniqueIdentifier>{342884aa-960f-460a-9d63-93cacab48de5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widget">
+      <UniqueIdentifier>{160d1dee-4be7-43ad-a6a8-511a8bb13865}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lights">
+      <UniqueIdentifier>{215eb704-917e-43c0-8d5b-d24e75403db3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

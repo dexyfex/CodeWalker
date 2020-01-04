@@ -157,6 +157,21 @@ namespace CodeWalker.GameFiles
             return res;
         }
 
+        public static uint TryFindHash(string text)
+        {
+            lock (syncRoot)
+            {
+                foreach (var kvp in Index)
+                {
+                    if (kvp.Value == text)
+                    {
+                        return kvp.Key;
+                    }
+                }
+            }
+            return 0;
+        }
+
     }
 
 

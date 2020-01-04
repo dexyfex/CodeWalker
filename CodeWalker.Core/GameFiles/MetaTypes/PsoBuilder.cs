@@ -101,13 +101,13 @@ namespace CodeWalker.GameFiles
         public PsoPOINTER AddItemPtr<T>(MetaName type, T item) where T : struct //helper method for AddItem<T>
         {
             var ptr = AddItem(type, item);
-            return new PsoPOINTER(ptr.BlockID, ptr.Offset, 0);
+            return new PsoPOINTER(ptr.BlockID, ptr.Offset);
         }
 
         public PsoPOINTER AddItemPtr(MetaName type, byte[] data)//helper method for AddItem<T>
         {
             var ptr = AddItem(type, data);
-            return new PsoPOINTER(ptr.BlockID, ptr.Offset, 0);
+            return new PsoPOINTER(ptr.BlockID, ptr.Offset);
         }
 
         public Array_Structure AddItemArrayPtr<T>(MetaName type, T[] items) where T : struct //helper method for AddItemArray<T>

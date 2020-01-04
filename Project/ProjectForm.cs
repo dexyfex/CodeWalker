@@ -45,6 +45,8 @@ namespace CodeWalker.Project
         private Archetype CurrentArchetype;
         private MCEntityDef CurrentMloEntity;
         private MCMloRoomDef CurrentMloRoom;
+        private MCMloPortalDef CurrentMloPortal;
+        private MCMloEntitySet CurrentMloEntitySet;
 
         private YndFile CurrentYndFile;
         private YndNode CurrentPathNode;
@@ -70,18 +72,25 @@ namespace CodeWalker.Project
         private Dat151Interior CurrentAudioInterior;
         private Dat151InteriorRoom CurrentAudioInteriorRoom;
 
+        private YbnFile CurrentYbnFile;
+        private Bounds CurrentCollisionBounds;
+        private BoundPolygon CurrentCollisionPoly;
+
         private bool renderitems = true;
         private bool hidegtavmap = false;
 
         private object projectsyncroot = new object();
         public object ProjectSyncRoot { get { return projectsyncroot; } }
 
+        private Dictionary<string, YbnFile> visibleybns = new Dictionary<string, YbnFile>();
         private Dictionary<int, YndFile> visibleynds = new Dictionary<int, YndFile>();
         private Dictionary<int, YnvFile> visibleynvs = new Dictionary<int, YnvFile>();
         private Dictionary<string, TrainTrack> visibletrains = new Dictionary<string, TrainTrack>();
         private Dictionary<string, YmtFile> visiblescenarios = new Dictionary<string, YmtFile>();
         private Dictionary<uint, YmapEntityDef> visiblemloentities = new Dictionary<uint, YmapEntityDef>();
         private Dictionary<uint, RelFile> visibleaudiofiles = new Dictionary<uint, RelFile>();
+
+        private Dictionary<uint, Archetype> projectarchetypes = new Dictionary<uint, Archetype>();//used to override archetypes in world view
 
         private bool ShowProjectItemInProcess = false;
 
@@ -383,6 +392,27 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetArchetype(CurrentArchetype); }, //updateFunc
                 (panel) => { return panel.CurrentArchetype == CurrentArchetype; }); //findFunc
         }
+        public void ShowEditYbnPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYbnPanel(this); }, //createFunc
+                (panel) => { panel.SetYbn(CurrentYbnFile); }, //updateFunc
+                (panel) => { return panel.Ybn == CurrentYbnFile; }); //findFunc
+        }
+        public void ShowEditYbnBoundsPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYbnBoundsPanel(this); }, //createFunc
+                (panel) => { panel.SetCollisionBounds(CurrentCollisionBounds); }, //updateFunc
+                (panel) => { return panel.CollisionBounds == CurrentCollisionBounds; }); //findFunc
+        }
+        public void ShowEditYbnBoundPolyPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYbnBoundPolyPanel(this); }, //createFunc
+                (panel) => { panel.SetCollisionPoly(CurrentCollisionPoly); }, //updateFunc
+                (panel) => { return panel.CollisionPoly == CurrentCollisionPoly; }); //findFunc
+        }
         public void ShowEditYndPanel(bool promote)
         {
             ShowPanel(promote,
@@ -453,12 +483,26 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetScenarioNode(CurrentScenarioNode); }, //updateFunc
                 (panel) => { return panel.CurrentScenarioNode == CurrentScenarioNode; }); //findFunc
         }
-        public void ShowEditYtypArchetypeMloRoomPanel(bool promote)
+        public void ShowEditYtypMloRoomPanel(bool promote)
         {
             ShowPanel(promote,
-                () => { return new EditYtypArchetypeMloRoomPanel(this); }, //createFunc
+                () => { return new EditYtypMloRoomPanel(this); }, //createFunc
                 (panel) => { panel.SetRoom(CurrentMloRoom); }, //updateFunc
                 (panel) => { return panel.CurrentRoom == CurrentMloRoom; }); //findFunc
+        }
+        public void ShowEditYtypMloPortalPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYtypMloPortalPanel(this); }, //createFunc
+                (panel) => { panel.SetPortal(CurrentMloPortal); }, //updateFunc
+                (panel) => { return panel.CurrentPortal == CurrentMloPortal; }); //findFunc
+        }
+        public void ShowEditYtypMloEntSetPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYtypMloEntSetPanel(this); }, //createFunc
+                (panel) => { panel.SetEntitySet(CurrentMloEntitySet); }, //updateFunc
+                (panel) => { return panel.CurrentEntitySet == CurrentMloEntitySet; }); //findFunc
         }
         public void ShowEditAudioFilePanel(bool promote)
         {
@@ -518,7 +562,15 @@ namespace CodeWalker.Project
             }
             else if (CurrentMloRoom != null)
             {
-                ShowEditYtypArchetypeMloRoomPanel(promote);
+                ShowEditYtypMloRoomPanel(promote);
+            }
+            else if (CurrentMloPortal != null)
+            {
+                ShowEditYtypMloPortalPanel(promote);
+            }
+            else if (CurrentMloEntitySet != null)
+            {
+                ShowEditYtypMloEntSetPanel(promote);
             }
             else if (CurrentEntity != null)
             {
@@ -543,6 +595,18 @@ namespace CodeWalker.Project
             else if (CurrentYtypFile != null)
             {
                 ShowEditYtypPanel(promote);
+            }
+            else if (CurrentCollisionPoly != null)
+            {
+                ShowEditYbnBoundPolyPanel(promote);
+            }
+            else if (CurrentCollisionBounds != null)
+            {
+                ShowEditYbnBoundsPanel(promote);
+            }
+            else if (CurrentYbnFile != null)
+            {
+                ShowEditYbnPanel(promote);
             }
             if (CurrentPathNode != null)
             {
@@ -640,6 +704,9 @@ namespace CodeWalker.Project
             CurrentGrassBatch = item as YmapGrassInstanceBatch;
             CurrentYtypFile = item as YtypFile;
             CurrentArchetype = item as Archetype;
+            CurrentYbnFile = item as YbnFile;
+            CurrentCollisionBounds = item as Bounds;
+            CurrentCollisionPoly = item as BoundPolygon;
             CurrentYndFile = item as YndFile;
             CurrentPathNode = item as YndNode;
             CurrentYnvFile = item as YnvFile;
@@ -659,6 +726,8 @@ namespace CodeWalker.Project
             CurrentAudioInterior = item as Dat151Interior;
             CurrentAudioInteriorRoom = item as Dat151InteriorRoom;
             CurrentMloRoom = item as MCMloRoomDef;
+            CurrentMloPortal = item as MCMloPortalDef;
+            CurrentMloEntitySet = item as MCMloEntitySet;
 
             if (CurrentAudioZone?.AudioZone == null) CurrentAudioZone = null;
             if (CurrentAudioEmitter?.AudioEmitter == null) CurrentAudioEmitter = null;
@@ -673,12 +742,11 @@ namespace CodeWalker.Project
 
             if (CurrentMloEntity != null)
             {
-                MloInstanceData instance = TryGetMloInstance(CurrentMloEntity.Archetype);
+                MloInstanceData instance = TryGetMloInstance(CurrentMloEntity.OwnerMlo);
 
                 if (instance != null)
                 {
                     CurrentEntity = instance.TryGetYmapEntity(CurrentMloEntity);
-
                     CurrentYmapFile = instance.Owner?.Ymap;
                 }
 
@@ -693,7 +761,6 @@ namespace CodeWalker.Project
                 else
                 {
                     CurrentArchetype = CurrentEntity.Archetype;
-
                     CurrentYmapFile = CurrentEntity.Ymap;
                 }
             }
@@ -705,9 +772,29 @@ namespace CodeWalker.Project
             {
                 CurrentYmapFile = CurrentGrassBatch.Ymap;
             }
+            if (CurrentMloRoom != null)
+            {
+                CurrentArchetype = CurrentMloRoom.OwnerMlo;
+            }
+            if (CurrentMloPortal != null)
+            {
+                CurrentArchetype = CurrentMloPortal.OwnerMlo;
+            }
+            if (CurrentMloEntitySet != null)
+            {
+                CurrentArchetype = CurrentMloEntitySet.OwnerMlo;
+            }
             if (CurrentArchetype != null)
             {
                 CurrentYtypFile = CurrentEntity?.MloParent?.Archetype?.Ytyp ?? CurrentArchetype?.Ytyp;
+            }
+            if (CurrentCollisionPoly != null)
+            {
+                CurrentCollisionBounds = CurrentCollisionPoly.Owner;
+            }
+            if (CurrentCollisionBounds != null)
+            {
+                CurrentYbnFile = CurrentCollisionBounds.GetRootYbn();
             }
             if (CurrentPathNode != null)
             {
@@ -854,9 +941,9 @@ namespace CodeWalker.Project
 
         //######## Public methods
 
-        // Possibly future proofing for procedural prop instances
         public bool CanPaintInstances()
         {
+            // Possibly future proofing for procedural prop instances
             if (CurrentGrassBatch != null)
             {
                 if (CurrentGrassBatch.BrushEnabled)
@@ -1054,6 +1141,19 @@ namespace CodeWalker.Project
                 }
             }
 
+            foreach (var ybn in CurrentProjectFile.YbnFiles)
+            {
+                if ((ybn != null) && (ybn.HasChanged))
+                {
+                    //save the current ybn first?
+                    if (MessageBox.Show("Would you like to save " + ybn.Name + " before closing?", "Save .ybn before closing?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        CurrentYbnFile = ybn;
+                        SaveYbn();
+                    }
+                }
+            }
+
             foreach (var ynd in CurrentProjectFile.YndFiles)
             {
                 if ((ynd != null) && (ynd.HasChanged))
@@ -1134,6 +1234,7 @@ namespace CodeWalker.Project
             CurrentProjectFile = null;
             CurrentYmapFile = null;
             CurrentYtypFile = null;
+            CurrentYbnFile = null;
             CurrentYndFile = null;
             CurrentYnvFile = null;
             CurrentTrainTrack = null;
@@ -1176,6 +1277,10 @@ namespace CodeWalker.Project
             else if (CurrentYtypFile != null)
             {
                 SaveYtyp();
+            }
+            else if (CurrentYbnFile != null)
+            {
+                SaveYbn();
             }
             else if (CurrentYndFile != null)
             {
@@ -1228,6 +1333,18 @@ namespace CodeWalker.Project
                     }
                     CurrentYtypFile = cytyp;
                     //ShowEditYtypPanel(false);
+                }
+
+                if (CurrentProjectFile.YbnFiles != null)
+                {
+                    var cybn = CurrentYbnFile;
+                    foreach (var ybn in CurrentProjectFile.YbnFiles)
+                    {
+                        CurrentYbnFile = ybn;
+                        SaveYbn();
+                    }
+                    CurrentYbnFile = cybn;
+                    //ShowEditYbnPanel(false);
                 }
 
                 if (CurrentProjectFile.YndFiles != null)
@@ -1303,6 +1420,10 @@ namespace CodeWalker.Project
             else if (CurrentYtypFile != null)
             {
                 SaveYtyp(saveas);
+            }
+            else if (CurrentYbnFile != null)
+            {
+                SaveYbn(saveas);
             }
             else if (CurrentYndFile != null)
             {
@@ -1450,7 +1571,7 @@ namespace CodeWalker.Project
 
                     if (!CurrentProjectFile.RenameYmap(origpath, newpath))
                     { //couldn't rename it in the project?
-                        MessageBox.Show("Couldn't rename ymap in project! This shouldn't happen - check the project file XML.");
+                        //MessageBox.Show("Couldn't rename ymap in project! This shouldn't happen - check the project file XML.");
                     }
                 }
                 SetProjectHasChanged(true);
@@ -1617,7 +1738,7 @@ namespace CodeWalker.Project
         public bool DeleteEntity()
         {
             if (CurrentEntity == null) return false;
-            return CurrentYmapFile != null ? DeleteYmapEntity() : DeleteMloArchetypeEntity();
+            return CurrentYmapFile != null ? DeleteYmapEntity() : DeleteMloEntity();
         }
 
         private bool DeleteYmapEntity()
@@ -2092,6 +2213,11 @@ namespace CodeWalker.Project
 
 
 
+
+
+
+
+
         public void NewYtyp()
         {
             if (CurrentProjectFile == null)
@@ -2212,7 +2338,7 @@ namespace CodeWalker.Project
 
                     if (!CurrentProjectFile.RenameYtyp(origpath, newpath))
                     { //couldn't rename it in the project?
-                        MessageBox.Show("Couldn't rename ytyp in project! This shouldn't happen - check the project file XML.");
+                        //MessageBox.Show("Couldn't rename ytyp in project! This shouldn't happen - check the project file XML.");
                     }
                 }
                 SetProjectHasChanged(true);
@@ -2242,11 +2368,13 @@ namespace CodeWalker.Project
             }
             CurrentYtypFile = ytyp;
             RefreshUI();
+            AddProjectArchetypes(ytyp);
         }
         public void RemoveYtypFromProject()
         {
             if (CurrentYtypFile == null) return;
             if (CurrentProjectFile == null) return;
+            RemoveProjectArchetypes(CurrentYtypFile);
             CurrentProjectFile.RemoveYtypFile(CurrentYtypFile);
             CurrentYtypFile = null;
             LoadProjectTree();
@@ -2278,52 +2406,72 @@ namespace CodeWalker.Project
             LoadProjectTree();
             ProjectExplorer?.TrySelectArchetypeTreeNode(archetype);
             CurrentArchetype = archetype;
+
+            AddProjectArchetype(archetype);
         }
         public void NewMloEntity(YmapEntityDef copy = null, bool copyTransform = false)
         {
             if ((CurrentArchetype == null) || !(CurrentArchetype is MloArchetype mloArch))
             {
-                var arch = CurrentEntity?.MloParent.Archetype ?? CurrentMloRoom?.Archetype;
-                if (arch == null)
-                    return;
-
-                mloArch = arch as MloArchetype;
-                if (mloArch == null)
-                    return;
-
+                mloArch = (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo;
+                if (mloArch == null) return;
                 CurrentArchetype = mloArch;
             }
 
-            if (CurrentMloRoom == null) CurrentMloRoom = mloArch?.GetEntityRoom(CurrentMloEntity);
-            if (CurrentMloRoom == null)
+            var mloInstance = TryGetMloInstance(mloArch);
+            if (mloInstance == null)
             {
+                MessageBox.Show("Unable to find MLO instance for this interior! Try adding an MLO instance ymap to the project.");
                 return;
             }
 
-            MloInstanceData mloInstance = TryGetMloInstance(mloArch);
-            if (mloInstance == null) return;
-
-            if (mloArch.rooms.Length <= 0)
+            if ((CurrentMloEntity == null) && (CurrentEntity != null))
             {
-                MessageBox.Show($@"Mlo {mloArch.Name} has no rooms! Cannot create entity.");
-                return;
+                CurrentMloEntity = mloInstance.TryGetArchetypeEntity(CurrentEntity);
             }
 
-            int roomIndex = CurrentMloRoom.Index;
-            if (roomIndex < 0)
+            if ((CurrentMloRoom == null) && (CurrentMloPortal == null) && (CurrentMloEntitySet == null))
             {
-                MessageBox.Show(@"Invalid room index.");
+                if (CurrentMloEntity != null)
+                {
+                    CurrentMloRoom = mloArch.GetEntityRoom(CurrentMloEntity);
+                    CurrentMloPortal = mloArch.GetEntityPortal(CurrentMloEntity);
+                    CurrentMloEntitySet = mloArch.GetEntitySet(CurrentMloEntity);
+                }
+                else
+                {
+                    if ((mloArch.rooms?.Length??0) <= 0)
+                    {
+                        MessageBox.Show($@"Mlo {mloArch.Name} has no rooms! Cannot create entity.");
+                        return;
+                    }
+                    CurrentMloRoom = mloArch.rooms[0];
+                }
+            }
+
+
+            int roomIndex = CurrentMloRoom?.Index ?? -1;
+            if (roomIndex >= (mloArch.rooms?.Length ?? 0))
+            {
+                MessageBox.Show($@"Room at index {roomIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.rooms?.Length ?? 0)} rooms.");
                 return;
             }
-            if (roomIndex >= mloArch.rooms.Length)
+
+            int portalIndex = CurrentMloPortal?.Index ?? -1;
+            if (portalIndex >= (mloArch.portals?.Length ?? 0))
             {
-                MessageBox.Show(
-                    $@"Room at index {roomIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {
-                            mloArch.rooms.Length
-                        } rooms.");
+                MessageBox.Show($@"Portal at index {portalIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.portals?.Length ?? 0)} portals.");
                 return;
             }
-            
+
+            int entsetIndex = CurrentMloEntitySet?.Index ?? -1;
+            if (entsetIndex >= (mloArch.entitySets?.Length ?? 0))
+            {
+                MessageBox.Show($@"EntitySet at index {entsetIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.entitySets?.Length ?? 0)} entitySets.");
+                return;
+            }
+
+
             float spawndist = 5.0f; //use archetype BSradius if starting with a copy...
             if (copy != null)
             {
@@ -2361,24 +2509,25 @@ namespace CodeWalker.Project
             cent.rotation = rot.ToVector4();
 
             var createindex = mloArch.entities.Length;
-            MCEntityDef ment = new MCEntityDef(ref cent, mloArch);
+            var ment = new MCEntityDef(ref cent, mloArch);
+            var outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, ment, createindex);
 
-            YmapEntityDef outEnt;
             try
             {
                 if (WorldForm != null)
                 {
                     lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                     {
-                        // Add the entity to the mlo instance and archetype.
-                        outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, ment, createindex);
-                        mloArch.AddEntity(outEnt, roomIndex);
+                        mloArch.AddEntity(outEnt, roomIndex, portalIndex, entsetIndex);
+                        mloInstance.AddEntity(outEnt);
+                        outEnt.SetArchetype(GameFileCache.GetArchetype(cent.archetypeName));
                     }
                 }
                 else
                 {
-                    outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, ment, createindex);
-                    mloArch.AddEntity(outEnt, roomIndex);
+                    mloArch.AddEntity(outEnt, roomIndex, portalIndex, entsetIndex);
+                    mloInstance.AddEntity(outEnt);
+                    outEnt.SetArchetype(GameFileCache.GetArchetype(cent.archetypeName));
                 }
             }
             catch(Exception e)
@@ -2387,71 +2536,121 @@ namespace CodeWalker.Project
                 return;
             }
 
-
-            mloInstance.AddEntity(outEnt);
-            outEnt.SetArchetype(GameFileCache.GetArchetype(cent.archetypeName));
+            ment = mloInstance.TryGetArchetypeEntity(outEnt);
 
             LoadProjectTree();
-            ProjectExplorer?.TrySelectMloEntityTreeNode(mloInstance.TryGetArchetypeEntity(outEnt));
+            ProjectExplorer?.TrySelectMloEntityTreeNode(ment);
             CurrentEntity = outEnt;
+            CurrentMloEntity = ment;
             CurrentYtypFile = CurrentEntity.MloParent?.Archetype?.Ytyp;
         }
-        private bool DeleteMloArchetypeEntity()
+        public void NewMloRoom(MCMloRoomDef copy = null)
         {
-            if (CurrentEntity?.MloParent?.Archetype?.Ytyp == null) return false;
-            if (CurrentEntity.MloParent.Archetype.Ytyp != CurrentYtypFile) return false;
-            if (!(CurrentEntity.MloParent.Archetype is MloArchetype mloArchetype)) return false;
-            if (mloArchetype.entities == null) return false; //nothing to delete..
-            //if (mloArchetype.InstancedEntities == null) return false; //nothing to delete..
+            var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? (CurrentArchetype as MloArchetype);
+            if (mlo == null) return;
 
-            if (CurrentEntity._CEntityDef.numChildren != 0)
+            if (copy == null)
             {
-                MessageBox.Show("This entity's numChildren is not 0 - deleting entities with children is not currently supported by CodeWalker.");
-                return true;
+                copy = CurrentMloRoom;
             }
 
-            if (MessageBox.Show("Are you sure you want to delete this entity?\n" + CurrentEntity._CEntityDef.archetypeName.ToString() + "\n" + CurrentEntity.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            var room = new MCMloRoomDef();
+            if (copy != null)
             {
-                return true;
+                room._Data = copy._Data;
+                room.RoomName = copy.RoomName;
             }
-            MloInstanceData mloInstance = CurrentEntity.MloParent.MloInstance;
-            if (mloInstance == null) return false;
-
-            var ent = CurrentEntity;
-            var mcEnt = mloInstance.TryGetArchetypeEntity(ent);
-            ProjectExplorer?.RemoveMloEntityTreeNode(mcEnt);
-
-            try
+            else
             {
-                if (WorldForm != null)
-                {
-                    lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
-                    {
-                        mloInstance.DeleteEntity(ent);
-                        //WorldForm.SelectItem(null, null, null);
-                    }
-                }
-                else
-                {
-                    mloInstance.DeleteEntity(ent);
-                }
-            }
-            catch (Exception e) // various failures could happen so we'll use a trycatch for when an exception is thrown.
-            {
-                MessageBox.Show(this, "Cannot delete entity: " + Environment.NewLine + e.Message);
-                return false;
+                room._Data.flags = 96;
+                room._Data.blend = 1.0f;
+                room._Data.exteriorVisibiltyDepth = -1;
+                room.RoomName = "NewRoom";
             }
 
-            var delent = ent;
-            var delytyp = delent.MloParent.Archetype.Ytyp;
+            mlo.AddRoom(room);
 
-            ProjectExplorer?.SetYtypHasChanged(delytyp, true);
+            var mloInstance = TryGetMloInstance(mlo);
+            if (mloInstance != null)
+            {
+            }
 
-            ClosePanel((EditYmapEntityPanel p) => { return p.Tag == delent; });
-            CurrentEntity = null;
-            WorldForm.SelectItem(null);
+            LoadProjectTree();
+            ProjectExplorer?.TrySelectMloRoomTreeNode(room);
+            CurrentMloRoom = room;
+            CurrentYtypFile = room?.OwnerMlo?.Ytyp;
+        }
+        public void NewMloPortal(MCMloPortalDef copy = null)
+        {
+            var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? (CurrentArchetype as MloArchetype);
+            if (mlo == null) return;
 
-            return true;
+            if (copy == null)
+            {
+                copy = CurrentMloPortal;
+            }
+
+            var portal = new MCMloPortalDef();
+            if (copy != null)
+            {
+                portal._Data = copy._Data;
+                portal.Corners = (Vector4[])copy.Corners?.Clone();
+            }
+            else
+            {
+                portal._Data.roomFrom = 1;
+                portal._Data.roomTo = 0;
+            }
+            if (portal.Corners == null)
+            {
+                portal.Corners = new[] { new Vector4(0, 0, 0, float.NaN), new Vector4(0, 0, 1, float.NaN), new Vector4(0, 1, 1, float.NaN), new Vector4(0, 1, 0, float.NaN) };
+            }
+
+            mlo.AddPortal(portal);
+
+            var mloInstance = TryGetMloInstance(mlo);
+            if (mloInstance != null)
+            {
+            }
+
+            LoadProjectTree();
+            ProjectExplorer?.TrySelectMloPortalTreeNode(portal);
+            CurrentMloPortal = portal;
+            CurrentYtypFile = portal?.OwnerMlo?.Ytyp;
+        }
+        public void NewMloEntitySet(MCMloEntitySet copy = null)
+        {
+            var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? (CurrentArchetype as MloArchetype);
+            if (mlo == null) return;
+
+            if (copy == null)
+            {
+                copy = CurrentMloEntitySet;
+            }
+
+            var set = new MCMloEntitySet();
+            if (copy != null)
+            {
+                set._Data.name = copy._Data.name;
+            }
+            else
+            {
+                JenkIndex.Ensure("NewEntitySet");//why is this here though
+                set._Data.name = JenkHash.GenHash("NewEntitySet");
+            }
+
+            mlo.AddEntitySet(set);
+
+            var mloInstance = TryGetMloInstance(mlo);
+            if (mloInstance != null)
+            {
+                mloInstance.AddEntitySet(set);
+            }
+
+            LoadProjectTree();
+            ProjectExplorer?.TrySelectMloEntitySetTreeNode(set);
+            CurrentMloEntitySet = set;
+            CurrentYtypFile = set?.OwnerMlo?.Ytyp;
         }
         public bool DeleteArchetype()
         {
@@ -2485,6 +2684,8 @@ namespace CodeWalker.Project
             var delarch = CurrentArchetype;
             var delytyp = delarch.Ytyp;
 
+            RemoveProjectArchetype(delarch);
+
             ProjectExplorer?.RemoveArchetypeTreeNode(delarch);
             ProjectExplorer?.SetYtypHasChanged(delytyp, true);
 
@@ -2494,6 +2695,364 @@ namespace CodeWalker.Project
 
             return true;
         }
+        public bool DeleteMloEntity()
+        {
+            if (CurrentEntity?.MloParent?.Archetype?.Ytyp == null) return false;
+            if (CurrentEntity.MloParent.Archetype.Ytyp != CurrentYtypFile) return false;
+            if (!(CurrentEntity.MloParent.Archetype is MloArchetype mloArchetype)) return false;
+            if (mloArchetype.entities == null) return false; //nothing to delete..
+            //if (mloArchetype.InstancedEntities == null) return false; //nothing to delete..
+
+            if (CurrentEntity._CEntityDef.numChildren != 0)
+            {
+                MessageBox.Show("This entity's numChildren is not 0 - deleting entities with children is not currently supported by CodeWalker.");
+                return true;
+            }
+
+            if (MessageBox.Show("Are you sure you want to delete this entity?\n" + CurrentEntity._CEntityDef.archetypeName.ToString() + "\n" + CurrentEntity.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+            MloInstanceData mloInstance = CurrentEntity.MloParent.MloInstance;
+            if (mloInstance == null) return false;
+
+
+            var delent = CurrentEntity; //CurrentEntity could get changed when we remove the tree node..
+            var delytyp = CurrentEntity.MloParent.Archetype.Ytyp;
+            var mcEnt = mloInstance.TryGetArchetypeEntity(CurrentEntity);
+
+            ProjectExplorer?.RemoveMloEntityTreeNode(mcEnt);
+            ProjectExplorer?.SetYtypHasChanged(delytyp, true);
+
+            try
+            {
+                if (WorldForm != null)
+                {
+                    lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                    {
+                        mloArchetype.RemoveEntity(delent);
+                        mloInstance.DeleteEntity(delent);
+                        //WorldForm.SelectItem(null, null, null);
+                    }
+                }
+                else
+                {
+                    mloArchetype.RemoveEntity(delent);
+                    mloInstance.DeleteEntity(delent);
+                }
+            }
+            catch (Exception e) // various failures could happen so we'll use a trycatch for when an exception is thrown.
+            {
+                MessageBox.Show(this, "Cannot delete entity: " + Environment.NewLine + e.Message);
+                return false;
+            }
+
+
+            ClosePanel((EditYmapEntityPanel p) => { return p.Tag == delent; });
+            CurrentEntity = null;
+            CurrentMloEntity = null;
+            WorldForm.SelectItem(null);
+
+            return true;
+        }
+        public bool DeleteMloRoom()
+        {
+            var mlo = CurrentMloRoom?.OwnerMlo;
+            if (mlo == null) return false;
+
+            if (MessageBox.Show("Are you sure you want to delete this room?\n" + CurrentMloRoom.Name + "\n\nDeleting existing rooms is generally not recommended, as it will mess up all the room IDs.\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            mlo.RemoveRoom(CurrentMloRoom);
+
+            var mloInstance = TryGetMloInstance(mlo);
+            if (mloInstance != null)
+            {
+            }
+
+            ProjectExplorer?.RemoveMloRoomTreeNode(CurrentMloRoom);
+            ProjectExplorer?.SetYtypHasChanged(mlo.Ytyp, true);
+            ClosePanel((EditYtypMloRoomPanel p) => { return p.Tag == CurrentMloRoom; });
+            CurrentMloRoom = null;
+
+            return true;
+        }
+        public bool DeleteMloPortal()
+        {
+            var mlo = CurrentMloPortal?.OwnerMlo;
+            if (mlo == null) return false;
+
+            if (MessageBox.Show("Are you sure you want to delete this portal?\n" + CurrentMloPortal.Name + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            mlo.RemovePortal(CurrentMloPortal);
+
+            var mloInstance = TryGetMloInstance(mlo);
+            if (mloInstance != null)
+            {
+            }
+
+            ProjectExplorer?.RemoveMloPortalTreeNode(CurrentMloPortal);
+            ProjectExplorer?.SetYtypHasChanged(mlo.Ytyp, true);
+            ClosePanel((EditYtypMloPortalPanel p) => { return p.Tag == CurrentMloPortal; });
+            CurrentMloPortal = null;
+
+            return true;
+        }
+        public bool DeleteMloEntitySet()
+        {
+            var mlo = CurrentMloEntitySet?.OwnerMlo;
+            if (mlo == null) return false;
+
+            if (MessageBox.Show("Are you sure you want to delete this entity set?\n" + CurrentMloEntitySet.Name + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            mlo.RemoveEntitySet(CurrentMloEntitySet);
+
+            var mloInstance = TryGetMloInstance(mlo);
+            if (mloInstance != null)
+            {
+                mloInstance.DeleteEntitySet(CurrentMloEntitySet);
+            }
+
+            ProjectExplorer?.RemoveMloEntitySetTreeNode(CurrentMloEntitySet);
+            ProjectExplorer?.SetYtypHasChanged(mlo.Ytyp, true);
+            ClosePanel((EditYtypMloEntSetPanel p) => { return p.Tag == CurrentMloEntitySet; });
+            CurrentMloEntitySet = null;
+
+            return true;
+        }
+
+        private void AddProjectArchetypes(YtypFile ytyp)
+        {
+            if (ytyp?.AllArchetypes == null) return;
+            foreach (var arch in ytyp.AllArchetypes)
+            {
+                AddProjectArchetype(arch);
+            }
+        }
+        private void AddProjectArchetype(Archetype arch)
+        {
+            if ((arch?.Hash ?? 0) == 0) return;
+            lock (projectsyncroot)
+            {
+                projectarchetypes[arch.Hash] = arch;
+            }
+        }
+        private void RemoveProjectArchetypes(YtypFile ytyp)
+        {
+            if (ytyp?.AllArchetypes == null) return;
+            foreach (var arch in ytyp.AllArchetypes)
+            {
+                RemoveProjectArchetype(arch);
+            }
+        }
+        private void RemoveProjectArchetype(Archetype arch)
+        {
+            if ((arch?.Hash ?? 0) == 0) return;
+            Archetype tarch = null;
+            lock (projectsyncroot)
+            {
+                projectarchetypes.TryGetValue(arch.Hash, out tarch);
+                if (tarch == arch)
+                {
+                    projectarchetypes.Remove(arch.Hash);
+                }
+            }
+        }
+
+
+
+
+
+
+
+        public void NewYbn()
+        {
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            if (CurrentProjectFile == null) return;
+
+            int testi = 1;
+            string fname = string.Empty;
+            bool filenameok = false;
+            while (!filenameok)
+            {
+                fname = "bounds" + testi.ToString() + ".ynd";
+                filenameok = !CurrentProjectFile.ContainsYbn(fname);
+                testi++;
+            }
+
+            lock (projectsyncroot)
+            {
+                YbnFile ybn = CurrentProjectFile.AddYbnFile(fname);
+                if (ybn != null)
+                {
+                    ybn.Loaded = true;
+                    ybn.HasChanged = true; //new ynd, flag as not saved
+
+                    //TODO: set new ybn default values...
+                    ybn.Bounds = new Bounds();
+                }
+            }
+
+            CurrentProjectFile.HasChanged = true;
+
+            LoadProjectTree();
+        }
+        public void OpenYbn()
+        {
+            string[] files = ShowOpenDialogMulti("Ybn files|*.ybn", string.Empty);
+            if (files == null)
+            {
+                return;
+            }
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            foreach (string file in files)
+            {
+                if (!File.Exists(file)) continue;
+
+                var ybn = CurrentProjectFile.AddYbnFile(file);
+
+                if (ybn != null)
+                {
+                    SetProjectHasChanged(true);
+
+                    LoadYbnFromFile(ybn, file);
+
+                    LoadProjectTree();
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
+                }
+
+            }
+        }
+        public void SaveYbn(bool saveas = false)
+        {
+            if ((CurrentYbnFile == null) && (CurrentCollisionBounds != null)) CurrentYbnFile = CurrentCollisionBounds.GetRootYbn();
+            if (CurrentYbnFile == null) return;
+
+
+            string ybnname = CurrentYbnFile.Name;
+            string filepath = CurrentYbnFile.FilePath;
+            if (string.IsNullOrEmpty(filepath))
+            {
+                filepath = ybnname;
+            }
+            string origfile = filepath;
+            if (!File.Exists(filepath))
+            {
+                saveas = true;
+            }
+
+
+            byte[] data;
+            lock (projectsyncroot) //need to sync writes to ybn objects...
+            {
+                saveas = saveas || string.IsNullOrEmpty(filepath);
+                if (saveas)
+                {
+                    filepath = ShowSaveDialog("Ybn files|*.ybn", filepath);
+                    if (string.IsNullOrEmpty(filepath))
+                    { return; }
+
+                    string newname = Path.GetFileNameWithoutExtension(filepath);
+                    JenkIndex.Ensure(newname);
+                    CurrentYbnFile.FilePath = filepath;
+                    CurrentYbnFile.RpfFileEntry.Name = new FileInfo(filepath).Name;
+                    CurrentYbnFile.Name = CurrentYbnFile.RpfFileEntry.Name;
+                }
+
+
+                data = CurrentYbnFile.Save();
+            }
+
+
+            if (data != null)
+            {
+                File.WriteAllBytes(filepath, data);
+            }
+
+            SetYbnHasChanged(false);
+
+            if (saveas)
+            {
+                //ShowEditYbnPanel(false);
+                if (CurrentProjectFile != null)
+                {
+                    string origpath = CurrentProjectFile.GetRelativePath(origfile);
+                    string newpath = CurrentProjectFile.GetRelativePath(CurrentYbnFile.FilePath);
+                    if (!CurrentProjectFile.RenameYbn(origpath, newpath))
+                    { //couldn't rename it in the project? happens when project not saved yet...
+                        //MessageBox.Show("Couldn't rename ybn in project! This shouldn't happen - check the project file XML.");
+                    }
+                }
+                SetProjectHasChanged(true);
+                SetCurrentSaveItem();
+            }
+
+        }
+        public void AddYbnToProject(YbnFile ybn)
+        {
+            if (ybn == null) return;
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            if (YbnExistsInProject(ybn)) return;
+            if (CurrentProjectFile.AddYbnFile(ybn))
+            {
+                ybn.HasChanged = true;
+                CurrentProjectFile.HasChanged = true;
+                LoadProjectTree();
+            }
+            CurrentYbnFile = ybn;
+            RefreshUI();
+            if (CurrentCollisionPoly != null)
+            {
+                ProjectExplorer?.TrySelectCollisionPolyTreeNode(CurrentCollisionPoly);
+            }
+            else if (CurrentCollisionBounds != null)
+            {
+                ProjectExplorer?.TrySelectCollisionBoundsTreeNode(CurrentCollisionBounds);
+            }
+        }
+        public void RemoveYbnFromProject()
+        {
+            if (CurrentYbnFile == null) return;
+            if (CurrentProjectFile == null) return;
+            CurrentProjectFile.RemoveYbnFile(CurrentYbnFile);
+            CurrentYbnFile = null;
+            LoadProjectTree();
+            RefreshUI();
+        }
+        public bool YbnExistsInProject(YbnFile ybn)
+        {
+            if (ybn == null) return false;
+            if (CurrentProjectFile == null) return false;
+            return CurrentProjectFile.ContainsYbn(ybn);
+        }
+
+
+
+
+
+
 
         public void NewYnd()
         {
@@ -2794,6 +3353,11 @@ namespace CodeWalker.Project
 
 
 
+
+
+
+
+
         public void NewYnv()
         {
             if (CurrentProjectFile == null)
@@ -2997,6 +3561,11 @@ namespace CodeWalker.Project
         {
             return portal == CurrentNavPortal;
         }
+
+
+
+
+
 
 
 
@@ -3257,6 +3826,11 @@ namespace CodeWalker.Project
         {
             return node == CurrentTrainNode;
         }
+
+
+
+
+
 
 
 
@@ -4263,9 +4837,9 @@ namespace CodeWalker.Project
                 if (vals[0].StartsWith("X")) continue;
                 Vector3 pos = Vector3.Zero;
                 float dir = 0;
-                var action = Unk_3609807418.Move;
-                var navMode = Unk_3971773454.Direct;
-                var navSpeed = Unk_941086046.Unk_00_3279574318;
+                var action = CScenarioChainingEdge__eAction.Move;
+                var navMode = CScenarioChainingEdge__eNavMode.Direct;
+                var navSpeed = CScenarioChainingEdge__eNavSpeed.Unk_00_3279574318;
                 var stype = new ScenarioTypeRef(defaulttype);
                 var modelset = defaultmodelset;
                 var flags = defaultflags;
@@ -4284,15 +4858,15 @@ namespace CodeWalker.Project
                     byte nsb = 0;
                     byte.TryParse(vals[4].Trim(), out nsb);
                     if (nsb > 15) nsb = 15;
-                    navSpeed = (Unk_941086046)nsb;
+                    navSpeed = (CScenarioChainingEdge__eNavSpeed)nsb;
                 }
                 if (vals.Length > 5)
                 {
                     switch (vals[5].Trim())
                     {
-                        case "Direct": navMode = Unk_3971773454.Direct; break;
-                        case "NavMesh": navMode = Unk_3971773454.NavMesh; break;
-                        case "Roads": navMode = Unk_3971773454.Roads; break;
+                        case "Direct": navMode = CScenarioChainingEdge__eNavMode.Direct; break;
+                        case "NavMesh": navMode = CScenarioChainingEdge__eNavMode.NavMesh; break;
+                        case "Roads": navMode = CScenarioChainingEdge__eNavMode.Roads; break;
                     }
                 }
                 if (vals.Length > 6)
@@ -5038,7 +5612,7 @@ namespace CodeWalker.Project
             room.NameHash = JenkHash.GenHash(room.Name);
 
             room.Flags0 = 0xAAAAAAAA;
-            room.Unk06 = 3817852694;//??
+            room.Unk06 = (uint)MetaName.null_sound;
             room.Unk14 = 3565506855;//?
 
 
@@ -5104,6 +5678,12 @@ namespace CodeWalker.Project
 
 
 
+
+
+
+
+
+
         public void GetVisibleYmaps(Camera camera, Dictionary<MetaHash, YmapFile> ymaps)
         {
             if (hidegtavmap)
@@ -5134,29 +5714,71 @@ namespace CodeWalker.Project
                     foreach (var kvp in ymaps)
                     {
                         var ymap = kvp.Value;
-                        if (ymap.MloEntities == null) continue;
-                        foreach (var mloDef in ymap.MloEntities)
+                        if (ymap.AllEntities != null)
                         {
-                            if (mloDef.Archetype == null) continue; // archetype was changed from an mlo to a regular archetype
-                            visiblemloentities[mloDef.Archetype._BaseArchetypeDef.name] = mloDef;
+                            foreach (var ent in ymap.AllEntities)
+                            {
+                                if (ent.Archetype == null) continue;
+
+                                Archetype parch = null;
+                                projectarchetypes.TryGetValue(ent.Archetype.Hash, out parch);
+                                if ((parch != null) && (ent.Archetype != parch))
+                                {
+                                    ent.SetArchetype(parch); //swap archetype to project one...
+                                    if (ent.IsMlo)
+                                    {
+                                        ent.MloInstance.InitYmapEntityArchetypes(GameFileCache);
+                                    }
+                                }
+
+                            }
+                        }
+                        if (ymap.MloEntities != null)
+                        {
+                            foreach (var mloDef in ymap.MloEntities)
+                            {
+                                if (mloDef.Archetype == null) continue; // archetype was changed from an mlo to a regular archetype
+                                visiblemloentities[mloDef.Archetype._BaseArchetypeDef.name] = mloDef;
+                            }
                         }
                     }
                 }
             }
         }
-        public void GetVisibleCollisionMeshes(Camera camera, List<BoundsStoreItem> items)
+        public void GetVisibleYbns(Camera camera, List<YbnFile> ybns)
         {
             if (hidegtavmap)
             {
-                items.Clear();
+                ybns.Clear();
             }
-        }
-        public void GetVisibleWaterQuads(Camera camera, List<WaterQuad> quads)
-        {
-            if (hidegtavmap)
+
+            if (CurrentProjectFile == null) return;
+
+            lock (projectsyncroot)
             {
-                quads.Clear();
+                visibleybns.Clear();
+                for (int i = 0; i < ybns.Count; i++)
+                {
+                    var ybn = ybns[i];
+                    visibleybns[ybn.Name] = ybn;
+                }
+
+                for (int i = 0; i < CurrentProjectFile.YbnFiles.Count; i++)
+                {
+                    var ybn = CurrentProjectFile.YbnFiles[i];
+                    if (ybn.Loaded)
+                    {
+                        visibleybns[ybn.Name] = ybn;
+                    }
+                }
+
+                ybns.Clear();
+                foreach (var ybn in visibleybns.Values)
+                {
+                    ybns.Add(ybn);
+                }
             }
+
         }
         public void GetVisibleYnds(Camera camera, List<YndFile> ynds)
         {
@@ -5336,6 +5958,13 @@ namespace CodeWalker.Project
 
 
         }
+        public void GetVisibleWaterQuads(Camera camera, List<WaterQuad> quads)
+        {
+            if (hidegtavmap)
+            {
+                quads.Clear();
+            }
+        }
 
         public MloInstanceData TryGetMloInstance(MloArchetype arch)
         {
@@ -5365,6 +5994,8 @@ namespace CodeWalker.Project
                     var ent = sel.EntityDef;
                     var cargen = sel.CarGenerator;
                     var grassbatch = sel.GrassBatch;
+                    var collpoly = sel.CollisionPoly;
+                    var collbound = sel.CollisionBounds ?? collpoly?.Owner;
                     var pathnode = sel.PathNode;
                     var pathlink = sel.PathLink;
                     var navpoly = sel.NavPoly;
@@ -5375,8 +6006,9 @@ namespace CodeWalker.Project
                     var scenarioedge = sel.ScenarioEdge;
                     var audiopl = sel.Audio;
                     Archetype arch = mlo?.Archetype ?? ent?.MloParent?.Archetype ?? ent?.Archetype;
-                    YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.Archetype?.Ytyp;
+                    YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.OwnerMlo?.Ytyp;
                     YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
+                    YbnFile ybn = collbound?.GetRootYbn();
                     YndFile ynd = pathnode?.Ynd;
                     YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
                     TrainTrack traintrack = trainnode?.Track;
@@ -5418,6 +6050,17 @@ namespace CodeWalker.Project
                         if (room != CurrentMloRoom)
                         {
                             ProjectExplorer?.TrySelectMloRoomTreeNode(room);
+                        }
+                    }
+                    else if (YbnExistsInProject(ybn))
+                    {
+                        if (collpoly != CurrentCollisionPoly)
+                        {
+                            ProjectExplorer?.TrySelectCollisionPolyTreeNode(collpoly);
+                        }
+                        if (collbound != CurrentCollisionBounds)
+                        {
+                            ProjectExplorer?.TrySelectCollisionBoundsTreeNode(collbound);
                         }
                     }
                     else if (YndExistsInProject(ynd))
@@ -5475,12 +6118,17 @@ namespace CodeWalker.Project
                     }
 
                     CurrentMloRoom = room;
+                    CurrentMloPortal = null;
+                    CurrentMloEntitySet = null;
                     CurrentYmapFile = ymap;
                     CurrentYtypFile = ytyp;
                     CurrentArchetype = arch;
                     CurrentEntity = ent ?? mlo;
                     CurrentCarGen = cargen;
                     CurrentGrassBatch = grassbatch;
+                    CurrentYbnFile = ybn;
+                    CurrentCollisionPoly = collpoly;
+                    CurrentCollisionBounds = collbound;
                     CurrentYndFile = ynd;
                     CurrentPathNode = pathnode;
                     CurrentPathLink = pathlink;
@@ -5530,6 +6178,14 @@ namespace CodeWalker.Project
                     else if (sel.CarGenerator != null)
                     {
                         OnWorldCarGenModified(sel.CarGenerator);
+                    }
+                    else if (sel.CollisionPoly != null)
+                    {
+                        OnWorldCollisionPolyModified(sel.CollisionPoly);
+                    }
+                    else if (sel.CollisionBounds != null)
+                    {
+                        OnWorldCollisionBoundsModified(sel.CollisionBounds);
                     }
                     else if (sel.PathNode != null)
                     {
@@ -5665,6 +6321,84 @@ namespace CodeWalker.Project
                 if (cargen.Ymap != null)
                 {
                     SetYmapHasChanged(true);
+                }
+            }
+
+        }
+        private void OnWorldCollisionPolyModified(BoundPolygon poly)
+        {
+            var ybn = poly?.Owner?.GetRootYbn();
+            if (ybn == null) return;
+
+            CurrentYbnFile = ybn;
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            if (!YbnExistsInProject(ybn))
+            {
+                ybn.HasChanged = true;
+                poly.Owner.HasChanged = true;
+                AddYbnToProject(ybn);
+                ProjectExplorer?.TrySelectCollisionPolyTreeNode(poly);
+            }
+
+            if (poly != CurrentCollisionPoly)
+            {
+                CurrentCollisionPoly = poly;
+                ProjectExplorer?.TrySelectCollisionPolyTreeNode(poly);
+            }
+
+            if (poly == CurrentCollisionPoly)
+            {
+                ShowEditYbnBoundPolyPanel(false);
+
+                //////UpdateCollisionPolyTreeNode(poly);
+
+                if (ybn != null)
+                {
+                    SetYbnHasChanged(true);
+                }
+            }
+
+        }
+        private void OnWorldCollisionBoundsModified(Bounds bounds)
+        {
+            var ybn = bounds?.GetRootYbn();
+            if (ybn == null) return;
+
+            CurrentYbnFile = ybn;
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            if (!YbnExistsInProject(ybn))
+            {
+                ybn.HasChanged = true;
+                bounds.HasChanged = true;
+                AddYbnToProject(ybn);
+                ProjectExplorer?.TrySelectCollisionBoundsTreeNode(bounds);
+            }
+
+            if (bounds != CurrentCollisionBounds)
+            {
+                CurrentCollisionBounds = bounds;
+                ProjectExplorer?.TrySelectCollisionBoundsTreeNode(bounds);
+            }
+
+            if (bounds == CurrentCollisionBounds)
+            {
+                ShowEditYbnBoundsPanel(false);
+
+                //////UpdateCollisionBoundsTreeNode(bounds);
+
+                if (ybn != null)
+                {
+                    SetYbnHasChanged(true);
                 }
             }
 
@@ -5974,6 +6708,19 @@ namespace CodeWalker.Project
 
             PromoteIfPreviewPanelActive();
         }
+        public void SetYbnHasChanged(bool changed)
+        {
+            if (CurrentYbnFile == null) return;
+
+            bool changechange = changed != CurrentYbnFile.HasChanged;
+            if (!changechange) return;
+
+            CurrentYbnFile.HasChanged = changed;
+
+            ProjectExplorer?.SetYbnHasChanged(CurrentYbnFile, changed);
+
+            PromoteIfPreviewPanelActive();
+        }
         public void SetYndHasChanged(bool changed)
         {
             if (CurrentYndFile == null) return;
@@ -6130,6 +6877,22 @@ namespace CodeWalker.Project
             byte[] data = File.ReadAllBytes(filename);
 
             ytyp.Load(data);
+
+            AddProjectArchetypes(ytyp);
+        }
+        private void LoadYbnFromFile(YbnFile ybn, string filename)
+        {
+            byte[] data = File.ReadAllBytes(filename);
+
+            ybn.Load(data);
+
+            if (WorldForm != null)
+            {
+                if (ybn?.Bounds != null)
+                {
+                    WorldForm.UpdateCollisionBoundsGraphics(ybn?.Bounds);
+                }
+            }
         }
         private void LoadYndFromFile(YndFile ynd, string filename)
         {
@@ -6224,6 +6987,7 @@ namespace CodeWalker.Project
             RefreshEntityUI();
             RefreshCarGenUI();
             RefreshYtypUI();
+            RefreshYbnUI();
             RefreshYndUI();
             RefreshYnvUI();
             RefreshTrainTrackUI();
@@ -6299,7 +7063,7 @@ namespace CodeWalker.Project
         {
             bool enable = (CurrentYtypFile != null);
             bool inproj = YtypExistsInProject(CurrentYtypFile);
-            bool ismlo = ((CurrentEntity != null) && (CurrentEntity.MloParent != null) || (CurrentMloRoom != null)) || (CurrentArchetype is MloArchetype);
+            bool ismlo = ((CurrentEntity != null) && (CurrentEntity.MloParent != null)) || (CurrentMloRoom != null) || (CurrentMloPortal != null) || (CurrentMloEntitySet != null) || (CurrentArchetype is MloArchetype);
 
             YtypNewArchetypeMenu.Enabled = enable && inproj;
             YtypMloToolStripMenuItem.Enabled = enable && inproj && ismlo;
@@ -6322,6 +7086,13 @@ namespace CodeWalker.Project
             {
                 //WorldForm.EnableYtypUI(enable, CurrentYtypFile?.Name ?? "");
             }
+        }
+        private void RefreshYbnUI()
+        {
+            bool enable = (CurrentYbnFile != null);
+            bool inproj = YbnExistsInProject(CurrentYbnFile);
+
+
         }
         private void RefreshYndUI()
         {
@@ -6470,6 +7241,10 @@ namespace CodeWalker.Project
             else if (CurrentYtypFile != null)
             {
                 filename = CurrentYtypFile.RpfFileEntry?.Name;
+            }
+            else if (CurrentYbnFile != null)
+            {
+                filename = CurrentYbnFile.RpfFileEntry?.Name;
             }
             else if (CurrentYndFile != null)
             {
@@ -6751,6 +7526,18 @@ namespace CodeWalker.Project
         private void YtypMloNewEntityToolStripMenuItem_Click(object sender, EventArgs e)
         {
             NewMloEntity();
+        }
+        private void YtypMloNewRoomToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewMloRoom();
+        }
+        private void YtypMloNewPortalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewMloPortal();
+        }
+        private void YtypMloNewEntitySetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewMloEntitySet();
         }
 
         private void YndNewNodeMenu_Click(object sender, EventArgs e)

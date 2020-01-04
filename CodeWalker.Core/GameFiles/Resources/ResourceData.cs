@@ -46,6 +46,8 @@ namespace CodeWalker.GameFiles
         private Stream systemStream;
         private Stream graphicsStream;
 
+        public RpfResourceFileEntry FileEntry { get; set; }
+
         // this is a dictionary that contains all the resource blocks
         // which were read from this resource reader
         private Dictionary<long, List<IResourceBlock>> blockPool;
@@ -84,6 +86,7 @@ namespace CodeWalker.GameFiles
         public ResourceDataReader(RpfResourceFileEntry resentry, byte[] data, Endianess endianess = Endianess.LittleEndian)
             : base((Stream)null, endianess)
         {
+            FileEntry = resentry;
             var systemSize = resentry.SystemSize;
             var graphicsSize = resentry.GraphicsSize;
 
@@ -264,6 +267,15 @@ namespace CodeWalker.GameFiles
             //    result2[i] = ReadUInt16();
             //}
             //Position = posbackup;
+            return result;
+        }
+        public short[] ReadShortsAt(ulong position, uint count)
+        {
+            if ((position <= 0) || (count == 0)) return null;
+            var result = new short[count];
+            var length = count * 2;
+            byte[] data = ReadBytesAt(position, length);
+            Buffer.BlockCopy(data, 0, result, 0, (int)length);
             return result;
         }
         public uint[] ReadUintsAt(ulong position, uint count)

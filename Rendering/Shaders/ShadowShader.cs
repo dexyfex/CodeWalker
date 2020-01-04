@@ -57,12 +57,15 @@ namespace CodeWalker.Rendering
         bool disposed = false;
 
         VertexShader shadowvs;
+        VertexShader shadowvs_skin;
         PixelShader shadowps;
 
         GpuVarsBuffer<ShadowShaderVSSceneVars> VSSceneVars;
         GpuVarsBuffer<ShadowShaderVSEntityVars> VSEntityVars;
         GpuVarsBuffer<ShadowShaderVSModelVars> VSModelVars;
         GpuVarsBuffer<ShadowShaderGeomVars> GeomVars;
+        GpuABuffer<Matrix3_s> BoneMatrices;
+        GpuABuffer<Vector4> ClothVertices;
 
         SamplerState texsampler;
         SamplerState texsamplerc;
@@ -70,15 +73,20 @@ namespace CodeWalker.Rendering
 
         public Vector4 WindVector { get; set; }
 
+        Matrix3_s[] defaultBoneMatrices;
+        bool defaultBoneMatricesBound = false;
+
 
         private Dictionary<VertexType, InputLayout> layouts = new Dictionary<VertexType, InputLayout>();
 
         public ShadowShader(Device device)
         {
             byte[] vsbytes = File.ReadAllBytes("Shaders\\ShadowVS.cso");
+            byte[] vssbytes = File.ReadAllBytes("Shaders\\ShadowVS_Skin.cso");
             byte[] psbytes = File.ReadAllBytes("Shaders\\ShadowPS.cso");
 
             shadowvs = new VertexShader(device, vsbytes);
+            shadowvs_skin = new VertexShader(device, vssbytes);
             shadowps = new PixelShader(device, psbytes);
 
 
@@ -86,36 +94,42 @@ namespace CodeWalker.Rendering
             VSEntityVars = new GpuVarsBuffer<ShadowShaderVSEntityVars>(device);
             VSModelVars = new GpuVarsBuffer<ShadowShaderVSModelVars>(device);
             GeomVars = new GpuVarsBuffer<ShadowShaderGeomVars>(device);
+            BoneMatrices = new GpuABuffer<Matrix3_s>(device, 255);
+            ClothVertices = new GpuABuffer<Vector4>(device, 254);
 
 
             //supported layouts - requires Position, Normal, Colour, Texcoord
-            layouts.Add(VertexType.Default, new InputLayout(device, vsbytes, VertexTypeDefault.GetLayout()));
-            layouts.Add(VertexType.DefaultEx, new InputLayout(device, vsbytes, VertexTypeDefaultEx.GetLayout()));
-            layouts.Add(VertexType.PNCCT, new InputLayout(device, vsbytes, VertexTypePNCCT.GetLayout()));
-            layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vsbytes, VertexTypePNCCTTTT.GetLayout()));
-            layouts.Add(VertexType.PBBNCCTTX, new InputLayout(device, vsbytes, VertexTypePBBNCCTTX.GetLayout()));
-            layouts.Add(VertexType.PBBNCCT, new InputLayout(device, vsbytes, VertexTypePBBNCCT.GetLayout()));
-            layouts.Add(VertexType.PNCTTTX, new InputLayout(device, vsbytes, VertexTypePNCTTTX.GetLayout()));
-            layouts.Add(VertexType.PNCTTTX_2, new InputLayout(device, vsbytes, VertexTypePNCTTTX_2.GetLayout()));
-            layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vsbytes, VertexTypePNCTTTX_3.GetLayout()));
-            layouts.Add(VertexType.PNCTTTTX, new InputLayout(device, vsbytes, VertexTypePNCTTTTX.GetLayout()));
-            layouts.Add(VertexType.PNCTTX, new InputLayout(device, vsbytes, VertexTypePNCTTX.GetLayout()));
-            layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vsbytes, VertexTypePNCCTTX.GetLayout()));
-            layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vsbytes, VertexTypePNCCTTX_2.GetLayout()));
-            layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vsbytes, VertexTypePNCCTTTX.GetLayout()));
-            layouts.Add(VertexType.PBBNCCTX, new InputLayout(device, vsbytes, VertexTypePBBNCCTX.GetLayout()));
-            layouts.Add(VertexType.PBBNCTX, new InputLayout(device, vsbytes, VertexTypePBBNCTX.GetLayout()));
-            layouts.Add(VertexType.PBBNCT, new InputLayout(device, vsbytes, VertexTypePBBNCT.GetLayout()));
-            layouts.Add(VertexType.PNCCTT, new InputLayout(device, vsbytes, VertexTypePNCCTT.GetLayout()));
-            layouts.Add(VertexType.PNCCTX, new InputLayout(device, vsbytes, VertexTypePNCCTX.GetLayout()));
-            layouts.Add(VertexType.PNCH2, new InputLayout(device, vsbytes, VertexTypePNCH2.GetLayout()));
-            layouts.Add(VertexType.PCCH2H4, new InputLayout(device, vsbytes, VertexTypePCCH2H4.GetLayout()));
-            layouts.Add(VertexType.PBBNCTT, new InputLayout(device, vsbytes, VertexTypePBBNCTT.GetLayout()));
-            layouts.Add(VertexType.PBBNCTTX, new InputLayout(device, vsbytes, VertexTypePBBNCTTX.GetLayout()));
-            layouts.Add(VertexType.PBBNCTTT, new InputLayout(device, vsbytes, VertexTypePBBNCTTT.GetLayout()));
-            layouts.Add(VertexType.PNCTT, new InputLayout(device, vsbytes, VertexTypePNCTT.GetLayout()));
-            layouts.Add(VertexType.PNCTTT, new InputLayout(device, vsbytes, VertexTypePNCTTT.GetLayout()));
-            layouts.Add(VertexType.PBBNCTTTX, new InputLayout(device, vsbytes, VertexTypePBBNCTTTX.GetLayout()));
+            layouts.Add(VertexType.Default, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.Default)));
+            layouts.Add(VertexType.DefaultEx, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.DefaultEx)));
+            layouts.Add(VertexType.PNCCT, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCT)));
+            layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCTTTT)));
+            layouts.Add(VertexType.PNCTTTX, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCTTTX)));
+            layouts.Add(VertexType.PNCTTTX_2, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCTTTX_2)));
+            layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCTTTX_3)));
+            layouts.Add(VertexType.PNCTTTTX, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCTTTTX)));
+            layouts.Add(VertexType.PNCTTX, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCTTX)));
+            layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCTTX)));
+            layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCTTX_2)));
+            layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCTTTX)));
+            layouts.Add(VertexType.PNCCTT, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCTT)));
+            layouts.Add(VertexType.PNCCTX, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCTX)));
+            layouts.Add(VertexType.PNCH2, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCH2, VertexDeclarationTypes.Types3)));
+            layouts.Add(VertexType.PCCH2H4, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PCCH2H4, VertexDeclarationTypes.Types2)));
+            layouts.Add(VertexType.PNCTT, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCTT)));
+            layouts.Add(VertexType.PNCTTT, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCTTT)));
+
+            layouts.Add(VertexType.PBBNCT, new InputLayout(device, vssbytes, VertexTypeGTAV.GetLayout(VertexType.PBBNCT)));
+            layouts.Add(VertexType.PBBNCTX, new InputLayout(device, vssbytes, VertexTypeGTAV.GetLayout(VertexType.PBBNCTX)));
+            layouts.Add(VertexType.PBBNCTT, new InputLayout(device, vssbytes, VertexTypeGTAV.GetLayout(VertexType.PBBNCTT)));
+            layouts.Add(VertexType.PBBNCTTT, new InputLayout(device, vssbytes, VertexTypeGTAV.GetLayout(VertexType.PBBNCTTT)));
+            layouts.Add(VertexType.PBBNCCT, new InputLayout(device, vssbytes, VertexTypeGTAV.GetLayout(VertexType.PBBNCCT)));
+            layouts.Add(VertexType.PBBNCCTT, new InputLayout(device, vssbytes, VertexTypeGTAV.GetLayout(VertexType.PBBNCCTT)));//TODO
+            layouts.Add(VertexType.PBBNCCTX, new InputLayout(device, vssbytes, VertexTypeGTAV.GetLayout(VertexType.PBBNCCTX)));
+            layouts.Add(VertexType.PBBNCTTX, new InputLayout(device, vssbytes, VertexTypeGTAV.GetLayout(VertexType.PBBNCTTX)));
+            layouts.Add(VertexType.PBBNCTTTX, new InputLayout(device, vssbytes, VertexTypeGTAV.GetLayout(VertexType.PBBNCTTTX)));//TODO
+            layouts.Add(VertexType.PBBNCCTTX, new InputLayout(device, vssbytes, VertexTypeGTAV.GetLayout(VertexType.PBBNCCTTX)));//TODO
+            //PBBCCT todo
+            //PBBNC todo
 
 
 
@@ -146,13 +160,22 @@ namespace CodeWalker.Rendering
                 MipLodBias = 0,
             });
 
+
+
+            defaultBoneMatrices = new Matrix3_s[255];
+            for (int i = 0; i < 255; i++)
+            {
+                defaultBoneMatrices[i].Row1 = Vector4.UnitX;
+                defaultBoneMatrices[i].Row2 = Vector4.UnitY;
+                defaultBoneMatrices[i].Row3 = Vector4.UnitZ;
+            }
+
         }
 
 
 
         public override void SetShader(DeviceContext context)
         {
-            context.VertexShader.Set(shadowvs);
             context.PixelShader.Set(shadowps);
         }
 
@@ -161,6 +184,26 @@ namespace CodeWalker.Rendering
             InputLayout l;
             if (layouts.TryGetValue(type, out l))
             {
+                VertexShader vs = shadowvs;
+                switch (type)
+                {
+                    case VertexType.PBBNCT:
+                    case VertexType.PBBNCTX:
+                    case VertexType.PBBNCTT:
+                    case VertexType.PBBNCTTT:
+                    case VertexType.PBBNCCT:
+                    case VertexType.PBBNCCTT:
+                    case VertexType.PBBNCCTX:
+                    case VertexType.PBBNCTTX:
+                    case VertexType.PBBNCTTTX:
+                    case VertexType.PBBNCCTTX:
+                        vs = shadowvs_skin;
+                        break;
+                }
+
+                context.VertexShader.Set(vs);
+
+
                 context.InputAssembler.InputLayout = l;
                 return true;
             }
@@ -192,6 +235,21 @@ namespace CodeWalker.Rendering
 
         public override void SetModelVars(DeviceContext context, RenderableModel model)
         {
+            if (model.Owner.Skeleton?.BoneTransforms != null)
+            {
+                SetBoneMatrices(context, model.Owner.Skeleton.BoneTransforms);
+                defaultBoneMatricesBound = false;
+            }
+            else if (!defaultBoneMatricesBound)
+            {
+                SetBoneMatrices(context, defaultBoneMatrices);
+                defaultBoneMatricesBound = true;
+            }
+            if (model.Owner.Cloth?.Vertices != null)
+            {
+                SetClothVertices(context, model.Owner.Cloth.Vertices);
+            }
+
             if (!model.UseTransform) return;
             VSModelVars.Vars.Transform = Matrix.Transpose(model.Transform);
             VSModelVars.Update(context);
@@ -271,6 +329,7 @@ namespace CodeWalker.Rendering
 
 
             uint windflag = 0;
+            uint tintflag = 0;
             var shaderFile = geom.DrawableGeom.Shader.FileName;
             switch (shaderFile.Hash)
             {
@@ -283,13 +342,18 @@ namespace CodeWalker.Rendering
                 case 4265705004://{trees_normal_diffspec.sps}
                     windflag = 1;
                     break;
+                case 231364109: //weapon_normal_spec_cutout_palette.sps
+                case 3294641629://weapon_normal_spec_detail_palette.sps
+                case 731050667: //weapon_normal_spec_palette.sps
+                    tintflag = 2; //use diffuse sampler alpha for tint lookup! (ignore texture alpha in PS)
+                    break;
             }
 
 
 
 
             GeomVars.Vars.EnableTexture = usediff ? 1u : 0u;
-            GeomVars.Vars.EnableTint = 0u;// usetint ? 1u : 0u;
+            GeomVars.Vars.EnableTint = tintflag;// usetint ? 1u : 0u;
             GeomVars.Vars.IsDecal = 0u;// DecalMode ? 1u : 0u;
             GeomVars.Vars.EnableWind = windflag;
             GeomVars.Vars.WindOverrideParams = geom.WindOverrideParams;
@@ -304,7 +368,28 @@ namespace CodeWalker.Rendering
             {
                 texture.SetPSResource(context, 0);
             }
+
+
+            if (geom.BoneTransforms != null)
+            {
+                SetBoneMatrices(context, geom.BoneTransforms);
+                defaultBoneMatricesBound = false;
+            }
+
         }
+
+        public void SetBoneMatrices(DeviceContext context, Matrix3_s[] matrices)
+        {
+            BoneMatrices.Update(context, matrices);
+            BoneMatrices.SetVSCBuffer(context, 7);
+        }
+
+        public void SetClothVertices(DeviceContext context, Vector4[] vertices)
+        {
+            ClothVertices.Update(context, vertices);
+            ClothVertices.SetVSCBuffer(context, 8);
+        }
+
 
         public override void UnbindResources(DeviceContext context)
         {
@@ -341,10 +426,13 @@ namespace CodeWalker.Rendering
             VSEntityVars.Dispose();
             VSModelVars.Dispose();
             GeomVars.Dispose();
+            BoneMatrices.Dispose();
+            ClothVertices.Dispose();
 
 
             shadowps.Dispose();
             shadowvs.Dispose();
+            shadowvs_skin.Dispose();
 
             disposed = true;
         }

@@ -813,6 +813,96 @@ namespace CodeWalker.GameFiles
 
             return 0;
         }
+
+
+
+        public static T[] ReadItemArray<T>(XmlNode node, string name) where T : IMetaXmlItem, new()
+        {
+            var vnode2 = node.SelectSingleNode(name);
+            if (vnode2 != null)
+            {
+                var inodes = vnode2.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    var vlist = new List<T>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        var v = new T();
+                        v.ReadXml(inode);
+                        vlist.Add(v);
+                    }
+                    return vlist.ToArray();
+                }
+            }
+            return null;
+        }
+
+        public static T[] ReadItemArrayNullable<T>(XmlNode node, string name) where T : IMetaXmlItem, new()
+        {
+            var vnode2 = node.SelectSingleNode(name);
+            if (vnode2 != null)
+            {
+                var inodes = vnode2.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    var vlist = new List<T>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        if (inode.HasChildNodes)
+                        {
+                            var v = new T();
+                            v.ReadXml(inode);
+                            vlist.Add(v);
+                        }
+                        else
+                        {
+                            vlist.Add(default(T));
+                        }
+                    }
+                    return vlist.ToArray();
+                }
+            }
+            return null;
+        }
+
+
+        public static MetaHash[] ReadHashItemArray(XmlNode node, string name)
+        {
+            var vnode = node.SelectSingleNode(name);
+            if (vnode != null)
+            {
+                var inodes = vnode.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    var vlist = new List<MetaHash>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        vlist.Add(GetHash(inode.InnerText));
+                    }
+                    return vlist.ToArray();
+                }
+            }
+            return null;
+        }
+        public static string[] ReadStringItemArray(XmlNode node, string name)
+        {
+            var vnode = node.SelectSingleNode(name);
+            if (vnode != null)
+            {
+                var inodes = vnode.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    var vlist = new List<string>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        vlist.Add(inode.InnerText);
+                    }
+                    return vlist.ToArray();
+                }
+            }
+            return null;
+        }
+
     }
 
     struct ArrayResults

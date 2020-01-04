@@ -26,11 +26,18 @@ namespace CodeWalker.Rendering
         public Quaternion Orientation;
         public Vector3 Scale;
         public uint TintPaletteIndex;
+        public bool CastShadow;
     }
     public struct RenderableGeometryInst
     {
         public RenderableGeometry Geom;
         public RenderableInst Inst;
+    }
+    public struct RenderableLightInst
+    {
+        public RenderableLight Light;
+        public Vector3 EntityPosition;
+        public Quaternion EntityRotation;
     }
 
     public struct RenderableBoundCompositeInst
@@ -68,8 +75,23 @@ namespace CodeWalker.Rendering
         //public Dictionary<uint, Texture> TextureDict { get; private set; }
         //public long EmbeddedTextureSize { get; private set; }
 
+        public Skeleton Skeleton { get; set; } = null;
         public bool HasSkeleton;
         public bool HasTransforms;
+
+        public bool HasAnims = false;
+        public double CurrentAnimTime = 0;
+        public YcdFile ClipDict;
+        public ClipMapEntry ClipMapEntry;
+        public Dictionary<ushort, RenderableModel> ModelBoneLinks;
+
+        public bool EnableRootMotion = false; //used to toggle whether or not to include root motion when playing animations
+
+        public ClothInstance Cloth;
+
+
+        public RenderableLight[] Lights;
+
 
 
         public override void Init(DrawableBase drawable)
@@ -119,7 +141,7 @@ namespace CodeWalker.Rendering
                 VlowModels = new RenderableModel[vlow.Length];
                 for (int i = 0; i < vlow.Length; i++)
                 {
-                    VlowModels[i] =  InitModel(vlow[i]);
+                    VlowModels[i] = InitModel(vlow[i]);
                     AllModels[curmodel + i] = VlowModels[i];
                 }
                 curmodel += vlow.Length;
@@ -135,6 +157,8 @@ namespace CodeWalker.Rendering
 
 
 
+            var fd = drawable as FragDrawable;
+            var dd = drawable as Drawable;
 
 
             bool hasskeleton = false;
@@ -153,14 +177,13 @@ namespace CodeWalker.Rendering
                 modeltransforms = skeleton.Transformations;
 
                 //for fragments, get the default pose from the root fragment...
-                var fd = drawable as FragDrawable;
                 if (fd != null)
                 {
                     var frag = fd.OwnerFragment;
-                    var pose = frag?.Unknown_A8h_Data;
-                    if ((pose != null) && (pose.Data != null)) //seems to be the default pose
+                    var pose = frag?.BoneTransforms;
+                    if ((pose != null) && (pose.Items != null)) //seems to be the default pose
                     {
-                        var posebonecount = pose.Data.Length;
+                        var posebonecount = pose.Items.Length;
                         if ((modeltransforms == null))// || (modeltransforms.Length != posebonecount))
                         {
                             modeltransforms = new Matrix[posebonecount];
@@ -169,7 +192,7 @@ namespace CodeWalker.Rendering
                         var maxbonecount = Math.Min(posebonecount, modelbonecount);
                         for (int i = 0; i < maxbonecount; i++)
                         {
-                            var p = pose.Data[i];
+                            var p = pose.Items[i];
                             Vector4 r1 = p.Row1;
                             Vector4 r2 = p.Row2;
                             Vector4 r3 = p.Row3;
@@ -230,6 +253,7 @@ namespace CodeWalker.Rendering
             HasSkeleton = hasskeleton;
             HasTransforms = hastransforms;
 
+            Skeleton = skeleton;
 
 
             //calculate transforms for the models if there are any. (TODO: move this to a method for re-use...)
@@ -241,10 +265,21 @@ namespace CodeWalker.Rendering
                 if (hastransforms)
                 {
 
-                    int boneidx = (int)((model.SkeletonBinding >> 24) & 0xFF);
+                    int boneidx = model.BoneIndex;
 
                     Matrix trans = (boneidx < modeltransforms.Length) ? modeltransforms[boneidx] : Matrix.Identity;
                     Bone bone = (hasbones && (boneidx < bones.Count)) ? bones[boneidx] : null;
+
+                    if (mi < HDModels.Length) //populate bone links map for hd models
+                    {
+                        if (bone != null)
+                        {
+                            if (ModelBoneLinks == null) ModelBoneLinks = new Dictionary<ushort, RenderableModel>();
+                            ModelBoneLinks[bone.Tag] = model;
+                        }
+                    }
+
+
 
                     if ((fragtransforms != null))// && (fragtransformid < fragtransforms.Length))
                     {
@@ -259,18 +294,18 @@ namespace CodeWalker.Rendering
                     else if (!usepose) //when using the skeleton's matrices, they need to be transformed by parent
                     {
                         trans.Column4 = Vector4.UnitW;
-                        ushort[] pinds = skeleton.ParentIndices;
-                        ushort parentind = ((pinds != null) && (boneidx < pinds.Length)) ? pinds[boneidx] : (ushort)65535;
-                        while (parentind < pinds.Length)
+                        short[] pinds = skeleton.ParentIndices;
+                        short parentind = ((pinds != null) && (boneidx < pinds.Length)) ? pinds[boneidx] : (short)-1;
+                        while ((parentind >= 0) && (parentind < pinds.Length))
                         {
                             Matrix ptrans = (parentind < modeltransforms.Length) ? modeltransforms[parentind] : Matrix.Identity;
                             ptrans.Column4 = Vector4.UnitW;
                             trans = Matrix.Multiply(ptrans, trans);
-                            parentind = ((pinds != null) && (parentind < pinds.Length)) ? pinds[parentind] : (ushort)65535;
+                            parentind = ((pinds != null) && (parentind < pinds.Length)) ? pinds[parentind] : (short)-1;
                         }
                     }
 
-                    if (((model.SkeletonBinding >> 8) & 0xFF) > 0) //skin mesh?
+                    if (model.IsSkinMesh)
                     {
                         model.Transform = Matrix.Identity;
                     }
@@ -280,6 +315,30 @@ namespace CodeWalker.Rendering
                     }
                 }
             }
+
+
+
+            var lights = dd?.LightAttributes?.data_items;
+            if ((lights == null) && (fd != null) && (fd?.OwnerFragment?.Drawable == fd))
+            {
+                lights = fd.OwnerFragment.LightAttributes?.data_items;
+            }
+            if (lights != null)
+            {
+                var rlights = new RenderableLight[lights.Length];
+                for (int i = 0; i < lights.Length; i++)
+                {
+                    var rlight = new RenderableLight();
+                    rlight.Owner = this;
+                    rlight.Init(ref lights[i]);
+                    rlights[i] = rlight;
+                }
+                Lights = rlights;
+            }
+
+
+            UpdateBoneTransforms();
+
         }
 
         private RenderableModel InitModel(DrawableModel dm)
@@ -330,6 +389,326 @@ namespace CodeWalker.Rendering
             return Key.ToString();
         }
 
+
+        public void ResetBoneTransforms()
+        {
+            if (Skeleton == null) return;
+            Skeleton.ResetBoneTransforms();
+            UpdateBoneTransforms();
+        }
+        private void UpdateBoneTransforms()
+        {
+            if (Skeleton?.Bones?.Data == null) return;
+
+            Skeleton.UpdateBoneTransforms();
+
+            var bones = Skeleton.Bones?.Data;
+            var bonetransforms = Skeleton.BoneTransforms;
+
+            var drawbl = Key;
+            if (AllModels == null) return;
+            for (int i = 0; i < AllModels.Length; i++)
+            {
+                var model = AllModels[i];
+                if (model?.Geometries == null) continue;
+                for (int g = 0; g < model.Geometries.Length; g++)
+                {
+                    var geom = model.Geometries[g];
+                    var boneids = geom?.DrawableGeom?.BoneIds;
+                    if (boneids == null) continue;
+                    if (boneids.Length != bones.Count)
+                    {
+                        var idc = boneids.Length;
+                        if (geom.BoneTransforms == null)
+                        {
+                            geom.BoneTransforms = new Matrix3_s[idc];
+                        }
+                        for (int b = 0; b < idc; b++)
+                        {
+                            var id = boneids[b];
+                            if (id < bonetransforms.Length)
+                            {
+                                geom.BoneTransforms[b] = bonetransforms[id];
+                                if (id != b)
+                                { }
+                            }
+                            else
+                            { }
+                        }
+                    }
+                }
+            }
+
+        }
+
+
+
+        public void UpdateAnims(double realTime)
+        {
+            if (ClipMapEntry?.OverridePlayTime ?? false)
+            {
+                realTime = ClipMapEntry.PlayTime;
+            }
+
+            if (CurrentAnimTime == realTime) return;//already updated this!
+            CurrentAnimTime = realTime;
+
+            EnableRootMotion = ClipMapEntry?.EnableRootMotion ?? false;
+
+            if (ClipMapEntry != null)
+            {
+                UpdateAnim(ClipMapEntry); //animate skeleton/models
+            }
+
+            UpdateBoneTransforms();
+
+            foreach (var model in HDModels)
+            {
+                if (model == null) continue;
+                foreach (var geom in model.Geometries)
+                {
+                    if (geom == null) continue;
+                    if (geom.ClipMapEntryUV != null)
+                    {
+                        UpdateAnimUV(geom.ClipMapEntryUV, geom); //animate UVs
+                    }
+                }
+            }
+
+        }
+        private void UpdateAnim(ClipMapEntry cme)
+        {
+
+            var clipanim = cme.Clip as ClipAnimation;
+            if (clipanim?.Animation != null)
+            {
+                UpdateAnim(clipanim.Animation, clipanim.GetPlaybackTime(CurrentAnimTime));
+            }
+
+            var clipanimlist = cme.Clip as ClipAnimationList;
+            if (clipanimlist?.Animations != null)
+            {
+                foreach (var canim in clipanimlist.Animations)
+                {
+                    if (canim?.Animation == null) continue;
+                    UpdateAnim(canim.Animation, canim.GetPlaybackTime(CurrentAnimTime));
+                }
+            }
+
+        }
+        private void UpdateAnim(Animation anim, float t)
+        { 
+            if (anim == null)
+            { return; }
+            if (anim.BoneIds?.data_items == null)
+            { return; }
+            if (anim.Sequences?.data_items == null)
+            { return; }
+
+            bool interpolate = true; //how to know? eg. cs4_14_hickbar_anim shouldn't
+
+            var frame = anim.GetFramePosition(t);
+
+            var dwbl = this.Key;
+            var skel = Skeleton;
+            var bones = skel?.Bones;
+            if (bones == null)
+            { return; }
+
+            Vector4 v;
+            Quaternion q;
+
+            for (int i = 0; i < anim.BoneIds.data_items.Length; i++)
+            {
+                var boneiditem = anim.BoneIds.data_items[i];
+                var track = boneiditem.Track;
+
+                Bone bone = null;
+                skel?.BonesMap?.TryGetValue(boneiditem.BoneId, out bone);
+                if (bone == null)
+                {
+                    continue;
+                    //skel.BoneTagsMap?.TryGetValue(boneiditem.BoneId, out bone);
+                    //if (bone == null)
+                    //{ continue; }
+                }
+
+                switch (track)
+                {
+                    case 0: //bone position
+                        v = anim.EvaluateVector4(frame, i, interpolate);
+                        bone.AnimTranslation = v.XYZ();
+                        break;
+                    case 1: //bone orientation
+                        q = anim.EvaluateQuaternion(frame, i, interpolate);
+                        bone.AnimRotation = q;
+                        break;
+                    case 2: //scale?
+                        v = anim.EvaluateVector4(frame, i, interpolate);
+                        bone.AnimScale = v.XYZ();
+                        break;
+                    case 5://root motion vector
+                        if (EnableRootMotion)
+                        {
+                            v = anim.EvaluateVector4(frame, i, interpolate);
+                            bone.AnimTranslation += v.XYZ();
+                        }
+                        break;
+                    case 6://quaternion... root rotation
+                        if (EnableRootMotion)
+                        {
+                            q = anim.EvaluateQuaternion(frame, i, interpolate);
+                            bone.AnimRotation = q * bone.AnimRotation;
+                        }
+                        break;
+                    case 7://vector3... (camera position?)
+                        break;
+                    case 8://quaternion... (camera rotation?)
+                        break;
+                    case 24://face stuff?
+                        break;
+                    case 25://face stuff?
+                        break;
+                    case 26://face stuff?
+                        break;
+                    case 27:
+                    case 50:
+                    case 134://single float?
+                    case 136:
+                    case 137:
+                    case 138:
+                    case 139:
+                    case 140:
+                        if (bone.Tag != 0)
+                        { }
+                        break;
+                    default:
+                        if (bone.Tag != 0)
+                        { }
+                        break;
+                }
+            }
+
+            for (int i = 0; i < bones.Count; i++)
+            {
+                var bone = bones[i];
+                var tag = bone.Tag;
+                switch (bone.Tag)
+                {
+                    case 23639: tag = 58271; break; //RB_L_ThighRoll: SKEL_L_Thigh
+                    case 6442:  tag = 51826; break; //RB_R_ThighRoll: SKEL_R_Thigh
+                    //case 61007: tag = 61163; break; //RB_L_ForeArmRoll: SKEL_L_Forearm //NOT GOOD
+                    //case 5232: tag = 45509; break; //RB_L_ArmRoll: SKEL_L_UpperArm
+                }
+                if ((tag != bone.Tag) && (tag != bone.Parent?.Tag))
+                {
+                    var obone = bone;
+                    if (skel.BonesMap.TryGetValue(tag, out obone))
+                    {
+                        bone.AnimRotation = obone.AnimRotation;
+                    }
+                }
+            }
+
+            for (int i = 0; i < bones.Count; i++)
+            {
+                var bone = bones[i];
+                bone.UpdateAnimTransform();
+                bone.UpdateSkinTransform();
+
+                //update model's transform from animated bone
+                RenderableModel bmodel = null;
+                ModelBoneLinks?.TryGetValue(bone.Tag, out bmodel);
+
+
+                if (bmodel == null)
+                { continue; }
+                if (bmodel.IsSkinMesh) //don't transform model for skin mesh
+                { continue; }
+
+                bmodel.Transform = bone.AnimTransform;
+
+            }
+
+
+        }
+        private void UpdateAnimUV(ClipMapEntry cme, RenderableGeometry rgeom = null)
+        {
+
+            var clipanim = cme.Clip as ClipAnimation;
+            if (clipanim?.Animation != null)
+            {
+                UpdateAnimUV(clipanim.Animation, clipanim.GetPlaybackTime(CurrentAnimTime), rgeom);
+            }
+
+            var clipanimlist = cme.Clip as ClipAnimationList;
+            if (clipanimlist?.Animations != null)
+            {
+                foreach (var canim in clipanimlist.Animations)
+                {
+                    if (canim?.Animation == null) continue;
+                    UpdateAnimUV(canim.Animation, canim.GetPlaybackTime(CurrentAnimTime), rgeom);
+                }
+            }
+
+        }
+        private void UpdateAnimUV(Animation anim, float t, RenderableGeometry rgeom = null)
+        {
+            if (anim == null)
+            { return; }
+            if (anim.BoneIds?.data_items == null)
+            { return; }
+            if (anim.Sequences?.data_items == null)
+            { return; }
+
+            bool interpolate = true; //how to know? eg. cs4_14_hickbar_anim shouldn't
+
+            var frame = anim.GetFramePosition(t);
+
+            var globalAnimUV0 = new Vector4(1.0f, 0.0f, 0.0f, 0.0f);
+            var globalAnimUV1 = new Vector4(0.0f, 1.0f, 0.0f, 0.0f);
+
+
+            for (int i = 0; i < anim.BoneIds.data_items.Length; i++)
+            {
+                var boneiditem = anim.BoneIds.data_items[i];
+                var track = boneiditem.Track;
+                if ((track != 17) && (track != 18))
+                { continue; }//17 and 18 would be UV0 and UV1
+
+                var v = anim.EvaluateVector4(frame, i, interpolate);
+
+                switch (track)
+                {
+                    case 17: globalAnimUV0 = v; break; //could be overwriting values here...
+                    case 18: globalAnimUV1 = v; break;
+                }
+            }
+
+            if (rgeom != null)
+            {
+                rgeom.globalAnimUV0 = globalAnimUV0;
+                rgeom.globalAnimUV1 = globalAnimUV1;
+            }
+            else
+            {
+                foreach (var model in HDModels) //TODO: figure out which models/geometries this should be applying to!
+                {
+                    if (model == null) continue;
+                    foreach (var geom in model.Geometries)
+                    {
+                        if (geom == null) continue;
+                        if (geom.globalAnimUVEnable)
+                        {
+                            geom.globalAnimUV0 = globalAnimUV0;
+                            geom.globalAnimUV1 = globalAnimUV1;
+                        }
+                    }
+                }
+            }
+
+        }
+
     }
 
     public class RenderableModel
@@ -346,11 +725,16 @@ namespace CodeWalker.Rendering
         public bool UseTransform;
         public Matrix Transform;
 
+        public int BoneIndex = 0;
+        public bool IsSkinMesh = false;
+
         public void Init(DrawableModel dmodel)
         {
             SkeletonBinding = dmodel.SkeletonBinding;//4th byte is bone index, 2nd byte for skin meshes
             RenderMaskFlags = dmodel.RenderMaskFlags; //only the first byte seems be related to this
 
+            IsSkinMesh = ((SkeletonBinding >> 8) & 0xFF) > 0;
+            BoneIndex = (int)((SkeletonBinding >> 24) & 0xFF);
 
             DrawableModel = dmodel;
             long geomcount = dmodel.Geometries.data_items.Length;
@@ -424,8 +808,8 @@ namespace CodeWalker.Rendering
         public float RippleBumpiness { get; set; } = 1.0f;
         public Vector4 WindGlobalParams { get; set; } = Vector4.Zero;
         public Vector4 WindOverrideParams { get; set; } = Vector4.One;
-        public Vector4 globalAnimUV0 { get; set; } = Vector4.Zero;
-        public Vector4 globalAnimUV1 { get; set; } = Vector4.Zero;
+        public Vector4 globalAnimUV0 { get; set; } = new Vector4(1.0f, 0.0f, 0.0f, 0.0f);
+        public Vector4 globalAnimUV1 { get; set; } = new Vector4(0.0f, 1.0f, 0.0f, 0.0f);
         public Vector4 DirtDecalMask { get; set; } = Vector4.Zero;
         public bool SpecOnly { get; set; } = false;
         public float WaveOffset { get; set; } = 0; //for terrainfoam
@@ -433,7 +817,12 @@ namespace CodeWalker.Rendering
         public float WaveMovement { get; set; } = 0; //for terrainfoam
         public float HeightOpacity { get; set; } = 0; //for terrainfoam
         public bool HDTextureEnable = true;
+        public bool globalAnimUVEnable = false;
+        public ClipMapEntry ClipMapEntryUV = null;
+        public bool isHair = false;
+        public bool disableRendering = false;
 
+        public Matrix3_s[] BoneTransforms = null;
 
         public static ShaderParamNames[] GetTextureSamplerList()
         {
@@ -545,6 +934,9 @@ namespace CodeWalker.Rendering
                     case 600733812://{decal_amb_only.sps}
                         SpecOnly = true; //this needs more work.
                         break;
+                    case 100720695://{ped_hair_spiked.sps}
+                        isHair = true;
+                        break;
                 }
 
 
@@ -612,9 +1004,11 @@ namespace CodeWalker.Rendering
                                 break;
                             case ShaderParamNames.globalAnimUV0:
                                 globalAnimUV0 = (Vector4)param.Data;
+                                globalAnimUVEnable = true;
                                 break;
                             case ShaderParamNames.globalAnimUV1:
                                 globalAnimUV1 = (Vector4)param.Data;
+                                globalAnimUVEnable = true;
                                 break;
                             case ShaderParamNames.WaveOffset:
                                 WaveOffset = ((Vector4)param.Data).X;
@@ -630,6 +1024,10 @@ namespace CodeWalker.Rendering
                                 break;
                             case ShaderParamNames.DirtDecalMask:
                                 DirtDecalMask = ((Vector4)param.Data);
+                                break;
+                            case ShaderParamNames.orderNumber:
+                                //stops drawing hair geoms that apparently shouldn't be rendered... any better way to do this?
+                                if (isHair && (((Vector4)param.Data).X > 0.0f)) disableRendering = true;
                                 break;
                         }
 
@@ -931,6 +1329,47 @@ namespace CodeWalker.Rendering
         }
     }
 
+    public class RenderableLight
+    {
+        public Renderable Owner;
+        public Vector3 Position;
+        public Vector3 Colour;
+        public Vector3 Direction;
+        public Vector3 TangentX;
+        public Vector3 TangentY;
+        public LightType Type;
+        public float Intensity;
+        public float Falloff;
+        public float FalloffExponent;
+        public float ConeInnerAngle;
+        public float ConeOuterAngle;
+        public Vector3 CapsuleExtent;
+        public Vector3 CullingPlaneNormal;
+        public float CullingPlaneOffset;
+        public uint TimeFlags;
+        public MetaHash TextureHash;
+
+        public void Init(ref LightAttributes_s l)
+        {
+            Position = l.Position;
+            Colour = new Vector3(l.ColorR, l.ColorG, l.ColorB) * ((l.Intensity * 5.0f)  / 255.0f);
+            Direction = l.Direction;
+            TangentX = l.Tangent;
+            TangentY = Vector3.Cross(l.Direction, l.Tangent);
+            Type = l.Type;
+            Intensity = l.Intensity;
+            Falloff = l.Falloff;
+            FalloffExponent = Math.Max(l.FalloffExponent * 0.25f, 0.5f);//is this right?
+            ConeInnerAngle = l.ConeInnerAngle * 0.01745329f; //is this right??
+            ConeOuterAngle = l.ConeOuterAngle * 0.01745329f; //pi/180
+            CapsuleExtent = l.Extent;
+            CullingPlaneNormal = l.CullingPlaneNormal;
+            CullingPlaneOffset = l.CullingPlaneOffset;
+            TimeFlags = l.TimeFlags;
+            TextureHash = l.ProjectedTextureHash;
+        }
+    }
+
 
     public class RenderableInstanceBatch : RenderableCacheItem<YmapGrassInstanceBatch>
     {
@@ -983,6 +1422,139 @@ namespace CodeWalker.Rendering
                 GrassInstanceBuffer = null;
             }
             LoadQueued = false;
+        }
+    }
+
+
+    public class RenderableLODLights : RenderableCacheItem<YmapFile>
+    {
+        public struct LODLight
+        {
+            public Vector3 Position;
+            public uint Colour;
+            public Vector3 Direction;
+            public uint TimeAndStateFlags;
+            public Vector4 TangentX;
+            public Vector4 TangentY;
+            public float Falloff;
+            public float FalloffExponent;
+            public float InnerAngle;//for cone
+            public float OuterAngleOrCapExt;//outer angle for cone, cap extent for capsule
+        }
+
+        public LODLight[] Points;
+        public LODLight[] Spots;
+        public LODLight[] Caps;
+
+        public GpuSBuffer<LODLight> PointsBuffer { get; set; }
+        public GpuSBuffer<LODLight> SpotsBuffer { get; set; }
+        public GpuSBuffer<LODLight> CapsBuffer { get; set; }
+
+
+        public override void Init(YmapFile key)
+        {
+            Key = key;
+
+            var ll = key.LODLights;
+            var dll = key.Parent?.DistantLODLights;
+
+            if (ll == null) return;
+            if (dll == null) return;
+
+            var n = dll.positions?.Length ?? 0;
+            n = Math.Min(n, dll.colours?.Length ?? 0);
+            n = Math.Min(n, ll.direction?.Length ?? 0);
+            n = Math.Min(n, ll.falloff?.Length ?? 0);
+            n = Math.Min(n, ll.falloffExponent?.Length ?? 0);
+            n = Math.Min(n, ll.timeAndStateFlags?.Length ?? 0);
+            n = Math.Min(n, ll.hash?.Length ?? 0);
+            n = Math.Min(n, ll.coneInnerAngle?.Length ?? 0);
+            n = Math.Min(n, ll.coneOuterAngleOrCapExt?.Length ?? 0);
+            n = Math.Min(n, ll.coronaIntensity?.Length ?? 0);
+
+            if (n <= 0)
+            { return; }
+
+
+            var points = new List<LODLight>();
+            var spots = new List<LODLight>();
+            var caps = new List<LODLight>();
+
+            for (int i = 0; i < n; i++)
+            {
+                var light = new LODLight();
+                light.Position = dll.positions[i].ToVector3();
+                light.Colour = dll.colours[i];
+                light.Direction = ll.direction[i].ToVector3();
+                light.TimeAndStateFlags = ll.timeAndStateFlags[i];
+                light.TangentX = new Vector4(Vector3.Normalize(light.Direction.GetPerpVec()), 0.0f);
+                light.TangentY = new Vector4(Vector3.Cross(light.Direction, light.TangentX.XYZ()), 0.0f);
+                light.Falloff = ll.falloff[i];
+                light.FalloffExponent = Math.Max(ll.falloffExponent[i]*0.01f, 0.5f);//is this right?
+                light.InnerAngle = ll.coneInnerAngle[i] * 0.0087266462f; //pi/360
+                light.OuterAngleOrCapExt = ll.coneOuterAngleOrCapExt[i] * 0.0087266462f; //pi/360
+                var type = (LightType)((light.TimeAndStateFlags >> 26) & 7);
+                switch (type)
+                {
+                    case LightType.Point:
+                        points.Add(light);
+                        break;
+                    case LightType.Spot:
+                        spots.Add(light);
+                        break;
+                    case LightType.Capsule:
+                        light.OuterAngleOrCapExt = ll.coneOuterAngleOrCapExt[i] * 0.25f;
+                        caps.Add(light);
+                        break;
+                    default: break;//just checking...
+                }
+            }
+
+            Points = points.ToArray();
+            Spots = spots.ToArray();
+            Caps = caps.ToArray();
+
+            DataSize = (points.Count + spots.Count + caps.Count) * 80;
+
+        }
+
+        public override void Load(Device device)
+        {
+            if ((Points != null) && (Points.Length > 0))
+            {
+                PointsBuffer = new GpuSBuffer<LODLight>(device, Points);
+            }
+            if ((Spots != null) && (Spots.Length > 0))
+            {
+                SpotsBuffer = new GpuSBuffer<LODLight>(device, Spots);
+            }
+            if ((Caps != null) && (Caps.Length > 0))
+            {
+                CapsBuffer = new GpuSBuffer<LODLight>(device, Caps);
+            }
+
+            IsLoaded = true;
+        }
+
+        public override void Unload()
+        {
+            IsLoaded = false;
+
+            if (PointsBuffer != null)
+            {
+                PointsBuffer.Dispose();
+                PointsBuffer = null;
+            }
+            if (SpotsBuffer != null)
+            {
+                SpotsBuffer.Dispose();
+                SpotsBuffer = null;
+            }
+            if (CapsBuffer != null)
+            {
+                CapsBuffer.Dispose();
+                CapsBuffer = null;
+            }
         }
     }
 
@@ -1276,15 +1848,53 @@ namespace CodeWalker.Rendering
     }
 
 
-    public class RenderableBoundComposite : RenderableCacheItem<BoundComposite>
+    public class RenderableBoundComposite : RenderableCacheItem<Bounds>
     {
         public RenderableBoundGeometry[] Geometries;
 
 
-        public override void Init(BoundComposite bound)
+        public override void Init(Bounds bound)
         {
             Key = bound;
 
+            if (bound is BoundComposite boundcomp)
+            {
+                InitBoundComp(boundcomp);
+            }
+            else
+            {
+                var rgeom = new RenderableBoundGeometry(this);
+                var xform = Matrix.Identity;
+                if (bound is BoundBox boundbox)
+                {
+                    rgeom.Init(boundbox, ref xform);
+                }
+                else if (bound is BoundSphere boundsph)
+                {
+                    rgeom.Init(boundsph, ref xform);
+                }
+                else if (bound is BoundCylinder boundcyl)
+                {
+                    rgeom.Init(boundcyl, ref xform);
+                }
+                else if (bound is BoundCapsule boundcap)
+                {
+                    rgeom.Init(boundcap, ref xform);
+                }
+                else if (bound is BoundDisc boundisc)
+                {
+                    rgeom.Init(boundisc, ref xform);
+                }
+                else
+                { }
+
+                Geometries = new[] { rgeom };
+                DataSize = 64;//just a guesstimate
+            }
+        }
+
+        private void InitBoundComp(BoundComposite bound)
+        { 
             if (bound.Children == null)
             {
                 return;
@@ -1294,19 +1904,39 @@ namespace CodeWalker.Rendering
             long dsize = 0;
             for (int i = 0; i < bound.Children.data_items.Length; i++)
             {
+                var rgeom = new RenderableBoundGeometry(this);
                 var child = bound.Children.data_items[i];
-                if (child is BoundGeometry)
+                var xform = (child != null) ? child.Transform : Matrix.Identity;
+                if (child is BoundGeometry bgeom)
                 {
-                    var rgeom = new RenderableBoundGeometry();
-                    rgeom.Init(child as BoundGeometry);
-                    rgeom.Owner = this;
+                    rgeom.Init(bgeom);
+                }
+                else if (child is BoundCapsule bcap)
+                {
+                    rgeom.Init(bcap, ref xform);
+                }
+                else if (child is BoundSphere bsph)
+                {
+                    rgeom.Init(bsph, ref xform);
+                }
+                else if (child is BoundBox bbox)
+                {
+                    rgeom.Init(bbox, ref xform);
+                }
+                else if (child is BoundCylinder bcyl)
+                {
+                    rgeom.Init(bcyl, ref xform);
+                }
+                else if (child is BoundDisc bdisc)
+                {
+                    rgeom.Init(bdisc, ref xform);
+                }
+                else if (child != null)
+                { }
+                if (rgeom.Initialised)
+                {
                     geoms[i] = rgeom;
                     dsize += rgeom.TotalDataSize;
-                }
-                else
-                {
-                    //other types of bound might be here, eg BoundBox
-                    geoms[i] = null;//not really necessary
                 }
             }
 
@@ -1318,11 +1948,13 @@ namespace CodeWalker.Rendering
 
         public override void Load(Device device)
         {
-            if (Geometries == null) return;
-            foreach (var geom in Geometries)
+            if (Geometries != null)
             {
-                if (geom == null) continue;
-                geom.Load(device);
+                foreach (var geom in Geometries)
+                {
+                    if (geom == null) continue;
+                    geom.Load(device);
+                }
             }
             //LastUseTime = DateTime.Now; //reset usage timer
             IsLoaded = true;
@@ -1331,11 +1963,13 @@ namespace CodeWalker.Rendering
         public override void Unload()
         {
             IsLoaded = false;
-            if (Geometries == null) return;
-            foreach (var geom in Geometries)
+            if (Geometries != null)
             {
-                if (geom == null) continue;
-                geom.Unload();
+                foreach (var geom in Geometries)
+                {
+                    if (geom == null) continue;
+                    geom.Unload();
+                }
             }
             LoadQueued = false;
         }
@@ -1352,7 +1986,6 @@ namespace CodeWalker.Rendering
         public Buffer VertexBuffer { get; set; }
         //public Buffer IndexBuffer { get; set; }
         public VertexBufferBinding VBBinding;
-        public BoundGeometry BoundGeom;
         public VertexType VertexType { get; set; } = VertexType.Default;
         public int VertexStride { get; set; } = 36;
         public int VertexCount { get; set; } = 0;
@@ -1369,16 +2002,37 @@ namespace CodeWalker.Rendering
         public GpuSBuffer<RenderableCapsule> CapsuleBuffer { get; set; }
         public GpuSBuffer<RenderableCylinder> CylinderBuffer { get; set; }
 
+
+        public Bounds Bound;
+        public BoundGeometry BoundGeom;
+        public Vector3 CenterGeom;
+        public Vector3 BBMin;
+        public Vector3 BBMax;
+        public Vector3 BBOffset = Vector3.Zero;
+        public Quaternion BBOrientation = Quaternion.Identity;
+
+        public bool Initialised = false;
+
+
+        public RenderableBoundGeometry(RenderableBoundComposite owner)
+        {
+            Owner = owner;
+        }
+
         public void Init(BoundGeometry bgeom)
         {
+            Bound = bgeom;
             BoundGeom = bgeom;
+            CenterGeom = bgeom.CenterGeom;
+            BBMin = bgeom.BoxMin;
+            BBMax = bgeom.BoxMax;
 
             if ((bgeom.Polygons == null) || (bgeom.Vertices == null))
             {
                 return;
             }
 
-            Vector3 vbox = (bgeom.BoundingBoxMax - bgeom.BoundingBoxMin);
+            //Vector3 vbox = (bgeom.BoxMax - bgeom.BoxMin);
             //var verts = bgeom.Vertices;
             //int vertcount = bgeom.Vertices.Length;
 
@@ -1415,8 +2069,7 @@ namespace CodeWalker.Rendering
             {
                 var poly = bgeom.Polygons[i];
                 if (poly == null) continue;
-                byte matind = ((bgeom.PolygonMaterialIndices != null) && (i < bgeom.PolygonMaterialIndices.Length)) ? bgeom.PolygonMaterialIndices[i] : (byte)0;
-                BoundMaterial_s mat = ((bgeom.Materials != null) && (matind < bgeom.Materials.Length)) ? bgeom.Materials[matind] : new BoundMaterial_s();
+                BoundMaterial_s mat = poly.Material;
                 Color color = BoundsMaterialTypes.GetMaterialColour(mat.Type);
                 Vector3 p1, p2, p3, p4, a1, n1;//, n2, n3, p5, p7, p8;
                 Vector3 norm = Vector3.Zero;
@@ -1446,7 +2099,7 @@ namespace CodeWalker.Rendering
                         p2 = bgeom.GetVertex(bcap.capsuleIndex2);
                         a1 = p2 - p1;
                         n1 = Vector3.Normalize(a1);
-                        p3 = Vector3.Normalize(GetPerpVec(n1));
+                        p3 = Vector3.Normalize(n1.GetPerpVec());
                         //p4 = Vector3.Normalize(Vector3.Cross(n1, p3));
                         Quaternion q1 = Quaternion.Invert(Quaternion.LookAtRH(Vector3.Zero, p3, n1));
                         rcapsules[curcapsule].Point1 = p1;
@@ -1479,7 +2132,7 @@ namespace CodeWalker.Rendering
                         p2 = bgeom.GetVertex(pcyl.cylinderIndex2);
                         a1 = p2 - p1;
                         n1 = Vector3.Normalize(a1);
-                        p3 = Vector3.Normalize(GetPerpVec(n1));
+                        p3 = Vector3.Normalize(n1.GetPerpVec());
                         //p4 = Vector3.Normalize(Vector3.Cross(n1, p3));
                         Quaternion q2 = Quaternion.Invert(Quaternion.LookAtRH(Vector3.Zero, p3, n1));
                         rcylinders[curcylinder].Point1 = p1;
@@ -1507,7 +2160,141 @@ namespace CodeWalker.Rendering
             VertexDataSize = (uint)(VertexCount * VertexStride);
             TotalDataSize = VertexDataSize;
 
+            Initialised = true;
         }
+        public void Init(BoundCapsule bcap, ref Matrix xform)
+        {
+            Matrix rmat = xform;
+            rmat.TranslationVector = Vector3.Zero;
+
+            Bound = bcap;
+            BBMin = bcap.BoxMin;
+            BBMax = bcap.BoxMax;
+            BBOffset = xform.TranslationVector;
+            BBOrientation = Quaternion.RotationMatrix(rmat);
+
+            var mat = (BoundsMaterialType)bcap.MaterialIndex;
+            var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
+            var colour = (uint)colourf.ToRgba();
+
+            float extent = bcap.SphereRadius - bcap.Margin;
+
+            var rcap = new RenderableCapsule();
+            rcap.Colour = colour;
+            rcap.Point1 = Vector3.TransformCoordinate(bcap.SphereCenter - new Vector3(0, extent, 0), xform);
+            rcap.Orientation = BBOrientation;
+            rcap.Length = extent * 2.0f;
+            rcap.Radius = bcap.Margin;
+
+            Capsules = new[] { rcap };
+
+            Initialised = true;
+        }
+        public void Init(BoundSphere bsph, ref Matrix xform)
+        {
+            Bound = bsph;
+            BBMin = bsph.BoxMin;
+            BBMax = bsph.BoxMax;
+            BBOffset = xform.TranslationVector;
+
+            var mat = (BoundsMaterialType)bsph.MaterialIndex;
+            var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
+            var colour = (uint)colourf.ToRgba();
+
+            var rsph = new RenderableSphere();
+            rsph.Colour = colour;
+            rsph.Center = Vector3.TransformCoordinate(bsph.SphereCenter, xform);
+            rsph.Radius = bsph.SphereRadius;
+
+            Spheres = new[] { rsph };
+
+            Initialised = true;
+        }
+        public void Init(BoundBox bbox, ref Matrix xform)
+        {
+            Matrix rmat = xform;
+            rmat.TranslationVector = Vector3.Zero;
+
+            Bound = bbox;
+            BBMin = bbox.BoxMin;
+            BBMax = bbox.BoxMax;
+            BBOffset = xform.TranslationVector;
+            BBOrientation = Quaternion.RotationMatrix(rmat);
+
+            var mat = (BoundsMaterialType)bbox.MaterialIndex;
+            var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
+            var colour = (uint)colourf.ToRgba();
+
+            var extent = (bbox.BoxMax - bbox.BoxMin).Abs();
+
+            var rbox = new RenderableBox();
+            rbox.Colour = colour;
+            rbox.Corner = Vector3.TransformCoordinate(bbox.BoxMin, xform);
+            rbox.Edge1 = Vector3.TransformNormal(new Vector3(extent.X, 0, 0), xform);
+            rbox.Edge2 = Vector3.TransformNormal(new Vector3(0, extent.Y, 0), xform);
+            rbox.Edge3 = Vector3.TransformNormal(new Vector3(0, 0, extent.Z), xform);
+
+            Boxes = new[] { rbox };
+
+            Initialised = true;
+        }
+        public void Init(BoundCylinder bcyl, ref Matrix xform)
+        {
+            Matrix rmat = xform;
+            rmat.TranslationVector = Vector3.Zero;
+
+            Bound = bcyl;
+            BBMin = bcyl.BoxMin;
+            BBMax = bcyl.BoxMax;
+            BBOffset = xform.TranslationVector;
+            BBOrientation = Quaternion.RotationMatrix(rmat);
+
+            var mat = (BoundsMaterialType)bcyl.MaterialIndex;
+            var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
+            var colour = (uint)colourf.ToRgba();
+
+            var extent = (bcyl.BoxMax - bcyl.BoxMin).Abs();
+            var length = extent.Y;
+            var radius = extent.X * 0.5f;
+
+            var rcyl = new RenderableCylinder();
+            rcyl.Colour = colour;
+            rcyl.Point1 = Vector3.TransformCoordinate(bcyl.SphereCenter - new Vector3(0, length * 0.5f, 0), xform);
+            rcyl.Orientation = BBOrientation;
+            rcyl.Length = length;
+            rcyl.Radius = radius;
+
+            Cylinders = new[] { rcyl };
+
+            Initialised = true;
+        }
+        public void Init(BoundDisc bdisc, ref Matrix xform)
+        {
+            Matrix rmat = xform;
+            rmat.TranslationVector = Vector3.Zero;
+
+            Bound = bdisc;
+            BBMin = bdisc.BoxMin;
+            BBMax = bdisc.BoxMax;
+            BBOffset = xform.TranslationVector;
+            BBOrientation = Quaternion.LookAtLH(Vector3.Zero, Vector3.UnitX, Vector3.UnitZ) * Quaternion.RotationMatrix(rmat);
+
+            var mat = (BoundsMaterialType)bdisc.MaterialIndex;
+            var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
+            var colour = (uint)colourf.ToRgba();
+
+            var rcyl = new RenderableCylinder();
+            rcyl.Colour = colour;
+            rcyl.Point1 = Vector3.TransformCoordinate(bdisc.SphereCenter - new Vector3(bdisc.Margin, 0, 0), xform);
+            rcyl.Orientation = BBOrientation;
+            rcyl.Length = bdisc.Margin * 2.0f;
+            rcyl.Radius = bdisc.SphereRadius;
+
+            Cylinders = new[] { rcyl };
+
+            Initialised = true;
+        }
+
 
         private ushort AddVertex(Vector3 pos, Vector3 norm, uint colour, List<VertexTypeDefault> list)
         {
@@ -1527,26 +2314,6 @@ namespace CodeWalker.Rendering
             arr[index].Colour = colour;
             arr[index].Texcoord = Vector2.Zero;
             index++;
-        }
-
-        private Vector3 GetPerpVec(Vector3 n)
-        {
-            //make a vector perpendicular to the given one
-            float nx = Math.Abs(n.X);
-            float ny = Math.Abs(n.Y);
-            float nz = Math.Abs(n.Z);
-            if ((nx < ny) && (nx < nz))
-            {
-                return Vector3.Cross(n, Vector3.Right);
-            }
-            else if (ny < nz)
-            {
-                return Vector3.Cross(n, Vector3.Up);
-            }
-            else
-            {
-                return Vector3.Cross(n, Vector3.ForwardLH);
-            }
         }
 
 

@@ -8,6 +8,21 @@ using System.Threading.Tasks;
 namespace CodeWalker.GameFiles
 {
 
+    public static class MetaNames
+    {
+        public static bool TryGetString(uint h, out string str)
+        {
+            if (Enum.IsDefined(typeof(MetaName), h))
+            {
+                str = ((MetaName)h).ToString();
+                if (str.StartsWith("@")) str = str.Substring(1); //mainly to handle the @null entry
+                return true;
+            }
+            str = null;
+            return false;
+        }
+    }
+
     
     public class MetaNamesUtil
     {
@@ -3463,6 +3478,397 @@ namespace CodeWalker.GameFiles
 
 
         FloatXYZ = 3805007828,
+
+        aPropMetaData = 3902803273,
+        ePedVarComp = 884254308,
+        ePropRenderFlags = 4212977111,
+        CPedPropTexData = 254518642,
+        eScenarioPopStreamingSlot = 3029795674,
+        eFadeCurveType = 3057039286,
+        eSuperlodType = 4015041481,
+        ePedRadioGenre = 2942646938,
+        eSexinessFlags = 374769227,
+        eExternallyDrivenDOFs = 637184392,
+        eAnchorPoints = 2834549053,
+        SpecialAbilityType = 2011786168,
+        DefaultSpawnPreference = 888587604,
+        numAlternatives = 2806194106,
+        bHasDrawblVariations = 4086467184,
+
+        CScenarioChainingEdge__eAction = 3609807418,
+        CScenarioChainingEdge__eNavMode = 3971773454,
+        CScenarioChainingEdge__eNavSpeed = 941086046,
+        CStreamingRequestCommonSet = 1358189812,
+
+        animal = 974042365, //in peds.ymt
+        standard_ped = 2703423328, //in peds.ymt
+        standard_male = 1860494962, //in peds.ymt PedCapsuleName - from pedbounds.xml
+        standard_female = 3778684510, //in peds.ymt PedCapsuleName
+        standard_player_male = 190297546, //in peds.ymt PedCapsuleName
+        standard_player_female = 3813733509, //in peds.ymt PedCapsuleName
+        large_male = 2182606047, //in peds.ymt PedCapsuleName
+        facial_clipset_group_gen_male = 2968316036, //in peds.ymt FacialClipsetGroupName
+        facial_clipset_group_gen_female = 984918963, //in peds.ymt FacialClipsetGroupName
+        facial_clipset_group_p_m_zero = 3839850645, //in peds.ymt FacialClipsetGroupName
+        facial_clipset_group_p_m_one = 3697506179, //in peds.ymt FacialClipsetGroupName
+        facial_clipset_group_p_m_two = 3958944905, //in peds.ymt FacialClipsetGroupName
+        anim_group_gesture_m_generic = 4080627616, //in peds.ymt DefaultGestureClipSet
+        anim_group_gesture_f_generic = 1375166916, //in peds.ymt DefaultGestureClipSet
+        anim_group_visemes_m_lo = 3326036851, //in peds.ymt DefaultVisemeClipSet
+        anim_group_visemes_f_lo = 2783456433, //in peds.ymt DefaultVisemeClipSet
+        nmbs_slow_getups = 69709351, //peds.ymt GetupSetHash
+        clip_set_id_invalid = 2106583169, //in peds.ymt
+        move_strafe_injured = 1434752434, //in peds.ymt InjuredStrafeClipSet
+        move_ped_to_strafe = 3943634031, //in peds.ymt MovementToStrafeClipSet
+        move_ped_strafing = 2464962150, //in peds.ymt StrafeClipSet
+        civmale = 45677184, //in peds.ymt Pedtype
+        civfemale = 1191392768, //in peds.ymt Pedtype
+        vfxpedinfo_human_generic = 1167185222, //in peds.ymt VfxInfoName
+        expr_set_ambient_male = 2495275024, //in peds.ymt ExpressionSetName
+        expr_set_ambient_female = 3793172393, //in peds.ymt ExpressionSetName
+        default_perception = 3537703288, //in peds.ymt PerceptionInfo
+        streamed_male = 4014297412, //in peds.ymt Personality
+        streamed_female = 991949850, //in peds.ymt Personality
+        fitnessmale = 921466782, //in peds.ymt Personality
+        fitnessfemale = 419688606, //in peds.ymt Personality
+        youngrichman = 3818603935, //in peds.ymt Personality
+        youngrichwoman = 367809573, //in peds.ymt Personality
+        youngaverageweakman = 3971800366, //in peds.ymt Personality
+        youngaverageweakwoman = 806694113, //in peds.ymt Personality
+        bs_ai = 2150391885,  //in peds.ymt DefaultBrawlingStyle
+        bs_franklin = 1037948029, //in peds.ymt DefaultBrawlingStyle
+        bs_michael = 2057220685, //in peds.ymt DefaultBrawlingStyle
+        bs_trevor = 1249954968, //in peds.ymt DefaultBrawlingStyle
+        weapon_unarmed = 2725352035,  //in peds.ymt DefaultUnarmedWeapon
+        silent_pvg = 423993118,  //in peds.ymt PedVoiceGroup
+        silent_cutscene_pvg = 1896822940,  //in peds.ymt PedVoiceGroup
+
+        @null = 987444055, // how best to handle this? C# doesn't like it
+
+
+        exportcamera = 962998194, //cutscene related stuff
+
+
+
+
+
+
+
+
+
+
+
+        //ped ymt's hashes from Siprus
+        numAvailProps = 2598445407,
+        numAvailTex = 3371516811,
+        ownsCloth = 2828247905,
+        aComponentData3 = 3796409423,
+        aDrawblData3 = 1756136273,
+        bHasTexVariations = 1235281004,
+        availComp = 2996560424,
+        CPVDrawblData = 1535046754,
+        CPVComponentData = 3538495220,
+        CPVTextureData = 1036962405,
+        propTexId = 672172037,
+        propDrawableId = 2095974912,
+        compDrawableId = 173599222,
+        propAnchorId = 3598106198,
+        compTexId = 2991454271,
+        PRF_CUTOUT = 3395845123,
+        PRF_DECAL = 3735238938,
+        PRF_ALPHA = 3757767268,
+        ANCHOR_PH_L_HAND = 604819740,
+        ANCHOR_PH_R_HAND = 2358626934,
+
+        //occlusion ymt's from Siprus
+        DestRoomIdx = 1028873946,
+        PortalInfoIdx = 1084559223,
+        DestInteriorHash = 57503776,
+        InteriorProxyHash = 3748344047,
+        PathNodeList = 1142266249,
+        PathNodeKey = 2721898107,
+        PathNodeChildList = 3530626268,
+        PortalEntityList = 3203972140,
+        PortalInfoList = 3085292924,
+
+        //vfxinteriorinfo ymt's from Siprus
+        CVfxInteriorSetup = 128879576,
+        CVfxRoomSetup = 769638437,
+        dustPtFxEnabled = 1270885502,
+        dustPtFxEvo = 3916956310,
+        dustPtFxName = 4061889016,
+        interiorInfoName = 3197750225,
+        smokePtFxEnabled = 174438245,
+        smokePtFxLevelOverride = 1794720348,
+        smokePtFxName = 2216385556,
+        vfxInteriorSetups = 3147314065,
+        vfxRoomSetups = 70742260,
+
+        //entries for vfxinteriorinfo values from Siprus
+        vfxinteriorinfo_club_bar = 3012126598,
+        vfxinteriorinfo_default = 2186191160,
+        vfxinteriorinfo_disabled = 4043117346,
+        vfxinteriorinfo_factory = 3704850198,
+        vfxinteriorinfo_factory2 = 789288375,
+        vfxinteriorinfo_foundry = 3102010781,
+        vfxinteriorinfo_methlab = 1747000990,
+        vfxinteriorinfo_michael_mansion = 2503389540,
+        vfxinteriorinfo_recycle = 3828623237,
+        env_bar_haze = 2464653728,
+        env_dust_motes_int_hvy = 2388998730,
+        env_dust_motes_int_recycle = 1189228428,
+        env_gunsmoke = 1283110988,
+        env_gunsmoke_paper_factory = 2917372338,
+        env_stripclub_haze = 3512462560,
+        v_34_deliveryrm = 1873829195,
+        v_34_processrm = 2131172512,
+        v_64_back = 291590403,
+        v_64_back_lower = 2635531210,
+        v_64_base2 = 2901364601,
+        v_64_cloak = 2699110422,
+        v_64_dance = 1921450756,
+        v_64_entry = 209242346,
+        v_64_entry_trans = 3070346248,
+        v_64_rear = 4193595779,
+        v_64_rear_trans = 1532913744,
+        v_64_side = 2526696518,
+        v_64_side_upper = 593969979,
+        v_64_upper = 182753347,
+        v_recycle_chopper = 2694641996,
+        v_recycle_cor1 = 2624371671,
+        v_recycle_door = 4022865356,
+        v_recycle_main = 1108714138,
+        v_recycle_office1 = 4228826032,
+        v_recycle_shield = 2720085499,
+        v_recycle_stair2 = 3998905162,
+        v_recycle_window = 2808950336,
+
+        //more ped.ymt's hashes from Siprus
+        shoe_dress_shoes = 3199946566,
+        shoe_golf_shoes = 2839919184,
+        shoe_heavy_boots = 1032158653,
+        shoe_scuba_flippers = 378813016,
+        shoe_flip_flops = 2060154316,
+        shoe_cowboy_boots = 2839908380,
+        shoe_normal_heels = 3937154717,
+        shoe_rubber = 3737214528,
+        shoe_trainers = 3325651536,
+        shoe_heels = 2000019839,
+        shoe_barefoot = 1461428428,
+        shoe_high_heels = 3928708288,
+        shoe_rubber_boots = 3194973734,
+        cloth_backpack = 1069599825,
+        cloth_ballistic = 4078855526,
+        cloth_cop_belt = 4133108633,
+        cloth_gas_mask = 4065623745,
+        cloth_heavy_bag = 4153104635,
+        cloth_lower_ballistic_armour = 4106198121,
+        cloth_lower_bare = 1628659471,
+        cloth_lower_cop = 1540859016,
+        cloth_lower_cotton = 1141160746,
+        cloth_lower_extreme = 4088613522,
+        cloth_lower_fireman = 1406591853,
+        cloth_lower_leather = 3327176319,
+        cloth_lower_pants_denim = 4176749571,
+        cloth_lower_pants_leather = 529572143,
+        cloth_lower_pants_suit = 3685853881,
+        cloth_lower_pants_tight = 879250969,
+        cloth_lower_shorts = 3301429444,
+        cloth_lower_skirt_long = 421389060,
+        cloth_lower_skirt_short = 710005800,
+        cloth_lower_swat = 291450192,
+        cloth_lower_waterproof = 1695056885,
+        cloth_rappel_parachute = 3513212182,
+        cloth_scuba = 861851786,
+        cloth_tool_belt = 2531067209,
+        cloth_upper_alien = 2291900169,
+        cloth_upper_ballistic_armour = 145524546,
+        cloth_upper_bare = 1870774092,
+        cloth_upper_bikini_top = 3629254153,
+        cloth_upper_coat_scientist = 1946563223,
+        cloth_upper_cop = 2483445690,
+        cloth_upper_cop_vest = 1515519271,
+        cloth_upper_cotton = 830866350,
+        cloth_upper_fireman = 669860574,
+        cloth_upper_jacket_cotton = 4008082313,
+        cloth_upper_jacket_leather = 1106508751,
+        cloth_upper_jacket_puffy = 2884411436,
+        cloth_upper_jacket_suit = 979848852,
+        cloth_upper_leather = 401172640,
+        cloth_upper_shirt_cotton_heavy = 3934084272,
+        cloth_upper_shirt_cotton_lite = 176526946,
+        cloth_upper_shirt_leather = 67091042,
+        cloth_upper_shirt_tee = 1237088534,
+        cloth_upper_spacesuit = 1018641360,
+        cloth_upper_swat = 2783390651,
+        cloth_upper_sweater = 3189514483,
+        cloth_upper_waterproof = 3748562816,
+        upper_cotton = 3438959116,
+
+        //CExtensionDefLightShaft enum value hashes from Siprus
+        LIGHTSHAFT_VOLUMETYPE_CYLINDER = 462992848,
+        LIGHTSHAFT_DENSITYTYPE_LINEAR = 152140774,
+        LIGHTSHAFT_DENSITYTYPE_CONSTANT = 676250331,
+        LIGHTSHAFT_DENSITYTYPE_QUADRATIC = 1098824079,
+        LIGHTSHAFT_DENSITYTYPE_QUADRATIC_GRADIENT = 1492299290,
+        LIGHTSHAFT_DENSITYTYPE_SOFT_SHADOW_HD = 1816804348,
+        LIGHTSHAFT_DENSITYTYPE_SOFT_SHADOW = 2057886646,
+        LIGHTSHAFT_DENSITYTYPE_LINEAR_GRADIENT = 2088805984,
+        LIGHTSHAFT_DENSITYTYPE_SOFT = 2399586564,
+
+
+
+        ////various entries from Siprus - thanks!
+        // eVfxGroup
+        VFXGROUP_TARMAC_BRITTLE = 349722727,
+        VFXGROUP_LINOLEUM = 656066551,
+        VFXGROUP_TVSCREEN = 688944506,
+        VFXGROUP_SAND_LOOSE = 1041698964,
+        VFXGROUP_CARDBOARD = 1710619059,
+        VFXGROUP_UNDEFINED = 1777437223,
+        VFXGROUP_CAR_PLASTIC = 2101842785,
+        VFXGROUP_SAND_UNDERWATER = 2143791359,
+        VFXGROUP_GENERIC = 2432469028,
+        VFXGROUP_SAND_DEEP = 2673689260,
+        VFXGROUP_CONCRETE_DUSTY = 3536499660,
+        VFXGROUP_LIQUID_MUD = 3745008516,
+        VFXGROUP_FOAM = 3912379355,
+
+        // POPGROUPS
+        POPGROUP_RARE = 35209924,
+
+        // DataFileType enum
+        AMB_PROCEDURAL_BLOOD_FILE = 2738801230,
+        COMBAT_BEHAVIOUR_OVERRIDE_FILE = 364263123,
+        CONTROLLER_LABELS_FILE_DURANGO = 4129824885,
+        CONTROLLER_LABELS_FILE_ORBIS = 91648887,
+        CONTROLLER_LABELS_FILE_ORBIS_JPN = 2018868761,
+        DELAYED_IDE_FILE = 4115202587,
+        DLC_POP_GROUPS = 2421375782,
+        FACIAL_CLIPSET_GROUPS_FILE = 1714317514,
+        FLIGHTZONES_FILE = 3179455283,
+        LEADERBOARD_ICONS_FILE = 1431237327,
+        PED_DAMAGE_OVERRIDE_FILE = 3155601669,
+        RMPTFX_FILE = 2041822787,
+        SCALEFORM_PREALLOC_FILE = 2609475948,
+        SCALEFORM_VALID_METHODS_FILE = 3169431862,
+        SCENARIO_POINTS_OVERRIDE_FILE = 33804852,
+        SCRIPT_BRAIN_FILE = 2678176687,
+        SCROLLBARS_FILE = 3993726615,
+
+        // animation clip priority enum
+        eAnimPriority = 1498349301,
+        AP_FACE_HIGH = 611607097,
+        AP_FACE_LOW = 2096169364,
+        AP_FACE_MEDIUM = 3509068476,
+
+        // eAnimPlayerFlag
+        APF_BLOCK_IK = 1238878851,
+        APF_ISPLAYING = 508324092,
+        APF_SCRIPT = 2827814553,
+        APF_UNUSED_3 = 2727614813,
+        APF_UNUSED_4 = 3032530358,
+        APF_UNUSED_6 = 3646785267,
+        APF_UNUSED_7 = 3914016462,
+        APF_UNUSED_8 = 1023626813,
+        APF_UNUSED_9 = 1321103795,
+
+        // ped ymts
+        bHasLowLODs = 911147899,
+        bIsSuperLOD = 315291935,
+
+        //rel categories
+        ambience_birds = 2111673525,
+        ambience_collectables = 1822293160,
+        ambience_general = 605434024,
+        ambience_industrial = 3601034378,
+        ambience_insects = 1516192474,
+        ambience_music = 4061751802,
+        ambience_speech = 4118533336,
+        ambience_weather = 2993238467,
+        collisions_cloth = 4114296646,
+        collisions_glass = 3665884229,
+        collisions_louder = 3707599549,
+        collisions_scripted = 3607066630,
+        collisions_vehicles_glass = 40916134,
+        cutscenes = 2130818598,
+        doors_loud = 4083376175,
+        fire = 3540648811,
+        fire_louder = 3795113672,
+        frontend_game_loud = 1563623315,
+        frontend_menu = 3209785070,
+        frontend_menu_loud = 2867594907,
+        frontend_radio = 130804751,
+        game_world = 657061725,
+        interactive_music = 1572110022,
+        music = 3376826828,
+        music_loading = 1691427420,
+        peds_clothing = 2705431951,
+        peds_collisions = 2898035946,
+        peds_collisions_loud = 3672708454,
+        peds_wind = 3149982308,
+        radio = 1847911863,
+        score = 2134238453,
+        scripted = 1670758327,
+        scripted_alarms = 2563970085,
+        scripted_louder = 682050869,
+        scripted_tv = 201797022,
+        speech = 163313604,
+        speech_ambient = 410026006,
+        speech_breathing = 2670011790,
+        speech_pain = 2021015895,
+        speech_scripted = 3078245965,
+        underwater_loud = 4027278097,
+        underwater_muted = 2969328544,
+        underwater_swimming = 2137972630,
+        vehicles_bicycles = 3685564039,
+        vehicles_bicycles_mechanical = 134197036,
+        vehicles_boats_engines = 1823905713,
+        vehicles_boats_water = 343703808,
+        vehicles_brakes = 1315521004,
+        vehicles_car_by = 2709313722,
+        vehicles_chassis_rattle = 270455670,
+        vehicles_doors = 2640217883,
+        vehicles_engines_cooling = 1473309549,
+        vehicles_engines_damage = 431436680,
+        vehicles_engines_ignition = 325435029,
+        vehicles_engines_intake = 266876274,
+        vehicles_engines_loud = 607318229,
+        vehicles_engines_reflections = 2730342635,
+        vehicles_engines_startup = 2812351357,
+        vehicles_extras_loud = 1806509607,
+        vehicles_helis = 3565904205,
+        vehicles_helis_distant = 1203937907,
+        vehicles_horns = 3310407619,
+        vehicles_horns_loud = 1875957285,
+        vehicles_planes = 360518393,
+        vehicles_planes_close = 450576074,
+        vehicles_planes_distant = 2745068879,
+        vehicles_planes_extras = 2970811186,
+        vehicles_planes_jet = 2496384807,
+        vehicles_planes_prop = 2880809343,
+        vehicles_sirens = 3312980540,
+        vehicles_suspension = 2521949505,
+        vehicles_train = 2900951834,
+        vehicles_train_brakes = 400861892,
+        vehicles_train_carriage = 3957967078,
+        vehicles_train_clack = 1353825976,
+        vehicles_wheels = 3141782289,
+        vehicles_wheels_loud = 3187816841,
+        vehicles_wheels_skids = 1011082280,
+        water_loud = 3800267791,
+        water_ocean = 3756642183,
+        water_swimming = 3392133420,
+        weapons_explosions = 217319362,
+        weapons_explosions_loud = 3464961727,
+        weapons_guns = 1238862244,
+        weather_rain = 973848687,
+        weather_rain_heavy = 646232623,
+        weather_rain_props = 633103322,
+        weather_thunder = 1377523001,
+        weather_wind = 3506430202,
+        weather_wind_foliage = 480273725,
+
 
 
 
@@ -8094,6 +8500,7 @@ namespace CodeWalker.GameFiles
         fInitialSearchRadius = 2790363538,
         fInjuredGetupImpulseMag2 = 461478411,
         fInputMax = 541735427,
+        fIntensity = 3937240636,
         fJumpDescendRate = 564993371,
         fJumpToSmashWindowPhaseChange = 3670878450,
         fLifeTime = 2257773206,
@@ -9307,7 +9714,8 @@ namespace CodeWalker.GameFiles
 
 
 
-
+        //Carl Johnson: I discovered  in zonebind
+        specialZoneAttribute = 218662697,
 
     }
 

@@ -89,6 +89,27 @@ namespace CodeWalker.Project.Panels
                 ytypsnode.Expand();
             }
 
+            if (CurrentProjectFile.YbnFiles.Count > 0)
+            {
+                var ybnsnode = projnode.Nodes.Add("Ybn Files");
+                ybnsnode.Name = "Ybn";
+
+                foreach (var ybnfile in CurrentProjectFile.YbnFiles)
+                {
+                    var ycstr = ybnfile.HasChanged ? "*" : "";
+                    string name = ybnfile.Name;
+                    if (ybnfile.RpfFileEntry != null)
+                    {
+                        name = ybnfile.RpfFileEntry.Name;
+                    }
+                    var yndnode = ybnsnode.Nodes.Add(ycstr + name);
+                    yndnode.Tag = ybnfile;
+
+                    LoadYbnTreeNodes(ybnfile, yndnode);
+                }
+                ybnsnode.Expand();
+            }
+
             if (CurrentProjectFile.YndFiles.Count > 0)
             {
                 var yndsnode = projnode.Nodes.Add("Ynd Files");
@@ -270,31 +291,132 @@ namespace CodeWalker.Project.Panels
 
                     if (yarch is MloArchetype mlo)
                     {
-                        if ((mlo.entities.Length) > 0 && (mlo.rooms.Length > 0))
+                        var rooms = mlo.rooms;
+                        var entities = mlo.entities;
+                        var entsets = mlo.entitySets;
+                        var portals = mlo.portals;
+                        if ((rooms != null) && (rooms.Length > 0))
                         {
-                            MCEntityDef[] entities = mlo.entities;
-                            var roomsnode = tarch.Nodes.Add("Rooms (" + mlo.rooms.Length.ToString() + ")");
+                            var roomsnode = tarch.Nodes.Add("Rooms (" + rooms.Length.ToString() + ")");
                             roomsnode.Name = "Rooms";
-                            for (int j = 0; j < mlo.rooms.Length; j++)
+                            for (int j = 0; j < rooms.Length; j++)
                             {
-                                MCMloRoomDef room = mlo.rooms[j];
-                                var roomnode = roomsnode.Nodes.Add(room.RoomName);
+                                var room = rooms[j];
+                                var roomnode = roomsnode.Nodes.Add(room.Index.ToString() + ": " + room.RoomName);
                                 roomnode.Tag = room;
-                                var entitiesnode = roomnode.Nodes.Add("Attached Objects (" + room.AttachedObjects.Length + ")");
-                                entitiesnode.Name = "Attached Objects";
-
-                                for (int k = 0; k < room.AttachedObjects.Length; k++)
+                                var roomentities = room.AttachedObjects;
+                                if ((roomentities != null) && (entities != null))
                                 {
-                                    uint attachedObject = room.AttachedObjects[k];
-                                    MCEntityDef ent = entities[attachedObject];
-                                    TreeNode entnode = entitiesnode.Nodes.Add(ent.ToString());
-                                    entnode.Tag = ent;
+                                    for (int k = 0; k < roomentities.Length; k++)
+                                    {
+                                        var attachedObject = roomentities[k];
+                                        if (attachedObject < entities.Length)
+                                        {
+                                            var ent = entities[attachedObject];
+                                            var entnode = roomnode.Nodes.Add(ent.ToString());
+                                            entnode.Tag = ent;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if ((portals != null) && (portals.Length > 0))
+                        {
+                            var portalsnode = tarch.Nodes.Add("Portals (" + portals.Length.ToString() + ")");
+                            portalsnode.Name = "Portals";
+                            for (int j = 0; j < portals.Length; j++)
+                            {
+                                var portal = portals[j];
+                                var portalnode = portalsnode.Nodes.Add(portal.Name);
+                                portalnode.Tag = portal;
+                                var portalentities = portal.AttachedObjects;
+                                if ((portalentities != null) && (entities != null))
+                                {
+                                    for (int k = 0; k < portalentities.Length; k++)
+                                    {
+                                        var attachedObject = portalentities[k];
+                                        if (attachedObject < entities.Length)
+                                        {
+                                            var ent = entities[attachedObject];
+                                            var entnode = portalnode.Nodes.Add(ent.ToString());
+                                            entnode.Tag = ent;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if ((entsets != null) && (entsets.Length > 0))
+                        {
+                            var setsnode = tarch.Nodes.Add("Entity Sets (" + entsets.Length.ToString() + ")");
+                            setsnode.Name = "EntitySets";
+                            for (int j = 0; j < entsets.Length; j++)
+                            {
+                                var entset = entsets[j];
+                                var setnode = setsnode.Nodes.Add(entset.Name);
+                                setnode.Tag = entset;
+                                var setlocs = entset.Locations;
+                                var setents = entset.Entities;
+                                if ((setents != null) && (setlocs != null))
+                                {
+                                    for (int k = 0; k < setents.Length; k++)
+                                    {
+                                        //var loc = (k < setlocs.Length) ? setlocs[k] : 0;
+                                        //var room = ((rooms != null) && (loc < rooms.Length)) ? rooms[loc] : null;
+                                        //var roomname = (room != null) ? room.RoomName : "[Room not found!]";
+                                        var ent = setents[k];
+                                        var entnode = setnode.Nodes.Add(/*roomname + ": " + */ ent.ToString());
+                                        entnode.Tag = ent;
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+        }
+        private void LoadYbnTreeNodes(YbnFile ybn, TreeNode node)
+        {
+            if (ybn == null) return;
+
+            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Nodes
+
+            node.Nodes.Clear();
+
+            if (ybn.Bounds != null)
+            {
+                LoadYbnBoundsTreeNode(ybn.Bounds, node);
+            }
+
+        }
+        private void LoadYbnBoundsTreeNode(Bounds b, TreeNode node)
+        {
+
+            var boundsnode = node.Nodes.Add(b.Type.ToString());
+            boundsnode.Tag = b;
+
+            if (b is BoundComposite bc)
+            {
+                var children = bc.Children?.data_items;
+                if (children != null)
+                {
+                    for (int i = 0; i < children.Length; i++)
+                    {
+                        var child = children[i];
+                        if (child != null)
+                        {
+                            LoadYbnBoundsTreeNode(child, boundsnode);
+                        }
+                    }
+                }
+            }
+            else if (b is BoundGeometry bg)
+            {
+                TreeNode n;
+                n = boundsnode.Nodes.Add("Edit Polygon");
+                n.Name = "EditPoly";
+                n.Tag = b; //this tag should get updated with the selected poly!
+            }
+
         }
         private void LoadYndTreeNodes(YndFile ynd, TreeNode node)
         {
@@ -589,6 +711,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYmapHasChanged(YmapFile ymap, bool changed)
         {
+            if (ymap != null)
+            {
+                ymap.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -613,6 +739,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYtypHasChanged(YtypFile ytyp, bool changed)
         {
+            if (ytyp != null)
+            {
+                ytyp.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -635,8 +765,40 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
+        public void SetYbnHasChanged(YbnFile ybn, bool changed)
+        {
+            if (ybn != null)
+            {
+                ybn.HasChanged = true;
+            }
+            if (ProjectTreeView.Nodes.Count > 0)
+            {
+                var pnode = ProjectTreeView.Nodes[0];
+                var ynnode = GetChildTreeNode(pnode, "Ybn");
+                if (ynnode == null) return;
+                string changestr = changed ? "*" : "";
+                for (int i = 0; i < ynnode.Nodes.Count; i++)
+                {
+                    var ynode = ynnode.Nodes[i];
+                    if (ynode.Tag == ybn)
+                    {
+                        string name = ybn.Name;
+                        if (ybn.RpfFileEntry != null)
+                        {
+                            name = ybn.RpfFileEntry.Name;
+                        }
+                        ynode.Text = changestr + name;
+                        break;
+                    }
+                }
+            }
+        }
         public void SetYndHasChanged(YndFile ynd, bool changed)
         {
+            if (ynd != null)
+            {
+                ynd.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -661,6 +823,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYnvHasChanged(YnvFile ynv, bool changed)
         {
+            if (ynv != null)
+            {
+                ynv.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -685,6 +851,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetTrainTrackHasChanged(TrainTrack track, bool changed)
         {
+            if (track != null)
+            {
+                track.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -709,6 +879,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetScenarioHasChanged(YmtFile scenario, bool changed)
         {
+            if (scenario != null)
+            {
+                scenario.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -733,6 +907,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetAudioRelHasChanged(RelFile rel, bool changed)
         {
+            if (rel != null)
+            {
+                rel.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -757,6 +935,10 @@ namespace CodeWalker.Project.Panels
         }
         public void SetGrassBatchHasChanged(YmapGrassInstanceBatch batch, bool changed)
         {
+            if (batch?.Ymap != null)
+            {
+                batch.Ymap.HasChanged = true;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var gbnode = FindGrassTreeNode(batch);
@@ -856,13 +1038,13 @@ namespace CodeWalker.Project.Panels
         public TreeNode FindArchetypeTreeNode(Archetype archetype)
         {
             if (archetype == null) return null;
-            TreeNode ytypnode = FindYtypTreeNode(archetype.Ytyp);
+            var ytypnode = FindYtypTreeNode(archetype.Ytyp);
             if (ytypnode == null) return null;
             var archetypenode = GetChildTreeNode(ytypnode, "Archetypes");
             if (archetypenode == null) return null;
             for (int i = 0; i < archetypenode.Nodes.Count; i++)
             {
-                TreeNode archnode = archetypenode.Nodes[i];
+                var archnode = archetypenode.Nodes[i];
                 if (archnode.Tag == archetype) return archnode;
             }
             return null;
@@ -871,69 +1053,138 @@ namespace CodeWalker.Project.Panels
         {
             if (room == null) return null;
 
-            TreeNode ytypnode = FindYtypTreeNode(room.Archetype.Ytyp);
-            if (ytypnode == null) return null;
-
-            TreeNode archetypesnode = GetChildTreeNode(ytypnode, "Archetypes");
-            if (archetypesnode == null) return null;
-
-            for (int i = 0; i < archetypesnode.Nodes.Count; i++)
+            var mloarchetypenode = FindArchetypeTreeNode(room.OwnerMlo);
+            if (mloarchetypenode != null)
             {
-                TreeNode mloarchetypenode = archetypesnode.Nodes[i];
-                if (mloarchetypenode.Tag == room.Archetype)
-                {
-                    TreeNode roomsnode = GetChildTreeNode(mloarchetypenode, "Rooms");
-                    if (roomsnode == null) return null;
+                var roomsnode = GetChildTreeNode(mloarchetypenode, "Rooms");
+                if (roomsnode == null) return null;
 
-                    for (int j = 0; j < roomsnode.Nodes.Count; j++)
-                    {
-                        TreeNode roomnode = roomsnode.Nodes[j];
-                        if (roomnode.Tag == room) return roomnode;
-                    }
-                    break;
+                for (int j = 0; j < roomsnode.Nodes.Count; j++)
+                {
+                    var roomnode = roomsnode.Nodes[j];
+                    if (roomnode.Tag == room) return roomnode;
                 }
             }
+
+            return null;
+        }
+        public TreeNode FindMloPortalTreeNode(MCMloPortalDef portal)
+        {
+            if (portal == null) return null;
+
+            var mloarchetypenode = FindArchetypeTreeNode(portal.OwnerMlo);
+            if (mloarchetypenode != null)
+            {
+                var portalsnode = GetChildTreeNode(mloarchetypenode, "Portals");
+                if (portalsnode == null) return null;
+
+                for (int j = 0; j < portalsnode.Nodes.Count; j++)
+                {
+                    var portalnode = portalsnode.Nodes[j];
+                    if (portalnode.Tag == portal) return portalnode;
+                }
+            }
+
+            return null;
+        }
+        public TreeNode FindMloEntitySetTreeNode(MCMloEntitySet entset)
+        {
+            if (entset == null) return null;
+
+            var mloarchetypenode = FindArchetypeTreeNode(entset.OwnerMlo);
+            if (mloarchetypenode != null)
+            {
+                var entsetsnode = GetChildTreeNode(mloarchetypenode, "EntitySets");
+                if (entsetsnode == null) return null;
+
+                for (int j = 0; j < entsetsnode.Nodes.Count; j++)
+                {
+                    var entsetnode = entsetsnode.Nodes[j];
+                    if (entsetnode.Tag == entset) return entsetnode;
+                }
+            }
+
             return null;
         }
         public TreeNode FindMloEntityTreeNode(MCEntityDef ent)
         {
-            MCMloRoomDef entityroom = ent?.Archetype?.GetEntityRoom(ent);
-            if (entityroom == null) return null;
-
-            TreeNode ytypnode = FindYtypTreeNode(ent.Archetype.Ytyp);
-            if (ytypnode == null) return null;
-
-            var archetypesnode = GetChildTreeNode(ytypnode, "Archetypes");
-            if (archetypesnode == null) return null;
-
-            for (int i = 0; i < archetypesnode.Nodes.Count; i++)
+            var entityroom = ent?.OwnerMlo?.GetEntityRoom(ent);
+            if (entityroom != null)
             {
-                TreeNode mloarchetypenode = archetypesnode.Nodes[i];
-                if (mloarchetypenode.Tag == ent.Archetype)
+                var roomnode = FindMloRoomTreeNode(entityroom);
+                if (roomnode != null)
                 {
-                    TreeNode roomsnode = GetChildTreeNode(mloarchetypenode, "Rooms");
-                    if (roomsnode == null) return null;
-
-                    for (int j = 0; j < roomsnode.Nodes.Count; j++)
+                    for (var k = 0; k < roomnode.Nodes.Count; k++)
                     {
-                        TreeNode roomnode = roomsnode.Nodes[j];
-                        if (roomnode.Tag == entityroom)
-                        {
-                            TreeNode entitiesnode = GetChildTreeNode(roomnode, "Attached Objects");
-                            if (entitiesnode == null) return null;
-
-                            for (var k = 0; k < entitiesnode.Nodes.Count; k++)
-                            {
-                                TreeNode entitynode = entitiesnode.Nodes[k];
-                                if (entitynode.Tag == ent) return entitynode;
-                            }
-                            break;
-                        }
+                        var entitynode = roomnode.Nodes[k];
+                        if (entitynode.Tag == ent) return entitynode;
                     }
-                    break;
                 }
             }
+
+            var entityportal = ent?.OwnerMlo?.GetEntityPortal(ent);
+            if (entityportal != null)
+            {
+                var portalnode = FindMloPortalTreeNode(entityportal);
+                if (portalnode != null)
+                {
+                    for (var k = 0; k < portalnode.Nodes.Count; k++)
+                    {
+                        var entitynode = portalnode.Nodes[k];
+                        if (entitynode.Tag == ent) return entitynode;
+                    }
+                }
+            }
+
+            var entityset = ent?.OwnerMlo?.GetEntitySet(ent);
+            if (entityset != null)
+            {
+                var setnode = FindMloEntitySetTreeNode(entityset);
+                if (setnode != null)
+                {
+                    for (var k = 0; k < setnode.Nodes.Count; k++)
+                    {
+                        var entitynode = setnode.Nodes[k];
+                        if (entitynode.Tag == ent) return entitynode;
+                    }
+                }
+            }
+
             return null;
+        }
+        public TreeNode FindYbnTreeNode(YbnFile ybn)
+        {
+            if (ProjectTreeView.Nodes.Count <= 0) return null;
+            var projnode = ProjectTreeView.Nodes[0];
+            var ybnsnode = GetChildTreeNode(projnode, "Ybn");
+            if (ybnsnode == null) return null;
+            for (int i = 0; i < ybnsnode.Nodes.Count; i++)
+            {
+                var ybnnode = ybnsnode.Nodes[i];
+                if (ybnnode.Tag == ybn) return ybnnode;
+            }
+            return null;
+        }
+        public TreeNode FindCollisionBoundsTreeNode(Bounds b)
+        {
+            if (b == null) return null;
+            var bnode = (b.Parent != null) ? FindCollisionBoundsTreeNode(b.Parent) : FindYbnTreeNode(b.GetRootYbn());
+            if (bnode == null) return null;
+            for (int i = 0; i < bnode.Nodes.Count; i++)
+            {
+                var nnode = bnode.Nodes[i];
+                if (nnode.Tag == b) return nnode;
+            }
+            return null;
+        }
+        public TreeNode FindCollisionPolyTreeNode(BoundPolygon p)
+        {
+            if (p == null) return null;
+            var ybnnode = FindCollisionBoundsTreeNode(p.Owner);
+            var polynode = GetChildTreeNode(ybnnode, "EditPoly");
+            if (polynode == null) return null;
+            polynode.Tag = p;
+            return polynode;
         }
         public TreeNode FindYndTreeNode(YndFile ynd)
         {
@@ -982,12 +1233,6 @@ namespace CodeWalker.Project.Panels
             if (polynode == null) return null;
             polynode.Tag = p;
             return polynode;
-            //for (int i = 0; i < polysnode.Nodes.Count; i++)
-            //{
-            //    TreeNode pnode = polysnode.Nodes[i];
-            //    if (pnode.Tag == p) return pnode;
-            //}
-            //return null;
         }
         public TreeNode FindNavPointTreeNode(YnvPoint p)
         {
@@ -1248,6 +1493,36 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
+        public void TrySelectMloPortalTreeNode(MCMloPortalDef portal)
+        {
+            TreeNode portalnode = FindMloPortalTreeNode(portal);
+            if (portalnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == portalnode)
+                {
+                    OnItemSelected?.Invoke(portal);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = portalnode;
+                }
+            }
+        }
+        public void TrySelectMloEntitySetTreeNode(MCMloEntitySet set)
+        {
+            TreeNode setnode = FindMloEntitySetTreeNode(set);
+            if (setnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == setnode)
+                {
+                    OnItemSelected?.Invoke(set);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = setnode;
+                }
+            }
+        }
         public void TrySelectArchetypeTreeNode(Archetype archetype)
         {
             TreeNode archetypenode = FindArchetypeTreeNode(archetype);
@@ -1260,6 +1535,48 @@ namespace CodeWalker.Project.Panels
                 else
                 {
                     ProjectTreeView.SelectedNode = archetypenode;
+                }
+            }
+        }
+        public void TrySelectCollisionBoundsTreeNode(Bounds bounds)
+        {
+            TreeNode tnode = FindCollisionBoundsTreeNode(bounds);
+            if (tnode == null)
+            {
+                tnode = FindYbnTreeNode(bounds?.GetRootYbn());
+            }
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(bounds);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
+            }
+        }
+        public void TrySelectCollisionPolyTreeNode(BoundPolygon poly)
+        {
+            TreeNode tnode = FindCollisionPolyTreeNode(poly);
+            if (tnode == null)
+            {
+                tnode = FindCollisionBoundsTreeNode(poly?.Owner);
+            }
+            if (tnode == null)
+            {
+                tnode = FindYbnTreeNode(poly?.Owner?.GetRootYbn());
+            }
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(poly);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
                 }
             }
         }
@@ -1632,7 +1949,6 @@ namespace CodeWalker.Project.Panels
                 tn.Parent.Nodes.Remove(tn);
             }
         }
-
         public void RemoveCarGenTreeNode(YmapCarGen cargen)
         {
             var tn = FindCarGenTreeNode(cargen);
@@ -1642,7 +1958,6 @@ namespace CodeWalker.Project.Panels
                 tn.Parent.Nodes.Remove(tn);
             }
         }
-
         public void RemoveGrassBatchTreeNode(YmapGrassInstanceBatch batch)
         {
             var tn = FindGrassTreeNode(batch);
@@ -1666,11 +1981,41 @@ namespace CodeWalker.Project.Panels
             var tn = FindMloEntityTreeNode(ent);
             if ((tn != null) && (tn.Parent != null))
             {
-                var tnp = tn.Parent.Parent;
-                MCMloRoomDef room = null;
-                if (tnp != null) room = tnp.Tag as MCMloRoomDef;
-
-                tn.Parent.Text = "Attached Objects (" + (room?.AttachedObjects.Length - 1 ?? 0) + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveMloRoomTreeNode(MCMloRoomDef room)
+        {
+            var tn = FindMloRoomTreeNode(room);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                tn.Parent.Text = "Rooms (" + (room.OwnerMlo?.rooms?.Length.ToString() ?? "0") + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveMloPortalTreeNode(MCMloPortalDef portal)
+        {
+            var tn = FindMloPortalTreeNode(portal);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                tn.Parent.Text = "Portals (" + (portal.OwnerMlo?.portals?.Length.ToString() ?? "0") + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveMloEntitySetTreeNode(MCMloEntitySet set)
+        {
+            var tn = FindMloEntitySetTreeNode(set);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                tn.Parent.Text = "Entity Sets (" + (set.OwnerMlo?.entitySets?.Length.ToString() ?? "0") + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveCollisionBoundsTreeNode(Bounds bounds)
+        {
+            var tn = FindCollisionBoundsTreeNode(bounds);
+            if ((tn != null) && (tn.Parent != null))
+            {
                 tn.Parent.Nodes.Remove(tn);
             }
         }

@@ -52,6 +52,48 @@ namespace CodeWalker.Rendering
         }
     }
 
+
+    public class GpuABuffer<T> where T : struct //Dynamic GPU buffer of items updated by CPU, for array of structs used as a constant buffer
+    {
+        public int StructSize;
+        public int StructCount;
+        public int BufferSize;
+        public Buffer Buffer;
+
+        public GpuABuffer(Device device, int count)
+        {
+            StructCount = count;
+            StructSize = System.Runtime.InteropServices.Marshal.SizeOf<T>();
+            BufferSize = StructCount * StructSize;
+            Buffer = new Buffer(device, BufferSize, ResourceUsage.Dynamic, BindFlags.ConstantBuffer, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
+        }
+        public void Dispose()
+        {
+            if (Buffer != null)
+            {
+                Buffer.Dispose();
+                Buffer = null;
+            }
+        }
+        public void Update(DeviceContext context, T[] data)
+        {
+            var dataBox = context.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
+            Utilities.Write(dataBox.DataPointer, data, 0, Math.Min(data.Length, StructCount));
+            context.UnmapSubresource(Buffer, 0);
+        }
+
+        public void SetVSCBuffer(DeviceContext context, int slot)
+        {
+            context.VertexShader.SetConstantBuffer(slot, Buffer);
+        }
+        public void SetPSCBuffer(DeviceContext context, int slot)
+        {
+            context.PixelShader.SetConstantBuffer(slot, Buffer);
+        }
+
+    }
+
+
     public class GpuSBuffer<T> where T : struct //for static struct data as resource view
     {
         public int StructSize;
@@ -147,6 +189,12 @@ namespace CodeWalker.Rendering
             Utilities.Write(dataBox.DataPointer, DataArray, 0, CurrentCount);
             context.UnmapSubresource(Buffer, 0);
         }
+        public void Update(DeviceContext context, T[] data)
+        {
+            var dataBox = context.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
+            Utilities.Write(dataBox.DataPointer, data, 0, data.Length);
+            context.UnmapSubresource(Buffer, 0);
+        }
 
         public void SetVSResource(DeviceContext context, int slot)
         {
@@ -214,6 +262,7 @@ namespace CodeWalker.Rendering
         public RenderTargetView MSRTV;
         public DepthStencilView MSDSV;
         public ShaderResourceView SRV;
+        //public ShaderResourceView DepthSRV; //possibly causing crash on DX10 hardware when multisampled
         public int VramUsage;
         public bool Multisampled;
         public bool UseDepth;
@@ -229,8 +278,10 @@ namespace CodeWalker.Rendering
             ShaderResourceViewDimension srvd = ShaderResourceViewDimension.Texture2D;// D3D11_SRV_DIMENSION_TEXTURE2D;
             int fs = DXUtility.ElementSize(f);
             int wh = w * h;
-            BindFlags db = BindFlags.DepthStencil;// D3D11_BIND_DEPTH_STENCIL;
+            BindFlags db = BindFlags.DepthStencil;// | BindFlags.ShaderResource;// D3D11_BIND_DEPTH_STENCIL;
             DepthStencilViewDimension dsvd = DepthStencilViewDimension.Texture2D;
+            Format dtexf = GetDepthTexFormat(df);
+            Format dsrvf = GetDepthSrvFormat(df);
 
             Texture = DXUtility.CreateTexture2D(device, w, h, 1, 1, f, 1, 0, u, b, 0, 0);
             RTV = DXUtility.CreateRenderTargetView(device, Texture, f, rtvd, 0, 0, 0);
@@ -242,24 +293,27 @@ namespace CodeWalker.Rendering
                 b = BindFlags.RenderTarget;
                 rtvd = RenderTargetViewDimension.Texture2DMultisampled;
                 dsvd = DepthStencilViewDimension.Texture2DMultisampled;
+                //srvd = ShaderResourceViewDimension.Texture2DMultisampled;
 
                 TextureMS = DXUtility.CreateTexture2D(device, w, h, 1, 1, f, sc, sq, u, b, 0, 0);
                 MSRTV = DXUtility.CreateRenderTargetView(device, TextureMS, f, rtvd, 0, 0, 0);
-                VramUsage += (wh * fs);
+                VramUsage += (wh * fs) * sc;
 
                 if (depth)
                 {
-                    DepthMS = DXUtility.CreateTexture2D(device, w, h, 1, 1, df, sc, sq, u, db, 0, 0);
+                    DepthMS = DXUtility.CreateTexture2D(device, w, h, 1, 1, dtexf, sc, sq, u, db, 0, 0);
                     MSDSV = DXUtility.CreateDepthStencilView(device, DepthMS, df, dsvd);
-                    VramUsage += (wh * DXUtility.ElementSize(df));
+                    //DepthSRV = DXUtility.CreateShaderResourceView(device, DepthMS, dsrvf, srvd, 1, 0, 0, 0);
+                    VramUsage += (wh * DXUtility.ElementSize(df)) * sc;
                 }
             }
             else
             {
                 if (depth)
                 {
-                    Depth = DXUtility.CreateTexture2D(device, w, h, 1, 1, df, sc, sq, u, db, 0, 0);
+                    Depth = DXUtility.CreateTexture2D(device, w, h, 1, 1, dtexf, sc, sq, u, db, 0, 0);
                     DSV = DXUtility.CreateDepthStencilView(device, Depth, df, dsvd);
+                    //DepthSRV = DXUtility.CreateShaderResourceView(device, Depth, dsrvf, srvd, 1, 0, 0, 0);
                     VramUsage += (wh * DXUtility.ElementSize(df));
                 }
             }
@@ -332,7 +386,7 @@ namespace CodeWalker.Rendering
                 context.ClearRenderTargetView(MSRTV, colour);
                 if (UseDepth)
                 {
-                    context.ClearDepthStencilView(MSDSV, DepthStencilClearFlags.Depth, 1.0f, 0);
+                    context.ClearDepthStencilView(MSDSV, DepthStencilClearFlags.Depth, 0.0f, 0);
                 }
             }
             else
@@ -340,7 +394,7 @@ namespace CodeWalker.Rendering
                 context.ClearRenderTargetView(RTV, colour);
                 if (UseDepth)
                 {
-                    context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 1.0f, 0);
+                    context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 0.0f, 0);
                 }
             }
         }
@@ -350,11 +404,11 @@ namespace CodeWalker.Rendering
             if (!UseDepth) return;
             if (Multisampled)
             {
-                context.ClearDepthStencilView(MSDSV, DepthStencilClearFlags.Depth, 1.0f, 0);
+                context.ClearDepthStencilView(MSDSV, DepthStencilClearFlags.Depth, 0.0f, 0);
             }
             else
             {
-                context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 1.0f, 0);
+                context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 0.0f, 0);
             }
         }
 
@@ -370,7 +424,170 @@ namespace CodeWalker.Rendering
             }
         }
 
+
+
+        public static Format GetDepthTexFormat(Format df)
+        {
+            Format dtexf = Format.R32_Typeless;
+            switch (df)
+            {
+                case Format.D16_UNorm:
+                    dtexf = Format.R16_Typeless;
+                    break;
+                case Format.D24_UNorm_S8_UInt:
+                    dtexf = Format.R24G8_Typeless;
+                    break;
+                case Format.D32_Float:
+                    dtexf = Format.R32_Typeless;
+                    break;
+                case Format.D32_Float_S8X24_UInt:
+                    dtexf = Format.R32G8X24_Typeless;//is this right? who uses this anyway??
+                    break;
+            }
+            return dtexf;
+        }
+        public static Format GetDepthSrvFormat(Format df)
+        {
+            Format dsrvf = Format.R32_Float;
+            switch (df)
+            {
+                case Format.D16_UNorm:
+                    dsrvf = Format.R16_UNorm;
+                    break;
+                case Format.D24_UNorm_S8_UInt:
+                    dsrvf = Format.R24_UNorm_X8_Typeless;
+                    break;
+                case Format.D32_Float:
+                    dsrvf = Format.R32_Float;
+                    break;
+                case Format.D32_Float_S8X24_UInt:
+                    dsrvf = Format.R32_Float_X8X24_Typeless;
+                    break;
+            }
+            return dsrvf;
+        }
+
     }
 
+
+    public class GpuMultiTexture //multiple texture and render targets (depth).
+    {
+        public Texture2D[] Textures;
+        public Texture2D Depth;
+        public RenderTargetView[] RTVs;
+        public DepthStencilView DSV;
+        public ShaderResourceView[] SRVs;
+        public ShaderResourceView DepthSRV;
+        public int VramUsage;
+        public bool UseDepth;
+        public int Count;
+        public bool Multisampled;
+        public int MultisampleCount;
+
+        public void Init(Device device, int w, int h, int count, Format f, bool depth, Format df, int multisamplecount)
+        {
+            Count = count;
+            VramUsage = 0;
+            UseDepth = depth;
+            MultisampleCount = multisamplecount;
+            Multisampled = (multisamplecount > 1);
+            ResourceUsage u = ResourceUsage.Default;
+            BindFlags b = BindFlags.RenderTarget | BindFlags.ShaderResource;
+            int fs = DXUtility.ElementSize(f);
+            int wh = w * h;
+            BindFlags db = BindFlags.DepthStencil | BindFlags.ShaderResource;// D3D11_BIND_DEPTH_STENCIL;
+            RenderTargetViewDimension rtvd = RenderTargetViewDimension.Texture2D;
+            ShaderResourceViewDimension srvd = ShaderResourceViewDimension.Texture2D;// D3D11_SRV_DIMENSION_TEXTURE2D;
+            DepthStencilViewDimension dsvd = DepthStencilViewDimension.Texture2D;
+
+            if (Multisampled)
+            {
+                rtvd = RenderTargetViewDimension.Texture2DMultisampled;
+                srvd = ShaderResourceViewDimension.Texture2DMultisampled;
+                dsvd = DepthStencilViewDimension.Texture2DMultisampled;
+            }
+
+            Textures = new Texture2D[count];
+            RTVs = new RenderTargetView[count];
+            SRVs = new ShaderResourceView[count];
+
+            for (int i = 0; i < count; i++)
+            {
+                Textures[i] = DXUtility.CreateTexture2D(device, w, h, 1, 1, f, multisamplecount, 0, u, b, 0, 0);
+                RTVs[i] = DXUtility.CreateRenderTargetView(device, Textures[i], f, rtvd, 0, 0, 0);
+                SRVs[i] = DXUtility.CreateShaderResourceView(device, Textures[i], f, srvd, 1, 0, 0, 0);
+                VramUsage += (wh * fs) * multisamplecount;
+            }
+            if (depth)
+            {
+                Format dtexf = GpuTexture.GetDepthTexFormat(df);
+                Format dsrvf = GpuTexture.GetDepthSrvFormat(df);
+                Depth = DXUtility.CreateTexture2D(device, w, h, 1, 1, dtexf, multisamplecount, 0, u, db, 0, 0);
+                DSV = DXUtility.CreateDepthStencilView(device, Depth, df, dsvd);
+                DepthSRV = DXUtility.CreateShaderResourceView(device, Depth, dsrvf, srvd, 1, 0, 0, 0);
+                VramUsage += (wh * DXUtility.ElementSize(df)) * multisamplecount;
+            }
+        }
+        public void Dispose()
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                SRVs[i].Dispose();
+                RTVs[i].Dispose();
+                Textures[i].Dispose();
+            }
+            SRVs = null;
+            RTVs = null;
+            Textures = null;
+
+            if (DSV != null)
+            {
+                DSV.Dispose();
+                DSV = null;
+            }
+            if (DepthSRV != null)
+            {
+                DepthSRV.Dispose();
+                DepthSRV = null;
+            }
+            if (Depth != null)
+            {
+                Depth.Dispose();
+                Depth = null;
+            }
+        }
+        public GpuMultiTexture(Device device, int w, int h, int count, Format f, bool depth, Format df, int msc = 1)
+        {
+            Init(device, w, h, count, f, depth, df, msc);
+        }
+        public GpuMultiTexture(Device device, int w, int h, int count, Format f, int msc = 1)
+        {
+            Init(device, w, h, count, f, false, Format.Unknown, msc);
+        }
+
+        public void Clear(DeviceContext context, Color4 colour)
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                context.ClearRenderTargetView(RTVs[i], colour);
+            }
+            if (UseDepth)
+            {
+                context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 0.0f, 0);
+            }
+        }
+
+        public void ClearDepth(DeviceContext context)
+        {
+            if (!UseDepth) return;
+            context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 0.0f, 0);
+        }
+
+        public void SetRenderTargets(DeviceContext context)
+        {
+            context.OutputMerger.SetRenderTargets(UseDepth ? DSV : null, RTVs);
+        }
+
+    }
 
 }

@@ -119,14 +119,14 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public ulong ParametersPointer { get; set; }
-        public MetaHash Name { get; set; } //530103687, 2401522793, 1912906641
+        public MetaHash Name { get; set; } //decal_emissive_only, emissive, spec
         public uint Unknown_Ch { get; set; } // 0x00000000
         public byte ParameterCount { get; set; }
         public byte RenderBucket { get; set; } // 2, 0, 
         public ushort Unknown_12h { get; set; } // 32768    HasComment?
         public ushort ParameterSize { get; set; } //112, 208, 320    (with 16h) 10485872, 17826000, 26214720
         public ushort ParameterDataSize { get; set; } //160, 272, 400 
-        public MetaHash FileName { get; set; } //2918136469, 2635608835, 2247429097
+        public MetaHash FileName { get; set; } //decal_emissive_only.sps, emissive.sps, spec.sps
         public uint Unknown_1Ch { get; set; } // 0x00000000
         public uint RenderBucketMask { get; set; } //65284, 65281  DrawBucketMask?   (1<<bucket) | 0xFF00
         public ushort Unknown_24h { get; set; } //0   Instanced?
@@ -510,44 +510,51 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public uint VFT { get; set; }
-        public uint Unknown_4h { get; set; } // 0x00000001
+        public uint Unknown_4h { get; set; } = 1; // 0x00000001
         public uint Unknown_8h { get; set; } // 0x00000000
         public uint Unknown_Ch { get; set; } // 0x00000000
-        public ulong Unknown_10h_Pointer { get; set; }
+        public ulong BoneTagsPointer { get; set; }
         public ushort Count1 { get; set; }
         public ushort Count2 { get; set; }
-        public uint Unknown_1Ch { get; set; }
+        public FlagsUint Unknown_1Ch { get; set; }
         public ulong BonesPointer { get; set; }
         public ulong TransformationsInvertedPointer { get; set; }
         public ulong TransformationsPointer { get; set; }
         public ulong ParentIndicesPointer { get; set; }
-        public ulong Unknown_40h_Pointer { get; set; }
+        public ulong ChildIndicesPointer { get; set; }
         public uint Unknown_48h { get; set; } // 0x00000000
         public uint Unknown_4Ch { get; set; } // 0x00000000
         public MetaHash Unknown_50h { get; set; }
         public MetaHash Unknown_54h { get; set; }
         public MetaHash Unknown_58h { get; set; }
-        public ushort Unknown_5Ch { get; set; } // 0x0001
+        public ushort Unknown_5Ch { get; set; } = 1; // 0x0001
         public ushort BonesCount { get; set; }
-        public ushort Count4 { get; set; }
+        public ushort ChildIndicesCount { get; set; }
         public ushort Unknown_62h { get; set; } // 0x0000
         public uint Unknown_64h { get; set; } // 0x00000000
         public uint Unknown_68h { get; set; } // 0x00000000
         public uint Unknown_6Ch { get; set; } // 0x00000000
 
         // reference data
-        public ResourcePointerArray64<Skeleton_Unknown_D_001> Unknown_10h_Data { get; set; }
+        public ResourcePointerArray64<SkeletonBoneTag> BoneTags { get; set; }
         public ResourceSimpleArray<Bone> Bones { get; set; }
 
         public Matrix[] TransformationsInverted { get; set; }
         public Matrix[] Transformations { get; set; }
-        public ushort[] ParentIndices { get; set; }
-        public ushort[] Unknown_40h_Data { get; set; }
+        public short[] ParentIndices { get; set; }
+        public short[] ChildIndices { get; set; }//mapping child->parent indices, first child index, then parent
 
         private ResourceSystemStructBlock<Matrix> TransformationsInvertedBlock = null;//for saving only
         private ResourceSystemStructBlock<Matrix> TransformationsBlock = null;
-        private ResourceSystemStructBlock<ushort> ParentIndicesBlock = null;
-        private ResourceSystemStructBlock<ushort> Unknown_40h_DataBlock = null;
+        private ResourceSystemStructBlock<short> ParentIndicesBlock = null;
+        private ResourceSystemStructBlock<short> ChildIndicesBlock = null;
+
+
+        public Dictionary<ushort, Bone> BonesMap { get; set; }//for convienience finding bones by tag
+
+
+        public Matrix3_s[] BoneTransforms; //for rendering
+
 
 
         /// <summary>
@@ -560,7 +567,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_4h = reader.ReadUInt32();
             this.Unknown_8h = reader.ReadUInt32();
             this.Unknown_Ch = reader.ReadUInt32();
-            this.Unknown_10h_Pointer = reader.ReadUInt64();
+            this.BoneTagsPointer = reader.ReadUInt64();
             this.Count1 = reader.ReadUInt16();
             this.Count2 = reader.ReadUInt16();
             this.Unknown_1Ch = reader.ReadUInt32();
@@ -568,7 +575,7 @@ namespace CodeWalker.GameFiles
             this.TransformationsInvertedPointer = reader.ReadUInt64();
             this.TransformationsPointer = reader.ReadUInt64();
             this.ParentIndicesPointer = reader.ReadUInt64();
-            this.Unknown_40h_Pointer = reader.ReadUInt64();
+            this.ChildIndicesPointer = reader.ReadUInt64();
             this.Unknown_48h = reader.ReadUInt32();
             this.Unknown_4Ch = reader.ReadUInt32();
             this.Unknown_50h = new MetaHash(reader.ReadUInt32());
@@ -576,15 +583,15 @@ namespace CodeWalker.GameFiles
             this.Unknown_58h = new MetaHash(reader.ReadUInt32());
             this.Unknown_5Ch = reader.ReadUInt16();
             this.BonesCount = reader.ReadUInt16();
-            this.Count4 = reader.ReadUInt16();
+            this.ChildIndicesCount = reader.ReadUInt16();
             this.Unknown_62h = reader.ReadUInt16();
             this.Unknown_64h = reader.ReadUInt32();
             this.Unknown_68h = reader.ReadUInt32();
             this.Unknown_6Ch = reader.ReadUInt32();
 
             // read reference data
-            this.Unknown_10h_Data = reader.ReadBlockAt<ResourcePointerArray64<Skeleton_Unknown_D_001>>(
-                this.Unknown_10h_Pointer, // offset
+            this.BoneTags = reader.ReadBlockAt<ResourcePointerArray64<SkeletonBoneTag>>(
+                this.BoneTagsPointer, // offset
                 this.Count1
             );
             this.Bones = reader.ReadBlockAt<ResourceSimpleArray<Bone>>(
@@ -593,24 +600,13 @@ namespace CodeWalker.GameFiles
             );
             this.TransformationsInverted = reader.ReadStructsAt<Matrix>(this.TransformationsInvertedPointer, this.BonesCount);
             this.Transformations = reader.ReadStructsAt<Matrix>(this.TransformationsPointer, this.BonesCount);
-            this.ParentIndices = reader.ReadUshortsAt(this.ParentIndicesPointer, this.BonesCount);
-            this.Unknown_40h_Data = reader.ReadUshortsAt(this.Unknown_40h_Pointer, this.Count4);
+            this.ParentIndices = reader.ReadShortsAt(this.ParentIndicesPointer, this.BonesCount);
+            this.ChildIndices = reader.ReadShortsAt(this.ChildIndicesPointer, this.ChildIndicesCount);
 
 
-            if ((Bones != null) && (ParentIndices != null))
-            {
-                var maxcnt = Math.Min(Bones.Count, ParentIndices.Length);
-                for (int i = 0; i < maxcnt; i++)
-                {
-                    var bone = Bones[i];
-                    var pind = ParentIndices[i];
-                    if (pind < Bones.Count)
-                    {
-                        bone.Parent = Bones[pind];
-                    }
-                }
-            }
+            AssignBoneParents();
 
+            BuildBonesMap();
         }
 
         /// <summary>
@@ -619,15 +615,15 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.Unknown_10h_Pointer = (ulong)(this.Unknown_10h_Data != null ? this.Unknown_10h_Data.FilePosition : 0);
-            this.Count1 = (ushort)(this.Unknown_10h_Data != null ? this.Unknown_10h_Data.Count : 0);
+            this.BoneTagsPointer = (ulong)(this.BoneTags != null ? this.BoneTags.FilePosition : 0);
+            this.Count1 = (ushort)(this.BoneTags != null ? this.BoneTags.Count : 0);
             this.BonesPointer = (ulong)(this.Bones != null ? this.Bones.FilePosition : 0);
             this.TransformationsInvertedPointer = (ulong)(this.TransformationsInvertedBlock != null ? this.TransformationsInvertedBlock.FilePosition : 0);
             this.TransformationsPointer = (ulong)(this.TransformationsBlock != null ? this.TransformationsBlock.FilePosition : 0);
             this.ParentIndicesPointer = (ulong)(this.ParentIndicesBlock != null ? this.ParentIndicesBlock.FilePosition : 0);
-            this.Unknown_40h_Pointer = (ulong)(this.Unknown_40h_DataBlock != null ? this.Unknown_40h_DataBlock.FilePosition : 0);
+            this.ChildIndicesPointer = (ulong)(this.ChildIndicesBlock != null ? this.ChildIndicesBlock.FilePosition : 0);
             this.BonesCount = (ushort)(this.Bones != null ? this.Bones.Count : 0);
-            this.Count4 = (ushort)(this.Unknown_40h_DataBlock != null ? this.Unknown_40h_DataBlock.ItemCount : 0);
+            this.ChildIndicesCount = (ushort)(this.ChildIndicesBlock != null ? this.ChildIndicesBlock.ItemCount : 0);
             //this.Count2 = BonesCount;//?
 
 
@@ -636,7 +632,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_4h);
             writer.Write(this.Unknown_8h);
             writer.Write(this.Unknown_Ch);
-            writer.Write(this.Unknown_10h_Pointer);
+            writer.Write(this.BoneTagsPointer);
             writer.Write(this.Count1);
             writer.Write(this.Count2);
             writer.Write(this.Unknown_1Ch);
@@ -644,7 +640,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.TransformationsInvertedPointer);
             writer.Write(this.TransformationsPointer);
             writer.Write(this.ParentIndicesPointer);
-            writer.Write(this.Unknown_40h_Pointer);
+            writer.Write(this.ChildIndicesPointer);
             writer.Write(this.Unknown_48h);
             writer.Write(this.Unknown_4Ch);
             writer.Write(this.Unknown_50h);
@@ -652,7 +648,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_58h);
             writer.Write(this.Unknown_5Ch);
             writer.Write(this.BonesCount);
-            writer.Write(this.Count4);
+            writer.Write(this.ChildIndicesCount);
             writer.Write(this.Unknown_62h);
             writer.Write(this.Unknown_64h);
             writer.Write(this.Unknown_68h);
@@ -665,7 +661,7 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (Unknown_10h_Data != null) list.Add(Unknown_10h_Data);
+            if (BoneTags != null) list.Add(BoneTags);
             if (Bones != null) list.Add(Bones);
             if (TransformationsInverted != null)
             {
@@ -679,19 +675,178 @@ namespace CodeWalker.GameFiles
             }
             if (ParentIndices != null)
             {
-                ParentIndicesBlock = new ResourceSystemStructBlock<ushort>(ParentIndices);
+                ParentIndicesBlock = new ResourceSystemStructBlock<short>(ParentIndices);
                 list.Add(ParentIndicesBlock);
             }
-            if (Unknown_40h_Data != null)
+            if (ChildIndices != null)
             {
-                Unknown_40h_DataBlock = new ResourceSystemStructBlock<ushort>(Unknown_40h_Data);
-                list.Add(Unknown_40h_DataBlock);
+                ChildIndicesBlock = new ResourceSystemStructBlock<short>(ChildIndices);
+                list.Add(ChildIndicesBlock);
             }
             return list.ToArray();
         }
+
+
+
+
+
+
+        public void AssignBoneParents()
+        {
+            if ((Bones != null) && (ParentIndices != null))
+            {
+                var maxcnt = Math.Min(Bones.Count, ParentIndices.Length);
+                for (int i = 0; i < maxcnt; i++)
+                {
+                    var bone = Bones[i];
+                    var pind = ParentIndices[i];
+                    if ((pind >= 0) && (pind < Bones.Count))
+                    {
+                        bone.Parent = Bones[pind];
+                    }
+                }
+            }
+        }
+
+        public void BuildBonesMap()
+        {
+            BonesMap = new Dictionary<ushort, Bone>();
+            if (Bones != null)
+            {
+                for (int i = 0; i < Bones.Count; i++)
+                {
+                    var bone = Bones[i];
+                    BonesMap[bone.Tag] = bone;
+
+                    bone.UpdateAnimTransform();
+                    bone.BindTransformInv = (i < TransformationsInverted?.Length) ? TransformationsInverted[i] : Matrix.Invert(bone.AnimTransform);
+                    bone.BindTransformInv.M44 = 1.0f;
+                    bone.UpdateSkinTransform();
+                }
+            }
+        }
+
+
+
+        public void ResetBoneTransforms()
+        {
+            if (Bones?.Data == null) return;
+            foreach (var bone in Bones.Data)
+            {
+                bone.ResetAnimTransform();
+            }
+            UpdateBoneTransforms();
+        }
+        public void UpdateBoneTransforms()
+        {
+            if (Bones?.Data == null) return;
+            if ((BoneTransforms == null) || (BoneTransforms.Length != Bones.Data.Count))
+            {
+                BoneTransforms = new Matrix3_s[Bones.Data.Count];
+            }
+            for (int i = 0; i < Bones.Data.Count; i++)
+            {
+                var bone = Bones.Data[i];
+                Matrix b = bone.SkinTransform;
+                Matrix3_s bt = new Matrix3_s();
+                bt.Row1 = b.Column1;
+                bt.Row2 = b.Column2;
+                bt.Row3 = b.Column3;
+                BoneTransforms[i] = bt;
+            }
+        }
+
+
+
+
+
+
+        public Skeleton Clone()
+        {
+            var skel = new Skeleton();
+
+            skel.Count1 = Count1;
+            skel.Count2 = Count2;
+            skel.Unknown_1Ch = Unknown_1Ch;
+            skel.Unknown_50h = Unknown_50h;
+            skel.Unknown_54h = Unknown_54h;
+            skel.Unknown_58h = Unknown_58h;
+            skel.BonesCount = BonesCount;
+            skel.ChildIndicesCount = ChildIndicesCount;
+
+            if (BoneTags != null)
+            {
+                skel.BoneTags = new ResourcePointerArray64<SkeletonBoneTag>();
+                if (BoneTags.data_items != null)
+                {
+                    skel.BoneTags.data_items = new SkeletonBoneTag[BoneTags.data_items.Length];
+                    for (int i = 0; i < BoneTags.data_items.Length; i++)
+                    {
+                        var obt = BoneTags.data_items[i];
+                        var nbt = new SkeletonBoneTag();
+                        skel.BoneTags.data_items[i] = nbt;
+                        while (obt != null)
+                        {
+                            nbt.BoneTag = obt.BoneTag;
+                            nbt.BoneIndex = obt.BoneIndex;
+                            obt = obt.LinkedTag;
+                            if (obt != null)
+                            {
+                                var nxt = new SkeletonBoneTag();
+                                nbt.LinkedTag = nxt;
+                                nbt = nxt;
+                            }
+                        }
+                    }
+                }
+            }
+            if (Bones != null)
+            {
+                skel.Bones = new ResourceSimpleArray<Bone>();
+                if (Bones.Data != null)
+                {
+                    skel.Bones.Data = new List<Bone>();
+                    for (int i = 0; i < Bones.Data.Count; i++)
+                    {
+                        var ob = Bones.Data[i];
+                        var nb = new Bone();
+                        nb.Rotation = ob.Rotation;
+                        nb.Translation = ob.Translation;
+                        nb.Scale = ob.Scale;
+                        nb.NextSiblingIndex = ob.NextSiblingIndex;
+                        nb.ParentIndex = ob.ParentIndex;
+                        nb.Flags = ob.Flags;
+                        nb.Index = ob.Index;
+                        nb.Tag = ob.Tag;
+                        nb.Index2 = ob.Index2;
+                        nb.Name = ob.Name;
+                        nb.AnimRotation = ob.AnimRotation;
+                        nb.AnimTranslation = ob.AnimTranslation;
+                        nb.AnimScale = ob.AnimScale;
+                        nb.AnimTransform = ob.AnimTransform;
+                        nb.BindTransformInv = ob.BindTransformInv;
+                        nb.SkinTransform = ob.SkinTransform;
+                        skel.Bones.Data.Add(nb);
+                    }
+                }
+            }
+
+            skel.TransformationsInverted = (Matrix[])TransformationsInverted?.Clone();
+            skel.Transformations = (Matrix[])Transformations?.Clone();
+            skel.ParentIndices = (short[])ParentIndices?.Clone();
+            skel.ChildIndices = (short[])ChildIndices?.Clone();
+
+            skel.AssignBoneParents();
+            skel.BuildBonesMap();
+
+            return skel;
+        }
+
+
+
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Skeleton_Unknown_D_001 : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class SkeletonBoneTag : ResourceSystemBlock
     {
         public override long BlockLength
         {
@@ -699,12 +854,12 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint Unknown_0h { get; set; }
-        public uint Unknown_4h { get; set; }
-        public ulong Unknown_8h_Pointer { get; set; }
+        public uint BoneTag { get; set; }
+        public uint BoneIndex { get; set; }
+        public ulong LinkedTagPointer { get; set; }
 
         // reference data
-        public Skeleton_Unknown_D_001 p1data { get; set; }
+        public SkeletonBoneTag LinkedTag { get; set; } //don't know why it's linked here
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -712,13 +867,13 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h_Pointer = reader.ReadUInt64();
+            this.BoneTag = reader.ReadUInt32();
+            this.BoneIndex = reader.ReadUInt32();
+            this.LinkedTagPointer = reader.ReadUInt64();
 
             // read reference data
-            this.p1data = reader.ReadBlockAt<Skeleton_Unknown_D_001>(
-                this.Unknown_8h_Pointer // offset
+            this.LinkedTag = reader.ReadBlockAt<SkeletonBoneTag>(
+                this.LinkedTagPointer // offset
             );
         }
 
@@ -728,12 +883,12 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.Unknown_8h_Pointer = (ulong)(this.p1data != null ? this.p1data.FilePosition : 0);
+            this.LinkedTagPointer = (ulong)(this.LinkedTag != null ? this.LinkedTag.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.Unknown_0h);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h_Pointer);
+            writer.Write(this.BoneTag);
+            writer.Write(this.BoneIndex);
+            writer.Write(this.LinkedTagPointer);
         }
 
         /// <summary>
@@ -742,9 +897,35 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (p1data != null) list.Add(p1data);
+            if (LinkedTag != null) list.Add(LinkedTag);
             return list.ToArray();
         }
+
+        public override string ToString()
+        {
+            return BoneTag.ToString() + ": " + BoneIndex.ToString();
+        }
+    }
+
+    [Flags] public enum EBoneFlags : ushort
+    {
+        None = 0,
+        RotX = 0x1,
+        RotY = 0x2,
+        RotZ = 0x4,
+        LimitRotation = 0x8,
+        TransX = 0x10,
+        TransY = 0x20,
+        TransZ = 0x40,
+        LimitTranslation = 0x80,
+        ScaleX = 0x100,
+        ScaleY = 0x200,
+        ScaleZ = 0x400,
+        LimitScale = 0x800,
+        Unk0 = 0x1000,
+        Unk1 = 0x2000,
+        Unk2 = 0x4000,
+        Unk3 = 0x8000,
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Bone : ResourceSystemBlock
@@ -755,25 +936,19 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        //public float RotationX { get; set; }
-        //public float RotationY { get; set; }
-        //public float RotationZ { get; set; }
-        //public float RotationW { get; set; }
         public Quaternion Rotation { get; set; }
         public Vector3 Translation { get; set; }
         public uint Unknown_1Ch { get; set; } // 0x00000000 RHW?
-        public float ScaleX { get; set; } // 1.0
-        public float ScaleY { get; set; } // 1.0
-        public float ScaleZ { get; set; } // 1.0
-        public float Unknown_2Ch { get; set; } // 1.0  RHW?
-        public ushort NextSiblingIndex { get; set; } //limb end index? IK chain?
+        public Vector3 Scale { get; set; }
+        public float Unknown_2Ch { get; set; } = 1.0f; // 1.0  RHW?
+        public short NextSiblingIndex { get; set; } //limb end index? IK chain?
         public short ParentIndex { get; set; }
         public uint Unknown_34h { get; set; } // 0x00000000
         public ulong NamePointer { get; set; }
-        public ushort Flags { get; set; }
-        public ushort Unknown_42h { get; set; }
-        public ushort Id { get; set; }
-        public ushort Unknown_46h { get; set; }
+        public EBoneFlags Flags { get; set; }
+        public short Index { get; set; }
+        public ushort Tag { get; set; }
+        public short Index2 { get; set; }//same as Index?
         public uint Unknown_48h { get; set; } // 0x00000000
         public uint Unknown_4Ch { get; set; } // 0x00000000
 
@@ -784,34 +959,34 @@ namespace CodeWalker.GameFiles
 
         private string_r NameBlock = null;
 
+
+        //used by CW for animating skeletons.
+        public Quaternion AnimRotation;//relative to parent
+        public Vector3 AnimTranslation;//relative to parent
+        public Vector3 AnimScale;
+        public Matrix AnimTransform;//absolute world transform, animated
+        public Matrix BindTransformInv;//inverse of bind pose transform
+        public Matrix SkinTransform;//transform to use for skin meshes
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            //this.RotationX = reader.ReadSingle();
-            //this.RotationY = reader.ReadSingle();
-            //this.RotationZ = reader.ReadSingle();
-            //this.RotationW = reader.ReadSingle();
             this.Rotation = new Quaternion(reader.ReadVector4());
             this.Translation = reader.ReadVector3();
-            //this.TranslationX = reader.ReadSingle();
-            //this.TranslationY = reader.ReadSingle();
-            //this.TranslationZ = reader.ReadSingle();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.ScaleX = reader.ReadSingle();
-            this.ScaleY = reader.ReadSingle();
-            this.ScaleZ = reader.ReadSingle();
+            this.Scale = reader.ReadVector3();
             this.Unknown_2Ch = reader.ReadSingle();
-            this.NextSiblingIndex = reader.ReadUInt16();
+            this.NextSiblingIndex = reader.ReadInt16();
             this.ParentIndex = reader.ReadInt16();
             this.Unknown_34h = reader.ReadUInt32();
             this.NamePointer = reader.ReadUInt64();
-            this.Flags = reader.ReadUInt16();
-            this.Unknown_42h = reader.ReadUInt16();
-            this.Id = reader.ReadUInt16();
-            this.Unknown_46h = reader.ReadUInt16();
+            this.Flags = (EBoneFlags)reader.ReadUInt16();
+            this.Index = reader.ReadInt16();
+            this.Tag = reader.ReadUInt16();
+            this.Index2 = reader.ReadInt16();
             this.Unknown_48h = reader.ReadUInt32();
             this.Unknown_4Ch = reader.ReadUInt32();
 
@@ -819,6 +994,11 @@ namespace CodeWalker.GameFiles
             this.Name = reader.ReadStringAt(//BlockAt<string_r>(
                 this.NamePointer // offset
             );
+
+
+            AnimRotation = Rotation;
+            AnimTranslation = Translation;
+            AnimScale = Scale;
         }
 
         /// <summary>
@@ -833,18 +1013,16 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Rotation.ToVector4());
             writer.Write(this.Translation);
             writer.Write(this.Unknown_1Ch);
-            writer.Write(this.ScaleX);
-            writer.Write(this.ScaleY);
-            writer.Write(this.ScaleZ);
+            writer.Write(this.Scale);
             writer.Write(this.Unknown_2Ch);
             writer.Write(this.NextSiblingIndex);
             writer.Write(this.ParentIndex);
             writer.Write(this.Unknown_34h);
             writer.Write(this.NamePointer);
-            writer.Write(this.Flags);
-            writer.Write(this.Unknown_42h);
-            writer.Write(this.Id);
-            writer.Write(this.Unknown_46h);
+            writer.Write((ushort)this.Flags);
+            writer.Write(this.Index);
+            writer.Write(this.Tag);
+            writer.Write(this.Index2);
             writer.Write(this.Unknown_48h);
             writer.Write(this.Unknown_4Ch);
         }
@@ -865,8 +1043,70 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Id.ToString() + ": " + Name;
+            return Tag.ToString() + ": " + Name;
         }
+
+
+        public void UpdateAnimTransform()
+        {
+            //AnimTransform = Matrix.AffineTransformation(1.0f, AnimRotation, AnimTranslation);//(local transform)
+            var pos = AnimTranslation;
+            var ori = AnimRotation;
+            var sca = AnimScale;
+            var pbone = Parent;
+            while (pbone != null)
+            {
+                pos = pbone.AnimRotation.Multiply(pos /** pbone.AnimScale*/) + pbone.AnimTranslation;
+                ori = pbone.AnimRotation * ori;
+                pbone = pbone.Parent;
+            }
+            AnimTransform = Matrix.AffineTransformation(1.0f, ori, pos);//(global transform)
+            AnimTransform.ScaleVector *= sca;
+        }
+        public void UpdateSkinTransform()
+        {
+            SkinTransform = BindTransformInv * AnimTransform;
+            //SkinTransform = Matrix.Identity;//(for testing)
+        }
+
+        public void ResetAnimTransform()
+        {
+            AnimRotation = Rotation;
+            AnimTranslation = Translation;
+            AnimScale = Scale;
+            UpdateAnimTransform();
+            UpdateSkinTransform();
+        }
+
+        public static uint ElfHash_Uppercased(string str)
+        {
+            uint hash = 0;
+            uint x = 0;
+            uint i = 0;
+
+            for (i = 0; i < str.Length; i++)
+            {
+                var c = ((byte)str[(int)i]);
+                if ((byte)(c - 'a') <= 25u) // to uppercase
+                    c -= 32;
+
+                hash = (hash << 4) + c;
+
+                if ((x = hash & 0xF0000000) != 0)
+                {
+                    hash ^= (x >> 24);
+                }
+
+                hash &= ~x;
+            }
+
+            return hash;
+        }
+        public static ushort CalculateBoneHash(string boneName)
+        {
+            return (ushort)(ElfHash_Uppercased(boneName) % 0xFE8F + 0x170);
+        }
+
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Joints : ResourceSystemBlock
@@ -1266,6 +1506,7 @@ namespace CodeWalker.GameFiles
         public ushort[] BoneIds { get; set; }
         public VertexData VertexData { get; set; }
         public ShaderFX Shader { get; set; }
+        public ushort ShaderID { get; set; }
 
         private ResourceSystemStructBlock<ushort> BoneIdsBlock = null;//for saving only
 
@@ -2094,14 +2335,19 @@ namespace CodeWalker.GameFiles
     }
 
 
+    public enum LightType : byte
+    {
+        Point = 1,
+        Spot = 2,
+        Capsule = 4,
+    }
+
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct LightAttributes_s
     {
         // structure data
         public uint Unknown_0h { get; set; } // 0x00000000
         public uint Unknown_4h { get; set; } // 0x00000000
-        public float PositionX { get; set; }
-        public float PositionY { get; set; }
-        public float PositionZ { get; set; }
+        public Vector3 Position { get; set; }
         public uint Unknown_14h { get; set; } // 0x00000000
         public byte ColorR { get; set; }
         public byte ColorG { get; set; }
@@ -2110,14 +2356,12 @@ namespace CodeWalker.GameFiles
         public float Intensity { get; set; }
         public uint Flags { get; set; }
         public ushort BoneId { get; set; }
-        public byte Type { get; set; }
+        public LightType Type { get; set; }
         public byte GroupId { get; set; }
         public uint TimeFlags { get; set; }
         public float Falloff { get; set; }
         public float FalloffExponent { get; set; }
-        public float CullingPlaneNormalX { get; set; }
-        public float CullingPlaneNormalY { get; set; }
-        public float CullingPlaneNormalZ { get; set; }
+        public Vector3 CullingPlaneNormal { get; set; }
         public float CullingPlaneOffset { get; set; }
         public byte ShadowBlur { get; set; }
         public byte Unknown_45h { get; set; }
@@ -2139,17 +2383,11 @@ namespace CodeWalker.GameFiles
         public float ShadowNearClip { get; set; }
         public float CoronaIntensity { get; set; }
         public float CoronaZBias { get; set; }
-        public float DirectionX { get; set; }
-        public float DirectionY { get; set; }
-        public float DirectionZ { get; set; }
-        public float TangentX { get; set; }
-        public float TangentY { get; set; }
-        public float TangentZ { get; set; }
+        public Vector3 Direction { get; set; }
+        public Vector3 Tangent { get; set; }
         public float ConeInnerAngle { get; set; }
         public float ConeOuterAngle { get; set; }
-        public float ExtentX { get; set; }
-        public float ExtentY { get; set; }
-        public float ExtentZ { get; set; }
+        public Vector3 Extent { get; set; }
         public uint ProjectedTextureHash { get; set; }
         public uint Unknown_A4h { get; set; } // 0x00000000
     }
@@ -2346,6 +2584,7 @@ namespace CodeWalker.GameFiles
                         var geom = model.Geometries.data_items[i];
                         ushort sid = (i < model.ShaderMapping.Length) ? model.ShaderMapping[i] : (ushort)0;
                         geom.Shader = (sid < shaders.Length) ? shaders[sid] : null;
+                        geom.ShaderID = sid;
                     }
                 }
             }
@@ -2415,6 +2654,69 @@ namespace CodeWalker.GameFiles
             if (DrawableModelsX != null) list.Add(DrawableModelsX);
             return list.ToArray();
         }
+
+
+
+        public DrawableBase ShallowCopy()
+        {
+            DrawableBase r = null;
+            if (this is FragDrawable fd)
+            {
+                var f = new FragDrawable();
+                f.Unknown_0A8h = fd.Unknown_0A8h;
+                f.Unknown_0ACh = fd.Unknown_0ACh;
+                f.FragMatrix = fd.FragMatrix;
+                f.FragMatricesIndsCount = fd.FragMatricesIndsCount;
+                f.FragMatricesCount = fd.FragMatricesCount;
+                f.Count3 = fd.Count3;
+                f.Count4 = fd.Count4;
+                f.Bound = fd.Bound;
+                f.FragMatricesInds = fd.FragMatricesInds;
+                f.FragMatrices = fd.FragMatrices;
+                f.Name = fd.Name;
+                f.OwnerFragment = fd.OwnerFragment;
+                f.OwnerFragmentPhys = fd.OwnerFragmentPhys;
+                r = f;
+            }
+            if (this is Drawable dd)
+            {
+                var d = new Drawable();
+                d.LightAttributes = dd.LightAttributes;
+                d.Name = dd.Name;
+                d.Bound = dd.Bound;
+                r = d;
+            }
+            if (r != null)
+            {
+                r.BoundingCenter = BoundingCenter;
+                r.BoundingSphereRadius = BoundingSphereRadius;
+                r.BoundingBoxMin = BoundingBoxMin;
+                r.BoundingBoxMax = BoundingBoxMax;
+                r.LodDistHigh = LodDistHigh;
+                r.LodDistMed = LodDistMed;
+                r.LodDistLow = LodDistLow;
+                r.LodDistVlow = LodDistVlow;
+                r.Unknown_80h = Unknown_80h;
+                r.Unknown_84h = Unknown_84h;
+                r.Unknown_88h = Unknown_88h;
+                r.Unknown_8Ch = Unknown_8Ch;
+                r.Unknown_98h = Unknown_98h;
+                r.Unknown_9Ah = Unknown_9Ah;
+                r.ShaderGroup = ShaderGroup;
+                r.Skeleton = Skeleton?.Clone();
+                r.DrawableModelsHigh = DrawableModelsHigh;
+                r.DrawableModelsMedium = DrawableModelsMedium;
+                r.DrawableModelsLow = DrawableModelsLow;
+                r.DrawableModelsVeryLow = DrawableModelsVeryLow;
+                r.DrawableModelsX = DrawableModelsX;
+                r.Joints = Joints;
+                r.AllModels = AllModels;
+                r.VertexDecls = VertexDecls;
+                r.Owner = Owner;
+            }
+            return r;
+        }
+
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Drawable : DrawableBase

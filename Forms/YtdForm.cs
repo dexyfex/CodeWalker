@@ -63,10 +63,11 @@ namespace CodeWalker.Forms
 
             if ((TexDict.Textures == null) || (TexDict.Textures.data_items == null)) return;
             var texs = TexDict.Textures.data_items;
+            List<Texture> texlist = new List<Texture>(texs);
+            texlist.Sort((a, b) => { return a.Name?.CompareTo(b.Name) ?? 0; });
 
-            for (int i = 0; i < texs.Length; i++)
+            foreach (var tex in texlist)
             {
-                var tex = texs[i];
                 ListViewItem lvi = TexturesListView.Items.Add(tex.Name);
                 lvi.ToolTipText = tex.Name;
                 lvi.Tag = tex;

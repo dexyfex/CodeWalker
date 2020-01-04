@@ -61,6 +61,8 @@
     <Compile Include="GameFiles\FileTypes\GtxdFile.cs" />
     <Compile Include="GameFiles\FileTypes\Gxt2File.cs" />
     <Compile Include="GameFiles\FileTypes\JPsoFile.cs" />
+    <Compile Include="GameFiles\FileTypes\PedFile.cs" />
+    <Compile Include="GameFiles\FileTypes\PedsFile.cs" />
     <Compile Include="GameFiles\FileTypes\RelFile.cs" />
     <Compile Include="GameFiles\FileTypes\Stats.cs" />
     <Compile Include="GameFiles\FileTypes\VehicleLayoutsFile.cs" />
@@ -69,7 +71,10 @@
     <Compile Include="GameFiles\FileTypes\YcdFile.cs" />
     <Compile Include="GameFiles\FileTypes\YddFile.cs" />
     <Compile Include="GameFiles\FileTypes\YdrFile.cs" />
+    <Compile Include="GameFiles\FileTypes\YedFile.cs" />
+    <Compile Include="GameFiles\FileTypes\YfdFile.cs" />
     <Compile Include="GameFiles\FileTypes\YftFile.cs" />
+    <Compile Include="GameFiles\FileTypes\YldFile.cs" />
     <Compile Include="GameFiles\FileTypes\YmapFile.cs" />
     <Compile Include="GameFiles\FileTypes\YmfFile.cs" />
     <Compile Include="GameFiles\FileTypes\YmtFile.cs" />
@@ -94,9 +99,13 @@
     <Compile Include="GameFiles\MetaTypes\Rbf.cs" />
     <Compile Include="GameFiles\MetaTypes\XmlMeta.cs" />
     <Compile Include="GameFiles\MetaTypes\XmlPso.cs" />
+    <Compile Include="GameFiles\MetaTypes\XmlRbf.cs" />
     <Compile Include="GameFiles\Resources\Bounds.cs" />
     <Compile Include="GameFiles\Resources\Clip.cs" />
+    <Compile Include="GameFiles\Resources\Clothes.cs" />
     <Compile Include="GameFiles\Resources\Drawable.cs" />
+    <Compile Include="GameFiles\Resources\Expression.cs" />
+    <Compile Include="GameFiles\Resources\Filter.cs" />
     <Compile Include="GameFiles\Resources\Frag.cs" />
     <Compile Include="GameFiles\Resources\Nav.cs" />
     <Compile Include="GameFiles\Resources\Node.cs" />
@@ -135,13 +144,16 @@
     <Compile Include="World\Camera.cs" />
     <Compile Include="World\Clouds.cs" />
     <Compile Include="World\Entity.cs" />
+    <Compile Include="World\Ped.cs" />
     <Compile Include="World\PopZones.cs" />
     <Compile Include="World\Scenarios.cs" />
     <Compile Include="World\Space.cs" />
     <Compile Include="World\Timecycle.cs" />
     <Compile Include="World\TimecycleMods.cs" />
     <Compile Include="World\Trains.cs" />
+    <Compile Include="World\Vehicle.cs" />
     <Compile Include="World\Water.cs" />
+    <Compile Include="World\Weapon.cs" />
     <Compile Include="World\Weather.cs" />
   </ItemGroup>
   <ItemGroup>

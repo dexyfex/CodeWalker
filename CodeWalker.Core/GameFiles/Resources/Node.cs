@@ -30,11 +30,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class NodeDictionary : ResourceFileBase
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class NodeDictionary : ResourceFileBase, IMetaXmlItem
     {
         public override long BlockLength
         {
@@ -186,6 +186,155 @@ namespace CodeWalker.GameFiles
 
             return list.ToArray();
         }
+
+
+
+
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YndXml.ValueTag(sb, indent, "VehicleNodeCount", NodesCountVehicle.ToString());
+            YndXml.ValueTag(sb, indent, "PedNodeCount", NodesCountPed.ToString());
+
+            XmlNodeWrapper[] nodes = null;
+            int nodecount = Nodes?.Length ?? 0;
+            if (nodecount > 0)
+            {
+                nodes = new XmlNodeWrapper[nodecount];
+                for (int i = 0; i < nodecount; i++)
+                {
+                    nodes[i] = new XmlNodeWrapper(Nodes[i], Links);
+                }
+            }
+            YndXml.WriteItemArray(sb, nodes, indent, "Nodes");
+
+
+            XmlJunctionWrapper[] juncs = null;
+            int junccount = Junctions?.Length ?? 0;
+            if (junccount > 0)
+            {
+                juncs = new XmlJunctionWrapper[junccount];
+                for (int i = 0; i < junccount; i++)
+                {
+                    juncs[i] = new XmlJunctionWrapper(Junctions[i], JunctionHeightmapBytes);
+                }
+            }
+            YndXml.WriteItemArray(sb, juncs, indent, "Junctions");
+
+            YndXml.WriteItemArray(sb, JunctionRefs, indent, "JunctionRefs");
+
+        }
+        public void ReadXml(XmlNode node)
+        {
+            NodesCountVehicle = Xml.GetChildUIntAttribute(node, "VehicleNodeCount", "value");
+            NodesCountPed = Xml.GetChildUIntAttribute(node, "PedNodeCount", "value");
+
+            List<Node> nodelist = new List<Node>();
+            List<NodeLink> linklist = new List<NodeLink>();
+            List<NodeJunction> junclist = new List<NodeJunction>();
+            List<byte> jhmblist = new List<byte>();
+            List<NodeJunctionRef> jreflist = new List<NodeJunctionRef>();
+
+            var nodesnode = node.SelectSingleNode("Nodes");
+            if (nodesnode != null)
+            {
+                var nodeitems = nodesnode.SelectNodes("Item");
+                foreach (XmlNode nodeitem in nodeitems)
+                {
+                    XmlNodeWrapper n = new XmlNodeWrapper(linklist);
+                    n.ReadXml(nodeitem);
+                    nodelist.Add(n.Node);
+                }
+            }
+
+            var juncsnode = node.SelectSingleNode("Junctions");
+            if (juncsnode != null)
+            {
+                var juncitems = juncsnode.SelectNodes("Item");
+                foreach (XmlNode juncitem in juncitems)
+                {
+                    XmlJunctionWrapper j = new XmlJunctionWrapper(jhmblist);
+                    j.ReadXml(juncitem);
+                    junclist.Add(j.Junction);
+                }
+            }
+
+            var jrefsnode = node.SelectSingleNode("JunctionRefs");
+            if (jrefsnode != null)
+            {
+                var jrefitems = jrefsnode.SelectNodes("Item");
+                foreach (XmlNode jrefitem in jrefitems)
+                {
+                    NodeJunctionRef jref = new NodeJunctionRef();
+                    jref.ReadXml(jrefitem);
+                    jreflist.Add(jref);
+                }
+            }
+
+            NodesCount = (uint)nodelist.Count;
+            Nodes = nodelist.ToArray();
+            LinksCount = (uint)linklist.Count;
+            Links = linklist.ToArray();
+            JunctionsCount = (uint)junclist.Count;
+            Junctions = junclist.ToArray();
+            JunctionHeightmapBytesCount = (uint)jhmblist.Count;
+            JunctionHeightmapBytes = jhmblist.ToArray();
+            JunctionRefsCount0 = (ushort)jreflist.Count;
+            JunctionRefsCount1 = JunctionRefsCount0;
+            JunctionRefs = jreflist.ToArray();
+
+        }
+
+
+        class XmlNodeWrapper : IMetaXmlItem
+        {
+            public Node Node;
+            private NodeLink[] AllLinks;
+            private List<NodeLink> AllLinksList;
+
+            public XmlNodeWrapper(Node node, NodeLink[] allLinks)
+            {
+                Node = node;
+                AllLinks = allLinks;
+            }
+            public XmlNodeWrapper(List<NodeLink> allLinksList)
+            {
+                AllLinksList = allLinksList;
+            }
+            public void WriteXml(StringBuilder sb, int indent)
+            {
+                Node.WriteXml(sb, indent, AllLinks);
+            }
+            public void ReadXml(XmlNode node)
+            {
+                Node = new Node();
+                Node.ReadXml(node, AllLinksList);
+            }
+        }
+        class XmlJunctionWrapper : IMetaXmlItem
+        {
+            public NodeJunction Junction;
+            private byte[] AllHeightmapData;
+            private List<byte> AllHeightmapDataList;
+
+            public XmlJunctionWrapper(NodeJunction junc, byte[] allHeightmapData)
+            {
+                Junction = junc;
+                AllHeightmapData = allHeightmapData;
+            }
+            public XmlJunctionWrapper(List<byte> allHeightmapDataList)
+            {
+                AllHeightmapDataList = allHeightmapDataList;
+            }
+            public void WriteXml(StringBuilder sb, int indent)
+            {
+                Junction.WriteXml(sb, indent, AllHeightmapData);
+            }
+            public void ReadXml(XmlNode node)
+            {
+                Junction = new NodeJunction();
+                Junction.ReadXml(node, AllHeightmapDataList);
+            }
+        }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct Node
@@ -218,15 +367,80 @@ namespace CodeWalker.GameFiles
             //       Unk22.ToString() + ", " + Unk24.ToString() + ", " + Unk26.ToString();
 
             return AreaID.ToString() + ", " + NodeID.ToString() + ", " + StreetName.ToString();// + ", X:" +
-                //PositionX.ToString() + ", Y:" + PositionY.ToString() + ", " + PositionZ.ToString();// + ", " + 
-                //Flags0.ToString() + ", " + Flags1.ToString() + ", Z:" +
-                //Flags2.ToString() + ", " + LinkCountFlags.ToString() + ", " + 
-                //Flags3.ToString() + ", " + Flags4.ToString();
+                                                                                               //PositionX.ToString() + ", Y:" + PositionY.ToString() + ", " + PositionZ.ToString();// + ", " + 
+                                                                                               //Flags0.ToString() + ", " + Flags1.ToString() + ", Z:" +
+                                                                                               //Flags2.ToString() + ", " + LinkCountFlags.ToString() + ", " + 
+                                                                                               //Flags3.ToString() + ", " + Flags4.ToString();
 
+        }
+
+        public void WriteXml(StringBuilder sb, int indent, NodeLink[] allLinks)
+        {
+            Vector3 p = new Vector3();
+            p.X = PositionX / 4.0f;
+            p.Y = PositionY / 4.0f;
+            p.Z = PositionZ / 32.0f;
+            int linkCount = LinkCountFlags.Value >> 3;
+            int linkCountUnk = LinkCountFlags.Value & 7;
+
+            YndXml.ValueTag(sb, indent, "AreaID", AreaID.ToString());
+            YndXml.ValueTag(sb, indent, "NodeID", NodeID.ToString());
+            YndXml.StringTag(sb, indent, "StreetName", YndXml.HashString(StreetName));
+            YndXml.SelfClosingTag(sb, indent, "Position " + FloatUtil.GetVector3XmlString(p));
+            YndXml.ValueTag(sb, indent, "Flags0", Flags0.Value.ToString());
+            YndXml.ValueTag(sb, indent, "Flags1", Flags1.Value.ToString());
+            YndXml.ValueTag(sb, indent, "Flags2", Flags2.Value.ToString());
+            YndXml.ValueTag(sb, indent, "Flags3", Flags3.Value.ToString());
+            YndXml.ValueTag(sb, indent, "Flags4", Flags4.Value.ToString());
+            YndXml.ValueTag(sb, indent, "Flags5", linkCountUnk.ToString());
+
+            NodeLink[] links = null;
+            if (linkCount > 0)
+            {
+                links = new NodeLink[linkCount];
+                for (int i = 0; i < linkCount; i++)
+                {
+                    links[i] = allLinks[LinkID + i];
+                }
+            }
+            YndXml.WriteItemArray(sb, links, indent, "Links");
+
+        }
+        public void ReadXml(XmlNode node, List<NodeLink> allLinksList)
+        {
+            AreaID = (ushort)Xml.GetChildUIntAttribute(node, "AreaID", "value");
+            NodeID = (ushort)Xml.GetChildUIntAttribute(node, "NodeID", "value");
+            StreetName = XmlYnd.GetTextHash(Xml.GetChildInnerText(node, "StreetName"));
+            Vector3 p = Xml.GetChildVector3Attributes(node, "Position", "x", "y", "z");
+            PositionX = (short)(p.X * 4.0f);
+            PositionY = (short)(p.Y * 4.0f);
+            PositionZ = (short)(p.Z * 32.0f);
+            Flags0 = (byte)Xml.GetChildUIntAttribute(node, "Flags0", "value");
+            Flags1 = (byte)Xml.GetChildUIntAttribute(node, "Flags1", "value");
+            Flags2 = (byte)Xml.GetChildUIntAttribute(node, "Flags2", "value");
+            Flags3 = (byte)Xml.GetChildUIntAttribute(node, "Flags3", "value");
+            Flags4 = (byte)Xml.GetChildUIntAttribute(node, "Flags4", "value");
+            int linkCountUnk = (byte)Xml.GetChildUIntAttribute(node, "Flags5", "value");
+
+            LinkID = (ushort)allLinksList.Count;
+            int linkCount = 0;
+            var linksnode = node.SelectSingleNode("Links");
+            if (linksnode != null)
+            {
+                var linkitems = linksnode.SelectNodes("Item");
+                foreach (XmlNode linkitem in linkitems)
+                {
+                    NodeLink link = new NodeLink();
+                    link.ReadXml(linkitem);
+                    allLinksList.Add(link);
+                    linkCount++;
+                }
+            }
+            LinkCountFlags = (byte)((linkCount << 3) + (linkCountUnk & 7));
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NodeLink
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NodeLink : IMetaXmlItem
     {
         public ushort AreaID { get; set; }
         public ushort NodeID { get; set; }
@@ -238,6 +452,25 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             return AreaID.ToString() + ", " + NodeID.ToString() + ", " + Flags0.Value.ToString() + ", " + Flags1.Value.ToString() + ", " + Flags2.Value.ToString() + ", " + LinkLength.Value.ToString();
+        }
+
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YndXml.ValueTag(sb, indent, "ToAreaID", AreaID.ToString());
+            YndXml.ValueTag(sb, indent, "ToNodeID", NodeID.ToString());
+            YndXml.ValueTag(sb, indent, "Flags0", Flags0.Value.ToString());
+            YndXml.ValueTag(sb, indent, "Flags1", Flags1.Value.ToString());
+            YndXml.ValueTag(sb, indent, "Flags2", Flags2.Value.ToString());
+            YndXml.ValueTag(sb, indent, "LinkLength", LinkLength.Value.ToString());
+        }
+        public void ReadXml(XmlNode node)
+        {
+            AreaID = (ushort)Xml.GetChildUIntAttribute(node, "ToAreaID", "value");
+            NodeID = (ushort)Xml.GetChildUIntAttribute(node, "ToNodeID", "value");
+            Flags0 = (byte)Xml.GetChildUIntAttribute(node, "Flags0", "value");
+            Flags1 = (byte)Xml.GetChildUIntAttribute(node, "Flags1", "value");
+            Flags2 = (byte)Xml.GetChildUIntAttribute(node, "Flags2", "value");
+            LinkLength = (byte)Xml.GetChildUIntAttribute(node, "LinkLength", "value");
         }
     }
 
@@ -255,9 +488,54 @@ namespace CodeWalker.GameFiles
         {
             return PositionX.ToString() + ", " + PositionY.ToString() + ": " + MinZ.ToString() + ", " + MaxZ.ToString() + ": " + HeightmapDimX.ToString() + " x " + HeightmapDimY.ToString();
         }
+
+        public void WriteXml(StringBuilder sb, int indent, byte[] allHeightmapData)
+        {
+            Vector2 p = new Vector2();
+            p.X = PositionX / 4.0f;
+            p.Y = PositionY / 4.0f;
+            float minz = MinZ / 32.0f;
+            float maxz = MaxZ / 32.0f;
+
+            YndXml.SelfClosingTag(sb, indent, "Position " + FloatUtil.GetVector2XmlString(p));
+            YndXml.ValueTag(sb, indent, "MinZ", FloatUtil.ToString(minz));
+            YndXml.ValueTag(sb, indent, "MaxZ", FloatUtil.ToString(maxz));
+            YndXml.ValueTag(sb, indent, "SizeX", HeightmapDimX.ToString());
+            YndXml.ValueTag(sb, indent, "SizeY", HeightmapDimY.ToString());
+
+            byte[] hmdata = null;
+            int hmbcount = HeightmapDimX * HeightmapDimY;
+            if (hmbcount > 0)
+            {
+                hmdata = new byte[hmbcount];
+                Buffer.BlockCopy(allHeightmapData, HeightmapPtr, hmdata, 0, hmbcount);
+            }
+            YndXml.WriteRawArray(sb, hmdata, indent, "Heightmap", "", RelXml.FormatHexByte, Math.Max(HeightmapDimX, (byte)1));
+
+        }
+        public void ReadXml(XmlNode node, List<byte> allHeightmapDataList)
+        {
+            Vector2 p = Xml.GetChildVector2Attributes(node, "Position", "x", "y");
+            float minz = Xml.GetChildFloatAttribute(node, "MinZ", "value");
+            float maxz = Xml.GetChildFloatAttribute(node, "MaxZ", "value");
+            HeightmapDimX = (byte)Xml.GetChildUIntAttribute(node, "SizeX", "value");
+            HeightmapDimY = (byte)Xml.GetChildUIntAttribute(node, "SizeY", "value");
+            PositionX = (short)(p.X * 4.0f);
+            PositionY = (short)(p.Y * 4.0f);
+            MinZ = (short)(minz * 32.0f);
+            MaxZ = (short)(maxz * 32.0f);
+
+            byte[] hmdata = Xml.GetChildRawByteArray(node, "Heightmap");
+            HeightmapPtr = (ushort)allHeightmapDataList.Count;
+            if (hmdata != null)
+            {
+                allHeightmapDataList.AddRange(hmdata);
+            }
+
+        }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NodeJunctionRef
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NodeJunctionRef : IMetaXmlItem
     {
         public ushort AreaID { get; set; }
         public ushort NodeID { get; set; }
@@ -267,6 +545,21 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             return AreaID.ToString() + ", " + NodeID.ToString() + ", " + JunctionID.ToString();
+        }
+
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YndXml.ValueTag(sb, indent, "AreaID", AreaID.ToString());
+            YndXml.ValueTag(sb, indent, "NodeID", NodeID.ToString());
+            YndXml.ValueTag(sb, indent, "JunctionID", JunctionID.ToString());
+            YndXml.ValueTag(sb, indent, "Unk0", Unk0.ToString());
+        }
+        public void ReadXml(XmlNode node)
+        {
+            AreaID = (ushort)Xml.GetChildUIntAttribute(node, "AreaID", "value");
+            NodeID = (ushort)Xml.GetChildUIntAttribute(node, "NodeID", "value");
+            JunctionID = (ushort)Xml.GetChildUIntAttribute(node, "JunctionID", "value");
+            Unk0 = (ushort)Xml.GetChildUIntAttribute(node, "Unk0", "value");
         }
     }
 

@@ -175,6 +175,9 @@
             this.ToolbarSaveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.YtypMloNewRoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtypMloNewPortalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtypMloNewEntitySetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.SuspendLayout();
@@ -510,14 +513,14 @@
             // ViewProjectExplorerMenu
             // 
             this.ViewProjectExplorerMenu.Name = "ViewProjectExplorerMenu";
-            this.ViewProjectExplorerMenu.Size = new System.Drawing.Size(156, 22);
+            this.ViewProjectExplorerMenu.Size = new System.Drawing.Size(157, 22);
             this.ViewProjectExplorerMenu.Text = "Project Explorer";
             this.ViewProjectExplorerMenu.Click += new System.EventHandler(this.ViewProjectExplorerMenu_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(153, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(154, 6);
             // 
             // ViewThemeMenu
             // 
@@ -526,7 +529,7 @@
             this.ViewThemeLightMenu,
             this.ViewThemeDarkMenu});
             this.ViewThemeMenu.Name = "ViewThemeMenu";
-            this.ViewThemeMenu.Size = new System.Drawing.Size(156, 22);
+            this.ViewThemeMenu.Size = new System.Drawing.Size(157, 22);
             this.ViewThemeMenu.Text = "Theme";
             // 
             // ViewThemeBlueMenu
@@ -679,7 +682,10 @@
             // YtypMloToolStripMenuItem
             // 
             this.YtypMloToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.YtypMloNewEntityToolStripMenuItem});
+            this.YtypMloNewEntityToolStripMenuItem,
+            this.YtypMloNewRoomToolStripMenuItem,
+            this.YtypMloNewPortalToolStripMenuItem,
+            this.YtypMloNewEntitySetToolStripMenuItem});
             this.YtypMloToolStripMenuItem.Enabled = false;
             this.YtypMloToolStripMenuItem.Name = "YtypMloToolStripMenuItem";
             this.YtypMloToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
@@ -688,7 +694,7 @@
             // YtypMloNewEntityToolStripMenuItem
             // 
             this.YtypMloNewEntityToolStripMenuItem.Name = "YtypMloNewEntityToolStripMenuItem";
-            this.YtypMloNewEntityToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
+            this.YtypMloNewEntityToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.YtypMloNewEntityToolStripMenuItem.Text = "New Entity";
             this.YtypMloNewEntityToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewEntityToolStripMenuItem_Click);
             // 
@@ -833,7 +839,7 @@
             this.TrainsAddToProjectMenu,
             this.TrainsRemoveFromProjectMenu});
             this.TrainsMenu.Name = "TrainsMenu";
-            this.TrainsMenu.Size = new System.Drawing.Size(50, 20);
+            this.TrainsMenu.Size = new System.Drawing.Size(49, 20);
             this.TrainsMenu.Text = "Trains";
             this.TrainsMenu.Visible = false;
             // 
@@ -1087,7 +1093,7 @@
             this.toolStripSeparator2,
             this.ToolsImportMenyooXmlMenu});
             this.ToolsMenu.Name = "ToolsMenu";
-            this.ToolsMenu.Size = new System.Drawing.Size(47, 20);
+            this.ToolsMenu.Size = new System.Drawing.Size(46, 20);
             this.ToolsMenu.Text = "Tools";
             // 
             // ToolsManifestGeneratorMenu
@@ -1360,6 +1366,27 @@
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
             // 
+            // YtypMloNewRoomToolStripMenuItem
+            // 
+            this.YtypMloNewRoomToolStripMenuItem.Name = "YtypMloNewRoomToolStripMenuItem";
+            this.YtypMloNewRoomToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.YtypMloNewRoomToolStripMenuItem.Text = "New Room";
+            this.YtypMloNewRoomToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewRoomToolStripMenuItem_Click);
+            // 
+            // YtypMloNewPortalToolStripMenuItem
+            // 
+            this.YtypMloNewPortalToolStripMenuItem.Name = "YtypMloNewPortalToolStripMenuItem";
+            this.YtypMloNewPortalToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.YtypMloNewPortalToolStripMenuItem.Text = "New Portal";
+            this.YtypMloNewPortalToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewPortalToolStripMenuItem_Click);
+            // 
+            // YtypMloNewEntitySetToolStripMenuItem
+            // 
+            this.YtypMloNewEntitySetToolStripMenuItem.Name = "YtypMloNewEntitySetToolStripMenuItem";
+            this.YtypMloNewEntitySetToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.YtypMloNewEntitySetToolStripMenuItem.Text = "New Entity Set";
+            this.YtypMloNewEntitySetToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewEntitySetToolStripMenuItem_Click);
+            // 
             // ProjectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1531,5 +1558,8 @@
         private System.Windows.Forms.ToolStripMenuItem ToolsLODLightsGeneratorMenu;
         private System.Windows.Forms.ToolStripMenuItem CalculateExtentsOfAllYmap;
         private System.Windows.Forms.ToolStripMenuItem CalculateFlagsOfAllYmaps;
+        private System.Windows.Forms.ToolStripMenuItem YtypMloNewRoomToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem YtypMloNewPortalToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem YtypMloNewEntitySetToolStripMenuItem;
     }
 }

@@ -51,6 +51,16 @@ namespace CodeWalker.GameFiles
                 RelFile rel = RpfFile.GetFile<RelFile>(e, data);
                 return GetXml(rel, out filename);
             }
+            else if (fnl.EndsWith(".ynd"))
+            {
+                YndFile ynd = RpfFile.GetFile<YndFile>(e, data);
+                return GetXml(ynd, out filename);
+            }
+            else if (fnl.EndsWith(".ycd"))
+            {
+                YcdFile ycd = RpfFile.GetFile<YcdFile>(e, data);
+                return GetXml(ycd, out filename);
+            }
             filename = fn;
             return string.Empty;
         }
@@ -109,6 +119,18 @@ namespace CodeWalker.GameFiles
             var fn = (rel?.RpfFileEntry?.Name) ?? "";
             filename = fn + ".xml";
             return RelXml.GetXml(rel);
+        }
+        public static string GetXml(YndFile ynd, out string filename)
+        {
+            var fn = (ynd?.RpfFileEntry?.Name) ?? "";
+            filename = fn + ".xml";
+            return YndXml.GetXml(ynd);
+        }
+        public static string GetXml(YcdFile ycd, out string filename)
+        {
+            var fn = (ycd?.RpfFileEntry?.Name) ?? "";
+            filename = fn + ".xml";
+            return YcdXml.GetXml(ycd);
         }
 
 
@@ -639,6 +661,10 @@ namespace CodeWalker.GameFiles
                 return;
             }
 
+            if (offset >= block.Length)
+            {
+                offset = offset >> 8; //how to tell when to do this??
+            }
 
             var boffset = offset + block.Offset;
 
@@ -943,7 +969,12 @@ namespace CodeWalker.GameFiles
             arrStruc.Count1 = arrStruc.Count2 = (ushort)aCount;
             var aind = indent + 1;
             string arrTag = ename;
-            PsoStructureEntryInfo arrEntry = estruct.GetEntry((int)(entry.ReferenceKey & 0xFFFF));
+            var arrEntInd = (entry.ReferenceKey & 0xFFFF);
+            if (arrEntInd >= estruct.EntriesCount)
+            {
+                arrEntInd = (entry.ReferenceKey & 0xFFF);
+            }
+            PsoStructureEntryInfo arrEntry = estruct.GetEntry((int)arrEntInd);
             if (arrEntry == null)
             {
                 ErrorXml(sb, indent, "ARRAYINFO not found for " + ename + "!");
@@ -1073,7 +1104,7 @@ namespace CodeWalker.GameFiles
                             OpenTag(sb, indent, arrTag);
                             if (atyp == null)
                             {
-                                ErrorXml(sb, indent, ename + ": Array type not found: " + HashString(arrEntry.ReferenceKey));
+                                ErrorXml(sb, indent, ename + ": Array type not found: " + HashString((MetaHash)arrEntry.ReferenceKey));
                             }
                             else
                             {
@@ -1218,7 +1249,20 @@ namespace CodeWalker.GameFiles
 
 
                     if (x1 != 0x1000000)
-                    { }
+                    {
+                        var c1 = MetaTypes.SwapBytes(BitConverter.ToUInt16(data, eoffset));
+                        var c2 = MetaTypes.SwapBytes(BitConverter.ToUInt16(data, eoffset + 2));
+                        var u1 = MetaTypes.SwapBytes(BitConverter.ToUInt32(data, eoffset + 4));
+                        var c3 = MetaTypes.SwapBytes(BitConverter.ToUInt16(data, eoffset + 8));
+                        var c4 = MetaTypes.SwapBytes(BitConverter.ToUInt16(data, eoffset + 10));
+                        var u3 = MetaTypes.SwapBytes(BitConverter.ToUInt32(data, eoffset + 12));
+                        ulong ptr = MetaTypes.SwapBytes(BitConverter.ToUInt64(data, eoffset + 16));
+                        sptr = new Array_Structure(ptr, c2);
+                        if (c3 != 256)
+                        { }
+                        if (c1 != c2)
+                        { }
+                    }
                     if (x2 != 0)
                     { }
                     if (mapreftype2.ReferenceKey != 0)
@@ -1241,11 +1285,15 @@ namespace CodeWalker.GameFiles
                         if (xCount1 > 0)
                         {
                             var xStruct = cont.GetStructureInfo(xBlock.NameHash);
-                            var xOffset1 = xOffset;
                             var xind = indent + 1;
                             var aind = indent + 2;
                             var kEntry = xStruct?.FindEntry(MetaName.Key);
                             var iEntry = xStruct?.FindEntry(MetaName.Item);
+
+                            if (xOffset >= xBlock.Length)
+                            {
+                                xOffset = xOffset >> 8; //how to tell when to do this??
+                            }
 
                             if ((xStruct == null) && (xBlock.NameHash == 0))
                             {
@@ -1267,9 +1315,9 @@ namespace CodeWalker.GameFiles
                             {
                                 ErrorXml(sb, aind, ename + ": Map Key was not a string!");
                             }
-                            else if (iEntry.Type != PsoDataType.Structure)
+                            else if ((iEntry.Type != PsoDataType.Structure) && (iEntry.Type != PsoDataType.String))
                             {
-                                ErrorXml(sb, aind, ename + ": Map Item was not a structure!");
+                                ErrorXml(sb, aind, ename + ": Map Item was not a structure or string!");
                             }
                             //else if (iEntry.Unk_5h != 3)
                             //{
@@ -1278,21 +1326,31 @@ namespace CodeWalker.GameFiles
                             else
                             {
                                 OpenTag(sb, xind, ename);
-                                int xOffset2 = (int)xOffset1;
-                                int xCount = xCount1;
 
-                                for (int n = 0; n < xCount; n++)
+                                for (int n = 0; n < xCount1; n++)
                                 {
+                                    if (xOffset >= xBlock.Length)
+                                    {
+                                        ErrorXml(sb, aind, "Offset out of range! Count is " + xCount1.ToString());
+                                        break; //out of range...
+                                    }
                                     //WriteNode(sb, aind, cont, xBlockId, xOffset, XmlTagMode.Item, xStruct.IndexInfo.NameHash);
 
-                                    int sOffset = xOffset2 + xBlock.Offset;
+                                    int sOffset = (int)xOffset + xBlock.Offset;
                                     var kOffset = sOffset + kEntry.DataOffset;
                                     var iOffset = sOffset + iEntry.DataOffset;
                                     var kStr = GetStringValue(cont.Pso, kEntry, data, kOffset);
-                                    if (iEntry.ReferenceKey != 0)//(xBlock.NameHash != (MetaName)MetaTypeName.ARRAYINFO)//257,258,259
+                                    if (iEntry.Type == PsoDataType.String)
+                                    {
+                                        var iStr = GetStringValue(cont.Pso, iEntry, data, iOffset);
+                                        OpenTag(sb, aind, "Item type=\"String\" key=\"" + kStr + "\"", false);
+                                        sb.Append(XmlEscape(iStr));
+                                        CloseTag(sb, 0, "Item");
+                                    }
+                                    else if (iEntry.ReferenceKey != 0)//(xBlock.NameHash != (MetaName)MetaTypeName.ARRAYINFO)//257,258,259
                                     {
                                         //embedded map values
-                                        var vOffset = xOffset2 + iEntry.DataOffset;
+                                        var vOffset = (int)xOffset + iEntry.DataOffset;
                                         OpenTag(sb, aind, "Item type=\"" + HashString((MetaName)iEntry.ReferenceKey) + "\" key=\"" + kStr + "\"");
                                         WriteNode(sb, aind, cont, xBlockId, vOffset, XmlTagMode.None, (MetaName)iEntry.ReferenceKey);
                                         CloseTag(sb, aind, "Item");
@@ -1318,18 +1376,14 @@ namespace CodeWalker.GameFiles
                                             }
                                             else
                                             {
+                                                var iOff = (int)iPtr.ItemOffset;
                                                 OpenTag(sb, aind, iStr);
-                                                WriteNode(sb, aind, cont, iPtr.BlockID, (int)iPtr.ItemOffset, XmlTagMode.None);//, (MetaName)entry.ReferenceKey);
+                                                WriteNode(sb, aind, cont, iPtr.BlockID, iOff, XmlTagMode.None);//, (MetaName)entry.ReferenceKey);
                                                 CloseTag(sb, aind, "Item");
                                             }
                                         }
                                     }
-                                    xOffset2 += xStruct.StructureLength;
-                                    if ((n < (xCount - 1)) && (xBlock != null) && (xOffset >= xBlock.Length))
-                                    {
-                                        ErrorXml(sb, aind, "Offset out of range! Count is " + xCount.ToString());
-                                        break; //out of range...
-                                    }
+                                    xOffset += (uint)xStruct.StructureLength;
                                 }
                                 CloseTag(sb, xind, ename);
                             }
@@ -1367,22 +1421,10 @@ namespace CodeWalker.GameFiles
                     return strval ?? "";
                 case 7:
                 case 8:
-                    var hashVal = MetaTypes.SwapBytes(MetaTypes.ConvertData<MetaHash>(data, eoffset));
+                    var hashVal = (MetaHash)MetaTypes.SwapBytes(MetaTypes.ConvertData<MetaHash>(data, eoffset));
                     return HashString(hashVal);
             }
 
-        }
-
-        public static string XmlEscape(string unescaped)
-        {
-            if (unescaped == null) return null;
-            XmlDocument doc = new XmlDocument();
-            XmlNode node = doc.CreateElement("root");
-            node.InnerText = unescaped;
-            var escaped = node.InnerXml;
-            if (escaped != unescaped)
-            { }
-            return node.InnerXml;
         }
 
 
@@ -1475,17 +1517,45 @@ namespace CodeWalker.GameFiles
 
         private static void WriteNode(StringBuilder sb, int indent, RbfStructure rs)
         {
+            var attStr = "";
+            if (rs.Attributes.Count > 0)
+            {
+                var asb = new StringBuilder();
+                foreach (var attr in rs.Attributes)
+                {
+                    if (attr is RbfString str)
+                    {
+                        asb.Append($" {attr.Name}=\"{str.Value}\"");
+                    }
+                    else if (attr is RbfFloat flt)
+                    {
+                        asb.Append($" {attr.Name}=\"{FloatUtil.ToString(flt.Value)}\"");
+                    }
+                    else if (attr is RbfUint32 unt)
+                    {
+                        asb.Append($" {attr.Name}=\"{unt.Value.ToString()}\"");
+                    }
+                    else if (attr is RbfBoolean bln)
+                    {
+                        asb.Append($" {attr.Name}=\"{bln.Value.ToString()}\"");
+                    }
+                    else
+                    { }
+                }
+                attStr = $"{asb.ToString()}";
+            }
+
             if (rs.Children.Count == 0)
             {
-                SelfClosingTag(sb, indent, rs.Name);
+                SelfClosingTag(sb, indent, rs.Name + attStr);
                 return;
             }
 
             int cind = indent + 1;
 
-            bool oneline = ((rs.Children.Count == 1) && (rs.Children[0].Name == null));
+            bool oneline = ((rs.Children.Count == 1) && (rs.Children[0].Name == null) && (rs.Attributes.Count == 0));
 
-            OpenTag(sb, indent, rs.Name, !oneline);
+            OpenTag(sb, indent, rs.Name + attStr, !oneline);
 
 
             foreach (var child in rs.Children)
@@ -1493,17 +1563,14 @@ namespace CodeWalker.GameFiles
                 if (child is RbfBytes)
                 {
                     var bytesChild = (RbfBytes)child;
-                    var contentField = rs.FindChild("content") as RbfString;//TODO: fix this to output nicer XML!
+                    var contentField = rs.FindAttribute("content") as RbfString;//TODO: fix this to output nicer XML!
                     if (contentField != null)
                     {
-                        OpenTag(sb, cind, "value");
-                        var aind = cind + 1;
-
                         if (contentField.Value == "char_array")
                         {
                             foreach (byte k in bytesChild.Value)
                             {
-                                Indent(sb, aind);
+                                Indent(sb, cind);
                                 sb.AppendLine(k.ToString());
                             }
                         }
@@ -1512,23 +1579,20 @@ namespace CodeWalker.GameFiles
                             var valueReader = new DataReader(new MemoryStream(bytesChild.Value));
                             while (valueReader.Position < valueReader.Length)
                             {
-                                Indent(sb, aind);
+                                Indent(sb, cind);
                                 var y = valueReader.ReadUInt16();
                                 sb.AppendLine(y.ToString());
                             }
                         }
                         else
                         {
-                            ErrorXml(sb, aind, "Unexpected content type: " + contentField.Value);
+                            ErrorXml(sb, cind, "Unexpected content type: " + contentField.Value);
                         }
-
-                        CloseTag(sb, cind, "value");
                     }
                     else
                     {
                         string stringValue = Encoding.ASCII.GetString(bytesChild.Value);
                         string str = stringValue.Substring(0, stringValue.Length - 1); //removes null terminator
-
                         sb.Append(str);
                     }
                 }
@@ -1539,6 +1603,8 @@ namespace CodeWalker.GameFiles
                 }
                 if (child is RbfString)
                 {
+                    ////// this doesn't seem to be used! it's always using RbfBytes child...
+
                     var stringChild = (RbfString)child;
                     StringTag(sb, cind, stringChild.Name, stringChild.Value);
 
@@ -1731,9 +1797,16 @@ namespace CodeWalker.GameFiles
                 var cind2 = ind + 2;
                 for (int i = 0; i < itemCount; i++)
                 {
-                    OpenTag(sb, cind, "Item");
-                    arr[i].WriteXml(sb, cind2);
-                    CloseTag(sb, cind, "Item");
+                    if (arr[i] != null)
+                    {
+                        OpenTag(sb, cind, "Item");
+                        arr[i].WriteXml(sb, cind2);
+                        CloseTag(sb, cind, "Item");
+                    }
+                    else
+                    {
+                        SelfClosingTag(sb, cind, "Item");
+                    }
                 }
                 CloseTag(sb, ind, name);
             }
@@ -1813,15 +1886,13 @@ namespace CodeWalker.GameFiles
 
         public static string HashString(MetaName h)
         {
-            if (Enum.IsDefined(typeof(MetaName), h))
-            {
-                return h.ToString();
-            }
-
             uint uh = (uint)h;
             if (uh == 0) return "";
 
-            var str = JenkIndex.TryGetString(uh);
+            string str;
+            if (MetaNames.TryGetString(uh, out str)) return str;
+
+            str = JenkIndex.TryGetString(uh);
             if (!string.IsNullOrEmpty(str)) return str;
 
             //TODO: do extra hash lookup here
@@ -1832,46 +1903,69 @@ namespace CodeWalker.GameFiles
         }
         public static string HashString(MetaHash h)
         {
+            if (h == 0) return "";
+
             var str = JenkIndex.TryGetString(h);
 
             if (string.IsNullOrEmpty(str))
             {
-                var nh = (MetaName)(uint)h;
-                if (Enum.IsDefined(typeof(MetaName), nh))
-                {
-                    return nh.ToString();
-                }
+                if (MetaNames.TryGetString(h, out str)) return str;
             }
 
             //todo: make sure JenkIndex is built!
             //todo: do extra hash lookup here
 
-            if (h == 0) return "";
-
 
             if (!string.IsNullOrEmpty(str)) return str;
             return "hash_" + h.Hex;
+        }
+        public static string HashString(TextHash h)
+        {
+            uint uh = h.Hash;
+            if (uh == 0) return "";
+
+            var str = GlobalText.TryGetString(uh);
+            if (!string.IsNullOrEmpty(str)) return str;
+
+            //TODO: do extra hash lookup here
+            //if(Lookup.TryGetValue(uh, out str)) ...
+
+            return "hash_" + uh.ToString("X").PadLeft(8, '0');
         }
 
 
         public static string UintString(uint h)
         {
-            if (Enum.IsDefined(typeof(MetaName), h))
-            {
-                return ((MetaName)h).ToString();
-            }
+            //string str;
+            //if (MetaNames.TryGetString(h, out str)) return str;
 
-            var str = JenkIndex.TryGetString(h);
-            if (!string.IsNullOrEmpty(str)) return str;
+            //str = JenkIndex.TryGetString(h);
+            //if (!string.IsNullOrEmpty(str)) return str;
 
-            //TODO: do extra hash lookup here
-            //if(Lookup.TryGetValue(uh, out str)) ...
+            ////TODO: do extra hash lookup here
+            ////if(Lookup.TryGetValue(uh, out str)) ...
 
 
             //if (h == 0) return "";
             return "0x" + h.ToString("X");
 
         }
+
+
+
+
+        public static string XmlEscape(string unescaped)
+        {
+            if (unescaped == null) return null;
+            XmlDocument doc = new XmlDocument();
+            XmlNode node = doc.CreateElement("root");
+            node.InnerText = unescaped;
+            var escaped = node.InnerXml;
+            if (escaped != unescaped)
+            { }
+            return node.InnerXml;
+        }
+
 
 
 
@@ -1900,6 +1994,8 @@ namespace CodeWalker.GameFiles
         RBF = 3,
         CacheFile = 4,
         AudioRel = 5,
+        Ynd = 6,
+        Ycd = 7,
     }
 
 }

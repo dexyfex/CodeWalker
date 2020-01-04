@@ -118,7 +118,7 @@ namespace CodeWalker.GameFiles
                             { } //just testing
                             else
                             {
-                                dates.Add(new CacheFileDate(line));//eg: 2740459947 130680580712018938 8944
+                                dates.Add(new CacheFileDate(line));//eg: 2740459947 (hash of: platform:/data/cdimages/scaleform_frontend.rpf) 130680580712018938 8944
                             }
                             break;
                     }
@@ -327,8 +327,8 @@ namespace CodeWalker.GameFiles
         public BoundsStoreItem(Bounds b)
         {
             Name = 0;
-            Min = b.BoundingBoxMin;
-            Max = b.BoundingBoxMax;
+            Min = b.BoxMin;
+            Max = b.BoxMax;
             Layer = 0;
         }
         public BoundsStoreItem(BinaryReader br)
@@ -624,7 +624,6 @@ namespace CodeWalker.GameFiles
                 InteriorProxyList = null; //plz get this GC
             }
         }
-
 
         public override string ToString()
         {

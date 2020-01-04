@@ -110,13 +110,13 @@ namespace CodeWalker.GameFiles
         public MetaPOINTER AddItemPtr<T>(MetaName type, T item) where T : struct //helper method for AddItem<T>
         {
             var ptr = AddItem(type, item);
-            return new MetaPOINTER(ptr.BlockID, ptr.Offset, 0);
+            return new MetaPOINTER(ptr.BlockID, ptr.Offset);
         }
 
         public MetaPOINTER AddItemPtr(MetaName type, byte[] data)//helper method for AddItem<T>
         {
             var ptr = AddItem(type, data);
-            return new MetaPOINTER(ptr.BlockID, ptr.Offset, 0);
+            return new MetaPOINTER(ptr.BlockID, ptr.Offset);
         }
 
         public Array_Structure AddItemArrayPtr<T>(MetaName type, T[] items) where T : struct //helper method for AddItemArray<T>

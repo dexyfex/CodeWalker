@@ -109,7 +109,7 @@ namespace CodeWalker.GameFiles
                                         case 4: //also pointer? what's the difference?
 
                                             var bptr = pb.AddItem(stype, struc);
-                                            var ptr = new PsoPOINTER(bptr.BlockID, bptr.Offset, 0);
+                                            var ptr = new PsoPOINTER(bptr.BlockID, bptr.Offset);
                                             ptr.SwapEnd();
                                             var ptrb = MetaTypes.ConvertToBytes(ptr);
 
@@ -748,7 +748,7 @@ namespace CodeWalker.GameFiles
                     if (!string.IsNullOrEmpty(str))
                     {
                         var bptr = pb.AddString(str);
-                        var ptr = new PsoPOINTER(bptr.BlockID, bptr.Offset, 0);
+                        var ptr = new PsoPOINTER(bptr.BlockID, bptr.Offset);
                         ptr.SwapEnd();
                         var val = MetaTypes.ConvertToBytes(ptr);
                         Buffer.BlockCopy(val, 0, data, entry.DataOffset, val.Length);

@@ -130,10 +130,15 @@ namespace CodeWalker.Project.Panels
                     MiloFloorIDTextBox.Text = milo.floorId.ToString();
                     MiloNumExitPortalsTextBox.Text = milo.numExitPortals.ToString();
                     MiloFlagsTextBox.Text = milo.MLOInstflags.ToString();
-                    foreach (var sets in CurrentEntity.MloInstance.EntitySets)
+                    if (CurrentEntity.MloInstance.EntitySets != null)
                     {
-                        MloInstanceEntitySet set = sets.Value;
-                        MiloEntitySetsListBox.Items.Add(set.EntitySet.ToString(), set.Visible);
+                        foreach (var set in CurrentEntity.MloInstance.EntitySets)
+                        {
+                            if (set?.EntitySet != null)
+                            {
+                                MiloEntitySetsListBox.Items.Add(set.EntitySet.ToString(), set.Visible);
+                            }
+                        }
                     }
                 }
                 else
@@ -793,11 +798,9 @@ namespace CodeWalker.Project.Panels
         {
             if (populatingui) return;
             var inst = CurrentEntity?.MloInstance;
-            var mloarch = CurrentEntity?.Archetype as MloArchetype;
-            if ((inst != null) && (mloarch != null))
+            if ((inst != null) && (inst.EntitySets != null) && (e.Index < inst.EntitySets.Length) && (e.Index >= 0))
             {
-                MloInstanceEntitySet mloInstanceEntitySet = inst.EntitySets[mloarch.entitySets[e.Index]._Data.name];
-                mloInstanceEntitySet.Visible = e.NewValue == CheckState.Checked;
+                inst.EntitySets[e.Index].Visible = e.NewValue == CheckState.Checked;
                 return;
             }
             e.NewValue = CheckState.Unchecked;

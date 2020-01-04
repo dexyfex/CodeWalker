@@ -45,6 +45,12 @@ namespace CodeWalker
             return new Vector4(x, y, z, w);
         }
 
+        public static Quaternion ToQuaternion(this Matrix m)
+        {
+            var rmat = m;
+            rmat.TranslationVector = Vector3.Zero;
+            return Quaternion.RotationMatrix(rmat);
+        }
 
     }
 }

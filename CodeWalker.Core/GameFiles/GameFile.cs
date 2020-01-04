@@ -75,6 +75,11 @@ namespace CodeWalker.GameFiles
         CarModCols = 19,
         CarVariations = 20,
         VehicleLayouts = 21,
+        Peds = 22,
+        Ped = 23,
+        Yed = 24,
+        Yld = 25,
+        Yfd = 26,
     }
 
 

@@ -82,8 +82,6 @@ namespace CodeWalker.Project.Panels
             float density = 0.5f; //distance between vertices for the initial grid
             //float clipdz = 0.5f; //any polygons with greater steepness should be removed
 
-            Vector2I imin = space.Grid.GetCellPos(new Vector3(min, 0));
-            Vector2I imax = space.Grid.GetCellPos(new Vector3(max, 0));
 
             //Vector2 vertexCounts = (max - min) / density;
             //int vertexCountX = (int)vertexCounts.X;
@@ -113,124 +111,127 @@ namespace CodeWalker.Project.Panels
 
                 var polys = new List<GenPoly>();
 
-                for (int x = imin.X; x <= imax.X; x++) //generate verts for each world cell
+                var vertexCountXY = (max - min) / density;
+                int vertexCountX = (int)vertexCountXY.X+1;
+                int vertexCountY = (int)vertexCountXY.Y+1;
+                //int vertexCountTot = vertexCountX * vertexCountY;
+                vgrid.BeginGrid(vertexCountX, vertexCountY);
+
+                Ray ray = new Ray(Vector3.Zero, new Vector3(0, 0, -1));//for casting with
+
+                UpdateStatus("Loading YBNs...");
+
+                var bmin = new Vector3(min, 0);
+                var bmax = new Vector3(max, 0);
+                var boundslist = space.BoundsStore.GetItems(ref bmin, ref bmax);
+
+                //pre-warm the bounds cache for this area, and find the min/max Z
+                foreach (var boundsitem in boundslist)
                 {
-                    for (int y = imin.Y; y <= imax.Y; y++)
+                    YbnFile ybn = gameFileCache.GetYbn(boundsitem.Name);
+                    if (ybn == null)
+                    { continue; } //ybn not found?
+                    if (!ybn.Loaded) //ybn not loaded yet...
                     {
-                        Vector2I gi = new Vector2I(x, y);
-                        var cell = space.Grid.GetCell(gi);
-                        var cellstr = gi.ToString();
-                        var cellmin = space.Grid.GetWorldPos(gi);
-                        var cellmax = cellmin + SpaceGrid.CellSize;
-                        var vertexCountXY = (cellmax - cellmin) / density;
-                        int vertexCountX = (int)vertexCountXY.X+1;
-                        int vertexCountY = (int)vertexCountXY.Y+1;
-                        //int vertexCountTot = vertexCountX * vertexCountY;
-                        vgrid.BeginGrid(vertexCountX, vertexCountY);
-                        cellmin.Z = 0.0f;//min probably not needed here
-                        cellmax.Z = 0.0f;
-                        Ray ray = new Ray(Vector3.Zero, new Vector3(0, 0, -1));//for casting with
-
-                        UpdateStatus("Loading cell " + cellstr + " ...");
-
-                        //pre-warm the bounds cache for this cell, and find the min/max Z
-                        if (cell.BoundsList != null)
+                        UpdateStatus("Loading ybn: " + boundsitem.Name.ToString() + " ...");
+                        int waitCount = 0;
+                        while (!ybn.Loaded)
                         {
-                            foreach (var boundsitem in cell.BoundsList)
+                            waitCount++;
+                            if (waitCount > 10000)
                             {
-                                YbnFile ybn = gameFileCache.GetYbn(boundsitem.Name);
-                                if (ybn == null)
-                                { continue; } //ybn not found?
-                                if (!ybn.Loaded) //ybn not loaded yet...
-                                {
-                                    UpdateStatus("Loading ybn: " + boundsitem.Name.ToString() + " ...");
-                                    int waitCount = 0;
-                                    while (!ybn.Loaded)
-                                    {
-                                        waitCount++;
-                                        if (waitCount > 10000)
-                                        {
-                                            UpdateStatus("Timeout waiting for ybn " + boundsitem.Name.ToString() + " to load!");
-                                            Thread.Sleep(1000); //just to let the message display for a second...
-                                            break;
-                                        }
-                                        Thread.Sleep(20);//~50fps should be fine
-                                        ybn = gameFileCache.GetYbn(boundsitem.Name); //try queue it again..
-                                    }
-                                }
-                                if (ybn.Loaded && (ybn.Bounds != null))
-                                {
-                                    cellmin.Z = Math.Min(cellmin.Z, ybn.Bounds.BoundingBoxMin.Z);
-                                    cellmax.Z = Math.Max(cellmax.Z, ybn.Bounds.BoundingBoxMax.Z);
-                                }
+                                UpdateStatus("Timeout waiting for ybn " + boundsitem.Name.ToString() + " to load!");
+                                Thread.Sleep(1000); //just to let the message display for a second...
+                                break;
                             }
+                            Thread.Sleep(20);//~50fps should be fine
+                            ybn = gameFileCache.GetYbn(boundsitem.Name); //try queue it again..
                         }
-
-
-
-                        //ray-cast each XY vertex position, and find the height and surface from ybn's
-                        //continue casting down to find more surfaces...
-
-                        UpdateStatus("Processing cell " + cellstr + " ...");
-
-                        for (int vx = 0; vx < vertexCountX; vx++)
-                        {
-                            for (int vy = 0; vy < vertexCountY; vy++)
-                            {
-                                vgrid.BeginCell(vx, vy);
-                                var vcoffset = new Vector3(vx, vy, 0) * density;
-                                ray.Position = cellmin + vcoffset;
-                                ray.Position.Z = cellmax.Z + 1.0f;//start the ray at the top of the cell
-                                var intres = space.RayIntersect(ray, float.MaxValue, layers);
-                                hitTestCount++;
-                                while (intres.Hit)// && (intres.HitDist > 0))
-                                {
-                                    if (intres.HitDist > 0)
-                                    {
-                                        hitCount++;
-                                        vert.Position = intres.Position;
-                                        vert.Normal = intres.Normal;
-                                        vert.Material = intres.Material.Type;
-                                        vert.PolyFlags = (ushort)intres.Material.Flags;
-                                        vert.PrevIDX = -1;
-                                        vert.PrevIDY = -1;
-                                        vert.NextIDX = -1;
-                                        vert.NextIDY = -1;
-                                        vert.CompPrevX = false;
-                                        vert.CompPrevY = false;
-                                        vert.CompNextX = false;
-                                        vert.CompNextY = false;
-                                        vert.PolyID = -1;
-                                        vgrid.AddVertex(ref vert);
-
-                                        if (vgrid.CurVertexCount > 15) //too many hits?
-                                        { break; }
-                                    }
-                                    //continue down until no more hits..... step by 3m
-                                    ray.Position.Z = intres.Position.Z - 3.0f;
-                                    intres = space.RayIntersect(ray, float.MaxValue, layers);
-                                }
-                                vgrid.EndCell(vx, vy);
-                            }
-                        }
-
-                        vgrid.EndGrid(); //build vertex array
-
-
-
-
-
-                        vgrid.ConnectVertices();
-
-
-                        var genPolys = vgrid.GenPolys2();
-                        polys.AddRange(genPolys);
-
-                        newCount += genPolys.Count;
-
-
+                    }
+                    if (ybn.Loaded && (ybn.Bounds != null))
+                    {
+                        bmin.Z = Math.Min(bmin.Z, ybn.Bounds.BoxMin.Z);
+                        bmax.Z = Math.Max(bmax.Z, ybn.Bounds.BoxMax.Z);
                     }
                 }
+
+
+
+                //ray-cast each XY vertex position, and find the height and surface from ybn's
+                //continue casting down to find more surfaces...
+
+                UpdateStatus("Processing...");
+
+                for (int vx = 0; vx < vertexCountX; vx++)
+                {
+                    for (int vy = 0; vy < vertexCountY; vy++)
+                    {
+                        vgrid.BeginCell(vx, vy);
+                        var vcoffset = new Vector3(vx, vy, 0) * density;
+                        ray.Position = bmin + vcoffset;
+                        ray.Position.Z = bmax.Z + 1.0f;//start the ray at the top of the cell
+                        var intres = space.RayIntersect(ray, float.MaxValue, layers);
+                        hitTestCount++;
+                        while (intres.Hit)// && (intres.HitDist > 0))
+                        {
+                            if (intres.HitDist > 0)
+                            {
+                                hitCount++;
+                                vert.Position = intres.Position;
+                                vert.Normal = intres.Normal;
+                                vert.Material = intres.Material.Type;
+                                vert.PolyFlags = (ushort)intres.Material.Flags;
+                                vert.PrevIDX = -1;
+                                vert.PrevIDY = -1;
+                                vert.NextIDX = -1;
+                                vert.NextIDY = -1;
+                                vert.CompPrevX = false;
+                                vert.CompPrevY = false;
+                                vert.CompNextX = false;
+                                vert.CompNextY = false;
+                                vert.PolyID = -1;
+                                vgrid.AddVertex(ref vert);
+
+                                if (vgrid.CurVertexCount > 15) //too many hits?
+                                { break; }
+                            }
+                            //continue down until no more hits..... step by 3m
+                            ray.Position.Z = intres.Position.Z - 3.0f;
+                            intres = space.RayIntersect(ray, float.MaxValue, layers);
+                        }
+                        vgrid.EndCell(vx, vy);
+                    }
+                }
+
+                vgrid.EndGrid(); //build vertex array
+
+
+
+
+
+                vgrid.ConnectVertices();
+
+
+                var genPolys = vgrid.GenPolys2();
+                polys.AddRange(genPolys);
+
+                newCount += genPolys.Count;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
                 //try merge generated polys into bigger ones, while keeping convex!

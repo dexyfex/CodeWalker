@@ -165,6 +165,8 @@ namespace CodeWalker
                 {
                     if (FileCache.IsInited)
                     {
+                        FileCache.BeginFrame();
+
                         bool fcItemsPending = FileCache.ContentThreadProc();
 
                         if (!fcItemsPending)
@@ -231,12 +233,14 @@ namespace CodeWalker
             InitFileType(".ymt", "Metadata (Binary)", 6, FileTypeAction.ViewYmt);
             InitFileType(".pso", "Metadata (PSO)", 6, FileTypeAction.ViewJPso);
             InitFileType(".gfx", "Scaleform Flash", 7);
-            InitFileType(".ynd", "Path Nodes", 8);
+            InitFileType(".ynd", "Path Nodes", 8, FileTypeAction.ViewYnd);
             InitFileType(".ynv", "Nav Mesh", 9, FileTypeAction.ViewModel);
             InitFileType(".yvr", "Vehicle Record", 9, FileTypeAction.ViewYvr);
             InitFileType(".ywr", "Waypoint Record", 9, FileTypeAction.ViewYwr);
             InitFileType(".fxc", "Compiled Shaders", 9, FileTypeAction.ViewFxc);
-            InitFileType(".yed", "Expression Dictionary", 9);
+            InitFileType(".yed", "Expression Dictionary", 9, FileTypeAction.ViewYed);
+            InitFileType(".yld", "Cloth Dictionary", 9, FileTypeAction.ViewYld);
+            InitFileType(".yfd", "Frame Filter Dictionary", 9, FileTypeAction.ViewYfd);
             InitFileType(".asi", "ASI Plugin", 9);
             InitFileType(".dll", "Dynamic Link Library", 9);
             InitFileType(".exe", "Executable", 10);
@@ -1302,7 +1306,11 @@ namespace CodeWalker
                 case FileTypeAction.ViewYwr:
                 case FileTypeAction.ViewYvr:
                 case FileTypeAction.ViewYcd:
+                case FileTypeAction.ViewYnd:
                 case FileTypeAction.ViewCacheDat:
+                case FileTypeAction.ViewYed:
+                case FileTypeAction.ViewYld:
+                case FileTypeAction.ViewYfd:
                     return true;
                 case FileTypeAction.ViewHex:
                 default:
@@ -1324,6 +1332,8 @@ namespace CodeWalker
                 case FileTypeAction.ViewJPso:
                 case FileTypeAction.ViewCut:
                 case FileTypeAction.ViewRel:
+                case FileTypeAction.ViewYnd:
+                case FileTypeAction.ViewYcd:
                     return true;
             }
             return false;
@@ -1425,8 +1435,20 @@ namespace CodeWalker
                     case FileTypeAction.ViewYcd:
                         ViewYcd(name, path, data, fe);
                         break;
+                    case FileTypeAction.ViewYnd:
+                        ViewYnd(name, path, data, fe);
+                        break;
                     case FileTypeAction.ViewCacheDat:
                         ViewCacheDat(name, path, data, fe);
+                        break;
+                    case FileTypeAction.ViewYed:
+                        ViewYed(name, path, data, fe);
+                        break;
+                    case FileTypeAction.ViewYld:
+                        ViewYld(name, path, data, fe);
+                        break;
+                    case FileTypeAction.ViewYfd:
+                        ViewYfd(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewHex:
                     default:
@@ -1626,6 +1648,34 @@ namespace CodeWalker
             YcdForm f = new YcdForm();
             f.Show();
             f.LoadYcd(ycd);
+        }
+        private void ViewYnd(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var ynd = RpfFile.GetFile<YndFile>(e, data);
+            MetaForm f = new MetaForm(this);
+            f.Show();
+            f.LoadMeta(ynd);
+        }
+        private void ViewYed(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var yed = RpfFile.GetFile<YedFile>(e, data);
+            GenericForm f = new GenericForm(this);
+            f.Show();
+            f.LoadFile(yed, yed.RpfFileEntry);
+        }
+        private void ViewYld(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var yld = RpfFile.GetFile<YldFile>(e, data);
+            GenericForm f = new GenericForm(this);
+            f.Show();
+            f.LoadFile(yld, yld.RpfFileEntry);
+        }
+        private void ViewYfd(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var yfd = RpfFile.GetFile<YfdFile>(e, data);
+            GenericForm f = new GenericForm(this);
+            f.Show();
+            f.LoadFile(yfd, yfd.RpfFileEntry);
         }
         private void ViewCacheDat(string name, string path, byte[] data, RpfFileEntry e)
         {
@@ -2407,6 +2457,14 @@ namespace CodeWalker
                     {
                         mformat = MetaFormat.AudioRel;
                     }
+                    if (fnamel.EndsWith(".ynd.xml"))
+                    {
+                        mformat = MetaFormat.Ynd;
+                    }
+                    if (fnamel.EndsWith(".ycd.xml"))
+                    {
+                        mformat = MetaFormat.Ycd;
+                    }
 
                     fname = fname.Substring(0, fname.Length - trimlength);
                     fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
@@ -2446,7 +2504,13 @@ namespace CodeWalker
                             }
                         case MetaFormat.RBF:
                             {
-                                //todo!
+                                var rbf = XmlRbf.GetRbf(doc);
+                                if (rbf.current == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import RBF XML");
+                                    continue;
+                                }
+                                data = rbf.Save();
                                 break;
                             }
                         case MetaFormat.AudioRel:
@@ -2458,6 +2522,28 @@ namespace CodeWalker
                                     continue;
                                 }
                                 data = rel.Save();
+                                break;
+                            }
+                        case MetaFormat.Ynd:
+                            {
+                                var ynd = XmlYnd.GetYnd(doc);
+                                if (ynd.NodeDictionary == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YND XML");
+                                    continue;
+                                }
+                                data = ynd.Save();
+                                break;
+                            }
+                        case MetaFormat.Ycd:
+                            {
+                                var ycd = XmlYcd.GetYcd(doc);
+                                if (ycd.ClipDictionary == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YCD XML");
+                                    continue;
+                                }
+                                data = ycd.Save();
                                 break;
                             }
                     }
@@ -4131,7 +4217,11 @@ namespace CodeWalker
         ViewYwr = 15,
         ViewYvr = 16,
         ViewYcd = 17,
-        ViewCacheDat = 18,
+        ViewYnd = 18,
+        ViewCacheDat = 19,
+        ViewYed = 20,
+        ViewYld = 21,
+        ViewYfd = 22,
     }
 
 

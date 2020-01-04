@@ -17,6 +17,7 @@ namespace CodeWalker.Project
         public int Version { get; set; }
         public List<string> YmapFilenames { get; set; } = new List<string>();
         public List<string> YtypFilenames { get; set; } = new List<string>();
+        public List<string> YbnFilenames { get; set; } = new List<string>();
         public List<string> YndFilenames { get; set; } = new List<string>();
         public List<string> YnvFilenames { get; set; } = new List<string>();
         public List<string> TrainsFilenames { get; set; } = new List<string>();
@@ -30,6 +31,7 @@ namespace CodeWalker.Project
 
         public List<YmapFile> YmapFiles { get; set; } = new List<YmapFile>();
         public List<YtypFile> YtypFiles { get; set; } = new List<YtypFile>();
+        public List<YbnFile> YbnFiles { get; set; } = new List<YbnFile>();
         public List<YndFile> YndFiles { get; set; } = new List<YndFile>();
         public List<YnvFile> YnvFiles { get; set; } = new List<YnvFile>();
         public List<TrainTrack> TrainsFiles { get; set; } = new List<TrainTrack>();
@@ -59,6 +61,11 @@ namespace CodeWalker.Project
                 Xml.AddChildWithInnerText(doc, ytypselem, "Item", ytypfilename);
             }
 
+            var ybnselem = Xml.AddChild(doc, projelem, "YbnFilenames");
+            foreach (string ybnfilename in YbnFilenames)
+            {
+                Xml.AddChildWithInnerText(doc, ybnselem, "Item", ybnfilename);
+            }
 
             var yndselem = Xml.AddChild(doc, projelem, "YndFilenames");
             foreach (string yndfilename in YndFilenames)
@@ -134,6 +141,22 @@ namespace CodeWalker.Project
                     if (ytypel != null)
                     {
                         AddYtypFile(ytypel.InnerText);
+                    }
+                }
+            }
+
+
+            YbnFilenames.Clear();
+            YbnFiles.Clear();
+            var ybnselem = Xml.GetChild(projelem, "YbnFilenames");
+            if (ybnselem != null)
+            {
+                foreach (var node in ybnselem.SelectNodes("Item"))
+                {
+                    XmlElement ybnel = node as XmlElement;
+                    if (ybnel != null)
+                    {
+                        AddYbnFile(ybnel.InnerText);
                     }
                 }
             }
@@ -233,6 +256,10 @@ namespace CodeWalker.Project
             for (int i = 0; i < YtypFilenames.Count; i++)
             {
                 YtypFilenames[i] = GetUpdatedFilePath(YtypFilenames[i], oldprojpath);
+            }
+            for (int i = 0; i < YbnFilenames.Count; i++)
+            {
+                YbnFilenames[i] = GetUpdatedFilePath(YbnFilenames[i], oldprojpath);
             }
             for (int i = 0; i < YndFilenames.Count; i++)
             {
@@ -448,6 +475,73 @@ namespace CodeWalker.Project
                 if (YtypFilenames[i] == oldfilename)
                 {
                     YtypFilenames[i] = newfilename;
+                    HasChanged = true;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        public YbnFile AddYbnFile(string filename)
+        {
+            YbnFile ybn = new YbnFile();
+            ybn.RpfFileEntry = new RpfResourceFileEntry();
+            ybn.RpfFileEntry.Name = Path.GetFileName(filename);
+            ybn.FilePath = GetFullFilePath(filename);
+            ybn.Name = ybn.RpfFileEntry.Name;
+            if (!AddYbnFile(ybn)) return null;
+            return ybn;
+        }
+        public bool AddYbnFile(YbnFile ybn)
+        {
+            string relpath = GetRelativePath(ybn.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = ybn.Name;
+            if (YndFilenames.Contains(relpath)) return false;
+            YbnFilenames.Add(relpath);
+            YbnFiles.Add(ybn);
+            return true;
+        }
+        public void RemoveYbnFile(YbnFile ybn)
+        {
+            if (ybn == null) return;
+            var relpath = GetRelativePath(ybn.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = ybn.Name;
+            YbnFiles.Remove(ybn);
+            YbnFilenames.Remove(relpath);
+            HasChanged = true;
+        }
+        public bool ContainsYbn(string filename)
+        {
+            bool found = false;
+            filename = filename.ToLowerInvariant();
+            foreach (var yndfn in YbnFilenames)
+            {
+                if (yndfn == filename)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            return found;
+        }
+        public bool ContainsYbn(YbnFile ybn)
+        {
+            foreach (var f in YbnFiles)
+            {
+                if (f == ybn) return true;
+            }
+            return false;
+        }
+        public bool RenameYbn(string oldfilename, string newfilename)
+        {
+            oldfilename = oldfilename.ToLowerInvariant();
+            newfilename = newfilename.ToLowerInvariant();
+            for (int i = 0; i < YbnFilenames.Count; i++)
+            {
+                if (YbnFilenames[i] == oldfilename)
+                {
+                    YbnFilenames[i] = newfilename;
                     HasChanged = true;
                     return true;
                 }
