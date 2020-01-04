@@ -399,6 +399,15 @@ namespace CodeWalker.GameFiles
             RootId = reader.ReadInt32();
             EntriesCount = reader.ReadInt16();
             Unknown_Eh = reader.ReadInt16();
+
+            if (EntriesCount <= 0) //any other way to know which version?
+            {
+                EntriesCount = reader.ReadInt16();
+                var unk1 = reader.ReadInt16();
+                var unk2 = reader.ReadInt16();
+                var unk3 = reader.ReadInt16();
+            }
+
             Entries = new PsoDataMappingEntry[EntriesCount];
             for (int i = 0; i < EntriesCount; i++)
             {

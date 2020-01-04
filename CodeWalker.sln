@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeWalker", "CodeWalker.cs
 		{DE50D3A6-B49E-47A0-ABE6-101473A00759} = {DE50D3A6-B49E-47A0-ABE6-101473A00759}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CodeWalkerShaders", "Shaders\CodeWalkerShaders.vcxproj", "{0D14B076-0ABF-434E-AB9F-36E7800D8887}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CodeWalker.Shaders", "CodeWalker.Shaders\CodeWalker.Shaders.vcxproj", "{0D14B076-0ABF-434E-AB9F-36E7800D8887}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeWalker.WinForms", "CodeWalker.WinForms\CodeWalker.WinForms.csproj", "{9702C58D-F52F-45CF-9456-9CE5AF40F5C3}"
 EndProject

@@ -133,6 +133,9 @@ namespace CodeWalker.Project.Panels
             var stypes = types.GetScenarioTypes();
             if (stypes == null) return;
 
+            var stgroups = types.GetScenarioTypeGroups();
+            if (stgroups == null) return;
+
             var pmsets = types.GetPedModelSets();
             if (pmsets == null) return;
 
@@ -147,9 +150,17 @@ namespace CodeWalker.Project.Panels
             ScenarioChainNodeTypeComboBox.Items.Add("");
             foreach (var stype in stypes)
             {
-                ScenarioPointTypeComboBox.Items.Add(stype);
-                ScenarioClusterPointTypeComboBox.Items.Add(stype);
-                ScenarioChainNodeTypeComboBox.Items.Add(stype);
+                ScenarioTypeRef? typeRef = new ScenarioTypeRef(stype);
+                ScenarioPointTypeComboBox.Items.Add(typeRef);
+                ScenarioClusterPointTypeComboBox.Items.Add(typeRef);
+                ScenarioChainNodeTypeComboBox.Items.Add(typeRef);
+            }
+            foreach (var stgroup in stgroups)
+            {
+                ScenarioTypeRef? typeRef = new ScenarioTypeRef(stgroup);
+                ScenarioPointTypeComboBox.Items.Add(typeRef);
+                ScenarioClusterPointTypeComboBox.Items.Add(typeRef);
+                ScenarioChainNodeTypeComboBox.Items.Add(typeRef);
             }
 
             ScenarioPointModelSetComboBox.Items.Clear();
@@ -175,32 +186,32 @@ namespace CodeWalker.Project.Panels
 
 
             ScenarioChainEdgeActionComboBox.Items.Clear();
-            ScenarioChainEdgeActionComboBox.Items.Add(Unk_3609807418.Move);
-            ScenarioChainEdgeActionComboBox.Items.Add(Unk_3609807418.Unk_7865678);
-            ScenarioChainEdgeActionComboBox.Items.Add(Unk_3609807418.MoveFollowMaster);
+            ScenarioChainEdgeActionComboBox.Items.Add(CScenarioChainingEdge__eAction.Move);
+            ScenarioChainEdgeActionComboBox.Items.Add(CScenarioChainingEdge__eAction.Unk_7865678);
+            ScenarioChainEdgeActionComboBox.Items.Add(CScenarioChainingEdge__eAction.MoveFollowMaster);
 
             ScenarioChainEdgeNavModeComboBox.Items.Clear();
-            ScenarioChainEdgeNavModeComboBox.Items.Add(Unk_3971773454.Direct);
-            ScenarioChainEdgeNavModeComboBox.Items.Add(Unk_3971773454.NavMesh);
-            ScenarioChainEdgeNavModeComboBox.Items.Add(Unk_3971773454.Roads);
+            ScenarioChainEdgeNavModeComboBox.Items.Add(CScenarioChainingEdge__eNavMode.Direct);
+            ScenarioChainEdgeNavModeComboBox.Items.Add(CScenarioChainingEdge__eNavMode.NavMesh);
+            ScenarioChainEdgeNavModeComboBox.Items.Add(CScenarioChainingEdge__eNavMode.Roads);
 
             ScenarioChainEdgeNavSpeedComboBox.Items.Clear();
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_00_3279574318);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_01_2212923970);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_02_4022799658);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_03_1425672334);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_04_957720931);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_05_3795195414);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_06_2834622009);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_07_1876554076);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_08_698543797);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_09_1544199634);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_10_2725613303);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_11_4033265820);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_12_3054809929);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_13_3911005380);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_14_3717649022);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(Unk_941086046.Unk_15_3356026130);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_00_3279574318);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_01_2212923970);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_02_4022799658);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_03_1425672334);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_04_957720931);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_05_3795195414);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_06_2834622009);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_07_1876554076);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_08_698543797);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_09_1544199634);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_10_2725613303);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_11_4033265820);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_12_3054809929);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_13_3911005380);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_14_3717649022);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_15_3356026130);
 
         }
 
@@ -827,7 +838,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.MyPoint == null) return;
-            ScenarioType stype = ScenarioPointTypeComboBox.SelectedItem as ScenarioType;
+            ScenarioTypeRef? stype = ScenarioPointTypeComboBox.SelectedItem as ScenarioTypeRef?;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.MyPoint.Type != stype)
@@ -1711,7 +1722,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.ChainingNode == null) return;
-            ScenarioType stype = ScenarioChainNodeTypeComboBox.SelectedItem as ScenarioType;
+            ScenarioTypeRef? stype = ScenarioChainNodeTypeComboBox.SelectedItem as ScenarioTypeRef?;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.ChainingNode.Type != stype)
@@ -1885,7 +1896,7 @@ namespace CodeWalker.Project.Panels
         {
             if (populatingui) return;
             if (CurrentScenarioChainEdge == null) return;
-            Unk_3609807418 v = (Unk_3609807418)ScenarioChainEdgeActionComboBox.SelectedItem;
+            CScenarioChainingEdge__eAction v = (CScenarioChainingEdge__eAction)ScenarioChainEdgeActionComboBox.SelectedItem;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioChainEdge.Action != v)
@@ -1900,7 +1911,7 @@ namespace CodeWalker.Project.Panels
         {
             if (populatingui) return;
             if (CurrentScenarioChainEdge == null) return;
-            Unk_3971773454 v = (Unk_3971773454)ScenarioChainEdgeNavModeComboBox.SelectedItem;
+            CScenarioChainingEdge__eNavMode v = (CScenarioChainingEdge__eNavMode)ScenarioChainEdgeNavModeComboBox.SelectedItem;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioChainEdge.NavMode != v)
@@ -1915,7 +1926,7 @@ namespace CodeWalker.Project.Panels
         {
             if (populatingui) return;
             if (CurrentScenarioChainEdge == null) return;
-            Unk_941086046 v = (Unk_941086046)ScenarioChainEdgeNavSpeedComboBox.SelectedItem;
+            CScenarioChainingEdge__eNavSpeed v = (CScenarioChainingEdge__eNavSpeed)ScenarioChainEdgeNavSpeedComboBox.SelectedItem;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioChainEdge.NavSpeed != v)
@@ -2133,7 +2144,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.ClusterMyPoint == null) return;
-            ScenarioType stype = ScenarioClusterPointTypeComboBox.SelectedItem as ScenarioType;
+            ScenarioTypeRef? stype = ScenarioClusterPointTypeComboBox.SelectedItem as ScenarioTypeRef?;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.ClusterMyPoint.Type != stype)

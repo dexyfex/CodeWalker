@@ -59,8 +59,9 @@ namespace CodeWalker.Rendering
     {
         bool disposed = false;
 
-        VertexShader basicvs;
-        PixelShader basicps;
+        VertexShader vs;
+        PixelShader ps;
+        PixelShader psdef;
         GpuVarsBuffer<TreesLodShaderVSSceneVars> VSSceneVars;
         GpuVarsBuffer<TreesLodShaderVSEntityVars> VSEntityVars;
         GpuVarsBuffer<TreesLodShaderVSModelVars> VSModelVars;
@@ -71,14 +72,18 @@ namespace CodeWalker.Rendering
 
         private Dictionary<VertexType, InputLayout> layouts = new Dictionary<VertexType, InputLayout>();
 
+        public bool Deferred = false;
+
 
         public TreesLodShader(Device device)
         {
             byte[] vsbytes = File.ReadAllBytes("Shaders\\TreesLodVS.cso");
             byte[] psbytes = File.ReadAllBytes("Shaders\\TreesLodPS.cso");
+            byte[] psdefbytes = File.ReadAllBytes("Shaders\\TreesLodPS_Deferred.cso");
 
-            basicvs = new VertexShader(device, vsbytes);
-            basicps = new PixelShader(device, psbytes);
+            vs = new VertexShader(device, vsbytes);
+            ps = new PixelShader(device, psbytes);
+            psdef = new PixelShader(device, psdefbytes);
 
             VSSceneVars = new GpuVarsBuffer<TreesLodShaderVSSceneVars>(device);
             VSEntityVars = new GpuVarsBuffer<TreesLodShaderVSEntityVars>(device);
@@ -88,7 +93,7 @@ namespace CodeWalker.Rendering
             PSEntityVars = new GpuVarsBuffer<TreesLodShaderPSEntityVars>(device);
 
             //layouts.Add(VertexType.PNCCT, new InputLayout(device, vsbytes, VertexTypePNCCT.GetLayout()));
-            layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vsbytes, VertexTypePNCCTTTT.GetLayout()));
+            layouts.Add(VertexType.PNCCTTTT, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCTTTT)));
 
 
 
@@ -112,8 +117,8 @@ namespace CodeWalker.Rendering
 
         public override void SetShader(DeviceContext context)
         {
-            context.VertexShader.Set(basicvs);
-            context.PixelShader.Set(basicps);
+            context.VertexShader.Set(vs);
+            context.PixelShader.Set(Deferred ? psdef : ps);
         }
 
         public override bool SetInputLayout(DeviceContext context, VertexType type)
@@ -189,14 +194,14 @@ namespace CodeWalker.Rendering
 
                 for (int i = 0; i < nparams; i++)
                 {
-                    var h = shader.ParametersList.Hashes[i];
+                    var h = (ShaderParamNames)shader.ParametersList.Hashes[i];
                     switch (h)
                     {
-                        case MetaName.AlphaTest: VSGeomVars.Vars.AlphaTest = (Vector4)sparams[i].Data; break;
-                        case MetaName.AlphaScale: VSGeomVars.Vars.AlphaScale = (Vector4)sparams[i].Data; break;
-                        case MetaName.UseTreeNormals: VSGeomVars.Vars.UseTreeNormals = (Vector4)sparams[i].Data; break;
-                        case MetaName.treeLod2Normal: VSGeomVars.Vars.treeLod2Normal = (Vector4)sparams[i].Data; break;
-                        case MetaName.treeLod2Params: VSGeomVars.Vars.treeLod2Params = (Vector4)sparams[i].Data; break;
+                        case ShaderParamNames.AlphaTest: VSGeomVars.Vars.AlphaTest = (Vector4)sparams[i].Data; break;
+                        case ShaderParamNames.AlphaScale: VSGeomVars.Vars.AlphaScale = (Vector4)sparams[i].Data; break;
+                        case ShaderParamNames.UseTreeNormals: VSGeomVars.Vars.UseTreeNormals = (Vector4)sparams[i].Data; break;
+                        case ShaderParamNames.treeLod2Normal: VSGeomVars.Vars.treeLod2Normal = (Vector4)sparams[i].Data; break;
+                        case ShaderParamNames.treeLod2Params: VSGeomVars.Vars.treeLod2Params = (Vector4)sparams[i].Data; break;
                     }
                 }
 
@@ -222,7 +227,7 @@ namespace CodeWalker.Rendering
                     var ihash = geom.TextureParamHashes[i];
                     switch (ihash)
                     {
-                        case MetaName.DiffuseSampler:
+                        case ShaderParamNames.DiffuseSampler:
                             texture = itex;
                             break;
                     }
@@ -311,8 +316,9 @@ namespace CodeWalker.Rendering
             PSSceneVars.Dispose();
             PSEntityVars.Dispose();
 
-            basicps.Dispose();
-            basicvs.Dispose();
+            psdef.Dispose();
+            ps.Dispose();
+            vs.Dispose();
 
             disposed = true;
         }

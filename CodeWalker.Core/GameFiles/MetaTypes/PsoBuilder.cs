@@ -101,13 +101,13 @@ namespace CodeWalker.GameFiles
         public PsoPOINTER AddItemPtr<T>(MetaName type, T item) where T : struct //helper method for AddItem<T>
         {
             var ptr = AddItem(type, item);
-            return new PsoPOINTER(ptr.BlockID, ptr.Offset, 0);
+            return new PsoPOINTER(ptr.BlockID, ptr.Offset);
         }
 
         public PsoPOINTER AddItemPtr(MetaName type, byte[] data)//helper method for AddItem<T>
         {
             var ptr = AddItem(type, data);
-            return new PsoPOINTER(ptr.BlockID, ptr.Offset, 0);
+            return new PsoPOINTER(ptr.BlockID, ptr.Offset);
         }
 
         public Array_Structure AddItemArrayPtr<T>(MetaName type, T[] items) where T : struct //helper method for AddItemArray<T>
@@ -147,7 +147,7 @@ namespace CodeWalker.GameFiles
         public Array_StructurePointer AddPointerArray(PsoPOINTER[] arr)
         {
             if ((arr == null) || (arr.Length == 0)) return new Array_StructurePointer();
-            var ptr = AddItemArray(MetaName.PsoPOINTER, arr);
+            var ptr = AddItemArray((MetaName)MetaTypeName.PsoPOINTER, arr);
             Array_StructurePointer sp = new Array_StructurePointer();
             sp.Count1 = (ushort)arr.Length;
             sp.Count2 = sp.Count1;
@@ -183,19 +183,19 @@ namespace CodeWalker.GameFiles
         public Array_Vector3 AddPaddedVector3ArrayPtr(Vector4[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_Vector3();
-            var ptr = AddItemArray((MetaName)1, items); //MetaName.VECTOR4  padded to vec4...
+            var ptr = AddItemArray((MetaName)1, items); //(MetaName)MetaTypeName.VECTOR4  padded to vec4...
             return new Array_Vector3(ptr.Pointer, items.Length);
         }
         public Array_Vector3 AddVector2ArrayPtr(Vector2[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_Vector3();
-            var ptr = AddItemArray((MetaName)1, items); //MetaName.VECTOR4  padded to vec4...?
+            var ptr = AddItemArray((MetaName)1, items); //(MetaName)MetaTypeName.VECTOR4  padded to vec4...?
             return new Array_Vector3(ptr.Pointer, items.Length);
         }
         public Array_uint AddHashArrayPtr(MetaHash[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_uint();
-            var ptr = AddItemArray((MetaName)6, items); //MetaName.HASH
+            var ptr = AddItemArray((MetaName)6, items); //(MetaName)MetaTypeName.HASH
             return new Array_uint(ptr.Pointer, items.Length);
         }
         public Array_uint AddUIntArrayPtr(uint[] items)
@@ -225,7 +225,7 @@ namespace CodeWalker.GameFiles
         public Array_float AddFloatArrayPtr(float[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_float();
-            var ptr = AddItemArray((MetaName)7, items); //MetaName.PsoFLOAT ? comes up as MetaName.POINTER due to RSC meta values
+            var ptr = AddItemArray((MetaName)7, items); //MetaName.PsoFLOAT ? comes up as (MetaName)MetaTypeName.POINTER due to RSC meta values
             return new Array_float(ptr.Pointer, items.Length);
         }
 
@@ -274,7 +274,7 @@ namespace CodeWalker.GameFiles
 
             if (valType == 0)
             {
-                inf = PsoTypes.GetStructureInfo(MetaName.ARRAYINFO); //default ARRAYINFO with pointer
+                inf = PsoTypes.GetStructureInfo((MetaName)MetaTypeName.ARRAYINFO); //default ARRAYINFO with pointer
                 if (!StructureInfos.ContainsKey(inf.IndexInfo.NameHash))
                 {
                     StructureInfos[inf.IndexInfo.NameHash] = inf;
@@ -286,7 +286,7 @@ namespace CodeWalker.GameFiles
             if (structInfo == null)
             { }//error?
 
-            MetaName xName = MetaName.ARRAYINFO + 1; //257
+            MetaName xName = (MetaName)MetaTypeName.ARRAYINFO + 1; //257
             bool nameOk = !StructureInfos.ContainsKey(xName);
             while (!nameOk)
             {
@@ -320,9 +320,9 @@ namespace CodeWalker.GameFiles
             //    case MetaName.fwClipDictionaryMetadata: return PsoTypes.GetStructureInfo((MetaName)257);
             //    case MetaName.fwMemoryGroupMetadata: return PsoTypes.GetStructureInfo((MetaName)258);
             //    case (MetaName)3219912345: return PsoTypes.GetStructureInfo((MetaName)259);
-            //    case (MetaName)0: return PsoTypes.GetStructureInfo(MetaName.ARRAYINFO);
+            //    case (MetaName)0: return PsoTypes.GetStructureInfo((MetaName)MetaTypeName.ARRAYINFO);
             //    default:
-            //        return PsoTypes.GetStructureInfo(MetaName.ARRAYINFO);//error?
+            //        return PsoTypes.GetStructureInfo((MetaName)MetaTypeName.ARRAYINFO);//error?
             //}
             //case (MetaName)257:
             //    return new PsoStructureInfo((MetaName)257, 0, 2, 32,
@@ -341,7 +341,7 @@ namespace CodeWalker.GameFiles
             //    );
             //case (MetaName)3219912345:
             //    return new PsoStructureInfo((MetaName)3219912345, 0, 0, 24,
-            //        new PsoStructureEntryInfo(MetaName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2356519750),
+            //        new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, (MetaName)2356519750),
             //        new PsoStructureEntryInfo(MetaName.Adjustments, PsoDataType.Array, 8, 0, 0)
             //    );
         }

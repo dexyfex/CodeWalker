@@ -33,7 +33,7 @@ namespace CodeWalker.Rendering
             }
         }
 
-        public UnitSphere(Device device, byte[] vsbytes, int detail)
+        public UnitSphere(Device device, byte[] vsbytes, int detail, bool invert = false)
         {
 
             InputLayout = new InputLayout(device, vsbytes, new[]
@@ -121,8 +121,8 @@ namespace CodeWalker.Rendering
             foreach (var tri in curtris)
             {
                 idata.Add((uint)tri.v1);
-                idata.Add((uint)tri.v2);
-                idata.Add((uint)tri.v3);
+                idata.Add((uint)(invert ? tri.v3 : tri.v2));
+                idata.Add((uint)(invert ? tri.v2 : tri.v3));
             }
 
 

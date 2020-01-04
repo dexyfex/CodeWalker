@@ -78,6 +78,7 @@ namespace CodeWalker.Rendering
         VertexShader pnctttxvs;
         VertexShader pncttxvs;
         PixelShader terrainps;
+        PixelShader terrainpsdef;
         GpuVarsBuffer<TerrainShaderVSSceneVars> VSSceneVars;
         GpuVarsBuffer<TerrainShaderVSEntityVars> VSEntityVars;
         GpuVarsBuffer<TerrainShaderVSModelVars> VSModelVars;
@@ -92,7 +93,8 @@ namespace CodeWalker.Rendering
         public int RenderVertexColourIndex = 1;
         public int RenderTextureCoordIndex = 1;
         public int RenderTextureSamplerCoord = 1;
-        public MetaName RenderTextureSampler = MetaName.DiffuseSampler;
+        public ShaderParamNames RenderTextureSampler = ShaderParamNames.DiffuseSampler;
+        public bool Deferred = false;
 
         private Dictionary<VertexType, InputLayout> layouts = new Dictionary<VertexType, InputLayout>();
 
@@ -107,6 +109,7 @@ namespace CodeWalker.Rendering
             byte[] vspnctttx = File.ReadAllBytes("Shaders\\TerrainVS_PNCTTTX.cso");
             byte[] vspncttx = File.ReadAllBytes("Shaders\\TerrainVS_PNCTTX.cso");
             byte[] psbytes = File.ReadAllBytes("Shaders\\TerrainPS.cso");
+            byte[] psdefbytes = File.ReadAllBytes("Shaders\\TerrainPS_Deferred.cso");
 
             pncctvs = new VertexShader(device, vspncct);
             pnccttvs = new VertexShader(device, vspncctt);
@@ -116,6 +119,7 @@ namespace CodeWalker.Rendering
             pnctttxvs = new VertexShader(device, vspnctttx);
             pncttxvs = new VertexShader(device, vspncttx);
             terrainps = new PixelShader(device, psbytes);
+            terrainpsdef = new PixelShader(device, psdefbytes);
 
             VSSceneVars = new GpuVarsBuffer<TerrainShaderVSSceneVars>(device);
             VSEntityVars = new GpuVarsBuffer<TerrainShaderVSEntityVars>(device);
@@ -125,14 +129,14 @@ namespace CodeWalker.Rendering
             PSGeomVars = new GpuVarsBuffer<TerrainShaderPSGeomVars>(device);
 
             //supported layouts - requires Position, Normal, Colour, Texcoord
-            layouts.Add(VertexType.PNCCT, new InputLayout(device, vspncct, VertexTypePNCCT.GetLayout()));
-            layouts.Add(VertexType.PNCCTT, new InputLayout(device, vspncctt, VertexTypePNCCTT.GetLayout()));
-            layouts.Add(VertexType.PNCTTX, new InputLayout(device, vspncttx, VertexTypePNCTTX.GetLayout()));
-            layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vspnctttx, VertexTypePNCTTTX_3.GetLayout()));
-            layouts.Add(VertexType.PNCCTX, new InputLayout(device, vspncctx, VertexTypePNCCTX.GetLayout()));
-            layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vspnccttx, VertexTypePNCCTTX.GetLayout()));
-            layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vspnccttx, VertexTypePNCCTTX_2.GetLayout()));
-            layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vspncctttx, VertexTypePNCCTTTX.GetLayout()));
+            layouts.Add(VertexType.PNCCT, new InputLayout(device, vspncct, VertexTypeGTAV.GetLayout(VertexType.PNCCT)));
+            layouts.Add(VertexType.PNCCTT, new InputLayout(device, vspncctt, VertexTypeGTAV.GetLayout(VertexType.PNCCTT)));
+            layouts.Add(VertexType.PNCTTX, new InputLayout(device, vspncttx, VertexTypeGTAV.GetLayout(VertexType.PNCTTX)));
+            layouts.Add(VertexType.PNCTTTX_3, new InputLayout(device, vspnctttx, VertexTypeGTAV.GetLayout(VertexType.PNCTTTX_3)));
+            layouts.Add(VertexType.PNCCTX, new InputLayout(device, vspncctx, VertexTypeGTAV.GetLayout(VertexType.PNCCTX)));
+            layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vspnccttx, VertexTypeGTAV.GetLayout(VertexType.PNCCTTX)));
+            layouts.Add(VertexType.PNCCTTX_2, new InputLayout(device, vspnccttx, VertexTypeGTAV.GetLayout(VertexType.PNCCTTX_2)));
+            layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vspncctttx, VertexTypeGTAV.GetLayout(VertexType.PNCCTTTX)));
 
 
 
@@ -259,7 +263,7 @@ namespace CodeWalker.Rendering
 
         public override void SetShader(DeviceContext context)
         {
-            context.PixelShader.Set(terrainps);
+            context.PixelShader.Set(Deferred ? terrainpsdef : terrainps);
         }
 
         public override bool SetInputLayout(DeviceContext context, VertexType type)
@@ -298,13 +302,13 @@ namespace CodeWalker.Rendering
                 case WorldRenderMode.SingleTexture:
                     switch (RenderTextureSampler)
                     {
-                        case MetaName.DiffuseSampler:
+                        case ShaderParamNames.DiffuseSampler:
                             rendermode = 5;
                             break;
-                        case MetaName.BumpSampler:
+                        case ShaderParamNames.BumpSampler:
                             rendermode = 6;
                             break;
-                        case MetaName.SpecSampler:
+                        case ShaderParamNames.SpecSampler:
                             rendermode = 7;
                             break;
                         default:
@@ -387,40 +391,40 @@ namespace CodeWalker.Rendering
                     var ihash = geom.TextureParamHashes[i];
                     switch (ihash)
                     {
-                        case MetaName.DiffuseSampler:
+                        case ShaderParamNames.DiffuseSampler:
                             texture0 = itex;
                             break;
-                        case MetaName.TextureSampler_layer0:
+                        case ShaderParamNames.TextureSampler_layer0:
                             texture1 = itex;
                             break;
-                        case MetaName.TextureSampler_layer1:
+                        case ShaderParamNames.TextureSampler_layer1:
                             texture2 = itex;
                             break;
-                        case MetaName.TextureSampler_layer2:
+                        case ShaderParamNames.TextureSampler_layer2:
                             texture3 = itex;
                             break;
-                        case MetaName.TextureSampler_layer3:
+                        case ShaderParamNames.TextureSampler_layer3:
                             texture4 = itex;
                             break;
-                        case MetaName.BumpSampler:
+                        case ShaderParamNames.BumpSampler:
                             normals0 = itex;
                             break;
-                        case MetaName.BumpSampler_layer0:
+                        case ShaderParamNames.BumpSampler_layer0:
                             normals1 = itex;
                             break;
-                        case MetaName.BumpSampler_layer1:
+                        case ShaderParamNames.BumpSampler_layer1:
                             normals2 = itex;
                             break;
-                        case MetaName.BumpSampler_layer2:
+                        case ShaderParamNames.BumpSampler_layer2:
                             normals3 = itex;
                             break;
-                        case MetaName.BumpSampler_layer3:
+                        case ShaderParamNames.BumpSampler_layer3:
                             normals4 = itex;
                             break;
-                        case MetaName.lookupSampler:
+                        case ShaderParamNames.lookupSampler:
                             texturemask = itex;
                             break;
-                        case MetaName.TintPaletteSampler:
+                        case ShaderParamNames.TintPaletteSampler:
                             tintpal = itex;
                             if (tintpal.Key != null)
                             {
@@ -494,9 +498,9 @@ namespace CodeWalker.Rendering
                 usevc = false;
                 switch (RenderTextureSampler)
                 {
-                    case MetaName.DiffuseSampler:
-                    case MetaName.BumpSampler:
-                    case MetaName.SpecSampler:
+                    case ShaderParamNames.DiffuseSampler:
+                    case ShaderParamNames.BumpSampler:
+                    case ShaderParamNames.SpecSampler:
                         break;
                     default:
                         for (int i = 0; i < geom.RenderableTextures.Length; i++)
@@ -639,6 +643,7 @@ namespace CodeWalker.Rendering
             PSGeomVars.Dispose();
 
             terrainps.Dispose();
+            terrainpsdef.Dispose();
             pncctvs.Dispose();
             pnccttvs.Dispose();
             pnccttxvs.Dispose();

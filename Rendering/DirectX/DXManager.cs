@@ -63,7 +63,7 @@ namespace CodeWalker.Rendering
                     Usage = Usage.RenderTargetOutput
                 };
 
-                FeatureLevel[] levels = new FeatureLevel[] { FeatureLevel.Level_10_0 };
+                FeatureLevel[] levels = new FeatureLevel[] { FeatureLevel.Level_11_0, FeatureLevel.Level_10_1, FeatureLevel.Level_10_0 };
 
                 DeviceCreationFlags flags = DeviceCreationFlags.None;
                 //#if DEBUG
@@ -322,11 +322,11 @@ namespace CodeWalker.Rendering
         public void ClearRenderTarget(DeviceContext ctx)
         {
             ctx.ClearRenderTargetView(targetview, clearcolour);
-            ctx.ClearDepthStencilView(depthview, DepthStencilClearFlags.Depth, 1.0f, 0);
+            ctx.ClearDepthStencilView(depthview, DepthStencilClearFlags.Depth, 0.0f, 0);
         }
         public void ClearDepth(DeviceContext ctx)
         {
-            ctx.ClearDepthStencilView(depthview, DepthStencilClearFlags.Depth, 1.0f, 0);
+            ctx.ClearDepthStencilView(depthview, DepthStencilClearFlags.Depth, 0.0f, 0);
         }
         public void SetDefaultRenderTarget(DeviceContext ctx)
         {

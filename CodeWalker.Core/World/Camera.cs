@@ -24,8 +24,8 @@ namespace CodeWalker.World
         public float FieldOfView;// 1.0f;
         public float FieldOfViewFactor = 0.5f / (float)Math.Tan(/*FieldOfView*/ 1.0f * 0.5f);
         public float AspectRatio = 1920.0f / 1080.0f;
-        public float ZNear = 0.5f;
-        public float ZFar = 12000.0f;
+        public float ZNear = 0.01f;
+        public float ZFar = 100000.0f;
         public Entity FollowEntity = null;
         public Vector3 LocalLookAt = Vector3.ForwardLH;
         public float VOffset = 0.0f;
@@ -176,15 +176,15 @@ namespace CodeWalker.World
         {
             if (IsMapView)
             {
-                ProjMatrix = Matrix.OrthoRH(AspectRatio * OrthographicSize, OrthographicSize, 1.0f, 3000.0f);
+                ProjMatrix = Matrix.OrthoRH(AspectRatio * OrthographicSize, OrthographicSize, 3000.0f, 1.0f);
             }
             else if (IsOrthographic)
             {
-                ProjMatrix = Matrix.OrthoRH(AspectRatio * OrthographicSize, OrthographicSize, ZNear, ZFar);
+                ProjMatrix = Matrix.OrthoRH(AspectRatio * OrthographicSize, OrthographicSize, ZFar, ZNear);
             }
             else
             {
-                ProjMatrix = Matrix.PerspectiveFovRH(FieldOfView, AspectRatio, ZNear, ZFar);
+                ProjMatrix = Matrix.PerspectiveFovRH(FieldOfView, AspectRatio, ZFar, ZNear);
             }
             //ProjMatrix._33/=ZFar;
             //ProjMatrix._43/=ZFar;
@@ -196,8 +196,8 @@ namespace CodeWalker.World
             float my = MouseY;
             ViewProjMatrix = Matrix.Multiply(ViewMatrix, ProjMatrix);
             ViewProjInvMatrix = Matrix.Invert(ViewProjMatrix);
-            MouseRayNear = ViewProjInvMatrix.MultiplyW(new Vector3(mx, my, 0.0f));
-            MouseRayFar = ViewProjInvMatrix.MultiplyW(new Vector3(mx, my, 1.0f));
+            MouseRayNear = ViewProjInvMatrix.MultiplyW(new Vector3(mx, my, 1.0f));
+            MouseRayFar = ViewProjInvMatrix.MultiplyW(new Vector3(mx, my, 0.0f));
             MouseRay.Position = Vector3.Zero;
             MouseRay.Direction = Vector3.Normalize(MouseRayFar - MouseRayNear);
             if (IsMapView || IsOrthographic)
@@ -249,12 +249,12 @@ namespace CodeWalker.World
             }
         }
 
-        public void ControllerRotate(float x, float y)
+        public void ControllerRotate(float x, float y, float elapsed)
         {
             lock (syncRoot)
             {
-                TargetRotation.X += x;
-                TargetRotation.Y += y;
+                TargetRotation.X += x*elapsed;
+                TargetRotation.Y += y*elapsed;
             }
         }
 
@@ -301,8 +301,8 @@ namespace CodeWalker.World
             Planes[1] = Plane.Normalize(new Plane((vp.M14 - vp.M11), (vp.M24 - vp.M21), (vp.M34 - vp.M31), (vp.M44 - vp.M41)));
             Planes[2] = Plane.Normalize(new Plane((vp.M14 - vp.M12), (vp.M24 - vp.M22), (vp.M34 - vp.M32), (vp.M44 - vp.M42)));
             Planes[3] = Plane.Normalize(new Plane((vp.M14 + vp.M12), (vp.M24 + vp.M22), (vp.M34 + vp.M32), (vp.M44 + vp.M42)));
-            Planes[4] = Plane.Normalize(new Plane((vp.M13), (vp.M23), (vp.M33), 0.0f));//(vp.M43));
-            Planes[5] = Plane.Normalize(new Plane((vp.M14 - vp.M13), (vp.M24 - vp.M23), (vp.M34 - vp.M33), (vp.M44 - vp.M43)));
+            Planes[4] = Plane.Normalize(new Plane((vp.M14 - vp.M13), (vp.M24 - vp.M23), (vp.M34 - vp.M33), (vp.M44 - vp.M43)));
+            Planes[5] = Plane.Normalize(new Plane((vp.M13), (vp.M23), (vp.M33), 0.0f));//(vp.M43));
         }
 
         //public bool ContainsSphere(ref Vector3 c, float cls, float r)
@@ -331,6 +331,18 @@ namespace CodeWalker.World
                 {
                     return false;
                 }
+            }
+            return true;
+        }
+        public bool ContainsAABBNoClip(ref Vector3 cen, ref Vector3 e)
+        {
+            var c = cen - Position;
+            for (int i = 0; i < 5; i++)
+            {
+                var pn = Planes[i].Normal;
+                var d = (c.X * pn.X) + (c.Y * pn.Y) + (c.Z * pn.Z); //Vector3.Dot(c, pn);// 
+                var r = (e.X * (pn.X > 0 ? pn.X : -pn.X)) + (e.Y * (pn.Y > 0 ? pn.Y : -pn.Y)) + (e.Z * (pn.Z > 0 ? pn.Z : -pn.Z)); //Vector3.Dot(e, pn.Abs()); //
+                if ((d + r) < 0) return false;
             }
             return true;
         }

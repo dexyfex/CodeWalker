@@ -84,6 +84,7 @@ namespace CodeWalker.Rendering
         VertexShader vspnct;
         VertexShader vspnctx;
         PixelShader ps;
+        PixelShader psdef;
 
         GpuVarsBuffer<WaterShaderVSSceneVars> VSSceneVars;
         GpuVarsBuffer<WaterShaderVSEntityVars> VSEntityVars;
@@ -103,10 +104,11 @@ namespace CodeWalker.Rendering
         public int RenderVertexColourIndex = 1;
         public int RenderTextureCoordIndex = 1;
         public int RenderTextureSamplerCoord = 1;
-        public MetaName RenderTextureSampler = MetaName.DiffuseSampler;
+        public ShaderParamNames RenderTextureSampler = ShaderParamNames.DiffuseSampler;
         public double CurrentRealTime = 0;
         public float CurrentElapsedTime = 0;
         public bool SpecularEnable = true;
+        public bool Deferred = false;
 
 
         public RenderableTexture waterbump { get; set; }
@@ -124,6 +126,7 @@ namespace CodeWalker.Rendering
             byte[] vspnctbytes = File.ReadAllBytes("Shaders\\WaterVS_PNCT.cso");
             byte[] vspnctxbytes = File.ReadAllBytes("Shaders\\WaterVS_PNCTX.cso");
             byte[] psbytes = File.ReadAllBytes("Shaders\\WaterPS.cso");
+            byte[] psdefbytes = File.ReadAllBytes("Shaders\\WaterPS_Deferred.cso");
 
 
             vspt = new VertexShader(device, vsptbytes);
@@ -131,6 +134,7 @@ namespace CodeWalker.Rendering
             vspnct = new VertexShader(device, vspnctbytes);
             vspnctx = new VertexShader(device, vspnctxbytes);
             ps = new PixelShader(device, psbytes);
+            psdef = new PixelShader(device, psdefbytes);
 
             VSSceneVars = new GpuVarsBuffer<WaterShaderVSSceneVars>(device);
             VSEntityVars = new GpuVarsBuffer<WaterShaderVSEntityVars>(device);
@@ -138,10 +142,10 @@ namespace CodeWalker.Rendering
             PSSceneVars = new GpuVarsBuffer<WaterShaderPSSceneVars>(device);
             PSGeomVars = new GpuVarsBuffer<WaterShaderPSGeomVars>(device);
 
-            layouts.Add(VertexType.PT, new InputLayout(device, vsptbytes, VertexTypePT.GetLayout()));
-            layouts.Add(VertexType.PCT, new InputLayout(device, vspctbytes, VertexTypePCT.GetLayout()));
-            layouts.Add(VertexType.Default, new InputLayout(device, vspnctbytes, VertexTypeDefault.GetLayout()));
-            layouts.Add(VertexType.DefaultEx, new InputLayout(device, vspnctxbytes, VertexTypeDefaultEx.GetLayout()));
+            layouts.Add(VertexType.PT, new InputLayout(device, vsptbytes, VertexTypeGTAV.GetLayout(VertexType.PT)));
+            layouts.Add(VertexType.PCT, new InputLayout(device, vspctbytes, VertexTypeGTAV.GetLayout(VertexType.PCT)));
+            layouts.Add(VertexType.Default, new InputLayout(device, vspnctbytes, VertexTypeGTAV.GetLayout(VertexType.Default)));
+            layouts.Add(VertexType.DefaultEx, new InputLayout(device, vspnctxbytes, VertexTypeGTAV.GetLayout(VertexType.DefaultEx)));
 
             texsampler = new SamplerState(device, new SamplerStateDescription()
             {
@@ -213,7 +217,7 @@ namespace CodeWalker.Rendering
 
         public override void SetShader(DeviceContext context)
         {
-            context.PixelShader.Set(ps);
+            context.PixelShader.Set(Deferred ? psdef : ps);
         }
 
         public override bool SetInputLayout(DeviceContext context, VertexType type)
@@ -351,19 +355,19 @@ namespace CodeWalker.Rendering
                         if (itex == null) continue;
                         switch (ihash)
                         {
-                            case MetaName.DiffuseSampler:
+                            case ShaderParamNames.DiffuseSampler:
                                 texture = itex;
                                 break;
-                            case MetaName.BumpSampler:
+                            case ShaderParamNames.BumpSampler:
                                 bumptex = itex;
                                 break;
-                            case MetaName.FlowSampler:
+                            case ShaderParamNames.FlowSampler:
                                 flowtex = itex;
                                 break;
-                            case MetaName.FoamSampler:
+                            case ShaderParamNames.FoamSampler:
                                 foamtex = itex;
                                 break;
-                            case MetaName.FogSampler:
+                            case ShaderParamNames.FogSampler:
                                 fogtex = itex;
                                 break;
                             default:
@@ -552,6 +556,7 @@ namespace CodeWalker.Rendering
             PSGeomVars.Dispose();
 
             ps.Dispose();
+            psdef.Dispose();
             vspt.Dispose();
             vspct.Dispose();
             vspnct.Dispose();

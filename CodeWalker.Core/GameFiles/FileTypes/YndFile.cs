@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -48,6 +49,7 @@ namespace CodeWalker.GameFiles
         public bool HasChanged { get; set; } = false;
         public List<string> SaveWarnings = null;
 
+        public bool BuildStructsOnSave { get; set; } = true;
 
 
         public YndFile() : base(null, GameFileType.Ynd)
@@ -85,39 +87,7 @@ namespace CodeWalker.GameFiles
 
             NodeDictionary = rd.ReadBlock<NodeDictionary>();
 
-            if (NodeDictionary != null)
-            {
-                if (NodeDictionary.Nodes != null)
-                {
-                    var nodes = NodeDictionary.Nodes;
-                    Nodes = new YndNode[nodes.Length];
-                    for (int i = 0; i < nodes.Length; i++)
-                    {
-                        var n = new YndNode();
-                        n.Init(this, nodes[i]);
-                        Nodes[i] = n;
-                        if (n.NodeID != i)
-                        { } //never hit here - nodeid's have to match the index!
-                    }
-                }
-                if ((NodeDictionary.JunctionRefs != null) && (NodeDictionary.Junctions != null))
-                {
-                    var juncrefs = NodeDictionary.JunctionRefs;
-                    var juncs = NodeDictionary.Junctions;
-                    Junctions = new YndJunction[juncrefs.Length];
-                    for (int i = 0; i < juncrefs.Length; i++)
-                    {
-                        var juncref = NodeDictionary.JunctionRefs[i];
-                        if (juncref.JunctionID >= juncs.Length)
-                        { continue; }
-
-                        var j = new YndJunction();
-                        j.Init(this, juncs[juncref.JunctionID], juncref);
-                        j.Heightmap = new YndJunctionHeightmap(NodeDictionary.JunctionHeightmapBytes, j);
-                        Junctions[i] = j;
-                    }
-                }
-            }
+            InitNodesFromDictionary();
 
             UpdateAllNodePositions();
 
@@ -143,8 +113,10 @@ namespace CodeWalker.GameFiles
 
         public byte[] Save()
         {
-
-            BuildStructs();
+            if (BuildStructsOnSave)
+            {
+                BuildStructs();
+            }
 
             byte[] data = ResourceBuilder.Build(NodeDictionary, 1); //ynd is version 1...
 
@@ -242,6 +214,44 @@ namespace CodeWalker.GameFiles
         }
 
 
+
+
+        public void InitNodesFromDictionary()
+        {
+            if (NodeDictionary != null)
+            {
+                if (NodeDictionary.Nodes != null)
+                {
+                    var nodes = NodeDictionary.Nodes;
+                    Nodes = new YndNode[nodes.Length];
+                    for (int i = 0; i < nodes.Length; i++)
+                    {
+                        var n = new YndNode();
+                        n.Init(this, nodes[i]);
+                        Nodes[i] = n;
+                        if (n.NodeID != i)
+                        { } //never hit here - nodeid's have to match the index!
+                    }
+                }
+                if ((NodeDictionary.JunctionRefs != null) && (NodeDictionary.Junctions != null))
+                {
+                    var juncrefs = NodeDictionary.JunctionRefs;
+                    var juncs = NodeDictionary.Junctions;
+                    Junctions = new YndJunction[juncrefs.Length];
+                    for (int i = 0; i < juncrefs.Length; i++)
+                    {
+                        var juncref = juncrefs[i];
+                        if (juncref.JunctionID >= juncs.Length)
+                        { continue; }
+
+                        var j = new YndJunction();
+                        j.Init(this, juncs[juncref.JunctionID], juncref);
+                        j.Heightmap = new YndJunctionHeightmap(NodeDictionary.JunctionHeightmapBytes, j);
+                        Junctions[i] = j;
+                    }
+                }
+            }
+        }
 
         public YndNode AddNode()
         {
@@ -1304,6 +1314,87 @@ namespace CodeWalker.GameFiles
         Vector4[] GetNodePositions();
     }
 
-    
+
+
+
+
+
+
+
+
+
+    public class YndXml : MetaXmlBase
+    {
+
+        public static string GetXml(YndFile ynd)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(XmlHeader);
+
+            if ((ynd != null) && (ynd.NodeDictionary != null))
+            {
+                var name = "NodeDictionary";
+
+                OpenTag(sb, 0, name);
+
+                ynd.NodeDictionary.WriteXml(sb, 1);
+
+                CloseTag(sb, 0, name);
+            }
+
+            return sb.ToString();
+        }
+
+    }
+
+
+    public class XmlYnd
+    {
+
+        public static YndFile GetYnd(string xml)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            return GetYnd(doc);
+        }
+
+        public static YndFile GetYnd(XmlDocument doc)
+        {
+            YndFile ynd = new YndFile();
+            ynd.NodeDictionary = new NodeDictionary();
+            ynd.NodeDictionary.ReadXml(doc.DocumentElement);
+            ynd.InitNodesFromDictionary();
+            ynd.BuildStructsOnSave = false; //structs don't need to be rebuilt here!
+            return ynd;
+        }
+
+
+
+
+
+        public static TextHash GetTextHash(string str)
+        {
+            if (string.IsNullOrEmpty(str))
+            {
+                return 0;
+            }
+            if (str.StartsWith("hash_"))
+            {
+                return Convert.ToUInt32(str.Substring(5), 16);
+            }
+            else
+            {
+                uint h = GlobalText.TryFindHash(str);
+                if (h != 0)
+                {
+                    return h;
+                }
+
+                return JenkHash.GenHash(str);
+            }
+        }
+
+    }
+
 
 }

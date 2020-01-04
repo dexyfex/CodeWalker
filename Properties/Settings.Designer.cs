@@ -734,5 +734,17 @@ namespace CodeWalker.Properties {
                 this["ExplorerWindowTheme"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Deferred {
+            get {
+                return ((bool)(this["Deferred"]));
+            }
+            set {
+                this["Deferred"] = value;
+            }
+        }
     }
 }

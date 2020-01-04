@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
 {
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public class YftFile : GameFile, PackedFile
     {
         public FragType Fragment { get; set; }
@@ -33,13 +35,18 @@ namespace CodeWalker.GameFiles
 
             Fragment = rd.ReadBlock<FragType>();
 
-            if (Fragment.Drawable != null)
+            if (Fragment != null)
             {
-                Fragment.Drawable.Owner = this;
-            }
-            if (Fragment.Drawable2 != null)
-            {
-                Fragment.Drawable2.Owner = this;
+                Fragment.Yft = this;
+
+                if (Fragment.Drawable != null)
+                {
+                    Fragment.Drawable.Owner = this;
+                }
+                if (Fragment.Drawable2 != null)
+                {
+                    Fragment.Drawable2.Owner = this;
+                }
             }
 
             Loaded = true;

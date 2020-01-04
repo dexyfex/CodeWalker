@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Windows.Forms;
 using CodeWalker.Properties;
+using Microsoft.Win32;
 
 namespace CodeWalker
 {
@@ -52,6 +53,13 @@ namespace CodeWalker
             string origFolder = CurrentGTAFolder;
             string folder = CurrentGTAFolder;
             SelectFolderForm f = new SelectFolderForm();
+
+            string autoFolder = AutoDetectFolder(out string source);
+            if (autoFolder != null && MessageBox.Show($"Auto-detected game folder \"{autoFolder}\" from {source}.\n\nContinue with auto-detected folder?", "Auto-detected game folder", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1) == DialogResult.Yes)
+            {
+                f.SelectedFolder = autoFolder;
+            }
+
             f.ShowDialog();
             if(f.Result == DialogResult.OK && Directory.Exists(f.SelectedFolder))
             {
@@ -95,5 +103,57 @@ namespace CodeWalker
 
         public static string GetCurrentGTAFolderWithTrailingSlash() =>CurrentGTAFolder.EndsWith(@"\") ? CurrentGTAFolder : CurrentGTAFolder + @"\";
 
+        public static bool AutoDetectFolder(out Dictionary<string, string> matches)
+        {
+            matches = new Dictionary<string, string>();
+
+            if(ValidateGTAFolder(CurrentGTAFolder))
+            {
+                matches.Add("Current CodeWalker Folder", CurrentGTAFolder);
+            }
+
+            RegistryKey baseKey32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+            string steamPathValue = baseKey32.OpenSubKey(@"Software\Rockstar Games\GTAV")?.GetValue("InstallFolderSteam") as string;
+            string retailPathValue = baseKey32.OpenSubKey(@"Software\Rockstar Games\Grand Theft Auto V")?.GetValue("InstallFolder") as string;
+            string oivPathValue = Registry.CurrentUser.OpenSubKey(@"Software\NewTechnologyStudio\OpenIV.exe\BrowseForFolder")?.GetValue("game_path_Five_pc") as string;
+
+            if(steamPathValue?.EndsWith("\\GTAV") == true)
+            {
+                steamPathValue = steamPathValue.Substring(0, steamPathValue.LastIndexOf("\\GTAV"));
+            }
+
+            if(ValidateGTAFolder(steamPathValue))
+            {
+                matches.Add("Steam", steamPathValue);
+            }
+
+            if(ValidateGTAFolder(retailPathValue))
+            {
+                matches.Add("Retail", retailPathValue);
+            }
+
+            if(ValidateGTAFolder(oivPathValue))
+            {
+                matches.Add("OpenIV", oivPathValue);
+            }
+
+            return matches.Count > 0;
+        }
+
+        public static string AutoDetectFolder(out string source)
+        {
+            source = null;
+
+            if(AutoDetectFolder(out Dictionary<string, string> matches))
+            {
+                var match = matches.First();
+                source = match.Key;
+                return match.Value;
+            }
+
+            return null;
+        }
+
+        public static string AutoDetectFolder() => AutoDetectFolder(out string _);
     }
 }

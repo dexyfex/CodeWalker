@@ -80,9 +80,8 @@ namespace CodeWalker
 
 
 
-        public void Update(float elapsed)
+        public void Update()
         {
-            if (elapsed > 0.1f) elapsed = 0.1f;
 
             var s = Settings.Default;
 
@@ -103,8 +102,8 @@ namespace CodeWalker
                 xbry = xbmainaxes.W;
                 xblt = xbtrigs.X;
                 xbrt = xbtrigs.Y;
-                float lamt = s.XInputLThumbSensitivity * elapsed;
-                float ramt = s.XInputRThumbSensitivity * elapsed;
+                float lamt = s.XInputLThumbSensitivity;
+                float ramt = s.XInputRThumbSensitivity;
                 xbly = s.XInputLThumbInvert ? xbly : -xbly;
                 xbry = s.XInputRThumbInvert ? xbry : -xbry;
                 xblx *= lamt;

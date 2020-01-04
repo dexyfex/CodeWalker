@@ -46,6 +46,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -66,6 +67,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -86,6 +88,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\CW.ico</ApplicationIcon>
@@ -137,17 +140,61 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AboutForm.cs">
+    <Compile Include="Project\Panels\EditYbnBoundPolyPanel.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AboutForm.Designer.cs">
+    <Compile Include="Project\Panels\EditYbnBoundPolyPanel.Designer.cs">
+      <DependentUpon>EditYbnBoundPolyPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditYbnBoundsPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYbnBoundsPanel.Designer.cs">
+      <DependentUpon>EditYbnBoundsPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditYbnPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYbnPanel.Designer.cs">
+      <DependentUpon>EditYbnPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypMloEntSetPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypMloEntSetPanel.Designer.cs">
+      <DependentUpon>EditYtypMloEntSetPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypMloPortalPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYtypMloPortalPanel.Designer.cs">
+      <DependentUpon>EditYtypMloPortalPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Rendering\Shaders\DeferredScene.cs" />
+    <Compile Include="Rendering\Utils\UnitCone.cs" />
+    <Compile Include="Tools\AboutForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Tools\AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\GenericForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\GenericForm.Designer.cs">
+      <DependentUpon>GenericForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\ModelMatForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\ModelMatForm.Designer.cs">
       <DependentUpon>ModelMatForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PedsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PedsForm.Designer.cs">
+      <DependentUpon>PedsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\Panels\GenerateLODLightsPanel.cs">
       <SubType>Form</SubType>
@@ -295,10 +342,10 @@
     <Compile Include="Tools\JenkIndForm.Designer.cs">
       <DependentUpon>JenkIndForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="KeyBindForm.cs">
+    <Compile Include="Utils\KeyBindForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="KeyBindForm.Designer.cs">
+    <Compile Include="Utils\KeyBindForm.Designer.cs">
       <DependentUpon>KeyBindForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MenuForm.cs">
@@ -387,11 +434,11 @@
     <Compile Include="Project\Panels\EditYmapCarGenPanel.Designer.cs">
       <DependentUpon>EditYmapCarGenPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Project\Panels\EditYtypArchetypeMloRoomPanel.cs">
+    <Compile Include="Project\Panels\EditYtypMloRoomPanel.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Project\Panels\EditYtypArchetypeMloRoomPanel.Designer.cs">
-      <DependentUpon>EditYtypArchetypeMloRoomPanel.cs</DependentUpon>
+    <Compile Include="Project\Panels\EditYtypMloRoomPanel.Designer.cs">
+      <DependentUpon>EditYtypMloRoomPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="Project\Panels\EditYmapEntityPanel.cs">
       <SubType>Form</SubType>
@@ -521,23 +568,29 @@
     <Compile Include="Rendering\Utils\UnitDisc.cs" />
     <Compile Include="Rendering\Utils\UnitSphere.cs" />
     <Compile Include="Rendering\VertexTypes.cs" />
-    <Compile Include="SelectFolderForm.cs">
+    <Compile Include="Utils\SelectFolderForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SelectFolderForm.Designer.cs">
+    <Compile Include="Utils\SelectFolderForm.Designer.cs">
       <DependentUpon>SelectFolderForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs" />
-    <Compile Include="SettingsForm.cs">
+    <Compile Include="World\CutsceneForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SettingsForm.Designer.cs">
+    <Compile Include="World\CutsceneForm.Designer.cs">
+      <DependentUpon>CutsceneForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="World\SettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="World\SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="StatisticsForm.cs">
+    <Compile Include="World\StatisticsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="StatisticsForm.Designer.cs">
+    <Compile Include="World\StatisticsForm.Designer.cs">
       <DependentUpon>StatisticsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\TextInputForm.cs">
@@ -552,22 +605,22 @@
     <Compile Include="Utils\MapUtils.cs" />
     <Compile Include="GameFiles\TextureFormats.cs" />
     <Compile Include="Utils\TextureLoader.cs" />
-    <Compile Include="Vehicles\VehicleForm.cs">
+    <Compile Include="VehicleForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Vehicles\VehicleForm.Designer.cs">
+    <Compile Include="VehicleForm.Designer.cs">
       <DependentUpon>VehicleForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="WorldInfoForm.cs">
+    <Compile Include="World\WorldInfoForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WorldInfoForm.Designer.cs">
+    <Compile Include="World\WorldInfoForm.Designer.cs">
       <DependentUpon>WorldInfoForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="WorldSearchForm.cs">
+    <Compile Include="World\WorldSearchForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WorldSearchForm.Designer.cs">
+    <Compile Include="World\WorldSearchForm.Designer.cs">
       <DependentUpon>WorldSearchForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Rendering\DirectX\DXForm.cs" />
@@ -586,11 +639,32 @@
       <DependentUpon>WorldForm.cs</DependentUpon>
     </Compile>
     <Compile Include="World\Widget.cs" />
-    <EmbeddedResource Include="AboutForm.resx">
+    <EmbeddedResource Include="Project\Panels\EditYbnBoundPolyPanel.resx">
+      <DependentUpon>EditYbnBoundPolyPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYbnBoundsPanel.resx">
+      <DependentUpon>EditYbnBoundsPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYbnPanel.resx">
+      <DependentUpon>EditYbnPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYtypMloEntSetPanel.resx">
+      <DependentUpon>EditYtypMloEntSetPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYtypMloPortalPanel.resx">
+      <DependentUpon>EditYtypMloPortalPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Tools\AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\GenericForm.resx">
+      <DependentUpon>GenericForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ModelMatForm.resx">
       <DependentUpon>ModelMatForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PedsForm.resx">
+      <DependentUpon>PedsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\GenerateLODLightsPanel.resx">
       <DependentUpon>GenerateLODLightsPanel.cs</DependentUpon>
@@ -664,7 +738,7 @@
     <EmbeddedResource Include="Tools\JenkIndForm.resx">
       <DependentUpon>JenkIndForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="KeyBindForm.resx">
+    <EmbeddedResource Include="Utils\KeyBindForm.resx">
       <DependentUpon>KeyBindForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MenuForm.resx">
@@ -709,8 +783,8 @@
     <EmbeddedResource Include="Project\Panels\EditYmapCarGenPanel.resx">
       <DependentUpon>EditYmapCarGenPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Project\Panels\EditYtypArchetypeMloRoomPanel.resx">
-      <DependentUpon>EditYtypArchetypeMloRoomPanel.cs</DependentUpon>
+    <EmbeddedResource Include="Project\Panels\EditYtypMloRoomPanel.resx">
+      <DependentUpon>EditYtypMloRoomPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYmapEntityPanel.resx">
       <DependentUpon>EditYmapEntityPanel.cs</DependentUpon>
@@ -773,28 +847,31 @@
     <EmbeddedResource Include="Tools\BinarySearchForm.resx">
       <DependentUpon>BinarySearchForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SelectFolderForm.resx">
+    <EmbeddedResource Include="Utils\SelectFolderForm.resx">
       <DependentUpon>SelectFolderForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SettingsForm.resx">
+    <EmbeddedResource Include="World\CutsceneForm.resx">
+      <DependentUpon>CutsceneForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="World\SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="StatisticsForm.resx">
+    <EmbeddedResource Include="World\StatisticsForm.resx">
       <DependentUpon>StatisticsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Utils\TextInputForm.resx">
       <DependentUpon>TextInputForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Vehicles\VehicleForm.resx">
+    <EmbeddedResource Include="VehicleForm.resx">
       <DependentUpon>VehicleForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WorldForm.resx">
       <DependentUpon>WorldForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WorldInfoForm.resx">
+    <EmbeddedResource Include="World\WorldInfoForm.resx">
       <DependentUpon>WorldInfoForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="WorldSearchForm.resx">
+    <EmbeddedResource Include="World\WorldSearchForm.resx">
       <DependentUpon>WorldSearchForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />

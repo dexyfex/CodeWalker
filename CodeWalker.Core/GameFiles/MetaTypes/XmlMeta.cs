@@ -15,9 +15,12 @@ namespace CodeWalker.GameFiles
 
             Traverse(doc.DocumentElement, mb, 0, true);
 
-            var meta = mb.GetMeta();
+            XmlNode metaName = doc.DocumentElement.Attributes.GetNamedItem("name");
 
-            return meta;
+            if (metaName != null)
+                return mb.GetMeta(metaName.Value);
+            else
+                return mb.GetMeta();
         }
 
         private static byte[] Traverse(XmlNode node, MetaBuilder mb, MetaName type = 0, bool isRoot = false)
@@ -58,7 +61,7 @@ namespace CodeWalker.GameFiles
 
                     var cnode = GetEntryNode(node.ChildNodes, entry);
 
-                    if (entry.EntryNameHash == MetaName.ARRAYINFO)
+                    if (entry.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO)
                     {
                         arrEntry = entry;
                         continue;
@@ -142,7 +145,7 @@ namespace CodeWalker.GameFiles
                                         bytes.Add(val);
                                     }
                                 }
-                                var ptr = mb.AddDataBlockPtr(bytes.ToArray(), MetaName.BYTE);
+                                var ptr = mb.AddDataBlockPtr(bytes.ToArray(), (MetaName)MetaTypeName.BYTE);
                                 var byt = MetaTypes.ConvertToBytes(ptr);
                                 Buffer.BlockCopy(byt, 0, data, entry.DataOffset, byt.Length);
                                 break;
@@ -810,6 +813,96 @@ namespace CodeWalker.GameFiles
 
             return 0;
         }
+
+
+
+        public static T[] ReadItemArray<T>(XmlNode node, string name) where T : IMetaXmlItem, new()
+        {
+            var vnode2 = node.SelectSingleNode(name);
+            if (vnode2 != null)
+            {
+                var inodes = vnode2.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    var vlist = new List<T>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        var v = new T();
+                        v.ReadXml(inode);
+                        vlist.Add(v);
+                    }
+                    return vlist.ToArray();
+                }
+            }
+            return null;
+        }
+
+        public static T[] ReadItemArrayNullable<T>(XmlNode node, string name) where T : IMetaXmlItem, new()
+        {
+            var vnode2 = node.SelectSingleNode(name);
+            if (vnode2 != null)
+            {
+                var inodes = vnode2.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    var vlist = new List<T>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        if (inode.HasChildNodes)
+                        {
+                            var v = new T();
+                            v.ReadXml(inode);
+                            vlist.Add(v);
+                        }
+                        else
+                        {
+                            vlist.Add(default(T));
+                        }
+                    }
+                    return vlist.ToArray();
+                }
+            }
+            return null;
+        }
+
+
+        public static MetaHash[] ReadHashItemArray(XmlNode node, string name)
+        {
+            var vnode = node.SelectSingleNode(name);
+            if (vnode != null)
+            {
+                var inodes = vnode.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    var vlist = new List<MetaHash>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        vlist.Add(GetHash(inode.InnerText));
+                    }
+                    return vlist.ToArray();
+                }
+            }
+            return null;
+        }
+        public static string[] ReadStringItemArray(XmlNode node, string name)
+        {
+            var vnode = node.SelectSingleNode(name);
+            if (vnode != null)
+            {
+                var inodes = vnode.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    var vlist = new List<string>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        vlist.Add(inode.InnerText);
+                    }
+                    return vlist.ToArray();
+                }
+            }
+            return null;
+        }
+
     }
 
     struct ArrayResults

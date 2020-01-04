@@ -187,6 +187,7 @@ namespace CodeWalker
         public MCMloRoomDef MloRoomDef { get; set; }
         public WaterQuad WaterQuad { get; set; }
         public Bounds CollisionBounds { get; set; }
+        public BoundPolygon CollisionPoly { get; set; }
         public YnvPoly NavPoly { get; set; }
         public YnvPoint NavPoint { get; set; }
         public YnvPortal NavPortal { get; set; }
@@ -200,6 +201,8 @@ namespace CodeWalker
         public bool MultipleSelection { get; set; }
         public Vector3 MultipleSelectionCenter { get; set; }
 
+        public Vector3 BBOffset { get; set; }
+        public Quaternion BBOrientation { get; set; }
         public BoundingBox AABB { get; set; }
         public BoundingSphere BSphere { get; set; }
         public int GeometryIndex { get; set; }
@@ -222,6 +225,7 @@ namespace CodeWalker
                     (GrassBatch != null) ||
                     (WaterQuad != null) ||
                     (CollisionBounds != null) ||
+                    (CollisionPoly != null) ||
                     (NavPoly != null) ||
                     (NavPoint != null) ||
                     (NavPortal != null) ||
@@ -259,6 +263,7 @@ namespace CodeWalker
                 || (OccludeModel != mhit.OccludeModel)
                 || (WaterQuad != mhit.WaterQuad)
                 || (CollisionBounds != mhit.CollisionBounds)
+                || (CollisionPoly != mhit.CollisionPoly)
                 || (NavPoly != mhit.NavPoly)
                 || (NavPoint != mhit.NavPoint)
                 || (NavPortal != mhit.NavPortal)
@@ -284,6 +289,7 @@ namespace CodeWalker
                 || (OccludeModel != null)
                 || (WaterQuad != null)
                 || (CollisionBounds != null)
+                || (CollisionPoly != null)
                 || (NavPoly != null)
                 || (NavPoint != null)
                 || (NavPortal != null)
@@ -311,6 +317,7 @@ namespace CodeWalker
             OccludeModel = null;
             WaterQuad = null;
             CollisionBounds = null;
+            CollisionPoly = null;
             NavPoly = null;
             NavPoint = null;
             NavPortal = null;
@@ -363,6 +370,10 @@ namespace CodeWalker
             else if (OccludeModel != null)
             {
                 name = "OccludeModel " + (OccludeModel.Ymap?.Name ?? "") + ": " + OccludeModel.Index.ToString();
+            }
+            else if (CollisionPoly != null)
+            {
+                name = "Poly " + CollisionPoly.Index.ToString() + ((CollisionBounds != null) ? (": " + CollisionBounds.GetName()) : string.Empty);
             }
             else if (CollisionBounds != null)
             {
@@ -429,6 +440,10 @@ namespace CodeWalker
             else if (Archetype != null)
             {
                 name = Archetype.Hash.ToString();
+            }
+            else if (CollisionPoly != null)
+            {
+                name = "Poly " + CollisionPoly.Index.ToString() + ((CollisionBounds != null) ? (": " + CollisionBounds.GetName()) : string.Empty);
             }
             else if (CollisionBounds != null)
             {
@@ -525,6 +540,14 @@ namespace CodeWalker
                 {
                     res = true;
                 }
+                else if (CollisionPoly != null)
+                {
+                    res = true;
+                }
+                else if (CollisionBounds != null)
+                {
+                    res = true;
+                }
                 else if (NavPoint != null)
                 {
                     res = true;
@@ -567,6 +590,14 @@ namespace CodeWalker
                 else if (CarGenerator != null)
                 {
                     return CarGenerator.Position;
+                }
+                else if (CollisionPoly != null)
+                {
+                    return CollisionPoly.Position;
+                }
+                else if (CollisionBounds != null)
+                {
+                    return CollisionBounds.Position;
                 }
                 else if (NavPoly != null)
                 {
@@ -615,6 +646,14 @@ namespace CodeWalker
                 {
                     return CarGenerator.Orientation;
                 }
+                else if (CollisionPoly != null)
+                {
+                    return Quaternion.Identity;
+                }
+                else if (CollisionBounds != null)
+                {
+                    return Quaternion.Identity;
+                }
                 else if (NavPoly != null)
                 {
                     return Quaternion.Identity;
@@ -662,6 +701,14 @@ namespace CodeWalker
                 {
                     return WidgetAxis.Z;
                 }
+                else if (CollisionPoly != null)
+                {
+                    return WidgetAxis.XYZ;
+                }
+                else if (CollisionBounds != null)
+                {
+                    return WidgetAxis.XYZ;
+                }
                 else if (NavPoly != null)
                 {
                     return WidgetAxis.XYZ;
@@ -708,6 +755,14 @@ namespace CodeWalker
                 else if (CarGenerator != null)
                 {
                     return new Vector3(CarGenerator.CCarGen.perpendicularLength);
+                }
+                else if (CollisionPoly != null)
+                {
+                    return Vector3.One;
+                }
+                else if (CollisionBounds != null)
+                {
+                    return Vector3.One;
                 }
                 else if (NavPoly != null)
                 {
@@ -769,14 +824,17 @@ namespace CodeWalker
             {
                 PathNode.SetPosition(newpos);
             }
+            else if (CollisionPoly != null)
+            {
+                CollisionPoly.Position = newpos;
+            }
+            else if (CollisionBounds != null)
+            {
+                CollisionBounds.Position = newpos;
+            }
             else if (NavPoly != null)
             {
                 NavPoly.SetPosition(newpos);
-
-                //if (projectForm != null)
-                //{
-                //    projectForm.OnWorldNavPolyModified(NavPoly);
-                //}
             }
             else if (NavPoint != null)
             {

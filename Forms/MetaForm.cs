@@ -303,6 +303,20 @@ namespace CodeWalker.Forms
                 if (cut.Pso != null) metaFormat = MetaFormat.PSO;
             }
         }
+        public void LoadMeta(YndFile ynd)
+        {
+            var fn = ((ynd?.RpfFileEntry?.Name) ?? "") + ".xml";
+            Xml = MetaXml.GetXml(ynd, out fn);
+            FileName = fn;
+            RawPropertyGrid.SelectedObject = ynd;
+            rpfFileEntry = ynd?.RpfFileEntry;
+            modified = false;
+            metaFormat = MetaFormat.XML;
+            if (ynd?.RpfFileEntry != null)
+            {
+                metaFormat = MetaFormat.Ynd;
+            }
+        }
         public void LoadMeta(CacheDatFile cachedat)
         {
             var fn = ((cachedat?.FileEntry?.Name) ?? "") + ".xml";
@@ -359,8 +373,23 @@ namespace CodeWalker.Forms
                         data = pso.Save();
                         break;
                     case MetaFormat.RBF:
-                        MessageBox.Show("Sorry, RBF import is not supported.", "Cannot import RBF XML");
-                        return false;
+                        var rbf = XmlRbf.GetRbf(doc);
+                        if (rbf.current == null)
+                        {
+                            MessageBox.Show("Schema not supported.", "Cannot import RBF XML");
+                            return false;
+                        }
+                        data = rbf.Save();
+                        break;
+                    case MetaFormat.Ynd:
+                        var ynd = XmlYnd.GetYnd(doc);
+                        if (ynd.NodeDictionary == null)
+                        {
+                            MessageBox.Show("Schema not supported.", "Cannot import YND XML");
+                            return false;
+                        }
+                        data = ynd.Save();
+                        break;
                     case MetaFormat.CacheFile:
                         MessageBox.Show("Sorry, CacheFile import is not supported.", "Cannot import CacheFile XML");
                         return false;

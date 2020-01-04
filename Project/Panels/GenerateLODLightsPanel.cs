@@ -154,7 +154,7 @@ namespace CodeWalker.Project.Panels
                                         for (int j = 0; j < skeleton.Bones.Data.Count; j++)
                                         {
                                             var tbone = skeleton.Bones.Data[j];
-                                            if (tbone.Id == la.BoneId)
+                                            if (tbone.Tag == la.BoneId)
                                             {
                                                 boneidx = j;
                                                 bone = tbone;
@@ -180,14 +180,14 @@ namespace CodeWalker.Project.Panels
                                                 xform = modeltransforms[boneidx];
                                                 xform.Column4 = Vector4.UnitW;
                                                 //xform = Matrix.Identity;
-                                                ushort[] pinds = skeleton.ParentIndices;
-                                                ushort parentind = ((pinds != null) && (boneidx < pinds.Length)) ? pinds[boneidx] : (ushort)65535;
-                                                while (parentind < pinds.Length)
+                                                short[] pinds = skeleton.ParentIndices;
+                                                short parentind = ((pinds != null) && (boneidx < pinds.Length)) ? pinds[boneidx] : (short)-1;
+                                                while ((parentind >= 0) && (parentind < pinds.Length))
                                                 {
                                                     Matrix ptrans = (parentind < modeltransforms.Length) ? modeltransforms[parentind] : Matrix.Identity;
                                                     ptrans.Column4 = Vector4.UnitW;
                                                     xform = Matrix.Multiply(ptrans, xform);
-                                                    parentind = ((pinds != null) && (parentind < pinds.Length)) ? pinds[parentind] : (ushort)65535;
+                                                    parentind = ((pinds != null) && (parentind < pinds.Length)) ? pinds[parentind] : (short)-1;
                                                 }
                                             }
                                         }
@@ -195,8 +195,8 @@ namespace CodeWalker.Project.Panels
 
 
 
-                                    Vector3 lpos = new Vector3(la.PositionX, la.PositionY, la.PositionZ);
-                                    Vector3 ldir = new Vector3(la.DirectionX, la.DirectionY, la.DirectionZ);
+                                    Vector3 lpos = la.Position;
+                                    Vector3 ldir = la.Direction;
                                     Vector3 bpos = xform.Multiply(lpos);
                                     Vector3 bdir = xform.MultiplyRot(ldir);
                                     Vector3 epos = ent.Orientation.Multiply(bpos) + ent.Position;
@@ -229,11 +229,11 @@ namespace CodeWalker.Project.Panels
                                     //1 = point
                                     //2 = spot
                                     //4 = capsule
-                                    uint type = la.Type;
+                                    uint type = (uint)la.Type;
                                     uint unk = isStreetLight ? 1u : 0;//2 bits - isStreetLight low bit, unk high bit
                                     uint t = la.TimeFlags | (type << 26) | (unk << 24);
 
-                                    var maxext = (byte)Math.Max(Math.Max(la.ExtentX, la.ExtentY), la.ExtentZ);
+                                    var maxext = (byte)Math.Max(Math.Max(la.Extent.X, la.Extent.Y), la.Extent.Z);
 
 
 

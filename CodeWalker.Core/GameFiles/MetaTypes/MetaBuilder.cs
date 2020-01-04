@@ -92,7 +92,7 @@ namespace CodeWalker.GameFiles
 
         public MetaBuilderPointer AddString(string str)
         {
-            MetaBuilderBlock block = EnsureBlock(MetaName.STRING);
+            MetaBuilderBlock block = EnsureBlock((MetaName)MetaTypeName.STRING);
             byte[] data = Encoding.ASCII.GetBytes(str);
             int datalen = data.Length;
             int newlen = datalen + 1; //include null terminator
@@ -110,13 +110,13 @@ namespace CodeWalker.GameFiles
         public MetaPOINTER AddItemPtr<T>(MetaName type, T item) where T : struct //helper method for AddItem<T>
         {
             var ptr = AddItem(type, item);
-            return new MetaPOINTER(ptr.BlockID, ptr.Offset, 0);
+            return new MetaPOINTER(ptr.BlockID, ptr.Offset);
         }
 
         public MetaPOINTER AddItemPtr(MetaName type, byte[] data)//helper method for AddItem<T>
         {
             var ptr = AddItem(type, data);
-            return new MetaPOINTER(ptr.BlockID, ptr.Offset, 0);
+            return new MetaPOINTER(ptr.BlockID, ptr.Offset);
         }
 
         public Array_Structure AddItemArrayPtr<T>(MetaName type, T[] items) where T : struct //helper method for AddItemArray<T>
@@ -154,37 +154,37 @@ namespace CodeWalker.GameFiles
         public Array_Vector3 AddPaddedVector3ArrayPtr(Vector4[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_Vector3();
-            var ptr = AddItemArray(MetaName.VECTOR4, items); //padded to vec4...
+            var ptr = AddItemArray((MetaName)MetaTypeName.VECTOR4, items); //padded to vec4...
             return new Array_Vector3(ptr);
         }
         public Array_uint AddHashArrayPtr(MetaHash[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_uint();
-            var ptr = AddItemArray(MetaName.HASH, items);
+            var ptr = AddItemArray((MetaName)MetaTypeName.HASH, items);
             return new Array_uint(ptr);
         }
         public Array_uint AddUintArrayPtr(uint[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_uint();
-            var ptr = AddItemArray(MetaName.UINT, items);
+            var ptr = AddItemArray((MetaName)MetaTypeName.UINT, items);
             return new Array_uint(ptr);
         }
         public Array_ushort AddUshortArrayPtr(ushort[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_ushort();
-            var ptr = AddItemArray(MetaName.USHORT, items);
+            var ptr = AddItemArray((MetaName)MetaTypeName.USHORT, items);
             return new Array_ushort(ptr);
         }
         public Array_byte AddByteArrayPtr(byte[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_byte();
-            var ptr = AddItemArray(MetaName.BYTE, items);
+            var ptr = AddItemArray((MetaName)MetaTypeName.BYTE, items);
             return new Array_byte(ptr);
         }
         public Array_float AddFloatArrayPtr(float[] items)
         {
             if ((items == null) || (items.Length == 0)) return new Array_float();
-            var ptr = AddItemArray(MetaName.FLOAT, items);
+            var ptr = AddItemArray((MetaName)MetaTypeName.FLOAT, items);
             return new Array_float(ptr);
         }
         public CharPointer AddStringPtr(string str) //helper method for AddString
@@ -205,7 +205,7 @@ namespace CodeWalker.GameFiles
         public Array_StructurePointer AddPointerArray(MetaPOINTER[] arr)
         {
             if ((arr == null) || (arr.Length == 0)) return new Array_StructurePointer();
-            var ptr = AddItemArray(MetaName.POINTER, arr);
+            var ptr = AddItemArray((MetaName)MetaTypeName.POINTER, arr);
             Array_StructurePointer sp = new Array_StructurePointer();
             sp.Count1 = (ushort)arr.Length;
             sp.Count2 = sp.Count1;
@@ -232,7 +232,7 @@ namespace CodeWalker.GameFiles
             //{
             //    var item = items[i];
             //    var meptr = AddItemPtr(type, item);
-            //    var mptr = AddItem(MetaName.POINTER, meptr);
+            //    var mptr = AddItem((MetaName)MetaTypeName.POINTER, meptr);
             //    if (i == 0)
             //    {
             //        sp.Pointer = mptr.Pointer; //main pointer points to the first item.
@@ -261,7 +261,7 @@ namespace CodeWalker.GameFiles
             //{
             //    var item = items[i];
             //    var meptr = item.Save(this);
-            //    var mptr = AddItem(MetaName.POINTER, meptr);
+            //    var mptr = AddItem((MetaName)MetaTypeName.POINTER, meptr);
             //    if (i == 0)
             //    {
             //        sp.Pointer = mptr.Pointer; //main pointer points to the first item.
@@ -348,7 +348,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public Meta GetMeta()
+        public Meta GetMeta(string metaName = "")
         {
             Meta m = new Meta();
             m.FileVFT = 0x405bc808;
@@ -394,6 +394,8 @@ namespace CodeWalker.GameFiles
                 m.DataBlocks.Add(bb.GetMetaDataBlock());
             }
             m.DataBlocksCount = (short)m.DataBlocks.Count;
+
+            m.Name = metaName;
 
             return m;
         }

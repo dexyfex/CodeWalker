@@ -62,7 +62,7 @@ namespace CodeWalker.GameFiles
                     var entry = infos.Entries[i];
                     var cnode = GetEntryNode(node.ChildNodes, entry.EntryNameHash);
 
-                    if (entry.EntryNameHash == MetaName.ARRAYINFO)
+                    if (entry.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO)
                     {
                         arrEntry = entry;
                         continue;
@@ -109,7 +109,7 @@ namespace CodeWalker.GameFiles
                                         case 4: //also pointer? what's the difference?
 
                                             var bptr = pb.AddItem(stype, struc);
-                                            var ptr = new PsoPOINTER(bptr.BlockID, bptr.Offset, 0);
+                                            var ptr = new PsoPOINTER(bptr.BlockID, bptr.Offset);
                                             ptr.SwapEnd();
                                             var ptrb = MetaTypes.ConvertToBytes(ptr);
 
@@ -265,7 +265,7 @@ namespace CodeWalker.GameFiles
                                 var fEnt = (fEntry != 0xFFF) ? infos.GetEntry((int)fEntry) : null;
                                 PsoEnumInfo flagsInfo = null;
                                 MetaName fEnum = (MetaName)(fEnt?.ReferenceKey ?? 0);
-                                if ((fEnt != null) && (fEnt.EntryNameHash == MetaName.ARRAYINFO))
+                                if ((fEnt != null) && (fEnt.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO))
                                 {
                                     flagsInfo = PsoTypes.GetEnumInfo(fEnum);
                                 }
@@ -399,7 +399,7 @@ namespace CodeWalker.GameFiles
 
                 TraverseStringRaw(kattr, pb, kEntry, nodeBytes); //write the key
 
-                if (xName != MetaName.ARRAYINFO)// (mapreftype2.ReferenceKey != 0)
+                if (xName != (MetaName)MetaTypeName.ARRAYINFO)// (mapreftype2.ReferenceKey != 0)
                 {
                     //value struct embedded in ARRAYINFO node
                     Buffer.BlockCopy(strucBytes, 0, nodeBytes, iEntry.DataOffset, strucBytes.Length);
@@ -748,7 +748,7 @@ namespace CodeWalker.GameFiles
                     if (!string.IsNullOrEmpty(str))
                     {
                         var bptr = pb.AddString(str);
-                        var ptr = new PsoPOINTER(bptr.BlockID, bptr.Offset, 0);
+                        var ptr = new PsoPOINTER(bptr.BlockID, bptr.Offset);
                         ptr.SwapEnd();
                         var val = MetaTypes.ConvertToBytes(ptr);
                         Buffer.BlockCopy(val, 0, data, entry.DataOffset, val.Length);
