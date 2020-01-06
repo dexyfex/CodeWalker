@@ -2768,6 +2768,12 @@ namespace CodeWalker.GameFiles
                 this.Bound = reader.ReadBlockAt<Bounds>(
                     this.BoundPointer // offset
                 );
+
+                if (Bound != null)
+                {
+                    Bound.Owner = this;
+                }
+
             }
             catch (Exception ex) //sometimes error here for loading particles! different drawable type? base only?
             {

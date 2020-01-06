@@ -828,7 +828,7 @@ namespace CodeWalker.GameFiles
         public uint EntriesCapacity { get; private set; }
 
         // reference data
-        public T[] data_items { get; private set; }
+        public T[] data_items { get; set; }
 
         private ResourceSystemStructBlock<T> data_block;//used for saving.
 

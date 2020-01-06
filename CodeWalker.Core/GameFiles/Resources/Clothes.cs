@@ -648,6 +648,11 @@ namespace CodeWalker.GameFiles
               this.Unknown_140h_Pointer // offset
             );
 
+            if (Bound != null)
+            {
+                Bound.Owner = this;
+            }
+
             if (Unknown_70h?.data_items?.Length > 0)
             { }
             if (Unknown_80h?.data_items?.Length > 0)
@@ -1131,6 +1136,11 @@ namespace CodeWalker.GameFiles
             this.Bound = reader.ReadBlockAt<Bounds>(
                 this.BoundPointer // offset
             );
+
+            if (Bound != null)
+            {
+                Bound.Owner = this;
+            }
 
         }
 

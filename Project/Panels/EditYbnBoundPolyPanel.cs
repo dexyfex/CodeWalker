@@ -81,6 +81,8 @@ namespace CodeWalker.Project.Panels
         {
             if (CollisionPoly == null)
             {
+                AddToProjectButton.Enabled = false;
+                DeleteButton.Enabled = false;
                 PolyTabControl.TabPages.Clear();
                 TriVertex1TextBox.Text = string.Empty;
                 TriVertex2TextBox.Text = string.Empty;
@@ -192,6 +194,10 @@ namespace CodeWalker.Project.Panels
                 MatUnkUpDown.Value = m.Unk4;
                 SetCheckedListBoxValues(MatFlagsCheckedListBox, (ushort)m.Flags);
 
+                var ybn = CollisionPoly.Owner?.GetRootYbn();
+                AddToProjectButton.Enabled = (ybn != null) ? !ProjectForm.YbnExistsInProject(ybn) : false;
+                DeleteButton.Enabled = !AddToProjectButton.Enabled;
+
                 populatingui = false;
             }
         }
@@ -223,6 +229,29 @@ namespace CodeWalker.Project.Panels
                 }
             }
             return r;
+        }
+
+
+        private void UpdatePolyMaterial(BoundMaterial_s mat)
+        {
+            if (CollisionPoly == null) return;
+            var shared = UpdateSharedMaterialCheckBox.Checked && (CollisionPoly.Owner != null);
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                if (shared)
+                {
+                    CollisionPoly.Owner.SetMaterial(CollisionPoly.Index, mat);
+                }
+                else
+                {
+                    CollisionPoly.Material = mat;
+                }
+                ProjectForm.SetYbnHasChanged(true);
+            }
+            if ((ProjectForm.WorldForm != null) && (CollisionPoly.Owner != null))
+            {
+                ProjectForm.WorldForm.UpdateCollisionBoundsGraphics(CollisionPoly.Owner);
+            }
         }
 
 
@@ -561,49 +590,103 @@ namespace CodeWalker.Project.Panels
         {
             if (CollisionPoly == null) return;
             if (populatingui) return;
-
+            var mat = CollisionPoly.Material;
+            var v = (byte)MatTypeCombo.SelectedIndex;
+            if (mat.Type != v)
+            {
+                mat.Type = v;
+                UpdatePolyMaterial(mat);
+            }
         }
 
         private void MatColourUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (CollisionPoly == null) return;
             if (populatingui) return;
-
+            var mat = CollisionPoly.Material;
+            var v = (byte)MatColourUpDown.Value;
+            if (mat.MaterialColorIndex != v)
+            {
+                mat.MaterialColorIndex = v;
+                UpdatePolyMaterial(mat);
+            }
         }
 
         private void MatProceduralIDUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (CollisionPoly == null) return;
             if (populatingui) return;
-
+            var mat = CollisionPoly.Material;
+            var v = (byte)MatProceduralIDUpDown.Value;
+            if (mat.ProceduralId != v)
+            {
+                mat.ProceduralId = v;
+                UpdatePolyMaterial(mat);
+            }
         }
 
         private void MatRoomIDUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (CollisionPoly == null) return;
             if (populatingui) return;
-
+            var mat = CollisionPoly.Material;
+            var v = (byte)MatRoomIDUpDown.Value;
+            if (mat.RoomId != v)
+            {
+                mat.RoomId = v;
+                UpdatePolyMaterial(mat);
+            }
         }
 
         private void MatPedDensityUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (CollisionPoly == null) return;
             if (populatingui) return;
-
+            var mat = CollisionPoly.Material;
+            var v = (byte)MatPedDensityUpDown.Value;
+            if (mat.PedDensity != v)
+            {
+                mat.PedDensity = v;
+                UpdatePolyMaterial(mat);
+            }
         }
 
         private void MatUnkUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (CollisionPoly == null) return;
             if (populatingui) return;
-
+            var mat = CollisionPoly.Material;
+            var v = (ushort)MatUnkUpDown.Value;
+            if (mat.Unk4 != v)
+            {
+                mat.Unk4 = v;
+                UpdatePolyMaterial(mat);
+            }
         }
 
         private void MatFlagsCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             if (CollisionPoly == null) return;
             if (populatingui) return;
+            var mat = CollisionPoly.Material;
+            var v = (EBoundMaterialFlags)GetCheckedListBoxValues(MatFlagsCheckedListBox, e);
+            if (mat.Flags != v)
+            {
+                mat.Flags = v;
+                UpdatePolyMaterial(mat);
+            }
+        }
 
+        private void AddToProjectButton_Click(object sender, EventArgs e)
+        {
+            ProjectForm.SetProjectItem(CollisionPoly);
+            ProjectForm.AddCollisionPolyToProject();
+        }
+
+        private void DeleteButton_Click(object sender, EventArgs e)
+        {
+            ProjectForm.SetProjectItem(CollisionPoly);
+            ProjectForm.DeleteCollisionPoly();
         }
     }
 }

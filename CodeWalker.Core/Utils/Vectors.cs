@@ -40,15 +40,37 @@ namespace CodeWalker
             }
         }
 
+        public static Vector3 Floor(this Vector3 v)
+        {
+            return new Vector3((float)Math.Floor(v.X), (float)Math.Floor(v.Y), (float)Math.Floor(v.Z));
+        }
+        public static Vector3 Ceiling(this Vector3 v)
+        {
+            return new Vector3((float)Math.Ceiling(v.X), (float)Math.Ceiling(v.Y), (float)Math.Ceiling(v.Z));
+        }
+
         public static Vector3 Abs(this Vector3 v)
         {
             return new Vector3(Math.Abs(v.X), Math.Abs(v.Y), Math.Abs(v.Z));
+        }
+
+        public static int CompareTo(this Vector3 a, Vector3 b)
+        {
+            int c;
+            c = a.X.CompareTo(b.X); if (c != 0) return c;
+            c = a.Y.CompareTo(b.Y); if (c != 0) return c;
+            c = a.Z.CompareTo(b.Z); if (c != 0) return c;
+            return 0;
         }
 
 
         public static Vector4 Floor(this Vector4 v)
         {
             return new Vector4((float)Math.Floor(v.X), (float)Math.Floor(v.Y), (float)Math.Floor(v.Z), (float)Math.Floor(v.W));
+        }
+        public static Vector4 Ceiling(this Vector4 v)
+        {
+            return new Vector4((float)Math.Ceiling(v.X), (float)Math.Ceiling(v.Y), (float)Math.Ceiling(v.Z), (float)Math.Ceiling(v.W));
         }
 
         public static Vector4 Abs(this Vector4 v)
