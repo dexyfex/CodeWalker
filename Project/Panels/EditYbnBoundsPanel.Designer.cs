@@ -64,16 +64,18 @@
             this.label11 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.GeometryTabPage = new System.Windows.Forms.TabPage();
-            this.CenterGeomTextBox = new System.Windows.Forms.TextBox();
-            this.label17 = new System.Windows.Forms.Label();
-            this.QuantumTextBox = new System.Windows.Forms.TextBox();
-            this.label18 = new System.Windows.Forms.Label();
-            this.UnkFloat1TextBox = new System.Windows.Forms.TextBox();
-            this.label19 = new System.Windows.Forms.Label();
+            this.PolyCountLabel = new System.Windows.Forms.Label();
+            this.VertexCountLabel = new System.Windows.Forms.Label();
             this.UnkFloat2TextBox = new System.Windows.Forms.TextBox();
             this.label20 = new System.Windows.Forms.Label();
-            this.VertexCountLabel = new System.Windows.Forms.Label();
-            this.PolyCountLabel = new System.Windows.Forms.Label();
+            this.UnkFloat1TextBox = new System.Windows.Forms.TextBox();
+            this.label19 = new System.Windows.Forms.Label();
+            this.QuantumTextBox = new System.Windows.Forms.TextBox();
+            this.label18 = new System.Windows.Forms.Label();
+            this.CenterGeomTextBox = new System.Windows.Forms.TextBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.DeleteButton = new System.Windows.Forms.Button();
+            this.AddToProjectButton = new System.Windows.Forms.Button();
             this.BoundsTabControl.SuspendLayout();
             this.BoundsTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.UnkTypeUpDown)).BeginInit();
@@ -99,6 +101,8 @@
             // 
             // BoundsTabPage
             // 
+            this.BoundsTabPage.Controls.Add(this.DeleteButton);
+            this.BoundsTabPage.Controls.Add(this.AddToProjectButton);
             this.BoundsTabPage.Controls.Add(this.MaterialCombo);
             this.BoundsTabPage.Controls.Add(this.UnkTypeUpDown);
             this.BoundsTabPage.Controls.Add(this.label16);
@@ -483,62 +487,23 @@
             this.GeometryTabPage.Text = "Geometry";
             this.GeometryTabPage.UseVisualStyleBackColor = true;
             // 
-            // CenterGeomTextBox
+            // PolyCountLabel
             // 
-            this.CenterGeomTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CenterGeomTextBox.Location = new System.Drawing.Point(91, 6);
-            this.CenterGeomTextBox.Name = "CenterGeomTextBox";
-            this.CenterGeomTextBox.Size = new System.Drawing.Size(458, 20);
-            this.CenterGeomTextBox.TabIndex = 4;
-            this.CenterGeomTextBox.TextChanged += new System.EventHandler(this.CenterGeomTextBox_TextChanged);
+            this.PolyCountLabel.AutoSize = true;
+            this.PolyCountLabel.Location = new System.Drawing.Point(88, 144);
+            this.PolyCountLabel.Name = "PolyCountLabel";
+            this.PolyCountLabel.Size = new System.Drawing.Size(58, 13);
+            this.PolyCountLabel.TabIndex = 12;
+            this.PolyCountLabel.Text = "0 polygons";
             // 
-            // label17
+            // VertexCountLabel
             // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(13, 9);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(72, 13);
-            this.label17.TabIndex = 3;
-            this.label17.Text = "Geom Center:";
-            // 
-            // QuantumTextBox
-            // 
-            this.QuantumTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.QuantumTextBox.Location = new System.Drawing.Point(91, 32);
-            this.QuantumTextBox.Name = "QuantumTextBox";
-            this.QuantumTextBox.Size = new System.Drawing.Size(458, 20);
-            this.QuantumTextBox.TabIndex = 6;
-            this.QuantumTextBox.TextChanged += new System.EventHandler(this.QuantumTextBox_TextChanged);
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(32, 35);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(53, 13);
-            this.label18.TabIndex = 5;
-            this.label18.Text = "Quantum:";
-            // 
-            // UnkFloat1TextBox
-            // 
-            this.UnkFloat1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.UnkFloat1TextBox.Location = new System.Drawing.Point(91, 58);
-            this.UnkFloat1TextBox.Name = "UnkFloat1TextBox";
-            this.UnkFloat1TextBox.Size = new System.Drawing.Size(458, 20);
-            this.UnkFloat1TextBox.TabIndex = 8;
-            this.UnkFloat1TextBox.TextChanged += new System.EventHandler(this.UnkFloat1TextBox_TextChanged);
-            // 
-            // label19
-            // 
-            this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(20, 61);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(65, 13);
-            this.label19.TabIndex = 7;
-            this.label19.Text = "Unk Float 1:";
+            this.VertexCountLabel.AutoSize = true;
+            this.VertexCountLabel.Location = new System.Drawing.Point(88, 124);
+            this.VertexCountLabel.Name = "VertexCountLabel";
+            this.VertexCountLabel.Size = new System.Drawing.Size(53, 13);
+            this.VertexCountLabel.TabIndex = 11;
+            this.VertexCountLabel.Text = "0 vertices";
             // 
             // UnkFloat2TextBox
             // 
@@ -559,23 +524,84 @@
             this.label20.TabIndex = 9;
             this.label20.Text = "Unk Float 2:";
             // 
-            // VertexCountLabel
+            // UnkFloat1TextBox
             // 
-            this.VertexCountLabel.AutoSize = true;
-            this.VertexCountLabel.Location = new System.Drawing.Point(88, 124);
-            this.VertexCountLabel.Name = "VertexCountLabel";
-            this.VertexCountLabel.Size = new System.Drawing.Size(53, 13);
-            this.VertexCountLabel.TabIndex = 11;
-            this.VertexCountLabel.Text = "0 vertices";
+            this.UnkFloat1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.UnkFloat1TextBox.Location = new System.Drawing.Point(91, 58);
+            this.UnkFloat1TextBox.Name = "UnkFloat1TextBox";
+            this.UnkFloat1TextBox.Size = new System.Drawing.Size(458, 20);
+            this.UnkFloat1TextBox.TabIndex = 8;
+            this.UnkFloat1TextBox.TextChanged += new System.EventHandler(this.UnkFloat1TextBox_TextChanged);
             // 
-            // PolyCountLabel
+            // label19
             // 
-            this.PolyCountLabel.AutoSize = true;
-            this.PolyCountLabel.Location = new System.Drawing.Point(88, 144);
-            this.PolyCountLabel.Name = "PolyCountLabel";
-            this.PolyCountLabel.Size = new System.Drawing.Size(58, 13);
-            this.PolyCountLabel.TabIndex = 12;
-            this.PolyCountLabel.Text = "0 polygons";
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(20, 61);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(65, 13);
+            this.label19.TabIndex = 7;
+            this.label19.Text = "Unk Float 1:";
+            // 
+            // QuantumTextBox
+            // 
+            this.QuantumTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.QuantumTextBox.Location = new System.Drawing.Point(91, 32);
+            this.QuantumTextBox.Name = "QuantumTextBox";
+            this.QuantumTextBox.Size = new System.Drawing.Size(458, 20);
+            this.QuantumTextBox.TabIndex = 6;
+            this.QuantumTextBox.TextChanged += new System.EventHandler(this.QuantumTextBox_TextChanged);
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(32, 35);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(53, 13);
+            this.label18.TabIndex = 5;
+            this.label18.Text = "Quantum:";
+            // 
+            // CenterGeomTextBox
+            // 
+            this.CenterGeomTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CenterGeomTextBox.Location = new System.Drawing.Point(91, 6);
+            this.CenterGeomTextBox.Name = "CenterGeomTextBox";
+            this.CenterGeomTextBox.Size = new System.Drawing.Size(458, 20);
+            this.CenterGeomTextBox.TabIndex = 4;
+            this.CenterGeomTextBox.TextChanged += new System.EventHandler(this.CenterGeomTextBox_TextChanged);
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(13, 9);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(72, 13);
+            this.label17.TabIndex = 3;
+            this.label17.Text = "Geom Center:";
+            // 
+            // DeleteButton
+            // 
+            this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.DeleteButton.Location = new System.Drawing.Point(454, 238);
+            this.DeleteButton.Name = "DeleteButton";
+            this.DeleteButton.Size = new System.Drawing.Size(95, 23);
+            this.DeleteButton.TabIndex = 36;
+            this.DeleteButton.Text = "Delete Bounds";
+            this.DeleteButton.UseVisualStyleBackColor = true;
+            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
+            // 
+            // AddToProjectButton
+            // 
+            this.AddToProjectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.AddToProjectButton.Location = new System.Drawing.Point(353, 238);
+            this.AddToProjectButton.Name = "AddToProjectButton";
+            this.AddToProjectButton.Size = new System.Drawing.Size(95, 23);
+            this.AddToProjectButton.TabIndex = 35;
+            this.AddToProjectButton.Text = "Add to Project";
+            this.AddToProjectButton.UseVisualStyleBackColor = true;
+            this.AddToProjectButton.Click += new System.EventHandler(this.AddToProjectButton_Click);
             // 
             // EditYbnBoundsPanel
             // 
@@ -649,5 +675,7 @@
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Label PolyCountLabel;
         private System.Windows.Forms.Label VertexCountLabel;
+        private System.Windows.Forms.Button DeleteButton;
+        private System.Windows.Forms.Button AddToProjectButton;
     }
 }

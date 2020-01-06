@@ -74,6 +74,8 @@ namespace CodeWalker.Project.Panels
             var b = CollisionBounds;
             if (b == null)
             {
+                AddToProjectButton.Enabled = false;
+                DeleteButton.Enabled = false;
                 BBMinTextBox.Text = string.Empty;
                 BBMaxTextBox.Text = string.Empty;
                 BBCenterTextBox.Text = string.Empty;
@@ -143,6 +145,10 @@ namespace CodeWalker.Project.Panels
                     VertexCountLabel.Text = "0 vertices";
                     PolyCountLabel.Text = "0 polygons";
                 }
+
+                var ybn = b.GetRootYbn();
+                AddToProjectButton.Enabled = (ybn != null) ? !ProjectForm.YbnExistsInProject(ybn) : false;
+                DeleteButton.Enabled = !AddToProjectButton.Enabled;
 
                 populatingui = false;
             }
@@ -446,6 +452,18 @@ namespace CodeWalker.Project.Panels
                     ProjectForm.SetYbnHasChanged(true);
                 }
             }
+        }
+
+        private void AddToProjectButton_Click(object sender, EventArgs e)
+        {
+            ProjectForm.SetProjectItem(CollisionBounds);
+            ProjectForm.AddCollisionBoundsToProject();
+        }
+
+        private void DeleteButton_Click(object sender, EventArgs e)
+        {
+            ProjectForm.SetProjectItem(CollisionBounds);
+            ProjectForm.DeleteCollisionBounds();
         }
     }
 }

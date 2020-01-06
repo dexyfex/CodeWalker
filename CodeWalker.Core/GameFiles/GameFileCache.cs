@@ -3516,7 +3516,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYbns()
         {
-            bool savetest = false;
+            bool savetest = true;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {
@@ -3674,7 +3674,8 @@ namespace CodeWalker.GameFiles
         }
         public void TestYdrs()
         {
-            bool savetest = false;
+            bool savetest = true;
+            bool boundsonly = true;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {
@@ -3700,6 +3701,9 @@ namespace CodeWalker.GameFiles
                                 var fentry = entry as RpfFileEntry;
                                 if (fentry == null)
                                 { continue; } //shouldn't happen
+
+                                if (boundsonly && (ydr.Drawable.Bound == null))
+                                { continue; }
 
                                 var bytes = ydr.Save();
 
@@ -3783,7 +3787,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYfts()
         {
-            bool savetest = false;
+            bool savetest = true;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {

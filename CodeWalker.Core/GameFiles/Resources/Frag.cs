@@ -453,6 +453,11 @@ namespace CodeWalker.GameFiles
             FragMatrices = reader.ReadStructsAt<Matrix>(FragMatricesPointer, FragMatricesCount);
             Name = reader.ReadStringAt(NamePointer);
 
+            if (Bound != null)
+            {
+                Bound.Owner = this;
+            }
+
             if ((Count3 != Count4)&&(Count4!=1)&&(Count3!=0))
             { }
             if (FragMatricesInds != null)
@@ -1271,6 +1276,11 @@ namespace CodeWalker.GameFiles
                         child.GroupNameHash = JenkHash.GenHash(str);
                     }
                 }
+            }
+
+            if (Bound != null)
+            {
+                Bound.Owner = this;
             }
         }
 
@@ -2123,6 +2133,11 @@ namespace CodeWalker.GameFiles
             this.Bound = reader.ReadBlockAt<Bounds>(
                 this.BoundPointer // offset
             );
+
+            if (Bound != null)
+            {
+                Bound.Owner = this;
+            }
         }
 
         /// <summary>

@@ -3048,6 +3048,157 @@ namespace CodeWalker.Project
             return CurrentProjectFile.ContainsYbn(ybn);
         }
 
+        public void NewCollisionBounds(BoundsType type, Bounds copy = null)
+        {
+            if (CurrentYbnFile == null) return;
+
+            //////// TODO!!
+
+        }
+        public void AddCollisionBoundsToProject()
+        {
+            try
+            {
+                if (CurrentCollisionBounds == null) return;
+
+                CurrentYbnFile = CurrentCollisionBounds.GetRootYbn();
+                if (CurrentYbnFile == null)
+                {
+                    MessageBox.Show("Sorry, only YBN collisions can currently be added to the project. Embedded collisions TODO!");
+                    return;
+                }
+
+                if (!YbnExistsInProject(CurrentYbnFile))
+                {
+                    var b = CurrentCollisionBounds;
+                    CurrentYbnFile.HasChanged = true;
+                    AddYbnToProject(CurrentYbnFile);
+
+                    CurrentCollisionBounds = b; //bug fix for some reason the treeview selects the project node here.
+                    CurrentYbnFile = b.GetRootYbn();
+                    ProjectExplorer?.TrySelectCollisionBoundsTreeNode(b);
+                }
+            }
+            catch
+            { }
+        }
+        public bool DeleteCollisionBounds()
+        {
+            if (CurrentCollisionBounds == null) return false;
+            if (CurrentYbnFile == null) return false;
+            if (CurrentCollisionBounds.GetRootYbn() != CurrentYbnFile) return false;
+
+            if (MessageBox.Show("Are you sure you want to delete this collision bounds?\n" + CurrentCollisionBounds.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentYbnFile.RemoveBounds(CurrentCollisionBounds);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentYbnFile.RemoveBounds(CurrentCollisionBounds);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unable to delete the collision bounds. This shouldn't happen!");
+            }
+
+            var delb = CurrentCollisionBounds;
+
+            ProjectExplorer?.RemoveCollisionBoundsTreeNode(CurrentCollisionBounds);
+            ProjectExplorer?.SetYbnHasChanged(CurrentYbnFile, true);
+
+            ClosePanel((EditYbnBoundsPanel p) => { return p.Tag == delb; });
+
+            CurrentCollisionBounds = null;
+
+            return true;
+        }
+
+        public void NewCollisionPoly(BoundPolygonType type, BoundPolygon copy = null)
+        {
+            if (CurrentYbnFile == null) return;
+
+            //////// TODO!!
+
+        }
+        public void AddCollisionPolyToProject()
+        {
+            try
+            {
+                if (CurrentCollisionPoly == null) return;
+
+                CurrentYbnFile = CurrentCollisionPoly.Owner?.GetRootYbn();
+                if (CurrentYbnFile == null)
+                {
+                    MessageBox.Show("Sorry, only YBN collisions can currently be added to the project. Embedded collisions TODO!");
+                    return;
+                }
+
+                if (!YbnExistsInProject(CurrentYbnFile))
+                {
+                    var p = CurrentCollisionPoly;
+                    CurrentYbnFile.HasChanged = true;
+                    AddYbnToProject(CurrentYbnFile);
+
+                    CurrentCollisionPoly = p; //bug fix for some reason the treeview selects the project node here.
+                    CurrentCollisionBounds = p.Owner;
+                    CurrentYbnFile = p.Owner?.GetRootYbn();
+                    ProjectExplorer?.TrySelectCollisionPolyTreeNode(p);
+                }
+            }
+            catch
+            { }
+        }
+        public bool DeleteCollisionPoly()
+        {
+            if (CurrentCollisionBounds == null) return false;
+            if (CurrentCollisionPoly == null) return false;
+            if (CurrentYbnFile == null) return false;
+            if (CurrentCollisionPoly.Owner != CurrentCollisionBounds) return false;
+
+            if (MessageBox.Show("Are you sure you want to delete this collision poly?\n" + CurrentCollisionPoly.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentYbnFile.RemovePoly(CurrentCollisionPoly);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentYbnFile.RemovePoly(CurrentCollisionPoly);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unable to delete the collision poly. This shouldn't happen!");
+            }
+
+            var delp = CurrentCollisionPoly;
+
+            //ProjectExplorer?.RemoveCollisionPolyTreeNode(CurrentCollisionPoly);
+            ProjectExplorer?.SetYbnHasChanged(CurrentYbnFile, true);
+
+            ClosePanel((EditYbnBoundPolyPanel p) => { return p.Tag == delp; });
+
+            CurrentCollisionPoly = null;
+
+            return true;
+        }
 
 
 

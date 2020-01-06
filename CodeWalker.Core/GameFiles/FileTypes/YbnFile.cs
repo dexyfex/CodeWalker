@@ -62,5 +62,17 @@ namespace CodeWalker.GameFiles
             return data;
         }
 
+
+
+
+        public bool RemoveBounds(Bounds b)
+        {
+            return false;
+        }
+        public bool RemovePoly(BoundPolygon p)
+        {
+            return false;
+        }
+
     }
 }

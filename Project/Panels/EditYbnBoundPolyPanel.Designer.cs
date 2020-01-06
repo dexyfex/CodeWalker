@@ -91,6 +91,9 @@
             this.MatColourUpDown = new System.Windows.Forms.NumericUpDown();
             this.label25 = new System.Windows.Forms.Label();
             this.MatFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
+            this.UpdateSharedMaterialCheckBox = new System.Windows.Forms.CheckBox();
+            this.DeleteButton = new System.Windows.Forms.Button();
+            this.AddToProjectButton = new System.Windows.Forms.Button();
             this.PolyTabControl.SuspendLayout();
             this.TriangleTabPage.SuspendLayout();
             this.SphereTabPage.SuspendLayout();
@@ -118,10 +121,10 @@
             this.PolyTabControl.Controls.Add(this.CapsuleTabPage);
             this.PolyTabControl.Controls.Add(this.BoxTabPage);
             this.PolyTabControl.Controls.Add(this.CylinderTabPage);
-            this.PolyTabControl.Location = new System.Drawing.Point(0, 0);
+            this.PolyTabControl.Location = new System.Drawing.Point(0, 12);
             this.PolyTabControl.Name = "PolyTabControl";
             this.PolyTabControl.SelectedIndex = 0;
-            this.PolyTabControl.Size = new System.Drawing.Size(564, 216);
+            this.PolyTabControl.Size = new System.Drawing.Size(564, 213);
             this.PolyTabControl.TabIndex = 0;
             // 
             // TriangleTabPage
@@ -146,7 +149,7 @@
             this.TriangleTabPage.Location = new System.Drawing.Point(4, 22);
             this.TriangleTabPage.Name = "TriangleTabPage";
             this.TriangleTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.TriangleTabPage.Size = new System.Drawing.Size(556, 190);
+            this.TriangleTabPage.Size = new System.Drawing.Size(556, 187);
             this.TriangleTabPage.TabIndex = 0;
             this.TriangleTabPage.Text = "Triangle";
             this.TriangleTabPage.UseVisualStyleBackColor = true;
@@ -160,7 +163,7 @@
             this.SphereTabPage.Location = new System.Drawing.Point(4, 22);
             this.SphereTabPage.Name = "SphereTabPage";
             this.SphereTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.SphereTabPage.Size = new System.Drawing.Size(556, 190);
+            this.SphereTabPage.Size = new System.Drawing.Size(556, 185);
             this.SphereTabPage.TabIndex = 1;
             this.SphereTabPage.Text = "Sphere";
             this.SphereTabPage.UseVisualStyleBackColor = true;
@@ -175,7 +178,7 @@
             this.CapsuleTabPage.Controls.Add(this.label12);
             this.CapsuleTabPage.Location = new System.Drawing.Point(4, 22);
             this.CapsuleTabPage.Name = "CapsuleTabPage";
-            this.CapsuleTabPage.Size = new System.Drawing.Size(556, 190);
+            this.CapsuleTabPage.Size = new System.Drawing.Size(556, 185);
             this.CapsuleTabPage.TabIndex = 2;
             this.CapsuleTabPage.Text = "Capsule";
             this.CapsuleTabPage.UseVisualStyleBackColor = true;
@@ -192,7 +195,7 @@
             this.BoxTabPage.Controls.Add(this.label19);
             this.BoxTabPage.Location = new System.Drawing.Point(4, 22);
             this.BoxTabPage.Name = "BoxTabPage";
-            this.BoxTabPage.Size = new System.Drawing.Size(556, 190);
+            this.BoxTabPage.Size = new System.Drawing.Size(556, 185);
             this.BoxTabPage.TabIndex = 3;
             this.BoxTabPage.Text = "Box";
             this.BoxTabPage.UseVisualStyleBackColor = true;
@@ -207,7 +210,7 @@
             this.CylinderTabPage.Controls.Add(this.label15);
             this.CylinderTabPage.Location = new System.Drawing.Point(4, 22);
             this.CylinderTabPage.Name = "CylinderTabPage";
-            this.CylinderTabPage.Size = new System.Drawing.Size(556, 190);
+            this.CylinderTabPage.Size = new System.Drawing.Size(556, 185);
             this.CylinderTabPage.TabIndex = 4;
             this.CylinderTabPage.Text = "Cylinder";
             this.CylinderTabPage.UseVisualStyleBackColor = true;
@@ -408,14 +411,15 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.MaterialTabControl.Controls.Add(this.MaterialTabPage);
-            this.MaterialTabControl.Location = new System.Drawing.Point(0, 218);
+            this.MaterialTabControl.Location = new System.Drawing.Point(0, 225);
             this.MaterialTabControl.Name = "MaterialTabControl";
             this.MaterialTabControl.SelectedIndex = 0;
-            this.MaterialTabControl.Size = new System.Drawing.Size(564, 286);
+            this.MaterialTabControl.Size = new System.Drawing.Size(564, 279);
             this.MaterialTabControl.TabIndex = 1;
             // 
             // MaterialTabPage
             // 
+            this.MaterialTabPage.Controls.Add(this.UpdateSharedMaterialCheckBox);
             this.MaterialTabPage.Controls.Add(this.MatFlagsCheckedListBox);
             this.MaterialTabPage.Controls.Add(this.MatColourUpDown);
             this.MaterialTabPage.Controls.Add(this.label25);
@@ -432,7 +436,7 @@
             this.MaterialTabPage.Location = new System.Drawing.Point(4, 22);
             this.MaterialTabPage.Name = "MaterialTabPage";
             this.MaterialTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.MaterialTabPage.Size = new System.Drawing.Size(556, 260);
+            this.MaterialTabPage.Size = new System.Drawing.Size(556, 253);
             this.MaterialTabPage.TabIndex = 0;
             this.MaterialTabPage.Text = "Material";
             this.MaterialTabPage.UseVisualStyleBackColor = true;
@@ -668,7 +672,7 @@
             // MatTypeCombo
             // 
             this.MatTypeCombo.FormattingEnabled = true;
-            this.MatTypeCombo.Location = new System.Drawing.Point(92, 9);
+            this.MatTypeCombo.Location = new System.Drawing.Point(92, 6);
             this.MatTypeCombo.Name = "MatTypeCombo";
             this.MatTypeCombo.Size = new System.Drawing.Size(195, 21);
             this.MatTypeCombo.TabIndex = 20;
@@ -677,7 +681,7 @@
             // label20
             // 
             this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(39, 12);
+            this.label20.Location = new System.Drawing.Point(39, 9);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(47, 13);
             this.label20.TabIndex = 19;
@@ -685,7 +689,7 @@
             // 
             // MatUnkUpDown
             // 
-            this.MatUnkUpDown.Location = new System.Drawing.Point(92, 140);
+            this.MatUnkUpDown.Location = new System.Drawing.Point(92, 137);
             this.MatUnkUpDown.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -699,7 +703,7 @@
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(56, 142);
+            this.label21.Location = new System.Drawing.Point(56, 139);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(30, 13);
             this.label21.TabIndex = 29;
@@ -707,7 +711,7 @@
             // 
             // MatPedDensityUpDown
             // 
-            this.MatPedDensityUpDown.Location = new System.Drawing.Point(92, 114);
+            this.MatPedDensityUpDown.Location = new System.Drawing.Point(92, 111);
             this.MatPedDensityUpDown.Maximum = new decimal(new int[] {
             255,
             0,
@@ -721,7 +725,7 @@
             // label22
             // 
             this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(19, 116);
+            this.label22.Location = new System.Drawing.Point(19, 113);
             this.label22.Name = "label22";
             this.label22.Size = new System.Drawing.Size(67, 13);
             this.label22.TabIndex = 27;
@@ -729,7 +733,7 @@
             // 
             // MatRoomIDUpDown
             // 
-            this.MatRoomIDUpDown.Location = new System.Drawing.Point(92, 88);
+            this.MatRoomIDUpDown.Location = new System.Drawing.Point(92, 85);
             this.MatRoomIDUpDown.Maximum = new decimal(new int[] {
             255,
             0,
@@ -743,7 +747,7 @@
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(34, 90);
+            this.label23.Location = new System.Drawing.Point(34, 87);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(52, 13);
             this.label23.TabIndex = 25;
@@ -751,7 +755,7 @@
             // 
             // MatProceduralIDUpDown
             // 
-            this.MatProceduralIDUpDown.Location = new System.Drawing.Point(92, 62);
+            this.MatProceduralIDUpDown.Location = new System.Drawing.Point(92, 59);
             this.MatProceduralIDUpDown.Maximum = new decimal(new int[] {
             255,
             0,
@@ -765,7 +769,7 @@
             // label24
             // 
             this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(11, 64);
+            this.label24.Location = new System.Drawing.Point(11, 61);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(75, 13);
             this.label24.TabIndex = 23;
@@ -773,7 +777,7 @@
             // 
             // MatColourUpDown
             // 
-            this.MatColourUpDown.Location = new System.Drawing.Point(92, 36);
+            this.MatColourUpDown.Location = new System.Drawing.Point(92, 33);
             this.MatColourUpDown.Maximum = new decimal(new int[] {
             255,
             0,
@@ -787,7 +791,7 @@
             // label25
             // 
             this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(6, 38);
+            this.label25.Location = new System.Drawing.Point(6, 35);
             this.label25.Name = "label25";
             this.label25.Size = new System.Drawing.Size(80, 13);
             this.label25.TabIndex = 21;
@@ -816,17 +820,51 @@
             "13 - Too Steep for Player",
             "14 - No Network Spawn",
             "15 - No Cam Collision Allow Clipping"});
-            this.MatFlagsCheckedListBox.Location = new System.Drawing.Point(326, 9);
+            this.MatFlagsCheckedListBox.Location = new System.Drawing.Point(326, 6);
             this.MatFlagsCheckedListBox.Name = "MatFlagsCheckedListBox";
             this.MatFlagsCheckedListBox.Size = new System.Drawing.Size(223, 244);
             this.MatFlagsCheckedListBox.TabIndex = 31;
             this.MatFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.MatFlagsCheckedListBox_ItemCheck);
+            // 
+            // UpdateSharedMaterialCheckBox
+            // 
+            this.UpdateSharedMaterialCheckBox.AutoSize = true;
+            this.UpdateSharedMaterialCheckBox.Location = new System.Drawing.Point(92, 172);
+            this.UpdateSharedMaterialCheckBox.Name = "UpdateSharedMaterialCheckBox";
+            this.UpdateSharedMaterialCheckBox.Size = new System.Drawing.Size(170, 17);
+            this.UpdateSharedMaterialCheckBox.TabIndex = 32;
+            this.UpdateSharedMaterialCheckBox.Text = "Update shared material on edit";
+            this.UpdateSharedMaterialCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // DeleteButton
+            // 
+            this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.DeleteButton.Location = new System.Drawing.Point(458, 7);
+            this.DeleteButton.Name = "DeleteButton";
+            this.DeleteButton.Size = new System.Drawing.Size(95, 23);
+            this.DeleteButton.TabIndex = 38;
+            this.DeleteButton.Text = "Delete Polygon";
+            this.DeleteButton.UseVisualStyleBackColor = true;
+            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
+            // 
+            // AddToProjectButton
+            // 
+            this.AddToProjectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.AddToProjectButton.Location = new System.Drawing.Point(357, 7);
+            this.AddToProjectButton.Name = "AddToProjectButton";
+            this.AddToProjectButton.Size = new System.Drawing.Size(95, 23);
+            this.AddToProjectButton.TabIndex = 37;
+            this.AddToProjectButton.Text = "Add to Project";
+            this.AddToProjectButton.UseVisualStyleBackColor = true;
+            this.AddToProjectButton.Click += new System.EventHandler(this.AddToProjectButton_Click);
             // 
             // EditYbnBoundPolyPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(565, 505);
+            this.Controls.Add(this.DeleteButton);
+            this.Controls.Add(this.AddToProjectButton);
             this.Controls.Add(this.MaterialTabControl);
             this.Controls.Add(this.PolyTabControl);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -922,5 +960,8 @@
         private System.Windows.Forms.NumericUpDown MatColourUpDown;
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.CheckedListBox MatFlagsCheckedListBox;
+        private System.Windows.Forms.CheckBox UpdateSharedMaterialCheckBox;
+        private System.Windows.Forms.Button DeleteButton;
+        private System.Windows.Forms.Button AddToProjectButton;
     }
 }

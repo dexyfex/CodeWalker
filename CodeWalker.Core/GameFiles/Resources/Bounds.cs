@@ -166,6 +166,7 @@ namespace CodeWalker.GameFiles
         public bool HasChanged { get; set; } = false;
         public BoundComposite Parent { get; set; }
         public YbnFile OwnerYbn { get; set; }
+        public object Owner { get; set; }
         public string OwnerName { get; set; }
         public string GetName()
         {
@@ -195,9 +196,24 @@ namespace CodeWalker.GameFiles
             }
             return r;
         }
+        public object GetRootOwner()
+        {
+            var r = Owner;
+            var p = Parent;
+            while ((p != null) && (r == null))
+            {
+                r = p.Owner;
+                p = p.Parent;
+            }
+            return r;
+        }
 
         public Matrix Transform { get; set; } = Matrix.Identity; //when it's the child of a bound composite
         public Matrix TransformInv { get; set; } = Matrix.Identity;
+
+        public BoundCompositeChildrenFlags CompositeFlags1 { get; set; }
+        public BoundCompositeChildrenFlags CompositeFlags2 { get; set; }
+
 
         public virtual Vector3 Scale
         {
@@ -786,19 +802,19 @@ namespace CodeWalker.GameFiles
         // structure data
         public uint Unknown_70h { get; set; } // 0x00000000
         public uint Unknown_74h { get; set; } // 0x00000000
-        public ulong Unknown_78h_Pointer { get; set; }
+        public ulong Vertices2Pointer { get; set; }
         public ushort Unknown_80h { get; set; } // 0x0000
         public ushort Unknown_82h { get; set; } //des_.ydr's? some extra data to read..?? is this some extra poly count?
-        public uint Count1 { get; set; }
+        public uint Vertices2Count { get; set; } //always equal to VerticesCount
         public ulong PolygonsPointer { get; set; }
         public Vector3 Quantum { get; set; }
         public float Unknown_9Ch { get; set; }
         public Vector3 CenterGeom { get; set; }
         public float Unknown_ACh { get; set; }
         public ulong VerticesPointer { get; set; }
-        public ulong Unknown_B8h_Pointer { get; set; }
-        public ulong Unknown_C0h_Pointer { get; set; }
-        public ulong Unknown_C8h_Pointer { get; set; }
+        public ulong VertexColoursPointer { get; set; }
+        public ulong Unknown1CountsPointer { get; set; }
+        public ulong Unknown1DataPointer { get; set; }
         public uint VerticesCount { get; set; }
         public uint PolygonsCount { get; set; }
         public uint Unknown_D8h { get; set; } // 0x00000000
@@ -824,21 +840,21 @@ namespace CodeWalker.GameFiles
         public uint Unknown_12Ch { get; set; } // 0x00000000
 
 
-        public BoundVertex_s[] p1data { get; set; }
+        public Vector3[] Vertices2 { get; set; }//found in some YFTs, same count as Vertices, and contents are similar
         public BoundPolygon[] Polygons { get; set; }
         public Vector3[] Vertices { get; set; }
-        public uint[] Unknown_B8h_Data { get; set; }
-        public uint[] Unknown_C0h_Data { get; set; }
-        public BoundGeomUnknown1 Unknown_C8h_Data { get; set; }
+        public BoundMaterialColour[] VertexColours { get; set; }//not sure, it seems like colours anyway, see eg. prologue03_10.ybn
+        public uint[] Unknown1Counts { get; set; }
+        public BoundGeomUnknown1 Unknown1Data { get; set; }
         public BoundMaterial_s[] Materials { get; set; }
         public BoundMaterialColour[] MaterialColours { get; set; }
         public byte[] PolygonMaterialIndices { get; set; }
 
-        private ResourceSystemStructBlock<BoundVertex_s> p1dataBlock = null;
+        private ResourceSystemStructBlock<BoundVertex_s> Vertices2Block = null;
         private ResourceSystemDataBlock PolygonsBlock = null;
         private ResourceSystemStructBlock<BoundVertex_s> VerticesBlock = null;
-        private ResourceSystemStructBlock<uint> Unknown_B8h_Block = null;
-        private ResourceSystemStructBlock<uint> Unknown_C0h_Block = null;
+        private ResourceSystemStructBlock<BoundMaterialColour> VertexColoursBlock = null;
+        private ResourceSystemStructBlock<uint> Unknown1CountsBlock = null;
         private ResourceSystemStructBlock<BoundMaterial_s> MaterialsBlock = null;
         private ResourceSystemStructBlock<BoundMaterialColour> MaterialColoursBlock = null;
         private ResourceSystemStructBlock<byte> PolygonMaterialIndicesBlock = null;
@@ -852,19 +868,19 @@ namespace CodeWalker.GameFiles
 
             this.Unknown_70h = reader.ReadUInt32();
             this.Unknown_74h = reader.ReadUInt32();
-            this.Unknown_78h_Pointer = reader.ReadUInt64();
+            this.Vertices2Pointer = reader.ReadUInt64();
             this.Unknown_80h = reader.ReadUInt16();
             this.Unknown_82h = reader.ReadUInt16();
-            this.Count1 = reader.ReadUInt32();
+            this.Vertices2Count = reader.ReadUInt32();
             this.PolygonsPointer = reader.ReadUInt64();
             this.Quantum = reader.ReadVector3();
             this.Unknown_9Ch = reader.ReadSingle();
             this.CenterGeom = reader.ReadVector3();
             this.Unknown_ACh = reader.ReadSingle();
             this.VerticesPointer = reader.ReadUInt64();
-            this.Unknown_B8h_Pointer = reader.ReadUInt64();
-            this.Unknown_C0h_Pointer = reader.ReadUInt64();
-            this.Unknown_C8h_Pointer = reader.ReadUInt64();
+            this.VertexColoursPointer = reader.ReadUInt64();
+            this.Unknown1CountsPointer = reader.ReadUInt64();
+            this.Unknown1DataPointer = reader.ReadUInt64();
             this.VerticesCount = reader.ReadUInt32();
             this.PolygonsCount = reader.ReadUInt32();
             this.Unknown_D8h = reader.ReadUInt32();
@@ -890,9 +906,16 @@ namespace CodeWalker.GameFiles
             this.Unknown_12Ch = reader.ReadUInt32();
 
 
-            this.p1data = reader.ReadStructsAt<BoundVertex_s>(this.Unknown_78h_Pointer, this.VerticesCount);
-            if (p1data != null)
-            { } //seems to be in YFT's
+            var verts2 = reader.ReadStructsAt<BoundVertex_s>(this.Vertices2Pointer, this.Vertices2Count);
+            if (verts2 != null) //seems to be in YFT's
+            {
+                Vertices2 = new Vector3[verts2.Length];
+                for (int i = 0; i < verts2.Length; i++)
+                {
+                    var bv = verts2[i];
+                    Vertices2[i] = bv.Vector * Quantum;
+                }
+            }
 
             ReadPolygons(reader);
 
@@ -903,16 +926,16 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < verts.Length; i++)
                 {
                     var bv = verts[i];
-                    Vertices[i] = new Vector3(bv.X, bv.Y, bv.Z) * Quantum;
+                    Vertices[i] = bv.Vector * Quantum;
                 }
             }
 
-            this.Unknown_B8h_Data = reader.ReadUintsAt(this.Unknown_B8h_Pointer, this.VerticesCount);
+            this.VertexColours = reader.ReadStructsAt<BoundMaterialColour>(this.VertexColoursPointer, this.VerticesCount);
 
-            this.Unknown_C0h_Data = reader.ReadUintsAt(this.Unknown_C0h_Pointer, 8);//item counts
-            if (this.Unknown_C0h_Data != null)
+            this.Unknown1Counts = reader.ReadUintsAt(this.Unknown1CountsPointer, 8);//item counts
+            if (this.Unknown1Counts != null)
             {
-                this.Unknown_C8h_Data = reader.ReadBlockAt<BoundGeomUnknown1>(this.Unknown_C8h_Pointer, this.Unknown_C0h_Data);
+                this.Unknown1Data = reader.ReadBlockAt<BoundGeomUnknown1>(this.Unknown1DataPointer, this.Unknown1Counts);
             }
 
             this.Materials = reader.ReadStructsAt<BoundMaterial_s>(this.MaterialsPointer, this.MaterialsCount);
@@ -923,6 +946,8 @@ namespace CodeWalker.GameFiles
 
 
 
+            if (Vertices2Count != VerticesCount)
+            { }//no hit here
             if (Unknown_9Ch != 0)
             { }
             if (Unknown_ACh != 0)
@@ -986,7 +1011,7 @@ namespace CodeWalker.GameFiles
 
         public Vector3 GetVertex(int index)
         {
-            return ((index < 0) || (index >= Vertices.Length)) ? Vector3.Zero : Vertices[index];
+            return ((index >= 0) && (index < Vertices.Length)) ? Vertices[index] : Vector3.Zero;
         }
         public Vector3 GetVertexPos(int index)
         {
@@ -1011,13 +1036,14 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // update structure data
-            this.Unknown_78h_Pointer = (ulong)(this.p1dataBlock != null ? this.p1dataBlock.FilePosition : 0);
+            this.Vertices2Pointer = (ulong)(this.Vertices2Block != null ? this.Vertices2Block.FilePosition : 0);
             this.PolygonsPointer = (ulong)(this.PolygonsBlock != null ? this.PolygonsBlock.FilePosition : 0);
             this.VerticesPointer = (ulong)(this.VerticesBlock != null ? this.VerticesBlock.FilePosition : 0);
-            this.Unknown_B8h_Pointer = (ulong)(this.Unknown_B8h_Block != null ? this.Unknown_B8h_Block.FilePosition : 0);
-            this.Unknown_C0h_Pointer = (ulong)(this.Unknown_C0h_Block != null ? this.Unknown_C0h_Block.FilePosition : 0);
-            this.Unknown_C8h_Pointer = (ulong)(this.Unknown_C8h_Data != null ? this.Unknown_C8h_Data.FilePosition : 0);
+            this.VertexColoursPointer = (ulong)(this.VertexColoursBlock != null ? this.VertexColoursBlock.FilePosition : 0);
+            this.Unknown1CountsPointer = (ulong)(this.Unknown1CountsBlock != null ? this.Unknown1CountsBlock.FilePosition : 0);
+            this.Unknown1DataPointer = (ulong)(this.Unknown1Data != null ? this.Unknown1Data.FilePosition : 0);
             this.VerticesCount = (uint)(this.VerticesBlock != null ? this.VerticesBlock.ItemCount : 0);
+            this.Vertices2Count = this.VerticesCount;
             this.PolygonsCount = (uint)(this.Polygons != null ? this.Polygons.Length : 0);
             this.MaterialsPointer = (ulong)(this.MaterialsBlock != null ? this.MaterialsBlock.FilePosition : 0);
             this.MaterialColoursPointer = (ulong)(this.MaterialColoursBlock != null ? this.MaterialColoursBlock.FilePosition : 0);
@@ -1029,19 +1055,19 @@ namespace CodeWalker.GameFiles
             // write structure data
             writer.Write(this.Unknown_70h);
             writer.Write(this.Unknown_74h);
-            writer.Write(this.Unknown_78h_Pointer);
+            writer.Write(this.Vertices2Pointer);
             writer.Write(this.Unknown_80h);
             writer.Write(this.Unknown_82h);
-            writer.Write(this.Count1);
+            writer.Write(this.Vertices2Count);
             writer.Write(this.PolygonsPointer);
             writer.Write(this.Quantum);
             writer.Write(this.Unknown_9Ch);
             writer.Write(this.CenterGeom);
             writer.Write(this.Unknown_ACh);
             writer.Write(this.VerticesPointer);
-            writer.Write(this.Unknown_B8h_Pointer);
-            writer.Write(this.Unknown_C0h_Pointer);
-            writer.Write(this.Unknown_C8h_Pointer);
+            writer.Write(this.VertexColoursPointer);
+            writer.Write(this.Unknown1CountsPointer);
+            writer.Write(this.Unknown1DataPointer);
             writer.Write(this.VerticesCount);
             writer.Write(this.PolygonsCount);
             writer.Write(this.Unknown_D8h);
@@ -1072,11 +1098,21 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override IResourceBlock[] GetReferences()
         {
+            BuildMaterials();
+            CalculateQuantum();
+
             var list = new List<IResourceBlock>(base.GetReferences());
-            if (p1data != null)
+            if (Vertices2 != null)
             {
-                p1dataBlock = new ResourceSystemStructBlock<BoundVertex_s>(p1data);
-                list.Add(p1dataBlock);
+                var verts = new List<BoundVertex_s>();
+                foreach (var v in Vertices2)
+                {
+                    var vq = v / Quantum;
+                    var vs = new BoundVertex_s(vq);
+                    verts.Add(vs);
+                }
+                Vertices2Block = new ResourceSystemStructBlock<BoundVertex_s>(verts.ToArray());
+                list.Add(Vertices2Block);
             }
             if (Polygons != null)
             {
@@ -1108,26 +1144,26 @@ namespace CodeWalker.GameFiles
                 var verts = new List<BoundVertex_s>();
                 foreach (var v in Vertices)
                 {
-                    var vq = v / Quantum;  //Vertices[i] = new Vector3(bv.X, bv.Y, bv.Z) * Quantum;
+                    var vq = v / Quantum;
                     var vs = new BoundVertex_s(vq);
                     verts.Add(vs);
                 }
                 VerticesBlock = new ResourceSystemStructBlock<BoundVertex_s>(verts.ToArray());
                 list.Add(VerticesBlock);
             }
-            if (Unknown_B8h_Data != null)
+            if (VertexColours != null)
             {
-                Unknown_B8h_Block = new ResourceSystemStructBlock<uint>(Unknown_B8h_Data);
-                list.Add(Unknown_B8h_Block);
+                VertexColoursBlock = new ResourceSystemStructBlock<BoundMaterialColour>(VertexColours);
+                list.Add(VertexColoursBlock);
             }
-            if (Unknown_C0h_Data != null)
+            if (Unknown1Counts != null)
             {
-                Unknown_C0h_Block = new ResourceSystemStructBlock<uint>(Unknown_C0h_Data);
-                list.Add(Unknown_C0h_Block);
+                Unknown1CountsBlock = new ResourceSystemStructBlock<uint>(Unknown1Counts);
+                list.Add(Unknown1CountsBlock);
             }
-            if (Unknown_C8h_Data != null)
+            if (Unknown1Data != null)
             {
-                list.Add(Unknown_C8h_Data);//this one is already a resource block!
+                list.Add(Unknown1Data);//this one is already a resource block!
             }
             if (Materials != null)
             {
@@ -1390,11 +1426,98 @@ namespace CodeWalker.GameFiles
                     res.Normal = n1;
                     res.HitPolygon = polygon;
                     res.HitBounds = this;
-                    res.Material = polygon?.Material ?? new BoundMaterial_s();
+                    res.Material = polygon.Material;
                 }
                 res.TestedPolyCount++;
             }
         }
+
+
+
+        public BoundMaterial_s GetMaterial(int polyIndex)
+        {
+            var matind = 0;
+            if ((PolygonMaterialIndices != null) && (polyIndex < PolygonMaterialIndices.Length))
+            {
+                matind = PolygonMaterialIndices[polyIndex];
+            }
+            if ((Materials != null) && (matind < Materials.Length))
+            {
+                return Materials[matind];
+            }
+            return new BoundMaterial_s();
+        }
+        public void SetMaterial(int polyIndex, BoundMaterial_s mat)
+        {
+            //updates the shared material for the given poly.
+            var matind = 0;
+            if ((PolygonMaterialIndices != null) && (polyIndex < PolygonMaterialIndices.Length))
+            {
+                matind = PolygonMaterialIndices[polyIndex];
+            }
+            if ((Materials != null) && (matind < Materials.Length))
+            {
+                Materials[matind] = mat;
+            }
+        }
+
+
+        public void CalculateQuantum()
+        {
+            var min = new Vector3(float.MaxValue);
+            var max = new Vector3(float.MinValue);
+            if (Vertices != null)
+            {
+                foreach (var v in Vertices)
+                {
+                    min = Vector3.Min(min, v);
+                    max = Vector3.Max(max, v);
+                }
+            }
+            if (Vertices2 != null)
+            {
+                foreach (var v in Vertices2)
+                {
+                    min = Vector3.Min(min, v);
+                    max = Vector3.Max(max, v);
+                }
+            }
+            var maxsiz = Vector3.Max(min.Abs(), max.Abs());
+            var q = (maxsiz+Margin) / 32767.0f;
+            Quantum = q;
+        }
+
+        public void BuildMaterials()
+        {
+            //update Materials and PolygonMaterialIndices arrays, using custom materials from polys and existing materials
+
+            var matdict = new Dictionary<BoundMaterial_s, byte>();
+            var matlist = new List<BoundMaterial_s>();
+            var polymats = new List<byte>();
+
+            if (Polygons != null)
+            {
+                foreach (var poly in Polygons)
+                {
+                    var mat = poly.Material;
+                    if (matdict.TryGetValue(mat, out byte matidx))
+                    {
+                        polymats.Add(matidx);
+                    }
+                    else
+                    {
+                        matidx = (byte)matlist.Count;
+                        matdict.Add(mat, matidx);
+                        matlist.Add(mat);
+                        polymats.Add(matidx);
+                    }
+                }
+            }
+
+            Materials = matlist.ToArray();
+            PolygonMaterialIndices = polymats.ToArray();
+        }
+
     }
     [TC(typeof(EXP))] public class BoundBVH : BoundGeometry
     {
@@ -1472,6 +1595,8 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override IResourceBlock[] GetReferences()
         {
+            BuildBVH();
+
             var list = new List<IResourceBlock>(base.GetReferences());
             if (BVH != null) list.Add(BVH);
             return list.ToArray();
@@ -1482,6 +1607,75 @@ namespace CodeWalker.GameFiles
 
         public void BuildBVH()
         {
+            if ((Polygons?.Length ?? 0) <= 0) //in some des_ drawables?
+            {
+                if (BVH != null)
+                { }
+                BVH = null;
+                return;
+            }
+            if (BVH != null)
+            {
+                //var tnodes = BVHBuilder.Unbuild(BVH);
+            }
+
+            var items = new List<BVHBuilderItem>();
+            for (int i = 0; i < Polygons.Length; i++)
+            {
+                var poly = Polygons[i];
+                if (poly != null)
+                {
+                    var it = new BVHBuilderItem();
+                    it.Min = poly.BoxMin;
+                    it.Max = poly.BoxMax;
+                    it.Index = i;
+                    it.Polygon = poly;
+                    items.Add(it);
+                }
+            }
+
+            var bvh = BVHBuilder.Build(items, 4); //geometries have BVH item threshold of 4
+
+            var newpolys = new BoundPolygon[items.Count];
+            var newpolymats = new byte[items.Count];
+            var itemlookup = new short[items.Count];
+            for (int i = 0; i < items.Count; i++)
+            {
+                var poly = items[i]?.Polygon;
+                if (poly != null)
+                {
+                    if (poly.Index < itemlookup.Length)
+                    {
+                        itemlookup[poly.Index] = (short)i;
+                    }
+                    else
+                    { }//shouldn't happen
+                }
+                else
+                { }//shouldn't happen
+            }
+            for (int i = 0; i < items.Count; i++)
+            {
+                var poly = items[i]?.Polygon;
+                if (poly != null)
+                {
+                    newpolys[i] = poly;
+                    newpolymats[i] = (poly.Index < PolygonMaterialIndices.Length) ? PolygonMaterialIndices[poly.Index] : (byte)0;//is this necessary?
+                    poly.Index = i;
+                    if (poly is BoundPolygonTriangle ptri)
+                    {
+                        ptri.edgeIndex1 = ((ptri.edgeIndex1 >= 0) && (ptri.edgeIndex1 < itemlookup.Length)) ? itemlookup[ptri.edgeIndex1] : (short)-1;
+                        ptri.edgeIndex2 = ((ptri.edgeIndex2 >= 0) && (ptri.edgeIndex2 < itemlookup.Length)) ? itemlookup[ptri.edgeIndex2] : (short)-1;
+                        ptri.edgeIndex3 = ((ptri.edgeIndex3 >= 0) && (ptri.edgeIndex3 < itemlookup.Length)) ? itemlookup[ptri.edgeIndex3] : (short)-1;
+                    }
+                }
+            }
+            Polygons = newpolys;
+            PolygonMaterialIndices = newpolymats;
+
+
+
+            BVH = bvh;
 
         }
 
@@ -1507,8 +1701,8 @@ namespace CodeWalker.GameFiles
             for (int t = 0; t < BVH.Trees.data_items.Length; t++)
             {
                 var tree = BVH.Trees.data_items[t];
-                box.Minimum = new Vector3(tree.MinX, tree.MinY, tree.MinZ) * q + c;
-                box.Maximum = new Vector3(tree.MaxX, tree.MaxY, tree.MaxZ) * q + c;
+                box.Minimum = tree.Min * q + c;
+                box.Maximum = tree.Max * q + c;
                 if (!sph.Intersects(ref box))
                 { continue; }
 
@@ -1517,8 +1711,8 @@ namespace CodeWalker.GameFiles
                 while (nodeind < lastind)
                 {
                     var node = BVH.Nodes.data_items[nodeind];
-                    box.Minimum = new Vector3(node.MinX, node.MinY, node.MinZ) * q + c;
-                    box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
+                    box.Minimum = node.Min * q + c;
+                    box.Maximum = node.Max * q + c;
                     bool nodehit = sph.Intersects(ref box);
                     bool nodeskip = !nodehit;
                     if (node.ItemCount <= 0) //intermediate node with child nodes
@@ -1549,7 +1743,6 @@ namespace CodeWalker.GameFiles
 
             return res;
         }
-
         public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue)
         {
             var res = new SpaceRayIntersectResult();
@@ -1575,8 +1768,8 @@ namespace CodeWalker.GameFiles
             for (int t = 0; t < BVH.Trees.data_items.Length; t++)
             {
                 var tree = BVH.Trees.data_items[t];
-                box.Minimum = new Vector3(tree.MinX, tree.MinY, tree.MinZ) * q + c;
-                box.Maximum = new Vector3(tree.MaxX, tree.MaxY, tree.MaxZ) * q + c;
+                box.Minimum = tree.Min * q + c;
+                box.Maximum = tree.Max * q + c;
                 if (!ray.Intersects(ref box, out bvhboxhittest))
                 { continue; }
                 if (bvhboxhittest > res.HitDist)
@@ -1587,8 +1780,8 @@ namespace CodeWalker.GameFiles
                 while (nodeind < lastind)
                 {
                     var node = BVH.Nodes.data_items[nodeind];
-                    box.Minimum = new Vector3(node.MinX, node.MinY, node.MinZ) * q + c;
-                    box.Maximum = new Vector3(node.MaxX, node.MaxY, node.MaxZ) * q + c;
+                    box.Minimum = node.Min * q + c;
+                    box.Maximum = node.Max * q + c;
                     bool nodehit = ray.Intersects(ref box, out bvhboxhittest);
                     bool nodeskip = !nodehit || (bvhboxhittest > res.HitDist);
                     if (node.ItemCount <= 0) //intermediate node with child nodes
@@ -1710,10 +1903,35 @@ namespace CodeWalker.GameFiles
                         xform.Column4 = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
                         child.Transform = xform;
                         child.TransformInv = Matrix.Invert(xform);
+                        child.CompositeFlags1 = ((ChildrenFlags1 != null) && (i < ChildrenFlags1.Length)) ? ChildrenFlags1[i] : new BoundCompositeChildrenFlags();
+                        child.CompositeFlags2 = ((ChildrenFlags2 != null) && (i < ChildrenFlags2.Length)) ? ChildrenFlags2[i] : new BoundCompositeChildrenFlags();
                     }
                 }
             }
-            
+
+            //if ((ChildrenTransformation1 != null) && (ChildrenTransformation2 != null))
+            //{
+            //    //if (ChildrenTransformation1.Length != ChildrenTransformation2.Length)
+            //    //{ }//no hits
+            //    //else
+            //    //{
+            //    //    for (int i = 0; i < ChildrenTransformation1.Length; i++)
+            //    //    {
+            //    //        if (ChildrenTransformation1[i] != ChildrenTransformation2[i])
+            //    //        { }//no hits
+            //    //    }
+            //    //}
+            //}
+            //else
+            //{ }//no hits
+            //if (ChildrenFlags1 != null)
+            //{ }
+            //else
+            //{ }//some props ydr's
+            //if (ChildrenFlags2 != null)
+            //{ }
+            //else
+            //{ }//some props ydr's
 
         }
 
@@ -1753,6 +1971,11 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override IResourceBlock[] GetReferences()
         {
+            BuildBVH();
+            UpdateChildrenFlags();
+            UpdateChildrenBounds();
+            UpdateChildrenTransformations();
+
             var list = new List<IResourceBlock>(base.GetReferences());
             if (Children != null) list.Add(Children);
             if (ChildrenTransformation1 != null)
@@ -1787,13 +2010,134 @@ namespace CodeWalker.GameFiles
 
 
 
-
         public void BuildBVH()
         {
 
+            if (Children?.data_items == null)
+            {
+                BVH = null;
+                return;
+            }
+            if (Children.data_items.Length <= 5) //composites only get BVHs if they have 6 or more children.
+            {
+                if (BVH != null)
+                { }
+                BVH = null;
+                return;
+            }
+            if (BVH != null)
+            {
+                //var tnodes = BVHBuilder.Unbuild(BVH);
+            }
+            else
+            {
+                //why are we here? yft's hit this...
+                if (!(Owner is FragPhysicsLOD) && !(Owner is FragPhysArchetype) && !(Owner is VerletCloth))
+                { }
+            }
+
+
+            var items = new List<BVHBuilderItem>();
+            for (int i = 0; i < Children.data_items.Length; i++)
+            {
+                var child = Children.data_items[i];
+                if (child != null)
+                {
+                    var it = new BVHBuilderItem();
+                    it.Min = child.BoxMin;
+                    it.Max = child.BoxMax;
+                    it.Index = i;
+                    it.Bounds = child;
+                    items.Add(it);
+                }
+            }
+
+            var bvh = BVHBuilder.Build(items, 1); //composites have BVH item threshold of 1
+
+            BVH = bvh;
+
         }
 
+        public void UpdateChildrenFlags()
+        {
+            if (Children?.data_items == null)
+            {
+                ChildrenFlags1 = null;
+                ChildrenFlags2 = null;
+                return;
+            }
 
+            var cf1 = new List<BoundCompositeChildrenFlags>();
+            var cf2 = new List<BoundCompositeChildrenFlags>();
+
+            foreach (var child in Children.data_items)
+            {
+                var f1 = new BoundCompositeChildrenFlags();
+                var f2 = new BoundCompositeChildrenFlags();
+                if (child != null)
+                {
+                    f1 = child.CompositeFlags1;
+                    f2 = child.CompositeFlags2;
+                }
+                cf1.Add(f1);
+                cf2.Add(f2);
+            }
+
+            ChildrenFlags1 = cf1.ToArray();
+            ChildrenFlags2 = cf2.ToArray();
+        }
+
+        public void UpdateChildrenBounds()
+        {
+            if (Children?.data_items == null)
+            {
+                ChildrenBoundingBoxes = null;
+                return;
+            }
+
+            var cbl = new List<AABB_s>();
+            foreach (var child in Children.data_items)
+            {
+                var aabb = new AABB_s();
+                if (child != null)
+                {
+                    aabb.Min = new Vector4(child.BoxMin, float.Epsilon);
+                    aabb.Max = new Vector4(child.BoxMax, child.Margin);
+                }
+                cbl.Add(aabb);
+            }
+
+            ChildrenBoundingBoxes = cbl.ToArray();
+
+        }
+
+        public void UpdateChildrenTransformations()
+        {
+            if (Children?.data_items == null)
+            {
+                ChildrenTransformation1 = null;
+                ChildrenTransformation2 = null;
+                return;
+            }
+
+            var ct1 = new List<Matrix>();
+            var ct2 = new List<Matrix>();
+            foreach (var child in Children.data_items)
+            {
+                var m = Matrix.Identity;
+                if (child != null)
+                {
+                    m = child.Transform;
+                }
+                m.Column4 = new Vector4(0.0f, float.Epsilon, float.Epsilon, 0.0f);//is this right? TODO: check!
+                ct1.Add(m);
+                ct2.Add(m);
+            }
+
+            ChildrenTransformation1 = ct1.ToArray();
+            ChildrenTransformation2 = ct2.ToArray();
+
+        }
 
 
         public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
@@ -1821,7 +2165,6 @@ namespace CodeWalker.GameFiles
 
             return res;
         }
-
         public override SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue)
         {
             var res = new SpaceRayIntersectResult();
@@ -1873,19 +2216,18 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                var matind = 0;
-                if ((Owner?.PolygonMaterialIndices != null) && (Index < Owner.PolygonMaterialIndices.Length))
-                {
-                    matind = Owner.PolygonMaterialIndices[Index];
-                }
-                if ((Owner.Materials != null) && (matind < Owner.Materials.Length))
-                {
-                    return Owner.Materials[matind];
-                }
-                return new BoundMaterial_s();
+                if (MaterialCustom.HasValue) return MaterialCustom.Value;
+                return Owner?.GetMaterial(Index) ?? new BoundMaterial_s();
+            }
+            set
+            {
+                MaterialCustom = value;
             }
         }
+        public BoundMaterial_s? MaterialCustom; //for editing, when assigning a new material.
         public int Index { get; set; } //for editing convenience, not stored
+        public abstract Vector3 BoxMin { get; }
+        public abstract Vector3 BoxMax { get; }
         public abstract Vector3 Scale { get; set; }
         public abstract Vector3 Position { get; set; }
         public abstract Quaternion Orientation { get; set; }
@@ -1936,6 +2278,20 @@ namespace CodeWalker.GameFiles
             set { if (Owner != null) Owner.SetVertexPos(vertIndex3, value); }
         }
 
+        public override Vector3 BoxMin
+        {
+            get
+            {
+                return Vector3.Min(Vector3.Min(Vertex1, Vertex2), Vertex3);
+            }
+        }
+        public override Vector3 BoxMax
+        {
+            get
+            {
+                return Vector3.Max(Vector3.Max(Vertex1, Vertex2), Vertex3);
+            }
+        }
         public override Vector3 Scale
         {
             get
@@ -2008,6 +2364,20 @@ namespace CodeWalker.GameFiles
         public uint unused0 { get; set; }
         public uint unused1 { get; set; }
 
+        public override Vector3 BoxMin
+        {
+            get
+            {
+                return Position - sphereRadius;
+            }
+        }
+        public override Vector3 BoxMax
+        {
+            get
+            {
+                return Position + sphereRadius;
+            }
+        }
         public override Vector3 Scale
         {
             get
@@ -2079,6 +2449,20 @@ namespace CodeWalker.GameFiles
             set { if (Owner != null) Owner.SetVertexPos(capsuleIndex2, value); }
         }
 
+        public override Vector3 BoxMin
+        {
+            get
+            {
+                return Vector3.Min(Vertex1, Vertex2) - capsuleRadius;
+            }
+        }
+        public override Vector3 BoxMax
+        {
+            get
+            {
+                return Vector3.Max(Vertex1, Vertex2) + capsuleRadius;
+            }
+        }
         public override Vector3 Scale
         {
             get
@@ -2170,6 +2554,20 @@ namespace CodeWalker.GameFiles
             set { if (Owner != null) Owner.SetVertexPos(boxIndex4, value); }
         }
 
+        public override Vector3 BoxMin
+        {
+            get
+            {
+                return Vector3.Min(Vector3.Min(Vector3.Min(Vertex1, Vertex2), Vertex3), Vertex4);
+            }
+        }
+        public override Vector3 BoxMax
+        {
+            get
+            {
+                return Vector3.Max(Vector3.Max(Vector3.Max(Vertex1, Vertex2), Vertex3), Vertex4);
+            }
+        }
         public override Vector3 Scale
         {
             get
@@ -2253,6 +2651,20 @@ namespace CodeWalker.GameFiles
             set { if (Owner != null) Owner.SetVertexPos(cylinderIndex2, value); }
         }
 
+        public override Vector3 BoxMin
+        {
+            get
+            {
+                return Vector3.Min(Vertex1, Vertex2) - cylinderRadius;//not perfect but meh
+            }
+        }
+        public override Vector3 BoxMax
+        {
+            get
+            {
+                return Vector3.Max(Vertex1, Vertex2) + cylinderRadius;//not perfect but meh
+            }
+        }
         public override Vector3 Scale
         {
             get
@@ -2327,6 +2739,12 @@ namespace CodeWalker.GameFiles
             Y = (short)v.Y;
             Z = (short)v.Z;
         }
+
+        public Vector3 Vector
+        {
+            get { return new Vector3(X, Y, Z); }
+            set { X = (short)value.X; Y = (short)value.Y; Z = (short)value.Z; }
+        }
     }
 
     [TC(typeof(EXP))] public class BoundGeomUnknown1 : ResourceSystemBlock
@@ -2352,7 +2770,7 @@ namespace CodeWalker.GameFiles
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            if (parameters?.Length < 1)
+            if ((parameters?.Length ?? 0) < 1)
             { return; } //shouldn't happen!
 
             var itemcounts = (uint[])parameters[0];
@@ -2404,41 +2822,41 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [Flags] public enum EBoundCompositeFlags
+    [Flags] public enum EBoundCompositeFlags : uint
     {
-        NONE = 0,
-        UNKNOWN = 1,
-        MAP_WEAPON = 1 << 1,
-        MAP_DYNAMIC = 1 << 2,
-        MAP_ANIMAL = 1 << 3,
-        MAP_COVER = 1 << 4,
-        MAP_VEHICLE = 1 << 5,
-        VEHICLE_NOT_BVH = 1 << 6,
-        VEHICLE_BVH = 1 << 7,
-        VEHICLE_BOX = 1 << 8,
-        PED = 1 << 9,
-        RAGDOLL = 1 << 10,
-        ANIMAL = 1 << 11,
-        ANIMAL_RAGDOLL = 1 << 12,
-        OBJECT = 1 << 13,
-        OBJECT_ENV_CLOTH = 1 << 14,
-        PLANT = 1 << 15,
-        PROJECTILE = 1 << 16,
-        EXPLOSION = 1 << 17,
-        PICKUP = 1 << 18,
-        FOLIAGE = 1 << 19,
-        FORKLIFT_FORKS = 1 << 20,
-        TEST_WEAPON = 1 << 21,
-        TEST_CAMERA = 1 << 22,
-        TEST_AI = 1 << 23,
-        TEST_SCRIPT = 1 << 24,
-        TEST_VEHICLE_WHEEL = 1 << 25,
-        GLASS = 1 << 26,
-        MAP_RIVER = 1 << 27,
-        SMOKE = 1 << 28,
-        UNSMASHED = 1 << 29,
-        MAP_STAIRS = 1 << 30,
-        MAP_DEEP_SURFACE = 1 << 31,
+        NONE = 0u,
+        UNKNOWN = 1u,
+        MAP_WEAPON = 1u << 1,
+        MAP_DYNAMIC = 1u << 2,
+        MAP_ANIMAL = 1u << 3,
+        MAP_COVER = 1u << 4,
+        MAP_VEHICLE = 1u << 5,
+        VEHICLE_NOT_BVH = 1u << 6,
+        VEHICLE_BVH = 1u << 7,
+        VEHICLE_BOX = 1u << 8,
+        PED = 1u << 9,
+        RAGDOLL = 1u << 10,
+        ANIMAL = 1u << 11,
+        ANIMAL_RAGDOLL = 1u << 12,
+        OBJECT = 1u << 13,
+        OBJECT_ENV_CLOTH = 1u << 14,
+        PLANT = 1u << 15,
+        PROJECTILE = 1u << 16,
+        EXPLOSION = 1u << 17,
+        PICKUP = 1u << 18,
+        FOLIAGE = 1u << 19,
+        FORKLIFT_FORKS = 1u << 20,
+        TEST_WEAPON = 1u << 21,
+        TEST_CAMERA = 1u << 22,
+        TEST_AI = 1u << 23,
+        TEST_SCRIPT = 1u << 24,
+        TEST_VEHICLE_WHEEL = 1u << 25,
+        GLASS = 1u << 26,
+        MAP_RIVER = 1u << 27,
+        SMOKE = 1u << 28,
+        UNSMASHED = 1u << 29,
+        MAP_STAIRS = 1u << 30,
+        MAP_DEEP_SURFACE = 1u << 31,
     }
     [TC(typeof(EXP))] public struct BoundCompositeChildrenFlags
     {
@@ -2472,7 +2890,6 @@ namespace CodeWalker.GameFiles
         public Vector4 Quantum { get; set; } // bounding box dimension / 2^16
         public ResourceSimpleList64_s<BVHTreeInfo_s> Trees { get; set; }
 
-
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
@@ -2490,7 +2907,6 @@ namespace CodeWalker.GameFiles
             this.QuantumInverse = reader.ReadStruct<Vector4>();
             this.Quantum = reader.ReadStruct<Vector4>();
             this.Trees = reader.ReadBlock<ResourceSimpleList64_s<BVHTreeInfo_s>>();
-
         }
 
         /// <summary>
@@ -2543,9 +2959,20 @@ namespace CodeWalker.GameFiles
         public short NodeIndex1 { get; set; }
         public short NodeIndex2 { get; set; }
 
+        public Vector3 Min
+        {
+            get { return new Vector3(MinX, MinY, MinZ); }
+            set { MinX = (short)value.X; MinY = (short)value.Y; MinZ = (short)value.Z; }
+        }
+        public Vector3 Max
+        {
+            get { return new Vector3(MaxX, MaxY, MaxZ); }
+            set { MaxX = (short)value.X; MaxY = (short)value.Y; MaxZ = (short)value.Z; }
+        }
+
         public override string ToString()
         {
-            return NodeIndex1.ToString() + ", " + NodeIndex2.ToString();
+            return NodeIndex1.ToString() + ", " + NodeIndex2.ToString() + "  (" + (NodeIndex2 - NodeIndex1).ToString() + " nodes)";
         }
     }
     [TC(typeof(EXP))] public struct BVHNode_s
@@ -2559,12 +2986,369 @@ namespace CodeWalker.GameFiles
         public short ItemId { get; set; }
         public short ItemCount { get; set; }
 
+        public Vector3 Min
+        {
+            get { return new Vector3(MinX, MinY, MinZ); }
+            set { MinX = (short)value.X; MinY = (short)value.Y; MinZ = (short)value.Z; }
+        }
+        public Vector3 Max
+        {
+            get { return new Vector3(MaxX, MaxY, MaxZ); }
+            set { MaxX = (short)value.X; MaxY = (short)value.Y; MaxZ = (short)value.Z; }
+        }
+
         public override string ToString()
         {
             return ItemId.ToString() + ": " + ItemCount.ToString();
         }
     }
 
+
+    public class BVHBuilder
+    {
+        public static int MaxNodeItemCount = 4; //item threshold: 1 for composites, 4 for geometries
+        public static int MaxTreeNodeCount = 127; //max number of nodes found in any tree
+
+
+        public static BVH Build(List<BVHBuilderItem> items, int itemThreshold)
+        {
+            if (items == null) return null;
+            var bvh = new BVH();
+            var min = new Vector3(float.MaxValue);
+            var max = new Vector3(float.MinValue);
+            var nodes = new List<BVHBuilderNode>();
+            var trees = new List<BVHBuilderNode>();
+            for (int i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+                min = Vector3.Min(min, item.Min);
+                max = Vector3.Max(max, item.Max);
+            }
+            var cen = (min + max) * 0.5f;
+            bvh.BoundingBoxMin = new Vector4(min, float.NaN);
+            bvh.BoundingBoxMax = new Vector4(max, float.NaN);
+            bvh.BoundingBoxCenter = new Vector4(cen, float.NaN);
+            bvh.Quantum = new Vector4(Vector3.Max((min - cen).Abs(), (max - cen).Abs()) / 32767.0f, float.NaN);
+            bvh.QuantumInverse = new Vector4(1.0f / bvh.Quantum.XYZ(), float.NaN);
+
+            var root = new BVHBuilderNode();
+            root.Items = items;
+            root.Build(itemThreshold);
+            root.GatherNodes(nodes);
+            root.GatherTrees(trees);
+
+
+            if (itemThreshold > 1) //need to reorder items, since they need to be grouped by node for the node's item index
+            {
+                items.Clear();
+                foreach (var node in nodes)
+                {
+                    if (node.Items != null)
+                    {
+                        foreach (var item in node.Items)
+                        {
+                            item.Index = items.Count;
+                            items.Add(item);
+                        }
+                    }
+                }
+            }
+            else //don't need to reorder items, since nodes only have one item and one item index
+            { }
+
+            var bvhtrees = new List<BVHTreeInfo_s>();
+            var bvhnodes = new List<BVHNode_s>();
+            var qi = bvh.QuantumInverse.XYZ();
+            var c = bvh.BoundingBoxCenter.XYZ();
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                var node = nodes[i];
+                var id = ((node.Items?.Count ?? 0) > 0) ? node.Items[0].Index : 0;
+                var tn = node.TotalNodes;
+                var bn = new BVHNode_s();
+                bn.Min = (node.Min - c) * qi;
+                bn.Max = (node.Max - c) * qi;
+                bn.ItemCount = (short)((tn <= 1) ? node.TotalItems : 0);
+                bn.ItemId = (short)((tn <= 1) ? id : node.TotalNodes);
+                bvhnodes.Add(bn);
+            }
+
+            for (int i = 0; i < trees.Count; i++)
+            {
+                var tree = trees[i];
+                var bt = new BVHTreeInfo_s();
+                bt.Min = (tree.Min - c) * qi;
+                bt.Max = (tree.Max - c) * qi;
+                bt.NodeIndex1 = (short)tree.Index;
+                bt.NodeIndex2 = (short)(tree.Index + tree.TotalNodes);
+                bvhtrees.Add(bt);
+            }
+
+
+            bvh.Nodes = new ResourceSimpleList64b_s<BVHNode_s>();
+            bvh.Nodes.data_items = bvhnodes.ToArray();
+
+            bvh.Trees = new ResourceSimpleList64_s<BVHTreeInfo_s>();
+            bvh.Trees.data_items = bvhtrees.ToArray();
+
+            return bvh;
+        }
+
+        public static BVHBuilderNode[] Unbuild(BVH bvh)
+        {
+            if ((bvh?.Trees?.data_items == null) || (bvh?.Nodes?.data_items == null)) return null;
+
+            var nodes = new List<BVHBuilderNode>();
+            foreach (var tree in bvh.Trees.data_items)
+            {
+                var bnode = new BVHBuilderNode();
+                bnode.Unbuild(bvh, tree.NodeIndex1, tree.NodeIndex2);
+                nodes.Add(bnode);
+                //MaxTreeNodeCount = Math.Max(MaxTreeNodeCount, tree.NodeIndex2 - tree.NodeIndex1);
+            }
+            return nodes.ToArray();
+        }
+
+    }
+    public class BVHBuilderNode
+    {
+        public List<BVHBuilderNode> Children;
+        public List<BVHBuilderItem> Items;
+        public Vector3 Min;
+        public Vector3 Max;
+        public int Index;
+
+        public int TotalNodes
+        {
+            get
+            {
+                int c = 1;
+                if (Children != null)
+                {
+                    foreach (var child in Children)
+                    {
+                        c += child.TotalNodes;
+                    }
+                }
+                return c;
+            }
+        }
+        public int TotalItems
+        {
+            get
+            {
+                int c = Items?.Count ?? 0;
+                if (Children != null)
+                {
+                    foreach (var child in Children)
+                    {
+                        c += child.TotalItems;
+                    }
+                }
+                return c;
+            }
+        }
+
+        public void Build(int itemThreshold)
+        {
+            UpdateMinMax();
+            if (Items == null) return;
+            if (Items.Count <= itemThreshold) return;
+
+            var avgsum = Vector3.Zero;
+            foreach (var item in Items)
+            {
+                avgsum += item.Min;
+                avgsum += item.Max;
+            }
+            var avg = avgsum * (0.5f / Items.Count);
+            int countx = 0, county = 0, countz = 0;
+            foreach (var item in Items)
+            {
+                var icen = (item.Min + item.Max) * 0.5f;
+                if (icen.X < avg.X) countx++;
+                if (icen.Y < avg.Y) county++;
+                if (icen.Z < avg.Z) countz++;
+            }
+            var target = Items.Count / 2.0f;
+            var dx = Math.Abs(target - countx);
+            var dy = Math.Abs(target - county);
+            var dz = Math.Abs(target - countz);
+            int axis = -1;
+            if ((dx <= dy) && (dx <= dz)) axis = 0; //x seems best
+            else if (dy <= dz) axis = 1; //y seems best
+            else axis = 2; //z seems best
+
+            var l1 = new List<BVHBuilderItem>();
+            var l2 = new List<BVHBuilderItem>();
+            foreach (var item in Items)
+            {
+                var icen = (item.Min + item.Max) * 0.5f;
+                bool s = false;
+                switch (axis)
+                {
+                    default:
+                    case 0: s = (icen.X > avg.X); break;
+                    case 1: s = (icen.Y > avg.Y); break;
+                    case 2: s = (icen.Z > avg.Z); break;
+                }
+                if (s) l1.Add(item);
+                else l2.Add(item);
+            }
+
+            if ((l1.Count == 0) || (l2.Count == 0)) //don't get stuck in a stack overflow...
+            {
+                var l3 = new List<BVHBuilderItem>();//we can recover from this...
+                l3.AddRange(l1);
+                l3.AddRange(l2);
+                if (l3.Count > 0)
+                {
+                    l3.Sort((a, b) =>
+                    {
+                        var c = a.Min.CompareTo(b.Min); if (c != 0) return c;
+                        return a.Max.CompareTo(b.Max);
+                    });
+                    l1.Clear();
+                    l2.Clear();
+                    var hidx = l3.Count / 2;
+                    for (int i = 0; i < hidx; i++) l1.Add(l3[i]);
+                    for (int i = hidx; i < l3.Count; i++) l2.Add(l3[i]);
+                }
+                else
+                { return; }//nothing to see here?
+            }
+
+            Items = null;
+            Children = new List<BVHBuilderNode>();
+
+            var n1 = new BVHBuilderNode();
+            n1.Items = l1;
+            n1.Build(itemThreshold);
+            Children.Add(n1);
+
+            var n2 = new BVHBuilderNode();
+            n2.Items = l2;
+            n2.Build(itemThreshold);
+            Children.Add(n2);
+
+            Children.Sort((a, b) =>
+            {
+                return b.TotalItems.CompareTo(a.TotalItems);
+            }); //is this necessary?
+
+        }
+        public void UpdateMinMax()
+        {
+            var min = new Vector3(float.MaxValue);
+            var max = new Vector3(float.MinValue);
+            if (Items != null)
+            {
+                foreach (var item in Items)
+                {
+                    min = Vector3.Min(min, item.Min);
+                    max = Vector3.Max(max, item.Max);
+                }
+            }
+            if (Children != null)
+            {
+                foreach (var child in Children)
+                {
+                    child.UpdateMinMax();
+                    min = Vector3.Min(min, child.Min);
+                    max = Vector3.Max(max, child.Max);
+                }
+            }
+            Min = min;
+            Max = max;
+        }
+        public void GatherNodes(List<BVHBuilderNode> nodes)
+        {
+            Index = nodes.Count;
+            nodes.Add(this);
+            if (Children != null)
+            {
+                foreach (var child in Children)
+                {
+                    child.GatherNodes(nodes);
+                }
+            }
+        }
+        public void GatherTrees(List<BVHBuilderNode> trees)
+        {
+            if ((TotalNodes > BVHBuilder.MaxTreeNodeCount) && ((Children?.Count ?? 0) > 0))
+            {
+                foreach (var child in Children)
+                {
+                    child.GatherTrees(trees);
+                }
+            }
+            else
+            {
+                trees.Add(this);
+            }
+        }
+
+        public void Unbuild(BVH bvh, int nodeIndex1, int nodeIndex2)
+        {
+            var q = bvh.Quantum.XYZ();
+            var c = bvh.BoundingBoxCenter.XYZ();
+            int nodeind = nodeIndex1;
+            int lastind = nodeIndex2;
+            while (nodeind < lastind)
+            {
+                var node = bvh.Nodes.data_items[nodeind];
+                if (node.ItemCount <= 0) //intermediate node with child nodes
+                {
+                    Children = new List<BVHBuilderNode>();
+                    var cind1 = nodeind + 1;
+                    var lcind = nodeind + node.ItemId; //(child node count)
+                    while (cind1 < lcind)
+                    {
+                        var cnode = bvh.Nodes.data_items[cind1];
+                        var ccount = (cnode.ItemCount <= 0) ? cnode.ItemId : 1;
+                        var cind2 = cind1 + ccount;
+                        var chi = new BVHBuilderNode();
+                        chi.Unbuild(bvh, cind1, cind2);
+                        Children.Add(chi);
+                        cind1 = cind2;
+                    }
+                    nodeind += node.ItemId;
+                }
+                else //leaf node, with polygons
+                {
+                    Items = new List<BVHBuilderItem>();
+                    for (int i = 0; i < node.ItemCount; i++)
+                    {
+                        var item = new BVHBuilderItem();
+                        item.Index = node.ItemId + i;
+                        Items.Add(item);
+                    }
+                    //BVHBuilder.MaxNodeItemCount = Math.Max(BVHBuilder.MaxNodeItemCount, node.ItemCount);
+                    nodeind++;
+                }
+                Min = node.Min * q + c;
+                Max = node.Max * q + c;
+            }
+        }
+
+        public override string ToString()
+        {
+            var fstr = (Children != null) ? (TotalNodes.ToString() + ", 0 - ") : (Items != null) ? ("i, " + TotalItems.ToString() + " - ") : "error!";
+            var cstr = (Children != null) ? (Children.Count.ToString() + " children") : "";
+            var istr = (Items != null) ? (Items.Count.ToString() + " items") : "";
+            if (string.IsNullOrEmpty(cstr)) return fstr + istr;
+            if (string.IsNullOrEmpty(istr)) return fstr + cstr;
+            return cstr + ", " + istr;
+        }
+    }
+    public class BVHBuilderItem
+    {
+        public Vector3 Min;
+        public Vector3 Max;
+        public int Index;
+        public Bounds Bounds;
+        public BoundPolygon Polygon;
+    }
 
 
 
