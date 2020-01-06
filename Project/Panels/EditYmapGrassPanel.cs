@@ -245,7 +245,7 @@ namespace CodeWalker.Project.Panels
             var wf = ProjectForm.WorldForm;
             if (wf == null) return;
 
-            //lock (wf.RenderSyncRoot)
+            lock (wf.RenderSyncRoot)
             {
                 CurrentBatch.CreateInstancesAtMouse(
                     CurrentBatch,
@@ -270,7 +270,7 @@ namespace CodeWalker.Project.Panels
             var wf = ProjectForm.WorldForm;
             if (wf == null) return;
             var changed = false;
-            //lock (wf.RenderSyncRoot)
+            lock (wf.RenderSyncRoot)
             {
                 if (CurrentBatch.EraseInstancesAtMouse(
                     CurrentBatch,
