@@ -7382,7 +7382,26 @@ namespace CodeWalker.Project
             bool enable = (CurrentYbnFile != null);
             bool inproj = YbnExistsInProject(CurrentYbnFile);
 
+            YbnNewBoundsMenu.Enabled = enable && inproj;
+            YbnNewPolygonMenu.Enabled = (CurrentCollisionBounds is BoundGeometry bgeom) && inproj;
 
+            if (CurrentYbnFile != null)
+            {
+                YbnNameMenu.Text = "(" + CurrentYbnFile.Name + ")";
+            }
+            else
+            {
+                YbnNameMenu.Text = "(No .ybn file selected)";
+            }
+
+            YbnAddToProjectMenu.Enabled = enable && !inproj;
+            YbnRemoveFromProjectMenu.Enabled = inproj;
+            YbnMenu.Visible = enable;
+
+            if (WorldForm != null)
+            {
+                WorldForm.EnableYbnUI(enable, CurrentYbnFile?.Name ?? "");
+            }
         }
         private void RefreshYndUI()
         {
@@ -7690,6 +7709,10 @@ namespace CodeWalker.Project
         {
             NewYtyp();
         }
+        private void FileNewYbnMenu_Click(object sender, EventArgs e)
+        {
+            NewYbn();
+        }
         private void FileNewYndMenu_Click(object sender, EventArgs e)
         {
             NewYnd();
@@ -7721,6 +7744,10 @@ namespace CodeWalker.Project
         private void FileOpenYtypMenu_Click(object sender, EventArgs e)
         {
             OpenYtyp();
+        }
+        private void FileOpenYbnMenu_Click(object sender, EventArgs e)
+        {
+            OpenYbn();
         }
         private void FileOpenYndMenu_Click(object sender, EventArgs e)
         {
@@ -7828,6 +7855,71 @@ namespace CodeWalker.Project
         private void YtypMloNewEntitySetToolStripMenuItem_Click(object sender, EventArgs e)
         {
             NewMloEntitySet();
+        }
+
+        private void YbnNewBoundBoxMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionBounds(BoundsType.Box);
+        }
+        private void YbnNewBoundSphereMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionBounds(BoundsType.Sphere);
+        }
+        private void YbnNewBoundCapsuleMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionBounds(BoundsType.Capsule);
+        }
+        private void YbnNewBoundCylinderMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionBounds(BoundsType.Cylinder);
+        }
+        private void YbnNewBoundDiscMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionBounds(BoundsType.Disc);
+        }
+        private void YbnNewBoundClothMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionBounds(BoundsType.Cloth);
+        }
+        private void YbnNewBoundGeometryMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionBounds(BoundsType.Geometry);
+        }
+        private void YbnNewBoundGeometryBVHMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionBounds(BoundsType.GeometryBVH);
+        }
+        private void YbnNewBoundCompositeMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionBounds(BoundsType.Composite);
+        }
+        private void YbnNewPolygonTriangleMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionPoly(BoundPolygonType.Triangle);
+        }
+        private void YbnNewPolygonSphereMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionPoly(BoundPolygonType.Sphere);
+        }
+        private void YbnNewPolygonCapsuleMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionPoly(BoundPolygonType.Capsule);
+        }
+        private void YbnNewPolygonBoxMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionPoly(BoundPolygonType.Box);
+        }
+        private void YbnNewPolygonCylinderMenu_Click(object sender, EventArgs e)
+        {
+            NewCollisionPoly(BoundPolygonType.Cylinder);
+        }
+        private void YbnAddToProjectMenu_Click(object sender, EventArgs e)
+        {
+            AddYbnToProject(CurrentYbnFile);
+        }
+        private void YbnRemoveFromProjectMenu_Click(object sender, EventArgs e)
+        {
+            RemoveYbnFromProject();
         }
 
         private void YndNewNodeMenu_Click(object sender, EventArgs e)
@@ -7987,6 +8079,10 @@ namespace CodeWalker.Project
         {
             NewYtyp();
         }
+        private void ToolbarNewYbnMenu_Click(object sender, EventArgs e)
+        {
+            NewYbn();
+        }
         private void ToolbarNewYndMenu_Click(object sender, EventArgs e)
         {
             NewYnd();
@@ -8025,6 +8121,10 @@ namespace CodeWalker.Project
         private void ToolbarOpenYtypMenu_Click(object sender, EventArgs e)
         {
             OpenYtyp();
+        }
+        private void ToolbarOpenYbnMenu_Click(object sender, EventArgs e)
+        {
+            OpenYbn();
         }
         private void ToolbarOpenYndMenu_Click(object sender, EventArgs e)
         {

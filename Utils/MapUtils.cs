@@ -673,11 +673,11 @@ namespace CodeWalker
                 }
                 else if (CollisionPoly != null)
                 {
-                    return Quaternion.Identity;
+                    return CollisionPoly.Orientation;
                 }
                 else if (CollisionBounds != null)
                 {
-                    return Quaternion.Identity;
+                    return CollisionBounds.Orientation;
                 }
                 else if (NavPoly != null)
                 {
@@ -791,11 +791,11 @@ namespace CodeWalker
                 }
                 else if (CollisionPoly != null)
                 {
-                    return Vector3.One;
+                    return CollisionPoly.Scale;
                 }
                 else if (CollisionBounds != null)
                 {
-                    return Vector3.One;
+                    return CollisionBounds.Scale;
                 }
                 else if (NavPoly != null)
                 {
@@ -828,7 +828,21 @@ namespace CodeWalker
                 return Vector3.One;
             }
         }
-
+        public bool WidgetScaleLockXY
+        {
+            get
+            {
+                if (CollisionBounds != null)
+                {
+                    return false;
+                }
+                if (CollisionPoly != null)
+                {
+                    return false;
+                }
+                return true;
+            }
+        }
 
 
 
@@ -912,6 +926,14 @@ namespace CodeWalker
             {
                 CarGenerator.SetOrientation(newrot);
             }
+            else if (CollisionPoly != null)
+            {
+                CollisionPoly.Orientation = newrot;
+            }
+            else if (CollisionBounds != null)
+            {
+                CollisionBounds.Orientation = newrot;
+            }
             else if (ScenarioNode != null)
             {
                 ScenarioNode.SetOrientation(newrot);
@@ -939,6 +961,14 @@ namespace CodeWalker
             {
                 CarGenerator.SetScale(newscale);
                 AABB = new BoundingBox(CarGenerator.BBMin, CarGenerator.BBMax);
+            }
+            else if (CollisionPoly != null)
+            {
+                CollisionPoly.Scale = newscale;
+            }
+            else if (CollisionBounds != null)
+            {
+                CollisionBounds.Scale = newscale;
             }
         }
 

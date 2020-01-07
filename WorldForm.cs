@@ -3484,6 +3484,7 @@ namespace CodeWalker
                         Widget.Position = SelectedItem.WidgetPosition;
                         Widget.Rotation = SelectedItem.WidgetRotation;
                         Widget.RotationWidget.EnableAxes = SelectedItem.WidgetRotationAxes;
+                        Widget.ScaleWidget.LockXY = SelectedItem.WidgetScaleLockXY;
                         Widget.Scale = SelectedItem.WidgetScale;
                     }
                 }
@@ -5127,6 +5128,17 @@ namespace CodeWalker
             ToolbarAddItemButton.Enabled = enable;
             //ToolbarDeleteEntityButton.Enabled = enable;
             ToolbarPasteButton.Enabled = (CopiedEntity != null) && enable;
+        }
+        public void EnableYbnUI(bool enable, string filename)
+        {
+
+            if (enable) //only do something if a ybn is selected - EnableYmapUI will handle the no selection case.. 
+            {
+                //ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
+                //ToolbarAddItemButton.Enabled = enable;
+                ////ToolbarDeleteEntityButton.Enabled = enable;
+                //ToolbarPasteButton.Enabled = (CopiedCollisionPoly != null) && enable;
+            }
         }
         public void EnableYndUI(bool enable, string filename)
         {

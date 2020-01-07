@@ -2332,10 +2332,23 @@ namespace CodeWalker.GameFiles
         {
             get
             {
+                if (ScaleCached.HasValue) return ScaleCached.Value;
+                ScaleCached = Vector3.One;
                 return Vector3.One;
             }
             set
             {
+                var v1 = Vertex1;
+                var v2 = Vertex2;
+                var v3 = Vertex3;
+                var cen = (v1 + v2 + v3) * (1.0f / 3.0f);
+                var trans = value / Scale;
+                var ori = Orientation;
+                var orinv = Quaternion.Invert(ori);
+                Vertex1 = cen + ori.Multiply(trans * orinv.Multiply(v1 - cen));
+                Vertex2 = cen + ori.Multiply(trans * orinv.Multiply(v2 - cen));
+                Vertex3 = cen + ori.Multiply(trans * orinv.Multiply(v3 - cen));
+                ScaleCached = value;
             }
         }
         public override Vector3 Position
@@ -2356,12 +2369,32 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                return Quaternion.Identity;
+                if (OrientationCached.HasValue) return OrientationCached.Value;
+                var v1 = Vertex1;
+                var v2 = Vertex2;
+                var v3 = Vertex3;
+                var dir = v2 - v1;
+                var side = Vector3.Cross((v3 - v1), dir);
+                var up = Vector3.Normalize(Vector3.Cross(dir, side));
+                var ori = Quaternion.Invert(Quaternion.LookAtRH(Vector3.Zero, side, up));
+                OrientationCached = ori;
+                return ori;
             }
             set
             {
+                var v1 = Vertex1;
+                var v2 = Vertex2;
+                var v3 = Vertex3;
+                var cen = (v1 + v2 + v3) * (1.0f / 3.0f);
+                var trans = value * Quaternion.Invert(Orientation);
+                Vertex1 = cen + trans.Multiply(v1 - cen);
+                Vertex2 = cen + trans.Multiply(v2 - cen);
+                Vertex3 = cen + trans.Multiply(v3 - cen);
+                OrientationCached = value;
             }
         }
+        private Quaternion? OrientationCached;
+        private Vector3? ScaleCached;
 
         public override BoundVertexRef NearestVertex(Vector3 p)
         {
@@ -2428,10 +2461,11 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                return Vector3.One;
+                return new Vector3(sphereRadius);
             }
             set
             {
+                sphereRadius = value.X;
             }
         }
         public override Vector3 Position
@@ -2518,10 +2552,22 @@ namespace CodeWalker.GameFiles
         {
             get
             {
+                if (ScaleCached.HasValue) return ScaleCached.Value;
+                ScaleCached = Vector3.One;
                 return Vector3.One;
             }
             set
             {
+                var v1 = Vertex1;
+                var v2 = Vertex2;
+                var cen = (v1 + v2) * 0.5f;
+                var trans = value / Scale;
+                var ori = Orientation;
+                var orinv = Quaternion.Invert(ori);
+                Vertex1 = cen + ori.Multiply(trans * orinv.Multiply(v1 - cen));
+                Vertex2 = cen + ori.Multiply(trans * orinv.Multiply(v2 - cen));
+                capsuleRadius = trans.X * capsuleRadius;
+                ScaleCached = value;
             }
         }
         public override Vector3 Position
@@ -2541,12 +2587,28 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                return Quaternion.Identity;
+                if (OrientationCached.HasValue) return OrientationCached.Value;
+                var v1 = Vertex1;
+                var v2 = Vertex2;
+                var dir = v2 - v1;
+                var up = Vector3.Normalize(dir.GetPerpVec());
+                var ori = Quaternion.Invert(Quaternion.LookAtRH(Vector3.Zero, dir, up));
+                OrientationCached = ori;
+                return ori;
             }
             set
             {
+                var v1 = Vertex1;
+                var v2 = Vertex2;
+                var cen = (v1 + v2) * 0.5f;
+                var trans = value * Quaternion.Invert(Orientation);
+                Vertex1 = cen + trans.Multiply(v1 - cen);
+                Vertex2 = cen + trans.Multiply(v2 - cen);
+                OrientationCached = value;
             }
         }
+        private Quaternion? OrientationCached;
+        private Vector3? ScaleCached;
 
         public override BoundVertexRef NearestVertex(Vector3 p)
         {
@@ -2631,10 +2693,25 @@ namespace CodeWalker.GameFiles
         {
             get
             {
+                if (ScaleCached.HasValue) return ScaleCached.Value;
+                ScaleCached = Vector3.One;
                 return Vector3.One;
             }
             set
             {
+                var v1 = Vertex1;
+                var v2 = Vertex2;
+                var v3 = Vertex3;
+                var v4 = Vertex4;
+                var cen = (v1 + v2 + v3 + v4) * 0.25f;
+                var trans = value / Scale;
+                var ori = Orientation;
+                var orinv = Quaternion.Invert(ori);
+                Vertex1 = cen + ori.Multiply(trans * orinv.Multiply(v1 - cen));
+                Vertex2 = cen + ori.Multiply(trans * orinv.Multiply(v2 - cen));
+                Vertex3 = cen + ori.Multiply(trans * orinv.Multiply(v3 - cen));
+                Vertex4 = cen + ori.Multiply(trans * orinv.Multiply(v4 - cen));
+                ScaleCached = value;
             }
         }
         public override Vector3 Position
@@ -2656,12 +2733,34 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                return Quaternion.Identity;
+                if (OrientationCached.HasValue) return OrientationCached.Value;
+                var v1 = Vertex1;
+                var v2 = Vertex2;
+                var v3 = Vertex3;
+                var v4 = Vertex4;
+                var dir = (v1+v4) - (v2+v3);
+                var up = Vector3.Normalize((v3+v4) - (v1+v2));
+                var ori = Quaternion.Invert(Quaternion.LookAtRH(Vector3.Zero, dir, up));
+                OrientationCached = ori;
+                return ori;
             }
             set
             {
+                var v1 = Vertex1;
+                var v2 = Vertex2;
+                var v3 = Vertex3;
+                var v4 = Vertex4;
+                var cen = (v1 + v2 + v3 + v4) * 0.25f;
+                var trans = value * Quaternion.Invert(Orientation);
+                Vertex1 = cen + trans.Multiply(v1 - cen);
+                Vertex2 = cen + trans.Multiply(v2 - cen);
+                Vertex3 = cen + trans.Multiply(v3 - cen);
+                Vertex4 = cen + trans.Multiply(v4 - cen);
+                OrientationCached = value;
             }
         }
+        private Quaternion? OrientationCached;
+        private Vector3? ScaleCached;
 
         public override BoundVertexRef NearestVertex(Vector3 p)
         {
@@ -2740,10 +2839,22 @@ namespace CodeWalker.GameFiles
         {
             get
             {
+                if (ScaleCached.HasValue) return ScaleCached.Value;
+                ScaleCached = Vector3.One;
                 return Vector3.One;
             }
             set
             {
+                var v1 = Vertex1;
+                var v2 = Vertex2;
+                var cen = (v1 + v2) * 0.5f;
+                var trans = value / Scale;
+                var ori = Orientation;
+                var orinv = Quaternion.Invert(ori);
+                Vertex1 = cen + ori.Multiply(trans * orinv.Multiply(v1 - cen));
+                Vertex2 = cen + ori.Multiply(trans * orinv.Multiply(v2 - cen));
+                cylinderRadius = trans.X * cylinderRadius;
+                ScaleCached = value;
             }
         }
         public override Vector3 Position
@@ -2763,12 +2874,28 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                return Quaternion.Identity;
+                if (OrientationCached.HasValue) return OrientationCached.Value;
+                var v1 = Vertex1;
+                var v2 = Vertex2;
+                var dir = v2 - v1;
+                var up = Vector3.Normalize(dir.GetPerpVec());
+                var ori = Quaternion.Invert(Quaternion.LookAtRH(Vector3.Zero, dir, up));
+                OrientationCached = ori;
+                return ori;
             }
             set
             {
+                var v1 = Vertex1;
+                var v2 = Vertex2;
+                var cen = (v1 + v2) * 0.5f;
+                var trans = value * Quaternion.Invert(Orientation);
+                Vertex1 = cen + trans.Multiply(v1 - cen);
+                Vertex2 = cen + trans.Multiply(v2 - cen);
+                OrientationCached = value;
             }
         }
+        private Quaternion? OrientationCached;
+        private Vector3? ScaleCached;
 
         public override BoundVertexRef NearestVertex(Vector3 p)
         {
