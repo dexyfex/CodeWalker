@@ -90,6 +90,9 @@
             this.YtypNewArchetypeMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.YtypMloToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.YtypMloNewEntityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtypMloNewRoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtypMloNewPortalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtypMloNewEntitySetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
             this.YtypAddToProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.YtypRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -173,9 +176,32 @@
             this.ToolbarSaveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.YtypMloNewRoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.YtypMloNewPortalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.YtypMloNewEntitySetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNameMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator25 = new System.Windows.Forms.ToolStripSeparator();
+            this.YbnNewBoundsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewPolygonMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator26 = new System.Windows.Forms.ToolStripSeparator();
+            this.YbnAddToProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewBoundSphereMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewBoundCapsuleMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewBoundBoxMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewBoundDiscMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewBoundCylinderMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewBoundClothMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewBoundGeometryMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewBoundGeometryBVHMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewBoundCompositeMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewPolygonTriangleMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewPolygonSphereMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewPolygonCapsuleMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewPolygonBoxMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YbnNewPolygonCylinderMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarNewYbnMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarOpenYbnMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.FileNewYbnMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.FileOpenYbnMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.SuspendLayout();
@@ -188,6 +214,7 @@
             this.ViewMenu,
             this.YmapMenu,
             this.YtypMenu,
+            this.YbnMenu,
             this.YndMenu,
             this.YnvMenu,
             this.TrainsMenu,
@@ -224,73 +251,74 @@
             this.toolStripSeparator8,
             this.FileNewYmapMenu,
             this.FileNewYtypMenu,
+            this.FileNewYbnMenu,
             this.FileNewYndMenu,
             this.FileNewYnvMenu,
             this.FileNewTrainsMenu,
             this.FileNewScenarioMenu,
             this.FileNewAudioDatMenu});
             this.FileNewMenu.Name = "FileNewMenu";
-            this.FileNewMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileNewMenu.Size = new System.Drawing.Size(180, 22);
             this.FileNewMenu.Text = "New";
             // 
             // FileNewProjectMenu
             // 
             this.FileNewProjectMenu.Name = "FileNewProjectMenu";
-            this.FileNewProjectMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileNewProjectMenu.Size = new System.Drawing.Size(180, 22);
             this.FileNewProjectMenu.Text = "Project";
             this.FileNewProjectMenu.Click += new System.EventHandler(this.FileNewProjectMenu_Click);
             // 
             // toolStripSeparator8
             // 
             this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(145, 6);
+            this.toolStripSeparator8.Size = new System.Drawing.Size(177, 6);
             // 
             // FileNewYmapMenu
             // 
             this.FileNewYmapMenu.Name = "FileNewYmapMenu";
-            this.FileNewYmapMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileNewYmapMenu.Size = new System.Drawing.Size(180, 22);
             this.FileNewYmapMenu.Text = "Ymap File";
             this.FileNewYmapMenu.Click += new System.EventHandler(this.FileNewYmapMenu_Click);
             // 
             // FileNewYtypMenu
             // 
             this.FileNewYtypMenu.Name = "FileNewYtypMenu";
-            this.FileNewYtypMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileNewYtypMenu.Size = new System.Drawing.Size(180, 22);
             this.FileNewYtypMenu.Text = "Ytyp File";
             this.FileNewYtypMenu.Click += new System.EventHandler(this.FileNewYtypMenu_Click);
             // 
             // FileNewYndMenu
             // 
             this.FileNewYndMenu.Name = "FileNewYndMenu";
-            this.FileNewYndMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileNewYndMenu.Size = new System.Drawing.Size(180, 22);
             this.FileNewYndMenu.Text = "Ynd File";
             this.FileNewYndMenu.Click += new System.EventHandler(this.FileNewYndMenu_Click);
             // 
             // FileNewYnvMenu
             // 
             this.FileNewYnvMenu.Name = "FileNewYnvMenu";
-            this.FileNewYnvMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileNewYnvMenu.Size = new System.Drawing.Size(180, 22);
             this.FileNewYnvMenu.Text = "Ynv File";
             this.FileNewYnvMenu.Click += new System.EventHandler(this.FileNewYnvMenu_Click);
             // 
             // FileNewTrainsMenu
             // 
             this.FileNewTrainsMenu.Name = "FileNewTrainsMenu";
-            this.FileNewTrainsMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileNewTrainsMenu.Size = new System.Drawing.Size(180, 22);
             this.FileNewTrainsMenu.Text = "Trains File";
             this.FileNewTrainsMenu.Click += new System.EventHandler(this.FileNewTrainsMenu_Click);
             // 
             // FileNewScenarioMenu
             // 
             this.FileNewScenarioMenu.Name = "FileNewScenarioMenu";
-            this.FileNewScenarioMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileNewScenarioMenu.Size = new System.Drawing.Size(180, 22);
             this.FileNewScenarioMenu.Text = "Scenario File";
             this.FileNewScenarioMenu.Click += new System.EventHandler(this.FileNewScenarioMenu_Click);
             // 
             // FileNewAudioDatMenu
             // 
             this.FileNewAudioDatMenu.Name = "FileNewAudioDatMenu";
-            this.FileNewAudioDatMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileNewAudioDatMenu.Size = new System.Drawing.Size(180, 22);
             this.FileNewAudioDatMenu.Text = "Audio Dat File";
             this.FileNewAudioDatMenu.Click += new System.EventHandler(this.FileNewAudioDatMenu_Click);
             // 
@@ -301,99 +329,100 @@
             this.toolStripSeparator9,
             this.FileOpenYmapMenu,
             this.FileOpenYtypMenu,
+            this.FileOpenYbnMenu,
             this.FileOpenYndMenu,
             this.FileOpenYnvMenu,
             this.FileOpenTrainsMenu,
             this.FileOpenScenarioMenu,
             this.FileOpenAudioDatMenu});
             this.FileOpenMenu.Name = "FileOpenMenu";
-            this.FileOpenMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileOpenMenu.Size = new System.Drawing.Size(180, 22);
             this.FileOpenMenu.Text = "Open";
             // 
             // FileOpenProjectMenu
             // 
             this.FileOpenProjectMenu.Name = "FileOpenProjectMenu";
-            this.FileOpenProjectMenu.Size = new System.Drawing.Size(157, 22);
+            this.FileOpenProjectMenu.Size = new System.Drawing.Size(180, 22);
             this.FileOpenProjectMenu.Text = "Project...";
             this.FileOpenProjectMenu.Click += new System.EventHandler(this.FileOpenProjectMenu_Click);
             // 
             // toolStripSeparator9
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
-            this.toolStripSeparator9.Size = new System.Drawing.Size(154, 6);
+            this.toolStripSeparator9.Size = new System.Drawing.Size(177, 6);
             // 
             // FileOpenYmapMenu
             // 
             this.FileOpenYmapMenu.Name = "FileOpenYmapMenu";
-            this.FileOpenYmapMenu.Size = new System.Drawing.Size(157, 22);
+            this.FileOpenYmapMenu.Size = new System.Drawing.Size(180, 22);
             this.FileOpenYmapMenu.Text = "Ymap File...";
             this.FileOpenYmapMenu.Click += new System.EventHandler(this.FileOpenYmapMenu_Click);
             // 
             // FileOpenYtypMenu
             // 
             this.FileOpenYtypMenu.Name = "FileOpenYtypMenu";
-            this.FileOpenYtypMenu.Size = new System.Drawing.Size(157, 22);
+            this.FileOpenYtypMenu.Size = new System.Drawing.Size(180, 22);
             this.FileOpenYtypMenu.Text = "Ytyp File...";
             this.FileOpenYtypMenu.Click += new System.EventHandler(this.FileOpenYtypMenu_Click);
             // 
             // FileOpenYndMenu
             // 
             this.FileOpenYndMenu.Name = "FileOpenYndMenu";
-            this.FileOpenYndMenu.Size = new System.Drawing.Size(157, 22);
+            this.FileOpenYndMenu.Size = new System.Drawing.Size(180, 22);
             this.FileOpenYndMenu.Text = "Ynd File...";
             this.FileOpenYndMenu.Click += new System.EventHandler(this.FileOpenYndMenu_Click);
             // 
             // FileOpenYnvMenu
             // 
             this.FileOpenYnvMenu.Name = "FileOpenYnvMenu";
-            this.FileOpenYnvMenu.Size = new System.Drawing.Size(157, 22);
+            this.FileOpenYnvMenu.Size = new System.Drawing.Size(180, 22);
             this.FileOpenYnvMenu.Text = "Ynv File...";
             this.FileOpenYnvMenu.Click += new System.EventHandler(this.FileOpenYnvMenu_Click);
             // 
             // FileOpenTrainsMenu
             // 
             this.FileOpenTrainsMenu.Name = "FileOpenTrainsMenu";
-            this.FileOpenTrainsMenu.Size = new System.Drawing.Size(157, 22);
+            this.FileOpenTrainsMenu.Size = new System.Drawing.Size(180, 22);
             this.FileOpenTrainsMenu.Text = "Trains File...";
             this.FileOpenTrainsMenu.Click += new System.EventHandler(this.FileOpenTrainsMenu_Click);
             // 
             // FileOpenScenarioMenu
             // 
             this.FileOpenScenarioMenu.Name = "FileOpenScenarioMenu";
-            this.FileOpenScenarioMenu.Size = new System.Drawing.Size(157, 22);
+            this.FileOpenScenarioMenu.Size = new System.Drawing.Size(180, 22);
             this.FileOpenScenarioMenu.Text = "Scenario File...";
             this.FileOpenScenarioMenu.Click += new System.EventHandler(this.FileOpenScenarioMenu_Click);
             // 
             // FileOpenAudioDatMenu
             // 
             this.FileOpenAudioDatMenu.Name = "FileOpenAudioDatMenu";
-            this.FileOpenAudioDatMenu.Size = new System.Drawing.Size(157, 22);
+            this.FileOpenAudioDatMenu.Size = new System.Drawing.Size(180, 22);
             this.FileOpenAudioDatMenu.Text = "Audio Dat File...";
             this.FileOpenAudioDatMenu.Click += new System.EventHandler(this.FileOpenAudioDatMenu_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(160, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // FileCloseProjectMenu
             // 
             this.FileCloseProjectMenu.Enabled = false;
             this.FileCloseProjectMenu.Name = "FileCloseProjectMenu";
-            this.FileCloseProjectMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileCloseProjectMenu.Size = new System.Drawing.Size(180, 22);
             this.FileCloseProjectMenu.Text = "Close Project";
             this.FileCloseProjectMenu.Click += new System.EventHandler(this.FileCloseProjectMenu_Click);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(160, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
             // 
             // FileSaveProjectMenu
             // 
             this.FileSaveProjectMenu.Enabled = false;
             this.FileSaveProjectMenu.Name = "FileSaveProjectMenu";
-            this.FileSaveProjectMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileSaveProjectMenu.Size = new System.Drawing.Size(180, 22);
             this.FileSaveProjectMenu.Text = "Save Project";
             this.FileSaveProjectMenu.Click += new System.EventHandler(this.FileSaveProjectMenu_Click);
             // 
@@ -401,7 +430,7 @@
             // 
             this.FileSaveProjectAsMenu.Enabled = false;
             this.FileSaveProjectAsMenu.Name = "FileSaveProjectAsMenu";
-            this.FileSaveProjectAsMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileSaveProjectAsMenu.Size = new System.Drawing.Size(180, 22);
             this.FileSaveProjectAsMenu.Text = "Save Project As...";
             this.FileSaveProjectAsMenu.Click += new System.EventHandler(this.FileSaveProjectAsMenu_Click);
             // 
@@ -409,7 +438,7 @@
             // 
             this.FileSaveItemMenu.Enabled = false;
             this.FileSaveItemMenu.Name = "FileSaveItemMenu";
-            this.FileSaveItemMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileSaveItemMenu.Size = new System.Drawing.Size(180, 22);
             this.FileSaveItemMenu.Text = "Save Item";
             this.FileSaveItemMenu.Visible = false;
             this.FileSaveItemMenu.Click += new System.EventHandler(this.FileSaveItemMenu_Click);
@@ -418,7 +447,7 @@
             // 
             this.FileSaveItemAsMenu.Enabled = false;
             this.FileSaveItemAsMenu.Name = "FileSaveItemAsMenu";
-            this.FileSaveItemAsMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileSaveItemAsMenu.Size = new System.Drawing.Size(180, 22);
             this.FileSaveItemAsMenu.Text = "Save Item As...";
             this.FileSaveItemAsMenu.Visible = false;
             this.FileSaveItemAsMenu.Click += new System.EventHandler(this.FileSaveItemAsMenu_Click);
@@ -676,9 +705,30 @@
             // YtypMloNewEntityToolStripMenuItem
             // 
             this.YtypMloNewEntityToolStripMenuItem.Name = "YtypMloNewEntityToolStripMenuItem";
-            this.YtypMloNewEntityToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.YtypMloNewEntityToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.YtypMloNewEntityToolStripMenuItem.Text = "New Entity";
             this.YtypMloNewEntityToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewEntityToolStripMenuItem_Click);
+            // 
+            // YtypMloNewRoomToolStripMenuItem
+            // 
+            this.YtypMloNewRoomToolStripMenuItem.Name = "YtypMloNewRoomToolStripMenuItem";
+            this.YtypMloNewRoomToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
+            this.YtypMloNewRoomToolStripMenuItem.Text = "New Room";
+            this.YtypMloNewRoomToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewRoomToolStripMenuItem_Click);
+            // 
+            // YtypMloNewPortalToolStripMenuItem
+            // 
+            this.YtypMloNewPortalToolStripMenuItem.Name = "YtypMloNewPortalToolStripMenuItem";
+            this.YtypMloNewPortalToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
+            this.YtypMloNewPortalToolStripMenuItem.Text = "New Portal";
+            this.YtypMloNewPortalToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewPortalToolStripMenuItem_Click);
+            // 
+            // YtypMloNewEntitySetToolStripMenuItem
+            // 
+            this.YtypMloNewEntitySetToolStripMenuItem.Name = "YtypMloNewEntitySetToolStripMenuItem";
+            this.YtypMloNewEntitySetToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
+            this.YtypMloNewEntitySetToolStripMenuItem.Text = "New Entity Set";
+            this.YtypMloNewEntitySetToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewEntitySetToolStripMenuItem_Click);
             // 
             // toolStripSeparator15
             // 
@@ -1184,6 +1234,7 @@
             this.toolStripSeparator7,
             this.ToolbarNewYmapMenu,
             this.ToolbarNewYtypMenu,
+            this.ToolbarNewYbnMenu,
             this.ToolbarNewYndMenu,
             this.ToolbarNewYnvMenu,
             this.ToolbarNewTrainsMenu,
@@ -1198,54 +1249,54 @@
             // ToolbarNewProjectMenu
             // 
             this.ToolbarNewProjectMenu.Name = "ToolbarNewProjectMenu";
-            this.ToolbarNewProjectMenu.Size = new System.Drawing.Size(167, 22);
+            this.ToolbarNewProjectMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolbarNewProjectMenu.Text = "New Project";
             this.ToolbarNewProjectMenu.Click += new System.EventHandler(this.ToolbarNewProjectMenu_Click);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(164, 6);
+            this.toolStripSeparator7.Size = new System.Drawing.Size(177, 6);
             // 
             // ToolbarNewYmapMenu
             // 
             this.ToolbarNewYmapMenu.Name = "ToolbarNewYmapMenu";
-            this.ToolbarNewYmapMenu.Size = new System.Drawing.Size(167, 22);
+            this.ToolbarNewYmapMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolbarNewYmapMenu.Text = "New Ymap File";
             this.ToolbarNewYmapMenu.Click += new System.EventHandler(this.ToolbarNewYmapMenu_Click);
             // 
             // ToolbarNewYtypMenu
             // 
             this.ToolbarNewYtypMenu.Name = "ToolbarNewYtypMenu";
-            this.ToolbarNewYtypMenu.Size = new System.Drawing.Size(167, 22);
+            this.ToolbarNewYtypMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolbarNewYtypMenu.Text = "New Ytyp File";
             this.ToolbarNewYtypMenu.Click += new System.EventHandler(this.ToolbarNewYtypMenu_Click);
             // 
             // ToolbarNewYndMenu
             // 
             this.ToolbarNewYndMenu.Name = "ToolbarNewYndMenu";
-            this.ToolbarNewYndMenu.Size = new System.Drawing.Size(167, 22);
+            this.ToolbarNewYndMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolbarNewYndMenu.Text = "New Ynd File";
             this.ToolbarNewYndMenu.Click += new System.EventHandler(this.ToolbarNewYndMenu_Click);
             // 
             // ToolbarNewYnvMenu
             // 
             this.ToolbarNewYnvMenu.Name = "ToolbarNewYnvMenu";
-            this.ToolbarNewYnvMenu.Size = new System.Drawing.Size(167, 22);
+            this.ToolbarNewYnvMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolbarNewYnvMenu.Text = "New Ynv File";
             this.ToolbarNewYnvMenu.Click += new System.EventHandler(this.ToolbarNewYnvMenu_Click);
             // 
             // ToolbarNewTrainsMenu
             // 
             this.ToolbarNewTrainsMenu.Name = "ToolbarNewTrainsMenu";
-            this.ToolbarNewTrainsMenu.Size = new System.Drawing.Size(167, 22);
+            this.ToolbarNewTrainsMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolbarNewTrainsMenu.Text = "New Trains File";
             this.ToolbarNewTrainsMenu.Click += new System.EventHandler(this.ToolbarNewTrainsMenu_Click);
             // 
             // ToolbarNewScenarioMenu
             // 
             this.ToolbarNewScenarioMenu.Name = "ToolbarNewScenarioMenu";
-            this.ToolbarNewScenarioMenu.Size = new System.Drawing.Size(167, 22);
+            this.ToolbarNewScenarioMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolbarNewScenarioMenu.Text = "New Scenario File";
             this.ToolbarNewScenarioMenu.Click += new System.EventHandler(this.ToolbarNewScenarioMenu_Click);
             // 
@@ -1257,6 +1308,7 @@
             this.toolStripSeparator6,
             this.ToolbarOpenYmapMenu,
             this.ToolbarOpenYtypMenu,
+            this.ToolbarOpenYbnMenu,
             this.ToolbarOpenYndMenu,
             this.ToolbarOpenYnvMenu,
             this.ToolbarOpenTrainsMenu,
@@ -1348,26 +1400,209 @@
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
             // 
-            // YtypMloNewRoomToolStripMenuItem
+            // YbnMenu
             // 
-            this.YtypMloNewRoomToolStripMenuItem.Name = "YtypMloNewRoomToolStripMenuItem";
-            this.YtypMloNewRoomToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.YtypMloNewRoomToolStripMenuItem.Text = "New Room";
-            this.YtypMloNewRoomToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewRoomToolStripMenuItem_Click);
+            this.YbnMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.YbnNameMenu,
+            this.toolStripSeparator25,
+            this.YbnNewBoundsMenu,
+            this.YbnNewPolygonMenu,
+            this.toolStripSeparator26,
+            this.YbnAddToProjectMenu,
+            this.YbnRemoveFromProjectMenu});
+            this.YbnMenu.Name = "YbnMenu";
+            this.YbnMenu.Size = new System.Drawing.Size(40, 20);
+            this.YbnMenu.Text = "Ybn";
+            this.YbnMenu.Visible = false;
             // 
-            // YtypMloNewPortalToolStripMenuItem
+            // YbnNameMenu
             // 
-            this.YtypMloNewPortalToolStripMenuItem.Name = "YtypMloNewPortalToolStripMenuItem";
-            this.YtypMloNewPortalToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.YtypMloNewPortalToolStripMenuItem.Text = "New Portal";
-            this.YtypMloNewPortalToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewPortalToolStripMenuItem_Click);
+            this.YbnNameMenu.Enabled = false;
+            this.YbnNameMenu.Name = "YbnNameMenu";
+            this.YbnNameMenu.Size = new System.Drawing.Size(189, 22);
+            this.YbnNameMenu.Text = "(No .ybn file selected)";
             // 
-            // YtypMloNewEntitySetToolStripMenuItem
+            // toolStripSeparator25
             // 
-            this.YtypMloNewEntitySetToolStripMenuItem.Name = "YtypMloNewEntitySetToolStripMenuItem";
-            this.YtypMloNewEntitySetToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.YtypMloNewEntitySetToolStripMenuItem.Text = "New Entity Set";
-            this.YtypMloNewEntitySetToolStripMenuItem.Click += new System.EventHandler(this.YtypMloNewEntitySetToolStripMenuItem_Click);
+            this.toolStripSeparator25.Name = "toolStripSeparator25";
+            this.toolStripSeparator25.Size = new System.Drawing.Size(186, 6);
+            // 
+            // YbnNewBoundsMenu
+            // 
+            this.YbnNewBoundsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.YbnNewBoundBoxMenu,
+            this.YbnNewBoundSphereMenu,
+            this.YbnNewBoundCapsuleMenu,
+            this.YbnNewBoundCylinderMenu,
+            this.YbnNewBoundDiscMenu,
+            this.YbnNewBoundClothMenu,
+            this.YbnNewBoundGeometryMenu,
+            this.YbnNewBoundGeometryBVHMenu,
+            this.YbnNewBoundCompositeMenu});
+            this.YbnNewBoundsMenu.Enabled = false;
+            this.YbnNewBoundsMenu.Name = "YbnNewBoundsMenu";
+            this.YbnNewBoundsMenu.Size = new System.Drawing.Size(189, 22);
+            this.YbnNewBoundsMenu.Text = "New Bounds";
+            // 
+            // YbnNewPolygonMenu
+            // 
+            this.YbnNewPolygonMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.YbnNewPolygonTriangleMenu,
+            this.YbnNewPolygonSphereMenu,
+            this.YbnNewPolygonCapsuleMenu,
+            this.YbnNewPolygonBoxMenu,
+            this.YbnNewPolygonCylinderMenu});
+            this.YbnNewPolygonMenu.Enabled = false;
+            this.YbnNewPolygonMenu.Name = "YbnNewPolygonMenu";
+            this.YbnNewPolygonMenu.Size = new System.Drawing.Size(189, 22);
+            this.YbnNewPolygonMenu.Text = "New Polygon";
+            // 
+            // toolStripSeparator26
+            // 
+            this.toolStripSeparator26.Name = "toolStripSeparator26";
+            this.toolStripSeparator26.Size = new System.Drawing.Size(186, 6);
+            // 
+            // YbnAddToProjectMenu
+            // 
+            this.YbnAddToProjectMenu.Enabled = false;
+            this.YbnAddToProjectMenu.Name = "YbnAddToProjectMenu";
+            this.YbnAddToProjectMenu.Size = new System.Drawing.Size(189, 22);
+            this.YbnAddToProjectMenu.Text = "Add to Project";
+            this.YbnAddToProjectMenu.Click += new System.EventHandler(this.YbnAddToProjectMenu_Click);
+            // 
+            // YbnRemoveFromProjectMenu
+            // 
+            this.YbnRemoveFromProjectMenu.Enabled = false;
+            this.YbnRemoveFromProjectMenu.Name = "YbnRemoveFromProjectMenu";
+            this.YbnRemoveFromProjectMenu.Size = new System.Drawing.Size(189, 22);
+            this.YbnRemoveFromProjectMenu.Text = "Remove from Project";
+            this.YbnRemoveFromProjectMenu.Click += new System.EventHandler(this.YbnRemoveFromProjectMenu_Click);
+            // 
+            // YbnNewBoundSphereMenu
+            // 
+            this.YbnNewBoundSphereMenu.Name = "YbnNewBoundSphereMenu";
+            this.YbnNewBoundSphereMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewBoundSphereMenu.Text = "Sphere";
+            this.YbnNewBoundSphereMenu.Click += new System.EventHandler(this.YbnNewBoundSphereMenu_Click);
+            // 
+            // YbnNewBoundCapsuleMenu
+            // 
+            this.YbnNewBoundCapsuleMenu.Name = "YbnNewBoundCapsuleMenu";
+            this.YbnNewBoundCapsuleMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewBoundCapsuleMenu.Text = "Capsule";
+            this.YbnNewBoundCapsuleMenu.Click += new System.EventHandler(this.YbnNewBoundCapsuleMenu_Click);
+            // 
+            // YbnNewBoundBoxMenu
+            // 
+            this.YbnNewBoundBoxMenu.Name = "YbnNewBoundBoxMenu";
+            this.YbnNewBoundBoxMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewBoundBoxMenu.Text = "Box";
+            this.YbnNewBoundBoxMenu.Click += new System.EventHandler(this.YbnNewBoundBoxMenu_Click);
+            // 
+            // YbnNewBoundDiscMenu
+            // 
+            this.YbnNewBoundDiscMenu.Name = "YbnNewBoundDiscMenu";
+            this.YbnNewBoundDiscMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewBoundDiscMenu.Text = "Disc";
+            this.YbnNewBoundDiscMenu.Click += new System.EventHandler(this.YbnNewBoundDiscMenu_Click);
+            // 
+            // YbnNewBoundCylinderMenu
+            // 
+            this.YbnNewBoundCylinderMenu.Name = "YbnNewBoundCylinderMenu";
+            this.YbnNewBoundCylinderMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewBoundCylinderMenu.Text = "Cylinder";
+            this.YbnNewBoundCylinderMenu.Click += new System.EventHandler(this.YbnNewBoundCylinderMenu_Click);
+            // 
+            // YbnNewBoundClothMenu
+            // 
+            this.YbnNewBoundClothMenu.Name = "YbnNewBoundClothMenu";
+            this.YbnNewBoundClothMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewBoundClothMenu.Text = "Cloth";
+            this.YbnNewBoundClothMenu.Click += new System.EventHandler(this.YbnNewBoundClothMenu_Click);
+            // 
+            // YbnNewBoundGeometryMenu
+            // 
+            this.YbnNewBoundGeometryMenu.Name = "YbnNewBoundGeometryMenu";
+            this.YbnNewBoundGeometryMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewBoundGeometryMenu.Text = "Geometry";
+            this.YbnNewBoundGeometryMenu.Click += new System.EventHandler(this.YbnNewBoundGeometryMenu_Click);
+            // 
+            // YbnNewBoundGeometryBVHMenu
+            // 
+            this.YbnNewBoundGeometryBVHMenu.Name = "YbnNewBoundGeometryBVHMenu";
+            this.YbnNewBoundGeometryBVHMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewBoundGeometryBVHMenu.Text = "Geometry BVH";
+            this.YbnNewBoundGeometryBVHMenu.Click += new System.EventHandler(this.YbnNewBoundGeometryBVHMenu_Click);
+            // 
+            // YbnNewBoundCompositeMenu
+            // 
+            this.YbnNewBoundCompositeMenu.Name = "YbnNewBoundCompositeMenu";
+            this.YbnNewBoundCompositeMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewBoundCompositeMenu.Text = "Composite";
+            this.YbnNewBoundCompositeMenu.Click += new System.EventHandler(this.YbnNewBoundCompositeMenu_Click);
+            // 
+            // YbnNewPolygonTriangleMenu
+            // 
+            this.YbnNewPolygonTriangleMenu.Name = "YbnNewPolygonTriangleMenu";
+            this.YbnNewPolygonTriangleMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewPolygonTriangleMenu.Text = "Triangle";
+            this.YbnNewPolygonTriangleMenu.Click += new System.EventHandler(this.YbnNewPolygonTriangleMenu_Click);
+            // 
+            // YbnNewPolygonSphereMenu
+            // 
+            this.YbnNewPolygonSphereMenu.Name = "YbnNewPolygonSphereMenu";
+            this.YbnNewPolygonSphereMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewPolygonSphereMenu.Text = "Sphere";
+            this.YbnNewPolygonSphereMenu.Click += new System.EventHandler(this.YbnNewPolygonSphereMenu_Click);
+            // 
+            // YbnNewPolygonCapsuleMenu
+            // 
+            this.YbnNewPolygonCapsuleMenu.Name = "YbnNewPolygonCapsuleMenu";
+            this.YbnNewPolygonCapsuleMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewPolygonCapsuleMenu.Text = "Capsule";
+            this.YbnNewPolygonCapsuleMenu.Click += new System.EventHandler(this.YbnNewPolygonCapsuleMenu_Click);
+            // 
+            // YbnNewPolygonBoxMenu
+            // 
+            this.YbnNewPolygonBoxMenu.Name = "YbnNewPolygonBoxMenu";
+            this.YbnNewPolygonBoxMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewPolygonBoxMenu.Text = "Box";
+            this.YbnNewPolygonBoxMenu.Click += new System.EventHandler(this.YbnNewPolygonBoxMenu_Click);
+            // 
+            // YbnNewPolygonCylinderMenu
+            // 
+            this.YbnNewPolygonCylinderMenu.Name = "YbnNewPolygonCylinderMenu";
+            this.YbnNewPolygonCylinderMenu.Size = new System.Drawing.Size(180, 22);
+            this.YbnNewPolygonCylinderMenu.Text = "Cylinder";
+            this.YbnNewPolygonCylinderMenu.Click += new System.EventHandler(this.YbnNewPolygonCylinderMenu_Click);
+            // 
+            // ToolbarNewYbnMenu
+            // 
+            this.ToolbarNewYbnMenu.Name = "ToolbarNewYbnMenu";
+            this.ToolbarNewYbnMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewYbnMenu.Text = "New Ybn File";
+            this.ToolbarNewYbnMenu.Click += new System.EventHandler(this.ToolbarNewYbnMenu_Click);
+            // 
+            // ToolbarOpenYbnMenu
+            // 
+            this.ToolbarOpenYbnMenu.Name = "ToolbarOpenYbnMenu";
+            this.ToolbarOpenYbnMenu.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarOpenYbnMenu.Text = "Open Ybn File...";
+            this.ToolbarOpenYbnMenu.Click += new System.EventHandler(this.ToolbarOpenYbnMenu_Click);
+            // 
+            // FileNewYbnMenu
+            // 
+            this.FileNewYbnMenu.Name = "FileNewYbnMenu";
+            this.FileNewYbnMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileNewYbnMenu.Text = "Ybn File";
+            this.FileNewYbnMenu.Click += new System.EventHandler(this.FileNewYbnMenu_Click);
+            // 
+            // FileOpenYbnMenu
+            // 
+            this.FileOpenYbnMenu.Name = "FileOpenYbnMenu";
+            this.FileOpenYbnMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileOpenYbnMenu.Text = "Ybn File...";
+            this.FileOpenYbnMenu.Click += new System.EventHandler(this.FileOpenYbnMenu_Click);
             // 
             // ProjectForm
             // 
@@ -1541,5 +1776,31 @@
         private System.Windows.Forms.ToolStripMenuItem YtypMloNewRoomToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem YtypMloNewPortalToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem YtypMloNewEntitySetToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem YbnMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNameMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator25;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewBoundsMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewPolygonMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator26;
+        private System.Windows.Forms.ToolStripMenuItem YbnAddToProjectMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnRemoveFromProjectMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewBoundBoxMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewBoundSphereMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewBoundCapsuleMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewBoundCylinderMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewBoundDiscMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewBoundClothMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewBoundGeometryMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewBoundGeometryBVHMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewBoundCompositeMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewPolygonTriangleMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewPolygonSphereMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewPolygonCapsuleMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewPolygonBoxMenu;
+        private System.Windows.Forms.ToolStripMenuItem YbnNewPolygonCylinderMenu;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarNewYbnMenu;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYbnMenu;
+        private System.Windows.Forms.ToolStripMenuItem FileNewYbnMenu;
+        private System.Windows.Forms.ToolStripMenuItem FileOpenYbnMenu;
     }
 }
