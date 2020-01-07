@@ -152,6 +152,12 @@
     <Compile Include="Project\Panels\EditYbnBoundsPanel.Designer.cs">
       <DependentUpon>EditYbnBoundsPanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Project\Panels\EditYbnBoundVertexPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditYbnBoundVertexPanel.Designer.cs">
+      <DependentUpon>EditYbnBoundVertexPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\Panels\EditYbnPanel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -644,6 +650,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYbnBoundsPanel.resx">
       <DependentUpon>EditYbnBoundsPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Project\Panels\EditYbnBoundVertexPanel.resx">
+      <DependentUpon>EditYbnBoundVertexPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYbnPanel.resx">
       <DependentUpon>EditYbnPanel.cs</DependentUpon>

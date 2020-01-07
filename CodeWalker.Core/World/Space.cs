@@ -2150,6 +2150,7 @@ namespace CodeWalker.World
     {
         public bool Hit;
         public float HitDist;
+        public BoundVertexRef HitVertex;
         public BoundPolygon HitPolygon;
         public Bounds HitBounds;
         public YbnFile HitYbn;
@@ -2167,6 +2168,7 @@ namespace CodeWalker.World
             {
                 Hit = true;
                 HitDist = r.HitDist;
+                HitVertex = r.HitVertex;
                 HitPolygon = r.HitPolygon;
                 HitBounds = r.HitBounds;
                 HitYbn = r.HitYbn;

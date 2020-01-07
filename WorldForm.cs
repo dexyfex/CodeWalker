@@ -1148,7 +1148,8 @@ namespace CodeWalker
                     break;
                 case MapSelectionMode.Collision:
                     change = change || (LastMouseHit.CollisionBounds != PrevMouseHit.CollisionBounds)
-                                    || (LastMouseHit.CollisionPoly != PrevMouseHit.CollisionPoly);
+                                    || (LastMouseHit.CollisionPoly != PrevMouseHit.CollisionPoly)
+                                    || (LastMouseHit.CollisionVertex != PrevMouseHit.CollisionVertex);
                     break;
                 case MapSelectionMode.NavMesh:
                     change = change || (LastMouseHit.NavPoly != PrevMouseHit.NavPoly)
@@ -1251,6 +1252,13 @@ namespace CodeWalker
                 {
                     mode = BoundsShaderMode.Sphere;
                 }
+            }
+            if (CurMouseHit.CollisionVertex != null)
+            {
+                var vpos = CurMouseHit.CollisionVertex.Position;
+                var crpos = camrel + ori.Multiply(vpos);
+                var vertexSize = 0.1f;
+                Renderer.RenderSelectionCircle(vpos, vertexSize, 0xFFFFFFFF);
             }
             if (CurMouseHit.CollisionPoly != null)
             {
@@ -1554,7 +1562,14 @@ namespace CodeWalker
                     Renderer.WhiteBoxes.Add(wbox);
                 }
             }
-            if (selectionItem.CollisionPoly != null)
+            if (selectionItem.CollisionVertex != null)
+            {
+                var vpos = selectionItem.CollisionVertex.Position;
+                var crpos = camrel + ori.Multiply(vpos);
+                var vertexSize = 0.1f;
+                Renderer.RenderSelectionCircle(vpos, vertexSize, cgrn);
+            }
+            else if (selectionItem.CollisionPoly != null)
             {
                 Renderer.RenderSelectionCollisionPolyOutline(selectionItem.CollisionPoly, cgrn, selectionItem.EntityDef);
             }
@@ -2304,6 +2319,17 @@ namespace CodeWalker
                     CurMouseHit.BBOffset = trans;
                     CurMouseHit.BBOrientation = MouseRayCollision.HitBounds?.Transform.ToQuaternion() ?? Quaternion.Identity;
                     CurMouseHit.AABB = new BoundingBox(MouseRayCollision.HitBounds?.BoxMin ?? Vector3.Zero, MouseRayCollision.HitBounds?.BoxMax ?? Vector3.Zero);
+
+                    float vertexDist = 0.1f;
+                    if ((MouseRayCollision.HitVertex.Distance < vertexDist) && (MouseRayCollision.HitBounds is BoundGeometry bgeom))
+                    {
+                        CurMouseHit.CollisionVertex = bgeom.GetVertexObject(MouseRayCollision.HitVertex.Index);
+                    }
+                    else
+                    {
+                        CurMouseHit.CollisionVertex = null;
+                    }
+
                 }
             }
         }
@@ -3575,6 +3601,23 @@ namespace CodeWalker
                 SelectItem(ms);
             }
         }
+        public void SelectCollisionVertex(BoundVertex v)
+        {
+            if (v == null)
+            {
+                SelectItem(null);
+            }
+            else
+            {
+
+                MapSelection ms = new MapSelection();
+                ms.CollisionVertex = v;
+
+                //ms.AABB = new BoundingBox(p.BoundingBoxMin, p.BoundingBoxMax);
+
+                SelectItem(ms);
+            }
+        }
         public void SelectNavPoly(YnvPoly poly)
         {
             if (poly == null)
@@ -4836,6 +4879,7 @@ namespace CodeWalker
             var cargen = SelectedItem.CarGenerator;
             var bounds = SelectedItem.CollisionBounds;
             var boundpoly = SelectedItem.CollisionPoly;
+            var boundvertex = SelectedItem.CollisionVertex;
             var pathnode = SelectedItem.PathNode;
             var navpoly = SelectedItem.NavPoly;
             var navpoint = SelectedItem.NavPoint;
@@ -4881,6 +4925,13 @@ namespace CodeWalker
                         case WidgetMode.Position: s = new CarGenPositionUndoStep(cargen, UndoStartPosition); break;
                         case WidgetMode.Rotation: s = new CarGenRotationUndoStep(cargen, UndoStartRotation); break;
                         case WidgetMode.Scale: s = new CarGenScaleUndoStep(cargen, UndoStartScale); break;
+                    }
+                }
+                else if (boundvertex != null)
+                {
+                    switch (tw.Mode)
+                    {
+                        case WidgetMode.Position: s = new CollisionVertexPositionUndoStep(boundvertex, UndoStartPosition, this); break;
                     }
                 }
                 else if (boundpoly != null)

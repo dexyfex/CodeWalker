@@ -73,6 +73,10 @@ namespace CodeWalker.GameFiles
         {
             return false;
         }
+        public bool RemoveVertex(BoundVertex v)
+        {
+            return false;
+        }
 
     }
 }

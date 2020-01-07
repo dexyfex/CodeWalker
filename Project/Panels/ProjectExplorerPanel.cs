@@ -415,6 +415,10 @@ namespace CodeWalker.Project.Panels
                 n = boundsnode.Nodes.Add("Edit Polygon");
                 n.Name = "EditPoly";
                 n.Tag = b; //this tag should get updated with the selected poly!
+
+                n = boundsnode.Nodes.Add("Edit Vertex");
+                n.Name = "EditVertex";
+                n.Tag = b; //this tag should get updated with the selected vertex!
             }
 
         }
@@ -1186,6 +1190,15 @@ namespace CodeWalker.Project.Panels
             polynode.Tag = p;
             return polynode;
         }
+        public TreeNode FindCollisionVertexTreeNode(BoundVertex v)
+        {
+            if (v == null) return null;
+            var ybnnode = FindCollisionBoundsTreeNode(v.Owner);
+            var vertnode = GetChildTreeNode(ybnnode, "EditVertex");
+            if (vertnode == null) return null;
+            vertnode.Tag = v;
+            return vertnode;
+        }
         public TreeNode FindYndTreeNode(YndFile ynd)
         {
             if (ProjectTreeView.Nodes.Count <= 0) return null;
@@ -1573,6 +1586,29 @@ namespace CodeWalker.Project.Panels
                 if (ProjectTreeView.SelectedNode == tnode)
                 {
                     OnItemSelected?.Invoke(poly);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
+            }
+        }
+        public void TrySelectCollisionVertexTreeNode(BoundVertex vert)
+        {
+            TreeNode tnode = FindCollisionVertexTreeNode(vert);
+            if (tnode == null)
+            {
+                tnode = FindCollisionBoundsTreeNode(vert?.Owner);
+            }
+            if (tnode == null)
+            {
+                tnode = FindYbnTreeNode(vert?.Owner?.GetRootYbn());
+            }
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(vert);
                 }
                 else
                 {

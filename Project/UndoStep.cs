@@ -103,6 +103,10 @@ namespace CodeWalker.Project
                     {
                         bounds[item.CollisionPoly.Owner] = 1;
                     }
+                    if (item.CollisionVertex?.Owner != null)
+                    {
+                        bounds[item.CollisionVertex.Owner] = 1;
+                    }
                 }
             }
 
@@ -760,6 +764,58 @@ namespace CodeWalker.Project
         public override string ToString()
         {
             return "Collision Poly " + (Polygon?.Index.ToString() ?? "") + ": Scale";
+        }
+    }
+
+    public class CollisionVertexPositionUndoStep : UndoStep
+    {
+        public BoundVertex Vertex { get; set; }
+        public Vector3 StartPosition { get; set; }
+        public Vector3 EndPosition { get; set; }
+
+        public CollisionVertexPositionUndoStep(BoundVertex vertex, Vector3 startpos, WorldForm wf)
+        {
+            Vertex = vertex;
+            StartPosition = startpos;
+            EndPosition = vertex?.Position ?? Vector3.Zero;
+
+            UpdateGraphics(wf);
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
+        {
+            if (Vertex != null)
+            {
+                Vertex.Position = p;
+            }
+
+            if (Vertex != sel.CollisionVertex) wf.SelectCollisionVertex(Vertex);
+            wf.SetWidgetPosition(p);
+
+            UpdateGraphics(wf);
+        }
+
+        private void UpdateGraphics(WorldForm wf)
+        {
+            if (Vertex?.Owner != null)
+            {
+                wf.UpdateCollisionBoundsGraphics(Vertex.Owner);
+            }
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartPosition);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndPosition);
+        }
+
+        public override string ToString()
+        {
+            return "Collision Vertex " + (Vertex?.Index.ToString() ?? "") + ": Position";
         }
     }
 

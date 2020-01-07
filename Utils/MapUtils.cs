@@ -188,6 +188,7 @@ namespace CodeWalker
         public WaterQuad WaterQuad { get; set; }
         public Bounds CollisionBounds { get; set; }
         public BoundPolygon CollisionPoly { get; set; }
+        public BoundVertex CollisionVertex { get; set; }
         public YnvPoly NavPoly { get; set; }
         public YnvPoint NavPoint { get; set; }
         public YnvPortal NavPortal { get; set; }
@@ -226,6 +227,7 @@ namespace CodeWalker
                     (WaterQuad != null) ||
                     (CollisionBounds != null) ||
                     (CollisionPoly != null) ||
+                    (CollisionVertex != null) ||
                     (NavPoly != null) ||
                     (NavPoint != null) ||
                     (NavPortal != null) ||
@@ -264,6 +266,7 @@ namespace CodeWalker
                 || (WaterQuad != mhit.WaterQuad)
                 || (CollisionBounds != mhit.CollisionBounds)
                 || (CollisionPoly != mhit.CollisionPoly)
+                || (CollisionVertex != mhit.CollisionVertex)
                 || (NavPoly != mhit.NavPoly)
                 || (NavPoint != mhit.NavPoint)
                 || (NavPortal != mhit.NavPortal)
@@ -290,6 +293,7 @@ namespace CodeWalker
                 || (WaterQuad != null)
                 || (CollisionBounds != null)
                 || (CollisionPoly != null)
+                || (CollisionVertex != null)
                 || (NavPoly != null)
                 || (NavPoint != null)
                 || (NavPortal != null)
@@ -318,6 +322,7 @@ namespace CodeWalker
             WaterQuad = null;
             CollisionBounds = null;
             CollisionPoly = null;
+            CollisionVertex = null;
             NavPoly = null;
             NavPoint = null;
             NavPortal = null;
@@ -370,6 +375,10 @@ namespace CodeWalker
             else if (OccludeModel != null)
             {
                 name = "OccludeModel " + (OccludeModel.Ymap?.Name ?? "") + ": " + OccludeModel.Index.ToString();
+            }
+            else if (CollisionVertex != null)
+            {
+                name = "Vertex " + CollisionVertex.Index.ToString() + ((CollisionBounds != null) ? (": " + CollisionBounds.GetName()) : string.Empty);
             }
             else if (CollisionPoly != null)
             {
@@ -440,6 +449,10 @@ namespace CodeWalker
             else if (Archetype != null)
             {
                 name = Archetype.Hash.ToString();
+            }
+            else if (CollisionVertex != null)
+            {
+                name = "Vertex " + CollisionVertex.Index.ToString() + ((CollisionBounds != null) ? (": " + CollisionBounds.GetName()) : string.Empty);
             }
             else if (CollisionPoly != null)
             {
@@ -540,6 +553,10 @@ namespace CodeWalker
                 {
                     res = true;
                 }
+                else if (CollisionVertex != null)
+                {
+                    res = true;
+                }
                 else if (CollisionPoly != null)
                 {
                     res = true;
@@ -590,6 +607,10 @@ namespace CodeWalker
                 else if (CarGenerator != null)
                 {
                     return CarGenerator.Position;
+                }
+                else if (CollisionVertex != null)
+                {
+                    return CollisionVertex.Position;
                 }
                 else if (CollisionPoly != null)
                 {
@@ -646,6 +667,10 @@ namespace CodeWalker
                 {
                     return CarGenerator.Orientation;
                 }
+                else if (CollisionVertex != null)
+                {
+                    return Quaternion.Identity;
+                }
                 else if (CollisionPoly != null)
                 {
                     return Quaternion.Identity;
@@ -701,6 +726,10 @@ namespace CodeWalker
                 {
                     return WidgetAxis.Z;
                 }
+                else if (CollisionVertex != null)
+                {
+                    return WidgetAxis.None;
+                }
                 else if (CollisionPoly != null)
                 {
                     return WidgetAxis.XYZ;
@@ -755,6 +784,10 @@ namespace CodeWalker
                 else if (CarGenerator != null)
                 {
                     return new Vector3(CarGenerator.CCarGen.perpendicularLength);
+                }
+                else if (CollisionVertex != null)
+                {
+                    return Vector3.One;
                 }
                 else if (CollisionPoly != null)
                 {
@@ -823,6 +856,10 @@ namespace CodeWalker
             else if (PathNode != null)
             {
                 PathNode.SetPosition(newpos);
+            }
+            else if (CollisionVertex != null)
+            {
+                CollisionVertex.Position = newpos;
             }
             else if (CollisionPoly != null)
             {
