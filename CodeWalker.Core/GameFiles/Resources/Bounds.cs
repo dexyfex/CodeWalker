@@ -859,6 +859,9 @@ namespace CodeWalker.GameFiles
         private ResourceSystemStructBlock<BoundMaterialColour> MaterialColoursBlock = null;
         private ResourceSystemStructBlock<byte> PolygonMaterialIndicesBlock = null;
 
+        private BoundVertex[] VertexObjects = null; //for use by the editor, created as needed by GetVertexObject()
+
+
         /// <summary>
         /// Reads the data-block from a stream.
         /// </summary>
@@ -1009,6 +1012,24 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public BoundVertex GetVertexObject(int index)
+        {
+            //gets a cached object which references a single vertex in this geometry
+            if (Vertices == null) return null;
+            if ((index < 0) || (index >= Vertices.Length)) return null;
+            if ((VertexObjects == null) || (VertexObjects.Length != Vertices.Length))
+            {
+                VertexObjects = new BoundVertex[Vertices.Length];
+            }
+            if (index >= VertexObjects.Length) return null;
+            var r = VertexObjects[index];
+            if (r == null)
+            {
+                r = new BoundVertex(this, index);
+                VertexObjects[index] = r;
+            }
+            return r;
+        }
         public Vector3 GetVertex(int index)
         {
             return ((index >= 0) && (index < Vertices.Length)) ? Vertices[index] : Vector3.Zero;
@@ -1026,6 +1047,18 @@ namespace CodeWalker.GameFiles
                 Vertices[index] = t;
             }
         }
+        public BoundMaterialColour GetVertexColour(int index)
+        {
+            return ((VertexColours != null) && (index >= 0) && (index < VertexColours.Length)) ? VertexColours[index] : new BoundMaterialColour();
+        }
+        public void SetVertexColour(int index, BoundMaterialColour c)
+        {
+            if ((VertexColours != null) && (index >= 0) && (index < VertexColours.Length))
+            {
+                VertexColours[index] = c;
+            }
+        }
+
 
 
         /// <summary>
@@ -1423,7 +1456,9 @@ namespace CodeWalker.GameFiles
                 {
                     res.HitDist = polyhittestdist;
                     res.Hit = true;
+                    res.Position = (ray.Position + ray.Direction * polyhittestdist);
                     res.Normal = n1;
+                    res.HitVertex = (polygon != null) ? polygon.NearestVertex(res.Position) : new BoundVertexRef(-1, float.MaxValue);
                     res.HitPolygon = polygon;
                     res.HitBounds = this;
                     res.Material = polygon.Material;
@@ -2231,6 +2266,7 @@ namespace CodeWalker.GameFiles
         public abstract Vector3 Scale { get; set; }
         public abstract Vector3 Position { get; set; }
         public abstract Quaternion Orientation { get; set; }
+        public abstract BoundVertexRef NearestVertex(Vector3 p);
         public abstract void Read(byte[] bytes, int offset);
         public abstract void Write(BinaryWriter bw);
         public virtual string Title
@@ -2327,6 +2363,16 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public override BoundVertexRef NearestVertex(Vector3 p)
+        {
+            var d1 = (p - Vertex1).Length();
+            var d2 = (p - Vertex2).Length();
+            var d3 = (p - Vertex3).Length();
+            if ((d1 <= d2) && (d1 <= d3)) return new BoundVertexRef(vertIndex1, d1);
+            if (d2 <= d3) return new BoundVertexRef(vertIndex2, d2);
+            return new BoundVertexRef(vertIndex3, d3);
+        }
+
         public BoundPolygonTriangle()
         {
             Type = BoundPolygonType.Triangle;
@@ -2402,6 +2448,11 @@ namespace CodeWalker.GameFiles
             set
             {
             }
+        }
+
+        public override BoundVertexRef NearestVertex(Vector3 p)
+        {
+            return new BoundVertexRef(sphereIndex, sphereRadius);
         }
 
         public BoundPolygonSphere()
@@ -2495,6 +2546,14 @@ namespace CodeWalker.GameFiles
             set
             {
             }
+        }
+
+        public override BoundVertexRef NearestVertex(Vector3 p)
+        {
+            var d1 = (p - Vertex1).Length();
+            var d2 = (p - Vertex2).Length();
+            if (d1 <= d2) return new BoundVertexRef(capsuleIndex1, d1);
+            return new BoundVertexRef(capsuleIndex2, d2);
         }
 
         public BoundPolygonCapsule()
@@ -2604,6 +2663,18 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public override BoundVertexRef NearestVertex(Vector3 p)
+        {
+            var d1 = (p - Vertex1).Length();
+            var d2 = (p - Vertex2).Length();
+            var d3 = (p - Vertex3).Length();
+            var d4 = (p - Vertex4).Length();
+            if ((d1 <= d2) && (d1 <= d3) && (d1 <= d4)) return new BoundVertexRef(boxIndex1, d1);
+            if ((d2 <= d3) && (d2 <= d4)) return new BoundVertexRef(boxIndex2, d2);
+            if (d3 <= d4) return new BoundVertexRef(boxIndex3, d3);
+            return new BoundVertexRef(boxIndex4, d4);
+        }
+
         public BoundPolygonBox()
         {
             Type = BoundPolygonType.Box;
@@ -2699,6 +2770,14 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public override BoundVertexRef NearestVertex(Vector3 p)
+        {
+            var d1 = (p - Vertex1).Length();
+            var d2 = (p - Vertex2).Length();
+            if (d1 <= d2) return new BoundVertexRef(cylinderIndex1, d1);
+            return new BoundVertexRef(cylinderIndex2, d2);
+        }
+
         public BoundPolygonCylinder()
         {
             Type = BoundPolygonType.Cylinder;
@@ -2724,6 +2803,49 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             return base.ToString() + ": " + cylinderIndex1.ToString() + ", " + cylinderIndex2.ToString() + ", " + cylinderRadius.ToString();
+        }
+    }
+
+
+    [TC(typeof(EXP))] public struct BoundVertexRef //convenience struct for BoundPolygon.NearestVertex and SpaceRayIntersectResult
+    {
+        public int Index { get; set; }
+        public float Distance { get; set; }
+
+        public BoundVertexRef(int index, float dist)
+        {
+            Index = index;
+            Distance = dist;
+        }
+    }
+    [TC(typeof(EXP))] public class BoundVertex //class for editing convenience, to hold a reference to a BoundGeometry vertex
+    {
+        public BoundGeometry Owner { get; set; }
+        public int Index { get; set; }
+
+        public Vector3 Position
+        {
+            get { return (Owner != null) ? Owner.GetVertexPos(Index) : Vector3.Zero; }
+            set { if (Owner != null) Owner.SetVertexPos(Index, value); }
+        }
+        public BoundMaterialColour Colour
+        {
+            get { return (Owner != null) ? Owner.GetVertexColour(Index) : new BoundMaterialColour(); }
+            set { if (Owner != null) Owner.SetVertexColour(Index, value); }
+        }
+
+        public BoundVertex(BoundGeometry owner, int index)
+        {
+            Owner = owner;
+            Index = index;
+        }
+
+        public virtual string Title
+        {
+            get
+            {
+                return "Vertex " + Index.ToString();
+            }
         }
     }
 
@@ -3449,7 +3571,6 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public struct BoundMaterialColour
     {
-        //public BoundsMaterialType Type { get; set; }
         public byte R { get; set; }
         public byte G { get; set; }
         public byte B { get; set; }

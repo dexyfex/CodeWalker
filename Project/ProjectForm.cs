@@ -75,6 +75,7 @@ namespace CodeWalker.Project
         private YbnFile CurrentYbnFile;
         private Bounds CurrentCollisionBounds;
         private BoundPolygon CurrentCollisionPoly;
+        private BoundVertex CurrentCollisionVertex;
 
         private bool renderitems = true;
         private bool hidegtavmap = false;
@@ -413,6 +414,13 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetCollisionPoly(CurrentCollisionPoly); }, //updateFunc
                 (panel) => { return panel.CollisionPoly == CurrentCollisionPoly; }); //findFunc
         }
+        public void ShowEditYbnBoundVertexPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYbnBoundVertexPanel(this); }, //createFunc
+                (panel) => { panel.SetCollisionVertex(CurrentCollisionVertex); }, //updateFunc
+                (panel) => { return panel.CollisionVertex == CurrentCollisionVertex; }); //findFunc
+        }
         public void ShowEditYndPanel(bool promote)
         {
             ShowPanel(promote,
@@ -596,6 +604,10 @@ namespace CodeWalker.Project
             {
                 ShowEditYtypPanel(promote);
             }
+            else if (CurrentCollisionVertex != null)
+            {
+                ShowEditYbnBoundVertexPanel(promote);
+            }
             else if (CurrentCollisionPoly != null)
             {
                 ShowEditYbnBoundPolyPanel(promote);
@@ -707,6 +719,7 @@ namespace CodeWalker.Project
             CurrentYbnFile = item as YbnFile;
             CurrentCollisionBounds = item as Bounds;
             CurrentCollisionPoly = item as BoundPolygon;
+            CurrentCollisionVertex = item as BoundVertex;
             CurrentYndFile = item as YndFile;
             CurrentPathNode = item as YndNode;
             CurrentYnvFile = item as YnvFile;
@@ -787,6 +800,10 @@ namespace CodeWalker.Project
             if (CurrentArchetype != null)
             {
                 CurrentYtypFile = CurrentEntity?.MloParent?.Archetype?.Ytyp ?? CurrentArchetype?.Ytyp;
+            }
+            if (CurrentCollisionVertex != null)
+            {
+                CurrentCollisionBounds = CurrentCollisionVertex.Owner;
             }
             if (CurrentCollisionPoly != null)
             {
@@ -3023,7 +3040,11 @@ namespace CodeWalker.Project
             }
             CurrentYbnFile = ybn;
             RefreshUI();
-            if (CurrentCollisionPoly != null)
+            if (CurrentCollisionVertex != null)
+            {
+                ProjectExplorer?.TrySelectCollisionVertexTreeNode(CurrentCollisionVertex);
+            }
+            else if (CurrentCollisionPoly != null)
             {
                 ProjectExplorer?.TrySelectCollisionPolyTreeNode(CurrentCollisionPoly);
             }
@@ -3200,6 +3221,75 @@ namespace CodeWalker.Project
             return true;
         }
 
+        public void AddCollisionVertexToProject()
+        {
+            try
+            {
+                if (CurrentCollisionVertex == null) return;
+
+                CurrentYbnFile = CurrentCollisionVertex.Owner?.GetRootYbn();
+                if (CurrentYbnFile == null)
+                {
+                    MessageBox.Show("Sorry, only YBN collisions can currently be added to the project. Embedded collisions TODO!");
+                    return;
+                }
+
+                if (!YbnExistsInProject(CurrentYbnFile))
+                {
+                    var v = CurrentCollisionVertex;
+                    CurrentYbnFile.HasChanged = true;
+                    AddYbnToProject(CurrentYbnFile);
+
+                    CurrentCollisionVertex = v; //bug fix for some reason the treeview selects the project node here.
+                    CurrentCollisionBounds = v.Owner;
+                    CurrentYbnFile = v.Owner?.GetRootYbn();
+                    ProjectExplorer?.TrySelectCollisionVertexTreeNode(v);
+                }
+            }
+            catch
+            { }
+        }
+        public bool DeleteCollisionVertex()
+        {
+            if (CurrentCollisionBounds == null) return false;
+            if (CurrentCollisionVertex == null) return false;
+            if (CurrentYbnFile == null) return false;
+            if (CurrentCollisionVertex.Owner != CurrentCollisionBounds) return false;
+
+            if (MessageBox.Show("Are you sure you want to delete this collision vertex, and all attached polygons?\n" + CurrentCollisionVertex.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return true;
+            }
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentYbnFile.RemoveVertex(CurrentCollisionVertex);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentYbnFile.RemoveVertex(CurrentCollisionVertex);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unable to delete the collision vertex. This shouldn't happen!");
+            }
+
+            var delv = CurrentCollisionVertex;
+
+            //ProjectExplorer?.RemoveCollisionVertexTreeNode(CurrentCollisionVertex);
+            ProjectExplorer?.SetYbnHasChanged(CurrentYbnFile, true);
+
+            ClosePanel((EditYbnBoundVertexPanel p) => { return p.Tag == delv; });
+
+            CurrentCollisionVertex = null;
+
+            return true;
+        }
 
 
 
@@ -6145,8 +6235,9 @@ namespace CodeWalker.Project
                     var ent = sel.EntityDef;
                     var cargen = sel.CarGenerator;
                     var grassbatch = sel.GrassBatch;
+                    var collvert = sel.CollisionVertex;
                     var collpoly = sel.CollisionPoly;
-                    var collbound = sel.CollisionBounds ?? collpoly?.Owner;
+                    var collbound = sel.CollisionBounds ?? collpoly?.Owner ?? collvert.Owner;
                     var pathnode = sel.PathNode;
                     var pathlink = sel.PathLink;
                     var navpoly = sel.NavPoly;
@@ -6205,11 +6296,15 @@ namespace CodeWalker.Project
                     }
                     else if (YbnExistsInProject(ybn))
                     {
-                        if (collpoly != CurrentCollisionPoly)
+                        if ((collvert != null) && (collvert != CurrentCollisionVertex))
+                        {
+                            ProjectExplorer?.TrySelectCollisionVertexTreeNode(collvert);
+                        }
+                        else if ((collpoly != null) && (collpoly != CurrentCollisionPoly))
                         {
                             ProjectExplorer?.TrySelectCollisionPolyTreeNode(collpoly);
                         }
-                        if (collbound != CurrentCollisionBounds)
+                        else if (collbound != CurrentCollisionBounds)
                         {
                             ProjectExplorer?.TrySelectCollisionBoundsTreeNode(collbound);
                         }
@@ -6278,6 +6373,7 @@ namespace CodeWalker.Project
                     CurrentCarGen = cargen;
                     CurrentGrassBatch = grassbatch;
                     CurrentYbnFile = ybn;
+                    CurrentCollisionVertex = collvert;
                     CurrentCollisionPoly = collpoly;
                     CurrentCollisionBounds = collbound;
                     CurrentYndFile = ynd;
@@ -6329,6 +6425,10 @@ namespace CodeWalker.Project
                     else if (sel.CarGenerator != null)
                     {
                         OnWorldCarGenModified(sel.CarGenerator);
+                    }
+                    else if (sel.CollisionVertex != null)
+                    {
+                        OnWorldCollisionVertexModified(sel.CollisionVertex);
                     }
                     else if (sel.CollisionPoly != null)
                     {
@@ -6472,6 +6572,45 @@ namespace CodeWalker.Project
                 if (cargen.Ymap != null)
                 {
                     SetYmapHasChanged(true);
+                }
+            }
+
+        }
+        private void OnWorldCollisionVertexModified(BoundVertex vert)
+        {
+            var ybn = vert?.Owner?.GetRootYbn();
+            if (ybn == null) return;
+
+            CurrentYbnFile = ybn;
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            if (!YbnExistsInProject(ybn))
+            {
+                ybn.HasChanged = true;
+                vert.Owner.HasChanged = true;
+                AddYbnToProject(ybn);
+                ProjectExplorer?.TrySelectCollisionVertexTreeNode(vert);
+            }
+
+            if (vert != CurrentCollisionVertex)
+            {
+                CurrentCollisionVertex = vert;
+                ProjectExplorer?.TrySelectCollisionVertexTreeNode(vert);
+            }
+
+            if (vert == CurrentCollisionVertex)
+            {
+                ShowEditYbnBoundVertexPanel(false);
+
+                //////UpdateCollisionVertexTreeNode(poly);
+
+                if (ybn != null)
+                {
+                    SetYbnHasChanged(true);
                 }
             }
 
