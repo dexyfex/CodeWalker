@@ -587,6 +587,7 @@
     <Compile Include="World\CutsceneForm.Designer.cs">
       <DependentUpon>CutsceneForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="World\MapSelection.cs" />
     <Compile Include="World\SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -296,6 +296,10 @@ namespace CodeWalker
             this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.SubtitleLabel = new System.Windows.Forms.Label();
             this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
+            this.ToolbarNewYbnButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarOpenYbnButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarNewYtypButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarOpenYtypButton = new System.Windows.Forms.ToolStripMenuItem();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -2836,7 +2840,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(554, 25);
+            this.Toolbar.Size = new System.Drawing.Size(585, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -2846,6 +2850,8 @@ namespace CodeWalker
             this.ToolbarNewButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ToolbarNewProjectButton,
             this.ToolbarNewYmapButton,
+            this.ToolbarNewYtypButton,
+            this.ToolbarNewYbnButton,
             this.ToolbarNewYndButton,
             this.ToolbarNewTrainsButton,
             this.ToolbarNewScenarioButton});
@@ -2861,35 +2867,35 @@ namespace CodeWalker
             // ToolbarNewProjectButton
             // 
             this.ToolbarNewProjectButton.Name = "ToolbarNewProjectButton";
-            this.ToolbarNewProjectButton.Size = new System.Drawing.Size(164, 22);
+            this.ToolbarNewProjectButton.Size = new System.Drawing.Size(180, 22);
             this.ToolbarNewProjectButton.Text = "New project";
             this.ToolbarNewProjectButton.Click += new System.EventHandler(this.ToolbarNewProjectButton_Click);
             // 
             // ToolbarNewYmapButton
             // 
             this.ToolbarNewYmapButton.Name = "ToolbarNewYmapButton";
-            this.ToolbarNewYmapButton.Size = new System.Drawing.Size(164, 22);
+            this.ToolbarNewYmapButton.Size = new System.Drawing.Size(180, 22);
             this.ToolbarNewYmapButton.Text = "New ymap file";
             this.ToolbarNewYmapButton.Click += new System.EventHandler(this.ToolbarNewYmapButton_Click);
             // 
             // ToolbarNewYndButton
             // 
             this.ToolbarNewYndButton.Name = "ToolbarNewYndButton";
-            this.ToolbarNewYndButton.Size = new System.Drawing.Size(164, 22);
+            this.ToolbarNewYndButton.Size = new System.Drawing.Size(180, 22);
             this.ToolbarNewYndButton.Text = "New ynd file";
             this.ToolbarNewYndButton.Click += new System.EventHandler(this.ToolbarNewYndButton_Click);
             // 
             // ToolbarNewTrainsButton
             // 
             this.ToolbarNewTrainsButton.Name = "ToolbarNewTrainsButton";
-            this.ToolbarNewTrainsButton.Size = new System.Drawing.Size(164, 22);
+            this.ToolbarNewTrainsButton.Size = new System.Drawing.Size(180, 22);
             this.ToolbarNewTrainsButton.Text = "New trains file";
             this.ToolbarNewTrainsButton.Click += new System.EventHandler(this.ToolbarNewTrainsButton_Click);
             // 
             // ToolbarNewScenarioButton
             // 
             this.ToolbarNewScenarioButton.Name = "ToolbarNewScenarioButton";
-            this.ToolbarNewScenarioButton.Size = new System.Drawing.Size(164, 22);
+            this.ToolbarNewScenarioButton.Size = new System.Drawing.Size(180, 22);
             this.ToolbarNewScenarioButton.Text = "New scenario file";
             this.ToolbarNewScenarioButton.Click += new System.EventHandler(this.ToolbarNewScenarioButton_Click);
             // 
@@ -2899,6 +2905,8 @@ namespace CodeWalker
             this.ToolbarOpenButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ToolbarOpenProjectButton,
             this.ToolbarOpenYmapButton,
+            this.ToolbarOpenYtypButton,
+            this.ToolbarOpenYbnButton,
             this.ToolbarOpenYndButton,
             this.ToolbarOpenTrainsButton,
             this.ToolbarOpenScenarioButton});
@@ -2914,35 +2922,35 @@ namespace CodeWalker
             // ToolbarOpenProjectButton
             // 
             this.ToolbarOpenProjectButton.Name = "ToolbarOpenProjectButton";
-            this.ToolbarOpenProjectButton.Size = new System.Drawing.Size(178, 22);
+            this.ToolbarOpenProjectButton.Size = new System.Drawing.Size(180, 22);
             this.ToolbarOpenProjectButton.Text = "Open project...";
             this.ToolbarOpenProjectButton.Click += new System.EventHandler(this.ToolbarOpenProjectButton_Click);
             // 
             // ToolbarOpenYmapButton
             // 
             this.ToolbarOpenYmapButton.Name = "ToolbarOpenYmapButton";
-            this.ToolbarOpenYmapButton.Size = new System.Drawing.Size(178, 22);
+            this.ToolbarOpenYmapButton.Size = new System.Drawing.Size(180, 22);
             this.ToolbarOpenYmapButton.Text = "Open ymap file...";
             this.ToolbarOpenYmapButton.Click += new System.EventHandler(this.ToolbarOpenYmapButton_Click);
             // 
             // ToolbarOpenYndButton
             // 
             this.ToolbarOpenYndButton.Name = "ToolbarOpenYndButton";
-            this.ToolbarOpenYndButton.Size = new System.Drawing.Size(178, 22);
+            this.ToolbarOpenYndButton.Size = new System.Drawing.Size(180, 22);
             this.ToolbarOpenYndButton.Text = "Open ynd file...";
             this.ToolbarOpenYndButton.Click += new System.EventHandler(this.ToolbarOpenYndButton_Click);
             // 
             // ToolbarOpenTrainsButton
             // 
             this.ToolbarOpenTrainsButton.Name = "ToolbarOpenTrainsButton";
-            this.ToolbarOpenTrainsButton.Size = new System.Drawing.Size(178, 22);
+            this.ToolbarOpenTrainsButton.Size = new System.Drawing.Size(180, 22);
             this.ToolbarOpenTrainsButton.Text = "Open trains file...";
             this.ToolbarOpenTrainsButton.Click += new System.EventHandler(this.ToolbarOpenTrainsButton_Click);
             // 
             // ToolbarOpenScenarioButton
             // 
             this.ToolbarOpenScenarioButton.Name = "ToolbarOpenScenarioButton";
-            this.ToolbarOpenScenarioButton.Size = new System.Drawing.Size(178, 22);
+            this.ToolbarOpenScenarioButton.Size = new System.Drawing.Size(180, 22);
             this.ToolbarOpenScenarioButton.Text = "Open scenario file...";
             this.ToolbarOpenScenarioButton.Click += new System.EventHandler(this.ToolbarOpenScenarioButton_Click);
             // 
@@ -3428,6 +3436,34 @@ namespace CodeWalker
             // 
             this.SubtitleTimer.Tick += new System.EventHandler(this.SubtitleTimer_Tick);
             // 
+            // ToolbarNewYbnButton
+            // 
+            this.ToolbarNewYbnButton.Name = "ToolbarNewYbnButton";
+            this.ToolbarNewYbnButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewYbnButton.Text = "New ybn file";
+            this.ToolbarNewYbnButton.Click += new System.EventHandler(this.ToolbarNewYbnButton_Click);
+            // 
+            // ToolbarOpenYbnButton
+            // 
+            this.ToolbarOpenYbnButton.Name = "ToolbarOpenYbnButton";
+            this.ToolbarOpenYbnButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarOpenYbnButton.Text = "Open ybn file...";
+            this.ToolbarOpenYbnButton.Click += new System.EventHandler(this.ToolbarOpenYbnButton_Click);
+            // 
+            // ToolbarNewYtypButton
+            // 
+            this.ToolbarNewYtypButton.Name = "ToolbarNewYtypButton";
+            this.ToolbarNewYtypButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewYtypButton.Text = "New ytyp file";
+            this.ToolbarNewYtypButton.Click += new System.EventHandler(this.ToolbarNewYtypButton_Click);
+            // 
+            // ToolbarOpenYtypButton
+            // 
+            this.ToolbarOpenYtypButton.Name = "ToolbarOpenYtypButton";
+            this.ToolbarOpenYtypButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarOpenYtypButton.Text = "Open ytyp file...";
+            this.ToolbarOpenYtypButton.Click += new System.EventHandler(this.ToolbarOpenYtypButton_Click);
+            // 
             // WorldForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3783,5 +3819,9 @@ namespace CodeWalker
         private System.Windows.Forms.Label SubtitleLabel;
         private System.Windows.Forms.Timer SubtitleTimer;
         private System.Windows.Forms.CheckBox DeferredShadingCheckBox;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarNewYbnButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYbnButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarNewYtypButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYtypButton;
     }
 }
