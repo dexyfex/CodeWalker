@@ -6237,7 +6237,7 @@ namespace CodeWalker.Project
                     var grassbatch = sel.GrassBatch;
                     var collvert = sel.CollisionVertex;
                     var collpoly = sel.CollisionPoly;
-                    var collbound = sel.CollisionBounds ?? collpoly?.Owner ?? collvert.Owner;
+                    var collbound = sel.CollisionBounds ?? collpoly?.Owner ?? collvert?.Owner;
                     var pathnode = sel.PathNode;
                     var pathlink = sel.PathLink;
                     var navpoly = sel.NavPoly;
@@ -6404,17 +6404,17 @@ namespace CodeWalker.Project
             }
             catch { }
         }
-        public void OnWorldSelectionModified(MapSelection sel, List<MapSelection> items)
+        public void OnWorldSelectionModified(MapSelection sel)
         {
             try
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { OnWorldSelectionModified(sel, items); }));
+                    BeginInvoke(new Action(() => { OnWorldSelectionModified(sel); }));
                 }
                 else
                 {
-                    if (sel.MultipleSelection)
+                    if (sel.MultipleSelectionItems != null)
                     {
                         //TODO!!
                     }

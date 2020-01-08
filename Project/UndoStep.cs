@@ -21,44 +21,11 @@ namespace CodeWalker.Project
     }
 
 
-
-    public class MultiPositionUndoStep : UndoStep
+    public abstract class MultiItemUndoStep : UndoStep
     {
-        private MapSelection Selection;
-        private MapSelection[] Items;
-        public Vector3 StartPosition { get; set; }
-        public Vector3 EndPosition { get; set; }
+        protected MapSelection Selection;
 
-        public MultiPositionUndoStep(MapSelection multiSel, MapSelection[] items, Vector3 startpos, WorldForm wf)
-        {
-            Selection = multiSel;
-            Items = items;
-            StartPosition = startpos;
-            EndPosition = multiSel.WidgetPosition;
-
-            UpdateGraphics(wf);
-        }
-
-        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p, Vector3 o)
-        {
-            //update selection items positions for new widget position p
-
-            Vector3 dp = p - o;
-            for (int i = 0; i < Items.Length; i++)
-            {
-                var refpos = Items[i].WidgetPosition;
-                Items[i].SetPosition(refpos + dp, false);
-            }
-            sel.MultipleSelectionCenter = p; //center used for widget pos...
-
-            wf.SelectMulti(Items);
-            wf.SetWidgetPosition(p);
-
-            UpdateGraphics(wf);
-        }
-
-
-        private void UpdateGraphics(WorldForm wf)
+        protected void UpdateGraphics(WorldForm wf)
         {
 
             Dictionary<YndFile, int> pathYnds = new Dictionary<YndFile, int>();
@@ -67,9 +34,9 @@ namespace CodeWalker.Project
             Dictionary<YmtFile, int> scenarioYmts = new Dictionary<YmtFile, int>();
             Dictionary<Bounds, int> bounds = new Dictionary<Bounds, int>();
 
-            if (Items != null)
+            if (Selection.MultipleSelectionItems != null)
             {
-                foreach (var item in Items)
+                foreach (var item in Selection.MultipleSelectionItems)
                 {
                     if (item.PathNode != null)
                     {
@@ -133,7 +100,35 @@ namespace CodeWalker.Project
 
         }
 
+    }
+    public class MultiPositionUndoStep : MultiItemUndoStep
+    {
+        public Vector3 StartPosition { get; set; }
+        public Vector3 EndPosition { get; set; }
 
+        public MultiPositionUndoStep(MapSelection multiSel, Vector3 startpos, WorldForm wf)
+        {
+            Selection = multiSel;
+            StartPosition = startpos;
+            EndPosition = multiSel.WidgetPosition;
+
+            UpdateGraphics(wf);
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p, Vector3 o)
+        {
+            //update selection items positions for new widget position p
+
+            Selection.MultipleSelectionCenter = o;
+            Selection.SetPosition(p, false);
+
+            sel.MultipleSelectionCenter = p; //center used for widget pos...
+
+            wf.SelectMulti(Selection.MultipleSelectionItems);
+            wf.SetWidgetPosition(p);
+
+            UpdateGraphics(wf);
+        }
 
         public override void Undo(WorldForm wf, ref MapSelection sel)
         {
@@ -147,7 +142,95 @@ namespace CodeWalker.Project
 
         public override string ToString()
         {
-            return (Items?.Length ?? 0).ToString() + " items: Position";
+            return (Selection.MultipleSelectionItems?.Length ?? 0).ToString() + " items: Position";
+        }
+    }
+    public class MultiRotationUndoStep : MultiItemUndoStep
+    {
+        public Quaternion StartRotation { get; set; }
+        public Quaternion EndRotation { get; set; }
+
+        public MultiRotationUndoStep(MapSelection multiSel, Quaternion startrot, WorldForm wf)
+        {
+            Selection = multiSel;
+            StartRotation = startrot;
+            EndRotation = multiSel.WidgetRotation;
+
+            UpdateGraphics(wf);
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Quaternion r, Quaternion o)
+        {
+            //update selection items positions+rotations for new widget rotation r
+
+            Selection.MultipleSelectionRotation = o;
+            Selection.SetRotation(r, false);
+
+            sel.MultipleSelectionRotation = r; //used for widget rot...
+
+            wf.SelectMulti(Selection.MultipleSelectionItems);
+            wf.SetWidgetRotation(r);
+
+            UpdateGraphics(wf);
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartRotation, EndRotation);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndRotation, StartRotation);
+        }
+
+        public override string ToString()
+        {
+            return (Selection.MultipleSelectionItems?.Length ?? 0).ToString() + " items: Rotation";
+        }
+    }
+    public class MultiScaleUndoStep : MultiItemUndoStep
+    {
+        public Vector3 StartScale { get; set; }
+        public Vector3 EndScale { get; set; }
+
+        public MultiScaleUndoStep(MapSelection multiSel, Vector3 startpos, WorldForm wf)
+        {
+            Selection = multiSel;
+            StartScale = startpos;
+            EndScale = multiSel.WidgetScale;
+
+            UpdateGraphics(wf);
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 s, Vector3 o)
+        {
+            //update selection items positions for new widget position p
+
+            Selection.MultipleSelectionScale = o;
+            Selection.SetScale(s, false);
+
+            sel.MultipleSelectionScale = s; // used for widget scale...
+
+            wf.SelectMulti(Selection.MultipleSelectionItems);
+            wf.SetWidgetScale(s);
+
+            UpdateGraphics(wf);
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartScale, EndScale);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndScale, StartScale);
+        }
+
+        public override string ToString()
+        {
+            return (Selection.MultipleSelectionItems?.Length ?? 0).ToString() + " items: Scale";
         }
     }
 

@@ -22,7 +22,6 @@ namespace CodeWalker
     {
         WorldForm WorldForm;
         MapSelection Selection;
-        List<MapSelection> SelectionItems;
         string SelectionMode = "";
         bool MouseSelectEnable = false;
 
@@ -60,10 +59,9 @@ namespace CodeWalker
             MouseSelectCheckBox.Checked = enable;
         }
 
-        public void SetSelection(MapSelection item, List<MapSelection> multiItems)
+        public void SetSelection(MapSelection item)
         {
             Selection = item;
-            SelectionItems = multiItems;
 
             SelectionNameTextBox.Text = item.GetNameString("Nothing selected");
             //SelEntityPropertyGrid.SelectedObject = item.EntityDef;
@@ -89,10 +87,10 @@ namespace CodeWalker
                 AddSelectionEntityHierarchyNodes(item.EntityDef);
             }
 
-            if (item.MultipleSelection)
+            if (item.MultipleSelectionItems != null)
             {
                 SelectionEntityTabPage.Text = "Multiple items";
-                SelEntityPropertyGrid.SelectedObject = multiItems.ToArray();
+                SelEntityPropertyGrid.SelectedObject = item.MultipleSelectionItems;
             }
             else if (item.TimeCycleModifier != null)
             {
@@ -450,7 +448,7 @@ namespace CodeWalker
 
         private void WorldInfoForm_Load(object sender, EventArgs e)
         {
-            SetSelection(Selection, SelectionItems);
+            SetSelection(Selection);
         }
 
         private void WorldInfoForm_FormClosed(object sender, FormClosedEventArgs e)

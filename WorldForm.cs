@@ -161,7 +161,7 @@ namespace CodeWalker
         string SelectionModeStr = "Entity";
         MapSelectionMode SelectionMode = MapSelectionMode.Entity;
         MapSelection SelectedItem;
-        List<MapSelection> SelectedItems = new List<MapSelection>();
+        MapSelection CopiedItem;
         WorldInfoForm InfoForm = null;
 
 
@@ -182,15 +182,6 @@ namespace CodeWalker
         WorldSnapMode SnapModePrev = WorldSnapMode.Ground;//also the default snap mode
         float SnapGridSize = 1.0f;
 
-        YmapEntityDef CopiedEntity = null;
-        YmapCarGen CopiedCarGen = null;
-        YndNode CopiedPathNode = null;
-        YnvPoly CopiedNavPoly = null;
-        YnvPoint CopiedNavPoint = null;
-        YnvPortal CopiedNavPortal = null;
-        TrainTrackNode CopiedTrainNode = null;
-        ScenarioNode CopiedScenarioNode = null;
-        AudioPlacement CopiedAudio = null;
 
         public bool EditEntityPivot { get; set; } = false;
 
@@ -1111,65 +1102,11 @@ namespace CodeWalker
             PrevMouseHit = LastMouseHit;
             LastMouseHit = CurMouseHit;
 
-            bool change = (LastMouseHit.EntityDef != PrevMouseHit.EntityDef);
+            bool change = LastMouseHit.CheckForChanges(PrevMouseHit); //(LastMouseHit.EntityDef != PrevMouseHit.EntityDef);
             if (SelectByGeometry)
             {
                 change = change || (LastMouseHit.Geometry != PrevMouseHit.Geometry);
             }
-            switch (SelectionMode)
-            {
-                case MapSelectionMode.EntityExtension:
-                    change = change || (LastMouseHit.EntityExtension != PrevMouseHit.EntityExtension);
-                    break;
-                case MapSelectionMode.ArchetypeExtension:
-                    change = change || (LastMouseHit.ArchetypeExtension != PrevMouseHit.ArchetypeExtension);
-                    break;
-                case MapSelectionMode.TimeCycleModifier:
-                    change = change || (LastMouseHit.TimeCycleModifier != PrevMouseHit.TimeCycleModifier);
-                    break;
-                case MapSelectionMode.CarGenerator:
-                    change = change || (LastMouseHit.CarGenerator != PrevMouseHit.CarGenerator);
-                    break;
-                case MapSelectionMode.MloInstance:
-                    change = change || (LastMouseHit.MloEntityDef != PrevMouseHit.MloEntityDef);
-                    break;
-                case MapSelectionMode.DistantLodLights:
-                    change = change || (LastMouseHit.DistantLodLights != PrevMouseHit.DistantLodLights);
-                    break;
-                case MapSelectionMode.Grass:
-                    change = change || (LastMouseHit.GrassBatch != PrevMouseHit.GrassBatch);
-                    break;
-                case MapSelectionMode.Occlusion:
-                    change = change || (LastMouseHit.BoxOccluder != PrevMouseHit.BoxOccluder)
-                                    || (LastMouseHit.OccludeModel != PrevMouseHit.OccludeModel);
-                    break;
-                case MapSelectionMode.WaterQuad:
-                    change = change || (LastMouseHit.WaterQuad != PrevMouseHit.WaterQuad);
-                    break;
-                case MapSelectionMode.Collision:
-                    change = change || (LastMouseHit.CollisionBounds != PrevMouseHit.CollisionBounds)
-                                    || (LastMouseHit.CollisionPoly != PrevMouseHit.CollisionPoly)
-                                    || (LastMouseHit.CollisionVertex != PrevMouseHit.CollisionVertex);
-                    break;
-                case MapSelectionMode.NavMesh:
-                    change = change || (LastMouseHit.NavPoly != PrevMouseHit.NavPoly)
-                                    || (LastMouseHit.NavPoint != PrevMouseHit.NavPoint)
-                                    || (LastMouseHit.NavPortal != PrevMouseHit.NavPortal);
-                    break;
-                case MapSelectionMode.Path:
-                    change = change || (LastMouseHit.PathNode != PrevMouseHit.PathNode);
-                    break;
-                case MapSelectionMode.TrainTrack:
-                    change = change || (LastMouseHit.TrainTrackNode != PrevMouseHit.TrainTrackNode);
-                    break;
-                case MapSelectionMode.Scenario:
-                    change = change || (LastMouseHit.ScenarioNode != PrevMouseHit.ScenarioNode);
-                    break;
-                case MapSelectionMode.Audio:
-                    change = change || (LastMouseHit.Audio != PrevMouseHit.Audio);
-                    break;
-            }
-
 
             if (change)
             {
@@ -1275,11 +1212,11 @@ namespace CodeWalker
 
         private void RenderSelection()
         {
-            if (SelectedItem.MultipleSelection)
+            if (SelectedItem.MultipleSelectionItems != null)
             {
-                for (int i = 0; i < SelectedItems.Count; i++)
+                for (int i = 0; i < SelectedItem.MultipleSelectionItems.Length; i++)
                 {
-                    var item = SelectedItems[i];
+                    var item = SelectedItem.MultipleSelectionItems[i];
                     RenderSelection(ref item);
                 }
             }
@@ -1697,30 +1634,11 @@ namespace CodeWalker
 
             if (newpos == oldpos) return;
 
-            if (SelectedItem.MultipleSelection)
-            {
-                if (EditEntityPivot)
-                {
-                }
-                else
-                {
-                    var dpos = newpos - SelectedItem.MultipleSelectionCenter;// oldpos;
-                    if (dpos == Vector3.Zero) return; //nothing moved.. (probably due to snap)
-                    for (int i = 0; i < SelectedItems.Count; i++)
-                    {
-                        var refpos = SelectedItems[i].WidgetPosition;
-                        SelectedItems[i].SetPosition(refpos + dpos, false);
-                    }
-                    SelectedItem.MultipleSelectionCenter = newpos;
-                }
-            }
-            else
-            {
-                SelectedItem.SetPosition(newpos, EditEntityPivot);                
-            }
+            SelectedItem.SetPosition(newpos, EditEntityPivot);
+            
             if (ProjectForm != null)
             {
-                ProjectForm.OnWorldSelectionModified(SelectedItem, SelectedItems);
+                ProjectForm.OnWorldSelectionModified(SelectedItem);
             }
         }
         private void Widget_OnRotationChange(Quaternion newrot, Quaternion oldrot)
@@ -1728,22 +1646,11 @@ namespace CodeWalker
             //called during UpdateWidgets()
             if (newrot == oldrot) return;
 
-            if (SelectedItem.MultipleSelection)
-            {
-                if (EditEntityPivot)
-                {
-                }
-                else
-                {
-                }
-            }
-            else
-            {
-                SelectedItem.SetRotation(newrot, oldrot, EditEntityPivot);
-            }
+            SelectedItem.SetRotation(newrot, EditEntityPivot);
+
             if (ProjectForm != null)
             {
-                ProjectForm.OnWorldSelectionModified(SelectedItem, SelectedItems);
+                ProjectForm.OnWorldSelectionModified(SelectedItem);
             }
         }
         private void Widget_OnScaleChange(Vector3 newscale, Vector3 oldscale)
@@ -1751,22 +1658,11 @@ namespace CodeWalker
             //called during UpdateWidgets()
             if (newscale == oldscale) return;
 
-            if (SelectedItem.MultipleSelection)
-            {
-                if (EditEntityPivot)
-                {//editing pivot scale is sort of meaningless..
-                }
-                else
-                {
-                }
-            }
-            else
-            {
-                SelectedItem.SetScale(newscale, oldscale, EditEntityPivot);
-            }
+            SelectedItem.SetScale(newscale, EditEntityPivot);
+
             if (ProjectForm != null)
             {
-                ProjectForm.OnWorldSelectionModified(SelectedItem, SelectedItems);
+                ProjectForm.OnWorldSelectionModified(SelectedItem);
             }
         }
 
@@ -3351,38 +3247,42 @@ namespace CodeWalker
 
             if (addSelection)
             {
-                if (SelectedItem.MultipleSelection)
+                var items = new List<MapSelection>();
+                if (SelectedItem.MultipleSelectionItems != null)
                 {
+                    items.AddRange(SelectedItem.MultipleSelectionItems);
+
                     if (mhitv.HasValue) //incoming selection isn't empty...
                     {
                         //search the list for a match, remove it if already there, otherwise add it.
                         bool found = false;
-                        foreach (var item in SelectedItems)
+                        foreach (var item in items)
                         {
                             if (!item.CheckForChanges(mhitv))
                             {
-                                SelectedItems.Remove(item);
+                                items.Remove(item);
                                 found = true;
                                 break;
                             }
                         }
                         if (found)
                         {
-                            if (SelectedItems.Count == 1)
+                            if (items.Count == 1)
                             {
-                                mhitv = SelectedItems[0];
-                                SelectedItems.Clear();
+                                mhitv = items[0];
+                                items.Clear();
                             }
-                            else if (SelectedItems.Count <= 0)
+                            else if (items.Count <= 0)
                             {
                                 mhitv.Clear();
-                                SelectedItems.Clear();//this shouldn't really happen..
+                                items.Clear();//this shouldn't really happen..
                             }
+                            mhitv.MultipleSelectionItems = items.ToArray();
                         }
                         else
                         {
-                            mhitv.MultipleSelection = false;
-                            SelectedItems.Add(mhitv);
+                            mhitv.MultipleSelectionItems = null;
+                            items.Add(mhitv);
                         }
                         change = true;
                     }
@@ -3399,11 +3299,11 @@ namespace CodeWalker
                         {
                             if (SelectedItem.HasValue) //add the existing item to the selection list, if it's not empty
                             {
-                                SelectedItem.MultipleSelection = false;
-                                SelectedItems.Add(SelectedItem);
-                                mhitv.MultipleSelection = false;
-                                SelectedItems.Add(mhitv);
-                                SelectedItem.MultipleSelection = true;
+                                mhitv.MultipleSelectionItems = null;
+                                SelectedItem.MultipleSelectionItems = null;
+                                items.Add(SelectedItem);
+                                items.Add(mhitv);
+                                SelectedItem.MultipleSelectionItems = items.ToArray();
                             }
                         }
                         else //empty incoming value... do nothing?
@@ -3414,39 +3314,39 @@ namespace CodeWalker
                     else //same thing was selected a 2nd time, just clear the selection.
                     {
                         SelectedItem.Clear();
-                        SelectedItems.Clear();
                         mhit = null; //dont's wants to selects it agains!
                         change = true;
                     }
                 }
 
-                if (SelectedItems.Count > 1)
+                if (items.Count > 1)
                 {
                     //iterate the selected items, and calculate the selection position
                     var center = Vector3.Zero;
-                    foreach (var item in SelectedItems)
+                    foreach (var item in items)
                     {
                         center += item.WidgetPosition;
                     }
-                    if (SelectedItems.Count > 0)
+                    if (items.Count > 0)
                     {
-                        center *= (1.0f / SelectedItems.Count);
+                        center *= (1.0f / items.Count);
                     }
 
                     mhitv.Clear();
-                    mhitv.MultipleSelection = true;
+                    mhitv.MultipleSelectionItems = items.ToArray();
                     mhitv.MultipleSelectionCenter = center;
+                    mhitv.MultipleSelectionRotation = Quaternion.Identity;
+                    mhitv.MultipleSelectionScale = Vector3.One;
                 }
             }
             else
             {
-                if (SelectedItem.MultipleSelection)
+                if (SelectedItem.MultipleSelectionItems != null)
                 {
                     change = true;
-                    SelectedItem.MultipleSelection = false;
+                    SelectedItem.MultipleSelectionItems = null;
                     SelectedItem.Clear();
                 }
-                SelectedItems.Clear();
             }
 
             if (!change)
@@ -3801,7 +3701,7 @@ namespace CodeWalker
 
                     if (InfoForm != null)
                     {
-                        InfoForm.SetSelection(SelectedItem, SelectedItems);
+                        InfoForm.SetSelection(SelectedItem);
                     }
                 }
             }
@@ -3838,10 +3738,10 @@ namespace CodeWalker
             ToolbarDeleteItemButton.Enabled = false;
             ToolbarDeleteItemButton.Text = "Delete";
 
-            if (item.MultipleSelection)
+            if (item.MultipleSelectionItems != null)
             {
                 SelectionEntityTabPage.Text = "Multiple items";
-                SelEntityPropertyGrid.SelectedObject = SelectedItems.ToArray();
+                SelEntityPropertyGrid.SelectedObject = item.MultipleSelectionItems;
             }
             else if (item.TimeCycleModifier != null)
             {
@@ -4148,7 +4048,7 @@ namespace CodeWalker
             if (InfoForm == null)
             {
                 InfoForm = new WorldInfoForm(this);
-                InfoForm.SetSelection(SelectedItem, SelectedItems);
+                InfoForm.SetSelection(SelectedItem);
                 InfoForm.SetSelectionMode(SelectionModeStr, MouseSelectEnabled);
                 InfoForm.Show(this);
             }
@@ -4847,25 +4747,9 @@ namespace CodeWalker
 
 
 
-        private bool CanMarkUndo()
-        {
-            if (SelectedItem.MultipleSelection) return true;
-            if (SelectedItem.EntityDef != null) return true;
-            if (SelectedItem.CarGenerator != null) return true;
-            if (SelectedItem.CollisionBounds != null) return true;
-            if (SelectedItem.CollisionPoly != null) return true;
-            if (SelectedItem.PathNode != null) return true;
-            //if (SelectedItem.NavPoly != null) return true;
-            if (SelectedItem.NavPoint != null) return true;
-            if (SelectedItem.NavPortal != null) return true;
-            if (SelectedItem.TrainTrackNode != null) return true;
-            if (SelectedItem.ScenarioNode != null) return true;
-            if (SelectedItem.Audio != null) return true;
-            return false;
-        }
         private void MarkUndoStart(Widget w)
         {
-            if (!CanMarkUndo()) return;
+            if (!SelectedItem.CanMarkUndo()) return;
             if (Widget is TransformWidget)
             {
                 UndoStartPosition = Widget.Position;
@@ -4875,134 +4759,12 @@ namespace CodeWalker
         }
         private void MarkUndoEnd(Widget w)
         {
-            if (!CanMarkUndo()) return;
-            var ent = SelectedItem.EntityDef;
-            var cargen = SelectedItem.CarGenerator;
-            var bounds = SelectedItem.CollisionBounds;
-            var boundpoly = SelectedItem.CollisionPoly;
-            var boundvertex = SelectedItem.CollisionVertex;
-            var pathnode = SelectedItem.PathNode;
-            var navpoly = SelectedItem.NavPoly;
-            var navpoint = SelectedItem.NavPoint;
-            var navportal = SelectedItem.NavPortal;
-            var trainnode = SelectedItem.TrainTrackNode;
-            var scenarionode = SelectedItem.ScenarioNode;
-            var audio = SelectedItem.Audio;
+            if (!SelectedItem.CanMarkUndo()) return;
             TransformWidget tw = Widget as TransformWidget;
             UndoStep s = null;
             if (tw != null)
             {
-                if (SelectedItem.MultipleSelection)
-                {
-                    switch (tw.Mode)
-                    {
-                        case WidgetMode.Position: s = new MultiPositionUndoStep(SelectedItem, SelectedItems.ToArray(), UndoStartPosition, this); break;
-                    }
-                }
-                else if (ent != null)
-                {
-                    if (EditEntityPivot)
-                    {
-                        switch (tw.Mode)
-                        {
-                            case WidgetMode.Position: s = new EntityPivotPositionUndoStep(ent, UndoStartPosition); break;
-                            case WidgetMode.Rotation: s = new EntityPivotRotationUndoStep(ent, UndoStartRotation); break;
-                        }
-                    }
-                    else
-                    {
-                        switch (tw.Mode)
-                        {
-                            case WidgetMode.Position: s = new EntityPositionUndoStep(ent, UndoStartPosition); break;
-                            case WidgetMode.Rotation: s = new EntityRotationUndoStep(ent, UndoStartRotation); break;
-                            case WidgetMode.Scale: s = new EntityScaleUndoStep(ent, UndoStartScale); break;
-                        }
-                    }
-                }
-                else if (cargen != null)
-                {
-                    switch (tw.Mode)
-                    {
-                        case WidgetMode.Position: s = new CarGenPositionUndoStep(cargen, UndoStartPosition); break;
-                        case WidgetMode.Rotation: s = new CarGenRotationUndoStep(cargen, UndoStartRotation); break;
-                        case WidgetMode.Scale: s = new CarGenScaleUndoStep(cargen, UndoStartScale); break;
-                    }
-                }
-                else if (boundvertex != null)
-                {
-                    switch (tw.Mode)
-                    {
-                        case WidgetMode.Position: s = new CollisionVertexPositionUndoStep(boundvertex, UndoStartPosition, this); break;
-                    }
-                }
-                else if (boundpoly != null)
-                {
-                    switch (tw.Mode)
-                    {
-                        case WidgetMode.Position: s = new CollisionPolyPositionUndoStep(boundpoly, UndoStartPosition, this); break;
-                        case WidgetMode.Rotation: s = new CollisionPolyRotationUndoStep(boundpoly, UndoStartRotation, this); break;
-                        case WidgetMode.Scale: s = new CollisionPolyScaleUndoStep(boundpoly, UndoStartScale, this); break;
-                    }
-                }
-                else if (bounds != null)
-                {
-                    switch (tw.Mode)
-                    {
-                        case WidgetMode.Position: s = new CollisionPositionUndoStep(bounds, UndoStartPosition, this); break;
-                        case WidgetMode.Rotation: s = new CollisionRotationUndoStep(bounds, UndoStartRotation, this); break;
-                        case WidgetMode.Scale: s = new CollisionScaleUndoStep(bounds, UndoStartScale, this); break;
-                    }
-                }
-                else if (pathnode != null)
-                {
-                    switch (tw.Mode)
-                    {
-                        case WidgetMode.Position: s = new PathNodePositionUndoStep(pathnode, UndoStartPosition, this); break;
-                    }
-                }
-                else if (navpoly != null)
-                {
-                    //todo...
-                }
-                else if (navpoint != null)
-                {
-                    switch (tw.Mode)
-                    {
-                        case WidgetMode.Position: s = new NavPointPositionUndoStep(navpoint, UndoStartPosition, this); break;
-                        case WidgetMode.Rotation: s = new NavPointRotationUndoStep(navpoint, UndoStartRotation, this); break;
-                    }
-                }
-                else if (navportal != null)
-                {
-                    switch (tw.Mode)
-                    {
-                        case WidgetMode.Position: s = new NavPortalPositionUndoStep(navportal, UndoStartPosition, this); break;
-                        case WidgetMode.Rotation: s = new NavPortalRotationUndoStep(navportal, UndoStartRotation, this); break;
-                    }
-                }
-                else if (trainnode != null)
-                {
-                    switch (tw.Mode)
-                    {
-                        case WidgetMode.Position: s = new TrainTrackNodePositionUndoStep(trainnode, UndoStartPosition, this); break;
-                    }
-                }
-                else if (scenarionode != null)
-                {
-                    switch (tw.Mode)
-                    {
-                        case WidgetMode.Position: s = new ScenarioNodePositionUndoStep(scenarionode, UndoStartPosition, this); break;
-                        case WidgetMode.Rotation: s = new ScenarioNodeRotationUndoStep(scenarionode, UndoStartRotation, this); break;
-                    }
-                }
-                else if (audio != null)
-                {
-                    switch (tw.Mode)
-                    {
-                        case WidgetMode.Position: s = new AudioPositionUndoStep(audio, UndoStartPosition); break;
-                        case WidgetMode.Rotation: s = new AudioRotationUndoStep(audio, UndoStartRotation); break;
-                    }
-                }
+                s = SelectedItem.CreateUndoStep(tw.Mode, UndoStartPosition, UndoStartRotation, UndoStartScale, this, EditEntityPivot);
             }
             if (s != null)
             {
@@ -5021,7 +4783,7 @@ namespace CodeWalker
 
             if (ProjectForm != null)
             {
-                ProjectForm.OnWorldSelectionModified(SelectedItem, SelectedItems);
+                ProjectForm.OnWorldSelectionModified(SelectedItem);
             }
 
             UpdateUndoUI();
@@ -5036,7 +4798,7 @@ namespace CodeWalker
 
             if (ProjectForm != null)
             {
-                ProjectForm.OnWorldSelectionModified(SelectedItem, SelectedItems);
+                ProjectForm.OnWorldSelectionModified(SelectedItem);
             }
 
             UpdateUndoUI();
@@ -5127,7 +4889,7 @@ namespace CodeWalker
             ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
             ToolbarAddItemButton.Enabled = enable;
             //ToolbarDeleteEntityButton.Enabled = enable;
-            ToolbarPasteButton.Enabled = (CopiedEntity != null) && enable;
+            ToolbarPasteButton.Enabled = (CopiedItem.EntityDef != null) && enable;
         }
         public void EnableYbnUI(bool enable, string filename)
         {
@@ -5137,7 +4899,7 @@ namespace CodeWalker
                 //ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
                 //ToolbarAddItemButton.Enabled = enable;
                 ////ToolbarDeleteEntityButton.Enabled = enable;
-                //ToolbarPasteButton.Enabled = (CopiedCollisionPoly != null) && enable;
+                //ToolbarPasteButton.Enabled = (CopiedItem.CollisionPoly != null) && enable;
             }
         }
         public void EnableYndUI(bool enable, string filename)
@@ -5153,7 +4915,7 @@ namespace CodeWalker
                 ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
                 ToolbarAddItemButton.Enabled = enable;
                 //ToolbarDeleteEntityButton.Enabled = enable;
-                ToolbarPasteButton.Enabled = (CopiedPathNode != null) && enable;
+                ToolbarPasteButton.Enabled = (CopiedItem.PathNode != null) && enable;
             }
         }
         public void EnableYnvUI(bool enable, string filename)
@@ -5169,7 +4931,7 @@ namespace CodeWalker
                 ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
                 ToolbarAddItemButton.Enabled = enable;
                 //ToolbarDeleteEntityButton.Enabled = enable;
-                ToolbarPasteButton.Enabled = (CopiedNavPoly != null) && enable;
+                ToolbarPasteButton.Enabled = (CopiedItem.NavPoly != null) && enable;
             }
         }
         public void EnableTrainsUI(bool enable, string filename)
@@ -5185,7 +4947,7 @@ namespace CodeWalker
                 ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
                 ToolbarAddItemButton.Enabled = enable;
                 //ToolbarDeleteEntityButton.Enabled = enable;
-                ToolbarPasteButton.Enabled = false;// (CopiedTrainNode != null) && enable;
+                ToolbarPasteButton.Enabled = false;// (CopiedItem.TrainNode != null) && enable;
             }
         }
         public void EnableScenarioUI(bool enable, string filename)
@@ -5201,7 +4963,7 @@ namespace CodeWalker
                 ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
                 ToolbarAddItemButton.Enabled = enable;
                 //ToolbarDeleteEntityButton.Enabled = enable;
-                ToolbarPasteButton.Enabled = (CopiedScenarioNode != null) && enable;
+                ToolbarPasteButton.Enabled = (CopiedItem.ScenarioNode != null) && enable;
             }
         }
         public void EnableAudioUI(bool enable, string filename) //TODO
@@ -5232,6 +4994,16 @@ namespace CodeWalker
         {
             ShowProjectForm();
             ProjectForm.NewYmap();
+        }
+        private void NewYtyp()
+        {
+            ShowProjectForm();
+            ProjectForm.NewYtyp();
+        }
+        private void NewYbn()
+        {
+            ShowProjectForm();
+            ProjectForm.NewYbn();
         }
         private void NewYnd()
         {
@@ -5280,6 +5052,16 @@ namespace CodeWalker
         {
             ShowProjectForm();
             ProjectForm.OpenYmap();
+        }
+        private void OpenYtyp()
+        {
+            ShowProjectForm();
+            ProjectForm.OpenYtyp();
+        }
+        private void OpenYbn()
+        {
+            ShowProjectForm();
+            ProjectForm.OpenYbn();
         }
         private void OpenYnd()
         {
@@ -5346,6 +5128,7 @@ namespace CodeWalker
         }
         private void CopyItem()
         {
+            CopiedItem = SelectedItem;
             if (SelectedItem.EntityDef != null) CopyEntity();
             else if (SelectedItem.CarGenerator != null) CopyCarGen();
             else if (SelectedItem.PathNode != null) CopyPathNode();
@@ -5359,16 +5142,16 @@ namespace CodeWalker
         }
         private void PasteItem()
         {
-            if (CopiedEntity != null) PasteEntity();
-            else if (CopiedCarGen != null) PasteCarGen();
-            else if (CopiedPathNode != null) PastePathNode();
-            else if (CopiedNavPoly != null) PasteNavPoly();
-            else if (CopiedNavPoint != null) PasteNavPoint();
-            else if (CopiedNavPortal != null) PasteNavPortal();
-            else if (CopiedTrainNode != null) PasteTrainNode();
-            else if (CopiedScenarioNode != null) PasteScenarioNode();
-            else if (CopiedAudio?.AudioZone != null) PasteAudioZone();
-            else if (CopiedAudio?.AudioEmitter != null) PasteAudioEmitter();
+            if (CopiedItem.EntityDef != null) PasteEntity();
+            else if (CopiedItem.CarGenerator != null) PasteCarGen();
+            else if (CopiedItem.PathNode != null) PastePathNode();
+            else if (CopiedItem.NavPoly != null) PasteNavPoly();
+            else if (CopiedItem.NavPoint != null) PasteNavPoint();
+            else if (CopiedItem.NavPortal != null) PasteNavPortal();
+            else if (CopiedItem.TrainTrackNode != null) PasteTrainNode();
+            else if (CopiedItem.ScenarioNode != null) PasteScenarioNode();
+            else if (CopiedItem.Audio?.AudioZone != null) PasteAudioZone();
+            else if (CopiedItem.Audio?.AudioEmitter != null) PasteAudioEmitter();
         }
         private void CloneItem()
         {
@@ -5439,22 +5222,21 @@ namespace CodeWalker
         }
         private void CopyEntity()
         {
-            CopiedEntity = SelectedItem.EntityDef;
-            ToolbarPasteButton.Enabled = (CopiedEntity != null) && ToolbarAddItemButton.Enabled;
+            ToolbarPasteButton.Enabled = (CopiedItem.EntityDef != null) && ToolbarAddItemButton.Enabled;
         }
         private void PasteEntity()
         {
-            if (CopiedEntity == null) return;
+            if (CopiedItem.EntityDef == null) return;
             if (ProjectForm == null) return;
-            MloInstanceData instance = CopiedEntity.MloParent?.MloInstance;
-            MCEntityDef entdef = instance?.TryGetArchetypeEntity(CopiedEntity);
+            MloInstanceData instance = CopiedItem.EntityDef.MloParent?.MloInstance;
+            MCEntityDef entdef = instance?.TryGetArchetypeEntity(CopiedItem.EntityDef);
             if (entdef != null)
             {
-                ProjectForm.NewMloEntity(CopiedEntity, true);
+                ProjectForm.NewMloEntity(CopiedItem.EntityDef, true);
             }
             else
             {
-                ProjectForm.NewEntity(CopiedEntity, true);
+                ProjectForm.NewEntity(CopiedItem.EntityDef, true);
             }
         }
         private void CloneEntity()
@@ -5501,14 +5283,13 @@ namespace CodeWalker
         }
         private void CopyCarGen()
         {
-            CopiedCarGen = SelectedItem.CarGenerator;
-            ToolbarPasteButton.Enabled = (CopiedCarGen != null) && ToolbarAddItemButton.Enabled;
+            ToolbarPasteButton.Enabled = (CopiedItem.CarGenerator != null) && ToolbarAddItemButton.Enabled;
         }
         private void PasteCarGen()
         {
-            if (CopiedCarGen == null) return;
+            if (CopiedItem.CarGenerator == null) return;
             if (ProjectForm == null) return;
-            ProjectForm.NewCarGen(CopiedCarGen);
+            ProjectForm.NewCarGen(CopiedItem.CarGenerator);
         }
         private void CloneCarGen()
         {
@@ -5555,14 +5336,13 @@ namespace CodeWalker
         }
         private void CopyPathNode()
         {
-            CopiedPathNode = SelectedItem.PathNode;
-            ToolbarPasteButton.Enabled = (CopiedPathNode != null) && ToolbarAddItemButton.Enabled;
+            ToolbarPasteButton.Enabled = (CopiedItem.PathNode != null) && ToolbarAddItemButton.Enabled;
         }
         private void PastePathNode()
         {
-            if (CopiedPathNode == null) return;
+            if (CopiedItem.PathNode == null) return;
             if (ProjectForm == null) return;
-            ProjectForm.NewPathNode(CopiedPathNode);
+            ProjectForm.NewPathNode(CopiedItem.PathNode);
         }
         private void ClonePathNode()
         {
@@ -5609,14 +5389,13 @@ namespace CodeWalker
         }
         private void CopyNavPoly()
         {
-            CopiedNavPoly = SelectedItem.NavPoly;
-            ToolbarPasteButton.Enabled = (CopiedNavPoly != null) && ToolbarAddItemButton.Enabled;
+            ToolbarPasteButton.Enabled = (CopiedItem.NavPoly != null) && ToolbarAddItemButton.Enabled;
         }
         private void PasteNavPoly()
         {
-            if (CopiedNavPoly == null) return;
+            if (CopiedItem.NavPoly == null) return;
             if (ProjectForm == null) return;
-            ProjectForm.NewNavPoly(CopiedNavPoly);
+            ProjectForm.NewNavPoly(CopiedItem.NavPoly);
         }
         private void CloneNavPoly()
         {
@@ -5663,14 +5442,13 @@ namespace CodeWalker
         }
         private void CopyNavPoint()
         {
-            CopiedNavPoint = SelectedItem.NavPoint;
-            ToolbarPasteButton.Enabled = (CopiedNavPoint != null) && ToolbarAddItemButton.Enabled;
+            ToolbarPasteButton.Enabled = (CopiedItem.NavPoint != null) && ToolbarAddItemButton.Enabled;
         }
         private void PasteNavPoint()
         {
-            if (CopiedNavPoint == null) return;
+            if (CopiedItem.NavPoint == null) return;
             if (ProjectForm == null) return;
-            ProjectForm.NewNavPoint(CopiedNavPoint);
+            ProjectForm.NewNavPoint(CopiedItem.NavPoint);
         }
         private void CloneNavPoint()
         {
@@ -5717,14 +5495,13 @@ namespace CodeWalker
         }
         private void CopyNavPortal()
         {
-            CopiedNavPortal = SelectedItem.NavPortal;
-            ToolbarPasteButton.Enabled = (CopiedNavPortal != null) && ToolbarAddItemButton.Enabled;
+            ToolbarPasteButton.Enabled = (CopiedItem.NavPortal != null) && ToolbarAddItemButton.Enabled;
         }
         private void PasteNavPortal()
         {
-            if (CopiedNavPortal == null) return;
+            if (CopiedItem.NavPortal == null) return;
             if (ProjectForm == null) return;
-            ProjectForm.NewNavPortal(CopiedNavPortal);
+            ProjectForm.NewNavPortal(CopiedItem.NavPortal);
         }
         private void CloneNavPortal()
         {
@@ -5771,14 +5548,13 @@ namespace CodeWalker
         }
         private void CopyTrainNode()
         {
-            CopiedTrainNode = SelectedItem.TrainTrackNode;
-            ToolbarPasteButton.Enabled = (CopiedTrainNode != null) && ToolbarAddItemButton.Enabled;
+            ToolbarPasteButton.Enabled = (CopiedItem.TrainTrackNode != null) && ToolbarAddItemButton.Enabled;
         }
         private void PasteTrainNode()
         {
-            if (CopiedTrainNode == null) return;
+            if (CopiedItem.TrainTrackNode == null) return;
             if (ProjectForm == null) return;
-            ProjectForm.NewTrainNode(CopiedTrainNode);
+            ProjectForm.NewTrainNode(CopiedItem.TrainTrackNode);
         }
         private void CloneTrainNode()
         {
@@ -5825,14 +5601,13 @@ namespace CodeWalker
         }
         private void CopyScenarioNode()
         {
-            CopiedScenarioNode = SelectedItem.ScenarioNode;
-            ToolbarPasteButton.Enabled = (CopiedScenarioNode != null) && ToolbarAddItemButton.Enabled;
+            ToolbarPasteButton.Enabled = (CopiedItem.ScenarioNode != null) && ToolbarAddItemButton.Enabled;
         }
         private void PasteScenarioNode()
         {
-            if (CopiedScenarioNode == null) return;
+            if (CopiedItem.ScenarioNode == null) return;
             if (ProjectForm == null) return;
-            ProjectForm.NewScenarioNode(CopiedScenarioNode);
+            ProjectForm.NewScenarioNode(CopiedItem.ScenarioNode);
         }
         private void CloneScenarioNode()
         {
@@ -5878,14 +5653,13 @@ namespace CodeWalker
         }
         private void CopyAudioZone()
         {
-            CopiedAudio = SelectedItem.Audio;
-            ToolbarPasteButton.Enabled = (CopiedAudio != null) && ToolbarAddItemButton.Enabled;
+            ToolbarPasteButton.Enabled = (CopiedItem.Audio != null) && ToolbarAddItemButton.Enabled;
         }
         private void PasteAudioZone()
         {
-            if (CopiedAudio == null) return;
+            if (CopiedItem.Audio == null) return;
             if (ProjectForm == null) return;
-            ProjectForm.NewAudioZone(CopiedAudio);
+            ProjectForm.NewAudioZone(CopiedItem.Audio);
         }
         private void CloneAudioZone()
         {
@@ -5931,14 +5705,13 @@ namespace CodeWalker
         }
         private void CopyAudioEmitter()
         {
-            CopiedAudio = SelectedItem.Audio;
-            ToolbarPasteButton.Enabled = (CopiedAudio != null) && ToolbarAddItemButton.Enabled;
+            ToolbarPasteButton.Enabled = (CopiedItem.Audio != null) && ToolbarAddItemButton.Enabled;
         }
         private void PasteAudioEmitter()
         {
-            if (CopiedAudio == null) return;
+            if (CopiedItem.Audio == null) return;
             if (ProjectForm == null) return;
-            ProjectForm.NewAudioEmitter(CopiedAudio);
+            ProjectForm.NewAudioEmitter(CopiedItem.Audio);
         }
         private void CloneAudioEmitter()
         {
@@ -7675,6 +7448,16 @@ namespace CodeWalker
             NewYmap();
         }
 
+        private void ToolbarNewYtypButton_Click(object sender, EventArgs e)
+        {
+            NewYtyp();
+        }
+
+        private void ToolbarNewYbnButton_Click(object sender, EventArgs e)
+        {
+            NewYbn();
+        }
+
         private void ToolbarNewYndButton_Click(object sender, EventArgs e)
         {
             NewYnd();
@@ -7703,6 +7486,16 @@ namespace CodeWalker
         private void ToolbarOpenYmapButton_Click(object sender, EventArgs e)
         {
             OpenYmap();
+        }
+
+        private void ToolbarOpenYtypButton_Click(object sender, EventArgs e)
+        {
+            OpenYtyp();
+        }
+
+        private void ToolbarOpenYbnButton_Click(object sender, EventArgs e)
+        {
+            OpenYbn();
         }
 
         private void ToolbarOpenYndButton_Click(object sender, EventArgs e)
