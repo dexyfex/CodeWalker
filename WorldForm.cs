@@ -3277,11 +3277,11 @@ namespace CodeWalker
                                 mhitv.Clear();
                                 items.Clear();//this shouldn't really happen..
                             }
-                            mhitv.MultipleSelectionItems = items.ToArray();
+                            mhitv.SetMultipleSelectionItems(items.ToArray());
                         }
                         else
                         {
-                            mhitv.MultipleSelectionItems = null;
+                            mhitv.SetMultipleSelectionItems(null);
                             items.Add(mhitv);
                         }
                         change = true;
@@ -3299,11 +3299,11 @@ namespace CodeWalker
                         {
                             if (SelectedItem.HasValue) //add the existing item to the selection list, if it's not empty
                             {
-                                mhitv.MultipleSelectionItems = null;
-                                SelectedItem.MultipleSelectionItems = null;
+                                mhitv.SetMultipleSelectionItems(null);
+                                SelectedItem.SetMultipleSelectionItems(null);
                                 items.Add(SelectedItem);
                                 items.Add(mhitv);
-                                SelectedItem.MultipleSelectionItems = items.ToArray();
+                                SelectedItem.SetMultipleSelectionItems(items.ToArray());
                             }
                         }
                         else //empty incoming value... do nothing?
@@ -3322,21 +3322,8 @@ namespace CodeWalker
                 if (items.Count > 1)
                 {
                     //iterate the selected items, and calculate the selection position
-                    var center = Vector3.Zero;
-                    foreach (var item in items)
-                    {
-                        center += item.WidgetPosition;
-                    }
-                    if (items.Count > 0)
-                    {
-                        center *= (1.0f / items.Count);
-                    }
-
                     mhitv.Clear();
-                    mhitv.MultipleSelectionItems = items.ToArray();
-                    mhitv.MultipleSelectionCenter = center;
-                    mhitv.MultipleSelectionRotation = Quaternion.Identity;
-                    mhitv.MultipleSelectionScale = Vector3.One;
+                    mhitv.SetMultipleSelectionItems(items.ToArray());
                 }
             }
             else
@@ -3344,7 +3331,6 @@ namespace CodeWalker
                 if (SelectedItem.MultipleSelectionItems != null)
                 {
                     change = true;
-                    SelectedItem.MultipleSelectionItems = null;
                     SelectedItem.Clear();
                 }
             }
