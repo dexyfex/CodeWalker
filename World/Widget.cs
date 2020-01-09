@@ -78,6 +78,11 @@ namespace CodeWalker.World
                 RotationWidget.ObjectSpace = value;
             }
         }
+        public float SnapAngleDegrees
+        {
+            get { return RotationWidget.SnapAngleDegrees; }
+            set { RotationWidget.SnapAngleDegrees = value; }
+        }
         public Vector3 Position
         {
             get { return PositionWidget.Position; }
@@ -500,6 +505,7 @@ namespace CodeWalker.World
 
         public bool ObjectSpace { get; set; } = true;
         public WidgetAxis EnableAxes { get; set; } = WidgetAxis.XYZ;
+        public float SnapAngleDegrees { get; set; } = 5.0f;
 
         public RotationWidget()
         {
@@ -640,7 +646,7 @@ namespace CodeWalker.World
                         Vector3 ov = Vector3.Normalize(DragStartVec - camrel);
                         float na = AngleOnAxes(nv, DraggedAxisSideDir1, DraggedAxisSideDir2);
                         float oa = AngleOnAxes(ov, DraggedAxisSideDir1, DraggedAxisSideDir2);
-                        float a = na - oa;
+                        float a = SnapAngle(na - oa);
                         Quaternion rot = Quaternion.RotationAxis(DraggedAxisDir, a);
                         Quaternion oldrot = Rotation;
                         Rotation = Quaternion.Normalize(Quaternion.Multiply(rot, DragStartRotation));
@@ -663,6 +669,15 @@ namespace CodeWalker.World
             return (float)Math.Atan2(d2, d1);
         }
 
+        private float SnapAngle(float a)
+        {
+            if (SnapAngleDegrees <= 0.0f) return a;
+            float snaprad = SnapAngleDegrees * 0.0174532925f;
+            float ahalf = a + (snaprad * 0.5f);
+            float mod = ahalf % snaprad;
+            float snapped = ahalf - mod;
+            return snapped;
+        }
     }
 
     public class ScaleWidget : Widget

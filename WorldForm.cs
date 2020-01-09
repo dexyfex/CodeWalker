@@ -7861,6 +7861,14 @@ namespace CodeWalker
             SnapGridSize = (float)SnapGridSizeUpDown.Value;
         }
 
+        private void SnapAngleUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            if (Widget != null)
+            {
+                Widget.SnapAngleDegrees = (float)SnapAngleUpDown.Value;
+            }
+        }
+
         private void RenderEntitiesCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Renderer.renderentities = RenderEntitiesCheckBox.Checked;
