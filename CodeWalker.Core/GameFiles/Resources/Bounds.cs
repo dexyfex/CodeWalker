@@ -2267,6 +2267,7 @@ namespace CodeWalker.GameFiles
         public abstract Vector3 Position { get; set; }
         public abstract Quaternion Orientation { get; set; }
         public abstract BoundVertexRef NearestVertex(Vector3 p);
+        public abstract void GatherVertices(Dictionary<BoundVertex, int> verts);
         public abstract void Read(byte[] bytes, int offset);
         public abstract void Write(BinaryWriter bw);
         public virtual string Title
@@ -2405,6 +2406,15 @@ namespace CodeWalker.GameFiles
             if (d2 <= d3) return new BoundVertexRef(vertIndex2, d2);
             return new BoundVertexRef(vertIndex3, d3);
         }
+        public override void GatherVertices(Dictionary<BoundVertex, int> verts)
+        {
+            if (Owner != null)
+            {
+                verts[Owner.GetVertexObject(vertIndex1)] = vertIndex1;
+                verts[Owner.GetVertexObject(vertIndex2)] = vertIndex2;
+                verts[Owner.GetVertexObject(vertIndex3)] = vertIndex3;
+            }
+        }
 
         public BoundPolygonTriangle()
         {
@@ -2487,6 +2497,13 @@ namespace CodeWalker.GameFiles
         public override BoundVertexRef NearestVertex(Vector3 p)
         {
             return new BoundVertexRef(sphereIndex, sphereRadius);
+        }
+        public override void GatherVertices(Dictionary<BoundVertex, int> verts)
+        {
+            if (Owner != null)
+            {
+                verts[Owner.GetVertexObject(sphereIndex)] = sphereIndex;
+            }
         }
 
         public BoundPolygonSphere()
@@ -2616,6 +2633,14 @@ namespace CodeWalker.GameFiles
             var d2 = (p - Vertex2).Length();
             if (d1 <= d2) return new BoundVertexRef(capsuleIndex1, d1);
             return new BoundVertexRef(capsuleIndex2, d2);
+        }
+        public override void GatherVertices(Dictionary<BoundVertex, int> verts)
+        {
+            if (Owner != null)
+            {
+                verts[Owner.GetVertexObject(capsuleIndex1)] = capsuleIndex1;
+                verts[Owner.GetVertexObject(capsuleIndex2)] = capsuleIndex2;
+            }
         }
 
         public BoundPolygonCapsule()
@@ -2773,6 +2798,16 @@ namespace CodeWalker.GameFiles
             if (d3 <= d4) return new BoundVertexRef(boxIndex3, d3);
             return new BoundVertexRef(boxIndex4, d4);
         }
+        public override void GatherVertices(Dictionary<BoundVertex, int> verts)
+        {
+            if (Owner != null)
+            {
+                verts[Owner.GetVertexObject(boxIndex1)] = boxIndex1;
+                verts[Owner.GetVertexObject(boxIndex2)] = boxIndex2;
+                verts[Owner.GetVertexObject(boxIndex3)] = boxIndex3;
+                verts[Owner.GetVertexObject(boxIndex4)] = boxIndex4;
+            }
+        }
 
         public BoundPolygonBox()
         {
@@ -2903,6 +2938,14 @@ namespace CodeWalker.GameFiles
             var d2 = (p - Vertex2).Length();
             if (d1 <= d2) return new BoundVertexRef(cylinderIndex1, d1);
             return new BoundVertexRef(cylinderIndex2, d2);
+        }
+        public override void GatherVertices(Dictionary<BoundVertex, int> verts)
+        {
+            if (Owner != null)
+            {
+                verts[Owner.GetVertexObject(cylinderIndex1)] = cylinderIndex1;
+                verts[Owner.GetVertexObject(cylinderIndex2)] = cylinderIndex2;
+            }
         }
 
         public BoundPolygonCylinder()

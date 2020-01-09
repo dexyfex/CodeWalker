@@ -69,10 +69,11 @@ namespace CodeWalker
         public MCScenarioChainingEdge ScenarioEdge { get; set; }
         public AudioPlacement Audio { get; set; }
 
-        public MapSelection[] MultipleSelectionItems { get; set; }
+        public MapSelection[] MultipleSelectionItems { get; private set; }
         public Vector3 MultipleSelectionCenter { get; set; }
         public Quaternion MultipleSelectionRotation { get; set; }
         public Vector3 MultipleSelectionScale { get; set; }
+        public BoundVertex[] GatheredCollisionVerts { get; private set; } //for collision polys, need to move all the individual vertices instead
 
         public Vector3 BBOffset { get; set; }
         public Quaternion BBOrientation { get; set; }
@@ -210,6 +211,7 @@ namespace CodeWalker
             MultipleSelectionCenter = Vector3.Zero;
             MultipleSelectionRotation = Quaternion.Identity;
             MultipleSelectionScale = Vector3.One;
+            GatheredCollisionVerts = null;
             AABB = new BoundingBox();
             GeometryIndex = 0;
             CamRel = Vector3.Zero;
@@ -760,6 +762,14 @@ namespace CodeWalker
         {
             get
             {
+                if (MultipleSelectionItems != null)
+                {
+                    for (int i = 0; i < MultipleSelectionItems.Length; i++)
+                    {
+                        if (MultipleSelectionItems[i].EntityDef != null) return true;
+                    }
+                    return false;
+                }
                 if (CollisionBounds != null)
                 {
                     return false;
@@ -772,6 +782,39 @@ namespace CodeWalker
             }
         }
 
+
+
+        public void SetMultipleSelectionItems(MapSelection[] items)
+        {
+            if ((items != null) && (items.Length == 0)) items = null;
+            MultipleSelectionItems = items;
+            GatheredCollisionVerts = null;
+            var center = Vector3.Zero;
+            if (items != null)
+            {
+                Dictionary<BoundVertex, int> collVerts = null;
+                for (int i = 0; i < items.Length; i++)
+                {
+                    center += items[i].WidgetPosition;
+                    var collPoly = items[i].CollisionPoly;
+                    if (collPoly != null)
+                    {
+                        
+                        if (collVerts == null) collVerts = new Dictionary<BoundVertex, int>();
+                        collPoly.GatherVertices(collVerts);
+                    }
+                }
+                if (collVerts != null)
+                {
+                    GatheredCollisionVerts = collVerts.Keys.ToArray();
+                }
+                if (items.Length > 0)
+                {
+                    center *= (1.0f / items.Length);
+                }
+            }
+            MultipleSelectionCenter = center;
+        }
 
 
         public void SetPosition(Vector3 newpos, bool editPivot)
@@ -787,8 +830,19 @@ namespace CodeWalker
                     if (dpos == Vector3.Zero) return; //nothing moved.. (probably due to snap)
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
-                        var refpos = MultipleSelectionItems[i].WidgetPosition;
-                        MultipleSelectionItems[i].SetPosition(refpos + dpos, false);
+                        if (MultipleSelectionItems[i].CollisionPoly == null)//skip polys, they use gathered verts
+                        {
+                            var refpos = MultipleSelectionItems[i].WidgetPosition;
+                            MultipleSelectionItems[i].SetPosition(refpos + dpos, false);
+                        }
+                    }
+                    if (GatheredCollisionVerts != null)
+                    {
+                        for (int i = 0; i < GatheredCollisionVerts.Length; i++)
+                        {
+                            var refpos = GatheredCollisionVerts[i].Position;
+                            GatheredCollisionVerts[i].Position = refpos + dpos;
+                        }
                     }
                     MultipleSelectionCenter = newpos;
                 }
@@ -864,13 +918,26 @@ namespace CodeWalker
                     var trans = newrot * orinv;
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
-                        var refpos = MultipleSelectionItems[i].WidgetPosition;
-                        var relpos = refpos - cen;
-                        var newpos = trans.Multiply(relpos) + cen;
-                        var refori = MultipleSelectionItems[i].WidgetRotation;
-                        var newori = trans * refori;
-                        MultipleSelectionItems[i].SetPosition(newpos, false);
-                        MultipleSelectionItems[i].SetRotation(newori, false);
+                        if (MultipleSelectionItems[i].CollisionPoly == null)//skip polys, they use gathered verts
+                        {
+                            var refpos = MultipleSelectionItems[i].WidgetPosition;
+                            var relpos = refpos - cen;
+                            var newpos = trans.Multiply(relpos) + cen;
+                            var refori = MultipleSelectionItems[i].WidgetRotation;
+                            var newori = trans * refori;
+                            MultipleSelectionItems[i].SetPosition(newpos, false);
+                            MultipleSelectionItems[i].SetRotation(newori, false);
+                        }
+                    }
+                    if (GatheredCollisionVerts != null)
+                    {
+                        for (int i = 0; i < GatheredCollisionVerts.Length; i++)
+                        {
+                            var refpos = GatheredCollisionVerts[i].Position;
+                            var relpos = refpos - cen;
+                            var newpos = trans.Multiply(relpos) + cen;
+                            GatheredCollisionVerts[i].Position = newpos;
+                        }
                     }
                     MultipleSelectionRotation = newrot;
                 }
@@ -934,11 +1001,24 @@ namespace CodeWalker
                     var rsca = newscale / MultipleSelectionScale;
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
-                        var refpos = MultipleSelectionItems[i].WidgetPosition;
-                        var relpos = refpos - cen;
-                        var newpos = ori.Multiply(orinv.Multiply(relpos) * rsca) + cen;
-                        MultipleSelectionItems[i].SetPosition(newpos, false);
-                        MultipleSelectionItems[i].SetScale(newscale, false);
+                        if (MultipleSelectionItems[i].CollisionPoly == null)//skip polys, they use gathered verts
+                        {
+                            var refpos = MultipleSelectionItems[i].WidgetPosition;
+                            var relpos = refpos - cen;
+                            var newpos = ori.Multiply(orinv.Multiply(relpos) * rsca) + cen;
+                            MultipleSelectionItems[i].SetPosition(newpos, false);
+                            MultipleSelectionItems[i].SetScale(newscale, false);
+                        }
+                    }
+                    if (GatheredCollisionVerts != null)
+                    {
+                        for (int i = 0; i < GatheredCollisionVerts.Length; i++)
+                        {
+                            var refpos = GatheredCollisionVerts[i].Position;
+                            var relpos = refpos - cen;
+                            var newpos = ori.Multiply(orinv.Multiply(relpos) * rsca) + cen;
+                            GatheredCollisionVerts[i].Position = newpos;
+                        }
                     }
                     MultipleSelectionScale = newscale;
                 }
@@ -951,6 +1031,10 @@ namespace CodeWalker
             {
                 CarGenerator.SetScale(newscale);
                 AABB = new BoundingBox(CarGenerator.BBMin, CarGenerator.BBMax);
+            }
+            else if (CollisionVertex != null)
+            {
+                //do nothing, but stop any poly from being scaled also
             }
             else if (CollisionPoly != null)
             {
