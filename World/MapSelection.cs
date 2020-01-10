@@ -1047,6 +1047,38 @@ namespace CodeWalker
         }
 
 
+
+        public void UpdateCollisionFromRayHit(ref SpaceRayIntersectResult hit, Camera camera)
+        {
+            var position = hit.HitEntity?.Position ?? Vector3.Zero;
+            var orientation = hit.HitEntity?.Orientation ?? Quaternion.Identity;
+            var scale = hit.HitEntity?.Scale ?? Vector3.One;
+            var camrel = position - camera.Position;
+            var trans = hit.HitBounds?.Transform.TranslationVector ?? Vector3.Zero;
+
+            CollisionPoly = hit.HitPolygon;
+            CollisionBounds = hit.HitBounds;
+            EntityDef = hit.HitEntity;
+            Archetype = hit.HitEntity?.Archetype;
+            HitDist = hit.HitDist;
+            CamRel = camrel + orientation.Multiply(trans);
+            BBOffset = trans;
+            BBOrientation = hit.HitBounds?.Transform.ToQuaternion() ?? Quaternion.Identity;
+            AABB = new BoundingBox(hit.HitBounds?.BoxMin ?? Vector3.Zero, hit.HitBounds?.BoxMax ?? Vector3.Zero);
+
+            float vertexDist = 0.1f;
+            if ((hit.HitVertex.Distance < vertexDist) && (hit.HitBounds is BoundGeometry bgeom))
+            {
+                CollisionVertex = bgeom.GetVertexObject(hit.HitVertex.Index);
+            }
+            else
+            {
+                CollisionVertex = null;
+            }
+        }
+
+
+
         public override string ToString()
         {
             return GetFullNameString("[Empty]");

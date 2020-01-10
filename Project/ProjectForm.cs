@@ -1040,6 +1040,23 @@ namespace CodeWalker.Project
                 }
             }
 
+            foreach (var ybn in CurrentProjectFile.YbnFiles)
+            {
+                string filename = ybn.FilePath;
+                if (!File.Exists(filename))
+                {
+                    filename = cpath + "\\" + filename;
+                }
+                if (File.Exists(filename))
+                {
+                    LoadYbnFromFile(ybn, filename);
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't find file: " + filename);
+                }
+            }
+
             foreach (var ynd in CurrentProjectFile.YndFiles)
             {
                 string filename = ynd.FilePath;
@@ -1246,18 +1263,23 @@ namespace CodeWalker.Project
                 }
             }
 
-            CloseAllProjectItems();
+            lock (projectsyncroot)
+            {
 
-            CurrentProjectFile = null;
-            CurrentYmapFile = null;
-            CurrentYtypFile = null;
-            CurrentYbnFile = null;
-            CurrentYndFile = null;
-            CurrentYnvFile = null;
-            CurrentTrainTrack = null;
-            CurrentScenario = null;
+                CloseAllProjectItems();
 
-            LoadProjectUI();
+                CurrentProjectFile = null;
+                CurrentYmapFile = null;
+                CurrentYtypFile = null;
+                CurrentYbnFile = null;
+                CurrentYndFile = null;
+                CurrentYnvFile = null;
+                CurrentTrainTrack = null;
+                CurrentScenario = null;
+
+                LoadProjectUI();
+
+            }
 
 
             if (WorldForm != null)
@@ -5932,9 +5954,9 @@ namespace CodeWalker.Project
                 ymaps.Clear(); //remove all the gtav ymaps.
             }
 
-            if (renderitems && (CurrentProjectFile != null))
+            lock (projectsyncroot)
             {
-                lock (projectsyncroot)
+                if (renderitems && (CurrentProjectFile != null))
                 {
                     for (int i = 0; i < CurrentProjectFile.YmapFiles.Count; i++)
                     {
@@ -5993,10 +6015,10 @@ namespace CodeWalker.Project
                 ybns.Clear();
             }
 
-            if (CurrentProjectFile == null) return;
-
             lock (projectsyncroot)
             {
+                if (CurrentProjectFile == null) return;
+
                 visibleybns.Clear();
                 for (int i = 0; i < ybns.Count; i++)
                 {
@@ -6028,10 +6050,10 @@ namespace CodeWalker.Project
                 ynds.Clear();
             }
 
-            if (CurrentProjectFile == null) return;
-
             lock (projectsyncroot)
             {
+                if (CurrentProjectFile == null) return;
+
                 visibleynds.Clear();
                 for (int i = 0; i < ynds.Count; i++)
                 {
@@ -6063,10 +6085,10 @@ namespace CodeWalker.Project
                 ynvs.Clear();
             }
 
-            if (CurrentProjectFile == null) return;
-
             lock (projectsyncroot)
             {
+                if (CurrentProjectFile == null) return;
+
                 visibleynvs.Clear();
                 for (int i = 0; i < ynvs.Count; i++)
                 {
@@ -6099,10 +6121,10 @@ namespace CodeWalker.Project
             }
 
 
-            if (CurrentProjectFile == null) return;
-
             lock (projectsyncroot)
             {
+                if (CurrentProjectFile == null) return;
+
                 visibletrains.Clear();
                 for (int i = 0; i < tracks.Count; i++)
                 {
@@ -6135,10 +6157,10 @@ namespace CodeWalker.Project
             }
 
 
-            if (CurrentProjectFile == null) return;
-
             lock (projectsyncroot)
             {
+                if (CurrentProjectFile == null) return;
+
                 visiblescenarios.Clear();
                 for (int i = 0; i < ymts.Count; i++)
                 {
@@ -6170,10 +6192,10 @@ namespace CodeWalker.Project
                 rels.Clear();
             }
 
-            if (CurrentProjectFile == null) return;
-
             lock (projectsyncroot)
             {
+                if (CurrentProjectFile == null) return;
+
                 visibleaudiofiles.Clear();
                 for (int i = 0; i < rels.Count; i++)
                 {
@@ -6205,6 +6227,51 @@ namespace CodeWalker.Project
             {
                 quads.Clear();
             }
+        }
+
+        public void GetMouseCollision(Camera camera, ref MapSelection curHit)
+        {
+            Ray mray = new Ray();
+            mray.Position = camera.MouseRay.Position + camera.Position;
+            mray.Direction = camera.MouseRay.Direction;
+
+            var bounds = curHit.CollisionBounds ?? curHit.CollisionPoly?.Owner ?? curHit.CollisionVertex?.Owner;
+            var curybn = bounds?.GetRootYbn();
+
+            if (hidegtavmap && (curybn != null))
+            {
+                curHit.Clear();
+            }
+
+
+            lock (projectsyncroot)
+            {
+                if (renderitems && (CurrentProjectFile != null))
+                {
+                    for (int i = 0; i < CurrentProjectFile.YbnFiles.Count; i++)
+                    {
+                        var ybn = CurrentProjectFile.YbnFiles[i];
+                        if (ybn.Loaded)
+                        {
+                            if (ybn.Name == curybn?.Name)
+                            {
+                                curHit.Clear();
+                            }
+
+                            if (ybn.Bounds != null)
+                            {
+                                var hit = ybn.Bounds.RayIntersect(ref mray); //TODO: interior ybns!
+                                if (hit.Hit)
+                                {
+                                    curHit.UpdateCollisionFromRayHit(ref hit, camera);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
         }
 
         public MloInstanceData TryGetMloInstance(MloArchetype arch)
