@@ -3324,7 +3324,7 @@ namespace CodeWalker.GameFiles
             bvh.QuantumInverse = new Vector4(1.0f / bvh.Quantum.XYZ(), float.NaN);
 
             var root = new BVHBuilderNode();
-            root.Items = items;
+            root.Items = items.ToList();
             root.Build(itemThreshold);
             root.GatherNodes(nodes);
             root.GatherTrees(trees);
