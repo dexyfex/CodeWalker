@@ -2184,6 +2184,7 @@ namespace CodeWalker
         {
             UpdateMouseHitsFromRenderer();
             UpdateMouseHitsFromSpace();
+            UpdateMouseHitsFromProject();
         }
         private void UpdateMouseHitsFromRenderer()
         {
@@ -2200,33 +2201,21 @@ namespace CodeWalker
 
                 if (MouseRayCollision.Hit)
                 {
-                    var position = MouseRayCollision.HitEntity?.Position ?? Vector3.Zero;
-                    var orientation = MouseRayCollision.HitEntity?.Orientation ?? Quaternion.Identity;
-                    var scale = MouseRayCollision.HitEntity?.Scale ?? Vector3.One;
-                    var camrel = position - camera.Position;
-                    var trans = MouseRayCollision.HitBounds?.Transform.TranslationVector ?? Vector3.Zero;
-
-                    CurMouseHit.CollisionPoly = MouseRayCollision.HitPolygon;
-                    CurMouseHit.CollisionBounds = MouseRayCollision.HitBounds;
-                    CurMouseHit.EntityDef = MouseRayCollision.HitEntity;
-                    CurMouseHit.Archetype = MouseRayCollision.HitEntity?.Archetype;
-                    CurMouseHit.HitDist = MouseRayCollision.HitDist;
-                    CurMouseHit.CamRel = camrel + orientation.Multiply(trans);
-                    CurMouseHit.BBOffset = trans;
-                    CurMouseHit.BBOrientation = MouseRayCollision.HitBounds?.Transform.ToQuaternion() ?? Quaternion.Identity;
-                    CurMouseHit.AABB = new BoundingBox(MouseRayCollision.HitBounds?.BoxMin ?? Vector3.Zero, MouseRayCollision.HitBounds?.BoxMax ?? Vector3.Zero);
-
-                    float vertexDist = 0.1f;
-                    if ((MouseRayCollision.HitVertex.Distance < vertexDist) && (MouseRayCollision.HitBounds is BoundGeometry bgeom))
-                    {
-                        CurMouseHit.CollisionVertex = bgeom.GetVertexObject(MouseRayCollision.HitVertex.Index);
-                    }
-                    else
-                    {
-                        CurMouseHit.CollisionVertex = null;
-                    }
-
+                    CurMouseHit.UpdateCollisionFromRayHit(ref MouseRayCollision, camera);
                 }
+            }
+        }
+        private void UpdateMouseHitsFromProject()
+        {
+            if (ProjectForm == null) return;
+
+            if (SelectionMode == MapSelectionMode.Collision)
+            {
+
+                ProjectForm.GetMouseCollision(camera, ref CurMouseHit);
+
+
+
             }
         }
         private void UpdateMouseHits(DrawableBase drawable, Archetype arche, YmapEntityDef entity)
