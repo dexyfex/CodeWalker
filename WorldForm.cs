@@ -3841,15 +3841,26 @@ namespace CodeWalker
                 SelExtensionPropertyGrid.SelectedObject = item.ArchetypeExtension;
                 ShowSelectedExtensionTab(true);
             }
+            else if (item.CollisionVertex != null)
+            {
+                SelExtensionPropertyGrid.SelectedObject = item.CollisionVertex;
+                ShowSelectedExtensionTab(true, "Coll");
+                ToolbarDeleteItemButton.Enabled = true;
+                ToolbarDeleteItemButton.Text = "Delete collision vertex";
+            }
             else if (item.CollisionPoly != null)
             {
                 SelExtensionPropertyGrid.SelectedObject = item.CollisionPoly;
                 ShowSelectedExtensionTab(true, "Coll");
+                ToolbarDeleteItemButton.Enabled = true;
+                ToolbarDeleteItemButton.Text = "Delete collision poly";
             }
             else if (item.CollisionBounds != null)
             {
                 SelExtensionPropertyGrid.SelectedObject = item.CollisionBounds;
                 ShowSelectedExtensionTab(true, "Coll");
+                ToolbarDeleteItemButton.Enabled = true;
+                ToolbarDeleteItemButton.Text = "Delete collision bounds";
             }
             else
             {
@@ -5100,6 +5111,9 @@ namespace CodeWalker
             else if (SelectedItem.ScenarioNode != null) DeleteScenarioNode();
             else if (SelectedItem.Audio?.AudioZone != null) DeleteAudioZone();
             else if (SelectedItem.Audio?.AudioEmitter != null) DeleteAudioEmitter();
+            else if (SelectedItem.CollisionVertex != null) DeleteCollisionVertex();
+            else if (SelectedItem.CollisionPoly != null) DeleteCollisionPoly();
+            else if (SelectedItem.CollisionBounds != null) DeleteCollisionBounds();
         }
         private void CopyItem()
         {
@@ -5695,6 +5709,101 @@ namespace CodeWalker
             ProjectForm.NewAudioEmitter(SelectedItem.Audio, true);
         }
 
+        private void DeleteCollisionVertex()
+        {
+            var vertex = SelectedItem.CollisionVertex;
+            if (vertex == null) return;
+
+            if ((ProjectForm != null) && (ProjectForm.IsCurrentCollisionVertex(vertex)))
+            {
+                if (!ProjectForm.DeleteCollisionVertex())
+                {
+                    //MessageBox.Show("Unable to delete this collision vertex from the current project. Make sure the ybn file exists in the current project.");
+                }
+                else
+                {
+                    SelectItem(null);
+                }
+            }
+            else
+            {
+                //project not open, or vertex not selected there, just remove the vertex from the geometry...
+                var bgeom = vertex.Owner;
+                if ((bgeom == null) || (!bgeom.DeleteVertex(vertex.Index)))
+                {
+                    MessageBox.Show("Unable to remove vertex.");
+                }
+                else
+                {
+                    UpdateCollisionBoundsGraphics(bgeom);
+                    SelectItem(null);
+                }
+            }
+        }
+        private void DeleteCollisionBounds()
+        {
+            var bounds = SelectedItem.CollisionBounds;
+            if (bounds == null) return;
+
+            if ((ProjectForm != null) && (ProjectForm.IsCurrentCollisionBounds(bounds)))
+            {
+                if (!ProjectForm.DeleteCollisionBounds())
+                {
+                    //MessageBox.Show("Unable to delete this collision bounds from the current project. Make sure the ybn file exists in the current project.");
+                }
+                else
+                {
+                    SelectItem(null);
+                }
+            }
+            else
+            {
+                var parent = bounds.Parent;
+                if (parent != null)
+                {
+                    parent.DeleteChild(bounds);
+                    UpdateCollisionBoundsGraphics(parent);
+                }
+                else
+                {
+                    var ybn = bounds.GetRootYbn();
+                    ybn.RemoveBounds(bounds);
+                }
+
+                SelectItem(null);
+            }
+        }
+        private void DeleteCollisionPoly()
+        {
+            var poly = SelectedItem.CollisionPoly;
+            if (poly == null) return;
+
+            if ((ProjectForm != null) && (ProjectForm.IsCurrentCollisionPoly(poly)))
+            {
+                if (!ProjectForm.DeleteCollisionPoly())
+                {
+                    //MessageBox.Show("Unable to delete this collision polygon from the current project. Make sure the ybn file exists in the current project.");
+                }
+                else
+                {
+                    SelectItem(null);
+                }
+            }
+            else
+            {
+                //project not open, or polygon not selected there, just remove the vertex from the geometry...
+                var bgeom = poly.Owner;
+                if ((bgeom == null) || (!bgeom.DeletePolygon(poly)))
+                {
+                    MessageBox.Show("Unable to remove polygon.");
+                }
+                else
+                {
+                    UpdateCollisionBoundsGraphics(bgeom);
+                    SelectItem(null);
+                }
+            }
+        }
 
 
         private void SetMouseSelect(bool enable)

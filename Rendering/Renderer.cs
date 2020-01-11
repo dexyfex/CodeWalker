@@ -3261,7 +3261,7 @@ namespace CodeWalker.Rendering
             }
 
             RenderableBoundComposite rndbc = renderableCache.GetRenderableBoundComp(bounds);
-            if (rndbc.IsLoaded)
+            if ((rndbc != null) && rndbc.IsLoaded)
             {
                 RenderableBoundGeometryInst rbginst = new RenderableBoundGeometryInst();
                 rbginst.Inst.Renderable = rndbc;

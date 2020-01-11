@@ -1133,6 +1133,7 @@ namespace CodeWalker.GameFiles
         {
             BuildMaterials();
             CalculateQuantum();
+            //UpdateEdgeIndices(); //TODO: reinstate this?
 
             var list = new List<IResourceBlock>(base.GetReferences());
             if (Vertices2 != null)
@@ -1551,6 +1552,201 @@ namespace CodeWalker.GameFiles
 
             Materials = matlist.ToArray();
             PolygonMaterialIndices = polymats.ToArray();
+        }
+
+        public void UpdateEdgeIndices()
+        {
+            //update all triangle edge indices, based on shared vertex indices
+
+            var edgedict = new Dictionary<BoundEdgeRef, BoundEdge>();
+            if (Polygons != null)
+            {
+                foreach (var poly in Polygons)
+                {
+                    if (poly is BoundPolygonTriangle btri)
+                    {
+                        var e1 = new BoundEdgeRef(btri.vertIndex1, btri.vertIndex2);
+                        var e2 = new BoundEdgeRef(btri.vertIndex2, btri.vertIndex3);
+                        var e3 = new BoundEdgeRef(btri.vertIndex3, btri.vertIndex1);
+
+                        if (edgedict.TryGetValue(e1, out BoundEdge edge1))
+                        {
+                            if (edge1.Triangle2 != null)
+                            { }
+                            edge1.Triangle2 = btri;
+                            edge1.EdgeID2 = 1;
+                        }
+                        else
+                        {
+                            edgedict[e1] = new BoundEdge(btri, 1);
+                        }
+                        if (edgedict.TryGetValue(e2, out BoundEdge edge2))
+                        {
+                            if (edge2.Triangle2 != null)
+                            { }
+                            edge2.Triangle2 = btri;
+                            edge2.EdgeID2 = 2;
+                        }
+                        else
+                        {
+                            edgedict[e2] = new BoundEdge(btri, 2);
+                        }
+                        if (edgedict.TryGetValue(e3, out BoundEdge edge3))
+                        {
+                            if (edge3.Triangle2 != null)
+                            { }
+                            edge3.Triangle2 = btri;
+                            edge3.EdgeID2 = 3;
+                        }
+                        else
+                        {
+                            edgedict[e3] = new BoundEdge(btri, 3);
+                        }
+
+                    }
+                }
+
+                foreach (var kvp in edgedict)
+                {
+                    var eref = kvp.Key;
+                    var edge = kvp.Value;
+
+                    if (edge.Triangle1 == null)
+                    { continue; }
+
+
+                    if (edge.Triangle2 == null)
+                    {
+                        edge.Triangle1.SetEdgeIndex(edge.EdgeID1, -1);
+                    }
+                    else
+                    {
+                        edge.Triangle1.SetEdgeIndex(edge.EdgeID1, (short)edge.Triangle2.Index);
+                        edge.Triangle2.SetEdgeIndex(edge.EdgeID2, (short)edge.Triangle1.Index);
+                    }
+                }
+
+            }
+
+        }
+
+
+        public bool DeletePolygon(BoundPolygon p)
+        {
+            if (Polygons != null)
+            {
+                var polys = Polygons.ToList();
+                var polymats = PolygonMaterialIndices.ToList();
+                var idx = polys.IndexOf(p);
+                if (idx >= 0)
+                {
+                    polys.RemoveAt(idx);
+                    polymats.RemoveAt(idx);
+                    Polygons = polys.ToArray();
+                    PolygonMaterialIndices = polymats.ToArray();
+                    PolygonsCount = (uint)polys.Count;
+
+                    for (int i = 0; i < Polygons.Length; i++)
+                    {
+                        var poly = Polygons[i];
+                        if (poly is BoundPolygonTriangle btri)
+                        {
+                            if (btri.edgeIndex1 == idx) btri.edgeIndex1 = -1;
+                            if (btri.edgeIndex1 > idx) btri.edgeIndex1--;
+                            if (btri.edgeIndex2 == idx) btri.edgeIndex2 = -1;
+                            if (btri.edgeIndex2 > idx) btri.edgeIndex2--;
+                            if (btri.edgeIndex3 == idx) btri.edgeIndex3 = -1;
+                            if (btri.edgeIndex3 > idx) btri.edgeIndex3--;
+                        }
+                        poly.Index = i;
+                    }
+
+                    var verts = p.VertexIndices;
+                    for (int i = 0; i < verts.Length; i++)
+                    {
+                        if (DeleteVertex(verts[i], false)) //delete any orphaned vertices
+                        {
+                            verts = p.VertexIndices;//vertex indices will have changed, need to continue with the new ones!
+                        }
+                    }
+
+                    return true;
+                }
+
+            }
+            return false;
+        }
+
+        public bool DeleteVertex(int index, bool deletePolys = true)
+        {
+            if (Vertices != null)
+            {
+                if (!deletePolys)
+                {
+                    //if not deleting polys, make sure this vertex isn't used by any
+                    foreach (var poly in Polygons)
+                    {
+                        var pverts = poly.VertexIndices;
+                        for (int i = 0; i < pverts.Length; i++)
+                        {
+                            if (pverts[i] == index)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+
+                var verts = Vertices.ToList();
+                var verts2 = Vertices2?.ToList();
+                var vertcols = VertexColours?.ToList();
+                verts.RemoveAt(index);
+                verts2?.RemoveAt(index);
+                vertcols?.RemoveAt(index);
+                Vertices = verts.ToArray();
+                Vertices2 = verts2?.ToArray();
+                VertexColours = vertcols?.ToArray();
+                VerticesCount = (uint)verts.Count;
+                Vertices2Count = VerticesCount;
+
+                if (Polygons != null)
+                {
+                    var delpolys = new List<BoundPolygon>();
+
+                    foreach (var poly in Polygons)
+                    {
+                        var pverts = poly.VertexIndices;
+                        for (int i = 0; i < pverts.Length; i++)
+                        {
+                            if (pverts[i] == index)
+                            {
+                                delpolys.Add(poly);
+                            }
+                            if (pverts[i] > index)
+                            {
+                                pverts[i]--;
+                            }
+                        }
+                        poly.VertexIndices = pverts;
+                    }
+
+                    if (deletePolys)
+                    {
+                        foreach (var delpoly in delpolys)
+                        {
+                            DeletePolygon(delpoly);
+                        }
+                    }
+                    else
+                    {
+                        if (delpolys.Count > 0)
+                        { } //this shouldn't happen! shouldn't have deleted the vertex if it is used by polys
+                    }
+                }
+
+                return true;
+            }
+            return false;
         }
 
     }
@@ -2230,6 +2426,41 @@ namespace CodeWalker.GameFiles
             return res;
         }
 
+
+
+
+        public bool DeleteChild(Bounds child)
+        {
+            if (Children?.data_items != null)
+            {
+                var children = Children.data_items.ToList();
+                var transforms1 = ChildrenTransformation1?.ToList();
+                var transforms2 = ChildrenTransformation2?.ToList();
+                var bboxes = ChildrenBoundingBoxes?.ToList();
+                var flags1 = ChildrenFlags1?.ToList();
+                var flags2 = ChildrenFlags2?.ToList();
+                var idx = children.IndexOf(child);
+                if (idx >= 0)
+                {
+                    children.RemoveAt(idx);
+                    transforms1?.RemoveAt(idx);
+                    transforms2?.RemoveAt(idx);
+                    bboxes?.RemoveAt(idx);
+                    flags1?.RemoveAt(idx);
+                    flags2?.RemoveAt(idx);
+                    Children.data_items = children.ToArray();
+                    ChildrenTransformation1 = transforms1?.ToArray();
+                    ChildrenTransformation2 = transforms2?.ToArray();
+                    ChildrenBoundingBoxes = bboxes?.ToArray();
+                    ChildrenFlags1 = flags1?.ToArray();
+                    ChildrenFlags2 = flags2?.ToArray();
+                    BuildBVH();
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
 
 
@@ -2266,6 +2497,7 @@ namespace CodeWalker.GameFiles
         public abstract Vector3 Scale { get; set; }
         public abstract Vector3 Position { get; set; }
         public abstract Quaternion Orientation { get; set; }
+        public abstract int[] VertexIndices { get; set; }
         public abstract BoundVertexRef NearestVertex(Vector3 p);
         public abstract void GatherVertices(Dictionary<BoundVertex, int> verts);
         public abstract void Read(byte[] bytes, int offset);
@@ -2292,9 +2524,9 @@ namespace CodeWalker.GameFiles
         public short edgeIndex2 { get; set; }
         public short edgeIndex3 { get; set; }
 
-        public int vertIndex1 { get { return (triIndex1 & 0x7FFF); } }
-        public int vertIndex2 { get { return (triIndex2 & 0x7FFF); } }
-        public int vertIndex3 { get { return (triIndex3 & 0x7FFF); } }
+        public int vertIndex1 { get { return (triIndex1 & 0x7FFF); } set { triIndex1 = (ushort)((value & 0x7FFF) + (vertFlag1 ? 0x8000 : 0)); } }
+        public int vertIndex2 { get { return (triIndex2 & 0x7FFF); } set { triIndex2 = (ushort)((value & 0x7FFF) + (vertFlag2 ? 0x8000 : 0)); } }
+        public int vertIndex3 { get { return (triIndex3 & 0x7FFF); } set { triIndex3 = (ushort)((value & 0x7FFF) + (vertFlag3 ? 0x8000 : 0)); } }
         public bool vertFlag1 { get { return (triIndex1 & 0x8000) > 0; } set { triIndex1 = (ushort)(vertIndex1 + (value ? 0x8000 : 0)); } }
         public bool vertFlag2 { get { return (triIndex2 & 0x8000) > 0; } set { triIndex2 = (ushort)(vertIndex2 + (value ? 0x8000 : 0)); } }
         public bool vertFlag3 { get { return (triIndex3 & 0x8000) > 0; } set { triIndex3 = (ushort)(vertIndex3 + (value ? 0x8000 : 0)); } }
@@ -2397,6 +2629,22 @@ namespace CodeWalker.GameFiles
         private Quaternion? OrientationCached;
         private Vector3? ScaleCached;
 
+        public override int[] VertexIndices
+        {
+            get
+            {
+                return new[] { vertIndex1, vertIndex2, vertIndex3 };
+            }
+            set
+            {
+                if (value?.Length >= 3)
+                {
+                    vertIndex1 = value[0];
+                    vertIndex2 = value[1];
+                    vertIndex3 = value[2];
+                }
+            }
+        }
         public override BoundVertexRef NearestVertex(Vector3 p)
         {
             var d1 = (p - Vertex1).Length();
@@ -2413,6 +2661,30 @@ namespace CodeWalker.GameFiles
                 verts[Owner.GetVertexObject(vertIndex1)] = vertIndex1;
                 verts[Owner.GetVertexObject(vertIndex2)] = vertIndex2;
                 verts[Owner.GetVertexObject(vertIndex3)] = vertIndex3;
+            }
+        }
+
+        public void SetEdgeIndex(int edgeid, short polyindex)
+        {
+            switch (edgeid)
+            {
+                case 1:
+                    if (edgeIndex1 != polyindex)
+                    { }
+                    edgeIndex1 = polyindex;
+                    break;
+                case 2:
+                    if (edgeIndex2 != polyindex)
+                    { }
+                    edgeIndex2 = polyindex;
+                    break;
+                case 3:
+                    if (edgeIndex3 != polyindex)
+                    { }
+                    edgeIndex3 = polyindex;
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -2494,6 +2766,20 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public override int[] VertexIndices
+        {
+            get
+            {
+                return new[] { (int)sphereIndex };
+            }
+            set
+            {
+                if (value?.Length >= 1)
+                {
+                    sphereIndex = (ushort)value[0];
+                }
+            }
+        }
         public override BoundVertexRef NearestVertex(Vector3 p)
         {
             return new BoundVertexRef(sphereIndex, sphereRadius);
@@ -2627,6 +2913,21 @@ namespace CodeWalker.GameFiles
         private Quaternion? OrientationCached;
         private Vector3? ScaleCached;
 
+        public override int[] VertexIndices
+        {
+            get
+            {
+                return new[] { (int)capsuleIndex1, (int)capsuleIndex2 };
+            }
+            set
+            {
+                if (value?.Length >= 2)
+                {
+                    capsuleIndex1 = (ushort)value[0];
+                    capsuleIndex2 = (ushort)value[1];
+                }
+            }
+        }
         public override BoundVertexRef NearestVertex(Vector3 p)
         {
             var d1 = (p - Vertex1).Length();
@@ -2787,6 +3088,23 @@ namespace CodeWalker.GameFiles
         private Quaternion? OrientationCached;
         private Vector3? ScaleCached;
 
+        public override int[] VertexIndices
+        {
+            get
+            {
+                return new[] { (int)boxIndex1, (int)boxIndex2, (int)boxIndex3, (int)boxIndex4 };
+            }
+            set
+            {
+                if (value?.Length >= 2)
+                {
+                    boxIndex1 = (short)value[0];
+                    boxIndex2 = (short)value[1];
+                    boxIndex3 = (short)value[2];
+                    boxIndex4 = (short)value[3];
+                }
+            }
+        }
         public override BoundVertexRef NearestVertex(Vector3 p)
         {
             var d1 = (p - Vertex1).Length();
@@ -2932,6 +3250,21 @@ namespace CodeWalker.GameFiles
         private Quaternion? OrientationCached;
         private Vector3? ScaleCached;
 
+        public override int[] VertexIndices
+        {
+            get
+            {
+                return new[] { (int)cylinderIndex1, (int)cylinderIndex2 };
+            }
+            set
+            {
+                if (value?.Length >= 2)
+                {
+                    cylinderIndex1 = (ushort)value[0];
+                    cylinderIndex2 = (ushort)value[1];
+                }
+            }
+        }
         public override BoundVertexRef NearestVertex(Vector3 p)
         {
             var d1 = (p - Vertex1).Length();
@@ -2976,6 +3309,31 @@ namespace CodeWalker.GameFiles
         }
     }
 
+
+    [TC(typeof(EXP))] public struct BoundEdgeRef //convenience struct for updating edge indices
+    {
+        public int Vertex1 { get; set; }
+        public int Vertex2 { get; set; }
+
+        public BoundEdgeRef(int i1, int i2)
+        {
+            Vertex1 = Math.Min(i1, i2);
+            Vertex2 = Math.Max(i1, i2);
+        }
+    }
+    [TC(typeof(EXP))] public class BoundEdge //convenience class for updating edge indices
+    {
+        public BoundPolygonTriangle Triangle1 { get; set; }
+        public BoundPolygonTriangle Triangle2 { get; set; }
+        public int EdgeID1 { get; set; }
+        public int EdgeID2 { get; set; }
+
+        public BoundEdge(BoundPolygonTriangle t1, int e1)
+        {
+            Triangle1 = t1;
+            EdgeID1 = e1;
+        }
+    }
 
     [TC(typeof(EXP))] public struct BoundVertexRef //convenience struct for BoundPolygon.NearestVertex and SpaceRayIntersectResult
     {

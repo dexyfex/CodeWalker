@@ -179,6 +179,11 @@ namespace CodeWalker
                 SelectionExtensionTabPage.Text = "Archetype Extension";
                 SelExtensionPropertyGrid.SelectedObject = item.ArchetypeExtension;
             }
+            else if (item.CollisionVertex != null)
+            {
+                SelectionExtensionTabPage.Text = "Collision Vertex";
+                SelExtensionPropertyGrid.SelectedObject = item.CollisionVertex;
+            }
             else if (item.CollisionPoly != null)
             {
                 SelectionExtensionTabPage.Text = "Collision Polygon";
