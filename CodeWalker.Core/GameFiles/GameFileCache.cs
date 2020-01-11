@@ -3517,6 +3517,7 @@ namespace CodeWalker.GameFiles
         public void TestYbns()
         {
             bool savetest = true;
+            bool reloadtest = false;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {
@@ -3544,6 +3545,9 @@ namespace CodeWalker.GameFiles
                                 { continue; } //shouldn't happen
 
                                 var bytes = ybn.Save();
+
+                                if (!reloadtest)
+                                { continue; }
 
                                 string origlen = TextUtil.GetBytesReadable(fentry.FileSize);
                                 string bytelen = TextUtil.GetBytesReadable(bytes.Length);

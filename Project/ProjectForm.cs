@@ -3136,18 +3136,34 @@ namespace CodeWalker.Project
                 return true;
             }
 
+            var parent = CurrentCollisionBounds.Parent;
+
             bool res = false;
             if (WorldForm != null)
             {
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                 {
-                    res = CurrentYbnFile.RemoveBounds(CurrentCollisionBounds);
+                    if (parent != null)
+                    {
+                        res = parent.DeleteChild(CurrentCollisionBounds);
+                    }
+                    else
+                    {
+                        res = CurrentYbnFile.RemoveBounds(CurrentCollisionBounds);
+                    }
                     //WorldForm.SelectItem(null, null, null);
                 }
             }
             else
             {
-                res = CurrentYbnFile.RemoveBounds(CurrentCollisionBounds);
+                if (parent != null)
+                {
+                    res = parent.DeleteChild(CurrentCollisionBounds);
+                }
+                else
+                {
+                    res = CurrentYbnFile.RemoveBounds(CurrentCollisionBounds);
+                }
             }
             if (!res)
             {
@@ -3163,7 +3179,19 @@ namespace CodeWalker.Project
 
             CurrentCollisionBounds = null;
 
+            if (parent != null)
+            {
+                if (WorldForm != null)
+                {
+                    WorldForm.UpdateCollisionBoundsGraphics(parent);
+                }
+            }
+
             return true;
+        }
+        public bool IsCurrentCollisionBounds(Bounds bounds)
+        {
+            return bounds == CurrentCollisionBounds;
         }
 
         public void NewCollisionPoly(BoundPolygonType type, BoundPolygon copy = null)
@@ -3218,13 +3246,13 @@ namespace CodeWalker.Project
             {
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                 {
-                    res = CurrentYbnFile.RemovePoly(CurrentCollisionPoly);
+                    res = CurrentCollisionPoly.Owner.DeletePolygon(CurrentCollisionPoly);
                     //WorldForm.SelectItem(null, null, null);
                 }
             }
             else
             {
-                res = CurrentYbnFile.RemovePoly(CurrentCollisionPoly);
+                res = CurrentCollisionPoly.Owner.DeletePolygon(CurrentCollisionPoly);
             }
             if (!res)
             {
@@ -3240,7 +3268,16 @@ namespace CodeWalker.Project
 
             CurrentCollisionPoly = null;
 
+            if (WorldForm != null)
+            {
+                WorldForm.UpdateCollisionBoundsGraphics(CurrentCollisionBounds);
+            }
+
             return true;
+        }
+        public bool IsCurrentCollisionPoly(BoundPolygon poly)
+        {
+            return poly == CurrentCollisionPoly;
         }
 
         public void AddCollisionVertexToProject()
@@ -3288,13 +3325,13 @@ namespace CodeWalker.Project
             {
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                 {
-                    res = CurrentYbnFile.RemoveVertex(CurrentCollisionVertex);
+                    res = CurrentCollisionVertex.Owner.DeleteVertex(CurrentCollisionVertex.Index);
                     //WorldForm.SelectItem(null, null, null);
                 }
             }
             else
             {
-                res = CurrentYbnFile.RemoveVertex(CurrentCollisionVertex);
+                res = CurrentCollisionVertex.Owner.DeleteVertex(CurrentCollisionVertex.Index);
             }
             if (!res)
             {
@@ -3311,6 +3348,10 @@ namespace CodeWalker.Project
             CurrentCollisionVertex = null;
 
             return true;
+        }
+        public bool IsCurrentCollisionVertex(BoundVertex vertex)
+        {
+            return vertex == CurrentCollisionVertex;
         }
 
 

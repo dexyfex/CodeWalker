@@ -1105,6 +1105,9 @@ namespace CodeWalker.World
                     { testcomplete = false; continue; } //ybn not loaded yet...
 
                     var b = ybn.Bounds;
+                    if (b == null)
+                    { continue; }
+
                     var bhit = b.RayIntersect(ref ray, res.HitDist);
                     if (bhit.Hit)
                     {
@@ -1355,6 +1358,9 @@ namespace CodeWalker.World
                     { testcomplete = false; continue; } //ybn not loaded yet...
 
                     var b = ybn.Bounds;
+                    if (b == null)
+                    { continue; }
+
                     var bhit = b.SphereIntersect(ref sph);
                     res.TryUpdate(ref bhit);
                 }

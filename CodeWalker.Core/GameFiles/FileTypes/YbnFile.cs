@@ -69,14 +69,11 @@ namespace CodeWalker.GameFiles
 
         public bool RemoveBounds(Bounds b)
         {
-            return false;
-        }
-        public bool RemovePoly(BoundPolygon p)
-        {
-            return false;
-        }
-        public bool RemoveVertex(BoundVertex v)
-        {
+            if (Bounds == b)
+            {
+                Bounds = null;
+                return true;
+            }
             return false;
         }
 
