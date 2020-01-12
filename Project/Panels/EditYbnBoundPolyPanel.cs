@@ -176,7 +176,7 @@ namespace CodeWalker.Project.Panels
                 if (CollisionCylinder != null)
                 {
                     CylVertex1TextBox.Text = FloatUtil.GetVector3String(CollisionCylinder.Vertex1);
-                    CylVertex2TextBox.Text = FloatUtil.GetVector3String(CollisionCylinder.Vertex1);
+                    CylVertex2TextBox.Text = FloatUtil.GetVector3String(CollisionCylinder.Vertex2);
                     CylRadiusTextBox.Text = FloatUtil.ToString(CollisionCylinder.cylinderRadius);
                     if (!PolyTabControl.TabPages.Contains(CylinderTabPage)) PolyTabControl.TabPages.Add(CylinderTabPage);
                 }

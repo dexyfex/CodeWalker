@@ -981,30 +981,9 @@ namespace CodeWalker.GameFiles
                 byte b0 = polygonData[offset];
                 polygonData[offset] = (byte)(b0 & 0xF8);//mask it off
                 BoundPolygonType type = (BoundPolygonType)(b0 & 7);
-                BoundPolygon p = null;
-                switch (type)
-                {
-                    case BoundPolygonType.Triangle:
-                        p = new BoundPolygonTriangle();
-                        break;
-                    case BoundPolygonType.Sphere:
-                        p = new BoundPolygonSphere();
-                        break;
-                    case BoundPolygonType.Capsule:
-                        p = new BoundPolygonCapsule();
-                        break;
-                    case BoundPolygonType.Box:
-                        p = new BoundPolygonBox();
-                        break;
-                    case BoundPolygonType.Cylinder:
-                        p = new BoundPolygonCylinder();
-                        break;
-                    default:
-                        break;
-                }
+                BoundPolygon p = CreatePolygon(type);
                 if (p != null)
                 {
-                    p.Owner = this;
                     p.Index = i;
                     p.Read(polygonData, offset);
                 }
@@ -1728,14 +1707,25 @@ namespace CodeWalker.GameFiles
                 var verts = Vertices.ToList();
                 var verts2 = Vertices2?.ToList();
                 var vertcols = VertexColours?.ToList();
+                var vertobjs = VertexObjects?.ToList();
                 verts.RemoveAt(index);
                 verts2?.RemoveAt(index);
                 vertcols?.RemoveAt(index);
+                vertobjs?.RemoveAt(index);
                 Vertices = verts.ToArray();
                 Vertices2 = verts2?.ToArray();
                 VertexColours = vertcols?.ToArray();
+                VertexObjects = vertobjs?.ToArray();
                 VerticesCount = (uint)verts.Count;
                 Vertices2Count = VerticesCount;
+
+                if (VertexObjects != null)
+                {
+                    for (int i = 0; i < VertexObjects.Length; i++)
+                    {
+                        if (VertexObjects[i] != null) VertexObjects[i].Index = i;
+                    }
+                }
 
                 if (Polygons != null)
                 {
@@ -1777,6 +1767,87 @@ namespace CodeWalker.GameFiles
             return false;
         }
 
+
+        public int AddVertex()
+        {
+            var verts = Vertices?.ToList() ?? new List<Vector3>();
+            var verts2 = Vertices2?.ToList();
+            var vertcols = VertexColours?.ToList();
+            var vertobjs = VertexObjects?.ToList();
+            var index = verts.Count;
+
+            verts.Add(Vector3.Zero);
+            verts2?.Add(Vector3.Zero);
+            vertcols?.Add(new BoundMaterialColour());
+            vertobjs?.Add(null);
+
+            Vertices = verts.ToArray();
+            Vertices2 = verts2?.ToArray();
+            VertexColours = vertcols?.ToArray();
+            VertexObjects = vertobjs?.ToArray();
+            VerticesCount = (uint)verts.Count;
+            Vertices2Count = VerticesCount;
+
+            return index;
+        }
+
+        public BoundPolygon AddPolygon(BoundPolygonType type)
+        {
+            var p = CreatePolygon(type);
+
+            var polys = Polygons?.ToList() ?? new List<BoundPolygon>();
+            var polymats = PolygonMaterialIndices?.ToList() ?? new List<byte>();
+
+            p.Index = polys.Count;
+            polys.Add(p);
+            polymats.Add(0);
+
+            Polygons = polys.ToArray();
+            PolygonMaterialIndices = polymats.ToArray();
+            PolygonsCount = (uint)polys.Count;
+
+            var vinds = p.VertexIndices; //just get the required array size
+            if (vinds != null)
+            {
+                for (int i = 0; i < vinds.Length; i++)
+                {
+                    vinds[i] = AddVertex();
+                }
+                p.VertexIndices = vinds;
+            }
+
+            return p;
+        }
+
+        private BoundPolygon CreatePolygon(BoundPolygonType type)
+        {
+            BoundPolygon p = null;
+            switch (type)
+            {
+                case BoundPolygonType.Triangle:
+                    p = new BoundPolygonTriangle();
+                    break;
+                case BoundPolygonType.Sphere:
+                    p = new BoundPolygonSphere();
+                    break;
+                case BoundPolygonType.Capsule:
+                    p = new BoundPolygonCapsule();
+                    break;
+                case BoundPolygonType.Box:
+                    p = new BoundPolygonBox();
+                    break;
+                case BoundPolygonType.Cylinder:
+                    p = new BoundPolygonCylinder();
+                    break;
+                default:
+                    break;
+            }
+            if (p != null)
+            {
+                p.Owner = this;
+            }
+            return p;
+        }
     }
     [TC(typeof(EXP))] public class BoundBVH : BoundGeometry
     {
@@ -2519,6 +2590,35 @@ namespace CodeWalker.GameFiles
             }
         }
         public BoundMaterial_s? MaterialCustom; //for editing, when assigning a new material.
+        public Vector3[] VertexPositions
+        {
+            get
+            {
+                var inds = VertexIndices;
+                var va = new Vector3[inds.Length];
+                if (Owner != null)
+                {
+                    for (int i = 0; i < inds.Length; i++)
+                    {
+                        va[i] = Owner.GetVertexPos(inds[i]);
+                    }
+                }
+                return va;
+            }
+            set
+            {
+                if (value == null) return;
+                var inds = VertexIndices;
+                if (Owner != null)
+                {
+                    var imax = Math.Min(inds.Length, value.Length);
+                    for (int i = 0; i < imax; i++)
+                    {
+                        Owner.SetVertexPos(inds[i], value[i]);
+                    }
+                }
+            }
+        }
         public int Index { get; set; } //for editing convenience, not stored
         public abstract Vector3 BoxMin { get; }
         public abstract Vector3 BoxMax { get; }

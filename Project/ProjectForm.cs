@@ -1496,7 +1496,7 @@ namespace CodeWalker.Project
         public object NewObject(MapSelection sel, bool copyPosition = false, bool selectNew = true)
         {
             //general method to add a new object, given a map selection
-            SelectObject(ref sel);
+            SetObject(ref sel);
             if (sel.MultipleSelectionItems != null)
             {
                 var objs = new List<object>();
@@ -1517,11 +1517,13 @@ namespace CodeWalker.Project
             else if (sel.ScenarioNode != null) return NewScenarioNode(sel.ScenarioNode, copyPosition, selectNew);
             else if (sel.Audio?.AudioZone != null) return NewAudioZone(sel.Audio, copyPosition, selectNew);
             else if (sel.Audio?.AudioEmitter != null) return NewAudioEmitter(sel.Audio, copyPosition, selectNew);
+            else if (sel.CollisionPoly != null) return NewCollisionPoly(sel.CollisionPoly.Type, sel.CollisionPoly, copyPosition, selectNew);
+            else if (sel.CollisionBounds != null) return NewCollisionBounds(sel.CollisionBounds.Type, sel.CollisionBounds, copyPosition, selectNew);
             return null;
         }
         public void DeleteObject(MapSelection sel)
         {
-            SelectObject(ref sel);
+            SetObject(ref sel);
             if (sel.MultipleSelectionItems != null)
             {
                 for (int i = 0; i < sel.MultipleSelectionItems.Length; i++)
@@ -1543,7 +1545,7 @@ namespace CodeWalker.Project
             else if (sel.CollisionPoly != null) DeleteCollisionPoly();
             else if (sel.CollisionBounds != null) DeleteCollisionBounds();
         }
-        public void SelectObject(ref MapSelection sel)
+        private void SetObject(ref MapSelection sel)
         {
             if (sel.MultipleSelectionItems != null) { } //todo...
             else if (sel.EntityDef != null) SetProjectItem(sel.EntityDef, false);
@@ -1930,6 +1932,11 @@ namespace CodeWalker.Project
 
             CurrentEntity = null;
 
+            if (WorldForm != null)
+            {
+                WorldForm.SelectItem(null);
+            }
+
             return true;
         }
         public bool IsCurrentEntity(YmapEntityDef ent)
@@ -2046,6 +2053,11 @@ namespace CodeWalker.Project
             ClosePanel((EditYmapGrassPanel p) => { return p.Tag == delbatch; });
 
             CurrentGrassBatch = null;
+
+            if (WorldForm != null)
+            {
+                WorldForm.SelectItem(null);
+            }
 
             return true;
         }
@@ -2196,6 +2208,11 @@ namespace CodeWalker.Project
             ClosePanel((EditYmapCarGenPanel p) => { return p.Tag == delgen; });
 
             CurrentCarGen = null;
+
+            if (WorldForm != null)
+            {
+                WorldForm.SelectItem(null);
+            }
 
             return true;
         }
@@ -2844,6 +2861,11 @@ namespace CodeWalker.Project
 
             CurrentArchetype = null;
 
+            if (WorldForm != null)
+            {
+                WorldForm.SelectItem(null);
+            }
+
             return true;
         }
         public bool DeleteMloEntity()
@@ -2902,7 +2924,11 @@ namespace CodeWalker.Project
             ClosePanel((EditYmapEntityPanel p) => { return p.Tag == delent; });
             CurrentEntity = null;
             CurrentMloEntity = null;
-            WorldForm.SelectItem(null);
+
+            if (WorldForm != null)
+            {
+                WorldForm.SelectItem(null);
+            }
 
             return true;
         }
@@ -2928,6 +2954,11 @@ namespace CodeWalker.Project
             ClosePanel((EditYtypMloRoomPanel p) => { return p.Tag == CurrentMloRoom; });
             CurrentMloRoom = null;
 
+            if (WorldForm != null)
+            {
+                WorldForm.SelectItem(null);
+            }
+
             return true;
         }
         public bool DeleteMloPortal()
@@ -2951,6 +2982,11 @@ namespace CodeWalker.Project
             ProjectExplorer?.SetYtypHasChanged(mlo.Ytyp, true);
             ClosePanel((EditYtypMloPortalPanel p) => { return p.Tag == CurrentMloPortal; });
             CurrentMloPortal = null;
+
+            if (WorldForm != null)
+            {
+                WorldForm.SelectItem(null);
+            }
 
             return true;
         }
@@ -2976,6 +3012,11 @@ namespace CodeWalker.Project
             ProjectExplorer?.SetYtypHasChanged(mlo.Ytyp, true);
             ClosePanel((EditYtypMloEntSetPanel p) => { return p.Tag == CurrentMloEntitySet; });
             CurrentMloEntitySet = null;
+
+            if (WorldForm != null)
+            {
+                WorldForm.SelectItem(null);
+            }
 
             return true;
         }
@@ -3292,13 +3333,15 @@ namespace CodeWalker.Project
 
             CurrentCollisionBounds = null;
 
-            if (parent != null)
+            if (WorldForm != null)
             {
-                if (WorldForm != null)
+                if (parent != null)
                 {
                     WorldForm.UpdateCollisionBoundsGraphics(parent);
                 }
+                WorldForm.SelectItem(null);
             }
+
 
             return true;
         }
@@ -3309,11 +3352,118 @@ namespace CodeWalker.Project
 
         public BoundPolygon NewCollisionPoly(BoundPolygonType type, BoundPolygon copy = null, bool copyPosition = false, bool selectNew = true)
         {
-            if (CurrentYbnFile == null) return null;
+            var bgeom = CurrentCollisionBounds as BoundGeometry;
+            if (bgeom == null) return null;
 
-            //////// TODO!!
 
-            return null;
+            var poly = bgeom.AddPolygon(type);
+            var ptri = poly as BoundPolygonTriangle;
+            var psph = poly as BoundPolygonSphere;
+            var pcap = poly as BoundPolygonCapsule;
+            var pbox = poly as BoundPolygonBox;
+            var pcyl = poly as BoundPolygonCylinder;
+            var ctri = copy as BoundPolygonTriangle;
+            var csph = copy as BoundPolygonSphere;
+            var ccap = copy as BoundPolygonCapsule;
+            var cbox = copy as BoundPolygonBox;
+            var ccyl = copy as BoundPolygonCylinder;
+
+            if (ptri != null)
+            {
+                ptri.edgeIndex1 = -1;
+                ptri.edgeIndex2 = -1;
+                ptri.edgeIndex3 = -1;
+            }
+
+            if (copy != null)
+            {
+                poly.VertexPositions = copy.VertexPositions;
+                poly.Material = copy.Material;
+                switch (type)
+                {
+                    case BoundPolygonType.Triangle:
+                        if ((ptri != null) && (ctri != null))
+                        {
+                            ptri.vertFlag1 = ctri.vertFlag1;
+                            ptri.vertFlag2 = ctri.vertFlag2;
+                            ptri.vertFlag3 = ctri.vertFlag3;
+                        }
+                        break;
+                    case BoundPolygonType.Sphere:
+                        if ((psph != null) && (csph != null))
+                        {
+                            psph.sphereRadius = csph.sphereRadius;
+                        }
+                        break;
+                    case BoundPolygonType.Capsule:
+                        if ((pcap != null) && (ccap != null))
+                        {
+                            pcap.capsuleRadius = ccap.capsuleRadius;
+                        }
+                        break;
+                    case BoundPolygonType.Box:
+                        if ((pbox != null) && (cbox != null))
+                        {
+                        }
+                        break;
+                    case BoundPolygonType.Cylinder:
+                        if ((pcyl != null) && (ccyl != null))
+                        {
+                            pcyl.cylinderRadius = ccyl.cylinderRadius;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                var pos = GetSpawnPos(10.0f);
+                var x = Vector3.UnitX;
+                var y = Vector3.UnitY;
+                var z = Vector3.UnitZ;
+
+                if (ptri != null)
+                {
+                    ptri.VertexPositions = new[] { pos, pos + x, pos + y };
+                }
+                if (psph != null)
+                {
+                    psph.VertexPositions = new[] { pos };
+                    psph.sphereRadius = 1.0f;
+                }
+                if (pcap != null)
+                {
+                    pcap.VertexPositions = new[] { pos - x, pos + x };
+                    pcap.capsuleRadius = 1.0f;
+                }
+                if (pbox != null)
+                {
+                    pbox.VertexPositions = new[] { pos - x + y - z, pos - x - y + z, pos + x + y + z, pos + x - y - z };
+                }
+                if (pcyl != null)
+                {
+                    pcyl.VertexPositions = new[] { pos - x, pos + x };
+                    pcyl.cylinderRadius = 1.0f;
+                }
+            }
+
+            if (selectNew)
+            {
+                //LoadProjectTree();//is this necessary?
+                ProjectExplorer?.TrySelectCollisionPolyTreeNode(poly);
+                CurrentCollisionPoly = poly;
+                //ShowEditYbnPanel(false);;
+                ShowEditYbnBoundPolyPanel(false);
+            }
+
+            if (WorldForm != null)
+            {
+                WorldForm.UpdateCollisionBoundsGraphics(bgeom);
+            }
+
+
+            return poly;
         }
         public void AddCollisionPolyToProject()
         {
@@ -3385,6 +3535,7 @@ namespace CodeWalker.Project
             if (WorldForm != null)
             {
                 WorldForm.UpdateCollisionBoundsGraphics(CurrentCollisionBounds);
+                WorldForm.SelectItem(null);
             }
 
             return true;
@@ -3460,6 +3611,12 @@ namespace CodeWalker.Project
             ClosePanel((EditYbnBoundVertexPanel p) => { return p.Tag == delv; });
 
             CurrentCollisionVertex = null;
+
+            if (WorldForm != null)
+            {
+                WorldForm.UpdateCollisionBoundsGraphics(CurrentCollisionBounds);
+                WorldForm.SelectItem(null);
+            }
 
             return true;
         }
@@ -3764,6 +3921,7 @@ namespace CodeWalker.Project
             if (WorldForm != null)
             {
                 WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
+                WorldForm.SelectItem(null);
             }
 
             return true;
@@ -4247,6 +4405,7 @@ namespace CodeWalker.Project
             if (WorldForm != null)
             {
                 WorldForm.UpdateTrainTrackGraphics(CurrentTrainTrack, false);
+                WorldForm.SelectItem(null);
             }
 
             return true;
@@ -4526,8 +4685,8 @@ namespace CodeWalker.Project
             if (WorldForm != null)
             {
                 WorldForm.UpdateScenarioGraphics(CurrentScenario, false);
+                WorldForm.SelectItem(null);
             }
-
 
             return true;
         }
@@ -5705,13 +5864,10 @@ namespace CodeWalker.Project
 
             CurrentAudioZone = null;
 
-            //if (WorldForm != null)
-            //{
-            //    lock (WorldForm.RenderSyncRoot)
-            //    {
-            //        WorldForm.SelectItem(null);
-            //    }
-            //}
+            if (WorldForm != null)
+            {
+                WorldForm.SelectItem(null);
+            }
 
             return true;
         }
@@ -5826,13 +5982,11 @@ namespace CodeWalker.Project
 
             ClosePanel((EditAudioEmitterPanel p) => { return p.CurrentEmitter.AudioEmitter == delem.AudioEmitter; });
 
-            //if (WorldForm != null)
-            //{
-            //    lock (WorldForm.RenderSyncRoot)
-            //    {
-            //        WorldForm.SelectItem(null);
-            //    }
-            //}
+
+            if (WorldForm != null)
+            {
+                WorldForm.SelectItem(null);
+            }
 
             return true;
         }
@@ -6439,7 +6593,7 @@ namespace CodeWalker.Project
                             if (ybn.Bounds != null)
                             {
                                 var hit = ybn.Bounds.RayIntersect(ref mray); //TODO: interior ybns!
-                                if (hit.Hit)
+                                if (hit.Hit && (hit.HitDist < curHit.HitDist))
                                 {
                                     curHit.UpdateCollisionFromRayHit(ref hit, camera);
                                 }
