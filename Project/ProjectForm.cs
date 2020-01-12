@@ -707,7 +707,7 @@ namespace CodeWalker.Project
 
             ShowProjectItemInProcess = false;
         }
-        public void SetProjectItem(object item)
+        public void SetProjectItem(object item, bool refreshUI = true)
         {
             CurrentYmapFile = item as YmapFile;
             CurrentMloEntity = item as MCEntityDef;
@@ -870,7 +870,10 @@ namespace CodeWalker.Project
                 CurrentAudioFile = CurrentAudioInteriorRoom.Rel;
             }
 
-            RefreshUI();
+            if (refreshUI)
+            {
+                RefreshUI();
+            }
 
         }
         public void SetCurrentArchetype(Archetype arch)
@@ -1488,6 +1491,80 @@ namespace CodeWalker.Project
 
 
 
+
+
+        public object NewObject(MapSelection sel, bool copyPosition = false, bool selectNew = true)
+        {
+            //general method to add a new object, given a map selection
+            SelectObject(ref sel);
+            if (sel.MultipleSelectionItems != null)
+            {
+                var objs = new List<object>();
+                for (int i = 0; i < sel.MultipleSelectionItems.Length; i++)
+                {
+                    objs.Add(NewObject(sel.MultipleSelectionItems[i], copyPosition, false));
+                }
+                LoadProjectTree();
+                return objs.ToArray();
+            }
+            else if (sel.EntityDef != null) return NewEntity(sel.EntityDef, copyPosition, selectNew);
+            else if (sel.CarGenerator != null) return NewCarGen(sel.CarGenerator, copyPosition, selectNew);
+            else if (sel.PathNode != null) return NewPathNode(sel.PathNode, copyPosition, selectNew);
+            else if (sel.NavPoly != null) return NewNavPoly(sel.NavPoly, copyPosition, selectNew);
+            else if (sel.NavPoint != null) return NewNavPoint(sel.NavPoint, copyPosition, selectNew);
+            else if (sel.NavPortal != null) return NewNavPortal(sel.NavPortal, copyPosition, selectNew);
+            else if (sel.TrainTrackNode != null) return NewTrainNode(sel.TrainTrackNode, copyPosition, selectNew);
+            else if (sel.ScenarioNode != null) return NewScenarioNode(sel.ScenarioNode, copyPosition, selectNew);
+            else if (sel.Audio?.AudioZone != null) return NewAudioZone(sel.Audio, copyPosition, selectNew);
+            else if (sel.Audio?.AudioEmitter != null) return NewAudioEmitter(sel.Audio, copyPosition, selectNew);
+            return null;
+        }
+        public void DeleteObject(MapSelection sel)
+        {
+            SelectObject(ref sel);
+            if (sel.MultipleSelectionItems != null)
+            {
+                for (int i = 0; i < sel.MultipleSelectionItems.Length; i++)
+                {
+                    DeleteObject(sel.MultipleSelectionItems[i]);
+                }
+            }
+            else if (sel.EntityDef != null) DeleteEntity();
+            else if (sel.CarGenerator != null) DeleteCarGen();
+            else if (sel.PathNode != null) DeletePathNode();
+            else if (sel.NavPoly != null) DeleteNavPoly();
+            else if (sel.NavPoint != null) DeleteNavPoint();
+            else if (sel.NavPortal != null) DeleteNavPortal();
+            else if (sel.TrainTrackNode != null) DeleteTrainNode();
+            else if (sel.ScenarioNode != null) DeleteScenarioNode();
+            else if (sel.Audio?.AudioZone != null) DeleteAudioZone();
+            else if (sel.Audio?.AudioEmitter != null) DeleteAudioEmitter();
+            else if (sel.CollisionVertex != null) DeleteCollisionVertex();
+            else if (sel.CollisionPoly != null) DeleteCollisionPoly();
+            else if (sel.CollisionBounds != null) DeleteCollisionBounds();
+        }
+        public void SelectObject(ref MapSelection sel)
+        {
+            if (sel.MultipleSelectionItems != null) { } //todo...
+            else if (sel.EntityDef != null) SetProjectItem(sel.EntityDef, false);
+            else if (sel.CarGenerator != null) SetProjectItem(sel.CarGenerator, false);
+            else if (sel.PathNode != null) SetProjectItem(sel.PathNode, false);
+            else if (sel.NavPoly != null) SetProjectItem(sel.NavPoly, false);
+            else if (sel.NavPoint != null) SetProjectItem(sel.NavPoint, false);
+            else if (sel.NavPortal != null) SetProjectItem(sel.NavPortal, false);
+            else if (sel.TrainTrackNode != null) SetProjectItem(sel.TrainTrackNode, false);
+            else if (sel.ScenarioNode != null) SetProjectItem(sel.ScenarioNode, false);
+            else if (sel.Audio?.AudioZone != null) SetProjectItem(sel.Audio, false);
+            else if (sel.Audio?.AudioEmitter != null) SetProjectItem(sel.Audio, false);
+            else if (sel.CollisionVertex != null) SetProjectItem(sel.CollisionVertex, false);
+            else if (sel.CollisionPoly != null) SetProjectItem(sel.CollisionPoly, false);
+            else if (sel.CollisionBounds != null) SetProjectItem(sel.CollisionBounds, false);
+        }
+
+
+
+
+
         public void NewYmap()
         {
             if (CurrentProjectFile == null)
@@ -1669,9 +1746,21 @@ namespace CodeWalker.Project
             return CurrentProjectFile.ContainsYmap(ymap);
         }
 
-        public void NewEntity(YmapEntityDef copy = null, bool copyPosition = false)
+        public YmapEntityDef NewEntity(YmapEntityDef copy = null, bool copyPosition = false, bool selectNew = true)
         {
-            if (CurrentYmapFile == null) return;
+            if (copy != null)
+            {
+                //create the entity in MLO instead of a ymap, if the copy is in an MLO
+                var instance = copy.MloParent?.MloInstance;
+                var entdef = instance?.TryGetArchetypeEntity(copy);
+                if (entdef != null)
+                {
+                    return NewMloEntity(copy, copyPosition, selectNew);
+                }
+            }
+
+
+            if (CurrentYmapFile == null) return null;
 
             float spawndist = 5.0f; //use archetype BSradius if starting with a copy...
             if (copy != null)
@@ -1724,11 +1813,16 @@ namespace CodeWalker.Project
             }
 
 
-            LoadProjectTree();
 
-            ProjectExplorer?.TrySelectEntityTreeNode(ent);
-            CurrentEntity = ent;
-            ShowEditYmapEntityPanel(false);
+            if (selectNew)
+            {
+                LoadProjectTree();
+                ProjectExplorer?.TrySelectEntityTreeNode(ent);
+                CurrentEntity = ent;
+                ShowEditYmapEntityPanel(false);
+            }
+
+            return ent;
         }
         public void AddEntityToProject()
         {
@@ -1803,10 +1897,10 @@ namespace CodeWalker.Project
                 }
             }
 
-            if (MessageBox.Show("Are you sure you want to delete this entity?\n" + CurrentEntity._CEntityDef.archetypeName.ToString() + "\n" + CurrentEntity.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            {
-                return true;
-            }
+            //if (MessageBox.Show("Are you sure you want to delete this entity?\n" + CurrentEntity._CEntityDef.archetypeName.ToString() + "\n" + CurrentEntity.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
 
             bool res = false;
             if (WorldForm != null)
@@ -1843,9 +1937,9 @@ namespace CodeWalker.Project
             return CurrentEntity == ent;
         }
 
-        public void NewGrassBatch(YmapGrassInstanceBatch copy = null)
+        public YmapGrassInstanceBatch NewGrassBatch(YmapGrassInstanceBatch copy = null)
         {
-            if (CurrentYmapFile == null) return;
+            if (CurrentYmapFile == null) return null;
 
             rage__fwGrassInstanceListDef fwBatch = new rage__fwGrassInstanceListDef();
             rage__fwGrassInstanceListDef__InstanceData[] instances = new rage__fwGrassInstanceListDef__InstanceData[0];
@@ -1895,6 +1989,8 @@ namespace CodeWalker.Project
             ProjectExplorer?.TrySelectGrassBatchTreeNode(batch);
             CurrentGrassBatch = batch;
             ShowEditYmapGrassBatchPanel(false);
+
+            return batch;
         }
         public void AddGrassBatchToProject()
         {
@@ -1992,9 +2088,9 @@ namespace CodeWalker.Project
             return false;
         }
 
-        public void NewCarGen(YmapCarGen copy = null, bool copyPosition = false)
+        public YmapCarGen NewCarGen(YmapCarGen copy = null, bool copyPosition = false, bool selectNew = true)
         {
-            if (CurrentYmapFile == null) return;
+            if (CurrentYmapFile == null) return null;
 
             Vector3 pos = GetSpawnPos(10.0f);
 
@@ -2037,11 +2133,14 @@ namespace CodeWalker.Project
             }
 
 
-            LoadProjectTree();
-
-            ProjectExplorer?.TrySelectCarGenTreeNode(cg);
-            CurrentCarGen = cg;
-            ShowEditYmapCarGenPanel(false);
+            if (selectNew)
+            {
+                LoadProjectTree();
+                ProjectExplorer?.TrySelectCarGenTreeNode(cg);
+                CurrentCarGen = cg;
+                ShowEditYmapCarGenPanel(false);
+            }
+            return cg;
         }
         public void AddCarGenToProject()
         {
@@ -2426,9 +2525,9 @@ namespace CodeWalker.Project
             return CurrentProjectFile.ContainsYtyp(ytyp);
         }
 
-        public void NewArchetype(Archetype copy = null, bool copyPosition = false)
+        public Archetype NewArchetype(Archetype copy = null)
         {
-            if (CurrentYtypFile == null) return;
+            if (CurrentYtypFile == null) return null;
             var archetype = CurrentYtypFile.AddArchetype();
             var archetypeDef = archetype._BaseArchetypeDef;
             if (copy == null)
@@ -2447,13 +2546,15 @@ namespace CodeWalker.Project
             CurrentArchetype = archetype;
 
             AddProjectArchetype(archetype);
+
+            return archetype;
         }
-        public void NewMloEntity(YmapEntityDef copy = null, bool copyTransform = false)
+        public YmapEntityDef NewMloEntity(YmapEntityDef copy = null, bool copyTransform = false, bool selectNew = true)
         {
             if ((CurrentArchetype == null) || !(CurrentArchetype is MloArchetype mloArch))
             {
                 mloArch = (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo;
-                if (mloArch == null) return;
+                if (mloArch == null) return null;
                 CurrentArchetype = mloArch;
             }
 
@@ -2461,7 +2562,7 @@ namespace CodeWalker.Project
             if (mloInstance == null)
             {
                 MessageBox.Show("Unable to find MLO instance for this interior! Try adding an MLO instance ymap to the project.");
-                return;
+                return null;
             }
 
             if ((CurrentMloEntity == null) && (CurrentEntity != null))
@@ -2482,7 +2583,7 @@ namespace CodeWalker.Project
                     if ((mloArch.rooms?.Length??0) <= 0)
                     {
                         MessageBox.Show($@"Mlo {mloArch.Name} has no rooms! Cannot create entity.");
-                        return;
+                        return null;
                     }
                     CurrentMloRoom = mloArch.rooms[0];
                 }
@@ -2493,21 +2594,21 @@ namespace CodeWalker.Project
             if (roomIndex >= (mloArch.rooms?.Length ?? 0))
             {
                 MessageBox.Show($@"Room at index {roomIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.rooms?.Length ?? 0)} rooms.");
-                return;
+                return null;
             }
 
             int portalIndex = CurrentMloPortal?.Index ?? -1;
             if (portalIndex >= (mloArch.portals?.Length ?? 0))
             {
                 MessageBox.Show($@"Portal at index {portalIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.portals?.Length ?? 0)} portals.");
-                return;
+                return null;
             }
 
             int entsetIndex = CurrentMloEntitySet?.Index ?? -1;
             if (entsetIndex >= (mloArch.entitySets?.Length ?? 0))
             {
                 MessageBox.Show($@"EntitySet at index {entsetIndex} does not exist in {mloArch.Name}! {mloArch.Name} only has {(mloArch.entitySets?.Length ?? 0)} entitySets.");
-                return;
+                return null;
             }
 
 
@@ -2572,21 +2673,26 @@ namespace CodeWalker.Project
             catch(Exception e)
             {
                 MessageBox.Show(this, e.Message, "Create MLO Entity Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                return null;
             }
 
             ment = mloInstance.TryGetArchetypeEntity(outEnt);
 
-            LoadProjectTree();
-            ProjectExplorer?.TrySelectMloEntityTreeNode(ment);
-            CurrentEntity = outEnt;
-            CurrentMloEntity = ment;
-            CurrentYtypFile = CurrentEntity.MloParent?.Archetype?.Ytyp;
+            if (selectNew)
+            {
+                LoadProjectTree();
+                ProjectExplorer?.TrySelectMloEntityTreeNode(ment);
+                CurrentEntity = outEnt;
+                CurrentMloEntity = ment;
+                CurrentYtypFile = CurrentEntity.MloParent?.Archetype?.Ytyp;
+            }
+
+            return outEnt;
         }
-        public void NewMloRoom(MCMloRoomDef copy = null)
+        public MCMloRoomDef NewMloRoom(MCMloRoomDef copy = null)
         {
             var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? (CurrentArchetype as MloArchetype);
-            if (mlo == null) return;
+            if (mlo == null) return null;
 
             if (copy == null)
             {
@@ -2618,11 +2724,13 @@ namespace CodeWalker.Project
             ProjectExplorer?.TrySelectMloRoomTreeNode(room);
             CurrentMloRoom = room;
             CurrentYtypFile = room?.OwnerMlo?.Ytyp;
+
+            return room;
         }
-        public void NewMloPortal(MCMloPortalDef copy = null)
+        public MCMloPortalDef NewMloPortal(MCMloPortalDef copy = null)
         {
             var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? (CurrentArchetype as MloArchetype);
-            if (mlo == null) return;
+            if (mlo == null) return null;
 
             if (copy == null)
             {
@@ -2656,11 +2764,13 @@ namespace CodeWalker.Project
             ProjectExplorer?.TrySelectMloPortalTreeNode(portal);
             CurrentMloPortal = portal;
             CurrentYtypFile = portal?.OwnerMlo?.Ytyp;
+
+            return portal;
         }
-        public void NewMloEntitySet(MCMloEntitySet copy = null)
+        public MCMloEntitySet NewMloEntitySet(MCMloEntitySet copy = null)
         {
             var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? (CurrentArchetype as MloArchetype);
-            if (mlo == null) return;
+            if (mlo == null) return null;
 
             if (copy == null)
             {
@@ -2690,6 +2800,8 @@ namespace CodeWalker.Project
             ProjectExplorer?.TrySelectMloEntitySetTreeNode(set);
             CurrentMloEntitySet = set;
             CurrentYtypFile = set?.OwnerMlo?.Ytyp;
+
+            return set;
         }
         public bool DeleteArchetype()
         {
@@ -3091,12 +3203,13 @@ namespace CodeWalker.Project
             return CurrentProjectFile.ContainsYbn(ybn);
         }
 
-        public void NewCollisionBounds(BoundsType type, Bounds copy = null)
+        public Bounds NewCollisionBounds(BoundsType type, Bounds copy = null, bool copyPosition = false, bool selectNew = true)
         {
-            if (CurrentYbnFile == null) return;
+            if (CurrentYbnFile == null) return null;
 
             //////// TODO!!
 
+            return null;
         }
         public void AddCollisionBoundsToProject()
         {
@@ -3194,12 +3307,13 @@ namespace CodeWalker.Project
             return bounds == CurrentCollisionBounds;
         }
 
-        public void NewCollisionPoly(BoundPolygonType type, BoundPolygon copy = null)
+        public BoundPolygon NewCollisionPoly(BoundPolygonType type, BoundPolygon copy = null, bool copyPosition = false, bool selectNew = true)
         {
-            if (CurrentYbnFile == null) return;
+            if (CurrentYbnFile == null) return null;
 
             //////// TODO!!
 
+            return null;
         }
         public void AddCollisionPolyToProject()
         {
@@ -3538,9 +3652,9 @@ namespace CodeWalker.Project
             return CurrentProjectFile.ContainsYnd(ynd);
         }
 
-        public void NewPathNode(YndNode copy = null, bool copyPosition = false)
+        public YndNode NewPathNode(YndNode copy = null, bool copyPosition = false, bool selectNew = true)
         {
-            if (CurrentYndFile == null) return;
+            if (CurrentYndFile == null) return null;
 
             var n = CurrentYndFile.AddNode();
             var areaid = n.AreaID;
@@ -3590,18 +3704,22 @@ namespace CodeWalker.Project
             CurrentYndFile.BuildBVH();
 
 
-            LoadProjectTree();
-
-            ProjectExplorer?.TrySelectPathNodeTreeNode(n);
-            CurrentPathNode = n;
-            //ShowEditYndPanel(false);;
-            ShowEditYndNodePanel(false);
+            if (selectNew)
+            {
+                LoadProjectTree();
+                ProjectExplorer?.TrySelectPathNodeTreeNode(n);
+                CurrentPathNode = n;
+                //ShowEditYndPanel(false);;
+                ShowEditYndNodePanel(false);
+            }
 
 
             if (WorldForm != null)
             {
                 WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
             }
+
+            return n;
         }
         public bool DeletePathNode()
         {
@@ -3830,8 +3948,9 @@ namespace CodeWalker.Project
             return CurrentProjectFile.ContainsYnv(ynv);
         }
 
-        public void NewNavPoly(YnvPoly copy = null, bool copyposition = false)//TODO!
+        public YnvPoly NewNavPoly(YnvPoly copy = null, bool copyposition = false, bool selectNew = true)//TODO!
         {
+            return null;
         }
         public bool DeleteNavPoly()//TODO!
         {
@@ -3842,8 +3961,9 @@ namespace CodeWalker.Project
             return poly == CurrentNavPoly;
         }
 
-        public void NewNavPoint(YnvPoint copy = null, bool copyposition = false)//TODO!
+        public YnvPoint NewNavPoint(YnvPoint copy = null, bool copyposition = false, bool selectNew = true)//TODO!
         {
+            return null;
         }
         public bool DeleteNavPoint()//TODO!
         {
@@ -3854,8 +3974,9 @@ namespace CodeWalker.Project
             return point == CurrentNavPoint;
         }
 
-        public void NewNavPortal(YnvPortal copy = null, bool copyposition = false)//TODO!
+        public YnvPortal NewNavPortal(YnvPortal copy = null, bool copyposition = false, bool selectNew = true)//TODO!
         {
+            return null;
         }
         public bool DeleteNavPortal()//TODO!
         {
@@ -4042,9 +4163,9 @@ namespace CodeWalker.Project
             return CurrentProjectFile.ContainsTrainTrack(track);
         }
 
-        public void NewTrainNode(TrainTrackNode copy = null, bool copyPosition = false)
+        public TrainTrackNode NewTrainNode(TrainTrackNode copy = null, bool copyPosition = false, bool selectNew = true)
         {
-            if (CurrentTrainTrack == null) return;
+            if (CurrentTrainTrack == null) return null;
 
             var afternode = copyPosition ? copy : null;
 
@@ -4067,17 +4188,21 @@ namespace CodeWalker.Project
             CurrentTrainTrack.BuildBVH();
 
 
-            LoadProjectTree();
-
-            ProjectExplorer?.TrySelectTrainNodeTreeNode(n);
-            CurrentTrainNode = n;
-            ShowEditTrainNodePanel(false);
+            if (selectNew)
+            {
+                LoadProjectTree();
+                ProjectExplorer?.TrySelectTrainNodeTreeNode(n);
+                CurrentTrainNode = n;
+                ShowEditTrainNodePanel(false);
+            }
 
 
             if (WorldForm != null)
             {
                 WorldForm.UpdateTrainTrackGraphics(CurrentTrainTrack, false);
             }
+
+            return n;
         }
         public bool DeleteTrainNode()
         {
@@ -4319,10 +4444,10 @@ namespace CodeWalker.Project
             return CurrentProjectFile.ContainsScenario(ymt);
         }
 
-        public void NewScenarioNode(ScenarioNode copy = null, bool copyPosition = false)
+        public ScenarioNode NewScenarioNode(ScenarioNode copy = null, bool copyPosition = false, bool selectNew = true)
         {
-            if (CurrentScenario == null) return;
-            if (CurrentScenario.ScenarioRegion == null) return;
+            if (CurrentScenario == null) return null;
+            if (CurrentScenario.ScenarioRegion == null) return null;
 
             if (copy == null)
             {
@@ -4338,12 +4463,14 @@ namespace CodeWalker.Project
             n.SetOrientation(ori);
 
 
-            LoadProjectTree();
-
-            ProjectExplorer?.TrySelectScenarioNodeTreeNode(n);
-            CurrentScenarioNode = n;
-            //ShowEditScenarioPanel(false);
-            ShowEditScenarioNodePanel(false);
+            if (selectNew)
+            {
+                LoadProjectTree();
+                ProjectExplorer?.TrySelectScenarioNodeTreeNode(n);
+                CurrentScenarioNode = n;
+                //ShowEditScenarioPanel(false);
+                ShowEditScenarioNodePanel(false);
+            }
 
 
             if (WorldForm != null)
@@ -4355,6 +4482,8 @@ namespace CodeWalker.Project
                 CurrentScenario.ScenarioRegion.BuildBVH();
                 CurrentScenario.ScenarioRegion.BuildVertices(); //for the graphics...
             }
+
+            return n;
         }
         public bool DeleteScenarioNode()
         {
@@ -5461,9 +5590,9 @@ namespace CodeWalker.Project
             return CurrentProjectFile.ContainsAudioRel(rel);
         }
 
-        public void NewAudioZone(AudioPlacement copy = null, bool copyPosition = false)
+        public AudioPlacement NewAudioZone(AudioPlacement copy = null, bool copyPosition = false, bool selectNew = true)
         {
-            if (CurrentAudioFile == null) return;
+            if (CurrentAudioFile == null) return null;
 
             if (copy == null)
             {
@@ -5517,18 +5646,22 @@ namespace CodeWalker.Project
 
             CurrentAudioFile.AddRelData(zone);
 
-            LoadProjectTree();
+            if (selectNew)
+            {
+                LoadProjectTree();
 
-            ProjectExplorer?.TrySelectAudioZoneTreeNode(ap);
-            CurrentAudioZone = ap;
+                ProjectExplorer?.TrySelectAudioZoneTreeNode(ap);
+                CurrentAudioZone = ap;
             
-            ShowEditAudioZonePanel(false);
-
+                ShowEditAudioZonePanel(false);
+            }
 
             if (WorldForm != null)
             {
                 WorldForm.UpdateAudioPlacementGraphics(CurrentAudioFile);
             }
+
+            return ap;
         }
         public bool DeleteAudioZone()
         {
@@ -5587,9 +5720,9 @@ namespace CodeWalker.Project
             return zone == CurrentAudioZone;
         }
 
-        public void NewAudioEmitter(AudioPlacement copy = null, bool copyPosition = false)
+        public AudioPlacement NewAudioEmitter(AudioPlacement copy = null, bool copyPosition = false, bool selectNew = true)
         {
-            if (CurrentAudioFile == null) return;
+            if (CurrentAudioFile == null) return null;
 
             if (copy == null)
             {
@@ -5634,18 +5767,22 @@ namespace CodeWalker.Project
 
             CurrentAudioFile.AddRelData(emitter);
 
-            LoadProjectTree();
+            if (selectNew)
+            {
+                LoadProjectTree();
 
-            ProjectExplorer?.TrySelectAudioEmitterTreeNode(ap);
-            CurrentAudioEmitter = ap;
+                ProjectExplorer?.TrySelectAudioEmitterTreeNode(ap);
+                CurrentAudioEmitter = ap;
 
-            ShowEditAudioEmitterPanel(false);
-
+                ShowEditAudioEmitterPanel(false);
+            }
 
             if (WorldForm != null)
             {
                 WorldForm.UpdateAudioPlacementGraphics(CurrentAudioFile);
             }
+
+            return ap;
         }
         public bool DeleteAudioEmitter()
         {

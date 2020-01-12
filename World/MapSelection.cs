@@ -782,6 +782,31 @@ namespace CodeWalker
             }
         }
 
+        public bool CanCopyPaste
+        {
+            get
+            {
+                if (MultipleSelectionItems != null)
+                {
+                    for (int i = 0; i < MultipleSelectionItems.Length; i++)
+                    {
+                        if (MultipleSelectionItems[i].CanCopyPaste) return true;
+                    }
+                    return false;
+                }
+                else if (EntityDef != null) return true;
+                else if (CarGenerator != null) return true;
+                else if (PathNode != null) return true;
+                else if (NavPoly != null) return true;
+                else if (NavPoint != null) return true;
+                else if (NavPortal != null) return true;
+                else if (TrainTrackNode != null) return true;
+                else if (ScenarioNode != null) return true;
+                else if (Audio?.AudioZone != null) return true;
+                else if (Audio?.AudioEmitter != null) return true;
+                return false;
+            }
+        }
 
 
         public void SetMultipleSelectionItems(MapSelection[] items)
