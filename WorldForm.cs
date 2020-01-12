@@ -3204,6 +3204,45 @@ namespace CodeWalker
             }
         }
 
+        public void SelectItems(object obj, bool addSelection = false)
+        {
+            if (obj == null)
+            {
+                SelectItem(null, addSelection);
+                return;
+            }
+            if (obj is object[] arr)
+            {
+                SelectItem(null, addSelection);
+                foreach (var mobj in arr)
+                {
+                    SelectItems(mobj, true);
+                }
+                if (!addSelection)
+                {
+                    UpdateSelectionUI(true);
+                }
+                if ((ProjectForm != null) && !addSelection)
+                {
+                    ProjectForm.OnWorldSelectionChanged(SelectedItem);
+                }
+            }
+            else if (obj is YmapEntityDef ent) SelectEntity(ent, addSelection);
+            else if (obj is YmapCarGen cargen) SelectCarGen(cargen, addSelection);
+            else if (obj is YmapGrassInstanceBatch grass) SelectGrassBatch(grass, addSelection);
+            else if (obj is MCMloRoomDef room) SelectMloRoom(room, null, addSelection);//how to get instance?
+            else if (obj is Bounds bounds) SelectCollisionBounds(bounds, addSelection);
+            else if (obj is BoundPolygon cpoly) SelectCollisionPoly(cpoly, addSelection);
+            else if (obj is BoundVertex cvert) SelectCollisionVertex(cvert, addSelection);
+            else if (obj is YnvPoly npoly) SelectNavPoly(npoly, addSelection);
+            else if (obj is YnvPoint npoint) SelectNavPoint(npoint, addSelection);
+            else if (obj is YnvPortal nportal) SelectNavPortal(nportal, addSelection);
+            else if (obj is YndNode pnode) SelectPathNode(pnode, addSelection);
+            else if (obj is YndLink plink) SelectPathLink(plink, addSelection);
+            else if (obj is TrainTrackNode tnode) SelectTrainTrackNode(tnode, addSelection);
+            else if (obj is ScenarioNode snode) SelectScenarioNode(snode, addSelection);
+            else if (obj is AudioPlacement audio) SelectAudio(audio, addSelection);
+        }
         public void SelectItem(MapSelection? mhit = null, bool addSelection = false)
         {
             var mhitv = mhit.HasValue ? mhit.Value : new MapSelection();
@@ -3351,7 +3390,10 @@ namespace CodeWalker
 
                 if (change)
                 {
-                    UpdateSelectionUI(true);
+                    if (!addSelection)
+                    {
+                        UpdateSelectionUI(true);
+                    }
 
                     Widget.Visible = SelectedItem.CanShowWidget;
                     if (Widget.Visible)
@@ -3364,27 +3406,35 @@ namespace CodeWalker
                     }
                 }
             }
-            if (change && (ProjectForm != null))
+            if (change && (ProjectForm != null) && !addSelection)
             {
                 ProjectForm.OnWorldSelectionChanged(SelectedItem);
             }
         }
-        public void SelectMulti(MapSelection[] items)
+        public void SelectMulti(MapSelection[] items, bool addSelection = false)
         {
-            SelectItem(null);
+            SelectItem(null, addSelection);
             if (items != null)
             {
                 foreach (var item in items)
                 {
                     SelectItem(item, true);
                 }
+                if (!addSelection)
+                {
+                    UpdateSelectionUI(true);
+                }
+                if ((ProjectForm != null) && !addSelection)
+                {
+                    ProjectForm.OnWorldSelectionChanged(SelectedItem);
+                }
             }
         }
-        public void SelectEntity(YmapEntityDef entity)
+        public void SelectEntity(YmapEntityDef entity, bool addSelection = false)
         {
             if (entity == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3396,42 +3446,42 @@ namespace CodeWalker
                 {
                     ms.MloEntityDef = entity;
                 }
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectCarGen(YmapCarGen cargen)
+        public void SelectCarGen(YmapCarGen cargen, bool addSelection = false)
         {
             if (cargen == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
                 MapSelection ms = new MapSelection();
                 ms.CarGenerator = cargen;
                 ms.AABB = new BoundingBox(cargen.BBMin, cargen.BBMax);
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectGrassBatch(YmapGrassInstanceBatch batch)
+        public void SelectGrassBatch(YmapGrassInstanceBatch batch, bool addSelection = false)
         {
             if (batch == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
                 MapSelection ms = new MapSelection();
                 ms.GrassBatch = batch;
                 ms.AABB = new BoundingBox(batch.AABBMin, batch.AABBMax);
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectMloRoom(MCMloRoomDef room, MloInstanceData instance)
+        public void SelectMloRoom(MCMloRoomDef room, MloInstanceData instance, bool addSelection = false)
         {
             if (room == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else if (instance != null)
             {
@@ -3440,14 +3490,14 @@ namespace CodeWalker
                 ms.AABB = new BoundingBox(room.BBMin_CW, room.BBMax_CW);
                 ms.BBOffset = instance.Owner.Position;
                 ms.BBOrientation = instance.Owner.Orientation;
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectCollisionBounds(Bounds b)
+        public void SelectCollisionBounds(Bounds b, bool addSelection = false)
         {
             if (b == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3457,14 +3507,14 @@ namespace CodeWalker
 
                 ms.AABB = new BoundingBox(b.BoxMin, b.BoxMax);
 
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectCollisionPoly(BoundPolygon p)
+        public void SelectCollisionPoly(BoundPolygon p, bool addSelection = false)
         {
             if (p == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3474,14 +3524,14 @@ namespace CodeWalker
 
                 //ms.AABB = new BoundingBox(p.BoundingBoxMin, p.BoundingBoxMax);
 
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectCollisionVertex(BoundVertex v)
+        public void SelectCollisionVertex(BoundVertex v, bool addSelection = false)
         {
             if (v == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3491,14 +3541,14 @@ namespace CodeWalker
 
                 //ms.AABB = new BoundingBox(p.BoundingBoxMin, p.BoundingBoxMax);
 
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectNavPoly(YnvPoly poly)
+        public void SelectNavPoly(YnvPoly poly, bool addSelection = false)
         {
             if (poly == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3513,14 +3563,14 @@ namespace CodeWalker
                 //{
                 //    ms.AABB = new BoundingBox(sect.AABBMin.XYZ(), sect.AABBMax.XYZ());
                 //}
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectNavPoint(YnvPoint point)
+        public void SelectNavPoint(YnvPoint point, bool addSelection = false)
         {
             if (point == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3529,14 +3579,14 @@ namespace CodeWalker
                 MapSelection ms = new MapSelection();
                 ms.NavPoint = point;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectNavPortal(YnvPortal portal)
+        public void SelectNavPortal(YnvPortal portal, bool addSelection = false)
         {
             if (portal == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3545,14 +3595,14 @@ namespace CodeWalker
                 MapSelection ms = new MapSelection();
                 ms.NavPortal = portal;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectPathNode(YndNode node)
+        public void SelectPathNode(YndNode node, bool addSelection = false)
         {
             if (node == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3561,15 +3611,15 @@ namespace CodeWalker
                 MapSelection ms = new MapSelection();
                 ms.PathNode = node;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectPathLink(YndLink link)
+        public void SelectPathLink(YndLink link, bool addSelection = false)
         {
             var node = link?.Node1;
             if (node == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3579,14 +3629,14 @@ namespace CodeWalker
                 ms.PathNode = node;
                 ms.PathLink = link;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectTrainTrackNode(TrainTrackNode node)
+        public void SelectTrainTrackNode(TrainTrackNode node, bool addSelection = false)
         {
             if (node == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3595,14 +3645,14 @@ namespace CodeWalker
                 MapSelection ms = new MapSelection();
                 ms.TrainTrackNode = node;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectScenarioNode(ScenarioNode node)
+        public void SelectScenarioNode(ScenarioNode node, bool addSelection = false)
         {
             if (node == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3611,14 +3661,14 @@ namespace CodeWalker
                 MapSelection ms = new MapSelection();
                 ms.ScenarioNode = node;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectScenarioEdge(ScenarioNode node, MCScenarioChainingEdge edge)
+        public void SelectScenarioEdge(ScenarioNode node, MCScenarioChainingEdge edge, bool addSelection = false)
         {
             if (node == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3628,14 +3678,14 @@ namespace CodeWalker
                 ms.ScenarioNode = node;
                 ms.ScenarioEdge = edge;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
-        public void SelectAudio(AudioPlacement audio)
+        public void SelectAudio(AudioPlacement audio, bool addSelection = false)
         {
             if (audio == null)
             {
-                SelectItem(null);
+                SelectItem(null, addSelection);
             }
             else
             {
@@ -3643,7 +3693,7 @@ namespace CodeWalker
                 ms.Audio = audio;
                 ms.AABB = new BoundingBox(audio.HitboxMin, audio.HitboxMax);
                 ms.BSphere = new BoundingSphere(audio.Position, audio.HitSphereRad);
-                SelectItem(ms);
+                SelectItem(ms, addSelection);
             }
         }
         private void SelectMousedItem()
@@ -3712,11 +3762,18 @@ namespace CodeWalker
             ToolbarCopyButton.Enabled = false;
             ToolbarDeleteItemButton.Enabled = false;
             ToolbarDeleteItemButton.Text = "Delete";
+            ToolbarAddItemButton.ToolTipText = "Add";
+            ToolbarAddItemButton.Enabled = false;
+            ToolbarPasteButton.Enabled = CopiedItem.CanCopyPaste;
+
 
             if (item.MultipleSelectionItems != null)
             {
                 SelectionEntityTabPage.Text = "Multiple items";
                 SelEntityPropertyGrid.SelectedObject = item.MultipleSelectionItems;
+                ToolbarCopyButton.Enabled = item.CanCopyPaste;
+                ToolbarDeleteItemButton.Enabled = true;
+                ToolbarDeleteItemButton.Text = "Delete multiple items";
             }
             else if (item.TimeCycleModifier != null)
             {
@@ -3869,26 +3926,11 @@ namespace CodeWalker
             }
 
 
-            //var ent = SelectedItem.EntityDef;
-            //ToolbarDeleteEntityButton.Enabled = false;
-            ////ToolbarAddEntityButton.Enabled = false;
-            //ToolbarCopyButton.Enabled = (ent != null);
-            //if (ent != null)
-            //{
-            //    ToolbarDeleteEntityButton.Enabled = true;
-            //    //ToolbarAddEntityButton.Enabled = true;
-            //    //if (ProjectForm != null)
-            //    //{
-            //    //    ToolbarDeleteEntityButton.Enabled = ProjectForm.IsCurrentEntity(ent);
-            //    //}
-            //}
-            //bool enableymapui = (ent != null) && (ent.Ymap != null);
-            //var ymap = ent?.Ymap;
 
-            bool enableymapui = (ymap != null);
-
-            EnableYmapUI(enableymapui, (ymap != null) ? ymap.Name : "");
-
+            if (ymap != null)
+            {
+                EnableYmapUI(true, ymap.Name);
+            }
             if (ynd != null)
             {
                 EnableYndUI(true, ynd.Name);
@@ -4874,8 +4916,6 @@ namespace CodeWalker
 
             ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
             ToolbarAddItemButton.Enabled = enable;
-            //ToolbarDeleteEntityButton.Enabled = enable;
-            ToolbarPasteButton.Enabled = (CopiedItem.EntityDef != null) && enable;
         }
         public void EnableYbnUI(bool enable, string filename)
         {
@@ -4884,8 +4924,6 @@ namespace CodeWalker
             {
                 //ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
                 //ToolbarAddItemButton.Enabled = enable;
-                ////ToolbarDeleteEntityButton.Enabled = enable;
-                //ToolbarPasteButton.Enabled = (CopiedItem.CollisionPoly != null) && enable;
             }
         }
         public void EnableYndUI(bool enable, string filename)
@@ -4900,8 +4938,6 @@ namespace CodeWalker
             {
                 ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
                 ToolbarAddItemButton.Enabled = enable;
-                //ToolbarDeleteEntityButton.Enabled = enable;
-                ToolbarPasteButton.Enabled = (CopiedItem.PathNode != null) && enable;
             }
         }
         public void EnableYnvUI(bool enable, string filename)
@@ -4916,8 +4952,6 @@ namespace CodeWalker
             {
                 ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
                 ToolbarAddItemButton.Enabled = enable;
-                //ToolbarDeleteEntityButton.Enabled = enable;
-                ToolbarPasteButton.Enabled = (CopiedItem.NavPoly != null) && enable;
             }
         }
         public void EnableTrainsUI(bool enable, string filename)
@@ -4932,8 +4966,6 @@ namespace CodeWalker
             {
                 ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
                 ToolbarAddItemButton.Enabled = enable;
-                //ToolbarDeleteEntityButton.Enabled = enable;
-                ToolbarPasteButton.Enabled = false;// (CopiedItem.TrainNode != null) && enable;
             }
         }
         public void EnableScenarioUI(bool enable, string filename)
@@ -4948,8 +4980,6 @@ namespace CodeWalker
             {
                 ToolbarAddItemButton.ToolTipText = "Add " + type + (enable ? (" to " + filename) : "");
                 ToolbarAddItemButton.Enabled = enable;
-                //ToolbarDeleteEntityButton.Enabled = enable;
-                ToolbarPasteButton.Enabled = (CopiedItem.ScenarioNode != null) && enable;
             }
         }
         public void EnableAudioUI(bool enable, string filename) //TODO
@@ -5088,721 +5118,296 @@ namespace CodeWalker
 
         private void AddItem()
         {
+            if (ProjectForm == null) return;
             switch (SelectionMode)
             {
-                case MapSelectionMode.Entity: AddEntity(); break;
-                case MapSelectionMode.CarGenerator: AddCarGen(); break;
-                case MapSelectionMode.Path: AddPathNode(); break;
-                case MapSelectionMode.NavMesh: AddNavPoly(); break;//how to add points/portals? project window
-                case MapSelectionMode.TrainTrack: AddTrainNode(); break;
-                case MapSelectionMode.Scenario: AddScenarioNode(); break; //how to add different node types? project window
-                case MapSelectionMode.Audio: AddAudioZone(); break; //how to add emitters as well? project window
+                case MapSelectionMode.Entity: ProjectForm.NewEntity(); break;
+                case MapSelectionMode.CarGenerator: ProjectForm.NewCarGen(); break;
+                case MapSelectionMode.Path: ProjectForm.NewPathNode(); break;
+                case MapSelectionMode.NavMesh: ProjectForm.NewNavPoly(); break; //.NewNavPoint/.NewNavPortal//how to add points/portals? project window
+                case MapSelectionMode.TrainTrack: ProjectForm.NewTrainNode(); break;
+                case MapSelectionMode.Scenario: ProjectForm.NewScenarioNode(); break; //how to add different node types? project window
+                case MapSelectionMode.Audio: ProjectForm.NewAudioZone(); break; //.NewAudioEmitter // how to add emitters as well? project window
             }
-        }
-        private void DeleteItem()
-        {
-            if (SelectedItem.EntityDef != null) DeleteEntity();
-            else if (SelectedItem.CarGenerator != null) DeleteCarGen();
-            else if (SelectedItem.PathNode != null) DeletePathNode();
-            else if (SelectedItem.NavPoly != null) DeleteNavPoly();
-            else if (SelectedItem.NavPoint != null) DeleteNavPoint();
-            else if (SelectedItem.NavPortal != null) DeleteNavPortal();
-            else if (SelectedItem.TrainTrackNode != null) DeleteTrainNode();
-            else if (SelectedItem.ScenarioNode != null) DeleteScenarioNode();
-            else if (SelectedItem.Audio?.AudioZone != null) DeleteAudioZone();
-            else if (SelectedItem.Audio?.AudioEmitter != null) DeleteAudioEmitter();
-            else if (SelectedItem.CollisionVertex != null) DeleteCollisionVertex();
-            else if (SelectedItem.CollisionPoly != null) DeleteCollisionPoly();
-            else if (SelectedItem.CollisionBounds != null) DeleteCollisionBounds();
         }
         private void CopyItem()
         {
             CopiedItem = SelectedItem;
-            if (SelectedItem.EntityDef != null) CopyEntity();
-            else if (SelectedItem.CarGenerator != null) CopyCarGen();
-            else if (SelectedItem.PathNode != null) CopyPathNode();
-            else if (SelectedItem.NavPoly != null) CopyNavPoly();
-            else if (SelectedItem.NavPoint != null) CopyNavPoint();
-            else if (SelectedItem.NavPortal != null) CopyNavPortal();
-            else if (SelectedItem.TrainTrackNode != null) CopyTrainNode();
-            else if (SelectedItem.ScenarioNode != null) CopyScenarioNode();
-            else if (SelectedItem.Audio?.AudioZone != null) CopyAudioZone();
-            else if (SelectedItem.Audio?.AudioEmitter != null) CopyAudioEmitter();
+            ToolbarPasteButton.Enabled = CopiedItem.CanCopyPaste && (ProjectForm != null); //ToolbarAddItemButton.Enabled;
         }
         private void PasteItem()
         {
-            if (CopiedItem.EntityDef != null) PasteEntity();
-            else if (CopiedItem.CarGenerator != null) PasteCarGen();
-            else if (CopiedItem.PathNode != null) PastePathNode();
-            else if (CopiedItem.NavPoly != null) PasteNavPoly();
-            else if (CopiedItem.NavPoint != null) PasteNavPoint();
-            else if (CopiedItem.NavPortal != null) PasteNavPortal();
-            else if (CopiedItem.TrainTrackNode != null) PasteTrainNode();
-            else if (CopiedItem.ScenarioNode != null) PasteScenarioNode();
-            else if (CopiedItem.Audio?.AudioZone != null) PasteAudioZone();
-            else if (CopiedItem.Audio?.AudioEmitter != null) PasteAudioEmitter();
+            if ((ProjectForm != null) && CopiedItem.CanCopyPaste)
+            {
+                SelectItems(ProjectForm.NewObject(CopiedItem, (CopiedItem.MultipleSelectionItems != null)));
+            }
         }
         private void CloneItem()
         {
-            if (SelectedItem.EntityDef != null) CloneEntity();
-            else if (SelectedItem.CarGenerator != null) CloneCarGen();
-            else if (SelectedItem.PathNode != null) ClonePathNode();
-            else if (SelectedItem.NavPoly != null) CloneNavPoly();
-            else if (SelectedItem.NavPoint != null) CloneNavPoint();
-            else if (SelectedItem.NavPortal != null) CloneNavPortal();
-            else if (SelectedItem.TrainTrackNode != null) CloneTrainNode();
-            else if (SelectedItem.ScenarioNode != null) CloneScenarioNode();
-            else if (SelectedItem.Audio?.AudioZone != null) CloneAudioZone();
-            else if (SelectedItem.Audio?.AudioEmitter != null) CloneAudioEmitter();
-        }
-
-        private void AddEntity()
-        {
-            if (ProjectForm == null) return;
-            ProjectForm.NewEntity();
-        }
-        private void DeleteEntity()
-        {
-            var ent = SelectedItem.EntityDef;
-            if (ent == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentEntity(ent)))
+            if ((ProjectForm != null) && SelectedItem.CanCopyPaste)
             {
-                if (!ProjectForm.DeleteEntity())
-                {
-                    //MessageBox.Show("Unable to delete this entity from the current project. Make sure the entity's ymap exists in the current project.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
+                SelectItems(ProjectForm.NewObject(SelectedItem, true));
+            }
+        }
+        private void DeleteItem()
+        {
+            if (ProjectForm != null)
+            {
+                ProjectForm.DeleteObject(SelectedItem);
+                SelectItem(null);
             }
             else
             {
-                //project not open, or entity not selected there, just remove the entity from the ymap/mlo...
-                var ymap = ent.Ymap;
-                var instance = ent.MloParent?.MloInstance;
-                if (ymap == null)
-                {
-                    if (instance != null)
-                    {
-                        try
-                        {
-                            if (!instance.DeleteEntity(ent))
-                            {
-                                SelectItem(null);
-                            }
-                        }
-                        catch (Exception e) // various failures can happen here.
-                        {
-                            MessageBox.Show("Unable to remove entity..." + Environment.NewLine + e.Message);
-                        }
-                    }
-                }
-                else if (!ymap.RemoveEntity(ent))
-                {
-                    MessageBox.Show("Unable to remove entity.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-        }
-        private void CopyEntity()
-        {
-            ToolbarPasteButton.Enabled = (CopiedItem.EntityDef != null) && ToolbarAddItemButton.Enabled;
-        }
-        private void PasteEntity()
-        {
-            if (CopiedItem.EntityDef == null) return;
-            if (ProjectForm == null) return;
-            MloInstanceData instance = CopiedItem.EntityDef.MloParent?.MloInstance;
-            MCEntityDef entdef = instance?.TryGetArchetypeEntity(CopiedItem.EntityDef);
-            if (entdef != null)
-            {
-                ProjectForm.NewMloEntity(CopiedItem.EntityDef, true);
-            }
-            else
-            {
-                ProjectForm.NewEntity(CopiedItem.EntityDef, true);
-            }
-        }
-        private void CloneEntity()
-        {
-            if (SelectedItem.EntityDef == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewEntity(SelectedItem.EntityDef, true);
-        }
-
-        private void AddCarGen()
-        {
-            if (ProjectForm == null) return;
-            ProjectForm.NewCarGen();
-        }
-        private void DeleteCarGen()
-        {
-            var cargen = SelectedItem.CarGenerator;
-            if (cargen == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentCarGen(cargen)))
-            {
-                if (!ProjectForm.DeleteCarGen())
-                {
-                    //MessageBox.Show("Unable to delete this car generator from the current project. Make sure the car generator's ymap exists in the current project.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-            else
-            {
-                //project not open, or cargen not selected there, just remove the cargen from the ymap...
-                var ymap = cargen.Ymap;
-                if (!ymap.RemoveCarGen(cargen))
-                {
-                    MessageBox.Show("Unable to remove car generator.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-        }
-        private void CopyCarGen()
-        {
-            ToolbarPasteButton.Enabled = (CopiedItem.CarGenerator != null) && ToolbarAddItemButton.Enabled;
-        }
-        private void PasteCarGen()
-        {
-            if (CopiedItem.CarGenerator == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewCarGen(CopiedItem.CarGenerator);
-        }
-        private void CloneCarGen()
-        {
-            if (SelectedItem.CarGenerator == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewCarGen(SelectedItem.CarGenerator, true);
-        }
-
-        private void AddPathNode()
-        {
-            if (ProjectForm == null) return;
-            ProjectForm.NewPathNode();
-        }
-        private void DeletePathNode()
-        {
-            var pathnode = SelectedItem.PathNode;
-            if (pathnode == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentPathNode(pathnode)))
-            {
-                if (!ProjectForm.DeletePathNode())
-                {
-                    //MessageBox.Show("Unable to delete this path node from the current project. Make sure the path node's ynd exists in the current project.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-            else
-            {
-                //project not open, or cargen not selected there, just remove the cargen from the ymap...
-                var ynd = pathnode.Ynd;
-                if (!ynd.RemoveNode(pathnode))
-                {
-                    MessageBox.Show("Unable to remove path node.");
-                }
-                else
-                {
-                    UpdatePathNodeGraphics(pathnode, false);
-                    SelectItem(null);
-                }
-            }
-        }
-        private void CopyPathNode()
-        {
-            ToolbarPasteButton.Enabled = (CopiedItem.PathNode != null) && ToolbarAddItemButton.Enabled;
-        }
-        private void PastePathNode()
-        {
-            if (CopiedItem.PathNode == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewPathNode(CopiedItem.PathNode);
-        }
-        private void ClonePathNode()
-        {
-            if (SelectedItem.PathNode == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewPathNode(SelectedItem.PathNode, true);
-        }
-
-        private void AddNavPoly()
-        {
-            if (ProjectForm == null) return;
-            ProjectForm.NewNavPoly();
-        }
-        private void DeleteNavPoly()
-        {
-            var navpoly = SelectedItem.NavPoly;
-            if (navpoly == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentNavPoly(navpoly)))
-            {
-                if (!ProjectForm.DeleteNavPoly())
-                {
-                    //MessageBox.Show("Unable to delete this nav poly from the current project. Make sure the nav poly's ynv exists in the current project.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-            else
-            {
-                //project not open, or nav poly not selected there, just remove the poly from the ynv...
-                var ynv = navpoly.Ynv;
-                if (!ynv.RemovePoly(navpoly))
-                {
-                    MessageBox.Show("Unable to remove nav poly. NavMesh editing TODO!");
-                }
-                else
-                {
-                    UpdateNavPolyGraphics(navpoly, false);
-                    SelectItem(null);
-                }
-            }
-        }
-        private void CopyNavPoly()
-        {
-            ToolbarPasteButton.Enabled = (CopiedItem.NavPoly != null) && ToolbarAddItemButton.Enabled;
-        }
-        private void PasteNavPoly()
-        {
-            if (CopiedItem.NavPoly == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewNavPoly(CopiedItem.NavPoly);
-        }
-        private void CloneNavPoly()
-        {
-            if (SelectedItem.NavPoly == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewNavPoly(SelectedItem.NavPoly, true);
-        }
-
-        private void AddNavPoint()
-        {
-            if (ProjectForm == null) return;
-            ProjectForm.NewNavPoint();
-        }
-        private void DeleteNavPoint()
-        {
-            var navpoint = SelectedItem.NavPoint;
-            if (navpoint == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentNavPoint(navpoint)))
-            {
-                if (!ProjectForm.DeleteNavPoint())
-                {
-                    //MessageBox.Show("Unable to delete this nav point from the current project. Make sure the nav point's ynv exists in the current project.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-            else
-            {
-                //project not open, or nav point not selected there, just remove the point from the ynv...
-                var ynv = navpoint.Ynv;
-                if (!ynv.RemovePoint(navpoint))
-                {
-                    MessageBox.Show("Unable to remove nav point. NavMesh editing TODO!");
-                }
-                else
-                {
-                    UpdateNavPointGraphics(navpoint, false);
-                    SelectItem(null);
-                }
-            }
-        }
-        private void CopyNavPoint()
-        {
-            ToolbarPasteButton.Enabled = (CopiedItem.NavPoint != null) && ToolbarAddItemButton.Enabled;
-        }
-        private void PasteNavPoint()
-        {
-            if (CopiedItem.NavPoint == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewNavPoint(CopiedItem.NavPoint);
-        }
-        private void CloneNavPoint()
-        {
-            if (SelectedItem.NavPoint == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewNavPoint(SelectedItem.NavPoint, true);
-        }
-
-        private void AddNavPortal()
-        {
-            if (ProjectForm == null) return;
-            ProjectForm.NewNavPortal();
-        }
-        private void DeleteNavPortal()
-        {
-            var navportal = SelectedItem.NavPortal;
-            if (navportal == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentNavPortal(navportal)))
-            {
-                if (!ProjectForm.DeleteNavPortal())
-                {
-                    //MessageBox.Show("Unable to delete this nav portal from the current project. Make sure the nav portal's ynv exists in the current project.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-            else
-            {
-                //project not open, or nav portal not selected there, just remove the portal from the ynv...
-                var ynv = navportal.Ynv;
-                if (!ynv.RemovePortal(navportal))
-                {
-                    MessageBox.Show("Unable to remove nav portal. NavMesh editing TODO!");
-                }
-                else
-                {
-                    UpdateNavPortalGraphics(navportal, false);
-                    SelectItem(null);
-                }
-            }
-        }
-        private void CopyNavPortal()
-        {
-            ToolbarPasteButton.Enabled = (CopiedItem.NavPortal != null) && ToolbarAddItemButton.Enabled;
-        }
-        private void PasteNavPortal()
-        {
-            if (CopiedItem.NavPortal == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewNavPortal(CopiedItem.NavPortal);
-        }
-        private void CloneNavPortal()
-        {
-            if (SelectedItem.NavPortal == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewNavPortal(SelectedItem.NavPortal, true);
-        }
-
-        private void AddTrainNode()
-        {
-            if (ProjectForm == null) return;
-            ProjectForm.NewTrainNode();
-        }
-        private void DeleteTrainNode()
-        {
-            var trainnode = SelectedItem.TrainTrackNode;
-            if (trainnode == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentTrainNode(trainnode)))
-            {
-                if (!ProjectForm.DeleteTrainNode())
-                {
-                    //MessageBox.Show("Unable to delete this train track node from the current project. Make sure the path train track file exists in the current project.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-            else
-            {
-                //project not open, or train node not selected there, just remove the node from the train track...
-                var track = trainnode.Track;
-                if (!track.RemoveNode(trainnode))
-                {
-                    MessageBox.Show("Unable to remove train track node.");
-                }
-                else
-                {
-                    UpdateTrainTrackNodeGraphics(trainnode, false);
-                    SelectItem(null);
-                }
-            }
-        }
-        private void CopyTrainNode()
-        {
-            ToolbarPasteButton.Enabled = (CopiedItem.TrainTrackNode != null) && ToolbarAddItemButton.Enabled;
-        }
-        private void PasteTrainNode()
-        {
-            if (CopiedItem.TrainTrackNode == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewTrainNode(CopiedItem.TrainTrackNode);
-        }
-        private void CloneTrainNode()
-        {
-            if (SelectedItem.TrainTrackNode == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewTrainNode(SelectedItem.TrainTrackNode, true);
-        }
-
-        private void AddScenarioNode()
-        {
-            if (ProjectForm == null) return;
-            ProjectForm.NewScenarioNode();
-        }
-        private void DeleteScenarioNode()
-        {
-            var scenariopt = SelectedItem.ScenarioNode;
-            if (scenariopt == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentScenarioNode(scenariopt)))
-            {
-                if (!ProjectForm.DeleteScenarioNode())
-                {
-                    //MessageBox.Show("Unable to delete this scenario point from the current project. Make sure the scenario file exists in the current project.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-            else
-            {
-                //project not open, or scenario point not selected there, just remove the point from the region...
-                var region = scenariopt.Region.Ymt.ScenarioRegion;
-                if (!region.RemoveNode(scenariopt))
-                {
-                    MessageBox.Show("Unable to remove scenario point.");
-                }
-                else
-                {
-                    UpdateScenarioGraphics(scenariopt.Ymt, false);
-                    SelectItem(null);
-                }
-            }
-        }
-        private void CopyScenarioNode()
-        {
-            ToolbarPasteButton.Enabled = (CopiedItem.ScenarioNode != null) && ToolbarAddItemButton.Enabled;
-        }
-        private void PasteScenarioNode()
-        {
-            if (CopiedItem.ScenarioNode == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewScenarioNode(CopiedItem.ScenarioNode);
-        }
-        private void CloneScenarioNode()
-        {
-            if (SelectedItem.ScenarioNode == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewScenarioNode(SelectedItem.ScenarioNode, true);
-        }
-
-        private void AddAudioZone()
-        {
-            if (ProjectForm == null) return;
-            ProjectForm.NewAudioZone();
-        }
-        private void DeleteAudioZone()
-        {
-            var audio = SelectedItem.Audio;
-            if (audio == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentAudioZone(audio)))
-            {
-                if (!ProjectForm.DeleteAudioZone())
-                {
-                    //MessageBox.Show("Unable to delete this audio zone from the current project. Make sure the zone's .rel file exists in the current project.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-            else
-            {
-                //project not open, or zone not selected there, just remove the zone from the rel...
-                var rel = audio.RelFile;
-                if (!rel.RemoveRelData(audio.AudioZone))
-                {
-                    MessageBox.Show("Unable to remove audio zone. Audio zone editing TODO!");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-        }
-        private void CopyAudioZone()
-        {
-            ToolbarPasteButton.Enabled = (CopiedItem.Audio != null) && ToolbarAddItemButton.Enabled;
-        }
-        private void PasteAudioZone()
-        {
-            if (CopiedItem.Audio == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewAudioZone(CopiedItem.Audio);
-        }
-        private void CloneAudioZone()
-        {
-            if (SelectedItem.Audio == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewAudioZone(SelectedItem.Audio, true);
-        }
-
-        private void AddAudioEmitter()
-        {
-            if (ProjectForm == null) return;
-            ProjectForm.NewAudioEmitter();
-        }
-        private void DeleteAudioEmitter()
-        {
-            var audio = SelectedItem.Audio;
-            if (audio == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentAudioEmitter(audio)))
-            {
-                if (!ProjectForm.DeleteAudioEmitter())
-                {
-                    //MessageBox.Show("Unable to delete this audio emitter from the current project. Make sure the emitter's .rel file exists in the current project.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-            else
-            {
-                //project not open, or zone not selected there, just remove the zone from the rel...
-                var rel = audio.RelFile;
-                if (!rel.RemoveRelData(audio.AudioEmitter))
-                {
-                    MessageBox.Show("Unable to remove audio emitter. Audio zone editing TODO!");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-        }
-        private void CopyAudioEmitter()
-        {
-            ToolbarPasteButton.Enabled = (CopiedItem.Audio != null) && ToolbarAddItemButton.Enabled;
-        }
-        private void PasteAudioEmitter()
-        {
-            if (CopiedItem.Audio == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewAudioEmitter(CopiedItem.Audio);
-        }
-        private void CloneAudioEmitter()
-        {
-            if (SelectedItem.Audio == null) return;
-            if (ProjectForm == null) return;
-            ProjectForm.NewAudioEmitter(SelectedItem.Audio, true);
-        }
-
-        private void DeleteCollisionVertex()
-        {
-            var vertex = SelectedItem.CollisionVertex;
-            if (vertex == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentCollisionVertex(vertex)))
-            {
-                if (!ProjectForm.DeleteCollisionVertex())
-                {
-                    //MessageBox.Show("Unable to delete this collision vertex from the current project. Make sure the ybn file exists in the current project.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-            else
-            {
-                //project not open, or vertex not selected there, just remove the vertex from the geometry...
-                var bgeom = vertex.Owner;
-                if ((bgeom == null) || (!bgeom.DeleteVertex(vertex.Index)))
-                {
-                    MessageBox.Show("Unable to remove vertex.");
-                }
-                else
-                {
-                    UpdateCollisionBoundsGraphics(bgeom);
-                    SelectItem(null);
-                }
-            }
-        }
-        private void DeleteCollisionBounds()
-        {
-            var bounds = SelectedItem.CollisionBounds;
-            if (bounds == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentCollisionBounds(bounds)))
-            {
-                if (!ProjectForm.DeleteCollisionBounds())
-                {
-                    //MessageBox.Show("Unable to delete this collision bounds from the current project. Make sure the ybn file exists in the current project.");
-                }
-                else
-                {
-                    SelectItem(null);
-                }
-            }
-            else
-            {
-                var parent = bounds.Parent;
-                if (parent != null)
-                {
-                    parent.DeleteChild(bounds);
-                    UpdateCollisionBoundsGraphics(parent);
-                }
-                else
-                {
-                    var ybn = bounds.GetRootYbn();
-                    ybn.RemoveBounds(bounds);
-                }
-
+                DeleteItem(ref SelectedItem);
                 SelectItem(null);
             }
         }
-        private void DeleteCollisionPoly()
+        private void DeleteItem(ref MapSelection item)
         {
-            var poly = SelectedItem.CollisionPoly;
-            if (poly == null) return;
-
-            if ((ProjectForm != null) && (ProjectForm.IsCurrentCollisionPoly(poly)))
+            if (item.MultipleSelectionItems != null)
             {
-                if (!ProjectForm.DeleteCollisionPoly())
+                for (int i = 0; i < item.MultipleSelectionItems.Length; i++)
                 {
-                    //MessageBox.Show("Unable to delete this collision polygon from the current project. Make sure the ybn file exists in the current project.");
+                    DeleteItem(ref item.MultipleSelectionItems[i]);
                 }
-                else
+            }
+            else if (item.EntityDef != null) DeleteEntity(item.EntityDef);
+            else if (item.CarGenerator != null) DeleteCarGen(item.CarGenerator);
+            else if (item.PathNode != null) DeletePathNode(item.PathNode);
+            else if (item.NavPoly != null) DeleteNavPoly(item.NavPoly);
+            else if (item.NavPoint != null) DeleteNavPoint(item.NavPoint);
+            else if (item.NavPortal != null) DeleteNavPortal(item.NavPortal);
+            else if (item.TrainTrackNode != null) DeleteTrainNode(item.TrainTrackNode);
+            else if (item.ScenarioNode != null) DeleteScenarioNode(item.ScenarioNode);
+            else if (item.Audio?.AudioZone != null) DeleteAudioZone(item.Audio);
+            else if (item.Audio?.AudioEmitter != null) DeleteAudioEmitter(item.Audio);
+            else if (item.CollisionVertex != null) DeleteCollisionVertex(item.CollisionVertex);
+            else if (item.CollisionPoly != null) DeleteCollisionPoly(item.CollisionPoly);
+            else if (item.CollisionBounds != null) DeleteCollisionBounds(item.CollisionBounds);
+        }
+        private void DeleteEntity(YmapEntityDef ent)
+        {
+            if (ent == null) return;
+
+            //project not open, or entity not selected there, just remove the entity from the ymap/mlo...
+            var ymap = ent.Ymap;
+            var instance = ent.MloParent?.MloInstance;
+            if (ymap == null)
+            {
+                if (instance != null)
                 {
-                    SelectItem(null);
+                    try
+                    {
+                        if (!instance.DeleteEntity(ent))
+                        {
+                            SelectItem(null);
+                        }
+                    }
+                    catch (Exception e) // various failures can happen here.
+                    {
+                        MessageBox.Show("Unable to remove entity..." + Environment.NewLine + e.Message);
+                    }
                 }
+            }
+            else if (!ymap.RemoveEntity(ent))
+            {
+                MessageBox.Show("Unable to remove entity.");
             }
             else
             {
-                //project not open, or polygon not selected there, just remove the vertex from the geometry...
-                var bgeom = poly.Owner;
-                if ((bgeom == null) || (!bgeom.DeletePolygon(poly)))
-                {
-                    MessageBox.Show("Unable to remove polygon.");
-                }
-                else
-                {
-                    UpdateCollisionBoundsGraphics(bgeom);
-                    SelectItem(null);
-                }
+                SelectItem(null);
             }
+        }
+        private void DeleteCarGen(YmapCarGen cargen)
+        {
+            if (cargen == null) return;
+
+            //project not open, or cargen not selected there, just remove the cargen from the ymap...
+            var ymap = cargen.Ymap;
+            if (!ymap.RemoveCarGen(cargen))
+            {
+                MessageBox.Show("Unable to remove car generator.");
+            }
+            else
+            {
+                SelectItem(null);
+            }
+        }
+        private void DeletePathNode(YndNode pathnode)
+        {
+            if (pathnode == null) return;
+
+            //project not open, or cargen not selected there, just remove the cargen from the ymap...
+            var ynd = pathnode.Ynd;
+            if (!ynd.RemoveNode(pathnode))
+            {
+                MessageBox.Show("Unable to remove path node.");
+            }
+            else
+            {
+                UpdatePathNodeGraphics(pathnode, false);
+                SelectItem(null);
+            }
+        }
+        private void DeleteNavPoly(YnvPoly navpoly)
+        {
+            if (navpoly == null) return;
+
+            //project not open, or nav poly not selected there, just remove the poly from the ynv...
+            var ynv = navpoly.Ynv;
+            if (!ynv.RemovePoly(navpoly))
+            {
+                MessageBox.Show("Unable to remove nav poly. NavMesh editing TODO!");
+            }
+            else
+            {
+                UpdateNavPolyGraphics(navpoly, false);
+                SelectItem(null);
+            }
+        }
+        private void DeleteNavPoint(YnvPoint navpoint)
+        {
+            if (navpoint == null) return;
+
+            //project not open, or nav point not selected there, just remove the point from the ynv...
+            var ynv = navpoint.Ynv;
+            if (!ynv.RemovePoint(navpoint))
+            {
+                MessageBox.Show("Unable to remove nav point. NavMesh editing TODO!");
+            }
+            else
+            {
+                UpdateNavPointGraphics(navpoint, false);
+                SelectItem(null);
+            }
+        }
+        private void DeleteNavPortal(YnvPortal navportal)
+        {
+            if (navportal == null) return;
+
+            //project not open, or nav portal not selected there, just remove the portal from the ynv...
+            var ynv = navportal.Ynv;
+            if (!ynv.RemovePortal(navportal))
+            {
+                MessageBox.Show("Unable to remove nav portal. NavMesh editing TODO!");
+            }
+            else
+            {
+                UpdateNavPortalGraphics(navportal, false);
+                SelectItem(null);
+            }
+        }
+        private void DeleteTrainNode(TrainTrackNode trainnode)
+        {
+            if (trainnode == null) return;
+
+            //project not open, or train node not selected there, just remove the node from the train track...
+            var track = trainnode.Track;
+            if (!track.RemoveNode(trainnode))
+            {
+                MessageBox.Show("Unable to remove train track node.");
+            }
+            else
+            {
+                UpdateTrainTrackNodeGraphics(trainnode, false);
+                SelectItem(null);
+            }
+        }
+        private void DeleteScenarioNode(ScenarioNode scenariopt)
+        {
+            if (scenariopt == null) return;
+
+            //project not open, or scenario point not selected there, just remove the point from the region...
+            var region = scenariopt.Region.Ymt.ScenarioRegion;
+            if (!region.RemoveNode(scenariopt))
+            {
+                MessageBox.Show("Unable to remove scenario point.");
+            }
+            else
+            {
+                UpdateScenarioGraphics(scenariopt.Ymt, false);
+                SelectItem(null);
+            }
+        }
+        private void DeleteAudioZone(AudioPlacement audio)
+        {
+            if (audio == null) return;
+
+            //project not open, or zone not selected there, just remove the zone from the rel...
+            var rel = audio.RelFile;
+            if (!rel.RemoveRelData(audio.AudioZone))
+            {
+                MessageBox.Show("Unable to remove audio zone. Audio zone editing TODO!");
+            }
+            else
+            {
+                SelectItem(null);
+            }
+        }
+        private void DeleteAudioEmitter(AudioPlacement audio)
+        {
+            if (audio == null) return;
+
+            //project not open, or zone not selected there, just remove the zone from the rel...
+            var rel = audio.RelFile;
+            if (!rel.RemoveRelData(audio.AudioEmitter))
+            {
+                MessageBox.Show("Unable to remove audio emitter. Audio zone editing TODO!");
+            }
+            else
+            {
+                SelectItem(null);
+            }
+        }
+        private void DeleteCollisionVertex(BoundVertex vertex)
+        {
+            if (vertex == null) return;
+
+            //project not open, or vertex not selected there, just remove the vertex from the geometry...
+            var bgeom = vertex.Owner;
+            if ((bgeom == null) || (!bgeom.DeleteVertex(vertex.Index)))
+            {
+                MessageBox.Show("Unable to remove vertex.");
+            }
+            else
+            {
+                UpdateCollisionBoundsGraphics(bgeom);
+                SelectItem(null);
+            }
+        }
+        private void DeleteCollisionPoly(BoundPolygon poly)
+        {
+            if (poly == null) return;
+
+            //project not open, or polygon not selected there, just remove the vertex from the geometry...
+            var bgeom = poly.Owner;
+            if ((bgeom == null) || (!bgeom.DeletePolygon(poly)))
+            {
+                MessageBox.Show("Unable to remove polygon.");
+            }
+            else
+            {
+                UpdateCollisionBoundsGraphics(bgeom);
+                SelectItem(null);
+            }
+        }
+        private void DeleteCollisionBounds(Bounds bounds)
+        {
+            if (bounds == null) return;
+
+            var parent = bounds.Parent;
+            if (parent != null)
+            {
+                parent.DeleteChild(bounds);
+                UpdateCollisionBoundsGraphics(parent);
+            }
+            else
+            {
+                var ybn = bounds.GetRootYbn();
+                ybn.RemoveBounds(bounds);
+            }
+
+            SelectItem(null);
         }
 
 
