@@ -1133,7 +1133,7 @@ namespace CodeWalker.GameFiles
         {
             BuildMaterials();
             CalculateQuantum();
-            //UpdateEdgeIndices(); //TODO: reinstate this?
+            UpdateEdgeIndices();
 
             var list = new List<IResourceBlock>(base.GetReferences());
             if (Vertices2 != null)
@@ -1558,74 +1558,102 @@ namespace CodeWalker.GameFiles
         {
             //update all triangle edge indices, based on shared vertex indices
 
-            var edgedict = new Dictionary<BoundEdgeRef, BoundEdge>();
-            if (Polygons != null)
-            {
-                foreach (var poly in Polygons)
-                {
-                    if (poly is BoundPolygonTriangle btri)
-                    {
-                        var e1 = new BoundEdgeRef(btri.vertIndex1, btri.vertIndex2);
-                        var e2 = new BoundEdgeRef(btri.vertIndex2, btri.vertIndex3);
-                        var e3 = new BoundEdgeRef(btri.vertIndex3, btri.vertIndex1);
+            if (Polygons == null)
+            { return; }
 
-                        if (edgedict.TryGetValue(e1, out BoundEdge edge1))
+            var edgedict = new Dictionary<BoundEdgeRef, BoundEdge>();
+            foreach (var poly in Polygons)
+            {
+                if (poly is BoundPolygonTriangle btri)
+                {
+                    var e1 = new BoundEdgeRef(btri.vertIndex1, btri.vertIndex2);
+                    var e2 = new BoundEdgeRef(btri.vertIndex2, btri.vertIndex3);
+                    var e3 = new BoundEdgeRef(btri.vertIndex3, btri.vertIndex1);
+
+                    if (edgedict.TryGetValue(e1, out BoundEdge edge1))
+                    {
+                        if (edge1.Triangle2 != null)
                         {
-                            if (edge1.Triangle2 != null)
-                            { }
+                            btri.SetEdgeIndex(1, (short)edge1.Triangle1.Index);
+                        }
+                        else
+                        {
                             edge1.Triangle2 = btri;
                             edge1.EdgeID2 = 1;
                         }
-                        else
-                        {
-                            edgedict[e1] = new BoundEdge(btri, 1);
-                        }
-                        if (edgedict.TryGetValue(e2, out BoundEdge edge2))
-                        {
-                            if (edge2.Triangle2 != null)
-                            { }
-                            edge2.Triangle2 = btri;
-                            edge2.EdgeID2 = 2;
-                        }
-                        else
-                        {
-                            edgedict[e2] = new BoundEdge(btri, 2);
-                        }
-                        if (edgedict.TryGetValue(e3, out BoundEdge edge3))
-                        {
-                            if (edge3.Triangle2 != null)
-                            { }
-                            edge3.Triangle2 = btri;
-                            edge3.EdgeID2 = 3;
-                        }
-                        else
-                        {
-                            edgedict[e3] = new BoundEdge(btri, 3);
-                        }
-
-                    }
-                }
-
-                foreach (var kvp in edgedict)
-                {
-                    var eref = kvp.Key;
-                    var edge = kvp.Value;
-
-                    if (edge.Triangle1 == null)
-                    { continue; }
-
-
-                    if (edge.Triangle2 == null)
-                    {
-                        edge.Triangle1.SetEdgeIndex(edge.EdgeID1, -1);
                     }
                     else
                     {
-                        edge.Triangle1.SetEdgeIndex(edge.EdgeID1, (short)edge.Triangle2.Index);
-                        edge.Triangle2.SetEdgeIndex(edge.EdgeID2, (short)edge.Triangle1.Index);
+                        edgedict[e1] = new BoundEdge(btri, 1);
                     }
-                }
+                    if (edgedict.TryGetValue(e2, out BoundEdge edge2))
+                    {
+                        if (edge2.Triangle2 != null)
+                        {
+                            btri.SetEdgeIndex(2, (short)edge2.Triangle1.Index);
+                        }
+                        else
+                        {
+                            edge2.Triangle2 = btri;
+                            edge2.EdgeID2 = 2;
+                        }
+                    }
+                    else
+                    {
+                        edgedict[e2] = new BoundEdge(btri, 2);
+                    }
+                    if (edgedict.TryGetValue(e3, out BoundEdge edge3))
+                    {
+                        if (edge3.Triangle2 != null)
+                        {
+                            btri.SetEdgeIndex(3, (short)edge3.Triangle1.Index);
+                        }
+                        else
+                        {
+                            edge3.Triangle2 = btri;
+                            edge3.EdgeID2 = 3;
+                        }
+                    }
+                    else
+                    {
+                        edgedict[e3] = new BoundEdge(btri, 3);
+                    }
 
+                }
+            }
+
+            foreach (var kvp in edgedict)
+            {
+                var eref = kvp.Key;
+                var edge = kvp.Value;
+
+                if (edge.Triangle1 == null)
+                { continue; }
+
+
+                if (edge.Triangle2 == null)
+                {
+                    edge.Triangle1.SetEdgeIndex(edge.EdgeID1, -1);
+                }
+                else
+                {
+                    edge.Triangle1.SetEdgeIndex(edge.EdgeID1, (short)edge.Triangle2.Index);
+                    edge.Triangle2.SetEdgeIndex(edge.EdgeID2, (short)edge.Triangle1.Index);
+                }
+            }
+
+
+            foreach (var poly in Polygons)
+            {
+                if (poly is BoundPolygonTriangle btri)
+                {
+                    if (btri.edgeIndex1 >= Polygons.Length)
+                    { } //just checking....
+                    if (btri.edgeIndex2 >= Polygons.Length)
+                    { }
+                    if (btri.edgeIndex3 >= Polygons.Length)
+                    { }
+                }
             }
 
         }
