@@ -804,6 +804,9 @@ namespace CodeWalker
                 else if (ScenarioNode != null) return true;
                 else if (Audio?.AudioZone != null) return true;
                 else if (Audio?.AudioEmitter != null) return true;
+                else if (CollisionVertex != null) return false;//can't copy just a vertex..
+                else if (CollisionPoly != null) return true;
+                else if (CollisionBounds != null) return true;
                 return false;
             }
         }
