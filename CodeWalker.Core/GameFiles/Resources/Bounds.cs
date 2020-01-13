@@ -421,6 +421,24 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public virtual void CopyFrom(Bounds other)
+        {
+            if (other == null) return;
+            SphereRadius = other.SphereRadius;
+            SphereCenter = other.SphereCenter;
+            BoxMin = other.BoxMin;
+            BoxMax = other.BoxMax;
+            Margin = other.Margin;
+            Unknown_3Ch = other.Unknown_3Ch;
+            MaterialIndex = other.MaterialIndex;
+            MaterialColorIndex = other.MaterialColorIndex;
+            ProceduralId = other.ProceduralId;
+            RoomId_and_PedDensity = other.RoomId_and_PedDensity;
+            UnkFlags = other.UnkFlags;
+            PolyFlags = other.PolyFlags;
+            Unknown_60h = other.Unknown_60h;
+            Volume = other.Volume;
+        }
 
         public virtual SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
         {
@@ -2003,10 +2021,18 @@ namespace CodeWalker.GameFiles
             Polygons = newpolys;
             PolygonMaterialIndices = newpolymats;
 
-
+            BoxMin = bvh.BoundingBoxMin.XYZ();
+            BoxMax = bvh.BoundingBoxMax.XYZ();
+            BoxCenter = bvh.BoundingBoxCenter.XYZ();
+            SphereCenter = BoxCenter;
+            SphereRadius = (BoxMax - BoxCenter).Length();
 
             BVH = bvh;
 
+            if (Parent != null)
+            {
+                Parent.BuildBVH();
+            }
         }
 
 
@@ -2384,6 +2410,12 @@ namespace CodeWalker.GameFiles
 
             var bvh = BVHBuilder.Build(items, 1); //composites have BVH item threshold of 1
 
+            BoxMin = bvh.BoundingBoxMin.XYZ();
+            BoxMax = bvh.BoundingBoxMax.XYZ();
+            BoxCenter = bvh.BoundingBoxCenter.XYZ();
+            SphereCenter = BoxCenter;
+            SphereRadius = (BoxMax - BoxCenter).Length();
+
             BVH = bvh;
 
         }
@@ -2558,6 +2590,37 @@ namespace CodeWalker.GameFiles
                 }
             }
             return false;
+        }
+
+        public void AddChild(Bounds child)
+        {
+            if (Children == null) Children = new ResourcePointerArray64<Bounds>();
+
+            var children = Children.data_items?.ToList() ?? new List<Bounds>();
+            var transforms1 = ChildrenTransformation1?.ToList() ?? new List<Matrix>();
+            var transforms2 = ChildrenTransformation2?.ToList() ?? new List<Matrix>();
+            var bboxes = ChildrenBoundingBoxes?.ToList() ?? new List<AABB_s>();
+            var flags1 = ChildrenFlags1?.ToList();
+            var flags2 = ChildrenFlags2?.ToList();
+            var idx = children.Count;
+
+            child.Parent = this;
+
+            children.Add(child);
+            transforms1.Add(Matrix.Identity);
+            transforms2.Add(Matrix.Identity);
+            bboxes.Add(new AABB_s());//will get updated later
+            flags1?.Add(new BoundCompositeChildrenFlags());
+            flags2?.Add(new BoundCompositeChildrenFlags());
+            Children.data_items = children.ToArray();
+            ChildrenTransformation1 = transforms1.ToArray();
+            ChildrenTransformation2 = transforms2.ToArray();
+            ChildrenBoundingBoxes = bboxes.ToArray();
+            ChildrenFlags1 = flags1?.ToArray();
+            ChildrenFlags2 = flags2?.ToArray();
+            BuildBVH();
+            UpdateChildrenBounds();
+
         }
 
     }

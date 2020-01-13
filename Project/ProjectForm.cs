@@ -2177,10 +2177,10 @@ namespace CodeWalker.Project
             if (CurrentCarGen.Ymap != CurrentYmapFile) return false;
             if (CurrentYmapFile.CarGenerators == null) return false; //nothing to delete..
 
-            if (MessageBox.Show("Are you sure you want to delete this car generator?\n" + CurrentCarGen.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            {
-                return true;
-            }
+            //if (MessageBox.Show("Are you sure you want to delete this car generator?\n" + CurrentCarGen.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
 
             bool res = false;
             if (WorldForm != null)
@@ -2882,10 +2882,11 @@ namespace CodeWalker.Project
                 return true;
             }
 
-            if (MessageBox.Show("Are you sure you want to delete this entity?\n" + CurrentEntity._CEntityDef.archetypeName.ToString() + "\n" + CurrentEntity.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            {
-                return true;
-            }
+            //if (MessageBox.Show("Are you sure you want to delete this entity?\n" + CurrentEntity._CEntityDef.archetypeName.ToString() + "\n" + CurrentEntity.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
+
             MloInstanceData mloInstance = CurrentEntity.MloParent.MloInstance;
             if (mloInstance == null) return false;
 
@@ -3078,7 +3079,7 @@ namespace CodeWalker.Project
             bool filenameok = false;
             while (!filenameok)
             {
-                fname = "bounds" + testi.ToString() + ".ynd";
+                fname = "bounds" + testi.ToString() + ".ybn";
                 filenameok = !CurrentProjectFile.ContainsYbn(fname);
                 testi++;
             }
@@ -3090,9 +3091,6 @@ namespace CodeWalker.Project
                 {
                     ybn.Loaded = true;
                     ybn.HasChanged = true; //new ynd, flag as not saved
-
-                    //TODO: set new ybn default values...
-                    ybn.Bounds = new Bounds();
                 }
             }
 
@@ -3248,9 +3246,107 @@ namespace CodeWalker.Project
         {
             if (CurrentYbnFile == null) return null;
 
-            //////// TODO!!
+            Bounds b = null;
+            switch (type)
+            {
+                case BoundsType.Sphere:
+                    b = new BoundSphere();
+                    break;
+                case BoundsType.Capsule:
+                    b = new BoundCapsule();
+                    break;
+                case BoundsType.Box:
+                    b = new BoundBox();
+                    break;
+                case BoundsType.Geometry:
+                    b = new BoundGeometry();
+                    break;
+                case BoundsType.GeometryBVH:
+                    b = new BoundBVH();
+                    break;
+                case BoundsType.Composite:
+                    b = new BoundComposite();
+                    break;
+                case BoundsType.Disc:
+                    b = new BoundDisc();
+                    break;
+                case BoundsType.Cylinder:
+                    b = new BoundCylinder();
+                    break;
+                case BoundsType.Cloth:
+                    b = new BoundCloth();
+                    break;
+            }
 
-            return null;
+            if (b == null) return null;
+
+            if ((copy != null) && (copy.Type == type))
+            {
+                b.CopyFrom(copy);
+            }
+            else
+            {
+                var pos = GetSpawnPos(10.0f);
+
+                b.Type = type;
+                b.Margin = 0.005f;
+                b.Volume = 1.0f;
+                b.Unknown_60h = Vector3.One;
+                b.Unknown_3Ch = 1;
+                b.SphereCenter = Vector3.Zero;
+                b.SphereRadius = 1.0f;
+                b.BoxCenter = Vector3.Zero;
+                b.BoxMin = -Vector3.One;
+                b.BoxMax = Vector3.One;
+                b.Position = pos;
+
+                if (b is BoundBVH bbvh)
+                { }
+                if (b is BoundGeometry bgeo)
+                {
+                    bgeo.CenterGeom = Vector3.Zero;
+                    bgeo.Quantum = Vector3.Zero;
+                    bgeo.Unknown_9Ch = 7.629627e-8f;
+                    bgeo.Unknown_ACh = 0.0025f;
+                    bgeo.Position = Vector3.Zero;//start geometry transform at 0
+                }
+                if (b is BoundComposite bcmp)
+                {
+                    bcmp.Position = Vector3.Zero;//start composite transform at 0
+                }
+            }
+
+
+            var bcomp = (CurrentCollisionBounds as BoundComposite) ?? CurrentCollisionBounds?.Parent;
+            if (bcomp != null)
+            {
+                bcomp.AddChild(b);
+            }
+            else
+            {
+                CurrentYbnFile.AddBounds(b);
+            }
+
+
+            if (selectNew)
+            {
+                LoadProjectTree();
+                ProjectExplorer?.TrySelectCollisionBoundsTreeNode(b);
+                CurrentCollisionBounds = b;
+                //ShowEditYbnPanel(false);;
+                ShowEditYbnBoundsPanel(false);
+            }
+
+            if (bcomp != null)
+            {
+                if (WorldForm != null)
+                {
+                    WorldForm.UpdateCollisionBoundsGraphics(bcomp);
+                }
+            }
+
+
+            return b;
         }
         public void AddCollisionBoundsToProject()
         {
@@ -3500,10 +3596,10 @@ namespace CodeWalker.Project
             if (CurrentYbnFile == null) return false;
             if (CurrentCollisionPoly.Owner != CurrentCollisionBounds) return false;
 
-            if (MessageBox.Show("Are you sure you want to delete this collision poly?\n" + CurrentCollisionPoly.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            {
-                return true;
-            }
+            //if (MessageBox.Show("Are you sure you want to delete this collision poly?\n" + CurrentCollisionPoly.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
 
             bool res = false;
             if (WorldForm != null)
@@ -3580,10 +3676,10 @@ namespace CodeWalker.Project
             if (CurrentYbnFile == null) return false;
             if (CurrentCollisionVertex.Owner != CurrentCollisionBounds) return false;
 
-            if (MessageBox.Show("Are you sure you want to delete this collision vertex, and all attached polygons?\n" + CurrentCollisionVertex.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            {
-                return true;
-            }
+            //if (MessageBox.Show("Are you sure you want to delete this collision vertex, and all attached polygons?\n" + CurrentCollisionVertex.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
 
             bool res = false;
             if (WorldForm != null)
@@ -3885,10 +3981,10 @@ namespace CodeWalker.Project
             if (CurrentPathNode.Ynd != CurrentYndFile) return false;
             if (CurrentYndFile.Nodes == null) return false; //nothing to delete..
 
-            if (MessageBox.Show("Are you sure you want to delete this path node?\n" + CurrentPathNode.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            {
-                return true;
-            }
+            //if (MessageBox.Show("Are you sure you want to delete this path node?\n" + CurrentPathNode.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
 
             bool res = false;
             if (WorldForm != null)
@@ -4369,10 +4465,10 @@ namespace CodeWalker.Project
             if (CurrentTrainNode.Track != CurrentTrainTrack) return false;
             if (CurrentTrainTrack.Nodes == null) return false; //nothing to delete..
 
-            if (MessageBox.Show("Are you sure you want to delete this train track node?\n" + CurrentTrainNode.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            {
-                return true;
-            }
+            //if (MessageBox.Show("Are you sure you want to delete this train track node?\n" + CurrentTrainNode.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
 
             bool res = false;
             if (WorldForm != null)
@@ -4651,10 +4747,10 @@ namespace CodeWalker.Project
             if (CurrentScenarioNode == null) return false;
 
 
-            if (MessageBox.Show("Are you sure you want to delete this scenario node?\n" + CurrentScenarioNode.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            {
-                return true;
-            }
+            //if (MessageBox.Show("Are you sure you want to delete this scenario node?\n" + CurrentScenarioNode.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
 
             bool res = false;
             if (WorldForm != null)
@@ -5830,10 +5926,10 @@ namespace CodeWalker.Project
             if (CurrentAudioZone?.AudioZone == null) return false;
 
 
-            if (MessageBox.Show("Are you sure you want to delete this audio zone?\n" + CurrentAudioZone.GetNameString() + "\n" + CurrentAudioZone.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            {
-                return true;
-            }
+            //if (MessageBox.Show("Are you sure you want to delete this audio zone?\n" + CurrentAudioZone.GetNameString() + "\n" + CurrentAudioZone.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
 
             bool res = false;
             if (WorldForm != null)
@@ -5948,10 +6044,10 @@ namespace CodeWalker.Project
             if (CurrentAudioEmitter?.AudioEmitter == null) return false;
 
 
-            if (MessageBox.Show("Are you sure you want to delete this audio emitter?\n" + CurrentAudioEmitter.GetNameString() + "\n" + CurrentAudioEmitter.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            {
-                return true;
-            }
+            //if (MessageBox.Show("Are you sure you want to delete this audio emitter?\n" + CurrentAudioEmitter.GetNameString() + "\n" + CurrentAudioEmitter.Position.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
 
             bool res = false;
             if (WorldForm != null)
@@ -6021,10 +6117,10 @@ namespace CodeWalker.Project
             if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
 
 
-            if (MessageBox.Show("Are you sure you want to delete this audio zone list?\n" + CurrentAudioZoneList.GetNameString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            {
-                return true;
-            }
+            //if (MessageBox.Show("Are you sure you want to delete this audio zone list?\n" + CurrentAudioZoneList.GetNameString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
 
             bool res = false;
             if (WorldForm != null)
@@ -6088,10 +6184,10 @@ namespace CodeWalker.Project
             if (CurrentAudioFile?.RelDatasSorted == null) return false; //nothing to delete..
 
 
-            if (MessageBox.Show("Are you sure you want to delete this audio emitter list?\n" + CurrentAudioEmitterList.GetNameString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            {
-                return true;
-            }
+            //if (MessageBox.Show("Are you sure you want to delete this audio emitter list?\n" + CurrentAudioEmitterList.GetNameString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
 
             bool res = false;
             if (WorldForm != null)
