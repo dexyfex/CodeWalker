@@ -87,10 +87,6 @@ namespace CodeWalker.Project.Panels
                 TriVertex1TextBox.Text = string.Empty;
                 TriVertex2TextBox.Text = string.Empty;
                 TriVertex3TextBox.Text = string.Empty;
-                TriAreaTextBox.Text = string.Empty;
-                TriEdge1UpDown.Value = 0;
-                TriEdge2UpDown.Value = 0;
-                TriEdge3UpDown.Value = 0;
                 TriFlag1CheckBox.Checked = false;
                 TriFlag2CheckBox.Checked = false;
                 TriFlag3CheckBox.Checked = false;
@@ -123,10 +119,6 @@ namespace CodeWalker.Project.Panels
                     TriVertex1TextBox.Text = FloatUtil.GetVector3String(CollisionTriangle.Vertex1);
                     TriVertex2TextBox.Text = FloatUtil.GetVector3String(CollisionTriangle.Vertex2);
                     TriVertex3TextBox.Text = FloatUtil.GetVector3String(CollisionTriangle.Vertex3);
-                    TriAreaTextBox.Text = FloatUtil.ToString(CollisionTriangle.triArea);
-                    TriEdge1UpDown.Value = CollisionTriangle.edgeIndex1;
-                    TriEdge2UpDown.Value = CollisionTriangle.edgeIndex2;
-                    TriEdge3UpDown.Value = CollisionTriangle.edgeIndex3;
                     TriFlag1CheckBox.Checked = CollisionTriangle.vertFlag1;
                     TriFlag2CheckBox.Checked = CollisionTriangle.vertFlag2;
                     TriFlag3CheckBox.Checked = CollisionTriangle.vertFlag3;
@@ -296,66 +288,6 @@ namespace CodeWalker.Project.Panels
                 if (CollisionTriangle.Vertex3 != v)
                 {
                     CollisionTriangle.Vertex3 = v;
-                    ProjectForm.SetYbnHasChanged(true);
-                }
-            }
-        }
-
-        private void TriAreaTextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (CollisionTriangle == null) return;
-            if (populatingui) return;
-            var v = FloatUtil.Parse(TriAreaTextBox.Text);
-            lock (ProjectForm.ProjectSyncRoot)
-            {
-                if (CollisionTriangle.triArea != v)
-                {
-                    CollisionTriangle.triArea = v;
-                    ProjectForm.SetYbnHasChanged(true);
-                }
-            }
-        }
-
-        private void TriEdge1UpDown_ValueChanged(object sender, EventArgs e)
-        {
-            if (CollisionTriangle == null) return;
-            if (populatingui) return;
-            var v = (short)TriEdge1UpDown.Value;
-            lock (ProjectForm.ProjectSyncRoot)
-            {
-                if (CollisionTriangle.edgeIndex1 != v)
-                {
-                    CollisionTriangle.edgeIndex1 = v;
-                    ProjectForm.SetYbnHasChanged(true);
-                }
-            }
-        }
-
-        private void TriEdge2UpDown_ValueChanged(object sender, EventArgs e)
-        {
-            if (CollisionTriangle == null) return;
-            if (populatingui) return;
-            var v = (short)TriEdge2UpDown.Value;
-            lock (ProjectForm.ProjectSyncRoot)
-            {
-                if (CollisionTriangle.edgeIndex2 != v)
-                {
-                    CollisionTriangle.edgeIndex2 = v;
-                    ProjectForm.SetYbnHasChanged(true);
-                }
-            }
-        }
-
-        private void TriEdge3UpDown_ValueChanged(object sender, EventArgs e)
-        {
-            if (CollisionTriangle == null) return;
-            if (populatingui) return;
-            var v = (short)TriEdge3UpDown.Value;
-            lock (ProjectForm.ProjectSyncRoot)
-            {
-                if (CollisionTriangle.edgeIndex3 != v)
-                {
-                    CollisionTriangle.edgeIndex3 = v;
                     ProjectForm.SetYbnHasChanged(true);
                 }
             }

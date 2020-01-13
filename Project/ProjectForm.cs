@@ -92,6 +92,9 @@ namespace CodeWalker.Project
         private Dictionary<uint, RelFile> visibleaudiofiles = new Dictionary<uint, RelFile>();
 
         private Dictionary<uint, Archetype> projectarchetypes = new Dictionary<uint, Archetype>();//used to override archetypes in world view
+        private Dictionary<uint, YbnFile> projectybns = new Dictionary<uint, YbnFile>();//used for handling interior ybns
+
+        private List<YmapEntityDef> interiorslist = new List<YmapEntityDef>(); //used for handling interiors ybns
 
         private bool ShowProjectItemInProcess = false;
 
@@ -580,6 +583,25 @@ namespace CodeWalker.Project
             {
                 ShowEditYtypMloEntSetPanel(promote);
             }
+            else if (CurrentYbnFile != null)
+            {
+                if (CurrentCollisionVertex != null)
+                {
+                    ShowEditYbnBoundVertexPanel(promote);
+                }
+                else if (CurrentCollisionPoly != null)
+                {
+                    ShowEditYbnBoundPolyPanel(promote);
+                }
+                else if (CurrentCollisionBounds != null)
+                {
+                    ShowEditYbnBoundsPanel(promote);
+                }
+                else
+                {
+                    ShowEditYbnPanel(promote);
+                }
+            }
             else if (CurrentEntity != null)
             {
                 ShowEditYmapEntityPanel(promote);
@@ -603,22 +625,6 @@ namespace CodeWalker.Project
             else if (CurrentYtypFile != null)
             {
                 ShowEditYtypPanel(promote);
-            }
-            else if (CurrentCollisionVertex != null)
-            {
-                ShowEditYbnBoundVertexPanel(promote);
-            }
-            else if (CurrentCollisionPoly != null)
-            {
-                ShowEditYbnBoundPolyPanel(promote);
-            }
-            else if (CurrentCollisionBounds != null)
-            {
-                ShowEditYbnBoundsPanel(promote);
-            }
-            else if (CurrentYbnFile != null)
-            {
-                ShowEditYbnPanel(promote);
             }
             if (CurrentPathNode != null)
             {
@@ -1507,6 +1513,8 @@ namespace CodeWalker.Project
                 LoadProjectTree();
                 return objs.ToArray();
             }
+            else if (sel.CollisionPoly != null) return NewCollisionPoly(sel.CollisionPoly.Type, sel.CollisionPoly, copyPosition, selectNew);
+            else if (sel.CollisionBounds != null) return NewCollisionBounds(sel.CollisionBounds.Type, sel.CollisionBounds, copyPosition, selectNew);
             else if (sel.EntityDef != null) return NewEntity(sel.EntityDef, copyPosition, selectNew);
             else if (sel.CarGenerator != null) return NewCarGen(sel.CarGenerator, copyPosition, selectNew);
             else if (sel.PathNode != null) return NewPathNode(sel.PathNode, copyPosition, selectNew);
@@ -1517,8 +1525,6 @@ namespace CodeWalker.Project
             else if (sel.ScenarioNode != null) return NewScenarioNode(sel.ScenarioNode, copyPosition, selectNew);
             else if (sel.Audio?.AudioZone != null) return NewAudioZone(sel.Audio, copyPosition, selectNew);
             else if (sel.Audio?.AudioEmitter != null) return NewAudioEmitter(sel.Audio, copyPosition, selectNew);
-            else if (sel.CollisionPoly != null) return NewCollisionPoly(sel.CollisionPoly.Type, sel.CollisionPoly, copyPosition, selectNew);
-            else if (sel.CollisionBounds != null) return NewCollisionBounds(sel.CollisionBounds.Type, sel.CollisionBounds, copyPosition, selectNew);
             return null;
         }
         public void DeleteObject(MapSelection sel)
@@ -1531,6 +1537,9 @@ namespace CodeWalker.Project
                     DeleteObject(sel.MultipleSelectionItems[i]);
                 }
             }
+            else if (sel.CollisionVertex != null) DeleteCollisionVertex();
+            else if (sel.CollisionPoly != null) DeleteCollisionPoly();
+            else if (sel.CollisionBounds != null) DeleteCollisionBounds();
             else if (sel.EntityDef != null) DeleteEntity();
             else if (sel.CarGenerator != null) DeleteCarGen();
             else if (sel.PathNode != null) DeletePathNode();
@@ -1541,13 +1550,13 @@ namespace CodeWalker.Project
             else if (sel.ScenarioNode != null) DeleteScenarioNode();
             else if (sel.Audio?.AudioZone != null) DeleteAudioZone();
             else if (sel.Audio?.AudioEmitter != null) DeleteAudioEmitter();
-            else if (sel.CollisionVertex != null) DeleteCollisionVertex();
-            else if (sel.CollisionPoly != null) DeleteCollisionPoly();
-            else if (sel.CollisionBounds != null) DeleteCollisionBounds();
         }
         private void SetObject(ref MapSelection sel)
         {
             if (sel.MultipleSelectionItems != null) { } //todo...
+            else if (sel.CollisionVertex != null) SetProjectItem(sel.CollisionVertex, false);
+            else if (sel.CollisionPoly != null) SetProjectItem(sel.CollisionPoly, false);
+            else if (sel.CollisionBounds != null) SetProjectItem(sel.CollisionBounds, false);
             else if (sel.EntityDef != null) SetProjectItem(sel.EntityDef, false);
             else if (sel.CarGenerator != null) SetProjectItem(sel.CarGenerator, false);
             else if (sel.PathNode != null) SetProjectItem(sel.PathNode, false);
@@ -1558,9 +1567,6 @@ namespace CodeWalker.Project
             else if (sel.ScenarioNode != null) SetProjectItem(sel.ScenarioNode, false);
             else if (sel.Audio?.AudioZone != null) SetProjectItem(sel.Audio, false);
             else if (sel.Audio?.AudioEmitter != null) SetProjectItem(sel.Audio, false);
-            else if (sel.CollisionVertex != null) SetProjectItem(sel.CollisionVertex, false);
-            else if (sel.CollisionPoly != null) SetProjectItem(sel.CollisionPoly, false);
-            else if (sel.CollisionBounds != null) SetProjectItem(sel.CollisionBounds, false);
         }
 
 
@@ -6436,7 +6442,7 @@ namespace CodeWalker.Project
                 }
             }
         }
-        public void GetVisibleYbns(Camera camera, List<YbnFile> ybns)
+        public void GetVisibleYbns(Camera camera, List<YbnFile> ybns, Dictionary<YmapEntityDef, YbnFile> interiors)
         {
             if (hidegtavmap)
             {
@@ -6459,7 +6465,10 @@ namespace CodeWalker.Project
                     var ybn = CurrentProjectFile.YbnFiles[i];
                     if (ybn.Loaded)
                     {
-                        visibleybns[ybn.Name] = ybn;
+                        if (!visiblemloentities.ContainsKey((ybn.RpfFileEntry != null) ? ybn.RpfFileEntry.ShortNameHash : 0))
+                        {
+                            visibleybns[ybn.Name] = ybn;
+                        }
                     }
                 }
 
@@ -6468,6 +6477,35 @@ namespace CodeWalker.Project
                 {
                     ybns.Add(ybn);
                 }
+
+
+
+                //messy way to gather the interior ybns!
+                projectybns.Clear();
+                for (int i = 0; i < CurrentProjectFile.YbnFiles.Count; i++)
+                {
+                    var ybn = CurrentProjectFile.YbnFiles[i];
+                    if (ybn.Loaded)
+                    {
+                        projectybns[ybn.RpfFileEntry?.ShortNameHash ?? JenkHash.GenHash(ybn.Name)] = ybn;
+                    }
+                }
+                interiorslist.Clear();
+                interiorslist.AddRange(interiors.Keys);
+                for (int i = 0; i < interiorslist.Count; i++)
+                {
+                    var mlo = interiorslist[i];
+                    var hash = mlo._CEntityDef.archetypeName;
+                    if (projectybns.TryGetValue(hash, out YbnFile ybn))
+                    {
+                        if ((ybn != null) && (ybn.Loaded))
+                        {
+                            interiors[mlo] = ybn;
+                        }
+                    }
+                }
+
+
             }
 
         }
@@ -6659,12 +6697,13 @@ namespace CodeWalker.Project
 
         public void GetMouseCollision(Camera camera, ref MapSelection curHit)
         {
-            Ray mray = new Ray();
+            var mray = new Ray();
             mray.Position = camera.MouseRay.Position + camera.Position;
             mray.Direction = camera.MouseRay.Direction;
 
             var bounds = curHit.CollisionBounds ?? curHit.CollisionPoly?.Owner ?? curHit.CollisionVertex?.Owner;
             var curybn = bounds?.GetRootYbn();
+            var eray = mray;
 
             if (hidegtavmap && (curybn != null))
             {
@@ -6688,7 +6727,7 @@ namespace CodeWalker.Project
 
                             if (ybn.Bounds != null)
                             {
-                                var hit = ybn.Bounds.RayIntersect(ref mray); //TODO: interior ybns!
+                                var hit = ybn.Bounds.RayIntersect(ref mray);
                                 if (hit.Hit && (hit.HitDist < curHit.HitDist))
                                 {
                                     curHit.UpdateCollisionFromRayHit(ref hit, camera);
@@ -6696,6 +6735,31 @@ namespace CodeWalker.Project
                             }
                         }
                     }
+
+                    for (int i = 0; i < interiorslist.Count; i++)
+                    {
+                        var mlo = interiorslist[i];
+                        var hash = mlo._CEntityDef.archetypeName;
+                        if (projectybns.TryGetValue(hash, out YbnFile ybn))
+                        {
+                            if ((ybn != null) && (ybn.Loaded) && (ybn.Bounds != null))
+                            {
+                                var eorinv = Quaternion.Invert(mlo.Orientation);
+                                eray.Position = eorinv.Multiply(mray.Position - mlo.Position);
+                                eray.Direction = eorinv.Multiply(mray.Direction);
+                                var hit = ybn.Bounds.RayIntersect(ref eray);
+                                if (hit.Hit && (hit.HitDist < curHit.HitDist))
+                                {
+                                    hit.HitYbn = ybn;
+                                    hit.HitEntity = mlo;
+                                    hit.Position = mlo.Orientation.Multiply(hit.Position) + mlo.Position;
+                                    hit.Normal = mlo.Orientation.Multiply(hit.Normal);
+                                    curHit.UpdateCollisionFromRayHit(ref hit, camera);
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
 
@@ -6753,7 +6817,7 @@ namespace CodeWalker.Project
                     RelFile audiofile = audiopl?.RelFile;
                     bool showcurrent = false;
 
-                    if (YmapExistsInProject(ymap))
+                    if (YmapExistsInProject(ymap) && (ybn == null))
                     {
                         if (ent != CurrentEntity)
                         {
@@ -6913,14 +6977,6 @@ namespace CodeWalker.Project
                     {
                         //TODO!!
                     }
-                    else if (sel.EntityDef != null)
-                    {
-                        OnWorldEntityModified(sel.EntityDef);
-                    }
-                    else if (sel.CarGenerator != null)
-                    {
-                        OnWorldCarGenModified(sel.CarGenerator);
-                    }
                     else if (sel.CollisionVertex != null)
                     {
                         OnWorldCollisionVertexModified(sel.CollisionVertex);
@@ -6932,6 +6988,14 @@ namespace CodeWalker.Project
                     else if (sel.CollisionBounds != null)
                     {
                         OnWorldCollisionBoundsModified(sel.CollisionBounds);
+                    }
+                    else if (sel.EntityDef != null)
+                    {
+                        OnWorldEntityModified(sel.EntityDef);
+                    }
+                    else if (sel.CarGenerator != null)
+                    {
+                        OnWorldCarGenModified(sel.CarGenerator);
                     }
                     else if (sel.PathNode != null)
                     {

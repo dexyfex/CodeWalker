@@ -110,6 +110,7 @@ namespace CodeWalker
         bool rendercollisionmeshes = Settings.Default.ShowCollisionMeshes;
         List<BoundsStoreItem> collisionitems = new List<BoundsStoreItem>();
         List<YbnFile> collisionybns = new List<YbnFile>();
+        Dictionary<YmapEntityDef, YbnFile> collisioninteriors = new Dictionary<YmapEntityDef, YbnFile>();
         int collisionmeshrange = Settings.Default.CollisionMeshRange;
         bool[] collisionmeshlayers = { true, true, true };
 
@@ -740,9 +741,22 @@ namespace CodeWalker
                 }
             }
 
+            collisioninteriors.Clear();
+            foreach (var mlo in Renderer.VisibleMlos)
+            {
+                if (mlo.Archetype == null) return;
+                var hash = mlo.Archetype.Hash;
+                YbnFile ybn = gameFileCache.GetYbn(hash);
+                if ((ybn != null) && (ybn.Loaded))
+                {
+                    collisioninteriors[mlo] = ybn;
+                }
+            }
+
+
             if (ProjectForm != null)
             {
-                ProjectForm.GetVisibleYbns(camera, collisionybns);
+                ProjectForm.GetVisibleYbns(camera, collisionybns, collisioninteriors);
             }
 
             foreach (var ybn in collisionybns)
@@ -750,6 +764,14 @@ namespace CodeWalker
                 if ((ybn != null) && (ybn.Loaded))
                 {
                     Renderer.RenderCollisionMesh(ybn.Bounds, null);
+                }
+            }
+
+            foreach (var kvp in collisioninteriors)
+            {
+                if ((kvp.Value != null) && (kvp.Value.Loaded))
+                {
+                    Renderer.RenderCollisionMesh(kvp.Value.Bounds, kvp.Key);
                 }
             }
 
@@ -2214,8 +2236,6 @@ namespace CodeWalker
 
                 ProjectForm.GetMouseCollision(camera, ref CurMouseHit);
 
-
-
             }
         }
         private void UpdateMouseHits(DrawableBase drawable, Archetype arche, YmapEntityDef entity)
@@ -3227,13 +3247,13 @@ namespace CodeWalker
                     ProjectForm.OnWorldSelectionChanged(SelectedItem);
                 }
             }
+            else if (obj is Bounds bounds) SelectCollisionBounds(bounds, addSelection);
+            else if (obj is BoundPolygon cpoly) SelectCollisionPoly(cpoly, addSelection);
+            else if (obj is BoundVertex cvert) SelectCollisionVertex(cvert, addSelection);
             else if (obj is YmapEntityDef ent) SelectEntity(ent, addSelection);
             else if (obj is YmapCarGen cargen) SelectCarGen(cargen, addSelection);
             else if (obj is YmapGrassInstanceBatch grass) SelectGrassBatch(grass, addSelection);
             else if (obj is MCMloRoomDef room) SelectMloRoom(room, null, addSelection);//how to get instance?
-            else if (obj is Bounds bounds) SelectCollisionBounds(bounds, addSelection);
-            else if (obj is BoundPolygon cpoly) SelectCollisionPoly(cpoly, addSelection);
-            else if (obj is BoundVertex cvert) SelectCollisionVertex(cvert, addSelection);
             else if (obj is YnvPoly npoly) SelectNavPoly(npoly, addSelection);
             else if (obj is YnvPoint npoint) SelectNavPoint(npoint, addSelection);
             else if (obj is YnvPortal nportal) SelectNavPortal(nportal, addSelection);
@@ -5158,19 +5178,22 @@ namespace CodeWalker
             }
             else
             {
-                DeleteItem(ref SelectedItem);
+                DeleteItem(SelectedItem);
                 SelectItem(null);
             }
         }
-        private void DeleteItem(ref MapSelection item)
+        private void DeleteItem(MapSelection item)
         {
             if (item.MultipleSelectionItems != null)
             {
                 for (int i = 0; i < item.MultipleSelectionItems.Length; i++)
                 {
-                    DeleteItem(ref item.MultipleSelectionItems[i]);
+                    DeleteItem(item.MultipleSelectionItems[i]);
                 }
             }
+            else if (item.CollisionVertex != null) DeleteCollisionVertex(item.CollisionVertex);
+            else if (item.CollisionPoly != null) DeleteCollisionPoly(item.CollisionPoly);
+            else if (item.CollisionBounds != null) DeleteCollisionBounds(item.CollisionBounds);
             else if (item.EntityDef != null) DeleteEntity(item.EntityDef);
             else if (item.CarGenerator != null) DeleteCarGen(item.CarGenerator);
             else if (item.PathNode != null) DeletePathNode(item.PathNode);
@@ -5181,9 +5204,6 @@ namespace CodeWalker
             else if (item.ScenarioNode != null) DeleteScenarioNode(item.ScenarioNode);
             else if (item.Audio?.AudioZone != null) DeleteAudioZone(item.Audio);
             else if (item.Audio?.AudioEmitter != null) DeleteAudioEmitter(item.Audio);
-            else if (item.CollisionVertex != null) DeleteCollisionVertex(item.CollisionVertex);
-            else if (item.CollisionPoly != null) DeleteCollisionPoly(item.CollisionPoly);
-            else if (item.CollisionBounds != null) DeleteCollisionBounds(item.CollisionBounds);
         }
         private void DeleteEntity(YmapEntityDef ent)
         {

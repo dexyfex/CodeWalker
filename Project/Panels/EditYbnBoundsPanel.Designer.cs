@@ -31,6 +31,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditYbnBoundsPanel));
             this.BoundsTabControl = new System.Windows.Forms.TabControl();
             this.BoundsTabPage = new System.Windows.Forms.TabPage();
+            this.DeleteButton = new System.Windows.Forms.Button();
+            this.AddToProjectButton = new System.Windows.Forms.Button();
             this.MaterialCombo = new System.Windows.Forms.ComboBox();
             this.UnkTypeUpDown = new System.Windows.Forms.NumericUpDown();
             this.label16 = new System.Windows.Forms.Label();
@@ -74,8 +76,18 @@
             this.label18 = new System.Windows.Forms.Label();
             this.CenterGeomTextBox = new System.Windows.Forms.TextBox();
             this.label17 = new System.Windows.Forms.Label();
-            this.DeleteButton = new System.Windows.Forms.Button();
-            this.AddToProjectButton = new System.Windows.Forms.Button();
+            this.CompositeFlagsTabPage = new System.Windows.Forms.TabPage();
+            this.CompFlags1CheckedListBox = new System.Windows.Forms.CheckedListBox();
+            this.label21 = new System.Windows.Forms.Label();
+            this.label22 = new System.Windows.Forms.Label();
+            this.CompFlags2CheckedListBox = new System.Windows.Forms.CheckedListBox();
+            this.CompositeXformTabPage = new System.Windows.Forms.TabPage();
+            this.CompScaleTextBox = new System.Windows.Forms.TextBox();
+            this.label23 = new System.Windows.Forms.Label();
+            this.CompRotationTextBox = new System.Windows.Forms.TextBox();
+            this.CompPositionTextBox = new System.Windows.Forms.TextBox();
+            this.label24 = new System.Windows.Forms.Label();
+            this.label25 = new System.Windows.Forms.Label();
             this.BoundsTabControl.SuspendLayout();
             this.BoundsTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.UnkTypeUpDown)).BeginInit();
@@ -86,17 +98,21 @@
             ((System.ComponentModel.ISupportInitialize)(this.RoomIDUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ProceduralIDUpDown)).BeginInit();
             this.GeometryTabPage.SuspendLayout();
+            this.CompositeFlagsTabPage.SuspendLayout();
+            this.CompositeXformTabPage.SuspendLayout();
             this.SuspendLayout();
             // 
             // BoundsTabControl
             // 
             this.BoundsTabControl.Controls.Add(this.BoundsTabPage);
             this.BoundsTabControl.Controls.Add(this.GeometryTabPage);
+            this.BoundsTabControl.Controls.Add(this.CompositeFlagsTabPage);
+            this.BoundsTabControl.Controls.Add(this.CompositeXformTabPage);
             this.BoundsTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BoundsTabControl.Location = new System.Drawing.Point(0, 0);
             this.BoundsTabControl.Name = "BoundsTabControl";
             this.BoundsTabControl.SelectedIndex = 0;
-            this.BoundsTabControl.Size = new System.Drawing.Size(565, 505);
+            this.BoundsTabControl.Size = new System.Drawing.Size(607, 515);
             this.BoundsTabControl.TabIndex = 0;
             // 
             // BoundsTabPage
@@ -138,10 +154,32 @@
             this.BoundsTabPage.Location = new System.Drawing.Point(4, 22);
             this.BoundsTabPage.Name = "BoundsTabPage";
             this.BoundsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.BoundsTabPage.Size = new System.Drawing.Size(557, 479);
+            this.BoundsTabPage.Size = new System.Drawing.Size(599, 489);
             this.BoundsTabPage.TabIndex = 0;
             this.BoundsTabPage.Text = "Bounds";
             this.BoundsTabPage.UseVisualStyleBackColor = true;
+            // 
+            // DeleteButton
+            // 
+            this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.DeleteButton.Location = new System.Drawing.Point(496, 238);
+            this.DeleteButton.Name = "DeleteButton";
+            this.DeleteButton.Size = new System.Drawing.Size(95, 23);
+            this.DeleteButton.TabIndex = 36;
+            this.DeleteButton.Text = "Delete Bounds";
+            this.DeleteButton.UseVisualStyleBackColor = true;
+            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
+            // 
+            // AddToProjectButton
+            // 
+            this.AddToProjectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.AddToProjectButton.Location = new System.Drawing.Point(395, 238);
+            this.AddToProjectButton.Name = "AddToProjectButton";
+            this.AddToProjectButton.Size = new System.Drawing.Size(95, 23);
+            this.AddToProjectButton.TabIndex = 35;
+            this.AddToProjectButton.Text = "Add to Project";
+            this.AddToProjectButton.UseVisualStyleBackColor = true;
+            this.AddToProjectButton.Click += new System.EventHandler(this.AddToProjectButton_Click);
             // 
             // MaterialCombo
             // 
@@ -189,7 +227,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.UnkVectorTextBox.Location = new System.Drawing.Point(91, 188);
             this.UnkVectorTextBox.Name = "UnkVectorTextBox";
-            this.UnkVectorTextBox.Size = new System.Drawing.Size(458, 20);
+            this.UnkVectorTextBox.Size = new System.Drawing.Size(500, 20);
             this.UnkVectorTextBox.TabIndex = 16;
             this.UnkVectorTextBox.TextChanged += new System.EventHandler(this.UnkVectorTextBox_TextChanged);
             // 
@@ -208,7 +246,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.VolumeTextBox.Location = new System.Drawing.Point(91, 162);
             this.VolumeTextBox.Name = "VolumeTextBox";
-            this.VolumeTextBox.Size = new System.Drawing.Size(458, 20);
+            this.VolumeTextBox.Size = new System.Drawing.Size(500, 20);
             this.VolumeTextBox.TabIndex = 14;
             this.VolumeTextBox.TextChanged += new System.EventHandler(this.VolumeTextBox_TextChanged);
             // 
@@ -368,7 +406,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.MarginTextBox.Location = new System.Drawing.Point(91, 136);
             this.MarginTextBox.Name = "MarginTextBox";
-            this.MarginTextBox.Size = new System.Drawing.Size(458, 20);
+            this.MarginTextBox.Size = new System.Drawing.Size(500, 20);
             this.MarginTextBox.TabIndex = 12;
             this.MarginTextBox.TextChanged += new System.EventHandler(this.MarginTextBox_TextChanged);
             // 
@@ -378,7 +416,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.BBCenterTextBox.Location = new System.Drawing.Point(91, 58);
             this.BBCenterTextBox.Name = "BBCenterTextBox";
-            this.BBCenterTextBox.Size = new System.Drawing.Size(458, 20);
+            this.BBCenterTextBox.Size = new System.Drawing.Size(500, 20);
             this.BBCenterTextBox.TabIndex = 6;
             this.BBCenterTextBox.TextChanged += new System.EventHandler(this.BBCenterTextBox_TextChanged);
             // 
@@ -406,7 +444,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.BSRadiusTextBox.Location = new System.Drawing.Point(91, 110);
             this.BSRadiusTextBox.Name = "BSRadiusTextBox";
-            this.BSRadiusTextBox.Size = new System.Drawing.Size(458, 20);
+            this.BSRadiusTextBox.Size = new System.Drawing.Size(500, 20);
             this.BSRadiusTextBox.TabIndex = 10;
             this.BSRadiusTextBox.TextChanged += new System.EventHandler(this.BSRadiusTextBox_TextChanged);
             // 
@@ -416,7 +454,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.BSCenterTextBox.Location = new System.Drawing.Point(91, 84);
             this.BSCenterTextBox.Name = "BSCenterTextBox";
-            this.BSCenterTextBox.Size = new System.Drawing.Size(458, 20);
+            this.BSCenterTextBox.Size = new System.Drawing.Size(500, 20);
             this.BSCenterTextBox.TabIndex = 8;
             this.BSCenterTextBox.TextChanged += new System.EventHandler(this.BSCenterTextBox_TextChanged);
             // 
@@ -435,7 +473,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.BBMaxTextBox.Location = new System.Drawing.Point(91, 32);
             this.BBMaxTextBox.Name = "BBMaxTextBox";
-            this.BBMaxTextBox.Size = new System.Drawing.Size(458, 20);
+            this.BBMaxTextBox.Size = new System.Drawing.Size(500, 20);
             this.BBMaxTextBox.TabIndex = 4;
             this.BBMaxTextBox.TextChanged += new System.EventHandler(this.BBMaxTextBox_TextChanged);
             // 
@@ -445,7 +483,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.BBMinTextBox.Location = new System.Drawing.Point(91, 6);
             this.BBMinTextBox.Name = "BBMinTextBox";
-            this.BBMinTextBox.Size = new System.Drawing.Size(458, 20);
+            this.BBMinTextBox.Size = new System.Drawing.Size(500, 20);
             this.BBMinTextBox.TabIndex = 2;
             this.BBMinTextBox.TextChanged += new System.EventHandler(this.BBMinTextBox_TextChanged);
             // 
@@ -482,7 +520,7 @@
             this.GeometryTabPage.Location = new System.Drawing.Point(4, 22);
             this.GeometryTabPage.Name = "GeometryTabPage";
             this.GeometryTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.GeometryTabPage.Size = new System.Drawing.Size(557, 479);
+            this.GeometryTabPage.Size = new System.Drawing.Size(599, 489);
             this.GeometryTabPage.TabIndex = 1;
             this.GeometryTabPage.Text = "Geometry";
             this.GeometryTabPage.UseVisualStyleBackColor = true;
@@ -511,7 +549,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.UnkFloat2TextBox.Location = new System.Drawing.Point(91, 84);
             this.UnkFloat2TextBox.Name = "UnkFloat2TextBox";
-            this.UnkFloat2TextBox.Size = new System.Drawing.Size(458, 20);
+            this.UnkFloat2TextBox.Size = new System.Drawing.Size(500, 20);
             this.UnkFloat2TextBox.TabIndex = 10;
             this.UnkFloat2TextBox.TextChanged += new System.EventHandler(this.UnkFloat2TextBox_TextChanged);
             // 
@@ -530,7 +568,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.UnkFloat1TextBox.Location = new System.Drawing.Point(91, 58);
             this.UnkFloat1TextBox.Name = "UnkFloat1TextBox";
-            this.UnkFloat1TextBox.Size = new System.Drawing.Size(458, 20);
+            this.UnkFloat1TextBox.Size = new System.Drawing.Size(500, 20);
             this.UnkFloat1TextBox.TabIndex = 8;
             this.UnkFloat1TextBox.TextChanged += new System.EventHandler(this.UnkFloat1TextBox_TextChanged);
             // 
@@ -549,7 +587,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.QuantumTextBox.Location = new System.Drawing.Point(91, 32);
             this.QuantumTextBox.Name = "QuantumTextBox";
-            this.QuantumTextBox.Size = new System.Drawing.Size(458, 20);
+            this.QuantumTextBox.Size = new System.Drawing.Size(500, 20);
             this.QuantumTextBox.TabIndex = 6;
             this.QuantumTextBox.TextChanged += new System.EventHandler(this.QuantumTextBox_TextChanged);
             // 
@@ -568,7 +606,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CenterGeomTextBox.Location = new System.Drawing.Point(91, 6);
             this.CenterGeomTextBox.Name = "CenterGeomTextBox";
-            this.CenterGeomTextBox.Size = new System.Drawing.Size(458, 20);
+            this.CenterGeomTextBox.Size = new System.Drawing.Size(500, 20);
             this.CenterGeomTextBox.TabIndex = 4;
             this.CenterGeomTextBox.TextChanged += new System.EventHandler(this.CenterGeomTextBox_TextChanged);
             // 
@@ -581,33 +619,204 @@
             this.label17.TabIndex = 3;
             this.label17.Text = "Geom Center:";
             // 
-            // DeleteButton
+            // CompositeFlagsTabPage
             // 
-            this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.DeleteButton.Location = new System.Drawing.Point(454, 238);
-            this.DeleteButton.Name = "DeleteButton";
-            this.DeleteButton.Size = new System.Drawing.Size(95, 23);
-            this.DeleteButton.TabIndex = 36;
-            this.DeleteButton.Text = "Delete Bounds";
-            this.DeleteButton.UseVisualStyleBackColor = true;
-            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
+            this.CompositeFlagsTabPage.Controls.Add(this.label22);
+            this.CompositeFlagsTabPage.Controls.Add(this.CompFlags2CheckedListBox);
+            this.CompositeFlagsTabPage.Controls.Add(this.label21);
+            this.CompositeFlagsTabPage.Controls.Add(this.CompFlags1CheckedListBox);
+            this.CompositeFlagsTabPage.Location = new System.Drawing.Point(4, 22);
+            this.CompositeFlagsTabPage.Name = "CompositeFlagsTabPage";
+            this.CompositeFlagsTabPage.Size = new System.Drawing.Size(599, 489);
+            this.CompositeFlagsTabPage.TabIndex = 2;
+            this.CompositeFlagsTabPage.Text = "Composite Flags";
+            this.CompositeFlagsTabPage.UseVisualStyleBackColor = true;
             // 
-            // AddToProjectButton
+            // CompFlags1CheckedListBox
             // 
-            this.AddToProjectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.AddToProjectButton.Location = new System.Drawing.Point(353, 238);
-            this.AddToProjectButton.Name = "AddToProjectButton";
-            this.AddToProjectButton.Size = new System.Drawing.Size(95, 23);
-            this.AddToProjectButton.TabIndex = 35;
-            this.AddToProjectButton.Text = "Add to Project";
-            this.AddToProjectButton.UseVisualStyleBackColor = true;
-            this.AddToProjectButton.Click += new System.EventHandler(this.AddToProjectButton_Click);
+            this.CompFlags1CheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.CompFlags1CheckedListBox.CheckOnClick = true;
+            this.CompFlags1CheckedListBox.FormattingEnabled = true;
+            this.CompFlags1CheckedListBox.Items.AddRange(new object[] {
+            "0 - Unknown",
+            "1 - Map Weapon",
+            "2 - Map Dynamic",
+            "3 - Map Animal",
+            "4 - Map Cover",
+            "5 - Map Vehicle",
+            "6 - Vehicle Not BVH",
+            "7 - Vehicle BVH",
+            "8 - Vehicle Box",
+            "9 - Ped",
+            "10 - Ragdoll",
+            "11 - Animal",
+            "12 - Animal Ragdoll",
+            "13 - Object",
+            "14 - Object Env Cloth",
+            "15 - Plant",
+            "16 - Projectile",
+            "17 - Explosion",
+            "18 - Pickup",
+            "19 - Foliage",
+            "20 - Forklift Forks",
+            "21 - Test Weapon",
+            "22 - Test Camera",
+            "23 - Test AI",
+            "24 - Test Script",
+            "25 - Test Vehicle Wheel",
+            "26 - Glass",
+            "27 - Map River",
+            "28 - Smoke",
+            "29 - Unsmashed",
+            "30 - Map Stairs",
+            "31 - Map Deep Surface"});
+            this.CompFlags1CheckedListBox.Location = new System.Drawing.Point(53, 3);
+            this.CompFlags1CheckedListBox.Name = "CompFlags1CheckedListBox";
+            this.CompFlags1CheckedListBox.Size = new System.Drawing.Size(174, 484);
+            this.CompFlags1CheckedListBox.TabIndex = 32;
+            this.CompFlags1CheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.CompFlags1CheckedListBox_ItemCheck);
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(3, 3);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(44, 13);
+            this.label21.TabIndex = 33;
+            this.label21.Text = "Flags 1:";
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(256, 3);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(44, 13);
+            this.label22.TabIndex = 35;
+            this.label22.Text = "Flags 2:";
+            // 
+            // CompFlags2CheckedListBox
+            // 
+            this.CompFlags2CheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.CompFlags2CheckedListBox.CheckOnClick = true;
+            this.CompFlags2CheckedListBox.FormattingEnabled = true;
+            this.CompFlags2CheckedListBox.Items.AddRange(new object[] {
+            "0 - Unknown",
+            "1 - Map Weapon",
+            "2 - Map Dynamic",
+            "3 - Map Animal",
+            "4 - Map Cover",
+            "5 - Map Vehicle",
+            "6 - Vehicle Not BVH",
+            "7 - Vehicle BVH",
+            "8 - Vehicle Box",
+            "9 - Ped",
+            "10 - Ragdoll",
+            "11 - Animal",
+            "12 - Animal Ragdoll",
+            "13 - Object",
+            "14 - Object Env Cloth",
+            "15 - Plant",
+            "16 - Projectile",
+            "17 - Explosion",
+            "18 - Pickup",
+            "19 - Foliage",
+            "20 - Forklift Forks",
+            "21 - Test Weapon",
+            "22 - Test Camera",
+            "23 - Test AI",
+            "24 - Test Script",
+            "25 - Test Vehicle Wheel",
+            "26 - Glass",
+            "27 - Map River",
+            "28 - Smoke",
+            "29 - Unsmashed",
+            "30 - Map Stairs",
+            "31 - Map Deep Surface"});
+            this.CompFlags2CheckedListBox.Location = new System.Drawing.Point(306, 3);
+            this.CompFlags2CheckedListBox.Name = "CompFlags2CheckedListBox";
+            this.CompFlags2CheckedListBox.Size = new System.Drawing.Size(174, 484);
+            this.CompFlags2CheckedListBox.TabIndex = 34;
+            this.CompFlags2CheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.CompFlags2CheckedListBox_ItemCheck);
+            // 
+            // CompositeXformTabPage
+            // 
+            this.CompositeXformTabPage.Controls.Add(this.CompScaleTextBox);
+            this.CompositeXformTabPage.Controls.Add(this.label23);
+            this.CompositeXformTabPage.Controls.Add(this.CompRotationTextBox);
+            this.CompositeXformTabPage.Controls.Add(this.CompPositionTextBox);
+            this.CompositeXformTabPage.Controls.Add(this.label24);
+            this.CompositeXformTabPage.Controls.Add(this.label25);
+            this.CompositeXformTabPage.Location = new System.Drawing.Point(4, 22);
+            this.CompositeXformTabPage.Name = "CompositeXformTabPage";
+            this.CompositeXformTabPage.Size = new System.Drawing.Size(599, 489);
+            this.CompositeXformTabPage.TabIndex = 3;
+            this.CompositeXformTabPage.Text = "Composite Transform";
+            this.CompositeXformTabPage.UseVisualStyleBackColor = true;
+            // 
+            // CompScaleTextBox
+            // 
+            this.CompScaleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompScaleTextBox.Location = new System.Drawing.Point(72, 64);
+            this.CompScaleTextBox.Name = "CompScaleTextBox";
+            this.CompScaleTextBox.Size = new System.Drawing.Size(500, 20);
+            this.CompScaleTextBox.TabIndex = 12;
+            this.CompScaleTextBox.TextChanged += new System.EventHandler(this.CompScaleTextBox_TextChanged);
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(29, 67);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(37, 13);
+            this.label23.TabIndex = 11;
+            this.label23.Text = "Scale:";
+            // 
+            // CompRotationTextBox
+            // 
+            this.CompRotationTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompRotationTextBox.Location = new System.Drawing.Point(72, 38);
+            this.CompRotationTextBox.Name = "CompRotationTextBox";
+            this.CompRotationTextBox.Size = new System.Drawing.Size(500, 20);
+            this.CompRotationTextBox.TabIndex = 10;
+            this.CompRotationTextBox.TextChanged += new System.EventHandler(this.CompRotationTextBox_TextChanged);
+            // 
+            // CompPositionTextBox
+            // 
+            this.CompPositionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompPositionTextBox.Location = new System.Drawing.Point(72, 12);
+            this.CompPositionTextBox.Name = "CompPositionTextBox";
+            this.CompPositionTextBox.Size = new System.Drawing.Size(500, 20);
+            this.CompPositionTextBox.TabIndex = 8;
+            this.CompPositionTextBox.TextChanged += new System.EventHandler(this.CompPositionTextBox_TextChanged);
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(16, 41);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(50, 13);
+            this.label24.TabIndex = 9;
+            this.label24.Text = "Rotation:";
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(19, 15);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(47, 13);
+            this.label25.TabIndex = 7;
+            this.label25.Text = "Position:";
             // 
             // EditYbnBoundsPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(565, 505);
+            this.ClientSize = new System.Drawing.Size(607, 515);
             this.Controls.Add(this.BoundsTabControl);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "EditYbnBoundsPanel";
@@ -624,6 +833,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.ProceduralIDUpDown)).EndInit();
             this.GeometryTabPage.ResumeLayout(false);
             this.GeometryTabPage.PerformLayout();
+            this.CompositeFlagsTabPage.ResumeLayout(false);
+            this.CompositeFlagsTabPage.PerformLayout();
+            this.CompositeXformTabPage.ResumeLayout(false);
+            this.CompositeXformTabPage.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -677,5 +890,17 @@
         private System.Windows.Forms.Label VertexCountLabel;
         private System.Windows.Forms.Button DeleteButton;
         private System.Windows.Forms.Button AddToProjectButton;
+        private System.Windows.Forms.TabPage CompositeFlagsTabPage;
+        private System.Windows.Forms.CheckedListBox CompFlags1CheckedListBox;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.CheckedListBox CompFlags2CheckedListBox;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.TabPage CompositeXformTabPage;
+        private System.Windows.Forms.TextBox CompScaleTextBox;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.TextBox CompRotationTextBox;
+        private System.Windows.Forms.TextBox CompPositionTextBox;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Label label25;
     }
 }

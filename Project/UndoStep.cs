@@ -544,12 +544,14 @@ namespace CodeWalker.Project
     public class CollisionPositionUndoStep : UndoStep
     {
         public Bounds Bounds { get; set; }
+        public YmapEntityDef Entity { get; set; }
         public Vector3 StartPosition { get; set; }
         public Vector3 EndPosition { get; set; }
 
-        public CollisionPositionUndoStep(Bounds bounds, Vector3 startpos, WorldForm wf)
+        public CollisionPositionUndoStep(Bounds bounds, YmapEntityDef ent, Vector3 startpos, WorldForm wf)
         {
             Bounds = bounds;
+            Entity = ent;
             StartPosition = startpos;
             EndPosition = bounds?.Position ?? Vector3.Zero;
 
@@ -560,8 +562,16 @@ namespace CodeWalker.Project
         {
             if (Bounds != null)
             {
-                Bounds.Position = p;
+                if (Entity != null)
+                {
+                    Bounds.Position = Quaternion.Invert(Entity.Orientation).Multiply(p - Entity.Position);
+                }
+                else
+                {
+                    Bounds.Position = p;
+                }
             }
+
 
             if (Bounds != sel.CollisionBounds) wf.SelectCollisionBounds(Bounds);
             wf.SetWidgetPosition(p);
@@ -595,14 +605,20 @@ namespace CodeWalker.Project
     public class CollisionRotationUndoStep : UndoStep
     {
         public Bounds Bounds { get; set; }
+        public YmapEntityDef Entity { get; set; }
         public Quaternion StartRotation { get; set; }
         public Quaternion EndRotation { get; set; }
 
-        public CollisionRotationUndoStep(Bounds bounds, Quaternion startrot, WorldForm wf)
+        public CollisionRotationUndoStep(Bounds bounds, YmapEntityDef ent, Quaternion startrot, WorldForm wf)
         {
             Bounds = bounds;
+            Entity = ent;
             StartRotation = startrot;
             EndRotation = bounds?.Orientation ?? Quaternion.Identity;
+            if (ent != null)
+            {
+                EndRotation = EndRotation * ent.Orientation;
+            }
 
             UpdateGraphics(wf);
         }
@@ -612,7 +628,14 @@ namespace CodeWalker.Project
         {
             if (Bounds != null)
             {
-                Bounds.Orientation = q;
+                if (Entity != null)
+                {
+                    Bounds.Orientation = Quaternion.Invert(Entity.Orientation) * q;
+                }
+                else
+                {
+                    Bounds.Orientation = q;
+                }
             }
 
             if (Bounds != sel.CollisionBounds) wf.SelectCollisionBounds(Bounds);
@@ -699,12 +722,14 @@ namespace CodeWalker.Project
     public class CollisionPolyPositionUndoStep : UndoStep
     {
         public BoundPolygon Polygon { get; set; }
+        public YmapEntityDef Entity { get; set; }
         public Vector3 StartPosition { get; set; }
         public Vector3 EndPosition { get; set; }
 
-        public CollisionPolyPositionUndoStep(BoundPolygon poly, Vector3 startpos, WorldForm wf)
+        public CollisionPolyPositionUndoStep(BoundPolygon poly, YmapEntityDef ent, Vector3 startpos, WorldForm wf)
         {
             Polygon = poly;
+            Entity = ent;
             StartPosition = startpos;
             EndPosition = poly?.Position ?? Vector3.Zero;
 
@@ -715,7 +740,14 @@ namespace CodeWalker.Project
         {
             if (Polygon != null)
             {
-                Polygon.Position = p;
+                if (Entity != null)
+                {
+                    Polygon.Position = Quaternion.Invert(Entity.Orientation).Multiply(p - Entity.Position);
+                }
+                else
+                {
+                    Polygon.Position = p;
+                }
             }
 
             if (Polygon != sel.CollisionPoly) wf.SelectCollisionPoly(Polygon);
@@ -750,14 +782,20 @@ namespace CodeWalker.Project
     public class CollisionPolyRotationUndoStep : UndoStep
     {
         public BoundPolygon Polygon { get; set; }
+        public YmapEntityDef Entity { get; set; }
         public Quaternion StartRotation { get; set; }
         public Quaternion EndRotation { get; set; }
 
-        public CollisionPolyRotationUndoStep(BoundPolygon poly, Quaternion startrot, WorldForm wf)
+        public CollisionPolyRotationUndoStep(BoundPolygon poly, YmapEntityDef ent, Quaternion startrot, WorldForm wf)
         {
             Polygon = poly;
+            Entity = ent;
             StartRotation = startrot;
             EndRotation = poly?.Orientation ?? Quaternion.Identity;
+            if (ent != null)
+            {
+                EndRotation = EndRotation * ent.Orientation;
+            }
 
             UpdateGraphics(wf);
         }
@@ -766,7 +804,14 @@ namespace CodeWalker.Project
         {
             if (Polygon != null)
             {
-                Polygon.Orientation = q;
+                if (Entity != null)
+                {
+                    Polygon.Orientation = Quaternion.Invert(Entity.Orientation) * q;
+                }
+                else
+                {
+                    Polygon.Orientation = q;
+                }
             }
 
             if (Polygon != sel.CollisionPoly) wf.SelectCollisionPoly(Polygon);
@@ -853,12 +898,14 @@ namespace CodeWalker.Project
     public class CollisionVertexPositionUndoStep : UndoStep
     {
         public BoundVertex Vertex { get; set; }
+        public YmapEntityDef Entity { get; set; }
         public Vector3 StartPosition { get; set; }
         public Vector3 EndPosition { get; set; }
 
-        public CollisionVertexPositionUndoStep(BoundVertex vertex, Vector3 startpos, WorldForm wf)
+        public CollisionVertexPositionUndoStep(BoundVertex vertex, YmapEntityDef ent, Vector3 startpos, WorldForm wf)
         {
             Vertex = vertex;
+            Entity = ent;
             StartPosition = startpos;
             EndPosition = vertex?.Position ?? Vector3.Zero;
 
@@ -869,7 +916,14 @@ namespace CodeWalker.Project
         {
             if (Vertex != null)
             {
-                Vertex.Position = p;
+                if (Entity != null)
+                {
+                    Vertex.Position = Quaternion.Invert(Entity.Orientation).Multiply(p - Entity.Position);
+                }
+                else
+                {
+                    Vertex.Position = p;
+                }
             }
 
             if (Vertex != sel.CollisionVertex) wf.SelectCollisionVertex(Vertex);

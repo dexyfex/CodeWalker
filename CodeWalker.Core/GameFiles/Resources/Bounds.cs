@@ -1131,6 +1131,7 @@ namespace CodeWalker.GameFiles
             BuildMaterials();
             CalculateQuantum();
             UpdateEdgeIndices();
+            UpdateTriangleAreas();
 
             var list = new List<IResourceBlock>(base.GetReferences());
             if (Vertices2 != null)
@@ -1653,6 +1654,29 @@ namespace CodeWalker.GameFiles
                 }
             }
 
+        }
+
+        public void UpdateTriangleAreas()
+        {
+            //update all triangle areas, based on vertex positions
+
+            if (Polygons == null)
+            { return; }
+
+            var edgedict = new Dictionary<BoundEdgeRef, BoundEdge>();
+            foreach (var poly in Polygons)
+            {
+                if (poly is BoundPolygonTriangle btri)
+                {
+                    var v1 = btri.Vertex1;
+                    var v2 = btri.Vertex2;
+                    var v3 = btri.Vertex3;
+                    var area = TriangleMath.Area(ref v1, ref v2, ref v3);
+                    //if (Math.Abs(btri.triArea - area) > Math.Max(area*0.1f,0.1f))
+                    //{ }//ehh good enough
+                    btri.triArea = area;
+                }
+            }
         }
 
 
@@ -2261,6 +2285,9 @@ namespace CodeWalker.GameFiles
                         child.TransformInv = Matrix.Invert(xform);
                         child.CompositeFlags1 = ((ChildrenFlags1 != null) && (i < ChildrenFlags1.Length)) ? ChildrenFlags1[i] : new BoundCompositeChildrenFlags();
                         child.CompositeFlags2 = ((ChildrenFlags2 != null) && (i < ChildrenFlags2.Length)) ? ChildrenFlags2[i] : new BoundCompositeChildrenFlags();
+
+                        //if ((child.CompositeFlags1.Flags1 != child.CompositeFlags2.Flags1) || (child.CompositeFlags1.Flags2 != child.CompositeFlags2.Flags2))
+                        //{ } //no hits
                     }
                 }
             }
