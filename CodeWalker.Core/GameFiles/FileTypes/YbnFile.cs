@@ -76,6 +76,15 @@ namespace CodeWalker.GameFiles
             }
             return false;
         }
+        public bool AddBounds(Bounds b)
+        {
+            if (b == null) return false;
+            if (Bounds != null) return false;
+            Bounds = b;
+            Bounds.OwnerYbn = this;
+            Bounds.OwnerName = Name ?? RpfFileEntry?.Name;
+            return true;
+        }
 
     }
 }

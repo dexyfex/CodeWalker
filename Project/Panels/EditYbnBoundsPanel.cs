@@ -151,6 +151,8 @@ namespace CodeWalker.Project.Panels
                 DeleteButton.Enabled = !AddToProjectButton.Enabled;
 
                 populatingui = false;
+
+                ProjectForm.WorldForm?.SelectCollisionBounds(b);
             }
         }
 

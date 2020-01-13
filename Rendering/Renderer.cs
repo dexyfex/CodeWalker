@@ -3267,13 +3267,16 @@ namespace CodeWalker.Rendering
                 rbginst.Inst.Renderable = rndbc;
                 rbginst.Inst.Orientation = orientation;
                 rbginst.Inst.Scale = scale;
-                foreach (var geom in rndbc.Geometries)
+                if (rndbc.Geometries != null)
                 {
-                    if (geom == null) continue;
-                    rbginst.Geom = geom;
-                    rbginst.Inst.Position = position + orientation.Multiply(geom.CenterGeom * scale);
-                    rbginst.Inst.CamRel = rbginst.Inst.Position - camera.Position;
-                    shaders.Enqueue(ref rbginst);
+                    foreach (var geom in rndbc.Geometries)
+                    {
+                        if (geom == null) continue;
+                        rbginst.Geom = geom;
+                        rbginst.Inst.Position = position + orientation.Multiply(geom.CenterGeom * scale);
+                        rbginst.Inst.CamRel = rbginst.Inst.Position - camera.Position;
+                        shaders.Enqueue(ref rbginst);
+                    }
                 }
 
                 if (RenderedBoundCompsListEnable) //for later hit tests
