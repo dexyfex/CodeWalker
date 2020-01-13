@@ -221,13 +221,27 @@ namespace CodeWalker
         public string GetNameString(string defval)
         {
             string name = defval;
+            var ename = (EntityDef != null) ? EntityDef._CEntityDef.archetypeName.ToString() : string.Empty;
+            var enamec = ename + ((!string.IsNullOrEmpty(ename)) ? ": " : "");
             if (MultipleSelectionItems != null)
             {
                 name = "Multiple items";
             }
+            else if (CollisionVertex != null)
+            {
+                name = enamec + "Vertex " + CollisionVertex.Index.ToString() + ((CollisionBounds != null) ? (": " + CollisionBounds.GetName()) : string.Empty);
+            }
+            else if (CollisionPoly != null)
+            {
+                name = enamec + "Poly " + CollisionPoly.Index.ToString() + ((CollisionBounds != null) ? (": " + CollisionBounds.GetName()) : string.Empty);
+            }
+            else if (CollisionBounds != null)
+            {
+                name = enamec + CollisionBounds.GetName();
+            }
             else if (EntityDef != null)
             {
-                name = EntityDef._CEntityDef.archetypeName.ToString();
+                name = ename;
             }
             else if (Archetype != null)
             {
@@ -256,18 +270,6 @@ namespace CodeWalker
             else if (OccludeModel != null)
             {
                 name = "OccludeModel " + (OccludeModel.Ymap?.Name ?? "") + ": " + OccludeModel.Index.ToString();
-            }
-            else if (CollisionVertex != null)
-            {
-                name = "Vertex " + CollisionVertex.Index.ToString() + ((CollisionBounds != null) ? (": " + CollisionBounds.GetName()) : string.Empty);
-            }
-            else if (CollisionPoly != null)
-            {
-                name = "Poly " + CollisionPoly.Index.ToString() + ((CollisionBounds != null) ? (": " + CollisionBounds.GetName()) : string.Empty);
-            }
-            else if (CollisionBounds != null)
-            {
-                name = CollisionBounds.GetName();
             }
             else if (WaterQuad != null)
             {
@@ -334,6 +336,7 @@ namespace CodeWalker
             if (CarGenerator != null) return true;
             if (CollisionBounds != null) return true;
             if (CollisionPoly != null) return true;
+            if (CollisionVertex != null) return true;
             if (PathNode != null) return true;
             //if (NavPoly != null) return true;
             if (NavPoint != null) return true;
@@ -352,6 +355,31 @@ namespace CodeWalker
                     case WidgetMode.Position: return new MultiPositionUndoStep(this, startPos, wf);
                     case WidgetMode.Rotation: return new MultiRotationUndoStep(this, startRot, wf);
                     case WidgetMode.Scale: return new MultiScaleUndoStep(this, startScale, wf);
+                }
+            }
+            else if (CollisionVertex != null)
+            {
+                switch (mode)
+                {
+                    case WidgetMode.Position: return new CollisionVertexPositionUndoStep(CollisionVertex, EntityDef, startPos, wf);
+                }
+            }
+            else if (CollisionPoly != null)
+            {
+                switch (mode)
+                {
+                    case WidgetMode.Position: return new CollisionPolyPositionUndoStep(CollisionPoly, EntityDef, startPos, wf);
+                    case WidgetMode.Rotation: return new CollisionPolyRotationUndoStep(CollisionPoly, EntityDef, startRot, wf);
+                    case WidgetMode.Scale: return new CollisionPolyScaleUndoStep(CollisionPoly, startScale, wf);
+                }
+            }
+            else if (CollisionBounds != null)
+            {
+                switch (mode)
+                {
+                    case WidgetMode.Position: return new CollisionPositionUndoStep(CollisionBounds, EntityDef, startPos, wf);
+                    case WidgetMode.Rotation: return new CollisionRotationUndoStep(CollisionBounds, EntityDef, startRot, wf);
+                    case WidgetMode.Scale: return new CollisionScaleUndoStep(CollisionBounds, startScale, wf);
                 }
             }
             else if (EntityDef != null)
@@ -381,31 +409,6 @@ namespace CodeWalker
                     case WidgetMode.Position: return new CarGenPositionUndoStep(CarGenerator, startPos);
                     case WidgetMode.Rotation: return new CarGenRotationUndoStep(CarGenerator, startRot);
                     case WidgetMode.Scale: return new CarGenScaleUndoStep(CarGenerator, startScale);
-                }
-            }
-            else if (CollisionVertex != null)
-            {
-                switch (mode)
-                {
-                    case WidgetMode.Position: return new CollisionVertexPositionUndoStep(CollisionVertex, startPos, wf);
-                }
-            }
-            else if (CollisionPoly != null)
-            {
-                switch (mode)
-                {
-                    case WidgetMode.Position: return new CollisionPolyPositionUndoStep(CollisionPoly, startPos, wf);
-                    case WidgetMode.Rotation: return new CollisionPolyRotationUndoStep(CollisionPoly, startRot, wf);
-                    case WidgetMode.Scale: return new CollisionPolyScaleUndoStep(CollisionPoly, startScale, wf);
-                }
-            }
-            else if (CollisionBounds != null)
-            {
-                switch (mode)
-                {
-                    case WidgetMode.Position: return new CollisionPositionUndoStep(CollisionBounds, startPos, wf);
-                    case WidgetMode.Rotation: return new CollisionRotationUndoStep(CollisionBounds, startRot, wf);
-                    case WidgetMode.Scale: return new CollisionScaleUndoStep(CollisionBounds, startScale, wf);
                 }
             }
             else if (PathNode != null)
@@ -530,6 +533,21 @@ namespace CodeWalker
                 {
                     return MultipleSelectionCenter;
                 }
+                else if (CollisionVertex != null)
+                {
+                    if (EntityDef != null) return EntityDef.Position + EntityDef.Orientation.Multiply(CollisionVertex.Position);
+                    return CollisionVertex.Position;
+                }
+                else if (CollisionPoly != null)
+                {
+                    if (EntityDef != null) return EntityDef.Position + EntityDef.Orientation.Multiply(CollisionPoly.Position);
+                    return CollisionPoly.Position;
+                }
+                else if (CollisionBounds != null)
+                {
+                    if (EntityDef != null) return EntityDef.Position + EntityDef.Orientation.Multiply(CollisionBounds.Position);
+                    return CollisionBounds.Position;
+                }
                 else if (EntityDef != null)
                 {
                     return EntityDef.WidgetPosition;
@@ -537,18 +555,6 @@ namespace CodeWalker
                 else if (CarGenerator != null)
                 {
                     return CarGenerator.Position;
-                }
-                else if (CollisionVertex != null)
-                {
-                    return CollisionVertex.Position;
-                }
-                else if (CollisionPoly != null)
-                {
-                    return CollisionPoly.Position;
-                }
-                else if (CollisionBounds != null)
-                {
-                    return CollisionBounds.Position;
                 }
                 else if (NavPoly != null)
                 {
@@ -589,6 +595,21 @@ namespace CodeWalker
                 {
                     return MultipleSelectionRotation;
                 }
+                else if (CollisionVertex != null)
+                {
+                    if (EntityDef != null) return EntityDef.Orientation;
+                    return Quaternion.Identity;
+                }
+                else if (CollisionPoly != null)
+                {
+                    if (EntityDef != null) return CollisionPoly.Orientation * EntityDef.Orientation;
+                    return CollisionPoly.Orientation;
+                }
+                else if (CollisionBounds != null)
+                {
+                    if (EntityDef != null) return CollisionBounds.Orientation * EntityDef.Orientation;
+                    return CollisionBounds.Orientation;
+                }
                 else if (EntityDef != null)
                 {
                     return EntityDef.WidgetOrientation;
@@ -596,18 +617,6 @@ namespace CodeWalker
                 else if (CarGenerator != null)
                 {
                     return CarGenerator.Orientation;
-                }
-                else if (CollisionVertex != null)
-                {
-                    return Quaternion.Identity;
-                }
-                else if (CollisionPoly != null)
-                {
-                    return CollisionPoly.Orientation;
-                }
-                else if (CollisionBounds != null)
-                {
-                    return CollisionBounds.Orientation;
                 }
                 else if (NavPoly != null)
                 {
@@ -648,14 +657,6 @@ namespace CodeWalker
                 {
                     return WidgetAxis.XYZ;
                 }
-                else if (EntityDef != null)
-                {
-                    return WidgetAxis.XYZ;
-                }
-                else if (CarGenerator != null)
-                {
-                    return WidgetAxis.Z;
-                }
                 else if (CollisionVertex != null)
                 {
                     return WidgetAxis.None;
@@ -667,6 +668,14 @@ namespace CodeWalker
                 else if (CollisionBounds != null)
                 {
                     return WidgetAxis.XYZ;
+                }
+                else if (EntityDef != null)
+                {
+                    return WidgetAxis.XYZ;
+                }
+                else if (CarGenerator != null)
+                {
+                    return WidgetAxis.Z;
                 }
                 else if (NavPoly != null)
                 {
@@ -707,14 +716,6 @@ namespace CodeWalker
                 {
                     return MultipleSelectionScale;
                 }
-                else if (EntityDef != null)
-                {
-                    return EntityDef.Scale;
-                }
-                else if (CarGenerator != null)
-                {
-                    return new Vector3(CarGenerator.CCarGen.perpendicularLength);
-                }
                 else if (CollisionVertex != null)
                 {
                     return Vector3.One;
@@ -726,6 +727,14 @@ namespace CodeWalker
                 else if (CollisionBounds != null)
                 {
                     return CollisionBounds.Scale;
+                }
+                else if (EntityDef != null)
+                {
+                    return EntityDef.Scale;
+                }
+                else if (CarGenerator != null)
+                {
+                    return new Vector3(CarGenerator.CCarGen.perpendicularLength);
                 }
                 else if (NavPoly != null)
                 {
@@ -766,7 +775,7 @@ namespace CodeWalker
                 {
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
-                        if (MultipleSelectionItems[i].EntityDef != null) return true;
+                        if ((MultipleSelectionItems[i].EntityDef != null) && (MultipleSelectionItems[i].CollisionBounds == null)) return true;
                     }
                     return false;
                 }
@@ -794,6 +803,9 @@ namespace CodeWalker
                     }
                     return false;
                 }
+                else if (CollisionVertex != null) return false;//can't copy just a vertex..
+                else if (CollisionPoly != null) return true;
+                else if (CollisionBounds != null) return true;
                 else if (EntityDef != null) return true;
                 else if (CarGenerator != null) return true;
                 else if (PathNode != null) return true;
@@ -804,9 +816,6 @@ namespace CodeWalker
                 else if (ScenarioNode != null) return true;
                 else if (Audio?.AudioZone != null) return true;
                 else if (Audio?.AudioEmitter != null) return true;
-                else if (CollisionVertex != null) return false;//can't copy just a vertex..
-                else if (CollisionPoly != null) return true;
-                else if (CollisionBounds != null) return true;
                 return false;
             }
         }
@@ -856,6 +865,7 @@ namespace CodeWalker
                 {
                     var dpos = newpos - MultipleSelectionCenter;// oldpos;
                     if (dpos == Vector3.Zero) return; //nothing moved.. (probably due to snap)
+                    YmapEntityDef ent = null;//hack to use an entity for multple selections... buggy if entities mismatch!!!
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
                         if (MultipleSelectionItems[i].CollisionPoly == null)//skip polys, they use gathered verts
@@ -863,17 +873,35 @@ namespace CodeWalker
                             var refpos = MultipleSelectionItems[i].WidgetPosition;
                             MultipleSelectionItems[i].SetPosition(refpos + dpos, false);
                         }
+                        ent = MultipleSelectionItems[i].EntityDef ?? ent;
                     }
+                    if (ent != null) dpos = Quaternion.Invert(ent.Orientation).Multiply(dpos);
                     if (GatheredCollisionVerts != null)
                     {
                         for (int i = 0; i < GatheredCollisionVerts.Length; i++)
                         {
                             var refpos = GatheredCollisionVerts[i].Position;
-                            GatheredCollisionVerts[i].Position = refpos + dpos;
+                            var vnewpos = refpos + dpos;
+                            GatheredCollisionVerts[i].Position = vnewpos;
                         }
                     }
                     MultipleSelectionCenter = newpos;
                 }
+            }
+            else if (CollisionVertex != null)
+            {
+                if (EntityDef != null) newpos = Quaternion.Invert(EntityDef.Orientation).Multiply(newpos - EntityDef.Position);
+                CollisionVertex.Position = newpos;
+            }
+            else if (CollisionPoly != null)
+            {
+                if (EntityDef != null) newpos = Quaternion.Invert(EntityDef.Orientation).Multiply(newpos - EntityDef.Position);
+                CollisionPoly.Position = newpos;
+            }
+            else if (CollisionBounds != null)
+            {
+                if (EntityDef != null) newpos = Quaternion.Invert(EntityDef.Orientation).Multiply(newpos - EntityDef.Position);
+                CollisionBounds.Position = newpos;
             }
             else if (EntityDef != null)
             {
@@ -893,18 +921,6 @@ namespace CodeWalker
             else if (PathNode != null)
             {
                 PathNode.SetPosition(newpos);
-            }
-            else if (CollisionVertex != null)
-            {
-                CollisionVertex.Position = newpos;
-            }
-            else if (CollisionPoly != null)
-            {
-                CollisionPoly.Position = newpos;
-            }
-            else if (CollisionBounds != null)
-            {
-                CollisionBounds.Position = newpos;
             }
             else if (NavPoly != null)
             {
@@ -944,6 +960,7 @@ namespace CodeWalker
                     var cen = MultipleSelectionCenter;
                     var orinv = Quaternion.Invert(MultipleSelectionRotation);
                     var trans = newrot * orinv;
+                    YmapEntityDef ent = null;//hack to use an entity for multple selections... buggy if entities mismatch!!!
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
                         if (MultipleSelectionItems[i].CollisionPoly == null)//skip polys, they use gathered verts
@@ -956,7 +973,9 @@ namespace CodeWalker
                             MultipleSelectionItems[i].SetPosition(newpos, false);
                             MultipleSelectionItems[i].SetRotation(newori, false);
                         }
+                        ent = MultipleSelectionItems[i].EntityDef ?? ent;
                     }
+                    var eorinv = (ent != null) ? Quaternion.Invert(ent.Orientation) : Quaternion.Identity;
                     if (GatheredCollisionVerts != null)
                     {
                         for (int i = 0; i < GatheredCollisionVerts.Length; i++)
@@ -964,11 +983,31 @@ namespace CodeWalker
                             var refpos = GatheredCollisionVerts[i].Position;
                             var relpos = refpos - cen;
                             var newpos = trans.Multiply(relpos) + cen;
+                            if (ent != null)
+                            {
+                                refpos = ent.Position + ent.Orientation.Multiply(refpos);
+                                relpos = refpos - cen;
+                                newpos = eorinv.Multiply(trans.Multiply(relpos) + cen - ent.Position);
+                            }
                             GatheredCollisionVerts[i].Position = newpos;
                         }
                     }
                     MultipleSelectionRotation = newrot;
                 }
+            }
+            else if (CollisionVertex != null)
+            {
+                //do nothing, but stop any poly from being rotated also
+            }
+            else if (CollisionPoly != null)
+            {
+                if (EntityDef != null) newrot = Quaternion.Normalize(Quaternion.Invert(EntityDef.Orientation) * newrot);
+                CollisionPoly.Orientation = newrot;
+            }
+            else if (CollisionBounds != null)
+            {
+                if (EntityDef != null) newrot = Quaternion.Normalize(Quaternion.Invert(EntityDef.Orientation) * newrot);
+                CollisionBounds.Orientation = newrot;
             }
             else if (EntityDef != null)
             {
@@ -984,18 +1023,6 @@ namespace CodeWalker
             else if (CarGenerator != null)
             {
                 CarGenerator.SetOrientation(newrot);
-            }
-            else if (CollisionVertex != null)
-            {
-                //do nothing, but stop any poly from being rotated also
-            }
-            else if (CollisionPoly != null)
-            {
-                CollisionPoly.Orientation = newrot;
-            }
-            else if (CollisionBounds != null)
-            {
-                CollisionBounds.Orientation = newrot;
             }
             else if (ScenarioNode != null)
             {
@@ -1027,6 +1054,7 @@ namespace CodeWalker
                     var ori = MultipleSelectionRotation;
                     var orinv = Quaternion.Invert(ori);
                     var rsca = newscale / MultipleSelectionScale;
+                    YmapEntityDef ent = null;//hack to use an entity for multple selections... buggy if entities mismatch!!!
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
                         if (MultipleSelectionItems[i].CollisionPoly == null)//skip polys, they use gathered verts
@@ -1037,7 +1065,9 @@ namespace CodeWalker
                             MultipleSelectionItems[i].SetPosition(newpos, false);
                             MultipleSelectionItems[i].SetScale(newscale, false);
                         }
+                        ent = MultipleSelectionItems[i].EntityDef ?? ent;
                     }
+                    var eorinv = (ent != null) ? Quaternion.Invert(ent.Orientation) : Quaternion.Identity;
                     if (GatheredCollisionVerts != null)
                     {
                         for (int i = 0; i < GatheredCollisionVerts.Length; i++)
@@ -1045,20 +1075,18 @@ namespace CodeWalker
                             var refpos = GatheredCollisionVerts[i].Position;
                             var relpos = refpos - cen;
                             var newpos = ori.Multiply(orinv.Multiply(relpos) * rsca) + cen;
+                            if (ent != null)
+                            {
+                                refpos = ent.Position + ent.Orientation.Multiply(refpos);
+                                relpos = refpos - cen;
+                                newpos = ori.Multiply(orinv.Multiply(relpos) * rsca) + cen;
+                                newpos = eorinv.Multiply(newpos - ent.Position);
+                            }
                             GatheredCollisionVerts[i].Position = newpos;
                         }
                     }
                     MultipleSelectionScale = newscale;
                 }
-            }
-            else if (EntityDef != null)
-            {
-                EntityDef.SetScale(newscale);
-            }
-            else if (CarGenerator != null)
-            {
-                CarGenerator.SetScale(newscale);
-                AABB = new BoundingBox(CarGenerator.BBMin, CarGenerator.BBMax);
             }
             else if (CollisionVertex != null)
             {
@@ -1071,6 +1099,15 @@ namespace CodeWalker
             else if (CollisionBounds != null)
             {
                 CollisionBounds.Scale = newscale;
+            }
+            else if (EntityDef != null)
+            {
+                EntityDef.SetScale(newscale);
+            }
+            else if (CarGenerator != null)
+            {
+                CarGenerator.SetScale(newscale);
+                AABB = new BoundingBox(CarGenerator.BBMin, CarGenerator.BBMax);
             }
         }
 

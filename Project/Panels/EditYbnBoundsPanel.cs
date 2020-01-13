@@ -93,10 +93,17 @@ namespace CodeWalker.Project.Panels
                 UnkFlagsUpDown.Value = 0;
                 UnkTypeUpDown.Value = 0;
                 BoundsTabControl.TabPages.Remove(GeometryTabPage);
+                BoundsTabControl.TabPages.Remove(CompositeFlagsTabPage);
+                BoundsTabControl.TabPages.Remove(CompositeXformTabPage);
                 CenterGeomTextBox.Text = string.Empty;
                 QuantumTextBox.Text = string.Empty;
                 UnkFloat1TextBox.Text = string.Empty;
                 UnkFloat2TextBox.Text = string.Empty;
+                SetCheckedListBoxValues(CompFlags1CheckedListBox, 0);
+                SetCheckedListBoxValues(CompFlags2CheckedListBox, 0);
+                CompPositionTextBox.Text = string.Empty;
+                CompRotationTextBox.Text = string.Empty;
+                CompScaleTextBox.Text = string.Empty;
                 VertexCountLabel.Text = "0 vertices";
                 PolyCountLabel.Text = "0 polygons";
             }
@@ -146,6 +153,34 @@ namespace CodeWalker.Project.Panels
                     PolyCountLabel.Text = "0 polygons";
                 }
 
+                if (b.Parent != null)
+                {
+                    if (!BoundsTabControl.TabPages.Contains(CompositeFlagsTabPage))
+                    {
+                        BoundsTabControl.TabPages.Add(CompositeFlagsTabPage);
+                    }
+                    if (!BoundsTabControl.TabPages.Contains(CompositeXformTabPage))
+                    {
+                        BoundsTabControl.TabPages.Add(CompositeXformTabPage);
+                    }
+
+                    SetCheckedListBoxValues(CompFlags1CheckedListBox, (uint)b.CompositeFlags1.Flags1);
+                    SetCheckedListBoxValues(CompFlags2CheckedListBox, (uint)b.CompositeFlags1.Flags2);
+                    CompPositionTextBox.Text = FloatUtil.GetVector3String(b.Position);
+                    CompRotationTextBox.Text = FloatUtil.GetVector4String(b.Orientation.ToVector4());
+                    CompScaleTextBox.Text = FloatUtil.GetVector3String(b.Scale);
+                }
+                else
+                {
+                    BoundsTabControl.TabPages.Remove(CompositeFlagsTabPage);
+                    BoundsTabControl.TabPages.Remove(CompositeXformTabPage);
+                    SetCheckedListBoxValues(CompFlags1CheckedListBox, 0);
+                    SetCheckedListBoxValues(CompFlags2CheckedListBox, 0);
+                    CompPositionTextBox.Text = string.Empty;
+                    CompRotationTextBox.Text = string.Empty;
+                    CompScaleTextBox.Text = string.Empty;
+                }
+
                 var ybn = b.GetRootYbn();
                 AddToProjectButton.Enabled = (ybn != null) ? !ProjectForm.YbnExistsInProject(ybn) : false;
                 DeleteButton.Enabled = !AddToProjectButton.Enabled;
@@ -155,6 +190,39 @@ namespace CodeWalker.Project.Panels
                 ProjectForm.WorldForm?.SelectCollisionBounds(b);
             }
         }
+
+
+
+        private void SetCheckedListBoxValues(CheckedListBox clb, uint flags)
+        {
+            for (int i = 0; i < clb.Items.Count; i++)
+            {
+                var c = ((flags & (1 << i)) > 0);
+                clb.SetItemCheckState(i, c ? CheckState.Checked : CheckState.Unchecked);
+            }
+        }
+        private uint GetCheckedListBoxValues(CheckedListBox clb, ItemCheckEventArgs e)
+        {
+            uint r = 0;
+            for (int i = 0; i < clb.Items.Count; i++)
+            {
+                if ((e != null) && (e.Index == i))
+                {
+                    if (e.NewValue == CheckState.Checked)
+                    {
+                        r += (uint)(1 << i);
+                    }
+                }
+                else
+                {
+                    bool v = clb.GetItemChecked(i);// == CheckState.Checked;
+                    r = BitUtil.UpdateBit(r, i, v);
+                }
+            }
+            return r;
+        }
+
+
 
         private void BBMinTextBox_TextChanged(object sender, EventArgs e)
         {
@@ -451,6 +519,83 @@ namespace CodeWalker.Project.Panels
                 if (CollisionGeom.Unknown_ACh != v)
                 {
                     CollisionGeom.Unknown_ACh = v;
+                    ProjectForm.SetYbnHasChanged(true);
+                }
+            }
+        }
+
+        private void CompFlags1CheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (CollisionBounds == null) return;
+            if (populatingui) return;
+            var f1 = CollisionBounds.CompositeFlags1;
+            var f2 = CollisionBounds.CompositeFlags2;
+            var v = (EBoundCompositeFlags)GetCheckedListBoxValues(CompFlags1CheckedListBox, e);
+            if ((f1.Flags1 != v) || (f2.Flags1 != v))
+            {
+                f1.Flags1 = v;
+                CollisionBounds.CompositeFlags1 = f1;
+                CollisionBounds.CompositeFlags2 = f1;
+                ProjectForm.SetYbnHasChanged(true);
+            }
+        }
+
+        private void CompFlags2CheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (CollisionBounds == null) return;
+            if (populatingui) return;
+            var f1 = CollisionBounds.CompositeFlags1;
+            var f2 = CollisionBounds.CompositeFlags2;
+            var v = (EBoundCompositeFlags)GetCheckedListBoxValues(CompFlags2CheckedListBox, e);
+            if ((f1.Flags2 != v) || (f2.Flags2 != v))
+            {
+                f1.Flags2 = v;
+                CollisionBounds.CompositeFlags1 = f1;
+                CollisionBounds.CompositeFlags2 = f1;
+                ProjectForm.SetYbnHasChanged(true);
+            }
+        }
+
+        private void CompPositionTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (CollisionBounds == null) return;
+            if (populatingui) return;
+            var v = FloatUtil.ParseVector3String(CompPositionTextBox.Text);
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                if (CollisionBounds.Position != v)
+                {
+                    CollisionBounds.Position = v;
+                    ProjectForm.SetYbnHasChanged(true);
+                }
+            }
+        }
+
+        private void CompRotationTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (CollisionBounds == null) return;
+            if (populatingui) return;
+            var q = FloatUtil.ParseVector4String(CompRotationTextBox.Text).ToQuaternion();
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                if (CollisionBounds.Orientation != q)
+                {
+                    CollisionBounds.Orientation = q;
+                    ProjectForm.SetYbnHasChanged(true);
+                }
+            }
+        }
+
+        private void CompScaleTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (CollisionBounds == null) return;
+            if (populatingui) return;
+            var v = FloatUtil.ParseVector3String(CompScaleTextBox.Text);
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                if (CollisionBounds.Scale != v)
+                {
+                    CollisionBounds.Scale = v;
                     ProjectForm.SetYbnHasChanged(true);
                 }
             }

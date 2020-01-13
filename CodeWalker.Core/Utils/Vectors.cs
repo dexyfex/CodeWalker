@@ -309,6 +309,63 @@ namespace CodeWalker
             return Vector3.Normalize(Vector3.Cross(Vector3.Cross(ab, av), ab));
         }
 
+        public static float PointRayDist(ref Vector3 p, ref Vector3 ro, ref Vector3 rd)
+        {
+            return Vector3.Cross(rd, p - ro).Length();
+        }
+
+    }
+
+
+    public static class TriangleMath
+    {
+
+        public static float AreaPart(ref Vector3 v1, ref Vector3 v2, ref Vector3 v3, out float angle)
+        {
+            var va = v2 - v1;
+            var vb = v3 - v1;
+            var na = Vector3.Normalize(va);
+            var nb = Vector3.Normalize(vb);
+            var a = va.Length();
+            var b = vb.Length();
+            var c = Math.Acos(Vector3.Dot(na, nb));
+            var area = (float)(0.5 * a * b * Math.Sin(c));
+            angle = (float)Math.Abs(c);
+            return area;
+        }
+
+        public static float Area(ref Vector3 v1, ref Vector3 v2, ref Vector3 v3)
+        {
+            var a1 = AreaPart(ref v1, ref v2, ref v3, out float t1);
+            var a2 = AreaPart(ref v2, ref v3, ref v1, out float t2);
+            var a3 = AreaPart(ref v3, ref v1, ref v2, out float t3);
+            var fp = (float)Math.PI;
+            var d1 = Math.Min(t1, Math.Abs(t1 - fp));
+            var d2 = Math.Min(t2, Math.Abs(t2 - fp));
+            var d3 = Math.Min(t3, Math.Abs(t3 - fp));
+            if ((d1 >= d2) && (a1 != 0))
+            {
+                if ((d1 >= d3) || (a3 == 0))
+                {
+                    return a1;
+                }
+                else
+                {
+                    return a3;
+                }
+            }
+            else
+            {
+                if ((d2 >= d3) || (a3 == 0))
+                {
+                    return a2;
+                }
+                else
+                {
+                    return a3;
+                }
+            }
+        }
 
     }
 

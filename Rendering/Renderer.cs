@@ -94,6 +94,7 @@ namespace CodeWalker.Rendering
 
         public bool ShowScriptedYmaps = true;
         public List<YmapFile> VisibleYmaps = new List<YmapFile>();
+        public List<YmapEntityDef> VisibleMlos = new List<YmapEntityDef>();
 
         public rage__eLodType renderworldMaxLOD = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
         public float renderworldLodDistMult = 1.0f;
@@ -1646,6 +1647,7 @@ namespace CodeWalker.Rendering
             renderworldentities.Clear();
             renderworldrenderables.Clear();
             VisibleYmaps.Clear();
+            VisibleMlos.Clear();
             ArchetypeRenderables.Clear();
             RequiredParents.Clear();
             RenderEntities.Clear();
@@ -1680,6 +1682,7 @@ namespace CodeWalker.Rendering
                 {
                     if (renderinteriors && (ent.MloInstance != null) && !MapViewEnabled) //render Mlo child entities...
                     {
+                        VisibleMlos.Add(ent);
                         renderworldentities.Add(ent);//collisions rendering needs this
                         RenderWorldAddInteriorEntities(ent);
                     }
@@ -2149,17 +2152,6 @@ namespace CodeWalker.Rendering
         }
         private void RenderWorldYmapExtras()
         {
-            if (renderinteriors && (rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision)))
-            {
-                for (int i = 0; i < renderworldentities.Count; i++)
-                {
-                    var ent = renderworldentities[i];
-                    if (ent.IsMlo)
-                    {
-                        RenderInteriorCollisionMesh(ent);
-                    }
-                }
-            }
             if (rendercars)
             {
                 for (int y = 0; y < VisibleYmaps.Count; y++)
@@ -2434,10 +2426,6 @@ namespace CodeWalker.Rendering
                                     if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
                                     RenderArchetype(intarch, intent);
                                 }
-                            }
-                            if (rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision))
-                            {
-                                RenderInteriorCollisionMesh(entity);
                             }
                         }
 
@@ -3225,20 +3213,6 @@ namespace CodeWalker.Rendering
 
 
 
-        private void RenderInteriorCollisionMesh(YmapEntityDef mlo)
-        {
-            //enqueue interior collison meshes for rendering.
-
-            if (mlo.Archetype == null) return;
-            var hash = mlo.Archetype.Hash;
-            YbnFile ybn = gameFileCache.GetYbn(hash);
-            if ((ybn != null) && (ybn.Loaded))
-            {
-                RenderCollisionMesh(ybn.Bounds, mlo);
-            }
-            if (ybn == null)
-            { }
-        }
 
         public void RenderCollisionMesh(Bounds bounds, YmapEntityDef entity)
         {
