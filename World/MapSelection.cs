@@ -1144,6 +1144,121 @@ namespace CodeWalker
 
 
 
+
+        public void UpdateGraphics(WorldForm wf)
+        {
+            if (MultipleSelectionItems != null)
+            {
+                Dictionary<YndFile, int> pathYnds = new Dictionary<YndFile, int>();
+                Dictionary<YnvFile, int> navYnvs = new Dictionary<YnvFile, int>();
+                Dictionary<TrainTrack, int> trainTracks = new Dictionary<TrainTrack, int>();
+                Dictionary<YmtFile, int> scenarioYmts = new Dictionary<YmtFile, int>();
+                Dictionary<Bounds, int> bounds = new Dictionary<Bounds, int>();
+
+                foreach (var item in MultipleSelectionItems)
+                {
+                    if (item.PathNode != null)
+                    {
+                        pathYnds[item.PathNode.Ynd] = 1;
+                    }
+                    if (item.NavPoly != null)
+                    {
+                        navYnvs[item.NavPoly.Ynv] = 1;
+                    }
+                    if (item.NavPoint != null)
+                    {
+                        navYnvs[item.NavPoint.Ynv] = 1;
+                    }
+                    if (item.NavPortal != null)
+                    {
+                        navYnvs[item.NavPortal.Ynv] = 1;
+                    }
+                    if (item.TrainTrackNode != null)
+                    {
+                        trainTracks[item.TrainTrackNode.Track] = 1;
+                    }
+                    if (item.ScenarioNode != null)
+                    {
+                        scenarioYmts[item.ScenarioNode.Ymt] = 1;
+                    }
+                    if (item.CollisionBounds != null)
+                    {
+                        bounds[item.CollisionBounds] = 1;
+                    }
+                    if (item.CollisionPoly?.Owner != null)
+                    {
+                        bounds[item.CollisionPoly.Owner] = 1;
+                    }
+                    if (item.CollisionVertex?.Owner != null)
+                    {
+                        bounds[item.CollisionVertex.Owner] = 1;
+                    }
+                }
+                foreach (var kvp in bounds)
+                {
+                    wf.UpdateCollisionBoundsGraphics(kvp.Key);
+                }
+                foreach (var kvp in pathYnds)
+                {
+                    wf.UpdatePathYndGraphics(kvp.Key, true);
+                }
+                foreach (var kvp in navYnvs)
+                {
+                    wf.UpdateNavYnvGraphics(kvp.Key, true);
+                }
+                foreach (var kvp in trainTracks)
+                {
+                    wf.UpdateTrainTrackGraphics(kvp.Key, false);
+                }
+                foreach (var kvp in scenarioYmts)
+                {
+                    wf.UpdateScenarioGraphics(kvp.Key, false);
+                }
+            }
+            else
+            {
+                if (PathNode != null)
+                {
+                    wf.UpdatePathYndGraphics(PathNode.Ynd, true);
+                }
+                if (NavPoly != null)
+                {
+                    wf.UpdateNavYnvGraphics(NavPoly.Ynv, true);
+                }
+                if (NavPoint != null)
+                {
+                    wf.UpdateNavYnvGraphics(NavPoint.Ynv, true);
+                }
+                if (NavPortal != null)
+                {
+                    wf.UpdateNavYnvGraphics(NavPortal.Ynv, true);
+                }
+                if (TrainTrackNode != null)
+                {
+                    wf.UpdateTrainTrackGraphics(TrainTrackNode.Track, false);
+                }
+                if (ScenarioNode != null)
+                {
+                    wf.UpdateScenarioGraphics(ScenarioNode.Ymt, false);
+                }
+                if (CollisionVertex?.Owner != null)
+                {
+                    wf.UpdateCollisionBoundsGraphics(CollisionVertex.Owner);
+                }
+                else if (CollisionPoly?.Owner != null)
+                {
+                    wf.UpdateCollisionBoundsGraphics(CollisionPoly.Owner);
+                }
+                else if (CollisionBounds != null)
+                {
+                    wf.UpdateCollisionBoundsGraphics(CollisionBounds);
+                }
+            }
+        }
+
+
+
+
         public override string ToString()
         {
             return GetFullNameString("[Empty]");

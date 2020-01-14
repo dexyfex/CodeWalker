@@ -1657,7 +1657,9 @@ namespace CodeWalker
             if (newpos == oldpos) return;
 
             SelectedItem.SetPosition(newpos, EditEntityPivot);
-            
+
+            SelectedItem.UpdateGraphics(this);
+
             if (ProjectForm != null)
             {
                 ProjectForm.OnWorldSelectionModified(SelectedItem);
@@ -1670,6 +1672,8 @@ namespace CodeWalker
 
             SelectedItem.SetRotation(newrot, EditEntityPivot);
 
+            SelectedItem.UpdateGraphics(this);
+
             if (ProjectForm != null)
             {
                 ProjectForm.OnWorldSelectionModified(SelectedItem);
@@ -1681,6 +1685,8 @@ namespace CodeWalker
             if (newscale == oldscale) return;
 
             SelectedItem.SetScale(newscale, EditEntityPivot);
+
+            SelectedItem.UpdateGraphics(this);
 
             if (ProjectForm != null)
             {

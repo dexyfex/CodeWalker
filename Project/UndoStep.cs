@@ -27,79 +27,8 @@ namespace CodeWalker.Project
 
         protected void UpdateGraphics(WorldForm wf)
         {
-
-            Dictionary<YndFile, int> pathYnds = new Dictionary<YndFile, int>();
-            Dictionary<YnvFile, int> navYnvs = new Dictionary<YnvFile, int>();
-            Dictionary<TrainTrack, int> trainTracks = new Dictionary<TrainTrack, int>();
-            Dictionary<YmtFile, int> scenarioYmts = new Dictionary<YmtFile, int>();
-            Dictionary<Bounds, int> bounds = new Dictionary<Bounds, int>();
-
-            if (Selection.MultipleSelectionItems != null)
-            {
-                foreach (var item in Selection.MultipleSelectionItems)
-                {
-                    if (item.PathNode != null)
-                    {
-                        pathYnds[item.PathNode.Ynd] = 1;
-                    }
-                    if (item.NavPoly != null)
-                    {
-                        navYnvs[item.NavPoly.Ynv] = 1;
-                    }
-                    if (item.NavPoint != null)
-                    {
-                        navYnvs[item.NavPoint.Ynv] = 1;
-                    }
-                    if (item.NavPortal != null)
-                    {
-                        navYnvs[item.NavPortal.Ynv] = 1;
-                    }
-                    if (item.TrainTrackNode != null)
-                    {
-                        trainTracks[item.TrainTrackNode.Track] = 1;
-                    }
-                    if (item.ScenarioNode != null)
-                    {
-                        scenarioYmts[item.ScenarioNode.Ymt] = 1;
-                    }
-                    if (item.CollisionBounds != null)
-                    {
-                        bounds[item.CollisionBounds] = 1;
-                    }
-                    if (item.CollisionPoly?.Owner != null)
-                    {
-                        bounds[item.CollisionPoly.Owner] = 1;
-                    }
-                    if (item.CollisionVertex?.Owner != null)
-                    {
-                        bounds[item.CollisionVertex.Owner] = 1;
-                    }
-                }
-            }
-
-            foreach (var kvp in bounds)
-            {
-                wf.UpdateCollisionBoundsGraphics(kvp.Key);
-            }
-            foreach (var kvp in pathYnds)
-            {
-                wf.UpdatePathYndGraphics(kvp.Key, true);
-            }
-            foreach (var kvp in navYnvs)
-            {
-                wf.UpdateNavYnvGraphics(kvp.Key, true);
-            }
-            foreach (var kvp in trainTracks)
-            {
-                wf.UpdateTrainTrackGraphics(kvp.Key, false);
-            }
-            foreach (var kvp in scenarioYmts)
-            {
-                wf.UpdateScenarioGraphics(kvp.Key, false);
-            }
-
+            Selection.UpdateGraphics(wf);
         }
-
     }
     public class MultiPositionUndoStep : MultiItemUndoStep
     {
