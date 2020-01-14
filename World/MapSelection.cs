@@ -833,10 +833,15 @@ namespace CodeWalker
                 for (int i = 0; i < items.Length; i++)
                 {
                     center += items[i].WidgetPosition;
+                    var collVert = items[i].CollisionVertex;
                     var collPoly = items[i].CollisionPoly;
-                    if (collPoly != null)
+                    if (collVert != null)
                     {
-                        
+                        if (collVerts == null) collVerts = new Dictionary<BoundVertex, int>();
+                        collVerts[collVert] = collVert.Index;
+                    }
+                    else if (collPoly != null)
+                    {
                         if (collVerts == null) collVerts = new Dictionary<BoundVertex, int>();
                         collPoly.GatherVertices(collVerts);
                     }
@@ -868,7 +873,9 @@ namespace CodeWalker
                     YmapEntityDef ent = null;//hack to use an entity for multple selections... buggy if entities mismatch!!!
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
-                        if (MultipleSelectionItems[i].CollisionPoly == null)//skip polys, they use gathered verts
+                        var collVert = MultipleSelectionItems[i].CollisionVertex;
+                        var collPoly = MultipleSelectionItems[i].CollisionPoly;
+                        if ((collVert == null) && (collPoly == null))//skip polys, they use gathered verts
                         {
                             var refpos = MultipleSelectionItems[i].WidgetPosition;
                             MultipleSelectionItems[i].SetPosition(refpos + dpos, false);
@@ -963,7 +970,9 @@ namespace CodeWalker
                     YmapEntityDef ent = null;//hack to use an entity for multple selections... buggy if entities mismatch!!!
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
-                        if (MultipleSelectionItems[i].CollisionPoly == null)//skip polys, they use gathered verts
+                        var collVert = MultipleSelectionItems[i].CollisionVertex;
+                        var collPoly = MultipleSelectionItems[i].CollisionPoly;
+                        if ((collVert == null) && (collPoly == null))//skip polys, they use gathered verts
                         {
                             var refpos = MultipleSelectionItems[i].WidgetPosition;
                             var relpos = refpos - cen;
@@ -1057,7 +1066,9 @@ namespace CodeWalker
                     YmapEntityDef ent = null;//hack to use an entity for multple selections... buggy if entities mismatch!!!
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
-                        if (MultipleSelectionItems[i].CollisionPoly == null)//skip polys, they use gathered verts
+                        var collVert = MultipleSelectionItems[i].CollisionVertex;
+                        var collPoly = MultipleSelectionItems[i].CollisionPoly;
+                        if ((collVert == null) && (collPoly == null))//skip polys, they use gathered verts
                         {
                             var refpos = MultipleSelectionItems[i].WidgetPosition;
                             var relpos = refpos - cen;
