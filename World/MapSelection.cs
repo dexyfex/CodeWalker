@@ -1268,6 +1268,25 @@ namespace CodeWalker
         }
 
 
+        public object GetProjectObject()
+        {
+            if (MultipleSelectionItems != null) return MultipleSelectionItems;
+            else if (CollisionVertex != null) return CollisionVertex;
+            else if (CollisionPoly != null) return CollisionPoly;
+            else if (CollisionBounds != null) return CollisionBounds;
+            else if (EntityDef != null) return EntityDef;
+            else if (CarGenerator != null) return CarGenerator;
+            else if (PathNode != null) return PathNode;
+            else if (NavPoly != null) return NavPoly;
+            else if (NavPoint != null) return NavPoint;
+            else if (NavPortal != null) return NavPortal;
+            else if (TrainTrackNode != null) return TrainTrackNode;
+            else if (ScenarioNode != null) return ScenarioNode;
+            else if (Audio?.AudioZone != null) return Audio;
+            else if (Audio?.AudioEmitter != null) return Audio;
+            return null;
+        }
+
 
 
         public override string ToString()

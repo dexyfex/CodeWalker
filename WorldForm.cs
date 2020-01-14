@@ -459,6 +459,17 @@ namespace CodeWalker
 
             UpdateMarkerSelectionPanelInvoke();
         }
+        public bool ConfirmQuit()
+        {
+            if ((ProjectForm != null) && (ProjectForm.CurrentProjectFile != null))
+            {
+                if (MessageBox.Show("Are you sure you want to quit CodeWalker?", "Confirm quit", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
 
         private void UpdateTimeOfDayLabel()
@@ -1740,6 +1751,30 @@ namespace CodeWalker
             }
         }
 
+        public void ChangeMultiPosition(MapSelection[] items, Vector3 pos, bool editPivot = false)
+        {
+            if (items == SelectedItem.MultipleSelectionItems)
+            {
+                SelectedItem.SetPosition(pos, editPivot);
+                SetWidgetPosition(pos, true);
+            }
+        }
+        public void ChangeMultiRotation(MapSelection[] items, Quaternion rot, bool editPivot = false)
+        {
+            if (items == SelectedItem.MultipleSelectionItems)
+            {
+                SelectedItem.SetRotation(rot, editPivot);
+                SetWidgetRotation(rot, true);
+            }
+        }
+        public void ChangeMultiScale(MapSelection[] items, Vector3 scale, bool editPivot = false)
+        {
+            if (items == SelectedItem.MultipleSelectionItems)
+            {
+                SelectedItem.SetScale(scale, editPivot);
+                SetWidgetScale(scale, true);
+            }
+        }
 
         public void UpdatePathYndGraphics(YndFile ynd, bool fullupdate)
         {
@@ -3269,7 +3304,7 @@ namespace CodeWalker
             else if (obj is ScenarioNode snode) SelectScenarioNode(snode, addSelection);
             else if (obj is AudioPlacement audio) SelectAudio(audio, addSelection);
         }
-        public void SelectItem(MapSelection? mhit = null, bool addSelection = false)
+        public void SelectItem(MapSelection? mhit = null, bool addSelection = false, bool manualSelection = false)
         {
             var mhitv = mhit.HasValue ? mhit.Value : new MapSelection();
             if (mhit != null)
@@ -3432,7 +3467,7 @@ namespace CodeWalker
                     }
                 }
             }
-            if (change && (ProjectForm != null) && !addSelection)
+            if (change && (ProjectForm != null) && (!addSelection || manualSelection))
             {
                 ProjectForm.OnWorldSelectionChanged(SelectedItem);
             }
@@ -3729,7 +3764,7 @@ namespace CodeWalker
             if (!MouseSelectEnabled)
             { return; }
 
-            SelectItem(LastMouseHit, Input.CtrlPressed);
+            SelectItem(LastMouseHit, Input.CtrlPressed, true);
         }
         private void UpdateSelectionUI(bool wait)
         {
@@ -5800,13 +5835,6 @@ namespace CodeWalker
 
         private void WorldForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //if (ProjectForm != null)
-            //{
-            //    if (MessageBox.Show("Are you sure you want to quit CodeWalker?", "Confirm quit", MessageBoxButtons.YesNo) != DialogResult.Yes)
-            //    {
-            //        e.Cancel = true; //unfortunately this doesn't catch the event early enough! :(
-            //    }
-            //}
         }
 
         private void WorldForm_MouseDown(object sender, MouseEventArgs e)
@@ -5824,6 +5852,8 @@ namespace CodeWalker
 
             MouseDownPoint = e.Location;
             MouseLastPoint = MouseDownPoint;
+            Input.CtrlPressed = (ModifierKeys & Keys.Control) > 0;
+            Input.ShiftPressed = (ModifierKeys & Keys.Shift) > 0;
 
             if (ControlMode == WorldControlMode.Free && !ControlBrushEnabled)
             {
@@ -5901,6 +5931,9 @@ namespace CodeWalker
                 case MouseButtons.Right: MouseRButtonDown = false; break;
             }
 
+            Input.CtrlPressed = (ModifierKeys & Keys.Control) > 0;
+            Input.ShiftPressed = (ModifierKeys & Keys.Shift) > 0;
+
             lock (MouseControlSyncRoot)
             {
                 MouseControlButtons &= ~e.Button;
@@ -5933,6 +5966,9 @@ namespace CodeWalker
         {
             int dx = e.X - MouseX;
             int dy = e.Y - MouseY;
+
+            Input.CtrlPressed = (ModifierKeys & Keys.Control) > 0;
+            Input.ShiftPressed = (ModifierKeys & Keys.Shift) > 0;
 
             if (MouseInvert)
             {

@@ -280,6 +280,10 @@ namespace CodeWalker.Forms
 
             Monitor.Exit(Renderer.RenderSyncRoot);
         }
+        public bool ConfirmQuit()
+        {
+            return true;
+        }
 
 
         private void ContentThread()

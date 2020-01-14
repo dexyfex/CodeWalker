@@ -227,7 +227,17 @@ namespace CodeWalker.Rendering
         }
         private void Dxform_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Cleanup();
+            if (!e.Cancel)
+            {
+                if (!dxform.ConfirmQuit())
+                {
+                    e.Cancel = true;
+                }
+            }
+            if (!e.Cancel)
+            {
+                Cleanup();
+            }
         }
         private void Dxform_ClientSizeChanged(object sender, EventArgs e)
         {
