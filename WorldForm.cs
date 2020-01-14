@@ -1766,23 +1766,23 @@ namespace CodeWalker
 
         public void UpdateCollisionBoundsGraphics(Bounds b)
         {
-            if (b is BoundBVH bvh)
+            lock (Renderer.RenderSyncRoot)
             {
-                bvh.BuildBVH();
-            }
-            else if (b is BoundComposite bc)
-            {
-                bc.BuildBVH();
-            }
+                if (b is BoundBVH bvh)
+                {
+                    bvh.BuildBVH();
+                }
+                else if (b is BoundComposite bc)
+                {
+                    bc.BuildBVH();
+                }
 
-            var ib = b;
-            while (ib.Parent != null)
-            {
-                ib = ib.Parent;
-            }
+                var ib = b;
+                while (ib.Parent != null)
+                {
+                    ib = ib.Parent;
+                }
 
-            //lock (Renderer.RenderSyncRoot)
-            {
                 Renderer.Invalidate(ib);
             }
         }

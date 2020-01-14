@@ -1502,7 +1502,6 @@ namespace CodeWalker.Project
         public object NewObject(MapSelection sel, bool copyPosition = false, bool selectNew = true)
         {
             //general method to add a new object, given a map selection
-            SetObject(ref sel);
             if (sel.MultipleSelectionItems != null)
             {
                 var objs = new List<object>();
@@ -6789,6 +6788,12 @@ namespace CodeWalker.Project
                 }
                 else
                 {
+                    if ((sel.MultipleSelectionItems != null) && (sel.MultipleSelectionItems.Length > 0))
+                    {
+                        SetObject(ref sel.MultipleSelectionItems[sel.MultipleSelectionItems.Length - 1]);
+                        return;
+                    }
+
                     var mlo = sel.MloEntityDef;
                     var room = sel.MloRoomDef;
                     var ent = sel.EntityDef;
