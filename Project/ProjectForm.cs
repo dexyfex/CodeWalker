@@ -36,6 +36,8 @@ namespace CodeWalker.Project
         }
         public ProjectFile CurrentProjectFile;
 
+        private MapSelection[] CurrentMulti;
+
         private YmapFile CurrentYmapFile;
         private YmapEntityDef CurrentEntity;
         private YmapCarGen CurrentCarGen;
@@ -354,6 +356,13 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
                 (panel) => { return true; }); //findFunc
         }
+        public void ShowEditMultiPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditMultiPanel(this); }, //createFunc
+                (panel) => { panel.SetItems(CurrentMulti); }, //updateFunc
+                (panel) => { return panel.Items == CurrentMulti; }); //findFunc
+        }
         public void ShowEditYmapPanel(bool promote)
         {
             ShowPanel(promote,
@@ -567,7 +576,11 @@ namespace CodeWalker.Project
 
         private void ShowCurrentProjectItem(bool promote)
         {
-            if (CurrentMloEntity != null)
+            if (CurrentMulti != null)
+            {
+                ShowEditMultiPanel(promote);
+            }
+            else if (CurrentMloEntity != null)
             {
                 ShowEditYmapEntityPanel(promote);
             }
@@ -715,6 +728,16 @@ namespace CodeWalker.Project
         }
         public void SetProjectItem(object item, bool refreshUI = true)
         {
+            if (item is MapSelection[] multi)
+            {
+                CurrentMulti = multi;
+                return;
+            }
+            else
+            {
+                CurrentMulti = null;
+            }
+
             CurrentYmapFile = item as YmapFile;
             CurrentMloEntity = item as MCEntityDef;
             CurrentEntity = item as YmapEntityDef;
@@ -1510,6 +1533,7 @@ namespace CodeWalker.Project
                     objs.Add(NewObject(sel.MultipleSelectionItems[i], copyPosition, false));
                 }
                 LoadProjectTree();
+                CurrentMulti = sel.MultipleSelectionItems;
                 return objs.ToArray();
             }
             else if (sel.CollisionPoly != null) return NewCollisionPoly(sel.CollisionPoly.Type, sel.CollisionPoly, copyPosition, selectNew);
@@ -1552,7 +1576,7 @@ namespace CodeWalker.Project
         }
         private void SetObject(ref MapSelection sel)
         {
-            if (sel.MultipleSelectionItems != null) { } //todo...
+            if (sel.MultipleSelectionItems != null) SetProjectItem(sel.MultipleSelectionItems, false);
             else if (sel.CollisionVertex != null) SetProjectItem(sel.CollisionVertex, false);
             else if (sel.CollisionPoly != null) SetProjectItem(sel.CollisionPoly, false);
             else if (sel.CollisionBounds != null) SetProjectItem(sel.CollisionBounds, false);
@@ -1567,7 +1591,6 @@ namespace CodeWalker.Project
             else if (sel.Audio?.AudioZone != null) SetProjectItem(sel.Audio, false);
             else if (sel.Audio?.AudioEmitter != null) SetProjectItem(sel.Audio, false);
         }
-
 
 
 
@@ -6788,10 +6811,20 @@ namespace CodeWalker.Project
                 }
                 else
                 {
+                    var wasmult = (CurrentMulti != null);
                     if ((sel.MultipleSelectionItems != null) && (sel.MultipleSelectionItems.Length > 0))
                     {
                         SetObject(ref sel.MultipleSelectionItems[sel.MultipleSelectionItems.Length - 1]);
+                        SetObject(ref sel);
+                        ProjectExplorer?.DeselectNode();
+                        ShowProjectItemInProcess = true;
+                        ShowCurrentProjectItem(false);
+                        ShowProjectItemInProcess = false;
                         return;
+                    }
+                    else
+                    {
+                        CurrentMulti = null;
                     }
 
                     var mlo = sel.MloEntityDef;
@@ -6824,15 +6857,15 @@ namespace CodeWalker.Project
 
                     if (YmapExistsInProject(ymap) && (ybn == null))
                     {
-                        if (ent != CurrentEntity)
+                        if (wasmult || (ent != CurrentEntity))
                         {
                             ProjectExplorer?.TrySelectEntityTreeNode(ent);
                         }
-                        if (cargen != CurrentCarGen)
+                        if (wasmult || (cargen != CurrentCarGen))
                         {
                             ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
                         }
-                        if (grassbatch != CurrentGrassBatch)
+                        if (wasmult || (grassbatch != CurrentGrassBatch))
                         {
                             ProjectExplorer?.TrySelectGrassBatchTreeNode(grassbatch);
                         }
@@ -6840,11 +6873,11 @@ namespace CodeWalker.Project
                     }
                     else if (YtypExistsInProject(ytyp))
                     {
-                        if (arch != CurrentArchetype)
+                        if (wasmult || (arch != CurrentArchetype))
                         {
                             ProjectExplorer?.TrySelectArchetypeTreeNode(mlo?.Archetype);
                         }
-                        if (ent != CurrentEntity)
+                        if (wasmult || (ent != CurrentEntity))
                         {
                             MloInstanceData mloInstance = ent.MloParent?.MloInstance;
                             if (mloInstance != null)
@@ -6853,69 +6886,69 @@ namespace CodeWalker.Project
                                 ProjectExplorer?.TrySelectMloEntityTreeNode(entityDef);
                             }
                         }
-                        if (room != CurrentMloRoom)
+                        if (wasmult || (room != CurrentMloRoom))
                         {
                             ProjectExplorer?.TrySelectMloRoomTreeNode(room);
                         }
                     }
                     else if (YbnExistsInProject(ybn))
                     {
-                        if ((collvert != null) && (collvert != CurrentCollisionVertex))
+                        if ((collvert != null) && (wasmult || (collvert != CurrentCollisionVertex)))
                         {
                             ProjectExplorer?.TrySelectCollisionVertexTreeNode(collvert);
                         }
-                        else if ((collpoly != null) && (collpoly != CurrentCollisionPoly))
+                        else if ((collpoly != null) && (wasmult || (collpoly != CurrentCollisionPoly)))
                         {
                             ProjectExplorer?.TrySelectCollisionPolyTreeNode(collpoly);
                         }
-                        else if (collbound != CurrentCollisionBounds)
+                        else if (wasmult || (collbound != CurrentCollisionBounds))
                         {
                             ProjectExplorer?.TrySelectCollisionBoundsTreeNode(collbound);
                         }
                     }
                     else if (YndExistsInProject(ynd))
                     {
-                        if (pathnode != CurrentPathNode)
+                        if (wasmult || (pathnode != CurrentPathNode))
                         {
                             ProjectExplorer?.TrySelectPathNodeTreeNode(pathnode);
                         }
                     }
                     else if (YnvExistsInProject(ynv))
                     {
-                        if (navpoly != CurrentNavPoly)
+                        if (wasmult || (navpoly != CurrentNavPoly))
                         {
                             ProjectExplorer?.TrySelectNavPolyTreeNode(navpoly);
                         }
-                        if (navpoint != CurrentNavPoint)
+                        if (wasmult || (navpoint != CurrentNavPoint))
                         {
                             ProjectExplorer?.TrySelectNavPointTreeNode(navpoint);
                         }
-                        if (navportal != CurrentNavPortal)
+                        if (wasmult || (navportal != CurrentNavPortal))
                         {
                             ProjectExplorer?.TrySelectNavPortalTreeNode(navportal);
                         }
                     }
                     else if (TrainTrackExistsInProject(traintrack))
                     {
-                        if (trainnode != CurrentTrainNode)
+                        if (wasmult || (trainnode != CurrentTrainNode))
                         {
                             ProjectExplorer?.TrySelectTrainNodeTreeNode(trainnode);
                         }
                     }
                     else if (ScenarioExistsInProject(scenario))
                     {
-                        if ((scenariond != null) && (scenariond != CurrentScenarioNode))
+                        if ((scenariond != null) && (wasmult || (scenariond != CurrentScenarioNode)))
                         {
                             ProjectExplorer?.TrySelectScenarioNodeTreeNode(scenariond);
                         }
                     }
                     else if (AudioFileExistsInProject(audiofile))
                     {
-                        if ((audiopl?.AudioZone != null) && (audiopl != CurrentAudioZone))
+                        if ((audiopl?.AudioZone != null) && (wasmult || (audiopl != CurrentAudioZone)))
                         {
                             ProjectExplorer?.TrySelectAudioZoneTreeNode(audiopl);
                         }
-                        if ((audiopl?.AudioEmitter != null) && (audiopl != CurrentAudioEmitter))
+                        if ((audiopl?.AudioEmitter != null) && (wasmult || (audiopl != CurrentAudioEmitter)))
                         {
                             ProjectExplorer?.TrySelectAudioEmitterTreeNode(audiopl);
                         }
@@ -6980,7 +7013,7 @@ namespace CodeWalker.Project
                 {
                     if (sel.MultipleSelectionItems != null)
                     {
-                        //TODO!!
+                        OnWorldMultiModified(sel.MultipleSelectionItems);
                     }
                     else if (sel.CollisionVertex != null)
                     {
@@ -7033,6 +7066,15 @@ namespace CodeWalker.Project
                 }
             }
             catch { }
+        }
+        private void OnWorldMultiModified(MapSelection[] items)
+        {
+
+            if (items == CurrentMulti)
+            {
+                ShowEditMultiPanel(false);
+            }
+
         }
         private void OnWorldEntityModified(YmapEntityDef ent)
         {
@@ -8220,6 +8262,21 @@ namespace CodeWalker.Project
 
         private void ProjectForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (CurrentProjectFile != null)
+            {
+                var msg = "Are you sure you want to close the project window?";
+                var tit = "Confirm close";
+                if (e.CloseReason == CloseReason.FormOwnerClosing)
+                {
+                    msg = "Are you sure you want to quit CodeWalker?";
+                    tit = "Confirm quit";
+                }
+                if (MessageBox.Show(msg, tit, MessageBoxButtons.YesNo) != DialogResult.Yes)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
             CloseProject();
         }
         private void ProjectForm_FormClosed(object sender, FormClosedEventArgs e)

@@ -221,7 +221,10 @@ namespace CodeWalker.Vehicles
         {
             Renderer.BuffersResized(w, h);
         }
-
+        public bool ConfirmQuit()
+        {
+            return true;
+        }
 
 
 

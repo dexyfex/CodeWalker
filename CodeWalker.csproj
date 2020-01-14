@@ -140,6 +140,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Project\Panels\EditMultiPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Project\Panels\EditMultiPanel.Designer.cs">
+      <DependentUpon>EditMultiPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Project\Panels\EditYbnBoundPolyPanel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -646,6 +652,9 @@
       <DependentUpon>WorldForm.cs</DependentUpon>
     </Compile>
     <Compile Include="World\Widget.cs" />
+    <EmbeddedResource Include="Project\Panels\EditMultiPanel.resx">
+      <DependentUpon>EditMultiPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Project\Panels\EditYbnBoundPolyPanel.resx">
       <DependentUpon>EditYbnBoundPolyPanel.cs</DependentUpon>
     </EmbeddedResource>

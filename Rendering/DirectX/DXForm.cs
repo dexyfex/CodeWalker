@@ -24,5 +24,6 @@ namespace CodeWalker.Rendering
         void CleanupScene();
         void RenderScene(DeviceContext context);
         void BuffersResized(int w, int h);
+        bool ConfirmQuit();
     }
 }

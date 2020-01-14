@@ -270,6 +270,10 @@ namespace CodeWalker.Peds
         {
             Renderer.BuffersResized(w, h);
         }
+        public bool ConfirmQuit()
+        {
+            return true;
+        }
 
 
 
