@@ -44,7 +44,7 @@ namespace CodeWalker
             this.ToolsButton = new System.Windows.Forms.Button();
             this.ToolsPanelExpandButton = new System.Windows.Forms.Button();
             this.ToolsTabControl = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.ViewTabPage = new System.Windows.Forms.TabPage();
             this.ViewTabControl = new System.Windows.Forms.TabControl();
             this.ViewWorldTabPage = new System.Windows.Forms.TabPage();
             this.EnableModsCheckBox = new System.Windows.Forms.CheckBox();
@@ -72,7 +72,8 @@ namespace CodeWalker
             this.label1 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.ViewModeComboBox = new System.Windows.Forms.ComboBox();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.ShowToolbarCheckBox = new System.Windows.Forms.CheckBox();
+            this.MarkersTabPage = new System.Windows.Forms.TabPage();
             this.label27 = new System.Windows.Forms.Label();
             this.CameraPositionTextBox = new System.Windows.Forms.TextBox();
             this.AddSelectionMarkerButton = new System.Windows.Forms.Button();
@@ -86,7 +87,7 @@ namespace CodeWalker
             this.label7 = new System.Windows.Forms.Label();
             this.AddMarkersButton = new System.Windows.Forms.Button();
             this.MultiFindTextBox = new CodeWalker.WinForms.TextBoxFix();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.SelectionTabPage = new System.Windows.Forms.TabPage();
             this.label25 = new System.Windows.Forms.Label();
             this.SelectionModeComboBox = new System.Windows.Forms.ComboBox();
             this.SelectionNameTextBox = new System.Windows.Forms.TextBox();
@@ -106,9 +107,9 @@ namespace CodeWalker
             this.SelectionExtensionTabPage = new System.Windows.Forms.TabPage();
             this.SelExtensionPropertyGrid = new CodeWalker.WinForms.ReadOnlyPropertyGrid();
             this.MouseSelectCheckBox = new System.Windows.Forms.CheckBox();
-            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.OptionsTabPage = new System.Windows.Forms.TabPage();
             this.OptionsTabControl = new System.Windows.Forms.TabControl();
-            this.tabPage8 = new System.Windows.Forms.TabPage();
+            this.OptionsGeneralTabPage = new System.Windows.Forms.TabPage();
             this.CarGeneratorsCheckBox = new System.Windows.Forms.CheckBox();
             this.RenderEntitiesCheckBox = new System.Windows.Forms.CheckBox();
             this.AdvancedSettingsButton = new System.Windows.Forms.Button();
@@ -135,7 +136,7 @@ namespace CodeWalker
             this.FullScreenCheckBox = new System.Windows.Forms.CheckBox();
             this.TimedEntitiesCheckBox = new System.Windows.Forms.CheckBox();
             this.FieldOfViewTrackBar = new System.Windows.Forms.TrackBar();
-            this.tabPage14 = new System.Windows.Forms.TabPage();
+            this.OptionsRenderTabPage = new System.Windows.Forms.TabPage();
             this.FarClipUpDown = new System.Windows.Forms.NumericUpDown();
             this.label32 = new System.Windows.Forms.Label();
             this.NearClipUpDown = new System.Windows.Forms.NumericUpDown();
@@ -151,7 +152,9 @@ namespace CodeWalker
             this.ProxiesCheckBox = new System.Windows.Forms.CheckBox();
             this.WaitForChildrenCheckBox = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
-            this.tabPage9 = new System.Windows.Forms.TabPage();
+            this.OptionsHelpersTabPage = new System.Windows.Forms.TabPage();
+            this.SnapAngleUpDown = new System.Windows.Forms.NumericUpDown();
+            this.label33 = new System.Windows.Forms.Label();
             this.SnapGridSizeUpDown = new System.Windows.Forms.NumericUpDown();
             this.label26 = new System.Windows.Forms.Label();
             this.SkeletonsCheckBox = new System.Windows.Forms.CheckBox();
@@ -163,7 +166,6 @@ namespace CodeWalker
             this.PathBoundsCheckBox = new System.Windows.Forms.CheckBox();
             this.SelectionWidgetCheckBox = new System.Windows.Forms.CheckBox();
             this.MarkerStyleComboBox = new System.Windows.Forms.ComboBox();
-            this.ShowToolbarCheckBox = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
             this.LocatorStyleComboBox = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
@@ -175,7 +177,7 @@ namespace CodeWalker
             this.BoundsRangeTrackBar = new System.Windows.Forms.TrackBar();
             this.BoundsStyleComboBox = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
-            this.tabPage10 = new System.Windows.Forms.TabPage();
+            this.OptionsLightingTabPage = new System.Windows.Forms.TabPage();
             this.DeferredShadingCheckBox = new System.Windows.Forms.CheckBox();
             this.WeatherRegionComboBox = new System.Windows.Forms.ComboBox();
             this.label29 = new System.Windows.Forms.Label();
@@ -300,12 +302,20 @@ namespace CodeWalker
             this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.SubtitleLabel = new System.Windows.Forms.Label();
             this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
-            this.SnapAngleUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label33 = new System.Windows.Forms.Label();
+            this.ToolbarRotationSnappingButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnappingOffButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnapping1Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnapping2Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnapping5Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnapping10Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnappingCustomButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnapping45Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnapping90Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSnapGridSizeButton = new System.Windows.Forms.ToolStripMenuItem();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
-            this.tabPage1.SuspendLayout();
+            this.ViewTabPage.SuspendLayout();
             this.ViewTabControl.SuspendLayout();
             this.ViewWorldTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.WorldDetailDistTrackBar)).BeginInit();
@@ -313,8 +323,8 @@ namespace CodeWalker
             this.ViewYmapsTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DetailTrackBar)).BeginInit();
             this.ViewModelTabPage.SuspendLayout();
-            this.tabPage2.SuspendLayout();
-            this.tabPage3.SuspendLayout();
+            this.MarkersTabPage.SuspendLayout();
+            this.SelectionTabPage.SuspendLayout();
             this.SelectionTabControl.SuspendLayout();
             this.SelectionEntityTabPage.SuspendLayout();
             this.SelectionArchetypeTabPage.SuspendLayout();
@@ -324,19 +334,20 @@ namespace CodeWalker
             this.tabPage12.SuspendLayout();
             this.tabPage13.SuspendLayout();
             this.SelectionExtensionTabPage.SuspendLayout();
-            this.tabPage4.SuspendLayout();
+            this.OptionsTabPage.SuspendLayout();
             this.OptionsTabControl.SuspendLayout();
-            this.tabPage8.SuspendLayout();
+            this.OptionsGeneralTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MapViewDetailTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.CollisionMeshRangeTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FieldOfViewTrackBar)).BeginInit();
-            this.tabPage14.SuspendLayout();
+            this.OptionsRenderTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FarClipUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NearClipUpDown)).BeginInit();
-            this.tabPage9.SuspendLayout();
+            this.OptionsHelpersTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SnapAngleUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BoundsRangeTrackBar)).BeginInit();
-            this.tabPage10.SuspendLayout();
+            this.OptionsLightingTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CloudParamTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.TimeSpeedTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
@@ -345,7 +356,6 @@ namespace CodeWalker
             this.ToolsMenu.SuspendLayout();
             this.Toolbar.SuspendLayout();
             this.ToolbarPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SnapAngleUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // StatusStrip
@@ -499,29 +509,29 @@ namespace CodeWalker
             this.ToolsTabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ToolsTabControl.Controls.Add(this.tabPage1);
-            this.ToolsTabControl.Controls.Add(this.tabPage2);
-            this.ToolsTabControl.Controls.Add(this.tabPage3);
-            this.ToolsTabControl.Controls.Add(this.tabPage4);
+            this.ToolsTabControl.Controls.Add(this.ViewTabPage);
+            this.ToolsTabControl.Controls.Add(this.MarkersTabPage);
+            this.ToolsTabControl.Controls.Add(this.SelectionTabPage);
+            this.ToolsTabControl.Controls.Add(this.OptionsTabPage);
             this.ToolsTabControl.Location = new System.Drawing.Point(3, 30);
             this.ToolsTabControl.Name = "ToolsTabControl";
             this.ToolsTabControl.SelectedIndex = 0;
             this.ToolsTabControl.Size = new System.Drawing.Size(213, 632);
             this.ToolsTabControl.TabIndex = 12;
             // 
-            // tabPage1
+            // ViewTabPage
             // 
-            this.tabPage1.Controls.Add(this.ViewTabControl);
-            this.tabPage1.Controls.Add(this.label3);
-            this.tabPage1.Controls.Add(this.ViewModeComboBox);
-            this.tabPage1.Controls.Add(this.ShowToolbarCheckBox);
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(205, 606);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "View";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            this.ViewTabPage.Controls.Add(this.ViewTabControl);
+            this.ViewTabPage.Controls.Add(this.label3);
+            this.ViewTabPage.Controls.Add(this.ViewModeComboBox);
+            this.ViewTabPage.Controls.Add(this.ShowToolbarCheckBox);
+            this.ViewTabPage.Location = new System.Drawing.Point(4, 22);
+            this.ViewTabPage.Name = "ViewTabPage";
+            this.ViewTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.ViewTabPage.Size = new System.Drawing.Size(205, 606);
+            this.ViewTabPage.TabIndex = 0;
+            this.ViewTabPage.Text = "View";
+            this.ViewTabPage.UseVisualStyleBackColor = true;
             // 
             // ViewTabControl
             // 
@@ -865,28 +875,40 @@ namespace CodeWalker
             this.ViewModeComboBox.SelectedIndexChanged += new System.EventHandler(this.ViewModeComboBox_SelectedIndexChanged);
             this.ViewModeComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ViewModeComboBox_KeyPress);
             // 
-            // tabPage2
+            // ShowToolbarCheckBox
             // 
-            this.tabPage2.Controls.Add(this.label27);
-            this.tabPage2.Controls.Add(this.CameraPositionTextBox);
-            this.tabPage2.Controls.Add(this.AddSelectionMarkerButton);
-            this.tabPage2.Controls.Add(this.AddCurrentPositonMarkerButton);
-            this.tabPage2.Controls.Add(this.ResetMarkersButton);
-            this.tabPage2.Controls.Add(this.ClearMarkersButton);
-            this.tabPage2.Controls.Add(this.GoToButton);
-            this.tabPage2.Controls.Add(this.ShowLocatorCheckBox);
-            this.tabPage2.Controls.Add(this.label6);
-            this.tabPage2.Controls.Add(this.LocateTextBox);
-            this.tabPage2.Controls.Add(this.label7);
-            this.tabPage2.Controls.Add(this.AddMarkersButton);
-            this.tabPage2.Controls.Add(this.MultiFindTextBox);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(205, 606);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Markers";
-            this.tabPage2.UseVisualStyleBackColor = true;
+            this.ShowToolbarCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.ShowToolbarCheckBox.AutoSize = true;
+            this.ShowToolbarCheckBox.Location = new System.Drawing.Point(10, 586);
+            this.ShowToolbarCheckBox.Name = "ShowToolbarCheckBox";
+            this.ShowToolbarCheckBox.Size = new System.Drawing.Size(108, 17);
+            this.ShowToolbarCheckBox.TabIndex = 47;
+            this.ShowToolbarCheckBox.Text = "Show Toolbar (T)";
+            this.ShowToolbarCheckBox.UseVisualStyleBackColor = true;
+            this.ShowToolbarCheckBox.CheckedChanged += new System.EventHandler(this.ShowToolbarCheckBox_CheckedChanged);
+            // 
+            // MarkersTabPage
+            // 
+            this.MarkersTabPage.Controls.Add(this.label27);
+            this.MarkersTabPage.Controls.Add(this.CameraPositionTextBox);
+            this.MarkersTabPage.Controls.Add(this.AddSelectionMarkerButton);
+            this.MarkersTabPage.Controls.Add(this.AddCurrentPositonMarkerButton);
+            this.MarkersTabPage.Controls.Add(this.ResetMarkersButton);
+            this.MarkersTabPage.Controls.Add(this.ClearMarkersButton);
+            this.MarkersTabPage.Controls.Add(this.GoToButton);
+            this.MarkersTabPage.Controls.Add(this.ShowLocatorCheckBox);
+            this.MarkersTabPage.Controls.Add(this.label6);
+            this.MarkersTabPage.Controls.Add(this.LocateTextBox);
+            this.MarkersTabPage.Controls.Add(this.label7);
+            this.MarkersTabPage.Controls.Add(this.AddMarkersButton);
+            this.MarkersTabPage.Controls.Add(this.MultiFindTextBox);
+            this.MarkersTabPage.Location = new System.Drawing.Point(4, 22);
+            this.MarkersTabPage.Name = "MarkersTabPage";
+            this.MarkersTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.MarkersTabPage.Size = new System.Drawing.Size(205, 606);
+            this.MarkersTabPage.TabIndex = 1;
+            this.MarkersTabPage.Text = "Markers";
+            this.MarkersTabPage.UseVisualStyleBackColor = true;
             // 
             // label27
             // 
@@ -1027,19 +1049,19 @@ namespace CodeWalker
             this.MultiFindTextBox.Size = new System.Drawing.Size(205, 355);
             this.MultiFindTextBox.TabIndex = 17;
             // 
-            // tabPage3
+            // SelectionTabPage
             // 
-            this.tabPage3.Controls.Add(this.label25);
-            this.tabPage3.Controls.Add(this.SelectionModeComboBox);
-            this.tabPage3.Controls.Add(this.SelectionNameTextBox);
-            this.tabPage3.Controls.Add(this.SelectionTabControl);
-            this.tabPage3.Controls.Add(this.MouseSelectCheckBox);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(205, 606);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Selection";
-            this.tabPage3.UseVisualStyleBackColor = true;
+            this.SelectionTabPage.Controls.Add(this.label25);
+            this.SelectionTabPage.Controls.Add(this.SelectionModeComboBox);
+            this.SelectionTabPage.Controls.Add(this.SelectionNameTextBox);
+            this.SelectionTabPage.Controls.Add(this.SelectionTabControl);
+            this.SelectionTabPage.Controls.Add(this.MouseSelectCheckBox);
+            this.SelectionTabPage.Location = new System.Drawing.Point(4, 22);
+            this.SelectionTabPage.Name = "SelectionTabPage";
+            this.SelectionTabPage.Size = new System.Drawing.Size(205, 606);
+            this.SelectionTabPage.TabIndex = 2;
+            this.SelectionTabPage.Text = "Selection";
+            this.SelectionTabPage.UseVisualStyleBackColor = true;
             // 
             // label25
             // 
@@ -1288,71 +1310,71 @@ namespace CodeWalker
             this.MouseSelectCheckBox.UseVisualStyleBackColor = true;
             this.MouseSelectCheckBox.CheckedChanged += new System.EventHandler(this.MouseSelectCheckBox_CheckedChanged);
             // 
-            // tabPage4
+            // OptionsTabPage
             // 
-            this.tabPage4.Controls.Add(this.OptionsTabControl);
-            this.tabPage4.Controls.Add(this.StatusBarCheckBox);
-            this.tabPage4.Controls.Add(this.QuitButton);
-            this.tabPage4.Controls.Add(this.ReloadSettingsButton);
-            this.tabPage4.Controls.Add(this.SaveSettingsButton);
-            this.tabPage4.Controls.Add(this.ReloadShadersButton);
-            this.tabPage4.Controls.Add(this.ErrorConsoleCheckBox);
-            this.tabPage4.Location = new System.Drawing.Point(4, 22);
-            this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(205, 606);
-            this.tabPage4.TabIndex = 3;
-            this.tabPage4.Text = "Options";
-            this.tabPage4.UseVisualStyleBackColor = true;
+            this.OptionsTabPage.Controls.Add(this.OptionsTabControl);
+            this.OptionsTabPage.Controls.Add(this.StatusBarCheckBox);
+            this.OptionsTabPage.Controls.Add(this.QuitButton);
+            this.OptionsTabPage.Controls.Add(this.ReloadSettingsButton);
+            this.OptionsTabPage.Controls.Add(this.SaveSettingsButton);
+            this.OptionsTabPage.Controls.Add(this.ReloadShadersButton);
+            this.OptionsTabPage.Controls.Add(this.ErrorConsoleCheckBox);
+            this.OptionsTabPage.Location = new System.Drawing.Point(4, 22);
+            this.OptionsTabPage.Name = "OptionsTabPage";
+            this.OptionsTabPage.Size = new System.Drawing.Size(205, 606);
+            this.OptionsTabPage.TabIndex = 3;
+            this.OptionsTabPage.Text = "Options";
+            this.OptionsTabPage.UseVisualStyleBackColor = true;
             // 
             // OptionsTabControl
             // 
             this.OptionsTabControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.OptionsTabControl.Controls.Add(this.tabPage8);
-            this.OptionsTabControl.Controls.Add(this.tabPage14);
-            this.OptionsTabControl.Controls.Add(this.tabPage9);
-            this.OptionsTabControl.Controls.Add(this.tabPage10);
+            this.OptionsTabControl.Controls.Add(this.OptionsGeneralTabPage);
+            this.OptionsTabControl.Controls.Add(this.OptionsRenderTabPage);
+            this.OptionsTabControl.Controls.Add(this.OptionsHelpersTabPage);
+            this.OptionsTabControl.Controls.Add(this.OptionsLightingTabPage);
             this.OptionsTabControl.Location = new System.Drawing.Point(0, 3);
             this.OptionsTabControl.Name = "OptionsTabControl";
             this.OptionsTabControl.SelectedIndex = 0;
             this.OptionsTabControl.Size = new System.Drawing.Size(208, 508);
             this.OptionsTabControl.TabIndex = 50;
             // 
-            // tabPage8
+            // OptionsGeneralTabPage
             // 
-            this.tabPage8.Controls.Add(this.CarGeneratorsCheckBox);
-            this.tabPage8.Controls.Add(this.RenderEntitiesCheckBox);
-            this.tabPage8.Controls.Add(this.AdvancedSettingsButton);
-            this.tabPage8.Controls.Add(this.ControlSettingsButton);
-            this.tabPage8.Controls.Add(this.MapViewDetailLabel);
-            this.tabPage8.Controls.Add(this.label28);
-            this.tabPage8.Controls.Add(this.MapViewDetailTrackBar);
-            this.tabPage8.Controls.Add(this.CameraModeComboBox);
-            this.tabPage8.Controls.Add(this.label24);
-            this.tabPage8.Controls.Add(this.WaterQuadsCheckBox);
-            this.tabPage8.Controls.Add(this.FieldOfViewLabel);
-            this.tabPage8.Controls.Add(this.label22);
-            this.tabPage8.Controls.Add(this.TimedEntitiesAlwaysOnCheckBox);
-            this.tabPage8.Controls.Add(this.GrassCheckBox);
-            this.tabPage8.Controls.Add(this.InteriorsCheckBox);
-            this.tabPage8.Controls.Add(this.CollisionMeshLayerDrawableCheckBox);
-            this.tabPage8.Controls.Add(this.CollisionMeshLayer2CheckBox);
-            this.tabPage8.Controls.Add(this.CollisionMeshLayer1CheckBox);
-            this.tabPage8.Controls.Add(this.label13);
-            this.tabPage8.Controls.Add(this.CollisionMeshLayer0CheckBox);
-            this.tabPage8.Controls.Add(this.label12);
-            this.tabPage8.Controls.Add(this.CollisionMeshRangeTrackBar);
-            this.tabPage8.Controls.Add(this.CollisionMeshesCheckBox);
-            this.tabPage8.Controls.Add(this.FullScreenCheckBox);
-            this.tabPage8.Controls.Add(this.TimedEntitiesCheckBox);
-            this.tabPage8.Controls.Add(this.FieldOfViewTrackBar);
-            this.tabPage8.Location = new System.Drawing.Point(4, 22);
-            this.tabPage8.Name = "tabPage8";
-            this.tabPage8.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage8.Size = new System.Drawing.Size(200, 482);
-            this.tabPage8.TabIndex = 0;
-            this.tabPage8.Text = "General";
-            this.tabPage8.UseVisualStyleBackColor = true;
+            this.OptionsGeneralTabPage.Controls.Add(this.CarGeneratorsCheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.RenderEntitiesCheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.AdvancedSettingsButton);
+            this.OptionsGeneralTabPage.Controls.Add(this.ControlSettingsButton);
+            this.OptionsGeneralTabPage.Controls.Add(this.MapViewDetailLabel);
+            this.OptionsGeneralTabPage.Controls.Add(this.label28);
+            this.OptionsGeneralTabPage.Controls.Add(this.MapViewDetailTrackBar);
+            this.OptionsGeneralTabPage.Controls.Add(this.CameraModeComboBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.label24);
+            this.OptionsGeneralTabPage.Controls.Add(this.WaterQuadsCheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.FieldOfViewLabel);
+            this.OptionsGeneralTabPage.Controls.Add(this.label22);
+            this.OptionsGeneralTabPage.Controls.Add(this.TimedEntitiesAlwaysOnCheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.GrassCheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.InteriorsCheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.CollisionMeshLayerDrawableCheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.CollisionMeshLayer2CheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.CollisionMeshLayer1CheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.label13);
+            this.OptionsGeneralTabPage.Controls.Add(this.CollisionMeshLayer0CheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.label12);
+            this.OptionsGeneralTabPage.Controls.Add(this.CollisionMeshRangeTrackBar);
+            this.OptionsGeneralTabPage.Controls.Add(this.CollisionMeshesCheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.FullScreenCheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.TimedEntitiesCheckBox);
+            this.OptionsGeneralTabPage.Controls.Add(this.FieldOfViewTrackBar);
+            this.OptionsGeneralTabPage.Location = new System.Drawing.Point(4, 22);
+            this.OptionsGeneralTabPage.Name = "OptionsGeneralTabPage";
+            this.OptionsGeneralTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.OptionsGeneralTabPage.Size = new System.Drawing.Size(200, 482);
+            this.OptionsGeneralTabPage.TabIndex = 0;
+            this.OptionsGeneralTabPage.Text = "General";
+            this.OptionsGeneralTabPage.UseVisualStyleBackColor = true;
             // 
             // CarGeneratorsCheckBox
             // 
@@ -1661,29 +1683,29 @@ namespace CodeWalker
             this.FieldOfViewTrackBar.Value = 100;
             this.FieldOfViewTrackBar.Scroll += new System.EventHandler(this.FieldOfViewTrackBar_Scroll);
             // 
-            // tabPage14
+            // OptionsRenderTabPage
             // 
-            this.tabPage14.Controls.Add(this.FarClipUpDown);
-            this.tabPage14.Controls.Add(this.label32);
-            this.tabPage14.Controls.Add(this.NearClipUpDown);
-            this.tabPage14.Controls.Add(this.label31);
-            this.tabPage14.Controls.Add(this.HDTexturesCheckBox);
-            this.tabPage14.Controls.Add(this.WireframeCheckBox);
-            this.tabPage14.Controls.Add(this.RenderModeComboBox);
-            this.tabPage14.Controls.Add(this.label11);
-            this.tabPage14.Controls.Add(this.TextureSamplerComboBox);
-            this.tabPage14.Controls.Add(this.TextureCoordsComboBox);
-            this.tabPage14.Controls.Add(this.label10);
-            this.tabPage14.Controls.Add(this.AnisotropicFilteringCheckBox);
-            this.tabPage14.Controls.Add(this.ProxiesCheckBox);
-            this.tabPage14.Controls.Add(this.WaitForChildrenCheckBox);
-            this.tabPage14.Controls.Add(this.label14);
-            this.tabPage14.Location = new System.Drawing.Point(4, 22);
-            this.tabPage14.Name = "tabPage14";
-            this.tabPage14.Size = new System.Drawing.Size(200, 482);
-            this.tabPage14.TabIndex = 3;
-            this.tabPage14.Text = "Render";
-            this.tabPage14.UseVisualStyleBackColor = true;
+            this.OptionsRenderTabPage.Controls.Add(this.FarClipUpDown);
+            this.OptionsRenderTabPage.Controls.Add(this.label32);
+            this.OptionsRenderTabPage.Controls.Add(this.NearClipUpDown);
+            this.OptionsRenderTabPage.Controls.Add(this.label31);
+            this.OptionsRenderTabPage.Controls.Add(this.HDTexturesCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.WireframeCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.RenderModeComboBox);
+            this.OptionsRenderTabPage.Controls.Add(this.label11);
+            this.OptionsRenderTabPage.Controls.Add(this.TextureSamplerComboBox);
+            this.OptionsRenderTabPage.Controls.Add(this.TextureCoordsComboBox);
+            this.OptionsRenderTabPage.Controls.Add(this.label10);
+            this.OptionsRenderTabPage.Controls.Add(this.AnisotropicFilteringCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.ProxiesCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.WaitForChildrenCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.label14);
+            this.OptionsRenderTabPage.Location = new System.Drawing.Point(4, 22);
+            this.OptionsRenderTabPage.Name = "OptionsRenderTabPage";
+            this.OptionsRenderTabPage.Size = new System.Drawing.Size(200, 482);
+            this.OptionsRenderTabPage.TabIndex = 3;
+            this.OptionsRenderTabPage.Text = "Render";
+            this.OptionsRenderTabPage.UseVisualStyleBackColor = true;
             // 
             // FarClipUpDown
             // 
@@ -1897,39 +1919,67 @@ namespace CodeWalker
             this.label14.TabIndex = 56;
             this.label14.Text = "Tex coords:";
             // 
-            // tabPage9
+            // OptionsHelpersTabPage
             // 
-            this.tabPage9.Controls.Add(this.SnapAngleUpDown);
-            this.tabPage9.Controls.Add(this.label33);
-            this.tabPage9.Controls.Add(this.SnapGridSizeUpDown);
-            this.tabPage9.Controls.Add(this.label26);
-            this.tabPage9.Controls.Add(this.SkeletonsCheckBox);
-            this.tabPage9.Controls.Add(this.AudioOuterBoundsCheckBox);
-            this.tabPage9.Controls.Add(this.PopZonesCheckBox);
-            this.tabPage9.Controls.Add(this.NavMeshesCheckBox);
-            this.tabPage9.Controls.Add(this.TrainPathsCheckBox);
-            this.tabPage9.Controls.Add(this.PathsDepthClipCheckBox);
-            this.tabPage9.Controls.Add(this.PathBoundsCheckBox);
-            this.tabPage9.Controls.Add(this.SelectionWidgetCheckBox);
-            this.tabPage9.Controls.Add(this.MarkerStyleComboBox);
-            this.tabPage9.Controls.Add(this.label4);
-            this.tabPage9.Controls.Add(this.LocatorStyleComboBox);
-            this.tabPage9.Controls.Add(this.label5);
-            this.tabPage9.Controls.Add(this.MarkerDepthClipCheckBox);
-            this.tabPage9.Controls.Add(this.label9);
-            this.tabPage9.Controls.Add(this.PathsCheckBox);
-            this.tabPage9.Controls.Add(this.SelectionBoundsCheckBox);
-            this.tabPage9.Controls.Add(this.BoundsDepthClipCheckBox);
-            this.tabPage9.Controls.Add(this.BoundsRangeTrackBar);
-            this.tabPage9.Controls.Add(this.BoundsStyleComboBox);
-            this.tabPage9.Controls.Add(this.label8);
-            this.tabPage9.Location = new System.Drawing.Point(4, 22);
-            this.tabPage9.Name = "tabPage9";
-            this.tabPage9.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage9.Size = new System.Drawing.Size(200, 482);
-            this.tabPage9.TabIndex = 1;
-            this.tabPage9.Text = "Helpers";
-            this.tabPage9.UseVisualStyleBackColor = true;
+            this.OptionsHelpersTabPage.Controls.Add(this.SnapAngleUpDown);
+            this.OptionsHelpersTabPage.Controls.Add(this.label33);
+            this.OptionsHelpersTabPage.Controls.Add(this.SnapGridSizeUpDown);
+            this.OptionsHelpersTabPage.Controls.Add(this.label26);
+            this.OptionsHelpersTabPage.Controls.Add(this.SkeletonsCheckBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.AudioOuterBoundsCheckBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.PopZonesCheckBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.NavMeshesCheckBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.TrainPathsCheckBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.PathsDepthClipCheckBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.PathBoundsCheckBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.SelectionWidgetCheckBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.MarkerStyleComboBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.label4);
+            this.OptionsHelpersTabPage.Controls.Add(this.LocatorStyleComboBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.label5);
+            this.OptionsHelpersTabPage.Controls.Add(this.MarkerDepthClipCheckBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.label9);
+            this.OptionsHelpersTabPage.Controls.Add(this.PathsCheckBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.SelectionBoundsCheckBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.BoundsDepthClipCheckBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.BoundsRangeTrackBar);
+            this.OptionsHelpersTabPage.Controls.Add(this.BoundsStyleComboBox);
+            this.OptionsHelpersTabPage.Controls.Add(this.label8);
+            this.OptionsHelpersTabPage.Location = new System.Drawing.Point(4, 22);
+            this.OptionsHelpersTabPage.Name = "OptionsHelpersTabPage";
+            this.OptionsHelpersTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.OptionsHelpersTabPage.Size = new System.Drawing.Size(200, 482);
+            this.OptionsHelpersTabPage.TabIndex = 1;
+            this.OptionsHelpersTabPage.Text = "Helpers";
+            this.OptionsHelpersTabPage.UseVisualStyleBackColor = true;
+            // 
+            // SnapAngleUpDown
+            // 
+            this.SnapAngleUpDown.DecimalPlaces = 1;
+            this.SnapAngleUpDown.Location = new System.Drawing.Point(98, 279);
+            this.SnapAngleUpDown.Maximum = new decimal(new int[] {
+            180,
+            0,
+            0,
+            0});
+            this.SnapAngleUpDown.Name = "SnapAngleUpDown";
+            this.SnapAngleUpDown.Size = new System.Drawing.Size(96, 20);
+            this.SnapAngleUpDown.TabIndex = 32;
+            this.SnapAngleUpDown.Value = new decimal(new int[] {
+            50,
+            0,
+            0,
+            65536});
+            this.SnapAngleUpDown.ValueChanged += new System.EventHandler(this.SnapAngleUpDown_ValueChanged);
+            // 
+            // label33
+            // 
+            this.label33.AutoSize = true;
+            this.label33.Location = new System.Drawing.Point(4, 281);
+            this.label33.Name = "label33";
+            this.label33.Size = new System.Drawing.Size(91, 13);
+            this.label33.TabIndex = 31;
+            this.label33.Text = "Snap angle (deg):";
             // 
             // SnapGridSizeUpDown
             // 
@@ -2071,18 +2121,6 @@ namespace CodeWalker
             this.MarkerStyleComboBox.SelectedIndexChanged += new System.EventHandler(this.MarkerStyleComboBox_SelectedIndexChanged);
             this.MarkerStyleComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.MarkerStyleComboBox_KeyPress);
             // 
-            // ShowToolbarCheckBox
-            // 
-            this.ShowToolbarCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.ShowToolbarCheckBox.AutoSize = true;
-            this.ShowToolbarCheckBox.Location = new System.Drawing.Point(10, 586);
-            this.ShowToolbarCheckBox.Name = "ShowToolbarCheckBox";
-            this.ShowToolbarCheckBox.Size = new System.Drawing.Size(108, 17);
-            this.ShowToolbarCheckBox.TabIndex = 47;
-            this.ShowToolbarCheckBox.Text = "Show Toolbar (T)";
-            this.ShowToolbarCheckBox.UseVisualStyleBackColor = true;
-            this.ShowToolbarCheckBox.CheckedChanged += new System.EventHandler(this.ShowToolbarCheckBox_CheckedChanged);
-            // 
             // label4
             // 
             this.label4.AutoSize = true;
@@ -2209,39 +2247,39 @@ namespace CodeWalker
             this.label8.TabIndex = 22;
             this.label8.Text = "Bounds style:";
             // 
-            // tabPage10
+            // OptionsLightingTabPage
             // 
-            this.tabPage10.Controls.Add(this.DeferredShadingCheckBox);
-            this.tabPage10.Controls.Add(this.WeatherRegionComboBox);
-            this.tabPage10.Controls.Add(this.label29);
-            this.tabPage10.Controls.Add(this.CloudParamTrackBar);
-            this.tabPage10.Controls.Add(this.CloudParamComboBox);
-            this.tabPage10.Controls.Add(this.label23);
-            this.tabPage10.Controls.Add(this.CloudsComboBox);
-            this.tabPage10.Controls.Add(this.label21);
-            this.tabPage10.Controls.Add(this.TimeSpeedLabel);
-            this.tabPage10.Controls.Add(this.label20);
-            this.tabPage10.Controls.Add(this.TimeSpeedTrackBar);
-            this.tabPage10.Controls.Add(this.TimeStartStopButton);
-            this.tabPage10.Controls.Add(this.ArtificialAmbientLightCheckBox);
-            this.tabPage10.Controls.Add(this.NaturalAmbientLightCheckBox);
-            this.tabPage10.Controls.Add(this.LODLightsCheckBox);
-            this.tabPage10.Controls.Add(this.HDRRenderingCheckBox);
-            this.tabPage10.Controls.Add(this.ControlTimeOfDayCheckBox);
-            this.tabPage10.Controls.Add(this.TimeOfDayLabel);
-            this.tabPage10.Controls.Add(this.label19);
-            this.tabPage10.Controls.Add(this.TimeOfDayTrackBar);
-            this.tabPage10.Controls.Add(this.WeatherComboBox);
-            this.tabPage10.Controls.Add(this.label17);
-            this.tabPage10.Controls.Add(this.ControlLightDirectionCheckBox);
-            this.tabPage10.Controls.Add(this.SkydomeCheckBox);
-            this.tabPage10.Controls.Add(this.ShadowsCheckBox);
-            this.tabPage10.Location = new System.Drawing.Point(4, 22);
-            this.tabPage10.Name = "tabPage10";
-            this.tabPage10.Size = new System.Drawing.Size(200, 482);
-            this.tabPage10.TabIndex = 2;
-            this.tabPage10.Text = "Lighting";
-            this.tabPage10.UseVisualStyleBackColor = true;
+            this.OptionsLightingTabPage.Controls.Add(this.DeferredShadingCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.WeatherRegionComboBox);
+            this.OptionsLightingTabPage.Controls.Add(this.label29);
+            this.OptionsLightingTabPage.Controls.Add(this.CloudParamTrackBar);
+            this.OptionsLightingTabPage.Controls.Add(this.CloudParamComboBox);
+            this.OptionsLightingTabPage.Controls.Add(this.label23);
+            this.OptionsLightingTabPage.Controls.Add(this.CloudsComboBox);
+            this.OptionsLightingTabPage.Controls.Add(this.label21);
+            this.OptionsLightingTabPage.Controls.Add(this.TimeSpeedLabel);
+            this.OptionsLightingTabPage.Controls.Add(this.label20);
+            this.OptionsLightingTabPage.Controls.Add(this.TimeSpeedTrackBar);
+            this.OptionsLightingTabPage.Controls.Add(this.TimeStartStopButton);
+            this.OptionsLightingTabPage.Controls.Add(this.ArtificialAmbientLightCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.NaturalAmbientLightCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.LODLightsCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.HDRRenderingCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.ControlTimeOfDayCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.TimeOfDayLabel);
+            this.OptionsLightingTabPage.Controls.Add(this.label19);
+            this.OptionsLightingTabPage.Controls.Add(this.TimeOfDayTrackBar);
+            this.OptionsLightingTabPage.Controls.Add(this.WeatherComboBox);
+            this.OptionsLightingTabPage.Controls.Add(this.label17);
+            this.OptionsLightingTabPage.Controls.Add(this.ControlLightDirectionCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.SkydomeCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.ShadowsCheckBox);
+            this.OptionsLightingTabPage.Location = new System.Drawing.Point(4, 22);
+            this.OptionsLightingTabPage.Name = "OptionsLightingTabPage";
+            this.OptionsLightingTabPage.Size = new System.Drawing.Size(200, 482);
+            this.OptionsLightingTabPage.TabIndex = 2;
+            this.OptionsLightingTabPage.Text = "Lighting";
+            this.OptionsLightingTabPage.UseVisualStyleBackColor = true;
             // 
             // DeferredShadingCheckBox
             // 
@@ -2846,7 +2884,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(554, 25);
+            this.Toolbar.Size = new System.Drawing.Size(585, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -3216,7 +3254,7 @@ namespace CodeWalker
             this.ToolbarObjectSpaceButton.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ToolbarObjectSpaceButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarObjectSpaceButton.Image")));
             this.ToolbarObjectSpaceButton.Name = "ToolbarObjectSpaceButton";
-            this.ToolbarObjectSpaceButton.Size = new System.Drawing.Size(142, 22);
+            this.ToolbarObjectSpaceButton.Size = new System.Drawing.Size(180, 22);
             this.ToolbarObjectSpaceButton.Text = "Object space";
             this.ToolbarObjectSpaceButton.Click += new System.EventHandler(this.ToolbarObjectSpaceButton_Click);
             // 
@@ -3224,7 +3262,7 @@ namespace CodeWalker
             // 
             this.ToolbarWorldSpaceButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarWorldSpaceButton.Image")));
             this.ToolbarWorldSpaceButton.Name = "ToolbarWorldSpaceButton";
-            this.ToolbarWorldSpaceButton.Size = new System.Drawing.Size(142, 22);
+            this.ToolbarWorldSpaceButton.Size = new System.Drawing.Size(180, 22);
             this.ToolbarWorldSpaceButton.Text = "World space";
             this.ToolbarWorldSpaceButton.Click += new System.EventHandler(this.ToolbarWorldSpaceButton_Click);
             // 
@@ -3234,7 +3272,9 @@ namespace CodeWalker
             this.ToolbarSnapButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ToolbarSnapToGroundButton,
             this.ToolbarSnapToGridButton,
-            this.ToolbarSnapToGroundGridButton});
+            this.ToolbarSnapToGroundGridButton,
+            this.ToolbarSnapGridSizeButton,
+            this.ToolbarRotationSnappingButton});
             this.ToolbarSnapButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapButton.Image")));
             this.ToolbarSnapButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ToolbarSnapButton.Name = "ToolbarSnapButton";
@@ -3470,33 +3510,85 @@ namespace CodeWalker
             // 
             this.SubtitleTimer.Tick += new System.EventHandler(this.SubtitleTimer_Tick);
             // 
-            // SnapAngleUpDown
+            // ToolbarRotationSnappingButton
             // 
-            this.SnapAngleUpDown.DecimalPlaces = 1;
-            this.SnapAngleUpDown.Location = new System.Drawing.Point(98, 279);
-            this.SnapAngleUpDown.Maximum = new decimal(new int[] {
-            180,
-            0,
-            0,
-            0});
-            this.SnapAngleUpDown.Name = "SnapAngleUpDown";
-            this.SnapAngleUpDown.Size = new System.Drawing.Size(96, 20);
-            this.SnapAngleUpDown.TabIndex = 32;
-            this.SnapAngleUpDown.Value = new decimal(new int[] {
-            50,
-            0,
-            0,
-            65536});
-            this.SnapAngleUpDown.ValueChanged += new System.EventHandler(this.SnapAngleUpDown_ValueChanged);
+            this.ToolbarRotationSnappingButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolbarRotationSnappingOffButton,
+            this.ToolbarRotationSnapping1Button,
+            this.ToolbarRotationSnapping2Button,
+            this.ToolbarRotationSnapping5Button,
+            this.ToolbarRotationSnapping10Button,
+            this.ToolbarRotationSnapping45Button,
+            this.ToolbarRotationSnapping90Button,
+            this.ToolbarRotationSnappingCustomButton});
+            this.ToolbarRotationSnappingButton.Name = "ToolbarRotationSnappingButton";
+            this.ToolbarRotationSnappingButton.Size = new System.Drawing.Size(205, 22);
+            this.ToolbarRotationSnappingButton.Text = "Rotation Snapping";
             // 
-            // label33
+            // ToolbarRotationSnappingOffButton
             // 
-            this.label33.AutoSize = true;
-            this.label33.Location = new System.Drawing.Point(4, 281);
-            this.label33.Name = "label33";
-            this.label33.Size = new System.Drawing.Size(91, 13);
-            this.label33.TabIndex = 31;
-            this.label33.Text = "Snap angle (deg):";
+            this.ToolbarRotationSnappingOffButton.Name = "ToolbarRotationSnappingOffButton";
+            this.ToolbarRotationSnappingOffButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarRotationSnappingOffButton.Text = "Off";
+            this.ToolbarRotationSnappingOffButton.Click += new System.EventHandler(this.ToolbarRotationSnappingOffButton_Click);
+            // 
+            // ToolbarRotationSnapping1Button
+            // 
+            this.ToolbarRotationSnapping1Button.Name = "ToolbarRotationSnapping1Button";
+            this.ToolbarRotationSnapping1Button.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarRotationSnapping1Button.Text = "1 Degree";
+            this.ToolbarRotationSnapping1Button.Click += new System.EventHandler(this.ToolbarRotationSnapping1Button_Click);
+            // 
+            // ToolbarRotationSnapping2Button
+            // 
+            this.ToolbarRotationSnapping2Button.Name = "ToolbarRotationSnapping2Button";
+            this.ToolbarRotationSnapping2Button.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarRotationSnapping2Button.Text = "2 Degrees";
+            this.ToolbarRotationSnapping2Button.Click += new System.EventHandler(this.ToolbarRotationSnapping2Button_Click);
+            // 
+            // ToolbarRotationSnapping5Button
+            // 
+            this.ToolbarRotationSnapping5Button.Checked = true;
+            this.ToolbarRotationSnapping5Button.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ToolbarRotationSnapping5Button.Name = "ToolbarRotationSnapping5Button";
+            this.ToolbarRotationSnapping5Button.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarRotationSnapping5Button.Text = "5 Degrees";
+            this.ToolbarRotationSnapping5Button.Click += new System.EventHandler(this.ToolbarRotationSnapping5Button_Click);
+            // 
+            // ToolbarRotationSnapping10Button
+            // 
+            this.ToolbarRotationSnapping10Button.Name = "ToolbarRotationSnapping10Button";
+            this.ToolbarRotationSnapping10Button.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarRotationSnapping10Button.Text = "10 Degrees";
+            this.ToolbarRotationSnapping10Button.Click += new System.EventHandler(this.ToolbarRotationSnapping10Button_Click);
+            // 
+            // ToolbarRotationSnappingCustomButton
+            // 
+            this.ToolbarRotationSnappingCustomButton.Name = "ToolbarRotationSnappingCustomButton";
+            this.ToolbarRotationSnappingCustomButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarRotationSnappingCustomButton.Text = "Custom...";
+            this.ToolbarRotationSnappingCustomButton.Click += new System.EventHandler(this.ToolbarRotationSnappingCustomButton_Click);
+            // 
+            // ToolbarRotationSnapping45Button
+            // 
+            this.ToolbarRotationSnapping45Button.Name = "ToolbarRotationSnapping45Button";
+            this.ToolbarRotationSnapping45Button.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarRotationSnapping45Button.Text = "45 Degrees";
+            this.ToolbarRotationSnapping45Button.Click += new System.EventHandler(this.ToolbarRotationSnapping45Button_Click);
+            // 
+            // ToolbarRotationSnapping90Button
+            // 
+            this.ToolbarRotationSnapping90Button.Name = "ToolbarRotationSnapping90Button";
+            this.ToolbarRotationSnapping90Button.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarRotationSnapping90Button.Text = "90 Degrees";
+            this.ToolbarRotationSnapping90Button.Click += new System.EventHandler(this.ToolbarRotationSnapping90Button_Click);
+            // 
+            // ToolbarSnapGridSizeButton
+            // 
+            this.ToolbarSnapGridSizeButton.Name = "ToolbarSnapGridSizeButton";
+            this.ToolbarSnapGridSizeButton.Size = new System.Drawing.Size(205, 22);
+            this.ToolbarSnapGridSizeButton.Text = "Grid Size...";
+            this.ToolbarSnapGridSizeButton.Click += new System.EventHandler(this.ToolbarSnapGridSizeButton_Click);
             // 
             // WorldForm
             // 
@@ -3527,8 +3619,8 @@ namespace CodeWalker
             this.StatusStrip.PerformLayout();
             this.ToolsPanel.ResumeLayout(false);
             this.ToolsTabControl.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage1.PerformLayout();
+            this.ViewTabPage.ResumeLayout(false);
+            this.ViewTabPage.PerformLayout();
             this.ViewTabControl.ResumeLayout(false);
             this.ViewWorldTabPage.ResumeLayout(false);
             this.ViewWorldTabPage.PerformLayout();
@@ -3539,10 +3631,10 @@ namespace CodeWalker
             ((System.ComponentModel.ISupportInitialize)(this.DetailTrackBar)).EndInit();
             this.ViewModelTabPage.ResumeLayout(false);
             this.ViewModelTabPage.PerformLayout();
-            this.tabPage2.ResumeLayout(false);
-            this.tabPage2.PerformLayout();
-            this.tabPage3.ResumeLayout(false);
-            this.tabPage3.PerformLayout();
+            this.MarkersTabPage.ResumeLayout(false);
+            this.MarkersTabPage.PerformLayout();
+            this.SelectionTabPage.ResumeLayout(false);
+            this.SelectionTabPage.PerformLayout();
             this.SelectionTabControl.ResumeLayout(false);
             this.SelectionEntityTabPage.ResumeLayout(false);
             this.SelectionArchetypeTabPage.ResumeLayout(false);
@@ -3552,24 +3644,25 @@ namespace CodeWalker
             this.tabPage12.ResumeLayout(false);
             this.tabPage13.ResumeLayout(false);
             this.SelectionExtensionTabPage.ResumeLayout(false);
-            this.tabPage4.ResumeLayout(false);
-            this.tabPage4.PerformLayout();
+            this.OptionsTabPage.ResumeLayout(false);
+            this.OptionsTabPage.PerformLayout();
             this.OptionsTabControl.ResumeLayout(false);
-            this.tabPage8.ResumeLayout(false);
-            this.tabPage8.PerformLayout();
+            this.OptionsGeneralTabPage.ResumeLayout(false);
+            this.OptionsGeneralTabPage.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MapViewDetailTrackBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.CollisionMeshRangeTrackBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.FieldOfViewTrackBar)).EndInit();
-            this.tabPage14.ResumeLayout(false);
-            this.tabPage14.PerformLayout();
+            this.OptionsRenderTabPage.ResumeLayout(false);
+            this.OptionsRenderTabPage.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FarClipUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.NearClipUpDown)).EndInit();
-            this.tabPage9.ResumeLayout(false);
-            this.tabPage9.PerformLayout();
+            this.OptionsHelpersTabPage.ResumeLayout(false);
+            this.OptionsHelpersTabPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SnapAngleUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BoundsRangeTrackBar)).EndInit();
-            this.tabPage10.ResumeLayout(false);
-            this.tabPage10.PerformLayout();
+            this.OptionsLightingTabPage.ResumeLayout(false);
+            this.OptionsLightingTabPage.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CloudParamTrackBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.TimeSpeedTrackBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).EndInit();
@@ -3582,7 +3675,6 @@ namespace CodeWalker
             this.Toolbar.PerformLayout();
             this.ToolbarPanel.ResumeLayout(false);
             this.ToolbarPanel.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SnapAngleUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -3602,10 +3694,10 @@ namespace CodeWalker
         private System.Windows.Forms.Button ToolsPanelShowButton;
         private System.Windows.Forms.CheckBox WireframeCheckBox;
         private System.Windows.Forms.TabControl ToolsTabControl;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.TabPage tabPage3;
-        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.TabPage ViewTabPage;
+        private System.Windows.Forms.TabPage MarkersTabPage;
+        private System.Windows.Forms.TabPage SelectionTabPage;
+        private System.Windows.Forms.TabPage OptionsTabPage;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox ViewModeComboBox;
         private System.Windows.Forms.CheckBox TimedEntitiesCheckBox;
@@ -3675,8 +3767,8 @@ namespace CodeWalker
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.ComboBox TextureSamplerComboBox;
         private System.Windows.Forms.TabControl OptionsTabControl;
-        private System.Windows.Forms.TabPage tabPage8;
-        private System.Windows.Forms.TabPage tabPage9;
+        private System.Windows.Forms.TabPage OptionsGeneralTabPage;
+        private System.Windows.Forms.TabPage OptionsHelpersTabPage;
         private System.Windows.Forms.CheckBox CollisionMeshesCheckBox;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.TrackBar CollisionMeshRangeTrackBar;
@@ -3704,7 +3796,7 @@ namespace CodeWalker
         private System.Windows.Forms.CheckBox ProxiesCheckBox;
         private System.Windows.Forms.CheckBox CollisionMeshLayerDrawableCheckBox;
         private System.Windows.Forms.CheckBox InteriorsCheckBox;
-        private System.Windows.Forms.TabPage tabPage10;
+        private System.Windows.Forms.TabPage OptionsLightingTabPage;
         private System.Windows.Forms.ComboBox WeatherComboBox;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label TimeOfDayLabel;
@@ -3736,7 +3828,7 @@ namespace CodeWalker
         private TreeViewFix SelDrawableModelsTreeView;
         private TreeViewFix SelDrawableTexturesTreeView;
         private System.Windows.Forms.CheckBox PathsCheckBox;
-        private System.Windows.Forms.TabPage tabPage14;
+        private System.Windows.Forms.TabPage OptionsRenderTabPage;
         private System.Windows.Forms.ToolStripMenuItem ToolsMenuProjectWindow;
         private System.Windows.Forms.CheckBox WaterQuadsCheckBox;
         private System.Windows.Forms.ComboBox CameraModeComboBox;
@@ -3860,5 +3952,15 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYtypButton;
         private System.Windows.Forms.NumericUpDown SnapAngleUpDown;
         private System.Windows.Forms.Label label33;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnappingButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnappingOffButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnapping1Button;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnapping2Button;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnapping5Button;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnapping10Button;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnappingCustomButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnapping45Button;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnapping90Button;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarSnapGridSizeButton;
     }
 }

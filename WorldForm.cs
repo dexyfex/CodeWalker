@@ -5725,6 +5725,59 @@ namespace CodeWalker
             SnapMode = mode;
         }
 
+        private void SetRotationSnapping(float degrees)
+        {
+            Widget.SnapAngleDegrees = degrees;
+
+            foreach (var child in ToolbarRotationSnappingButton.DropDownItems)
+            {
+                var childi = child as ToolStripMenuItem;
+                if (childi != null)
+                {
+                    childi.Checked = false;
+                }
+            }
+
+            var selItem = ToolbarRotationSnappingCustomButton;
+
+            switch (degrees)
+            {
+                case 0.0f:
+                    selItem = ToolbarRotationSnappingOffButton;
+                    break;
+                case 1.0f:
+                    selItem = ToolbarRotationSnapping1Button;
+                    break;
+                case 2.0f:
+                    selItem = ToolbarRotationSnapping2Button;
+                    break;
+                case 5.0f:
+                    selItem = ToolbarRotationSnapping5Button;
+                    break;
+                case 10.0f:
+                    selItem = ToolbarRotationSnapping10Button;
+                    break;
+                case 45.0f:
+                    selItem = ToolbarRotationSnapping45Button;
+                    break;
+                case 90.0f:
+                    selItem = ToolbarRotationSnapping90Button;
+                    break;
+            }
+
+            if (selItem != null)
+            {
+                selItem.Checked = true;
+            }
+
+            var cval = (float)SnapAngleUpDown.Value;
+            if (cval != degrees)
+            {
+                SnapAngleUpDown.Value = (decimal)degrees;
+            }
+
+        }
+
 
         private void SetCameraMode(string modestr)
         {
@@ -7433,6 +7486,57 @@ namespace CodeWalker
             SetSnapMode(WorldSnapMode.Hybrid);
         }
 
+        private void ToolbarRotationSnappingOffButton_Click(object sender, EventArgs e)
+        {
+            SetRotationSnapping(0);
+        }
+
+        private void ToolbarRotationSnapping1Button_Click(object sender, EventArgs e)
+        {
+            SetRotationSnapping(1);
+        }
+
+        private void ToolbarRotationSnapping2Button_Click(object sender, EventArgs e)
+        {
+            SetRotationSnapping(2);
+        }
+
+        private void ToolbarRotationSnapping5Button_Click(object sender, EventArgs e)
+        {
+            SetRotationSnapping(5);
+        }
+
+        private void ToolbarRotationSnapping10Button_Click(object sender, EventArgs e)
+        {
+            SetRotationSnapping(10);
+        }
+
+        private void ToolbarRotationSnapping45Button_Click(object sender, EventArgs e)
+        {
+            SetRotationSnapping(45);
+        }
+
+        private void ToolbarRotationSnapping90Button_Click(object sender, EventArgs e)
+        {
+            SetRotationSnapping(90);
+        }
+
+        private void ToolbarRotationSnappingCustomButton_Click(object sender, EventArgs e)
+        {
+            ToolsPanel.Visible = true;
+            ToolsTabControl.SelectedTab = OptionsTabPage;
+            OptionsTabControl.SelectedTab = OptionsHelpersTabPage;
+            SnapAngleUpDown.Focus();
+        }
+
+        private void ToolbarSnapGridSizeButton_Click(object sender, EventArgs e)
+        {
+            ToolsPanel.Visible = true;
+            ToolsTabControl.SelectedTab = OptionsTabPage;
+            OptionsTabControl.SelectedTab = OptionsHelpersTabPage;
+            SnapGridSizeUpDown.Focus();
+        }
+
         private void ToolbarUndoButton_ButtonClick(object sender, EventArgs e)
         {
             Undo();
@@ -7616,7 +7720,7 @@ namespace CodeWalker
         {
             if (Widget != null)
             {
-                Widget.SnapAngleDegrees = (float)SnapAngleUpDown.Value;
+                SetRotationSnapping((float)SnapAngleUpDown.Value);
             }
         }
 
