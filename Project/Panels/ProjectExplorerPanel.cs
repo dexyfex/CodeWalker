@@ -2264,6 +2264,16 @@ namespace CodeWalker.Project.Panels
         public event ProjectExplorerItemActivateHandler OnItemActivated;
 
 
+        private void ClearSelectedNodes()
+        {
+            foreach (var node in SelectedNodes)
+            {
+                node.BackColor = Color.Empty;
+                node.ForeColor = Color.Empty;
+            }
+            SelectedNodes.Clear();
+        }
+
 
         private void ProjectTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
@@ -2273,6 +2283,8 @@ namespace CodeWalker.Project.Panels
             {
                 if (SelectedNodes.Contains(e.Node))
                 {
+                    e.Node.BackColor = Color.Empty;
+                    e.Node.ForeColor = Color.Empty;
                     SelectedNodes.Remove(e.Node);
                 }
                 else
@@ -2292,7 +2304,7 @@ namespace CodeWalker.Project.Panels
                 else
                 {
                     bool start = false;
-                    SelectedNodes.Clear();
+                    ClearSelectedNodes();
                     foreach (TreeNode cnode in pnode.Nodes)
                     {
                         if (start)
@@ -2316,7 +2328,7 @@ namespace CodeWalker.Project.Panels
             }
             else
             {
-                SelectedNodes.Clear();
+                ClearSelectedNodes();
                 SelectedNodes.Add(e.Node);
             }
             if (SelectedNodes.Count > 1)
@@ -2324,6 +2336,8 @@ namespace CodeWalker.Project.Panels
                 var objs = new List<object>();
                 foreach (var node in SelectedNodes)
                 {
+                    node.BackColor = SystemColors.Highlight;
+                    node.ForeColor = SystemColors.HighlightText;
                     objs.Add(node.Tag);
                 }
                 OnItemSelected?.Invoke(objs.ToArray());
