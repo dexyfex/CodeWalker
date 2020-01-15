@@ -2064,12 +2064,12 @@ namespace CodeWalker.Rendering
         }
         private void RenderWorldAddInteriorEntities(YmapEntityDef ent)
         {
-            if (ent.MloInstance.Entities != null)
+            if (ent?.MloInstance?.Entities != null)
             {
                 for (int j = 0; j < ent.MloInstance.Entities.Length; j++)
                 {
                     var intent = ent.MloInstance.Entities[j];
-                    if (intent.Archetype == null) continue; //missing archetype...
+                    if (intent?.Archetype == null) continue; //missing archetype...
                     if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
 
                     intent.IsVisible = true;
@@ -2082,19 +2082,19 @@ namespace CodeWalker.Rendering
                     renderworldentities.Add(intent);
                 }
             }
-            if (ent.MloInstance.EntitySets != null)
+            if (ent?.MloInstance?.EntitySets != null)
             {
                 for (int e = 0; e < ent.MloInstance.EntitySets.Length; e++)
                 {
                     var entityset = ent.MloInstance.EntitySets[e];
-                    if (!entityset.VisibleOrForced) continue;
+                    if ((entityset == null) || (!entityset.VisibleOrForced)) continue;
 
                     var entities = entityset.Entities;
                     if (entities == null) continue;
                     for (int i = 0; i < entities.Count; i++)
                     {
                         var intent = entities[i];
-                        if (intent.Archetype == null) continue; //missing archetype...
+                        if (intent?.Archetype == null) continue; //missing archetype...
                         if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
 
                         intent.IsVisible = true;
