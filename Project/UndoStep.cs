@@ -182,7 +182,7 @@ namespace CodeWalker.Project
         {
             Entity?.SetPositionFromWidget(p);
 
-            if (Entity != sel.EntityDef) wf.SelectEntity(Entity);
+            if (Entity != sel.EntityDef) wf.SelectObject(Entity);
             wf.SetWidgetPosition(Entity.WidgetPosition);
         }
 
@@ -219,7 +219,7 @@ namespace CodeWalker.Project
         {
             Entity?.SetOrientationFromWidget(q);
 
-            if (Entity != sel.EntityDef) wf.SelectEntity(Entity);
+            if (Entity != sel.EntityDef) wf.SelectObject(Entity);
             wf.SetWidgetRotation(q);
         }
 
@@ -257,7 +257,7 @@ namespace CodeWalker.Project
         {
             Entity?.SetScale(s);
 
-            if (Entity != sel.EntityDef) wf.SelectEntity(Entity);
+            if (Entity != sel.EntityDef) wf.SelectObject(Entity);
             wf.SetWidgetScale(s);
         }
 
@@ -297,7 +297,7 @@ namespace CodeWalker.Project
         {
             Entity?.SetPivotPositionFromWidget(p);
 
-            if (Entity != sel.EntityDef) wf.SelectEntity(Entity);
+            if (Entity != sel.EntityDef) wf.SelectObject(Entity);
             wf.SetWidgetPosition(p);
         }
 
@@ -334,7 +334,7 @@ namespace CodeWalker.Project
         {
             Entity?.SetPivotOrientationFromWidget(q);
 
-            if (Entity != sel.EntityDef) wf.SelectEntity(Entity);
+            if (Entity != sel.EntityDef) wf.SelectObject(Entity);
             wf.SetWidgetRotation(q);
         }
 
@@ -374,7 +374,7 @@ namespace CodeWalker.Project
         {
             CarGen?.SetPosition(p);
 
-            if (CarGen != sel.CarGenerator) wf.SelectCarGen(CarGen);
+            if (CarGen != sel.CarGenerator) wf.SelectObject(CarGen);
             wf.SetWidgetPosition(p);
         }
 
@@ -411,7 +411,7 @@ namespace CodeWalker.Project
         {
             CarGen?.SetOrientation(q);
 
-            if (CarGen != sel.CarGenerator) wf.SelectCarGen(CarGen);
+            if (CarGen != sel.CarGenerator) wf.SelectObject(CarGen);
             wf.SetWidgetRotation(q);
         }
 
@@ -447,7 +447,7 @@ namespace CodeWalker.Project
         {
             CarGen?.SetScale(s);
 
-            if (CarGen != sel.CarGenerator) wf.SelectCarGen(CarGen);
+            if (CarGen != sel.CarGenerator) wf.SelectObject(CarGen);
             wf.SetWidgetScale(s);
         }
 
@@ -502,7 +502,7 @@ namespace CodeWalker.Project
             }
 
 
-            if (Bounds != sel.CollisionBounds) wf.SelectCollisionBounds(Bounds);
+            if (Bounds != sel.CollisionBounds) wf.SelectObject(Bounds);
             wf.SetWidgetPosition(p);
 
             UpdateGraphics(wf);
@@ -567,7 +567,7 @@ namespace CodeWalker.Project
                 }
             }
 
-            if (Bounds != sel.CollisionBounds) wf.SelectCollisionBounds(Bounds);
+            if (Bounds != sel.CollisionBounds) wf.SelectObject(Bounds);
             wf.SetWidgetRotation(q);
 
             UpdateGraphics(wf);
@@ -618,7 +618,7 @@ namespace CodeWalker.Project
                 Bounds.Scale = s;
             }
 
-            if (Bounds != sel.CollisionBounds) wf.SelectCollisionBounds(Bounds);
+            if (Bounds != sel.CollisionBounds) wf.SelectObject(Bounds);
             wf.SetWidgetScale(s);
 
             UpdateGraphics(wf);
@@ -679,7 +679,7 @@ namespace CodeWalker.Project
                 }
             }
 
-            if (Polygon != sel.CollisionPoly) wf.SelectCollisionPoly(Polygon);
+            if (Polygon != sel.CollisionPoly) wf.SelectObject(Polygon);
             wf.SetWidgetPosition(p);
 
             UpdateGraphics(wf);
@@ -743,7 +743,7 @@ namespace CodeWalker.Project
                 }
             }
 
-            if (Polygon != sel.CollisionPoly) wf.SelectCollisionPoly(Polygon);
+            if (Polygon != sel.CollisionPoly) wf.SelectObject(Polygon);
             wf.SetWidgetRotation(q);
 
             UpdateGraphics(wf);
@@ -794,7 +794,7 @@ namespace CodeWalker.Project
                 Polygon.Scale = s;
             }
 
-            if (Polygon != sel.CollisionPoly) wf.SelectCollisionPoly(Polygon);
+            if (Polygon != sel.CollisionPoly) wf.SelectObject(Polygon);
             wf.SetWidgetScale(s);
 
             UpdateGraphics(wf);
@@ -855,7 +855,7 @@ namespace CodeWalker.Project
                 }
             }
 
-            if (Vertex != sel.CollisionVertex) wf.SelectCollisionVertex(Vertex);
+            if (Vertex != sel.CollisionVertex) wf.SelectObject(Vertex);
             wf.SetWidgetPosition(p);
 
             UpdateGraphics(wf);
@@ -910,11 +910,11 @@ namespace CodeWalker.Project
             {
                 if (sel.PathLink != null)
                 {
-                    wf.SelectPathLink(sel.PathLink);
+                    wf.SelectObject(sel.PathLink);
                 }
                 else
                 {
-                    wf.SelectPathNode(PathNode);
+                    wf.SelectObject(PathNode);
                 }
             }
             wf.SetWidgetPosition(p);
@@ -972,7 +972,7 @@ namespace CodeWalker.Project
 
             if (Point != sel.NavPoint)
             {
-                wf.SelectNavPoint(Point);
+                wf.SelectObject(Point);
             }
             wf.SetWidgetPosition(p);
 
@@ -1025,7 +1025,7 @@ namespace CodeWalker.Project
         {
             Point?.SetOrientation(q);
 
-            if (Point != sel.NavPoint) wf.SelectNavPoint(Point);
+            if (Point != sel.NavPoint) wf.SelectObject(Point);
             wf.SetWidgetRotation(q);
 
             //UpdateGraphics(wf);
@@ -1078,7 +1078,7 @@ namespace CodeWalker.Project
 
             if (Portal != sel.NavPortal)
             {
-                wf.SelectNavPortal(Portal);
+                wf.SelectObject(Portal);
             }
             wf.SetWidgetPosition(p);
 
@@ -1131,7 +1131,7 @@ namespace CodeWalker.Project
         {
             Portal?.SetOrientation(q);
 
-            if (Portal != sel.NavPortal) wf.SelectNavPortal(Portal);
+            if (Portal != sel.NavPortal) wf.SelectObject(Portal);
             wf.SetWidgetRotation(q);
 
             //UpdateGraphics(wf);
@@ -1186,7 +1186,7 @@ namespace CodeWalker.Project
 
             if (Node != sel.TrainTrackNode)
             {
-                wf.SelectTrainTrackNode(Node);
+                wf.SelectObject(Node);
             }
             wf.SetWidgetPosition(p);
 
@@ -1241,7 +1241,7 @@ namespace CodeWalker.Project
         {
             ScenarioNode?.SetPosition(p);
 
-            if (ScenarioNode != sel.ScenarioNode) wf.SelectScenarioNode(ScenarioNode);
+            if (ScenarioNode != sel.ScenarioNode) wf.SelectObject(ScenarioNode);
             wf.SetWidgetPosition(p);
 
             UpdateGraphics(wf);
@@ -1291,7 +1291,7 @@ namespace CodeWalker.Project
         {
             ScenarioNode?.SetOrientation(q);
 
-            if (ScenarioNode != sel.ScenarioNode) wf.SelectScenarioNode(ScenarioNode);
+            if (ScenarioNode != sel.ScenarioNode) wf.SelectObject(ScenarioNode);
             wf.SetWidgetRotation(q);
 
             //UpdateGraphics(wf);
@@ -1342,7 +1342,7 @@ namespace CodeWalker.Project
         {
             Audio?.SetPosition(p);
 
-            if (Audio != sel.Audio) wf.SelectAudio(Audio);
+            if (Audio != sel.Audio) wf.SelectObject(Audio);
             wf.SetWidgetPosition(p);
         }
 
@@ -1379,7 +1379,7 @@ namespace CodeWalker.Project
         {
             Audio?.SetOrientation(q);
 
-            if (Audio != sel.Audio) wf.SelectAudio(Audio);
+            if (Audio != sel.Audio) wf.SelectObject(Audio);
             wf.SetWidgetRotation(q);
         }
 

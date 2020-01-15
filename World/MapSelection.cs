@@ -1287,6 +1287,115 @@ namespace CodeWalker
             return null;
         }
 
+        public static MapSelection FromProjectObject(object o, object parent = null)
+        {
+            const float nrad = 0.5f;
+            var ms = new MapSelection();
+            if (o is YmapEntityDef entity)
+            {
+                ms.EntityDef = entity;
+                ms.Archetype = entity?.Archetype;
+                ms.AABB = new BoundingBox(entity.BBMin, entity.BBMax);
+                if (entity.MloInstance != null)
+                {
+                    ms.MloEntityDef = entity;
+                }
+            }
+            else if (o is YmapCarGen cargen)
+            {
+                ms.CarGenerator = cargen;
+                ms.AABB = new BoundingBox(cargen.BBMin, cargen.BBMax);
+            }
+            else if (o is YmapGrassInstanceBatch batch)
+            {
+                ms.GrassBatch = batch;
+                ms.AABB = new BoundingBox(batch.AABBMin, batch.AABBMax);
+            }
+            else if (o is MCMloRoomDef room)
+            {
+                if (parent is MloInstanceData instance)
+                {
+                    ms.MloRoomDef = room;
+                    ms.AABB = new BoundingBox(room.BBMin_CW, room.BBMax_CW);
+                    ms.BBOffset = instance.Owner.Position;
+                    ms.BBOrientation = instance.Owner.Orientation;
+                }
+            }
+            else if (o is Bounds b)
+            {
+                ms.CollisionBounds = b;
+                ms.AABB = new BoundingBox(b.BoxMin, b.BoxMax);
+            }
+            else if (o is BoundPolygon p)
+            {
+                ms.CollisionPoly = p;
+                //ms.AABB = new BoundingBox(p.BoundingBoxMin, p.BoundingBoxMax);
+            }
+            else if (o is BoundVertex v)
+            {
+                ms.CollisionVertex = v;
+                //ms.AABB = new BoundingBox(p.BoundingBoxMin, p.BoundingBoxMax);
+            }
+            else if (o is YnvPoly poly)
+            {
+                var cellaabb = poly._RawData.CellAABB;
+                var sect = poly.Ynv?.Nav?.SectorTree;
+                ms.NavPoly = poly;
+                ms.AABB = new BoundingBox(cellaabb.Min, cellaabb.Max);
+                //if (sect != null)
+                //{
+                //    ms.AABB = new BoundingBox(sect.AABBMin.XYZ(), sect.AABBMax.XYZ());
+                //}
+            }
+            else if (o is YnvPoint point)
+            {
+                ms.NavPoint = point;
+                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
+            }
+            else if (o is YnvPortal portal)
+            {
+                ms.NavPortal = portal;
+                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
+            }
+            else if (o is YndNode node)
+            {
+                ms.PathNode = node;
+                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
+            }
+            else if (o is YndLink link)
+            {
+                ms.PathNode = link.Node1;
+                ms.PathLink = link;
+                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
+            }
+            else if (o is TrainTrackNode tnode)
+            {
+                ms.TrainTrackNode = tnode;
+                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
+            }
+            else if (o is ScenarioNode snode)
+            {
+                ms.ScenarioNode = snode;
+                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
+            }
+            else if (o is MCScenarioChainingEdge sedge)
+            {
+                if (parent is ScenarioNode enode)
+                {
+                    ms.ScenarioNode = enode;
+                    ms.ScenarioEdge = sedge;
+                    ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
+                }
+            }
+            else if (o is AudioPlacement audio)
+            {
+                ms.Audio = audio;
+                ms.AABB = new BoundingBox(audio.HitboxMin, audio.HitboxMax);
+                ms.BSphere = new BoundingSphere(audio.Position, audio.HitSphereRad);
+            }
+            return ms;
+        }
+
 
 
         public override string ToString()

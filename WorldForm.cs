@@ -3265,7 +3265,7 @@ namespace CodeWalker
             }
         }
 
-        public void SelectItems(object obj, bool addSelection = false)
+        public void SelectObject(object obj, object parent = null, bool addSelection = false)
         {
             if (obj == null)
             {
@@ -3277,7 +3277,7 @@ namespace CodeWalker
                 SelectItem(null, addSelection);
                 foreach (var mobj in arr)
                 {
-                    SelectItems(mobj, true);
+                    SelectObject(mobj, null, true);
                 }
                 if (!addSelection)
                 {
@@ -3288,21 +3288,18 @@ namespace CodeWalker
                     ProjectForm.OnWorldSelectionChanged(SelectedItem);
                 }
             }
-            else if (obj is Bounds bounds) SelectCollisionBounds(bounds, addSelection);
-            else if (obj is BoundPolygon cpoly) SelectCollisionPoly(cpoly, addSelection);
-            else if (obj is BoundVertex cvert) SelectCollisionVertex(cvert, addSelection);
-            else if (obj is YmapEntityDef ent) SelectEntity(ent, addSelection);
-            else if (obj is YmapCarGen cargen) SelectCarGen(cargen, addSelection);
-            else if (obj is YmapGrassInstanceBatch grass) SelectGrassBatch(grass, addSelection);
-            else if (obj is MCMloRoomDef room) SelectMloRoom(room, null, addSelection);//how to get instance?
-            else if (obj is YnvPoly npoly) SelectNavPoly(npoly, addSelection);
-            else if (obj is YnvPoint npoint) SelectNavPoint(npoint, addSelection);
-            else if (obj is YnvPortal nportal) SelectNavPortal(nportal, addSelection);
-            else if (obj is YndNode pnode) SelectPathNode(pnode, addSelection);
-            else if (obj is YndLink plink) SelectPathLink(plink, addSelection);
-            else if (obj is TrainTrackNode tnode) SelectTrainTrackNode(tnode, addSelection);
-            else if (obj is ScenarioNode snode) SelectScenarioNode(snode, addSelection);
-            else if (obj is AudioPlacement audio) SelectAudio(audio, addSelection);
+            else
+            {
+                var ms = MapSelection.FromProjectObject(obj, parent);
+                if (!ms.HasValue)
+                {
+                    SelectItem(null, addSelection);
+                }
+                else
+                {
+                    SelectItem(ms, addSelection);
+                }
+            }
         }
         public void SelectItem(MapSelection? mhit = null, bool addSelection = false, bool manualSelection = false)
         {
@@ -3489,272 +3486,6 @@ namespace CodeWalker
                 {
                     ProjectForm.OnWorldSelectionChanged(SelectedItem);
                 }
-            }
-        }
-        public void SelectEntity(YmapEntityDef entity, bool addSelection = false)
-        {
-            if (entity == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-                MapSelection ms = new MapSelection();
-                ms.EntityDef = entity;
-                ms.Archetype = entity?.Archetype;
-                ms.AABB = new BoundingBox(entity.BBMin, entity.BBMax);
-                if (entity.MloInstance != null)
-                {
-                    ms.MloEntityDef = entity;
-                }
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectCarGen(YmapCarGen cargen, bool addSelection = false)
-        {
-            if (cargen == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-                MapSelection ms = new MapSelection();
-                ms.CarGenerator = cargen;
-                ms.AABB = new BoundingBox(cargen.BBMin, cargen.BBMax);
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectGrassBatch(YmapGrassInstanceBatch batch, bool addSelection = false)
-        {
-            if (batch == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-                MapSelection ms = new MapSelection();
-                ms.GrassBatch = batch;
-                ms.AABB = new BoundingBox(batch.AABBMin, batch.AABBMax);
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectMloRoom(MCMloRoomDef room, MloInstanceData instance, bool addSelection = false)
-        {
-            if (room == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else if (instance != null)
-            {
-                MapSelection ms = new MapSelection();
-                ms.MloRoomDef = room;
-                ms.AABB = new BoundingBox(room.BBMin_CW, room.BBMax_CW);
-                ms.BBOffset = instance.Owner.Position;
-                ms.BBOrientation = instance.Owner.Orientation;
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectCollisionBounds(Bounds b, bool addSelection = false)
-        {
-            if (b == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-
-                MapSelection ms = new MapSelection();
-                ms.CollisionBounds = b;
-
-                ms.AABB = new BoundingBox(b.BoxMin, b.BoxMax);
-
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectCollisionPoly(BoundPolygon p, bool addSelection = false)
-        {
-            if (p == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-
-                MapSelection ms = new MapSelection();
-                ms.CollisionPoly = p;
-
-                //ms.AABB = new BoundingBox(p.BoundingBoxMin, p.BoundingBoxMax);
-
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectCollisionVertex(BoundVertex v, bool addSelection = false)
-        {
-            if (v == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-
-                MapSelection ms = new MapSelection();
-                ms.CollisionVertex = v;
-
-                //ms.AABB = new BoundingBox(p.BoundingBoxMin, p.BoundingBoxMax);
-
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectNavPoly(YnvPoly poly, bool addSelection = false)
-        {
-            if (poly == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-                var sect = poly.Ynv?.Nav?.SectorTree;
-
-                MapSelection ms = new MapSelection();
-                ms.NavPoly = poly;
-
-                var cellaabb = poly._RawData.CellAABB;
-                ms.AABB = new BoundingBox(cellaabb.Min, cellaabb.Max);
-                //if (sect != null)
-                //{
-                //    ms.AABB = new BoundingBox(sect.AABBMin.XYZ(), sect.AABBMax.XYZ());
-                //}
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectNavPoint(YnvPoint point, bool addSelection = false)
-        {
-            if (point == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-                float nrad = 0.5f;
-
-                MapSelection ms = new MapSelection();
-                ms.NavPoint = point;
-                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectNavPortal(YnvPortal portal, bool addSelection = false)
-        {
-            if (portal == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-                float nrad = 0.5f;
-
-                MapSelection ms = new MapSelection();
-                ms.NavPortal = portal;
-                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectPathNode(YndNode node, bool addSelection = false)
-        {
-            if (node == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-                float nrad = 0.5f;
-
-                MapSelection ms = new MapSelection();
-                ms.PathNode = node;
-                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectPathLink(YndLink link, bool addSelection = false)
-        {
-            var node = link?.Node1;
-            if (node == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-                float nrad = 0.5f;
-
-                MapSelection ms = new MapSelection();
-                ms.PathNode = node;
-                ms.PathLink = link;
-                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectTrainTrackNode(TrainTrackNode node, bool addSelection = false)
-        {
-            if (node == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-                float nrad = 0.5f;
-
-                MapSelection ms = new MapSelection();
-                ms.TrainTrackNode = node;
-                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectScenarioNode(ScenarioNode node, bool addSelection = false)
-        {
-            if (node == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-                float nrad = 0.5f;
-
-                MapSelection ms = new MapSelection();
-                ms.ScenarioNode = node;
-                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectScenarioEdge(ScenarioNode node, MCScenarioChainingEdge edge, bool addSelection = false)
-        {
-            if (node == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-                float nrad = 0.5f;
-
-                MapSelection ms = new MapSelection();
-                ms.ScenarioNode = node;
-                ms.ScenarioEdge = edge;
-                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
-                SelectItem(ms, addSelection);
-            }
-        }
-        public void SelectAudio(AudioPlacement audio, bool addSelection = false)
-        {
-            if (audio == null)
-            {
-                SelectItem(null, addSelection);
-            }
-            else
-            {
-                MapSelection ms = new MapSelection();
-                ms.Audio = audio;
-                ms.AABB = new BoundingBox(audio.HitboxMin, audio.HitboxMax);
-                ms.BSphere = new BoundingSphere(audio.Position, audio.HitSphereRad);
-                SelectItem(ms, addSelection);
             }
         }
         private void SelectMousedItem()
@@ -4245,7 +3976,7 @@ namespace CodeWalker
             if (entity == null) return;
             ViewModeComboBox.Text = "World view";
             GoToPosition(entity.Position);
-            SelectEntity(entity);
+            SelectObject(entity);
         }
 
 
@@ -5200,14 +4931,14 @@ namespace CodeWalker
         {
             if ((ProjectForm != null) && CopiedItem.CanCopyPaste)
             {
-                SelectItems(ProjectForm.NewObject(CopiedItem, (CopiedItem.MultipleSelectionItems != null)));
+                SelectObject(ProjectForm.NewObject(CopiedItem, (CopiedItem.MultipleSelectionItems != null)));
             }
         }
         private void CloneItem()
         {
             if ((ProjectForm != null) && SelectedItem.CanCopyPaste)
             {
-                SelectItems(ProjectForm.NewObject(SelectedItem, true));
+                SelectObject(ProjectForm.NewObject(SelectedItem, true));
             }
         }
         private void DeleteItem()

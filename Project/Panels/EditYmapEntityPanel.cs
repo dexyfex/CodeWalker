@@ -156,7 +156,7 @@ namespace CodeWalker.Project.Panels
                 UpdateTabVisibility();
 
 
-                ProjectForm.WorldForm?.SelectEntity(CurrentEntity); //hopefully the drawable is already loaded - this will try get from cache
+                ProjectForm.WorldForm?.SelectObject(CurrentEntity); //hopefully the drawable is already loaded - this will try get from cache
 
                 ////struct CEntityDef:
                 //MetaHash archetypeName { get; set; } //8   8: Hash: 0: archetypeName

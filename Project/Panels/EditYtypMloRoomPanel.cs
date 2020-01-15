@@ -24,7 +24,7 @@ namespace CodeWalker.Project.Panels
             Tag = room;
             UpdateFormTitle();
             MloInstanceData instance = ProjectForm.TryGetMloInstance(room?.OwnerMlo);
-            ProjectForm.WorldForm?.SelectMloRoom(room, instance);
+            ProjectForm.WorldForm?.SelectObject(room, instance);
             UpdateControls();
         }
 

@@ -103,7 +103,7 @@ namespace CodeWalker.Project.Panels
 
                 if (ProjectForm.WorldForm != null)
                 {
-                    ProjectForm.WorldForm.SelectCarGen(CurrentCarGen);
+                    ProjectForm.WorldForm.SelectObject(CurrentCarGen);
                 }
 
                 ////struct CCarGen:

@@ -187,7 +187,7 @@ namespace CodeWalker.Project.Panels
 
                 populatingui = false;
 
-                ProjectForm.WorldForm?.SelectCollisionBounds(b);
+                ProjectForm.WorldForm?.SelectObject(b);
             }
         }
 
