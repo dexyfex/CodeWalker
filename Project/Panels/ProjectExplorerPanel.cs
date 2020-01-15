@@ -1878,6 +1878,70 @@ namespace CodeWalker.Project.Panels
 
 
 
+        public void UpdateYmapTreeNode(YmapFile ymap)
+        {
+            var tn = FindYmapTreeNode(ymap);
+            if (tn != null)
+            {
+                tn.Text = ymap.RpfFileEntry?.Name ?? ymap.Name;
+            }
+        }
+        public void UpdateYtypTreeNode(YtypFile ytyp)
+        {
+            var tn = FindYtypTreeNode(ytyp);
+            if (tn != null)
+            {
+                tn.Text = ytyp.RpfFileEntry?.Name ?? ytyp.Name;
+            }
+        }
+        public void UpdateYbnTreeNode(YbnFile ybn)
+        {
+            var tn = FindYbnTreeNode(ybn);
+            if (tn != null)
+            {
+                tn.Text = ybn.RpfFileEntry?.Name ?? ybn.Name;
+            }
+        }
+        public void UpdateYndTreeNode(YndFile ynd)
+        {
+            var tn = FindYndTreeNode(ynd);
+            if (tn != null)
+            {
+                tn.Text = ynd.RpfFileEntry?.Name ?? ynd.Name;
+            }
+        }
+        public void UpdateYnvTreeNode(YnvFile ynv)
+        {
+            var tn = FindYnvTreeNode(ynv);
+            if (tn != null)
+            {
+                tn.Text = ynv.RpfFileEntry?.Name ?? ynv.Name;
+            }
+        }
+        public void UpdateTrainTrackTreeNode(TrainTrack track)
+        {
+            var tn = FindTrainTrackTreeNode(track);
+            if (tn != null)
+            {
+                tn.Text = track.RpfFileEntry?.Name ?? track.Name;
+            }
+        }
+        public void UpdateScenarioTreeNode(YmtFile scenarios)
+        {
+            var tn = FindScenarioTreeNode(scenarios);
+            if (tn != null)
+            {
+                tn.Text = scenarios.RpfFileEntry?.Name ?? scenarios.Name;
+            }
+        }
+        public void UpdateAudioRelTreeNode(RelFile rel)
+        {
+            var tn = FindAudioRelTreeNode(rel);
+            if (tn != null)
+            {
+                tn.Text = rel.RpfFileEntry?.Name ?? rel.Name;
+            }
+        }
         public void UpdateArchetypeTreeNode(Archetype archetype)
         {
             var tn = FindArchetypeTreeNode(archetype);

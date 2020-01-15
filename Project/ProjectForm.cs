@@ -1719,6 +1719,8 @@ namespace CodeWalker.Project
                     { //couldn't rename it in the project?
                         //MessageBox.Show("Couldn't rename ymap in project! This shouldn't happen - check the project file XML.");
                     }
+
+                    ProjectExplorer?.UpdateYmapTreeNode(CurrentYmapFile);
                 }
                 SetProjectHasChanged(true);
                 SetCurrentSaveItem();
@@ -2523,6 +2525,8 @@ namespace CodeWalker.Project
                     { //couldn't rename it in the project?
                         //MessageBox.Show("Couldn't rename ytyp in project! This shouldn't happen - check the project file XML.");
                     }
+
+                    ProjectExplorer?.UpdateYtypTreeNode(CurrentYtypFile);
                 }
                 SetProjectHasChanged(true);
                 SetCurrentSaveItem();
@@ -3219,6 +3223,7 @@ namespace CodeWalker.Project
                     { //couldn't rename it in the project? happens when project not saved yet...
                         //MessageBox.Show("Couldn't rename ybn in project! This shouldn't happen - check the project file XML.");
                     }
+                    ProjectExplorer?.UpdateYbnTreeNode(CurrentYbnFile);
                 }
                 SetProjectHasChanged(true);
                 SetCurrentSaveItem();
@@ -3890,6 +3895,7 @@ namespace CodeWalker.Project
                     { //couldn't rename it in the project? happens when project not saved yet...
                         //MessageBox.Show("Couldn't rename ynd in project! This shouldn't happen - check the project file XML.");
                     }
+                    ProjectExplorer?.UpdateYndTreeNode(CurrentYndFile);
                 }
                 SetProjectHasChanged(true);
                 SetCurrentSaveItem();
@@ -4188,6 +4194,7 @@ namespace CodeWalker.Project
                     { //couldn't rename it in the project? happens when project not saved yet...
                         //MessageBox.Show("Couldn't rename ynv in project! This shouldn't happen - check the project file XML.");
                     }
+                    ProjectExplorer?.UpdateYnvTreeNode(CurrentYnvFile);
                 }
                 SetProjectHasChanged(true);
                 SetCurrentSaveItem();
@@ -4402,6 +4409,7 @@ namespace CodeWalker.Project
                     { //couldn't rename it in the project? happens when project not saved yet...
                         //MessageBox.Show("Couldn't rename train track in project! This shouldn't happen - check the project file XML.");
                     }
+                    ProjectExplorer?.UpdateTrainTrackTreeNode(CurrentTrainTrack);
                 }
                 SetProjectHasChanged(true);
                 SetCurrentSaveItem();
@@ -4685,6 +4693,7 @@ namespace CodeWalker.Project
                     { //couldn't rename it in the project? happens when project not saved yet...
                         //MessageBox.Show("Couldn't rename scenario in project! This shouldn't happen - check the project file XML.");
                     }
+                    ProjectExplorer?.UpdateScenarioTreeNode(CurrentScenario);
                 }
                 SetProjectHasChanged(true);
                 SetCurrentSaveItem();
@@ -5827,6 +5836,7 @@ namespace CodeWalker.Project
                     { //couldn't rename it in the project? happens when project not saved yet...
                         //MessageBox.Show("Couldn't rename audio rel in project! This shouldn't happen - check the project file XML.");
                     }
+                    ProjectExplorer?.UpdateAudioRelTreeNode(CurrentAudioFile);
                 }
                 SetProjectHasChanged(true);
                 SetCurrentSaveItem();
