@@ -46,7 +46,30 @@ namespace CodeWalker.Forms
 
         private void ExportOnim_Click(object sender, EventArgs e)
         {
+            if (MainListView.SelectedItems[0].Tag is Animation anim)
+            {
+                var saveFileDialog = new SaveFileDialog();
 
+                string newfn = $"{Path.GetFileNameWithoutExtension(Ycd.Name)}_{MainListView.SelectedItems[0].Text}.onim";
+
+                saveFileDialog.FileName = newfn;
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string path = saveFileDialog.FileName;
+
+                    try
+                    {
+                        using (var file = File.OpenWrite(path))
+                        {
+                            Ycd.SaveOpenFormatsAnimation(anim, file);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error saving file " + path + ":\n" + ex.ToString());
+                    }
+                }
+            }
         }
 
         private void UpdateFormTitle()
