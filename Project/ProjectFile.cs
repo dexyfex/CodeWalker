@@ -402,7 +402,7 @@ namespace CodeWalker.Project
             newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < YmapFilenames.Count; i++)
             {
-                if (YmapFilenames[i] == oldfilename)
+                if (YmapFilenames[i]?.ToLowerInvariant() == oldfilename)
                 {
                     YmapFilenames[i] = newfilename;
                     HasChanged = true;
@@ -472,7 +472,7 @@ namespace CodeWalker.Project
             newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < YtypFilenames.Count; i++)
             {
-                if (YtypFilenames[i] == oldfilename)
+                if (YtypFilenames[i]?.ToLowerInvariant() == oldfilename)
                 {
                     YtypFilenames[i] = newfilename;
                     HasChanged = true;
@@ -539,7 +539,7 @@ namespace CodeWalker.Project
             newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < YbnFilenames.Count; i++)
             {
-                if (YbnFilenames[i] == oldfilename)
+                if (YbnFilenames[i]?.ToLowerInvariant() == oldfilename)
                 {
                     YbnFilenames[i] = newfilename;
                     HasChanged = true;
@@ -606,7 +606,7 @@ namespace CodeWalker.Project
             newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < YndFilenames.Count; i++)
             {
-                if (YndFilenames[i] == oldfilename)
+                if (YndFilenames[i]?.ToLowerInvariant() == oldfilename)
                 {
                     YndFilenames[i] = newfilename;
                     HasChanged = true;
@@ -673,7 +673,7 @@ namespace CodeWalker.Project
             newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < YnvFilenames.Count; i++)
             {
-                if (YnvFilenames[i] == oldfilename)
+                if (YnvFilenames[i]?.ToLowerInvariant() == oldfilename)
                 {
                     YnvFilenames[i] = newfilename;
                     HasChanged = true;
@@ -740,7 +740,7 @@ namespace CodeWalker.Project
             newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < TrainsFilenames.Count; i++)
             {
-                if (TrainsFilenames[i] == oldfilename)
+                if (TrainsFilenames[i]?.ToLowerInvariant() == oldfilename)
                 {
                     TrainsFilenames[i] = newfilename;
                     HasChanged = true;
@@ -809,7 +809,7 @@ namespace CodeWalker.Project
             newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < ScenarioFilenames.Count; i++)
             {
-                if (ScenarioFilenames[i] == oldfilename)
+                if (ScenarioFilenames[i]?.ToLowerInvariant() == oldfilename)
                 {
                     ScenarioFilenames[i] = newfilename;
                     HasChanged = true;
@@ -877,7 +877,7 @@ namespace CodeWalker.Project
             newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < AudioRelFilenames.Count; i++)
             {
-                if (AudioRelFilenames[i] == oldfilename)
+                if (AudioRelFilenames[i]?.ToLowerInvariant() == oldfilename)
                 {
                     AudioRelFilenames[i] = newfilename;
                     HasChanged = true;
