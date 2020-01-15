@@ -711,6 +711,12 @@ namespace CodeWalker.Project
         }
         public void ShowProjectItem(object item, bool promote)
         {
+            if (item is object[] arr)
+            {
+                var multisel = MapSelection.FromProjectObject(arr); //convert to MapSelection array
+                item = multisel.MultipleSelectionItems;
+            }
+
             ShowProjectItemInProcess = true;
 
             SetProjectItem(item);
@@ -722,6 +728,11 @@ namespace CodeWalker.Project
             else
             {
                 ShowCurrentProjectItem(promote);
+            }
+
+            if (item is MapSelection[] multi)
+            {
+                WorldForm?.SelectMulti(multi, false, false);
             }
 
             ShowProjectItemInProcess = false;
