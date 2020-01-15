@@ -65,7 +65,7 @@ namespace CodeWalker.Project.Panels
             {
                 if (ProjectForm.WorldForm != null)
                 {
-                    ProjectForm.WorldForm.SelectScenarioNode(CurrentScenarioNode);
+                    ProjectForm.WorldForm.SelectObject(CurrentScenarioNode);
                 }
             }
         }
@@ -465,7 +465,7 @@ namespace CodeWalker.Project.Panels
 
                 if (ProjectForm.WorldForm != null)
                 {
-                    ProjectForm.WorldForm.SelectScenarioEdge(CurrentScenarioNode, e);
+                    ProjectForm.WorldForm.SelectObject(e, CurrentScenarioNode);
                 }
             }
         }
@@ -681,7 +681,7 @@ namespace CodeWalker.Project.Panels
             if (ProjectForm.WorldForm != null)
             {
                 ProjectForm.WorldForm.UpdateScenarioGraphics(CurrentScenario, false);
-                ProjectForm.WorldForm.SelectScenarioEdge(CurrentScenarioNode, null);
+                ProjectForm.WorldForm.SelectObject(CurrentScenarioNode);
             }
         }
 

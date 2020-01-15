@@ -61,7 +61,7 @@ namespace CodeWalker.Project.Panels
 
                 if (ProjectForm.WorldForm != null)
                 {
-                    ProjectForm.WorldForm.SelectTrainTrackNode(TrainNode);
+                    ProjectForm.WorldForm.SelectObject(TrainNode);
                 }
             }
         }

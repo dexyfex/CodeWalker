@@ -42,7 +42,7 @@ namespace CodeWalker.Project.Panels
             Tag = batch;
             UpdateFormTitle();
             UpdateControls();
-            ProjectForm.WorldForm?.SelectGrassBatch(batch);
+            ProjectForm.WorldForm?.SelectObject(batch);
         }
 
         private void UpdateControls()

@@ -105,7 +105,7 @@ namespace CodeWalker.Project.Panels
 
                 if (ProjectForm.WorldForm != null)
                 {
-                    ProjectForm.WorldForm.SelectPathNode(CurrentPathNode);
+                    ProjectForm.WorldForm.SelectObject(CurrentPathNode);
                 }
 
             }
@@ -139,7 +139,7 @@ namespace CodeWalker.Project.Panels
 
                 if (ProjectForm.WorldForm != null)
                 {
-                    ProjectForm.WorldForm.SelectPathLink(CurrentPathLink);
+                    ProjectForm.WorldForm.SelectObject(CurrentPathLink);
                 }
             }
 

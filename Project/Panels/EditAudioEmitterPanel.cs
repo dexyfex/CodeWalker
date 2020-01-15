@@ -129,7 +129,7 @@ namespace CodeWalker.Project.Panels
 
                 if (ProjectForm.WorldForm != null)
                 {
-                    ProjectForm.WorldForm.SelectAudio(CurrentEmitter);
+                    ProjectForm.WorldForm.SelectObject(CurrentEmitter);
                 }
 
             }
