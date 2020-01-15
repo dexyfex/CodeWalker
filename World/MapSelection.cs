@@ -1291,7 +1291,16 @@ namespace CodeWalker
         {
             const float nrad = 0.5f;
             var ms = new MapSelection();
-            if (o is YmapEntityDef entity)
+            if (o is object[] arr)
+            {
+                var multi = new MapSelection[arr.Length];
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    multi[i] = FromProjectObject(arr[i]);
+                }
+                ms.SetMultipleSelectionItems(multi);
+            }
+            else if (o is YmapEntityDef entity)
             {
                 ms.EntityDef = entity;
                 ms.Archetype = entity?.Archetype;

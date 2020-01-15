@@ -20,6 +20,7 @@ namespace CodeWalker.Project.Panels
         public ProjectFile CurrentProjectFile { get; set; }
 
         private bool inDoubleClick = false; //used in disabling double-click to expand tree nodes
+        private List<TreeNode> SelectedNodes = new List<TreeNode>();
 
         public ProjectExplorerPanel(ProjectForm projectForm)
         {
@@ -2266,7 +2267,71 @@ namespace CodeWalker.Project.Panels
 
         private void ProjectTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            OnItemSelected?.Invoke(ProjectTreeView.SelectedNode?.Tag);
+            bool addSelection = (ModifierKeys & Keys.Control) > 0;
+            bool fillSelection = (ModifierKeys & Keys.Shift) > 0;
+            if (addSelection)
+            {
+                if (SelectedNodes.Contains(e.Node))
+                {
+                    SelectedNodes.Remove(e.Node);
+                }
+                else
+                {
+                    SelectedNodes.Add(e.Node);
+                }
+            }
+            else if (fillSelection)
+            {
+                var snode = (SelectedNodes.Count == 0) ? null : SelectedNodes[SelectedNodes.Count - 1];
+                var pnode = snode?.Parent;
+
+                if ((pnode == null) || (pnode != e.Node?.Parent))
+                {
+                    SelectedNodes.Add(e.Node);
+                }
+                else
+                {
+                    bool start = false;
+                    SelectedNodes.Clear();
+                    foreach (TreeNode cnode in pnode.Nodes)
+                    {
+                        if (start)
+                        {
+                            SelectedNodes.Add(cnode);
+                        }
+                        if (cnode == snode)
+                        {
+                            if (start) break;
+                            else start = true;
+                            SelectedNodes.Add(cnode);
+                        }
+                        if (cnode == e.Node)
+                        {
+                            if (start) break;
+                            else start = true;
+                            SelectedNodes.Add(cnode);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                SelectedNodes.Clear();
+                SelectedNodes.Add(e.Node);
+            }
+            if (SelectedNodes.Count > 1)
+            {
+                var objs = new List<object>();
+                foreach (var node in SelectedNodes)
+                {
+                    objs.Add(node.Tag);
+                }
+                OnItemSelected?.Invoke(objs.ToArray());
+            }
+            else
+            {
+                OnItemSelected?.Invoke(ProjectTreeView.SelectedNode?.Tag);
+            }
         }
         private void ProjectTreeView_DoubleClick(object sender, EventArgs e)
         {

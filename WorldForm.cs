@@ -3301,7 +3301,7 @@ namespace CodeWalker
                 }
             }
         }
-        public void SelectItem(MapSelection? mhit = null, bool addSelection = false, bool manualSelection = false)
+        public void SelectItem(MapSelection? mhit = null, bool addSelection = false, bool manualSelection = false, bool notifyProject = true)
         {
             var mhitv = mhit.HasValue ? mhit.Value : new MapSelection();
             if (mhit != null)
@@ -3464,25 +3464,25 @@ namespace CodeWalker
                     }
                 }
             }
-            if (change && (ProjectForm != null) && (!addSelection || manualSelection))
+            if (notifyProject && change && (ProjectForm != null) && (!addSelection || manualSelection))
             {
                 ProjectForm.OnWorldSelectionChanged(SelectedItem);
             }
         }
-        public void SelectMulti(MapSelection[] items, bool addSelection = false)
+        public void SelectMulti(MapSelection[] items, bool addSelection = false, bool notifyProject = true)
         {
-            SelectItem(null, addSelection);
+            SelectItem(null, addSelection, false, notifyProject);
             if (items != null)
             {
                 foreach (var item in items)
                 {
-                    SelectItem(item, true);
+                    SelectItem(item, true, false, notifyProject);
                 }
                 if (!addSelection)
                 {
                     UpdateSelectionUI(true);
                 }
-                if ((ProjectForm != null) && !addSelection)
+                if (notifyProject && (ProjectForm != null) && !addSelection)
                 {
                     ProjectForm.OnWorldSelectionChanged(SelectedItem);
                 }
