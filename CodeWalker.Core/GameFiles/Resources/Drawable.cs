@@ -1776,7 +1776,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.VertexCount = (uint)(this.Data1 != null ? this.Data1.VertexCount : 0);
+            this.VertexCount = (uint)(this.Data1 != null ? this.Data1.VertexCount : this.Data2 != null ? this.Data2.VertexCount : 0);
             this.DataPointer1 = (ulong)(this.Data1 != null ? this.Data1.FilePosition : 0);
             this.DataPointer2 = (ulong)(this.Data2 != null ? this.Data2.FilePosition : 0);
             this.InfoPointer = (ulong)(this.Info != null ? this.Info.FilePosition : 0);
