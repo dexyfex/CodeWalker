@@ -486,7 +486,7 @@ namespace CodeWalker.Rendering
                 {
                     lightdircolour *= weather.CurrentValues.skyHdr;
                     lightdircolour.Alpha = 1.0f;
-                    lightdirambcolour *= weather.CurrentValues.skyHdr;
+                    lightdirambcolour *= weather.CurrentValues.skyHdr * 0.35f;
                     lightdirambcolour.Alpha = 1.0f;
                     hdrint = weather.CurrentValues.skyHdr;
                 }
