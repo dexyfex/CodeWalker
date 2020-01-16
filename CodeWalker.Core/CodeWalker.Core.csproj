@@ -122,6 +122,7 @@
     <Compile Include="GameFiles\RpfFile.cs" />
     <Compile Include="GameFiles\RpfManager.cs" />
     <Compile Include="GameFiles\Utils\Data.cs" />
+    <Compile Include="GameFiles\Utils\DDSIO.cs" />
     <Compile Include="GameFiles\Utils\GTACrypto.cs" />
     <Compile Include="GameFiles\Utils\GTAKeys.cs" />
     <Compile Include="GameFiles\Utils\Jenk.cs" />

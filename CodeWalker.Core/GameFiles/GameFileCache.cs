@@ -186,7 +186,7 @@ namespace CodeWalker.GameFiles
                 //TestCuts();
                 //TestYlds();
                 //TestYcds();
-                //TestYtds();
+                TestYtds();
                 //TestYbns();
                 //TestYdrs();
                 //TestYdds();
@@ -3440,6 +3440,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYtds()
         {
+            bool ddstest = true;
             bool savetest = false;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
@@ -3460,6 +3461,23 @@ namespace CodeWalker.GameFiles
                             {
                                 UpdateStatus("Error! " + ex.ToString());
                                 errorfiles.Add(entry);
+                            }
+                            if (ddstest && (ytdfile != null) && (ytdfile.TextureDict != null))
+                            {
+                                foreach (var tex in ytdfile.TextureDict.Textures.data_items)
+                                {
+                                    var dds = Utils.DDSIO.GetDDSFile(tex);
+                                    var tex2 = Utils.DDSIO.GetTexture(dds);
+                                    if (!tex.Name.StartsWith("script_rt"))
+                                    {
+                                        if (tex.Data?.FullData?.Length != tex2.Data?.FullData?.Length)
+                                        { }
+                                        if (tex.Stride != tex2.Stride)
+                                        { }
+                                    }
+                                    if ((tex.Format != tex2.Format) || (tex.Width != tex2.Width) || (tex.Height != tex2.Height) || (tex.Depth != tex2.Depth) || (tex.Levels != tex2.Levels))
+                                    { }
+                                }
                             }
                             if (savetest && (ytdfile != null) && (ytdfile.TextureDict != null))
                             {
@@ -3687,7 +3705,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYdrs()
         {
-            bool savetest = true;
+            bool savetest = false;
             bool boundsonly = true;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
@@ -3800,7 +3818,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYfts()
         {
-            bool savetest = true;
+            bool savetest = false;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {
@@ -3855,6 +3873,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYpts()
         {
+            var savetest = false;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {
@@ -3875,7 +3894,7 @@ namespace CodeWalker.GameFiles
                                 UpdateStatus("Error! " + ex.ToString());
                                 errorfiles.Add(entry);
                             }
-                            if ((ypt != null) && (ypt.PtfxList != null))
+                            if (savetest && (ypt != null) && (ypt.PtfxList != null))
                             {
                                 var fentry = entry as RpfFileEntry;
                                 if (fentry == null)
