@@ -303,6 +303,7 @@ namespace CodeWalker.GameFiles
             {
                 case 1:
                 case 2: // only found in .yft
+                case 0: //only found in .ypt
                     break;
                 default:
                     break;
@@ -3429,7 +3430,7 @@ namespace CodeWalker.GameFiles
         {
             var s = string.Format("{0} m=\"{1}\" v1=\"{2}\" v2=\"{3}\" radius=\"{4}\"",
                 Type,
-                Material,
+                MaterialIndex,
                 capsuleIndex1,
                 capsuleIndex2,
                 FloatUtil.ToString(capsuleRadius)
@@ -3630,7 +3631,7 @@ namespace CodeWalker.GameFiles
         {
             var s = string.Format("{0} m=\"{1}\" v1=\"{2}\" v2=\"{3}\" v3=\"{4}\" v4=\"{5}\"",
                 Type,
-                Material,
+                MaterialIndex,
                 boxIndex1,
                 boxIndex2,
                 boxIndex3,
@@ -3804,7 +3805,7 @@ namespace CodeWalker.GameFiles
         {
             var s = string.Format("{0} m=\"{1}\" v1=\"{2}\" v2=\"{3}\" radius=\"{4}\"",
                 Type,
-                Material,
+                MaterialIndex,
                 cylinderIndex1,
                 cylinderIndex2,
                 FloatUtil.ToString(cylinderRadius)
