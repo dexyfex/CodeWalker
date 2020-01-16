@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -87,4 +88,115 @@ namespace CodeWalker.GameFiles
         }
 
     }
+
+
+
+
+    public class YbnXml : MetaXmlBase
+    {
+
+        public static string GetXml(YbnFile ybn)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(XmlHeader);
+
+            var name = "BoundsFile";
+            OpenTag(sb, 0, name);
+
+            if (ybn?.Bounds != null)
+            {
+                Bounds.WriteXmlNode(ybn.Bounds, sb, 1);
+            }
+
+            CloseTag(sb, 0, name);
+
+            return sb.ToString();
+        }
+
+
+        public static string FormatBoundMaterialColour(BoundMaterialColour c) //for use with WriteItemArray
+        {
+            return c.R.ToString() + ", " + c.G.ToString() + ", " + c.B.ToString() + ", " + c.A.ToString();
+        }
+
+    }
+
+    public class XmlYbn
+    {
+
+        public static YbnFile GetYbn(string xml)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            return GetYbn(doc);
+        }
+
+        public static YbnFile GetYbn(XmlDocument doc)
+        {
+            YbnFile r = new YbnFile();
+
+            var node = doc.DocumentElement;
+            var bnode = node?.SelectSingleNode("Bounds");
+            if (bnode != null)
+            {
+                r.Bounds = Bounds.ReadXmlNode(bnode, r);
+            }
+
+            return r;
+        }
+
+
+
+        public static BoundMaterialColour[] GetRawBoundMaterialColourArray(XmlNode node)
+        {
+            if (node == null) return null;
+            byte r, g, b, a;
+            var items = new List<BoundMaterialColour>();
+            var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
+            for (int i = 0; i < split.Length; i++)
+            {
+                var s = split[i]?.Trim();
+                if (string.IsNullOrEmpty(s)) continue;
+                var split2 = s.Split(',');// Regex.Split(s, @"[\s\t]");
+                int c = 0;
+                r = 0; g = 0; b = 0; a = 0;
+                for (int n = 0; n < split2.Length; n++)
+                {
+                    var ts = split2[n]?.Trim();
+                    if (string.IsNullOrEmpty(ts)) continue;
+                    byte v = 0;
+                    byte.TryParse(ts, out v);
+                    switch (c)
+                    {
+                        case 0: r = v; break;
+                        case 1: g = v; break;
+                        case 2: b = v; break;
+                        case 3: a = v; break;
+                    }
+                    c++;
+                }
+                if (c >= 2)
+                {
+                    var val = new BoundMaterialColour();
+                    val.R = r;
+                    val.G = g;
+                    val.B = b;
+                    val.A = a;
+                    items.Add(val);
+                }
+            }
+
+            return (items.Count > 0) ? items.ToArray() : null;
+        }
+        public static BoundMaterialColour[] GetChildRawBoundMaterialColourArray(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            return GetRawBoundMaterialColourArray(cnode);
+        }
+
+
+    }
+
+
+
 }

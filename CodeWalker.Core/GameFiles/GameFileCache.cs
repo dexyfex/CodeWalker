@@ -3516,7 +3516,8 @@ namespace CodeWalker.GameFiles
         }
         public void TestYbns()
         {
-            bool savetest = true;
+            bool xmltest = true;
+            bool savetest = false;
             bool reloadtest = false;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
@@ -3537,6 +3538,14 @@ namespace CodeWalker.GameFiles
                             {
                                 UpdateStatus("Error! " + ex.ToString());
                                 errorfiles.Add(entry);
+                            }
+                            if (xmltest && (ybn != null) && (ybn.Bounds != null))
+                            {
+                                var xml = YbnXml.GetXml(ybn);
+                                var ybn2 = XmlYbn.GetYbn(xml);
+                                var xml2 = YbnXml.GetXml(ybn2);
+                                if (xml.Length != xml2.Length)
+                                { }
                             }
                             if (savetest && (ybn != null) && (ybn.Bounds != null))
                             {

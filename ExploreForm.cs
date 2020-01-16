@@ -230,10 +230,10 @@ namespace CodeWalker
             InitFileType(".sps", "Shader Preset", 5, FileTypeAction.ViewText);
             InitFileType(".xml", "XML File", 6, FileTypeAction.ViewXml);
             InitFileType(".meta", "Metadata (XML)", 6, FileTypeAction.ViewXml);
-            InitFileType(".ymt", "Metadata (Binary)", 6, FileTypeAction.ViewYmt);
-            InitFileType(".pso", "Metadata (PSO)", 6, FileTypeAction.ViewJPso);
+            InitFileType(".ymt", "Metadata (Binary)", 6, FileTypeAction.ViewYmt, true);
+            InitFileType(".pso", "Metadata (PSO)", 6, FileTypeAction.ViewJPso, true);
             InitFileType(".gfx", "Scaleform Flash", 7);
-            InitFileType(".ynd", "Path Nodes", 8, FileTypeAction.ViewYnd);
+            InitFileType(".ynd", "Path Nodes", 8, FileTypeAction.ViewYnd, true);
             InitFileType(".ynv", "Nav Mesh", 9, FileTypeAction.ViewModel);
             InitFileType(".yvr", "Vehicle Record", 9, FileTypeAction.ViewYvr);
             InitFileType(".ywr", "Waypoint Record", 9, FileTypeAction.ViewYwr);
@@ -247,9 +247,9 @@ namespace CodeWalker
             InitFileType(".yft", "Fragment", 11, FileTypeAction.ViewModel);
             InitFileType(".ydr", "Drawable", 11, FileTypeAction.ViewModel);
             InitFileType(".ydd", "Drawable Dictionary", 12, FileTypeAction.ViewModel);
-            InitFileType(".cut", "Cutscene", 12, FileTypeAction.ViewCut);
+            InitFileType(".cut", "Cutscene", 12, FileTypeAction.ViewCut, true);
             InitFileType(".ysc", "Script", 13);
-            InitFileType(".ymf", "Manifest", 14, FileTypeAction.ViewYmf);
+            InitFileType(".ymf", "Manifest", 14, FileTypeAction.ViewYmf, true);
             InitFileType(".bik", "Bink Video", 15);
             InitFileType(".jpg", "JPEG Image", 16);
             InitFileType(".jpeg", "JPEG Image", 16);
@@ -258,21 +258,21 @@ namespace CodeWalker
             InitFileType(".dds", "DirectDraw Surface", 16);
             InitFileType(".ytd", "Texture Dictionary", 16, FileTypeAction.ViewYtd);
             InitFileType(".mrf", "MRF File", 18);
-            InitFileType(".ycd", "Clip Dictionary", 18, FileTypeAction.ViewYcd);
+            InitFileType(".ycd", "Clip Dictionary", 18, FileTypeAction.ViewYcd, true);
             InitFileType(".ypt", "Particle Effect", 18, FileTypeAction.ViewModel);
-            InitFileType(".ybn", "Static Collisions", 19, FileTypeAction.ViewModel);
+            InitFileType(".ybn", "Static Collisions", 19, FileTypeAction.ViewModel, true);
             InitFileType(".ide", "Item Definitions", 20, FileTypeAction.ViewText);
-            InitFileType(".ytyp", "Archetype Definitions", 20, FileTypeAction.ViewYtyp);
-            InitFileType(".ymap", "Map Data", 21, FileTypeAction.ViewYmap);
+            InitFileType(".ytyp", "Archetype Definitions", 20, FileTypeAction.ViewYtyp, true);
+            InitFileType(".ymap", "Map Data", 21, FileTypeAction.ViewYmap, true);
             InitFileType(".ipl", "Item Placements", 21, FileTypeAction.ViewText);
             InitFileType(".awc", "Audio Wave Container", 22, FileTypeAction.ViewAwc);
-            InitFileType(".rel", "Audio Data (REL)", 23, FileTypeAction.ViewRel);
+            InitFileType(".rel", "Audio Data (REL)", 23, FileTypeAction.ViewRel, true);
 
             InitSubFileType(".dat", "cache_y.dat", "Cache File", 6, FileTypeAction.ViewCacheDat);
         }
-        private void InitFileType(string ext, string name, int imgidx, FileTypeAction defaultAction = FileTypeAction.ViewHex)
+        private void InitFileType(string ext, string name, int imgidx, FileTypeAction defaultAction = FileTypeAction.ViewHex, bool xmlConvertible = false)
         {
-            var ft = new FileTypeInfo(ext, name, imgidx, defaultAction);
+            var ft = new FileTypeInfo(ext, name, imgidx, defaultAction, xmlConvertible);
             FileTypes[ext] = ft;
         }
         private void InitSubFileType(string ext, string subext, string name, int imgidx, FileTypeAction defaultAction = FileTypeAction.ViewHex)
@@ -280,7 +280,7 @@ namespace CodeWalker
             FileTypeInfo pti = null;
             if (FileTypes.TryGetValue(ext, out pti))
             {
-                var ft = new FileTypeInfo(subext, name, imgidx, defaultAction);
+                var ft = new FileTypeInfo(subext, name, imgidx, defaultAction, pti.XmlConvertible);
                 pti.AddSubType(ft);
             }
         }
@@ -308,7 +308,7 @@ namespace CodeWalker
                 }
                 else
                 {
-                    ft = new FileTypeInfo(ext, ext.Substring(1).ToUpperInvariant() + " File", 4, FileTypeAction.ViewHex);
+                    ft = new FileTypeInfo(ext, ext.Substring(1).ToUpperInvariant() + " File", 4, FileTypeAction.ViewHex, false);
                     FileTypes[ft.Extension] = ft; //save it for later!
                     return ft;
                 }
@@ -1323,20 +1323,7 @@ namespace CodeWalker
         {
             if (item == null) return false;
             if (item.FileType == null) return false;
-            switch (item.FileType.DefaultAction)
-            {
-                case FileTypeAction.ViewYmt:
-                case FileTypeAction.ViewYmf:
-                case FileTypeAction.ViewYmap:
-                case FileTypeAction.ViewYtyp:
-                case FileTypeAction.ViewJPso:
-                case FileTypeAction.ViewCut:
-                case FileTypeAction.ViewRel:
-                case FileTypeAction.ViewYnd:
-                case FileTypeAction.ViewYcd:
-                    return true;
-            }
-            return false;
+            return item.FileType.XmlConvertible;
         }
 
 
@@ -2465,6 +2452,10 @@ namespace CodeWalker
                     {
                         mformat = MetaFormat.Ycd;
                     }
+                    if (fnamel.EndsWith(".ybn.xml"))
+                    {
+                        mformat = MetaFormat.Ybn;
+                    }
 
                     fname = fname.Substring(0, fname.Length - trimlength);
                     fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
@@ -2544,6 +2535,17 @@ namespace CodeWalker
                                     continue;
                                 }
                                 data = ycd.Save();
+                                break;
+                            }
+                        case MetaFormat.Ybn:
+                            {
+                                var ybn = XmlYbn.GetYbn(doc);
+                                if (ybn.Bounds == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YBN XML");
+                                    continue;
+                                }
+                                data = ybn.Save();
                                 break;
                             }
                     }
@@ -4181,13 +4183,15 @@ namespace CodeWalker
         public int ImageIndex { get; set; }
         public FileTypeAction DefaultAction { get; set; }
         public List<FileTypeInfo> SubTypes { get; set; }
+        public bool XmlConvertible { get; set; }
 
-        public FileTypeInfo(string extension, string name, int imageindex, FileTypeAction defaultAction)
+        public FileTypeInfo(string extension, string name, int imageindex, FileTypeAction defaultAction, bool xmlConvertible)
         {
             Name = name;
             Extension = extension;
             ImageIndex = imageindex;
             DefaultAction = defaultAction;
+            XmlConvertible = xmlConvertible;
         }
 
         public void AddSubType(FileTypeInfo t)

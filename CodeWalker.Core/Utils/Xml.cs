@@ -374,6 +374,12 @@ namespace CodeWalker
             var cnode = node.SelectSingleNode(name);
             return GetRawVector3Array(cnode);
         }
+        public static Vector3[] GetChildRawVector3ArrayNullable(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            var arr = GetRawVector3Array(cnode);
+            return ((arr != null) && (arr.Length > 0)) ? arr : null;
+        }
 
         public static Vector4[] GetRawVector4Array(XmlNode node)
         {
