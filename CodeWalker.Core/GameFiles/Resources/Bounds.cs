@@ -30,6 +30,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Xml;
 using System.Text;
 using System.Threading.Tasks;
 using CodeWalker.World;
@@ -259,9 +260,6 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -368,10 +366,6 @@ namespace CodeWalker.GameFiles
             }
 
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -399,13 +393,95 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_60h);
             writer.Write(this.Volume);
         }
+        public virtual void WriteXml(StringBuilder sb, int indent)
+        {
+            YbnXml.SelfClosingTag(sb, indent, "BoxMin " + FloatUtil.GetVector3XmlString(BoxMin));
+            YbnXml.SelfClosingTag(sb, indent, "BoxMax " + FloatUtil.GetVector3XmlString(BoxMax));
+            YbnXml.SelfClosingTag(sb, indent, "BoxCenter " + FloatUtil.GetVector3XmlString(BoxCenter));
+            YbnXml.SelfClosingTag(sb, indent, "SphereCenter " + FloatUtil.GetVector3XmlString(SphereCenter));
+            YbnXml.ValueTag(sb, indent, "SphereRadius", FloatUtil.ToString(SphereRadius));
+            YbnXml.ValueTag(sb, indent, "Margin", FloatUtil.ToString(Margin));
+            YbnXml.ValueTag(sb, indent, "Volume", FloatUtil.ToString(Volume));
+            YbnXml.SelfClosingTag(sb, indent, "Inertia " + FloatUtil.GetVector3XmlString(Unknown_60h));
+            YbnXml.ValueTag(sb, indent, "MaterialIndex", MaterialIndex.ToString());
+            YbnXml.ValueTag(sb, indent, "MaterialColourIndex", MaterialColorIndex.ToString());
+            YbnXml.ValueTag(sb, indent, "ProceduralID", ProceduralId.ToString());
+            YbnXml.ValueTag(sb, indent, "RoomID", RoomId.ToString());
+            YbnXml.ValueTag(sb, indent, "PedDensity", PedDensity.ToString());
+            YbnXml.ValueTag(sb, indent, "UnkFlags", UnkFlags.ToString());
+            YbnXml.ValueTag(sb, indent, "PolyFlags", PolyFlags.ToString());
+            YbnXml.ValueTag(sb, indent, "UnkType", Unknown_3Ch.ToString());
+            if (Parent != null)
+            {
+                YbnXml.SelfClosingTag(sb, indent, "CompositePosition " + FloatUtil.GetVector3XmlString(Position));
+                YbnXml.SelfClosingTag(sb, indent, "CompositeRotation " + FloatUtil.GetVector4XmlString(Orientation.ToVector4()));
+                YbnXml.SelfClosingTag(sb, indent, "CompositeScale " + FloatUtil.GetVector3XmlString(Scale));
+                YbnXml.StringTag(sb, indent, "CompositeFlags1", CompositeFlags1.Flags1.ToString());
+                YbnXml.StringTag(sb, indent, "CompositeFlags2", CompositeFlags1.Flags2.ToString());
+            }
+        }
+        public virtual void ReadXml(XmlNode node)
+        {
+            BoxMin = Xml.GetChildVector3Attributes(node, "BoxMin", "x", "y", "z");
+            BoxMax = Xml.GetChildVector3Attributes(node, "BoxMax", "x", "y", "z");
+            BoxCenter = Xml.GetChildVector3Attributes(node, "BoxCenter", "x", "y", "z");
+            SphereCenter = Xml.GetChildVector3Attributes(node, "SphereCenter", "x", "y", "z");
+            SphereRadius = Xml.GetChildFloatAttribute(node, "SphereRadius", "value");
+            Margin = Xml.GetChildFloatAttribute(node, "Margin", "value");
+            Volume = Xml.GetChildFloatAttribute(node, "Volume", "value");
+            Unknown_60h = Xml.GetChildVector3Attributes(node, "Inertia", "x", "y", "z");
+            MaterialIndex = (byte)Xml.GetChildUIntAttribute(node, "MaterialIndex", "value");
+            MaterialColorIndex = (byte)Xml.GetChildUIntAttribute(node, "MaterialColourIndex", "value");
+            ProceduralId = (byte)Xml.GetChildUIntAttribute(node, "ProceduralID", "value");
+            RoomId = (byte)Xml.GetChildUIntAttribute(node, "RoomID", "value");
+            PedDensity = (byte)Xml.GetChildUIntAttribute(node, "PedDensity", "value");
+            UnkFlags = (byte)Xml.GetChildUIntAttribute(node, "UnkFlags", "value");
+            PolyFlags = (byte)Xml.GetChildUIntAttribute(node, "PolyFlags", "value");
+            Unknown_3Ch = (byte)Xml.GetChildUIntAttribute(node, "UnkType", "value");
+            if (Parent != null)
+            {
+                Position = Xml.GetChildVector3Attributes(node, "CompositePosition", "x", "y", "z");
+                Orientation = Xml.GetChildVector4Attributes(node, "CompositeRotation", "x", "y", "z", "w").ToQuaternion();
+                Scale = Xml.GetChildVector3Attributes(node, "CompositeScale", "x", "y", "z");
+                var f = new BoundCompositeChildrenFlags();
+                f.Flags1 = Xml.GetChildEnumInnerText<EBoundCompositeFlags>(node, "CompositeFlags1");
+                f.Flags2 = Xml.GetChildEnumInnerText<EBoundCompositeFlags>(node, "CompositeFlags2");
+                CompositeFlags1 = f;
+                CompositeFlags2 = f;
+            }
+        }
+        public static void WriteXmlNode(Bounds b, StringBuilder sb, int indent, string name = "Bounds")
+        {
+            if (b == null) return;
+            YbnXml.OpenTag(sb, indent, name + " type=\"" + b.Type.ToString() + "\"");
+            b.WriteXml(sb, indent + 1);
+            YbnXml.CloseTag(sb, indent, name);
+        }
+        public static Bounds ReadXmlNode(XmlNode node, object owner = null, BoundComposite parent = null)
+        {
+            if (node == null) return null;
+            var typestr = Xml.GetStringAttribute(node, "type");
+            var type = Xml.GetEnumValue<BoundsType>(typestr);
+            var b = Create(type);
+            if (b != null)
+            {
+                b.Type = type;
+                b.Owner = owner;
+                b.Parent = parent;
+                b.ReadXml(node);
+            }
+            return b;
+        }
 
         public IResourceSystemBlock GetType(ResourceDataReader reader, params object[] parameters)
         {
             reader.Position += 16;
             var type = (BoundsType)reader.ReadByte();
             reader.Position -= 17;
-
+            return Create(type);
+        }
+        public static Bounds Create(BoundsType type)
+        {
             switch (type)
             {
                 case BoundsType.Sphere: return new BoundSphere();
@@ -426,6 +502,7 @@ namespace CodeWalker.GameFiles
             if (other == null) return;
             SphereRadius = other.SphereRadius;
             SphereCenter = other.SphereCenter;
+            BoxCenter = other.BoxCenter;
             BoxMin = other.BoxMin;
             BoxMax = other.BoxMax;
             Margin = other.Margin;
@@ -880,9 +957,6 @@ namespace CodeWalker.GameFiles
         private BoundVertex[] VertexObjects = null; //for use by the editor, created as needed by GetVertexObject()
 
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -984,83 +1058,6 @@ namespace CodeWalker.GameFiles
             }
 
         }
-
-        private void ReadPolygons(ResourceDataReader reader)
-        {
-            if(PolygonsCount==0)
-            { return; }
-
-            Polygons = new BoundPolygon[PolygonsCount];
-            uint polybytecount = PolygonsCount * 16;
-            var polygonData = reader.ReadBytesAt(PolygonsPointer, polybytecount);
-            for (int i = 0; i < PolygonsCount; i++)
-            {
-                var offset = i * 16;
-                byte b0 = polygonData[offset];
-                polygonData[offset] = (byte)(b0 & 0xF8);//mask it off
-                BoundPolygonType type = (BoundPolygonType)(b0 & 7);
-                BoundPolygon p = CreatePolygon(type);
-                if (p != null)
-                {
-                    p.Index = i;
-                    p.Read(polygonData, offset);
-                }
-                Polygons[i] = p;
-            }
-        }
-
-        public BoundVertex GetVertexObject(int index)
-        {
-            //gets a cached object which references a single vertex in this geometry
-            if (Vertices == null) return null;
-            if ((index < 0) || (index >= Vertices.Length)) return null;
-            if ((VertexObjects == null) || (VertexObjects.Length != Vertices.Length))
-            {
-                VertexObjects = new BoundVertex[Vertices.Length];
-            }
-            if (index >= VertexObjects.Length) return null;
-            var r = VertexObjects[index];
-            if (r == null)
-            {
-                r = new BoundVertex(this, index);
-                VertexObjects[index] = r;
-            }
-            return r;
-        }
-        public Vector3 GetVertex(int index)
-        {
-            return ((index >= 0) && (index < Vertices.Length)) ? Vertices[index] : Vector3.Zero;
-        }
-        public Vector3 GetVertexPos(int index)
-        {
-            var v = GetVertex(index) + CenterGeom;
-            return Vector3.Transform(v, Transform).XYZ();
-        }
-        public void SetVertexPos(int index, Vector3 v)
-        {
-            if ((index >= 0) && (index < Vertices.Length))
-            {
-                var t = Vector3.Transform(v, TransformInv).XYZ() - CenterGeom;
-                Vertices[index] = t;
-            }
-        }
-        public BoundMaterialColour GetVertexColour(int index)
-        {
-            return ((VertexColours != null) && (index >= 0) && (index < VertexColours.Length)) ? VertexColours[index] : new BoundMaterialColour();
-        }
-        public void SetVertexColour(int index, BoundMaterialColour c)
-        {
-            if ((VertexColours != null) && (index >= 0) && (index < VertexColours.Length))
-            {
-                VertexColours[index] = c;
-            }
-        }
-
-
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -1122,10 +1119,95 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_128h);
             writer.Write(this.Unknown_12Ch);
         }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            base.WriteXml(sb, indent);
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
+            YbnXml.SelfClosingTag(sb, indent, "GeometryCenter " + FloatUtil.GetVector3XmlString(CenterGeom));
+            YbnXml.ValueTag(sb, indent, "UnkFloat1", FloatUtil.ToString(Unknown_9Ch));
+            YbnXml.ValueTag(sb, indent, "UnkFloat2", FloatUtil.ToString(Unknown_ACh));
+
+            if (Materials != null)
+            {
+                YbnXml.WriteItemArray(sb, Materials, indent, "Materials");
+            }
+            if (MaterialColours != null)
+            {
+                YbnXml.WriteRawArray(sb, MaterialColours, indent, "MaterialColours", "", YbnXml.FormatBoundMaterialColour, 1);
+            }
+            if (Vertices != null)
+            {
+                YbnXml.WriteRawArray(sb, Vertices, indent, "Vertices", "", YbnXml.FormatVector3, 1);
+            }
+            if (Vertices2 != null)
+            {
+                YbnXml.WriteRawArray(sb, Vertices2, indent, "Vertices2", "", YbnXml.FormatVector3, 1);
+            }
+            if (VertexColours != null)
+            {
+                YbnXml.WriteRawArray(sb, VertexColours, indent, "VertexColours", "", YbnXml.FormatBoundMaterialColour, 1);
+            }
+            if (Polygons != null)
+            {
+                YbnXml.WriteCustomItemArray(sb, Polygons, indent, "Polygons");
+            }
+            if (Unknown1Data != null)
+            {
+                YbnXml.OpenTag(sb, indent, "UnkData");
+                Unknown1Data.WriteXml(sb, indent + 1);
+                YbnXml.CloseTag(sb, indent, "UnkData");
+            }
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+
+            CenterGeom = Xml.GetChildVector3Attributes(node, "GeometryCenter", "x", "y", "z");
+            Unknown_9Ch = Xml.GetChildFloatAttribute(node, "UnkFloat1", "value");
+            Unknown_ACh = Xml.GetChildFloatAttribute(node, "UnkFloat2", "value");
+
+            Materials = XmlMeta.ReadItemArray<BoundMaterial_s>(node, "Materials");
+            MaterialColours = XmlYbn.GetChildRawBoundMaterialColourArray(node, "MaterialColours");
+            Vertices = Xml.GetChildRawVector3ArrayNullable(node, "Vertices");
+            Vertices2 = Xml.GetChildRawVector3ArrayNullable(node, "Vertices2");
+            VertexColours = XmlYbn.GetChildRawBoundMaterialColourArray(node, "VertexColours");
+
+            var pnode = node.SelectSingleNode("Polygons");
+            if (pnode != null)
+            {
+                var inodes = pnode.ChildNodes;
+                if (inodes?.Count > 0)
+                {
+                    var polylist = new List<BoundPolygon>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        var typestr = inode.Name;
+                        var type = Xml.GetEnumValue<BoundPolygonType>(typestr);
+                        var poly = CreatePolygon(type);
+                        if (poly != null)
+                        {
+                            poly.ReadXml(inode);
+                            polylist.Add(poly);
+                        }
+                    }
+                    Polygons = polylist.ToArray();
+                }
+            }
+
+            var unode = node.SelectSingleNode("UnkData");
+            if (unode != null)
+            {
+                Unknown1Data = new BoundGeomUnknown1();
+                Unknown1Data.ReadXml(unode);
+            }
+
+            BuildMaterials();
+            CalculateQuantum();
+            UpdateEdgeIndices();
+            UpdateTriangleAreas();
+
+        }
+
         public override IResourceBlock[] GetReferences()
         {
             BuildMaterials();
@@ -1214,6 +1296,82 @@ namespace CodeWalker.GameFiles
             }
             return list.ToArray();
         }
+
+
+
+        private void ReadPolygons(ResourceDataReader reader)
+        {
+            if(PolygonsCount==0)
+            { return; }
+
+            Polygons = new BoundPolygon[PolygonsCount];
+            uint polybytecount = PolygonsCount * 16;
+            var polygonData = reader.ReadBytesAt(PolygonsPointer, polybytecount);
+            for (int i = 0; i < PolygonsCount; i++)
+            {
+                var offset = i * 16;
+                byte b0 = polygonData[offset];
+                polygonData[offset] = (byte)(b0 & 0xF8);//mask it off
+                BoundPolygonType type = (BoundPolygonType)(b0 & 7);
+                BoundPolygon p = CreatePolygon(type);
+                if (p != null)
+                {
+                    p.Index = i;
+                    p.Read(polygonData, offset);
+                }
+                Polygons[i] = p;
+            }
+        }
+
+        public BoundVertex GetVertexObject(int index)
+        {
+            //gets a cached object which references a single vertex in this geometry
+            if (Vertices == null) return null;
+            if ((index < 0) || (index >= Vertices.Length)) return null;
+            if ((VertexObjects == null) || (VertexObjects.Length != Vertices.Length))
+            {
+                VertexObjects = new BoundVertex[Vertices.Length];
+            }
+            if (index >= VertexObjects.Length) return null;
+            var r = VertexObjects[index];
+            if (r == null)
+            {
+                r = new BoundVertex(this, index);
+                VertexObjects[index] = r;
+            }
+            return r;
+        }
+        public Vector3 GetVertex(int index)
+        {
+            return ((index >= 0) && (index < Vertices.Length)) ? Vertices[index] : Vector3.Zero;
+        }
+        public Vector3 GetVertexPos(int index)
+        {
+            var v = GetVertex(index) + CenterGeom;
+            return Vector3.Transform(v, Transform).XYZ();
+        }
+        public void SetVertexPos(int index, Vector3 v)
+        {
+            if ((index >= 0) && (index < Vertices.Length))
+            {
+                var t = Vector3.Transform(v, TransformInv).XYZ() - CenterGeom;
+                Vertices[index] = t;
+            }
+        }
+        public BoundMaterialColour GetVertexColour(int index)
+        {
+            return ((VertexColours != null) && (index >= 0) && (index < VertexColours.Length)) ? VertexColours[index] : new BoundMaterialColour();
+        }
+        public void SetVertexColour(int index, BoundMaterialColour c)
+        {
+            if ((VertexColours != null) && (index >= 0) && (index < VertexColours.Length))
+            {
+                VertexColours[index] = c;
+            }
+        }
+
+
+
 
         public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
         {
@@ -1468,18 +1626,27 @@ namespace CodeWalker.GameFiles
 
 
 
-        public BoundMaterial_s GetMaterial(int polyIndex)
+        public int GetMaterialIndex(int polyIndex)
         {
             var matind = 0;
             if ((PolygonMaterialIndices != null) && (polyIndex < PolygonMaterialIndices.Length))
             {
                 matind = PolygonMaterialIndices[polyIndex];
             }
-            if ((Materials != null) && (matind < Materials.Length))
+            return matind;
+        }
+        public BoundMaterial_s GetMaterialByIndex(int matIndex)
+        {
+            if ((Materials != null) && (matIndex < Materials.Length))
             {
-                return Materials[matind];
+                return Materials[matIndex];
             }
             return new BoundMaterial_s();
+        }
+        public BoundMaterial_s GetMaterial(int polyIndex)
+        {
+            var matind = GetMaterialIndex(polyIndex);
+            return GetMaterialByIndex(matind);
         }
         public void SetMaterial(int polyIndex, BoundMaterial_s mat)
         {
@@ -1911,9 +2078,6 @@ namespace CodeWalker.GameFiles
         // reference data
         public BVH BVH { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -1940,10 +2104,6 @@ namespace CodeWalker.GameFiles
                 //this can happen in some ydr's for some reason
             }
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -1962,9 +2122,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_14Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             BuildBVH();
@@ -2231,9 +2388,6 @@ namespace CodeWalker.GameFiles
         private ResourceSystemStructBlock<BoundCompositeChildrenFlags> ChildrenFlags2Block = null;
 
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -2317,10 +2471,6 @@ namespace CodeWalker.GameFiles
             //{ }//some props ydr's
 
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -2348,10 +2498,55 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_A4h);
             writer.Write(this.BVHPointer);
         }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            base.WriteXml(sb, indent);
+            var c = Children?.data_items;
+            if ((c == null) || (c.Length == 0))
+            {
+                YbnXml.SelfClosingTag(sb, indent, "Children");
+            }
+            else
+            {
+                var cind = indent + 1;
+                YbnXml.OpenTag(sb, indent, "Children");
+                foreach (var child in c)
+                {
+                    Bounds.WriteXmlNode(child, sb, cind, "Item");
+                }
+                YbnXml.CloseTag(sb, indent, "Children");
+            }
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
+            var cnode = node.SelectSingleNode("Children");
+            if (cnode != null)
+            {
+                var cnodes = cnode.SelectNodes("Item");
+                if (cnodes?.Count > 0)
+                {
+                    var blist = new List<Bounds>();
+                    foreach (XmlNode inode in cnodes)
+                    {
+                        var b = Bounds.ReadXmlNode(inode, Owner, this);
+                        blist.Add(b);
+                    }
+                    var arr = blist.ToArray();
+                    Children = new ResourcePointerArray64<Bounds>();
+                    Children.data_items = arr;
+
+                    BuildBVH();
+                    UpdateChildrenFlags();
+                    UpdateChildrenBounds();
+                    UpdateChildrenTransformations();
+                }
+            }
+
+
+        }
+
         public override IResourceBlock[] GetReferences()
         {
             BuildBVH();
@@ -2414,7 +2609,7 @@ namespace CodeWalker.GameFiles
             }
             else
             {
-                //why are we here? yft's hit this...
+                //why are we here? yft's hit this... (and when loading XML!)
                 if (!(Owner is FragPhysicsLOD) && !(Owner is FragPhysArchetype) && !(Owner is VerletCloth))
                 { }
             }
@@ -2663,7 +2858,7 @@ namespace CodeWalker.GameFiles
         Box = 3,
         Cylinder = 4,
     }
-    [TC(typeof(EXP))] public abstract class BoundPolygon
+    [TC(typeof(EXP))] public abstract class BoundPolygon : IMetaXmlItem
     {
         public BoundPolygonType Type { get; set; }
         public BoundGeometry Owner { get; set; } //for browsing/editing convenience
@@ -2680,6 +2875,10 @@ namespace CodeWalker.GameFiles
             }
         }
         public BoundMaterial_s? MaterialCustom; //for editing, when assigning a new material.
+        public int MaterialIndex
+        {
+            get { return Owner?.GetMaterialIndex(Index) ?? -1; }
+        }
         public Vector3[] VertexPositions
         {
             get
@@ -2720,6 +2919,8 @@ namespace CodeWalker.GameFiles
         public abstract void GatherVertices(Dictionary<BoundVertex, int> verts);
         public abstract void Read(byte[] bytes, int offset);
         public abstract void Write(BinaryWriter bw);
+        public abstract void WriteXml(StringBuilder sb, int indent);
+        public abstract void ReadXml(XmlNode node);
         public virtual string Title
         {
             get
@@ -2930,6 +3131,30 @@ namespace CodeWalker.GameFiles
             bw.Write(edgeIndex2);
             bw.Write(edgeIndex3);
         }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            var s = string.Format("{0} m=\"{1}\" v1=\"{2}\" v2=\"{3}\" v3=\"{4}\" f1=\"{5}\" f2=\"{6}\" f3=\"{7}\"", 
+                Type,
+                MaterialIndex,
+                vertIndex1, 
+                vertIndex2, 
+                vertIndex3,
+                vertFlag1 ? 1 : 0,
+                vertFlag2 ? 1 : 0,
+                vertFlag3 ? 1 : 0
+                );
+            YbnXml.SelfClosingTag(sb, indent, s);
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Material = Owner?.GetMaterialByIndex(Xml.GetIntAttribute(node, "m")) ?? new BoundMaterial_s();
+            vertIndex1 = Xml.GetIntAttribute(node, "v1");
+            vertIndex2 = Xml.GetIntAttribute(node, "v2");
+            vertIndex3 = Xml.GetIntAttribute(node, "v3");
+            vertFlag1 = Xml.GetIntAttribute(node, "f1") != 0;
+            vertFlag2 = Xml.GetIntAttribute(node, "f2") != 0;
+            vertFlag3 = Xml.GetIntAttribute(node, "f3") != 0;
+        }
         public override string ToString()
         {
             return base.ToString() + ": " + vertIndex1.ToString() + ", " + vertIndex2.ToString() + ", " + vertIndex3.ToString();
@@ -3029,6 +3254,22 @@ namespace CodeWalker.GameFiles
             bw.Write(sphereRadius);
             bw.Write(unused0);
             bw.Write(unused1);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            var s = string.Format("{0} m=\"{1}\" v=\"{2}\" radius=\"{3}\"",
+                Type,
+                MaterialIndex,
+                sphereIndex,
+                FloatUtil.ToString(sphereRadius)
+                );
+            YbnXml.SelfClosingTag(sb, indent, s);
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Material = Owner?.GetMaterialByIndex(Xml.GetIntAttribute(node, "m")) ?? new BoundMaterial_s();
+            sphereIndex = (ushort)Xml.GetUIntAttribute(node, "v");
+            sphereRadius = Xml.GetFloatAttribute(node, "radius");
         }
         public override string ToString()
         {
@@ -3183,6 +3424,24 @@ namespace CodeWalker.GameFiles
             bw.Write(capsuleIndex2);
             bw.Write(unused0);
             bw.Write(unused1);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            var s = string.Format("{0} m=\"{1}\" v1=\"{2}\" v2=\"{3}\" radius=\"{4}\"",
+                Type,
+                Material,
+                capsuleIndex1,
+                capsuleIndex2,
+                FloatUtil.ToString(capsuleRadius)
+                );
+            YbnXml.SelfClosingTag(sb, indent, s);
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Material = Owner?.GetMaterialByIndex(Xml.GetIntAttribute(node, "m")) ?? new BoundMaterial_s();
+            capsuleIndex1 = (ushort)Xml.GetUIntAttribute(node, "v1");
+            capsuleIndex2 = (ushort)Xml.GetUIntAttribute(node, "v2");
+            capsuleRadius = Xml.GetFloatAttribute(node, "radius");
         }
         public override string ToString()
         {
@@ -3367,6 +3626,26 @@ namespace CodeWalker.GameFiles
             bw.Write(boxIndex4);
             bw.Write(unused0);
         }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            var s = string.Format("{0} m=\"{1}\" v1=\"{2}\" v2=\"{3}\" v3=\"{4}\" v4=\"{5}\"",
+                Type,
+                Material,
+                boxIndex1,
+                boxIndex2,
+                boxIndex3,
+                boxIndex4
+                );
+            YbnXml.SelfClosingTag(sb, indent, s);
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Material = Owner?.GetMaterialByIndex(Xml.GetIntAttribute(node, "m")) ?? new BoundMaterial_s();
+            boxIndex1 = (short)Xml.GetIntAttribute(node, "v1");
+            boxIndex2 = (short)Xml.GetIntAttribute(node, "v2");
+            boxIndex3 = (short)Xml.GetIntAttribute(node, "v3");
+            boxIndex4 = (short)Xml.GetIntAttribute(node, "v4");
+        }
         public override string ToString()
         {
             return base.ToString() + ": " + boxIndex1.ToString() + ", " + boxIndex2.ToString() + ", " + boxIndex3.ToString() + ", " + boxIndex4.ToString();
@@ -3521,6 +3800,24 @@ namespace CodeWalker.GameFiles
             bw.Write(unused0);
             bw.Write(unused1);
         }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            var s = string.Format("{0} m=\"{1}\" v1=\"{2}\" v2=\"{3}\" radius=\"{4}\"",
+                Type,
+                Material,
+                cylinderIndex1,
+                cylinderIndex2,
+                FloatUtil.ToString(cylinderRadius)
+                );
+            YbnXml.SelfClosingTag(sb, indent, s);
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Material = Owner?.GetMaterialByIndex(Xml.GetIntAttribute(node, "m")) ?? new BoundMaterial_s();
+            cylinderIndex1 = (ushort)Xml.GetUIntAttribute(node, "v1");
+            cylinderIndex2 = (ushort)Xml.GetUIntAttribute(node, "v2");
+            cylinderRadius = Xml.GetFloatAttribute(node, "radius");
+        }
         public override string ToString()
         {
             return base.ToString() + ": " + cylinderIndex1.ToString() + ", " + cylinderIndex2.ToString() + ", " + cylinderRadius.ToString();
@@ -3615,7 +3912,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public class BoundGeomUnknown1 : ResourceSystemBlock
+    [TC(typeof(EXP))] public class BoundGeomUnknown1 : ResourceSystemBlock, IMetaXmlItem
     {
         public uint[][] Items { get; private set; }
 
@@ -3654,7 +3951,6 @@ namespace CodeWalker.GameFiles
                 }
             }
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
 
@@ -3667,6 +3963,50 @@ namespace CodeWalker.GameFiles
                 }
             }
             
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            if (Items == null) return;
+            foreach (var item in Items)
+            {
+                YbnXml.Indent(sb, indent);
+                if (item != null)
+                {
+                    bool newline = true;
+                    foreach (var val in item)
+                    {
+                        if (!newline) sb.Append(", ");
+                        sb.Append(val.ToString());
+                        newline = false;
+                    }
+                }
+                sb.AppendLine();
+            }
+        }
+        public void ReadXml(XmlNode node)
+        {
+            var collist = new List<uint[]>();
+            var rowlist = new List<uint>();
+            var str = node.InnerText;
+            var split = str.Split('\n');
+            for (int i = 0; i < split.Length; i++)
+            {
+                var s = split[i]?.Trim();
+                //if (string.IsNullOrEmpty(s)) continue;
+                var split2 = s.Split(',');// Regex.Split(s, @"[\s\t]");
+                rowlist.Clear();
+                for (int n = 0; n < split2.Length; n++)
+                {
+                    var ts = split2[n]?.Trim();
+                    if (string.IsNullOrEmpty(ts)) continue;
+                    if (uint.TryParse(ts, out uint u))
+                    {
+                        rowlist.Add(u);
+                    }
+                }
+                collist.Add(rowlist.ToArray());
+            }
+            Items = collist.ToArray();
         }
 
         public override IResourceBlock[] GetReferences()
@@ -4240,13 +4580,11 @@ namespace CodeWalker.GameFiles
         FLAG_NO_NETWORK_SPAWN = 1 << 14,
         FLAG_NO_CAM_COLLISION_ALLOW_CLIPPING = 1 << 15,
     }
-    [TC(typeof(EXP))] public struct BoundMaterial_s
+    [TC(typeof(EXP))] public struct BoundMaterial_s : IMetaXmlItem
     {
 
         public uint Data1;
         public uint Data2;
-
-        #region Public Properties
 
         public BoundsMaterialType Type
         {
@@ -4272,18 +4610,6 @@ namespace CodeWalker.GameFiles
             set => Data1 = ((Data1 & 0xFF1FFFFFu) | ((value & 0x7u) << 21));
         }
 
-        //public byte Flags1
-        //{
-        //    get => (byte)((Data1 >> 24) & 0xFFu);
-        //    set => Data1 = ((Data1 & 0xFFFFFFu) | ((value & 0xFFu) << 24));
-        //}
-
-        //public byte Flags2
-        //{
-        //    get => (byte)((Data2 >> 24) & 0xFFu);
-        //    set => Data2 = ((Data2 & 0xFFFFFFu) | ((value & 0xFFu) << 24));
-        //}
-
         public EBoundMaterialFlags Flags
         {
             get => (EBoundMaterialFlags)(((Data1 >> 24) & 0xFFu) | ((Data2 & 0xFFu) << 8));
@@ -4297,13 +4623,35 @@ namespace CodeWalker.GameFiles
         public byte MaterialColorIndex
         {
             get => (byte)((Data2 >> 8) & 0xFFu);
-            set => Data2 = ((Data2 & 0xFFFF00FFu) | (value & 0xFFu));
+            set => Data2 = ((Data2 & 0xFFFF00FFu) | ((value & 0xFFu) << 8));
         }
 
         public ushort Unk4
         {
             get => (ushort)((Data2 >> 16) & 0xFFFFu);
             set => Data2 = ((Data2 & 0x0000FFFFu) | ((value & 0xFFFFu) << 16));
+        }
+
+
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YbnXml.ValueTag(sb, indent, "Type", Type.Index.ToString());
+            YbnXml.ValueTag(sb, indent, "ProceduralID", ProceduralId.ToString());
+            YbnXml.ValueTag(sb, indent, "RoomID", RoomId.ToString());
+            YbnXml.ValueTag(sb, indent, "PedDensity", PedDensity.ToString());
+            YbnXml.StringTag(sb, indent, "Flags", Flags.ToString());
+            YbnXml.ValueTag(sb, indent, "MaterialColourIndex", MaterialColorIndex.ToString());
+            YbnXml.ValueTag(sb, indent, "Unk", Unk4.ToString());
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Type = (byte)Xml.GetChildUIntAttribute(node, "Type", "value");
+            ProceduralId = (byte)Xml.GetChildUIntAttribute(node, "ProceduralID", "value");
+            RoomId = (byte)Xml.GetChildUIntAttribute(node, "RoomID", "value");
+            PedDensity = (byte)Xml.GetChildUIntAttribute(node, "PedDensity", "value");
+            Flags = Xml.GetChildEnumInnerText<EBoundMaterialFlags>(node, "Flags");
+            MaterialColorIndex = (byte)Xml.GetChildUIntAttribute(node, "MaterialColourIndex", "value");
+            Unk4 = (ushort)Xml.GetChildUIntAttribute(node, "Unk", "value");
         }
 
         public override string ToString()
@@ -4313,7 +4661,6 @@ namespace CodeWalker.GameFiles
                 + Flags.ToString() + ", " + MaterialColorIndex.ToString() + ", " + Unk4.ToString();
         }
 
-        #endregion
     }
     [TC(typeof(EXP))] public struct BoundMaterialColour
     {

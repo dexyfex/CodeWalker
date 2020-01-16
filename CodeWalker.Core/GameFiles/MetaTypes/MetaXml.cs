@@ -61,6 +61,11 @@ namespace CodeWalker.GameFiles
                 YcdFile ycd = RpfFile.GetFile<YcdFile>(e, data);
                 return GetXml(ycd, out filename);
             }
+            else if (fnl.EndsWith(".ybn"))
+            {
+                YbnFile ybn = RpfFile.GetFile<YbnFile>(e, data);
+                return GetXml(ybn, out filename);
+            }
             filename = fn;
             return string.Empty;
         }
@@ -131,6 +136,12 @@ namespace CodeWalker.GameFiles
             var fn = (ycd?.RpfFileEntry?.Name) ?? "";
             filename = fn + ".xml";
             return YcdXml.GetXml(ycd);
+        }
+        public static string GetXml(YbnFile ybn, out string filename)
+        {
+            var fn = (ybn?.RpfFileEntry?.Name) ?? "";
+            filename = fn + ".xml";
+            return YbnXml.GetXml(ybn);
         }
 
 
@@ -1815,6 +1826,27 @@ namespace CodeWalker.GameFiles
                 SelfClosingTag(sb, ind, name);
             }
         }
+        public static void WriteCustomItemArray<T>(StringBuilder sb, T[] arr, int ind, string name) where T : IMetaXmlItem
+        {
+            var itemCount = arr?.Length ?? 0;
+            if (itemCount > 0)
+            {
+                OpenTag(sb, ind, name);
+                var cind = ind + 1;
+                for (int i = 0; i < itemCount; i++)
+                {
+                    if (arr[i] != null)
+                    {
+                        arr[i].WriteXml(sb, cind);
+                    }
+                }
+                CloseTag(sb, ind, name);
+            }
+            else
+            {
+                SelfClosingTag(sb, ind, name);
+            }
+        }
         public static void WriteHashItemArray(StringBuilder sb, MetaHash[] arr, int ind, string name)
         {
             var itemCount = arr?.Length ?? 0;
@@ -1996,6 +2028,7 @@ namespace CodeWalker.GameFiles
         AudioRel = 5,
         Ynd = 6,
         Ycd = 7,
+        Ybn = 8,
     }
 
 }
