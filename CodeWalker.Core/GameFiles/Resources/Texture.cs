@@ -22,7 +22,7 @@ namespace CodeWalker.GameFiles
         // structure data
         public uint Unknown_10h { get; set; } // 0x00000000
         public uint Unknown_14h { get; set; } // 0x00000000
-        public uint Unknown_18h { get; set; } // 0x00000001
+        public uint Unknown_18h { get; set; } = 1; // 0x00000001
         public uint Unknown_1Ch { get; set; } // 0x00000000
         public ResourceSimpleList64_uint TextureNameHashes { get; set; }
         public ResourcePointerList64<Texture> Textures { get; set; }
@@ -143,7 +143,7 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public uint VFT { get; set; }
-        public uint Unknown_4h { get; set; } // 0x00000001
+        public uint Unknown_4h { get; set; } = 1; // 0x00000001
         public uint Unknown_8h { get; set; } // 0x00000000
         public uint Unknown_Ch { get; set; } // 0x00000000
         public uint Unknown_10h { get; set; } // 0x00000000
@@ -153,7 +153,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_20h { get; set; } // 0x00000000
         public uint Unknown_24h { get; set; } // 0x00000000
         public ulong NamePointer { get; set; }
-        public uint Unknown_30h { get; set; }
+        public ushort Unknown_30h { get; set; } = 1;
+        public ushort Unknown_32h { get; set; }
         public uint Unknown_34h { get; set; } // 0x00000000
         public uint Unknown_38h { get; set; } // 0x00000000
         public uint Unknown_3Ch { get; set; } // 0x00000000
@@ -181,7 +182,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_20h = reader.ReadUInt32();
             this.Unknown_24h = reader.ReadUInt32();
             this.NamePointer = reader.ReadUInt64();
-            this.Unknown_30h = reader.ReadUInt32();
+            this.Unknown_30h = reader.ReadUInt16();
+            this.Unknown_32h = reader.ReadUInt16();
             this.Unknown_34h = reader.ReadUInt32();
             this.Unknown_38h = reader.ReadUInt32();
             this.Unknown_3Ch = reader.ReadUInt32();
@@ -194,6 +196,22 @@ namespace CodeWalker.GameFiles
             if (!string.IsNullOrEmpty(Name))
             {
                 NameHash = JenkHash.GenHash(Name.ToLowerInvariant());
+            }
+
+            switch (Unknown_32h)
+            {
+                case 0x20:
+                case 0x28:
+                case 0x30:
+                case 0x38:
+                case 0x40:
+                case 0x48:
+                case 0x80:
+                case 0x90:
+                case 0x2://embedded
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -218,6 +236,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_24h);
             writer.Write(this.NamePointer);
             writer.Write(this.Unknown_30h);
+            writer.Write(this.Unknown_32h);
             writer.Write(this.Unknown_34h);
             writer.Write(this.Unknown_38h);
             writer.Write(this.Unknown_3Ch);
@@ -251,13 +270,16 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint Unknown_40h { get; set; }
+        public byte Unknown_40h { get; set; }
+        public byte Unknown_41h { get; set; }
+        public byte Unknown_42h { get; set; }
+        public byte Unknown_43h { get; set; }
         public uint Unknown_44h { get; set; } // 0x00000000
-        public uint Unknown_48h { get; set; }
+        public uint Unknown_48h { get; set; } // 0, 1
         public uint Unknown_4Ch { get; set; } // 0x00000000
         public ushort Width { get; set; }
         public ushort Height { get; set; }
-        public ushort Unknown_54h { get; set; } // 0x0001
+        public ushort Depth { get; set; } = 1;  //is depth > 1 supported?
         public ushort Stride { get; set; }
         public TextureFormat Format { get; set; }
         public byte Unknown_5Ch { get; set; } // 0x00
@@ -299,13 +321,16 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_40h = reader.ReadUInt32();
+            this.Unknown_40h = reader.ReadByte();
+            this.Unknown_41h = reader.ReadByte();
+            this.Unknown_42h = reader.ReadByte();
+            this.Unknown_43h = reader.ReadByte();
             this.Unknown_44h = reader.ReadUInt32();
             this.Unknown_48h = reader.ReadUInt32();
             this.Unknown_4Ch = reader.ReadUInt32();
             this.Width = reader.ReadUInt16();
             this.Height = reader.ReadUInt16();
-            this.Unknown_54h = reader.ReadUInt16();
+            this.Depth = reader.ReadUInt16();
             this.Stride = reader.ReadUInt16();
             this.Format = (TextureFormat)reader.ReadUInt32();
             this.Unknown_5Ch = reader.ReadByte();
@@ -332,6 +357,171 @@ namespace CodeWalker.GameFiles
                 this.Levels,
                 this.Stride
             );
+
+            switch (Unknown_40h)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 8:
+                case 9:
+                case 0xA:
+                case 0xB:
+                case 0xC:
+                case 0xE:
+                case 0x10:
+                case 0x12:
+                case 0x13:
+                case 0x14:
+                case 0x15:
+                case 0x16:
+                case 0x17:
+                case 0x18:
+                case 0x19:
+                case 0x1A:
+                case 0x26:
+                case 0x34:
+                case 0x36:
+                case 0x37:
+                case 0x42:
+                case 0x54:
+                case 0x56:
+                case 0x57:
+                case 0x74:
+                case 0x76:
+                case 0x77:
+                case 0x20://embedded only
+                    break;
+                default:
+                    break;
+            }
+            switch (Unknown_41h)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 4:
+                case 6:
+                case 8:
+                case 0xA:
+                case 0xC:
+                case 0xE:
+                case 0x10:
+                case 0x11:
+                case 0x12:
+                case 0x13:
+                case 0x14:
+                case 0x16:
+                case 0x17:
+                case 0x18:
+                case 0x1C:
+                case 0x1E:
+                case 0x20:
+                case 0x22:
+                case 0x28:
+                case 0x2B:
+                case 0x2C:
+                case 0x30:
+                case 0x38:
+                case 0x39:
+                case 0x3C:
+                case 0x40:
+                case 0x4C:
+                case 0x4E:
+                case 0x50:
+                case 0x54:
+                case 0x56:
+                case 0x57:
+                case 0x58:
+                case 0x5A:
+                case 0x5C:
+                case 0x5E:
+                case 0x60:
+                case 0x64:
+                case 0x68:
+                case 0x70:
+                case 0x78:
+                case 0x80:
+                case 0x90:
+                case 0x9C:
+                case 0x9E:
+                case 0xA0:
+                case 0xA8:
+                case 0xAA:
+                case 0xAC:
+                case 0xAE:
+                case 0xB0:
+                case 0xB2:
+                case 0xB4:
+                case 0xB8:
+                case 0xBC:
+                case 0xC0:
+                case 0xD0:
+                case 7://embedded only
+                case 0xA4://embedded only
+                case 0xAB://embedded only
+                    break;
+                default:
+                    break;
+            }
+            switch (Unknown_42h)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                case 0xA:
+                case 0xB:
+                case 0xC:
+                case 0xE:
+                case 0x10:
+                case 0x12:
+                case 0x14:
+                case 0x15:
+                case 0x18:
+                case 0x19:
+                case 0x20:
+                case 0x21:
+                case 0x24:
+                case 0x2A:
+                case 0x40:
+                case 0x55:
+                case 0x80://embedded only
+                    break;
+                default:
+                    break;
+            }
+            switch (Unknown_43h)
+            {
+                case 0x20://32
+                case 0x28://40
+                case 0x30://48
+                case 0:
+                    break;
+                default:
+                    break;
+            }
+
+            switch (Unknown_48h)
+            {
+                case 0:
+                case 1:
+                    break;
+                default:
+                    break;
+            }
+
+
         }
 
         /// <summary>
@@ -345,12 +535,15 @@ namespace CodeWalker.GameFiles
 
             // write structure data
             writer.Write(this.Unknown_40h);
+            writer.Write(this.Unknown_41h);
+            writer.Write(this.Unknown_42h);
+            writer.Write(this.Unknown_43h);
             writer.Write(this.Unknown_44h);
             writer.Write(this.Unknown_48h);
             writer.Write(this.Unknown_4Ch);
             writer.Write(this.Width);
             writer.Write(this.Height);
-            writer.Write(this.Unknown_54h);
+            writer.Write(this.Depth);
             writer.Write(this.Stride);
             writer.Write((uint)this.Format);
             writer.Write(this.Unknown_5Ch);

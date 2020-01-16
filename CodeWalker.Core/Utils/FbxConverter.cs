@@ -788,7 +788,8 @@ namespace CodeWalker
             }
             var texParam = new TextureBase();
             texParam.Unknown_4h = 1;
-            texParam.Unknown_30h = 131073;//wtf is this? 2x shorts, 0x00020001
+            texParam.Unknown_30h = 1;// 131073;//wtf is this? 2x shorts, 0x00020001
+            texParam.Unknown_32h = 2;
             texParam.Name = name;
             texParam.NameHash = JenkHash.GenHash(name.ToLowerInvariant());
             return texParam;

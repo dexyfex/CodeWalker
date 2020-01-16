@@ -69,6 +69,32 @@
 
 
 
+//additional dds importing code modified from: https://gist.github.com/spazzarama/2710d020d1d615cde20c607711655167
+// DDSTextureLoader Ported to C# by Justin Stenning, March 2017
+//--------------------------------------------------------------------------------------
+// File: DDSTextureLoader.cpp
+//
+// Functions for loading a DDS texture and creating a Direct3D runtime resource for it
+//
+// Note these functions are useful as a light-weight runtime loader for DDS files. For
+// a full-featured DDS file reader, writer, and texture processing pipeline see
+// the 'Texconv' sample and the 'DirectXTex' library.
+//
+// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
+// PARTICULAR PURPOSE.
+//
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//
+// http://go.microsoft.com/fwlink/?LinkId=248926
+// http://go.microsoft.com/fwlink/?LinkId=248929
+//--------------------------------------------------------------------------------------
+
+
+
+
+
 using CodeWalker.GameFiles;
 using System;
 using System.Collections.Generic;
@@ -332,7 +358,142 @@ namespace CodeWalker.Utils
         }
 
 
+        public static Texture GetTexture(byte[] ddsfile)
+        {
+            var ms = new MemoryStream(ddsfile);
+            var br = new BinaryReader(ms);
 
+            var header = new DDS_HEADER();
+            var header10 = new DDS_HEADER_DXT10();
+            var useheader10 = false;
+
+            if (!DXTex._ReadDDSHeader(br, out header, out header10, out useheader10))
+            { return null; }
+
+            var width = header.dwWidth;
+            var height = header.dwHeight;
+            var depth = header.dwDepth;
+            var mipCount = header.dwMipMapCount;
+            if (mipCount == 0)
+            {
+                mipCount = 1;
+            }
+
+            TEX_DIMENSION resDim = 0;
+            uint arraySize = 1;
+            DXGI_FORMAT format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
+            bool isCubeMap = false;
+
+            if (useheader10)
+            {
+                arraySize = header10.arraySize;
+                format = header10.dxgiFormat;
+                resDim = (TEX_DIMENSION)header10.resourceDimension;
+
+                if (arraySize == 0) throw new Exception("ArraySize was 0! This isn't supported...");
+                switch (format)
+                {
+                    case DXGI_FORMAT.DXGI_FORMAT_AI44:
+                    case DXGI_FORMAT.DXGI_FORMAT_IA44:
+                    case DXGI_FORMAT.DXGI_FORMAT_P8:
+                    case DXGI_FORMAT.DXGI_FORMAT_A8P8:
+                        throw new NotSupportedException(string.Format("{0} DXGI format is not supported", format.ToString()));
+                    default:
+                        if (DXTex.BitsPerPixel(format) == 0)
+                            throw new NotSupportedException(string.Format("{0} DXGI format is not supported", format.ToString()));
+                        break;
+                }
+                switch (resDim)
+                {
+                    case TEX_DIMENSION.TEX_DIMENSION_TEXTURE1D:
+                        if ((header.dwFlags & DXTex.DDS_HEIGHT) > 0 && height != 1) throw new NotSupportedException("1D texture's height wasn't 1!");
+                        height = depth = 1; // D3DX writes 1D textures with a fixed Height of 1
+                        break;
+                    case TEX_DIMENSION.TEX_DIMENSION_TEXTURE2D:
+                        if ((header10.miscFlag & (uint)TEX_MISC_FLAG.TEX_MISC_TEXTURECUBE) > 0) { arraySize *= 6; isCubeMap = true; }
+                        depth = 1;
+                        break;
+                    case TEX_DIMENSION.TEX_DIMENSION_TEXTURE3D:
+                        if ((header.dwFlags & DXTex.DDS_HEADER_FLAGS_VOLUME) == 0) throw new ArgumentException("3D texture without volume flag!");
+                        if (arraySize > 1) throw new ArgumentException("3D texture with ArraySize > 1!");
+                        break;
+                    default: throw new ArgumentException("Unknown resource dimension!");
+                }
+            }
+            else
+            {
+                format = header.ddspf.GetDXGIFormat();
+
+                if (format == DXGI_FORMAT.DXGI_FORMAT_UNKNOWN) throw new ArgumentException("Unknown DDS format.");
+                if ((header.dwFlags & DXTex.DDS_HEADER_FLAGS_VOLUME) > 0)
+                {
+                    resDim = TEX_DIMENSION.TEX_DIMENSION_TEXTURE3D;
+                }
+                else
+                {
+                    if ((header.dwCaps2 & DXTex.DDS_CUBEMAP) > 0)
+                    {
+                        if ((header.dwCaps2 & DXTex.DDS_CUBEMAP_ALLFACES) != DXTex.DDS_CUBEMAP_ALLFACES) throw new ArgumentException("Not all faces in cubemap exist!");//requires all 6 faces
+                        arraySize = 6;
+                        isCubeMap = true;
+                    }
+                    depth = 1;
+                    resDim = TEX_DIMENSION.TEX_DIMENSION_TEXTURE2D;
+                    // Note there's no way for a legacy Direct3D 9 DDS to express a '1D' texture
+                }
+                if (DXTex.BitsPerPixel(format) == 0) throw new Exception(string.Format("{0} DXGI format is not supported", format.ToString()));
+            }
+
+            if (isCubeMap)
+            { }
+
+            DXTex.ComputePitch(format, (int)width, (int)height, out int rowPitch, out int slicePitch, 0);
+            var stride = slicePitch / height;
+            var scanlines = DXTex.ComputeScanlines(format, (int)height);
+
+            var brem = ms.Length - ms.Position;
+            var ddsdata = br.ReadBytes((int)brem);
+
+            var tex = new Texture();
+            tex.Width = (ushort)width;
+            tex.Height = (ushort)height;
+            tex.Depth = (ushort)depth;
+            tex.Levels = (byte)mipCount;
+            tex.Format = GetTextureFormat(format);
+            tex.Stride = (ushort)stride;
+            tex.Data = new TextureData();
+            tex.Data.FullData = ddsdata;
+
+            //tex.Unknown_43h = (byte)header.ddspf.dwSize;
+
+            return tex;
+        }
+
+
+
+
+        private static TextureFormat GetTextureFormat(DXGI_FORMAT f)
+        {
+            var format = (TextureFormat)0;
+            switch (f)
+            {
+                // compressed
+                case DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM: format = TextureFormat.D3DFMT_DXT1; break;
+                case DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM: format = TextureFormat.D3DFMT_DXT3; break;
+                case DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM: format = TextureFormat.D3DFMT_DXT5; break;
+                case DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM: format = TextureFormat.D3DFMT_ATI1; break;
+                case DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM: format = TextureFormat.D3DFMT_ATI2; break;
+                case DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM: format = TextureFormat.D3DFMT_BC7; break;
+
+                // uncompressed
+                case DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM: format = TextureFormat.D3DFMT_A1R5G5B5; break;
+                case DXGI_FORMAT.DXGI_FORMAT_A8_UNORM: format = TextureFormat.D3DFMT_A8; break;
+                case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM: format = TextureFormat.D3DFMT_A8B8G8R8; break;
+                case DXGI_FORMAT.DXGI_FORMAT_R8_UNORM: format = TextureFormat.D3DFMT_L8; break;
+                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM: format = TextureFormat.D3DFMT_A8R8G8B8; break;
+            }
+            return format;
+        }
 
         private static DXGI_FORMAT GetDXGIFormat(TextureFormat f)
         {
@@ -1015,6 +1176,7 @@ namespace CodeWalker.Utils
 
             public static uint DDS_FLAGS_VOLUME = 0x00200000; // DDSCAPS2_VOLUME
 
+            public static uint DDS_MAGIC = 0x20534444; // "DDS "
 
 
 
@@ -1104,7 +1266,6 @@ namespace CodeWalker.Utils
 
                 int sizeofddsheader = 31 * 4;
                 int sizeofddsheader10 = 5 * 4;
-                const uint DDS_MAGIC = 0x20534444; // "DDS "
 
                 required = 4/*sizeof(uint32_t)*/ + sizeofddsheader/*sizeof(DDS_HEADER)*/;
 
@@ -1313,6 +1474,68 @@ namespace CodeWalker.Utils
             }
 
 
+            public static bool _ReadDDSHeader(BinaryReader br, out DDS_HEADER header, out DDS_HEADER_DXT10 header10, out bool useheader10)
+            {
+                var magic = br.ReadUInt32();
+                if (magic != DDS_MAGIC) throw new Exception("Invalid DDS magic!");
+
+                //var header = new DDS_HEADER();
+                //var header10 = new DDS_HEADER_DXT10();
+                int sizeofddsheader = 31 * 4;
+                int sizeofddspixelformat = 8 * 4;
+
+                header.dwSize = br.ReadUInt32();
+                header.dwFlags = br.ReadUInt32();
+                header.dwHeight = br.ReadUInt32();
+                header.dwWidth = br.ReadUInt32();
+                header.dwPitchOrLinearSize = br.ReadUInt32();
+                header.dwDepth = br.ReadUInt32(); // only if DDS_HEADER_FLAGS_VOLUME is set in dwFlags
+                header.dwMipMapCount = br.ReadUInt32();
+
+                //public uint dwReserved1[11]; //x11
+                for (int i = 0; i < 11; i++) br.ReadUInt32();
+
+                header.ddspf.dwSize = br.ReadUInt32();
+                header.ddspf.dwFlags = br.ReadUInt32();
+                header.ddspf.dwFourCC = br.ReadUInt32();
+                header.ddspf.dwRGBBitCount = br.ReadUInt32();
+                header.ddspf.dwRBitMask = br.ReadUInt32();
+                header.ddspf.dwGBitMask = br.ReadUInt32();
+                header.ddspf.dwBBitMask = br.ReadUInt32();
+                header.ddspf.dwABitMask = br.ReadUInt32();
+
+                header.dwCaps = br.ReadUInt32();
+                header.dwCaps2 = br.ReadUInt32();
+                header.dwCaps3 = br.ReadUInt32();
+                header.dwCaps4 = br.ReadUInt32();
+                header.dwReserved2 = br.ReadUInt32();
+
+
+
+                if(((DDS_PIXELFORMAT.DDS_FOURCC & header.ddspf.dwFlags) > 0) && 
+                    (DDS_PIXELFORMAT.MAKEFOURCC('D', 'X', '1', '0') == header.ddspf.dwFourCC))
+                {
+                    header10.dxgiFormat = (DXGI_FORMAT)br.ReadUInt32();
+                    header10.resourceDimension = br.ReadUInt32();
+                    header10.miscFlag = br.ReadUInt32(); // see DDS_RESOURCE_MISC_FLAG
+                    header10.arraySize = br.ReadUInt32();
+                    header10.miscFlags2 = br.ReadUInt32(); // see DDS_MISC_FLAGS2
+                    useheader10 = true;
+                }
+                else
+                {
+                    header10 = new DDS_HEADER_DXT10();
+                    useheader10 = false;
+                }
+
+                if (header.dwSize != sizeofddsheader || header.ddspf.dwSize != sizeofddspixelformat)
+                {
+                    throw new Exception("Invalid DDS header size");
+                }
+
+
+                return true;
+            }
 
 
         }
@@ -1596,86 +1819,250 @@ namespace CodeWalker.Utils
             public static uint DDS_PAL8 = 0x00000020;  // DDPF_PALETTEINDEXED8
 
 
-            public static DDS_PIXELFORMAT DDSPF_DXT1 = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('D','X','T','1'), 0, 0, 0, 0, 0 );
-
-            public static DDS_PIXELFORMAT DDSPF_DXT2 = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('D', 'X', 'T', '2'), 0, 0, 0, 0, 0);
-
-            public static DDS_PIXELFORMAT DDSPF_DXT3 = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('D','X','T','3'), 0, 0, 0, 0, 0);
-
-            public static DDS_PIXELFORMAT DDSPF_DXT4 = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('D','X','T','4'), 0, 0, 0, 0, 0);
-
-            public static DDS_PIXELFORMAT DDSPF_DXT5 = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('D','X','T','5'), 0, 0, 0, 0, 0);
-
-            public static DDS_PIXELFORMAT DDSPF_BC4_UNORM = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('B','C','4','U'), 0, 0, 0, 0, 0);
-
-            public static DDS_PIXELFORMAT DDSPF_BC4_SNORM = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('B','C','4','S'), 0, 0, 0, 0, 0);
-
-            public static DDS_PIXELFORMAT DDSPF_BC5_UNORM = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('B','C','5','U'), 0, 0, 0, 0, 0);
-
-            public static DDS_PIXELFORMAT DDSPF_BC5_SNORM = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('B','C','5','S'), 0, 0, 0, 0, 0);
-
-            public static DDS_PIXELFORMAT DDSPF_R8G8_B8G8 = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('R','G','B','G'), 0, 0, 0, 0, 0);
-
-            public static DDS_PIXELFORMAT DDSPF_G8R8_G8B8 = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('G','R','G','B'), 0, 0, 0, 0, 0);
-
-            public static DDS_PIXELFORMAT DDSPF_YUY2 = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('Y','U','Y','2'), 0, 0, 0, 0, 0);
-
-            public static DDS_PIXELFORMAT DDSPF_A8R8G8B8 = new DDS_PIXELFORMAT(
-                 32, DDS_RGBA, 0, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-
-            public static DDS_PIXELFORMAT DDSPF_X8R8G8B8 = new DDS_PIXELFORMAT(
-                 32, DDS_RGB,  0, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000);
-
-            public static DDS_PIXELFORMAT DDSPF_A8B8G8R8 = new DDS_PIXELFORMAT(
-                 32, DDS_RGBA, 0, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-
-            public static DDS_PIXELFORMAT DDSPF_X8B8G8R8 = new DDS_PIXELFORMAT(
-                 32, DDS_RGB,  0, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0x00000000);
-
-            public static DDS_PIXELFORMAT DDSPF_G16R16 = new DDS_PIXELFORMAT(
-                 32, DDS_RGB,  0, 32, 0x0000ffff, 0xffff0000, 0x00000000, 0x00000000);
-
-            public static DDS_PIXELFORMAT DDSPF_R5G6B5 = new DDS_PIXELFORMAT(
-                 32, DDS_RGB, 0, 16, 0x0000f800, 0x000007e0, 0x0000001f, 0x00000000);
-
-            public static DDS_PIXELFORMAT DDSPF_A1R5G5B5 = new DDS_PIXELFORMAT(
-                 32, DDS_RGBA, 0, 16, 0x00007c00, 0x000003e0, 0x0000001f, 0x00008000);
-
-            public static DDS_PIXELFORMAT DDSPF_A4R4G4B4 = new DDS_PIXELFORMAT(
-                 32, DDS_RGBA, 0, 16, 0x00000f00, 0x000000f0, 0x0000000f, 0x0000f000);
-
-            public static DDS_PIXELFORMAT DDSPF_R8G8B8 = new DDS_PIXELFORMAT(
-                 32, DDS_RGB, 0, 24, 0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000);
-
-            public static DDS_PIXELFORMAT DDSPF_L8 = new DDS_PIXELFORMAT(
-                 32, DDS_LUMINANCE, 0,  8, 0xff, 0x00, 0x00, 0x00);
-
-            public static DDS_PIXELFORMAT DDSPF_L16 = new DDS_PIXELFORMAT(
-                32, DDS_LUMINANCE, 0, 16, 0xffff, 0x0000, 0x0000, 0x0000);
-
-            public static DDS_PIXELFORMAT DDSPF_A8L8 = new DDS_PIXELFORMAT(
-                 32, DDS_LUMINANCEA, 0, 16, 0x00ff, 0x0000, 0x0000, 0xff00);
-
-            public static DDS_PIXELFORMAT DDSPF_A8 = new DDS_PIXELFORMAT(
-                 32, DDS_ALPHA, 0, 8, 0x00, 0x00, 0x00, 0xff);
+            public static DDS_PIXELFORMAT DDSPF_DXT1 = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('D','X','T','1'), 0, 0, 0, 0, 0 );
+            public static DDS_PIXELFORMAT DDSPF_DXT2 = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('D', 'X', 'T', '2'), 0, 0, 0, 0, 0);
+            public static DDS_PIXELFORMAT DDSPF_DXT3 = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('D','X','T','3'), 0, 0, 0, 0, 0);
+            public static DDS_PIXELFORMAT DDSPF_DXT4 = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('D','X','T','4'), 0, 0, 0, 0, 0);
+            public static DDS_PIXELFORMAT DDSPF_DXT5 = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('D','X','T','5'), 0, 0, 0, 0, 0);
+            public static DDS_PIXELFORMAT DDSPF_BC4_UNORM = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('B','C','4','U'), 0, 0, 0, 0, 0);
+            public static DDS_PIXELFORMAT DDSPF_BC4_SNORM = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('B','C','4','S'), 0, 0, 0, 0, 0);
+            public static DDS_PIXELFORMAT DDSPF_BC5_UNORM = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('B','C','5','U'), 0, 0, 0, 0, 0);
+            public static DDS_PIXELFORMAT DDSPF_BC5_SNORM = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('B','C','5','S'), 0, 0, 0, 0, 0);
+            public static DDS_PIXELFORMAT DDSPF_R8G8_B8G8 = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('R','G','B','G'), 0, 0, 0, 0, 0);
+            public static DDS_PIXELFORMAT DDSPF_G8R8_G8B8 = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('G','R','G','B'), 0, 0, 0, 0, 0);
+            public static DDS_PIXELFORMAT DDSPF_YUY2 = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('Y','U','Y','2'), 0, 0, 0, 0, 0);
+            public static DDS_PIXELFORMAT DDSPF_A8R8G8B8 = new DDS_PIXELFORMAT(32, DDS_RGBA, 0, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+            public static DDS_PIXELFORMAT DDSPF_X8R8G8B8 = new DDS_PIXELFORMAT(32, DDS_RGB,  0, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000);
+            public static DDS_PIXELFORMAT DDSPF_A8B8G8R8 = new DDS_PIXELFORMAT(32, DDS_RGBA, 0, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+            public static DDS_PIXELFORMAT DDSPF_X8B8G8R8 = new DDS_PIXELFORMAT(32, DDS_RGB,  0, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0x00000000);
+            public static DDS_PIXELFORMAT DDSPF_G16R16 = new DDS_PIXELFORMAT(32, DDS_RGB,  0, 32, 0x0000ffff, 0xffff0000, 0x00000000, 0x00000000);
+            public static DDS_PIXELFORMAT DDSPF_R5G6B5 = new DDS_PIXELFORMAT(32, DDS_RGB, 0, 16, 0x0000f800, 0x000007e0, 0x0000001f, 0x00000000);
+            public static DDS_PIXELFORMAT DDSPF_A1R5G5B5 = new DDS_PIXELFORMAT(32, DDS_RGBA, 0, 16, 0x00007c00, 0x000003e0, 0x0000001f, 0x00008000);
+            public static DDS_PIXELFORMAT DDSPF_A4R4G4B4 = new DDS_PIXELFORMAT(32, DDS_RGBA, 0, 16, 0x00000f00, 0x000000f0, 0x0000000f, 0x0000f000);
+            public static DDS_PIXELFORMAT DDSPF_R8G8B8 = new DDS_PIXELFORMAT(32, DDS_RGB, 0, 24, 0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000);
+            public static DDS_PIXELFORMAT DDSPF_L8 = new DDS_PIXELFORMAT(32, DDS_LUMINANCE, 0,  8, 0xff, 0x00, 0x00, 0x00);
+            public static DDS_PIXELFORMAT DDSPF_L16 = new DDS_PIXELFORMAT(32, DDS_LUMINANCE, 0, 16, 0xffff, 0x0000, 0x0000, 0x0000);
+            public static DDS_PIXELFORMAT DDSPF_A8L8 = new DDS_PIXELFORMAT(32, DDS_LUMINANCEA, 0, 16, 0x00ff, 0x0000, 0x0000, 0xff00);
+            public static DDS_PIXELFORMAT DDSPF_A8 = new DDS_PIXELFORMAT(32, DDS_ALPHA, 0, 8, 0x00, 0x00, 0x00, 0xff);
 
             // D3DFMT_A2R10G10B10/D3DFMT_A2B10G10R10 should be written using DX10 extension to avoid D3DX 10:10:10:2 reversal issue
 
             // This indicates the DDS_HEADER_DXT10 extension is present (the format is in dxgiFormat)
-            public static DDS_PIXELFORMAT DDSPF_DX10 = new DDS_PIXELFORMAT(
-                 32, DDS_FOURCC, MAKEFOURCC('D','X','1','0'), 0, 0, 0, 0, 0);
+            public static DDS_PIXELFORMAT DDSPF_DX10 = new DDS_PIXELFORMAT(32, DDS_FOURCC, MAKEFOURCC('D','X','1','0'), 0, 0, 0, 0, 0);
+
+
+
+
+
+            private bool ISBITMASK(uint r, uint g, uint b, uint a)
+            {
+                return ((dwRBitMask == r) && (dwGBitMask == g) && (dwBBitMask == b) && (dwABitMask == a));
+            }
+
+            public DXGI_FORMAT GetDXGIFormat()
+            {
+
+                if ((dwFlags & DDS_RGB) > 0)
+                {
+                    // Note that sRGB formats are written using the "DX10" extended header
+
+                    switch (dwRGBBitCount)
+                    {
+                        case 32:
+                            if (ISBITMASK(0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000))
+                            {
+                                return DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM;
+                            }
+
+                            if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000))
+                            {
+                                return DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
+                            }
+
+                            if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000))
+                            {
+                                return DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM;
+                            }
+
+                            // No DXGI format maps to ISBITMASK(0x000000ff, 0x0000ff00, 0x00ff0000, 0x00000000) aka D3DFMT_X8B8G8R8
+
+                            // Note that many common DDS reader/writers (including D3DX) swap the
+                            // the RED/BLUE masks for 10:10:10:2 formats. We assumme
+                            // below that the 'backwards' header mask is being used since it is most
+                            // likely written by D3DX. The more robust solution is to use the 'DX10'
+                            // header extension and specify the DXGI_FORMAT_R10G10B10A2_UNORM format directly
+
+                            // For 'correct' writers, this should be 0x000003ff, 0x000ffc00, 0x3ff00000 for RGB data
+                            if (ISBITMASK(0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000))
+                            {
+                                return DXGI_FORMAT.DXGI_FORMAT_R10G10B10A2_UNORM;
+                            }
+
+                            // No DXGI format maps to ISBITMASK(0x000003ff, 0x000ffc00, 0x3ff00000, 0xc0000000) aka D3DFMT_A2R10G10B10
+
+                            if (ISBITMASK(0x0000ffff, 0xffff0000, 0x00000000, 0x00000000))
+                            {
+                                return DXGI_FORMAT.DXGI_FORMAT_R16G16_UNORM;
+                            }
+
+                            if (ISBITMASK(0xffffffff, 0x00000000, 0x00000000, 0x00000000))
+                            {
+                                // Only 32-bit color channel format in D3D9 was R32F
+                                return DXGI_FORMAT.DXGI_FORMAT_R32_FLOAT; // D3DX writes this out as a FourCC of 114
+                            }
+                            break;
+
+                        case 24:
+                            // No 24bpp DXGI formats aka D3DFMT_R8G8B8
+                            break;
+
+                        case 16:
+                            if (ISBITMASK(0x7c00, 0x03e0, 0x001f, 0x8000))
+                            {
+                                return DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM;
+                            }
+                            if (ISBITMASK(0xf800, 0x07e0, 0x001f, 0x0000))
+                            {
+                                return DXGI_FORMAT.DXGI_FORMAT_B5G6R5_UNORM;
+                            }
+
+                            // No DXGI format maps to ISBITMASK(0x7c00, 0x03e0, 0x001f, 0x0000) aka D3DFMT_X1R5G5B5
+                            if (ISBITMASK(0x0f00, 0x00f0, 0x000f, 0xf000))
+                            {
+                                return DXGI_FORMAT.DXGI_FORMAT_B4G4R4A4_UNORM;
+                            }
+
+                            // No DXGI format maps to ISBITMASK(0x0f00, 0x00f0, 0x000f, 0x0000) aka D3DFMT_X4R4G4B4
+
+                            // No 3:3:2, 3:3:2:8, or paletted DXGI formats aka D3DFMT_A8R3G3B2, D3DFMT_R3G3B2, D3DFMT_P8, D3DFMT_A8P8, etc.
+                            break;
+                    }
+                }
+                else if ((dwFlags & DDS_LUMINANCE) > 0)
+                {
+                    if (8 == dwRGBBitCount)
+                    {
+                        if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x00000000))
+                        {
+                            return DXGI_FORMAT.DXGI_FORMAT_R8_UNORM; // D3DX10/11 writes this out as DX10 extension
+                        }
+
+                        // No DXGI format maps to ISBITMASK(0x0f, 0x00, 0x00, 0xf0) aka D3DFMT_A4L4
+                    }
+
+                    if (16 == dwRGBBitCount)
+                    {
+                        if (ISBITMASK(0x0000ffff, 0x00000000, 0x00000000, 0x00000000))
+                        {
+                            return DXGI_FORMAT.DXGI_FORMAT_R16_UNORM; // D3DX10/11 writes this out as DX10 extension
+                        }
+                        if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x0000ff00))
+                        {
+                            return DXGI_FORMAT.DXGI_FORMAT_R8G8_UNORM; // D3DX10/11 writes this out as DX10 extension
+                        }
+                    }
+                }
+                else if ((dwFlags & DDS_ALPHA) > 0)
+                {
+                    if (8 == dwRGBBitCount)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_A8_UNORM;
+                    }
+                }
+                else if ((dwFlags & DDS_FOURCC) > 0)
+                {
+                    if (MAKEFOURCC('D', 'X', 'T', '1') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM;
+                    }
+                    if (MAKEFOURCC('D', 'X', 'T', '3') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM;
+                    }
+                    if (MAKEFOURCC('D', 'X', 'T', '5') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM;
+                    }
+
+                    // While pre-mulitplied alpha isn't directly supported by the DXGI formats,
+                    // they are basically the same as these BC formats so they can be mapped
+                    if (MAKEFOURCC('D', 'X', 'T', '2') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM;
+                    }
+                    if (MAKEFOURCC('D', 'X', 'T', '4') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM;
+                    }
+
+                    if (MAKEFOURCC('A', 'T', 'I', '1') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM;
+                    }
+                    if (MAKEFOURCC('B', 'C', '4', 'U') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM;
+                    }
+                    if (MAKEFOURCC('B', 'C', '4', 'S') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_BC4_SNORM;
+                    }
+
+                    if (MAKEFOURCC('A', 'T', 'I', '2') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM;
+                    }
+                    if (MAKEFOURCC('B', 'C', '5', 'U') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM;
+                    }
+                    if (MAKEFOURCC('B', 'C', '5', 'S') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_BC5_SNORM;
+                    }
+
+                    // BC6H and BC7 are written using the "DX10" extended header
+
+                    if (MAKEFOURCC('R', 'G', 'B', 'G') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_R8G8_B8G8_UNORM;
+                    }
+                    if (MAKEFOURCC('G', 'R', 'G', 'B') == dwFourCC)
+                    {
+                        return DXGI_FORMAT.DXGI_FORMAT_G8R8_G8B8_UNORM;
+                    }
+
+                    // Check for D3DFORMAT enums being set here
+                    switch (dwFourCC)
+                    {
+                        case 36: // D3DFMT_A16B16G16R16
+                            return DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_UNORM;
+
+                        case 110: // D3DFMT_Q16W16V16U16
+                            return DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_SNORM;
+
+                        case 111: // D3DFMT_R16F
+                            return DXGI_FORMAT.DXGI_FORMAT_R16_FLOAT;
+
+                        case 112: // D3DFMT_G16R16F
+                            return DXGI_FORMAT.DXGI_FORMAT_R16G16_FLOAT;
+
+                        case 113: // D3DFMT_A16B16G16R16F
+                            return DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+                        case 114: // D3DFMT_R32F
+                            return DXGI_FORMAT.DXGI_FORMAT_R32_FLOAT;
+
+                        case 115: // D3DFMT_G32R32F
+                            return DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT;
+
+                        case 116: // D3DFMT_A32B32G32R32F
+                            return DXGI_FORMAT.DXGI_FORMAT_R32G32B32A32_FLOAT;
+                    }
+                }
+
+                return DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
+            }
 
 
         };
