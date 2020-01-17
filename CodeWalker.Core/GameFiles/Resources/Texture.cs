@@ -1,9 +1,11 @@
-﻿using System;
+﻿using CodeWalker.Utils;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -29,7 +31,6 @@ namespace CodeWalker.GameFiles
 
         public Dictionary<uint, Texture> Dict { get; set; }
 
-
         public long MemoryUsage
         {
             get
@@ -49,15 +50,10 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public TextureDictionary()
-        {
-            //this.TextureNameHashes = new ResourceSimpleList64_uint();
-            //this.Textures = new ResourcePointerList64<Texture>();
-        }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
+        public TextureDictionary()
+        { }
+
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -70,22 +66,8 @@ namespace CodeWalker.GameFiles
             this.TextureNameHashes = reader.ReadBlock<ResourceSimpleList64_uint>();
             this.Textures = reader.ReadBlock<ResourcePointerList64<Texture>>();
 
-            var dict = new Dictionary<uint, Texture>();
-            if ((Textures?.data_items != null) && (TextureNameHashes?.data_items != null))
-            {
-                for (int i = 0; (i < Textures.data_items.Length) && (i < TextureNameHashes.data_items.Length); i++)
-                {
-                    var tex = Textures.data_items[i];
-                    var hash = TextureNameHashes.data_items[i];
-                    dict[hash] = tex;
-                }
-            }
-            Dict = dict;// new Dictionary<uint, Texture>(dict);
+            BuildDict();
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -99,6 +81,65 @@ namespace CodeWalker.GameFiles
             writer.WriteBlock(this.TextureNameHashes);
             writer.WriteBlock(this.Textures);
         }
+        public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+
+            if (Textures?.data_items != null)
+            {
+                foreach (var tex in Textures.data_items)
+                {
+                    YtdXml.OpenTag(sb, indent, "Item");
+                    tex.WriteXml(sb, indent + 1, ddsfolder);
+                    YtdXml.CloseTag(sb, indent, "Item");
+                }
+            }
+
+        }
+        public void ReadXml(XmlNode node, string ddsfolder)
+        {
+            var textures = new List<Texture>();
+            var texturehashes = new List<uint>();
+
+            var inodes = node.SelectNodes("Item");
+            if (inodes != null)
+            {
+                foreach (XmlNode inode in inodes)
+                {
+                    var tex = new Texture();
+                    tex.ReadXml(inode, ddsfolder);
+                    textures.Add(tex);
+                    texturehashes.Add(tex.NameHash);
+                }
+            }
+
+            TextureNameHashes = new ResourceSimpleList64_uint();
+            TextureNameHashes.data_items = texturehashes.ToArray();
+            Textures = new ResourcePointerList64<Texture>();
+            Textures.data_items = textures.ToArray();
+            BuildDict();
+        }
+        public static void WriteXmlNode(TextureDictionary d, StringBuilder sb, int indent, string ddsfolder, string name = "TextureDictionary")
+        {
+            if (d == null) return;
+            if ((d.Textures?.data_items == null) || (d.Textures.data_items.Length == 0))
+            {
+                YtdXml.SelfClosingTag(sb, indent, name);
+            }
+            else
+            {
+                YtdXml.OpenTag(sb, indent, name);
+                d.WriteXml(sb, indent + 1, ddsfolder);
+                YtdXml.CloseTag(sb, indent, name);
+            }
+        }
+        public static TextureDictionary ReadXmlNode(XmlNode node, string ddsfolder)
+        {
+            if (node == null) return null;
+            var td = new TextureDictionary();
+            td.ReadXml(node, ddsfolder);
+            return td;
+        }
+
 
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
@@ -118,20 +159,21 @@ namespace CodeWalker.GameFiles
             return tex;
         }
 
-        //public Dictionary<uint, Texture> GetDictionary()
-        //{
-        //    Dictionary<uint, Texture> td = new Dictionary<uint, Texture>();
-        //    if ((Textures != null) && (Textures.data_items != null))
-        //    {
-        //        var texs = Textures.data_items;
-        //        var hashes = TextureNameHashes;
-        //        for (int i = 0; (i < texs.Length) && (i < hashes.Length); i++)
-        //        {
-        //            td.Add(hashes[i], texs[i]);
-        //        }
-        //    }
-        //    return td;
-        //}
+        private void BuildDict()
+        {
+            var dict = new Dictionary<uint, Texture>();
+            if ((Textures?.data_items != null) && (TextureNameHashes?.data_items != null))
+            {
+                for (int i = 0; (i < Textures.data_items.Length) && (i < TextureNameHashes.data_items.Length); i++)
+                {
+                    var tex = Textures.data_items[i];
+                    var hash = TextureNameHashes.data_items[i];
+                    dict[hash] = tex;
+                }
+            }
+            Dict = dict;
+        }
+
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class TextureBase : ResourceSystemBlock
@@ -165,9 +207,6 @@ namespace CodeWalker.GameFiles
 
         private string_r NameBlock = null;
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -214,10 +253,6 @@ namespace CodeWalker.GameFiles
                     break;
             }
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -241,10 +276,19 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_38h);
             writer.Write(this.Unknown_3Ch);
         }
+        public virtual void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            YtdXml.StringTag(sb, indent, "Name", Name);
+            YtdXml.ValueTag(sb, indent, "Unk32", Unknown_32h.ToString());
+        }
+        public virtual void ReadXml(XmlNode node, string ddsfolder)
+        {
+            Name = Xml.GetChildInnerText(node, "Name");
+            NameHash = JenkHash.GenHash(Name?.ToLowerInvariant());
+            Unknown_32h = (ushort)Xml.GetChildUIntAttribute(node, "Unk32", "value");
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
+
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -317,35 +361,6 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public byte Unknown_40h
-        {
-            get
-            {
-                return (byte)(UsageData & 0xFF);
-            }
-        }
-        public byte Unknown_41h
-        {
-            get
-            {
-                return (byte)((UsageData >> 8) & 0xFF);
-            }
-        }
-        public byte Unknown_42h
-        {
-            get
-            {
-                return (byte)((UsageData >> 16) & 0xFF);
-            }
-        }
-        public byte Unknown_43h
-        {
-            get
-            {
-                return (byte)((UsageData >> 24) & 0xFF);
-            }
-        }
-
 
         // reference data
         public TextureData Data { get; set; }
@@ -363,9 +378,6 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -396,177 +408,59 @@ namespace CodeWalker.GameFiles
             this.Unknown_8Ch = reader.ReadUInt32();
 
             // read reference data
-            this.Data = reader.ReadBlockAt<TextureData>(
-                this.DataPointer, // offset
-                this.Format,
-                this.Width,
-                this.Height,
-                this.Levels,
-                this.Stride
-            );
+            this.Data = reader.ReadBlockAt<TextureData>(this.DataPointer, this.Format, this.Width, this.Height, this.Levels, this.Stride);
 
-            
-            switch (Unknown_40h)
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 8:
-                case 9:
-                case 10:
-                case 11:
-                case 12:
-                case 14:
-                case 16:
-                case 18:
-                case 19:
-                case 20:
-                case 21:
-                case 22:
-                case 23:
-                case 24:
-                case 25:
-                case 26:
-                case 38:
-                case 52:
-                case 54:
-                case 55:
-                case 66:
-                case 84:
-                case 86:
-                case 87:
-                case 116:
-                case 118:
-                case 119:
-                    break;
-                case 32://embedded only
-                    break;
-                default:
-                    break;
-            }
-            switch (Unknown_41h)
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 4:
-                case 6:
-                case 8:
-                case 0xA:
-                case 0xC:
-                case 0xE:
-                case 0x10:
-                case 0x11:
-                case 0x12:
-                case 0x13:
-                case 0x14:
-                case 0x16:
-                case 0x17:
-                case 0x18:
-                case 0x1C:
-                case 0x1E:
-                case 0x20:
-                case 0x22:
-                case 0x28:
-                case 0x2B:
-                case 0x2C:
-                case 0x30:
-                case 0x38:
-                case 0x39:
-                case 0x3C:
-                case 0x40:
-                case 0x4C:
-                case 0x4E:
-                case 0x50:
-                case 0x54:
-                case 0x56:
-                case 0x57:
-                case 0x58:
-                case 0x5A:
-                case 0x5C:
-                case 0x5E:
-                case 0x60:
-                case 0x64:
-                case 0x68:
-                case 0x70:
-                case 0x78:
-                case 0x80:
-                case 0x90:
-                case 0x9C:
-                case 0x9E:
-                case 0xA0:
-                case 0xA8:
-                case 0xAA:
-                case 0xAC:
-                case 0xAE:
-                case 0xB0:
-                case 0xB2:
-                case 0xB4:
-                case 0xB8:
-                case 0xBC:
-                case 0xC0:
-                case 0xD0:
-                case 7://embedded only
-                case 0xA4://embedded only
-                case 0xAB://embedded only
-                    break;
-                default:
-                    break;
-            }
-            switch (Unknown_42h)
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                case 0xA:
-                case 0xB:
-                case 0xC:
-                case 0xE:
-                case 0x10:
-                case 0x12:
-                case 0x14:
-                case 0x15:
-                case 0x18:
-                case 0x19:
-                case 0x20:
-                case 0x21:
-                case 0x24:
-                case 0x2A:
-                case 0x40:
-                case 0x55:
-                case 0x80://embedded only
-                    break;
-                default:
-                    break;
-            }
-            switch (Unknown_43h)
-            {
-                case 0x20://32
-                case 0x28://40
-                case 0x30://48
-                case 0:
-                    break;
-                default:
-                    break;
-            }
-            
 
+            switch (Usage)
+            {
+                case TextureUsage.UNKNOWN:// = 0,
+                case TextureUsage.DEFAULT:// = 1,
+                case TextureUsage.TERRAIN:// = 2,
+                case TextureUsage.CLOUDDENSITY:// = 3,
+                case TextureUsage.CLOUDNORMAL:// = 4,
+                case TextureUsage.CABLE:// = 5,
+                case TextureUsage.FENCE:// = 6,
+                case TextureUsage.SCRIPT:// = 8,
+                case TextureUsage.WATERFLOW:// = 9,
+                case TextureUsage.WATERFOAM:// = 10,
+                case TextureUsage.WATERFOG:// = 11,
+                case TextureUsage.WATEROCEAN:// = 12,
+                case TextureUsage.FOAMOPACITY:// = 14,
+                case TextureUsage.DIFFUSEMIPSHARPEN:// = 16,
+                case TextureUsage.DIFFUSEDARK:// = 18,
+                case TextureUsage.DIFFUSEALPHAOPAQUE:// = 19,
+                case TextureUsage.DIFFUSE:// = 20,
+                case TextureUsage.DETAIL:// = 21,
+                case TextureUsage.NORMAL:// = 22,
+                case TextureUsage.SPECULAR:// = 23,
+                case TextureUsage.EMISSIVE:// = 24,
+                case TextureUsage.TINTPALETTE:// = 25,
+                case TextureUsage.SKIPPROCESSING:// = 26,
+                    break;
+                case TextureUsage.ENVEFF:// = 7, //unused by V
+                case TextureUsage.WATER:// = 13, //unused by V
+                case TextureUsage.FOAM:// = 15,  //unused by V
+                case TextureUsage.DIFFUSEDETAIL:// = 17, //unused by V
+                case TextureUsage.DONOTOPTIMIZE:// = 27, //unused by V
+                case TextureUsage.TEST:// = 28,  //unused by V
+                case TextureUsage.COUNT:// = 29, //unused by V
+                    break;
+                default:
+                    break;
+            }
+
+            var uf = UsageFlags;
+            if ((uf & TextureUsageFlags.EMBEDDEDSCRIPTRT) > 0) // .ydr embedded script_rt textures, only 3 uses
+            { }
+            if ((uf & TextureUsageFlags.UNK19) > 0)
+            { }
+            if ((uf & TextureUsageFlags.UNK20) > 0)
+            { }
+            if ((uf & TextureUsageFlags.UNK21) > 0)
+            { }
+            if ((uf & TextureUsageFlags.UNK24) == 0)//wtf isthis? only 0 on special resident(?) textures and some reused ones
+            { }
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -598,10 +492,62 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_88h);
             writer.Write(this.Unknown_8Ch);
         }
+        public override void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            base.WriteXml(sb, indent, ddsfolder);
+            YtdXml.ValueTag(sb, indent, "Width", Width.ToString());
+            YtdXml.ValueTag(sb, indent, "Height", Height.ToString());
+            YtdXml.ValueTag(sb, indent, "MipLevels", Levels.ToString());
+            YtdXml.StringTag(sb, indent, "Format", Format.ToString());
+            YtdXml.StringTag(sb, indent, "Usage", Usage.ToString());
+            YtdXml.StringTag(sb, indent, "UsageFlags", UsageFlags.ToString());
+            YtdXml.ValueTag(sb, indent, "ExtraFlags", ExtraFlags.ToString());
+            YtdXml.StringTag(sb, indent, "FileName", (Name ?? "null") + ".dds");
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
+            try
+            {
+                var filepath = System.IO.Path.Combine(ddsfolder, (Name ?? "null") + ".dds");
+                var dds = DDSIO.GetDDSFile(this);
+                System.IO.File.WriteAllBytes(filepath, dds);
+            }
+            catch { }
+        }
+        public override void ReadXml(XmlNode node, string ddsfolder)
+        {
+            base.ReadXml(node, ddsfolder);
+            Width = (ushort)Xml.GetChildUIntAttribute(node, "Width", "value");
+            Height = (ushort)Xml.GetChildUIntAttribute(node, "Height", "value");
+            Levels = (byte)Xml.GetChildUIntAttribute(node, "MipLevels", "value");
+            Format = Xml.GetChildEnumInnerText<TextureFormat>(node, "Format");
+            Usage = Xml.GetChildEnumInnerText<TextureUsage>(node, "Usage");
+            UsageFlags = Xml.GetChildEnumInnerText<TextureUsageFlags>(node, "UsageFlags");
+            ExtraFlags = Xml.GetChildUIntAttribute(node, "ExtraFlags", "value");
+            var filename = Xml.GetChildInnerText(node, "FileName");
+
+            try
+            {
+                var filepath = System.IO.Path.Combine(ddsfolder, filename);
+                if (System.IO.File.Exists(filepath))
+                {
+                    var dds = System.IO.File.ReadAllBytes(filepath);
+                    var tex = DDSIO.GetTexture(dds);
+                    if (tex != null)
+                    {
+                        Data = tex.Data;
+                        Width = tex.Width;
+                        Height = tex.Height;
+                        Depth = tex.Depth;
+                        Levels = tex.Levels;
+                        Format = tex.Format;
+                        Stride = tex.Stride;
+                    }
+                }
+            }
+            catch { }
+
+
+        }
+
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
@@ -678,7 +624,6 @@ namespace CodeWalker.GameFiles
         //UNKNOWN
     }
 
-
     public enum TextureUsage : byte
     {
         UNKNOWN = 0,
@@ -717,29 +662,29 @@ namespace CodeWalker.GameFiles
     {
         NOT_HALF = 1,
         HD_SPLIT = (1 << 1),
-        UNK2 = (1 << 2),
-        UNK3 = (1 << 3),
-        UNK4 = (1 << 4),
-        UNK5 = (1 << 5),
-        UNK6 = (1 << 6),
-        UNK7 = (1 << 7),
-        UNK8 = (1 << 8),
-        UNK9 = (1 << 9),
-        UNK10 = (1 << 10),
-        UNK11 = (1 << 11),
-        UNK12 = (1 << 12),
-        UNK13 = (1 << 13),
-        UNK14 = (1 << 14),
-        UNK15 = (1 << 15),
-        UNK16 = (1 << 16),
-        UNK17 = (1 << 17),
-        UNK18 = (1 << 18),
-        UNK19 = (1 << 19),
-        UNK20 = (1 << 20),
-        UNK21 = (1 << 21),
+        X2 = (1 << 2),
+        X4 = (1 << 3),
+        Y4 = (1 << 4),
+        X8 = (1 << 5),
+        X16 = (1 << 6),
+        X32 = (1 << 7),
+        X64 = (1 << 8),
+        Y64 = (1 << 9),
+        X128 = (1 << 10),
+        X256 = (1 << 11),
+        X512 = (1 << 12),
+        Y512 = (1 << 13),
+        X1024 = (1 << 14),//wtf is all this?
+        Y1024 = (1 << 15),
+        X2048 = (1 << 16),
+        Y2048 = (1 << 17),
+        EMBEDDEDSCRIPTRT = (1 << 18),
+        UNK19 = (1 << 19),  //unused by V
+        UNK20 = (1 << 20),  //unused by V
+        UNK21 = (1 << 21),  //unused by V
         FLAG_FULL = (1 << 22),
         MAPS_HALF = (1 << 23),
-        UNK24 = (1 << 24),
+        UNK24 = (1 << 24),//used by almost everything...
     }
 
 

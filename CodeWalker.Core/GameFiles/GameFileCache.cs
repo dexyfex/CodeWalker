@@ -3440,7 +3440,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYtds()
         {
-            bool ddstest = true;
+            bool ddstest = false;
             bool savetest = false;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)

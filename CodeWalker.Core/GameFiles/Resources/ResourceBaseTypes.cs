@@ -1062,7 +1062,7 @@ namespace CodeWalker.GameFiles
         public ushort EntriesCapacity { get; private set; }
 
         // reference data
-        public uint[] data_items { get; private set; }
+        public uint[] data_items { get; set; }
 
         private ResourceSystemStructBlock<uint> data_block;//used for saving.
 
