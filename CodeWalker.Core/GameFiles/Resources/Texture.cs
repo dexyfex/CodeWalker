@@ -270,12 +270,9 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public byte Unknown_40h { get; set; }
-        public byte Unknown_41h { get; set; }
-        public byte Unknown_42h { get; set; }
-        public byte Unknown_43h { get; set; }
+        public uint UsageData { get; set; }
         public uint Unknown_44h { get; set; } // 0x00000000
-        public uint Unknown_48h { get; set; } // 0, 1
+        public uint ExtraFlags { get; set; } // 0, 1
         public uint Unknown_4Ch { get; set; } // 0x00000000
         public ushort Width { get; set; }
         public ushort Height { get; set; }
@@ -296,6 +293,59 @@ namespace CodeWalker.GameFiles
         public uint Unknown_84h { get; set; } // 0x00000000
         public uint Unknown_88h { get; set; } // 0x00000000
         public uint Unknown_8Ch { get; set; } // 0x00000000
+
+        public TextureUsage Usage
+        {
+            get
+            {
+                return (TextureUsage)(UsageData & 0x1F);
+            }
+            set
+            {
+                UsageData = (UsageData & 0xFFFFFFE0) + (((uint)value) & 0x1F);
+            }
+        }
+        public TextureUsageFlags UsageFlags
+        {
+            get
+            {
+                return (TextureUsageFlags)(UsageData >> 5);
+            }
+            set
+            {
+                UsageData = (UsageData & 0x1F) + (((uint)value) << 5);
+            }
+        }
+
+        public byte Unknown_40h
+        {
+            get
+            {
+                return (byte)(UsageData & 0xFF);
+            }
+        }
+        public byte Unknown_41h
+        {
+            get
+            {
+                return (byte)((UsageData >> 8) & 0xFF);
+            }
+        }
+        public byte Unknown_42h
+        {
+            get
+            {
+                return (byte)((UsageData >> 16) & 0xFF);
+            }
+        }
+        public byte Unknown_43h
+        {
+            get
+            {
+                return (byte)((UsageData >> 24) & 0xFF);
+            }
+        }
+
 
         // reference data
         public TextureData Data { get; set; }
@@ -321,12 +371,9 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_40h = reader.ReadByte();
-            this.Unknown_41h = reader.ReadByte();
-            this.Unknown_42h = reader.ReadByte();
-            this.Unknown_43h = reader.ReadByte();
+            this.UsageData = reader.ReadUInt32();
             this.Unknown_44h = reader.ReadUInt32();
-            this.Unknown_48h = reader.ReadUInt32();
+            this.ExtraFlags = reader.ReadUInt32();
             this.Unknown_4Ch = reader.ReadUInt32();
             this.Width = reader.ReadUInt16();
             this.Height = reader.ReadUInt16();
@@ -358,6 +405,7 @@ namespace CodeWalker.GameFiles
                 this.Stride
             );
 
+            
             switch (Unknown_40h)
             {
                 case 0:
@@ -369,32 +417,33 @@ namespace CodeWalker.GameFiles
                 case 6:
                 case 8:
                 case 9:
-                case 0xA:
-                case 0xB:
-                case 0xC:
-                case 0xE:
-                case 0x10:
-                case 0x12:
-                case 0x13:
-                case 0x14:
-                case 0x15:
-                case 0x16:
-                case 0x17:
-                case 0x18:
-                case 0x19:
-                case 0x1A:
-                case 0x26:
-                case 0x34:
-                case 0x36:
-                case 0x37:
-                case 0x42:
-                case 0x54:
-                case 0x56:
-                case 0x57:
-                case 0x74:
-                case 0x76:
-                case 0x77:
-                case 0x20://embedded only
+                case 10:
+                case 11:
+                case 12:
+                case 14:
+                case 16:
+                case 18:
+                case 19:
+                case 20:
+                case 21:
+                case 22:
+                case 23:
+                case 24:
+                case 25:
+                case 26:
+                case 38:
+                case 52:
+                case 54:
+                case 55:
+                case 66:
+                case 84:
+                case 86:
+                case 87:
+                case 116:
+                case 118:
+                case 119:
+                    break;
+                case 32://embedded only
                     break;
                 default:
                     break;
@@ -511,16 +560,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
-
-            switch (Unknown_48h)
-            {
-                case 0:
-                case 1:
-                    break;
-                default:
-                    break;
-            }
-
+            
 
         }
 
@@ -534,12 +574,9 @@ namespace CodeWalker.GameFiles
             this.DataPointer = (ulong)this.Data.FilePosition;
 
             // write structure data
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_41h);
-            writer.Write(this.Unknown_42h);
-            writer.Write(this.Unknown_43h);
+            writer.Write(this.UsageData);
             writer.Write(this.Unknown_44h);
-            writer.Write(this.Unknown_48h);
+            writer.Write(this.ExtraFlags);
             writer.Write(this.Unknown_4Ch);
             writer.Write(this.Width);
             writer.Write(this.Height);
@@ -640,5 +677,70 @@ namespace CodeWalker.GameFiles
 
         //UNKNOWN
     }
+
+
+    public enum TextureUsage : byte
+    {
+        UNKNOWN = 0,
+        DEFAULT = 1,
+        TERRAIN = 2,
+        CLOUDDENSITY = 3,
+        CLOUDNORMAL = 4,
+        CABLE = 5,
+        FENCE = 6,
+        ENVEFF = 7, //unused by V
+        SCRIPT = 8,
+        WATERFLOW = 9,
+        WATERFOAM = 10,
+        WATERFOG = 11,
+        WATEROCEAN = 12,
+        WATER = 13, //unused by V
+        FOAMOPACITY = 14,
+        FOAM = 15,  //unused by V
+        DIFFUSEMIPSHARPEN = 16,
+        DIFFUSEDETAIL = 17, //unused by V
+        DIFFUSEDARK = 18,
+        DIFFUSEALPHAOPAQUE = 19,
+        DIFFUSE = 20,
+        DETAIL = 21,
+        NORMAL = 22,
+        SPECULAR = 23,
+        EMISSIVE = 24,
+        TINTPALETTE = 25,
+        SKIPPROCESSING = 26,
+        DONOTOPTIMIZE = 27, //unused by V
+        TEST = 28,  //unused by V
+        COUNT = 29, //unused by V
+    }
+    [Flags]
+    public enum TextureUsageFlags : uint
+    {
+        NOT_HALF = 1,
+        HD_SPLIT = (1 << 1),
+        UNK2 = (1 << 2),
+        UNK3 = (1 << 3),
+        UNK4 = (1 << 4),
+        UNK5 = (1 << 5),
+        UNK6 = (1 << 6),
+        UNK7 = (1 << 7),
+        UNK8 = (1 << 8),
+        UNK9 = (1 << 9),
+        UNK10 = (1 << 10),
+        UNK11 = (1 << 11),
+        UNK12 = (1 << 12),
+        UNK13 = (1 << 13),
+        UNK14 = (1 << 14),
+        UNK15 = (1 << 15),
+        UNK16 = (1 << 16),
+        UNK17 = (1 << 17),
+        UNK18 = (1 << 18),
+        UNK19 = (1 << 19),
+        UNK20 = (1 << 20),
+        UNK21 = (1 << 21),
+        FLAG_FULL = (1 << 22),
+        MAPS_HALF = (1 << 23),
+        UNK24 = (1 << 24),
+    }
+
 
 }
