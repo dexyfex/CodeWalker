@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -18,7 +19,7 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public uint VFT { get; set; }
-        public uint Unknown_4h { get; set; } // 0x00000001
+        public uint Unknown_4h { get; set; } = 1; // 0x00000001
         public ulong TextureDictionaryPointer { get; set; }
         public ulong ShadersPointer { get; set; }
         public ushort ShadersCount1 { get; set; }
@@ -37,9 +38,6 @@ namespace CodeWalker.GameFiles
         public TextureDictionary TextureDictionary { get; set; }
         public ResourcePointerArray64<ShaderFX> Shaders { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -68,10 +66,6 @@ namespace CodeWalker.GameFiles
                 this.ShadersCount1
             );
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -97,10 +91,16 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_38h);
             writer.Write(this.Unknown_3Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            //TODO
+        }
+        public void ReadXml(XmlNode node, string ddsfolder)
+        {
+            //TODO
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
+
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -140,9 +140,6 @@ namespace CodeWalker.GameFiles
         //public SimpleArrayOFFSET<uint_r> ParameterHashes { get; set; }
         public ShaderParametersBlock ParametersList { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -169,10 +166,6 @@ namespace CodeWalker.GameFiles
                 this.ParameterCount
             );
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -198,9 +191,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_2Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -223,7 +213,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public byte DataType { get; set; }
+        public byte DataType { get; set; } //0: texture, 1: vector4
         public byte Unknown_1h { get; set; }
         public ushort Unknown_2h { get; set; }
         public uint Unknown_4h { get; set; }
@@ -232,9 +222,6 @@ namespace CodeWalker.GameFiles
         //public IResourceBlock Data { get; set; }
         public object Data { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -246,10 +233,6 @@ namespace CodeWalker.GameFiles
 
             // DONT READ DATA...
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
@@ -262,9 +245,6 @@ namespace CodeWalker.GameFiles
             // DONT WRITE DATA
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
@@ -380,7 +360,6 @@ namespace CodeWalker.GameFiles
             Hashes = hashes.ToArray();
 
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
 
@@ -514,8 +493,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_8h { get; set; } // 0x00000000
         public uint Unknown_Ch { get; set; } // 0x00000000
         public ulong BoneTagsPointer { get; set; }
-        public ushort Count1 { get; set; }
-        public ushort Count2 { get; set; }
+        public ushort BoneTagsCount { get; set; }
+        public ushort BoneTagsMax { get; set; }
         public FlagsUint Unknown_1Ch { get; set; }
         public ulong BonesPointer { get; set; }
         public ulong TransformationsInvertedPointer { get; set; }
@@ -556,10 +535,6 @@ namespace CodeWalker.GameFiles
         public Matrix3_s[] BoneTransforms; //for rendering
 
 
-
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -568,8 +543,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_8h = reader.ReadUInt32();
             this.Unknown_Ch = reader.ReadUInt32();
             this.BoneTagsPointer = reader.ReadUInt64();
-            this.Count1 = reader.ReadUInt16();
-            this.Count2 = reader.ReadUInt16();
+            this.BoneTagsCount = reader.ReadUInt16();
+            this.BoneTagsMax = reader.ReadUInt16();
             this.Unknown_1Ch = reader.ReadUInt32();
             this.BonesPointer = reader.ReadUInt64();
             this.TransformationsInvertedPointer = reader.ReadUInt64();
@@ -592,7 +567,7 @@ namespace CodeWalker.GameFiles
             // read reference data
             this.BoneTags = reader.ReadBlockAt<ResourcePointerArray64<SkeletonBoneTag>>(
                 this.BoneTagsPointer, // offset
-                this.Count1
+                this.BoneTagsCount
             );
             this.Bones = reader.ReadBlockAt<ResourceSimpleArray<Bone>>(
                 this.BonesPointer, // offset
@@ -603,20 +578,18 @@ namespace CodeWalker.GameFiles
             this.ParentIndices = reader.ReadShortsAt(this.ParentIndicesPointer, this.BonesCount);
             this.ChildIndices = reader.ReadShortsAt(this.ChildIndicesPointer, this.ChildIndicesCount);
 
+            if (BoneTagsMax != Math.Min(BonesCount, BoneTagsCount))
+            { }
 
             AssignBoneParents();
 
             BuildBonesMap();
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
             this.BoneTagsPointer = (ulong)(this.BoneTags != null ? this.BoneTags.FilePosition : 0);
-            this.Count1 = (ushort)(this.BoneTags != null ? this.BoneTags.Count : 0);
+            this.BoneTagsCount = (ushort)(this.BoneTags != null ? this.BoneTags.Count : 0);
             this.BonesPointer = (ulong)(this.Bones != null ? this.Bones.FilePosition : 0);
             this.TransformationsInvertedPointer = (ulong)(this.TransformationsInvertedBlock != null ? this.TransformationsInvertedBlock.FilePosition : 0);
             this.TransformationsPointer = (ulong)(this.TransformationsBlock != null ? this.TransformationsBlock.FilePosition : 0);
@@ -624,7 +597,7 @@ namespace CodeWalker.GameFiles
             this.ChildIndicesPointer = (ulong)(this.ChildIndicesBlock != null ? this.ChildIndicesBlock.FilePosition : 0);
             this.BonesCount = (ushort)(this.Bones != null ? this.Bones.Count : 0);
             this.ChildIndicesCount = (ushort)(this.ChildIndicesBlock != null ? this.ChildIndicesBlock.ItemCount : 0);
-            //this.Count2 = BonesCount;//?
+            this.BoneTagsMax = Math.Min(BonesCount, BoneTagsCount);
 
 
             // write structure data
@@ -633,8 +606,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_8h);
             writer.Write(this.Unknown_Ch);
             writer.Write(this.BoneTagsPointer);
-            writer.Write(this.Count1);
-            writer.Write(this.Count2);
+            writer.Write(this.BoneTagsCount);
+            writer.Write(this.BoneTagsMax);
             writer.Write(this.Unknown_1Ch);
             writer.Write(this.BonesPointer);
             writer.Write(this.TransformationsInvertedPointer);
@@ -654,10 +627,15 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_68h);
             writer.Write(this.Unknown_6Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            //TODO
+        }
+        public void ReadXml(XmlNode node)
+        {
+            //TODO
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -765,8 +743,8 @@ namespace CodeWalker.GameFiles
         {
             var skel = new Skeleton();
 
-            skel.Count1 = Count1;
-            skel.Count2 = Count2;
+            skel.BoneTagsCount = BoneTagsCount;
+            skel.BoneTagsMax = BoneTagsMax;
             skel.Unknown_1Ch = Unknown_1Ch;
             skel.Unknown_50h = Unknown_50h;
             skel.Unknown_54h = Unknown_54h;
@@ -846,7 +824,7 @@ namespace CodeWalker.GameFiles
 
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class SkeletonBoneTag : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class SkeletonBoneTag : ResourceSystemBlock, IMetaXmlItem
     {
         public override long BlockLength
         {
@@ -861,9 +839,6 @@ namespace CodeWalker.GameFiles
         // reference data
         public SkeletonBoneTag LinkedTag { get; set; } //don't know why it's linked here
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -876,10 +851,6 @@ namespace CodeWalker.GameFiles
                 this.LinkedTagPointer // offset
             );
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -890,10 +861,15 @@ namespace CodeWalker.GameFiles
             writer.Write(this.BoneIndex);
             writer.Write(this.LinkedTagPointer);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            //TODO
+        }
+        public void ReadXml(XmlNode node)
+        {
+            //TODO
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -905,6 +881,7 @@ namespace CodeWalker.GameFiles
         {
             return BoneTag.ToString() + ": " + BoneIndex.ToString();
         }
+
     }
 
     [Flags] public enum EBoneFlags : ushort
@@ -928,7 +905,7 @@ namespace CodeWalker.GameFiles
         Unk3 = 0x8000,
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Bone : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class Bone : ResourceSystemBlock, IMetaXmlItem
     {
         public override long BlockLength
         {
@@ -968,9 +945,6 @@ namespace CodeWalker.GameFiles
         public Matrix BindTransformInv;//inverse of bind pose transform
         public Matrix SkinTransform;//transform to use for skin meshes
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -1000,10 +974,6 @@ namespace CodeWalker.GameFiles
             AnimTranslation = Translation;
             AnimScale = Scale;
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -1026,10 +996,15 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_48h);
             writer.Write(this.Unknown_4Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            //TODO
+        }
+        public void ReadXml(XmlNode node)
+        {
+            //TODO
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -1118,7 +1093,7 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public uint VFT { get; set; }
-        public uint Unknown_4h { get; set; } // 0x00000001
+        public uint Unknown_4h { get; set; } = 1; // 0x00000001
         public uint Unknown_8h { get; set; } // 0x00000000
         public uint Unknown_Ch { get; set; } // 0x00000000
         public ulong RotationLimitsPointer { get; set; }
@@ -1130,7 +1105,7 @@ namespace CodeWalker.GameFiles
         public ushort RotationLimitsCount { get; set; }
         public ushort TranslationLimitsCount { get; set; }
         public ushort Unknown_34h { get; set; } // 0x0000
-        public ushort Unknown_36h { get; set; } // 0x0001
+        public ushort Unknown_36h { get; set; } = 1; // 0x0001
         public uint Unknown_38h { get; set; } // 0x00000000
         public uint Unknown_3Ch { get; set; } // 0x00000000
 
@@ -1142,9 +1117,6 @@ namespace CodeWalker.GameFiles
         private ResourceSystemStructBlock<JointTranslationLimit_s> TranslationLimitsBlock = null;
 
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -1178,10 +1150,6 @@ namespace CodeWalker.GameFiles
             this.TranslationLimits = reader.ReadStructsAt<JointTranslationLimit_s>(this.TranslationLimitsPointer, this.TranslationLimitsCount);
 
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -1209,10 +1177,23 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_38h);
             writer.Write(this.Unknown_3Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            if (RotationLimits != null)
+            {
+                YdrXml.WriteItemArray(sb, RotationLimits, indent, "RotationLimits");
+            }
+            if (TranslationLimits != null)
+            {
+                YdrXml.WriteItemArray(sb, TranslationLimits, indent, "TranslationLimits");
+            }
+        }
+        public void ReadXml(XmlNode node)
+        {
+            RotationLimits = XmlMeta.ReadItemArray<JointRotationLimit_s>(node, "RotationLimits");
+            TranslationLimits = XmlMeta.ReadItemArray<JointTranslationLimit_s>(node, "TranslationLimits");
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -1230,7 +1211,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct JointRotationLimit_s
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct JointRotationLimit_s : IMetaXmlItem
     {
         // structure data
         public uint Unknown_0h { get; set; } // 0x00000000
@@ -1278,9 +1259,74 @@ namespace CodeWalker.GameFiles
         public float Unknown_B4h { get; set; } // -pi
         public float Unknown_B8h { get; set; } // pi
         public uint Unknown_BCh { get; set; } // 0x00000100
+
+        public JointRotationLimit_s(bool init)
+        {
+            var pi = (float)Math.PI;
+            Unknown_0h = 0;
+            Unknown_4h = 0;
+            BoneId = 0;
+            Unknown_Ah = 0;
+            Unknown_Ch = 1;
+            Unknown_10h = 3;
+            Unknown_14h = 0;
+            Unknown_18h = 0;
+            Unknown_1Ch = 0;
+            Unknown_20h = 0;
+            Unknown_24h = 0;
+            Unknown_28h = 0;
+            Unknown_2Ch = 1.0f;
+            Unknown_30h = 0;
+            Unknown_34h = 0;
+            Unknown_38h = 0;
+            Unknown_3Ch = 0;
+            Unknown_40h = 1.0f;
+            Unknown_44h = 0;
+            Unknown_48h = 0;
+            Unknown_4Ch = 0;
+            Unknown_50h = -pi;
+            Unknown_54h = pi;
+            Unknown_58h = 1.0f;
+            Min = Vector3.Zero;
+            Max = Vector3.Zero;
+            Unknown_74h = pi;
+            Unknown_78h = -pi;
+            Unknown_7Ch = pi;
+            Unknown_80h = pi;
+            Unknown_84h = -pi;
+            Unknown_88h = pi;
+            Unknown_8Ch = pi;
+            Unknown_90h = -pi;
+            Unknown_94h = pi;
+            Unknown_98h = pi;
+            Unknown_9Ch = -pi;
+            Unknown_A0h = pi;
+            Unknown_A4h = pi;
+            Unknown_A8h = -pi;
+            Unknown_ACh = pi;
+            Unknown_B0h = pi;
+            Unknown_B4h = -pi;
+            Unknown_B8h = pi;
+            Unknown_BCh = 0x100;
+        }
+
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YdrXml.ValueTag(sb, indent, "BoneId", BoneId.ToString());
+            YdrXml.ValueTag(sb, indent, "UnknownA", Unknown_Ah.ToString());
+            YdrXml.SelfClosingTag(sb, indent, "Min " + FloatUtil.GetVector3XmlString(Min));
+            YdrXml.SelfClosingTag(sb, indent, "Max " + FloatUtil.GetVector3XmlString(Max));
+        }
+        public void ReadXml(XmlNode node)
+        {
+            BoneId = (ushort)Xml.GetChildUIntAttribute(node, "BoneId", "value");
+            Unknown_Ah = (ushort)Xml.GetChildUIntAttribute(node, "UnknownA", "value");
+            Min = Xml.GetChildVector3Attributes(node, "Min", "x", "y", "z");
+            Max = Xml.GetChildVector3Attributes(node, "Max", "x", "y", "z");
+        }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct JointTranslationLimit_s
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct JointTranslationLimit_s : IMetaXmlItem
     {
         public uint Unknown_0h { get; set; } // 0x00000000
         public uint Unknown_4h { get; set; } // 0x00000000
@@ -1294,6 +1340,19 @@ namespace CodeWalker.GameFiles
         public uint Unknown_2Ch { get; set; } // 0x00000000
         public Vector3 Max { get; set; }
         public uint Unknown_3Ch { get; set; } // 0x00000000
+
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YdrXml.ValueTag(sb, indent, "BoneId", BoneId.ToString());
+            YdrXml.SelfClosingTag(sb, indent, "Min " + FloatUtil.GetVector3XmlString(Min));
+            YdrXml.SelfClosingTag(sb, indent, "Max " + FloatUtil.GetVector3XmlString(Max));
+        }
+        public void ReadXml(XmlNode node)
+        {
+            BoneId = (ushort)Xml.GetChildUIntAttribute(node, "BoneId", "value");
+            Min = Xml.GetChildVector3Attributes(node, "Min", "x", "y", "z");
+            Max = Xml.GetChildVector3Attributes(node, "Max", "x", "y", "z");
+        }
     }
 
 
@@ -1302,7 +1361,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableModel : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableModel : ResourceSystemBlock, IMetaXmlItem
     {
         public override long BlockLength
         {
@@ -1372,9 +1431,6 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -1400,10 +1456,6 @@ namespace CodeWalker.GameFiles
             this.ShaderMapping = reader.ReadUshortsAt(this.ShaderMappingPointer, this.GeometriesCount1);
 
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -1428,10 +1480,29 @@ namespace CodeWalker.GameFiles
             writer.Write(this.RenderMaskFlags);
             writer.Write(this.GeometriesCount3);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            //TODO
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
+            if (Geometries?.data_items != null)
+            {
+                YdrXml.WriteItemArray(sb, Geometries.data_items, indent, "Geometries");
+            }
+
+        }
+        public void ReadXml(XmlNode node)
+        {
+            //TODO
+
+            var geoms = XmlMeta.ReadItemArray<DrawableGeometry>(node, "Geometries");
+            if (geoms != null)
+            {
+                Geometries = new ResourcePointerArray64<DrawableGeometry>();
+                Geometries.data_items = geoms;
+            }
+
+        }
+
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -1453,9 +1524,10 @@ namespace CodeWalker.GameFiles
         {
             return "(" + Geometries.Count + " geometr" + (Geometries.Count != 1 ? "ies)" : "y)");
         }
+
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableGeometry : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableGeometry : ResourceSystemBlock, IMetaXmlItem
     {
         public override long BlockLength
         {
@@ -1514,9 +1586,6 @@ namespace CodeWalker.GameFiles
         public bool UpdateRenderableParameters { get; set; } = false; //used by model material editor...
 
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -1595,10 +1664,6 @@ namespace CodeWalker.GameFiles
             else
             { }
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -1647,10 +1712,15 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_90h);
             writer.Write(this.Unknown_94h);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            //TODO
+        }
+        public void ReadXml(XmlNode node)
+        {
+            //TODO
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -2342,7 +2412,7 @@ namespace CodeWalker.GameFiles
         Capsule = 4,
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct LightAttributes_s
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct LightAttributes_s : IMetaXmlItem
     {
         // structure data
         public uint Unknown_0h { get; set; } // 0x00000000
@@ -2388,8 +2458,89 @@ namespace CodeWalker.GameFiles
         public float ConeInnerAngle { get; set; }
         public float ConeOuterAngle { get; set; }
         public Vector3 Extent { get; set; }
-        public uint ProjectedTextureHash { get; set; }
+        public MetaHash ProjectedTextureHash { get; set; }
         public uint Unknown_A4h { get; set; } // 0x00000000
+
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YdrXml.SelfClosingTag(sb, indent, "Position " + FloatUtil.GetVector3XmlString(Position));
+            YdrXml.SelfClosingTag(sb, indent, string.Format("Colour r=\"{0}\" g=\"{1}\" b=\"{2}\"", ColorR, ColorG, ColorB));
+            YdrXml.ValueTag(sb, indent, "Flashiness", Flashiness.ToString());
+            YdrXml.ValueTag(sb, indent, "Intensity", FloatUtil.ToString(Intensity));
+            YdrXml.ValueTag(sb, indent, "Flags", Flags.ToString());
+            YdrXml.ValueTag(sb, indent, "BoneId", BoneId.ToString());
+            YdrXml.StringTag(sb, indent, "Type", Type.ToString());
+            YdrXml.ValueTag(sb, indent, "GroupId", GroupId.ToString());
+            YdrXml.ValueTag(sb, indent, "TimeFlags", TimeFlags.ToString());
+            YdrXml.ValueTag(sb, indent, "Falloff", FloatUtil.ToString(Falloff));
+            YdrXml.ValueTag(sb, indent, "FalloffExponent", FloatUtil.ToString(FalloffExponent));
+            YdrXml.SelfClosingTag(sb, indent, "CullingPlaneNormal " + FloatUtil.GetVector3XmlString(CullingPlaneNormal));
+            YdrXml.ValueTag(sb, indent, "CullingPlaneOffset", FloatUtil.ToString(CullingPlaneOffset));
+            YdrXml.ValueTag(sb, indent, "Unknown45", Unknown_45h.ToString());
+            YdrXml.ValueTag(sb, indent, "Unknown46", Unknown_46h.ToString());
+            YdrXml.ValueTag(sb, indent, "VolumeIntensity", FloatUtil.ToString(VolumeIntensity));
+            YdrXml.ValueTag(sb, indent, "VolumeSizeScale", FloatUtil.ToString(VolumeSizeScale));
+            YdrXml.SelfClosingTag(sb, indent, string.Format("VolumeOuterColour r=\"{0}\" g=\"{1}\" b=\"{2}\"", VolumeOuterColorR, VolumeOuterColorG, VolumeOuterColorB));
+            YdrXml.ValueTag(sb, indent, "LightHash", LightHash.ToString());
+            YdrXml.ValueTag(sb, indent, "VolumeOuterIntensity", FloatUtil.ToString(VolumeOuterIntensity));
+            YdrXml.ValueTag(sb, indent, "CoronaSize", FloatUtil.ToString(CoronaSize));
+            YdrXml.ValueTag(sb, indent, "VolumeOuterExponent", FloatUtil.ToString(VolumeOuterExponent));
+            YdrXml.ValueTag(sb, indent, "LightFadeDistance", LightFadeDistance.ToString());
+            YdrXml.ValueTag(sb, indent, "ShadowFadeDistance", ShadowFadeDistance.ToString());
+            YdrXml.ValueTag(sb, indent, "SpecularFadeDistance", SpecularFadeDistance.ToString());
+            YdrXml.ValueTag(sb, indent, "VolumetricFadeDistance", VolumetricFadeDistance.ToString());
+            YdrXml.ValueTag(sb, indent, "ShadowNearClip", FloatUtil.ToString(ShadowNearClip));
+            YdrXml.ValueTag(sb, indent, "CoronaIntensity", FloatUtil.ToString(CoronaIntensity));
+            YdrXml.ValueTag(sb, indent, "CoronaZBias", FloatUtil.ToString(CoronaZBias));
+            YdrXml.SelfClosingTag(sb, indent, "Direction " + FloatUtil.GetVector3XmlString(Direction));
+            YdrXml.SelfClosingTag(sb, indent, "Tangent " + FloatUtil.GetVector3XmlString(Tangent));
+            YdrXml.ValueTag(sb, indent, "ConeInnerAngle", FloatUtil.ToString(ConeInnerAngle));
+            YdrXml.ValueTag(sb, indent, "ConeOuterAngle", FloatUtil.ToString(ConeOuterAngle));
+            YdrXml.SelfClosingTag(sb, indent, "Extent " + FloatUtil.GetVector3XmlString(Extent));
+            YdrXml.StringTag(sb, indent, "ProjectedTextureHash", YdrXml.HashString(ProjectedTextureHash));
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Position = Xml.GetChildVector3Attributes(node, "Position", "x", "y", "z");
+            ColorR = (byte)Xml.GetChildUIntAttribute(node, "Colour", "r");
+            ColorG = (byte)Xml.GetChildUIntAttribute(node, "Colour", "g");
+            ColorB = (byte)Xml.GetChildUIntAttribute(node, "Colour", "b");
+            Flashiness = (byte)Xml.GetChildUIntAttribute(node, "Flashiness", "value");
+            Intensity = Xml.GetChildFloatAttribute(node, "Intensity", "value");
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            BoneId = (ushort)Xml.GetChildUIntAttribute(node, "BoneId", "value");
+            Type = Xml.GetChildEnumInnerText<LightType>(node, "Type");
+            GroupId = (byte)Xml.GetChildUIntAttribute(node, "GroupId", "value");
+            TimeFlags = Xml.GetChildUIntAttribute(node, "TimeFlags", "value");
+            Falloff = Xml.GetChildFloatAttribute(node, "Falloff", "value");
+            FalloffExponent = Xml.GetChildFloatAttribute(node, "FalloffExponent", "value");
+            CullingPlaneNormal = Xml.GetChildVector3Attributes(node, "CullingPlaneNormal", "x", "y", "z");
+            CullingPlaneOffset = Xml.GetChildFloatAttribute(node, "CullingPlaneOffset", "value");
+            Unknown_45h = (byte)Xml.GetChildUIntAttribute(node, "Unknown45", "value");
+            Unknown_46h = (ushort)Xml.GetChildUIntAttribute(node, "Unknown46", "value");
+            VolumeIntensity = Xml.GetChildFloatAttribute(node, "VolumeIntensity", "value");
+            VolumeSizeScale = Xml.GetChildFloatAttribute(node, "VolumeSizeScale", "value");
+            VolumeOuterColorR = (byte)Xml.GetChildUIntAttribute(node, "VolumeOuterColour", "r");
+            VolumeOuterColorG = (byte)Xml.GetChildUIntAttribute(node, "VolumeOuterColour", "g");
+            VolumeOuterColorB = (byte)Xml.GetChildUIntAttribute(node, "VolumeOuterColour", "b");
+            LightHash = (byte)Xml.GetChildUIntAttribute(node, "LightHash", "value");
+            VolumeOuterIntensity = Xml.GetChildFloatAttribute(node, "VolumeOuterIntensity", "value");
+            CoronaSize = Xml.GetChildFloatAttribute(node, "CoronaSize", "value");
+            VolumeOuterExponent = Xml.GetChildFloatAttribute(node, "VolumeOuterExponent", "value");
+            LightFadeDistance = (byte)Xml.GetChildUIntAttribute(node, "LightFadeDistance", "value");
+            ShadowFadeDistance = (byte)Xml.GetChildUIntAttribute(node, "ShadowFadeDistance", "value");
+            SpecularFadeDistance = (byte)Xml.GetChildUIntAttribute(node, "SpecularFadeDistance", "value");
+            VolumetricFadeDistance = (byte)Xml.GetChildUIntAttribute(node, "VolumetricFadeDistance", "value");
+            ShadowNearClip = Xml.GetChildFloatAttribute(node, "ShadowNearClip", "value");
+            CoronaIntensity = Xml.GetChildFloatAttribute(node, "CoronaIntensity", "value");
+            CoronaZBias = Xml.GetChildFloatAttribute(node, "CoronaZBias", "value");
+            Direction = Xml.GetChildVector3Attributes(node, "Direction", "x", "y", "z");
+            Tangent = Xml.GetChildVector3Attributes(node, "Tangent", "x", "y", "z");
+            ConeInnerAngle = Xml.GetChildFloatAttribute(node, "ConeInnerAngle", "value");
+            ConeOuterAngle = Xml.GetChildFloatAttribute(node, "ConeOuterAngle", "value");
+            Extent = Xml.GetChildVector3Attributes(node, "Extent", "x", "y", "z");
+            ProjectedTextureHash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "ProjectedTextureHash"));
+        }
     }
 
 
@@ -2465,9 +2616,6 @@ namespace CodeWalker.GameFiles
         }
 
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -2560,44 +2708,6 @@ namespace CodeWalker.GameFiles
 
             AssignGeometryShaders(ShaderGroup);
         }
-
-        public void AssignGeometryShaders(ShaderGroup shaderGrp)
-        {
-            if (shaderGrp != null)
-            {
-                ShaderGroup = shaderGrp;
-            }
-
-            //map the shaders to the geometries
-            if (ShaderGroup != null)
-            {
-                var shaders = ShaderGroup.Shaders.data_items;
-                foreach (DrawableModel model in AllModels)
-                {
-                    if (model.Geometries == null) continue;
-                    if (model.Geometries.data_items == null) continue;
-                    if (model.ShaderMapping == null) continue;
-
-                    int geomcount = model.Geometries.data_items.Length;
-                    for (int i = 0; i < geomcount; i++)
-                    {
-                        var geom = model.Geometries.data_items[i];
-                        ushort sid = (i < model.ShaderMapping.Length) ? model.ShaderMapping[i] : (ushort)0;
-                        geom.Shader = (sid < shaders.Length) ? shaders[sid] : null;
-                        geom.ShaderID = sid;
-                    }
-                }
-            }
-            else
-            {
-            }
-
-        }
-
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -2637,10 +2747,127 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_9Ch);
             writer.Write(this.DrawableModelsXPointer);
         }
+        public virtual void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            YdrXml.SelfClosingTag(sb, indent, "BoundingSphereCenter " + FloatUtil.GetVector3XmlString(BoundingCenter));
+            YdrXml.ValueTag(sb, indent, "BoundingSphereRadius", FloatUtil.ToString(BoundingSphereRadius));
+            YdrXml.SelfClosingTag(sb, indent, "BoundingBoxMin " + FloatUtil.GetVector4XmlString(BoundingBoxMin));
+            YdrXml.SelfClosingTag(sb, indent, "BoundingBoxMax " + FloatUtil.GetVector4XmlString(BoundingBoxMax));
+            YdrXml.ValueTag(sb, indent, "LodDistHigh", FloatUtil.ToString(LodDistHigh));
+            YdrXml.ValueTag(sb, indent, "LodDistMed", FloatUtil.ToString(LodDistMed));
+            YdrXml.ValueTag(sb, indent, "LodDistLow", FloatUtil.ToString(LodDistLow));
+            YdrXml.ValueTag(sb, indent, "LodDistVlow", FloatUtil.ToString(LodDistVlow));
+            YdrXml.ValueTag(sb, indent, "Unknown80", Unknown_80h.ToString());
+            YdrXml.ValueTag(sb, indent, "Unknown84", Unknown_84h.ToString());
+            YdrXml.ValueTag(sb, indent, "Unknown88", Unknown_88h.ToString());
+            YdrXml.ValueTag(sb, indent, "Unknown8C", Unknown_8Ch.ToString());
+            YdrXml.ValueTag(sb, indent, "Unknown98", Unknown_98h.ToString());
+            YdrXml.ValueTag(sb, indent, "Unknown9A", Unknown_9Ah.ToString());
+            if (ShaderGroup != null)
+            {
+                YdrXml.OpenTag(sb, indent, "ShaderGroup");
+                ShaderGroup.WriteXml(sb, indent + 1, ddsfolder);
+                YdrXml.CloseTag(sb, indent, "ShaderGroup");
+            }
+            if (Skeleton != null)
+            {
+                YdrXml.OpenTag(sb, indent, "Skeleton");
+                Skeleton.WriteXml(sb, indent + 1);
+                YdrXml.CloseTag(sb, indent, "Skeleton");
+            }
+            if (Joints != null)
+            {
+                YdrXml.OpenTag(sb, indent, "Joints");
+                Joints.WriteXml(sb, indent + 1);
+                YdrXml.CloseTag(sb, indent, "Joints");
+            }
+            if (DrawableModelsHigh?.data_items != null)
+            {
+                YdrXml.WriteItemArray(sb, DrawableModelsHigh.data_items, indent, "DrawableModelsHigh");
+            }
+            if (DrawableModelsMedium?.data_items != null)
+            {
+                YdrXml.WriteItemArray(sb, DrawableModelsMedium.data_items, indent, "DrawableModelsMedium");
+            }
+            if (DrawableModelsLow?.data_items != null)
+            {
+                YdrXml.WriteItemArray(sb, DrawableModelsLow.data_items, indent, "DrawableModelsLow");
+            }
+            if (DrawableModelsVeryLow?.data_items != null)
+            {
+                YdrXml.WriteItemArray(sb, DrawableModelsVeryLow.data_items, indent, "DrawableModelsVeryLow");
+            }
+            if ((DrawableModelsX?.data_items != null) && (DrawableModelsX != DrawableModelsHigh))//is this right? duplicates..?
+            {
+                YdrXml.WriteItemArray(sb, DrawableModelsX.data_items, indent, "DrawableModelsX");
+            }
+        }
+        public virtual void ReadXml(XmlNode node, string ddsfolder)
+        {
+            BoundingCenter = Xml.GetChildVector3Attributes(node, "BoundingSphereCenter", "x", "y", "z");
+            BoundingSphereRadius = Xml.GetChildFloatAttribute(node, "BoundingSphereRadius", "value");
+            BoundingBoxMin = Xml.GetChildVector4Attributes(node, "BoundingBoxMin", "x", "y", "z", "w");
+            BoundingBoxMax = Xml.GetChildVector4Attributes(node, "BoundingBoxMax", "x", "y", "z", "w");
+            LodDistHigh = Xml.GetChildFloatAttribute(node, "LodDistHigh", "value");
+            LodDistMed = Xml.GetChildFloatAttribute(node, "LodDistMed", "value");
+            LodDistLow = Xml.GetChildFloatAttribute(node, "LodDistLow", "value");
+            LodDistVlow = Xml.GetChildFloatAttribute(node, "LodDistVlow", "value");
+            Unknown_80h = Xml.GetChildUIntAttribute(node, "Unknown80", "value");
+            Unknown_84h = Xml.GetChildUIntAttribute(node, "Unknown84", "value");
+            Unknown_88h = Xml.GetChildUIntAttribute(node, "Unknown88", "value");
+            Unknown_8Ch = Xml.GetChildUIntAttribute(node, "Unknown8C", "value");
+            Unknown_98h = (ushort)Xml.GetChildUIntAttribute(node, "Unknown98", "value");
+            Unknown_9Ah = (ushort)Xml.GetChildUIntAttribute(node, "Unknown9A", "value");
+            var sgnode = node.SelectSingleNode("ShaderGroup");
+            if (sgnode != null)
+            {
+                ShaderGroup = new ShaderGroup();
+                ShaderGroup.ReadXml(sgnode, ddsfolder);
+            }
+            var sknode = node.SelectSingleNode("Skeleton");
+            if (sknode != null)
+            {
+                Skeleton = new Skeleton();
+                Skeleton.ReadXml(sknode);
+            }
+            var jnode = node.SelectSingleNode("Joints");
+            if (jnode != null)
+            {
+                Joints = new Joints();
+                Joints.ReadXml(jnode);
+            }
+            var dmhigh = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsHigh");
+            if (dmhigh != null)
+            {
+                DrawableModelsHigh = new ResourcePointerList64<DrawableModel>();
+                DrawableModelsHigh.data_items = dmhigh;
+            }
+            var dmmed = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsMedium");
+            if (dmmed != null)
+            {
+                DrawableModelsMedium = new ResourcePointerList64<DrawableModel>();
+                DrawableModelsMedium.data_items = dmmed;
+            }
+            var dmlow = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsLow");
+            if (dmlow != null)
+            {
+                DrawableModelsLow = new ResourcePointerList64<DrawableModel>();
+                DrawableModelsLow.data_items = dmlow;
+            }
+            var dmvlow = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsVeryLow");
+            if (dmvlow != null)
+            {
+                DrawableModelsVeryLow = new ResourcePointerList64<DrawableModel>();
+                DrawableModelsVeryLow.data_items = dmvlow;
+            }
+            var dmx = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsX");
+            if (dmx != null)
+            {
+                DrawableModelsX = new ResourcePointerList64<DrawableModel>();
+                DrawableModelsX.data_items = dmx;
+            }
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
@@ -2655,6 +2882,39 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
 
+
+        public void AssignGeometryShaders(ShaderGroup shaderGrp)
+        {
+            if (shaderGrp != null)
+            {
+                ShaderGroup = shaderGrp;
+            }
+
+            //map the shaders to the geometries
+            if (ShaderGroup != null)
+            {
+                var shaders = ShaderGroup.Shaders.data_items;
+                foreach (DrawableModel model in AllModels)
+                {
+                    if (model.Geometries == null) continue;
+                    if (model.Geometries.data_items == null) continue;
+                    if (model.ShaderMapping == null) continue;
+
+                    int geomcount = model.Geometries.data_items.Length;
+                    for (int i = 0; i < geomcount; i++)
+                    {
+                        var geom = model.Geometries.data_items[i];
+                        ushort sid = (i < model.ShaderMapping.Length) ? model.ShaderMapping[i] : (ushort)0;
+                        geom.Shader = (sid < shaders.Length) ? shaders[sid] : null;
+                        geom.ShaderID = sid;
+                    }
+                }
+            }
+            else
+            {
+            }
+
+        }
 
 
         public DrawableBase ShallowCopy()
@@ -2743,9 +3003,6 @@ namespace CodeWalker.GameFiles
         private string_r NameBlock = null;//only used when saving..
 
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -2780,10 +3037,6 @@ namespace CodeWalker.GameFiles
                 ErrorMessage = ex.ToString();
             }
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -2799,10 +3052,48 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_C4h);
             writer.Write(this.BoundPointer);
         }
+        public override void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            YdrXml.StringTag(sb, indent, "Name", Name);
+            base.WriteXml(sb, indent, ddsfolder);
+            Bounds.WriteXmlNode(Bound, sb, indent);
+            if (LightAttributes?.data_items != null)
+            {
+                YdrXml.WriteItemArray(sb, LightAttributes.data_items, indent, "LightAttributes");
+            }
+        }
+        public override void ReadXml(XmlNode node, string ddsfolder)
+        {
+            Name = Xml.GetChildInnerText(node, "Name");
+            base.ReadXml(node, ddsfolder);
+            var bnode = node.SelectSingleNode("Bounds");
+            if (bnode != null)
+            {
+                Bound = Bounds.ReadXmlNode(bnode, this);
+            }
+            var lights = XmlMeta.ReadItemArray<LightAttributes_s>(node, "LightAttributes");
+            if (lights != null)
+            {
+                LightAttributes = new ResourceSimpleList64_s<LightAttributes_s>();
+                LightAttributes.data_items = lights;
+            }
+        }
+        public static void WriteXmlNode(Drawable d, StringBuilder sb, int indent, string ddsfolder, string name = "Drawable")
+        {
+            if (d == null) return;
+            YdrXml.OpenTag(sb, indent, name);
+            d.WriteXml(sb, indent + 1, ddsfolder);
+            YdrXml.CloseTag(sb, indent, name);
+        }
+        public static Drawable ReadXmlNode(XmlNode node, string ddsfolder)
+        {
+            if (node == null) return null;
+            var d = new Drawable();
+            d.ReadXml(node, ddsfolder);
+            return d;
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
+
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
@@ -2984,9 +3275,6 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -3013,10 +3301,6 @@ namespace CodeWalker.GameFiles
                 this.DrawablesCount1
             );
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -3043,10 +3327,54 @@ namespace CodeWalker.GameFiles
             writer.Write(this.DrawablesCount2);
             writer.Write(this.Unknown_3Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            if (Drawables?.data_items != null)
+            {
+                foreach (var d in Drawables.data_items)
+                {
+                    YddXml.OpenTag(sb, indent, "Item");
+                    d.WriteXml(sb, indent + 1, ddsfolder);
+                    YddXml.CloseTag(sb, indent, "Item");
+                }
+            }
+        }
+        public void ReadXml(XmlNode node, string ddsfolder)
+        {
+            var drawables = new List<Drawable>();
+            var drawablehashes = new List<uint>();
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
+            var inodes = node.SelectNodes("Item");
+            if (inodes != null)
+            {
+                foreach (XmlNode inode in inodes)
+                {
+                    var d = new Drawable();
+                    d.ReadXml(inode, ddsfolder);
+                    drawables.Add(d);
+                    drawablehashes.Add(JenkHash.GenHash(d.Name));//TODO: check this!
+                }
+            }
+
+            Hashes = drawablehashes.ToArray();
+            Drawables = new ResourcePointerArray64<Drawable>();
+            Drawables.data_items = drawables.ToArray();
+        }
+        public static void WriteXmlNode(DrawableDictionary d, StringBuilder sb, int indent, string ddsfolder, string name = "DrawableDictionary")
+        {
+            if (d == null) return;
+            YddXml.OpenTag(sb, indent, name);
+            d.WriteXml(sb, indent + 1, ddsfolder);
+            YddXml.CloseTag(sb, indent, name);
+        }
+        public static DrawableDictionary ReadXmlNode(XmlNode node, string ddsfolder)
+        {
+            if (node == null) return null;
+            var d = new DrawableDictionary();
+            d.ReadXml(node, ddsfolder);
+            return d;
+        }
+
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());

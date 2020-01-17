@@ -71,6 +71,26 @@ namespace CodeWalker.GameFiles
                 YtdFile ytd = RpfFile.GetFile<YtdFile>(e, data);
                 return GetXml(ytd, out filename, outputfolder);
             }
+            else if (fnl.EndsWith(".ydr"))
+            {
+                YdrFile ydr = RpfFile.GetFile<YdrFile>(e, data);
+                return GetXml(ydr, out filename, outputfolder);
+            }
+            else if (fnl.EndsWith(".ydd"))
+            {
+                YddFile ydd = RpfFile.GetFile<YddFile>(e, data);
+                return GetXml(ydd, out filename, outputfolder);
+            }
+            else if (fnl.EndsWith(".yft"))
+            {
+                YftFile yft = RpfFile.GetFile<YftFile>(e, data);
+                return GetXml(yft, out filename, outputfolder);
+            }
+            else if (fnl.EndsWith(".ypt"))
+            {
+                YptFile ypt = RpfFile.GetFile<YptFile>(e, data);
+                return GetXml(ypt, out filename, outputfolder);
+            }
             filename = fn;
             return string.Empty;
         }
@@ -153,6 +173,30 @@ namespace CodeWalker.GameFiles
             var fn = (ytd?.Name) ?? "";
             filename = fn + ".xml";
             return YtdXml.GetXml(ytd, outputfolder);
+        }
+        public static string GetXml(YdrFile ydr, out string filename, string outputfolder)
+        {
+            var fn = (ydr?.Name) ?? "";
+            filename = fn + ".xml";
+            return YdrXml.GetXml(ydr, outputfolder);
+        }
+        public static string GetXml(YddFile ydd, out string filename, string outputfolder)
+        {
+            var fn = (ydd?.Name) ?? "";
+            filename = fn + ".xml";
+            return YddXml.GetXml(ydd, outputfolder);
+        }
+        public static string GetXml(YftFile yft, out string filename, string outputfolder)
+        {
+            var fn = (yft?.Name) ?? "";
+            filename = fn + ".xml";
+            return YftXml.GetXml(yft, outputfolder);
+        }
+        public static string GetXml(YptFile ypt, out string filename, string outputfolder)
+        {
+            var fn = (ypt?.Name) ?? "";
+            filename = fn + ".xml";
+            return YptXml.GetXml(ypt, outputfolder);
         }
 
 
@@ -2041,6 +2085,10 @@ namespace CodeWalker.GameFiles
         Ycd = 7,
         Ybn = 8,
         Ytd = 9,
+        Ydr = 10,
+        Ydd = 11,
+        Yft = 12,
+        Ypt = 13,
     }
 
 }

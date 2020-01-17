@@ -31,7 +31,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -123,9 +123,6 @@ namespace CodeWalker.GameFiles
         public YftFile Yft { get; set; }
 
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -250,10 +247,6 @@ namespace CodeWalker.GameFiles
 
 
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -332,10 +325,29 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_128h);
             writer.Write(this.Unknown_12Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            //TODO
+        }
+        public void ReadXml(XmlNode node, string ddsfolder)
+        {
+            //TODO
+        }
+        public static void WriteXmlNode(FragType f, StringBuilder sb, int indent, string ddsfolder, string name = "Fragment")
+        {
+            if (f == null) return;
+            YftXml.OpenTag(sb, indent, name);
+            f.WriteXml(sb, indent + 1, ddsfolder);
+            YftXml.CloseTag(sb, indent, name);
+        }
+        public static FragType ReadXmlNode(XmlNode node, string ddsfolder)
+        {
+            if (node == null) return null;
+            var f = new FragType();
+            f.ReadXml(node, ddsfolder);
+            return f;
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
@@ -413,9 +425,6 @@ namespace CodeWalker.GameFiles
         private ResourceSystemStructBlock<Matrix> Unknown_108h_DataBlock = null;
         private string_r NameBlock = null;
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -465,10 +474,6 @@ namespace CodeWalker.GameFiles
             if (FragMatrices != null)
             { }
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -508,10 +513,31 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_148h);
             writer.Write(this.Unknown_14Ch);
         }
+        public override void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            base.WriteXml(sb, indent, ddsfolder);
+            //TODO
+        }
+        public override void ReadXml(XmlNode node, string ddsfolder)
+        {
+            base.ReadXml(node, ddsfolder);
+            //TODO
+        }
+        public static void WriteXmlNode(FragDrawable d, StringBuilder sb, int indent, string ddsfolder, string name = "FragDrawable")
+        {
+            if (d == null) return;
+            YftXml.OpenTag(sb, indent, name);
+            d.WriteXml(sb, indent + 1, ddsfolder);
+            YftXml.CloseTag(sb, indent, name);
+        }
+        public static FragDrawable ReadXmlNode(XmlNode node, string ddsfolder)
+        {
+            if (node == null) return null;
+            var d = new FragDrawable();
+            d.ReadXml(node, ddsfolder);
+            return d;
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());

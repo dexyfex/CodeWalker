@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -50,12 +52,29 @@ namespace CodeWalker.GameFiles
             }
 
 
+            BuildDrawableDict();
+
+
+            Loaded = true;
+
+        }
+
+
+        public byte[] Save()
+        {
+            byte[] data = ResourceBuilder.Build(PtfxList, 68); //ypt is type/version 68...
+
+            return data;
+        }
+
+
+
+
+        private void BuildDrawableDict()
+        {
             var dDict = PtfxList?.DrawableDictionary;
 
-            if ((dDict != null) &&
-                (dDict.Drawables != null) &&
-                (dDict.Drawables.data_items != null) &&
-                (dDict.Hashes != null))
+            if ((dDict?.Drawables?.data_items != null) && (dDict?.Hashes != null))
             {
                 DrawableDict = new Dictionary<uint, Drawable>();
                 var drawables = dDict.Drawables.data_items;
@@ -85,27 +104,74 @@ namespace CodeWalker.GameFiles
                         }
                     }
                 }
-
             }
-
-
-
-
-
-            Loaded = true;
 
         }
 
 
-        public byte[] Save()
-        {
-            byte[] data = ResourceBuilder.Build(PtfxList, 68); //ypt is type/version 68...
+    }
 
-            return data;
+
+
+
+
+    public class YptXml : MetaXmlBase
+    {
+
+        public static string GetXml(YptFile ypt, string outputFolder = "")
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(XmlHeader);
+
+            var ddsfolder = outputFolder;
+            if (!string.IsNullOrEmpty(ddsfolder))
+            {
+                ddsfolder = Path.Combine(outputFolder, ypt.Name);
+
+                if (!Directory.Exists(ddsfolder))
+                {
+                    Directory.CreateDirectory(ddsfolder);
+                }
+            }
+
+            if (ypt?.PtfxList != null)
+            {
+                ParticleEffectsList.WriteXmlNode(ypt.PtfxList, sb, 0, ddsfolder);
+            }
+
+            return sb.ToString();
         }
 
     }
 
+    public class XmlYpt
+    {
+
+        public static YptFile GetYpt(string xml, string inputFolder = "")
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            return GetYpt(doc, inputFolder);
+        }
+
+        public static YptFile GetYpt(XmlDocument doc, string inputFolder = "")
+        {
+            YptFile r = new YptFile();
+
+            var ddsfolder = inputFolder;
+
+            var node = doc.DocumentElement;
+            if (node != null)
+            {
+                r.PtfxList = ParticleEffectsList.ReadXmlNode(node, ddsfolder);
+            }
+
+            r.Name = Path.GetFileName(inputFolder);
+
+            return r;
+        }
+
+    }
 
 
 
