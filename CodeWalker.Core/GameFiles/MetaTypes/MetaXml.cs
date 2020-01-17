@@ -12,7 +12,7 @@ namespace CodeWalker.GameFiles
     public class MetaXml : MetaXmlBase
     {
 
-        public static string GetXml(RpfFileEntry e, byte[] data, out string filename)
+        public static string GetXml(RpfFileEntry e, byte[] data, out string filename, string outputfolder = "")
         {
             var fn = e.Name;
             var fnl = fn.ToLowerInvariant();
@@ -65,6 +65,11 @@ namespace CodeWalker.GameFiles
             {
                 YbnFile ybn = RpfFile.GetFile<YbnFile>(e, data);
                 return GetXml(ybn, out filename);
+            }
+            else if (fnl.EndsWith(".ytd"))
+            {
+                YtdFile ytd = RpfFile.GetFile<YtdFile>(e, data);
+                return GetXml(ytd, out filename, outputfolder);
             }
             filename = fn;
             return string.Empty;
@@ -142,6 +147,12 @@ namespace CodeWalker.GameFiles
             var fn = (ybn?.RpfFileEntry?.Name) ?? "";
             filename = fn + ".xml";
             return YbnXml.GetXml(ybn);
+        }
+        public static string GetXml(YtdFile ytd, out string filename, string outputfolder)
+        {
+            var fn = (ytd?.Name) ?? "";
+            filename = fn + ".xml";
+            return YtdXml.GetXml(ytd, outputfolder);
         }
 
 
@@ -2029,6 +2040,7 @@ namespace CodeWalker.GameFiles
         Ynd = 6,
         Ycd = 7,
         Ybn = 8,
+        Ytd = 9,
     }
 
 }

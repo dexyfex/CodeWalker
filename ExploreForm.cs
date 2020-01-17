@@ -256,7 +256,7 @@ namespace CodeWalker
             InitFileType(".gif", "GIF Image", 16);
             InitFileType(".png", "Portable Network Graphics", 16);
             InitFileType(".dds", "DirectDraw Surface", 16);
-            InitFileType(".ytd", "Texture Dictionary", 16, FileTypeAction.ViewYtd);
+            InitFileType(".ytd", "Texture Dictionary", 16, FileTypeAction.ViewYtd, true);
             InitFileType(".mrf", "MRF File", 18);
             InitFileType(".ycd", "Clip Dictionary", 18, FileTypeAction.ViewYcd, true);
             InitFileType(".ypt", "Particle Effect", 18, FileTypeAction.ViewModel);
@@ -1910,7 +1910,16 @@ namespace CodeWalker
         }
         private void ExportXml()
         {
+            bool isytd = false;//need a folder to output ytd XML to, for the texture .dds files
             if (MainListView.SelectedIndices.Count == 1)
+            {
+                var idx = MainListView.SelectedIndices[0];
+                if ((idx < 0) || (idx >= CurrentFiles.Count)) return;
+                var file = CurrentFiles[idx];
+                isytd = file?.File?.NameLower?.EndsWith(".ytd") == true;
+            }
+
+            if ((MainListView.SelectedIndices.Count == 1) && (!isytd))
             {
                 var idx = MainListView.SelectedIndices[0];
                 if ((idx < 0) || (idx >= CurrentFiles.Count)) return;
@@ -1975,7 +1984,7 @@ namespace CodeWalker
                         }
 
                         string newfn;
-                        string xml = MetaXml.GetXml(file.File, data, out newfn);
+                        string xml = MetaXml.GetXml(file.File, data, out newfn, folderpath);
                         if (string.IsNullOrEmpty(xml))
                         {
                             errors.AppendLine("Unable to convert file to XML: " + file.Path);
@@ -2422,6 +2431,7 @@ namespace CodeWalker
                     var fi = new FileInfo(fpath);
                     var fname = fi.Name;
                     var fnamel = fname.ToLowerInvariant();
+                    var fpathin = fpath;
                     var mformat = MetaFormat.RSC;
                     var trimlength = 4;
 
@@ -2456,9 +2466,14 @@ namespace CodeWalker
                     {
                         mformat = MetaFormat.Ybn;
                     }
+                    if (fnamel.EndsWith(".ytd.xml"))
+                    {
+                        mformat = MetaFormat.Ytd;
+                    }
 
                     fname = fname.Substring(0, fname.Length - trimlength);
                     fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
+                    fpathin = fpathin.Substring(0, fpathin.Length - trimlength);
 
                     var doc = new XmlDocument();
                     string text = File.ReadAllText(fpath);
@@ -2546,6 +2561,17 @@ namespace CodeWalker
                                     continue;
                                 }
                                 data = ybn.Save();
+                                break;
+                            }
+                        case MetaFormat.Ytd:
+                            {
+                                var ytd = XmlYtd.GetYtd(doc, fpathin);
+                                if (ytd.TextureDict == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YTD XML");
+                                    continue;
+                                }
+                                data = ytd.Save();
                                 break;
                             }
                     }

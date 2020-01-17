@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -56,4 +57,68 @@ namespace CodeWalker.GameFiles
 
 
     }
+
+
+
+
+    public class YtdXml : MetaXmlBase
+    {
+
+        public static string GetXml(YtdFile ytd, string outputFolder = "")
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(XmlHeader);
+
+            var ddsfolder = outputFolder;
+            if (!string.IsNullOrEmpty(ddsfolder))
+            {
+                ddsfolder = Path.Combine(outputFolder, ytd.Name);
+
+                if (!Directory.Exists(ddsfolder))
+                {
+                    Directory.CreateDirectory(ddsfolder);
+                }
+            }
+
+            if (ytd?.TextureDict != null)
+            {
+                TextureDictionary.WriteXmlNode(ytd.TextureDict, sb, 0, ddsfolder);
+            }
+
+            return sb.ToString();
+        }
+
+    }
+
+    public class XmlYtd
+    {
+
+        public static YtdFile GetYtd(string xml, string inputFolder = "")
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            return GetYtd(doc, inputFolder);
+        }
+
+        public static YtdFile GetYtd(XmlDocument doc, string inputFolder = "")
+        {
+            YtdFile r = new YtdFile();
+
+            var ddsfolder = inputFolder;
+
+            var node = doc.DocumentElement;
+            if (node != null)
+            {
+                r.TextureDict = TextureDictionary.ReadXmlNode(node, ddsfolder);
+            }
+
+            r.Name = Path.GetFileName(inputFolder);
+
+            return r;
+        }
+
+    }
+
+
+
 }
