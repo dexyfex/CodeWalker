@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -61,4 +62,70 @@ namespace CodeWalker.GameFiles
 
 
     }
+
+
+
+
+
+    public class YftXml : MetaXmlBase
+    {
+
+        public static string GetXml(YftFile yft, string outputFolder = "")
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(XmlHeader);
+
+            var ddsfolder = outputFolder;
+            if (!string.IsNullOrEmpty(ddsfolder))
+            {
+                ddsfolder = Path.Combine(outputFolder, yft.Name);
+
+                if (!Directory.Exists(ddsfolder))
+                {
+                    Directory.CreateDirectory(ddsfolder);
+                }
+            }
+
+            if (yft?.Fragment != null)
+            {
+                FragType.WriteXmlNode(yft.Fragment, sb, 0, ddsfolder);
+            }
+
+            return sb.ToString();
+        }
+
+    }
+
+    public class XmlYft
+    {
+
+        public static YftFile GetYft(string xml, string inputFolder = "")
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            return GetYft(doc, inputFolder);
+        }
+
+        public static YftFile GetYft(XmlDocument doc, string inputFolder = "")
+        {
+            YftFile r = new YftFile();
+
+            var ddsfolder = inputFolder;
+
+            var node = doc.DocumentElement;
+            if (node != null)
+            {
+                r.Fragment = FragType.ReadXmlNode(node, ddsfolder);
+            }
+
+            r.Name = Path.GetFileName(inputFolder);
+
+            return r;
+        }
+
+    }
+
+
+
+
 }

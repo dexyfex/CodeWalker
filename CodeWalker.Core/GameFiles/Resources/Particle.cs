@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
 
@@ -110,7 +111,6 @@ namespace CodeWalker.GameFiles
                 this.EffectRuleDictionaryPointer // offset
             );
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -138,6 +138,28 @@ namespace CodeWalker.GameFiles
             writer.Write(this.EffectRuleDictionaryPointer);
             writer.Write(this.Unknown_58h);
             writer.Write(this.Unknown_5Ch);
+        }
+        public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            //TODO
+        }
+        public void ReadXml(XmlNode node, string ddsfolder)
+        {
+            //TODO
+        }
+        public static void WriteXmlNode(ParticleEffectsList p, StringBuilder sb, int indent, string ddsfolder, string name = "ParticleEffectsList")
+        {
+            if (p == null) return;
+            YptXml.OpenTag(sb, indent, name);
+            p.WriteXml(sb, indent + 1, ddsfolder);
+            YptXml.CloseTag(sb, indent, name);
+        }
+        public static ParticleEffectsList ReadXmlNode(XmlNode node, string ddsfolder)
+        {
+            if (node == null) return null;
+            var p = new ParticleEffectsList();
+            p.ReadXml(node, ddsfolder);
+            return p;
         }
 
         public override IResourceBlock[] GetReferences()

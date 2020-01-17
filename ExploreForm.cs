@@ -244,9 +244,9 @@ namespace CodeWalker
             InitFileType(".asi", "ASI Plugin", 9);
             InitFileType(".dll", "Dynamic Link Library", 9);
             InitFileType(".exe", "Executable", 10);
-            InitFileType(".yft", "Fragment", 11, FileTypeAction.ViewModel);
-            InitFileType(".ydr", "Drawable", 11, FileTypeAction.ViewModel);
-            InitFileType(".ydd", "Drawable Dictionary", 12, FileTypeAction.ViewModel);
+            InitFileType(".yft", "Fragment", 11, FileTypeAction.ViewModel, true);
+            InitFileType(".ydr", "Drawable", 11, FileTypeAction.ViewModel, true);
+            InitFileType(".ydd", "Drawable Dictionary", 12, FileTypeAction.ViewModel, true);
             InitFileType(".cut", "Cutscene", 12, FileTypeAction.ViewCut, true);
             InitFileType(".ysc", "Script", 13);
             InitFileType(".ymf", "Manifest", 14, FileTypeAction.ViewYmf, true);
@@ -259,7 +259,7 @@ namespace CodeWalker
             InitFileType(".ytd", "Texture Dictionary", 16, FileTypeAction.ViewYtd, true);
             InitFileType(".mrf", "MRF File", 18);
             InitFileType(".ycd", "Clip Dictionary", 18, FileTypeAction.ViewYcd, true);
-            InitFileType(".ypt", "Particle Effect", 18, FileTypeAction.ViewModel);
+            InitFileType(".ypt", "Particle Effect", 18, FileTypeAction.ViewModel, true);
             InitFileType(".ybn", "Static Collisions", 19, FileTypeAction.ViewModel, true);
             InitFileType(".ide", "Item Definitions", 20, FileTypeAction.ViewText);
             InitFileType(".ytyp", "Archetype Definitions", 20, FileTypeAction.ViewYtyp, true);
@@ -2470,6 +2470,22 @@ namespace CodeWalker
                     {
                         mformat = MetaFormat.Ytd;
                     }
+                    if (fnamel.EndsWith(".ydr.xml"))
+                    {
+                        mformat = MetaFormat.Ydr;
+                    }
+                    if (fnamel.EndsWith(".ydd.xml"))
+                    {
+                        mformat = MetaFormat.Ydd;
+                    }
+                    if (fnamel.EndsWith(".yft.xml"))
+                    {
+                        mformat = MetaFormat.Yft;
+                    }
+                    if (fnamel.EndsWith(".ypt.xml"))
+                    {
+                        mformat = MetaFormat.Ypt;
+                    }
 
                     fname = fname.Substring(0, fname.Length - trimlength);
                     fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
@@ -2572,6 +2588,50 @@ namespace CodeWalker
                                     continue;
                                 }
                                 data = ytd.Save();
+                                break;
+                            }
+                        case MetaFormat.Ydr:
+                            {
+                                var ydr = XmlYdr.GetYdr(doc, fpathin);
+                                if (ydr.Drawable == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YDR XML");
+                                    continue;
+                                }
+                                data = ydr.Save();
+                                break;
+                            }
+                        case MetaFormat.Ydd:
+                            {
+                                var ydd = XmlYdd.GetYdd(doc, fpathin);
+                                if (ydd.DrawableDict == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YDD XML");
+                                    continue;
+                                }
+                                data = ydd.Save();
+                                break;
+                            }
+                        case MetaFormat.Yft:
+                            {
+                                var yft = XmlYft.GetYft(doc, fpathin);
+                                if (yft.Fragment == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YFT XML");
+                                    continue;
+                                }
+                                data = yft.Save();
+                                break;
+                            }
+                        case MetaFormat.Ypt:
+                            {
+                                var ypt = XmlYpt.GetYpt(doc, fpathin);
+                                if (ypt.PtfxList == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YPT XML");
+                                    continue;
+                                }
+                                data = ypt.Save();
                                 break;
                             }
                     }

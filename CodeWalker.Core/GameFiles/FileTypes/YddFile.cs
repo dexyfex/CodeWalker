@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -93,4 +94,68 @@ namespace CodeWalker.GameFiles
         }
 
     }
+
+
+
+
+    public class YddXml : MetaXmlBase
+    {
+
+        public static string GetXml(YddFile ydd, string outputFolder = "")
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(XmlHeader);
+
+            var ddsfolder = outputFolder;
+            if (!string.IsNullOrEmpty(ddsfolder))
+            {
+                ddsfolder = Path.Combine(outputFolder, ydd.Name);
+
+                if (!Directory.Exists(ddsfolder))
+                {
+                    Directory.CreateDirectory(ddsfolder);
+                }
+            }
+
+            if (ydd?.DrawableDict != null)
+            {
+                DrawableDictionary.WriteXmlNode(ydd.DrawableDict, sb, 0, ddsfolder);
+            }
+
+            return sb.ToString();
+        }
+
+    }
+
+    public class XmlYdd
+    {
+
+        public static YddFile GetYdd(string xml, string inputFolder = "")
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            return GetYdd(doc, inputFolder);
+        }
+
+        public static YddFile GetYdd(XmlDocument doc, string inputFolder = "")
+        {
+            YddFile r = new YddFile();
+
+            var ddsfolder = inputFolder;
+
+            var node = doc.DocumentElement;
+            if (node != null)
+            {
+                r.DrawableDict = DrawableDictionary.ReadXmlNode(node, ddsfolder);
+            }
+
+            r.Name = Path.GetFileName(inputFolder);
+
+            return r;
+        }
+
+    }
+
+
+
 }
