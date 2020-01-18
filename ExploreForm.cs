@@ -1910,16 +1910,20 @@ namespace CodeWalker
         }
         private void ExportXml()
         {
-            bool isytd = false;//need a folder to output ytd XML to, for the texture .dds files
+            bool needfolder = false;//need a folder to output ytd XML to, for the texture .dds files
             if (MainListView.SelectedIndices.Count == 1)
             {
                 var idx = MainListView.SelectedIndices[0];
                 if ((idx < 0) || (idx >= CurrentFiles.Count)) return;
                 var file = CurrentFiles[idx];
-                isytd = file?.File?.NameLower?.EndsWith(".ytd") == true;
+                var nl = file?.File?.NameLower;
+                if (!string.IsNullOrEmpty(nl))
+                {
+                    needfolder = nl.EndsWith(".ytd") || nl.EndsWith(".ydr") || nl.EndsWith(".ydd") || nl.EndsWith(".yft") || nl.EndsWith(".ypt");
+                }
             }
 
-            if ((MainListView.SelectedIndices.Count == 1) && (!isytd))
+            if ((MainListView.SelectedIndices.Count == 1) && (!needfolder))
             {
                 var idx = MainListView.SelectedIndices[0];
                 if ((idx < 0) || (idx >= CurrentFiles.Count)) return;
