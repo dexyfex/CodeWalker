@@ -1132,10 +1132,6 @@ namespace CodeWalker.Rendering
             {
                 IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, DrawableGeom.IndexBuffer.Indices);
             }
-            else if (DrawableGeom.BoneIds != null)
-            {
-                IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, DrawableGeom.BoneIds);
-            }
 
         }
 

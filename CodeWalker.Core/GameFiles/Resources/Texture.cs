@@ -278,7 +278,7 @@ namespace CodeWalker.GameFiles
         }
         public virtual void WriteXml(StringBuilder sb, int indent, string ddsfolder)
         {
-            YtdXml.StringTag(sb, indent, "Name", Name);
+            YtdXml.StringTag(sb, indent, "Name", YtdXml.XmlEscape(Name));
             YtdXml.ValueTag(sb, indent, "Unk32", Unknown_32h.ToString());
         }
         public virtual void ReadXml(XmlNode node, string ddsfolder)
