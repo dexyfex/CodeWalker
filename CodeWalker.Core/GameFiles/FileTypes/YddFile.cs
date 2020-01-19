@@ -111,9 +111,24 @@ namespace CodeWalker.GameFiles
             {
                 ddsfolder = Path.Combine(outputFolder, ydd.Name);
 
-                if (!Directory.Exists(ddsfolder))
+                bool hastxd = false;
+                if (ydd?.DrawableDict?.Drawables?.data_items != null)
                 {
-                    Directory.CreateDirectory(ddsfolder);
+                    foreach (var d in ydd.DrawableDict.Drawables.data_items)
+                    {
+                        if (d?.ShaderGroup?.TextureDictionary != null)
+                        {
+                            hastxd = true;
+                            break;
+                        }
+                    }
+                }
+                if (hastxd)
+                {
+                    if (!Directory.Exists(ddsfolder))
+                    {
+                        Directory.CreateDirectory(ddsfolder);
+                    }
                 }
             }
 

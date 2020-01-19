@@ -32,45 +32,26 @@ namespace CodeWalker.Rendering
             "BINORMAL",
         };
 
-        public static int GetVertexComponentTypeSizeInBytes(VertexComponentType type)
-        {
-            switch (type)
-            {
-                case VertexComponentType.Nothing: return 0;
-                case VertexComponentType.Float16Two: return 4;
-                case VertexComponentType.Float: return 4;
-                case VertexComponentType.Float16Four: return 8;
-                case VertexComponentType.Float_unk: return 0;
-                case VertexComponentType.Float2: return 8;
-                case VertexComponentType.Float3: return 12;
-                case VertexComponentType.Float4: return 16;
-                case VertexComponentType.UByte4: return 4;
-                case VertexComponentType.Color: return 4;
-                case VertexComponentType.Dec3N: return 4;
-                default: return 0;
-            }
-        }
-
         public static Format GetDXGIFormat(VertexComponentType type)
         {
             switch (type)
             {
                 case VertexComponentType.Nothing: return Format.Unknown;
-                case VertexComponentType.Float16Two: return Format.R16G16_Float;
+                case VertexComponentType.Half2: return Format.R16G16_Float;
                 case VertexComponentType.Float: return Format.R32_Float;
-                case VertexComponentType.Float16Four: return Format.R16G16B16A16_Float;
-                case VertexComponentType.Float_unk: return Format.Unknown;
+                case VertexComponentType.Half4: return Format.R16G16B16A16_Float;
+                case VertexComponentType.FloatUnk: return Format.Unknown;
                 case VertexComponentType.Float2: return Format.R32G32_Float;
                 case VertexComponentType.Float3: return Format.R32G32B32_Float;
                 case VertexComponentType.Float4: return Format.R32G32B32A32_Float;
                 case VertexComponentType.UByte4: return Format.R8G8B8A8_UInt;
-                case VertexComponentType.Color: return Format.R8G8B8A8_UNorm;
+                case VertexComponentType.Colour: return Format.R8G8B8A8_UNorm;
                 case VertexComponentType.Dec3N: return Format.R10G10B10A2_UNorm;
                 default: return Format.Unknown;
             }
         }
 
-        public static InputElement[] GetLayout(VertexType componentsFlags, VertexDeclarationTypes componentsTypes = VertexDeclarationTypes.Types1)
+        public static InputElement[] GetLayout(VertexType componentsFlags, VertexDeclarationTypes componentsTypes = VertexDeclarationTypes.GTAV1)
         {
             List<InputElement> inputElements = new List<InputElement>();
 
@@ -87,7 +68,7 @@ namespace CodeWalker.Rendering
 
                     if (componentType == VertexComponentType.Nothing) continue; // should never hit this
 
-                    var componentTypeSize = GetVertexComponentTypeSizeInBytes(componentType);
+                    var componentTypeSize = VertexComponentTypes.GetSizeInBytes(componentType);
                     var format = GetDXGIFormat(componentType);
 
                     if (componentTypeSize == 0 || format == Format.Unknown) continue;

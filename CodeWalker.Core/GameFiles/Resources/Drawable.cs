@@ -38,6 +38,24 @@ namespace CodeWalker.GameFiles
         public TextureDictionary TextureDictionary { get; set; }
         public ResourcePointerArray64<ShaderFX> Shaders { get; set; }
 
+
+        public int TotalParameters
+        {
+            get
+            {
+                int c = 0;
+                if (Shaders?.data_items != null)
+                {
+                    foreach (var s in Shaders.data_items)
+                    {
+                        c += s.ParameterCount;
+                    }
+                }
+                return c;
+            }
+        }
+
+
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -650,12 +668,12 @@ namespace CodeWalker.GameFiles
             for (int i = 0; i < Count; i++)
             {
                 var param = Parameters[i];
-                var hash = Hashes[i];
+                var name = (ShaderParamNames)Hashes[i];
                 var typestr = "";
                 if (param.DataType == 0) typestr = "Texture";
                 else if (param.DataType == 1) typestr = "Vector";
                 else if (param.DataType > 1) typestr = "Array";
-                var otstr = "Item name=\"" + YdrXml.HashString(hash) + "\" type=\"" + typestr + "\"";
+                var otstr = "Item name=\"" + name.ToString() + "\" type=\"" + typestr + "\"";
 
                 if (param.DataType == 0)
                 {
@@ -708,7 +726,7 @@ namespace CodeWalker.GameFiles
             foreach (XmlNode pnode in pnodes)
             {
                 var p = new ShaderParameter();
-                var h = (MetaName)(uint)XmlMeta.GetHash(Xml.GetStringAttribute(pnode, "name"));
+                var h = (MetaName)(uint)XmlMeta.GetHash(Xml.GetStringAttribute(pnode, "name")?.ToLowerInvariant());
                 var type = Xml.GetStringAttribute(pnode, "type");
                 if (type == "Texture")
                 {
@@ -750,6 +768,7 @@ namespace CodeWalker.GameFiles
 
             Parameters = plist.ToArray();
             Hashes = hlist.ToArray();
+            Count = plist.Count;
 
             for (int i = 0; i < Parameters.Length; i++)
             {
@@ -2015,6 +2034,18 @@ namespace CodeWalker.GameFiles
             set { SkeletonBinding = (SkeletonBinding & 0xFFFFFF00) + ((value & 0xFFu) << 0); }
         }
 
+        public byte RenderMask
+        {
+            get { return (byte)((RenderMaskFlags >> 0) & 0xFF); }
+            set { RenderMaskFlags = (ushort)((RenderMaskFlags & 0xFF00u) + ((value & 0xFFu) << 0)); }
+        }
+        public byte Flags
+        {
+            get { return (byte)((RenderMaskFlags >> 8) & 0xFF); }
+            set { RenderMaskFlags = (ushort)((RenderMaskFlags & 0xFFu) + ((value & 0xFFu) << 8)); }
+        }
+
+
 
         // reference data
         public ResourcePointerArray64<DrawableGeometry> Geometries { get; set; }
@@ -2153,10 +2184,11 @@ namespace CodeWalker.GameFiles
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            YdrXml.ValueTag(sb, indent, "BoneIndex", BoneIndex.ToString());
+            YdrXml.ValueTag(sb, indent, "RenderMask", RenderMask.ToString());
+            YdrXml.ValueTag(sb, indent, "Flags", Flags.ToString());
             YdrXml.ValueTag(sb, indent, "HasSkin", HasSkin.ToString());
+            YdrXml.ValueTag(sb, indent, "BoneIndex", BoneIndex.ToString());
             YdrXml.ValueTag(sb, indent, "Unknown1", SkeletonBindUnk1.ToString());
-            YdrXml.ValueTag(sb, indent, "RenderMask", RenderMaskFlags.ToString());
 
             if (Geometries?.data_items != null)
             {
@@ -2166,13 +2198,16 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node)
         {
-            BoneIndex = (byte)Xml.GetChildUIntAttribute(node, "BoneIndex", "value");
+            RenderMask = (byte)Xml.GetChildUIntAttribute(node, "RenderMask", "value");
+            Flags = (byte)Xml.GetChildUIntAttribute(node, "Flags", "value");
             HasSkin = (byte)Xml.GetChildUIntAttribute(node, "HasSkin", "value");
+            BoneIndex = (byte)Xml.GetChildUIntAttribute(node, "BoneIndex", "value");
             SkeletonBindUnk1 = (byte)Xml.GetChildUIntAttribute(node, "Unknown1", "value");
-            RenderMaskFlags = (ushort)Xml.GetChildUIntAttribute(node, "RenderMask", "value");
 
             var aabbs = new List<AABB_s>();
             var shids = new List<ushort>();
+            var min = new Vector4(float.MaxValue);
+            var max = new Vector4(float.MinValue);
             var geoms = XmlMeta.ReadItemArray<DrawableGeometry>(node, "Geometries");
             if (geoms != null)
             {
@@ -2182,8 +2217,17 @@ namespace CodeWalker.GameFiles
                 {
                     aabbs.Add(geom.AABB);
                     shids.Add(geom.ShaderID);
+                    min = Vector4.Min(min, geom.AABB.Min);
+                    max = Vector4.Max(max, geom.AABB.Max);
                 }
+                GeometriesCount1 = GeometriesCount2 = GeometriesCount3 = (ushort)geoms.Length;
             }
+            if (aabbs.Count > 1)
+            {
+                var outeraabb = new AABB_s() { Min = min, Max = max };
+                aabbs.Insert(0, outeraabb);
+            }
+
             BoundsData = (aabbs.Count > 0) ? aabbs.ToArray() : null;
             ShaderMapping = (shids.Count > 0) ? shids.ToArray() : null;
         }
@@ -2425,11 +2469,13 @@ namespace CodeWalker.GameFiles
             if (VertexBuffer != null)
             {
                 YdrXml.OpenTag(sb, indent, "VertexBuffer");
+                VertexBuffer.WriteXml(sb, indent + 1);
                 YdrXml.CloseTag(sb, indent, "VertexBuffer");
             }
             if (IndexBuffer != null)
             {
                 YdrXml.OpenTag(sb, indent, "IndexBuffer");
+                IndexBuffer.WriteXml(sb, indent + 1);
                 YdrXml.CloseTag(sb, indent, "IndexBuffer");
             }
         }
@@ -2460,10 +2506,15 @@ namespace CodeWalker.GameFiles
             var vnode = node.SelectSingleNode("VertexBuffer");
             if (vnode != null)
             {
+                VertexBuffer = new VertexBuffer();
+                VertexBuffer.ReadXml(vnode);
+                VertexData = VertexBuffer.Data1 ?? VertexBuffer.Data2;
             }
             var inode = node.SelectSingleNode("IndexBuffer");
             if (inode != null)
             {
+                IndexBuffer = new IndexBuffer();
+                IndexBuffer.ReadXml(inode);
             }
         }
 
@@ -2498,7 +2549,7 @@ namespace CodeWalker.GameFiles
         public uint VFT { get; set; }
         public uint Unknown_4h { get; set; } = 1; // 0x00000001
         public ushort VertexStride { get; set; }
-        public ushort Unknown_Ah { get; set; } //only 0 or 1024
+        public ushort Flags { get; set; } //only 0 or 1024
         public uint Unknown_Ch { get; set; } // 0x00000000
         public ulong DataPointer1 { get; set; }
         public uint VertexCount { get; set; }
@@ -2531,16 +2582,13 @@ namespace CodeWalker.GameFiles
         public VertexData Data2 { get; set; }
         public VertexDeclaration Info { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
             this.VFT = reader.ReadUInt32();
             this.Unknown_4h = reader.ReadUInt32();
             this.VertexStride = reader.ReadUInt16();
-            this.Unknown_Ah = reader.ReadUInt16();
+            this.Flags = reader.ReadUInt16();
             this.Unknown_Ch = reader.ReadUInt32();
             this.DataPointer1 = reader.ReadUInt64();
             this.VertexCount = reader.ReadUInt32();
@@ -2586,21 +2634,17 @@ namespace CodeWalker.GameFiles
             );
 
 
-            switch (Unknown_Ah)
-            {
-                case 0:
-                    break;
-                case 1024://micro flag? //micro_brow_down.ydr, micro_chin_pointed.ydr
-                    break;
-                default:
-                    break;
-            }
+            //switch (Flags)
+            //{
+            //    case 0:
+            //        break;
+            //    case 1024://micro flag? //micro_brow_down.ydr, micro_chin_pointed.ydr
+            //        break;
+            //    default:
+            //        break;
+            //}
 
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -2613,7 +2657,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.VFT);
             writer.Write(this.Unknown_4h);
             writer.Write(this.VertexStride);
-            writer.Write(this.Unknown_Ah);
+            writer.Write(this.Flags);
             writer.Write(this.Unknown_Ch);
             writer.Write(this.DataPointer1);
             writer.Write(this.VertexCount);
@@ -2641,10 +2685,57 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_78h);
             writer.Write(this.Unknown_7Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YdrXml.ValueTag(sb, indent, "Flags", Flags.ToString());
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
+            if (Info != null)
+            {
+                YdrXml.OpenTag(sb, indent, "Layout type=\"" + Info.Types.ToString() + "\"");
+                Info.WriteXml(sb, indent + 1);
+                YdrXml.CloseTag(sb, indent, "Layout");
+            }
+            if (Data1 != null)
+            {
+                YdrXml.OpenTag(sb, indent, "Data");
+                Data1.WriteXml(sb, indent + 1);
+                YdrXml.CloseTag(sb, indent, "Data");
+            }
+            if ((Data2 != null) && (Data2 != Data1))
+            {
+                YdrXml.OpenTag(sb, indent, "Data2");
+                Data2.WriteXml(sb, indent + 1);
+                YdrXml.CloseTag(sb, indent, "Data2");
+            }
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Flags = (ushort)Xml.GetChildUIntAttribute(node, "Flags", "value");
+
+            var inode = node.SelectSingleNode("Layout");
+            if (inode != null)
+            {
+                Info = new VertexDeclaration();
+                Info.ReadXml(inode);
+                VertexStride = Info.Stride;
+            }
+            var dnode = node.SelectSingleNode("Data");
+            if (dnode != null)
+            {
+                Data1 = new VertexData();
+                Data1.ReadXml(dnode, Info);
+                Data2 = Data1;
+                VertexCount = (uint)Data1.VertexCount;
+            }
+            var dnode2 = node.SelectSingleNode("Data2");
+            if (dnode2 != null)
+            {
+                Data2 = new VertexData();
+                Data2.ReadXml(dnode2, Info);
+            }
+        }
+
+
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -2669,17 +2760,13 @@ namespace CodeWalker.GameFiles
         }
 
 
-
-        public VertexDeclaration info { get; set; }
-        public object[] Data { get; set; }
-        public uint[] Types { get; set; }
-
-
+        public int VertexStride { get; set; }
+        public int VertexCount { get; set; }
+        public VertexDeclaration Info { get; set; }
         public VertexType VertexType { get; set; }
+
         public byte[] VertexBytes { get; set; }
 
-        public int VertexCount { get; set; }
-        public int VertexStride { get; set; }
 
         public long MemoryUsage
         {
@@ -2693,26 +2780,24 @@ namespace CodeWalker.GameFiles
         {
             VertexStride = Convert.ToInt32(parameters[0]);
             VertexCount = Convert.ToInt32(parameters[1]);
-            info = (VertexDeclaration)parameters[2];
-
-            VertexType = (VertexType)info.Flags;
+            Info = (VertexDeclaration)parameters[2];
+            VertexType = (VertexType)Info.Flags;
 
             VertexBytes = reader.ReadBytes(VertexCount * VertexStride);
 
-
-            switch (info.Types)
+            switch (Info.Types)
             {
-                case 8598872888530528662: //YDR - 0x7755555555996996
+                case VertexDeclarationTypes.GTAV1: //YDR - 0x7755555555996996
                     break;
-                case 216172782140628998:  //YFT - 0x030000000199A006
-                    switch (info.Flags)
+                case VertexDeclarationTypes.GTAV2:  //YFT - 0x030000000199A006
+                    switch (Info.Flags)
                     {
                         case 16473: VertexType = VertexType.PCCH2H4; break;  //  PCCH2H4 
                         default:break;
                     }
                     break;
-                case 216172782140612614:  //YFT - 0x0300000001996006  PNCH2H4
-                    switch (info.Flags)
+                case VertexDeclarationTypes.GTAV3:  //YFT - 0x0300000001996006  PNCH2H4
+                    switch (Info.Flags)
                     {
                         case 89: VertexType = VertexType.PNCH2; break;     //  PNCH2
                         default: break;
@@ -2723,244 +2808,6 @@ namespace CodeWalker.GameFiles
             }
 
         }
-
-        public /*override*/ void ReadOrig(ResourceDataReader reader, params object[] parameters)
-        {
-            int stride = Convert.ToInt32(parameters[0]);
-            int count = Convert.ToInt32(parameters[1]);
-            var info = (VertexDeclaration)parameters[2];
-            this.VertexCount = count;
-            this.info = info;
-
-
-            bool[] IsUsed = new bool[16];
-            for (int i = 0; i < 16; i++)
-                IsUsed[i] = ((info.Flags >> i) & 0x1) == 1;
-
-            Types = new uint[16];
-            for (int i = 0; i < 16; i++)
-                Types[i] = (uint)((info.Types >> (int)(4 * i)) & 0xF);
-
-
-
-            Data = new object[16];
-            for (int i = 0; i < 16; i++)
-            {
-                if (IsUsed[i])
-                {
-                    switch (Types[i])
-                    {
-                        case 0: Data[i] = new ushort[1 * count]; break;
-                        case 1: Data[i] = new ushort[2 * count]; break;
-                        case 2: Data[i] = new ushort[3 * count]; break;
-                        case 3: Data[i] = new ushort[4 * count]; break;
-                        case 4: Data[i] = new float[1 * count]; break;
-                        case 5: Data[i] = new float[2 * count]; break;
-                        case 6: Data[i] = new float[3 * count]; break;
-                        case 7: Data[i] = new float[4 * count]; break;
-                        case 8: Data[i] = new uint[count]; break;
-                        case 9: Data[i] = new uint[count]; break;
-                        case 10: Data[i] = new uint[count]; break;
-                        default:
-                            throw new Exception();
-                    }
-                }
-            }
-
-
-
-            long pos = reader.Position;
-
-            // read...
-            for (int i = 0; i < count; i++)
-            {
-
-                for (int k = 0; k < 16; k++)
-                {
-                    if (IsUsed[k])
-                    {
-                        switch (Types[k])
-                        {
-                            // float16
-                            case 0:
-                                {
-                                    var buf = Data[k] as ushort[];
-                                    buf[i * 1 + 0] = reader.ReadUInt16();
-                                    break;
-                                }
-                            case 1:
-                                {
-                                    var buf = Data[k] as ushort[];
-                                    buf[i * 2 + 0] = reader.ReadUInt16();
-                                    buf[i * 2 + 1] = reader.ReadUInt16();
-                                    break;
-                                }
-                            case 2:
-                                {
-                                    var buf = Data[k] as ushort[];
-                                    buf[i * 3 + 0] = reader.ReadUInt16();
-                                    buf[i * 3 + 1] = reader.ReadUInt16();
-                                    buf[i * 3 + 2] = reader.ReadUInt16();
-                                    break;
-                                }
-                            case 3:
-                                {
-                                    var buf = Data[k] as ushort[];
-                                    buf[i * 4 + 0] = reader.ReadUInt16();
-                                    buf[i * 4 + 1] = reader.ReadUInt16();
-                                    buf[i * 4 + 2] = reader.ReadUInt16();
-                                    buf[i * 4 + 3] = reader.ReadUInt16();
-                                    break;
-                                }
-
-                            // float32
-                            case 4:
-                                {
-                                    var buf = Data[k] as float[];
-                                    buf[i * 1 + 0] = reader.ReadSingle();
-                                    break;
-                                }
-                            case 5:
-                                {
-                                    var buf = Data[k] as float[];
-                                    buf[i * 2 + 0] = reader.ReadSingle();
-                                    buf[i * 2 + 1] = reader.ReadSingle();
-                                    break;
-                                }
-                            case 6:
-                                {
-                                    var buf = Data[k] as float[];
-                                    buf[i * 3 + 0] = reader.ReadSingle();
-                                    buf[i * 3 + 1] = reader.ReadSingle();
-                                    buf[i * 3 + 2] = reader.ReadSingle();
-                                    break;
-                                }
-                            case 7:
-                                {
-                                    var buf = Data[k] as float[];
-                                    buf[i * 4 + 0] = reader.ReadSingle();
-                                    buf[i * 4 + 1] = reader.ReadSingle();
-                                    buf[i * 4 + 2] = reader.ReadSingle();
-                                    buf[i * 4 + 3] = reader.ReadSingle();
-                                    break;
-                                }
-
-                            case 8:
-                            case 9:
-                            case 10:
-                                {
-                                    var buf = Data[k] as uint[];
-                                    buf[i * 1 + 0] = reader.ReadUInt32();
-                                    break;
-                                }
-
-                            default:
-                                throw new Exception();
-                        }
-                    }
-                }
-
-            }
-
-            //this.length = stride * count;
-        }
-
-        public /*override*/ void WriteOrig(ResourceDataWriter writer, params object[] parameters)
-        {
-
-            // write...
-            for (int i = 0; i < VertexCount; i++)
-            {
-
-                for (int k = 0; k < 16; k++)
-                {
-                    if (Data[k] != null)
-                    {
-                        switch (Types[k])
-                        {
-                            // float16
-                            case 0:
-                                {
-                                    var buf = Data[k] as ushort[];
-                                    writer.Write(buf[i * 1 + 0]);
-                                    break;
-                                }
-                            case 1:
-                                {
-                                    var buf = Data[k] as ushort[];
-                                    writer.Write(buf[i * 2 + 0]);
-                                    writer.Write(buf[i * 2 + 1]);
-                                    break;
-                                }
-                            case 2:
-                                {
-                                    var buf = Data[k] as ushort[];
-                                    writer.Write(buf[i * 3 + 0]);
-                                    writer.Write(buf[i * 3 + 1]);
-                                    writer.Write(buf[i * 3 + 2]);
-                                    break;
-                                }
-                            case 3:
-                                {
-                                    var buf = Data[k] as ushort[];
-                                    writer.Write(buf[i * 4 + 0]);
-                                    writer.Write(buf[i * 4 + 1]);
-                                    writer.Write(buf[i * 4 + 2]);
-                                    writer.Write(buf[i * 4 + 3]);
-                                    break;
-                                }
-
-                            // float32
-                            case 4:
-                                {
-                                    var buf = Data[k] as float[];
-                                    writer.Write(buf[i * 1 + 0]);
-                                    break;
-                                }
-                            case 5:
-                                {
-                                    var buf = Data[k] as float[];
-                                    writer.Write(buf[i * 2 + 0]);
-                                    writer.Write(buf[i * 2 + 1]);
-                                    break;
-                                }
-                            case 6:
-                                {
-                                    var buf = Data[k] as float[];
-                                    writer.Write(buf[i * 3 + 0]);
-                                    writer.Write(buf[i * 3 + 1]);
-                                    writer.Write(buf[i * 3 + 2]);
-                                    break;
-                                }
-                            case 7:
-                                {
-                                    var buf = Data[k] as float[];
-                                    writer.Write(buf[i * 4 + 0]);
-                                    writer.Write(buf[i * 4 + 1]);
-                                    writer.Write(buf[i * 4 + 2]);
-                                    writer.Write(buf[i * 4 + 3]);
-                                    break;
-                                }
-
-                            case 8:
-                            case 9:
-                            case 10:
-                                {
-                                    var buf = Data[k] as uint[];
-                                    writer.Write(buf[i * 1 + 0]);
-                                    break;
-                                }
-
-                            default:
-                                throw new Exception();
-                        }
-                    }
-                }
-
-            }
-
-        }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             if (VertexBytes != null)
@@ -2968,6 +2815,467 @@ namespace CodeWalker.GameFiles
                 writer.Write(VertexBytes); //not dealing with individual vertex data here any more!
             }
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            var flags = Info?.Flags ?? 0;
+            var row = new StringBuilder();
+            for (int v = 0; v < VertexCount; v++)
+            {
+                row.Clear();
+                for (int k = 0; k < 16; k++)
+                {
+                    if (((flags >> k) & 0x1) == 1)
+                    {
+                        if (row.Length > 0) row.Append("   ");
+                        var str = GetString(v, k, " ");
+                        row.Append(str);
+                    }
+                }
+                YdrXml.Indent(sb, indent);
+                sb.AppendLine(row.ToString());
+            }
+        }
+        public void ReadXml(XmlNode node, VertexDeclaration info)
+        {
+            Info = info;
+            VertexType = (VertexType)(info?.Flags ?? 0);
+
+            if (Info != null)
+            {
+                var flags = Info.Flags;
+                var stride = Info.Stride;
+                var vstrs = new List<string[]>();
+                var coldelim = new[] { ' ', '\t' };
+                var rowdelim = new[] { '\n' };
+                var rows = node?.InnerText?.Trim()?.Split(rowdelim, StringSplitOptions.RemoveEmptyEntries);
+                if (rows != null)
+                {
+                    foreach (var row in rows)
+                    {
+                        var rowt = row.Trim();
+                        if (string.IsNullOrEmpty(rowt)) continue;
+                        var cols = row.Split(coldelim, StringSplitOptions.RemoveEmptyEntries);
+                        vstrs.Add(cols);
+                    }
+                }
+                if (vstrs.Count > 0)
+                {
+                    AllocateData(vstrs.Count);
+                    for (int v = 0; v < vstrs.Count; v++)
+                    {
+                        var vstr = vstrs[v];
+                        var sind = 0;
+                        for (int k = 0; k < 16; k++)
+                        {
+                            if (((flags >> k) & 0x1) == 1)
+                            {
+                                SetString(v, k, vstr, ref sind);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        public void AllocateData(int vertexCount)
+        {
+            if (Info != null)
+            {
+                var stride = Info.Stride;
+                var byteCount = vertexCount * stride;
+                VertexBytes = new byte[byteCount];
+                VertexCount = vertexCount;
+            }
+        }
+
+        public void SetString(int v, int c, string[] strs, ref int sind)
+        {
+            if ((Info != null) && (VertexBytes != null) && (strs != null))
+            {
+                var ind = sind;
+                float f(int i) => FloatUtil.Parse(strs[ind + i].Trim());
+                byte b(int i) { if (byte.TryParse(strs[ind + i].Trim(), out byte x)) return x; else return 0; }
+                var ct = Info.GetComponentType(c);
+                var cc = VertexComponentTypes.GetComponentCount(ct);
+                if (sind + cc > strs.Length)
+                { return; }
+                switch (ct)
+                {
+                    case VertexComponentType.Float: SetFloat(v, c, f(0)); break;
+                    case VertexComponentType.Float2: SetVector2(v, c, new Vector2(f(0), f(1))); break;
+                    case VertexComponentType.Float3: SetVector3(v, c, new Vector3(f(0), f(1), f(2))); break;
+                    case VertexComponentType.Float4: SetVector4(v, c, new Vector4(f(0), f(1), f(2), f(3))); break;
+                    case VertexComponentType.Dec3N: SetDec3N(v, c, new Vector3(f(0), f(1), f(2))); break;
+                    case VertexComponentType.Half2: SetHalf2(v, c, new Half2(f(0), f(1))); break;
+                    case VertexComponentType.Half4: SetHalf4(v, c, new Half4(f(0), f(1), f(2), f(3))); break;
+                    case VertexComponentType.Colour: SetColour(v, c, new Color(b(0), b(1), b(2), b(3))); break;
+                    case VertexComponentType.UByte4: SetUByte4(v, c, new Color(b(0), b(1), b(2), b(3))); break;
+                    default:
+                        break;
+                }
+                sind += cc;
+            }
+        }
+        public void SetFloat(int v, int c, float val)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 4;//sizeof(float)
+                if (e <= VertexBytes.Length)
+                {
+                    var b = BitConverter.GetBytes(val);
+                    Buffer.BlockCopy(b, 0, VertexBytes, o, 4);
+                }
+            }
+        }
+        public void SetVector2(int v, int c, Vector2 val)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 8;//sizeof(Vector2)
+                if (e <= VertexBytes.Length)
+                {
+                    var x = BitConverter.GetBytes(val.X);
+                    var y = BitConverter.GetBytes(val.Y);
+                    Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 4);
+                    Buffer.BlockCopy(y, 0, VertexBytes, o + 4, 4);
+                }
+            }
+        }
+        public void SetVector3(int v, int c, Vector3 val)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 12;//sizeof(Vector3)
+                if (e <= VertexBytes.Length)
+                {
+                    var x = BitConverter.GetBytes(val.X);
+                    var y = BitConverter.GetBytes(val.Y);
+                    var z = BitConverter.GetBytes(val.Z);
+                    Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 4);
+                    Buffer.BlockCopy(y, 0, VertexBytes, o + 4, 4);
+                    Buffer.BlockCopy(z, 0, VertexBytes, o + 8, 4);
+                }
+            }
+        }
+        public void SetVector4(int v, int c, Vector4 val)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 16;//sizeof(Vector4)
+                if (e <= VertexBytes.Length)
+                {
+                    var x = BitConverter.GetBytes(val.X);
+                    var y = BitConverter.GetBytes(val.Y);
+                    var z = BitConverter.GetBytes(val.Z);
+                    var w = BitConverter.GetBytes(val.W);
+                    Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 4);
+                    Buffer.BlockCopy(y, 0, VertexBytes, o + 4, 4);
+                    Buffer.BlockCopy(z, 0, VertexBytes, o + 8, 4);
+                    Buffer.BlockCopy(w, 0, VertexBytes, o + 12, 4);
+                }
+            }
+        }
+        public void SetDec3N(int v, int c, Vector3 val)
+        {
+            //see https://docs.microsoft.com/en-us/previous-versions/windows/desktop/bb322868(v%3Dvs.85)
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 4;//sizeof(Dec3N)
+                if (e <= VertexBytes.Length)
+                {
+                    var sx = (val.X < 0.0f);
+                    var sy = (val.X < 0.0f);
+                    var sz = (val.X < 0.0f);
+                    var x = Math.Min((uint)(Math.Abs(val.X) * 511.0f), 511);
+                    var y = Math.Min((uint)(Math.Abs(val.Y) * 511.0f), 511);
+                    var z = Math.Min((uint)(Math.Abs(val.Z) * 511.0f), 511);
+                    var ux = ((sx ? ~x : x) & 0x1FF) + (sx ? 0x200 : 0);
+                    var uy = ((sy ? ~y : y) & 0x1FF) + (sy ? 0x200 : 0);
+                    var uz = ((sz ? ~z : z) & 0x1FF) + (sz ? 0x200 : 0);
+                    var uw = 0u;
+                    var u = ux + (uy << 10) + (uz << 20) + (uw << 30);
+                    var b = BitConverter.GetBytes(u);
+                    Buffer.BlockCopy(b, 0, VertexBytes, o, 4);
+                }
+            }
+        }
+        public void SetHalf2(int v, int c, Half2 val)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 4;//sizeof(Half2)
+                if (e <= VertexBytes.Length)
+                {
+                    var x = BitConverter.GetBytes(val.X.RawValue);
+                    var y = BitConverter.GetBytes(val.Y.RawValue);
+                    Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 2);
+                    Buffer.BlockCopy(y, 0, VertexBytes, o + 2, 2);
+                }
+            }
+        }
+        public void SetHalf4(int v, int c, Half4 val)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 8;//sizeof(Half4)
+                if (e <= VertexBytes.Length)
+                {
+                    var x = BitConverter.GetBytes(val.X.RawValue);
+                    var y = BitConverter.GetBytes(val.Y.RawValue);
+                    var z = BitConverter.GetBytes(val.Z.RawValue);
+                    var w = BitConverter.GetBytes(val.W.RawValue);
+                    Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 2);
+                    Buffer.BlockCopy(y, 0, VertexBytes, o + 2, 2);
+                    Buffer.BlockCopy(z, 0, VertexBytes, o + 4, 2);
+                    Buffer.BlockCopy(w, 0, VertexBytes, o + 6, 2);
+                }
+            }
+        }
+        public void SetColour(int v, int c, Color val)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 4;//sizeof(Color)
+                if (e <= VertexBytes.Length)
+                {
+                    var u = val.ToRgba();
+                    var b = BitConverter.GetBytes(u);
+                    Buffer.BlockCopy(b, 0, VertexBytes, o, 4);
+                }
+            }
+        }
+        public void SetUByte4(int v, int c, Color val)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 4;//sizeof(UByte4)
+                if (e <= VertexBytes.Length)
+                {
+                    var u = val.ToRgba();
+                    var b = BitConverter.GetBytes(u);
+                    Buffer.BlockCopy(b, 0, VertexBytes, o, 4);
+                }
+            }
+        }
+
+        public string GetString(int v, int c, string d = ", ")
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var ct = Info.GetComponentType(c);
+                switch (ct)
+                {
+                    case VertexComponentType.Float: return FloatUtil.ToString(GetFloat(v, c));
+                    case VertexComponentType.Float2: return FloatUtil.GetVector2String(GetVector2(v, c), d);
+                    case VertexComponentType.Float3: return FloatUtil.GetVector3String(GetVector3(v, c), d);
+                    case VertexComponentType.Float4: return FloatUtil.GetVector4String(GetVector4(v, c), d);
+                    case VertexComponentType.Dec3N: return FloatUtil.GetVector3String(GetDec3N(v, c), d);
+                    case VertexComponentType.Half2: return FloatUtil.GetHalf2String(GetHalf2(v, c), d);
+                    case VertexComponentType.Half4: return FloatUtil.GetHalf4String(GetHalf4(v, c), d);
+                    case VertexComponentType.Colour: return FloatUtil.GetColourString(GetColour(v, c), d);
+                    case VertexComponentType.UByte4: return FloatUtil.GetColourString(GetUByte4(v, c), d);
+                    default:
+                        break;
+                }
+            }
+            return string.Empty;
+        }
+        public float GetFloat(int v, int c)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 4;//sizeof(float)
+                if (e <= VertexBytes.Length)
+                {
+                    var f = BitConverter.ToSingle(VertexBytes, o);
+                    return f;
+                }
+            }
+            return 0;
+        }
+        public Vector2 GetVector2(int v, int c)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 8;//sizeof(Vector2)
+                if (e <= VertexBytes.Length)
+                {
+                    var x = BitConverter.ToSingle(VertexBytes, o + 0);
+                    var y = BitConverter.ToSingle(VertexBytes, o + 4);
+                    return new Vector2(x, y);
+                }
+            }
+            return Vector2.Zero;
+        }
+        public Vector3 GetVector3(int v, int c)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 12;//sizeof(Vector3)
+                if (e <= VertexBytes.Length)
+                {
+                    var x = BitConverter.ToSingle(VertexBytes, o + 0);
+                    var y = BitConverter.ToSingle(VertexBytes, o + 4);
+                    var z = BitConverter.ToSingle(VertexBytes, o + 8);
+                    return new Vector3(x, y, z);
+                }
+            }
+            return Vector3.Zero;
+        }
+        public Vector4 GetVector4(int v, int c)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 16;//sizeof(Vector4)
+                if (e <= VertexBytes.Length)
+                {
+                    var x = BitConverter.ToSingle(VertexBytes, o + 0);
+                    var y = BitConverter.ToSingle(VertexBytes, o + 4);
+                    var z = BitConverter.ToSingle(VertexBytes, o + 8);
+                    var w = BitConverter.ToSingle(VertexBytes, o + 12);
+                    return new Vector4(x, y, z, w);
+                }
+            }
+            return Vector4.Zero;
+        }
+        public Vector3 GetDec3N(int v, int c)
+        {
+            //see https://docs.microsoft.com/en-us/previous-versions/windows/desktop/bb322868(v%3Dvs.85)
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 4;//sizeof(Dec3N)
+                if (e <= VertexBytes.Length)
+                {
+                    var u = BitConverter.ToUInt32(VertexBytes, o);
+                    var ux = (u >> 0) & 0x3FF;
+                    var uy = (u >> 10) & 0x3FF;
+                    var uz = (u >> 20) & 0x3FF;
+                    var uw = (u >> 30);
+                    var sx = (ux & 0x200) > 0;
+                    var sy = (uy & 0x200) > 0;
+                    var sz = (uz & 0x200) > 0;
+                    var x = ((sx ? ~ux : ux) & 0x1FF) / (sx ? -511.0f : 511.0f);
+                    var y = ((sy ? ~uy : uy) & 0x1FF) / (sy ? -511.0f : 511.0f);
+                    var z = ((sz ? ~uz : uz) & 0x1FF) / (sz ? -511.0f : 511.0f);
+                    return new Vector3(x, y, z);
+                }
+            }
+            return Vector3.Zero;
+        }
+        public Half2 GetHalf2(int v, int c)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 4;//sizeof(Half2)
+                if (e <= VertexBytes.Length)
+                {
+                    var x = BitConverter.ToUInt16(VertexBytes, o + 0);
+                    var y = BitConverter.ToUInt16(VertexBytes, o + 2);
+                    return new Half2(x, y);
+                }
+            }
+            return new Half2(0, 0);
+        }
+        public Half4 GetHalf4(int v, int c)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 8;//sizeof(Half4)
+                if (e <= VertexBytes.Length)
+                {
+                    var x = BitConverter.ToUInt16(VertexBytes, o + 0);
+                    var y = BitConverter.ToUInt16(VertexBytes, o + 2);
+                    var z = BitConverter.ToUInt16(VertexBytes, o + 4);
+                    var w = BitConverter.ToUInt16(VertexBytes, o + 6);
+                    return new Half4(x, y, z, w);
+                }
+            }
+            return new Half4(0, 0, 0, 0);
+        }
+        public Color GetColour(int v, int c)
+        {
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 4;//sizeof(Color)
+                if (e <= VertexBytes.Length)
+                {
+                    var rgba = BitConverter.ToUInt32(VertexBytes, o);
+                    return new Color(rgba);
+                }
+            }
+            return Color.Black;
+        }
+        public Color GetUByte4(int v, int c)
+        {
+            //Color is the same as UByte4 really
+            if ((Info != null) && (VertexBytes != null))
+            {
+                var s = Info.Stride;
+                var co = Info.GetComponentOffset(c);
+                var o = (v * s) + co;
+                var e = o + 4;//sizeof(UByte4)
+                if (e <= VertexBytes.Length)
+                {
+                    var rgba = BitConverter.ToUInt32(VertexBytes, o);
+                    return new Color(rgba);
+                }
+            }
+            return new Color(0, 0, 0, 0);
+        }
+
 
         public override string ToString()
         {
@@ -2985,13 +3293,10 @@ namespace CodeWalker.GameFiles
         // structure data
         public uint Flags { get; set; }
         public ushort Stride { get; set; }
-        public byte Unknown_6h { get; set; }
+        public byte Unknown_6h { get; set; }//0
         public byte Count { get; set; }
-        public ulong Types { get; set; }
+        public VertexDeclarationTypes Types { get; set; }
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -2999,12 +3304,14 @@ namespace CodeWalker.GameFiles
             this.Stride = reader.ReadUInt16();
             this.Unknown_6h = reader.ReadByte();
             this.Count = reader.ReadByte();
-            this.Types = reader.ReadUInt64();
-        }
+            this.Types = (VertexDeclarationTypes)reader.ReadUInt64();
 
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
+            ////just testing!
+            //UpdateCountAndStride();
+            //if (Unknown_6h != 0)
+            //{ }//no hit
+
+        }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
@@ -3012,7 +3319,37 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Stride);
             writer.Write(this.Unknown_6h);
             writer.Write(this.Count);
-            writer.Write(this.Types);
+            writer.Write((ulong)this.Types);
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            for (int k = 0; k < 16; k++)
+            {
+                if (((Flags >> k) & 0x1) == 1)
+                {
+                    var componentSemantic = (VertexSemantics)k;
+                    var tag = componentSemantic.ToString();
+                    YdrXml.SelfClosingTag(sb, indent, tag);
+                }
+            }
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Types = Xml.GetEnumValue<VertexDeclarationTypes>(Xml.GetStringAttribute(node, "type"));
+
+            uint f = 0;
+            foreach (XmlNode cnode in node.ChildNodes)
+            {
+                if (cnode is XmlElement celem)
+                {
+                    var componentSematic = Xml.GetEnumValue<VertexSemantics>(celem.Name);
+                    var idx = (int)componentSematic;
+                    f = f | (1u << idx);
+                }
+            }
+            Flags = f;
+
+            UpdateCountAndStride();
         }
 
         public ulong GetDeclarationId()
@@ -3022,10 +3359,55 @@ namespace CodeWalker.GameFiles
             {
                 if (((Flags >> i) & 1) == 1)
                 {
-                    res += (Types & (0xFu << (i * 4)));
+                    res += ((ulong)Types & (0xFu << (i * 4)));
                 }
             }
             return res;
+        }
+
+        public VertexComponentType GetComponentType(int index)
+        {
+            //index is the flags bit index
+            return (VertexComponentType)(((ulong)Types >> (index * 4)) & 0x0000000F);
+        }
+
+        public int GetComponentOffset(int index)
+        {
+            //index is the flags bit index
+            var offset = 0;
+            for (int k = 0; k < index; k++)
+            {
+                if (((Flags >> k) & 0x1) == 1)
+                {
+                    var componentType = GetComponentType(k);
+                    offset += VertexComponentTypes.GetSizeInBytes(componentType);
+                }
+            }
+            return offset;
+        }
+
+        public void UpdateCountAndStride()
+        {
+            var cnt = 0;
+            var str = 0;
+            for (int k = 0; k < 16; k++)
+            {
+                if (((Flags >> k) & 0x1) == 1)
+                {
+                    var componentType = GetComponentType(k);
+                    str += VertexComponentTypes.GetSizeInBytes(componentType);
+                    cnt++;
+                }
+            }
+
+            ////just testing
+            //if (Count != cnt)
+            //{ }//no hit
+            //if (Stride != str)
+            //{ }//no hit
+
+            Count = (byte)cnt;
+            Stride = (ushort)str;
         }
 
         public override string ToString()
@@ -3043,7 +3425,7 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public uint VFT { get; set; }
-        public uint Unknown_4h { get; set; } // 0x00000001
+        public uint Unknown_4h { get; set; } = 1; // 0x00000001
         public uint IndicesCount { get; set; }
         public uint Unknown_Ch { get; set; } // 0x00000000
         public ulong IndicesPointer { get; set; }
@@ -3074,9 +3456,6 @@ namespace CodeWalker.GameFiles
         private ResourceSystemStructBlock<ushort> IndicesBlock = null; //only used when saving
 
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -3111,10 +3490,6 @@ namespace CodeWalker.GameFiles
             //);
             this.Indices = reader.ReadUshortsAt(this.IndicesPointer, this.IndicesCount);
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -3146,10 +3521,24 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_58h);
             writer.Write(this.Unknown_5Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            if (Indices != null)
+            {
+                YdrXml.WriteRawArray(sb, Indices, indent, "Data", "", null, 24);
+            }
+        }
+        public void ReadXml(XmlNode node)
+        {
+            var inode = node.SelectSingleNode("Data");
+            if (inode != null)
+            {
+                Indices = Xml.GetRawUshortArray(node);
+                IndicesCount = (uint)(Indices?.Length ?? 0);
+            }
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
+
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -3325,15 +3714,57 @@ namespace CodeWalker.GameFiles
         public float LodDistMed { get; set; }
         public float LodDistLow { get; set; }
         public float LodDistVlow { get; set; }
-        public uint Unknown_80h { get; set; }
-        public uint Unknown_84h { get; set; }
-        public uint Unknown_88h { get; set; }
-        public uint Unknown_8Ch { get; set; }
+        public uint RenderMaskFlagsHigh { get; set; }
+        public uint RenderMaskFlagsMed { get; set; }
+        public uint RenderMaskFlagsLow { get; set; }
+        public uint RenderMaskFlagsVlow { get; set; }
         public ulong JointsPointer { get; set; }
-        public ushort Unknown_98h { get; set; }
+        public ushort Unknown_98h { get; set; } // 0
         public ushort Unknown_9Ah { get; set; }
         public uint Unknown_9Ch { get; set; } // 0x00000000
         public ulong DrawableModelsXPointer { get; set; }
+
+        public byte FlagsHigh
+        {
+            get { return (byte)(RenderMaskFlagsHigh & 0xFF); }
+            set { RenderMaskFlagsHigh = (RenderMaskFlagsHigh & 0xFFFFFF00) + (value & 0xFFu); }
+        }
+        public byte FlagsMed
+        {
+            get { return (byte)(RenderMaskFlagsMed & 0xFF); }
+            set { RenderMaskFlagsMed = (RenderMaskFlagsMed & 0xFFFFFF00) + (value & 0xFFu); }
+        }
+        public byte FlagsLow
+        {
+            get { return (byte)(RenderMaskFlagsLow & 0xFF); }
+            set { RenderMaskFlagsLow = (RenderMaskFlagsLow & 0xFFFFFF00) + (value & 0xFFu); }
+        }
+        public byte FlagsVlow
+        {
+            get { return (byte)(RenderMaskFlagsVlow & 0xFF); }
+            set { RenderMaskFlagsVlow = (RenderMaskFlagsVlow & 0xFFFFFF00) + (value & 0xFFu); }
+        }
+        public byte RenderMaskHigh
+        {
+            get { return (byte)((RenderMaskFlagsHigh >> 8) & 0xFF); }
+            set { RenderMaskFlagsHigh = (RenderMaskFlagsHigh & 0xFFFF00FF) + ((value & 0xFFu) << 8); }
+        }
+        public byte RenderMaskMed
+        {
+            get { return (byte)((RenderMaskFlagsMed >> 8) & 0xFF); }
+            set { RenderMaskFlagsMed = (RenderMaskFlagsMed & 0xFFFF00FF) + ((value & 0xFFu) << 8); }
+        }
+        public byte RenderMaskLow
+        {
+            get { return (byte)((RenderMaskFlagsLow >> 8) & 0xFF); }
+            set { RenderMaskFlagsLow = (RenderMaskFlagsLow & 0xFFFF00FF) + ((value & 0xFFu) << 8); }
+        }
+        public byte RenderMaskVlow
+        {
+            get { return (byte)((RenderMaskFlagsVlow >> 8) & 0xFF); }
+            set { RenderMaskFlagsVlow = (RenderMaskFlagsVlow & 0xFFFF00FF) + ((value & 0xFFu) << 8); }
+        }
+
 
         // reference data
         public ShaderGroup ShaderGroup { get; set; }
@@ -3393,10 +3824,10 @@ namespace CodeWalker.GameFiles
             this.LodDistMed = reader.ReadSingle();
             this.LodDistLow = reader.ReadSingle();
             this.LodDistVlow = reader.ReadSingle();
-            this.Unknown_80h = reader.ReadUInt32();
-            this.Unknown_84h = reader.ReadUInt32();
-            this.Unknown_88h = reader.ReadUInt32();
-            this.Unknown_8Ch = reader.ReadUInt32();
+            this.RenderMaskFlagsHigh = reader.ReadUInt32();
+            this.RenderMaskFlagsMed = reader.ReadUInt32();
+            this.RenderMaskFlagsLow = reader.ReadUInt32();
+            this.RenderMaskFlagsVlow = reader.ReadUInt32();
             this.JointsPointer = reader.ReadUInt64();
             this.Unknown_98h = reader.ReadUInt16();
             this.Unknown_9Ah = reader.ReadUInt16();
@@ -3465,6 +3896,177 @@ namespace CodeWalker.GameFiles
             VertexDecls = new Dictionary<ulong, VertexDeclaration>(vds);
 
             AssignGeometryShaders(ShaderGroup);
+
+
+
+
+
+            ////just testing!!!
+            //if ((DrawableModelsHigh?.data_items != null) != (Unknown_80h != 0))
+            //{ }//no hit
+            //if ((DrawableModelsMedium?.data_items != null) != (Unknown_84h != 0))
+            //{ }//no hit
+            //if ((DrawableModelsLow?.data_items != null) != (Unknown_88h != 0))
+            //{ }//no hit
+            //if ((DrawableModelsVeryLow?.data_items != null) != (Unknown_8Ch != 0))
+            //{ }//no hit
+            //if ((Unknown_80h & 0xFFFF0000) > 0)
+            //{ }//no hit
+            //if ((Unknown_84h & 0xFFFF0000) > 0)
+            //{ }//no hit
+            //if ((Unknown_88h & 0xFFFF0000) > 0)
+            //{ }//no hit
+            //if ((Unknown_8Ch & 0xFFFF0000) > 0)
+            //{ }//no hit
+            //BuildRenderMasks();
+
+            //switch (FlagsHigh)
+            //{
+            //    case 2:
+            //    case 1:
+            //    case 13:
+            //    case 4:
+            //    case 12:
+            //    case 5:
+            //    case 3:
+            //    case 8:
+            //    case 9:
+            //    case 15:
+            //    case 130:
+            //    case 11:
+            //    case 10:
+            //    case 7:
+            //    case 131:
+            //    case 129:
+            //    case 75:
+            //    case 69:
+            //    case 6:
+            //    case 64:
+            //    case 14:
+            //    case 77:
+            //    case 73:
+            //    case 76:
+            //    case 71:
+            //    case 79:
+            //    case 65:
+            //    case 0://some yft's have null HD models
+            //    case 19:
+            //    case 51:
+            //        break;
+            //    default:
+            //        break;
+            //}
+            //switch (FlagsMed)
+            //{
+            //    case 0:
+            //    case 1:
+            //    case 9:
+            //    case 8:
+            //    case 13:
+            //    case 3:
+            //    case 2:
+            //    case 5:
+            //    case 11:
+            //    case 15:
+            //    case 10:
+            //    case 12:
+            //    case 4:
+            //    case 7:
+            //    case 51:
+            //        break;
+            //    default:
+            //        break;
+            //}
+            //switch (FlagsLow)
+            //{
+            //    case 0:
+            //    case 9:
+            //    case 1:
+            //    case 8:
+            //    case 5:
+            //    case 3:
+            //    case 13:
+            //    case 2:
+            //    case 11:
+            //    case 15:
+            //    case 4:
+            //    case 7:
+            //    case 51:
+            //        break;
+            //    default:
+            //        break;
+            //}
+            //switch (FlagsVlow)
+            //{
+            //    case 0:
+            //    case 1:
+            //    case 9:
+            //    case 3:
+            //    case 7:
+            //    case 5:
+            //    case 49:
+            //    case 51:
+            //    case 11:
+            //        break;
+            //    default:
+            //        break;
+            //}
+            //switch (Unknown_98h)
+            //{
+            //    case 0:
+            //        break;
+            //    default:
+            //        break;//no hit
+            //}
+            //switch (Unknown_9Ah)//wtf isthis? flags?
+            //{
+            //    case 18:
+            //    case 33:
+            //    case 34:
+            //    case 46:
+            //    case 58:
+            //    case 209:
+            //    case 71:
+            //    case 172:
+            //    case 64:
+            //    case 122:
+            //    case 96:
+            //    case 248:
+            //    case 147:
+            //    case 51:
+            //    case 159:
+            //    case 134:
+            //    case 108:
+            //    case 83:
+            //    case 336:
+            //    case 450:
+            //    case 197:
+            //    case 374:
+            //    case 184:
+            //    case 310:
+            //    case 36:
+            //    case 386:
+            //    case 285:
+            //    case 260:
+            //    case 77:
+            //    case 361:
+            //    case 235:
+            //    case 91:
+            //    case 223:
+            //    case 1207:
+            //    case 2090:
+            //    case 45:
+            //    case 52:
+            //    case 526:
+            //    case 3081:
+            //    case 294:
+            //    case 236:
+            //    case 156:
+            //        break;
+            //    default://still lots more..
+            //        break;
+            //}
+
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
@@ -3495,10 +4097,10 @@ namespace CodeWalker.GameFiles
             writer.Write(this.LodDistMed);
             writer.Write(this.LodDistLow);
             writer.Write(this.LodDistVlow);
-            writer.Write(this.Unknown_80h);
-            writer.Write(this.Unknown_84h);
-            writer.Write(this.Unknown_88h);
-            writer.Write(this.Unknown_8Ch);
+            writer.Write(this.RenderMaskFlagsHigh);
+            writer.Write(this.RenderMaskFlagsMed);
+            writer.Write(this.RenderMaskFlagsLow);
+            writer.Write(this.RenderMaskFlagsVlow);
             writer.Write(this.JointsPointer);
             writer.Write(this.Unknown_98h);
             writer.Write(this.Unknown_9Ah);
@@ -3515,11 +4117,10 @@ namespace CodeWalker.GameFiles
             YdrXml.ValueTag(sb, indent, "LodDistMed", FloatUtil.ToString(LodDistMed));
             YdrXml.ValueTag(sb, indent, "LodDistLow", FloatUtil.ToString(LodDistLow));
             YdrXml.ValueTag(sb, indent, "LodDistVlow", FloatUtil.ToString(LodDistVlow));
-            YdrXml.ValueTag(sb, indent, "Unknown80", Unknown_80h.ToString());
-            YdrXml.ValueTag(sb, indent, "Unknown84", Unknown_84h.ToString());
-            YdrXml.ValueTag(sb, indent, "Unknown88", Unknown_88h.ToString());
-            YdrXml.ValueTag(sb, indent, "Unknown8C", Unknown_8Ch.ToString());
-            YdrXml.ValueTag(sb, indent, "Unknown98", Unknown_98h.ToString());
+            YdrXml.ValueTag(sb, indent, "FlagsHigh", FlagsHigh.ToString());
+            YdrXml.ValueTag(sb, indent, "FlagsMed", FlagsMed.ToString());
+            YdrXml.ValueTag(sb, indent, "FlagsLow", FlagsLow.ToString());
+            YdrXml.ValueTag(sb, indent, "FlagsVlow", FlagsVlow.ToString());
             YdrXml.ValueTag(sb, indent, "Unknown9A", Unknown_9Ah.ToString());
             if (ShaderGroup != null)
             {
@@ -3570,11 +4171,10 @@ namespace CodeWalker.GameFiles
             LodDistMed = Xml.GetChildFloatAttribute(node, "LodDistMed", "value");
             LodDistLow = Xml.GetChildFloatAttribute(node, "LodDistLow", "value");
             LodDistVlow = Xml.GetChildFloatAttribute(node, "LodDistVlow", "value");
-            Unknown_80h = Xml.GetChildUIntAttribute(node, "Unknown80", "value");
-            Unknown_84h = Xml.GetChildUIntAttribute(node, "Unknown84", "value");
-            Unknown_88h = Xml.GetChildUIntAttribute(node, "Unknown88", "value");
-            Unknown_8Ch = Xml.GetChildUIntAttribute(node, "Unknown8C", "value");
-            Unknown_98h = (ushort)Xml.GetChildUIntAttribute(node, "Unknown98", "value");
+            FlagsHigh = (byte)Xml.GetChildUIntAttribute(node, "FlagsHigh", "value");
+            FlagsMed = (byte)Xml.GetChildUIntAttribute(node, "FlagsMed", "value");
+            FlagsLow = (byte)Xml.GetChildUIntAttribute(node, "FlagsLow", "value");
+            FlagsVlow = (byte)Xml.GetChildUIntAttribute(node, "FlagsVlow", "value");
             Unknown_9Ah = (ushort)Xml.GetChildUIntAttribute(node, "Unknown9A", "value");
             var sgnode = node.SelectSingleNode("ShaderGroup");
             if (sgnode != null)
@@ -3624,6 +4224,12 @@ namespace CodeWalker.GameFiles
                 DrawableModelsX = new ResourcePointerList64<DrawableModel>();
                 DrawableModelsX.data_items = dmx;
             }
+            else
+            {
+                DrawableModelsX = DrawableModelsHigh;
+            }
+
+            BuildRenderMasks();
         }
 
         public override IResourceBlock[] GetReferences()
@@ -3672,6 +4278,43 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public void BuildRenderMasks()
+        {
+            var hmask = BuildRenderMask(DrawableModelsHigh?.data_items);
+            var mmask = BuildRenderMask(DrawableModelsMedium?.data_items);
+            var lmask = BuildRenderMask(DrawableModelsLow?.data_items);
+            var vmask = BuildRenderMask(DrawableModelsVeryLow?.data_items);
+
+            ////just testing
+            //if (hmask != RenderMaskHigh)
+            //{ }//no hit
+            //if (mmask != RenderMaskMed)
+            //{ }//no hit
+            //if (lmask != RenderMaskLow)
+            //{ }//no hit
+            //if (vmask != RenderMaskVlow)
+            //{ }//no hit
+
+            RenderMaskHigh = hmask;
+            RenderMaskMed = mmask;
+            RenderMaskLow = lmask;
+            RenderMaskVlow = vmask;
+
+        }
+        private byte BuildRenderMask(DrawableModel[] models)
+        {
+            byte mask = 0;
+            if (models != null)
+            {
+                foreach (var model in models)
+                {
+                    mask = (byte)(mask | model.RenderMask);
+                }
+            }
+            return mask;
+        }
+
+
         public DrawableBase ShallowCopy()
         {
             DrawableBase r = null;
@@ -3711,10 +4354,10 @@ namespace CodeWalker.GameFiles
                 r.LodDistMed = LodDistMed;
                 r.LodDistLow = LodDistLow;
                 r.LodDistVlow = LodDistVlow;
-                r.Unknown_80h = Unknown_80h;
-                r.Unknown_84h = Unknown_84h;
-                r.Unknown_88h = Unknown_88h;
-                r.Unknown_8Ch = Unknown_8Ch;
+                r.RenderMaskFlagsHigh = RenderMaskFlagsHigh;
+                r.RenderMaskFlagsMed = RenderMaskFlagsMed;
+                r.RenderMaskFlagsLow = RenderMaskFlagsLow;
+                r.RenderMaskFlagsVlow = RenderMaskFlagsVlow;
                 r.Unknown_98h = Unknown_98h;
                 r.Unknown_9Ah = Unknown_9Ah;
                 r.ShaderGroup = ShaderGroup;
@@ -3826,12 +4469,10 @@ namespace CodeWalker.GameFiles
             {
                 Bound = Bounds.ReadXmlNode(bnode, this);
             }
-            var lights = XmlMeta.ReadItemArray<LightAttributes_s>(node, "LightAttributes");
-            if (lights != null)
-            {
-                LightAttributes = new ResourceSimpleList64_s<LightAttributes_s>();
-                LightAttributes.data_items = lights;
-            }
+
+            LightAttributes = new ResourceSimpleList64_s<LightAttributes_s>();
+            LightAttributes.data_items = XmlMeta.ReadItemArray<LightAttributes_s>(node, "LightAttributes");
+
         }
         public static void WriteXmlNode(Drawable d, StringBuilder sb, int indent, string ddsfolder, string name = "Drawable")
         {

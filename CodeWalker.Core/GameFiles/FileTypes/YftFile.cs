@@ -80,9 +80,38 @@ namespace CodeWalker.GameFiles
             {
                 ddsfolder = Path.Combine(outputFolder, yft.Name);
 
-                if (!Directory.Exists(ddsfolder))
+                bool hastxd = false;
+                if (yft?.Fragment != null)
                 {
-                    Directory.CreateDirectory(ddsfolder);
+                    hastxd = hastxd || (yft.Fragment.Drawable?.ShaderGroup?.TextureDictionary != null);
+                    hastxd = hastxd || (yft.Fragment.Drawable2?.ShaderGroup?.TextureDictionary != null);
+                    if (yft.Fragment.DrawableArray?.data_items != null)
+                    {
+                        foreach (var d in yft.Fragment.DrawableArray?.data_items)
+                        {
+                            if (hastxd) break;
+                            if (d?.ShaderGroup?.TextureDictionary != null)
+                            {
+                                hastxd = true;
+                            }
+                        }
+                    }
+                    if (yft.Fragment.PhysicsLODGroup?.PhysicsLOD1?.Children?.data_items != null)
+                    {
+                        foreach (var child in yft.Fragment.PhysicsLODGroup.PhysicsLOD1.Children.data_items)
+                        {
+                            if (hastxd) break;
+                            hastxd = hastxd || (child.Drawable1?.ShaderGroup?.TextureDictionary != null);
+                            hastxd = hastxd || (child.Drawable2?.ShaderGroup?.TextureDictionary != null);
+                        }
+                    }
+                }
+                if (hastxd)
+                {
+                    if (!Directory.Exists(ddsfolder))
+                    {
+                        Directory.CreateDirectory(ddsfolder);
+                    }
                 }
             }
 

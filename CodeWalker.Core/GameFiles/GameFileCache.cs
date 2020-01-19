@@ -4264,7 +4264,7 @@ namespace CodeWalker.GameFiles
                     if (((vd.Flags >> i) & 1) == 1)
                     {
                         string typestr = "Unknown";
-                        uint type = (uint)((vd.Types >> (4 * i)) & 0xF);
+                        uint type = (uint)(((ulong)vd.Types >> (4 * i)) & 0xF);
                         switch (type)
                         {
                             case 0: typestr = "ushort"; break;// Data[i] = new ushort[1 * count]; break;

@@ -164,10 +164,6 @@ namespace CodeWalker
             d.LodDistMed = 9998;
             d.LodDistLow = 9998;
             d.LodDistVlow = 9998;
-            d.Unknown_80h = 0;//TODO: figure these out! related to high/med/low/vlow   0xFF00 + ?
-            d.Unknown_84h = 0;
-            d.Unknown_88h = 0;
-            d.Unknown_8Ch = 0;
             d.Unknown_9Ah = 33;//WTF is this???
             d.FileVFT = 1079446584;
             d.FileUnknown = 1;
@@ -175,30 +171,32 @@ namespace CodeWalker
             {
                 d.DrawableModelsHigh = new ResourcePointerList64<DrawableModel>();
                 d.DrawableModelsHigh.data_items = mlHigh.ToArray();
-                d.Unknown_80h = 65281;//WTF is this???   0xFF00 + ?
+                d.FlagsHigh = 1;//what flags should be used??
             }
             if (mlMed.Count > 0)
             {
                 d.DrawableModelsMedium = new ResourcePointerList64<DrawableModel>();
                 d.DrawableModelsMedium.data_items = mlMed.ToArray();
                 d.LodDistHigh = bsRad * 2.0f; //when med models present, generate a high lod dist..
-                d.Unknown_84h = 65281;//WTF is this???   0xFF00 + ?
+                d.FlagsMed = 1;
             }
             if (mlLow.Count > 0)
             {
                 d.DrawableModelsLow = new ResourcePointerList64<DrawableModel>();
                 d.DrawableModelsLow.data_items = mlLow.ToArray();
                 d.LodDistMed = bsRad * 8.0f; //when low models present, generate a med lod dist..
-                d.Unknown_88h = 65281;//WTF is this???   0xFF00 + ?
+                d.FlagsLow = 1;
             }
             if (mlVlow.Count > 0)
             {
                 d.DrawableModelsVeryLow = new ResourcePointerList64<DrawableModel>();
                 d.DrawableModelsVeryLow.data_items = mlVlow.ToArray();
                 d.LodDistLow = bsRad * 32.0f; //when vlow models present, generate a low lod dist..
-                d.Unknown_8Ch = 65281;//WTF is this???   0xFF00 + ?
+                d.FlagsVlow = 1;
             }
             d.DrawableModelsX = d.DrawableModelsHigh;
+
+            d.BuildRenderMasks();
 
             d.LightAttributes = new ResourceSimpleList64_s<LightAttributes_s>();
             //todo: light attributes?
@@ -598,7 +596,7 @@ namespace CodeWalker
 
 
             var vData = new VertexData();
-            vData.info = dVertDecl;
+            vData.Info = dVertDecl;
             vData.VertexType = (VertexType)dVertDecl.Flags;
             vData.VertexStride = dVertDecl.Stride;
             vData.VertexCount = vList.Count;
@@ -817,7 +815,7 @@ namespace CodeWalker
         private VertexDeclaration GetVertexDeclaration(ShaderFX shader)
         {
             var d = new VertexDeclaration();
-            d.Types = 8598872888530528662;
+            d.Types = VertexDeclarationTypes.GTAV1;
             d.Unknown_6h = 0;
 
             switch (shader.Name)
