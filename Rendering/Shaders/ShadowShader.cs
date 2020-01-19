@@ -113,8 +113,8 @@ namespace CodeWalker.Rendering
             layouts.Add(VertexType.PNCCTTTX, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCTTTX)));
             layouts.Add(VertexType.PNCCTT, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCTT)));
             layouts.Add(VertexType.PNCCTX, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCTX)));
-            layouts.Add(VertexType.PNCH2, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCH2, VertexDeclarationTypes.Types3)));
-            layouts.Add(VertexType.PCCH2H4, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PCCH2H4, VertexDeclarationTypes.Types2)));
+            layouts.Add(VertexType.PNCH2, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCH2, VertexDeclarationTypes.GTAV3)));
+            layouts.Add(VertexType.PCCH2H4, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PCCH2H4, VertexDeclarationTypes.GTAV2)));
             layouts.Add(VertexType.PNCTT, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCTT)));
             layouts.Add(VertexType.PNCTTT, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.PNCTTT)));
 

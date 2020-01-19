@@ -76,9 +76,12 @@ namespace CodeWalker.GameFiles
             {
                 ddsfolder = Path.Combine(outputFolder, ydr.Name);
 
-                if (!Directory.Exists(ddsfolder))
+                if (ydr?.Drawable?.ShaderGroup?.TextureDictionary != null)
                 {
-                    Directory.CreateDirectory(ddsfolder);
+                    if (!Directory.Exists(ddsfolder))
+                    {
+                        Directory.CreateDirectory(ddsfolder);
+                    }
                 }
             }
 

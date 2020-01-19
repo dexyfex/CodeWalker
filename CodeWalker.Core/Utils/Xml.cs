@@ -222,6 +222,30 @@ namespace CodeWalker
             return GetRawByteArray(cnode);
         }
 
+        public static ushort[] GetRawUshortArray(XmlNode node)
+        {
+            if (node == null) return new ushort[0];
+            var data = new List<ushort>();
+            var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");
+            for (int i = 0; i < split.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(split[i]))
+                {
+                    var str = split[i];
+                    if (string.IsNullOrEmpty(str)) continue;
+                    var val = (ushort)0;
+                    ushort.TryParse(str, out val);
+                    data.Add(val);
+                }
+            }
+            return data.ToArray();
+        }
+        public static ushort[] GetChildRawUshortArray(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            return GetRawUshortArray(cnode);
+        }
+
         public static uint[] GetRawUintArray(XmlNode node)
         {
             if (node == null) return new uint[0];

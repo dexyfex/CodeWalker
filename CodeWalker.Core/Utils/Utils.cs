@@ -128,22 +128,22 @@ namespace CodeWalker
         }
 
 
-        public static string GetVector2String(Vector2 v)
+        public static string GetVector2String(Vector2 v, string d = ", ")
         {
             var c = CultureInfo.InvariantCulture;
-            return v.X.ToString(c) + ", " + v.Y.ToString(c);
+            return v.X.ToString(c) + d + v.Y.ToString(c);
         }
         public static string GetVector2XmlString(Vector2 v)
         {
             var c = CultureInfo.InvariantCulture;
             return string.Format("x=\"{0}\" y=\"{1}\"", v.X.ToString(c), v.Y.ToString(c));
         }
-        public static string GetVector3String(Vector3 v)
+        public static string GetVector3String(Vector3 v, string d = ", ")
         {
             var c = CultureInfo.InvariantCulture;
-            return v.X.ToString(c) + ", " + v.Y.ToString(c) + ", " + v.Z.ToString(c);
+            return v.X.ToString(c) + d + v.Y.ToString(c) + d + v.Z.ToString(c);
         }
-        public static string GetVector3String(Vector3 v, string format)
+        public static string GetVector3StringFormat(Vector3 v, string format)
         {
             var c = CultureInfo.InvariantCulture;
             return v.X.ToString(format, c) + ", " + v.Y.ToString(format, c) + ", " + v.Z.ToString(format, c);
@@ -152,6 +152,11 @@ namespace CodeWalker
         {
             var c = CultureInfo.InvariantCulture;
             return string.Format("x=\"{0}\" y=\"{1}\" z=\"{2}\"", v.X.ToString(c), v.Y.ToString(c), v.Z.ToString(c));
+        }
+        public static string GetVector4String(Vector4 v, string d = ", ")
+        {
+            var c = CultureInfo.InvariantCulture;
+            return v.X.ToString(c) + d + v.Y.ToString(c) + d + v.Z.ToString(c) + d + v.W.ToString(c);
         }
         public static string GetVector4XmlString(Vector4 v)
         {
@@ -162,6 +167,23 @@ namespace CodeWalker
         {
             var c = CultureInfo.InvariantCulture;
             return string.Format("x=\"{0}\" y=\"{1}\" z=\"{2}\" w=\"{3}\"", q.X.ToString(c), q.Y.ToString(c), q.Z.ToString(c), q.W.ToString(c));
+        }
+        public static string GetHalf2String(Half2 v, string d = ", ")
+        {
+            var c = CultureInfo.InvariantCulture;
+            var f = Half.ConvertToFloat(new[] { v.X, v.Y });
+            return f[0].ToString(c) + d + f[1].ToString(c);
+        }
+        public static string GetHalf4String(Half4 v, string d = ", ")
+        {
+            var c = CultureInfo.InvariantCulture;
+            var f = Half.ConvertToFloat(new[] { v.X, v.Y, v.Z, v.W });
+            return f[0].ToString(c) + d + f[1].ToString(c) + d + f[2].ToString(c) + d + f[3].ToString(c);
+        }
+        public static string GetColourString(Color v, string d = ", ")
+        {
+            var c = CultureInfo.InvariantCulture;
+            return v.R.ToString(c) + d + v.G.ToString(c) + d + v.B.ToString(c) + d + v.A.ToString(c);
         }
 
 
@@ -179,7 +201,6 @@ namespace CodeWalker
             }
             return p;
         }
-
         public static Vector3 ParseVector3String(string s)
         {
             Vector3 p = new Vector3(0.0f);
@@ -197,14 +218,6 @@ namespace CodeWalker
                 TryParse(ss[2].Trim(), out p.Z);
             }
             return p;
-        }
-
-
-
-        public static string GetVector4String(Vector4 v)
-        {
-            var c = CultureInfo.InvariantCulture;
-            return v.X.ToString(c) + ", " + v.Y.ToString(c) + ", " + v.Z.ToString(c) + ", " + v.W.ToString(c);
         }
         public static Vector4 ParseVector4String(string s)
         {

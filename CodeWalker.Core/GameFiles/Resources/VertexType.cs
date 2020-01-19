@@ -10,15 +10,15 @@ namespace CodeWalker.GameFiles
     public enum VertexComponentType : byte
     {
         Nothing = 0,
-        Float16Two = 1,
+        Half2 = 1,
         Float = 2,
-        Float16Four = 3,
-        Float_unk = 4,
+        Half4 = 3,
+        FloatUnk = 4,
         Float2 = 5,
         Float3 = 6,
         Float4 = 7,
         UByte4 = 8,
-        Color = 9,
+        Colour = 9,
         Dec3N = 10,
         Unk1 = 11,
         Unk2 = 12,
@@ -27,17 +27,79 @@ namespace CodeWalker.GameFiles
         Unk5 = 15,
     }
 
+    public static class VertexComponentTypes
+    {
+        public static int GetSizeInBytes(VertexComponentType type)
+        {
+            switch (type)
+            {
+                case VertexComponentType.Nothing: return 0;
+                case VertexComponentType.Half2: return 4;
+                case VertexComponentType.Float: return 4;
+                case VertexComponentType.Half4: return 8;
+                case VertexComponentType.FloatUnk: return 0;
+                case VertexComponentType.Float2: return 8;
+                case VertexComponentType.Float3: return 12;
+                case VertexComponentType.Float4: return 16;
+                case VertexComponentType.UByte4: return 4;
+                case VertexComponentType.Colour: return 4;
+                case VertexComponentType.Dec3N: return 4;
+                default: return 0;
+            }
+        }
+
+        public static int GetComponentCount(VertexComponentType type)
+        {
+            switch (type)
+            {
+                case VertexComponentType.Nothing: return 0;
+                case VertexComponentType.Half2: return 2;
+                case VertexComponentType.Float: return 1;
+                case VertexComponentType.Half4: return 4;
+                case VertexComponentType.FloatUnk: return 0;
+                case VertexComponentType.Float2: return 2;
+                case VertexComponentType.Float3: return 3;
+                case VertexComponentType.Float4: return 4;
+                case VertexComponentType.UByte4: return 4;
+                case VertexComponentType.Colour: return 4;
+                case VertexComponentType.Dec3N: return 3;
+                default: return 0;
+            }
+        }
+
+    }
+
     public enum VertexDeclarationTypes : ulong
     {
-        Types1 = 0x7755555555996996, // GTAV - used by most drawables
-        Types2 = 0x030000000199A006, // GTAV - used on cloth?
-        Types3 = 0x0300000001996006, // GTAV - used on cloth?
+        GTAV1 = 0x7755555555996996, // GTAV - used by most drawables
+        GTAV2 = 0x030000000199A006, // GTAV - used on cloth?
+        GTAV3 = 0x0300000001996006, // GTAV - used on cloth?
 
         //Types4 = 0x0000000007097007, // Max Payne 3
         //Types5 = 0x0700000007097977, // Max Payne 3
         //Types6 = 0x0700000007997977, // Max Payne 3
         //Types7 = 0x0700007777097977, // Max Payne 3
         //Types8 = 0x0700007777997977, // Max Payne 3
+    }
+
+    public enum VertexSemantics : int
+    {
+        Position = 0,
+        BlendWeights = 1,
+        BlendIndices = 2,
+        Normal = 3,
+        Colour0 = 4,
+        Colour1 = 5,
+        TexCoord0 = 6,
+        TexCoord1 = 7,
+        TexCoord2 = 8,
+        TexCoord3 = 9,
+        TexCoord4 = 10,
+        TexCoord5 = 11,
+        TexCoord6 = 12,
+        TexCoord7 = 13,
+        Tangent = 14,
+        Binormal = 15,
     }
 
     public enum VertexType : uint
@@ -82,52 +144,47 @@ namespace CodeWalker.GameFiles
         PBBNCTTTX = 16863,
     }
 
-
-    //0x7755555555996996
-    public struct VertexTypeGTAV1
+    public struct VertexTypeGTAV1    //0x7755555555996996
     {
         public Vector3 Position;
         public uint BlendWeights;
         public uint BlendIndices;
-        public Vector3 Normals;
+        public Vector3 Normal;
         public uint Colour0;
         public uint Colour1;
-        public Vector2 Texcoords0;
-        public Vector2 Texcoords1;
-        public Vector2 Texcoords2;
-        public Vector2 Texcoords3;
-        public Vector2 Texcoords4;
-        public Vector2 Texcoords5;
-        public Vector2 Texcoords6;
-        public Vector2 Texcoords7;
-        public Vector4 Tangents;
-        public Vector4 Binormals;
+        public Vector2 Texcoord0;
+        public Vector2 Texcoord1;
+        public Vector2 Texcoord2;
+        public Vector2 Texcoord3;
+        public Vector2 Texcoord4;
+        public Vector2 Texcoord5;
+        public Vector2 Texcoord6;
+        public Vector2 Texcoord7;
+        public Vector4 Tangent;
+        public Vector4 Binormal;
     }
 
-    //0x030000000199A006
-    public struct VertexTypeGTAV2
+    public struct VertexTypeGTAV2    //0x030000000199A006
     {
         public Vector3 Position;
-        public uint Normals; // Packed as Dec3N 
+        public uint Normal; // Packed as Dec3N 
         public uint Colour0;
         public uint Colour1;
-        public Half2 Texcoords0;
-        public Half4 Tangents;
+        public Half2 Texcoord0;
+        public Half4 Tangent;
     }
 
-    //0x0300000001996006
-    public struct VertexTypeGTAV3
+    public struct VertexTypeGTAV3    //0x0300000001996006
     {
         public Vector3 Position;
-        public Vector3 Normals;
+        public Vector3 Normal;
         public uint Colour0;
         public uint Colour1;
-        public Half2 Texcoords0;
-        public Half4 Tangents;
+        public Half2 Texcoord0;
+        public Half4 Tangent;
     }
 
-    //vertex data to be used by the editor. TODO: maybe move somewhere else.
-    public struct EditorVertex
+    public struct EditorVertex    //vertex data to be used by the editor. TODO: maybe move somewhere else.
     {
         public Vector3 Position;
         public uint Colour;

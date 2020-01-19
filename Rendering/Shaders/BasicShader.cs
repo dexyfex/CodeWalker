@@ -256,7 +256,7 @@ namespace CodeWalker.Rendering
 
             //supported layouts - requires Position, Normal, Colour, Texcoord
             layouts.Add(VertexType.Default, new InputLayout(device, vspnctbytes, VertexTypeGTAV.GetLayout(VertexType.Default)));
-            layouts.Add(VertexType.PNCH2, new InputLayout(device, vspnctbytes, VertexTypeGTAV.GetLayout(VertexType.PNCH2, VertexDeclarationTypes.Types3)));//TODO?
+            layouts.Add(VertexType.PNCH2, new InputLayout(device, vspnctbytes, VertexTypeGTAV.GetLayout(VertexType.PNCH2, VertexDeclarationTypes.GTAV3)));//TODO?
             layouts.Add(VertexType.PNCTT, new InputLayout(device, vspncttbytes, VertexTypeGTAV.GetLayout(VertexType.PNCTT)));
             layouts.Add(VertexType.PNCTTT, new InputLayout(device, vspnctttbytes, VertexTypeGTAV.GetLayout(VertexType.PNCTTT)));
             layouts.Add(VertexType.PNCCT, new InputLayout(device, vspncctbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCT)));
@@ -267,7 +267,7 @@ namespace CodeWalker.Rendering
 
             //normalmap layouts - requires Position, Normal, Colour, Texcoord, Tangent (X)
             layouts.Add(VertexType.DefaultEx, new InputLayout(device, vspnctxbytes, VertexTypeGTAV.GetLayout(VertexType.DefaultEx)));
-            layouts.Add(VertexType.PCCH2H4, new InputLayout(device, vspnctxbytes, VertexTypeGTAV.GetLayout(VertexType.PCCH2H4, VertexDeclarationTypes.Types2)));
+            layouts.Add(VertexType.PCCH2H4, new InputLayout(device, vspnctxbytes, VertexTypeGTAV.GetLayout(VertexType.PCCH2H4, VertexDeclarationTypes.GTAV2)));
             layouts.Add(VertexType.PNCCTX, new InputLayout(device, vspncctxbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCTX)));
             layouts.Add(VertexType.PNCTTX, new InputLayout(device, vspncttxbytes, VertexTypeGTAV.GetLayout(VertexType.PNCTTX)));
             layouts.Add(VertexType.PNCCTTX, new InputLayout(device, vspnccttxbytes, VertexTypeGTAV.GetLayout(VertexType.PNCCTTX)));

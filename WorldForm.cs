@@ -5609,7 +5609,7 @@ namespace CodeWalker
                 UpdateTimeOfDayLabel();
             }
 
-            CameraPositionTextBox.Text = FloatUtil.GetVector3String(camera.Position, "0.##");
+            CameraPositionTextBox.Text = FloatUtil.GetVector3StringFormat(camera.Position, "0.##");
         }
 
         private void WorldForm_Load(object sender, EventArgs e)
