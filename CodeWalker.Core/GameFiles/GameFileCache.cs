@@ -4194,9 +4194,9 @@ namespace CodeWalker.GameFiles
                                     }
                                 }
                             }
-                            if ((yft.Fragment.Clothes != null) && (yft.Fragment.Clothes.data_items != null))
+                            if ((yft.Fragment.Cloths != null) && (yft.Fragment.Cloths.data_items != null))
                             {
-                                foreach (var cloth in yft.Fragment.Clothes.data_items)
+                                foreach (var cloth in yft.Fragment.Cloths.data_items)
                                 {
                                     drawablecount++;
                                     foreach (var kvp in cloth.Drawable.VertexDecls)

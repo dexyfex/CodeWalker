@@ -140,6 +140,28 @@ namespace CodeWalker.GameFiles
         //public float Unknown_22 { get; set; }
         //public float Unknown_23 { get; set; }
         //public float Unknown_24 { get; set; }
+
+
+        public Matrix3_s(float[] a)
+        {
+            if ((a != null) && (a.Length == 12))
+            {
+                Row1 = new Vector4(a[0], a[1], a[2], a[3]);
+                Row2 = new Vector4(a[4], a[5], a[6], a[7]);
+                Row3 = new Vector4(a[8], a[9], a[10], a[11]);
+            }
+            else
+            {
+                Row1 = new Vector4(1, 0, 0, 0);
+                Row2 = new Vector4(0, 1, 0, 0);
+                Row3 = new Vector4(0, 0, 1, 0);
+            }
+        }
+        public float[] ToArray()
+        {
+            return new[] { Row1.X, Row1.Y, Row1.Z, Row1.W, Row2.X, Row2.Y, Row2.Z, Row2.W, Row3.X, Row3.Y, Row3.Z, Row3.W };
+        }
+
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct AABB_s

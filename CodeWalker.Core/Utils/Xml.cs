@@ -41,6 +41,14 @@ namespace CodeWalker
             uint.TryParse(val, out i);
             return i;
         }
+        public static ulong GetULongAttribute(XmlNode node, string attribute)
+        {
+            if (node == null) return 0;
+            string val = node.Attributes[attribute]?.InnerText;
+            ulong i;
+            ulong.TryParse(val, out i);
+            return i;
+        }
         public static float GetFloatAttribute(XmlNode node, string attribute)
         {
             if (node == null) return 0;
@@ -199,7 +207,7 @@ namespace CodeWalker
 
 
 
-        public static byte[] GetRawByteArray(XmlNode node)
+        public static byte[] GetRawByteArray(XmlNode node, int fromBase = 16)
         {
             if (node == null) return new byte[0];
             var data = new List<byte>();
@@ -210,16 +218,16 @@ namespace CodeWalker
                 {
                     var str = split[i];
                     if (string.IsNullOrEmpty(str)) continue;
-                    var val = Convert.ToByte(str, 16);
+                    var val = Convert.ToByte(str, fromBase);
                     data.Add(val);
                 }
             }
             return data.ToArray();
         }
-        public static byte[] GetChildRawByteArray(XmlNode node, string name)
+        public static byte[] GetChildRawByteArray(XmlNode node, string name, int fromBase = 16)
         {
             var cnode = node.SelectSingleNode(name);
-            return GetRawByteArray(cnode);
+            return GetRawByteArray(cnode, fromBase);
         }
 
         public static ushort[] GetRawUshortArray(XmlNode node)
@@ -450,6 +458,18 @@ namespace CodeWalker
             return GetRawVector4Array(cnode);
         }
 
+        public static Matrix GetMatrix(XmlNode node)
+        {
+            if (node == null) return Matrix.Identity;
+            var arr = GetRawFloatArray(node);
+            if ((arr == null) || (arr.Length != 16)) return Matrix.Identity;
+            return new Matrix(arr);
+        }
+        public static Matrix GetChildMatrix(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            return GetMatrix(cnode);
+        }
 
     }
 }

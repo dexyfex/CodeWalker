@@ -708,7 +708,6 @@ namespace CodeWalker
             shader.Unknown_24h = 0;
             shader.Unknown_26h = 0;
             shader.Unknown_28h = 0;
-            shader.Unknown_2Ch = 0;
 
 
             switch (spsName)
