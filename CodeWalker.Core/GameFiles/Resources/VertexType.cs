@@ -74,6 +74,7 @@ namespace CodeWalker.GameFiles
         GTAV1 = 0x7755555555996996, // GTAV - used by most drawables
         GTAV2 = 0x030000000199A006, // GTAV - used on cloth?
         GTAV3 = 0x0300000001996006, // GTAV - used on cloth?
+        GTAV4 = 0x7655555555996996, // GTAV - used by FragGlassWindow
 
         //Types4 = 0x0000000007097007, // Max Payne 3
         //Types5 = 0x0700000007097977, // Max Payne 3

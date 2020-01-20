@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -506,9 +507,16 @@ namespace CodeWalker.GameFiles
 
             try
             {
-                var filepath = System.IO.Path.Combine(ddsfolder, (Name ?? "null") + ".dds");
-                var dds = DDSIO.GetDDSFile(this);
-                System.IO.File.WriteAllBytes(filepath, dds);
+                if (!string.IsNullOrEmpty(ddsfolder))
+                {
+                    if (!Directory.Exists(ddsfolder))
+                    {
+                        Directory.CreateDirectory(ddsfolder);
+                    }
+                    var filepath = Path.Combine(ddsfolder, (Name ?? "null") + ".dds");
+                    var dds = DDSIO.GetDDSFile(this);
+                    File.WriteAllBytes(filepath, dds);
+                }
             }
             catch { }
         }
@@ -526,10 +534,10 @@ namespace CodeWalker.GameFiles
 
             try
             {
-                var filepath = System.IO.Path.Combine(ddsfolder, filename);
-                if (System.IO.File.Exists(filepath))
+                var filepath = Path.Combine(ddsfolder, filename);
+                if (File.Exists(filepath))
                 {
-                    var dds = System.IO.File.ReadAllBytes(filepath);
+                    var dds = File.ReadAllBytes(filepath);
                     var tex = DDSIO.GetTexture(dds);
                     if (tex != null)
                     {

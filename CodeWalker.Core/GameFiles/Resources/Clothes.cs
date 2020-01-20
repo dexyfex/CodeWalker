@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 /*
     Copyright(c) 2017 Neodymium
@@ -892,7 +893,7 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class EnvironmentCloth : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class EnvironmentCloth : ResourceSystemBlock, IMetaXmlItem
     {
         // pgBase
         // clothBase (TODO)
@@ -938,9 +939,6 @@ namespace CodeWalker.GameFiles
 
         private ResourceSystemStructBlock<uint> UnknownDataBlock = null;
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -992,10 +990,6 @@ namespace CodeWalker.GameFiles
             }
 
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -1037,10 +1031,15 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_78h);
             writer.Write(this.Unknown_7Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            //TODO!!
+        }
+        public void ReadXml(XmlNode node)
+        {
+            //TODO!!
+        }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -1054,6 +1053,7 @@ namespace CodeWalker.GameFiles
             }
             return list.ToArray();
         }
+
     }
 
 

@@ -1790,6 +1790,21 @@ namespace CodeWalker.GameFiles
             else SelfClosingTag(sb, indent, name);
         }
 
+        public static void WriteRawArrayContent<T>(StringBuilder sb, T[] arr, int ind, Func<T, string> formatter = null, int arrRowSize = 10) where T : struct
+        {
+            var aCount = arr?.Length ?? 0;
+            for (int n = 0; n < aCount; n++)
+            {
+                var col = n % arrRowSize;
+                if (col == 0) Indent(sb, ind);
+                if (col > 0) sb.Append(" ");
+                string str = (formatter != null) ? formatter(arr[n]) : arr[n].ToString();
+                sb.Append(str);
+                bool lastcol = (col == (arrRowSize - 1));
+                bool lastn = (n == (aCount - 1));
+                if (lastcol || lastn) sb.AppendLine();
+            }
+        }
         public static void WriteRawArray<T>(StringBuilder sb, T[] arr, int ind, string name, string typeName, Func<T, string> formatter = null, int arrRowSize = 10) where T : struct
         {
             var aCount = arr?.Length ?? 0;
