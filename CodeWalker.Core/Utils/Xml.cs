@@ -112,7 +112,7 @@ namespace CodeWalker
         }
 
 
-        public static bool GetChildBoolAttribute(XmlNode node, string name, string attribute)
+        public static bool GetChildBoolAttribute(XmlNode node, string name, string attribute = "value")
         {
             if (node == null) return false;
             string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
@@ -120,7 +120,7 @@ namespace CodeWalker
             bool.TryParse(val, out b);
             return b;
         }
-        public static int GetChildIntAttribute(XmlNode node, string name, string attribute)
+        public static int GetChildIntAttribute(XmlNode node, string name, string attribute = "value")
         {
             if (node == null) return 0;
             string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
@@ -128,7 +128,7 @@ namespace CodeWalker
             int.TryParse(val, out i);
             return i;
         }
-        public static uint GetChildUIntAttribute(XmlNode node, string name, string attribute)
+        public static uint GetChildUIntAttribute(XmlNode node, string name, string attribute = "value")
         {
             if (node == null) return 0;
             string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
@@ -144,7 +144,7 @@ namespace CodeWalker
             }
             return i;
         }
-        public static float GetChildFloatAttribute(XmlNode node, string name, string attribute)
+        public static float GetChildFloatAttribute(XmlNode node, string name, string attribute = "value")
         {
             if (node == null) return 0;
             string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
@@ -152,26 +152,26 @@ namespace CodeWalker
             FloatUtil.TryParse(val, out f);
             return f;
         }
-        public static string GetChildStringAttribute(XmlNode node, string name, string attribute)
+        public static string GetChildStringAttribute(XmlNode node, string name, string attribute = "value")
         {
             if (node == null) return string.Empty;
             string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
             return val;
         }
-        public static Vector2 GetChildVector2Attributes(XmlNode node, string name, string x, string y)
+        public static Vector2 GetChildVector2Attributes(XmlNode node, string name, string x = "x", string y = "y")
         {
             float fx = GetChildFloatAttribute(node, name, x);
             float fy = GetChildFloatAttribute(node, name, y);
             return new Vector2(fx, fy);
         }
-        public static Vector3 GetChildVector3Attributes(XmlNode node, string name, string x, string y, string z)
+        public static Vector3 GetChildVector3Attributes(XmlNode node, string name, string x = "x", string y = "y", string z = "z")
         {
             float fx = GetChildFloatAttribute(node, name, x);
             float fy = GetChildFloatAttribute(node, name, y);
             float fz = GetChildFloatAttribute(node, name, z);
             return new Vector3(fx, fy, fz);
         }
-        public static Vector4 GetChildVector4Attributes(XmlNode node, string name, string x, string y, string z, string w)
+        public static Vector4 GetChildVector4Attributes(XmlNode node, string name, string x = "x", string y = "y", string z = "z", string w = "w")
         {
             float fx = GetChildFloatAttribute(node, name, x);
             float fy = GetChildFloatAttribute(node, name, y);

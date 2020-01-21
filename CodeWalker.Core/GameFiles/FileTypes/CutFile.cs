@@ -111,11 +111,11 @@ namespace CodeWalker.GameFiles
             fTotalDuration = Xml.GetChildFloatAttribute(node, "fTotalDuration", "value");
             cFaceDir = Xml.GetChildInnerText(node, "cFaceDir");
             iCutsceneFlags = Xml.GetChildRawUintArray(node, "iCutsceneFlags");
-            vOffset = Xml.GetChildVector3Attributes(node, "vOffset", "x", "y", "z");
+            vOffset = Xml.GetChildVector3Attributes(node, "vOffset");
             fRotation = Xml.GetChildFloatAttribute(node, "fRotation", "value");
             cExtraRoom = Xml.GetChildInnerText(node, "cExtraRoom");
-            vExtraRoomPos = Xml.GetChildVector3Attributes(node, "vExtraRoomPos", "x", "y", "z");
-            vTriggerOffset = Xml.GetChildVector3Attributes(node, "vTriggerOffset", "x", "y", "z");
+            vExtraRoomPos = Xml.GetChildVector3Attributes(node, "vExtraRoomPos");
+            vTriggerOffset = Xml.GetChildVector3Attributes(node, "vTriggerOffset");
             pCutsceneObjects = ReadObjectArray(node, "pCutsceneObjects");
             pCutsceneLoadEventList = ReadObjectArray(node, "pCutsceneLoadEventList");
             pCutsceneEventList = ReadObjectArray(node, "pCutsceneEventList");
@@ -419,7 +419,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             cSceneName = XmlMeta.GetHash(Xml.GetChildInnerText(node, "cSceneName"));
-            vOffset = Xml.GetChildVector3Attributes(node, "vOffset", "x", "y", "z");
+            vOffset = Xml.GetChildVector3Attributes(node, "vOffset");
             fStartTime = Xml.GetChildFloatAttribute(node, "fStartTime", "value");
             fRotation = Xml.GetChildFloatAttribute(node, "fRotation", "value");
             fPitch = Xml.GetChildFloatAttribute(node, "fPitch", "value");
@@ -585,7 +585,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            vPosition = Xml.GetChildVector3Attributes(node, "vPosition", "x", "y", "z");
+            vPosition = Xml.GetChildVector3Attributes(node, "vPosition");
             fRadius = Xml.GetChildFloatAttribute(node, "fRadius", "value");
         }
     }
@@ -634,9 +634,9 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            vDirection = Xml.GetChildVector3Attributes(node, "vDirection", "x", "y", "z");
-            vColour = Xml.GetChildVector3Attributes(node, "vColour", "x", "y", "z");
-            vPosition = Xml.GetChildVector3Attributes(node, "vPosition", "x", "y", "z");
+            vDirection = Xml.GetChildVector3Attributes(node, "vDirection");
+            vColour = Xml.GetChildVector3Attributes(node, "vColour");
+            vPosition = Xml.GetChildVector3Attributes(node, "vPosition");
             fIntensity = Xml.GetChildFloatAttribute(node, "fIntensity", "value");
             fFallOff = Xml.GetChildFloatAttribute(node, "fFallOff", "value");
             fConeAngle = Xml.GetChildFloatAttribute(node, "fConeAngle", "value");
@@ -688,9 +688,9 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            vDirection = Xml.GetChildVector3Attributes(node, "vDirection", "x", "y", "z");
-            vColour = Xml.GetChildVector3Attributes(node, "vColour", "x", "y", "z");
-            vPosition = Xml.GetChildVector3Attributes(node, "vPosition", "x", "y", "z");
+            vDirection = Xml.GetChildVector3Attributes(node, "vDirection");
+            vColour = Xml.GetChildVector3Attributes(node, "vColour");
+            vPosition = Xml.GetChildVector3Attributes(node, "vPosition");
             fIntensity = Xml.GetChildFloatAttribute(node, "fIntensity", "value");
             fFallOff = Xml.GetChildFloatAttribute(node, "fFallOff", "value");
             fConeAngle = Xml.GetChildFloatAttribute(node, "fConeAngle", "value");
@@ -773,7 +773,7 @@ namespace CodeWalker.GameFiles
         {
             base.ReadXml(node);
             StreamingName = XmlMeta.GetHash(Xml.GetChildInnerText(node, "StreamingName"));
-            vStartPosition = Xml.GetChildVector3Attributes(node, "vStartPosition", "x", "y", "z");
+            vStartPosition = Xml.GetChildVector3Attributes(node, "vStartPosition");
         }
     }
     [TC(typeof(EXP))] public class CutParticleEffectObject : CutNamedObject  // rage__cutfParticleEffectObject
@@ -825,7 +825,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            vPosition = Xml.GetChildVector3Attributes(node, "vPosition", "x", "y", "z");
+            vPosition = Xml.GetChildVector3Attributes(node, "vPosition");
             fRadius = Xml.GetChildFloatAttribute(node, "fRadius", "value");
         }
     }
@@ -1013,7 +1013,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            vOffset = Xml.GetChildVector3Attributes(node, "vOffset", "x", "y", "z");
+            vOffset = Xml.GetChildVector3Attributes(node, "vOffset");
             fRotation = Xml.GetChildFloatAttribute(node, "fRotation", "value");
             fPitch = Xml.GetChildFloatAttribute(node, "fPitch", "value");
             fRoll = Xml.GetChildFloatAttribute(node, "fRoll", "value");
@@ -1077,8 +1077,8 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            vPosition = Xml.GetChildVector3Attributes(node, "vPosition", "x", "y", "z");
-            vRotationQuaternion = Xml.GetChildVector4Attributes(node, "vRotationQuaternion", "x", "y", "z", "w").ToQuaternion();
+            vPosition = Xml.GetChildVector3Attributes(node, "vPosition");
+            vRotationQuaternion = Xml.GetChildVector4Attributes(node, "vRotationQuaternion").ToQuaternion();
             fNearDrawDistance = Xml.GetChildFloatAttribute(node, "fNearDrawDistance", "value");
             fFarDrawDistance = Xml.GetChildFloatAttribute(node, "fFarDrawDistance", "value");
             fMapLodScale = Xml.GetChildFloatAttribute(node, "fMapLodScale", "value");
@@ -1121,8 +1121,8 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             bUseTimeCycleValues = Xml.GetChildBoolAttribute(node, "bUseTimeCycleValues", "value");
-            vDirection = Xml.GetChildVector3Attributes(node, "vDirection", "x", "y", "z");
-            vColour = Xml.GetChildVector3Attributes(node, "vColour", "x", "y", "z");
+            vDirection = Xml.GetChildVector3Attributes(node, "vDirection");
+            vColour = Xml.GetChildVector3Attributes(node, "vColour");
             fIntensity = Xml.GetChildFloatAttribute(node, "fIntensity", "value");
         }
     }
@@ -1202,8 +1202,8 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            vPosition = Xml.GetChildVector3Attributes(node, "vPosition", "x", "y", "z");
-            vRotation = Xml.GetChildVector4Attributes(node, "vRotation", "x", "y", "z", "w").ToQuaternion();
+            vPosition = Xml.GetChildVector3Attributes(node, "vPosition");
+            vRotation = Xml.GetChildVector4Attributes(node, "vRotation").ToQuaternion();
             fWidth = Xml.GetChildFloatAttribute(node, "fWidth", "value");
             fHeight = Xml.GetChildFloatAttribute(node, "fHeight", "value");
             Colour = Xml.GetChildUIntAttribute(node, "Colour", "value");
@@ -1236,7 +1236,7 @@ namespace CodeWalker.GameFiles
         {
             base.ReadXml(node);
             cameraCutHashName = XmlMeta.GetHash(Xml.GetChildInnerText(node, "cameraCutHashName"));
-            position = Xml.GetChildVector3Attributes(node, "position", "x", "y", "z");
+            position = Xml.GetChildVector3Attributes(node, "position");
             radius = Xml.GetChildFloatAttribute(node, "radius", "value");
             interpTime = Xml.GetChildFloatAttribute(node, "interpTime", "value");
             cascadeIndex = Xml.GetChildIntAttribute(node, "cascadeIndex", "value");
@@ -1268,8 +1268,8 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            vInitialBoneRotation = Xml.GetChildVector4Attributes(node, "vInitialBoneRotation", "x", "y", "z", "w").ToQuaternion();
-            vInitialBoneOffset = Xml.GetChildVector3Attributes(node, "vInitialBoneOffset", "x", "y", "z");
+            vInitialBoneRotation = Xml.GetChildVector4Attributes(node, "vInitialBoneRotation").ToQuaternion();
+            vInitialBoneOffset = Xml.GetChildVector3Attributes(node, "vInitialBoneOffset");
             iAttachParentId = Xml.GetChildIntAttribute(node, "iAttachParentId", "value");
             iAttachBoneHash = (ushort)Xml.GetChildUIntAttribute(node, "iAttachBoneHash", "value");
         }

@@ -411,7 +411,7 @@ namespace CodeWalker.GameFiles
             AreaID = (ushort)Xml.GetChildUIntAttribute(node, "AreaID", "value");
             NodeID = (ushort)Xml.GetChildUIntAttribute(node, "NodeID", "value");
             StreetName = XmlYnd.GetTextHash(Xml.GetChildInnerText(node, "StreetName"));
-            Vector3 p = Xml.GetChildVector3Attributes(node, "Position", "x", "y", "z");
+            Vector3 p = Xml.GetChildVector3Attributes(node, "Position");
             PositionX = (short)(p.X * 4.0f);
             PositionY = (short)(p.Y * 4.0f);
             PositionZ = (short)(p.Z * 32.0f);
@@ -515,7 +515,7 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node, List<byte> allHeightmapDataList)
         {
-            Vector2 p = Xml.GetChildVector2Attributes(node, "Position", "x", "y");
+            Vector2 p = Xml.GetChildVector2Attributes(node, "Position");
             float minz = Xml.GetChildFloatAttribute(node, "MinZ", "value");
             float maxz = Xml.GetChildFloatAttribute(node, "MaxZ", "value");
             HeightmapDimX = (byte)Xml.GetChildUIntAttribute(node, "SizeX", "value");

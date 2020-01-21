@@ -1653,10 +1653,10 @@ namespace CodeWalker.GameFiles
             ParentIndex = (short)Xml.GetChildIntAttribute(node, "ParentIndex", "value");
             NextSiblingIndex = (short)Xml.GetChildIntAttribute(node, "SiblingIndex", "value");
             Flags = Xml.GetChildEnumInnerText<EBoneFlags>(node, "Flags");
-            Translation = Xml.GetChildVector3Attributes(node, "Translation", "x", "y", "z");
-            Rotation = Xml.GetChildVector4Attributes(node, "Rotation", "x", "y", "z", "w").ToQuaternion();
-            Scale = Xml.GetChildVector3Attributes(node, "Scale", "x", "y", "z");
-            TransformUnk = Xml.GetChildVector4Attributes(node, "TransformUnk", "x", "y", "z", "w");
+            Translation = Xml.GetChildVector3Attributes(node, "Translation");
+            Rotation = Xml.GetChildVector4Attributes(node, "Rotation").ToQuaternion();
+            Scale = Xml.GetChildVector3Attributes(node, "Scale");
+            TransformUnk = Xml.GetChildVector4Attributes(node, "TransformUnk");
         }
 
         public override IResourceBlock[] GetReferences()
@@ -1972,8 +1972,8 @@ namespace CodeWalker.GameFiles
             Init();
             BoneId = (ushort)Xml.GetChildUIntAttribute(node, "BoneId", "value");
             Unknown_Ah = (ushort)Xml.GetChildUIntAttribute(node, "UnknownA", "value");
-            Min = Xml.GetChildVector3Attributes(node, "Min", "x", "y", "z");
-            Max = Xml.GetChildVector3Attributes(node, "Max", "x", "y", "z");
+            Min = Xml.GetChildVector3Attributes(node, "Min");
+            Max = Xml.GetChildVector3Attributes(node, "Max");
         }
     }
 
@@ -2001,8 +2001,8 @@ namespace CodeWalker.GameFiles
         public void ReadXml(XmlNode node)
         {
             BoneId = (ushort)Xml.GetChildUIntAttribute(node, "BoneId", "value");
-            Min = Xml.GetChildVector3Attributes(node, "Min", "x", "y", "z");
-            Max = Xml.GetChildVector3Attributes(node, "Max", "x", "y", "z");
+            Min = Xml.GetChildVector3Attributes(node, "Min");
+            Max = Xml.GetChildVector3Attributes(node, "Max");
         }
     }
 
@@ -2502,8 +2502,8 @@ namespace CodeWalker.GameFiles
         {
             ShaderID = (ushort)Xml.GetChildUIntAttribute(node, "ShaderIndex", "value");
             var aabb = new AABB_s();
-            aabb.Min = Xml.GetChildVector4Attributes(node, "BoundingBoxMin", "x", "y", "z", "w");
-            aabb.Max = Xml.GetChildVector4Attributes(node, "BoundingBoxMax", "x", "y", "z", "w");
+            aabb.Min = Xml.GetChildVector4Attributes(node, "BoundingBoxMin");
+            aabb.Max = Xml.GetChildVector4Attributes(node, "BoundingBoxMax");
             AABB = aabb;
             var bnode = node.SelectSingleNode("BoneIDs");
             if (bnode != null)
@@ -3666,7 +3666,7 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node)
         {
-            Position = Xml.GetChildVector3Attributes(node, "Position", "x", "y", "z");
+            Position = Xml.GetChildVector3Attributes(node, "Position");
             ColorR = (byte)Xml.GetChildUIntAttribute(node, "Colour", "r");
             ColorG = (byte)Xml.GetChildUIntAttribute(node, "Colour", "g");
             ColorB = (byte)Xml.GetChildUIntAttribute(node, "Colour", "b");
@@ -3679,7 +3679,7 @@ namespace CodeWalker.GameFiles
             TimeFlags = Xml.GetChildUIntAttribute(node, "TimeFlags", "value");
             Falloff = Xml.GetChildFloatAttribute(node, "Falloff", "value");
             FalloffExponent = Xml.GetChildFloatAttribute(node, "FalloffExponent", "value");
-            CullingPlaneNormal = Xml.GetChildVector3Attributes(node, "CullingPlaneNormal", "x", "y", "z");
+            CullingPlaneNormal = Xml.GetChildVector3Attributes(node, "CullingPlaneNormal");
             CullingPlaneOffset = Xml.GetChildFloatAttribute(node, "CullingPlaneOffset", "value");
             Unknown_45h = (byte)Xml.GetChildUIntAttribute(node, "Unknown45", "value");
             Unknown_46h = (ushort)Xml.GetChildUIntAttribute(node, "Unknown46", "value");
@@ -3699,11 +3699,11 @@ namespace CodeWalker.GameFiles
             ShadowNearClip = Xml.GetChildFloatAttribute(node, "ShadowNearClip", "value");
             CoronaIntensity = Xml.GetChildFloatAttribute(node, "CoronaIntensity", "value");
             CoronaZBias = Xml.GetChildFloatAttribute(node, "CoronaZBias", "value");
-            Direction = Xml.GetChildVector3Attributes(node, "Direction", "x", "y", "z");
-            Tangent = Xml.GetChildVector3Attributes(node, "Tangent", "x", "y", "z");
+            Direction = Xml.GetChildVector3Attributes(node, "Direction");
+            Tangent = Xml.GetChildVector3Attributes(node, "Tangent");
             ConeInnerAngle = Xml.GetChildFloatAttribute(node, "ConeInnerAngle", "value");
             ConeOuterAngle = Xml.GetChildFloatAttribute(node, "ConeOuterAngle", "value");
-            Extent = Xml.GetChildVector3Attributes(node, "Extent", "x", "y", "z");
+            Extent = Xml.GetChildVector3Attributes(node, "Extent");
             ProjectedTextureHash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "ProjectedTextureHash"));
         }
     }
@@ -4181,10 +4181,10 @@ namespace CodeWalker.GameFiles
         }
         public virtual void ReadXml(XmlNode node, string ddsfolder)
         {
-            BoundingCenter = Xml.GetChildVector3Attributes(node, "BoundingSphereCenter", "x", "y", "z");
+            BoundingCenter = Xml.GetChildVector3Attributes(node, "BoundingSphereCenter");
             BoundingSphereRadius = Xml.GetChildFloatAttribute(node, "BoundingSphereRadius", "value");
-            BoundingBoxMin = Xml.GetChildVector4Attributes(node, "BoundingBoxMin", "x", "y", "z", "w");
-            BoundingBoxMax = Xml.GetChildVector4Attributes(node, "BoundingBoxMax", "x", "y", "z", "w");
+            BoundingBoxMin = Xml.GetChildVector4Attributes(node, "BoundingBoxMin");
+            BoundingBoxMax = Xml.GetChildVector4Attributes(node, "BoundingBoxMax");
             LodDistHigh = Xml.GetChildFloatAttribute(node, "LodDistHigh", "value");
             LodDistMed = Xml.GetChildFloatAttribute(node, "LodDistMed", "value");
             LodDistLow = Xml.GetChildFloatAttribute(node, "LodDistLow", "value");
