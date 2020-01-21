@@ -164,7 +164,7 @@ namespace CodeWalker.Project.Panels
                                         if (bone != null)
                                         {
                                             var modeltransforms = skeleton.Transformations;
-                                            var fragtransforms = fdwbl?.OwnerFragmentPhys?.OwnerFragPhysLod?.FragTransforms?.Data;
+                                            var fragtransforms = fdwbl?.OwnerFragmentPhys?.OwnerFragPhysLod?.FragTransforms?.Matrices;
                                             var fragtransformid = fdwbl?.OwnerFragmentPhys?.OwnerFragPhysIndex ?? 0;
                                             var fragoffset = fdwbl?.OwnerFragmentPhys?.OwnerFragPhysLod.Unknown_30h ?? Vector4.Zero;
                                             fragoffset.W = 0.0f;
