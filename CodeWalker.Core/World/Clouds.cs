@@ -132,7 +132,7 @@ namespace CodeWalker.World
             CloudHatFrags = fraglist.ToArray();
 
             DesiredTransitionTimeSec = Xml.GetChildFloatAttribute(xml, "mDesiredTransitionTimeSec", "value");
-            CamPositionScaler = Xml.GetChildVector3Attributes(xml, "mCamPositionScaler", "x", "y", "z");
+            CamPositionScaler = Xml.GetChildVector3Attributes(xml, "mCamPositionScaler");
             AltitudeScrollScaler = Xml.GetChildFloatAttribute(xml, "mAltitudeScrollScaler", "value");
         }
 
@@ -170,9 +170,9 @@ namespace CodeWalker.World
 
         public void Init(XmlElement xml)
         {
-            Position = Xml.GetChildVector3Attributes(xml, "mPosition", "x", "y", "z");
-            Rotation = Xml.GetChildVector3Attributes(xml, "mRotation", "x", "y", "z");
-            Scale = Xml.GetChildVector3Attributes(xml, "mScale", "x", "y", "z");
+            Position = Xml.GetChildVector3Attributes(xml, "mPosition");
+            Rotation = Xml.GetChildVector3Attributes(xml, "mRotation");
+            Scale = Xml.GetChildVector3Attributes(xml, "mScale");
             Name = Xml.GetChildInnerText(xml, "mName");
 
             List<CloudHatFragLayer> layerlist = new List<CloudHatFragLayer>();
@@ -192,8 +192,8 @@ namespace CodeWalker.World
             TransitionAlphaRange = Xml.GetChildFloatAttribute(xml, "mTransitionAlphaRange", "value");
             TransitionMidPoint = Xml.GetChildFloatAttribute(xml, "mTransitionMidPoint", "value");
             Enabled = Xml.GetChildBoolAttribute(xml, "mEnabled", "value");
-            AngularVelocity = Xml.GetChildVector3Attributes(xml, "mAngularVelocity", "x", "y", "z");
-            AnimBlendWeights = Xml.GetChildVector3Attributes(xml, "mAnimBlendWeights", "x", "y", "z");
+            AngularVelocity = Xml.GetChildVector3Attributes(xml, "mAngularVelocity");
+            AnimBlendWeights = Xml.GetChildVector3Attributes(xml, "mAnimBlendWeights");
 
             string uvvelocitystr = Xml.GetChildInnerText(xml, "mUVVelocity").Trim();
             string[] uvvelocities = uvvelocitystr.Split('\n');

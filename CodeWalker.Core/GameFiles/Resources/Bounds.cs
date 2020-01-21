@@ -423,14 +423,14 @@ namespace CodeWalker.GameFiles
         }
         public virtual void ReadXml(XmlNode node)
         {
-            BoxMin = Xml.GetChildVector3Attributes(node, "BoxMin", "x", "y", "z");
-            BoxMax = Xml.GetChildVector3Attributes(node, "BoxMax", "x", "y", "z");
-            BoxCenter = Xml.GetChildVector3Attributes(node, "BoxCenter", "x", "y", "z");
-            SphereCenter = Xml.GetChildVector3Attributes(node, "SphereCenter", "x", "y", "z");
+            BoxMin = Xml.GetChildVector3Attributes(node, "BoxMin");
+            BoxMax = Xml.GetChildVector3Attributes(node, "BoxMax");
+            BoxCenter = Xml.GetChildVector3Attributes(node, "BoxCenter");
+            SphereCenter = Xml.GetChildVector3Attributes(node, "SphereCenter");
             SphereRadius = Xml.GetChildFloatAttribute(node, "SphereRadius", "value");
             Margin = Xml.GetChildFloatAttribute(node, "Margin", "value");
             Volume = Xml.GetChildFloatAttribute(node, "Volume", "value");
-            Unknown_60h = Xml.GetChildVector3Attributes(node, "Inertia", "x", "y", "z");
+            Unknown_60h = Xml.GetChildVector3Attributes(node, "Inertia");
             MaterialIndex = (byte)Xml.GetChildUIntAttribute(node, "MaterialIndex", "value");
             MaterialColorIndex = (byte)Xml.GetChildUIntAttribute(node, "MaterialColourIndex", "value");
             ProceduralId = (byte)Xml.GetChildUIntAttribute(node, "ProceduralID", "value");
@@ -441,9 +441,9 @@ namespace CodeWalker.GameFiles
             Unknown_3Ch = (byte)Xml.GetChildUIntAttribute(node, "UnkType", "value");
             if (Parent != null)
             {
-                Position = Xml.GetChildVector3Attributes(node, "CompositePosition", "x", "y", "z");
-                Orientation = Xml.GetChildVector4Attributes(node, "CompositeRotation", "x", "y", "z", "w").ToQuaternion();
-                Scale = Xml.GetChildVector3Attributes(node, "CompositeScale", "x", "y", "z");
+                Position = Xml.GetChildVector3Attributes(node, "CompositePosition");
+                Orientation = Xml.GetChildVector4Attributes(node, "CompositeRotation").ToQuaternion();
+                Scale = Xml.GetChildVector3Attributes(node, "CompositeScale");
                 var f = new BoundCompositeChildrenFlags();
                 f.Flags1 = Xml.GetChildEnumInnerText<EBoundCompositeFlags>(node, "CompositeFlags1");
                 f.Flags2 = Xml.GetChildEnumInnerText<EBoundCompositeFlags>(node, "CompositeFlags2");
@@ -1163,7 +1163,7 @@ namespace CodeWalker.GameFiles
         {
             base.ReadXml(node);
 
-            CenterGeom = Xml.GetChildVector3Attributes(node, "GeometryCenter", "x", "y", "z");
+            CenterGeom = Xml.GetChildVector3Attributes(node, "GeometryCenter");
             Unknown_9Ch = Xml.GetChildFloatAttribute(node, "UnkFloat1", "value");
             Unknown_ACh = Xml.GetChildFloatAttribute(node, "UnkFloat2", "value");
 

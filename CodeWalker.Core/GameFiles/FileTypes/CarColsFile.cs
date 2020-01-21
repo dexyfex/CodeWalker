@@ -288,12 +288,12 @@ namespace CodeWalker.GameFiles
             TextureSetName = XmlMeta.GetHash(Xml.GetChildInnerText(node, "TextureSetName"));
             DiffuseMapName = XmlMeta.GetHash(Xml.GetChildInnerText(node, "DiffuseMapName"));
             NormalMapName = XmlMeta.GetHash(Xml.GetChildInnerText(node, "NormalMapName"));
-            FontExtents = Xml.GetChildVector4Attributes(node, "FontExtents", "x", "y", "z", "w");
-            MaxLettersOnPlate = Xml.GetChildVector2Attributes(node, "MaxLettersOnPlate", "x", "y");
+            FontExtents = Xml.GetChildVector4Attributes(node, "FontExtents");
+            MaxLettersOnPlate = Xml.GetChildVector2Attributes(node, "MaxLettersOnPlate");
             FontColor = Xml.GetChildUIntAttribute(node, "FontColor", "value");
             FontOutlineColor = Xml.GetChildUIntAttribute(node, "FontOutlineColor", "value");
             IsFontOutlineEnabled = Xml.GetChildBoolAttribute(node, "IsFontOutlineEnabled", "value");
-            FontOutlineMinMaxDepth = Xml.GetChildVector2Attributes(node, "FontOutlineMinMaxDepth", "x", "y");
+            FontOutlineMinMaxDepth = Xml.GetChildVector2Attributes(node, "FontOutlineMinMaxDepth");
         }
 
         public override string ToString()

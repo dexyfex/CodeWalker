@@ -5472,23 +5472,23 @@ namespace CodeWalker.GameFiles
             Flags0 = Xml.GetChildUIntAttribute(node, "Flags0", "value");
             Shape = Xml.GetEnumValue<Dat151ZoneShape>(Xml.GetChildInnerText(node, "Shape"));
             Flags1 = Xml.GetChildUIntAttribute(node, "Flags1", "value");
-            OuterPos = Xml.GetChildVector3Attributes(node, "OuterPos", "x", "y", "z");
-            OuterSize = Xml.GetChildVector3Attributes(node, "OuterSize", "x", "y", "z");
-            OuterVec1 = Xml.GetChildVector4Attributes(node, "OuterVec1", "x", "y", "z", "w");
-            OuterVec2 = Xml.GetChildVector4Attributes(node, "OuterVec2", "x", "y", "z", "w");
+            OuterPos = Xml.GetChildVector3Attributes(node, "OuterPos");
+            OuterSize = Xml.GetChildVector3Attributes(node, "OuterSize");
+            OuterVec1 = Xml.GetChildVector4Attributes(node, "OuterVec1");
+            OuterVec2 = Xml.GetChildVector4Attributes(node, "OuterVec2");
             OuterAngle = Xml.GetChildUIntAttribute(node, "OuterAngle", "value");
-            OuterVec3 = Xml.GetChildVector3Attributes(node, "OuterVec3", "x", "y", "z");
-            InnerPos = Xml.GetChildVector3Attributes(node, "InnerPos", "x", "y", "z");
-            InnerSize = Xml.GetChildVector3Attributes(node, "InnerSize", "x", "y", "z");
-            InnerVec1 = Xml.GetChildVector4Attributes(node, "InnerVec1", "x", "y", "z", "w");
-            InnerVec2 = Xml.GetChildVector4Attributes(node, "InnerVec2", "x", "y", "z", "w");
+            OuterVec3 = Xml.GetChildVector3Attributes(node, "OuterVec3");
+            InnerPos = Xml.GetChildVector3Attributes(node, "InnerPos");
+            InnerSize = Xml.GetChildVector3Attributes(node, "InnerSize");
+            InnerVec1 = Xml.GetChildVector4Attributes(node, "InnerVec1");
+            InnerVec2 = Xml.GetChildVector4Attributes(node, "InnerVec2");
             InnerAngle = Xml.GetChildUIntAttribute(node, "InnerAngle", "value");
-            InnerVec3 = Xml.GetChildVector3Attributes(node, "InnerVec3", "x", "y", "z");
-            UnkVec1 = Xml.GetChildVector4Attributes(node, "UnkVec1", "x", "y", "z", "w");
-            UnkVec2 = Xml.GetChildVector4Attributes(node, "UnkVec2", "x", "y", "z", "w");
+            InnerVec3 = Xml.GetChildVector3Attributes(node, "InnerVec3");
+            UnkVec1 = Xml.GetChildVector4Attributes(node, "UnkVec1");
+            UnkVec2 = Xml.GetChildVector4Attributes(node, "UnkVec2");
             UnkHash0 = XmlRel.GetHash(Xml.GetChildInnerText(node, "UnkHash0"));
             UnkHash1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "UnkHash1"));
-            UnkVec3 = Xml.GetChildVector2Attributes(node, "UnkVec3", "x", "y");
+            UnkVec3 = Xml.GetChildVector2Attributes(node, "UnkVec3");
             Flags2 = Xml.GetChildUIntAttribute(node, "Flags2", "value");
             Unk14 = (byte)Xml.GetChildUIntAttribute(node, "Unk14", "value");
             Unk15 = (byte)Xml.GetChildUIntAttribute(node, "Unk15", "value");
@@ -5931,7 +5931,7 @@ namespace CodeWalker.GameFiles
             Flags0 = Xml.GetChildUIntAttribute(node, "Flags0", "value");
             Flags1 = Xml.GetChildUIntAttribute(node, "Flags1", "value");
             Flags2 = Xml.GetChildUIntAttribute(node, "Flags2", "value");
-            Position = Xml.GetChildVector3Attributes(node, "Position", "x", "y", "z");
+            Position = Xml.GetChildVector3Attributes(node, "Position");
             Flags3 = Xml.GetChildUIntAttribute(node, "Flags3", "value");
             Hash1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Hash1"));
             Hash2 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Hash2"));
@@ -6120,7 +6120,7 @@ namespace CodeWalker.GameFiles
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
             Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
             RadioStation = XmlRel.GetHash(Xml.GetChildInnerText(node, "RadioStation"));
-            Position = Xml.GetChildVector3Attributes(node, "Position", "x", "y", "z");
+            Position = Xml.GetChildVector3Attributes(node, "Position");
             Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
             Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
             Unk08 = Xml.GetChildIntAttribute(node, "Unk08", "value");
@@ -9315,7 +9315,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             Unk01 = Xml.GetChildUIntAttribute(node, "Unk01", "value");
-            Unk02 = Xml.GetChildVector4Attributes(node, "Unk02", "x", "y", "z", "w");
+            Unk02 = Xml.GetChildVector4Attributes(node, "Unk02");
             Unk03 = Xml.GetChildIntAttribute(node, "Unk03", "value");
             Unk04 = Xml.GetChildIntAttribute(node, "Unk04", "value");
             Unk05 = Xml.GetChildIntAttribute(node, "Unk05", "value");
@@ -9404,7 +9404,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             Unk01 = Xml.GetChildUIntAttribute(node, "Unk01", "value");
-            Unk02 = Xml.GetChildVector4Attributes(node, "Unk02", "x", "y", "z", "w");
+            Unk02 = Xml.GetChildVector4Attributes(node, "Unk02");
             Unk03 = Xml.GetChildIntAttribute(node, "Unk03", "value");
             Unk04 = Xml.GetChildIntAttribute(node, "Unk04", "value");
             Unk05 = Xml.GetChildUIntAttribute(node, "Unk05", "value");
@@ -9484,7 +9484,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             Unk01 = Xml.GetChildUIntAttribute(node, "Unk01", "value");
-            Unk02 = Xml.GetChildVector4Attributes(node, "Unk02", "x", "y", "z", "w");
+            Unk02 = Xml.GetChildVector4Attributes(node, "Unk02");
             Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
             Unk04 = Xml.GetChildUIntAttribute(node, "Unk04", "value");
             Unk05 = Xml.GetChildUIntAttribute(node, "Unk05", "value");
@@ -9590,7 +9590,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             Unk01 = Xml.GetChildUIntAttribute(node, "Unk01", "value");
-            Unk02 = Xml.GetChildVector4Attributes(node, "Unk02", "x", "y", "z", "w");
+            Unk02 = Xml.GetChildVector4Attributes(node, "Unk02");
             Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
             Unk04 = Xml.GetChildUIntAttribute(node, "Unk04", "value");
             Unk05 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
@@ -15320,7 +15320,7 @@ namespace CodeWalker.GameFiles
             Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
             Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
             Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
-            Position = Xml.GetChildVector3Attributes(node, "Position", "x", "y", "z");
+            Position = Xml.GetChildVector3Attributes(node, "Position");
             Unk04 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
             Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
             Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
@@ -17704,7 +17704,7 @@ namespace CodeWalker.GameFiles
             Alarm = XmlRel.GetHash(Xml.GetChildInnerText(node, "Alarm"));
             Unk04 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
             Unk05 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
-            Position = Xml.GetChildVector3Attributes(node, "Position", "x", "y", "z");
+            Position = Xml.GetChildVector3Attributes(node, "Position");
             Unk06 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk06"));
         }
     }
@@ -19600,8 +19600,8 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            Vec1 = Xml.GetChildVector3Attributes(node, "Vec1", "x", "y", "z");
-            Vec2 = Xml.GetChildVector3Attributes(node, "Vec2", "x", "y", "z");
+            Vec1 = Xml.GetChildVector3Attributes(node, "Vec1");
+            Vec2 = Xml.GetChildVector3Attributes(node, "Vec2");
         }
     }
     [TC(typeof(EXP))] public class Dat4ConfigVariableList : Dat4ConfigData
@@ -20013,15 +20013,15 @@ namespace CodeWalker.GameFiles
             Unk7 = Xml.GetChildFloatAttribute(node, "Unk7", "value");
             UnkItems = XmlRel.ReadItemArray<UnkItem>(node, "UnkItems");
             UnkItemsCount = (UnkItems?.Length ?? 0);
-            UnkVec1 = Xml.GetChildVector4Attributes(node, "UnkVec1", "x", "y", "z", "w");
-            UnkVec2 = Xml.GetChildVector4Attributes(node, "UnkVec2", "x", "y", "z", "w");
-            UnkVec3 = Xml.GetChildVector4Attributes(node, "UnkVec3", "x", "y", "z", "w");
-            UnkVec4 = Xml.GetChildVector4Attributes(node, "UnkVec4", "x", "y", "z", "w");
-            UnkVec5 = Xml.GetChildVector4Attributes(node, "UnkVec5", "x", "y", "z", "w");
-            UnkVec6 = Xml.GetChildVector4Attributes(node, "UnkVec6", "x", "y", "z", "w");
-            UnkVec7 = Xml.GetChildVector4Attributes(node, "UnkVec7", "x", "y", "z", "w");
-            UnkVec8 = Xml.GetChildVector4Attributes(node, "UnkVec8", "x", "y", "z", "w");
-            UnkVec9 = Xml.GetChildVector4Attributes(node, "UnkVec9", "x", "y", "z", "w");
+            UnkVec1 = Xml.GetChildVector4Attributes(node, "UnkVec1");
+            UnkVec2 = Xml.GetChildVector4Attributes(node, "UnkVec2");
+            UnkVec3 = Xml.GetChildVector4Attributes(node, "UnkVec3");
+            UnkVec4 = Xml.GetChildVector4Attributes(node, "UnkVec4");
+            UnkVec5 = Xml.GetChildVector4Attributes(node, "UnkVec5");
+            UnkVec6 = Xml.GetChildVector4Attributes(node, "UnkVec6");
+            UnkVec7 = Xml.GetChildVector4Attributes(node, "UnkVec7");
+            UnkVec8 = Xml.GetChildVector4Attributes(node, "UnkVec8");
+            UnkVec9 = Xml.GetChildVector4Attributes(node, "UnkVec9");
             UnkVecs1 = Xml.GetChildRawVector4Array(node, "UnkVecs1");
             UnkVecs2 = Xml.GetChildRawVector4Array(node, "UnkVecs2");
             UnkVecs3 = Xml.GetChildRawVector4Array(node, "UnkVecs3");

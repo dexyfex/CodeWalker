@@ -1119,7 +1119,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            Value = Xml.GetChildVector3Attributes(node, "Value", "x", "y", "z");
+            Value = Xml.GetChildVector3Attributes(node, "Value");
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimChannelStaticQuaternion : AnimChannel
@@ -1153,7 +1153,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            Value = new Quaternion(Xml.GetChildVector4Attributes(node, "Value", "x", "y", "z", "w"));
+            Value = new Quaternion(Xml.GetChildVector4Attributes(node, "Value"));
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimChannelIndirectQuantizeFloat : AnimChannel
@@ -4165,7 +4165,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            Value = Xml.GetChildVector3Attributes(node, "Value", "x", "y", "z");
+            Value = Xml.GetChildVector3Attributes(node, "Value");
             Unknown_02Ch = Xml.GetChildFloatAttribute(node, "Unknown2C", "value");
         }
     }
@@ -4208,7 +4208,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            Value = Xml.GetChildVector4Attributes(node, "Value", "x", "y", "z", "w");
+            Value = Xml.GetChildVector4Attributes(node, "Value");
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeHashString : ClipPropertyAttribute
