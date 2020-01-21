@@ -206,7 +206,7 @@ namespace CodeWalker.Rendering
                     {
                         if (phys.OwnerFragPhysLod != null)
                         {
-                            fragtransforms = phys.OwnerFragPhysLod.FragTransforms?.Data;
+                            fragtransforms = phys.OwnerFragPhysLod.FragTransforms?.Matrices;
                             fragtransformid = phys.OwnerFragPhysIndex;
                             fragoffset = phys.OwnerFragPhysLod.Unknown_30h;
                             fragoffset.W = 0.0f;

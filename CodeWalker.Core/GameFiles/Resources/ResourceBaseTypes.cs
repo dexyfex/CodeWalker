@@ -1491,7 +1491,7 @@ namespace CodeWalker.GameFiles
 
 
         public ulong[] data_pointers { get; private set; }
-        public T[] data_items { get; private set; }
+        public T[] data_items { get; set; }
 
 
         private ResourceSystemStructBlock<T>[] data_blocks = null;
