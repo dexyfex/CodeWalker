@@ -169,6 +169,13 @@ namespace CodeWalker.GameFiles
         public YbnFile OwnerYbn { get; set; }
         public object Owner { get; set; }
         public string OwnerName { get; set; }
+        public bool OwnerIsFragment
+        {
+            get
+            {
+                return ((Owner is FragPhysicsLOD) || (Owner is FragPhysArchetype) || (Owner is FragDrawable));
+            }
+        }
         public string GetName()
         {
             string n = OwnerName;
@@ -417,8 +424,11 @@ namespace CodeWalker.GameFiles
                 YbnXml.SelfClosingTag(sb, indent, "CompositePosition " + FloatUtil.GetVector3XmlString(Position));
                 YbnXml.SelfClosingTag(sb, indent, "CompositeRotation " + FloatUtil.GetVector4XmlString(Orientation.ToVector4()));
                 YbnXml.SelfClosingTag(sb, indent, "CompositeScale " + FloatUtil.GetVector3XmlString(Scale));
-                YbnXml.StringTag(sb, indent, "CompositeFlags1", CompositeFlags1.Flags1.ToString());
-                YbnXml.StringTag(sb, indent, "CompositeFlags2", CompositeFlags1.Flags2.ToString());
+                if (!Parent.OwnerIsFragment)
+                {
+                    YbnXml.StringTag(sb, indent, "CompositeFlags1", CompositeFlags1.Flags1.ToString());
+                    YbnXml.StringTag(sb, indent, "CompositeFlags2", CompositeFlags1.Flags2.ToString());
+                }
             }
         }
         public virtual void ReadXml(XmlNode node)
@@ -444,11 +454,14 @@ namespace CodeWalker.GameFiles
                 Position = Xml.GetChildVector3Attributes(node, "CompositePosition");
                 Orientation = Xml.GetChildVector4Attributes(node, "CompositeRotation").ToQuaternion();
                 Scale = Xml.GetChildVector3Attributes(node, "CompositeScale");
-                var f = new BoundCompositeChildrenFlags();
-                f.Flags1 = Xml.GetChildEnumInnerText<EBoundCompositeFlags>(node, "CompositeFlags1");
-                f.Flags2 = Xml.GetChildEnumInnerText<EBoundCompositeFlags>(node, "CompositeFlags2");
-                CompositeFlags1 = f;
-                CompositeFlags2 = f;
+                if (!Parent.OwnerIsFragment)
+                {
+                    var f = new BoundCompositeChildrenFlags();
+                    f.Flags1 = Xml.GetChildEnumInnerText<EBoundCompositeFlags>(node, "CompositeFlags1");
+                    f.Flags2 = Xml.GetChildEnumInnerText<EBoundCompositeFlags>(node, "CompositeFlags2");
+                    CompositeFlags1 = f;
+                    CompositeFlags2 = f;
+                }
             }
         }
         public static void WriteXmlNode(Bounds b, StringBuilder sb, int indent, string name = "Bounds")
@@ -1206,7 +1219,7 @@ namespace CodeWalker.GameFiles
             CalculateQuantum();
             UpdateEdgeIndices();
             UpdateTriangleAreas();
-
+            UpdateUnknown1Counts();
         }
 
         public override IResourceBlock[] GetReferences()
@@ -1847,6 +1860,17 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public void UpdateUnknown1Counts()
+        {
+            if (Unknown1Data?.Items != null)
+            {
+                Unknown1Counts = new uint[8];
+                for (int i = 0; i < 8; i++)
+                {
+                    Unknown1Counts[i] = (i < Unknown1Data.Items.Length) ? (uint)(Unknown1Data.Items[i]?.Length ?? 0) : 0;
+                }
+            }
+        }
 
         public bool DeletePolygon(BoundPolygon p)
         {
@@ -2513,7 +2537,14 @@ namespace CodeWalker.GameFiles
                 YbnXml.OpenTag(sb, indent, "Children");
                 foreach (var child in c)
                 {
-                    Bounds.WriteXmlNode(child, sb, cind, "Item");
+                    if (c == null)
+                    {
+                        YbnXml.SelfClosingTag(sb, cind, "Item");
+                    }
+                    else
+                    {
+                        Bounds.WriteXmlNode(child, sb, cind, "Item");
+                    }
                 }
                 YbnXml.CloseTag(sb, indent, "Children");
             }
@@ -2531,8 +2562,15 @@ namespace CodeWalker.GameFiles
                     var blist = new List<Bounds>();
                     foreach (XmlNode inode in cnodes)
                     {
-                        var b = Bounds.ReadXmlNode(inode, Owner, this);
-                        blist.Add(b);
+                        if (inode.HasChildNodes)
+                        {
+                            var b = Bounds.ReadXmlNode(inode, Owner, this);
+                            blist.Add(b);
+                        }
+                        else
+                        {
+                            blist.Add(null);
+                        }
                     }
                     var arr = blist.ToArray();
                     Children = new ResourcePointerArray64<Bounds>();
@@ -2646,6 +2684,12 @@ namespace CodeWalker.GameFiles
         public void UpdateChildrenFlags()
         {
             if (Children?.data_items == null)
+            {
+                ChildrenFlags1 = null;
+                ChildrenFlags2 = null;
+                return;
+            }
+            if (OwnerIsFragment)//don't use flags in fragments
             {
                 ChildrenFlags1 = null;
                 ChildrenFlags2 = null;
@@ -3988,7 +4032,7 @@ namespace CodeWalker.GameFiles
         {
             var collist = new List<uint[]>();
             var rowlist = new List<uint>();
-            var str = node.InnerText;
+            var str = node.InnerText.Trim();
             var split = str.Split('\n');
             for (int i = 0; i < split.Length; i++)
             {
@@ -4110,11 +4154,11 @@ namespace CodeWalker.GameFiles
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.BoundingBoxMin = reader.ReadStruct<Vector4>();
-            this.BoundingBoxMax = reader.ReadStruct<Vector4>();
-            this.BoundingBoxCenter = reader.ReadStruct<Vector4>();
-            this.QuantumInverse = reader.ReadStruct<Vector4>();
-            this.Quantum = reader.ReadStruct<Vector4>();
+            this.BoundingBoxMin = reader.ReadVector4();
+            this.BoundingBoxMax = reader.ReadVector4();
+            this.BoundingBoxCenter = reader.ReadVector4();
+            this.QuantumInverse = reader.ReadVector4();
+            this.Quantum = reader.ReadVector4();
             this.Trees = reader.ReadBlock<ResourceSimpleList64_s<BVHTreeInfo_s>>();
         }
 

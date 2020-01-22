@@ -465,10 +465,6 @@ namespace CodeWalker.GameFiles
                 foreach (var x in Parameters)
                 {
                     offset += 16;
-                }
-
-                foreach (var x in Parameters)
-                {
                     offset += 16 * x.DataType;
                 }
 
@@ -756,7 +752,6 @@ namespace CodeWalker.GameFiles
                 }
                 else if (type == "Array")
                 {
-                    p.DataType = 2;
                     var vecs = new List<Vector4>();
                     var inodes = pnode.SelectNodes("Value");
                     foreach (XmlNode inode in inodes)
@@ -768,6 +763,7 @@ namespace CodeWalker.GameFiles
                         vecs.Add(new Vector4(fx, fy, fz, fw));
                     }
                     p.Data = vecs.ToArray();
+                    p.DataType = (byte)vecs.Count;
                 }
                 plist.Add(p);
                 hlist.Add(h);
@@ -3830,10 +3826,10 @@ namespace CodeWalker.GameFiles
             // read structure data
             this.ShaderGroupPointer = reader.ReadUInt64();
             this.SkeletonPointer = reader.ReadUInt64();
-            this.BoundingCenter = reader.ReadStruct<Vector3>();
+            this.BoundingCenter = reader.ReadVector3();
             this.BoundingSphereRadius = reader.ReadSingle();
-            this.BoundingBoxMin = reader.ReadStruct<Vector4>();
-            this.BoundingBoxMax = reader.ReadStruct<Vector4>();
+            this.BoundingBoxMin = reader.ReadVector4();
+            this.BoundingBoxMax = reader.ReadVector4();
             this.DrawableModelsHighPointer = reader.ReadUInt64();
             this.DrawableModelsMediumPointer = reader.ReadUInt64();
             this.DrawableModelsLowPointer = reader.ReadUInt64();
@@ -3879,39 +3875,8 @@ namespace CodeWalker.GameFiles
             );
 
 
-            var allModels = new List<DrawableModel>();
-            if (DrawableModelsHigh != null) allModels.AddRange(DrawableModelsHigh.data_items);
-            if (DrawableModelsMedium != null) allModels.AddRange(DrawableModelsMedium.data_items);
-            if (DrawableModelsLow != null) allModels.AddRange(DrawableModelsLow.data_items);
-            if (DrawableModelsVeryLow != null) allModels.AddRange(DrawableModelsVeryLow.data_items);
-            if ((DrawableModelsX != null) && (DrawableModelsX != DrawableModelsHigh))
-            {
-                allModels.AddRange(DrawableModelsX.data_items);
-            }
-            AllModels = allModels.ToArray();
-
-
-            var vds = new Dictionary<ulong, VertexDeclaration>();
-            foreach (DrawableModel model in AllModels)
-            {
-                foreach (var geom in model.Geometries.data_items)
-                {
-                    var info = geom.VertexBuffer.Info;
-                    var declid = info.GetDeclarationId();
-
-                    if (!vds.ContainsKey(declid))
-                    {
-                        vds.Add(declid, info);
-                    }
-                    //else //debug test
-                    //{
-                    //    if ((VertexDecls[declid].Stride != info.Stride)||(VertexDecls[declid].Types != info.Types))
-                    //    {
-                    //    }
-                    //}
-                }
-            }
-            VertexDecls = new Dictionary<ulong, VertexDeclaration>(vds);
+            BuildAllModels();
+            BuildVertexDecls();
 
             AssignGeometryShaders(ShaderGroup);
 
@@ -4248,6 +4213,8 @@ namespace CodeWalker.GameFiles
             }
 
             BuildRenderMasks();
+            BuildAllModels();
+            BuildVertexDecls();
         }
 
         public override IResourceBlock[] GetReferences()
@@ -4267,15 +4234,15 @@ namespace CodeWalker.GameFiles
 
         public void AssignGeometryShaders(ShaderGroup shaderGrp)
         {
-            if (shaderGrp != null)
-            {
-                ShaderGroup = shaderGrp;
-            }
+            //if (shaderGrp != null)
+            //{
+            //    ShaderGroup = shaderGrp;
+            //}
 
             //map the shaders to the geometries
-            if (ShaderGroup != null)
+            if (shaderGrp != null)
             {
-                var shaders = ShaderGroup.Shaders.data_items;
+                var shaders = shaderGrp.Shaders.data_items;
                 foreach (DrawableModel model in AllModels)
                 {
                     if (model?.Geometries?.data_items == null) continue;
@@ -4293,6 +4260,47 @@ namespace CodeWalker.GameFiles
             {
             }
 
+        }
+
+
+
+        public void BuildAllModels()
+        {
+            var allModels = new List<DrawableModel>();
+            if (DrawableModelsHigh != null) allModels.AddRange(DrawableModelsHigh.data_items);
+            if (DrawableModelsMedium != null) allModels.AddRange(DrawableModelsMedium.data_items);
+            if (DrawableModelsLow != null) allModels.AddRange(DrawableModelsLow.data_items);
+            if (DrawableModelsVeryLow != null) allModels.AddRange(DrawableModelsVeryLow.data_items);
+            if ((DrawableModelsX != null) && (DrawableModelsX != DrawableModelsHigh))
+            {
+                allModels.AddRange(DrawableModelsX.data_items);
+            }
+            AllModels = allModels.ToArray();
+        }
+
+        public void BuildVertexDecls()
+        {
+            var vds = new Dictionary<ulong, VertexDeclaration>();
+            foreach (DrawableModel model in AllModels)
+            {
+                foreach (var geom in model.Geometries.data_items)
+                {
+                    var info = geom.VertexBuffer.Info;
+                    var declid = info.GetDeclarationId();
+
+                    if (!vds.ContainsKey(declid))
+                    {
+                        vds.Add(declid, info);
+                    }
+                    //else //debug test
+                    //{
+                    //    if ((VertexDecls[declid].Stride != info.Stride)||(VertexDecls[declid].Types != info.Types))
+                    //    {
+                    //    }
+                    //}
+                }
+            }
+            VertexDecls = new Dictionary<ulong, VertexDeclaration>(vds);
         }
 
 

@@ -1490,9 +1490,10 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public ulong[] data_pointers { get; private set; }
+        public ulong[] data_pointers { get; set; }
         public T[] data_items { get; set; }
 
+        public bool ManualPointerOverride { get; set; } = false;//use this to manually write data_pointers
 
         private ResourceSystemStructBlock<T>[] data_blocks = null;
 
@@ -1518,20 +1519,23 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update...
-            var list = new List<ulong>();
-            if (data_blocks != null)
+            if (ManualPointerOverride == false)
             {
-                foreach (var x in data_blocks)
+                var list = new List<ulong>();
+                if (data_blocks != null)
                 {
-                    list.Add((ulong)x.FilePosition);
+                    foreach (var x in data_blocks)
+                    {
+                        list.Add((ulong)x.FilePosition);
+                    }
                 }
+                //foreach (var x in data_items)
+                //    if (x != null)
+                //        data_pointers.Add((uint)x.Position);
+                //    else
+                //        data_pointers.Add((uint)0);
+                data_pointers = list.ToArray();
             }
-            //foreach (var x in data_items)
-            //    if (x != null)
-            //        data_pointers.Add((uint)x.Position);
-            //    else
-            //        data_pointers.Add((uint)0);
-            data_pointers = list.ToArray();
 
             // write...
             foreach (var x in data_pointers)
@@ -1543,19 +1547,22 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>();
 
-            var blocks = new List<ResourceSystemStructBlock<T>>();
-            if (data_items != null)
+            if (ManualPointerOverride == false)
             {
-                foreach (var x in data_items)
+                var blocks = new List<ResourceSystemStructBlock<T>>();
+                if (data_items != null)
                 {
-                    var block = new ResourceSystemStructBlock<T>(new[] { x });
-                    blocks.Add(block);
-                    list.Add(block);
+                    foreach (var x in data_items)
+                    {
+                        var block = new ResourceSystemStructBlock<T>(new[] { x });
+                        blocks.Add(block);
+                        list.Add(block);
+                    }
                 }
+                data_blocks = blocks.ToArray();
+                //foreach (var x in data_items)
+                //    list.Add(x);
             }
-            data_blocks = blocks.ToArray();
-            //foreach (var x in data_items)
-            //    list.Add(x);
 
             return list.ToArray();
         }

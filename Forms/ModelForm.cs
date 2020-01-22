@@ -678,7 +678,7 @@ namespace CodeWalker.Forms
                 MoveCameraToView(dr.BoundingCenter, dr.BoundingSphereRadius);
             }
 
-            UpdateModelsUI(yft.Fragment.Drawable);
+            UpdateModelsUI(yft.Fragment?.Drawable, yft.Fragment);
         }
         public void LoadModel(YbnFile ybn)
         {
@@ -952,54 +952,9 @@ namespace CodeWalker.Forms
 
 
 
-        private void UpdateModelsUI(DrawableBase drawable)
+        private void UpdateModelsUI(DrawableBase drawable, object detailsObject = null)
         {
-            DetailsPropertyGrid.SelectedObject = drawable;
-
-            DrawableDrawFlags.Clear();
-            Renderer.SelectionModelDrawFlags.Clear();
-            Renderer.SelectionGeometryDrawFlags.Clear();
-            ModelsTreeView.Nodes.Clear();
-            ModelsTreeView.ShowRootLines = false;
-            TexturesTreeView.Nodes.Clear();
-            if (drawable != null)
-            {
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsHigh, "High Detail", true);
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsMedium, "Medium Detail", false);
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", false);
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", false);
-                //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false);
-
-                var fdrawable = drawable as FragDrawable;
-                if (fdrawable != null)
-                {
-                    var plod1 = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1;
-                    if ((plod1 != null) && (plod1.Children?.data_items != null))
-                    {
-                        foreach (var child in plod1.Children.data_items)
-                        {
-                            var cdrwbl = child.Drawable1;
-                            if ((cdrwbl != null) && (cdrwbl.AllModels?.Length > 0))
-                            {
-                                if (cdrwbl.Owner is FragDrawable) continue; //it's a copied drawable... eg a wheel
-
-                                var dname = child.GroupName;
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsHigh, dname + " - High Detail", true);
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsMedium, dname + " - Medium Detail", false);
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsLow, dname + " - Low Detail", false);
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsVeryLow, dname + " - Very Low Detail", false);
-                            }
-                        }
-                    }
-                }
-
-            }
-        }
-        private void UpdateModelsUI(FragType frag)
-        {
-            DetailsPropertyGrid.SelectedObject = frag;
-
-            var drawable = frag.Drawable;
+            DetailsPropertyGrid.SelectedObject = detailsObject ?? drawable;
 
             DrawableDrawFlags.Clear();
             Renderer.SelectionModelDrawFlags.Clear();
