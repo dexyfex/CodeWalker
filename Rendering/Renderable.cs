@@ -208,8 +208,7 @@ namespace CodeWalker.Rendering
                         {
                             fragtransforms = phys.OwnerFragPhysLod.FragTransforms?.Matrices;
                             fragtransformid = phys.OwnerFragPhysIndex;
-                            fragoffset = phys.OwnerFragPhysLod.Unknown_30h;
-                            fragoffset.W = 0.0f;
+                            fragoffset = new Vector4(phys.OwnerFragPhysLod.Unknown_30h, 0.0f);
 
 
                             switch (phys.BoneTag) //right hand side wheel flip!

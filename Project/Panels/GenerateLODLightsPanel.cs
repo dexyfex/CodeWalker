@@ -166,8 +166,7 @@ namespace CodeWalker.Project.Panels
                                             var modeltransforms = skeleton.Transformations;
                                             var fragtransforms = fdwbl?.OwnerFragmentPhys?.OwnerFragPhysLod?.FragTransforms?.Matrices;
                                             var fragtransformid = fdwbl?.OwnerFragmentPhys?.OwnerFragPhysIndex ?? 0;
-                                            var fragoffset = fdwbl?.OwnerFragmentPhys?.OwnerFragPhysLod.Unknown_30h ?? Vector4.Zero;
-                                            fragoffset.W = 0.0f;
+                                            var fragoffset = new Vector4(fdwbl?.OwnerFragmentPhys?.OwnerFragPhysLod.Unknown_30h ?? Vector3.Zero, 0.0f);
 
                                             if ((fragtransforms != null) && (fragtransformid < fragtransforms.Length))
                                             {
