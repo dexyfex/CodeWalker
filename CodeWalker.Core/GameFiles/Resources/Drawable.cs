@@ -1034,8 +1034,8 @@ namespace CodeWalker.GameFiles
 
             BuildIndices();
             BuildBoneTags();
-            BuildTransformations();
             AssignBoneParents();
+            BuildTransformations();
             BuildBonesMap();
         }
 
@@ -1265,11 +1265,21 @@ namespace CodeWalker.GameFiles
                     var pos = bone.Translation;
                     var ori = bone.Rotation;
                     var sca = bone.Scale;
-                    var m = Matrix.AffineTransformation(1.0f, ori, pos);//(global transform)
+                    var m = Matrix.AffineTransformation(1.0f, ori, pos);//(local transform)
                     m.ScaleVector *= sca;
-                    var mi = Matrix.Invert(m);
                     m.Column4 = bone.TransformUnk;// new Vector4(0, 4, -3, 0);//???
+
+                    var pbone = bone.Parent;
+                    while (pbone != null)
+                    {
+                        pos = pbone.Rotation.Multiply(pos /** pbone.Scale*/) + pbone.Translation;
+                        ori = pbone.Rotation * ori;
+                        pbone = pbone.Parent;
+                    }
+                    var m2 = Matrix.AffineTransformation(1.0f, ori, pos);//(global transform)
+                    var mi = Matrix.Invert(m2);
                     mi.Column4 = Vector4.Zero;
+
                     transforms.Add(m);
                     transformsinv.Add(mi);
                 }
@@ -4215,6 +4225,8 @@ namespace CodeWalker.GameFiles
             BuildRenderMasks();
             BuildAllModels();
             BuildVertexDecls();
+
+            FileUnknown = 1;
         }
 
         public override IResourceBlock[] GetReferences()
