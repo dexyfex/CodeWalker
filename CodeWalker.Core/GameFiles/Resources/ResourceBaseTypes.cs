@@ -1102,7 +1102,7 @@ namespace CodeWalker.GameFiles
         public ushort EntriesCapacity { get; private set; }
 
         // reference data
-        public ushort[] data_items { get; private set; }
+        public ushort[] data_items { get; set; }
 
         private ResourceSystemStructBlock<ushort> data_block;//used for saving.
 
@@ -1336,7 +1336,7 @@ namespace CodeWalker.GameFiles
         public ushort EntriesCapacity { get; private set; }
 
         // reference data
-        public float[] data_items { get; private set; }
+        public float[] data_items { get; set; }
 
         private ResourceSystemStructBlock<float> data_block;//used for saving.
 

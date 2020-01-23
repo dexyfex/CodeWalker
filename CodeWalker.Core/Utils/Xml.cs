@@ -229,6 +229,12 @@ namespace CodeWalker
             var cnode = node.SelectSingleNode(name);
             return GetRawByteArray(cnode, fromBase);
         }
+        public static byte[] GetChildRawByteArrayNullable(XmlNode node, string name, int fromBase = 16)
+        {
+            var cnode = node.SelectSingleNode(name);
+            var arr = GetRawByteArray(cnode, fromBase);
+            return ((arr != null) && (arr.Length > 0)) ? arr : null;
+        }
 
         public static ushort[] GetRawUshortArray(XmlNode node)
         {
@@ -252,6 +258,12 @@ namespace CodeWalker
         {
             var cnode = node.SelectSingleNode(name);
             return GetRawUshortArray(cnode);
+        }
+        public static ushort[] GetChildRawUshortArrayNullable(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            var arr = GetRawUshortArray(cnode);
+            return ((arr != null) && (arr.Length > 0)) ? arr : null;
         }
 
         public static uint[] GetRawUintArray(XmlNode node)
@@ -277,6 +289,12 @@ namespace CodeWalker
             var cnode = node.SelectSingleNode(name);
             return GetRawUintArray(cnode);
         }
+        public static uint[] GetChildRawUintArrayNullable(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            var arr = GetRawUintArray(cnode);
+            return ((arr != null) && (arr.Length > 0)) ? arr : null;
+        }
 
         public static int[] GetRawIntArray(XmlNode node)
         {
@@ -301,6 +319,12 @@ namespace CodeWalker
             var cnode = node.SelectSingleNode(name);
             return GetRawIntArray(cnode);
         }
+        public static int[] GetChildRawIntArrayNullable(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            var arr = GetRawIntArray(cnode);
+            return ((arr != null) && (arr.Length > 0)) ? arr : null;
+        }
 
         public static float[] GetRawFloatArray(XmlNode node)
         {
@@ -320,6 +344,12 @@ namespace CodeWalker
         {
             var cnode = node.SelectSingleNode(name);
             return GetRawFloatArray(cnode);
+        }
+        public static float[] GetChildRawFloatArrayNullable(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            var arr = GetRawFloatArray(cnode);
+            return ((arr != null) && (arr.Length > 0)) ? arr : null;
         }
 
         public static Vector2[] GetRawVector2Array(XmlNode node)
@@ -456,6 +486,12 @@ namespace CodeWalker
         {
             var cnode = node.SelectSingleNode(name);
             return GetRawVector4Array(cnode);
+        }
+        public static Vector4[] GetChildRawVector4ArrayNullable(XmlNode node, string name)
+        {
+            var cnode = node.SelectSingleNode(name);
+            var arr = GetRawVector4Array(cnode);
+            return ((arr != null) && (arr.Length > 0)) ? arr : null;
         }
 
         public static Matrix GetMatrix(XmlNode node)
