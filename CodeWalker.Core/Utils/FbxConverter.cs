@@ -158,8 +158,8 @@ namespace CodeWalker
             d.ShaderGroup = sgrp;
             d.BoundingCenter = bsCen;
             d.BoundingSphereRadius = bsRad;
-            d.BoundingBoxMin = new Vector4(bbMin, float.NaN);
-            d.BoundingBoxMax = new Vector4(bbMax, float.NaN);
+            d.BoundingBoxMin = bbMin;
+            d.BoundingBoxMax = bbMax;
             d.LodDistHigh = 9998;//lod dist defaults
             d.LodDistMed = 9998;
             d.LodDistLow = 9998;

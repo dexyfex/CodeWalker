@@ -656,7 +656,7 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public ulong Unknown_0A8h; // 0x0000000000000000
-        public Matrix FragMatrix { get; set; }
+        public Matrix4F_s FragMatrix { get; set; }
         public ulong BoundPointer { get; set; }
         public ulong FragMatricesIndsPointer { get; set; }
         public ushort FragMatricesIndsCount { get; set; }
@@ -677,7 +677,7 @@ namespace CodeWalker.GameFiles
         // reference data
         public Bounds Bound { get; set; }
         public ulong[] FragMatricesInds { get; set; }
-        public Matrix[] FragMatrices { get; set; }
+        public Matrix4F_s[] FragMatrices { get; set; }
         public string Name { get; set; }
 
         public FragType OwnerFragment { get; set; } //for handy use
@@ -686,7 +686,7 @@ namespace CodeWalker.GameFiles
         public FragDrawable OwnerDrawable { get; set; } //if inheriting shaders, skeletons and bounds
 
         private ResourceSystemStructBlock<ulong> FragMatricesIndsBlock = null; //used for saving only
-        private ResourceSystemStructBlock<Matrix> FragMatricesBlock = null;
+        private ResourceSystemStructBlock<Matrix4F_s> FragMatricesBlock = null;
         private string_r NameBlock = null;
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -695,7 +695,7 @@ namespace CodeWalker.GameFiles
 
             // read structure data
             this.Unknown_0A8h = reader.ReadUInt64();
-            this.FragMatrix = reader.ReadMatrix();
+            this.FragMatrix = reader.ReadStruct<Matrix4F_s>();
             this.BoundPointer = reader.ReadUInt64();
             this.FragMatricesIndsPointer = reader.ReadUInt64();
             this.FragMatricesIndsCount = reader.ReadUInt16();
@@ -716,7 +716,7 @@ namespace CodeWalker.GameFiles
             // read reference data
             Bound = reader.ReadBlockAt<Bounds>(BoundPointer);
             FragMatricesInds = reader.ReadUlongsAt(FragMatricesIndsPointer, FragMatricesIndsCount);
-            FragMatrices = reader.ReadStructsAt<Matrix>(FragMatricesPointer, FragMatricesCapacity);
+            FragMatrices = reader.ReadStructsAt<Matrix4F_s>(FragMatricesPointer, FragMatricesCapacity);
             Name = reader.ReadStringAt(NamePointer);
 
             if (Bound != null)
@@ -765,6 +765,29 @@ namespace CodeWalker.GameFiles
             //if (Unknown_148h != 0)
             //{ }//no hit
 
+            //if (FragMatrix.Flags1 != 0x7f800001)
+            //{ }//no hit
+            //if (FragMatrix.Flags2 != 0x7f800001)
+            //{ }//no hit
+            //if (FragMatrix.Flags3 != 0x7f800001)
+            //{ }//no hit
+            //if (FragMatrix.Flags4 != 0x7f800001)
+            //{ }//no hit
+            //if (FragMatrices != null)
+            //{
+            //    foreach (var fm in FragMatrices)
+            //    {
+            //        if (fm.Flags1 != 0x7f800001)
+            //        { }//no hit
+            //        if (fm.Flags2 != 0x7f800001)
+            //        { }//no hit
+            //        if (fm.Flags3 != 0x7f800001)
+            //        { }//no hit
+            //        if (fm.Flags4 != 0x7f800001)
+            //        { }//no hit
+            //    }
+            //}
+
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
@@ -780,7 +803,7 @@ namespace CodeWalker.GameFiles
 
             // write structure data
             writer.Write(this.Unknown_0A8h);
-            writer.Write(this.FragMatrix);
+            writer.WriteStruct(this.FragMatrix);
             writer.Write(this.BoundPointer);
             writer.Write(this.FragMatricesIndsPointer);
             writer.Write(this.FragMatricesIndsCount);
@@ -801,7 +824,7 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent, string ddsfolder)
         {
             YftXml.StringTag(sb, indent, "Name", YftXml.XmlEscape(Name));
-            YftXml.WriteRawArray(sb, FragMatrix.ToArray(), indent, "Matrix", "", FloatUtil.ToString, 4);
+            YftXml.WriteRawArray(sb, FragMatrix.ToArray(), indent, "Matrix", "", FloatUtil.ToString, 3);
             if ((FragMatrices != null) && (FragMatrices.Length > 0))
             {
                 YftXml.OpenTag(sb, indent, "Matrices capacity=\"" + FragMatrices.Length.ToString() + "\"");
@@ -811,7 +834,7 @@ namespace CodeWalker.GameFiles
                 {
                     var idx = ((FragMatricesInds != null) && (i < FragMatricesInds.Length)) ? FragMatricesInds[i] : 0;
                     YftXml.OpenTag(sb, cind, "Item id=\"" + idx.ToString() + "\"");
-                    YftXml.WriteRawArrayContent(sb, FragMatrices[i].ToArray(), cind + 1, FloatUtil.ToString, 4);
+                    YftXml.WriteRawArrayContent(sb, FragMatrices[i].ToArray(), cind + 1, FloatUtil.ToString, 3);
                     YftXml.CloseTag(sb, cind, "Item");
                 }
                 YftXml.CloseTag(sb, indent, "Matrices");
@@ -836,26 +859,26 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node, string ddsfolder)
         {
             Name = Xml.GetChildInnerText(node, "Name"); if (string.IsNullOrEmpty(Name)) Name = null;
-            FragMatrix = Xml.GetChildMatrix(node, "Matrix");
+            FragMatrix = new Matrix4F_s(Xml.GetChildRawFloatArray(node, "Matrix"));
 
             var msnode = node.SelectSingleNode("Matrices");
             if (msnode != null)
             {
-                var mats = new List<Matrix>();
+                var mats = new List<Matrix4F_s>();
                 var matinds = new List<ulong>();
                 var cap = Xml.GetIntAttribute(msnode, "capacity");
                 var inodes = msnode.SelectNodes("Item");
                 foreach (XmlNode inode in inodes)
                 {
                     var id = Xml.GetULongAttribute(inode, "id");
-                    var mat = Xml.GetMatrix(inode);
+                    var mat = new Matrix4F_s(Xml.GetRawFloatArray(inode));
                     matinds.Add(id);
                     mats.Add(mat);
                 }
                 for (int i = mats.Count; i < cap; i++)
                 {
                     matinds.Add(0);
-                    mats.Add(new Matrix(float.NaN));
+                    mats.Add(new Matrix4F_s(float.NaN));
                 }
                 FragMatrices = mats.ToArray();
                 FragMatricesInds = matinds.ToArray();
@@ -895,7 +918,7 @@ namespace CodeWalker.GameFiles
             }
             if (FragMatrices != null)
             {
-                FragMatricesBlock = new ResourceSystemStructBlock<Matrix>(FragMatrices);
+                FragMatricesBlock = new ResourceSystemStructBlock<Matrix4F_s>(FragMatrices);
                 list.Add(FragMatricesBlock);
             }
             if (Name != null)
@@ -1544,21 +1567,29 @@ namespace CodeWalker.GameFiles
                 Items[i] = u;
                 coffset += reader.Position - rpos;
 
-                var padd = (int)(16 - (coffset % 16)) % 16;
+                var padd = (16 - (coffset % 16)) % 16;
                 if (padd > 0)
                 {
-                    u.Padding = reader.ReadBytes(padd);
+                    u.Padding = reader.ReadBytes((int)padd);
                     coffset += padd;
+
+                    //foreach (var b in u.Padding)
+                    //{
+                    //    if (b != 0)
+                    //    { }
+                    //}
                 }
             }
 
+            //if (coffset != TotalLength)
+            //{ }
             //if (Unknown_4h != 112)
             //{ }//no hit
             //if (UnkUint0 != 0)
             //{ }//no hit
 
             //// just testing
-            BuildOffsets();
+            //BuildOffsets();
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
@@ -1582,13 +1613,16 @@ namespace CodeWalker.GameFiles
                 item.Write(writer);
 
                 coffset += writer.Position - rpos;
-                var padd = (int)(16 - (coffset % 16)) % 16;
+                var padd = (16 - (coffset % 16)) % 16;
                 if (padd > 0)
                 {
                     writer.Write(new byte[padd]);
                     coffset += padd;
                 }
             }
+
+            //if (coffset != TotalLength)
+            //{ }
 
         }
         public void WriteXml(StringBuilder sb, int indent)
@@ -1630,6 +1664,7 @@ namespace CodeWalker.GameFiles
             var bc = 16u;
             if (Items != null)
             {
+                bc += (uint)((Items.Length + (Items.Length & 1)) * 8);
                 foreach (var item in Items)
                 {
                     var off = new ItemOffsetStruct();
@@ -1639,11 +1674,10 @@ namespace CodeWalker.GameFiles
                     bc += item.TotalLength;
                     bc += (16 - (bc % 16)) % 16;//account for padding
                 }
-                if ((offs.Count % 2) != 0)
+                if ((offs.Count & 1) != 0)
                 {
                     offs.Add(new ItemOffsetStruct());
                 }
-                bc += (uint)offs.Count * 8u;
             }
 
             //// just testing

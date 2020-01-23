@@ -1740,6 +1740,15 @@ namespace CodeWalker.GameFiles
             if (Polygons == null)
             { return; }
 
+            for (int i = 0; i < Polygons.Length; i++)
+            {
+                var poly = Polygons[i];
+                if (poly != null)
+                {
+                    poly.Index = i;
+                }
+            }
+
             var edgedict = new Dictionary<BoundEdgeRef, BoundEdge>();
             foreach (var poly in Polygons)
             {
@@ -2397,8 +2406,8 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public ResourcePointerArray64<Bounds> Children { get; set; }
-        public Matrix[] ChildrenTransformation1 { get; set; }
-        public Matrix[] ChildrenTransformation2 { get; set; }
+        public Matrix4F_s[] ChildrenTransformation1 { get; set; }
+        public Matrix4F_s[] ChildrenTransformation2 { get; set; }
         public AABB_s[] ChildrenBoundingBoxes { get; set; }
         public BoundCompositeChildrenFlags[] ChildrenFlags1 { get; set; }
         public BoundCompositeChildrenFlags[] ChildrenFlags2 { get; set; }
@@ -2406,8 +2415,8 @@ namespace CodeWalker.GameFiles
         public BVH BVH { get; set; }
 
 
-        private ResourceSystemStructBlock<Matrix> ChildrenTransformation1Block = null;
-        private ResourceSystemStructBlock<Matrix> ChildrenTransformation2Block = null;
+        private ResourceSystemStructBlock<Matrix4F_s> ChildrenTransformation1Block = null;
+        private ResourceSystemStructBlock<Matrix4F_s> ChildrenTransformation2Block = null;
         private ResourceSystemStructBlock<AABB_s> ChildrenBoundingBoxesBlock = null;
         private ResourceSystemStructBlock<BoundCompositeChildrenFlags> ChildrenFlags1Block = null;
         private ResourceSystemStructBlock<BoundCompositeChildrenFlags> ChildrenFlags2Block = null;
@@ -2435,8 +2444,8 @@ namespace CodeWalker.GameFiles
                 this.ChildrenCount1
             );
 
-            this.ChildrenTransformation1 = reader.ReadStructsAt<Matrix>(this.ChildrenTransformation1Pointer, this.ChildrenCount1);
-            this.ChildrenTransformation2 = reader.ReadStructsAt<Matrix>(this.ChildrenTransformation2Pointer, this.ChildrenCount1);
+            this.ChildrenTransformation1 = reader.ReadStructsAt<Matrix4F_s>(this.ChildrenTransformation1Pointer, this.ChildrenCount1);
+            this.ChildrenTransformation2 = reader.ReadStructsAt<Matrix4F_s>(this.ChildrenTransformation2Pointer, this.ChildrenCount1);
             this.ChildrenBoundingBoxes = reader.ReadStructsAt<AABB_s>(this.ChildrenBoundingBoxesPointer, this.ChildrenCount1);
             this.ChildrenFlags1 = reader.ReadStructsAt<BoundCompositeChildrenFlags>(this.ChildrenFlags1Pointer, this.ChildrenCount1);
             this.ChildrenFlags2 = reader.ReadStructsAt<BoundCompositeChildrenFlags>(this.ChildrenFlags2Pointer, this.ChildrenCount1);
@@ -2458,8 +2467,7 @@ namespace CodeWalker.GameFiles
                     {
                         child.Parent = this;
 
-                        var xform = ((childTransforms != null) && (i < childTransforms.Length)) ? childTransforms[i] : Matrix.Identity;
-                        xform.Column4 = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+                        var xform = ((childTransforms != null) && (i < childTransforms.Length)) ? childTransforms[i].ToMatrix() : Matrix.Identity;
                         child.Transform = xform;
                         child.TransformInv = Matrix.Invert(xform);
                         child.CompositeFlags1 = ((ChildrenFlags1 != null) && (i < ChildrenFlags1.Length)) ? ChildrenFlags1[i] : new BoundCompositeChildrenFlags();
@@ -2470,6 +2478,64 @@ namespace CodeWalker.GameFiles
                     }
                 }
             }
+
+            //if (ChildrenTransformation1 != null)
+            //{
+            //    foreach (var m in ChildrenTransformation1)
+            //    {
+            //        switch (m.Flags1)
+            //        {
+            //            case 0:
+            //            case 0x7f800001: //only in yft's!
+            //            case 0x80000000: //only in yft's! = -0
+            //                break;
+            //            default:
+            //                break;//no hit
+            //        }
+            //        switch (m.Flags2)
+            //        {
+            //            case 1:
+            //            case 0: //only in yft's!
+            //            case 0x7f800001: //only in yft's!
+            //            case 0x80000000: //only in yft's! = -0
+            //                break;
+            //            default:
+            //                break;//no hit
+            //        }
+            //        switch (m.Flags3)
+            //        {
+            //            case 1:
+            //            case 0: //only in yft's!
+            //            case 0x7f800001: //only in yft's!
+            //            case 0x80000000: //only in yft's! = -0
+            //                break;
+            //            default:
+            //                break;//no hit
+            //        }
+            //        switch (m.Flags4)
+            //        {
+            //            case 0:
+            //            case 0x7f800001: //only in yft's!
+            //            case 0x42f9c6a4: //only in yft!  = 124.888f
+            //            case 0x42f94c3a: //only in yft!  = 124.649f
+            //            case 0x42f33400: //only in yft!  = 121.602f
+            //            case 0x42f4793c: //only in yft!  = 122.237f
+            //            case 0x42f2d6a2: //only in yft!  = 121.419f
+            //            case 0x42eca103:
+            //            case 0x42ede882:
+            //            case 0x42e6ec74:
+            //            case 0x42e26655:
+            //            case 0x42e2ac9e:
+            //            case 0x42eb1c90:
+            //            case 0x4474bd4d:
+            //            case 0x433b2027:
+            //                break;
+            //            default:
+            //                break;//+ more! in yft's! it really seems like a float...
+            //        }
+            //    }
+            //}
+
 
             //if ((ChildrenTransformation1 != null) && (ChildrenTransformation2 != null))
             //{
@@ -2597,12 +2663,12 @@ namespace CodeWalker.GameFiles
             if (Children != null) list.Add(Children);
             if (ChildrenTransformation1 != null)
             {
-                ChildrenTransformation1Block = new ResourceSystemStructBlock<Matrix>(ChildrenTransformation1);
+                ChildrenTransformation1Block = new ResourceSystemStructBlock<Matrix4F_s>(ChildrenTransformation1);
                 list.Add(ChildrenTransformation1Block);
             }
             if (ChildrenTransformation2 != null)
             {
-                ChildrenTransformation2Block = new ResourceSystemStructBlock<Matrix>(ChildrenTransformation2);
+                ChildrenTransformation2Block = new ResourceSystemStructBlock<Matrix4F_s>(ChildrenTransformation2);
                 list.Add(ChildrenTransformation2Block);
             }
             if (ChildrenBoundingBoxes != null)
@@ -2749,16 +2815,32 @@ namespace CodeWalker.GameFiles
                 return;
             }
 
-            var ct1 = new List<Matrix>();
-            var ct2 = new List<Matrix>();
+            var ct1 = new List<Matrix4F_s>();
+            var ct2 = new List<Matrix4F_s>();
             foreach (var child in Children.data_items)
             {
-                var m = Matrix.Identity;
+                var m = Matrix4F_s.Identity;
                 if (child != null)
                 {
-                    m = child.Transform;
+                    m = new Matrix4F_s(child.Transform);
                 }
-                m.Column4 = new Vector4(0.0f, float.Epsilon, float.Epsilon, 0.0f);//is this right? TODO: check!
+
+                if (OwnerIsFragment)
+                {
+                    m.Flags1 = 0x7f800001;
+                    m.Flags2 = 0x7f800001;
+                    m.Flags3 = 0x7f800001;
+                    m.Flags4 = 0x7f800001;
+                }
+                else
+                {
+                    //m.Column4 = new Vector4(0.0f, float.Epsilon, float.Epsilon, 0.0f);//is this right? TODO: check!
+                    m.Flags1 = 0;
+                    m.Flags2 = 1;
+                    m.Flags3 = 1;
+                    m.Flags4 = 0;
+                }
+
                 ct1.Add(m);
                 ct2.Add(m);
             }
@@ -2864,8 +2946,8 @@ namespace CodeWalker.GameFiles
             if (Children == null) Children = new ResourcePointerArray64<Bounds>();
 
             var children = Children.data_items?.ToList() ?? new List<Bounds>();
-            var transforms1 = ChildrenTransformation1?.ToList() ?? new List<Matrix>();
-            var transforms2 = ChildrenTransformation2?.ToList() ?? new List<Matrix>();
+            var transforms1 = ChildrenTransformation1?.ToList() ?? new List<Matrix4F_s>();
+            var transforms2 = ChildrenTransformation2?.ToList() ?? new List<Matrix4F_s>();
             var bboxes = ChildrenBoundingBoxes?.ToList() ?? new List<AABB_s>();
             var flags1 = ChildrenFlags1?.ToList();
             var flags2 = ChildrenFlags2?.ToList();
@@ -2874,8 +2956,8 @@ namespace CodeWalker.GameFiles
             child.Parent = this;
 
             children.Add(child);
-            transforms1.Add(Matrix.Identity);
-            transforms2.Add(Matrix.Identity);
+            transforms1.Add(Matrix4F_s.Identity);
+            transforms2.Add(Matrix4F_s.Identity);
             bboxes.Add(new AABB_s());//will get updated later
             flags1?.Add(new BoundCompositeChildrenFlags());
             flags2?.Add(new BoundCompositeChildrenFlags());
