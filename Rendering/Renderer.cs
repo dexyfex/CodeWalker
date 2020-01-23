@@ -1413,8 +1413,8 @@ namespace CodeWalker.Rendering
                 rinst.Position = Vector3.Zero;
                 rinst.CamRel = Vector3.Zero;
                 rinst.Distance = 0.0f;
-                rinst.BBMin = skydomeydr.BoundingBoxMin.XYZ();
-                rinst.BBMax = skydomeydr.BoundingBoxMax.XYZ();
+                rinst.BBMin = skydomeydr.BoundingBoxMin;
+                rinst.BBMax = skydomeydr.BoundingBoxMax;
                 rinst.BSCenter = Vector3.Zero;
                 rinst.Radius = skydomeydr.BoundingSphereRadius;
                 rinst.Orientation = Quaternion.Identity;
@@ -2887,8 +2887,8 @@ namespace CodeWalker.Rendering
             Vector3 scale = Vector3.One;
             Quaternion orientation = Quaternion.Identity;
             uint tintPaletteIndex = 0;
-            Vector3 bbmin = (arche != null) ? arche.BBMin : rndbl.Key.BoundingBoxMin.XYZ();
-            Vector3 bbmax = (arche != null) ? arche.BBMax : rndbl.Key.BoundingBoxMax.XYZ();
+            Vector3 bbmin = (arche != null) ? arche.BBMin : rndbl.Key.BoundingBoxMin;
+            Vector3 bbmax = (arche != null) ? arche.BBMax : rndbl.Key.BoundingBoxMax;
             Vector3 bscen = (arche != null) ? arche.BSCenter : rndbl.Key.BoundingCenter;
             float radius = (arche != null) ? arche.BSRadius : rndbl.Key.BoundingSphereRadius;
             float distance = 0;// (camrel + bscen).Length();

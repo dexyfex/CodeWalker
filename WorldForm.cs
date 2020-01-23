@@ -2315,8 +2315,8 @@ namespace CodeWalker
             {
                 bsph.Center = camrel + drawable.BoundingCenter;
                 bsph.Radius = drawable.BoundingSphereRadius;
-                bbox.Minimum = drawable.BoundingBoxMin.XYZ() * scale;
-                bbox.Maximum = drawable.BoundingBoxMax.XYZ() * scale;
+                bbox.Minimum = drawable.BoundingBoxMin * scale;
+                bbox.Maximum = drawable.BoundingBoxMax * scale;
             }
             bool mousespherehit = camera.MouseRay.Intersects(ref bsph);
 

@@ -3728,8 +3728,10 @@ namespace CodeWalker.GameFiles
         public ulong SkeletonPointer { get; set; }
         public Vector3 BoundingCenter { get; set; }
         public float BoundingSphereRadius { get; set; }
-        public Vector4 BoundingBoxMin { get; set; }
-        public Vector4 BoundingBoxMax { get; set; }
+        public Vector3 BoundingBoxMin { get; set; }
+        public uint Unknown_3Ch { get; set; } = 0x7f800001;
+        public Vector3 BoundingBoxMax { get; set; }
+        public uint Unknown_4Ch { get; set; } = 0x7f800001;
         public ulong DrawableModelsHighPointer { get; set; }
         public ulong DrawableModelsMediumPointer { get; set; }
         public ulong DrawableModelsLowPointer { get; set; }
@@ -3838,8 +3840,10 @@ namespace CodeWalker.GameFiles
             this.SkeletonPointer = reader.ReadUInt64();
             this.BoundingCenter = reader.ReadVector3();
             this.BoundingSphereRadius = reader.ReadSingle();
-            this.BoundingBoxMin = reader.ReadVector4();
-            this.BoundingBoxMax = reader.ReadVector4();
+            this.BoundingBoxMin = reader.ReadVector3();
+            this.Unknown_3Ch = reader.ReadUInt32();
+            this.BoundingBoxMax = reader.ReadVector3();
+            this.Unknown_4Ch = reader.ReadUInt32();
             this.DrawableModelsHighPointer = reader.ReadUInt64();
             this.DrawableModelsMediumPointer = reader.ReadUInt64();
             this.DrawableModelsLowPointer = reader.ReadUInt64();
@@ -3895,6 +3899,22 @@ namespace CodeWalker.GameFiles
 
 
             ////just testing!!!
+            //switch (Unknown_3Ch)
+            //{
+            //    case 0x7f800001:
+            //    case 0: //only in yft's!
+            //        break;
+            //    default:
+            //        break;
+            //}
+            //switch (Unknown_4Ch)
+            //{
+            //    case 0x7f800001:
+            //    case 0: //only in yft's!
+            //        break;
+            //    default:
+            //        break;
+            //}
             //if ((DrawableModelsHigh?.data_items != null) != (Unknown_80h != 0))
             //{ }//no hit
             //if ((DrawableModelsMedium?.data_items != null) != (Unknown_84h != 0))
@@ -4081,7 +4101,9 @@ namespace CodeWalker.GameFiles
             writer.Write(this.BoundingCenter);
             writer.Write(this.BoundingSphereRadius);
             writer.Write(this.BoundingBoxMin);
+            writer.Write(this.Unknown_3Ch);
             writer.Write(this.BoundingBoxMax);
+            writer.Write(this.Unknown_4Ch);
             writer.Write(this.DrawableModelsHighPointer);
             writer.Write(this.DrawableModelsMediumPointer);
             writer.Write(this.DrawableModelsLowPointer);
@@ -4104,8 +4126,8 @@ namespace CodeWalker.GameFiles
         {
             YdrXml.SelfClosingTag(sb, indent, "BoundingSphereCenter " + FloatUtil.GetVector3XmlString(BoundingCenter));
             YdrXml.ValueTag(sb, indent, "BoundingSphereRadius", FloatUtil.ToString(BoundingSphereRadius));
-            YdrXml.SelfClosingTag(sb, indent, "BoundingBoxMin " + FloatUtil.GetVector4XmlString(BoundingBoxMin));
-            YdrXml.SelfClosingTag(sb, indent, "BoundingBoxMax " + FloatUtil.GetVector4XmlString(BoundingBoxMax));
+            YdrXml.SelfClosingTag(sb, indent, "BoundingBoxMin " + FloatUtil.GetVector3XmlString(BoundingBoxMin));
+            YdrXml.SelfClosingTag(sb, indent, "BoundingBoxMax " + FloatUtil.GetVector3XmlString(BoundingBoxMax));
             YdrXml.ValueTag(sb, indent, "LodDistHigh", FloatUtil.ToString(LodDistHigh));
             YdrXml.ValueTag(sb, indent, "LodDistMed", FloatUtil.ToString(LodDistMed));
             YdrXml.ValueTag(sb, indent, "LodDistLow", FloatUtil.ToString(LodDistLow));
@@ -4158,8 +4180,8 @@ namespace CodeWalker.GameFiles
         {
             BoundingCenter = Xml.GetChildVector3Attributes(node, "BoundingSphereCenter");
             BoundingSphereRadius = Xml.GetChildFloatAttribute(node, "BoundingSphereRadius", "value");
-            BoundingBoxMin = Xml.GetChildVector4Attributes(node, "BoundingBoxMin");
-            BoundingBoxMax = Xml.GetChildVector4Attributes(node, "BoundingBoxMax");
+            BoundingBoxMin = Xml.GetChildVector3Attributes(node, "BoundingBoxMin");
+            BoundingBoxMax = Xml.GetChildVector3Attributes(node, "BoundingBoxMax");
             LodDistHigh = Xml.GetChildFloatAttribute(node, "LodDistHigh", "value");
             LodDistMed = Xml.GetChildFloatAttribute(node, "LodDistMed", "value");
             LodDistLow = Xml.GetChildFloatAttribute(node, "LodDistLow", "value");

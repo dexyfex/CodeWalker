@@ -164,6 +164,102 @@ namespace CodeWalker.GameFiles
 
     }
 
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct Matrix4F_s
+    {
+        public Vector3 Column1 { get; set; }
+        public uint Flags1 { get; set; }
+        public Vector3 Column2 { get; set; }
+        public uint Flags2 { get; set; }
+        public Vector3 Column3 { get; set; }
+        public uint Flags3 { get; set; }
+        public Vector3 Column4 { get; set; }
+        public uint Flags4 { get; set; }
+
+        public Matrix4F_s(bool identity)
+        {
+            if (identity)
+            {
+                Column1 = Vector3.UnitX;
+                Column2 = Vector3.UnitY;
+                Column3 = Vector3.UnitZ;
+                Column4 = Vector3.Zero;
+            }
+            else
+            {
+                Column1 = Vector3.Zero;
+                Column2 = Vector3.Zero;
+                Column3 = Vector3.Zero;
+                Column4 = Vector3.Zero;
+            }
+            Flags1 = 0x7f800001;
+            Flags2 = 0x7f800001;
+            Flags3 = 0x7f800001;
+            Flags4 = 0x7f800001;
+        }
+        public Matrix4F_s(float v)
+        {
+            Column1 = new Vector3(v);
+            Column2 = new Vector3(v);
+            Column3 = new Vector3(v);
+            Column4 = new Vector3(v);
+            Flags1 = 0x7f800001;
+            Flags2 = 0x7f800001;
+            Flags3 = 0x7f800001;
+            Flags4 = 0x7f800001;
+        }
+        public Matrix4F_s(float[] a)
+        {
+            if ((a != null) && (a.Length == 12))
+            {
+                Column1 = new Vector3(a[0], a[1], a[2]);
+                Column2 = new Vector3(a[3], a[4], a[5]);
+                Column3 = new Vector3(a[6], a[7], a[8]);
+                Column4 = new Vector3(a[9], a[10], a[11]);
+            }
+            else
+            {
+                Column1 = Vector3.UnitX;
+                Column2 = Vector3.UnitY;
+                Column3 = Vector3.UnitZ;
+                Column4 = Vector3.Zero;
+            }
+            Flags1 = 0x7f800001;
+            Flags2 = 0x7f800001;
+            Flags3 = 0x7f800001;
+            Flags4 = 0x7f800001;
+        }
+        public Matrix4F_s(Matrix m)
+        {
+            Column1 = new Vector3(m.M11, m.M12, m.M13);
+            Column2 = new Vector3(m.M21, m.M22, m.M23);
+            Column3 = new Vector3(m.M31, m.M32, m.M33);
+            Column4 = new Vector3(m.M41, m.M42, m.M43);
+            Flags1 = 0x7f800001;
+            Flags2 = 0x7f800001;
+            Flags3 = 0x7f800001;
+            Flags4 = 0x7f800001;
+        }
+
+        public float[] ToArray()
+        {
+            return new[] { Column1.X, Column1.Y, Column1.Z, Column2.X, Column2.Y, Column2.Z, Column3.X, Column3.Y, Column3.Z, Column4.X, Column4.Y, Column4.Z };
+        }
+
+        public Matrix ToMatrix()
+        {
+            return new Matrix(Column1.X, Column1.Y, Column1.Z, 0, Column2.X, Column2.Y, Column2.Z, 0, Column3.X, Column3.Y, Column3.Z, 0, Column4.X, Column4.Y, Column4.Z, 1);
+        }
+
+
+        public static Matrix4F_s Identity { get { return new Matrix4F_s(true); } }
+        public static Matrix4F_s Zero { get { return new Matrix4F_s(false); } }
+
+
+
+    }
+
+
+
     [TypeConverter(typeof(ExpandableObjectConverter))] public struct AABB_s
     {
         public Vector4 Min { get; set; }
