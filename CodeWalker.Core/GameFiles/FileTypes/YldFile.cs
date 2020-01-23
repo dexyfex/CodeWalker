@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -69,5 +71,74 @@ namespace CodeWalker.GameFiles
 
             Loaded = true;
         }
+
+        public byte[] Save()
+        {
+            byte[] data = ResourceBuilder.Build(ClothDictionary, 8); //yld is type/version 8...
+
+            return data;
+        }
+
     }
+
+
+
+    public class YldXml : MetaXmlBase
+    {
+
+        public static string GetXml(YldFile yld, string outputFolder = "")
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(XmlHeader);
+
+            var ddsfolder = outputFolder;
+            if (!string.IsNullOrEmpty(ddsfolder))
+            {
+                ddsfolder = Path.Combine(outputFolder, yld.Name);
+
+                if (!Directory.Exists(ddsfolder))
+                {
+                    Directory.CreateDirectory(ddsfolder);
+                }
+            }
+
+            if (yld?.ClothDictionary != null)
+            {
+                ClothDictionary.WriteXmlNode(yld.ClothDictionary, sb, 0);
+            }
+
+            return sb.ToString();
+        }
+
+    }
+
+    public class XmlYld
+    {
+
+        public static YldFile GetYld(string xml, string inputFolder = "")
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            return GetYld(doc, inputFolder);
+        }
+
+        public static YldFile GetYld(XmlDocument doc, string inputFolder = "")
+        {
+            YldFile r = new YldFile();
+
+            var ddsfolder = inputFolder;
+
+            var node = doc.DocumentElement;
+            if (node != null)
+            {
+                r.ClothDictionary = ClothDictionary.ReadXmlNode(node);
+            }
+
+            r.Name = Path.GetFileName(inputFolder);
+
+            return r;
+        }
+
+    }
+
 }

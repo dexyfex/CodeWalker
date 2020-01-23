@@ -91,6 +91,11 @@ namespace CodeWalker.GameFiles
                 YptFile ypt = RpfFile.GetFile<YptFile>(e, data);
                 return GetXml(ypt, out filename, outputfolder);
             }
+            else if (fnl.EndsWith(".yld"))
+            {
+                YldFile yld = RpfFile.GetFile<YldFile>(e, data);
+                return GetXml(yld, out filename, outputfolder);
+            }
             filename = fn;
             return string.Empty;
         }
@@ -197,6 +202,12 @@ namespace CodeWalker.GameFiles
             var fn = (ypt?.Name) ?? "";
             filename = fn + ".xml";
             return YptXml.GetXml(ypt, outputfolder);
+        }
+        public static string GetXml(YldFile yld, out string filename, string outputfolder)
+        {
+            var fn = (yld?.Name) ?? "";
+            filename = fn + ".xml";
+            return YldXml.GetXml(yld, outputfolder);
         }
 
 
@@ -2104,6 +2115,7 @@ namespace CodeWalker.GameFiles
         Ydd = 11,
         Yft = 12,
         Ypt = 13,
+        Yld = 14,
     }
 
 }

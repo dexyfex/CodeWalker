@@ -16217,6 +16217,42 @@ namespace CodeWalker.GameFiles
                     b20, b21, b22, b23, b24, b25, b26, b27, b28, b29,
                     b30, b31;
 
+        public PsoChar32(string s)
+        {
+            s = s.PadRight(32, '\0');
+            b00 = (byte)s[0];
+            b01 = (byte)s[1];
+            b02 = (byte)s[2];
+            b03 = (byte)s[3];
+            b04 = (byte)s[4];
+            b05 = (byte)s[5];
+            b06 = (byte)s[6];
+            b07 = (byte)s[7];
+            b08 = (byte)s[8];
+            b09 = (byte)s[9];
+            b10 = (byte)s[10];
+            b11 = (byte)s[11];
+            b12 = (byte)s[12];
+            b13 = (byte)s[13];
+            b14 = (byte)s[14];
+            b15 = (byte)s[15];
+            b16 = (byte)s[16];
+            b17 = (byte)s[17];
+            b18 = (byte)s[18];
+            b19 = (byte)s[19];
+            b20 = (byte)s[20];
+            b21 = (byte)s[21];
+            b22 = (byte)s[22];
+            b23 = (byte)s[23];
+            b24 = (byte)s[24];
+            b25 = (byte)s[25];
+            b26 = (byte)s[26];
+            b27 = (byte)s[27];
+            b28 = (byte)s[28];
+            b29 = (byte)s[29];
+            b30 = (byte)s[30];
+            b31 = (byte)s[31];
+        }
         public override string ToString()
         {
             byte[] bytes = new byte[]

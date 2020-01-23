@@ -428,7 +428,23 @@ namespace CodeWalker.GameFiles
             }
             if ((Cloths?.data_items?.Length ?? 0) > 0)
             {
-                YftXml.WriteItemArray(sb, Cloths.data_items, indent, "Cloths");
+                YftXml.OpenTag(sb, indent, "Cloths");
+                var cind = indent + 1;
+                var cind2 = indent + 2;
+                for (int i = 0; i < Cloths.data_items.Length; i++)
+                {
+                    if (Cloths.data_items[i] != null)
+                    {
+                        YftXml.OpenTag(sb, cind, "Item");
+                        Cloths.data_items[i].WriteXml(sb, cind2, ddsfolder);
+                        YftXml.CloseTag(sb, cind, "Item");
+                    }
+                    else
+                    {
+                        YftXml.SelfClosingTag(sb, cind, "Item");
+                    }
+                }
+                YftXml.CloseTag(sb, indent, "Cloths");
             }
         }
         public void ReadXml(XmlNode node, string ddsfolder)
@@ -498,7 +514,22 @@ namespace CodeWalker.GameFiles
             LightAttributes = new ResourceSimpleList64_s<LightAttributes_s>();
             LightAttributes.data_items = XmlMeta.ReadItemArray<LightAttributes_s>(node, "Lights");
             Cloths = new ResourcePointerList64<EnvironmentCloth>();
-            Cloths.data_items = XmlMeta.ReadItemArray<EnvironmentCloth>(node, "Cloths");
+            var cnode = node.SelectSingleNode("Cloths");
+            if (cnode != null)
+            {
+                var inodes = cnode.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    var vlist = new List<EnvironmentCloth>();
+                    foreach (XmlNode inode in inodes)
+                    {
+                        var v = new EnvironmentCloth();
+                        v.ReadXml(inode, ddsfolder);
+                        vlist.Add(v);
+                    }
+                    Cloths.data_items = vlist.ToArray();
+                }
+            }
 
             AssignChildrenSkeletonsAndBounds();
             AssignChildrenShaders();

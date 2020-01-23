@@ -239,7 +239,7 @@ namespace CodeWalker
             InitFileType(".ywr", "Waypoint Record", 9, FileTypeAction.ViewYwr);
             InitFileType(".fxc", "Compiled Shaders", 9, FileTypeAction.ViewFxc);
             InitFileType(".yed", "Expression Dictionary", 9, FileTypeAction.ViewYed);
-            InitFileType(".yld", "Cloth Dictionary", 9, FileTypeAction.ViewYld);
+            InitFileType(".yld", "Cloth Dictionary", 9, FileTypeAction.ViewYld, true);
             InitFileType(".yfd", "Frame Filter Dictionary", 9, FileTypeAction.ViewYfd);
             InitFileType(".asi", "ASI Plugin", 9);
             InitFileType(".dll", "Dynamic Link Library", 9);
@@ -2490,6 +2490,10 @@ namespace CodeWalker
                     {
                         mformat = MetaFormat.Ypt;
                     }
+                    if (fnamel.EndsWith(".yld.xml"))
+                    {
+                        mformat = MetaFormat.Yld;
+                    }
 
                     fname = fname.Substring(0, fname.Length - trimlength);
                     fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
@@ -2636,6 +2640,17 @@ namespace CodeWalker
                                     continue;
                                 }
                                 data = ypt.Save();
+                                break;
+                            }
+                        case MetaFormat.Yld:
+                            {
+                                var yld = XmlYld.GetYld(doc, fpathin);
+                                if (yld.ClothDictionary == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YLD XML");
+                                    continue;
+                                }
+                                data = yld.Save();
                                 break;
                             }
                     }
