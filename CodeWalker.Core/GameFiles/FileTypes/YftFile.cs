@@ -44,9 +44,9 @@ namespace CodeWalker.GameFiles
                 {
                     Fragment.Drawable.Owner = this;
                 }
-                if (Fragment.Drawable2 != null)
+                if (Fragment.DrawableCloth != null)
                 {
-                    Fragment.Drawable2.Owner = this;
+                    Fragment.DrawableCloth.Owner = this;
                 }
             }
 

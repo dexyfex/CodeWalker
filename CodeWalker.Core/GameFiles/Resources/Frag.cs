@@ -83,7 +83,7 @@ namespace CodeWalker.GameFiles
         public ulong GlassWindowsPointer { get; set; }
         public ulong Unknown_E8h; // 0x0000000000000000
         public ulong PhysicsLODGroupPointer { get; set; }
-        public ulong Drawable2Pointer { get; set; }
+        public ulong DrawableClothPointer { get; set; }
         public ulong Unknown_100h; // 0x0000000000000000
         public ulong Unknown_108h; // 0x0000000000000000
         public ResourceSimpleList64_s<LightAttributes_s> LightAttributes { get; set; }
@@ -98,7 +98,7 @@ namespace CodeWalker.GameFiles
         public FragBoneTransforms BoneTransforms { get; set; }
         public ResourcePointerArray64<FragGlassWindow> GlassWindows { get; set; }
         public FragPhysicsLODGroup PhysicsLODGroup { get; set; }
-        public FragDrawable Drawable2 { get; set; }
+        public FragDrawable DrawableCloth { get; set; }
         public FragVehicleGlassWindows VehicleGlassWindows { get; set; }
 
 
@@ -149,7 +149,7 @@ namespace CodeWalker.GameFiles
             this.GlassWindowsPointer = reader.ReadUInt64();
             this.Unknown_E8h = reader.ReadUInt64();
             this.PhysicsLODGroupPointer = reader.ReadUInt64();
-            this.Drawable2Pointer = reader.ReadUInt64();
+            this.DrawableClothPointer = reader.ReadUInt64();
             this.Unknown_100h = reader.ReadUInt64();
             this.Unknown_108h = reader.ReadUInt64();
             this.LightAttributes = reader.ReadBlock<ResourceSimpleList64_s<LightAttributes_s>>();
@@ -164,17 +164,17 @@ namespace CodeWalker.GameFiles
             BoneTransforms = reader.ReadBlockAt<FragBoneTransforms>(BoneTransformsPointer);
             GlassWindows = reader.ReadBlockAt<ResourcePointerArray64<FragGlassWindow>>(GlassWindowsPointer, GlassWindowsCount);
             PhysicsLODGroup = reader.ReadBlockAt<FragPhysicsLODGroup>(PhysicsLODGroupPointer);
-            Drawable2 = reader.ReadBlockAt<FragDrawable>(Drawable2Pointer);
+            DrawableCloth = reader.ReadBlockAt<FragDrawable>(DrawableClothPointer);
             VehicleGlassWindows = reader.ReadBlockAt<FragVehicleGlassWindows>(VehicleGlassWindowsPointer);
 
             if (Drawable != null)
             {
                 Drawable.OwnerFragment = this;
             }
-            if (Drawable2 != null)
+            if (DrawableCloth != null)
             {
-                Drawable2.OwnerFragment = this;
-                if (Drawable2.OwnerCloth == null)
+                DrawableCloth.OwnerFragment = this;
+                if (DrawableCloth.OwnerCloth == null)
                 { }//no hit!
             }
             if (DrawableArray?.data_items != null)
@@ -321,7 +321,7 @@ namespace CodeWalker.GameFiles
             this.GlassWindowsCount = (byte)(this.GlassWindows != null ? this.GlassWindows.Count : 0);
             this.GlassWindowsPointer = (ulong)(this.GlassWindows != null ? this.GlassWindows.FilePosition : 0);
             this.PhysicsLODGroupPointer = (ulong)(this.PhysicsLODGroup != null ? this.PhysicsLODGroup.FilePosition : 0);
-            this.Drawable2Pointer = (ulong)(this.Drawable2 != null ? this.Drawable2.FilePosition : 0);
+            this.DrawableClothPointer = (ulong)(this.DrawableCloth != null ? this.DrawableCloth.FilePosition : 0);
             this.VehicleGlassWindowsPointer = (ulong)(this.VehicleGlassWindows != null ? this.VehicleGlassWindows.FilePosition : 0);
 
             // write structure data
@@ -362,7 +362,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.GlassWindowsPointer);
             writer.Write(this.Unknown_E8h);
             writer.Write(this.PhysicsLODGroupPointer);
-            writer.Write(this.Drawable2Pointer);
+            writer.Write(this.DrawableClothPointer);
             writer.Write(this.Unknown_100h);
             writer.Write(this.Unknown_108h);
             writer.WriteBlock(this.LightAttributes);
@@ -385,10 +385,6 @@ namespace CodeWalker.GameFiles
             if (Drawable != null)
             {
                 FragDrawable.WriteXmlNode(Drawable, sb, indent, ddsfolder, "Drawable");
-            }
-            if (Drawable2 != null)
-            {
-                FragDrawable.WriteXmlNode(Drawable2, sb, indent, ddsfolder, "Drawable2");
             }
             if ((DrawableArray?.data_items?.Length ?? 0) > 0)
             {
@@ -467,11 +463,6 @@ namespace CodeWalker.GameFiles
             {
                 Drawable = FragDrawable.ReadXmlNode(dnode, ddsfolder);
             }
-            var dnode2 = node.SelectSingleNode("Drawable2");
-            if (dnode2 != null)
-            {
-                Drawable2 = FragDrawable.ReadXmlNode(dnode2, ddsfolder);
-            }
             var danode = node.SelectSingleNode("DrawableArray");
             if (danode != null)
             {
@@ -528,6 +519,8 @@ namespace CodeWalker.GameFiles
                         var v = new EnvironmentCloth();
                         v.ReadXml(inode, ddsfolder);
                         vlist.Add(v);
+
+                        DrawableCloth = v.Drawable;
                     }
                     Cloths.data_items = vlist.ToArray();
                 }
@@ -560,7 +553,7 @@ namespace CodeWalker.GameFiles
             if (PhysicsLODGroup == null) return;
 
             //for things like vehicle wheels, the shaderGroup in the model is missing, so use the main drawable's shaders.
-            var pdrwbl = Drawable ?? Drawable2;
+            var pdrwbl = Drawable ?? DrawableCloth;
             var pskel = pdrwbl?.Skeleton;
 
             void assigndr(FragDrawable dr, BoundComposite pbcmp, int i)
@@ -617,7 +610,7 @@ namespace CodeWalker.GameFiles
         {
             if (PhysicsLODGroup == null) return;
 
-            var pdrwbl = Drawable ?? Drawable2;
+            var pdrwbl = Drawable ?? DrawableCloth;
             var pskel = pdrwbl?.Skeleton;
 
             void assignskb(FragDrawable dr, BoundComposite pbcmp, int i)
@@ -666,7 +659,7 @@ namespace CodeWalker.GameFiles
             if (BoneTransforms != null) list.Add(BoneTransforms);
             if (GlassWindows != null) list.Add(GlassWindows);
             if (PhysicsLODGroup != null) list.Add(PhysicsLODGroup);
-            if (Drawable2 != null) list.Add(Drawable2);
+            if (DrawableCloth != null) list.Add(DrawableCloth);
             if (VehicleGlassWindows != null) list.Add(VehicleGlassWindows);
             return list.ToArray();
         }
