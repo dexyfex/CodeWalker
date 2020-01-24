@@ -2590,9 +2590,9 @@ namespace CodeWalker.Rendering
 
             RenderDrawable(f.Drawable, arch, ent, txdhash, null, null, animClip);
 
-            if (f.Drawable2 != null) //cloth
+            if (f.DrawableCloth != null) //cloth
             {
-                RenderDrawable(f.Drawable2, arch, ent, txdhash, null, null, animClip);
+                RenderDrawable(f.DrawableCloth, arch, ent, txdhash, null, null, animClip);
             }
 
             //vehicle wheels...
@@ -2817,9 +2817,9 @@ namespace CodeWalker.Rendering
                 if (fd != null)
                 {
                     var frag = fd.OwnerFragment;
-                    if ((frag != null) && (frag.Drawable2 != null)) //cloth...
+                    if ((frag != null) && (frag.DrawableCloth != null)) //cloth...
                     {
-                        rndbl = TryGetRenderable(arche, frag.Drawable2);
+                        rndbl = TryGetRenderable(arche, frag.DrawableCloth);
                         if (rndbl != null)
                         {
                             bool res2 = RenderRenderable(rndbl, arche, entity);
