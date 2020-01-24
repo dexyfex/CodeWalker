@@ -1589,7 +1589,7 @@ namespace CodeWalker.GameFiles
         public ulong[] data_pointers { get; set; }
         public T[] data_items { get; set; }
 
-        public bool ManualPointerOverride { get; set; } = false;//use this to manually write data_pointers
+        public bool ManualPointerOverride = false;//use this to manually write data_pointers
 
         private ResourceSystemStructBlock<T>[] data_blocks = null;
 

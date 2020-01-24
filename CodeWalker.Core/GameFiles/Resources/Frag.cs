@@ -174,6 +174,8 @@ namespace CodeWalker.GameFiles
             if (Drawable2 != null)
             {
                 Drawable2.OwnerFragment = this;
+                if (Drawable2.OwnerCloth == null)
+                { }//no hit!
             }
             if (DrawableArray?.data_items != null)
             {
@@ -1128,7 +1130,7 @@ namespace CodeWalker.GameFiles
             get { return TotalLength; }
         }
 
-        [TypeConverter(typeof(ExpandableObjectConverter))] public struct ItemOffsetStruct
+        [TypeConverter(typeof(ExpandableObjectConverter))] public struct WindowOffsetStruct
         {
             public uint Item { get; set; }
             public uint Offset { get; set; }
@@ -1137,13 +1139,13 @@ namespace CodeWalker.GameFiles
                 return Item.ToString() + ": " + Offset.ToString();
             }
         }
-        [TypeConverter(typeof(ExpandableObjectConverter))] public class ItemStruct
+        [TypeConverter(typeof(ExpandableObjectConverter))] public class WindowStruct
         {
             public Matrix Matrix { get; set; }
             public uint UnkUint1 { get; set; } = 0x56475743; // "VGWC"    vehicle glass window C..?
             public ushort ItemID { get; set; } //matches UnkStruct1.Item
             public ushort UnkUshort1 { get; set; }
-            public ushort UnkUshort2 { get; set; }
+            public ushort UnkUshort2 { get; set; } //max value of all End1 and End2 in ItemDatas, plus 1
             public ushort ItemDataCount { get; set; }//count of item data arrays
             public ushort ItemDataByteLength { get; set; }//total byte length of ItemDatas plus byte length of ItemDataOffsets
             public ushort UnkUshort3 { get; set; } = 0; //0
@@ -1153,7 +1155,7 @@ namespace CodeWalker.GameFiles
             public float UnkFloat2 { get; set; }
             public ushort UnkUshort4 { get; set; } //0, 1
             public ushort UnkUshort5 { get; set; } //2, 2050
-            public float UnkFloat3 { get; set; }
+            public float CracksTextureTiling { get; set; } // UV multiplier for the "shattered" cracks texture that is applied when the window is broken
             public uint UnkUint4 { get; set; } = 0; //0
             public uint UnkUint5 { get; set; } = 0; //0
             public ushort[] ItemDataOffsets { get; set; }//byte offsets for following array
@@ -1203,7 +1205,7 @@ namespace CodeWalker.GameFiles
                 UnkFloat2 = reader.ReadSingle();
                 UnkUshort4 = reader.ReadUInt16();//0, 1
                 UnkUshort5 = reader.ReadUInt16();//2, 2050
-                UnkFloat3 = reader.ReadSingle();
+                CracksTextureTiling = reader.ReadSingle();
                 UnkUint4 = reader.ReadUInt32();//0
                 UnkUint5 = reader.ReadUInt32();//0
 
@@ -1322,7 +1324,7 @@ namespace CodeWalker.GameFiles
                 writer.Write(UnkFloat2);
                 writer.Write(UnkUshort4);
                 writer.Write(UnkUshort5);
-                writer.Write(UnkFloat3);
+                writer.Write(CracksTextureTiling);
                 writer.Write(UnkUint4);
                 writer.Write(UnkUint5);
                 writer.WriteStructs(ItemDataOffsets);
@@ -1350,7 +1352,7 @@ namespace CodeWalker.GameFiles
                 YftXml.ValueTag(sb, indent, "UnkUshort5", UnkUshort5.ToString());
                 YftXml.ValueTag(sb, indent, "UnkFloat1", FloatUtil.ToString(UnkFloat1));
                 YftXml.ValueTag(sb, indent, "UnkFloat2", FloatUtil.ToString(UnkFloat2));
-                YftXml.ValueTag(sb, indent, "UnkFloat3", FloatUtil.ToString(UnkFloat3));
+                YftXml.ValueTag(sb, indent, "CracksTextureTiling", FloatUtil.ToString(CracksTextureTiling));
                 YftXml.WriteRawArray(sb, Matrix.ToArray(), indent, "Matrix", "", FloatUtil.ToString, 4);
                 if (ItemDatas != null)
                 {
@@ -1375,7 +1377,7 @@ namespace CodeWalker.GameFiles
                 UnkUshort5 = (ushort)Xml.GetChildUIntAttribute(node, "UnkUshort5", "value");
                 UnkFloat1 = Xml.GetChildFloatAttribute(node, "UnkFloat1", "value");
                 UnkFloat2 = Xml.GetChildFloatAttribute(node, "UnkFloat2", "value");
-                UnkFloat3 = Xml.GetChildFloatAttribute(node, "UnkFloat3", "value");
+                CracksTextureTiling = Xml.GetChildFloatAttribute(node, "CracksTextureTiling", "value");
                 Matrix = Xml.GetChildMatrix(node, "Matrix");
                 var dnode = node.SelectSingleNode("Items");
                 if (dnode != null)
@@ -1400,8 +1402,8 @@ namespace CodeWalker.GameFiles
             {
                 var o = 0u;
                 var offs = new List<ushort>();
-                //var maxlen = 0u;
-                //var minlen = 0xFFFFFFFFu;
+                var maxend = 0;
+
                 if (ItemDatas != null)
                 {
                     foreach (var item in ItemDatas)
@@ -1409,8 +1411,7 @@ namespace CodeWalker.GameFiles
                         offs.Add((ushort)o);
                         o += item.TotalLength;
                         var dl = item.DataLength + item.Start1;
-                        //maxlen = Math.Max(maxlen, dl);
-                        //minlen = Math.Min(minlen, dl);
+                        maxend = Math.Max(Math.Max(maxend, item.End1), item.End2);
                     }
                     o += (uint)(ItemDatas.Length * 2);
                 }
@@ -1436,11 +1437,10 @@ namespace CodeWalker.GameFiles
 
                 ItemDataCount = (ushort)(ItemDatas?.Length ?? 0);
 
-                //if (UnkUshort1 != minlen+1)
-                //{ }
-                //if (UnkUshort2 != maxlen)
-                //{ }
-                //UnkUshort2 = (ushort)maxunk;
+                //if (UnkUshort2 != maxend + 1)
+                //{ }//no hit
+                UnkUshort2 = (ushort)(maxend + 1);
+
             }
 
             public override string ToString()
@@ -1572,9 +1572,9 @@ namespace CodeWalker.GameFiles
         public ushort Unknown_4h { get; set; } = 112;// = length of item headers
         public ushort ItemCount { get; set; }
         public uint TotalLength { get; set; }
-        public ItemOffsetStruct[] ItemOffsets { get; set; }
+        public WindowOffsetStruct[] WindowOffsets { get; set; }
         public uint UnkUint0 { get; set; } = 0;
-        public ItemStruct[] Items { get; set; }
+        public WindowStruct[] Windows { get; set; }
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -1584,18 +1584,18 @@ namespace CodeWalker.GameFiles
             Unknown_4h = reader.ReadUInt16(); //112 = length of item headers
             ItemCount = reader.ReadUInt16();
             TotalLength = reader.ReadUInt32();
-            ItemOffsets = reader.ReadStructs<ItemOffsetStruct>(ItemCount + (ItemCount & 1u)); //offsets in here start at just after UnkUint0
+            WindowOffsets = reader.ReadStructs<WindowOffsetStruct>(ItemCount + (ItemCount & 1u)); //offsets in here start at just after UnkUint0
             UnkUint0 = reader.ReadUInt32();//0
 
-            long coffset = 16 + ItemOffsets.Length*8;
+            long coffset = 16 + WindowOffsets.Length*8;
 
-            Items = new ItemStruct[ItemCount];
+            Windows = new WindowStruct[ItemCount];
             for (int i = 0; i < ItemCount; i++)
             {
                 var rpos = reader.Position;
-                var u = new ItemStruct();
+                var u = new WindowStruct();
                 u.Read(reader);
-                Items[i] = u;
+                Windows[i] = u;
                 coffset += reader.Position - rpos;
 
                 var padd = (16 - (coffset % 16)) % 16;
@@ -1632,12 +1632,12 @@ namespace CodeWalker.GameFiles
             writer.Write(this.ItemCount);
             writer.Write(this.TotalLength);
 
-            writer.WriteStructs(ItemOffsets);
+            writer.WriteStructs(WindowOffsets);
             writer.Write(UnkUint0);
 
-            long coffset = 16 + ItemOffsets.Length * 8;
+            long coffset = 16 + WindowOffsets.Length * 8;
 
-            foreach (var item in Items)
+            foreach (var item in Windows)
             {
                 var rpos = writer.Position;
 
@@ -1658,30 +1658,30 @@ namespace CodeWalker.GameFiles
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            if (Items != null)
+            if (Windows != null)
             {
-                foreach (var item in Items)
+                foreach (var item in Windows)
                 {
-                    YftXml.OpenTag(sb, indent, "Item");
+                    YftXml.OpenTag(sb, indent, "Window");
                     item.WriteXml(sb, indent + 1);
-                    YftXml.CloseTag(sb, indent, "Item");
+                    YftXml.CloseTag(sb, indent, "Window");
                 }
             }
         }
         public void ReadXml(XmlNode node)
         {
-            var inodes = node.SelectNodes("Item");
-            var ilist = new List<ItemStruct>();
+            var inodes = node.SelectNodes("Window");
+            var ilist = new List<WindowStruct>();
             if (inodes != null)
             {
                 foreach (XmlNode inode in inodes)
                 {
-                    var item = new ItemStruct();
+                    var item = new WindowStruct();
                     item.ReadXml(inode);
                     ilist.Add(item);
                 }
             }
-            Items = ilist.ToArray();
+            Windows = ilist.ToArray();
             ItemCount = (ushort)ilist.Count;
 
             BuildOffsets();
@@ -1691,14 +1691,14 @@ namespace CodeWalker.GameFiles
 
         public void BuildOffsets()
         {
-            var offs = new List<ItemOffsetStruct>();
+            var offs = new List<WindowOffsetStruct>();
             var bc = 16u;
-            if (Items != null)
+            if (Windows != null)
             {
-                bc += (uint)((Items.Length + (Items.Length & 1)) * 8);
-                foreach (var item in Items)
+                bc += (uint)((Windows.Length + (Windows.Length & 1)) * 8);
+                foreach (var item in Windows)
                 {
-                    var off = new ItemOffsetStruct();
+                    var off = new WindowOffsetStruct();
                     off.Item = item.ItemID;
                     off.Offset = bc;
                     offs.Add(off);
@@ -1707,7 +1707,7 @@ namespace CodeWalker.GameFiles
                 }
                 if ((offs.Count & 1) != 0)
                 {
-                    offs.Add(new ItemOffsetStruct());
+                    offs.Add(new WindowOffsetStruct());
                 }
             }
 
@@ -1729,7 +1729,7 @@ namespace CodeWalker.GameFiles
             //        { }
             //    }
             //}
-            ItemOffsets = offs.ToArray();
+            WindowOffsets = offs.ToArray();
 
         }
 
@@ -2015,6 +2015,17 @@ namespace CodeWalker.GameFiles
                         var group = Groups.data_items[gi];
                         child.Group = group;
                     }
+                }
+            }
+
+
+            if ((Groups?.data_items != null) && (GroupNames?.data_items != null) && (Groups.data_items.Length == GroupNames.data_items.Length))
+            {
+                //this fixes up broken group names caused by zmod, but it's not necessary for vanilla files, 
+                //since the group name pointers should point at the names embedded in the groups themselves.
+                for (int i = 0; i < Groups.data_items.Length; i++)
+                {
+                    Groups.data_items[i].Name = GroupNames.data_items[i];
                 }
             }
 
