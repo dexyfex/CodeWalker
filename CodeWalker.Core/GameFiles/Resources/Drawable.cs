@@ -1041,6 +1041,8 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
+            BuildTransformations();
+
             var list = new List<IResourceBlock>();
             if (BoneTags != null) list.Add(BoneTags);
             if (Bones != null) list.Add(Bones);

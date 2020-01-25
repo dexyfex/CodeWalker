@@ -1067,58 +1067,153 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public Matrix Matrix { get; set; } //column 4 is NaN,NaN,NaN,1
+        public float UnkFloat1 { get; set; }
+        public float UnkFloat2 { get; set; }
+        public float UnkFloat3 { get; set; }
+        public uint UnkUint1 = 0x7f800001; // 0x7f800001
+        public float UnkFloat5 { get; set; }
+        public float UnkFloat6 { get; set; }
+        public float UnkFloat7 { get; set; }
+        public uint UnkUint2 = 0x7f800001; // 0x7f800001
+        public float UnkFloat9 { get; set; }
+        public float UnkFloat10 { get; set; }
+        public float UnkFloat11 { get; set; }
+        public uint UnkUint3 = 0x7f800001; // 0x7f800001
+        public float UnkFloat13 { get; set; }
+        public float UnkFloat14 { get; set; }
+        public float UnkFloat15 { get; set; }
+        public float UnkFloat16 { get; set; }
         public VertexDeclaration VertexDeclaration { get; set; } = new VertexDeclaration(); //this all equates to VertexTypePNCTT
-        public float Unknown_50h { get; set; } //looks floaty
-        public ushort Unknown_54h { get; set; } = 2; //2
+        public float UnkFloat17 { get; set; }
+        public ushort UnkUshort1 = 2; //2
         public ushort Flags { get; set; }//512, 768, 1280 etc ... flags
-        public Vector3 Vector1 { get; set; }
-        public Vector3 Vector2 { get; set; } // z = 0x7F800001 (NaN)
+        public float UnkFloat18 { get; set; }
+        public float UnkFloat19 { get; set; }
+        public float UnkFloat20 { get; set; }
+        public float UnkFloat21 { get; set; }
+        public float UnkFloat22 { get; set; }
+        public uint UnkUint4 = 0x7f800001; // 0x7f800001
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Matrix = reader.ReadMatrix();
+            this.UnkFloat1 = reader.ReadSingle();
+            this.UnkFloat2 = reader.ReadSingle();
+            this.UnkFloat3 = reader.ReadSingle();
+            this.UnkUint1 = reader.ReadUInt32();
+            this.UnkFloat5 = reader.ReadSingle();
+            this.UnkFloat6 = reader.ReadSingle();
+            this.UnkFloat7 = reader.ReadSingle();
+            this.UnkUint2 = reader.ReadUInt32();
+            this.UnkFloat9 = reader.ReadSingle();
+            this.UnkFloat10 = reader.ReadSingle();
+            this.UnkFloat11 = reader.ReadSingle();
+            this.UnkUint3 = reader.ReadUInt32();
+            this.UnkFloat13 = reader.ReadSingle();
+            this.UnkFloat14 = reader.ReadSingle();
+            this.UnkFloat15 = reader.ReadSingle();
+            this.UnkFloat16 = reader.ReadSingle();
             this.VertexDeclaration.Read(reader);
-            this.Unknown_50h = reader.ReadSingle();
-            this.Unknown_54h = reader.ReadUInt16();
+            this.UnkFloat17 = reader.ReadSingle();
+            this.UnkUshort1 = reader.ReadUInt16();
             this.Flags = reader.ReadUInt16();
-            this.Vector1 = reader.ReadVector3();
-            this.Vector2 = reader.ReadVector3();
+            this.UnkFloat18 = reader.ReadSingle();
+            this.UnkFloat19 = reader.ReadSingle();
+            this.UnkFloat20 = reader.ReadSingle();
+            this.UnkFloat21 = reader.ReadSingle();
+            this.UnkFloat22 = reader.ReadSingle();
+            this.UnkUint4 = reader.ReadUInt32();
 
-            //if (Unknown_50h > 1.0f)
+            //if (UnkUint1 != 0x7f800001)
             //{ }//no hit
-            //if (Unknown_54h != 2)
+            //if (UnkUint2 != 0x7f800001)
+            //{ }//no hit
+            //if (UnkUint3 != 0x7f800001)
+            //{ }//no hit
+            //if (UnkUint4 != 0x7f800001)
+            //{ }//no hit
+            //if (UnkUshort1 != 2)
+            //{ }//no hit
+            //if (UnkFloat17 > 1.0f)
             //{ }//no hit
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.Matrix);
+            writer.Write(this.UnkFloat1);
+            writer.Write(this.UnkFloat2);
+            writer.Write(this.UnkFloat3);
+            writer.Write(this.UnkUint1);
+            writer.Write(this.UnkFloat5);
+            writer.Write(this.UnkFloat6);
+            writer.Write(this.UnkFloat7);
+            writer.Write(this.UnkUint2);
+            writer.Write(this.UnkFloat9);
+            writer.Write(this.UnkFloat10);
+            writer.Write(this.UnkFloat11);
+            writer.Write(this.UnkUint3);
+            writer.Write(this.UnkFloat13);
+            writer.Write(this.UnkFloat14);
+            writer.Write(this.UnkFloat15);
+            writer.Write(this.UnkFloat16);
             this.VertexDeclaration.Write(writer);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Unknown_54h);
+            writer.Write(this.UnkFloat17);
+            writer.Write(this.UnkUshort1);
             writer.Write(this.Flags);
-            writer.Write(this.Vector1);
-            writer.Write(this.Vector2);
+            writer.Write(this.UnkFloat18);
+            writer.Write(this.UnkFloat19);
+            writer.Write(this.UnkFloat20);
+            writer.Write(this.UnkFloat21);
+            writer.Write(this.UnkFloat22);
+            writer.Write(this.UnkUint4);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
             YftXml.ValueTag(sb, indent, "Flags", Flags.ToString());
-            YftXml.ValueTag(sb, indent, "Unknown50", FloatUtil.ToString(Unknown_50h));
-            YftXml.SelfClosingTag(sb, indent, "Vector1 " + FloatUtil.GetVector3XmlString(Vector1));
-            YftXml.SelfClosingTag(sb, indent, "Vector2 " + FloatUtil.GetVector3XmlString(Vector2));
-            YftXml.WriteRawArray(sb, Matrix.ToArray(), indent, "Matrix", "", FloatUtil.ToString, 4);
+            YftXml.ValueTag(sb, indent, "UnkFloat1", FloatUtil.ToString(UnkFloat1));
+            YftXml.ValueTag(sb, indent, "UnkFloat2", FloatUtil.ToString(UnkFloat2));
+            YftXml.ValueTag(sb, indent, "UnkFloat3", FloatUtil.ToString(UnkFloat3));
+            YftXml.ValueTag(sb, indent, "UnkFloat5", FloatUtil.ToString(UnkFloat5));
+            YftXml.ValueTag(sb, indent, "UnkFloat6", FloatUtil.ToString(UnkFloat6));
+            YftXml.ValueTag(sb, indent, "UnkFloat7", FloatUtil.ToString(UnkFloat7));
+            YftXml.ValueTag(sb, indent, "UnkFloat9", FloatUtil.ToString(UnkFloat9));
+            YftXml.ValueTag(sb, indent, "UnkFloat10", FloatUtil.ToString(UnkFloat10));
+            YftXml.ValueTag(sb, indent, "UnkFloat11", FloatUtil.ToString(UnkFloat11));
+            YftXml.ValueTag(sb, indent, "UnkFloat13", FloatUtil.ToString(UnkFloat13));
+            YftXml.ValueTag(sb, indent, "UnkFloat14", FloatUtil.ToString(UnkFloat14));
+            YftXml.ValueTag(sb, indent, "UnkFloat15", FloatUtil.ToString(UnkFloat15));
+            YftXml.ValueTag(sb, indent, "UnkFloat16", FloatUtil.ToString(UnkFloat16));
+            YftXml.ValueTag(sb, indent, "UnkFloat17", FloatUtil.ToString(UnkFloat17));
+            YftXml.ValueTag(sb, indent, "UnkFloat18", FloatUtil.ToString(UnkFloat18));
+            YftXml.ValueTag(sb, indent, "UnkFloat19", FloatUtil.ToString(UnkFloat19));
+            YftXml.ValueTag(sb, indent, "UnkFloat20", FloatUtil.ToString(UnkFloat20));
+            YftXml.ValueTag(sb, indent, "UnkFloat21", FloatUtil.ToString(UnkFloat21));
+            YftXml.ValueTag(sb, indent, "UnkFloat22", FloatUtil.ToString(UnkFloat22));
             VertexDeclaration.WriteXml(sb, indent, "Layout");
         }
         public void ReadXml(XmlNode node)
         {
             Flags = (ushort)Xml.GetChildUIntAttribute(node, "Flags", "value");
-            Unknown_50h = Xml.GetChildFloatAttribute(node, "Unknown50", "value");
-            Vector1 = Xml.GetChildVector3Attributes(node, "Vector1");
-            Vector2 = Xml.GetChildVector3Attributes(node, "Vector2");
-            Matrix = Xml.GetChildMatrix(node, "Matrix");
+            UnkFloat1 = Xml.GetChildFloatAttribute(node, "UnkFloat1", "value");
+            UnkFloat2 = Xml.GetChildFloatAttribute(node, "UnkFloat2", "value");
+            UnkFloat3 = Xml.GetChildFloatAttribute(node, "UnkFloat3", "value");
+            UnkFloat5 = Xml.GetChildFloatAttribute(node, "UnkFloat5", "value");
+            UnkFloat6 = Xml.GetChildFloatAttribute(node, "UnkFloat6", "value");
+            UnkFloat7 = Xml.GetChildFloatAttribute(node, "UnkFloat7", "value");
+            UnkFloat9 = Xml.GetChildFloatAttribute(node, "UnkFloat9", "value");
+            UnkFloat10 = Xml.GetChildFloatAttribute(node, "UnkFloat10", "value");
+            UnkFloat11 = Xml.GetChildFloatAttribute(node, "UnkFloat11", "value");
+            UnkFloat13 = Xml.GetChildFloatAttribute(node, "UnkFloat13", "value");
+            UnkFloat14 = Xml.GetChildFloatAttribute(node, "UnkFloat14", "value");
+            UnkFloat15 = Xml.GetChildFloatAttribute(node, "UnkFloat15", "value");
+            UnkFloat16 = Xml.GetChildFloatAttribute(node, "UnkFloat16", "value");
+            UnkFloat17 = Xml.GetChildFloatAttribute(node, "UnkFloat17", "value");
+            UnkFloat18 = Xml.GetChildFloatAttribute(node, "UnkFloat18", "value");
+            UnkFloat19 = Xml.GetChildFloatAttribute(node, "UnkFloat19", "value");
+            UnkFloat20 = Xml.GetChildFloatAttribute(node, "UnkFloat20", "value");
+            UnkFloat21 = Xml.GetChildFloatAttribute(node, "UnkFloat21", "value");
+            UnkFloat22 = Xml.GetChildFloatAttribute(node, "UnkFloat22", "value");
             VertexDeclaration.ReadXml(node.SelectSingleNode("Layout"));
         }
     }
