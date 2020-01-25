@@ -382,7 +382,7 @@ namespace CodeWalker.GameFiles
             YftXml.ValueTag(sb, indent, "UnknownCC", FloatUtil.ToString(Unknown_CCh));
             YftXml.ValueTag(sb, indent, "UnknownD0", FloatUtil.ToString(Unknown_D0h));
             YftXml.ValueTag(sb, indent, "UnknownD4", FloatUtil.ToString(Unknown_D4h));
-            if (Drawable != null)
+            if ((Drawable != null) && (Drawable.OwnerCloth == null))
             {
                 FragDrawable.WriteXmlNode(Drawable, sb, indent, ddsfolder, "Drawable");
             }
@@ -520,7 +520,14 @@ namespace CodeWalker.GameFiles
                         v.ReadXml(inode, ddsfolder);
                         vlist.Add(v);
 
-                        DrawableCloth = v.Drawable;
+                        if (Drawable == null)
+                        {
+                            Drawable = v.Drawable;
+                        }
+                        else
+                        {
+                            DrawableCloth = v.Drawable;
+                        }
                     }
                     Cloths.data_items = vlist.ToArray();
                 }
