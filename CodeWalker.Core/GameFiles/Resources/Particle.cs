@@ -177,7 +177,7 @@ namespace CodeWalker.GameFiles
         public ulong Unknown_8h; // 0x0000000000000000
         public ulong Unknown_10h; // 0x0000000000000000
         public ulong Unknown_18h = 1; // 0x0000000000000001
-        public ResourceSimpleList64<uint_r> ParticleRuleNameHashes { get; set; }
+        public ResourceSimpleList64_s<MetaHash> ParticleRuleNameHashes { get; set; }
         public ResourcePointerList64<ParticleRule> ParticleRules { get; set; }
 
 
@@ -189,7 +189,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_8h = reader.ReadUInt64();
             this.Unknown_10h = reader.ReadUInt64();
             this.Unknown_18h = reader.ReadUInt64();
-            this.ParticleRuleNameHashes = reader.ReadBlock<ResourceSimpleList64<uint_r>>();
+            this.ParticleRuleNameHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
             this.ParticleRules = reader.ReadBlock<ResourcePointerList64<ParticleRule>>();
 
             //if (Unknown_4h != 1)
@@ -203,6 +203,7 @@ namespace CodeWalker.GameFiles
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
+
             // write structure data
             writer.Write(this.VFT);
             writer.Write(this.Unknown_4h);
@@ -236,7 +237,7 @@ namespace CodeWalker.GameFiles
         public ulong Unknown_8h; // 0x0000000000000000
         public ulong Unknown_10h; // 0x0000000000000000
         public ulong Unknown_18h = 1; // 0x0000000000000001
-        public ResourceSimpleList64<uint_r> EffectRuleNameHashes { get; set; }
+        public ResourceSimpleList64_s<MetaHash> EffectRuleNameHashes { get; set; }
         public ResourcePointerList64<ParticleEffectRule> EffectRules { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -247,7 +248,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_8h = reader.ReadUInt64();
             this.Unknown_10h = reader.ReadUInt64();
             this.Unknown_18h = reader.ReadUInt64();
-            this.EffectRuleNameHashes = reader.ReadBlock<ResourceSimpleList64<uint_r>>();
+            this.EffectRuleNameHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
             this.EffectRules = reader.ReadBlock<ResourcePointerList64<ParticleEffectRule>>();
 
             //if (Unknown_4h != 1)
@@ -294,18 +295,9 @@ namespace CodeWalker.GameFiles
         public ulong Unknown_8h; // 0x0000000000000000
         public ulong Unknown_10h; // 0x0000000000000000
         public ulong Unknown_18h = 1; // 0x0000000000000001
-        public ulong HashesPointer { get; set; }
-        public ushort HashesCount1 { get; set; }
-        public ushort HashesCount2 { get; set; }
-        public uint Unknown_2Ch; // 0x00000000
-        public ulong EffectRulesPointer { get; set; }
-        public ushort EffectRulesCount1 { get; set; }
-        public ushort EffectRulesCount2 { get; set; }
-        public uint Unknown_3Ch; // 0x00000000
+        public ResourceSimpleList64_s<MetaHash> EmitterRuleNameHashes { get; set; }
+        public ResourcePointerList64<ParticleEmitterRule> EmitterRules { get; set; }
 
-        // reference data
-        public ResourceSimpleArray<uint_r> Hashes { get; set; }
-        public ResourcePointerArray64<ParticleEmitterRule> EmitterRules { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -315,18 +307,9 @@ namespace CodeWalker.GameFiles
             this.Unknown_8h = reader.ReadUInt64();
             this.Unknown_10h = reader.ReadUInt64();
             this.Unknown_18h = reader.ReadUInt64();
-            this.HashesPointer = reader.ReadUInt64();
-            this.HashesCount1 = reader.ReadUInt16();
-            this.HashesCount2 = reader.ReadUInt16();
-            this.Unknown_2Ch = reader.ReadUInt32();
-            this.EffectRulesPointer = reader.ReadUInt64();
-            this.EffectRulesCount1 = reader.ReadUInt16();
-            this.EffectRulesCount2 = reader.ReadUInt16();
-            this.Unknown_3Ch = reader.ReadUInt32();
+            this.EmitterRuleNameHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
+            this.EmitterRules = reader.ReadBlock<ResourcePointerList64<ParticleEmitterRule>>();
 
-            // read reference data
-            this.Hashes = reader.ReadBlockAt<ResourceSimpleArray<uint_r>>(this.HashesPointer, this.HashesCount1);
-            this.EmitterRules = reader.ReadBlockAt<ResourcePointerArray64<ParticleEmitterRule>>(this.EffectRulesPointer, this.EffectRulesCount1);
 
             //if (Unknown_4h != 1)
             //{ }//no hit
@@ -336,20 +319,9 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
             //if (Unknown_18h != 1)
             //{ }//no hit
-            //if (Unknown_2Ch != 0)
-            //{ }//no hit
-            //if (Unknown_3Ch != 0)
-            //{ }//no hit
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            // update structure data
-            this.HashesPointer = (ulong)(this.Hashes != null ? this.Hashes.FilePosition : 0);
-            this.HashesCount1 = (ushort)(this.Hashes != null ? this.Hashes.Count : 0);
-            this.HashesCount2 = this.HashesCount1;
-            this.EffectRulesPointer = (ulong)(this.EmitterRules != null ? this.EmitterRules.FilePosition : 0);
-            this.EffectRulesCount1 = (ushort)(this.EmitterRules != null ? this.EmitterRules.Count : 0);
-            this.EffectRulesCount2 = this.EffectRulesCount1;
 
             // write structure data
             writer.Write(this.VFT);
@@ -357,22 +329,16 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_8h);
             writer.Write(this.Unknown_10h);
             writer.Write(this.Unknown_18h);
-            writer.Write(this.HashesPointer);
-            writer.Write(this.HashesCount1);
-            writer.Write(this.HashesCount2);
-            writer.Write(this.Unknown_2Ch);
-            writer.Write(this.EffectRulesPointer);
-            writer.Write(this.EffectRulesCount1);
-            writer.Write(this.EffectRulesCount2);
-            writer.Write(this.Unknown_3Ch);
+            writer.WriteBlock(this.EmitterRuleNameHashes);
+            writer.WriteBlock(this.EmitterRules);
         }
 
-        public override IResourceBlock[] GetReferences()
+        public override Tuple<long, IResourceBlock>[] GetParts()
         {
-            var list = new List<IResourceBlock>();
-            if (Hashes != null) list.Add(Hashes);
-            if (EmitterRules != null) list.Add(EmitterRules);
-            return list.ToArray();
+            return new Tuple<long, IResourceBlock>[] {
+                new Tuple<long, IResourceBlock>(0x20, EmitterRuleNameHashes),
+                new Tuple<long, IResourceBlock>(0x30, EmitterRules)
+            };
         }
     }
 
@@ -887,7 +853,7 @@ namespace CodeWalker.GameFiles
         public ulong Unknown_28h; // 0x0000000000000000
         public ulong Unknown_30h; // 0x0000000000000000
         public ulong Unknown_38h; // 0x0000000000000000
-        public ResourceSimpleList64<uint_r> Unknown_40h { get; set; }
+        public ResourceSimpleList64_s<MetaHash> Unknown_40h { get; set; }
         public uint Unknown_50h { get; set; }
         public uint Unknown_54h; // 0x00000000
 
@@ -899,7 +865,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_28h = reader.ReadUInt64();
             this.Unknown_30h = reader.ReadUInt64();
             this.Unknown_38h = reader.ReadUInt64();
-            this.Unknown_40h = reader.ReadBlock<ResourceSimpleList64<uint_r>>();
+            this.Unknown_40h = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
             this.Unknown_50h = reader.ReadUInt32();
             this.Unknown_54h = reader.ReadUInt32();
 
