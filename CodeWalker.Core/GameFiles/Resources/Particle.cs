@@ -396,7 +396,7 @@ namespace CodeWalker.GameFiles
         public ulong Unknown_200h = 1; // 0x0000000000000001
         public MetaHash FxcFile { get; set; } // ptfx_sprite, ptfx_trail
         public uint Unknown_20Ch; // 0x00000000
-        public ResourceSimpleList64<ParticleRuleUnknownItem2> UnknownList2 { get; set; }
+        public ResourceSimpleList64<ParticleDrawable> Drawables { get; set; }
         public uint Unknown_220h { get; set; }
         public uint Unknown_224h; // 0x00000000
         public ulong Unknown_228h; // 0x0000000000000000
@@ -458,7 +458,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_200h = reader.ReadUInt64();
             this.FxcFile = reader.ReadUInt32();
             this.Unknown_20Ch = reader.ReadUInt32();
-            this.UnknownList2 = reader.ReadBlock<ResourceSimpleList64<ParticleRuleUnknownItem2>>();
+            this.Drawables = reader.ReadBlock<ResourceSimpleList64<ParticleDrawable>>();
             this.Unknown_220h = reader.ReadUInt32();
             this.Unknown_224h = reader.ReadUInt32();
             this.Unknown_228h = reader.ReadUInt64();
@@ -473,7 +473,12 @@ namespace CodeWalker.GameFiles
             #endregion
 
 
-            if ((UnknownList2?.data_items?.Length ?? 0) != 0)
+            if (!string.IsNullOrEmpty(Name?.Value))
+            {
+                JenkIndex.Ensure(Name.Value);
+            }
+
+            if ((Drawables?.data_items?.Length ?? 0) != 0)
             { }
 
             //if (Unknown_4h != 1)
@@ -800,7 +805,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_200h);
             writer.Write(this.FxcFile);
             writer.Write(this.Unknown_20Ch);
-            writer.WriteBlock(this.UnknownList2);
+            writer.WriteBlock(this.Drawables);
             writer.Write(this.Unknown_220h);
             writer.Write(this.Unknown_224h);
             writer.Write(this.Unknown_228h);
@@ -829,7 +834,7 @@ namespace CodeWalker.GameFiles
                 new Tuple<long, IResourceBlock>(0x168, BehaviourList5),
                 new Tuple<long, IResourceBlock>(0x188, UnknownList1),
                 new Tuple<long, IResourceBlock>(0x1F0, ShaderVars),
-                new Tuple<long, IResourceBlock>(0x210, UnknownList2)
+                new Tuple<long, IResourceBlock>(0x210, Drawables)
             };
         }
 
@@ -937,7 +942,7 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TC(typeof(EXP))] public class ParticleRuleUnknownItem2 : ResourceSystemBlock
+    [TC(typeof(EXP))] public class ParticleDrawable : ResourceSystemBlock
     {
         public override long BlockLength => 0x30;
 
@@ -953,7 +958,7 @@ namespace CodeWalker.GameFiles
         public ulong Unknown_28h; // 0x0000000000000000
 
         // reference data
-        public string_r String1 { get; set; }
+        public string_r Name { get; set; }
         public DrawableBase Drawable { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -970,9 +975,13 @@ namespace CodeWalker.GameFiles
             this.Unknown_28h = reader.ReadUInt64();
 
             // read reference data
-            this.String1 = reader.ReadBlockAt<string_r>(this.String1Pointer);
+            this.Name = reader.ReadBlockAt<string_r>(this.String1Pointer);
             this.Drawable = reader.ReadBlockAt<DrawableBase>(this.DrawablePointer);
 
+            if (!string.IsNullOrEmpty(Name?.Value))
+            {
+                JenkIndex.Ensure(Name.Value);
+            }
 
             switch (Unknown_0h)
             {
@@ -1010,48 +1019,8 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (Unknown_20h) // hash
-            {
-                case 0x87a5ed82: // 
-                case 0xdb0ab622: // 
-                case 0x85d8e70c: // 
-                case 0xfe3b1a3e: // 
-                case 0x4a77efcd: // 
-                case 0xcdbc28bc: // 
-                case 0xe3fa614b: // 
-                case 0xcc0119e3: // 
-                case 0x978e7951: // 
-                case 0xe9413645: // 
-                case 0xd619b1d0: // 
-                case 0x53ba65f6: // 
-                case 0x0cb74ad6: // 
-                case 0x9c16576d: // 
-                case 0xc1bc3b5a: // 
-                case 0xe9bcdb08: // 
-                case 0x12b9b850: // 
-                case 0x3c331001: // 
-                case 0x38ab2e35: // 
-                case 0xdbac05f2: // 
-                case 0x6f0b6a5c: // 
-                case 0x264b52a9: // 
-                case 0xec45fc49: // 
-                case 0xf5f584ba: // 
-                case 0x995cb2ef: // 
-                case 0x52330054: // 
-                case 0x444d4290: // 
-                case 0xce5992f4: // 
-                case 0x74cfdbd3: // 
-                case 0x9381ce76: // 
-                case 0x95644bd1: // 
-                case 0x7e6fd926: // 
-                case 0xdb801b83: // 
-                case 0xf0402c1d: // 
-                case 0x21e42911: // 
-                case 0xb1178b81: // 
-                    break;
-                default:
-                    break;
-            }
+            //if (Unknown_20h != JenkHash.GenHash(String1?.Value ?? ""))
+            //{ }//no hit
             //if (Unknown_24h != 0)
             //{ }//no hit
             //if (Unknown_28h != 0)
@@ -1060,7 +1029,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.String1Pointer = (ulong)(this.String1 != null ? this.String1.FilePosition : 0);
+            this.String1Pointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
             this.DrawablePointer = (ulong)(this.Drawable != null ? this.Drawable.FilePosition : 0);
 
             // write structure data
@@ -1078,14 +1047,14 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (String1 != null) list.Add(String1);
+            if (Name != null) list.Add(Name);
             if (Drawable != null) list.Add(Drawable);
             return list.ToArray();
         }
 
         public override string ToString()
         {
-            if (!string.IsNullOrEmpty(String1?.Value)) return String1.Value;
+            if (!string.IsNullOrEmpty(Name?.Value)) return Name.Value;
             if (Unknown_20h != 0) return Unknown_20h.ToString();
             return base.ToString();
         }
@@ -1514,6 +1483,13 @@ namespace CodeWalker.GameFiles
             #endregion
 
 
+            if (!string.IsNullOrEmpty(Name?.Value))
+            {
+                JenkIndex.Ensure(Name.Value);
+            }
+
+
+
             //if (Unknown_4h != 1)
             //{ }//no hit
             //if (Unknown_8h != 0)
@@ -1806,7 +1782,6 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
 
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -2074,7 +2049,6 @@ namespace CodeWalker.GameFiles
             //if (Unknown_88h != 0)
             //{ }//no hit
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
@@ -2309,6 +2283,16 @@ namespace CodeWalker.GameFiles
             this.EmitterRule = reader.ReadBlockAt<ParticleEmitterRule>(this.EmitterRulePointer);
             this.ParticleRule = reader.ReadBlockAt<ParticleRule>(this.ParticleRulePointer);
 
+
+            if (!string.IsNullOrEmpty(String1?.Value))
+            {
+                JenkIndex.Ensure(String1.Value);
+            }
+            if (!string.IsNullOrEmpty(String2?.Value))
+            {
+                JenkIndex.Ensure(String2.Value);
+            }
+
             //if (Unknown_4h != 1)
             //{ }//no hit
             //switch (Unknown_8h)
@@ -2429,7 +2413,6 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
 
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -2559,6 +2542,12 @@ namespace CodeWalker.GameFiles
             this.Domain2 = reader.ReadBlockAt<ParticleDomain>(this.Domain2Pointer);
             this.Domain3 = reader.ReadBlockAt<ParticleDomain>(this.Domain3Pointer);
             this.KeyframeProps2 = reader.ReadBlockAt<ResourcePointerArray64<ParticleKeyframeProp>>(this.KeyframeProps2Pointer, this.KeyframePropsCount2);
+
+
+            if (!string.IsNullOrEmpty(Name?.Value))
+            {
+                JenkIndex.Ensure(Name.Value);
+            }
 
 
             //if (Unknown_4h != 1)
@@ -2775,6 +2764,11 @@ namespace CodeWalker.GameFiles
 
             // read reference data
             this.String1 = reader.ReadBlockAt<string_r>(this.String1Pointer);
+
+            //if (!string.IsNullOrEmpty(String1?.Value))
+            //{
+            //    JenkIndex.Ensure(String1.Value);
+            //}
 
 
             //if (Unknown_8h != 0)
