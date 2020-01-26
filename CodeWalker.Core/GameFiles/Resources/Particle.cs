@@ -61,7 +61,7 @@ namespace CodeWalker.GameFiles
         // reference data
         public string_r Name { get; set; }
         public TextureDictionary TextureDictionary { get; set; }
-        public DrawableDictionary DrawableDictionary { get; set; }
+        public DrawableBaseDictionary DrawableDictionary { get; set; }
         public ParticleRuleDictionary ParticleRuleDictionary { get; set; }
         public ParticleEffectRuleDictionary EffectRuleDictionary { get; set; }
         public ParticleEmitterRuleDictionary EmitterRuleDictionary { get; set; }
@@ -86,7 +86,7 @@ namespace CodeWalker.GameFiles
             // read reference data
             this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
             this.TextureDictionary = reader.ReadBlockAt<TextureDictionary>(this.TextureDictionaryPointer);
-            this.DrawableDictionary = reader.ReadBlockAt<DrawableDictionary>(this.DrawableDictionaryPointer);
+            this.DrawableDictionary = reader.ReadBlockAt<DrawableBaseDictionary>(this.DrawableDictionaryPointer);
             this.ParticleRuleDictionary = reader.ReadBlockAt<ParticleRuleDictionary>(this.ParticleRuleDictionaryPointer);
             this.EffectRuleDictionary = reader.ReadBlockAt<ParticleEffectRuleDictionary>(this.EmitterRuleDictionaryPointer);
             this.EmitterRuleDictionary = reader.ReadBlockAt<ParticleEmitterRuleDictionary>(this.EffectRuleDictionaryPointer);
@@ -866,6 +866,11 @@ namespace CodeWalker.GameFiles
                 new Tuple<long, IResourceBlock>(0x210, UnknownList2)
             };
         }
+
+        public override string ToString()
+        {
+            return Name?.ToString() ?? base.ToString();
+        }
     }
 
 
@@ -957,6 +962,12 @@ namespace CodeWalker.GameFiles
                 new Tuple<long, IResourceBlock>(0x40, Unknown_40h)
             };
         }
+
+        public override string ToString()
+        {
+            var n = Name.ToString();
+            return (!string.IsNullOrEmpty(n)) ? n : base.ToString();
+        }
     }
 
 
@@ -977,7 +988,7 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public string_r String1 { get; set; }
-        public Drawable Drawable { get; set; }
+        public DrawableBase Drawable { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -994,7 +1005,7 @@ namespace CodeWalker.GameFiles
 
             // read reference data
             this.String1 = reader.ReadBlockAt<string_r>(this.String1Pointer);
-            this.Drawable = reader.ReadBlockAt<Drawable>(this.DrawablePointer);
+            this.Drawable = reader.ReadBlockAt<DrawableBase>(this.DrawablePointer);
 
 
             switch (Unknown_0h)
@@ -1073,7 +1084,7 @@ namespace CodeWalker.GameFiles
                 case 0xb1178b81: // 
                     break;
                 default:
-                    break;//no hit
+                    break;
             }
             //if (Unknown_24h != 0)
             //{ }//no hit
@@ -1104,6 +1115,13 @@ namespace CodeWalker.GameFiles
             if (String1 != null) list.Add(String1);
             if (Drawable != null) list.Add(Drawable);
             return list.ToArray();
+        }
+
+        public override string ToString()
+        {
+            if (!string.IsNullOrEmpty(String1?.Value)) return String1.Value;
+            if (Unknown_20h != 0) return Unknown_20h.ToString();
+            return base.ToString();
         }
     }
 
@@ -1377,6 +1395,12 @@ namespace CodeWalker.GameFiles
             if (EmitterRule != null) list.Add(EmitterRule);
             if (String1 != null) list.Add(String1);
             return list.ToArray();
+        }
+
+        public override string ToString()
+        {
+            var str = String1?.ToString();
+            return (!string.IsNullOrEmpty(str)) ? str : base.ToString();
         }
     }
 
@@ -1906,6 +1930,11 @@ namespace CodeWalker.GameFiles
                 new Tuple<long, IResourceBlock>(768, KeyframeProp4)
             };
         }
+
+        public override string ToString()
+        {
+            return Name?.ToString() ?? base.ToString();
+        }
     }
     
 
@@ -2110,6 +2139,11 @@ namespace CodeWalker.GameFiles
                 new Tuple<long, IResourceBlock>(0x70, Items)
             };
         }
+
+        public override string ToString()
+        {
+            return Unknown_68h.ToString();
+        }
     }
 
 
@@ -2234,6 +2268,11 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}, {1}, {2}, {3}, {4}, {5}", Unknown_0h, Unknown_4h, Unknown_10h, Unknown_14h, Unknown_18h, Unknown_1Ch);
         }
     }
 
@@ -2467,6 +2506,11 @@ namespace CodeWalker.GameFiles
             if (ParticleRule != null) list.Add(ParticleRule);
             return list.ToArray();
         }
+
+        public override string ToString()
+        {
+            return String1?.ToString() ?? String2?.ToString() ?? base.ToString();
+        }
     }
 
 
@@ -2672,6 +2716,11 @@ namespace CodeWalker.GameFiles
                 new Tuple<long, IResourceBlock>(1416, KeyframeProps1[9]),
             };
         }
+
+        public override string ToString()
+        {
+            return Name?.ToString() ?? base.ToString();
+        }
     }
 
 
@@ -2731,6 +2780,11 @@ namespace CodeWalker.GameFiles
                 new Tuple<long, IResourceBlock>(0x28, Unknown_28h)
             };
         }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
     
 
@@ -2762,7 +2816,6 @@ namespace CodeWalker.GameFiles
             //if (Unknown_10h != 0)
             //{ }//no hit
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -2779,6 +2832,11 @@ namespace CodeWalker.GameFiles
             var list = new List<IResourceBlock>();
             if (String1 != null) list.Add(String1);
             return list.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return String1?.ToString() ?? base.ToString();
         }
     }
 
@@ -2858,13 +2916,12 @@ namespace CodeWalker.GameFiles
                 case 0xff864d6c: // 
                     break;
                 default:
-                    break;//no hit
+                    break;
             }
             //if (Unknown_4h != 0)
             //{ }//no hit
 
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
@@ -2881,6 +2938,11 @@ namespace CodeWalker.GameFiles
             var list = new List<IResourceBlock>();
             if (Item != null) list.Add(Item);
             return list.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return Unknown_0h.ToString();
         }
     }
 
@@ -2951,7 +3013,7 @@ namespace CodeWalker.GameFiles
                 case 0xff864d6c: // 
                     break;
                 default:
-                    break;//no hit
+                    break;
             }
             //switch (Unknown_14h)
             //{
@@ -2962,7 +3024,6 @@ namespace CodeWalker.GameFiles
             //        break;//no hit
             //}
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
@@ -2976,6 +3037,11 @@ namespace CodeWalker.GameFiles
             return new Tuple<long, IResourceBlock>[] {
                 new Tuple<long, IResourceBlock>(0, Unknown_0h)
             };
+        }
+
+        public override string ToString()
+        {
+            return Unknown_10h.ToString();
         }
     }
 
@@ -3028,7 +3094,6 @@ namespace CodeWalker.GameFiles
             //if (Unknown_28h != 0)
             //{ }//no hit
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
@@ -3045,6 +3110,11 @@ namespace CodeWalker.GameFiles
             return new Tuple<long, IResourceBlock>[] {
                 new Tuple<long, IResourceBlock>(0, Unknown_0h)
             };
+        }
+
+        public override string ToString()
+        {
+            return Unknown_20h.ToString() + ", " + Unknown_24h.ToString();
         }
     }
 
@@ -3215,6 +3285,10 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public override string ToString()
+        {
+            return "Domain: " + DomainType.ToString();
+        }
     }
 
     [TC(typeof(EXP))] public class ParticleDomainBox : ParticleDomain
@@ -3344,6 +3418,11 @@ namespace CodeWalker.GameFiles
                 case ParticleBehaviourType.Liquid: return new ParticleBehaviourLiquid();
                 default: return null;// throw new Exception("Unknown behaviour type");
             }
+        }
+
+        public override string ToString()
+        {
+            return "Behaviour: " + Type.ToString();
         }
     }
 
@@ -5857,6 +5936,11 @@ namespace CodeWalker.GameFiles
                 default: return null;// throw new Exception("Unknown shader var type");
             }
         }
+
+        public override string ToString()
+        {
+            return Unknown_10h.ToString() + ": " + Type.ToString();
+        }
     }
 
     [TC(typeof(EXP))] public class ParticleShaderVarVector : ParticleShaderVar
@@ -5987,7 +6071,7 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x40;
 
         // structure data
-        public uint Unknown_18h { get; set; } // 3, 4, 6, 7
+        public uint Unknown_18h { get; set; } // 3, 4, 6, 7       //shader var index..?
         public uint Unknown_1Ch; // 0x00000000
         public uint Unknown_20h; // 0x00000000
         public uint Unknown_24h; // 0x00000000
@@ -6089,7 +6173,7 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x50;
 
         // structure data
-        public uint Unknown_18h { get; set; } // 9, 14, 15, 16, 17, 20, 23, 31
+        public uint Unknown_18h { get; set; } // 9, 14, 15, 16, 17, 20, 23, 31       //shader var index..?
         public uint Unknown_1Ch = 1; // 0x00000001
         public ulong Unknown_20h; // 0x0000000000000000
         public ResourceSimpleList64<ParticleShaderVarKeyframeItem> Items { get; set; }

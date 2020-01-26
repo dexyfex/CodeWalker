@@ -12,7 +12,7 @@ namespace CodeWalker.GameFiles
     {
         public ParticleEffectsList PtfxList { get; set; }
 
-        public Dictionary<uint, Drawable> DrawableDict { get; set; }
+        public Dictionary<uint, DrawableBase> DrawableDict { get; set; }
 
         public string ErrorMessage { get; set; }
 
@@ -76,7 +76,7 @@ namespace CodeWalker.GameFiles
 
             if ((dDict?.Drawables?.data_items != null) && (dDict?.Hashes != null))
             {
-                DrawableDict = new Dictionary<uint, Drawable>();
+                DrawableDict = new Dictionary<uint, DrawableBase>();
                 var drawables = dDict.Drawables.data_items;
                 var hashes = dDict.Hashes;
                 for (int i = 0; (i < drawables.Length) && (i < hashes.Length); i++)
@@ -87,23 +87,23 @@ namespace CodeWalker.GameFiles
                     drawable.Owner = this;
                 }
 
-                for (int i = 0; (i < drawables.Length) && (i < hashes.Length); i++)
-                {
-                    var drawable = drawables[i];
-                    var hash = hashes[i];
-                    if ((drawable.Name == null) || (drawable.Name.EndsWith("#dd")))
-                    {
-                        string hstr = JenkIndex.TryGetString(hash);
-                        if (!string.IsNullOrEmpty(hstr))
-                        {
-                            drawable.Name = hstr;
-                        }
-                        else
-                        {
-                            drawable.Name = "0x" + hash.ToString("X").PadLeft(8, '0');
-                        }
-                    }
-                }
+                //for (int i = 0; (i < drawables.Length) && (i < hashes.Length); i++)
+                //{
+                //    var drawable = drawables[i];
+                //    var hash = hashes[i];
+                //    if ((drawable.Name == null) || (drawable.Name.EndsWith("#dd")))
+                //    {
+                //        string hstr = JenkIndex.TryGetString(hash);
+                //        if (!string.IsNullOrEmpty(hstr))
+                //        {
+                //            drawable.Name = hstr;
+                //        }
+                //        else
+                //        {
+                //            drawable.Name = "0x" + hash.ToString("X").PadLeft(8, '0');
+                //        }
+                //    }
+                //}
             }
 
         }

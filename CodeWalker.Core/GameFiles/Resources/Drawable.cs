@@ -4582,10 +4582,8 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint Unknown_10h { get; set; }
-        public uint Unknown_14h { get; set; }
-        public uint Unknown_18h { get; set; }
-        public uint Unknown_1Ch { get; set; }
+        public ulong Unknown_10h; // 0x0000000000000000
+        public ulong Unknown_18h = 1; // 0x0000000000000001
         public ulong HashesPointer { get; set; }
         public ushort HashesCount1 { get; set; }
         public ushort HashesCount2 { get; set; }
@@ -4604,18 +4602,13 @@ namespace CodeWalker.GameFiles
         private ResourceSystemStructBlock<uint> HashesBlock = null;//only used for saving
 
 
-        /// <summary>
-        /// Reads the data-block from a stream.
-        /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
+            this.Unknown_10h = reader.ReadUInt64();
+            this.Unknown_18h = reader.ReadUInt64();
             this.HashesPointer = reader.ReadUInt64();
             this.HashesCount1 = reader.ReadUInt16();
             this.HashesCount2 = reader.ReadUInt16();
@@ -4626,21 +4619,18 @@ namespace CodeWalker.GameFiles
             this.Unknown_3Ch = reader.ReadUInt32();
 
             // read reference data
-            //this.Hashes = reader.ReadBlockAt<ResourceSimpleArray<uint_r>>(
-            //    this.HashesPointer, // offset
-            //    this.HashesCount1
-            //);
             this.Hashes = reader.ReadUintsAt(this.HashesPointer, this.HashesCount1);
+            this.Drawables = reader.ReadBlockAt<ResourcePointerArray64<DrawableBase>>(this.DrawablesPointer, this.DrawablesCount1);
 
-            this.Drawables = reader.ReadBlockAt<ResourcePointerArray64<DrawableBase>>(
-                this.DrawablesPointer, // offset
-                this.DrawablesCount1
-            );
+            //if (Unknown_10h != 0)
+            //{ }
+            //if (Unknown_18h != 1)
+            //{ }
+            //if (Unknown_2Ch != 0)
+            //{ }
+            //if (Unknown_3Ch != 0)
+            //{ }
         }
-
-        /// <summary>
-        /// Writes the data-block to a stream.
-        /// </summary>
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -4655,9 +4645,7 @@ namespace CodeWalker.GameFiles
 
             // write structure data
             writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
             writer.Write(this.HashesPointer);
             writer.Write(this.HashesCount1);
             writer.Write(this.HashesCount2);
@@ -4668,9 +4656,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_3Ch);
         }
 
-        /// <summary>
-        /// Returns a list of data blocks which are referenced by this block.
-        /// </summary>
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());

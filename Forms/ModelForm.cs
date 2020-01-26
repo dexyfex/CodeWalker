@@ -1023,6 +1023,35 @@ namespace CodeWalker.Forms
 
             ToolsPanel.Visible = true; //show the panel by default for dictionaries...
         }
+        private void UpdateModelsUI(Dictionary<uint, DrawableBase> dict)
+        {
+            //DetailsPropertyGrid.SelectedObject = dict; //this won't look good...
+
+            DrawableDrawFlags.Clear();
+            Renderer.SelectionModelDrawFlags.Clear();
+            Renderer.SelectionGeometryDrawFlags.Clear();
+            ModelsTreeView.Nodes.Clear();
+            ModelsTreeView.ShowRootLines = true;
+            TexturesTreeView.Nodes.Clear();
+
+            bool check = true;
+            if (dict != null)
+            {
+                List<KeyValuePair<uint, DrawableBase>> items = new List<KeyValuePair<uint, DrawableBase>>();
+                foreach (var kvp in dict)
+                {
+                    items.Add(kvp);
+                }
+                //items.Sort((a, b) => { return a.Value?.Name?.CompareTo(b.Value?.Name ?? "") ?? 0; });
+                foreach (var kvp in items)
+                {
+                    AddDrawableTreeNode(kvp.Value, kvp.Key, check);
+                    check = false;
+                }
+            }
+
+            ToolsPanel.Visible = true; //show the panel by default for dictionaries...
+        }
         private void UpdateBoundsUI(YbnFile bounds)
         {
             DetailsPropertyGrid.SelectedObject = bounds;
@@ -1878,7 +1907,7 @@ namespace CodeWalker.Forms
             }
             else if ((Ypt != null) && (Ypt.Loaded))
             {
-                dict = Ypt.DrawableDict;
+                //dict = Ypt.DrawableDict;
             }
             else
             {
