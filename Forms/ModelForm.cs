@@ -1873,6 +1873,10 @@ namespace CodeWalker.Forms
             {
                 td = Yft.Fragment?.Drawable?.ShaderGroup?.TextureDictionary;
             }
+            else if ((Ypt != null) && (Ypt.Loaded))
+            {
+                td = Ypt?.PtfxList?.TextureDictionary;
+            }
 
             if (td != null)
             {
