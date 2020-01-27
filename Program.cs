@@ -1,8 +1,12 @@
-﻿using System;
+﻿using CodeWalker.Properties;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Shell;
 
 namespace CodeWalker
 {
@@ -47,7 +51,9 @@ namespace CodeWalker
                     }
                 }
             }
-            
+
+            EnsureJumpList();
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
@@ -94,6 +100,68 @@ namespace CodeWalker
                 //this can happen if folder wasn't chosen, or in some other catastrophic error. meh.
             }
 #endif
+        }
+
+
+        static void EnsureJumpList()
+        {
+            if (Settings.Default.JumpListInitialised) return;
+
+            try
+            {
+                var cwpath = Assembly.GetEntryAssembly().Location;
+                var cwdir = Path.GetDirectoryName(cwpath);
+
+                var jtWorld = new JumpTask();
+                jtWorld.ApplicationPath = cwpath;
+                jtWorld.IconResourcePath = cwpath;
+                jtWorld.WorkingDirectory = cwdir;
+                jtWorld.Arguments = "";
+                jtWorld.Title = "World View";
+                jtWorld.Description = "Display the GTAV World";
+                jtWorld.CustomCategory = "Launch Options";
+
+                var jtExplorer = new JumpTask();
+                jtExplorer.ApplicationPath = cwpath;
+                jtExplorer.IconResourcePath = Path.Combine(cwdir, "CodeWalker RPF Explorer.exe");
+                jtExplorer.WorkingDirectory = cwdir;
+                jtExplorer.Arguments = "explorer";
+                jtExplorer.Title = "RPF Explorer";
+                jtExplorer.Description = "Open RPF Explorer";
+                jtExplorer.CustomCategory = "Launch Options";
+
+                var jtVehicles = new JumpTask();
+                jtVehicles.ApplicationPath = cwpath;
+                jtVehicles.IconResourcePath = Path.Combine(cwdir, "CodeWalker Vehicle Viewer.exe");
+                jtVehicles.WorkingDirectory = cwdir;
+                jtVehicles.Arguments = "vehicles";
+                jtVehicles.Title = "Vehicle Viewer";
+                jtVehicles.Description = "Open Vehicle Viewer";
+                jtVehicles.CustomCategory = "Launch Options";
+
+                var jtPeds = new JumpTask();
+                jtPeds.ApplicationPath = cwpath;
+                jtPeds.IconResourcePath = Path.Combine(cwdir, "CodeWalker Ped Viewer.exe");
+                jtPeds.WorkingDirectory = cwdir;
+                jtPeds.Arguments = "peds";
+                jtPeds.Title = "Ped Viewer";
+                jtPeds.Description = "Open Ped Viewer";
+                jtPeds.CustomCategory = "Launch Options";
+
+                var jumpList = new JumpList();
+
+                jumpList.JumpItems.Add(jtWorld);
+                jumpList.JumpItems.Add(jtExplorer);
+                jumpList.JumpItems.Add(jtVehicles);
+                jumpList.JumpItems.Add(jtPeds);
+
+                jumpList.Apply();
+
+                Settings.Default.JumpListInitialised = true;
+                Settings.Default.Save();
+            }
+            catch
+            { }
         }
     }
 }
