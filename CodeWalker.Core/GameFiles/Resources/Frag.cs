@@ -3288,16 +3288,16 @@ namespace CodeWalker.GameFiles
         public uint Unknown_30h = 0x00010000; // 0x00010000
         public uint Unknown_34h; // 0x00000000
         public ulong Unknown_38h; // 0x0000000000000000
-        public float Unknown_40h { get; set; }
-        public float Unknown_44h { get; set; }
+        public float Mass { get; set; } //in pounds, of course
+        public float MassInv { get; set; } // 1.0 / Mass
         public float Unknown_48h { get; set; } = 1.0f; // 1.0f
         public float Unknown_4Ch { get; set; } = 150.0f; // 150.0f
         public float Unknown_50h { get; set; } = 6.2831855f; // 6.2831855f = 2*pi
         public float Unknown_54h { get; set; } = 1.0f; // 1.0f
         public ulong Unknown_58h; // 0x0000000000000000
-        public Vector3 Unknown_60h { get; set; }
+        public Vector3 InertiaTensor { get; set; }
         public uint Unknown_6Ch = 0x7fc00001; // 0x7fc00001
-        public Vector3 Unknown_70h { get; set; }
+        public Vector3 InertiaTensorInv { get; set; } // 1.0 / InertiaTensor
         public uint Unknown_7Ch = 0x7fc00001; // 0x7fc00001
         public Vector3 Unknown_80h { get; set; } = Vector3.Zero; // 0.0 0.0 0.0 NaN
         public uint Unknown_8Ch = 0x7f800001; // 0x7f800001
@@ -3334,16 +3334,16 @@ namespace CodeWalker.GameFiles
             this.Unknown_30h = reader.ReadUInt32();
             this.Unknown_34h = reader.ReadUInt32();
             this.Unknown_38h = reader.ReadUInt64();
-            this.Unknown_40h = reader.ReadSingle();
-            this.Unknown_44h = reader.ReadSingle();
+            this.Mass = reader.ReadSingle();
+            this.MassInv = reader.ReadSingle();
             this.Unknown_48h = reader.ReadSingle();
             this.Unknown_4Ch = reader.ReadSingle();
             this.Unknown_50h = reader.ReadSingle();
             this.Unknown_54h = reader.ReadSingle();
             this.Unknown_58h = reader.ReadUInt64();
-            this.Unknown_60h = reader.ReadVector3();
+            this.InertiaTensor = reader.ReadVector3();
             this.Unknown_6Ch = reader.ReadUInt32();
-            this.Unknown_70h = reader.ReadVector3();
+            this.InertiaTensorInv = reader.ReadVector3();
             this.Unknown_7Ch = reader.ReadUInt32();
             this.Unknown_80h = reader.ReadVector3();
             this.Unknown_8Ch = reader.ReadUInt32();
@@ -3466,16 +3466,16 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_30h);
             writer.Write(this.Unknown_34h);
             writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_44h);
+            writer.Write(this.Mass);
+            writer.Write(this.MassInv);
             writer.Write(this.Unknown_48h);
             writer.Write(this.Unknown_4Ch);
             writer.Write(this.Unknown_50h);
             writer.Write(this.Unknown_54h);
             writer.Write(this.Unknown_58h);
-            writer.Write(this.Unknown_60h);
+            writer.Write(this.InertiaTensor);
             writer.Write(this.Unknown_6Ch);
-            writer.Write(this.Unknown_70h);
+            writer.Write(this.InertiaTensorInv);
             writer.Write(this.Unknown_7Ch);
             writer.Write(this.Unknown_80h);
             writer.Write(this.Unknown_8Ch);
@@ -3493,14 +3493,14 @@ namespace CodeWalker.GameFiles
         public void WriteXml(StringBuilder sb, int indent)
         {
             YftXml.StringTag(sb, indent, "Name", YftXml.XmlEscape(Name));
-            YftXml.ValueTag(sb, indent, "Unknown40", FloatUtil.ToString(Unknown_40h));
-            YftXml.ValueTag(sb, indent, "Unknown44", FloatUtil.ToString(Unknown_44h));
+            YftXml.ValueTag(sb, indent, "Mass", FloatUtil.ToString(Mass));
+            YftXml.ValueTag(sb, indent, "MassInv", FloatUtil.ToString(MassInv));
             YftXml.ValueTag(sb, indent, "Unknown48", FloatUtil.ToString(Unknown_48h));
             YftXml.ValueTag(sb, indent, "Unknown4C", FloatUtil.ToString(Unknown_4Ch));
             YftXml.ValueTag(sb, indent, "Unknown50", FloatUtil.ToString(Unknown_50h));
             YftXml.ValueTag(sb, indent, "Unknown54", FloatUtil.ToString(Unknown_54h));
-            YftXml.SelfClosingTag(sb, indent, "Unknown60 " + FloatUtil.GetVector3XmlString(Unknown_60h));
-            YftXml.SelfClosingTag(sb, indent, "Unknown70 " + FloatUtil.GetVector3XmlString(Unknown_70h));
+            YftXml.SelfClosingTag(sb, indent, "InertiaTensor " + FloatUtil.GetVector3XmlString(InertiaTensor));
+            YftXml.SelfClosingTag(sb, indent, "InertiaTensorInv " + FloatUtil.GetVector3XmlString(InertiaTensorInv));
             if (Bound != null)
             {
                 Bounds.WriteXmlNode(Bound, sb, indent);
@@ -3509,14 +3509,14 @@ namespace CodeWalker.GameFiles
         public void ReadXml(XmlNode node)
         {
             Name = Xml.GetChildInnerText(node, "Name");
-            Unknown_40h = Xml.GetChildFloatAttribute(node, "Unknown40", "value");
-            Unknown_44h = Xml.GetChildFloatAttribute(node, "Unknown44", "value");
+            Mass = Xml.GetChildFloatAttribute(node, "Mass", "value");
+            MassInv = Xml.GetChildFloatAttribute(node, "MassInv", "value");
             Unknown_48h = Xml.GetChildFloatAttribute(node, "Unknown48", "value");
             Unknown_4Ch = Xml.GetChildFloatAttribute(node, "Unknown4C", "value");
             Unknown_50h = Xml.GetChildFloatAttribute(node, "Unknown50", "value");
             Unknown_54h = Xml.GetChildFloatAttribute(node, "Unknown54", "value");
-            Unknown_60h = Xml.GetChildVector3Attributes(node, "Unknown60");
-            Unknown_70h = Xml.GetChildVector3Attributes(node, "Unknown70");
+            InertiaTensor = Xml.GetChildVector3Attributes(node, "InertiaTensor");
+            InertiaTensorInv = Xml.GetChildVector3Attributes(node, "InertiaTensorInv");
             var bnode = node.SelectSingleNode("Bounds");
             if (bnode != null)
             {
