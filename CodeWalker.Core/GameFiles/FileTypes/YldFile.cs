@@ -91,17 +91,6 @@ namespace CodeWalker.GameFiles
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(XmlHeader);
 
-            var ddsfolder = outputFolder;
-            if (!string.IsNullOrEmpty(ddsfolder))
-            {
-                ddsfolder = Path.Combine(outputFolder, yld.Name);
-
-                if (!Directory.Exists(ddsfolder))
-                {
-                    Directory.CreateDirectory(ddsfolder);
-                }
-            }
-
             if (yld?.ClothDictionary != null)
             {
                 ClothDictionary.WriteXmlNode(yld.ClothDictionary, sb, 0);

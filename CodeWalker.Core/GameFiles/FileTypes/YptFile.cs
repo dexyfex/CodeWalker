@@ -123,15 +123,9 @@ namespace CodeWalker.GameFiles
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(XmlHeader);
 
-            var ddsfolder = outputFolder;
-            if (!string.IsNullOrEmpty(ddsfolder))
-            {
-                ddsfolder = Path.Combine(outputFolder, ypt.Name);
-            }
-
             if (ypt?.PtfxList != null)
             {
-                ParticleEffectsList.WriteXmlNode(ypt.PtfxList, sb, 0, ddsfolder);
+                ParticleEffectsList.WriteXmlNode(ypt.PtfxList, sb, 0, outputFolder);
             }
 
             return sb.ToString();

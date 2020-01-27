@@ -106,15 +106,9 @@ namespace CodeWalker.GameFiles
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(XmlHeader);
 
-            var ddsfolder = outputFolder;
-            if (!string.IsNullOrEmpty(ddsfolder))
-            {
-                ddsfolder = Path.Combine(outputFolder, ydd.Name);
-            }
-
             if (ydd?.DrawableDict != null)
             {
-                DrawableDictionary.WriteXmlNode(ydd.DrawableDict, sb, 0, ddsfolder);
+                DrawableDictionary.WriteXmlNode(ydd.DrawableDict, sb, 0, outputFolder);
             }
 
             return sb.ToString();
