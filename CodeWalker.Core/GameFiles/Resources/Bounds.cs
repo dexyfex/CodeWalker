@@ -2726,9 +2726,11 @@ namespace CodeWalker.GameFiles
                 var child = Children.data_items[i];
                 if (child != null)
                 {
+                    var cbox = new BoundingBox(child.BoxMin, child.BoxMax);
+                    var tcbox = cbox.Transform(child.Position, child.Orientation, child.Scale);
                     var it = new BVHBuilderItem();
-                    it.Min = child.BoxMin;
-                    it.Max = child.BoxMax;
+                    it.Min = tcbox.Minimum;
+                    it.Max = tcbox.Maximum;
                     it.Index = i;
                     it.Bounds = child;
                     items.Add(it);
