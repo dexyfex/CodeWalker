@@ -1,4 +1,4 @@
-﻿using SharpDX;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -648,12 +648,34 @@ namespace CodeWalker.GameFiles
         public YndJunction Junction { get; set; }
         public bool HasJunction;
 
+        // Known types, non exhaustive:
+        /// <summary>
+        /// Normal                      = 0, Most nodes
+        /// ParkingSpace?               = 1, Only 4 on the map as far as I can see. Probably useless.
+        /// PedCrossRoad                = 10, Any pedestrian crossing where vehicles have priority. Traffic light crossings etc.
+        /// PedNode                     = 14,
+        /// TrafficLightStopNode        = 15, 
+        /// StopJunctionNode            = 16, 
+        /// Caution (Slow Down)?        = 17, Appears before barriers, and merges
+        /// PedCrossRoadWithPriority?   = 18, Appears in off-road crossings
+        /// RestrictedAccess?           = 19, Appears in the airport entrance, the airbase, and the road where the house falls down. Probably to stop all nav.
+        /// OffRoadJunctionNode?        = 20  Appears on a junction node with more than one edge where there is an off-road connection.
+        /// </summary>
+        public int Special
+        {
+            get
+            {
+                return _RawData.Flags1.Value >> 3;
+            }
+        }
 
         public bool IsPedNode
         {
             get
             {
-                return false;// ((Flags4.Value >> 4) & 7) == 7;
+                return Special == 10
+                       || Special == 14
+                       || Special == 18;
             }
         }
 
