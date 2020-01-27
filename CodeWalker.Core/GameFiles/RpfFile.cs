@@ -1900,7 +1900,7 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public static void Defragment(RpfFile file, Action<string, float> progress)
+        public static void Defragment(RpfFile file, Action<string, float> progress = null)
         {
             if (file?.AllEntries == null) return;
 
@@ -1928,7 +1928,7 @@ namespace CodeWalker.GameFiles
                         var entry = allfiles[i];
                         float prog = (float)i / allfiles.Count;
                         string txt = "Relocating " + entry.Name + "...";
-                        progress(txt, prog);
+                        progress?.Invoke(txt, prog);
 
                         var sourceblock = entry.FileOffset;
                         var blockcount = GetBlockCount(entry.GetFileSize());
