@@ -121,6 +121,26 @@ namespace CodeWalker
 
 
 
+    public static class BoundingBoxMath
+    {
+
+        public static BoundingBox Transform(this BoundingBox b, Vector3 position, Quaternion orientation, Vector3 scale)
+        {
+            var mat = Matrix.Transformation(Vector3.Zero, Quaternion.Identity, scale, Vector3.Zero, orientation, position);
+            var matabs = mat;
+            matabs.Column1 = mat.Column1.Abs();
+            matabs.Column2 = mat.Column2.Abs();
+            matabs.Column3 = mat.Column3.Abs();
+            matabs.Column4 = mat.Column4.Abs();
+            var bbcenter = (b.Maximum + b.Minimum) * 0.5f;
+            var bbextent = (b.Maximum - b.Minimum) * 0.5f;
+            var ncenter = Vector3.TransformCoordinate(bbcenter, mat);
+            var nextent = Vector3.TransformNormal(bbextent, matabs).Abs();
+            return new BoundingBox(ncenter - nextent, ncenter + nextent);
+        }
+
+    }
+
 
 
     public struct BoundingCapsule
