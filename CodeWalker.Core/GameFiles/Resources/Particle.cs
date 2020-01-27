@@ -343,6 +343,12 @@ namespace CodeWalker.GameFiles
     }
 
 
+
+
+
+
+
+
     [TC(typeof(EXP))] public class ParticleRule : ResourceSystemBlock
     {
         // pgBase
@@ -942,125 +948,6 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TC(typeof(EXP))] public class ParticleDrawable : ResourceSystemBlock
-    {
-        public override long BlockLength => 0x30;
-
-        // structure data
-        public float Unknown_0h { get; set; }
-        public float Unknown_4h { get; set; }
-        public float Unknown_8h { get; set; }
-        public float Unknown_Ch { get; set; }
-        public ulong String1Pointer { get; set; }
-        public ulong DrawablePointer { get; set; }
-        public MetaHash Unknown_20h { get; set; }
-        public uint Unknown_24h { get; set; } // 0x00000000
-        public ulong Unknown_28h; // 0x0000000000000000
-
-        // reference data
-        public string_r Name { get; set; }
-        public DrawableBase Drawable { get; set; }
-
-        public override void Read(ResourceDataReader reader, params object[] parameters)
-        {
-            // read structure data
-            this.Unknown_0h = reader.ReadSingle();
-            this.Unknown_4h = reader.ReadSingle();
-            this.Unknown_8h = reader.ReadSingle();
-            this.Unknown_Ch = reader.ReadSingle();
-            this.String1Pointer = reader.ReadUInt64();
-            this.DrawablePointer = reader.ReadUInt64();
-            this.Unknown_20h = reader.ReadUInt32();
-            this.Unknown_24h = reader.ReadUInt32();
-            this.Unknown_28h = reader.ReadUInt64();
-
-            // read reference data
-            this.Name = reader.ReadBlockAt<string_r>(this.String1Pointer);
-            this.Drawable = reader.ReadBlockAt<DrawableBase>(this.DrawablePointer);
-
-            if (!string.IsNullOrEmpty(Name?.Value))
-            {
-                JenkIndex.Ensure(Name.Value);
-            }
-
-            switch (Unknown_0h)
-            {
-                case 0.355044f:
-                case 1.0f:
-                case 0.308508f:
-                    break;
-                default:
-                    break;//more
-            }
-            switch (Unknown_4h)
-            {
-                case 0.894308f:
-                case 1.0f:
-                case 0.127314f:
-                    break;
-                default:
-                    break;//more
-            }
-            switch (Unknown_8h)
-            {
-                case 0.894308f:
-                case 1.0f:
-                case 0.127314f:
-                    break;
-                default:
-                    break;//more
-            }
-            switch (Unknown_Ch)
-            {
-                case 0.4f:
-                case 0.5f:
-                case 0.178602f:
-                    break;
-                default:
-                    break;//more
-            }
-            //if (Unknown_20h != JenkHash.GenHash(String1?.Value ?? ""))
-            //{ }//no hit
-            //if (Unknown_24h != 0)
-            //{ }//no hit
-            //if (Unknown_28h != 0)
-            //{ }//no hit
-        }
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
-        {
-            // update structure data
-            this.String1Pointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
-            this.DrawablePointer = (ulong)(this.Drawable != null ? this.Drawable.FilePosition : 0);
-
-            // write structure data
-            writer.Write(this.Unknown_0h);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_Ch);
-            writer.Write(this.String1Pointer);
-            writer.Write(this.DrawablePointer);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_28h);
-        }
-
-        public override IResourceBlock[] GetReferences()
-        {
-            var list = new List<IResourceBlock>();
-            if (Name != null) list.Add(Name);
-            if (Drawable != null) list.Add(Drawable);
-            return list.ToArray();
-        }
-
-        public override string ToString()
-        {
-            if (!string.IsNullOrEmpty(Name?.Value)) return Name.Value;
-            if (Unknown_20h != 0) return Unknown_20h.ToString();
-            return base.ToString();
-        }
-    }
-
-
     [TC(typeof(EXP))] public class ParticleEffectSpawner : ResourceSystemBlock
     {
         // pgBase
@@ -1086,13 +973,13 @@ namespace CodeWalker.GameFiles
         public uint Unknown_48h { get; set; } // 0, 4, 8, 9, 10, 11, 12, 14     //index/id
         public uint Unknown_4Ch; // 0x00000000
         public ulong Unknown_50h; // 0x0000000000000000
-        public ulong EmitterRulePointer { get; set; }
+        public ulong EffectRulePointer { get; set; }
         public ulong String1Pointer { get; set; }
         public float Unknown_68h { get; set; } // 0, 0.5f, 1.0f
         public uint Unknown_6Ch { get; set; } // eg. 0x01010100
 
         // reference data
-        public ParticleEffectRule EmitterRule { get; set; }
+        public ParticleEffectRule EffectRule { get; set; }
         public string_r String1 { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -1116,13 +1003,13 @@ namespace CodeWalker.GameFiles
             this.Unknown_48h = reader.ReadUInt32();
             this.Unknown_4Ch = reader.ReadUInt32();
             this.Unknown_50h = reader.ReadUInt64();
-            this.EmitterRulePointer = reader.ReadUInt64();
+            this.EffectRulePointer = reader.ReadUInt64();
             this.String1Pointer = reader.ReadUInt64();
             this.Unknown_68h = reader.ReadSingle();
             this.Unknown_6Ch = reader.ReadUInt32();
 
             // read reference data
-            this.EmitterRule = reader.ReadBlockAt<ParticleEffectRule>(this.EmitterRulePointer);
+            this.EffectRule = reader.ReadBlockAt<ParticleEffectRule>(this.EffectRulePointer);
             this.String1 = reader.ReadBlockAt<string_r>(this.String1Pointer);
 
             //if (Unknown_4h != 1)
@@ -1295,7 +1182,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.EmitterRulePointer = (ulong)(this.EmitterRule != null ? this.EmitterRule.FilePosition : 0);
+            this.EffectRulePointer = (ulong)(this.EffectRule != null ? this.EffectRule.FilePosition : 0);
             this.String1Pointer = (ulong)(this.String1 != null ? this.String1.FilePosition : 0);
 
             // write structure data
@@ -1317,7 +1204,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_48h);
             writer.Write(this.Unknown_4Ch);
             writer.Write(this.Unknown_50h);
-            writer.Write(this.EmitterRulePointer);
+            writer.Write(this.EffectRulePointer);
             writer.Write(this.String1Pointer);
             writer.Write(this.Unknown_68h);
             writer.Write(this.Unknown_6Ch);
@@ -1327,7 +1214,7 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (EmitterRule != null) list.Add(EmitterRule);
+            if (EffectRule != null) list.Add(EffectRule);
             if (String1 != null) list.Add(String1);
             return list.ToArray();
         }
@@ -1338,6 +1225,133 @@ namespace CodeWalker.GameFiles
             return (!string.IsNullOrEmpty(str)) ? str : base.ToString();
         }
     }
+
+
+    [TC(typeof(EXP))] public class ParticleDrawable : ResourceSystemBlock
+    {
+        public override long BlockLength => 0x30;
+
+        // structure data
+        public float Unknown_0h { get; set; }
+        public float Unknown_4h { get; set; }
+        public float Unknown_8h { get; set; }
+        public float Unknown_Ch { get; set; }
+        public ulong String1Pointer { get; set; }
+        public ulong DrawablePointer { get; set; }
+        public MetaHash Unknown_20h { get; set; }
+        public uint Unknown_24h { get; set; } // 0x00000000
+        public ulong Unknown_28h; // 0x0000000000000000
+
+        // reference data
+        public string_r Name { get; set; }
+        public DrawableBase Drawable { get; set; }
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.Unknown_0h = reader.ReadSingle();
+            this.Unknown_4h = reader.ReadSingle();
+            this.Unknown_8h = reader.ReadSingle();
+            this.Unknown_Ch = reader.ReadSingle();
+            this.String1Pointer = reader.ReadUInt64();
+            this.DrawablePointer = reader.ReadUInt64();
+            this.Unknown_20h = reader.ReadUInt32();
+            this.Unknown_24h = reader.ReadUInt32();
+            this.Unknown_28h = reader.ReadUInt64();
+
+            // read reference data
+            this.Name = reader.ReadBlockAt<string_r>(this.String1Pointer);
+            this.Drawable = reader.ReadBlockAt<DrawableBase>(this.DrawablePointer);
+
+            if (!string.IsNullOrEmpty(Name?.Value))
+            {
+                JenkIndex.Ensure(Name.Value);
+            }
+
+            switch (Unknown_0h)
+            {
+                case 0.355044f:
+                case 1.0f:
+                case 0.308508f:
+                    break;
+                default:
+                    break;//more
+            }
+            switch (Unknown_4h)
+            {
+                case 0.894308f:
+                case 1.0f:
+                case 0.127314f:
+                    break;
+                default:
+                    break;//more
+            }
+            switch (Unknown_8h)
+            {
+                case 0.894308f:
+                case 1.0f:
+                case 0.127314f:
+                    break;
+                default:
+                    break;//more
+            }
+            switch (Unknown_Ch)
+            {
+                case 0.4f:
+                case 0.5f:
+                case 0.178602f:
+                    break;
+                default:
+                    break;//more
+            }
+            //if (Unknown_20h != JenkHash.GenHash(String1?.Value ?? ""))
+            //{ }//no hit
+            //if (Unknown_24h != 0)
+            //{ }//no hit
+            //if (Unknown_28h != 0)
+            //{ }//no hit
+        }
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            // update structure data
+            this.String1Pointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
+            this.DrawablePointer = (ulong)(this.Drawable != null ? this.Drawable.FilePosition : 0);
+
+            // write structure data
+            writer.Write(this.Unknown_0h);
+            writer.Write(this.Unknown_4h);
+            writer.Write(this.Unknown_8h);
+            writer.Write(this.Unknown_Ch);
+            writer.Write(this.String1Pointer);
+            writer.Write(this.DrawablePointer);
+            writer.Write(this.Unknown_20h);
+            writer.Write(this.Unknown_24h);
+            writer.Write(this.Unknown_28h);
+        }
+
+        public override IResourceBlock[] GetReferences()
+        {
+            var list = new List<IResourceBlock>();
+            if (Name != null) list.Add(Name);
+            if (Drawable != null) list.Add(Drawable);
+            return list.ToArray();
+        }
+
+        public override string ToString()
+        {
+            if (!string.IsNullOrEmpty(Name?.Value)) return Name.Value;
+            if (Unknown_20h != 0) return Unknown_20h.ToString();
+            return base.ToString();
+        }
+    }
+
+
+
+
+
+
+
+
 
 
     [TC(typeof(EXP))] public class ParticleEffectRule : ResourceSystemBlock
@@ -1877,344 +1891,6 @@ namespace CodeWalker.GameFiles
             return Name?.ToString() ?? base.ToString();
         }
     }
-    
-
-    [TC(typeof(EXP))] public class ParticleKeyframeProp : ResourceSystemBlock
-    {
-        // datBase
-        // ptxKeyframeProp
-        public override long BlockLength => 0x90;
-
-        // structure data
-        public uint VFT { get; set; }
-        public uint Unknown_4h = 1; // 0x00000001
-        public ulong Unknown_8h; // 0x0000000000000000
-        public ulong Unknown_10h; // 0x0000000000000000
-        public ulong Unknown_18h; // 0x0000000000000000
-        public ulong Unknown_20h; // 0x0000000000000000
-        public ulong Unknown_28h; // 0x0000000000000000
-        public ulong Unknown_30h; // 0x0000000000000000
-        public ulong Unknown_38h; // 0x0000000000000000
-        public ulong Unknown_40h; // 0x0000000000000000
-        public ulong Unknown_48h; // 0x0000000000000000
-        public ulong Unknown_50h; // 0x0000000000000000
-        public ulong Unknown_58h; // 0x0000000000000000
-        public ulong Unknown_60h; // 0x0000000000000000
-        public MetaHash Unknown_68h { get; set; } // name hash?
-        public uint Unknown_6Ch { get; set; }
-        public ResourceSimpleList64<ParticleKeyframePropItem> Items { get; set; }
-        public ulong Unknown_80h; // 0x0000000000000000
-        public ulong Unknown_88h; // 0x0000000000000000
-
-
-        public override void Read(ResourceDataReader reader, params object[] parameters)
-        {
-            // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadUInt64();
-            this.Unknown_18h = reader.ReadUInt64();
-            this.Unknown_20h = reader.ReadUInt64();
-            this.Unknown_28h = reader.ReadUInt64();
-            this.Unknown_30h = reader.ReadUInt64();
-            this.Unknown_38h = reader.ReadUInt64();
-            this.Unknown_40h = reader.ReadUInt64();
-            this.Unknown_48h = reader.ReadUInt64();
-            this.Unknown_50h = reader.ReadUInt64();
-            this.Unknown_58h = reader.ReadUInt64();
-            this.Unknown_60h = reader.ReadUInt64();
-            this.Unknown_68h = reader.ReadUInt32();
-            this.Unknown_6Ch = reader.ReadUInt32();
-            this.Items = reader.ReadBlock<ResourceSimpleList64<ParticleKeyframePropItem>>();
-            this.Unknown_80h = reader.ReadUInt64();
-            this.Unknown_88h = reader.ReadUInt64();
-
-
-            //if (Unknown_4h != 1)
-            //{ }//no hit
-            //if (Unknown_8h != 0)
-            //{ }//no hit
-            //if (Unknown_10h != 0)
-            //{ }//no hit
-            //if (Unknown_18h != 0)
-            //{ }//no hit
-            //if (Unknown_20h != 0)
-            //{ }//no hit
-            //if (Unknown_28h != 0)
-            //{ }//no hit
-            //if (Unknown_30h != 0)
-            //{ }//no hit
-            //if (Unknown_38h != 0)
-            //{ }//no hit
-            //if (Unknown_40h != 0)
-            //{ }//no hit
-            //if (Unknown_48h != 0)
-            //{ }//no hit
-            //if (Unknown_50h != 0)
-            //{ }//no hit
-            //if (Unknown_58h != 0)
-            //{ }//no hit
-            //if (Unknown_60h != 0)
-            //{ }//no hit
-            switch (Unknown_68h) // name hash ..?
-            {
-                case 0x30e327d4: // 
-                case 0x412a554c: // 
-                case 0x1f641348: // 
-                case 0x3dc78098: // 
-                case 0xa67a1155: // 
-                case 0xd5c0fce5: // 
-                case 0xe7af1a2c: // 
-                case 0x7fae9df8: // 
-                case 0x60500691: // 
-                case 0x8306b23a: // 
-                case 0x1c256ba4: // 
-                case 0x351ed852: // 
-                case 0xf0274f77: //
-                case 0x687b4382: //
-                case 0x61532d47: //
-                case 0x686f965f: // 
-                case 0x2946e76f: //
-                case 0xd0ef73c5: // 
-                case 0x64c7fc25: // 
-                case 0x0aadcbef: // 
-                case 0xfb8eb4e6: // 
-                case 0xa7228870: // 
-                case 0xe5480b3b: // 
-                case 0xd7c1e22b: // 
-                case 0xce8e57a7: // 
-                case 0x34d6ded7: // 
-                case 0xff864d6c: // 
-                case 0x61c50318: // 
-                case 0xe00e5025: // 
-                case 0x9fc4652b: // 
-                case 0x60855078: // 
-                case 0xc9fe6abb: // 
-                case 0x4af0ffa1: // 
-                case 0xa83b53f0: // 
-                case 0xdd18b4f2: // 
-                case 0xe511bc23: // 
-                case 0xd2df1fa0: // 
-                case 0x45e377e9: // 
-                case 0x5e692d43: // 
-                case 0x1104051e: // 
-                case 0x841ab3da: // 
-                case 0x41d49131: // 
-                case 0x64c6c696: // 
-                case 0x13c0cac4: // 
-                case 0xe7d61ff7: // 
-                    break;
-                default:
-                    break;//and more...
-            }
-            switch (Unknown_6Ch)//some offset..?
-            {
-                case 0x00007a00:
-                case 0x00007b00:
-                case 0x00007c00:
-                case 0x00007d00:
-                case 0x00007e00:
-                case 0x00007f00:
-                case 0x00008000:
-                case 0x00008100:
-                case 0x00008200:
-                case 0x00008300:
-                case 0x0000e400:
-                case 0x0000e500:
-                case 0x0000e600:
-                case 0x0000e700:
-                case 0x0000e800:
-                case 0x0000e900:
-                case 0x0000ea00:
-                case 0x0000eb00:
-                case 0x0000ec00:
-                case 0x0000ed00:
-                case 0x0000ee00:
-                case 0x0000ef00:
-                case 0x0000f000:
-                case 0x0000f100:
-                case 0x0000f200:
-                case 0x0000f300:
-                case 0x0000f400:
-                case 0x00000600:
-                case 0x00000700:
-                case 0x00000800:
-                    break;
-                default:
-                    break;///and more......
-            }
-            //if (Unknown_80h != 0)
-            //{ }//no hit
-            //if (Unknown_88h != 0)
-            //{ }//no hit
-        }
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
-        {
-            // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_48h);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Unknown_58h);
-            writer.Write(this.Unknown_60h);
-            writer.Write(this.Unknown_68h);
-            writer.Write(this.Unknown_6Ch);
-            writer.WriteBlock(this.Items);
-            writer.Write(this.Unknown_80h);
-            writer.Write(this.Unknown_88h);
-        }
-
-        public override Tuple<long, IResourceBlock>[] GetParts()
-        {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x70, Items)
-            };
-        }
-
-        public override string ToString()
-        {
-            return Unknown_68h.ToString();
-        }
-    }
-
-
-    [TC(typeof(EXP))] public class ParticleKeyframePropItem : ResourceSystemBlock
-    {
-        public override long BlockLength => 0x20;
-
-        // structure data
-        public float Unknown_0h { get; set; }
-        public float Unknown_4h { get; set; }
-        public ulong Unknown_8h; // 0x0000000000000000
-        public float Unknown_10h { get; set; }
-        public float Unknown_14h { get; set; }
-        public float Unknown_18h { get; set; }
-        public float Unknown_1Ch { get; set; }
-
-        public override void Read(ResourceDataReader reader, params object[] parameters)
-        {
-            // read structure data
-            this.Unknown_0h = reader.ReadSingle();
-            this.Unknown_4h = reader.ReadSingle();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadSingle();
-            this.Unknown_14h = reader.ReadSingle();
-            this.Unknown_18h = reader.ReadSingle();
-            this.Unknown_1Ch = reader.ReadSingle();
-
-            switch (Unknown_0h)
-            {
-                case 0:
-                case 1.0f:
-                case 0.6f:
-                case 0.010234f:
-                case 0.12f:
-                case 0.8f:
-                    break;
-                default:
-                    break; //and more..
-            }
-            switch (Unknown_4h)
-            {
-                case 0:
-                case 1.0f:
-                case 1.66666663f:
-                case 97.7135f:
-                case 8.333334f:
-                case 1.47058821f:
-                case 5.00000048f:
-                    break;
-                default:
-                    break; //and more...
-            }
-            //if (Unknown_8h != 0)
-            //{ }//no hit
-            switch (Unknown_10h)
-            {
-                case 0:
-                case 1.2f:
-                case 5.0f:
-                case 2.4f:
-                case 7.0f:
-                case 1.0f:
-                case 0.6f:
-                case 0.931395f:
-                case 0.45f:
-                case 0.55f:
-                case 0.5f:
-                    break;
-                default:
-                    break; //and more..
-            }
-            switch (Unknown_14h)
-            {
-                case 0:
-                case 1.2f:
-                case 5.0f:
-                case 2.4f:
-                case 7.0f:
-                case 1.0f:
-                case 0.6f:
-                case 0.73913f:
-                case 0.3f:
-                case 0.5f:
-                    break;
-                default:
-                    break; //and more...
-            }
-            switch (Unknown_18h)
-            {
-                case -0.8f:
-                case -0.5f:
-                case 0:
-                case 1.0f:
-                case 0.213439f:
-                case 4.000001f:
-                case 0.05f:
-                    break;
-                default:
-                    break; //and more...
-            }
-            switch (Unknown_1Ch)
-            {
-                case 0:
-                case 1.0f:
-                case 0.669767f:
-                case 0.945107f:
-                case 0.798588f:
-                case 0.03f:
-                case 0.6f:
-                    break;
-                default:
-                    break;// and more..
-            }
-        }
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
-        {
-            // write structure data
-            writer.Write(this.Unknown_0h);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0}, {1}, {2}, {3}, {4}, {5}", Unknown_0h, Unknown_4h, Unknown_10h, Unknown_14h, Unknown_18h, Unknown_1Ch);
-        }
-    }
 
 
     [TC(typeof(EXP))] public class ParticleEventEmitter : ResourceSystemBlock
@@ -2463,232 +2139,6 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TC(typeof(EXP))] public class ParticleEmitterRule : ResourceSystemBlock
-    {
-        // pgBase
-        // pgBaseRefCounted
-        // ptxEmitterRule
-        public override long BlockLength => 0x630;
-
-        // structure data
-        public uint VFT { get; set; }
-        public uint Unknown_4h = 1; // 0x00000001
-        public ulong Unknown_8h; // 0x0000000000000000
-        public uint Unknown_10h { get; set; } // 2, 3, 4, 5, 6, 10, 21
-        public uint Unknown_14h; // 0x00000000
-        public float Unknown_18h { get; set; } = 4.1f; // 4.1f
-        public uint Unknown_1Ch; // 0x00000000
-        public ulong NamePointer { get; set; }
-        public ulong Unknown_28h; // 0x0000000000000000
-        public ulong Unknown_30h; // 0x0000000000000000
-        public ulong Domain1Pointer { get; set; }
-        public ulong Unknown_40h; // 0x0000000000000000
-        public ulong Domain2Pointer { get; set; }
-        public ulong Unknown_50h; // 0x0000000000000000
-        public ulong Domain3Pointer { get; set; }
-        public ulong Unknown_60h; // 0x0000000000000000
-        public ulong Unknown_68h; // 0x0000000000000000
-        public ulong Unknown_70h; // 0x0000000000000000
-        public ParticleKeyframeProp[] KeyframeProps1 { get; set; } = new ParticleKeyframeProp[10];
-        public ulong KeyframeProps2Pointer { get; set; }
-        public ushort KeyframePropsCount1 = 10; // 10
-        public ushort KeyframePropsCount2 = 10; // 10
-        public uint Unknown_624h; // 0x00000000
-        public uint Unknown_628h { get; set; } // 0, 1
-        public uint Unknown_62Ch; // 0x00000000
-
-        // reference data
-        public string_r Name { get; set; }
-        public ParticleDomain Domain1 { get; set; }
-        public ParticleDomain Domain2 { get; set; }
-        public ParticleDomain Domain3 { get; set; }
-        public ResourcePointerArray64<ParticleKeyframeProp> KeyframeProps2 { get; set; }
-
-        public override void Read(ResourceDataReader reader, params object[] parameters)
-        {
-            // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadSingle();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.NamePointer = reader.ReadUInt64();
-            this.Unknown_28h = reader.ReadUInt64();
-            this.Unknown_30h = reader.ReadUInt64();
-            this.Domain1Pointer = reader.ReadUInt64();
-            this.Unknown_40h = reader.ReadUInt64();
-            this.Domain2Pointer = reader.ReadUInt64();
-            this.Unknown_50h = reader.ReadUInt64();
-            this.Domain3Pointer = reader.ReadUInt64();
-            this.Unknown_60h = reader.ReadUInt64();
-            this.Unknown_68h = reader.ReadUInt64();
-            this.Unknown_70h = reader.ReadUInt64();
-            for (int i = 0; i < 10; i++)
-            {
-                this.KeyframeProps1[i] = reader.ReadBlock<ParticleKeyframeProp>();
-            }
-            this.KeyframeProps2Pointer = reader.ReadUInt64();
-            this.KeyframePropsCount1 = reader.ReadUInt16();
-            this.KeyframePropsCount2 = reader.ReadUInt16();
-            this.Unknown_624h = reader.ReadUInt32();
-            this.Unknown_628h = reader.ReadUInt32();
-            this.Unknown_62Ch = reader.ReadUInt32();
-
-            // read reference data
-            this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
-            this.Domain1 = reader.ReadBlockAt<ParticleDomain>(this.Domain1Pointer);
-            this.Domain2 = reader.ReadBlockAt<ParticleDomain>(this.Domain2Pointer);
-            this.Domain3 = reader.ReadBlockAt<ParticleDomain>(this.Domain3Pointer);
-            this.KeyframeProps2 = reader.ReadBlockAt<ResourcePointerArray64<ParticleKeyframeProp>>(this.KeyframeProps2Pointer, this.KeyframePropsCount2);
-
-
-            if (!string.IsNullOrEmpty(Name?.Value))
-            {
-                JenkIndex.Ensure(Name.Value);
-            }
-
-
-            //if (Unknown_4h != 1)
-            //{ }//no hit
-            //if (Unknown_8h != 0)
-            //{ }//no hit
-            //switch (Unknown_10h)
-            //{
-            //    case 3:
-            //    case 2:
-            //    case 4:
-            //    case 5:
-            //    case 10:
-            //    case 21:
-            //    case 6:
-            //        break;
-            //    default:
-            //        break;//no hit
-            //}
-            //if (Unknown_14h != 0)
-            //{ }//no hit
-            //if (Unknown_18h != 4.1f)
-            //{ }//no hit
-            //if (Unknown_1Ch != 0)
-            //{ }//no hit
-            //if (Unknown_28h != 0)
-            //{ }//no hit
-            //if (Unknown_30h != 0)
-            //{ }//no hit
-            //if (Unknown_40h != 0)
-            //{ }//no hit
-            //if (Unknown_50h != 0)
-            //{ }//no hit
-            //if (Unknown_60h != 0)
-            //{ }//no hit
-            //if (Unknown_68h != 0)
-            //{ }//no hit
-            //if (Unknown_70h != 0)
-            //{ }//no hit
-            //if (KeyframePropsCount1 != 10)
-            //{ }//no hit
-            //if (KeyframePropsCount2 != 10)
-            //{ }//no hit
-            //if (Unknown_624h != 0)
-            //{ }//no hit
-            //switch (Unknown_628h)
-            //{
-            //    case 0:
-            //    case 1:
-            //        break;
-            //    default:
-            //        break;//no hit
-            //}
-            //if (Unknown_62Ch != 0)
-            //{ }//no hit
-        }
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
-        {
-            // update structure data
-            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
-            this.Domain1Pointer = (ulong)(this.Domain1 != null ? this.Domain1.FilePosition : 0);
-            this.Domain2Pointer = (ulong)(this.Domain2 != null ? this.Domain2.FilePosition : 0);
-            this.Domain3Pointer = (ulong)(this.Domain3 != null ? this.Domain3.FilePosition : 0);
-            this.KeyframeProps2Pointer = (ulong)(this.KeyframeProps2 != null ? this.KeyframeProps2.FilePosition : 0);
-            //this.refcnt2 = (ushort)(this.refs != null ? this.refs.Count : 0);
-
-            // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.NamePointer);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Domain1Pointer);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Domain2Pointer);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Domain3Pointer);
-            writer.Write(this.Unknown_60h);
-            writer.Write(this.Unknown_68h);
-            writer.Write(this.Unknown_70h);
-            for (int i = 0; i < 10; i++)
-            {
-                writer.WriteBlock(this.KeyframeProps1[i]);
-            }
-            writer.Write(this.KeyframeProps2Pointer);
-            writer.Write(this.KeyframePropsCount1);
-            writer.Write(this.KeyframePropsCount2);
-            writer.Write(this.Unknown_624h);
-            writer.Write(this.Unknown_628h);
-            writer.Write(this.Unknown_62Ch);
-        }
-
-        public override IResourceBlock[] GetReferences()
-        {
-            var list = new List<IResourceBlock>();
-            if (Name != null) list.Add(Name);
-            if (Domain1 != null) list.Add(Domain1);
-            if (Domain2 != null) list.Add(Domain2);
-            if (Domain3 != null) list.Add(Domain3);
-            if (KeyframeProps2 != null) list.Add(KeyframeProps2);
-            return list.ToArray();
-        }
-
-        public override Tuple<long, IResourceBlock>[] GetParts()
-        {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(120, KeyframeProps1[0]),
-                new Tuple<long, IResourceBlock>(264, KeyframeProps1[1]),
-                new Tuple<long, IResourceBlock>(408, KeyframeProps1[2]),
-                new Tuple<long, IResourceBlock>(552, KeyframeProps1[3]),
-                new Tuple<long, IResourceBlock>(696, KeyframeProps1[4]),
-                new Tuple<long, IResourceBlock>(840, KeyframeProps1[5]),
-                new Tuple<long, IResourceBlock>(984, KeyframeProps1[6]),
-                new Tuple<long, IResourceBlock>(1128, KeyframeProps1[7]),
-                new Tuple<long, IResourceBlock>(1272, KeyframeProps1[8]),
-                new Tuple<long, IResourceBlock>(1416, KeyframeProps1[9]),
-            };
-        }
-
-        public override string ToString()
-        {
-            return Name?.ToString() ?? base.ToString();
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
     [TC(typeof(EXP))] public class ParticleUnknown1 : ResourceSystemBlock
     {
         public override long BlockLength => 0x40;
@@ -2741,7 +2191,7 @@ namespace CodeWalker.GameFiles
             return base.ToString();
         }
     }
-    
+
 
     [TC(typeof(EXP))] public class ParticleStringBlock : ResourceSystemBlock
     {
@@ -3011,7 +2461,7 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x30;
 
         // structure data
-        public ResourceSimpleList64<ParticleKeyframePropItem> Unknown_0h { get; set; }
+        public ResourceSimpleList64<ParticleKeyframePropValue> Unknown_0h { get; set; }
         public ulong Unknown_10h; // 0x0000000000000000
         public ulong Unknown_18h; // 0x0000000000000000
         public uint Unknown_20h { get; set; } // 0, 1, 2, 3, 4
@@ -3021,7 +2471,7 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadBlock<ResourceSimpleList64<ParticleKeyframePropItem>>();
+            this.Unknown_0h = reader.ReadBlock<ResourceSimpleList64<ParticleKeyframePropValue>>();
             this.Unknown_10h = reader.ReadUInt64();
             this.Unknown_18h = reader.ReadUInt64();
             this.Unknown_20h = reader.ReadUInt32();
@@ -3080,6 +2530,573 @@ namespace CodeWalker.GameFiles
 
 
 
+
+
+
+
+
+
+
+    [TC(typeof(EXP))] public class ParticleEmitterRule : ResourceSystemBlock
+    {
+        // pgBase
+        // pgBaseRefCounted
+        // ptxEmitterRule
+        public override long BlockLength => 0x630;
+
+        // structure data
+        public uint VFT { get; set; }
+        public uint Unknown_4h = 1; // 0x00000001
+        public ulong Unknown_8h; // 0x0000000000000000
+        public uint Unknown_10h { get; set; } // 2, 3, 4, 5, 6, 10, 21
+        public uint Unknown_14h; // 0x00000000
+        public float Unknown_18h { get; set; } = 4.1f; // 4.1f
+        public uint Unknown_1Ch; // 0x00000000
+        public ulong NamePointer { get; set; }
+        public ulong Unknown_28h; // 0x0000000000000000
+        public ulong Unknown_30h; // 0x0000000000000000
+        public ulong Domain1Pointer { get; set; }
+        public ulong Unknown_40h; // 0x0000000000000000
+        public ulong Domain2Pointer { get; set; }
+        public ulong Unknown_50h; // 0x0000000000000000
+        public ulong Domain3Pointer { get; set; }
+        public ulong Unknown_60h; // 0x0000000000000000
+        public ulong Unknown_68h; // 0x0000000000000000
+        public ulong Unknown_70h; // 0x0000000000000000
+        public ParticleKeyframeProp[] KeyframeProps1 { get; set; } = new ParticleKeyframeProp[10];
+        public ulong KeyframeProps2Pointer { get; set; }
+        public ushort KeyframePropsCount1 = 10; // 10
+        public ushort KeyframePropsCount2 = 10; // 10
+        public uint Unknown_624h; // 0x00000000
+        public uint Unknown_628h { get; set; } // 0, 1
+        public uint Unknown_62Ch; // 0x00000000
+
+        // reference data
+        public string_r Name { get; set; }
+        public ParticleDomain Domain1 { get; set; }
+        public ParticleDomain Domain2 { get; set; }
+        public ParticleDomain Domain3 { get; set; }
+        public ResourcePointerArray64<ParticleKeyframeProp> KeyframeProps2 { get; set; }
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.VFT = reader.ReadUInt32();
+            this.Unknown_4h = reader.ReadUInt32();
+            this.Unknown_8h = reader.ReadUInt64();
+            this.Unknown_10h = reader.ReadUInt32();
+            this.Unknown_14h = reader.ReadUInt32();
+            this.Unknown_18h = reader.ReadSingle();
+            this.Unknown_1Ch = reader.ReadUInt32();
+            this.NamePointer = reader.ReadUInt64();
+            this.Unknown_28h = reader.ReadUInt64();
+            this.Unknown_30h = reader.ReadUInt64();
+            this.Domain1Pointer = reader.ReadUInt64();
+            this.Unknown_40h = reader.ReadUInt64();
+            this.Domain2Pointer = reader.ReadUInt64();
+            this.Unknown_50h = reader.ReadUInt64();
+            this.Domain3Pointer = reader.ReadUInt64();
+            this.Unknown_60h = reader.ReadUInt64();
+            this.Unknown_68h = reader.ReadUInt64();
+            this.Unknown_70h = reader.ReadUInt64();
+            for (int i = 0; i < 10; i++)
+            {
+                this.KeyframeProps1[i] = reader.ReadBlock<ParticleKeyframeProp>();
+            }
+            this.KeyframeProps2Pointer = reader.ReadUInt64();
+            this.KeyframePropsCount1 = reader.ReadUInt16();
+            this.KeyframePropsCount2 = reader.ReadUInt16();
+            this.Unknown_624h = reader.ReadUInt32();
+            this.Unknown_628h = reader.ReadUInt32();
+            this.Unknown_62Ch = reader.ReadUInt32();
+
+            // read reference data
+            this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
+            this.Domain1 = reader.ReadBlockAt<ParticleDomain>(this.Domain1Pointer);
+            this.Domain2 = reader.ReadBlockAt<ParticleDomain>(this.Domain2Pointer);
+            this.Domain3 = reader.ReadBlockAt<ParticleDomain>(this.Domain3Pointer);
+            this.KeyframeProps2 = reader.ReadBlockAt<ResourcePointerArray64<ParticleKeyframeProp>>(this.KeyframeProps2Pointer, this.KeyframePropsCount2);
+
+
+            if (!string.IsNullOrEmpty(Name?.Value))
+            {
+                JenkIndex.Ensure(Name.Value);
+            }
+
+
+            //if (Unknown_4h != 1)
+            //{ }//no hit
+            //if (Unknown_8h != 0)
+            //{ }//no hit
+            //switch (Unknown_10h)
+            //{
+            //    case 3:
+            //    case 2:
+            //    case 4:
+            //    case 5:
+            //    case 10:
+            //    case 21:
+            //    case 6:
+            //        break;
+            //    default:
+            //        break;//no hit
+            //}
+            //if (Unknown_14h != 0)
+            //{ }//no hit
+            //if (Unknown_18h != 4.1f)
+            //{ }//no hit
+            //if (Unknown_1Ch != 0)
+            //{ }//no hit
+            //if (Unknown_28h != 0)
+            //{ }//no hit
+            //if (Unknown_30h != 0)
+            //{ }//no hit
+            //if (Unknown_40h != 0)
+            //{ }//no hit
+            //if (Unknown_50h != 0)
+            //{ }//no hit
+            //if (Unknown_60h != 0)
+            //{ }//no hit
+            //if (Unknown_68h != 0)
+            //{ }//no hit
+            //if (Unknown_70h != 0)
+            //{ }//no hit
+            //if (KeyframePropsCount1 != 10)
+            //{ }//no hit
+            //if (KeyframePropsCount2 != 10)
+            //{ }//no hit
+            //if (Unknown_624h != 0)
+            //{ }//no hit
+            //switch (Unknown_628h)
+            //{
+            //    case 0:
+            //    case 1:
+            //        break;
+            //    default:
+            //        break;//no hit
+            //}
+            //if (Unknown_62Ch != 0)
+            //{ }//no hit
+        }
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            // update structure data
+            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
+            this.Domain1Pointer = (ulong)(this.Domain1 != null ? this.Domain1.FilePosition : 0);
+            this.Domain2Pointer = (ulong)(this.Domain2 != null ? this.Domain2.FilePosition : 0);
+            this.Domain3Pointer = (ulong)(this.Domain3 != null ? this.Domain3.FilePosition : 0);
+            this.KeyframeProps2Pointer = (ulong)(this.KeyframeProps2 != null ? this.KeyframeProps2.FilePosition : 0);
+            //this.refcnt2 = (ushort)(this.refs != null ? this.refs.Count : 0);
+
+            // write structure data
+            writer.Write(this.VFT);
+            writer.Write(this.Unknown_4h);
+            writer.Write(this.Unknown_8h);
+            writer.Write(this.Unknown_10h);
+            writer.Write(this.Unknown_14h);
+            writer.Write(this.Unknown_18h);
+            writer.Write(this.Unknown_1Ch);
+            writer.Write(this.NamePointer);
+            writer.Write(this.Unknown_28h);
+            writer.Write(this.Unknown_30h);
+            writer.Write(this.Domain1Pointer);
+            writer.Write(this.Unknown_40h);
+            writer.Write(this.Domain2Pointer);
+            writer.Write(this.Unknown_50h);
+            writer.Write(this.Domain3Pointer);
+            writer.Write(this.Unknown_60h);
+            writer.Write(this.Unknown_68h);
+            writer.Write(this.Unknown_70h);
+            for (int i = 0; i < 10; i++)
+            {
+                writer.WriteBlock(this.KeyframeProps1[i]);
+            }
+            writer.Write(this.KeyframeProps2Pointer);
+            writer.Write(this.KeyframePropsCount1);
+            writer.Write(this.KeyframePropsCount2);
+            writer.Write(this.Unknown_624h);
+            writer.Write(this.Unknown_628h);
+            writer.Write(this.Unknown_62Ch);
+        }
+
+        public override IResourceBlock[] GetReferences()
+        {
+            var list = new List<IResourceBlock>();
+            if (Name != null) list.Add(Name);
+            if (Domain1 != null) list.Add(Domain1);
+            if (Domain2 != null) list.Add(Domain2);
+            if (Domain3 != null) list.Add(Domain3);
+            if (KeyframeProps2 != null) list.Add(KeyframeProps2);
+            return list.ToArray();
+        }
+
+        public override Tuple<long, IResourceBlock>[] GetParts()
+        {
+            return new Tuple<long, IResourceBlock>[] {
+                new Tuple<long, IResourceBlock>(120, KeyframeProps1[0]),
+                new Tuple<long, IResourceBlock>(264, KeyframeProps1[1]),
+                new Tuple<long, IResourceBlock>(408, KeyframeProps1[2]),
+                new Tuple<long, IResourceBlock>(552, KeyframeProps1[3]),
+                new Tuple<long, IResourceBlock>(696, KeyframeProps1[4]),
+                new Tuple<long, IResourceBlock>(840, KeyframeProps1[5]),
+                new Tuple<long, IResourceBlock>(984, KeyframeProps1[6]),
+                new Tuple<long, IResourceBlock>(1128, KeyframeProps1[7]),
+                new Tuple<long, IResourceBlock>(1272, KeyframeProps1[8]),
+                new Tuple<long, IResourceBlock>(1416, KeyframeProps1[9]),
+            };
+        }
+
+        public override string ToString()
+        {
+            return Name?.ToString() ?? base.ToString();
+        }
+    }
+
+
+
+
+
+
+
+
+    
+
+    [TC(typeof(EXP))] public class ParticleKeyframeProp : ResourceSystemBlock
+    {
+        // datBase
+        // ptxKeyframeProp
+        public override long BlockLength => 0x90;
+
+        // structure data
+        public uint VFT { get; set; }
+        public uint Unknown_4h = 1; // 0x00000001
+        public ulong Unknown_8h; // 0x0000000000000000
+        public ulong Unknown_10h; // 0x0000000000000000
+        public ulong Unknown_18h; // 0x0000000000000000
+        public ulong Unknown_20h; // 0x0000000000000000
+        public ulong Unknown_28h; // 0x0000000000000000
+        public ulong Unknown_30h; // 0x0000000000000000
+        public ulong Unknown_38h; // 0x0000000000000000
+        public ulong Unknown_40h; // 0x0000000000000000
+        public ulong Unknown_48h; // 0x0000000000000000
+        public ulong Unknown_50h; // 0x0000000000000000
+        public ulong Unknown_58h; // 0x0000000000000000
+        public ulong Unknown_60h; // 0x0000000000000000
+        public MetaHash Unknown_68h { get; set; } // name hash?
+        public uint Unknown_6Ch { get; set; }
+        public ResourceSimpleList64<ParticleKeyframePropValue> Values { get; set; }
+        public ulong Unknown_80h; // 0x0000000000000000
+        public ulong Unknown_88h; // 0x0000000000000000
+
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.VFT = reader.ReadUInt32();
+            this.Unknown_4h = reader.ReadUInt32();
+            this.Unknown_8h = reader.ReadUInt64();
+            this.Unknown_10h = reader.ReadUInt64();
+            this.Unknown_18h = reader.ReadUInt64();
+            this.Unknown_20h = reader.ReadUInt64();
+            this.Unknown_28h = reader.ReadUInt64();
+            this.Unknown_30h = reader.ReadUInt64();
+            this.Unknown_38h = reader.ReadUInt64();
+            this.Unknown_40h = reader.ReadUInt64();
+            this.Unknown_48h = reader.ReadUInt64();
+            this.Unknown_50h = reader.ReadUInt64();
+            this.Unknown_58h = reader.ReadUInt64();
+            this.Unknown_60h = reader.ReadUInt64();
+            this.Unknown_68h = reader.ReadUInt32();
+            this.Unknown_6Ch = reader.ReadUInt32();
+            this.Values = reader.ReadBlock<ResourceSimpleList64<ParticleKeyframePropValue>>();
+            this.Unknown_80h = reader.ReadUInt64();
+            this.Unknown_88h = reader.ReadUInt64();
+
+
+            //if (Unknown_4h != 1)
+            //{ }//no hit
+            //if (Unknown_8h != 0)
+            //{ }//no hit
+            //if (Unknown_10h != 0)
+            //{ }//no hit
+            //if (Unknown_18h != 0)
+            //{ }//no hit
+            //if (Unknown_20h != 0)
+            //{ }//no hit
+            //if (Unknown_28h != 0)
+            //{ }//no hit
+            //if (Unknown_30h != 0)
+            //{ }//no hit
+            //if (Unknown_38h != 0)
+            //{ }//no hit
+            //if (Unknown_40h != 0)
+            //{ }//no hit
+            //if (Unknown_48h != 0)
+            //{ }//no hit
+            //if (Unknown_50h != 0)
+            //{ }//no hit
+            //if (Unknown_58h != 0)
+            //{ }//no hit
+            //if (Unknown_60h != 0)
+            //{ }//no hit
+            switch (Unknown_68h) // name hash ..?
+            {
+                case 0x30e327d4: // 
+                case 0x412a554c: // 
+                case 0x1f641348: // 
+                case 0x3dc78098: // 
+                case 0xa67a1155: // 
+                case 0xd5c0fce5: // 
+                case 0xe7af1a2c: // 
+                case 0x7fae9df8: // 
+                case 0x60500691: // 
+                case 0x8306b23a: // 
+                case 0x1c256ba4: // 
+                case 0x351ed852: // 
+                case 0xf0274f77: //
+                case 0x687b4382: //
+                case 0x61532d47: //
+                case 0x686f965f: // 
+                case 0x2946e76f: //
+                case 0xd0ef73c5: // 
+                case 0x64c7fc25: // 
+                case 0x0aadcbef: // 
+                case 0xfb8eb4e6: // 
+                case 0xa7228870: // 
+                case 0xe5480b3b: // 
+                case 0xd7c1e22b: // 
+                case 0xce8e57a7: // 
+                case 0x34d6ded7: // 
+                case 0xff864d6c: // 
+                case 0x61c50318: // 
+                case 0xe00e5025: // 
+                case 0x9fc4652b: // 
+                case 0x60855078: // 
+                case 0xc9fe6abb: // 
+                case 0x4af0ffa1: // 
+                case 0xa83b53f0: // 
+                case 0xdd18b4f2: // 
+                case 0xe511bc23: // 
+                case 0xd2df1fa0: // 
+                case 0x45e377e9: // 
+                case 0x5e692d43: // 
+                case 0x1104051e: // 
+                case 0x841ab3da: // 
+                case 0x41d49131: // 
+                case 0x64c6c696: // 
+                case 0x13c0cac4: // 
+                case 0xe7d61ff7: // 
+                    break;
+                default:
+                    break;//and more...
+            }
+            switch (Unknown_6Ch)//some offset..?
+            {
+                case 0x00007a00:
+                case 0x00007b00:
+                case 0x00007c00:
+                case 0x00007d00:
+                case 0x00007e00:
+                case 0x00007f00:
+                case 0x00008000:
+                case 0x00008100:
+                case 0x00008200:
+                case 0x00008300:
+                case 0x0000e400:
+                case 0x0000e500:
+                case 0x0000e600:
+                case 0x0000e700:
+                case 0x0000e800:
+                case 0x0000e900:
+                case 0x0000ea00:
+                case 0x0000eb00:
+                case 0x0000ec00:
+                case 0x0000ed00:
+                case 0x0000ee00:
+                case 0x0000ef00:
+                case 0x0000f000:
+                case 0x0000f100:
+                case 0x0000f200:
+                case 0x0000f300:
+                case 0x0000f400:
+                case 0x00000600:
+                case 0x00000700:
+                case 0x00000800:
+                    break;
+                default:
+                    break;///and more......
+            }
+            //if (Unknown_80h != 0)
+            //{ }//no hit
+            //if (Unknown_88h != 0)
+            //{ }//no hit
+        }
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            // write structure data
+            writer.Write(this.VFT);
+            writer.Write(this.Unknown_4h);
+            writer.Write(this.Unknown_8h);
+            writer.Write(this.Unknown_10h);
+            writer.Write(this.Unknown_18h);
+            writer.Write(this.Unknown_20h);
+            writer.Write(this.Unknown_28h);
+            writer.Write(this.Unknown_30h);
+            writer.Write(this.Unknown_38h);
+            writer.Write(this.Unknown_40h);
+            writer.Write(this.Unknown_48h);
+            writer.Write(this.Unknown_50h);
+            writer.Write(this.Unknown_58h);
+            writer.Write(this.Unknown_60h);
+            writer.Write(this.Unknown_68h);
+            writer.Write(this.Unknown_6Ch);
+            writer.WriteBlock(this.Values);
+            writer.Write(this.Unknown_80h);
+            writer.Write(this.Unknown_88h);
+        }
+
+        public override Tuple<long, IResourceBlock>[] GetParts()
+        {
+            return new Tuple<long, IResourceBlock>[] {
+                new Tuple<long, IResourceBlock>(0x70, Values)
+            };
+        }
+
+        public override string ToString()
+        {
+            return Unknown_68h.ToString() + "( " + (Values?.data_items?.Length ?? 0).ToString() + " values)";
+        }
+    }
+
+
+    [TC(typeof(EXP))] public class ParticleKeyframePropValue : ResourceSystemBlock
+    {
+        public override long BlockLength => 0x20;
+
+        // structure data
+        public float Unknown_0h { get; set; }
+        public float Unknown_4h { get; set; }
+        public ulong Unknown_8h; // 0x0000000000000000
+        public float Unknown_10h { get; set; }
+        public float Unknown_14h { get; set; }
+        public float Unknown_18h { get; set; }
+        public float Unknown_1Ch { get; set; }
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.Unknown_0h = reader.ReadSingle();
+            this.Unknown_4h = reader.ReadSingle();
+            this.Unknown_8h = reader.ReadUInt64();
+            this.Unknown_10h = reader.ReadSingle();
+            this.Unknown_14h = reader.ReadSingle();
+            this.Unknown_18h = reader.ReadSingle();
+            this.Unknown_1Ch = reader.ReadSingle();
+
+            switch (Unknown_0h)
+            {
+                case 0:
+                case 1.0f:
+                case 0.6f:
+                case 0.010234f:
+                case 0.12f:
+                case 0.8f:
+                    break;
+                default:
+                    break; //and more..
+            }
+            switch (Unknown_4h)
+            {
+                case 0:
+                case 1.0f:
+                case 1.66666663f:
+                case 97.7135f:
+                case 8.333334f:
+                case 1.47058821f:
+                case 5.00000048f:
+                    break;
+                default:
+                    break; //and more...
+            }
+            //if (Unknown_8h != 0)
+            //{ }//no hit
+            switch (Unknown_10h)
+            {
+                case 0:
+                case 1.2f:
+                case 5.0f:
+                case 2.4f:
+                case 7.0f:
+                case 1.0f:
+                case 0.6f:
+                case 0.931395f:
+                case 0.45f:
+                case 0.55f:
+                case 0.5f:
+                    break;
+                default:
+                    break; //and more..
+            }
+            switch (Unknown_14h)
+            {
+                case 0:
+                case 1.2f:
+                case 5.0f:
+                case 2.4f:
+                case 7.0f:
+                case 1.0f:
+                case 0.6f:
+                case 0.73913f:
+                case 0.3f:
+                case 0.5f:
+                    break;
+                default:
+                    break; //and more...
+            }
+            switch (Unknown_18h)
+            {
+                case -0.8f:
+                case -0.5f:
+                case 0:
+                case 1.0f:
+                case 0.213439f:
+                case 4.000001f:
+                case 0.05f:
+                    break;
+                default:
+                    break; //and more...
+            }
+            switch (Unknown_1Ch)
+            {
+                case 0:
+                case 1.0f:
+                case 0.669767f:
+                case 0.945107f:
+                case 0.798588f:
+                case 0.03f:
+                case 0.6f:
+                    break;
+                default:
+                    break;// and more..
+            }
+        }
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            // write structure data
+            writer.Write(this.Unknown_0h);
+            writer.Write(this.Unknown_4h);
+            writer.Write(this.Unknown_8h);
+            writer.Write(this.Unknown_10h);
+            writer.Write(this.Unknown_14h);
+            writer.Write(this.Unknown_18h);
+            writer.Write(this.Unknown_1Ch);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}, {1}, {2}, {3}, {4}, {5}", Unknown_0h, Unknown_4h, Unknown_10h, Unknown_14h, Unknown_18h, Unknown_1Ch);
+        }
+    }
 
 
 
