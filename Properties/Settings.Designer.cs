@@ -746,5 +746,41 @@ namespace CodeWalker.Properties {
                 this["Deferred"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public float SnapRotationDegrees {
+            get {
+                return ((float)(this["SnapRotationDegrees"]));
+            }
+            set {
+                this["SnapRotationDegrees"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public float SnapGridSize {
+            get {
+                return ((float)(this["SnapGridSize"]));
+            }
+            set {
+                this["SnapGridSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool JumpListInitialised {
+            get {
+                return ((bool)(this["JumpListInitialised"]));
+            }
+            set {
+                this["JumpListInitialised"] = value;
+            }
+        }
     }
 }

@@ -4495,6 +4495,9 @@ namespace CodeWalker
             BoundsRangeTrackBar.Value = s.BoundsRange;
             ErrorConsoleCheckBox.Checked = s.ShowErrorConsole;
             StatusBarCheckBox.Checked = s.ShowStatusBar;
+            SnapGridSizeUpDown.Value = (decimal)s.SnapGridSize;
+            SetRotationSnapping(s.SnapRotationDegrees);
+            
 
             EnableModsCheckBox.Checked = s.EnableMods;
             DlcLevelComboBox.Text = s.DLC;
@@ -4530,6 +4533,9 @@ namespace CodeWalker
             s.BoundsRange = BoundsRangeTrackBar.Value;
             s.ShowErrorConsole = ErrorConsoleCheckBox.Checked;
             s.ShowStatusBar = StatusBarCheckBox.Checked;
+            s.SnapRotationDegrees = (float)SnapAngleUpDown.Value;
+            s.SnapGridSize = (float)SnapGridSizeUpDown.Value;
+
 
             //additional settings from gamefilecache...
             s.EnableMods = gameFileCache.EnableMods;
