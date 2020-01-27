@@ -7,6 +7,7 @@ using System.IO;
 using System.Windows.Forms;
 using CodeWalker.Properties;
 using Microsoft.Win32;
+using CodeWalker.GameFiles;
 
 namespace CodeWalker
 {
@@ -155,5 +156,14 @@ namespace CodeWalker
         }
 
         public static string AutoDetectFolder() => AutoDetectFolder(out string _);
+
+        public static void UpdateSettings()
+        {
+            if (string.IsNullOrEmpty(Settings.Default.Key) && (GTA5Keys.PC_AES_KEY != null))
+            {
+                Settings.Default.Key = Convert.ToBase64String(GTA5Keys.PC_AES_KEY);
+                Settings.Default.Save();
+            }
+        }
     }
 }

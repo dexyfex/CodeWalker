@@ -894,7 +894,7 @@
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </None>
@@ -915,6 +915,9 @@
     <None Include="README.md" />
     <None Include="Resources\CW.ico" />
     <None Include="Resources\CW16.ico" />
+    <Content Include="Resources\CWPeds.ico" />
+    <Content Include="Resources\CWRPFExplorer.ico" />
+    <Content Include="Resources\CWVehicles.ico" />
     <Content Include="Todo.txt" />
   </ItemGroup>
   <ItemGroup>
