@@ -2451,8 +2451,8 @@ namespace CodeWalker
                     }
                     if (fnamel.EndsWith(".rbf.xml"))
                     {
-                        MessageBox.Show(fname + ": RBF XML import not yet supported.", "Cannot import XML");
-                        continue;
+                        mformat = MetaFormat.RBF;
+                        trimlength = 8;
                     }
                     if (fnamel.EndsWith(".rel.xml"))
                     {
@@ -2498,6 +2498,7 @@ namespace CodeWalker
                     fname = fname.Substring(0, fname.Length - trimlength);
                     fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
                     fpathin = fpathin.Substring(0, fpathin.Length - trimlength);
+                    fpathin = Path.Combine(Path.GetDirectoryName(fpathin), Path.GetFileNameWithoutExtension(fpathin));
 
                     var doc = new XmlDocument();
                     string text = File.ReadAllText(fpath);

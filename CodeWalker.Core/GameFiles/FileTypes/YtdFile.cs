@@ -69,20 +69,9 @@ namespace CodeWalker.GameFiles
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(XmlHeader);
 
-            var ddsfolder = outputFolder;
-            if (!string.IsNullOrEmpty(ddsfolder))
-            {
-                ddsfolder = Path.Combine(outputFolder, ytd.Name);
-
-                if (!Directory.Exists(ddsfolder))
-                {
-                    Directory.CreateDirectory(ddsfolder);
-                }
-            }
-
             if (ytd?.TextureDict != null)
             {
-                TextureDictionary.WriteXmlNode(ytd.TextureDict, sb, 0, ddsfolder);
+                TextureDictionary.WriteXmlNode(ytd.TextureDict, sb, 0, outputFolder);
             }
 
             return sb.ToString();

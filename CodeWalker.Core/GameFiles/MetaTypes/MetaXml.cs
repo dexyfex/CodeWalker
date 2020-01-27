@@ -16,6 +16,12 @@ namespace CodeWalker.GameFiles
         {
             var fn = e.Name;
             var fnl = fn.ToLowerInvariant();
+
+            if (!string.IsNullOrEmpty(outputfolder))
+            {
+                outputfolder = Path.Combine(outputfolder, e.GetShortName());
+            }
+
             if (fnl.EndsWith(".ymt"))
             {
                 YmtFile ymt = RpfFile.GetFile<YmtFile>(e, data);
