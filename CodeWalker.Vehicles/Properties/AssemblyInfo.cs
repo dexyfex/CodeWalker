@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CodeWalker Error Report Tool")]
+[assembly: AssemblyTitle("CodeWalker Vehicle Viewer")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("CodeWalker.ErrorReport")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyProduct("CodeWalker.Vehicles")]
+[assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("47a2c383-99b4-4447-94d9-0685e6d7e2da")]
+[assembly: Guid("b0646a59-11c9-4061-b4ce-b8f18bda708d")]
 
 // Version information for an assembly consists of the following four values:
 //
