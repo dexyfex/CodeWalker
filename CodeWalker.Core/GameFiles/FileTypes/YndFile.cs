@@ -105,7 +105,6 @@ namespace CodeWalker.GameFiles
 
             BuildBVH();
 
-
             Loaded = true;
             LoadQueued = true;
         }
@@ -648,27 +647,60 @@ namespace CodeWalker.GameFiles
         public YndJunction Junction { get; set; }
         public bool HasJunction;
 
-        // Known types, non exhaustive:
+
+        // Flag0 Properties
         /// <summary>
-        /// Normal                      = 0, Most nodes
-        /// ParkingSpace?               = 1, Only 4 on the map as far as I can see. Probably useless.
-        /// PedCrossRoad                = 10, Any pedestrian crossing where vehicles have priority. Traffic light crossings etc.
+        /// A node being "disabled" does not mean that a vehicle will not travel through it.
+        /// Vehicles seem to use some sort of line-of-sight type system. I'm unsure what
+        /// the actual implementation is at this time.
+        /// </summary>
+        public bool IsDisabled { get { return (this.Flags0.Value & 1) > 0; } }
+
+        // Flag1 Properties
+        /// <summary>
+        /// Special type is the last 5 bits in Flags1. I cannot see a flag pattern here.
+        /// I suspect this to be an enum. Especially since this attribute appears as an int
+        /// in the XML file
+        /// 
+        /// Known Special Types:
+        /// Normal                      = 0,    Most nodes
+        /// ParkingSpace?               = 2,    Only 4 on the map as far as I can see. Probably useless.
+        /// PedCrossRoad                = 10,   Any pedestrian crossing where vehicles have priority. Traffic light crossings etc.
         /// PedNode                     = 14,
         /// TrafficLightStopNode        = 15, 
         /// StopJunctionNode            = 16, 
-        /// Caution (Slow Down)?        = 17, Appears before barriers, and merges
-        /// PedCrossRoadWithPriority?   = 18, Appears in off-road crossings
-        /// RestrictedAccess?           = 19, Appears in the airport entrance, the airbase, and the road where the house falls down. Probably to stop all nav.
-        /// OffRoadJunctionNode?        = 20  Appears on a junction node with more than one edge where there is an off-road connection.
+        /// Caution (Slow Down)?        = 17,   Appears before barriers, and merges
+        /// PedCrossRoadWithPriority?   = 18,   Appears in off-road crossings
+        /// RestrictedAccess?           = 19,   Appears in the airport entrance, the airbase, and the road where the house falls down. Probably to stop all nav.
+        /// OffRoadJunctionNode?        = 20    Appears on a junction node with more than one edge where there is an off-road connection.
         /// </summary>
-        public int Special
-        {
-            get
-            {
-                return _RawData.Flags1.Value >> 3;
-            }
-        }
+        public int Special { get { return this.Flags1.Value >> 3; } }
 
+        // Flag2 Properties
+        public bool GpsDisabled { get { return (this.Flags2.Value & 1) > 0; } }
+        public bool IsHighwayNode { get { return (RawData.Flags2.Value & 64) == 64; } }
+
+        // Flag3 Properties
+        public bool IsTunnel { get { return (this.Flags3 & 1) > 0; } }
+
+        /// <summary>
+        /// The heuristic value takes up the rest of Flags3.
+        /// It is a 7 bit integer, ranging from 0 to 127
+        /// For each node edge, it seems to add the ABS(FLOOR(targetPos - sourcePos)).
+        /// This is not 100% accurate however. You'll see perfect accuracy in
+        /// single lane roads, like alleys.
+        /// </summary>
+        public int HeuristicValue { get { return this.Flags3.Value >> 1; } }
+
+        // Flag4 Properties
+        /// <summary>
+        /// The first 4 bits of Flag4 is the density of the node. This ranges from 0 to 15.
+        /// </summary>
+        public int Density {get { return this.Flags4.Value & 15; } } 
+
+        /// <summary>
+        /// If Special is 10, 14 or 18 this is a ped node. There may be more Special types out there.
+        /// </summary>
         public bool IsPedNode
         {
             get
@@ -678,9 +710,6 @@ namespace CodeWalker.GameFiles
                        || Special == 18;
             }
         }
-
-
-
 
         public void Init(YndFile ynd, Node node)
         {
