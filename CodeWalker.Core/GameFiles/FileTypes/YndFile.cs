@@ -686,9 +686,9 @@ namespace CodeWalker.GameFiles
         /// <summary>
         /// The heuristic value takes up the rest of Flags3.
         /// It is a 7 bit integer, ranging from 0 to 127
-        /// For each node edge, it seems to add the ABS(FLOOR(targetPos - sourcePos)).
-        /// This is not 100% accurate however. You'll see perfect accuracy in
-        /// single lane roads, like alleys.
+        /// For each node edge, it seems to add the ABS(FLOOR(DISTANCE(vTargetPos, vSourcePos))).
+        /// This is not 100% accurate with road merges etc (as is the nature of heuristics).
+        /// You'll see perfect accuracy in single lane roads, like alleys.
         /// </summary>
         public int HeuristicValue { get { return this.Flags3.Value >> 1; } }
 
