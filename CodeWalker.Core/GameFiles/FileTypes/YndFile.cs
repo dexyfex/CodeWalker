@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -620,6 +621,13 @@ namespace CodeWalker.GameFiles
         }
     }
 
+    public enum YndNodeSpeed
+    {
+        Slow = 0,
+        Normal = 1,
+        Fast = 2,
+        Faster = 3
+    }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class YndNode : BasePathNode
     {
@@ -647,24 +655,26 @@ namespace CodeWalker.GameFiles
         public YndJunction Junction { get; set; }
         public bool HasJunction;
 
+        // LinkCountUnk Properties
 
-        // Flag0 Properties
         /// <summary>
-        /// A node being "disabled" does not mean that a vehicle will not travel through it.
-        /// I'm unsure of the reason for this atm
-        /// It's consistent with disabling nodes via natives.
+        /// Road Speed. Valid values:
+        /// 0: Slow
+        /// 1: Normal
+        /// 2: Fast
+        /// 3: Faster
         /// </summary>
-        public bool IsDisabled { get { return (this.Flags0.Value & 1) > 0; } }
+        public YndNodeSpeed Speed { get { return (YndNodeSpeed)(this.LinkCountUnk >> 1); } }
+
+        //// Flag0 Properties
         public bool OffRoad { get { return (this.Flags0.Value & 8) > 0; } }
-
-        /// <summary>
-        /// Not 100% on this one. Add a question mark.
-        /// </summary>
         public bool NoBigVehicles { get { return (this.Flags0.Value & 32) > 0; } }
         public bool CannotGoLeft { get { return (this.Flags0.Value & 128) > 0; } }
 
         // Flag1 Properties
         public bool LeftTurnOnly { get { return (this.Flags1 & 1) > 0; } }
+        public bool KeepLeft { get { return (this.Flags1 & 2) > 0; } }
+        public bool KeepRight { get { return (this.Flags1 & 3) > 0; } }
 
         /// <summary>
         /// Special type is the last 5 bits in Flags1. I cannot see a flag pattern here.
@@ -688,6 +698,11 @@ namespace CodeWalker.GameFiles
         // Flag2 Properties
         public bool GpsDisabled { get { return (this.Flags2.Value & 1) > 0; } }
         public bool IsHighwayNode { get { return (RawData.Flags2.Value & 64) == 64; } }
+        /// <summary>
+        /// A node being "disabled" does not mean that a vehicle will not travel through it.
+        /// </summary>
+        public bool IsDisabledUnk0 { get { return (this.Flags2.Value & 128) > 0; } }
+        public bool IsDisabledUnk1 { get { return (this.Flags2.Value & 16) > 0; } }
 
         // Flag3 Properties
         public bool IsTunnel { get { return (this.Flags3 & 1) > 0; } }
