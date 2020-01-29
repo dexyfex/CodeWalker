@@ -651,8 +651,8 @@ namespace CodeWalker.GameFiles
         // Flag0 Properties
         /// <summary>
         /// A node being "disabled" does not mean that a vehicle will not travel through it.
-        /// Vehicles seem to use some sort of line-of-sight type system. I'm unsure what
-        /// the actual implementation is at this time.
+        /// I'm unsure of the reason for this atm
+        /// It's consistent with disabling nodes via natives.
         /// </summary>
         public bool IsDisabled { get { return (this.Flags0.Value & 1) > 0; } }
         public bool OffRoad { get { return (this.Flags0.Value & 8) > 0; } }
