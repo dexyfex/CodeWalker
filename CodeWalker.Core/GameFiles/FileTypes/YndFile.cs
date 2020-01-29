@@ -655,8 +655,17 @@ namespace CodeWalker.GameFiles
         /// the actual implementation is at this time.
         /// </summary>
         public bool IsDisabled { get { return (this.Flags0.Value & 1) > 0; } }
+        public bool OffRoad { get { return (this.Flags0.Value & 8) > 0; } }
+
+        /// <summary>
+        /// Not 100% on this one. Add a question mark.
+        /// </summary>
+        public bool NoBigVehicles { get { return (this.Flags0.Value & 32) > 0; } }
+        public bool CannotGoLeft { get { return (this.Flags0.Value & 128) > 0; } }
 
         // Flag1 Properties
+        public bool LeftTurnOnly { get { return (this.Flags1 & 1) > 0; } }
+
         /// <summary>
         /// Special type is the last 5 bits in Flags1. I cannot see a flag pattern here.
         /// I suspect this to be an enum. Especially since this attribute appears as an int
