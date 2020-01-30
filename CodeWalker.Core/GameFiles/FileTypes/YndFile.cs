@@ -667,14 +667,14 @@ namespace CodeWalker.GameFiles
         public YndNodeSpeed Speed { get { return (YndNodeSpeed)(this.LinkCountUnk >> 1); } }
 
         //// Flag0 Properties
-        public bool OffRoad { get { return (this.Flags0.Value & 8) > 0; } }
-        public bool NoBigVehicles { get { return (this.Flags0.Value & 32) > 0; } }
-        public bool CannotGoLeft { get { return (this.Flags0.Value & 128) > 0; } }
+        public bool OffRoad { get { return (Flags0.Value & 8) > 0; } }
+        public bool NoBigVehicles { get { return (Flags0.Value & 32) > 0; } }
+        public bool CannotGoLeft { get { return (Flags0.Value & 128) > 0; } }
 
         // Flag1 Properties
-        public bool LeftTurnOnly { get { return (this.Flags1 & 1) > 0; } }
-        public bool KeepLeft { get { return (this.Flags1 & 2) > 0; } }
-        public bool KeepRight { get { return (this.Flags1 & 3) > 0; } }
+        public bool LeftTurnOnly { get { return (Flags1 & 1) > 0; } }
+        public bool KeepLeft { get { return (Flags1 & 2) > 0; } }
+        public bool KeepRight { get { return (Flags1 & 3) > 0; } }
 
         /// <summary>
         /// Special type is the last 5 bits in Flags1. I cannot see a flag pattern here.
@@ -693,19 +693,19 @@ namespace CodeWalker.GameFiles
         /// RestrictedAccess?           = 19,   Appears in the airport entrance, the airbase, and the road where the house falls down. Probably to stop all nav.
         /// OffRoadJunctionNode?        = 20    Appears on a junction node with more than one edge where there is an off-road connection.
         /// </summary>
-        public int Special { get { return this.Flags1.Value >> 3; } }
+        public int Special { get { return Flags1.Value >> 3; } }
 
         // Flag2 Properties
-        public bool GpsDisabled { get { return (this.Flags2.Value & 1) > 0; } }
+        public bool GpsDisabled { get { return (Flags2.Value & 1) > 0; } }
         public bool IsHighwayNode { get { return (RawData.Flags2.Value & 64) == 64; } }
         /// <summary>
         /// A node being "disabled" does not mean that a vehicle will not travel through it.
         /// </summary>
-        public bool IsDisabledUnk0 { get { return (this.Flags2.Value & 128) > 0; } }
-        public bool IsDisabledUnk1 { get { return (this.Flags2.Value & 16) > 0; } }
+        public bool IsDisabledUnk0 { get { return (Flags2.Value & 128) > 0; } }
+        public bool IsDisabledUnk1 { get { return (Flags2.Value & 16) > 0; } }
 
         // Flag3 Properties
-        public bool IsTunnel { get { return (this.Flags3 & 1) > 0; } }
+        public bool IsTunnel { get { return (Flags3 & 1) > 0; } }
 
         /// <summary>
         /// The heuristic value takes up the rest of Flags3.
@@ -714,13 +714,13 @@ namespace CodeWalker.GameFiles
         /// This is not 100% accurate with road merges etc (as is the nature of heuristics).
         /// You'll see perfect accuracy in single lane roads, like alleys.
         /// </summary>
-        public int HeuristicValue { get { return this.Flags3.Value >> 1; } }
+        public int HeuristicValue { get { return Flags3.Value >> 1; } }
 
         // Flag4 Properties
         /// <summary>
         /// The first 4 bits of Flag4 is the density of the node. This ranges from 0 to 15.
         /// </summary>
-        public int Density {get { return this.Flags4.Value & 15; } } 
+        public int Density {get { return Flags4.Value & 15; } } 
 
         /// <summary>
         /// If Special is 10, 14 or 18 this is a ped node. There may be more Special types out there.
@@ -980,7 +980,10 @@ namespace CodeWalker.GameFiles
         public int OffsetValue { get { return (Flags1.Value >> 4) & 7; } }
         public bool NegativeOffset { get { return (Flags1.Value >> 7) > 0; } }
         public float LaneOffset { get { return (OffsetValue / 7.0f) * (NegativeOffset ? -0.5f : 0.5f); } }
-
+        public bool GpsBothWays { get { return (Flags0 & 1) > 0; } }
+        public bool NarrowRoad { get { return (Flags1 & 2) > 0; } }
+        public bool DontUseForNavigation { get { return (Flags2 & 1) > 0; } }
+        public bool Shortcut { get { return (Flags2 & 2) > 0; } }
 
         public void Init(YndFile ynd, YndNode node1, YndNode node2, NodeLink link)
         {
