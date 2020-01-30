@@ -693,7 +693,7 @@ namespace CodeWalker.GameFiles
 
         // Flag2 Properties
         public bool GpsDisabled { get { return (Flags2.Value & 1) > 0; } }
-        public bool IsHighwayNode { get { return (RawData.Flags2.Value & 64) == 64; } }
+        public bool IsHighwayNode { get { return (RawData.Flags2.Value & 64) > 0; } }
         /// <summary>
         /// A node being "disabled" does not mean that a vehicle will not travel through it.
         /// </summary>
