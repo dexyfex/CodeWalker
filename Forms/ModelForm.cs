@@ -1042,7 +1042,7 @@ namespace CodeWalker.Forms
                 {
                     items.Add(kvp);
                 }
-                //items.Sort((a, b) => { return a.Value?.Name?.CompareTo(b.Value?.Name ?? "") ?? 0; });
+                items.Sort((a, b) => { return ((MetaHash)a.Key).ToCleanString().CompareTo(((MetaHash)b.Key).ToCleanString()); });
                 foreach (var kvp in items)
                 {
                     AddDrawableTreeNode(kvp.Value, kvp.Key, check);

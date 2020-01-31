@@ -4655,6 +4655,57 @@ namespace CodeWalker.GameFiles
             writer.Write(this.DrawablesCount2);
             writer.Write(this.Unknown_3Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            if (Drawables?.data_items != null)
+            {
+                for (int i=0; i< Drawables.data_items.Length; i++)
+                {
+                    var d = Drawables.data_items[i];
+                    var h = (MetaHash)((i < (Hashes?.Length ?? 0)) ? Hashes[i] : 0);
+                    YddXml.OpenTag(sb, indent, "Item");
+                    YddXml.StringTag(sb, indent + 1, "Name", YddXml.XmlEscape(h.ToCleanString()));
+                    d.WriteXml(sb, indent + 1, ddsfolder);
+                    YddXml.CloseTag(sb, indent, "Item");
+                }
+            }
+        }
+        public void ReadXml(XmlNode node, string ddsfolder)
+        {
+            var drawables = new List<DrawableBase>();
+            var drawablehashes = new List<uint>();
+
+            var inodes = node.SelectNodes("Item");
+            if (inodes != null)
+            {
+                foreach (XmlNode inode in inodes)
+                {
+                    var h = XmlMeta.GetHash(Xml.GetChildInnerText(inode, "Name"));
+                    var d = new DrawableBase();
+                    d.ReadXml(inode, ddsfolder);
+                    drawables.Add(d);
+                    drawablehashes.Add(h);
+                }
+            }
+
+            Hashes = drawablehashes.ToArray();
+            Drawables = new ResourcePointerArray64<DrawableBase>();
+            Drawables.data_items = drawables.ToArray();
+        }
+        public static void WriteXmlNode(DrawableBaseDictionary d, StringBuilder sb, int indent, string ddsfolder, string name = "DrawableDictionary")
+        {
+            if (d == null) return;
+            YddXml.OpenTag(sb, indent, name);
+            d.WriteXml(sb, indent + 1, ddsfolder);
+            YddXml.CloseTag(sb, indent, name);
+        }
+        public static DrawableBaseDictionary ReadXmlNode(XmlNode node, string ddsfolder)
+        {
+            if (node == null) return null;
+            var d = new DrawableBaseDictionary();
+            d.ReadXml(node, ddsfolder);
+            return d;
+        }
 
         public override IResourceBlock[] GetReferences()
         {
