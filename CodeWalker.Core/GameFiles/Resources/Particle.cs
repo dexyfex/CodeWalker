@@ -129,11 +129,65 @@ namespace CodeWalker.GameFiles
         }
         public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
         {
-            //TODO
+            YptXml.StringTag(sb, indent, "Name", YptXml.XmlEscape(Name?.Value ?? ""));
+            if (EffectRuleDictionary != null)
+            {
+                YptXml.OpenTag(sb, indent, "EffectRuleDictionary");
+                EffectRuleDictionary.WriteXml(sb, indent + 1);
+                YptXml.CloseTag(sb, indent, "EffectRuleDictionary");
+            }
+            if (EmitterRuleDictionary != null)
+            {
+                YptXml.OpenTag(sb, indent, "EmitterRuleDictionary");
+                EmitterRuleDictionary.WriteXml(sb, indent + 1);
+                YptXml.CloseTag(sb, indent, "EmitterRuleDictionary");
+            }
+            if (ParticleRuleDictionary != null)
+            {
+                YptXml.OpenTag(sb, indent, "ParticleRuleDictionary");
+                ParticleRuleDictionary.WriteXml(sb, indent + 1, ddsfolder);
+                YptXml.CloseTag(sb, indent, "ParticleRuleDictionary");
+            }
+            if (DrawableDictionary != null)
+            {
+                DrawableBaseDictionary.WriteXmlNode(DrawableDictionary, sb, indent, ddsfolder, "DrawableDictionary");
+            }
+            if (TextureDictionary != null)
+            {
+                TextureDictionary.WriteXmlNode(TextureDictionary, sb, indent, ddsfolder, "TextureDictionary");
+            }
         }
         public void ReadXml(XmlNode node, string ddsfolder)
         {
-            //TODO
+            Name = (string_r)Xml.GetChildInnerText(node, "Name");
+            var efnode = node.SelectSingleNode("EffectRuleDictionary");
+            if (efnode != null)
+            {
+                EffectRuleDictionary = new ParticleEffectRuleDictionary();
+                EffectRuleDictionary.ReadXml(efnode);
+            }
+            var emnode = node.SelectSingleNode("EmitterRuleDictionary");
+            if (emnode != null)
+            {
+                EmitterRuleDictionary = new ParticleEmitterRuleDictionary();
+                EmitterRuleDictionary.ReadXml(emnode);
+            }
+            var ptnode = node.SelectSingleNode("ParticleRuleDictionary");
+            if (ptnode != null)
+            {
+                ParticleRuleDictionary = new ParticleRuleDictionary();
+                ParticleRuleDictionary.ReadXml(ptnode, ddsfolder);
+            }
+            var dnode = node.SelectSingleNode("DrawableDictionary");
+            if (dnode != null)
+            {
+                DrawableDictionary = DrawableBaseDictionary.ReadXmlNode(dnode, ddsfolder);
+            }
+            var tnode = node.SelectSingleNode("TextureDictionary");
+            if (tnode != null)
+            {
+                TextureDictionary = TextureDictionary.ReadXmlNode(tnode, ddsfolder);
+            }
         }
         public static void WriteXmlNode(ParticleEffectsList p, StringBuilder sb, int indent, string ddsfolder, string name = "ParticleEffectsList")
         {
@@ -172,7 +226,7 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x40;
 
         // structure data
-        public MetaHash VFT { get; set; }
+        public uint VFT { get; set; }
         public uint Unknown_4h = 1; // 0x00000001
         public ulong Unknown_8h; // 0x0000000000000000
         public ulong Unknown_10h; // 0x0000000000000000
@@ -213,6 +267,46 @@ namespace CodeWalker.GameFiles
             writer.WriteBlock(this.ParticleRuleNameHashes);
             writer.WriteBlock(this.ParticleRules);
         }
+        public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            if (ParticleRules?.data_items != null)
+            {
+                var rules = ParticleRules.data_items.ToList();
+                rules.Sort((a, b) => { return a.Name?.Value?.CompareTo(b.Name?.Value) ?? ((b.Name?.Value != null) ? 1 : 0); });
+                foreach (var r in rules)
+                {
+                    YptXml.OpenTag(sb, indent, "Item");
+                    r.WriteXml(sb, indent + 1, ddsfolder);
+                    YptXml.CloseTag(sb, indent, "Item");
+                }
+            }
+        }
+        public void ReadXml(XmlNode node, string ddsfolder)
+        {
+            var rules = new List<ParticleRule>();
+            var hashes = new List<MetaHash>();
+
+            var inodes = node.SelectNodes("Item");
+            if (inodes != null)
+            {
+                foreach (XmlNode inode in inodes)
+                {
+                    var r = new ParticleRule();
+                    r.ReadXml(inode, ddsfolder);
+                    rules.Add(r);
+                }
+            }
+            rules.Sort((a, b) => { return a.NameHash.Hash.CompareTo(b.NameHash.Hash); });
+            foreach (var r in rules)
+            {
+                hashes.Add(r.NameHash);
+            }
+
+            ParticleRuleNameHashes = new ResourceSimpleList64_s<MetaHash>();
+            ParticleRuleNameHashes.data_items = hashes.ToArray();
+            ParticleRules = new ResourcePointerList64<ParticleRule>();
+            ParticleRules.data_items = rules.ToArray();
+        }
 
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
@@ -232,7 +326,7 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x40;
 
         // structure data
-        public MetaHash VFT { get; set; }
+        public uint VFT { get; set; }
         public uint Unknown_4h = 1; // 0x00000001
         public ulong Unknown_8h; // 0x0000000000000000
         public ulong Unknown_10h; // 0x0000000000000000
@@ -271,6 +365,46 @@ namespace CodeWalker.GameFiles
             writer.WriteBlock(this.EffectRuleNameHashes);
             writer.WriteBlock(this.EffectRules);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            if (EffectRules?.data_items != null)
+            {
+                var rules = EffectRules.data_items.ToList();
+                rules.Sort((a, b) => { return a.Name?.Value?.CompareTo(b.Name?.Value) ?? ((b.Name?.Value != null) ? 1 : 0); });
+                foreach (var r in rules)
+                {
+                    YptXml.OpenTag(sb, indent, "Item");
+                    r.WriteXml(sb, indent + 1);
+                    YptXml.CloseTag(sb, indent, "Item");
+                }
+            }
+        }
+        public void ReadXml(XmlNode node)
+        {
+            var rules = new List<ParticleEffectRule>();
+            var hashes = new List<MetaHash>();
+
+            var inodes = node.SelectNodes("Item");
+            if (inodes != null)
+            {
+                foreach (XmlNode inode in inodes)
+                {
+                    var r = new ParticleEffectRule();
+                    r.ReadXml(inode);
+                    rules.Add(r);
+                }
+            }
+            rules.Sort((a, b) => { return a.NameHash.Hash.CompareTo(b.NameHash.Hash); });
+            foreach (var r in rules)
+            {
+                hashes.Add(r.NameHash);
+            }
+
+            EffectRuleNameHashes = new ResourceSimpleList64_s<MetaHash>();
+            EffectRuleNameHashes.data_items = hashes.ToArray();
+            EffectRules = new ResourcePointerList64<ParticleEffectRule>();
+            EffectRules.data_items = rules.ToArray();
+        }
 
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
@@ -290,7 +424,7 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x40;
 
         // structure data
-        public MetaHash VFT { get; set; }
+        public uint VFT { get; set; }
         public uint Unknown_4h = 1; // 0x00000001
         public ulong Unknown_8h; // 0x0000000000000000
         public ulong Unknown_10h; // 0x0000000000000000
@@ -332,6 +466,46 @@ namespace CodeWalker.GameFiles
             writer.WriteBlock(this.EmitterRuleNameHashes);
             writer.WriteBlock(this.EmitterRules);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            if (EmitterRules?.data_items != null)
+            {
+                var rules = EmitterRules.data_items.ToList();
+                rules.Sort((a, b) => { return a.Name?.Value?.CompareTo(b.Name?.Value) ?? ((b.Name?.Value != null) ? 1 : 0); });
+                foreach (var r in rules)
+                {
+                    YptXml.OpenTag(sb, indent, "Item");
+                    r.WriteXml(sb, indent + 1);
+                    YptXml.CloseTag(sb, indent, "Item");
+                }
+            }
+        }
+        public void ReadXml(XmlNode node)
+        {
+            var rules = new List<ParticleEmitterRule>();
+            var hashes = new List<MetaHash>();
+
+            var inodes = node.SelectNodes("Item");
+            if (inodes != null)
+            {
+                foreach (XmlNode inode in inodes)
+                {
+                    var r = new ParticleEmitterRule();
+                    r.ReadXml(inode);
+                    rules.Add(r);
+                }
+            }
+            rules.Sort((a, b) => { return a.NameHash.Hash.CompareTo(b.NameHash.Hash); });
+            foreach (var r in rules)
+            {
+                hashes.Add(r.NameHash);
+            }
+
+            EmitterRuleNameHashes = new ResourceSimpleList64_s<MetaHash>();
+            EmitterRuleNameHashes.data_items = hashes.ToArray();
+            EmitterRules = new ResourcePointerList64<ParticleEmitterRule>();
+            EmitterRules.data_items = rules.ToArray();
+        }
 
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
@@ -368,7 +542,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_100h { get; set; }  // 0, 1, 2
         public uint Unknown_104h { get; set; }  // 0, 1, 7
         public uint Unknown_108h { get; set; }  // 0, 1, 2
-        public uint Unknown_10Ch { get; set; }
+        public uint Unknown_10Ch { get; set; }  // eg. 0x00010100
         public uint Unknown_110h; // 0x00000000
         public float Unknown_114h { get; set; } = 1.0f;
         public uint Unknown_118h { get; set; } //index/id
@@ -387,8 +561,8 @@ namespace CodeWalker.GameFiles
         public ulong Unknown_1A8h; // 0x0000000000000000
         public uint VFT2 { get; set; } = 0x40605c50; // 0x40605c50, 0x40607c70
         public uint Unknown_1B4h = 1; // 0x00000001
-        public ulong String1Pointer { get; set; }
-        public ulong String2Pointer { get; set; }
+        public ulong FxcFilePointer { get; set; }
+        public ulong FxcTechniquePointer { get; set; }
         public ulong Unknown_1C8h; // 0x0000000000000000
         public uint Unknown_1D0h { get; set; } //index/id
         public uint Unknown_1D4h; // 0x00000000
@@ -396,14 +570,14 @@ namespace CodeWalker.GameFiles
         public uint Unknown_1DCh = 1; // 0x00000001
         public uint Unknown_1E0h { get; set; }  // 0, 4
         public uint Unknown_1E4h { get; set; }  // 0, 1
-        public uint Unknown_1E8h { get; set; }
+        public uint Unknown_1E8h { get; set; }  // eg. 0x00000101
         public uint Unknown_1ECh { get; set; }  // 0, 1
         public ResourcePointerList64<ParticleShaderVar> ShaderVars { get; set; }
         public ulong Unknown_200h = 1; // 0x0000000000000001
-        public MetaHash FxcFile { get; set; } // ptfx_sprite, ptfx_trail
+        public MetaHash FxcFileHash { get; set; } // ptfx_sprite, ptfx_trail
         public uint Unknown_20Ch; // 0x00000000
         public ResourceSimpleList64<ParticleDrawable> Drawables { get; set; }
-        public uint Unknown_220h { get; set; }
+        public uint Unknown_220h { get; set; }  // eg. 0x00000202
         public uint Unknown_224h; // 0x00000000
         public ulong Unknown_228h; // 0x0000000000000000
         public ulong Unknown_230h; // 0x0000000000000000
@@ -411,8 +585,9 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public string_r Name { get; set; }
-        public string_r String1 { get; set; }
-        public string_r String2 { get; set; }
+        public MetaHash NameHash { get; set; }
+        public string_r FxcFile { get; set; } // ptfx_sprite, ptfx_trail
+        public string_r FxcTechnique { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -449,8 +624,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_1A8h = reader.ReadUInt64();
             this.VFT2 = reader.ReadUInt32();
             this.Unknown_1B4h = reader.ReadUInt32();
-            this.String1Pointer = reader.ReadUInt64();
-            this.String2Pointer = reader.ReadUInt64();
+            this.FxcFilePointer = reader.ReadUInt64();
+            this.FxcTechniquePointer = reader.ReadUInt64();
             this.Unknown_1C8h = reader.ReadUInt64();
             this.Unknown_1D0h = reader.ReadUInt32();
             this.Unknown_1D4h = reader.ReadUInt32();
@@ -462,7 +637,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_1ECh = reader.ReadUInt32();
             this.ShaderVars = reader.ReadBlock<ResourcePointerList64<ParticleShaderVar>>();
             this.Unknown_200h = reader.ReadUInt64();
-            this.FxcFile = reader.ReadUInt32();
+            this.FxcFileHash = reader.ReadUInt32();
             this.Unknown_20Ch = reader.ReadUInt32();
             this.Drawables = reader.ReadBlock<ResourceSimpleList64<ParticleDrawable>>();
             this.Unknown_220h = reader.ReadUInt32();
@@ -473,8 +648,8 @@ namespace CodeWalker.GameFiles
 
             // read reference data
             this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
-            this.String1 = reader.ReadBlockAt<string_r>(this.String1Pointer);
-            this.String2 = reader.ReadBlockAt<string_r>(this.String2Pointer);
+            this.FxcFile = reader.ReadBlockAt<string_r>(this.FxcFilePointer);
+            this.FxcTechnique = reader.ReadBlockAt<string_r>(this.FxcTechniquePointer);
 
             #endregion
 
@@ -635,7 +810,7 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
             //if (Unknown_1A8h != 0)
             //{ }//no hit
-            //switch (VFTx3)
+            //switch (VFT2)
             //{
             //    case 0x40605c50:
             //    case 0x40607c70:
@@ -671,7 +846,7 @@ namespace CodeWalker.GameFiles
             //}
             //if (Unknown_1D4h != 0)
             //{ }//no hit
-            //switch (VFTx4)
+            //switch (VFT3)
             //{
             //    case 0x40605b48:
             //    case 0x40607b68:
@@ -720,7 +895,7 @@ namespace CodeWalker.GameFiles
             //}
             //if (Unknown_200h != 1)
             //{ }//no hit
-            //switch (FxcFile) // .fxc shader file name
+            //switch (FxcFileHash) // .fxc shader file name
             //{
             //    case 0x0eb0d762: // ptfx_sprite
             //    case 0xe7b0585f: // ptfx_trail
@@ -728,7 +903,7 @@ namespace CodeWalker.GameFiles
             //    default:
             //        break;//no hit
             //}
-            //if (FxcFile != JenkHash.GenHash(String1?.ToString() ?? ""))
+            //if (FxcFileHash != JenkHash.GenHash(FxcFile?.ToString() ?? ""))
             //{ }//no hit
             //if (Unknown_20Ch != 0)
             //{ }//no hit
@@ -762,8 +937,8 @@ namespace CodeWalker.GameFiles
         {
             // update structure data
             this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
-            this.String1Pointer = (ulong)(this.String1 != null ? this.String1.FilePosition : 0);
-            this.String2Pointer = (ulong)(this.String2 != null ? this.String2.FilePosition : 0);
+            this.FxcFilePointer = (ulong)(this.FxcFile != null ? this.FxcFile.FilePosition : 0);
+            this.FxcTechniquePointer = (ulong)(this.FxcTechnique != null ? this.FxcTechnique.FilePosition : 0);
 
             // write structure data
             writer.Write(this.VFT);
@@ -796,8 +971,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_1A8h);
             writer.Write(this.VFT2);
             writer.Write(this.Unknown_1B4h);
-            writer.Write(this.String1Pointer);
-            writer.Write(this.String2Pointer);
+            writer.Write(this.FxcFilePointer);
+            writer.Write(this.FxcTechniquePointer);
             writer.Write(this.Unknown_1C8h);
             writer.Write(this.Unknown_1D0h);
             writer.Write(this.Unknown_1D4h);
@@ -809,7 +984,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_1ECh);
             writer.WriteBlock(this.ShaderVars);
             writer.Write(this.Unknown_200h);
-            writer.Write(this.FxcFile);
+            writer.Write(this.FxcFileHash);
             writer.Write(this.Unknown_20Ch);
             writer.WriteBlock(this.Drawables);
             writer.Write(this.Unknown_220h);
@@ -818,13 +993,169 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_230h);
             writer.Write(this.Unknown_238h);
         }
+        public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            YptXml.StringTag(sb, indent, "Name", YptXml.XmlEscape(Name?.Value ?? ""));
+            YptXml.StringTag(sb, indent, "FxcFile", YptXml.XmlEscape(FxcFile?.Value ?? ""));
+            YptXml.StringTag(sb, indent, "FxcTechnique", YptXml.XmlEscape(FxcTechnique?.Value ?? ""));
+            YptXml.ValueTag(sb, indent, "Unknown10", Unknown_10h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown100", Unknown_100h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown104", Unknown_104h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown108", Unknown_108h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown10C", Unknown_10Ch.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown118", Unknown_118h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown11C", Unknown_11Ch.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown1D0", Unknown_1D0h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown1E0", Unknown_1E0h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown1E4", Unknown_1E4h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown1E8", Unknown_1E8h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown1EC", Unknown_1ECh.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown220", Unknown_220h.ToString());
+            if (Spawner1 != null)
+            {
+                YptXml.OpenTag(sb, indent, "Spawner1");
+                Spawner1.WriteXml(sb, indent + 1);
+                YptXml.CloseTag(sb, indent, "Spawner1");
+            }
+            if (Spawner2 != null)
+            {
+                YptXml.OpenTag(sb, indent, "Spawner2");
+                Spawner2.WriteXml(sb, indent + 1);
+                YptXml.CloseTag(sb, indent, "Spawner2");
+            }
+            if (BehaviourList1?.data_items?.Length > 0)
+            {
+                YptXml.WriteItemArray(sb, BehaviourList1.data_items, indent, "BehaviourList1");
+            }
+            if (BehaviourList2?.data_items?.Length > 0)
+            {
+                YptXml.WriteItemArray(sb, BehaviourList2.data_items, indent, "BehaviourList2");
+            }
+            if (BehaviourList3?.data_items?.Length > 0)
+            {
+                YptXml.WriteItemArray(sb, BehaviourList3.data_items, indent, "BehaviourList3");
+            }
+            if (BehaviourList4?.data_items?.Length > 0)
+            {
+                YptXml.WriteItemArray(sb, BehaviourList4.data_items, indent, "BehaviourList4");
+            }
+            if (BehaviourList5?.data_items?.Length > 0)
+            {
+                YptXml.WriteItemArray(sb, BehaviourList5.data_items, indent, "BehaviourList5");
+            }
+            if (UnknownList1?.data_items?.Length > 0)
+            {
+                YptXml.WriteItemArray(sb, UnknownList1.data_items, indent, "UnknownList1");
+            }
+            if (ShaderVars?.data_items?.Length > 0)
+            {
+                YptXml.WriteItemArray(sb, ShaderVars.data_items, indent, "ShaderVars");
+            }
+            if (Drawables?.data_items?.Length > 0)
+            {
+                YptXml.WriteItemArray(sb, Drawables.data_items, indent, "Drawables");
+            }
+        }
+        public void ReadXml(XmlNode node, string ddsfolder)
+        {
+            Name = (string_r)Xml.GetChildInnerText(node, "Name"); if (Name.Value == null) Name = null;
+            NameHash = JenkHash.GenHash(Name?.Value ?? "");
+            FxcFile = (string_r)Xml.GetChildInnerText(node, "FxcFile"); if (FxcFile.Value == null) FxcFile = null;
+            FxcTechnique = (string_r)Xml.GetChildInnerText(node, "FxcTechnique"); if (FxcTechnique.Value == null) FxcTechnique = null;
+            Unknown_10h = Xml.GetChildUIntAttribute(node, "Unknown10");
+            Unknown_100h = Xml.GetChildUIntAttribute(node, "Unknown100");
+            Unknown_104h = Xml.GetChildUIntAttribute(node, "Unknown104");
+            Unknown_108h = Xml.GetChildUIntAttribute(node, "Unknown108");
+            Unknown_10Ch = Xml.GetChildUIntAttribute(node, "Unknown10C");
+            Unknown_118h = Xml.GetChildUIntAttribute(node, "Unknown118");
+            Unknown_11Ch = Xml.GetChildUIntAttribute(node, "Unknown11C");
+            Unknown_1D0h = Xml.GetChildUIntAttribute(node, "Unknown1D0");
+            Unknown_1E0h = Xml.GetChildUIntAttribute(node, "Unknown1E0");
+            Unknown_1E4h = Xml.GetChildUIntAttribute(node, "Unknown1E4");
+            Unknown_1E8h = Xml.GetChildUIntAttribute(node, "Unknown1E8");
+            Unknown_1ECh = Xml.GetChildUIntAttribute(node, "Unknown1EC");
+            Unknown_220h = Xml.GetChildUIntAttribute(node, "Unknown220");
+            Spawner1 = new ParticleEffectSpawner();
+            Spawner1.ReadXml(node.SelectSingleNode("Spawner1"));
+            Spawner2 = new ParticleEffectSpawner();
+            Spawner2.ReadXml(node.SelectSingleNode("Spawner2"));
+
+
+            ResourcePointerList64<ParticleBehaviour> readBehaviours(string name)
+            {
+                var beh = new ResourcePointerList64<ParticleBehaviour>();
+                var bnode = node.SelectSingleNode(name);
+                if (bnode != null)
+                {
+                    var inodes = bnode.SelectNodes("Item");
+                    if (inodes?.Count > 0)
+                    {
+                        var blist = new List<ParticleBehaviour>();
+                        foreach (XmlNode inode in inodes)
+                        {
+                            var typestr = Xml.GetChildStringAttribute(inode, "Type");
+                            var type = Xml.GetEnumValue<ParticleBehaviourType>(typestr);
+                            var b = ParticleBehaviour.Create(type);
+                            if (b != null)
+                            {
+                                b.ReadXml(inode);
+                            }
+                            blist.Add(b);
+                        }
+                        beh.data_items = blist.ToArray();
+                    }
+                }
+                return beh;
+            }
+            BehaviourList1 = readBehaviours("BehaviourList1");
+            BehaviourList2 = readBehaviours("BehaviourList2");
+            BehaviourList3 = readBehaviours("BehaviourList3");
+            BehaviourList4 = readBehaviours("BehaviourList4");
+            BehaviourList5 = readBehaviours("BehaviourList5");
+
+            UnknownList1 = new ResourceSimpleList64<ParticleRuleUnknownItem>();
+            UnknownList1.data_items = XmlMeta.ReadItemArrayNullable<ParticleRuleUnknownItem>(node, "UnknownList1");
+
+
+            ResourcePointerList64<ParticleShaderVar> readShaderVars(string name)
+            {
+                var sha = new ResourcePointerList64<ParticleShaderVar>();
+                var snode = node.SelectSingleNode(name);
+                if (snode != null)
+                {
+                    var inodes = snode.SelectNodes("Item");
+                    if (inodes?.Count > 0)
+                    {
+                        var slist = new List<ParticleShaderVar>();
+                        foreach (XmlNode inode in inodes)
+                        {
+                            var typestr = Xml.GetChildStringAttribute(inode, "Type");
+                            var type = Xml.GetEnumValue<ParticleShaderVarType>(typestr);
+                            var s = ParticleShaderVar.Create(type);
+                            if (s != null)
+                            {
+                                s.ReadXml(inode);
+                            }
+                            slist.Add(s);
+                        }
+                        sha.data_items = slist.ToArray();
+                    }
+                }
+                return sha;
+            }
+            ShaderVars = readShaderVars("ShaderVars");
+
+
+            Drawables = new ResourceSimpleList64<ParticleDrawable>();
+            Drawables.data_items = XmlMeta.ReadItemArrayNullable<ParticleDrawable>(node, "Drawables");
+        }
 
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
             if (Name != null) list.Add(Name);
-            if (String1 != null) list.Add(String1);
-            if (String2 != null) list.Add(String2);
+            if (FxcFile != null) list.Add(FxcFile);
+            if (FxcTechnique != null) list.Add(FxcTechnique);
             return list.ToArray();
         }
 
@@ -851,7 +1182,7 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TC(typeof(EXP))] public class ParticleRuleUnknownItem : ResourceSystemBlock
+    [TC(typeof(EXP))] public class ParticleRuleUnknownItem : ResourceSystemBlock, IMetaXmlItem
     {
         public override long BlockLength => 0x58;
 
@@ -919,7 +1250,6 @@ namespace CodeWalker.GameFiles
             //if (Unknown_54h != 0)
             //{ }//no hit
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
@@ -931,6 +1261,19 @@ namespace CodeWalker.GameFiles
             writer.WriteBlock(this.Unknown_40h);
             writer.Write(this.Unknown_50h);
             writer.Write(this.Unknown_54h);
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YptXml.StringTag(sb, indent, "Name", YptXml.XmlEscape(Name.ToString()));
+            YptXml.ValueTag(sb, indent, "Unknown50", Unknown_50h.ToString());
+            YptXml.WriteHashItemArray(sb, Unknown_40h?.data_items, indent, "Unknown40");
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Name = new PsoChar32(Xml.GetChildInnerText(node, "Name"));
+            Unknown_50h = Xml.GetChildUIntAttribute(node, "Unknown50");
+            Unknown_40h = new ResourceSimpleList64_s<MetaHash>();
+            Unknown_40h.data_items = XmlMeta.ReadHashItemArray(node, "Unknown40");
         }
 
         public override Tuple<long, IResourceBlock>[] GetParts()
@@ -945,6 +1288,7 @@ namespace CodeWalker.GameFiles
             var n = Name.ToString();
             return (!string.IsNullOrEmpty(n)) ? n : base.ToString();
         }
+
     }
 
 
@@ -1209,6 +1553,43 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_68h);
             writer.Write(this.Unknown_6Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YptXml.StringTag(sb, indent, "String1", YptXml.XmlEscape(String1?.Value ?? ""));
+            YptXml.ValueTag(sb, indent, "Unknown18", FloatUtil.ToString(Unknown_18h));
+            YptXml.ValueTag(sb, indent, "Unknown1C", FloatUtil.ToString(Unknown_1Ch));
+            YptXml.ValueTag(sb, indent, "Unknown20", Unknown_20h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown24", FloatUtil.ToString(Unknown_24h));
+            YptXml.ValueTag(sb, indent, "Unknown28", Unknown_28h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown38", FloatUtil.ToString(Unknown_38h));
+            YptXml.ValueTag(sb, indent, "Unknown3C", FloatUtil.ToString(Unknown_3Ch));
+            YptXml.ValueTag(sb, indent, "Unknown40", Unknown_40h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown44", FloatUtil.ToString(Unknown_44h));
+            YptXml.ValueTag(sb, indent, "Unknown48", Unknown_48h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown68", FloatUtil.ToString(Unknown_68h));
+            YptXml.ValueTag(sb, indent, "Unknown6C", Unknown_6Ch.ToString());
+            YptXml.StringTag(sb, indent, "EffectRule", EffectRule?.Name?.Value ?? "");
+        }
+        public void ReadXml(XmlNode node)
+        {
+            String1 = (string_r)Xml.GetChildInnerText(node, "String1"); if (String1.Value == null) String1 = null;
+            Unknown_18h = Xml.GetChildFloatAttribute(node, "Unknown18");
+            Unknown_1Ch = Xml.GetChildFloatAttribute(node, "Unknown1C");
+            Unknown_20h = Xml.GetChildUIntAttribute(node, "Unknown20");
+            Unknown_24h = Xml.GetChildFloatAttribute(node, "Unknown24");
+            Unknown_28h = Xml.GetChildUIntAttribute(node, "Unknown28");
+            Unknown_38h = Xml.GetChildFloatAttribute(node, "Unknown38");
+            Unknown_3Ch = Xml.GetChildFloatAttribute(node, "Unknown3C");
+            Unknown_40h = Xml.GetChildUIntAttribute(node, "Unknown40");
+            Unknown_44h = Xml.GetChildFloatAttribute(node, "Unknown44");
+            Unknown_48h = Xml.GetChildUIntAttribute(node, "Unknown48");
+            Unknown_68h = Xml.GetChildFloatAttribute(node, "Unknown68");
+            Unknown_6Ch = Xml.GetChildUIntAttribute(node, "Unknown6C");
+            var ername = Xml.GetChildInnerText(node, "EffectRule");
+            if (!string.IsNullOrEmpty(ername))
+            {
+            }
+        }
 
 
         public override IResourceBlock[] GetReferences()
@@ -1227,7 +1608,7 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TC(typeof(EXP))] public class ParticleDrawable : ResourceSystemBlock
+    [TC(typeof(EXP))] public class ParticleDrawable : ResourceSystemBlock, IMetaXmlItem
     {
         public override long BlockLength => 0x30;
 
@@ -1236,9 +1617,9 @@ namespace CodeWalker.GameFiles
         public float Unknown_4h { get; set; }
         public float Unknown_8h { get; set; }
         public float Unknown_Ch { get; set; }
-        public ulong String1Pointer { get; set; }
+        public ulong NamePointer { get; set; }
         public ulong DrawablePointer { get; set; }
-        public MetaHash Unknown_20h { get; set; }
+        public MetaHash NameHash { get; set; }
         public uint Unknown_24h { get; set; } // 0x00000000
         public ulong Unknown_28h; // 0x0000000000000000
 
@@ -1253,14 +1634,14 @@ namespace CodeWalker.GameFiles
             this.Unknown_4h = reader.ReadSingle();
             this.Unknown_8h = reader.ReadSingle();
             this.Unknown_Ch = reader.ReadSingle();
-            this.String1Pointer = reader.ReadUInt64();
+            this.NamePointer = reader.ReadUInt64();
             this.DrawablePointer = reader.ReadUInt64();
-            this.Unknown_20h = reader.ReadUInt32();
+            this.NameHash = reader.ReadUInt32();
             this.Unknown_24h = reader.ReadUInt32();
             this.Unknown_28h = reader.ReadUInt64();
 
             // read reference data
-            this.Name = reader.ReadBlockAt<string_r>(this.String1Pointer);
+            this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
             this.Drawable = reader.ReadBlockAt<DrawableBase>(this.DrawablePointer);
 
             if (!string.IsNullOrEmpty(Name?.Value))
@@ -1304,8 +1685,8 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            //if (Unknown_20h != JenkHash.GenHash(String1?.Value ?? ""))
-            //{ }//no hit
+            if (NameHash != JenkHash.GenHash(Name?.Value ?? ""))
+            { }//no hit
             //if (Unknown_24h != 0)
             //{ }//no hit
             //if (Unknown_28h != 0)
@@ -1314,7 +1695,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.String1Pointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
+            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
             this.DrawablePointer = (ulong)(this.Drawable != null ? this.Drawable.FilePosition : 0);
 
             // write structure data
@@ -1322,11 +1703,31 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_4h);
             writer.Write(this.Unknown_8h);
             writer.Write(this.Unknown_Ch);
-            writer.Write(this.String1Pointer);
+            writer.Write(this.NamePointer);
             writer.Write(this.DrawablePointer);
-            writer.Write(this.Unknown_20h);
+            writer.Write(this.NameHash);
             writer.Write(this.Unknown_24h);
             writer.Write(this.Unknown_28h);
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YptXml.StringTag(sb, indent, "Name", YptXml.XmlEscape(Name?.Value ?? ""));
+            YptXml.ValueTag(sb, indent, "Unknown0", FloatUtil.ToString(Unknown_0h));
+            YptXml.ValueTag(sb, indent, "Unknown4", FloatUtil.ToString(Unknown_4h));
+            YptXml.ValueTag(sb, indent, "Unknown8", FloatUtil.ToString(Unknown_8h));
+            YptXml.ValueTag(sb, indent, "UnknownC", FloatUtil.ToString(Unknown_Ch));
+            if (Drawable != null)
+            {
+            }
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Name = (string_r)Xml.GetChildInnerText(node, "Name"); if (Name.Value == null) Name = null;
+            NameHash = JenkHash.GenHash(Name?.Value ?? "");
+            Unknown_0h = Xml.GetChildFloatAttribute(node, "Unknown0");
+            Unknown_4h = Xml.GetChildFloatAttribute(node, "Unknown4");
+            Unknown_8h = Xml.GetChildFloatAttribute(node, "Unknown8");
+            Unknown_Ch = Xml.GetChildFloatAttribute(node, "UnknownC");
         }
 
         public override IResourceBlock[] GetReferences()
@@ -1340,9 +1741,10 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             if (!string.IsNullOrEmpty(Name?.Value)) return Name.Value;
-            if (Unknown_20h != 0) return Unknown_20h.ToString();
+            if (NameHash != 0) return NameHash.ToString();
             return base.ToString();
         }
+
     }
 
 
@@ -1374,7 +1776,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_34h = 1; // 0x00000001
         public ulong EventEmittersPointer { get; set; }
         public ushort EventEmittersCount1 { get; set; }
-        public ushort EventEmittersCount2 { get; set; }
+        public ushort EventEmittersCount2 { get; set; } = 32; //always 32
         public uint Unknown_44h; // 0x00000000
         public ulong UnknownData1Pointer { get; set; }
         public uint Unknown_50h { get; set; } // 0, 0xffffffff
@@ -1394,7 +1796,7 @@ namespace CodeWalker.GameFiles
         public float Unknown_90h { get; set; }
         public float Unknown_94h { get; set; }
         public float Unknown_98h { get; set; }
-        public uint Unknown_9Ch { get; set; } // 0x7f800001
+        public uint Unknown_9Ch { get; set; } = 0x7f800001;// 0x7f800001
         public float Unknown_A0h { get; set; }
         public float Unknown_A4h { get; set; }
         public float Unknown_A8h { get; set; }
@@ -1408,9 +1810,9 @@ namespace CodeWalker.GameFiles
         public ParticleKeyframeProp KeyframeProp2 { get; set; }
         public ParticleKeyframeProp KeyframeProp3 { get; set; }
         public ParticleKeyframeProp KeyframeProp4 { get; set; }
-        public ulong KeyframePropsPointer { get; set; }
-        public ushort KeyframePropsCount1 { get; set; }
-        public ushort KeyframePropsCount2 { get; set; }
+        public ulong KeyframePropsPointer { get; set; } //pointer to a list, which is pointing back to above items
+        public ushort KeyframePropsCount1 { get; set; } = 5; //always 5
+        public ushort KeyframePropsCount2 { get; set; } = 16; //always 16
         public uint Unknown_39Ch; // 0x00000000
         public uint Unknown_3A0h { get; set; } // eg. 0x00090100
         public uint Unknown_3A4h; // 0x00000000
@@ -1421,9 +1823,10 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public string_r Name { get; set; }
+        public MetaHash NameHash { get; set; }
         public ResourcePointerArray64<ParticleEventEmitter> EventEmitters { get; set; }
         public ParticleUnknown1 UnknownData { get; set; }
-        public ResourcePointerArray64<ParticleKeyframeProp> KeyframeProps { get; set; }
+        public ResourcePointerArray64<ParticleKeyframeProp> KeyframeProps { get; set; } // these just point to the 5x embedded KeyframeProps, padded to 16 items
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -1492,7 +1895,7 @@ namespace CodeWalker.GameFiles
             this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
             this.EventEmitters = reader.ReadBlockAt<ResourcePointerArray64<ParticleEventEmitter>>(this.EventEmittersPointer, this.EventEmittersCount1);
             this.UnknownData = reader.ReadBlockAt<ParticleUnknown1>(this.UnknownData1Pointer);
-            this.KeyframeProps = reader.ReadBlockAt<ResourcePointerArray64<ParticleKeyframeProp>>(this.KeyframePropsPointer, this.KeyframePropsCount2);
+            this.KeyframeProps = reader.ReadBlockAt<ResourcePointerArray64<ParticleKeyframeProp>>(this.KeyframePropsPointer, this.KeyframePropsCount1);
 
             #endregion
 
@@ -1502,7 +1905,12 @@ namespace CodeWalker.GameFiles
                 JenkIndex.Ensure(Name.Value);
             }
 
-
+            //if (EventEmittersCount2 != 32)
+            //{ }//no hit
+            //if (KeyframePropsCount2 != 16)
+            //{ }//no hit
+            //if (KeyframePropsCount1 != 5)
+            //{ }//no hit
 
             //if (Unknown_4h != 1)
             //{ }//no hit
@@ -1801,10 +2209,19 @@ namespace CodeWalker.GameFiles
             // update structure data
             this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
             this.EventEmittersPointer = (ulong)(this.EventEmitters != null ? this.EventEmitters.FilePosition : 0);
-            //this.c3b = (ushort)(this.p3data != null ? this.p3data.Count : 0);
             this.UnknownData1Pointer = (ulong)(this.UnknownData != null ? this.UnknownData.FilePosition : 0);
             this.KeyframePropsPointer = (ulong)(this.KeyframeProps != null ? this.KeyframeProps.FilePosition : 0);
-            //this.refcnt2 = (ushort)(this.refs != null ? this.refs.Count : 0);
+
+            if (KeyframeProps?.data_items != null)
+            {
+                var kfplist = new List<ulong>();
+                foreach (var kf in KeyframeProps?.data_items)
+                {
+                    kfplist.Add((ulong)kf.FilePosition);//manually write pointers for this
+                }
+                for (int i = kfplist.Count; i < 16; i++) kfplist.Add(0);
+                KeyframeProps.data_pointers = kfplist.ToArray();
+            }
 
             // write structure data
             writer.Write(this.VFT);
@@ -1864,6 +2281,97 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_3B0h);
             writer.Write(this.Unknown_3B8h);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YptXml.StringTag(sb, indent, "Name", YptXml.XmlEscape(Name?.Value ?? ""));
+            YptXml.ValueTag(sb, indent, "Unknown50", Unknown_50h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown54", Unknown_54h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown70", FloatUtil.ToString(Unknown_70h));
+            YptXml.ValueTag(sb, indent, "Unknown74", FloatUtil.ToString(Unknown_74h));
+            YptXml.ValueTag(sb, indent, "Unknown78", FloatUtil.ToString(Unknown_78h));
+            YptXml.ValueTag(sb, indent, "Unknown7C", FloatUtil.ToString(Unknown_7Ch));
+            YptXml.ValueTag(sb, indent, "Unknown80", FloatUtil.ToString(Unknown_80h));
+            YptXml.ValueTag(sb, indent, "Unknown84", FloatUtil.ToString(Unknown_84h));
+            YptXml.ValueTag(sb, indent, "Unknown88", Unknown_88h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown8C", Unknown_8Ch.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown90", FloatUtil.ToString(Unknown_90h));
+            YptXml.ValueTag(sb, indent, "Unknown94", FloatUtil.ToString(Unknown_94h));
+            YptXml.ValueTag(sb, indent, "Unknown98", FloatUtil.ToString(Unknown_98h));
+            YptXml.ValueTag(sb, indent, "UnknownA0", FloatUtil.ToString(Unknown_A0h));
+            YptXml.ValueTag(sb, indent, "UnknownA4", FloatUtil.ToString(Unknown_A4h));
+            YptXml.ValueTag(sb, indent, "UnknownA8", FloatUtil.ToString(Unknown_A8h));
+            YptXml.ValueTag(sb, indent, "UnknownAC", FloatUtil.ToString(Unknown_ACh));
+            YptXml.ValueTag(sb, indent, "UnknownB0", FloatUtil.ToString(Unknown_B0h));
+            YptXml.ValueTag(sb, indent, "UnknownB4", FloatUtil.ToString(Unknown_B4h));
+            YptXml.ValueTag(sb, indent, "UnknownB8", FloatUtil.ToString(Unknown_B8h));
+            YptXml.ValueTag(sb, indent, "UnknownBC", Unknown_BCh.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown3A0", Unknown_3A0h.ToString());
+            if (EventEmitters?.data_items != null)
+            {
+                YptXml.WriteItemArray(sb, EventEmitters.data_items, indent, "EventEmitters");
+            }
+            if (KeyframeProps?.data_items != null)
+            {
+                YptXml.WriteItemArray(sb, KeyframeProps.data_items, indent, "KeyframeProperties");
+            }
+            if (UnknownData != null)
+            {
+                YptXml.OpenTag(sb, indent, "UnknownData");
+                UnknownData.WriteXml(sb, indent + 1);
+                YptXml.CloseTag(sb, indent, "UnknownData");
+            }
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Name = (string_r)Xml.GetChildInnerText(node, "Name"); if (Name.Value == null) Name = null;
+            NameHash = JenkHash.GenHash(Name?.Value ?? "");
+            Unknown_50h = Xml.GetChildUIntAttribute(node, "Unknown50");
+            Unknown_54h = Xml.GetChildUIntAttribute(node, "Unknown54");
+            Unknown_70h = Xml.GetChildFloatAttribute(node, "Unknown70");
+            Unknown_74h = Xml.GetChildFloatAttribute(node, "Unknown74");
+            Unknown_78h = Xml.GetChildFloatAttribute(node, "Unknown78");
+            Unknown_7Ch = Xml.GetChildFloatAttribute(node, "Unknown7C");
+            Unknown_80h = Xml.GetChildFloatAttribute(node, "Unknown80");
+            Unknown_84h = Xml.GetChildFloatAttribute(node, "Unknown84");
+            Unknown_88h = Xml.GetChildUIntAttribute(node, "Unknown88");
+            Unknown_8Ch = Xml.GetChildUIntAttribute(node, "Unknown8C");
+            Unknown_90h = Xml.GetChildFloatAttribute(node, "Unknown90");
+            Unknown_94h = Xml.GetChildFloatAttribute(node, "Unknown94");
+            Unknown_98h = Xml.GetChildFloatAttribute(node, "Unknown98");
+            Unknown_A0h = Xml.GetChildFloatAttribute(node, "UnknownA0");
+            Unknown_A4h = Xml.GetChildFloatAttribute(node, "UnknownA4");
+            Unknown_A8h = Xml.GetChildFloatAttribute(node, "UnknownA8");
+            Unknown_ACh = Xml.GetChildFloatAttribute(node, "UnknownAC");
+            Unknown_B0h = Xml.GetChildFloatAttribute(node, "UnknownB0");
+            Unknown_B4h = Xml.GetChildFloatAttribute(node, "UnknownB4");
+            Unknown_B8h = Xml.GetChildFloatAttribute(node, "UnknownB8");
+            Unknown_BCh = Xml.GetChildUIntAttribute(node, "UnknownBC");
+            Unknown_3A0h = Xml.GetChildUIntAttribute(node, "Unknown3A0");
+
+            var emlist = XmlMeta.ReadItemArray<ParticleEventEmitter>(node, "EventEmitters")?.ToList() ?? new List<ParticleEventEmitter>();
+            EventEmittersCount1 = (ushort)emlist.Count;
+            for (int i = emlist.Count; i < 32; i++) emlist.Add(null);
+            EventEmitters = new ResourcePointerArray64<ParticleEventEmitter>();
+            EventEmitters.data_items = emlist.ToArray();
+
+            var kflist = XmlMeta.ReadItemArray<ParticleKeyframeProp>(node, "KeyframeProperties")?.ToList() ?? new List<ParticleKeyframeProp>();
+            KeyframeProp0 = (kflist.Count > 0) ? kflist[0] : new ParticleKeyframeProp();
+            KeyframeProp1 = (kflist.Count > 1) ? kflist[1] : new ParticleKeyframeProp();
+            KeyframeProp2 = (kflist.Count > 2) ? kflist[2] : new ParticleKeyframeProp();
+            KeyframeProp3 = (kflist.Count > 3) ? kflist[3] : new ParticleKeyframeProp();
+            KeyframeProp4 = (kflist.Count > 4) ? kflist[4] : new ParticleKeyframeProp();
+            KeyframeProps = new ResourcePointerArray64<ParticleKeyframeProp>();
+            KeyframeProps.data_items = kflist.ToArray();
+            KeyframePropsCount1 = 5;//this should always be 5.......
+
+            var udnode = node.SelectSingleNode("UnknownData");
+            if (udnode != null)
+            {
+                UnknownData = new ParticleUnknown1();
+                UnknownData.ReadXml(udnode);
+            }
+
+        }
 
         public override IResourceBlock[] GetReferences()
         {
@@ -1871,7 +2379,11 @@ namespace CodeWalker.GameFiles
             if (Name != null) list.Add(Name);
             if (EventEmitters != null) list.Add(EventEmitters);
             if (UnknownData != null) list.Add(UnknownData);
-            if (KeyframeProps != null) list.Add(KeyframeProps);
+            if (KeyframeProps != null)
+            {
+                KeyframeProps.ManualPointerOverride = true;
+                list.Add(KeyframeProps);
+            }
             return list.ToArray();
         }
 
@@ -1893,7 +2405,7 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TC(typeof(EXP))] public class ParticleEventEmitter : ResourceSystemBlock
+    [TC(typeof(EXP))] public class ParticleEventEmitter : ResourceSystemBlock, IMetaXmlItem
     {
         // ptxEvent
         // ptxEventEmitter
@@ -1902,7 +2414,7 @@ namespace CodeWalker.GameFiles
         // structure data
         public uint VFT { get; set; }
         public uint Unknown_4h = 1; // 0x00000001
-        public uint Unknown_8h { get; set; } // 0, 1, 2, 3, 4, 5, 6
+        public uint Unknown_8h { get; set; } // 0, 1, 2, 3, 4, 5, 6  -index?
         public uint Unknown_Ch; // 0x00000000
         public float Unknown_10h { get; set; }
         public float Unknown_14h { get; set; }
@@ -1923,10 +2435,11 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public ParticleUnknown1 UnknownData { get; set; }
-        public string_r String1 { get; set; }
-        public string_r String2 { get; set; }
+        public string_r EmitterRuleName { get; set; }
+        public string_r ParticleRuleName { get; set; }
         public ParticleEmitterRule EmitterRule { get; set; }
         public ParticleRule ParticleRule { get; set; }
+
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -1954,20 +2467,25 @@ namespace CodeWalker.GameFiles
 
             // read reference data
             this.UnknownData = reader.ReadBlockAt<ParticleUnknown1>(this.UnknownDataPointer);
-            this.String1 = reader.ReadBlockAt<string_r>(this.String1Pointer);
-            this.String2 = reader.ReadBlockAt<string_r>(this.String2Pointer);
+            this.EmitterRuleName = reader.ReadBlockAt<string_r>(this.String1Pointer);
+            this.ParticleRuleName = reader.ReadBlockAt<string_r>(this.String2Pointer);
             this.EmitterRule = reader.ReadBlockAt<ParticleEmitterRule>(this.EmitterRulePointer);
             this.ParticleRule = reader.ReadBlockAt<ParticleRule>(this.ParticleRulePointer);
 
 
-            if (!string.IsNullOrEmpty(String1?.Value))
+            if (!string.IsNullOrEmpty(EmitterRuleName?.Value))
             {
-                JenkIndex.Ensure(String1.Value);
+                JenkIndex.Ensure(EmitterRuleName.Value);
             }
-            if (!string.IsNullOrEmpty(String2?.Value))
+            if (!string.IsNullOrEmpty(ParticleRuleName?.Value))
             {
-                JenkIndex.Ensure(String2.Value);
+                JenkIndex.Ensure(ParticleRuleName.Value);
             }
+
+            if (EmitterRuleName?.Value != EmitterRule?.Name?.Value)
+            { }//no hit
+            if (ParticleRuleName?.Value != ParticleRule?.Name?.Value)
+            { }//no hit
 
             //if (Unknown_4h != 1)
             //{ }//no hit
@@ -2093,8 +2611,8 @@ namespace CodeWalker.GameFiles
         {
             // update structure data
             this.UnknownDataPointer = (ulong)(this.UnknownData != null ? this.UnknownData.FilePosition : 0);
-            this.String1Pointer = (ulong)(this.String1 != null ? this.String1.FilePosition : 0);
-            this.String2Pointer = (ulong)(this.String2 != null ? this.String2.FilePosition : 0);
+            this.String1Pointer = (ulong)(this.EmitterRuleName != null ? this.EmitterRuleName.FilePosition : 0);
+            this.String2Pointer = (ulong)(this.ParticleRuleName != null ? this.ParticleRuleName.FilePosition : 0);
             this.EmitterRulePointer = (ulong)(this.EmitterRule != null ? this.EmitterRule.FilePosition : 0);
             this.ParticleRulePointer = (ulong)(this.ParticleRule != null ? this.ParticleRule.FilePosition : 0);
 
@@ -2120,13 +2638,53 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_64h);
             writer.Write(this.Unknown_68h);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YptXml.StringTag(sb, indent, "EmitterRule", YptXml.XmlEscape(EmitterRuleName?.Value ?? ""));
+            YptXml.StringTag(sb, indent, "ParticleRule", YptXml.XmlEscape(ParticleRuleName?.Value ?? ""));
+            YptXml.ValueTag(sb, indent, "Unknown8", Unknown_8h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown10", FloatUtil.ToString(Unknown_10h));
+            YptXml.ValueTag(sb, indent, "Unknown14", FloatUtil.ToString(Unknown_14h));
+            YptXml.ValueTag(sb, indent, "Unknown50", FloatUtil.ToString(Unknown_50h));
+            YptXml.ValueTag(sb, indent, "Unknown54", FloatUtil.ToString(Unknown_54h));
+            YptXml.ValueTag(sb, indent, "Unknown58", FloatUtil.ToString(Unknown_58h));
+            YptXml.ValueTag(sb, indent, "Unknown5C", FloatUtil.ToString(Unknown_5Ch));
+            YptXml.ValueTag(sb, indent, "Unknown60", Unknown_60h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown64", Unknown_64h.ToString());
+            if (UnknownData != null)
+            {
+                YptXml.OpenTag(sb, indent, "UnknownData");
+                UnknownData.WriteXml(sb, indent + 1);
+                YptXml.CloseTag(sb, indent, "UnknownData");
+            }
+        }
+        public void ReadXml(XmlNode node)
+        {
+            EmitterRuleName = (string_r)Xml.GetChildInnerText(node, "EmitterRule"); if (EmitterRuleName.Value == null) EmitterRuleName = null;
+            ParticleRuleName = (string_r)Xml.GetChildInnerText(node, "ParticleRule"); if (ParticleRuleName.Value == null) ParticleRuleName = null;
+            Unknown_8h = Xml.GetChildUIntAttribute(node, "Unknown8");
+            Unknown_10h = Xml.GetChildFloatAttribute(node, "Unknown10");
+            Unknown_14h = Xml.GetChildFloatAttribute(node, "Unknown14");
+            Unknown_50h = Xml.GetChildFloatAttribute(node, "Unknown50");
+            Unknown_54h = Xml.GetChildFloatAttribute(node, "Unknown54");
+            Unknown_58h = Xml.GetChildFloatAttribute(node, "Unknown58");
+            Unknown_5Ch = Xml.GetChildFloatAttribute(node, "Unknown5C");
+            Unknown_60h = Xml.GetChildUIntAttribute(node, "Unknown60");
+            Unknown_64h = Xml.GetChildUIntAttribute(node, "Unknown64");
+            var udnode = node.SelectSingleNode("UnknownData");
+            if (udnode != null)
+            {
+                UnknownData = new ParticleUnknown1();
+                UnknownData.ReadXml(udnode);
+            }
+        }
 
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
             if (UnknownData != null) list.Add(UnknownData);
-            if (String1 != null) list.Add(String1);
-            if (String2 != null) list.Add(String2);
+            if (EmitterRuleName != null) list.Add(EmitterRuleName);
+            if (ParticleRuleName != null) list.Add(ParticleRuleName);
             if (EmitterRule != null) list.Add(EmitterRule);
             if (ParticleRule != null) list.Add(ParticleRule);
             return list.ToArray();
@@ -2134,8 +2692,9 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return String1?.ToString() ?? String2?.ToString() ?? base.ToString();
+            return EmitterRuleName?.ToString() ?? ParticleRuleName?.ToString() ?? base.ToString();
         }
+
     }
 
 
@@ -2164,8 +2723,45 @@ namespace CodeWalker.GameFiles
             //if (Unknown_38h != 0)
             //{ }//no hit
 
-            if ((Unknown_10h?.data_items?.Length ?? 0) > 0)
-            { }
+            var cnt1 = (Unknown_0h?.data_items?.Length ?? 0);
+            var cnt2 = (Unknown_10h?.data_items?.Length ?? 0);
+            var cnt3 = (Unknown_28h?.data_items?.Length ?? 0);
+
+            if (cnt2 != cnt3)
+            { }//no hit
+            if ((cnt2 != 0) && (cnt2 != cnt1))
+            { }//hit
+            if ((cnt3 != 0) && (cnt3 != cnt1))
+            { }//hit
+
+
+            //var dic = new Dictionary<MetaHash, ParticleUnknown2>();
+            //if (Unknown_10h?.data_items != null)
+            //{
+            //    foreach (var item in Unknown_10h.data_items)
+            //    {
+            //        dic[item.NameHash] = item;
+            //    }
+            //}
+            //if (Unknown_28h?.data_items != null)
+            //{
+            //    MetaHash lasthash = 0;
+            //    foreach (var item in Unknown_28h.data_items)
+            //    {
+            //        if (item.NameHash < lasthash)
+            //        { }//no hit! - this array is a sorted dictionary of the items!
+            //        lasthash = item.NameHash;
+            //        if (dic.TryGetValue(item.NameHash, out ParticleUnknown2 oitem))
+            //        {
+            //            if (item.Item != oitem)
+            //            { }//no hit
+            //        }
+            //        else
+            //        { }//no hit
+            //    }
+            //}
+
+
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
@@ -2175,6 +2771,70 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_20h);
             writer.WriteBlock(this.Unknown_28h);
             writer.Write(this.Unknown_38h);
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            if (Unknown_0h?.data_items != null)
+            {
+                if (Unknown_0h.data_items.Length > 0)
+                {
+                    YptXml.OpenTag(sb, indent, "Unknown0");
+                    foreach (var item in Unknown_0h.data_items)
+                    {
+                        YptXml.StringTag(sb, indent + 1, "Item", YptXml.XmlEscape(item?.Name?.Value ?? ""));
+                    }
+                    YptXml.CloseTag(sb, indent, "Unknown0");
+                }
+                else
+                {
+                    YptXml.SelfClosingTag(sb, indent, "Unknown0");
+                }
+            }
+            if (Unknown_10h?.data_items != null)
+            {
+                YptXml.WriteItemArray(sb, Unknown_10h.data_items, indent, "Unknown10");
+            }
+            //if (Unknown_28h?.data_items != null)
+            //{
+            //    YptXml.WriteItemArray(sb, Unknown_28h.data_items, indent, "Unknown28");
+            //}
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Unknown_0h = new ResourceSimpleList64<ParticleStringBlock>();
+            //Unknown_0h.data_items = XmlMeta.ReadItemArray<ParticleStringBlock>(node, "Unknown0");
+            var unode = node.SelectSingleNode("Unknown0");
+            if (unode != null)
+            {
+                var inodes = unode.SelectNodes("Item");
+                var ilist = new List<ParticleStringBlock>();
+                foreach (XmlNode inode in inodes)
+                {
+                    var iname = inode.InnerText;
+                    var blk = new ParticleStringBlock();
+                    blk.Name = (string_r)iname;
+                    ilist.Add(blk);
+                }
+                Unknown_0h.data_items = ilist.ToArray();
+            }
+
+            Unknown_10h = new ResourceSimpleList64<ParticleUnknown2>();
+            Unknown_10h.data_items = XmlMeta.ReadItemArray<ParticleUnknown2>(node, "Unknown10");
+
+            Unknown_28h = new ResourceSimpleList64<ParticleUnknown2Block>();
+            //Unknown_28h.data_items = XmlMeta.ReadItemArray<ParticleUnknown2Block>(node, "Unknown28");
+            if (Unknown_10h.data_items != null)
+            {
+                var blist = new List<ParticleUnknown2Block>();
+                foreach (var item in Unknown_10h.data_items)
+                {
+                    var blk = new ParticleUnknown2Block();
+                    blk.Item = item;
+                    blk.NameHash = item.NameHash;
+                    blist.Add(blk);
+                }
+                Unknown_28h.data_items = blist.ToArray();
+            }
         }
 
         public override Tuple<long, IResourceBlock>[] GetParts()
@@ -2198,22 +2858,22 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 24;
 
         // structure data
-        public ulong String1Pointer { get; set; }
+        public ulong NamePointer { get; set; }
         public ulong Unknown_8h; // 0x0000000000000000
         public ulong Unknown_10h; // 0x0000000000000000
 
         // reference data
-        public string_r String1 { get; set; }
+        public string_r Name { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.String1Pointer = reader.ReadUInt64();
+            this.NamePointer = reader.ReadUInt64();
             this.Unknown_8h = reader.ReadUInt64();
             this.Unknown_10h = reader.ReadUInt64();
 
             // read reference data
-            this.String1 = reader.ReadBlockAt<string_r>(this.String1Pointer);
+            this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
 
             //if (!string.IsNullOrEmpty(String1?.Value))
             //{
@@ -2229,10 +2889,10 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.String1Pointer = (ulong)(this.String1 != null ? this.String1.FilePosition : 0);
+            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.String1Pointer);
+            writer.Write(this.NamePointer);
             writer.Write(this.Unknown_8h);
             writer.Write(this.Unknown_10h);
         }
@@ -2240,13 +2900,13 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (String1 != null) list.Add(String1);
+            if (Name != null) list.Add(Name);
             return list.ToArray();
         }
 
         public override string ToString()
         {
-            return String1?.ToString() ?? base.ToString();
+            return Name?.ToString() ?? base.ToString();
         }
     }
 
@@ -2256,7 +2916,7 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x10;
 
         // structure data
-        public MetaHash Unknown_0h { get; set; }
+        public MetaHash NameHash { get; set; }
         public uint Unknown_4h; // 0x00000000
         public ulong ItemPointer { get; set; }
 
@@ -2266,7 +2926,7 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadUInt32();
+            this.NameHash = reader.ReadUInt32();
             this.Unknown_4h = reader.ReadUInt32();
             this.ItemPointer = reader.ReadUInt64();
 
@@ -2275,8 +2935,10 @@ namespace CodeWalker.GameFiles
 
             if (Item != null)
             { }
+            if ((Item?.NameHash ?? 0) != NameHash)
+            { }//no hit! so this is just a "dictionary" entry for an Item!
 
-            switch (Unknown_0h) // hash...
+            switch (NameHash) // hash...
             {
                 case 0x1104051e: // 
                 case 0x13c0cac4: // 
@@ -2338,7 +3000,7 @@ namespace CodeWalker.GameFiles
             this.ItemPointer = (ulong)(this.Item != null ? this.Item.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.Unknown_0h);
+            writer.Write(this.NameHash);
             writer.Write(this.Unknown_4h);
             writer.Write(this.ItemPointer);
         }
@@ -2352,28 +3014,29 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Unknown_0h.ToString();
+            return NameHash.ToString();
         }
+
     }
 
 
-    [TC(typeof(EXP))] public class ParticleUnknown2 : ResourceSystemBlock
+    [TC(typeof(EXP))] public class ParticleUnknown2 : ResourceSystemBlock, IMetaXmlItem
     {
         public override long BlockLength => 24;
 
         // structure data
         public ResourceSimpleList64<ParticleUnknown3> Unknown_0h { get; set; }
-        public MetaHash Unknown_10h { get; set; }
+        public MetaHash NameHash { get; set; }
         public uint Unknown_14h { get; set; } // 0, 1
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
             this.Unknown_0h = reader.ReadBlock<ResourceSimpleList64<ParticleUnknown3>>();
-            this.Unknown_10h = reader.ReadUInt32();
+            this.NameHash = reader.ReadUInt32();
             this.Unknown_14h = reader.ReadUInt32();
 
-            switch (Unknown_10h) // hash...
+            switch (NameHash) // hash...
             {
                 case 0x45e377e9: // 
                 case 0x1104051e: //
@@ -2438,8 +3101,24 @@ namespace CodeWalker.GameFiles
         {
             // write structure data
             writer.WriteBlock(this.Unknown_0h);
-            writer.Write(this.Unknown_10h);
+            writer.Write(this.NameHash);
             writer.Write(this.Unknown_14h);
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YptXml.StringTag(sb, indent, "Name", YptXml.HashString(NameHash));
+            YptXml.ValueTag(sb, indent, "Unknown14", Unknown_14h.ToString());
+            if (Unknown_0h?.data_items != null)
+            {
+                YptXml.WriteItemArray(sb, Unknown_0h.data_items, indent, "Items");
+            }
+        }
+        public void ReadXml(XmlNode node)
+        {
+            NameHash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Name"));
+            Unknown_14h = Xml.GetChildUIntAttribute(node, "Unknown14");
+            Unknown_0h = new ResourceSimpleList64<ParticleUnknown3>();
+            Unknown_0h.data_items = XmlMeta.ReadItemArray<ParticleUnknown3>(node, "Items");
         }
 
         public override Tuple<long, IResourceBlock>[] GetParts()
@@ -2451,12 +3130,13 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Unknown_10h.ToString();
+            return NameHash.ToString();
         }
+
     }
 
 
-    [TC(typeof(EXP))] public class ParticleUnknown3 : ResourceSystemBlock
+    [TC(typeof(EXP))] public class ParticleUnknown3 : ResourceSystemBlock, IMetaXmlItem
     {
         public override long BlockLength => 0x30;
 
@@ -2514,6 +3194,22 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_24h);
             writer.Write(this.Unknown_28h);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YptXml.ValueTag(sb, indent, "Unknown20", Unknown_20h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown24", Unknown_24h.ToString());
+            if (Unknown_0h?.data_items != null)
+            {
+                YptXml.WriteItemArray(sb, Unknown_0h.data_items, indent, "Keyframes");
+            }
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Unknown_20h = Xml.GetChildUIntAttribute(node, "Unknown20");
+            Unknown_24h = Xml.GetChildUIntAttribute(node, "Unknown24");
+            Unknown_0h = new ResourceSimpleList64<ParticleKeyframePropValue>();
+            Unknown_0h.data_items = XmlMeta.ReadItemArray<ParticleKeyframePropValue>(node, "Keyframes");
+        }
 
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
@@ -2526,6 +3222,7 @@ namespace CodeWalker.GameFiles
         {
             return Unknown_20h.ToString() + ", " + Unknown_24h.ToString();
         }
+
     }
 
 
@@ -2573,6 +3270,7 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public string_r Name { get; set; }
+        public MetaHash NameHash { get; set; }
         public ParticleDomain Domain1 { get; set; }
         public ParticleDomain Domain2 { get; set; }
         public ParticleDomain Domain3 { get; set; }
@@ -2718,6 +3416,21 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_628h);
             writer.Write(this.Unknown_62Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YptXml.StringTag(sb, indent, "Name", YptXml.XmlEscape(Name?.Value ?? ""));
+            YptXml.ValueTag(sb, indent, "Unknown10", Unknown_10h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown628", Unknown_628h.ToString());
+
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Name = (string_r)Xml.GetChildInnerText(node, "Name"); if (Name.Value == null) Name = null;
+            NameHash = JenkHash.GenHash(Name?.Value ?? "");
+            Unknown_10h = Xml.GetChildUIntAttribute(node, "Unknown10");
+            Unknown_628h = Xml.GetChildUIntAttribute(node, "Unknown628");
+
+        }
 
         public override IResourceBlock[] GetReferences()
         {
@@ -2761,7 +3474,7 @@ namespace CodeWalker.GameFiles
 
     
 
-    [TC(typeof(EXP))] public class ParticleKeyframeProp : ResourceSystemBlock
+    [TC(typeof(EXP))] public class ParticleKeyframeProp : ResourceSystemBlock, IMetaXmlItem
     {
         // datBase
         // ptxKeyframeProp
@@ -2954,6 +3667,12 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_80h);
             writer.Write(this.Unknown_88h);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+        public void ReadXml(XmlNode node)
+        {
+        }
 
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
@@ -2964,12 +3683,13 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Unknown_68h.ToString() + "( " + (Values?.data_items?.Length ?? 0).ToString() + " values)";
+            return Unknown_68h.ToString() + " (" + (Values?.data_items?.Length ?? 0).ToString() + " values)";
         }
+
     }
 
 
-    [TC(typeof(EXP))] public class ParticleKeyframePropValue : ResourceSystemBlock
+    [TC(typeof(EXP))] public class ParticleKeyframePropValue : ResourceSystemBlock, IMetaXmlItem
     {
         public override long BlockLength => 0x20;
 
@@ -3091,11 +3811,18 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+        }
+        public void ReadXml(XmlNode node)
+        {
+        }
 
         public override string ToString()
         {
             return string.Format("{0}, {1}, {2}, {3}, {4}, {5}", Unknown_0h, Unknown_4h, Unknown_10h, Unknown_14h, Unknown_18h, Unknown_1Ch);
         }
+
     }
 
 
@@ -3328,7 +4055,7 @@ namespace CodeWalker.GameFiles
         Liquid = 0xDF229542
     }
 
-    [TC(typeof(EXP))] public class ParticleBehaviour : ResourceSystemBlock, IResourceXXSystemBlock
+    [TC(typeof(EXP))] public class ParticleBehaviour : ResourceSystemBlock, IResourceXXSystemBlock, IMetaXmlItem
     {
         // ptxBehaviour
         public override long BlockLength => 0x10;
@@ -3360,6 +4087,16 @@ namespace CodeWalker.GameFiles
             writer.Write((uint)this.Type);
             writer.Write(this.Unknown_Ch);
         }
+        public virtual void WriteXml(StringBuilder sb, int indent)
+        {
+            YptXml.ValueTag(sb, indent, "Type", Type.ToString());
+
+        }
+        public virtual void ReadXml(XmlNode node)
+        {
+            Type = Xml.GetEnumValue<ParticleBehaviourType>(Xml.GetChildStringAttribute(node, "Type"));
+
+        }
 
         public IResourceSystemBlock GetType(ResourceDataReader reader, params object[] parameters)
         {
@@ -3368,6 +4105,10 @@ namespace CodeWalker.GameFiles
             ParticleBehaviourType type = (ParticleBehaviourType)reader.ReadUInt32();
             reader.Position -= 12;
 
+            return Create(type);
+        }
+        public static ParticleBehaviour Create(ParticleBehaviourType type)
+        {
             switch (type)
             {
                 case ParticleBehaviourType.Age: return new ParticleBehaviourAge();
@@ -3401,6 +4142,7 @@ namespace CodeWalker.GameFiles
         {
             return "Behaviour: " + Type.ToString();
         }
+
     }
 
     [TC(typeof(EXP))] public class ParticleBehaviourAge : ParticleBehaviour
@@ -5824,7 +6566,7 @@ namespace CodeWalker.GameFiles
         Keyframe = 7,
     }
 
-    [TC(typeof(EXP))] public class ParticleShaderVar : ResourceSystemBlock, IResourceXXSystemBlock
+    [TC(typeof(EXP))] public class ParticleShaderVar : ResourceSystemBlock, IResourceXXSystemBlock, IMetaXmlItem
     {
         // datBase
         // ptxShaderVar
@@ -5897,6 +6639,16 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_15h);
             writer.Write(this.Unknown_16h);
         }
+        public virtual void WriteXml(StringBuilder sb, int indent)
+        {
+            YptXml.ValueTag(sb, indent, "Type", Type.ToString());
+
+        }
+        public virtual void ReadXml(XmlNode node)
+        {
+            Type = Xml.GetEnumValue<ParticleShaderVarType>(Xml.GetChildStringAttribute(node, "Type"));
+
+        }
 
         public IResourceSystemBlock GetType(ResourceDataReader reader, params object[] parameters)
         {
@@ -5904,6 +6656,10 @@ namespace CodeWalker.GameFiles
             var type = (ParticleShaderVarType)reader.ReadByte();
             reader.Position -= 21;
 
+            return Create(type);
+        }
+        public static ParticleShaderVar Create(ParticleShaderVarType type)
+        {
             switch (type)
             {
                 case ParticleShaderVarType.Vector2:
@@ -5918,6 +6674,7 @@ namespace CodeWalker.GameFiles
         {
             return Unknown_10h.ToString() + ": " + Type.ToString();
         }
+
     }
 
     [TC(typeof(EXP))] public class ParticleShaderVarVector : ParticleShaderVar

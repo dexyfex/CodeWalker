@@ -736,7 +736,7 @@ namespace CodeWalker.GameFiles
 
         // reference data
         //public ResourceSimpleArray<T> Entries;
-        public T[] data_items { get; private set; }
+        public T[] data_items { get; set; }
 
         private ResourceSimpleArray<T> data_block;//used for saving.
 
@@ -1395,8 +1395,10 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public ulong[] data_pointers { get; private set; }
+        public ulong[] data_pointers { get; set; }
         public T[] data_items { get; set; }
+
+        public bool ManualPointerOverride = false;//use this to manually write data_pointers
 
 
 
@@ -1424,13 +1426,22 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update...
-            var list = new List<ulong>();
-            foreach (var x in data_items)
-                if (x != null)
-                    list.Add((uint)x.FilePosition);
-                else
-                    list.Add((uint)0);
-            data_pointers = list.ToArray();
+            if (ManualPointerOverride == false)
+            {
+                var list = new List<ulong>();
+                foreach (var x in data_items)
+                {
+                    if (x != null)
+                    {
+                        list.Add((uint)x.FilePosition);
+                    }
+                    else
+                    {
+                        list.Add(0);
+                    }
+                }
+                data_pointers = list.ToArray();
+            }
 
             // write...
             foreach (var x in data_pointers)
@@ -1442,8 +1453,13 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>();
 
-            foreach (var x in data_items)
-                list.Add(x);
+            if (ManualPointerOverride == false)
+            {
+                foreach (var x in data_items)
+                {
+                    list.Add(x);
+                }
+            }
 
             return list.ToArray();
         }
