@@ -1739,14 +1739,16 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public ulong EntriesPointer { get; private set; }
-        public ushort EntriesCount { get; private set; }
-        public ushort EntriesCapacity { get; private set; }
+        public ushort EntriesCount { get; set; }
+        public ushort EntriesCapacity { get; set; }
 
         // reference data
         //public ResourcePointerArray64<T> Entries;
 
         public ulong[] data_pointers { get; private set; }
         public T[] data_items { get; set; }
+
+        public bool ManualCountOverride = false; //use this to manually specify the count
 
         private ResourcePointerArray64<T> data_block;//used for saving.
 
@@ -1777,8 +1779,11 @@ namespace CodeWalker.GameFiles
         {
             // update...
             this.EntriesPointer = (ulong)(this.data_block != null ? this.data_block.FilePosition : 0);
-            this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.Count : 0);
-            this.EntriesCapacity = (ushort)(this.data_block != null ? this.data_block.Count : 0);
+            if (ManualCountOverride == false)
+            {
+                this.EntriesCapacity = (ushort)(this.data_block != null ? this.data_block.Count : 0);
+                this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.Count : 0);
+            }
 
 
             // write...
