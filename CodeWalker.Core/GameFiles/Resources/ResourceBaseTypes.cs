@@ -1391,7 +1391,14 @@ namespace CodeWalker.GameFiles
 
         public override long BlockLength
         {
-            get { return (data_items!=null)?8 * data_items.Length:0; }
+            get
+            {
+                if (ManualPointerOverride)
+                {
+                    return (data_pointers != null) ? 8 * data_pointers.Length : 0;
+                }
+                return (data_items != null) ? 8 * data_items.Length : 0;
+            }
         }
 
 
@@ -1899,62 +1906,6 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleArray2<T, U> : ResourceSystemBlock where T : IResourceSystemBlock, new() where U : IResourceSystemBlock, new()
-    {
-        public ResourceSimpleArray<T> Array1 { get; private set; }
-        public ResourceSimpleArray<U> Array2 { get; private set; }
-
-        /// <summary>
-        /// Gets the length of the data block.
-        /// </summary>
-        public override long BlockLength
-        {
-            get
-            {
-                return Array1.BlockLength + Array2.BlockLength;
-            }
-        }
-
-        /// <summary>
-        /// Reads the data block.
-        /// </summary>
-        public override void Read(ResourceDataReader reader, params object[] parameters)
-        {
-            int numElements1 = Convert.ToInt32(parameters[0]);
-            int numElements2 = Convert.ToInt32(parameters[1]);
-            Array1 = reader.ReadBlock<ResourceSimpleArray<T>>(numElements1);
-            Array2 = reader.ReadBlock<ResourceSimpleArray<U>>(numElements2);
-        }
-
-        /// <summary>
-        /// Writes the data block.
-        /// </summary>
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
-        {
-            writer.WriteBlock(Array1);
-            writer.WriteBlock(Array2);
-        }
-
-
-
-
-        public override Tuple<long, IResourceBlock>[] GetParts()
-        {
-            var list = new List<Tuple<long, IResourceBlock>>();
-            list.Add(new Tuple<long, IResourceBlock>(0, Array1));
-            list.Add(new Tuple<long, IResourceBlock>(Array1.BlockLength, Array2));
-            return list.ToArray();
-        }
-
-
-
-
-        public override string ToString()
-        {
-            return "(Count1: " + ((Array1 != null) ? Array1.Count : 0).ToString() + ", Count2: " + ((Array2 != null) ? Array2.Count : 0).ToString() + ")";
-        }
-
-    }
 
 
 
