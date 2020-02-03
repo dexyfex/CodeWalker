@@ -1273,7 +1273,7 @@ namespace CodeWalker.GameFiles
                     { }
                     var arrFloat = new Array_float(arrStruc.Pointer, arrStruc.Count1); //block type 7
                     var floatArr = PsoTypes.GetFloatArray(cont.Pso, arrFloat);
-                    WriteRawArray(sb, floatArr, indent, ename, "float");
+                    WriteRawArray(sb, floatArr, indent, ename, "float", FloatUtil.ToString);
                     break;
                 case PsoDataType.UShort:
                     if (embedded)
