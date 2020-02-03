@@ -188,6 +188,8 @@ namespace CodeWalker.GameFiles
             {
                 TextureDictionary = TextureDictionary.ReadXmlNode(tnode, ddsfolder);
             }
+
+            AssignChildren();
         }
         public static void WriteXmlNode(ParticleEffectsList p, StringBuilder sb, int indent, string ddsfolder, string name = "ParticleEffectsList")
         {
@@ -203,6 +205,150 @@ namespace CodeWalker.GameFiles
             p.ReadXml(node, ddsfolder);
             return p;
         }
+
+
+        public void AssignChildren()
+        {
+            //assigns any child references on objects that are stored in main dictionaries
+            //but, build dictionaries first
+
+            var texdict = new Dictionary<MetaHash, Texture>();
+            if (TextureDictionary?.Dict != null)
+            {
+                foreach (var kvp in TextureDictionary.Dict)
+                {
+                    texdict[kvp.Key] = kvp.Value;
+                }
+            }
+
+            var drwdict = new Dictionary<MetaHash, DrawableBase>();
+            if (DrawableDictionary?.Drawables?.data_items != null)
+            {
+                var max = Math.Min(DrawableDictionary.Drawables.data_items.Length, (DrawableDictionary.Hashes?.Length ?? 0));
+                for (int i = 0; i < max; i++)
+                {
+                    drwdict[DrawableDictionary.Hashes[i]] = DrawableDictionary.Drawables.data_items[i];
+                }
+            }
+
+            var ptrdict = new Dictionary<MetaHash, ParticleRule>();
+            if (ParticleRuleDictionary?.ParticleRules?.data_items != null)
+            {
+                foreach (var ptr in ParticleRuleDictionary.ParticleRules.data_items)
+                {
+                    ptrdict[ptr.NameHash] = ptr;
+                }
+            }
+
+            var emrdict = new Dictionary<MetaHash, ParticleEmitterRule>();
+            if (EmitterRuleDictionary?.EmitterRules?.data_items != null)
+            {
+                foreach (var emr in EmitterRuleDictionary.EmitterRules.data_items)
+                {
+                    emrdict[emr.NameHash] = emr;
+                }
+            }
+
+            var efrdict = new Dictionary<MetaHash, ParticleEffectRule>();
+            if (EffectRuleDictionary?.EffectRules?.data_items != null)
+            {
+                foreach (var efr in EffectRuleDictionary.EffectRules.data_items)
+                {
+                    efrdict[efr.NameHash] = efr;
+                }
+            }
+
+
+
+
+
+            if (EffectRuleDictionary?.EffectRules?.data_items != null)
+            {
+                foreach (var efr in EffectRuleDictionary.EffectRules.data_items)
+                {
+                    if (efr?.EventEmitters?.data_items != null)
+                    {
+                        foreach (var em in efr.EventEmitters.data_items)
+                        {
+                            if (em == null) continue;
+                            var ptrhash = JenkHash.GenHash(em.ParticleRuleName?.Value ?? "");
+                            if (ptrdict.TryGetValue(ptrhash, out ParticleRule ptr))
+                            {
+                                em.ParticleRule = ptr;
+                            }
+                            else if (ptrhash != 0)
+                            { }
+
+                            var emrhash = JenkHash.GenHash(em.EmitterRuleName?.Value ?? "");
+                            if (emrdict.TryGetValue(emrhash, out ParticleEmitterRule emr))
+                            {
+                                em.EmitterRule = emr;
+                            }
+                            else if (emrhash != 0)
+                            { }
+
+                        }
+                    }
+                }
+            }
+
+            if (ParticleRuleDictionary?.ParticleRules?.data_items != null)
+            {
+                foreach (var ptr in ParticleRuleDictionary.ParticleRules.data_items)
+                {
+                    if (ptr.Spawner1 != null)
+                    {
+                        var efrhash = JenkHash.GenHash(ptr.Spawner1.EffectRuleName?.Value ?? "");
+                        if (efrdict.TryGetValue(efrhash, out ParticleEffectRule efr))
+                        {
+                            ptr.Spawner1.EffectRule = efr;
+                        }
+                        else if (efrhash != 0)
+                        { }
+                    }
+                    if (ptr.Spawner2 != null)
+                    {
+                        var efrhash = JenkHash.GenHash(ptr.Spawner2.EffectRuleName?.Value ?? "");
+                        if (efrdict.TryGetValue(efrhash, out ParticleEffectRule efr))
+                        {
+                            ptr.Spawner2.EffectRule = efr;
+                        }
+                        else if (efrhash != 0)
+                        { }
+                    }
+                    if (ptr.Drawables?.data_items != null)
+                    {
+                        foreach (var pdrw in ptr.Drawables.data_items)
+                        {
+                            if (drwdict.TryGetValue(pdrw.NameHash, out DrawableBase drw))
+                            {
+                                pdrw.Drawable = drw;
+                            }
+                            else if (pdrw.NameHash != 0)
+                            { }
+                        }
+                    }
+                    if (ptr.ShaderVars?.data_items != null)
+                    {
+                        foreach (var svar in ptr.ShaderVars.data_items)
+                        {
+                            if (svar is ParticleShaderVarTexture texvar)
+                            {
+                                if (texdict.TryGetValue(texvar.TextureNameHash, out Texture tex))
+                                {
+                                    texvar.Texture = tex;
+                                }
+                                else if (texvar.TextureNameHash != 0)
+                                { }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+        }
+
 
         public override IResourceBlock[] GetReferences()
         {
@@ -1002,15 +1148,15 @@ namespace CodeWalker.GameFiles
             YptXml.ValueTag(sb, indent, "Unknown100", Unknown_100h.ToString());
             YptXml.ValueTag(sb, indent, "Unknown104", Unknown_104h.ToString());
             YptXml.ValueTag(sb, indent, "Unknown108", Unknown_108h.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown10C", Unknown_10Ch.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown10C", YptXml.UintString(Unknown_10Ch));
             YptXml.ValueTag(sb, indent, "Unknown118", Unknown_118h.ToString());
             YptXml.ValueTag(sb, indent, "Unknown11C", Unknown_11Ch.ToString());
             YptXml.ValueTag(sb, indent, "Unknown1D0", Unknown_1D0h.ToString());
             YptXml.ValueTag(sb, indent, "Unknown1E0", Unknown_1E0h.ToString());
             YptXml.ValueTag(sb, indent, "Unknown1E4", Unknown_1E4h.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown1E8", Unknown_1E8h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown1E8", YptXml.UintString(Unknown_1E8h));
             YptXml.ValueTag(sb, indent, "Unknown1EC", Unknown_1ECh.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown220", Unknown_220h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown220", YptXml.UintString(Unknown_220h));
             if (Spawner1 != null)
             {
                 YptXml.OpenTag(sb, indent, "Spawner1");
@@ -1550,16 +1696,16 @@ namespace CodeWalker.GameFiles
             YptXml.StringTag(sb, indent, "EffectRule", EffectRule?.Name?.Value ?? "");
             YptXml.ValueTag(sb, indent, "Unknown18", FloatUtil.ToString(Unknown_18h));
             YptXml.ValueTag(sb, indent, "Unknown1C", FloatUtil.ToString(Unknown_1Ch));
-            YptXml.ValueTag(sb, indent, "Unknown20", Unknown_20h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown20", YptXml.UintString(Unknown_20h));
             YptXml.ValueTag(sb, indent, "Unknown24", FloatUtil.ToString(Unknown_24h));
             YptXml.ValueTag(sb, indent, "Unknown28", Unknown_28h.ToString());
             YptXml.ValueTag(sb, indent, "Unknown38", FloatUtil.ToString(Unknown_38h));
             YptXml.ValueTag(sb, indent, "Unknown3C", FloatUtil.ToString(Unknown_3Ch));
-            YptXml.ValueTag(sb, indent, "Unknown40", Unknown_40h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown40", YptXml.UintString(Unknown_40h));
             YptXml.ValueTag(sb, indent, "Unknown44", FloatUtil.ToString(Unknown_44h));
             YptXml.ValueTag(sb, indent, "Unknown48", Unknown_48h.ToString());
             YptXml.ValueTag(sb, indent, "Unknown68", FloatUtil.ToString(Unknown_68h));
-            YptXml.ValueTag(sb, indent, "Unknown6C", Unknown_6Ch.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown6C", YptXml.UintString(Unknown_6Ch));
         }
         public void ReadXml(XmlNode node)
         {
@@ -2275,16 +2421,16 @@ namespace CodeWalker.GameFiles
         public void WriteXml(StringBuilder sb, int indent)
         {
             YptXml.StringTag(sb, indent, "Name", YptXml.XmlEscape(Name?.Value ?? ""));
-            YptXml.ValueTag(sb, indent, "Unknown50", Unknown_50h.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown54", Unknown_54h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown50", YptXml.UintString(Unknown_50h));
+            YptXml.ValueTag(sb, indent, "Unknown54", YptXml.UintString(Unknown_54h));
             YptXml.ValueTag(sb, indent, "Unknown70", FloatUtil.ToString(Unknown_70h));
             YptXml.ValueTag(sb, indent, "Unknown74", FloatUtil.ToString(Unknown_74h));
             YptXml.ValueTag(sb, indent, "Unknown78", FloatUtil.ToString(Unknown_78h));
             YptXml.ValueTag(sb, indent, "Unknown7C", FloatUtil.ToString(Unknown_7Ch));
             YptXml.ValueTag(sb, indent, "Unknown80", FloatUtil.ToString(Unknown_80h));
             YptXml.ValueTag(sb, indent, "Unknown84", FloatUtil.ToString(Unknown_84h));
-            YptXml.ValueTag(sb, indent, "Unknown88", Unknown_88h.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown8C", Unknown_8Ch.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown88", YptXml.UintString(Unknown_88h));
+            YptXml.ValueTag(sb, indent, "Unknown8C", YptXml.UintString(Unknown_8Ch));
             YptXml.ValueTag(sb, indent, "Unknown90", FloatUtil.ToString(Unknown_90h));
             YptXml.ValueTag(sb, indent, "Unknown94", FloatUtil.ToString(Unknown_94h));
             YptXml.ValueTag(sb, indent, "Unknown98", FloatUtil.ToString(Unknown_98h));
@@ -2295,8 +2441,8 @@ namespace CodeWalker.GameFiles
             YptXml.ValueTag(sb, indent, "UnknownB0", FloatUtil.ToString(Unknown_B0h));
             YptXml.ValueTag(sb, indent, "UnknownB4", FloatUtil.ToString(Unknown_B4h));
             YptXml.ValueTag(sb, indent, "UnknownB8", FloatUtil.ToString(Unknown_B8h));
-            YptXml.ValueTag(sb, indent, "UnknownBC", Unknown_BCh.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown3A0", Unknown_3A0h.ToString());
+            YptXml.ValueTag(sb, indent, "UnknownBC", YptXml.UintString(Unknown_BCh));
+            YptXml.ValueTag(sb, indent, "Unknown3A0", YptXml.UintString(Unknown_3A0h));
             if (EventEmitters?.data_items != null)
             {
                 YptXml.WriteItemArray(sb, EventEmitters.data_items, indent, "EventEmitters");
@@ -2373,6 +2519,7 @@ namespace CodeWalker.GameFiles
             if (KeyframeProps != null)
             {
                 KeyframeProps.ManualPointerOverride = true;
+                KeyframeProps.data_pointers = new ulong[16];
                 list.Add(KeyframeProps);
             }
             return list.ToArray();
@@ -2640,8 +2787,8 @@ namespace CodeWalker.GameFiles
             YptXml.ValueTag(sb, indent, "Unknown54", FloatUtil.ToString(Unknown_54h));
             YptXml.ValueTag(sb, indent, "Unknown58", FloatUtil.ToString(Unknown_58h));
             YptXml.ValueTag(sb, indent, "Unknown5C", FloatUtil.ToString(Unknown_5Ch));
-            YptXml.ValueTag(sb, indent, "Unknown60", Unknown_60h.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown64", Unknown_64h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown60", YptXml.UintString(Unknown_60h));
+            YptXml.ValueTag(sb, indent, "Unknown64", YptXml.UintString(Unknown_64h));
             if (UnknownData != null)
             {
                 YptXml.OpenTag(sb, indent, "UnknownData");
@@ -3485,6 +3632,7 @@ namespace CodeWalker.GameFiles
             if (KeyframeProps2 != null)
             {
                 KeyframeProps2.ManualPointerOverride = true;
+                KeyframeProps2.data_pointers = new ulong[10];
                 list.Add(KeyframeProps2);
             }
             return list.ToArray();
@@ -4056,7 +4204,7 @@ namespace CodeWalker.GameFiles
         public virtual void WriteXml(StringBuilder sb, int indent)
         {
             YptXml.ValueTag(sb, indent, "Type", DomainType.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown10", Unknown_10h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown10", YptXml.UintString(Unknown_10h));
             YptXml.ValueTag(sb, indent, "Unknown258", FloatUtil.ToString(Unknown_258h));
             if (KeyframeProp0 != null)
             {
@@ -4658,7 +4806,7 @@ namespace CodeWalker.GameFiles
             base.WriteXml(sb, indent);
             YptXml.ValueTag(sb, indent, "Unknown270", Unknown_270h.ToString());
             YptXml.ValueTag(sb, indent, "Unknown274", Unknown_274h.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown278", Unknown_278h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown278", YptXml.UintString(Unknown_278h));
             YptXml.ValueTag(sb, indent, "Unknown27C", FloatUtil.ToString(Unknown_27Ch));
             if (KeyframeProp0 != null)
             {
@@ -5227,7 +5375,7 @@ namespace CodeWalker.GameFiles
         // structure data
         public ParticleKeyframeProp KeyframeProp0 { get; set; }
         public uint Unknown_C0h { get; set; } // 0, 2
-        public uint Unknown_C4h { get; set; }
+        public int Unknown_C4h { get; set; }
         public uint Unknown_C8h { get; set; } // 0, 1, 2
         public uint Unknown_CCh { get; set; } // eg. 0x01010100
 
@@ -5238,7 +5386,7 @@ namespace CodeWalker.GameFiles
             // read structure data
             this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
             this.Unknown_C0h = reader.ReadUInt32();
-            this.Unknown_C4h = reader.ReadUInt32();
+            this.Unknown_C4h = reader.ReadInt32();
             this.Unknown_C8h = reader.ReadUInt32();
             this.Unknown_CCh = reader.ReadUInt32();
 
@@ -5261,7 +5409,7 @@ namespace CodeWalker.GameFiles
                 case 24:
                 case 7:
                 case 37:
-                case 0xffffffff: // -1..
+                case -1:  //0xffffffff..
                 case 2:
                     break;
                 default:
@@ -5309,7 +5457,7 @@ namespace CodeWalker.GameFiles
             YptXml.ValueTag(sb, indent, "UnknownC0", Unknown_C0h.ToString());
             YptXml.ValueTag(sb, indent, "UnknownC4", Unknown_C4h.ToString());
             YptXml.ValueTag(sb, indent, "UnknownC8", Unknown_C8h.ToString());
-            YptXml.ValueTag(sb, indent, "UnknownCC", Unknown_CCh.ToString());
+            YptXml.ValueTag(sb, indent, "UnknownCC", YptXml.UintString(Unknown_CCh));
             if (KeyframeProp0 != null)
             {
                 YptXml.OpenTag(sb, indent, "KeyframeProperty0");
@@ -5321,7 +5469,7 @@ namespace CodeWalker.GameFiles
         {
             base.ReadXml(node);
             Unknown_C0h = Xml.GetChildUIntAttribute(node, "UnknownC0");
-            Unknown_C4h = Xml.GetChildUIntAttribute(node, "UnknownC4");
+            Unknown_C4h = Xml.GetChildIntAttribute(node, "UnknownC4");
             Unknown_C8h = Xml.GetChildUIntAttribute(node, "UnknownC8");
             Unknown_CCh = Xml.GetChildUIntAttribute(node, "UnknownCC");
 
@@ -5409,7 +5557,7 @@ namespace CodeWalker.GameFiles
         {
             base.WriteXml(sb, indent);
             YptXml.ValueTag(sb, indent, "Unknown1E0", Unknown_1E0h.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown1E4", Unknown_1E4h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown1E4", YptXml.UintString(Unknown_1E4h));
             if (KeyframeProp0 != null)
             {
                 YptXml.OpenTag(sb, indent, "KeyframeProperty0");
@@ -5701,8 +5849,8 @@ namespace CodeWalker.GameFiles
             YptXml.ValueTag(sb, indent, "Unknown50", FloatUtil.ToString(Unknown_50h));
             YptXml.ValueTag(sb, indent, "Unknown54", FloatUtil.ToString(Unknown_54h));
             YptXml.ValueTag(sb, indent, "Unknown58", FloatUtil.ToString(Unknown_58h));
-            YptXml.ValueTag(sb, indent, "Unknown5C", Unknown_5Ch.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown60", Unknown_60h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown5C", YptXml.UintString(Unknown_5Ch));
+            YptXml.ValueTag(sb, indent, "Unknown60", YptXml.UintString(Unknown_60h));
         }
         public override void ReadXml(XmlNode node)
         {
@@ -5986,8 +6134,8 @@ namespace CodeWalker.GameFiles
         {
             base.WriteXml(sb, indent);
             YptXml.ValueTag(sb, indent, "Unknown540", FloatUtil.ToString(Unknown_540h));
-            YptXml.ValueTag(sb, indent, "Unknown544", Unknown_544h.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown548", Unknown_548h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown544", YptXml.UintString(Unknown_544h));
+            YptXml.ValueTag(sb, indent, "Unknown548", YptXml.UintString(Unknown_548h));
             YptXml.ValueTag(sb, indent, "Unknown54C", Unknown_54Ch.ToString());
             if (KeyframeProp0 != null)
             {
@@ -6372,7 +6520,7 @@ namespace CodeWalker.GameFiles
             YptXml.ValueTag(sb, indent, "Unknown164", FloatUtil.ToString(Unknown_164h));
             YptXml.ValueTag(sb, indent, "Unknown168", FloatUtil.ToString(Unknown_168h));
             YptXml.ValueTag(sb, indent, "Unknown16C", FloatUtil.ToString(Unknown_16Ch));
-            YptXml.ValueTag(sb, indent, "Unknown170", Unknown_170h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown170", YptXml.UintString(Unknown_170h));
             YptXml.ValueTag(sb, indent, "Unknown174", FloatUtil.ToString(Unknown_174h));
             YptXml.ValueTag(sb, indent, "Unknown178", FloatUtil.ToString(Unknown_178h));
             if (KeyframeProp0 != null)
@@ -6898,7 +7046,7 @@ namespace CodeWalker.GameFiles
             YptXml.ValueTag(sb, indent, "UnknownDC", FloatUtil.ToString(Unknown_DCh));
             YptXml.ValueTag(sb, indent, "UnknownE0", FloatUtil.ToString(Unknown_E0h));
             YptXml.ValueTag(sb, indent, "UnknownE4", FloatUtil.ToString(Unknown_E4h));
-            YptXml.ValueTag(sb, indent, "UnknownEC", Unknown_ECh.ToString());
+            YptXml.ValueTag(sb, indent, "UnknownEC", YptXml.UintString(Unknown_ECh));
             if (KeyframeProp0 != null)
             {
                 YptXml.OpenTag(sb, indent, "KeyframeProperty0");
@@ -6953,7 +7101,7 @@ namespace CodeWalker.GameFiles
         public float Unknown_420h { get; set; } // 1.0f, 3.0f
         public float Unknown_424h { get; set; } // 1.0f
         public uint Unknown_428h { get; set; } // 0, 1, 2
-        public MetaHash Unknown_42Ch { get; set; } // 0x00000101, 0x00010101
+        public uint Unknown_42Ch { get; set; } // 0x00000101, 0x00010101
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -7024,6 +7172,7 @@ namespace CodeWalker.GameFiles
             YptXml.ValueTag(sb, indent, "Unknown420", FloatUtil.ToString(Unknown_420h));
             YptXml.ValueTag(sb, indent, "Unknown424", FloatUtil.ToString(Unknown_424h));
             YptXml.ValueTag(sb, indent, "Unknown428", Unknown_428h.ToString());
+            YptXml.ValueTag(sb, indent, "Unknown42C", YptXml.UintString(Unknown_42Ch));
             if (KeyframeProp0 != null)
             {
                 YptXml.OpenTag(sb, indent, "KeyframeProperty0");
@@ -7073,6 +7222,7 @@ namespace CodeWalker.GameFiles
             Unknown_420h = Xml.GetChildFloatAttribute(node, "Unknown420");
             Unknown_424h = Xml.GetChildFloatAttribute(node, "Unknown424");
             Unknown_428h = Xml.GetChildUIntAttribute(node, "Unknown428");
+            Unknown_42Ch = Xml.GetChildUIntAttribute(node, "Unknown42C");
 
             KeyframeProp0 = new ParticleKeyframeProp();
             var pnode0 = node.SelectSingleNode("KeyframeProperty0");
@@ -7197,8 +7347,8 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public uint Unknown_30h; // 0x00000000
-        public uint Unknown_34h { get; set; } // 0, 1, 3, 0xffffffff
-        public uint Unknown_38h { get; set; } // 9000, 9001, 9003, 9007, 0xffffffff
+        public int Unknown_34h { get; set; } // 0, 1, 3, 0xffffffff
+        public int Unknown_38h { get; set; } // 9000, 9001, 9003, 9007, 0xffffffff
         public float Unknown_3Ch { get; set; } // 0, 0.05f, 0.15f, 0.2f, 0.75f
         public float Unknown_40h { get; set; } // 0.5f, 1.0f, 1.5f, 1.6f, 1.75f, 2.0f
         public float Unknown_44h { get; set; } // 0.01f, 0.03f, 0.08f, 0.5f
@@ -7210,8 +7360,8 @@ namespace CodeWalker.GameFiles
 
             // read structure data
             this.Unknown_30h = reader.ReadUInt32();
-            this.Unknown_34h = reader.ReadUInt32();
-            this.Unknown_38h = reader.ReadUInt32();
+            this.Unknown_34h = reader.ReadInt32();
+            this.Unknown_38h = reader.ReadInt32();
             this.Unknown_3Ch = reader.ReadSingle();
             this.Unknown_40h = reader.ReadSingle();
             this.Unknown_44h = reader.ReadSingle();
@@ -7301,8 +7451,8 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            Unknown_34h = Xml.GetChildUIntAttribute(node, "Unknown34");
-            Unknown_38h = Xml.GetChildUIntAttribute(node, "Unknown38");
+            Unknown_34h = Xml.GetChildIntAttribute(node, "Unknown34");
+            Unknown_38h = Xml.GetChildIntAttribute(node, "Unknown38");
             Unknown_3Ch = Xml.GetChildFloatAttribute(node, "Unknown3C");
             Unknown_40h = Xml.GetChildFloatAttribute(node, "Unknown40");
             Unknown_44h = Xml.GetChildFloatAttribute(node, "Unknown44");

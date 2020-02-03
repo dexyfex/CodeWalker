@@ -12,8 +12,8 @@ namespace CodeWalker.GameFiles
     {
         protected const int RESOURCE_IDENT = 0x37435352;
         protected const int BASE_SIZE = 0x2000;
-        private const int SKIP_SIZE = 512;//256;//64;
-        private const int ALIGN_SIZE = 512;//64;
+        private const int SKIP_SIZE = 16;//512;//256;//64;
+        private const int ALIGN_SIZE = 16;//512;//64;
 
 
         public static void GetBlocks(IResourceBlock rootBlock, out IList<IResourceBlock> sys, out IList<IResourceBlock> gfx)
@@ -182,9 +182,10 @@ namespace CodeWalker.GameFiles
 
 
 
-            fileBase.FilePagesInfo.SystemPagesCount = 0;
-            if (systemPageCount > 0)
-                fileBase.FilePagesInfo.SystemPagesCount = 1; // (byte)systemPageCount; //1
+            //fileBase.FilePagesInfo.SystemPagesCount = 0;
+            //if (systemPageCount > 0)
+            //    fileBase.FilePagesInfo.SystemPagesCount = 1; // (byte)systemPageCount; //1
+            fileBase.FilePagesInfo.SystemPagesCount = (byte)systemPageCount;
             fileBase.FilePagesInfo.GraphicsPagesCount = (byte)graphicsPageCount;
 
 
