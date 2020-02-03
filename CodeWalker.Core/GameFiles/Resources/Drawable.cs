@@ -4446,7 +4446,7 @@ namespace CodeWalker.GameFiles
         // structure data
         public ulong NamePointer { get; set; }
         public ResourceSimpleList64_s<LightAttributes_s> LightAttributes { get; set; }
-        public ulong ParticlesPointer { get; set; } // pointer in YPT files! TODO: investigate what it points to!
+        public ulong UnkPointer { get; set; } 
         public ulong BoundPointer { get; set; }
 
         // reference data
@@ -4466,7 +4466,7 @@ namespace CodeWalker.GameFiles
             // read structure data
             this.NamePointer = reader.ReadUInt64();
             this.LightAttributes = reader.ReadBlock<ResourceSimpleList64_s<LightAttributes_s>>();
-            this.ParticlesPointer = reader.ReadUInt64();
+            this.UnkPointer = reader.ReadUInt64();
             this.BoundPointer = reader.ReadUInt64();
 
             try
@@ -4487,12 +4487,12 @@ namespace CodeWalker.GameFiles
                 }
 
             }
-            catch (Exception ex) //sometimes error here for loading particles! different drawable type? base only?
+            catch (Exception ex) 
             {
                 ErrorMessage = ex.ToString();
             }
 
-            if (ParticlesPointer != 0)
+            if (UnkPointer != 0)
             { }
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -4506,7 +4506,7 @@ namespace CodeWalker.GameFiles
             // write structure data
             writer.Write(this.NamePointer);
             writer.WriteBlock(this.LightAttributes);
-            writer.Write(this.ParticlesPointer);
+            writer.Write(this.UnkPointer);
             writer.Write(this.BoundPointer);
         }
         public override void WriteXml(StringBuilder sb, int indent, string ddsfolder)
@@ -4574,7 +4574,60 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableBaseDictionary : ResourceFileBase
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawablePtfx : DrawableBase
+    {
+        public override long BlockLength
+        {
+            get { return 176; }
+        }
+
+        // structure data
+        public ulong UnkPointer { get; set; }
+
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            base.Read(reader, parameters);
+
+            // read structure data
+            this.UnkPointer = reader.ReadUInt64();
+
+            if (UnkPointer != 0)
+            { }
+        }
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            base.Write(writer, parameters);
+
+            // write structure data
+            writer.Write(this.UnkPointer);
+        }
+        public override void WriteXml(StringBuilder sb, int indent, string ddsfolder)
+        {
+            base.WriteXml(sb, indent, ddsfolder);
+        }
+        public override void ReadXml(XmlNode node, string ddsfolder)
+        {
+            base.ReadXml(node, ddsfolder);
+        }
+        public static void WriteXmlNode(DrawablePtfx d, StringBuilder sb, int indent, string ddsfolder, string name = "Drawable")
+        {
+            if (d == null) return;
+            YdrXml.OpenTag(sb, indent, name);
+            d.WriteXml(sb, indent + 1, ddsfolder);
+            YdrXml.CloseTag(sb, indent, name);
+        }
+        public static DrawablePtfx ReadXmlNode(XmlNode node, string ddsfolder)
+        {
+            if (node == null) return null;
+            var d = new DrawablePtfx();
+            d.ReadXml(node, ddsfolder);
+            return d;
+        }
+
+    }
+
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawablePtfxDictionary : ResourceFileBase
     {
         public override long BlockLength
         {
@@ -4596,7 +4649,7 @@ namespace CodeWalker.GameFiles
         // reference data
         //public ResourceSimpleArray<uint_r> Hashes { get; set; }
         public uint[] Hashes { get; set; }
-        public ResourcePointerArray64<DrawableBase> Drawables { get; set; }
+        public ResourcePointerArray64<DrawablePtfx> Drawables { get; set; }
 
 
         private ResourceSystemStructBlock<uint> HashesBlock = null;//only used for saving
@@ -4620,7 +4673,7 @@ namespace CodeWalker.GameFiles
 
             // read reference data
             this.Hashes = reader.ReadUintsAt(this.HashesPointer, this.HashesCount1);
-            this.Drawables = reader.ReadBlockAt<ResourcePointerArray64<DrawableBase>>(this.DrawablesPointer, this.DrawablesCount1);
+            this.Drawables = reader.ReadBlockAt<ResourcePointerArray64<DrawablePtfx>>(this.DrawablesPointer, this.DrawablesCount1);
 
             //if (Unknown_10h != 0)
             //{ }
@@ -4672,7 +4725,7 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node, string ddsfolder)
         {
-            var drawables = new List<DrawableBase>();
+            var drawables = new List<DrawablePtfx>();
             var drawablehashes = new List<uint>();
 
             var inodes = node.SelectNodes("Item");
@@ -4681,7 +4734,7 @@ namespace CodeWalker.GameFiles
                 foreach (XmlNode inode in inodes)
                 {
                     var h = XmlMeta.GetHash(Xml.GetChildInnerText(inode, "Name"));
-                    var d = new DrawableBase();
+                    var d = new DrawablePtfx();
                     d.ReadXml(inode, ddsfolder);
                     drawables.Add(d);
                     drawablehashes.Add(h);
@@ -4689,20 +4742,20 @@ namespace CodeWalker.GameFiles
             }
 
             Hashes = drawablehashes.ToArray();
-            Drawables = new ResourcePointerArray64<DrawableBase>();
+            Drawables = new ResourcePointerArray64<DrawablePtfx>();
             Drawables.data_items = drawables.ToArray();
         }
-        public static void WriteXmlNode(DrawableBaseDictionary d, StringBuilder sb, int indent, string ddsfolder, string name = "DrawableDictionary")
+        public static void WriteXmlNode(DrawablePtfxDictionary d, StringBuilder sb, int indent, string ddsfolder, string name = "DrawableDictionary")
         {
             if (d == null) return;
             YddXml.OpenTag(sb, indent, name);
             d.WriteXml(sb, indent + 1, ddsfolder);
             YddXml.CloseTag(sb, indent, name);
         }
-        public static DrawableBaseDictionary ReadXmlNode(XmlNode node, string ddsfolder)
+        public static DrawablePtfxDictionary ReadXmlNode(XmlNode node, string ddsfolder)
         {
             if (node == null) return null;
-            var d = new DrawableBaseDictionary();
+            var d = new DrawablePtfxDictionary();
             d.ReadXml(node, ddsfolder);
             return d;
         }

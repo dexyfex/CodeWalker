@@ -44,7 +44,7 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public uint FileVFT { get; set; }
-        public uint FileUnknown { get; set; }
+        public uint FileUnknown { get; set; } = 1;
         public ulong FilePagesInfoPointer { get; set; }
 
         // reference data

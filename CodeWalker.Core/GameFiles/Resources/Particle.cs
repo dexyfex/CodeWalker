@@ -61,7 +61,7 @@ namespace CodeWalker.GameFiles
         // reference data
         public string_r Name { get; set; }
         public TextureDictionary TextureDictionary { get; set; }
-        public DrawableBaseDictionary DrawableDictionary { get; set; }
+        public DrawablePtfxDictionary DrawableDictionary { get; set; }
         public ParticleRuleDictionary ParticleRuleDictionary { get; set; }
         public ParticleEffectRuleDictionary EffectRuleDictionary { get; set; }
         public ParticleEmitterRuleDictionary EmitterRuleDictionary { get; set; }
@@ -86,7 +86,7 @@ namespace CodeWalker.GameFiles
             // read reference data
             this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
             this.TextureDictionary = reader.ReadBlockAt<TextureDictionary>(this.TextureDictionaryPointer);
-            this.DrawableDictionary = reader.ReadBlockAt<DrawableBaseDictionary>(this.DrawableDictionaryPointer);
+            this.DrawableDictionary = reader.ReadBlockAt<DrawablePtfxDictionary>(this.DrawableDictionaryPointer);
             this.ParticleRuleDictionary = reader.ReadBlockAt<ParticleRuleDictionary>(this.ParticleRuleDictionaryPointer);
             this.EffectRuleDictionary = reader.ReadBlockAt<ParticleEffectRuleDictionary>(this.EmitterRuleDictionaryPointer);
             this.EmitterRuleDictionary = reader.ReadBlockAt<ParticleEmitterRuleDictionary>(this.EffectRuleDictionaryPointer);
@@ -150,7 +150,7 @@ namespace CodeWalker.GameFiles
             }
             if (DrawableDictionary != null)
             {
-                DrawableBaseDictionary.WriteXmlNode(DrawableDictionary, sb, indent, ddsfolder, "DrawableDictionary");
+                DrawablePtfxDictionary.WriteXmlNode(DrawableDictionary, sb, indent, ddsfolder, "DrawableDictionary");
             }
             if (TextureDictionary != null)
             {
@@ -181,7 +181,7 @@ namespace CodeWalker.GameFiles
             var dnode = node.SelectSingleNode("DrawableDictionary");
             if (dnode != null)
             {
-                DrawableDictionary = DrawableBaseDictionary.ReadXmlNode(dnode, ddsfolder);
+                DrawableDictionary = DrawablePtfxDictionary.ReadXmlNode(dnode, ddsfolder);
             }
             var tnode = node.SelectSingleNode("TextureDictionary");
             if (tnode != null)
@@ -221,7 +221,7 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            var drwdict = new Dictionary<MetaHash, DrawableBase>();
+            var drwdict = new Dictionary<MetaHash, DrawablePtfx>();
             if (DrawableDictionary?.Drawables?.data_items != null)
             {
                 var max = Math.Min(DrawableDictionary.Drawables.data_items.Length, (DrawableDictionary.Hashes?.Length ?? 0));
@@ -320,7 +320,7 @@ namespace CodeWalker.GameFiles
                     {
                         foreach (var pdrw in ptr.Drawables.data_items)
                         {
-                            if (drwdict.TryGetValue(pdrw.NameHash, out DrawableBase drw))
+                            if (drwdict.TryGetValue(pdrw.NameHash, out DrawablePtfx drw))
                             {
                                 pdrw.Drawable = drw;
                             }
@@ -1762,7 +1762,7 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public string_r Name { get; set; }
-        public DrawableBase Drawable { get; set; }
+        public DrawablePtfx Drawable { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -1779,7 +1779,7 @@ namespace CodeWalker.GameFiles
 
             // read reference data
             this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
-            this.Drawable = reader.ReadBlockAt<DrawableBase>(this.DrawablePointer);
+            this.Drawable = reader.ReadBlockAt<DrawablePtfx>(this.DrawablePointer);
 
             if (!string.IsNullOrEmpty(Name?.Value))
             {
