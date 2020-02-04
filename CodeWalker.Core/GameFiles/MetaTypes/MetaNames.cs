@@ -3882,6 +3882,10 @@ namespace CodeWalker.GameFiles
         refractionmap = 3749494808,
         camerabias = 4030385036,
         ambientmult = 4164128389,
+        softnessshadowoffset = 2810291083,
+        softnessshadowmult = 341373563,
+        extralightmult = 3338535754,
+        camerashrink = 2170767496,
 
 
 
