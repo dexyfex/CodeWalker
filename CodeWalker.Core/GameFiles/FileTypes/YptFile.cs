@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,11 +9,15 @@ using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public class YptFile : GameFile, PackedFile
     {
         public ParticleEffectsList PtfxList { get; set; }
 
         public Dictionary<uint, DrawableBase> DrawableDict { get; set; }
+
+        public Dictionary<MetaHash, ParticleEffectRule> EffectDict { get; set; }
+        public ParticleEffectRule[] AllEffects { get; set; }
 
         public string ErrorMessage { get; set; }
 
@@ -53,7 +58,7 @@ namespace CodeWalker.GameFiles
 
 
             BuildDrawableDict();
-
+            BuildParticleDict();
 
             Loaded = true;
 
@@ -108,6 +113,28 @@ namespace CodeWalker.GameFiles
 
         }
 
+        private void BuildParticleDict()
+        {
+            var pdict = PtfxList?.EffectRuleDictionary;
+
+            if (pdict?.EffectRules?.data_items != null)
+            {
+
+                EffectDict = new Dictionary<MetaHash, ParticleEffectRule>();
+                var elist = new List<ParticleEffectRule>();
+
+                foreach (var e in pdict.EffectRules.data_items)
+                {
+                    EffectDict[e.NameHash] = e;
+                    elist.Add(e);
+                }
+
+                elist.Sort((a, b) => { return (a.Name?.Value ?? "").CompareTo(b.Name?.Value ?? ""); });
+                AllEffects = elist.ToArray();
+
+            }
+
+        }
 
     }
 
