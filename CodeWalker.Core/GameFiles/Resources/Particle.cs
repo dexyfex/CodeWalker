@@ -3237,58 +3237,6 @@ namespace CodeWalker.GameFiles
             if ((Item?.NameHash ?? 0) != NameHash)
             { }//no hit! so this is just a "dictionary" entry for an Item!
 
-            switch (NameHash) // hash...
-            {
-                case 0x1104051e: // 
-                case 0x13c0cac4: // 
-                case 0x41d49131: // 
-                case 0x45e377e9: // 
-                case 0x4af0ffa1: // 
-                case 0xe00e5025: // 
-                case 0x1f641348: // 
-                case 0x3dc78098: // 
-                case 0x7fae9df8: // 
-                case 0x60500691: // 
-                case 0xce8e57a7: // 
-                case 0x61c50318: // 
-                case 0xc9fe6abb: // 
-                case 0x9fc4652b: // 
-                case 0xe7d61ff7: // 
-                case 0x30e327d4: // 
-                case 0x412a554c: // 
-                case 0xa7228870: // 
-                case 0xe7af1a2c: // 
-                case 0xfb8eb4e6: // 
-                case 0x60855078: // 
-                case 0x64c7fc25: // 
-                case 0xd0ef73c5: // 
-                case 0xe5480b3b: // 
-                case 0x8306b23a: // 
-                case 0xd2df1fa0: // 
-                case 0xa83b53f0: // 
-                case 0:
-                case 0x75990186: // 
-                case 0xd5c0fce5: // 
-                case 0x5e692d43: // 
-                case 0x64c6c696: // 
-                case 0x0aadcbef: // 
-                case 0x841ab3da: // 
-                case 0x513812a5: // 
-                case 0xf256e579: // 
-                case 0xef500a62: // 
-                case 0x34d6ded7: // 
-                case 0x2946e76f: // 
-                case 0xc35aaf9b: // 
-                case 0xe2c464a6: // 
-                case 0xa67a1155: // 
-                case 0x3ee8e85e: // 
-                case 0x72668c6f: // 
-                case 0xd7c1e22b: // 
-                case 0xff864d6c: // 
-                    break;
-                default:
-                    break;
-            }
             //if (Unknown_4h != 0)
             //{ }//no hit
 
@@ -3335,8 +3283,9 @@ namespace CodeWalker.GameFiles
             this.NameHash = reader.ReadUInt32();
             this.Unknown_14h = reader.ReadUInt32();
 
-            switch (NameHash) // hash...
+            switch (NameHash) // hash... same as ParticleKeyframeProp names....
             {
+                case 0:
                 case 0x45e377e9: // 
                 case 0x1104051e: //
                 case 0xe00e5025: //
@@ -3364,7 +3313,6 @@ namespace CodeWalker.GameFiles
                 case 0x8306b23a: // 
                 case 0xd2df1fa0: // 
                 case 0xa83b53f0: // 
-                case 0:
                 case 0x75990186: // 
                 case 0xd5c0fce5: // 
                 case 0x5e692d43: // 
@@ -3383,9 +3331,17 @@ namespace CodeWalker.GameFiles
                 case 0x72668c6f: // 
                 case 0xd7c1e22b: // 
                 case 0xff864d6c: // 
+                case 0x687b4382: // 
+                case 0xf0274f77: // 
+                case 0x1c256ba4: // 
+                case 0x351ed852: // 
+                case 0x686f965f: // 
+                case 0x61532d47: // 
+                case 0x5473d2fe: // 
+                case 0xdafe6982: // 
                     break;
                 default:
-                    break;
+                    break;//no hit
             }
             //switch (Unknown_14h)
             //{
@@ -3955,9 +3911,37 @@ namespace CodeWalker.GameFiles
                 case 0x64c6c696: // 
                 case 0x13c0cac4: // 
                 case 0xe7d61ff7: // 
+                case 0xda8c99a6: // 
+                case 0x12bbe65e: // 
+                case 0xef500a62: // 
+                case 0x75990186: // 
+                case 0xe364d5b2: // 
+                case 0xf8561886: // 
+                case 0xe2c464a6: // 
+                case 0xc35aaf9b: // 
+                case 0xb9410926: // 
+                case 0xce9adbfd: // 
+                case 0xea6afaba: // 
+                case 0x2d0d70b5: // 
+                case 0xff31aaf3: // 
+                case 0xf256e579: // 
+                case 0x513812a5: // 
+                case 0xd1be590a: // 
+                case 0x72668c6f: // 
+                case 0x3c599207: // 
+                case 0x23f55175: // 
+                case 0x3ee8e85e: // 
+                case 0xdafe6982: // 
+                case 0x5473d2fe: // 
+                case 0x9ef3ceec: // 
+                case 0x570dc9cd: // 
+                case 0x68f00338: // 
+                case 0x8ace32c2: // 
+                case 0xc248b5c9: // 
+                case 0x851d3d14: // 
                     break;
                 default:
-                    break;//and more...
+                    break;//no hit
             }
             switch (Unknown_6Ch)//some offset..?
             {
@@ -7781,33 +7765,33 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
             //if (Unknown_8h != 0)
             //{ }//no hit
-            switch (Name) //parameter name
-            {
-                case 0xea057402: // 
-                case 0x0b3045be: // softness
-                case 0x91bf3028: // superalpha
-                case 0x4a8a0a28: // directionalmult
-                case 0xf8338e85: // ambientmult
-                case 0xbfd98c1d: // shadowamount
-                case 0xc6fe034a: // 
-                case 0xf03acb8c: // camerabias
-                case 0x81634888: // 
-                case 0xb695f45c: // normalarc
-                case 0x403390ea: // 
-                case 0x18ca6c12: // softnesscurve
-                case 0x1458f27b: // 
-                case 0xa781a38b: // 
-                case 0x77b842ed: // normalmapmult
-                case 0x7b483bc5: // 
-                case 0x6a1dbec3: // 
-                case 0xba5af058: // 
-                case 0xdf7cc018: // refractionmap
-                case 0xb36327d1: // normalspecmap
-                case 0x0df47048: // diffusetex2
-                    break;
-                default:
-                    break;//no hit
-            }
+            //switch (Name) //parameter name
+            //{
+            //    case 0xea057402: // 
+            //    case 0x0b3045be: // softness
+            //    case 0x91bf3028: // superalpha
+            //    case 0x4a8a0a28: // directionalmult
+            //    case 0xf8338e85: // ambientmult
+            //    case 0xbfd98c1d: // shadowamount
+            //    case 0xc6fe034a: // extralightmult
+            //    case 0xf03acb8c: // camerabias
+            //    case 0x81634888: // camerashrink
+            //    case 0xb695f45c: // normalarc
+            //    case 0x403390ea: // 
+            //    case 0x18ca6c12: // softnesscurve
+            //    case 0x1458f27b: // softnessshadowmult
+            //    case 0xa781a38b: // softnessshadowoffset
+            //    case 0x77b842ed: // normalmapmult
+            //    case 0x7b483bc5: // 
+            //    case 0x6a1dbec3: // 
+            //    case 0xba5af058: // 
+            //    case 0xdf7cc018: // refractionmap
+            //    case 0xb36327d1: // normalspecmap
+            //    case 0x0df47048: // diffusetex2
+            //        break;
+            //    default:
+            //        break;//no hit
+            //}
             //if (Unknown_15h != 0)
             //{ }//no hit
             //if (Unknown_16h != 0)
