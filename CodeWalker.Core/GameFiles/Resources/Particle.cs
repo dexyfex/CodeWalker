@@ -2181,13 +2181,22 @@ namespace CodeWalker.GameFiles
             this.UnknownData = reader.ReadBlockAt<ParticleUnknown1>(this.UnknownData1Pointer);
             this.KeyframeProps = reader.ReadBlockAt<ResourcePointerArray64<ParticleKeyframeProp>>(this.KeyframePropsPointer, this.KeyframePropsCount1);
 
-            #endregion
-
-
             if (!string.IsNullOrEmpty(Name?.Value))
             {
                 JenkIndex.Ensure(Name.Value);
+                NameHash = JenkHash.GenHash(Name.Value);
             }
+
+            #endregion
+
+
+            #region testing
+
+            //for (int i = 0; i < (EventEmitters?.data_items?.Length??0); i++)
+            //{
+            //    if (EventEmitters.data_items[i].Index != i)
+            //    { }//no hit
+            //}
 
             //if (EventEmittersCount2 != 32)
             //{ }//no hit
@@ -2233,20 +2242,20 @@ namespace CodeWalker.GameFiles
             //    default:
             //        break;//no hit
             //}
-            switch (Unknown_54h)
-            {
-                case 0x01000000:
-                case 0x01010001:
-                case 0x01010200:
-                case 0x01010000:
-                case 0x01000200:
-                case 0x01000001:
-                case 0x01000201:
-                case 0x01000100:
-                    break;
-                default:
-                    break;//more
-            }
+            //switch (Unknown_54h)
+            //{
+            //    case 0x01000000:
+            //    case 0x01010001:
+            //    case 0x01010200:
+            //    case 0x01010000:
+            //    case 0x01000200:
+            //    case 0x01000001:
+            //    case 0x01000201:
+            //    case 0x01000100:
+            //        break;
+            //    default:
+            //        break;//more
+            //}
             //if (Unknown_58h != 0)
             //{ }//no hit
             //if (Unknown_60h != 0)
@@ -2255,17 +2264,17 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
             //if (Unknown_6Ch != 0x7f800001)
             //{ }//no hit
-            switch (Unknown_70h)
-            {
-                case 0:
-                case 1.0f:
-                case 0.5f:
-                case 0.2f:
-                case 0.1f:
-                    break;
-                default:
-                    break;//more
-            }
+            //switch (Unknown_70h)
+            //{
+            //    case 0:
+            //    case 1.0f:
+            //    case 0.5f:
+            //    case 0.2f:
+            //    case 0.1f:
+            //        break;
+            //    default:
+            //        break;//more
+            //}
             //switch (Unknown_74h)
             //{
             //    case 0.25f:
@@ -2276,42 +2285,42 @@ namespace CodeWalker.GameFiles
             //    default:
             //        break;//no hit
             //}
-            switch (Unknown_78h)
-            {
-                case 0.2f:
-                case 0.5f:
-                case 1.0f:
-                    break;
-                default:
-                    break;//more
-            }
-            switch (Unknown_7Ch)
-            {
-                case 0.2f:
-                case 0.5f:
-                case 1.0f:
-                    break;
-                default:
-                    break;//more
-            }
-            switch (Unknown_80h)
-            {
-                case 1.0f:
-                case 2.0f:
-                case 1.2f:
-                case 1.5f:
-                    break;
-                default:
-                    break;//more
-            }
-            switch (Unknown_84h)
-            {
-                case 1.0f:
-                case 2.0f:
-                    break;
-                default:
-                    break;//more
-            }
+            //switch (Unknown_78h)
+            //{
+            //    case 0.2f:
+            //    case 0.5f:
+            //    case 1.0f:
+            //        break;
+            //    default:
+            //        break;//more
+            //}
+            //switch (Unknown_7Ch)
+            //{
+            //    case 0.2f:
+            //    case 0.5f:
+            //    case 1.0f:
+            //        break;
+            //    default:
+            //        break;//more
+            //}
+            //switch (Unknown_80h)
+            //{
+            //    case 1.0f:
+            //    case 2.0f:
+            //    case 1.2f:
+            //    case 1.5f:
+            //        break;
+            //    default:
+            //        break;//more
+            //}
+            //switch (Unknown_84h)
+            //{
+            //    case 1.0f:
+            //    case 2.0f:
+            //        break;
+            //    default:
+            //        break;//more
+            //}
             //switch (Unknown_88h)
             //{
             //    case 0x01010100:
@@ -2338,127 +2347,127 @@ namespace CodeWalker.GameFiles
             //    default:
             //        break;//no hit
             //}
-            switch (Unknown_90h)
-            {
-                case 0:
-                case 1.1f:
-                case 1.5f:
-                case 1.2f:
-                case 6.0f:
-                    break;
-                default:
-                    break;//more
-            }
-            switch (Unknown_94h)
-            {
-                case 0:
-                case 1.8f:
-                case 10.0f:
-                case 0.4f:
-                case -1.0f:
-                case -9.0f:
-                    break;
-                default:
-                    break;//more
-            }
-            switch (Unknown_98h)
-            {
-                case 0:
-                case 5.0f:
-                case 1.5f:
-                case -1.0f:
-                case 0.5f:
-                case 0.2f:
-                case 1.0f:
-                case 12.0f:
-                    break;
-                default:
-                    break;//more
-            }
+            //switch (Unknown_90h)
+            //{
+            //    case 0:
+            //    case 1.1f:
+            //    case 1.5f:
+            //    case 1.2f:
+            //    case 6.0f:
+            //        break;
+            //    default:
+            //        break;//more
+            //}
+            //switch (Unknown_94h)
+            //{
+            //    case 0:
+            //    case 1.8f:
+            //    case 10.0f:
+            //    case 0.4f:
+            //    case -1.0f:
+            //    case -9.0f:
+            //        break;
+            //    default:
+            //        break;//more
+            //}
+            //switch (Unknown_98h)
+            //{
+            //    case 0:
+            //    case 5.0f:
+            //    case 1.5f:
+            //    case -1.0f:
+            //    case 0.5f:
+            //    case 0.2f:
+            //    case 1.0f:
+            //    case 12.0f:
+            //        break;
+            //    default:
+            //        break;//more
+            //}
             //if (Unknown_9Ch != 0x7f800001)
             //{ }//no hit
-            switch (Unknown_A0h)
-            {
-                case 0:
-                case 4.5f:
-                case 11.0f:
-                case 5.0f:
-                    break;
-                default:
-                    break;//and more
-            }
-            switch (Unknown_A4h)
-            {
-                case 38.0f:
-                case 25.0f:
-                    break;
-                default:
-                    break;//and more
-            }
-            switch (Unknown_A8h)
-            {
-                case 40.0f:
-                case 30.0f:
-                    break;
-                default:
-                    break;//and more
-            }
-            switch (Unknown_ACh)
-            {
-                case 15.0f:
-                case 4.0f:
-                    break;
-                default:
-                    break;//and more
-            }
-            switch (Unknown_B0h)
-            {
-                case 40.0f:
-                case 12.0f:
-                    break;
-                default:
-                    break;//and more
-            }
-            switch (Unknown_B4h)
-            {
-                case 3.0f:
-                case 0:
-                case 0.500002f:
-                case 1.5f:
-                    break;
-                default:
-                    break;//more
-            }
-            switch (Unknown_B8h)
-            {
-                case 2.0f:
-                case 0:
-                case 1.5f:
-                case 1.0f:
-                case 3.0f:
-                case 5.0f:
-                case 9.0f:
-                    break;
-                default:
-                    break;//more
-            }
-            switch (Unknown_BCh)
-            {
-                case 0x00010103:
-                case 0:
-                case 0x01000000:
-                case 0x01010003:
-                case 0x00000103:
-                case 0x00000002:
-                case 0x00000003:
-                case 0x00010100:
-                case 0x01000002:
-                case 0x00010002:
-                case 0x01010002:
-                    break;
-                default:
-                    break;//more
-            }
+            //switch (Unknown_A0h)
+            //{
+            //    case 0:
+            //    case 4.5f:
+            //    case 11.0f:
+            //    case 5.0f:
+            //        break;
+            //    default:
+            //        break;//and more
+            //}
+            //switch (Unknown_A4h)
+            //{
+            //    case 38.0f:
+            //    case 25.0f:
+            //        break;
+            //    default:
+            //        break;//and more
+            //}
+            //switch (Unknown_A8h)
+            //{
+            //    case 40.0f:
+            //    case 30.0f:
+            //        break;
+            //    default:
+            //        break;//and more
+            //}
+            //switch (Unknown_ACh)
+            //{
+            //    case 15.0f:
+            //    case 4.0f:
+            //        break;
+            //    default:
+            //        break;//and more
+            //}
+            //switch (Unknown_B0h)
+            //{
+            //    case 40.0f:
+            //    case 12.0f:
+            //        break;
+            //    default:
+            //        break;//and more
+            //}
+            //switch (Unknown_B4h)
+            //{
+            //    case 3.0f:
+            //    case 0:
+            //    case 0.500002f:
+            //    case 1.5f:
+            //        break;
+            //    default:
+            //        break;//more
+            //}
+            //switch (Unknown_B8h)
+            //{
+            //    case 2.0f:
+            //    case 0:
+            //    case 1.5f:
+            //    case 1.0f:
+            //    case 3.0f:
+            //    case 5.0f:
+            //    case 9.0f:
+            //        break;
+            //    default:
+            //        break;//more
+            //}
+            //switch (Unknown_BCh)
+            //{
+            //    case 0x00010103:
+            //    case 0:
+            //    case 0x01000000:
+            //    case 0x01010003:
+            //    case 0x00000103:
+            //    case 0x00000002:
+            //    case 0x00000003:
+            //    case 0x00010100:
+            //    case 0x01000002:
+            //    case 0x00010002:
+            //    case 0x01010002:
+            //        break;
+            //    default:
+            //        break;//more
+            //}
             //if (Unknown_39Ch != 0)
             //{ }//no hit
             //switch (Unknown_3A0h)
@@ -2471,7 +2480,7 @@ namespace CodeWalker.GameFiles
             //    case 0x00080000:
             //    case 0x00090100:
             //    case 0x000b0100:
-            //    case 0x000c0100:
+            //    case 0x000c0100: //setting the 5th digit to C (eg 0x000C0000) for Unknown3A0 in EffectRuleDictionary enables damage for volumetric particles -Monika
             //        break;
             //    default:
             //        break;//no hit
@@ -2486,6 +2495,8 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
             //if (Unknown_3B8h != 0)
             //{ }//no hit
+
+            #endregion
 
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -2637,6 +2648,11 @@ namespace CodeWalker.GameFiles
             for (int i = emlist.Count; i < 32; i++) emlist.Add(null);
             EventEmitters = new ResourcePointerArray64<ParticleEventEmitter>();
             EventEmitters.data_items = emlist.ToArray();
+            for (int i = 0; i < (EventEmitters.data_items?.Length ?? 0); i++)
+            {
+                EventEmitters.data_items[i].Index = (uint)i;
+            }
+
 
             var kflist = XmlMeta.ReadItemArray<ParticleKeyframeProp>(node, "KeyframeProperties")?.ToList() ?? new List<ParticleKeyframeProp>();
             KeyframeProp0 = (kflist.Count > 0) ? kflist[0] : new ParticleKeyframeProp();
@@ -2699,23 +2715,23 @@ namespace CodeWalker.GameFiles
         // structure data
         public uint VFT { get; set; }
         public uint Unknown_4h = 1; // 0x00000001
-        public uint Unknown_8h { get; set; } // 0, 1, 2, 3, 4, 5, 6  -index?
+        public uint Index { get; set; } // 0, 1, 2, 3, 4, 5, 6  -index?
         public uint Unknown_Ch; // 0x00000000
         public float Unknown_10h { get; set; }
         public float Unknown_14h { get; set; }
         public ulong UnknownDataPointer { get; set; }
         public ulong Unknown_20h; // 0x0000000000000000
         public ulong Unknown_28h; // 0x0000000000000000
-        public ulong String1Pointer { get; set; }
-        public ulong String2Pointer { get; set; }
+        public ulong EmitterRuleNamePointer { get; set; }
+        public ulong ParticleRuleNamePointer { get; set; }
         public ulong EmitterRulePointer { get; set; }
         public ulong ParticleRulePointer { get; set; }
         public float Unknown_50h { get; set; }
         public float Unknown_54h { get; set; }
         public float Unknown_58h { get; set; }
         public float Unknown_5Ch { get; set; }
-        public uint Unknown_60h { get; set; } // eg. 0xfffafafa - colour?
-        public uint Unknown_64h { get; set; } // eg. 0x5affffff - colour?
+        public uint Colour1 { get; set; } // eg. 0xfffafafa - colour?
+        public uint Colour2 { get; set; } // eg. 0x5affffff - colour?
         public ulong Unknown_68h; // 0x0000000000000000
 
         // reference data
@@ -2731,29 +2747,29 @@ namespace CodeWalker.GameFiles
             // read structure data
             this.VFT = reader.ReadUInt32();
             this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt32();
+            this.Index = reader.ReadUInt32();
             this.Unknown_Ch = reader.ReadUInt32();
             this.Unknown_10h = reader.ReadSingle();
             this.Unknown_14h = reader.ReadSingle();
             this.UnknownDataPointer = reader.ReadUInt64();
             this.Unknown_20h = reader.ReadUInt64();
             this.Unknown_28h = reader.ReadUInt64();
-            this.String1Pointer = reader.ReadUInt64();
-            this.String2Pointer = reader.ReadUInt64();
+            this.EmitterRuleNamePointer = reader.ReadUInt64();
+            this.ParticleRuleNamePointer = reader.ReadUInt64();
             this.EmitterRulePointer = reader.ReadUInt64();
             this.ParticleRulePointer = reader.ReadUInt64();
             this.Unknown_50h = reader.ReadSingle();
             this.Unknown_54h = reader.ReadSingle();
             this.Unknown_58h = reader.ReadSingle();
             this.Unknown_5Ch = reader.ReadSingle();
-            this.Unknown_60h = reader.ReadUInt32();
-            this.Unknown_64h = reader.ReadUInt32();
+            this.Colour1 = reader.ReadUInt32();
+            this.Colour2 = reader.ReadUInt32();
             this.Unknown_68h = reader.ReadUInt64();
 
             // read reference data
             this.UnknownData = reader.ReadBlockAt<ParticleUnknown1>(this.UnknownDataPointer);
-            this.EmitterRuleName = reader.ReadBlockAt<string_r>(this.String1Pointer);
-            this.ParticleRuleName = reader.ReadBlockAt<string_r>(this.String2Pointer);
+            this.EmitterRuleName = reader.ReadBlockAt<string_r>(this.EmitterRuleNamePointer);
+            this.ParticleRuleName = reader.ReadBlockAt<string_r>(this.ParticleRuleNamePointer);
             this.EmitterRule = reader.ReadBlockAt<ParticleEmitterRule>(this.EmitterRulePointer);
             this.ParticleRule = reader.ReadBlockAt<ParticleRule>(this.ParticleRulePointer);
 
@@ -2856,7 +2872,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (Unknown_60h)
+            switch (Colour1)
             {
                 case 0xffffffff:
                 case 0xfffafafa:
@@ -2870,7 +2886,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (Unknown_64h)
+            switch (Colour2)
             {
                 case 0xffffffff:
                 case 0xffffefc2:
@@ -2896,46 +2912,45 @@ namespace CodeWalker.GameFiles
         {
             // update structure data
             this.UnknownDataPointer = (ulong)(this.UnknownData != null ? this.UnknownData.FilePosition : 0);
-            this.String1Pointer = (ulong)(this.EmitterRuleName != null ? this.EmitterRuleName.FilePosition : 0);
-            this.String2Pointer = (ulong)(this.ParticleRuleName != null ? this.ParticleRuleName.FilePosition : 0);
+            this.EmitterRuleNamePointer = (ulong)(this.EmitterRuleName != null ? this.EmitterRuleName.FilePosition : 0);
+            this.ParticleRuleNamePointer = (ulong)(this.ParticleRuleName != null ? this.ParticleRuleName.FilePosition : 0);
             this.EmitterRulePointer = (ulong)(this.EmitterRule != null ? this.EmitterRule.FilePosition : 0);
             this.ParticleRulePointer = (ulong)(this.ParticleRule != null ? this.ParticleRule.FilePosition : 0);
 
             // write structure data
             writer.Write(this.VFT);
             writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
+            writer.Write(this.Index);
             writer.Write(this.Unknown_Ch);
             writer.Write(this.Unknown_10h);
             writer.Write(this.Unknown_14h);
             writer.Write(this.UnknownDataPointer);
             writer.Write(this.Unknown_20h);
             writer.Write(this.Unknown_28h);
-            writer.Write(this.String1Pointer);
-            writer.Write(this.String2Pointer);
+            writer.Write(this.EmitterRuleNamePointer);
+            writer.Write(this.ParticleRuleNamePointer);
             writer.Write(this.EmitterRulePointer);
             writer.Write(this.ParticleRulePointer);
             writer.Write(this.Unknown_50h);
             writer.Write(this.Unknown_54h);
             writer.Write(this.Unknown_58h);
             writer.Write(this.Unknown_5Ch);
-            writer.Write(this.Unknown_60h);
-            writer.Write(this.Unknown_64h);
+            writer.Write(this.Colour1);
+            writer.Write(this.Colour2);
             writer.Write(this.Unknown_68h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
             YptXml.StringTag(sb, indent, "EmitterRule", YptXml.XmlEscape(EmitterRuleName?.Value ?? ""));
             YptXml.StringTag(sb, indent, "ParticleRule", YptXml.XmlEscape(ParticleRuleName?.Value ?? ""));
-            YptXml.ValueTag(sb, indent, "Unknown8", Unknown_8h.ToString());
             YptXml.ValueTag(sb, indent, "Unknown10", FloatUtil.ToString(Unknown_10h));
             YptXml.ValueTag(sb, indent, "Unknown14", FloatUtil.ToString(Unknown_14h));
             YptXml.ValueTag(sb, indent, "Unknown50", FloatUtil.ToString(Unknown_50h));
             YptXml.ValueTag(sb, indent, "Unknown54", FloatUtil.ToString(Unknown_54h));
             YptXml.ValueTag(sb, indent, "Unknown58", FloatUtil.ToString(Unknown_58h));
             YptXml.ValueTag(sb, indent, "Unknown5C", FloatUtil.ToString(Unknown_5Ch));
-            YptXml.ValueTag(sb, indent, "Unknown60", YptXml.UintString(Unknown_60h));
-            YptXml.ValueTag(sb, indent, "Unknown64", YptXml.UintString(Unknown_64h));
+            YptXml.ValueTag(sb, indent, "Colour1", YptXml.UintString(Colour1));
+            YptXml.ValueTag(sb, indent, "Colour2", YptXml.UintString(Colour2));
             if (UnknownData != null)
             {
                 YptXml.OpenTag(sb, indent, "UnknownData");
@@ -2947,15 +2962,14 @@ namespace CodeWalker.GameFiles
         {
             EmitterRuleName = (string_r)Xml.GetChildInnerText(node, "EmitterRule"); if (EmitterRuleName.Value == null) EmitterRuleName = null;
             ParticleRuleName = (string_r)Xml.GetChildInnerText(node, "ParticleRule"); if (ParticleRuleName.Value == null) ParticleRuleName = null;
-            Unknown_8h = Xml.GetChildUIntAttribute(node, "Unknown8");
             Unknown_10h = Xml.GetChildFloatAttribute(node, "Unknown10");
             Unknown_14h = Xml.GetChildFloatAttribute(node, "Unknown14");
             Unknown_50h = Xml.GetChildFloatAttribute(node, "Unknown50");
             Unknown_54h = Xml.GetChildFloatAttribute(node, "Unknown54");
             Unknown_58h = Xml.GetChildFloatAttribute(node, "Unknown58");
             Unknown_5Ch = Xml.GetChildFloatAttribute(node, "Unknown5C");
-            Unknown_60h = Xml.GetChildUIntAttribute(node, "Unknown60");
-            Unknown_64h = Xml.GetChildUIntAttribute(node, "Unknown64");
+            Colour1 = Xml.GetChildUIntAttribute(node, "Colour1");
+            Colour2 = Xml.GetChildUIntAttribute(node, "Colour2");
             var udnode = node.SelectSingleNode("UnknownData");
             if (udnode != null)
             {
@@ -7767,29 +7781,29 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
             //if (Unknown_8h != 0)
             //{ }//no hit
-            switch (Name) //parameter name..?
+            switch (Name) //parameter name
             {
                 case 0xea057402: // 
-                case 0x0b3045be: // "softness"
-                case 0x91bf3028: // 
-                case 0x4a8a0a28: // 
-                case 0xf8338e85: // 
-                case 0xbfd98c1d: // 
+                case 0x0b3045be: // softness
+                case 0x91bf3028: // superalpha
+                case 0x4a8a0a28: // directionalmult
+                case 0xf8338e85: // ambientmult
+                case 0xbfd98c1d: // shadowamount
                 case 0xc6fe034a: // 
-                case 0xf03acb8c: // 
+                case 0xf03acb8c: // camerabias
                 case 0x81634888: // 
-                case 0xb695f45c: // 
+                case 0xb695f45c: // normalarc
                 case 0x403390ea: // 
-                case 0x18ca6c12: // 
+                case 0x18ca6c12: // softnesscurve
                 case 0x1458f27b: // 
                 case 0xa781a38b: // 
-                case 0x77b842ed: // 
+                case 0x77b842ed: // normalmapmult
                 case 0x7b483bc5: // 
                 case 0x6a1dbec3: // 
                 case 0xba5af058: // 
-                case 0xdf7cc018: // 
-                case 0xb36327d1: // 
-                case 0x0df47048: // 
+                case 0xdf7cc018: // refractionmap
+                case 0xb36327d1: // normalspecmap
+                case 0x0df47048: // diffusetex2
                     break;
                 default:
                     break;//no hit

@@ -3870,7 +3870,18 @@ namespace CodeWalker.GameFiles
         weather_wind_foliage = 480273725,
 
 
-
+        // particles ShaderVars names from Siprus
+        diffusetex2 = 234123336,
+        softnesscurve = 415919122,
+        directionalmult = 1250560552,
+        normalmapmult = 2008564461,
+        superalpha = 2445226024,
+        normalspecmap = 3009619921,
+        normalarc = 3063280732,
+        shadowamount = 3218705437,
+        refractionmap = 3749494808,
+        camerabias = 4030385036,
+        ambientmult = 4164128389,
 
 
 
