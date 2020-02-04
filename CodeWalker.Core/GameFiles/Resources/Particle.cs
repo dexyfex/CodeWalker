@@ -2650,7 +2650,10 @@ namespace CodeWalker.GameFiles
             EventEmitters.data_items = emlist.ToArray();
             for (int i = 0; i < (EventEmitters.data_items?.Length ?? 0); i++)
             {
-                EventEmitters.data_items[i].Index = (uint)i;
+                if (EventEmitters.data_items[i] != null)
+                {
+                    EventEmitters.data_items[i].Index = (uint)i;
+                }
             }
 
 
@@ -3129,7 +3132,7 @@ namespace CodeWalker.GameFiles
                 {
                     var blk = new ParticleUnknown2Block();
                     blk.Item = item;
-                    blk.NameHash = item.NameHash;
+                    blk.Name = item.Name;
                     blist.Add(blk);
                 }
                 Unknown_28h.data_items = blist.ToArray();
@@ -3215,7 +3218,7 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x10;
 
         // structure data
-        public MetaHash NameHash { get; set; }
+        public ParticleKeyframePropName Name { get; set; }
         public uint Unknown_4h; // 0x00000000
         public ulong ItemPointer { get; set; }
 
@@ -3225,7 +3228,7 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.NameHash = reader.ReadUInt32();
+            this.Name = reader.ReadUInt32();
             this.Unknown_4h = reader.ReadUInt32();
             this.ItemPointer = reader.ReadUInt64();
 
@@ -3234,7 +3237,7 @@ namespace CodeWalker.GameFiles
 
             if (Item != null)
             { }
-            if ((Item?.NameHash ?? 0) != NameHash)
+            if ((Item?.Name ?? 0) != Name)
             { }//no hit! so this is just a "dictionary" entry for an Item!
 
             //if (Unknown_4h != 0)
@@ -3247,7 +3250,7 @@ namespace CodeWalker.GameFiles
             this.ItemPointer = (ulong)(this.Item != null ? this.Item.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.NameHash);
+            writer.Write(this.Name);
             writer.Write(this.Unknown_4h);
             writer.Write(this.ItemPointer);
         }
@@ -3261,7 +3264,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return NameHash.ToString();
+            return Name.ToString();
         }
 
     }
@@ -3273,76 +3276,16 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public ResourceSimpleList64<ParticleUnknown3> Unknown_0h { get; set; }
-        public MetaHash NameHash { get; set; }
+        public ParticleKeyframePropName Name { get; set; }
         public uint Unknown_14h { get; set; } // 0, 1
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
             this.Unknown_0h = reader.ReadBlock<ResourceSimpleList64<ParticleUnknown3>>();
-            this.NameHash = reader.ReadUInt32();
+            this.Name = reader.ReadUInt32();
             this.Unknown_14h = reader.ReadUInt32();
 
-            switch (NameHash) // hash... same as ParticleKeyframeProp names....
-            {
-                case 0:
-                case 0x45e377e9: // 
-                case 0x1104051e: //
-                case 0xe00e5025: //
-                case 0x41d49131: // 
-                case 0x4af0ffa1: // 
-                case 0x13c0cac4: // 
-                case 0x7fae9df8: // 
-                case 0x1f641348: // 
-                case 0x3dc78098: // 
-                case 0x60500691: // 
-                case 0xce8e57a7: // 
-                case 0x61c50318: // 
-                case 0xc9fe6abb: // 
-                case 0x9fc4652b: // 
-                case 0xe7d61ff7: // 
-                case 0x30e327d4: // 
-                case 0x412a554c: // 
-                case 0xe7af1a2c: // 
-                case 0xfb8eb4e6: // 
-                case 0xa7228870: // 
-                case 0x60855078: // 
-                case 0x64c7fc25: // 
-                case 0xd0ef73c5: // 
-                case 0xe5480b3b: // 
-                case 0x8306b23a: // 
-                case 0xd2df1fa0: // 
-                case 0xa83b53f0: // 
-                case 0x75990186: // 
-                case 0xd5c0fce5: // 
-                case 0x5e692d43: // 
-                case 0x64c6c696: // 
-                case 0x0aadcbef: // 
-                case 0x841ab3da: // 
-                case 0x513812a5: // 
-                case 0xf256e579: // 
-                case 0xef500a62: // 
-                case 0x34d6ded7: // 
-                case 0x2946e76f: // 
-                case 0xc35aaf9b: // 
-                case 0xe2c464a6: // 
-                case 0xa67a1155: // 
-                case 0x3ee8e85e: // 
-                case 0x72668c6f: // 
-                case 0xd7c1e22b: // 
-                case 0xff864d6c: // 
-                case 0x687b4382: // 
-                case 0xf0274f77: // 
-                case 0x1c256ba4: // 
-                case 0x351ed852: // 
-                case 0x686f965f: // 
-                case 0x61532d47: // 
-                case 0x5473d2fe: // 
-                case 0xdafe6982: // 
-                    break;
-                default:
-                    break;//no hit
-            }
             //switch (Unknown_14h)
             //{
             //    case 1:
@@ -3356,12 +3299,12 @@ namespace CodeWalker.GameFiles
         {
             // write structure data
             writer.WriteBlock(this.Unknown_0h);
-            writer.Write(this.NameHash);
+            writer.Write(this.Name);
             writer.Write(this.Unknown_14h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            YptXml.StringTag(sb, indent, "Name", YptXml.HashString(NameHash));
+            YptXml.StringTag(sb, indent, "Name", Name.ToString());
             YptXml.ValueTag(sb, indent, "Unknown14", Unknown_14h.ToString());
             if (Unknown_0h?.data_items != null)
             {
@@ -3370,7 +3313,7 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node)
         {
-            NameHash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Name"));
+            Name = Xml.GetChildInnerText(node, "Name");
             Unknown_14h = Xml.GetChildUIntAttribute(node, "Unknown14");
             Unknown_0h = new ResourceSimpleList64<ParticleUnknown3>();
             Unknown_0h.data_items = XmlMeta.ReadItemArray<ParticleUnknown3>(node, "Items");
@@ -3385,7 +3328,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return NameHash.ToString();
+            return Name.ToString();
         }
 
     }
@@ -3784,7 +3727,52 @@ namespace CodeWalker.GameFiles
 
 
 
-    
+    [TC(typeof(EXP))] public struct ParticleKeyframePropName
+    {
+        public uint Hash { get; set; }
+
+        public ParticleKeyframePropName(uint h) { Hash = h; }
+        public ParticleKeyframePropName(string str)
+        {
+            var strl = str?.ToLowerInvariant() ?? "";
+            if (strl.StartsWith("hash_"))
+            {
+                Hash = Convert.ToUInt32(strl.Substring(5), 16);
+            }
+            else
+            {
+                Hash = JenkHash.GenHash(strl);
+            }
+        }
+
+        public override string ToString()
+        {
+            var str = ParticleKeyframeProp.GetName(Hash);
+            if (!string.IsNullOrEmpty(str)) return str;
+            return YptXml.HashString((MetaHash)Hash);
+        }
+
+        public string ToCleanString()
+        {
+            if (Hash == 0) return string.Empty;
+            return ToString();
+        }
+
+        public static implicit operator uint(ParticleKeyframePropName h)
+        {
+            return h.Hash;  //implicit conversion
+        }
+
+        public static implicit operator ParticleKeyframePropName(uint v)
+        {
+            return new ParticleKeyframePropName(v);
+        }
+        public static implicit operator ParticleKeyframePropName(string s)
+        {
+            return new ParticleKeyframePropName(s);
+        }
+    }
+
 
     [TC(typeof(EXP))] public class ParticleKeyframeProp : ResourceSystemBlock, IMetaXmlItem
     {
@@ -3807,7 +3795,7 @@ namespace CodeWalker.GameFiles
         public ulong Unknown_50h; // 0x0000000000000000
         public ulong Unknown_58h; // 0x0000000000000000
         public ulong Unknown_60h; // 0x0000000000000000
-        public MetaHash NameHash { get; set; } // name hash?
+        public ParticleKeyframePropName Name { get; set; } // name hash?
         public uint Unknown_6Ch { get; set; } //offset..?
         public ResourceSimpleList64<ParticleKeyframePropValue> Values { get; set; }
         public ulong Unknown_80h; // 0x0000000000000000
@@ -3831,7 +3819,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_50h = reader.ReadUInt64();
             this.Unknown_58h = reader.ReadUInt64();
             this.Unknown_60h = reader.ReadUInt64();
-            this.NameHash = reader.ReadUInt32();
+            this.Name = reader.ReadUInt32();
             this.Unknown_6Ch = reader.ReadUInt32();
             this.Values = reader.ReadBlock<ResourceSimpleList64<ParticleKeyframePropValue>>();
             this.Unknown_80h = reader.ReadUInt64();
@@ -3864,85 +3852,6 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
             //if (Unknown_60h != 0)
             //{ }//no hit
-            switch (NameHash) // name hash ..?
-            {
-                case 0x30e327d4: // 
-                case 0x412a554c: // 
-                case 0x1f641348: // 
-                case 0x3dc78098: // 
-                case 0xa67a1155: // 
-                case 0xd5c0fce5: // 
-                case 0xe7af1a2c: // 
-                case 0x7fae9df8: // 
-                case 0x60500691: // 
-                case 0x8306b23a: // 
-                case 0x1c256ba4: // 
-                case 0x351ed852: // 
-                case 0xf0274f77: //
-                case 0x687b4382: //
-                case 0x61532d47: //
-                case 0x686f965f: // 
-                case 0x2946e76f: //
-                case 0xd0ef73c5: // 
-                case 0x64c7fc25: // 
-                case 0x0aadcbef: // 
-                case 0xfb8eb4e6: // 
-                case 0xa7228870: // 
-                case 0xe5480b3b: // 
-                case 0xd7c1e22b: // 
-                case 0xce8e57a7: // 
-                case 0x34d6ded7: // 
-                case 0xff864d6c: // 
-                case 0x61c50318: // 
-                case 0xe00e5025: // 
-                case 0x9fc4652b: // 
-                case 0x60855078: // 
-                case 0xc9fe6abb: // 
-                case 0x4af0ffa1: // 
-                case 0xa83b53f0: // 
-                case 0xdd18b4f2: // 
-                case 0xe511bc23: // 
-                case 0xd2df1fa0: // 
-                case 0x45e377e9: // 
-                case 0x5e692d43: // 
-                case 0x1104051e: // 
-                case 0x841ab3da: // 
-                case 0x41d49131: // 
-                case 0x64c6c696: // 
-                case 0x13c0cac4: // 
-                case 0xe7d61ff7: // 
-                case 0xda8c99a6: // 
-                case 0x12bbe65e: // 
-                case 0xef500a62: // 
-                case 0x75990186: // 
-                case 0xe364d5b2: // 
-                case 0xf8561886: // 
-                case 0xe2c464a6: // 
-                case 0xc35aaf9b: // 
-                case 0xb9410926: // 
-                case 0xce9adbfd: // 
-                case 0xea6afaba: // 
-                case 0x2d0d70b5: // 
-                case 0xff31aaf3: // 
-                case 0xf256e579: // 
-                case 0x513812a5: // 
-                case 0xd1be590a: // 
-                case 0x72668c6f: // 
-                case 0x3c599207: // 
-                case 0x23f55175: // 
-                case 0x3ee8e85e: // 
-                case 0xdafe6982: // 
-                case 0x5473d2fe: // 
-                case 0x9ef3ceec: // 
-                case 0x570dc9cd: // 
-                case 0x68f00338: // 
-                case 0x8ace32c2: // 
-                case 0xc248b5c9: // 
-                case 0x851d3d14: // 
-                    break;
-                default:
-                    break;//no hit
-            }
             switch (Unknown_6Ch)//some offset..?
             {
                 case 0x00007a00:
@@ -4001,7 +3910,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_50h);
             writer.Write(this.Unknown_58h);
             writer.Write(this.Unknown_60h);
-            writer.Write(this.NameHash);
+            writer.Write(this.Name);
             writer.Write(this.Unknown_6Ch);
             writer.WriteBlock(this.Values);
             writer.Write(this.Unknown_80h);
@@ -4009,7 +3918,7 @@ namespace CodeWalker.GameFiles
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            YptXml.StringTag(sb, indent, "Name", YptXml.HashString(NameHash));
+            YptXml.StringTag(sb, indent, "Name", Name.ToString());
             YptXml.ValueTag(sb, indent, "Unknown6C", Unknown_6Ch.ToString());
 
             if (Values?.data_items != null)
@@ -4020,7 +3929,7 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node)
         {
-            NameHash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Name"));
+            Name = Xml.GetChildInnerText(node, "Name");
             Unknown_6Ch = Xml.GetChildUIntAttribute(node, "Unknown6C");
 
             Values = new ResourceSimpleList64<ParticleKeyframePropValue>();
@@ -4037,8 +3946,102 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return NameHash.ToString() + " (" + (Values?.data_items?.Length ?? 0).ToString() + " values)";
+            return Name.ToString() + " (" + (Values?.data_items?.Length ?? 0).ToString() + " values)";
         }
+
+
+
+
+
+        public static string GetName(uint hash)
+        {
+            if (NameDict == null)
+            {
+                //thanks to zirconium for this
+                var d = new Dictionary<uint, string>();
+                d[0x30e327d4] = "ptxu_Acceleration:m_xyzMinKFP"; 
+                d[0x412a554c] = "ptxu_Acceleration:m_xyzMaxKFP"; 
+                d[0x1f641348] = "ptxu_Size:m_whdMinKFP"; 
+                d[0x3dc78098] = "ptxu_Size:m_whdMaxKFP"; 
+                d[0xa67a1155] = "ptxu_Size:m_tblrScalarKFP"; 
+                d[0xd5c0fce5] = "ptxu_Size:m_tblrVelScalarKFP"; 
+                d[0xe7af1a2c] = "ptxu_MatrixWeight:m_mtxWeightKFP"; 
+                d[0x7fae9df8] = "ptxu_Colour:m_rgbaMinKFP"; 
+                d[0x60500691] = "ptxu_Colour:m_rgbaMaxKFP"; 
+                d[0x8306b23a] = "ptxu_Colour:m_emissiveIntensityKFP"; 
+                d[0x1c256ba4] = "ptxu_Rotation:m_initialAngleMinKFP"; 
+                d[0x351ed852] = "ptxu_Rotation:m_initialAngleMaxKFP"; 
+                d[0xf0274f77] = "ptxu_Rotation:m_angleMinKFP"; 
+                d[0x687b4382] = "ptxu_Rotation:m_angleMaxKFP"; 
+                d[0x61532d47] = "ptxu_Collision:m_bouncinessKFP"; 
+                d[0x686f965f] = "ptxu_Collision:m_bounceDirVarKFP"; 
+                d[0x2946e76f] = "ptxu_AnimateTexture:m_animRateKFP"; 
+                d[0xd0ef73c5] = "ptxu_Dampening:m_xyzMinKFP"; 
+                d[0x64c7fc25] = "ptxu_Dampening:m_xyzMaxKFP"; 
+                d[0x0aadcbef] = "ptxu_Wind:m_influenceKFP"; 
+                d[0xfb8eb4e6] = "ptxu_Decal:m_dimensionsKFP"; 
+                d[0xa7228870] = "ptxu_Decal:m_alphaKFP"; 
+                d[0xe5480b3b] = "ptxEffectRule:m_colourTintMinKFP"; 
+                d[0xd7c1e22b] = "ptxEffectRule:m_colourTintMaxKFP"; 
+                d[0xce8e57a7] = "ptxEffectRule:m_zoomScalarKFP"; 
+                d[0x34d6ded7] = "ptxEffectRule:m_dataSphereKFP"; 
+                d[0xff864d6c] = "ptxEffectRule:m_dataCapsuleKFP"; 
+                d[0x61c50318] = "ptxEmitterRule:m_spawnRateOverTimeKFP"; 
+                d[0xe00e5025] = "ptxEmitterRule:m_spawnRateOverDistKFP"; 
+                d[0x9fc4652b] = "ptxEmitterRule:m_particleLifeKFP"; 
+                d[0x60855078] = "ptxEmitterRule:m_playbackRateScalarKFP"; 
+                d[0xc9fe6abb] = "ptxEmitterRule:m_speedScalarKFP"; 
+                d[0x4af0ffa1] = "ptxEmitterRule:m_sizeScalarKFP"; 
+                d[0xa83b53f0] = "ptxEmitterRule:m_accnScalarKFP"; 
+                d[0xdd18b4f2] = "ptxEmitterRule:m_dampeningScalarKFP"; 
+                d[0xe511bc23] = "ptxEmitterRule:m_matrixWeightScalarKFP"; 
+                d[0xd2df1fa0] = "ptxEmitterRule:m_inheritVelocityKFP"; 
+                d[0x45e377e9] = "ptxCreationDomain:m_positionKFP"; 
+                d[0x5e692d43] = "ptxCreationDomain:m_rotationKFP"; 
+                d[0x1104051e] = "ptxCreationDomain:m_sizeOuterKFP"; 
+                d[0x841ab3da] = "ptxCreationDomain:m_sizeInnerKFP"; 
+                d[0x41d49131] = "ptxTargetDomain:m_positionKFP"; 
+                d[0x64c6c696] = "ptxTargetDomain:m_rotationKFP"; 
+                d[0x13c0cac4] = "ptxTargetDomain:m_sizeOuterKFP"; 
+                d[0xe7d61ff7] = "ptxTargetDomain:m_sizeInnerKFP"; 
+                d[0xda8c99a6] = "ptxu_Light:m_rgbMinKFP"; 
+                d[0x12bbe65e] = "ptxu_Light:m_rgbMaxKFP"; 
+                d[0xef500a62] = "ptxu_Light:m_intensityKFP"; 
+                d[0x75990186] = "ptxu_Light:m_rangeKFP"; 
+                d[0xe364d5b2] = "ptxu_Light:m_coronaRgbMinKFP"; 
+                d[0xf8561886] = "ptxu_Light:m_coronaRgbMaxKFP"; 
+                d[0xe2c464a6] = "ptxu_Light:m_coronaIntensityKFP"; 
+                d[0xc35aaf9b] = "ptxu_Light:m_coronaSizeKFP"; 
+                d[0xb9410926] = "ptxu_Light:m_coronaFlareKFP"; 
+                d[0xce9adbfd] = "ptxu_ZCull:m_heightKFP"; 
+                d[0xea6afaba] = "ptxu_ZCull:m_fadeDistKFP"; 
+                d[0x2d0d70b5] = "ptxu_Noise:m_posNoiseMinKFP"; 
+                d[0xff31aaf3] = "ptxu_Noise:m_posNoiseMaxKFP"; 
+                d[0xf256e579] = "ptxu_Noise:m_velNoiseMinKFP"; 
+                d[0x513812a5] = "ptxu_Noise:m_velNoiseMaxKFP"; 
+                d[0xd1be590a] = "ptxu_Acceleration:m_strengthKFP"; 
+                d[0x72668c6f] = "ptxd_Trail:m_texInfoKFP"; 
+                d[0x3c599207] = "ptxu_FogVolume:m_rgbTintMinKFP"; 
+                d[0x23f55175] = "ptxu_FogVolume:m_rgbTintMaxKFP"; 
+                d[0x3ee8e85e] = "ptxu_FogVolume:m_densityRangeKFP"; 
+                d[0xdafe6982] = "ptxu_FogVolume:m_scaleMinKFP"; 
+                d[0x5473d2fe] = "ptxu_FogVolume:m_scaleMaxKFP"; 
+                d[0x9ef3ceec] = "ptxu_FogVolume:m_rotationMinKFP"; 
+                d[0x570dc9cd] = "ptxu_FogVolume:m_rotationMaxKFP"; 
+                d[0x68f00338] = "ptxAttractorDomain:m_positionKFP"; 
+                d[0x8ace32c2] = "ptxAttractorDomain:m_rotationKFP"; 
+                d[0xc248b5c9] = "ptxAttractorDomain:m_sizeOuterKFP"; 
+                d[0x851d3d14] = "ptxAttractorDomain:m_sizeInnerKFP";
+                NameDict = d;
+            }
+            if (NameDict.TryGetValue(hash, out string str))
+            {
+                return str;
+            }
+            return YptXml.HashString((MetaHash)hash);
+        }
+        private static Dictionary<uint, string> NameDict;
+
 
     }
 
