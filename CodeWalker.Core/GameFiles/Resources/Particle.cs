@@ -808,6 +808,100 @@ namespace CodeWalker.GameFiles
             if ((Drawables?.data_items?.Length ?? 0) != 0)
             { }
 
+
+            #region test
+
+            //var bl1 = BehaviourList1?.data_items?.ToList() ?? new List<ParticleBehaviour>();
+            //var bl2 = BehaviourList2?.data_items?.ToList() ?? new List<ParticleBehaviour>();
+            //var bl3 = BehaviourList3?.data_items?.ToList() ?? new List<ParticleBehaviour>();
+            //var bl4 = BehaviourList4?.data_items?.ToList() ?? new List<ParticleBehaviour>();
+            //var bl5 = BehaviourList5?.data_items?.ToList() ?? new List<ParticleBehaviour>();
+            //if (bl2.Count != bl3.Count)
+            //{ }//no hit
+            //foreach (var b in bl1)
+            //{
+            //    var t = b.Type;
+            //    var il2 = bl2.Contains(b);
+            //    var il3 = bl3.Contains(b);
+            //    var il4 = bl4.Contains(b);
+            //    var il5 = bl5.Contains(b);
+            //    var render = false;
+            //    var extra = false;
+            //    var extra2 = false;
+            //    switch (t)
+            //    {
+            //        case ParticleBehaviourType.Sprite:
+            //        case ParticleBehaviourType.Model:
+            //        case ParticleBehaviourType.Trail:
+            //            render = true;
+            //            break;
+            //    }
+            //    switch (t)
+            //    {
+            //        case ParticleBehaviourType.Collision:
+            //        case ParticleBehaviourType.Light:
+            //        case ParticleBehaviourType.Decal:
+            //        case ParticleBehaviourType.ZCull:
+            //        case ParticleBehaviourType.Trail:
+            //        case ParticleBehaviourType.FogVolume:
+            //        case ParticleBehaviourType.River:
+            //        case ParticleBehaviourType.DecalPool:
+            //        case ParticleBehaviourType.Liquid:
+            //            extra = true;
+            //            break;
+            //    }
+            //    switch (t)
+            //    {
+            //        case ParticleBehaviourType.Sprite:
+            //        case ParticleBehaviourType.Model:
+            //        case ParticleBehaviourType.Trail:
+            //        case ParticleBehaviourType.FogVolume:
+            //            extra2 = true;
+            //            break;
+            //    }
+            //    if (il2 != il3)
+            //    { }//no hit
+            //    if (il2 == render)
+            //    { }//no hit
+            //    if (il4 != extra)
+            //    { }//no hit
+            //    if (il5 != extra2)
+            //    { }//no hit
+            //}
+
+            //var blc1 = BehaviourList1?.data_items?.Length ?? 0;
+            //var blc2 = BehaviourList2?.data_items?.Length ?? 0;
+            //for (int i = 0; i < blc2; i++)
+            //{
+            //    var b = BehaviourList2.data_items[i];
+            //    if (!bl1.Contains(b))
+            //    { }//no hit
+            //}
+            //var blc3 = BehaviourList3?.data_items?.Length ?? 0;
+            //for (int i = 0; i < blc3; i++)
+            //{
+            //    var b = BehaviourList3.data_items[i];
+            //    if (!bl1.Contains(b))
+            //    { }//no hit
+            //}
+            //var blc4 = BehaviourList4?.data_items?.Length ?? 0;
+            //for (int i = 0; i < blc4; i++)
+            //{
+            //    var b = BehaviourList4.data_items[i];
+            //    if (!bl1.Contains(b))
+            //    { }//no hit
+            //}
+            //var blc5 = BehaviourList5?.data_items?.Length ?? 0;
+            //for (int i = 0; i < blc5; i++)
+            //{
+            //    var b = BehaviourList5.data_items[i];
+            //    if (!bl1.Contains(b))
+            //    { }//no hit
+            //}
+
+
+
+
             //if (Unknown_4h != 1)
             //{ }//no hit
             //if (Unknown_8h != 0)
@@ -1077,7 +1171,7 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
             //if (Unknown_238h != 0)
             //{ }//no hit
-
+            #endregion
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
@@ -1171,23 +1265,7 @@ namespace CodeWalker.GameFiles
             }
             if (BehaviourList1?.data_items?.Length > 0)
             {
-                YptXml.WriteItemArray(sb, BehaviourList1.data_items, indent, "BehaviourList1");
-            }
-            if (BehaviourList2?.data_items?.Length > 0)
-            {
-                YptXml.WriteItemArray(sb, BehaviourList2.data_items, indent, "BehaviourList2");
-            }
-            if (BehaviourList3?.data_items?.Length > 0)
-            {
-                YptXml.WriteItemArray(sb, BehaviourList3.data_items, indent, "BehaviourList3");
-            }
-            if (BehaviourList4?.data_items?.Length > 0)
-            {
-                YptXml.WriteItemArray(sb, BehaviourList4.data_items, indent, "BehaviourList4");
-            }
-            if (BehaviourList5?.data_items?.Length > 0)
-            {
-                YptXml.WriteItemArray(sb, BehaviourList5.data_items, indent, "BehaviourList5");
+                YptXml.WriteItemArray(sb, BehaviourList1.data_items, indent, "Behaviours");
             }
             if (UnknownList1?.data_items?.Length > 0)
             {
@@ -1227,31 +1305,25 @@ namespace CodeWalker.GameFiles
             Spawner2.ReadXml(node.SelectSingleNode("Spawner2"));
 
 
-            ResourcePointerList64<ParticleBehaviour> readBehaviours(string name)
+
+            var bnode = node.SelectSingleNode("Behaviours");
+            var blist = new List<ParticleBehaviour>();
+            if (bnode != null)
             {
-                var beh = new ResourcePointerList64<ParticleBehaviour>();
-                var bnode = node.SelectSingleNode(name);
-                if (bnode != null)
+                var inodes = bnode.SelectNodes("Item");
+                if (inodes?.Count > 0)
                 {
-                    var inodes = bnode.SelectNodes("Item");
-                    if (inodes?.Count > 0)
+                    foreach (XmlNode inode in inodes)
                     {
-                        var blist = new List<ParticleBehaviour>();
-                        foreach (XmlNode inode in inodes)
-                        {
-                            var b = ParticleBehaviour.ReadXmlNode(inode);
-                            blist.Add(b);
-                        }
-                        beh.data_items = blist.ToArray();
+                        var b = ParticleBehaviour.ReadXmlNode(inode);
+                        blist.Add(b);
                     }
                 }
-                return beh;
             }
-            BehaviourList1 = readBehaviours("BehaviourList1");
-            BehaviourList2 = readBehaviours("BehaviourList2");
-            BehaviourList3 = readBehaviours("BehaviourList3");
-            BehaviourList4 = readBehaviours("BehaviourList4");
-            BehaviourList5 = readBehaviours("BehaviourList5");
+            BuildBehaviours(blist);
+
+
+
 
             UnknownList1 = new ResourceSimpleList64<ParticleRuleUnknownItem>();
             UnknownList1.data_items = XmlMeta.ReadItemArrayNullable<ParticleRuleUnknownItem>(node, "UnknownList1");
@@ -1283,6 +1355,81 @@ namespace CodeWalker.GameFiles
             Drawables = new ResourceSimpleList64<ParticleDrawable>();
             Drawables.data_items = XmlMeta.ReadItemArrayNullable<ParticleDrawable>(node, "Drawables");
         }
+
+
+        public void BuildBehaviours(List<ParticleBehaviour> blist)
+        {
+            var blist2 = new List<ParticleBehaviour>();
+            var blist3 = new List<ParticleBehaviour>();
+            var blist4 = new List<ParticleBehaviour>();
+            var blist5 = new List<ParticleBehaviour>();
+
+            foreach (var b in blist)
+            {
+                if (b == null) continue;
+                var render = false;
+                var extra = false;
+                var extra2 = false;
+                switch (b.Type)
+                {
+                    case ParticleBehaviourType.Sprite:
+                    case ParticleBehaviourType.Model:
+                    case ParticleBehaviourType.Trail:
+                        render = true;
+                        break;
+                }
+                switch (b.Type)
+                {
+                    case ParticleBehaviourType.Collision:
+                    case ParticleBehaviourType.Light:
+                    case ParticleBehaviourType.Decal:
+                    case ParticleBehaviourType.ZCull:
+                    case ParticleBehaviourType.Trail:
+                    case ParticleBehaviourType.FogVolume:
+                    case ParticleBehaviourType.River:
+                    case ParticleBehaviourType.DecalPool:
+                    case ParticleBehaviourType.Liquid:
+                        extra = true;
+                        break;
+                }
+                switch (b.Type)
+                {
+                    case ParticleBehaviourType.Sprite:
+                    case ParticleBehaviourType.Model:
+                    case ParticleBehaviourType.Trail:
+                    case ParticleBehaviourType.FogVolume:
+                        extra2 = true;
+                        break;
+                }
+                if (!render)
+                {
+                    blist2.Add(b);
+                    blist3.Add(b);
+                }
+                if (extra)
+                {
+                    blist4.Add(b);
+                }
+                if (extra2)
+                {
+                    blist5.Add(b);
+                }
+            }
+
+            BehaviourList1 = new ResourcePointerList64<ParticleBehaviour>();
+            BehaviourList1.data_items = blist.ToArray();
+            BehaviourList2 = new ResourcePointerList64<ParticleBehaviour>();
+            BehaviourList2.data_items = blist2.ToArray();
+            BehaviourList3 = new ResourcePointerList64<ParticleBehaviour>();
+            BehaviourList3.data_items = blist3.ToArray();
+            BehaviourList4 = new ResourcePointerList64<ParticleBehaviour>();
+            BehaviourList4.data_items = blist4.ToArray();
+            BehaviourList5 = new ResourcePointerList64<ParticleBehaviour>();
+            BehaviourList5.data_items = blist5.ToArray();
+
+
+        }
+
 
         public override IResourceBlock[] GetReferences()
         {
