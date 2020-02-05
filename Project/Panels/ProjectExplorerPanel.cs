@@ -2277,8 +2277,8 @@ namespace CodeWalker.Project.Panels
 
         private void ProjectTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            bool addSelection = (ModifierKeys & Keys.Control) > 0;
-            bool fillSelection = (ModifierKeys & Keys.Shift) > 0;
+            bool addSelection = Focused && ((ModifierKeys & Keys.Control) > 0);
+            bool fillSelection = Focused && ((ModifierKeys & Keys.Shift) > 0);
             if (addSelection)
             {
                 if (SelectedNodes.Contains(e.Node))
