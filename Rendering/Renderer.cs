@@ -3490,7 +3490,7 @@ namespace CodeWalker.Rendering
 
                                         if ((dtex == null) && (ytd2 == null))// rndbl.SDtxds.Length == 0)//texture not found..
                                         {
-                                            if (drawable.ShaderGroup.TextureDictionary != null)//check any embedded texdict
+                                            if (drawable.ShaderGroup?.TextureDictionary != null)//check any embedded texdict
                                             {
                                                 dtex = drawable.ShaderGroup.TextureDictionary.Lookup(tex.NameHash);
                                                 if (dtex != null)
