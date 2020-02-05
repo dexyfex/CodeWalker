@@ -71,7 +71,7 @@ namespace CodeWalker.Forms
                     var item = PlayListView.Items.Add(audio.Name);
                     item.SubItems.Add(audio.Type);
                     item.SubItems.Add(audio.LengthStr);
-                    item.SubItems.Add(TextUtil.GetBytesReadable(audio.Data.Length));
+                    item.SubItems.Add(TextUtil.GetBytesReadable(audio.Data?.Length ?? 0));
                     item.Tag = audio;
                     totalLength += audio.Length;
                 }

@@ -180,6 +180,7 @@ namespace CodeWalker.GameFiles
                 //RE test area!
                 //TestAudioRels();
                 //TestAudioYmts();
+                //TestAudioAwcs();
                 //TestMetas();
                 //TestPsos();
                 //TestRbfs();
@@ -2831,6 +2832,35 @@ namespace CodeWalker.GameFiles
             { }
 
 
+        }
+        public void TestAudioAwcs()
+        {
+
+            StringBuilder sb = new StringBuilder();
+
+            Dictionary<uint, int> allids = new Dictionary<uint, int>();
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    try
+                    {
+                        var n = entry.NameLower;
+                        if (n.EndsWith(".awc"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            var awcfile = RpfMan.GetFile<AwcFile>(entry);
+                            if (awcfile != null)
+                            { }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                    }
+                }
+            }
         }
         public void TestMetas()
         {

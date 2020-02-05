@@ -23,8 +23,9 @@ namespace CodeWalker.GameFiles
         public int StreamCount { get; set; }
         public int InfoOffset { get; set; }
 
+        public ushort[] UnkUshorts { get; set; } //offsets of some sort?
+
         public bool MultiChannel { get; set; }
-        public byte[] MultiChannelData { get; set; }
 
         public AwcStreamInfo[] StreamInfos { get; set; }
         public uint[] AudioIds { get; set; }
@@ -79,8 +80,11 @@ namespace CodeWalker.GameFiles
                 {
                     Decrypt_RSXXTEA(data, GTA5Keys.PC_AWC_KEY);
                     Magic = BitConverter.ToUInt32(data, 0);
-                } else
+                }
+                else
+                {
                     ErrorMessage = "Corrupted data!";
+                }
             }
 
             switch (Magic)
@@ -127,14 +131,24 @@ namespace CodeWalker.GameFiles
 
 
                 var flag0 = ((Flags & 1) == 1);
-                var infoStart = 16 + (flag0 ? (StreamCount * 2) : 0);
+                if (flag0)
+                {
+                    UnkUshorts = new ushort[StreamCount]; //offsets of some sort?
+                    for (int i = 0; i < StreamCount; i++)
+                    {
+                        UnkUshorts[i] = r.ReadUInt16();
+                    }
+                }
 
+
+                var infoStart = 16 + (flag0 ? (StreamCount * 2) : 0);
+                if (ms.Position != infoStart)
+                { }
                 ms.Position = infoStart;
+
 
                 List<AwcStreamInfo> infos = new List<AwcStreamInfo>();
                 Dictionary<uint, AwcStreamInfo> infoDict = new Dictionary<uint, AwcStreamInfo>();
-                List<uint> audioIds = new List<uint>();
-                List<AwcAudio> audios = new List<AwcAudio>();
 
                 for (int i = 0; i < StreamCount; i++)
                 {
@@ -145,178 +159,144 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < StreamCount; i++)
                 {
                     var info = infos[i];
-                    for (int j = 0; j < info.TagCount; j++)
+                    for (int j = 0; j < info.ChunkCount; j++)
                     {
                         var chunk = new AwcChunkInfo(r);
-                        info.Chunks[chunk.Tag] = chunk;
+                        info.ChunkList.Add(chunk);
+                        info.ChunkDict[chunk.Tag] = chunk;
                     }
                 }
 
                 StreamInfos = infos.ToArray();
 
-
-
-                byte hformat = 0xFA;// 250  0x6061D4FA & 0xFF; //JenkHash.GenHash("format");
-                byte hdata = 0x55;// 85  0x5EB5E655 & 0xFF; //JenkHash.GenHash("data");
-                byte hycd = 0x5C;// 92  YCD resource chunk... lip sync anims?
-                byte hunk = 0x36;// 54  unk chunk? small number of bytes (2+)
-
-
-
-                if (MultiChannel)
-                {
-                    AwcStreamInfo stream0 = null;
-                    if (!infoDict.TryGetValue(0, out stream0))
-                    {
-                        ErrorMessage = "Couldn't find MultiChannel stream0";
-                        return;
-                    }
-
-                    AwcChunkInfo chunk72 = null;
-                    if (!stream0.Chunks.TryGetValue(72, out chunk72))
-                    {
-                        ErrorMessage = "Couldn't find MultiChannel chunk72";
-                        return;
-                    }
-
-                    ms.Position = chunk72.Offset;
-
-                    AwcChannelChunkInfo chanInfo = new AwcChannelChunkInfo(r);
-                    if (chanInfo.ChannelCount != StreamCount - 1)
-                    {
-                        ErrorMessage = "Channel Count did not match Stream Count";
-                        return;
-                    }
-
-                    List<AwcChannelChunkItemInfo> chunkItems = new List<AwcChannelChunkItemInfo>();
-                    for (int i = 0; i < chanInfo.ChannelCount; i++)
-                    {
-                        var itemInfo = new AwcChannelChunkItemInfo(r);
-                        chunkItems.Add(itemInfo);
-                        audioIds.Add(infos[i + 1].Id);
-                    }
-
-                    //AudioStreams.Add(new MultiChannelAudio(new ChunkStream(this.Stream, streamsChunks[0][Tag("data")]), channelsInfoHeader, streamsInfo, header.BigEndian));
-
-                    AwcChunkInfo cdata = null;
-                    if (!stream0.Chunks.TryGetValue(hdata, out cdata))
-                    {
-                        ErrorMessage = "Couldn't find Stream 0 data chunk";
-                        return;
-                    }
-
-                    ms.Position = cdata.Offset;
-                    var lastPos = cdata.Offset + cdata.Size;
-                    //int chunkSize = 0x800;
-                    uint bigChunkSize = chanInfo.ChunkSize;
-                    var chanCount = chanInfo.ChannelCount;
-
-                    MultiChannelData = r.ReadBytes(cdata.Size);
-                    ms.Position = cdata.Offset;
-
-                    //var d = data;//temporary
-
-                    ////this doesn't seem to work :(
-                    //while (ms.Position < lastPos)
-                    //{
-                    //    uint totalChunks = 0;
-                    //    var startPos = ms.Position;
-                    //    var curPos = startPos;
-                    //    //byte[] chunkdata = r.ReadBytes(chunkSize);
-                    //    //ms.Position = startPos;
-                    //    AwcChannelChunkHeader[] chanHeaders = new AwcChannelChunkHeader[chanCount];
-                    //    for (int i = 0; i < chanCount; i++)
-                    //    {
-                    //        var chanHeader = new AwcChannelChunkHeader(r);
-                    //        chanHeaders[i] = chanHeader;
-                    //        totalChunks += chanHeader.ChunkCount;
-                    //    }
-                    //    int headerSize = (int)(totalChunks * 4 + chanInfo.ChannelCount * AwcChannelChunkHeader.Size);
-                    //    headerSize += (((-headerSize) % chunkSize) + chunkSize) % chunkSize; //todo: simplify this!
-                    //    curPos += headerSize;
-                    //    AwcChannelChunk[] chanChunks = new AwcChannelChunk[chanCount];
-                    //    for (int i = 0; i < chanCount; i++)
-                    //    {
-                    //        var chanChunk = new AwcChannelChunk(r, chanHeaders[i], chunkItems[i]);
-                    //        chanChunks[i] = chanChunk;
-                    //        curPos += chanChunk.TotalDataSize;
-                    //    }
-                    //    if (curPos - startPos > chanInfo.ChunkSize)
-                    //    {
-                    //        ErrorMessage = "Chunk was bigger than the chunk size";
-                    //        break;
-                    //    }
-                    //    if ((totalChunks == 0) || ((startPos + chanInfo.ChunkSize) > lastPos))
-                    //    {
-                    //        ErrorMessage = "Unable to read chunk";
-                    //        break;
-                    //    }
-                    //    var newPos = startPos + bigChunkSize;
-                    //    if (newPos >= lastPos) break;
-                    //    ms.Position = newPos;
-                    //}
-
-
-
-                }
-                else
-                {
-
-                    for (int i = 0; i < StreamCount; i++)
-                    {
-                        var info = infos[i];
-
-                        AwcChunkInfo cformat = null;
-                        if (!info.Chunks.TryGetValue(hformat, out cformat))
-                        {
-                            ErrorMessage = "Couldn't find Stream " + i.ToString() + " format chunk";
-                            continue;
-                        }
-
-                        AwcChunkInfo cdata = null;
-                        if (!info.Chunks.TryGetValue(hdata, out cdata))
-                        {
-                            ErrorMessage = "Couldn't find Stream " + i.ToString() + " data chunk";
-                            continue;
-                        }
-
-                        AwcChunkInfo cycd = null;
-                        AwcAudioAnimClipDict oycd = null;
-                        if (info.Chunks.TryGetValue(hycd, out cycd))
-                        {
-                            ms.Position = cycd.Offset;
-                            oycd = new AwcAudioAnimClipDict(r, cycd);
-                        }
-
-                        AwcChunkInfo cunk = null;
-                        AwcAudioUnk ounk = null;
-                        if (info.Chunks.TryGetValue(hunk, out cunk))
-                        {
-                            ms.Position = cunk.Offset;
-                            ounk = new AwcAudioUnk(r, cunk);
-                        }
-
-
-                        ms.Position = cformat.Offset;
-                        AwcFormatChunk formatChunk = new AwcFormatChunk(r);
-
-                        ms.Position = cdata.Offset;
-                        AwcAudio audio = new AwcAudio(r, info, formatChunk, cdata);
-
-                        audio.ClipDict = oycd;
-                        audio.UnkData = ounk;
-
-                        audios.Add(audio);
-                        audioIds.Add(info.Id);
-                    }
-                }
-
-
-                Audios = audios.ToArray();
-                AudioIds = audioIds.ToArray();
-
-
+                //ReadAudiosOrig(infoDict, r);
+                ReadAudios(r);
             }
+        }
+
+        private void ReadAudios(DataReader r)
+        {
+
+            List<uint> audioIds = new List<uint>();
+            List<AwcAudio> audios = new List<AwcAudio>();
+
+            for (int i = 0; i < StreamCount; i++)
+            {
+                var info = StreamInfos[i];
+                var audio = new AwcAudio();
+                audio.StreamInfo = info;
+
+                for (int j = 0; j < info.ChunkList.Count; j++)
+                {
+                    var chunk = info.ChunkList[j];
+                    r.Position = chunk.Offset;
+                    switch (chunk.Tag)
+                    {
+                        case 85: //data
+                            audio.DataInfo = chunk;
+                            audio.Data = r.ReadBytes(chunk.Size);
+                            break;
+                        case 250://format
+                            audio.Format = new AwcFormatChunk(r, chunk);
+                            break;
+                        case 92: //animation  - YCD resource chunk
+                            audio.ClipDict = new AwcAudioAnimClipDict(r, chunk);
+                            break;
+                        case 43: //unk2B
+                            audio.UnkData2B = new AwcAudioUnk(r, chunk);
+                            break;
+                        case 54: //unk36  - small number of bytes (2+)
+                            audio.UnkData36 = new AwcAudioUnk(r, chunk);
+                            break;
+                        case 90: //unk5A
+                            audio.UnkData5A = new AwcAudioUnk(r, chunk);
+                            break;
+                        case 104://unk68
+                            audio.UnkData68 = new AwcAudioUnk(r, chunk);
+                            break;
+                        case 217://unkD9  - length 200+
+                            audio.UnkDataD9 = new AwcAudioUnk(r, chunk);
+                            break;
+                        case 72: //multi channel info
+                            audio.MultiChannelInfo = new AwcChannelChunkInfo(r);
+                            break;
+                        case 163://multi unkA3
+                            audio.MultiChannelOffsets = new AwcChannelOffsetsInfo(r, chunk);
+                            break;
+                        case 189://multi unkBD
+                            audio.UnkDataBD = new AwcAudioUnk(r, chunk);
+                            break;
+                        default:
+                            break;
+                    }
+                    if ((r.Position - chunk.Offset) != chunk.Size)
+                    { }//make sure everything was read!
+                }
+
+                audios.Add(audio);
+                audioIds.Add(info.Id);
+            }
+
+            Audios = audios.ToArray();
+            AudioIds = audioIds.ToArray();
+
+        }
+
+        private void ReadAudiosOrig(Dictionary<uint, AwcStreamInfo> infoDict, DataReader r)
+        {
+
+            //just leaving this here temporarily for reference about how libertyV parsed multichannel data
+
+
+            //r.Position = cdata.Offset;
+            //var lastPos = cdata.Offset + cdata.Size;
+            ////int chunkSize = 0x800;
+            //uint bigChunkSize = chanInfo.ChunkSize;
+            //var chanCount = chanInfo.ChannelCount;
+
+            //MultiChannelData = r.ReadBytes(cdata.Size);
+            //r.Position = cdata.Offset;
+
+            ////this doesn't seem to work :(
+            //while (ms.Position < lastPos)
+            //{
+            //    uint totalChunks = 0;
+            //    var startPos = ms.Position;
+            //    var curPos = startPos;
+            //    //byte[] chunkdata = r.ReadBytes(chunkSize);
+            //    //ms.Position = startPos;
+            //    AwcChannelChunkHeader[] chanHeaders = new AwcChannelChunkHeader[chanCount];
+            //    for (int i = 0; i < chanCount; i++)
+            //    {
+            //        var chanHeader = new AwcChannelChunkHeader(r);
+            //        chanHeaders[i] = chanHeader;
+            //        totalChunks += chanHeader.ChunkCount;
+            //    }
+            //    int headerSize = (int)(totalChunks * 4 + chanInfo.ChannelCount * AwcChannelChunkHeader.Size);
+            //    headerSize += (((-headerSize) % chunkSize) + chunkSize) % chunkSize; //todo: simplify this!
+            //    curPos += headerSize;
+            //    AwcChannelChunk[] chanChunks = new AwcChannelChunk[chanCount];
+            //    for (int i = 0; i < chanCount; i++)
+            //    {
+            //        var chanChunk = new AwcChannelChunk(r, chanHeaders[i], chunkItems[i]);
+            //        chanChunks[i] = chanChunk;
+            //        curPos += chanChunk.TotalDataSize;
+            //    }
+            //    if (curPos - startPos > chanInfo.ChunkSize)
+            //    {
+            //        ErrorMessage = "Chunk was bigger than the chunk size";
+            //        break;
+            //    }
+            //    if ((totalChunks == 0) || ((startPos + chanInfo.ChunkSize) > lastPos))
+            //    {
+            //        ErrorMessage = "Unable to read chunk";
+            //        break;
+            //    }
+            //    var newPos = startPos + bigChunkSize;
+            //    if (newPos >= lastPos) break;
+            //    ms.Position = newPos;
+            //}
+
 
         }
 
@@ -326,21 +306,22 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public class AwcStreamInfo
     {
         public uint RawVal { get; set; }
-        public uint TagCount { get; set; }
+        public uint ChunkCount { get; set; }
         public uint Id { get; set; }
 
-        public Dictionary<byte, AwcChunkInfo> Chunks { get; set; } = new Dictionary<byte, AwcChunkInfo>();
+        public List<AwcChunkInfo> ChunkList { get; set; } = new List<AwcChunkInfo>();
+        public Dictionary<byte, AwcChunkInfo> ChunkDict { get; set; } = new Dictionary<byte, AwcChunkInfo>();
 
         public AwcStreamInfo(DataReader r)
         {
             RawVal = r.ReadUInt32();
-            TagCount = (RawVal >> 29);
+            ChunkCount = (RawVal >> 29);
             Id = (RawVal & 0x1FFFFFFF);
         }
 
         public override string ToString()
         {
-            return Id.ToString("X") + ": " + TagCount.ToString() + " tags";
+            return Id.ToString("X") + ": " + ChunkCount.ToString() + " chunks";
         }
     }
 
@@ -367,20 +348,32 @@ namespace CodeWalker.GameFiles
 
     [TC(typeof(EXP))] public class AwcChannelChunkInfo
     {
-        public uint Unk0 { get; set; }
+        public uint ChunkCount { get; set; }
         public uint ChunkSize { get; set; }
         public uint ChannelCount { get; set; }
+        public AwcChannelChunkItemInfo[] Channels { get; set; }
+
+        public uint TotalSize { get { return ChunkCount * ChunkSize; } }
 
         public AwcChannelChunkInfo(DataReader r)
         {
-            Unk0 = r.ReadUInt32();
+            ChunkCount = r.ReadUInt32();
             ChunkSize = r.ReadUInt32();
             ChannelCount = r.ReadUInt32();
+
+            List<AwcChannelChunkItemInfo> channels = new List<AwcChannelChunkItemInfo>();
+            for (int i = 0; i < ChannelCount; i++)
+            {
+                var itemInfo = new AwcChannelChunkItemInfo(r);
+                channels.Add(itemInfo);
+            }
+            Channels = channels.ToArray();
+
         }
 
         public override string ToString()
         {
-            return Unk0.ToString() + ": " + ChunkSize.ToString() + ", " + ChannelCount.ToString() + " channels";
+            return ChunkCount.ToString() + ": " + ChunkSize.ToString() + ", " + ChannelCount.ToString() + " channels";
         }
     }
 
@@ -421,14 +414,16 @@ namespace CodeWalker.GameFiles
         public ushort LoopEnd { get; set; }
         public ushort PlayEnd { get; set; }
         public byte PlayBegin { get; set; }
+        public uint UnkExtra { get; set; }
 
-        public enum CodecFormat {
+        public enum CodecFormat
+        {
             PCM = 0,
             ADPCM = 4
         }
         public CodecFormat Codec { get; set; }
 
-        public AwcFormatChunk(DataReader r)
+        public AwcFormatChunk(DataReader r, AwcChunkInfo info)
         {
             Samples = r.ReadUInt32();
             LoopPoint = r.ReadInt32();
@@ -440,9 +435,17 @@ namespace CodeWalker.GameFiles
             PlayBegin = r.ReadByte();
             Codec = (CodecFormat)r.ReadByte();
 
-            //Apparently sometimes this struct is longer? TODO: fix??
-            //r.ReadUInt16();
-            //r.ReadUInt16();
+            switch (info.Size) //Apparently sometimes this struct is longer?
+            {
+                case 20:
+                    break;
+                case 24:
+                    UnkExtra = r.ReadUInt32();
+                    break;
+                default:
+                    break;//no hit
+            }
+
         }
 
 
@@ -460,8 +463,14 @@ namespace CodeWalker.GameFiles
         public byte[] Data { get; set; }
 
         public AwcAudioAnimClipDict ClipDict { get; set; }
-        public AwcAudioUnk UnkData { get; set; }
-
+        public AwcAudioUnk UnkData2B { get; set; }
+        public AwcAudioUnk UnkData36 { get; set; }
+        public AwcAudioUnk UnkData5A { get; set; }
+        public AwcAudioUnk UnkData68 { get; set; }
+        public AwcAudioUnk UnkDataD9 { get; set; }
+        public AwcChannelChunkInfo MultiChannelInfo { get; set; }
+        public AwcChannelOffsetsInfo MultiChannelOffsets { get; set; }
+        public AwcAudioUnk UnkDataBD { get; set; }
 
         public short Channels = 1;
         public short BitsPerSample = 16;
@@ -530,6 +539,9 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public AwcAudio()
+        {
+        }
         public AwcAudio(DataReader r, AwcStreamInfo s, AwcFormatChunk f, AwcChunkInfo d)
         {
             StreamInfo = s;
@@ -716,10 +728,12 @@ namespace CodeWalker.GameFiles
 
     [TC(typeof(EXP))] public class AwcAudioUnk
     {
+        public AwcChunkInfo ChunkInfo { get; set; }
         public byte[] Data { get; set; }
 
         public AwcAudioUnk(DataReader r, AwcChunkInfo info)
         {
+            ChunkInfo = info;
             Data = r.ReadBytes(info.Size);
         }
 
@@ -735,6 +749,32 @@ namespace CodeWalker.GameFiles
             return sb.ToString();
         }
     }
+
+    [TC(typeof(EXP))] public class AwcChannelOffsetsInfo
+    {
+        public AwcChunkInfo ChunkInfo { get; set; }
+        public uint[] Offsets { get; set; }
+
+        public AwcChannelOffsetsInfo(DataReader r, AwcChunkInfo info)
+        {
+            ChunkInfo = info;
+            var count = info.Size / 4;
+            var rem = info.Size % 4;
+            if (rem != 0)
+            { }
+            Offsets = new uint[count];
+            for (int i = 0; i < count; i++)
+            {
+                Offsets[i] = r.ReadUInt32();
+            }
+        }
+
+        public override string ToString()
+        {
+            return (Offsets?.Length ?? 0).ToString() + " items";
+        }
+    }
+
 
 
     [TC(typeof(EXP))] public class AwcChannelChunkHeader
