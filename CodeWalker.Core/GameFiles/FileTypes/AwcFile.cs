@@ -23,9 +23,15 @@ namespace CodeWalker.GameFiles
         public int StreamCount { get; set; }
         public int InfoOffset { get; set; }
 
+        public bool UnkUshortsFlag { get { return ((Flags & 1) == 1); } }
+        public bool SingleChannelEncryptFlag { get { return ((Flags & 2) == 2); } }
+        public bool MultiChannelFlag { get { return ((Flags & 4) == 4); }  }
+        public bool MultiChannelEncryptFlag { get { return ((Flags & 8) == 8); } }
+
         public ushort[] UnkUshorts { get; set; } //offsets of some sort?
 
-        public bool MultiChannel { get; set; }
+
+        public bool WholeFileEncrypted { get; set; }
 
         public AwcStreamInfo[] StreamInfos { get; set; }
         public uint[] AudioIds { get; set; }
@@ -80,6 +86,7 @@ namespace CodeWalker.GameFiles
                 {
                     Decrypt_RSXXTEA(data, GTA5Keys.PC_AWC_KEY);
                     Magic = BitConverter.ToUInt32(data, 0);
+                    WholeFileEncrypted = true;
                 }
                 else
                 {
@@ -111,27 +118,13 @@ namespace CodeWalker.GameFiles
                 InfoOffset = r.ReadInt32();
 
 
-                //notes from libertyV:
-                // first bit - means that there are unknown word for each stream after this header
-                // second bit - I think that it means that not all the tags are in the start of the file, but all the tags of a stream are near the data tag
-                // third bit - Multi channel audio
-
                 if ((Flags >> 8) != 0xFF)
                 {
                     ErrorMessage = "Flags 0 not supported!";
                     return;
                 }
-                if ((Flags & 0xF8) != 0)
-                {
-                    //ErrorMessage = "Flags 1 not supported!";
-                    //return;
-                }
 
-                MultiChannel = ((Flags & 4) == 4);
-
-
-                var flag0 = ((Flags & 1) == 1);
-                if (flag0)
+                if (UnkUshortsFlag)
                 {
                     UnkUshorts = new ushort[StreamCount]; //offsets of some sort?
                     for (int i = 0; i < StreamCount; i++)
@@ -141,9 +134,9 @@ namespace CodeWalker.GameFiles
                 }
 
 
-                var infoStart = 16 + (flag0 ? (StreamCount * 2) : 0);
+                var infoStart = 16 + (UnkUshortsFlag ? (StreamCount * 2) : 0);
                 if (ms.Position != infoStart)
-                { }
+                { }//no hit
                 ms.Position = infoStart;
 
 
@@ -169,8 +162,9 @@ namespace CodeWalker.GameFiles
 
                 StreamInfos = infos.ToArray();
 
-                //ReadAudiosOrig(infoDict, r);
                 ReadAudios(r);
+
+
             }
         }
 
@@ -179,6 +173,7 @@ namespace CodeWalker.GameFiles
 
             List<uint> audioIds = new List<uint>();
             List<AwcAudio> audios = new List<AwcAudio>();
+            AwcAudio multiaudio = null;
 
             for (int i = 0; i < StreamCount; i++)
             {
@@ -211,17 +206,17 @@ namespace CodeWalker.GameFiles
                         case 90: //unk5A
                             audio.UnkData5A = new AwcAudioUnk(r, chunk);
                             break;
-                        case 104://unk68
-                            audio.UnkData68 = new AwcAudioUnk(r, chunk);
+                        case 104://MIDI
+                            audio.MIDIData = new AwcAudioMIDI(r, chunk);
                             break;
                         case 217://unkD9  - length 200+
                             audio.UnkDataD9 = new AwcAudioUnk(r, chunk);
                             break;
                         case 72: //multi channel info
-                            audio.MultiChannelInfo = new AwcChannelChunkInfo(r);
+                            audio.MultiChannelInfo = new AwcChannelBlockInfo(r);
                             break;
                         case 163://multi unkA3
-                            audio.MultiChannelOffsets = new AwcChannelOffsetsInfo(r, chunk);
+                            audio.MultiChannelSampleOffsets = new AwcChannelOffsetsInfo(r, chunk);
                             break;
                         case 189://multi unkBD
                             audio.UnkDataBD = new AwcAudioUnk(r, chunk);
@@ -233,8 +228,81 @@ namespace CodeWalker.GameFiles
                     { }//make sure everything was read!
                 }
 
+
+                //decrypt data where necessary
+                if ((audio.Data != null) && (!WholeFileEncrypted))
+                {
+                    if (MultiChannelFlag)
+                    {
+                        var ocount = (int)(audio.MultiChannelSampleOffsets?.SampleOffsets?.Length ?? 0);
+                        var ccount = (int)(audio.MultiChannelInfo?.ChannelCount ?? 0);
+                        var bcount = (int)(audio.MultiChannelInfo?.BlockCount ?? 0);
+                        var bsize = (int)(audio.MultiChannelInfo?.BlockSize ?? 0);
+                        var blist = new List<AwcChannelDataBlock>();
+                        for (int b = 0; b < bcount; b++)
+                        {
+                            int srcoff = b * bsize;
+                            int mcsoff = (b < ocount) ? (int)audio.MultiChannelSampleOffsets.SampleOffsets[b] : 0;
+                            int blen = Math.Max(Math.Min(bsize, audio.Data.Length - srcoff), 0);
+                            var bdat = new byte[blen];
+                            Buffer.BlockCopy(audio.Data, srcoff, bdat, 0, blen);
+                            if (MultiChannelEncryptFlag)
+                            {
+                                AwcFile.Decrypt_RSXXTEA(bdat, GTA5Keys.PC_AWC_KEY);
+                            }
+                            var blk = new AwcChannelDataBlock(bdat, audio.MultiChannelInfo, r.Endianess, b, mcsoff);
+                            blist.Add(blk);
+                        }
+                        audio.MultiChannelBlocks = blist.ToArray();
+                        multiaudio = audio;
+                    }
+                    else
+                    {
+                        if (SingleChannelEncryptFlag)
+                        {
+                            AwcFile.Decrypt_RSXXTEA(audio.Data, GTA5Keys.PC_AWC_KEY);
+                        }
+                    }
+                }
+                if ((audio.Data != null) && WholeFileEncrypted && MultiChannelFlag)
+                { }//no hit
+
+
                 audios.Add(audio);
                 audioIds.Add(info.Id);
+            }
+
+            if (multiaudio != null)
+            {
+                var multichaninfos = multiaudio.MultiChannelInfo;
+                for (int i = 0; i < audios.Count; i++)
+                {
+                    var audio = audios[i];
+                    if (audio != multiaudio)
+                    {
+                        var id = audio.StreamInfo?.Id ?? 0;
+                        var srcind = 0;
+                        var chancnt = multiaudio.MultiChannelInfo?.Channels?.Length ?? 0;
+                        var found = false;
+                        for (int ind = 0; ind < chancnt; ind++)
+                        {
+                            var mchan = multiaudio.MultiChannelInfo.Channels[ind];
+                            if (mchan.Id == id)
+                            {
+                                srcind = ind;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found)
+                        { }//no hit
+
+                        audio.MultiChannelSource = multiaudio;
+                        audio.MultiChannelFormat = (srcind < multichaninfos?.Channels?.Length) ? multichaninfos.Channels[srcind] : null;
+                        audio.MultiChannelIndex = srcind;
+                    }
+
+                }
             }
 
             Audios = audios.ToArray();
@@ -242,66 +310,13 @@ namespace CodeWalker.GameFiles
 
         }
 
-        private void ReadAudiosOrig(Dictionary<uint, AwcStreamInfo> infoDict, DataReader r)
-        {
-
-            //just leaving this here temporarily for reference about how libertyV parsed multichannel data
-
-
-            //r.Position = cdata.Offset;
-            //var lastPos = cdata.Offset + cdata.Size;
-            ////int chunkSize = 0x800;
-            //uint bigChunkSize = chanInfo.ChunkSize;
-            //var chanCount = chanInfo.ChannelCount;
-
-            //MultiChannelData = r.ReadBytes(cdata.Size);
-            //r.Position = cdata.Offset;
-
-            ////this doesn't seem to work :(
-            //while (ms.Position < lastPos)
-            //{
-            //    uint totalChunks = 0;
-            //    var startPos = ms.Position;
-            //    var curPos = startPos;
-            //    //byte[] chunkdata = r.ReadBytes(chunkSize);
-            //    //ms.Position = startPos;
-            //    AwcChannelChunkHeader[] chanHeaders = new AwcChannelChunkHeader[chanCount];
-            //    for (int i = 0; i < chanCount; i++)
-            //    {
-            //        var chanHeader = new AwcChannelChunkHeader(r);
-            //        chanHeaders[i] = chanHeader;
-            //        totalChunks += chanHeader.ChunkCount;
-            //    }
-            //    int headerSize = (int)(totalChunks * 4 + chanInfo.ChannelCount * AwcChannelChunkHeader.Size);
-            //    headerSize += (((-headerSize) % chunkSize) + chunkSize) % chunkSize; //todo: simplify this!
-            //    curPos += headerSize;
-            //    AwcChannelChunk[] chanChunks = new AwcChannelChunk[chanCount];
-            //    for (int i = 0; i < chanCount; i++)
-            //    {
-            //        var chanChunk = new AwcChannelChunk(r, chanHeaders[i], chunkItems[i]);
-            //        chanChunks[i] = chanChunk;
-            //        curPos += chanChunk.TotalDataSize;
-            //    }
-            //    if (curPos - startPos > chanInfo.ChunkSize)
-            //    {
-            //        ErrorMessage = "Chunk was bigger than the chunk size";
-            //        break;
-            //    }
-            //    if ((totalChunks == 0) || ((startPos + chanInfo.ChunkSize) > lastPos))
-            //    {
-            //        ErrorMessage = "Unable to read chunk";
-            //        break;
-            //    }
-            //    var newPos = startPos + bigChunkSize;
-            //    if (newPos >= lastPos) break;
-            //    ms.Position = newPos;
-            //}
-
-
-        }
-
     }
 
+    public enum AwcCodecFormat
+    {
+        PCM = 0,
+        ADPCM = 4
+    }
 
     [TC(typeof(EXP))] public class AwcStreamInfo
     {
@@ -346,25 +361,25 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public class AwcChannelChunkInfo
+    [TC(typeof(EXP))] public class AwcChannelBlockInfo
     {
-        public uint ChunkCount { get; set; }
-        public uint ChunkSize { get; set; }
+        public uint BlockCount { get; set; }
+        public uint BlockSize { get; set; }
         public uint ChannelCount { get; set; }
-        public AwcChannelChunkItemInfo[] Channels { get; set; }
+        public AwcChannelBlockItemInfo[] Channels { get; set; }
 
-        public uint TotalSize { get { return ChunkCount * ChunkSize; } }
+        public uint TotalSize { get { return BlockCount * BlockSize; } }
 
-        public AwcChannelChunkInfo(DataReader r)
+        public AwcChannelBlockInfo(DataReader r)
         {
-            ChunkCount = r.ReadUInt32();
-            ChunkSize = r.ReadUInt32();
+            BlockCount = r.ReadUInt32();
+            BlockSize = r.ReadUInt32();
             ChannelCount = r.ReadUInt32();
 
-            List<AwcChannelChunkItemInfo> channels = new List<AwcChannelChunkItemInfo>();
+            List<AwcChannelBlockItemInfo> channels = new List<AwcChannelBlockItemInfo>();
             for (int i = 0; i < ChannelCount; i++)
             {
-                var itemInfo = new AwcChannelChunkItemInfo(r);
+                var itemInfo = new AwcChannelBlockItemInfo(r);
                 channels.Add(itemInfo);
             }
             Channels = channels.ToArray();
@@ -373,34 +388,107 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return ChunkCount.ToString() + ": " + ChunkSize.ToString() + ", " + ChannelCount.ToString() + " channels";
+            return BlockCount.ToString() + ": " + BlockSize.ToString() + ", " + ChannelCount.ToString() + " channels";
         }
     }
 
-    [TC(typeof(EXP))] public class AwcChannelChunkItemInfo
+    [TC(typeof(EXP))] public class AwcChannelBlockItemInfo
     {
         public uint Id { get; set; }
         public uint Samples { get; set; }
-        public ushort Unk0 { get; set; }
+        public ushort Unk0 { get; set; }//flags?
         public ushort SamplesPerSecond { get; set; }
-        public byte Unk1 { get; set; }
+        public AwcCodecFormat Codec { get; set; }
         public byte RoundSize { get; set; }
         public ushort Unk2 { get; set; }
 
-        public AwcChannelChunkItemInfo(DataReader r)
+        public AwcChannelBlockItemInfo(DataReader r)
         {
             Id = r.ReadUInt32();
             Samples = r.ReadUInt32();
             Unk0 = r.ReadUInt16();
             SamplesPerSecond = r.ReadUInt16();
-            Unk1 = r.ReadByte();
+            Codec = (AwcCodecFormat)r.ReadByte();
             RoundSize = r.ReadByte();
             Unk2 = r.ReadUInt16();
+
+            //switch (Unk0)
+            //{
+            //    case 65395:
+            //    case 65485:
+            //    case 33:
+            //    case 9:
+            //    case 674:
+            //    case 529:
+            //    case 11:
+            //    case 105:
+            //    case 65396:
+            //    case 437:
+            //    case 477:
+            //    case 65475:
+            //    case 519:
+            //    case 349:
+            //    case 65517:
+            //    case 106:
+            //    case 219:
+            //    case 58:
+            //    case 63:
+            //    case 65530:
+            //    case 65511:
+            //    case 191:
+            //    case 65439:
+            //    case 65345:
+            //    case 560:
+            //    case 640:
+            //    case 65335:
+            //    case 208:
+            //    case 392:
+            //    case 1968:
+            //    case 2257:
+            //    case 1101:
+            //    case 906:
+            //    case 1087:
+            //    case 718:
+            //    case 65362:
+            //    case 259:
+            //    case 234:
+            //    case 299:
+            //    case 307:
+            //    case 75:
+            //    case 67:
+            //    case 4:
+            //    case 290:
+            //    case 587:
+            //    case 65448:
+            //    case 15:
+            //    case 398:
+            //    case 399:
+            //    case 65375:
+            //    case 65376:
+            //    case 65336:
+            //        break;
+            //    default:
+            //        break;//more... flags?
+            //}
+            //switch (Codec)
+            //{
+            //    case AwcCodecFormat.ADPCM:
+            //        break;
+            //    default:
+            //        break;//no hit
+            //}
+            //switch (Unk2)
+            //{
+            //    case 0:
+            //        break;
+            //    default:
+            //        break;//no hit
+            //}
         }
 
         public override string ToString()
         {
-            return Id.ToString() + ": " + Samples.ToString() + " samples, " + SamplesPerSecond.ToString() + " samples/sec, size: " + RoundSize.ToString();
+            return Id.ToString() + ", " + Codec.ToString() + ": " + Samples.ToString() + " samples, " + SamplesPerSecond.ToString() + " samples/sec, size: " + RoundSize.ToString() + " unk0: " + Unk0.ToString();
         }
     }
 
@@ -416,12 +504,7 @@ namespace CodeWalker.GameFiles
         public byte PlayBegin { get; set; }
         public uint UnkExtra { get; set; }
 
-        public enum CodecFormat
-        {
-            PCM = 0,
-            ADPCM = 4
-        }
-        public CodecFormat Codec { get; set; }
+        public AwcCodecFormat Codec { get; set; }
 
         public AwcFormatChunk(DataReader r, AwcChunkInfo info)
         {
@@ -433,7 +516,7 @@ namespace CodeWalker.GameFiles
             LoopEnd = r.ReadUInt16();
             PlayEnd = r.ReadUInt16();
             PlayBegin = r.ReadByte();
-            Codec = (CodecFormat)r.ReadByte();
+            Codec = (AwcCodecFormat)r.ReadByte();
 
             switch (info.Size) //Apparently sometimes this struct is longer?
             {
@@ -466,11 +549,16 @@ namespace CodeWalker.GameFiles
         public AwcAudioUnk UnkData2B { get; set; }
         public AwcAudioUnk UnkData36 { get; set; }
         public AwcAudioUnk UnkData5A { get; set; }
-        public AwcAudioUnk UnkData68 { get; set; }
+        public AwcAudioMIDI MIDIData { get; set; }
         public AwcAudioUnk UnkDataD9 { get; set; }
-        public AwcChannelChunkInfo MultiChannelInfo { get; set; }
-        public AwcChannelOffsetsInfo MultiChannelOffsets { get; set; }
+        public AwcChannelBlockInfo MultiChannelInfo { get; set; }
+        public AwcChannelOffsetsInfo MultiChannelSampleOffsets { get; set; }
+        public AwcChannelDataBlock[] MultiChannelBlocks { get; set; }
         public AwcAudioUnk UnkDataBD { get; set; }
+
+        public AwcAudio MultiChannelSource { get; set; }
+        public AwcChannelBlockItemInfo MultiChannelFormat { get; set; }
+        public int MultiChannelIndex { get; set; }
 
         public short Channels = 1;
         public short BitsPerSample = 16;
@@ -478,14 +566,14 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                return Format?.SamplesPerSecond ?? 0;
+                return Format?.SamplesPerSecond ?? MultiChannelFormat?.SamplesPerSecond ?? 0;
             }
         }
         public int SampleCount
         {
             get
             {
-                return (int)(Format?.Samples ?? 0);
+                return (int)(Format?.Samples ?? MultiChannelFormat?.Samples ?? 0);
             }
         }
 
@@ -501,23 +589,33 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                if (Format == null) return "Unknown";
-
-                string codec;
-                switch (Format.Codec)
+                if (MIDIData != null)
                 {
-                    case AwcFormatChunk.CodecFormat.PCM:
-                        codec = "PCM";
-                        break;
-                    case AwcFormatChunk.CodecFormat.ADPCM:
-                        codec = "ADPCM";
+                    return "MIDI";
+                }
+
+                var fc = AwcCodecFormat.PCM;
+                var hz = 0;
+                if (Format != null)
+                {
+                    fc = Format.Codec;
+                    hz = Format.SamplesPerSecond;
+                }
+                if (MultiChannelFormat != null)
+                {
+                    fc = MultiChannelFormat.Codec;
+                    hz = MultiChannelFormat.SamplesPerSecond;
+                }
+                string codec = fc.ToString();
+                switch (fc)
+                {
+                    case AwcCodecFormat.PCM:
+                    case AwcCodecFormat.ADPCM:
                         break;
                     default:
                         codec = "Unknown";
                         break;
                 }
-
-                var hz = Format.SamplesPerSecond;
 
                 return codec + ((hz > 0) ? (", " + hz.ToString() + " Hz") : "");
             }
@@ -527,10 +625,11 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                return Format == null ? 0 : (float)Format.Samples / Format.SamplesPerSecond;                
+                if (Format != null) return (float)Format.Samples / Format.SamplesPerSecond;
+                if (MultiChannelFormat != null) return (float)MultiChannelFormat.Samples / MultiChannelFormat.SamplesPerSecond;
+                return 0;
             }
         }
-
         public string LengthStr
         {
             get
@@ -538,6 +637,39 @@ namespace CodeWalker.GameFiles
                 return TimeSpan.FromSeconds(Length).ToString("m\\:ss");
             }
         }
+
+        public int ByteLength
+        {
+            get
+            {
+                if (MIDIData?.Data != null)
+                {
+                    return MIDIData.Data?.Length ?? 0;
+                }
+                if (Data != null)
+                {
+                    return Data.Length;
+                }
+                if (MultiChannelSource != null)
+                {
+                    int c = 0;
+                    if (MultiChannelSource?.MultiChannelBlocks != null)
+                    {
+                        foreach (var blk in MultiChannelSource.MultiChannelBlocks)
+                        {
+                            if (MultiChannelIndex < (blk?.Channels?.Length ?? 0))
+                            {
+                                var chan = blk.Channels[MultiChannelIndex];
+                                c += chan?.ChannelData?.Length ?? 0;
+                            }
+                        }
+                    }
+                    return c;
+                }
+                return 0;
+            }
+        }
+
 
         public AwcAudio()
         {
@@ -553,8 +685,20 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            var hash = (StreamInfo?.Id.ToString("X") ?? "0").PadLeft(8, '0');
-            return "0x" + hash + ": " + Format?.ToString() ?? "AwcAudio";
+            var hash = "0x" + (StreamInfo?.Id.ToString("X") ?? "0").PadLeft(8, '0') + ": ";
+            if (Format != null)
+            {
+                return hash + Format?.ToString() ?? "AwcAudio";
+            }
+            if (MultiChannelFormat != null)
+            {
+                return hash + MultiChannelFormat?.ToString() ?? "AwcAudio";
+            }
+            if (MIDIData != null)
+            {
+                return hash + MIDIData.ToString(); 
+            }
+            return hash + "Unknown";
         }
 
         public byte[] DecodeADPCM(byte[] data, int sampleCount)
@@ -635,27 +779,56 @@ namespace CodeWalker.GameFiles
         {
             byte[] dataPCM = null;
             int bitsPerSample = BitsPerSample;
+            var channels = Channels;
 
-            switch (Format.Codec)
+            if (MultiChannelFormat != null)
             {
-                case AwcFormatChunk.CodecFormat.PCM:
-                    dataPCM = Data;
-                    break;
-                case AwcFormatChunk.CodecFormat.ADPCM:
-                    dataPCM = new byte[Data.Length];
-                    Buffer.BlockCopy(Data, 0, dataPCM, 0, Data.Length);
-                    AwcFile.Decrypt_RSXXTEA(dataPCM, GTA5Keys.PC_AWC_KEY);
+                var ms = new MemoryStream();
+                var bw = new BinaryWriter(ms);
+                if (MultiChannelSource?.MultiChannelBlocks != null)
+                {
+                    foreach (var blk in MultiChannelSource.MultiChannelBlocks)
+                    {
+                        if (MultiChannelIndex < (blk?.Channels?.Length ?? 0))
+                        {
+                            var chan = blk.Channels[MultiChannelIndex];
+                            var cdata = chan.ChannelData;
+                            bw.Write(cdata);
+                        }
+                    }
+                }
+                bw.Flush();
+                ms.Position = 0;
+                dataPCM = new byte[ms.Length];
+                ms.Read(dataPCM, 0, (int)ms.Length);
+                if (MultiChannelFormat.Codec == AwcCodecFormat.ADPCM)
+                {
                     dataPCM = DecodeADPCM(dataPCM, SampleCount);
-                    bitsPerSample = 16;
-                    break;
+                }
+                channels = 1;
+            }
+            else
+            {
+                switch (Format.Codec)
+                {
+                    case AwcCodecFormat.PCM:
+                        dataPCM = Data;
+                        break;
+                    case AwcCodecFormat.ADPCM:
+                        dataPCM = new byte[Data.Length];
+                        Buffer.BlockCopy(Data, 0, dataPCM, 0, Data.Length);
+                        dataPCM = DecodeADPCM(dataPCM, SampleCount);
+                        bitsPerSample = 16;
+                        break;
+                }
             }
 
-            int byteRate = SamplesPerSecond * Channels * bitsPerSample / 8;
-            short blockAlign = (short)(Channels * bitsPerSample / 8);
+            int byteRate = SamplesPerSecond * channels * bitsPerSample / 8;
+            short blockAlign = (short)(channels * bitsPerSample / 8);
 
             MemoryStream stream = new MemoryStream();
             BinaryWriter w = new BinaryWriter(stream);
-            int wavLength = 12 + 24 + 8 + Data.Length;
+            int wavLength = 12 + 24 + 8 + dataPCM.Length;
 
             // RIFF chunk
             w.Write("RIFF".ToCharArray());
@@ -666,7 +839,7 @@ namespace CodeWalker.GameFiles
             w.Write("fmt ".ToCharArray());
             w.Write((int)16); // fmt size
             w.Write((short)1); // 1 = WAVE_FORMAT_PCM
-            w.Write((short)Channels);
+            w.Write((short)channels);
             w.Write((int)SamplesPerSecond);
             w.Write((int)byteRate);
             w.Write((short)blockAlign);
@@ -750,10 +923,28 @@ namespace CodeWalker.GameFiles
         }
     }
 
+    
+    [TC(typeof(EXP))] public class AwcAudioMIDI
+    {
+        public AwcChunkInfo ChunkInfo { get; set; }
+        public byte[] Data { get; set; }
+
+        public AwcAudioMIDI(DataReader r, AwcChunkInfo info)
+        {
+            ChunkInfo = info;
+            Data = r.ReadBytes(info.Size);
+        }
+
+        public override string ToString()
+        {
+            return "MIDI - " + (Data?.Length??0).ToString() + " bytes";
+        }
+    }
+
     [TC(typeof(EXP))] public class AwcChannelOffsetsInfo
     {
         public AwcChunkInfo ChunkInfo { get; set; }
-        public uint[] Offsets { get; set; }
+        public uint[] SampleOffsets { get; set; }
 
         public AwcChannelOffsetsInfo(DataReader r, AwcChunkInfo info)
         {
@@ -762,71 +953,119 @@ namespace CodeWalker.GameFiles
             var rem = info.Size % 4;
             if (rem != 0)
             { }
-            Offsets = new uint[count];
+            SampleOffsets = new uint[count];
             for (int i = 0; i < count; i++)
             {
-                Offsets[i] = r.ReadUInt32();
+                SampleOffsets[i] = r.ReadUInt32();
             }
         }
 
         public override string ToString()
         {
-            return (Offsets?.Length ?? 0).ToString() + " items";
+            return (SampleOffsets?.Length ?? 0).ToString() + " items";
         }
     }
 
-
-
-    [TC(typeof(EXP))] public class AwcChannelChunkHeader
+    [TC(typeof(EXP))] public class AwcChannelDataBlock
     {
-        public static uint Size = 16; //24 for ps3...
-
-        public uint StartChunk { get; set; }
-        public uint ChunkCount { get; set; }
-        public uint SamplesToSkip { get; set; } //mostly 0
-        public uint SamplesPerChunk { get; set; }
-        public uint DataSize { get; set; }
-
-        public AwcChannelChunkHeader(DataReader r)
-        {
-            StartChunk = r.ReadUInt32();
-            ChunkCount = r.ReadUInt32();
-            SamplesToSkip = r.ReadUInt32();
-            SamplesPerChunk = r.ReadUInt32();
-            DataSize = ChunkCount * 0x800;
-
-            //for ps3, two extra ints:
-            //uint unk0 = r.ReadUint32();
-            //DataSize = r.ReadUint32();
-
-
-        }
-
-    }
-
-    [TC(typeof(EXP))] public class AwcChannelChunk
-    {
-        public AwcChannelChunkHeader Header { get; set; }
-        public AwcChannelChunkItemInfo Info { get; set; }
         public byte[] Data { get; set; }
+        public int Index { get; set; }
+        public int SampleOffset { get; set; }
 
-        public uint TotalDataSize { get; set; }
+        public AwcChannelDataItem[] Channels { get; set; }
 
-        public AwcChannelChunk(DataReader r, AwcChannelChunkHeader h, AwcChannelChunkItemInfo i)
+
+        public AwcChannelDataBlock(byte[] data, AwcChannelBlockInfo channelInfo, Endianess endianess, int index, int sampleOffset)
         {
-            Header = h;
-            Info = i;
+            Data = data;
+            Index = index;
+            SampleOffset = sampleOffset;
 
-            TotalDataSize = h.DataSize;
-
-            var rs = i?.RoundSize ?? 0;
-            int ds = (int)h.DataSize;
-            if (rs != 0)
+            using (var ms = new MemoryStream(data))
             {
-                TotalDataSize = (uint)(TotalDataSize + (((-ds) % rs) + rs) % rs);
+                var r = new DataReader(ms, endianess);
+
+                var channels = channelInfo?.Channels;
+                var channelcount = channelInfo?.ChannelCount ?? 0;
+
+                var ilist = new List<AwcChannelDataItem>();
+                for (int i = 0; i < channelcount; i++)
+                {
+                    var channel = new AwcChannelDataItem(r);
+                    channel.ChannelInfo = ((channels != null) && (i < channels.Length)) ? channels[i] : null;
+                    ilist.Add(channel);
+                }
+                Channels = ilist.ToArray();
+
+                foreach (var channel in Channels)
+                {
+                    channel.ReadOffsets(r);
+                }
+
+                var padc = (0x800 - (r.Position % 0x800)) % 0x800;
+                var padb = r.ReadBytes((int)padc);
+
+                foreach (var channel in Channels)
+                {
+                    var bcnt = channel.OffsetCount * 2048;
+                    channel.ChannelData = r.ReadBytes(bcnt);
+                }
+                if (r.Position != r.Length)
+                { }//still more, just padding?
+
+
+
             }
+
         }
 
+        public override string ToString()
+        {
+            return (Data?.Length ?? 0).ToString() + " bytes";
+        }
+    }
+
+    [TC(typeof(EXP))] public class AwcChannelDataItem
+    {
+        public int Unk0 { get; set; }
+        public int OffsetCount { get; set; }
+        public int Unk2 { get; set; }
+        public int SampleCount { get; set; }
+        public int Unk4 { get; set; }
+        public int Unk5 { get; set; }
+
+        public int[] SampleOffsets { get; set; }
+
+        public AwcChannelBlockItemInfo ChannelInfo { get; set; } //for convenience
+
+        public byte[] ChannelData { get; set; }
+
+
+        public AwcChannelDataItem(DataReader r)
+        {
+            Unk0 = r.ReadInt32();
+            OffsetCount = r.ReadInt32();
+            Unk2 = r.ReadInt32();
+            SampleCount = r.ReadInt32();
+            Unk4 = r.ReadInt32();
+            Unk5 = r.ReadInt32();
+        }
+
+        public void ReadOffsets(DataReader r)
+        {
+            var olist = new List<int>();
+            for (int i = 0; i < OffsetCount; i++)
+            {
+                var v = r.ReadInt32();
+                olist.Add(v);
+            }
+            SampleOffsets = olist.ToArray();
+        }
+
+        public override string ToString()
+        {
+            return Unk0.ToString() + ", " + OffsetCount.ToString() + ", " + Unk2.ToString() + ", " + SampleCount.ToString() + ", " + Unk4.ToString() + ", " + Unk5.ToString();
+        }
     }
 
 }

@@ -2844,8 +2844,8 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-                    try
-                    {
+                    //try
+                    //{
                         var n = entry.NameLower;
                         if (n.EndsWith(".awc"))
                         {
@@ -2854,11 +2854,11 @@ namespace CodeWalker.GameFiles
                             if (awcfile != null)
                             { }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        UpdateStatus("Error! " + ex.ToString());
-                    }
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //}
                 }
             }
         }

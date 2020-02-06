@@ -32,7 +32,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AwcForm));
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.PlayerTabPage = new System.Windows.Forms.TabPage();
-            this.label1 = new System.Windows.Forms.Label();
             this.LabelInfo = new System.Windows.Forms.Label();
             this.LabelTime = new System.Windows.Forms.Label();
             this.StopButton = new System.Windows.Forms.Button();
@@ -75,7 +74,6 @@
             // 
             // PlayerTabPage
             // 
-            this.PlayerTabPage.Controls.Add(this.label1);
             this.PlayerTabPage.Controls.Add(this.LabelInfo);
             this.PlayerTabPage.Controls.Add(this.LabelTime);
             this.PlayerTabPage.Controls.Add(this.StopButton);
@@ -94,16 +92,6 @@
             this.PlayerTabPage.TabIndex = 0;
             this.PlayerTabPage.Text = "Player";
             this.PlayerTabPage.UseVisualStyleBackColor = true;
-            // 
-            // label1
-            // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(244, 247);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(316, 13);
-            this.label1.TabIndex = 13;
-            this.label1.Text = "WARNING: Work in progress! Some audio may not play correctly!";
             // 
             // LabelInfo
             // 
@@ -133,6 +121,7 @@
             this.StopButton.TabIndex = 10;
             this.StopButton.Text = "◼";
             this.StopButton.UseVisualStyleBackColor = true;
+            this.StopButton.Click += new System.EventHandler(this.StopButton_Click);
             // 
             // VolumeLabel
             // 
@@ -208,6 +197,7 @@
             this.PlayListView.TabIndex = 0;
             this.PlayListView.UseCompatibleStateImageBehavior = false;
             this.PlayListView.View = System.Windows.Forms.View.Details;
+            this.PlayListView.SelectedIndexChanged += new System.EventHandler(this.PlayListView_SelectedIndexChanged);
             this.PlayListView.DoubleClick += new System.EventHandler(this.PlayListView_DoubleClick);
             // 
             // PlaylistNameHeader
@@ -237,12 +227,12 @@
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ExportAsWav});
             this.contextMenuStrip.Name = "contextMenuStrip1";
-            this.contextMenuStrip.Size = new System.Drawing.Size(149, 26);
+            this.contextMenuStrip.Size = new System.Drawing.Size(150, 26);
             // 
             // ExportAsWav
             // 
             this.ExportAsWav.Name = "ExportAsWav";
-            this.ExportAsWav.Size = new System.Drawing.Size(148, 22);
+            this.ExportAsWav.Size = new System.Drawing.Size(149, 22);
             this.ExportAsWav.Text = "Export as .wav";
             this.ExportAsWav.Click += new System.EventHandler(this.ExportAsWav_Click);
             // 
@@ -352,6 +342,5 @@
         private System.Windows.Forms.ToolStripMenuItem ExportAsWav;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
         private System.Windows.Forms.ColumnHeader PlaylistSizeHeader;
-        private System.Windows.Forms.Label label1;
     }
 }
