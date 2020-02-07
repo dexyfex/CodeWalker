@@ -701,149 +701,93 @@ namespace CodeWalker.GameFiles
             return hash + "Unknown";
         }
 
-        public byte[] DecodeADPCM(byte[] data, int sampleCount)
+
+        public byte[] GetWavData()
         {
-            byte[] dataPCM = new byte[data.Length * 4];
-            int predictor = 0, step_index = 0, step = 0;
-            int readingOffset = 0, writingOffset = 0, bytesInBlock = 0;
-
-            int[] ima_index_table = {
-                -1, -1, -1, -1, 2, 4, 6, 8,
-                -1, -1, -1, -1, 2, 4, 6, 8
-            };
-
-            short[] ima_step_table = {
-                7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
-                19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
-                50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
-                130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
-                337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
-                876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
-                2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
-                5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
-                15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
-            };
-
-            int clip(int value, int min, int max)
+            if (MultiChannelFormat != null)
             {
-                if (value < min)
-                    return min;
-                if (value > max)
-                    return max;
-                return value;
-            }
-
-            void parseNibble(byte nibble)
-            {
-                step_index = clip(step_index + ima_index_table[nibble], 0, 88);
-
-                int diff = step >> 3;
-                if ((nibble & 4) > 0) diff += step;
-                if ((nibble & 2) > 0) diff += step >> 1;
-                if ((nibble & 1) > 0) diff += step >> 2;
-                if ((nibble & 8) > 0) predictor -= diff;
-                else predictor += diff;
-
-                step = ima_step_table[step_index];
-
-                int samplePCM = clip(predictor, -32768, 32767);
-                dataPCM[writingOffset] = (byte)(samplePCM & 0xFF);
-                dataPCM[writingOffset + 1] = (byte)((samplePCM >> 8) & 0xFF);
-                writingOffset += 2;
-            }
-
-            while ((readingOffset < data.Length) && (sampleCount > 0))
-            {
-                if (bytesInBlock == 0)
+                if (Data == null)
                 {
-                    step_index = clip(data[readingOffset], 0, 88);
-                    predictor = BitConverter.ToInt16(data, readingOffset + 2);
-                    step = ima_step_table[step_index];
-                    bytesInBlock = 2044;
-                    readingOffset += 4;
-                }
-                else
-                {
-                    parseNibble((byte)(data[readingOffset] & 0x0F));
-                    parseNibble((byte)((data[readingOffset] >> 4) & 0x0F));
-                    bytesInBlock--;
-                    sampleCount -= 2;
-                    readingOffset++;
+                    var ms = new MemoryStream();
+                    var bw = new BinaryWriter(ms);
+                    if (MultiChannelSource?.MultiChannelBlocks != null)
+                    {
+                        foreach (var blk in MultiChannelSource.MultiChannelBlocks)
+                        {
+                            if (MultiChannelIndex < (blk?.Channels?.Length ?? 0))
+                            {
+                                var chan = blk.Channels[MultiChannelIndex];
+                                var cdata = chan.ChannelData;
+                                bw.Write(cdata);
+                            }
+                        }
+                    }
+                    bw.Flush();
+                    ms.Position = 0;
+                    Data = new byte[ms.Length];
+                    ms.Read(Data, 0, (int)ms.Length);
                 }
             }
-
-            return dataPCM;
+            return Data;
         }
 
         public Stream GetWavStream()
         {
-            byte[] dataPCM = null;
-            int bitsPerSample = BitsPerSample;
+            byte[] dataPCM = GetWavData();
+            var bitsPerSample = BitsPerSample;
             var channels = Channels;
+            var codec = MultiChannelFormat?.Codec ?? Format?.Codec ?? AwcCodecFormat.PCM;
 
-            if (MultiChannelFormat != null)
+            if (codec == AwcCodecFormat.ADPCM)//just convert ADPCM to PCM for compatibility reasons
             {
-                var ms = new MemoryStream();
-                var bw = new BinaryWriter(ms);
-                if (MultiChannelSource?.MultiChannelBlocks != null)
-                {
-                    foreach (var blk in MultiChannelSource.MultiChannelBlocks)
-                    {
-                        if (MultiChannelIndex < (blk?.Channels?.Length ?? 0))
-                        {
-                            var chan = blk.Channels[MultiChannelIndex];
-                            var cdata = chan.ChannelData;
-                            bw.Write(cdata);
-                        }
-                    }
-                }
-                bw.Flush();
-                ms.Position = 0;
-                dataPCM = new byte[ms.Length];
-                ms.Read(dataPCM, 0, (int)ms.Length);
-                if (MultiChannelFormat.Codec == AwcCodecFormat.ADPCM)
-                {
-                    dataPCM = DecodeADPCM(dataPCM, SampleCount);
-                }
-                channels = 1;
-            }
-            else
-            {
-                switch (Format.Codec)
-                {
-                    case AwcCodecFormat.PCM:
-                        dataPCM = Data;
-                        break;
-                    case AwcCodecFormat.ADPCM:
-                        dataPCM = new byte[Data.Length];
-                        Buffer.BlockCopy(Data, 0, dataPCM, 0, Data.Length);
-                        dataPCM = DecodeADPCM(dataPCM, SampleCount);
-                        bitsPerSample = 16;
-                        break;
-                }
+                dataPCM = ADPCMCodec.DecodeADPCM(dataPCM, SampleCount);
+                bitsPerSample = 16;
             }
 
+            short formatcodec = 1; // 1 = WAVE_FORMAT_PCM
             int byteRate = SamplesPerSecond * channels * bitsPerSample / 8;
             short blockAlign = (short)(channels * bitsPerSample / 8);
+            short samplesPerBlock = 0;
+            bool addextrafmt = false;
+
+            //if (codec == AwcCodecFormat.ADPCM)//can't seem to get ADPCM wav files to work :(
+            //{
+            //    bitsPerSample = 4;
+            //    formatcodec = 17;
+            //    byteRate = (int)(SamplesPerSecond * 0.50685 * channels);
+            //    blockAlign = 2048;// (short)(256 * (4 * channels));// (short)(36 * channels);//256;// 2048;// 
+            //    samplesPerBlock = 4088;// (short)(((blockAlign - (4 * channels)) * 8) / (bitsPerSample * channels) + 1); // 2044;// 
+            //    addextrafmt = true;
+            //}
+
 
             MemoryStream stream = new MemoryStream();
             BinaryWriter w = new BinaryWriter(stream);
-            int wavLength = 12 + 24 + 8 + dataPCM.Length;
+            int wavLength = 36 + dataPCM.Length;
+            if (addextrafmt)
+            {
+                wavLength += 4;
+            }
 
             // RIFF chunk
             w.Write("RIFF".ToCharArray());
-            w.Write((int)(wavLength - 8));
+            w.Write((int)wavLength);
             w.Write("WAVE".ToCharArray());
 
             // fmt sub-chunk     
             w.Write("fmt ".ToCharArray());
-            w.Write((int)16); // fmt size
-            w.Write((short)1); // 1 = WAVE_FORMAT_PCM
+            w.Write((int)(addextrafmt ? 20 : 16)); // fmt size
+            w.Write((short)formatcodec);
             w.Write((short)channels);
             w.Write((int)SamplesPerSecond);
             w.Write((int)byteRate);
             w.Write((short)blockAlign);
             w.Write((short)bitsPerSample);
+            if (addextrafmt)
+            {
+                w.Write((ushort)0x0002);
+                w.Write((ushort)samplesPerBlock);
+            }
 
             // data sub-chunk
             w.Write("data".ToCharArray());
@@ -1066,6 +1010,90 @@ namespace CodeWalker.GameFiles
         {
             return Unk0.ToString() + ", " + OffsetCount.ToString() + ", " + Unk2.ToString() + ", " + SampleCount.ToString() + ", " + Unk4.ToString() + ", " + Unk5.ToString();
         }
+    }
+
+
+
+
+
+    public class ADPCMCodec
+    {
+
+        private static int[] ima_index_table = 
+        {
+            -1, -1, -1, -1, 2, 4, 6, 8,
+            -1, -1, -1, -1, 2, 4, 6, 8
+        };
+
+        private static short[] ima_step_table = 
+        {
+            7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
+            19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
+            50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
+            130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
+            337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
+            876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
+            2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
+            5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
+            15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
+        };
+
+        private static int clip(int value, int min, int max)
+        {
+            if (value < min) return min;
+            if (value > max) return max;
+            return value;
+        }
+
+        public static byte[] DecodeADPCM(byte[] data, int sampleCount)
+        {
+            byte[] dataPCM = new byte[data.Length * 4];
+            int predictor = 0, step_index = 0, step = 0;
+            int readingOffset = 0, writingOffset = 0, bytesInBlock = 0;
+
+            void parseNibble(byte nibble)
+            {
+                step_index = clip(step_index + ima_index_table[nibble], 0, 88);
+
+                int diff = step >> 3;
+                if ((nibble & 4) > 0) diff += step;
+                if ((nibble & 2) > 0) diff += step >> 1;
+                if ((nibble & 1) > 0) diff += step >> 2;
+                if ((nibble & 8) > 0) predictor -= diff;
+                else predictor += diff;
+
+                step = ima_step_table[step_index];
+
+                int samplePCM = clip(predictor, -32768, 32767);
+                dataPCM[writingOffset] = (byte)(samplePCM & 0xFF);
+                dataPCM[writingOffset + 1] = (byte)((samplePCM >> 8) & 0xFF);
+                writingOffset += 2;
+            }
+
+            while ((readingOffset < data.Length) && (sampleCount > 0))
+            {
+                if (bytesInBlock == 0)
+                {
+                    step_index = clip(data[readingOffset], 0, 88);
+                    predictor = BitConverter.ToInt16(data, readingOffset + 2);
+                    step = ima_step_table[step_index];
+                    bytesInBlock = 2044;
+                    readingOffset += 4;
+                }
+                else
+                {
+                    parseNibble((byte)(data[readingOffset] & 0x0F));
+                    parseNibble((byte)((data[readingOffset] >> 4) & 0x0F));
+                    bytesInBlock--;
+                    sampleCount -= 2;
+                    readingOffset++;
+                }
+            }
+
+            return dataPCM;
+        }
+
+
     }
 
 }
