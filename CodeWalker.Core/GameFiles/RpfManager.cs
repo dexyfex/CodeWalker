@@ -490,6 +490,11 @@ namespace CodeWalker.GameFiles
                     //failing silently!! not so good really
                 }
             }
+
+            for (int i = 0; i < 100; i++)
+            {
+                JenkIndex.Ensure(i.ToString("00"));
+            }
         }
 
     }

@@ -265,7 +265,7 @@ namespace CodeWalker
             InitFileType(".ytyp", "Archetype Definitions", 20, FileTypeAction.ViewYtyp, true);
             InitFileType(".ymap", "Map Data", 21, FileTypeAction.ViewYmap, true);
             InitFileType(".ipl", "Item Placements", 21, FileTypeAction.ViewText);
-            InitFileType(".awc", "Audio Wave Container", 22, FileTypeAction.ViewAwc);
+            InitFileType(".awc", "Audio Wave Container", 22, FileTypeAction.ViewAwc, true);
             InitFileType(".rel", "Audio Data (REL)", 23, FileTypeAction.ViewRel, true);
 
             InitSubFileType(".dat", "cache_y.dat", "Cache File", 6, FileTypeAction.ViewCacheDat);
@@ -1919,7 +1919,7 @@ namespace CodeWalker
                 var nl = file?.File?.NameLower;
                 if (!string.IsNullOrEmpty(nl))
                 {
-                    needfolder = nl.EndsWith(".ytd") || nl.EndsWith(".ydr") || nl.EndsWith(".ydd") || nl.EndsWith(".yft") || nl.EndsWith(".ypt");
+                    needfolder = nl.EndsWith(".ytd") || nl.EndsWith(".ydr") || nl.EndsWith(".ydd") || nl.EndsWith(".yft") || nl.EndsWith(".ypt") || nl.EndsWith(".awc");
                 }
             }
 
@@ -2494,6 +2494,10 @@ namespace CodeWalker
                     {
                         mformat = MetaFormat.Yld;
                     }
+                    if (fnamel.EndsWith(".awc.xml"))
+                    {
+                        mformat = MetaFormat.Awc;
+                    }
 
                     fname = fname.Substring(0, fname.Length - trimlength);
                     fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
@@ -2652,6 +2656,17 @@ namespace CodeWalker
                                     continue;
                                 }
                                 data = yld.Save();
+                                break;
+                            }
+                        case MetaFormat.Awc:
+                            {
+                                var awc = XmlAwc.GetAwc(doc, fpathin);
+                                if (awc.Audios == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import AWC XML");
+                                    continue;
+                                }
+                                data = awc.Save();
                                 break;
                             }
                     }
