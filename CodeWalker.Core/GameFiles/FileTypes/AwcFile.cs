@@ -1048,23 +1048,18 @@ namespace CodeWalker.GameFiles
         public static byte[] DecodeADPCM(byte[] data, int sampleCount)
         {
             byte[] dataPCM = new byte[data.Length * 4];
-            int predictor = 0, step_index = 0, step = 0;
+            int predictor = 0, stepIndex = 0;
             int readingOffset = 0, writingOffset = 0, bytesInBlock = 0;
 
             void parseNibble(byte nibble)
             {
-                step_index = clip(step_index + ima_index_table[nibble], 0, 88);
-
-                int diff = step >> 3;
-                if ((nibble & 4) > 0) diff += step;
-                if ((nibble & 2) > 0) diff += step >> 1;
-                if ((nibble & 1) > 0) diff += step >> 2;
-                if ((nibble & 8) > 0) predictor -= diff;
-                else predictor += diff;
-
-                step = ima_step_table[step_index];
-
+                var step = ima_step_table[stepIndex];
+                int diff = ((((nibble & 7) << 1) + 1) * step) >> 3;
+                if ((nibble & 8) != 0) diff = -diff;
+                predictor = predictor + diff;
+                stepIndex = clip(stepIndex + ima_index_table[nibble], 0, 88);
                 int samplePCM = clip(predictor, -32768, 32767);
+
                 dataPCM[writingOffset] = (byte)(samplePCM & 0xFF);
                 dataPCM[writingOffset + 1] = (byte)((samplePCM >> 8) & 0xFF);
                 writingOffset += 2;
@@ -1074,9 +1069,8 @@ namespace CodeWalker.GameFiles
             {
                 if (bytesInBlock == 0)
                 {
-                    step_index = clip(data[readingOffset], 0, 88);
+                    stepIndex = clip(data[readingOffset], 0, 88);
                     predictor = BitConverter.ToInt16(data, readingOffset + 2);
-                    step = ima_step_table[step_index];
                     bytesInBlock = 2044;
                     readingOffset += 4;
                 }
@@ -1093,6 +1087,91 @@ namespace CodeWalker.GameFiles
             return dataPCM;
         }
 
+        public static byte[] EncodeADPCM(byte[] data, int sampleCount)
+        {
+            byte[] dataPCM = new byte[data.Length / 4];
+
+            int predictor = 0, stepIndex = 0;
+            int readingOffset = 0, writingOffset = 0, bytesInBlock = 0;
+
+            short readSample()
+            {
+                var s = BitConverter.ToInt16(data, readingOffset);
+                readingOffset += 2;
+                return s;
+            }
+
+            void writeInt16(short v)
+            {
+                var ba = BitConverter.GetBytes(v);
+                dataPCM[writingOffset++] = ba[0];
+                dataPCM[writingOffset++] = ba[1];
+            }
+
+            byte encodeNibble(int pcm16)
+            {
+                int delta = pcm16 - predictor;
+                uint value = 0;
+                if (delta < 0)
+                {
+                    value = 8;
+                    delta = -delta;
+                }
+
+                var step = ima_step_table[stepIndex];
+                var diff = step >> 3;
+                if (delta > step)
+                {
+                    value |= 4;
+                    delta -= step;
+                    diff += step;
+                }
+                step >>= 1;
+                if (delta > step)
+                {
+                    value |= 2;
+                    delta -= step;
+                    diff += step;
+                }
+                step >>= 1;
+                if (delta > step)
+                {
+                    value |= 1;
+                    diff += step;
+                }
+
+                predictor += (((value & 8) != 0) ? -diff : diff);
+                predictor = clip(predictor, short.MinValue, short.MaxValue);
+
+                stepIndex += ima_index_table[value & 7];
+                stepIndex = clip(stepIndex, 0, 88);
+
+                return (byte)value;
+            }
+
+            while ((writingOffset < dataPCM.Length) && (sampleCount > 0))
+            {
+                if (bytesInBlock == 0)
+                {
+                    writeInt16((short)stepIndex);
+                    writeInt16((short)predictor);
+                    bytesInBlock = 2044;
+                }
+                else
+                {
+                    var s0 = readSample();
+                    var s1 = readSample();
+                    var b0 = encodeNibble(s0);
+                    var b1 = encodeNibble(s1);
+                    var b = (b0 & 0x0F) + ((b1 & 0x0F) << 4);
+                    dataPCM[writingOffset++] = (byte)b;
+                    bytesInBlock--;
+                    sampleCount -= 2;
+                }
+            }
+
+            return dataPCM;
+        }
 
     }
 
