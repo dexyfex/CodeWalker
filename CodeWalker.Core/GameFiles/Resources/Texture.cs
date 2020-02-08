@@ -503,7 +503,7 @@ namespace CodeWalker.GameFiles
             YtdXml.StringTag(sb, indent, "Usage", Usage.ToString());
             YtdXml.StringTag(sb, indent, "UsageFlags", UsageFlags.ToString());
             YtdXml.ValueTag(sb, indent, "ExtraFlags", ExtraFlags.ToString());
-            YtdXml.StringTag(sb, indent, "FileName", (Name ?? "null") + ".dds");
+            YtdXml.StringTag(sb, indent, "FileName", YtdXml.XmlEscape((Name ?? "null") + ".dds"));
 
             try
             {
