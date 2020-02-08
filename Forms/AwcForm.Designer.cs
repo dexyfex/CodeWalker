@@ -53,24 +53,30 @@
             this.DetailsPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
             this.Timer = new System.Windows.Forms.Timer(this.components);
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.XmlTabPage = new System.Windows.Forms.TabPage();
+            this.XmlTextBox = new FastColoredTextBoxNS.FastColoredTextBox();
             this.MainTabControl.SuspendLayout();
             this.PlayerTabPage.SuspendLayout();
             this.contextMenuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.VolumeTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PositionTrackBar)).BeginInit();
             this.DetailsTabPage.SuspendLayout();
+            this.XmlTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.XmlTextBox)).BeginInit();
             this.SuspendLayout();
             // 
             // MainTabControl
             // 
             this.MainTabControl.Controls.Add(this.PlayerTabPage);
             this.MainTabControl.Controls.Add(this.DetailsTabPage);
+            this.MainTabControl.Controls.Add(this.XmlTabPage);
             this.MainTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MainTabControl.Location = new System.Drawing.Point(0, 0);
             this.MainTabControl.Name = "MainTabControl";
             this.MainTabControl.SelectedIndex = 0;
-            this.MainTabControl.Size = new System.Drawing.Size(576, 361);
+            this.MainTabControl.Size = new System.Drawing.Size(709, 448);
             this.MainTabControl.TabIndex = 0;
+            this.MainTabControl.SelectedIndexChanged += new System.EventHandler(this.MainTabControl_SelectedIndexChanged);
             // 
             // PlayerTabPage
             // 
@@ -88,7 +94,7 @@
             this.PlayerTabPage.Location = new System.Drawing.Point(4, 22);
             this.PlayerTabPage.Name = "PlayerTabPage";
             this.PlayerTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.PlayerTabPage.Size = new System.Drawing.Size(568, 335);
+            this.PlayerTabPage.Size = new System.Drawing.Size(701, 422);
             this.PlayerTabPage.TabIndex = 0;
             this.PlayerTabPage.Text = "Player";
             this.PlayerTabPage.UseVisualStyleBackColor = true;
@@ -97,7 +103,7 @@
             // 
             this.LabelInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.LabelInfo.AutoSize = true;
-            this.LabelInfo.Location = new System.Drawing.Point(8, 247);
+            this.LabelInfo.Location = new System.Drawing.Point(8, 334);
             this.LabelInfo.Name = "LabelInfo";
             this.LabelInfo.Size = new System.Drawing.Size(0, 13);
             this.LabelInfo.TabIndex = 12;
@@ -105,7 +111,7 @@
             // LabelTime
             // 
             this.LabelTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.LabelTime.Location = new System.Drawing.Point(285, 308);
+            this.LabelTime.Location = new System.Drawing.Point(418, 395);
             this.LabelTime.Name = "LabelTime";
             this.LabelTime.Size = new System.Drawing.Size(114, 17);
             this.LabelTime.TabIndex = 11;
@@ -115,7 +121,7 @@
             // 
             this.StopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.StopButton.Enabled = false;
-            this.StopButton.Location = new System.Drawing.Point(211, 304);
+            this.StopButton.Location = new System.Drawing.Point(211, 391);
             this.StopButton.Name = "StopButton";
             this.StopButton.Size = new System.Drawing.Size(31, 23);
             this.StopButton.TabIndex = 10;
@@ -127,9 +133,9 @@
             // 
             this.VolumeLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.VolumeLabel.AutoSize = true;
-            this.VolumeLabel.Location = new System.Drawing.Point(405, 308);
+            this.VolumeLabel.Location = new System.Drawing.Point(538, 395);
             this.VolumeLabel.Name = "VolumeLabel";
-            this.VolumeLabel.Size = new System.Drawing.Size(56, 13);
+            this.VolumeLabel.Size = new System.Drawing.Size(60, 13);
             this.VolumeLabel.TabIndex = 9;
             this.VolumeLabel.Text = "🕩 Volume";
             // 
@@ -137,7 +143,7 @@
             // 
             this.chbAutoJump.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chbAutoJump.AutoSize = true;
-            this.chbAutoJump.Location = new System.Drawing.Point(17, 308);
+            this.chbAutoJump.Location = new System.Drawing.Point(17, 395);
             this.chbAutoJump.Name = "chbAutoJump";
             this.chbAutoJump.Size = new System.Drawing.Size(108, 17);
             this.chbAutoJump.TabIndex = 8;
@@ -147,7 +153,7 @@
             // PrevButton
             // 
             this.PrevButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.PrevButton.Location = new System.Drawing.Point(137, 304);
+            this.PrevButton.Location = new System.Drawing.Point(137, 391);
             this.PrevButton.Name = "PrevButton";
             this.PrevButton.Size = new System.Drawing.Size(31, 23);
             this.PrevButton.TabIndex = 2;
@@ -158,7 +164,7 @@
             // NextButton
             // 
             this.NextButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.NextButton.Location = new System.Drawing.Point(248, 304);
+            this.NextButton.Location = new System.Drawing.Point(248, 391);
             this.NextButton.Name = "NextButton";
             this.NextButton.Size = new System.Drawing.Size(31, 23);
             this.NextButton.TabIndex = 4;
@@ -169,7 +175,7 @@
             // PlayButton
             // 
             this.PlayButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.PlayButton.Location = new System.Drawing.Point(174, 304);
+            this.PlayButton.Location = new System.Drawing.Point(174, 391);
             this.PlayButton.Name = "PlayButton";
             this.PlayButton.Size = new System.Drawing.Size(31, 23);
             this.PlayButton.TabIndex = 3;
@@ -193,7 +199,7 @@
             this.PlayListView.Location = new System.Drawing.Point(6, 6);
             this.PlayListView.MultiSelect = false;
             this.PlayListView.Name = "PlayListView";
-            this.PlayListView.Size = new System.Drawing.Size(556, 238);
+            this.PlayListView.Size = new System.Drawing.Size(689, 325);
             this.PlayListView.TabIndex = 0;
             this.PlayListView.UseCompatibleStateImageBehavior = false;
             this.PlayListView.View = System.Windows.Forms.View.Details;
@@ -203,7 +209,7 @@
             // PlaylistNameHeader
             // 
             this.PlaylistNameHeader.Text = "Name";
-            this.PlaylistNameHeader.Width = 260;
+            this.PlaylistNameHeader.Width = 337;
             // 
             // PlaylistTypeHeader
             // 
@@ -241,7 +247,7 @@
             this.VolumeTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.VolumeTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.VolumeTrackBar.LargeChange = 10;
-            this.VolumeTrackBar.Location = new System.Drawing.Point(455, 304);
+            this.VolumeTrackBar.Location = new System.Drawing.Point(588, 391);
             this.VolumeTrackBar.Maximum = 100;
             this.VolumeTrackBar.Name = "VolumeTrackBar";
             this.VolumeTrackBar.Size = new System.Drawing.Size(105, 45);
@@ -256,10 +262,10 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.PositionTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.PositionTrackBar.LargeChange = 1000;
-            this.PositionTrackBar.Location = new System.Drawing.Point(6, 266);
+            this.PositionTrackBar.Location = new System.Drawing.Point(6, 353);
             this.PositionTrackBar.Maximum = 1000;
             this.PositionTrackBar.Name = "PositionTrackBar";
-            this.PositionTrackBar.Size = new System.Drawing.Size(554, 45);
+            this.PositionTrackBar.Size = new System.Drawing.Size(687, 45);
             this.PositionTrackBar.TabIndex = 1;
             this.PositionTrackBar.TickStyle = System.Windows.Forms.TickStyle.None;
             this.PositionTrackBar.Scroll += new System.EventHandler(this.PositionTrackBar_Scroll);
@@ -270,7 +276,7 @@
             this.DetailsTabPage.Location = new System.Drawing.Point(4, 22);
             this.DetailsTabPage.Name = "DetailsTabPage";
             this.DetailsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.DetailsTabPage.Size = new System.Drawing.Size(568, 335);
+            this.DetailsTabPage.Size = new System.Drawing.Size(701, 422);
             this.DetailsTabPage.TabIndex = 1;
             this.DetailsTabPage.Text = "Details";
             this.DetailsTabPage.UseVisualStyleBackColor = true;
@@ -281,7 +287,7 @@
             this.DetailsPropertyGrid.HelpVisible = false;
             this.DetailsPropertyGrid.Location = new System.Drawing.Point(3, 3);
             this.DetailsPropertyGrid.Name = "DetailsPropertyGrid";
-            this.DetailsPropertyGrid.Size = new System.Drawing.Size(562, 329);
+            this.DetailsPropertyGrid.Size = new System.Drawing.Size(695, 416);
             this.DetailsPropertyGrid.TabIndex = 0;
             // 
             // Timer
@@ -295,11 +301,63 @@
             this.saveFileDialog.DefaultExt = "wav";
             this.saveFileDialog.Filter = "Wave files (*.wav)|*.wav";
             // 
+            // XmlTabPage
+            // 
+            this.XmlTabPage.Controls.Add(this.XmlTextBox);
+            this.XmlTabPage.Location = new System.Drawing.Point(4, 22);
+            this.XmlTabPage.Name = "XmlTabPage";
+            this.XmlTabPage.Size = new System.Drawing.Size(701, 422);
+            this.XmlTabPage.TabIndex = 2;
+            this.XmlTabPage.Text = "XML";
+            this.XmlTabPage.UseVisualStyleBackColor = true;
+            // 
+            // XmlTextBox
+            // 
+            this.XmlTextBox.AutoCompleteBracketsList = new char[] {
+        '(',
+        ')',
+        '{',
+        '}',
+        '[',
+        ']',
+        '\"',
+        '\"',
+        '\'',
+        '\''};
+            this.XmlTextBox.AutoIndentChars = false;
+            this.XmlTextBox.AutoIndentCharsPatterns = "";
+            this.XmlTextBox.AutoIndentExistingLines = false;
+            this.XmlTextBox.AutoScrollMinSize = new System.Drawing.Size(27, 14);
+            this.XmlTextBox.BackBrush = null;
+            this.XmlTextBox.CharHeight = 14;
+            this.XmlTextBox.CharWidth = 8;
+            this.XmlTextBox.CommentPrefix = null;
+            this.XmlTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.XmlTextBox.DelayedEventsInterval = 1;
+            this.XmlTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.XmlTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.XmlTextBox.IsReplaceMode = false;
+            this.XmlTextBox.Language = FastColoredTextBoxNS.Language.XML;
+            this.XmlTextBox.LeftBracket = '<';
+            this.XmlTextBox.LeftBracket2 = '(';
+            this.XmlTextBox.Location = new System.Drawing.Point(0, 0);
+            this.XmlTextBox.Name = "XmlTextBox";
+            this.XmlTextBox.Paddings = new System.Windows.Forms.Padding(0);
+            this.XmlTextBox.RightBracket = '>';
+            this.XmlTextBox.RightBracket2 = ')';
+            this.XmlTextBox.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
+            this.XmlTextBox.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("XmlTextBox.ServiceColors")));
+            this.XmlTextBox.Size = new System.Drawing.Size(701, 422);
+            this.XmlTextBox.TabIndex = 2;
+            this.XmlTextBox.Zoom = 100;
+            this.XmlTextBox.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.XmlTextBox_TextChanged);
+            this.XmlTextBox.VisibleRangeChangedDelayed += new System.EventHandler(this.XmlTextBox_VisibleRangeChangedDelayed);
+            // 
             // AwcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(576, 361);
+            this.ClientSize = new System.Drawing.Size(709, 448);
             this.Controls.Add(this.MainTabControl);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(592, 300);
@@ -313,6 +371,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.VolumeTrackBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PositionTrackBar)).EndInit();
             this.DetailsTabPage.ResumeLayout(false);
+            this.XmlTabPage.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.XmlTextBox)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -342,5 +402,7 @@
         private System.Windows.Forms.ToolStripMenuItem ExportAsWav;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
         private System.Windows.Forms.ColumnHeader PlaylistSizeHeader;
+        private System.Windows.Forms.TabPage XmlTabPage;
+        private FastColoredTextBoxNS.FastColoredTextBox XmlTextBox;
     }
 }
