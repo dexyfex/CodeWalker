@@ -3009,7 +3009,7 @@ namespace CodeWalker.GameFiles
                 {
                     name = name.Substring(slidx + 1);
                 }
-                var didx = name.LastIndexOf('.');
+                var didx = name.IndexOf('.');
                 if ((didx > 0) && (didx < name.Length))
                 {
                     name = name.Substring(0, didx);

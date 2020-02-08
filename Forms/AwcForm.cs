@@ -7,6 +7,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Linq;
 
 namespace CodeWalker.Forms
 {
@@ -114,7 +115,9 @@ namespace CodeWalker.Forms
             float totalLength = 0;
             if (awc.Streams != null)
             {
-                foreach (var audio in awc.Streams)
+                var strlist = awc.Streams.ToList();
+                strlist.Sort((a, b) => a.Name.CompareTo(b.Name));
+                foreach (var audio in strlist)
                 {
                     if (audio.StreamBlocks != null) continue;//don't display multichannel source audios
                     var item = PlayListView.Items.Add(audio.Name);
