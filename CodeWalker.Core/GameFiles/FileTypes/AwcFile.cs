@@ -165,7 +165,8 @@ namespace CodeWalker.GameFiles
 
             for (int i = 0; i < StreamCount; i++)
             {
-                var info = new AwcStreamInfo(r);
+                var info = new AwcStreamInfo();
+                info.Read(r);
                 infos.Add(info);
             }
             for (int i = 0; i < StreamCount; i++)
@@ -173,7 +174,8 @@ namespace CodeWalker.GameFiles
                 var info = infos[i];
                 for (int j = 0; j < info.ChunkCount; j++)
                 {
-                    var chunk = new AwcChunkInfo(r);
+                    var chunk = new AwcChunkInfo();
+                    chunk.Read(r);
                     info.Chunks[j] = chunk;
                 }
             }
@@ -350,27 +352,19 @@ namespace CodeWalker.GameFiles
         public uint RawVal { get; set; }
         public uint ChunkCount { get; set; }
         public uint Id { get; set; }
-
         public AwcChunkInfo[] Chunks { get; set; }
 
-
-        public AwcStreamInfo()
-        {
-        }
-        public AwcStreamInfo(DataReader r)
+        public void Read(DataReader r)
         {
             RawVal = r.ReadUInt32();
             ChunkCount = (RawVal >> 29);
             Id = (RawVal & 0x1FFFFFFF);
-
             Chunks = new AwcChunkInfo[ChunkCount];
         }
-
         public void Write(DataWriter w)
         {
             ChunkCount = (uint)(Chunks?.Length ?? 0);
             RawVal = (Id & 0x1FFFFFFF) + (ChunkCount << 29);
-
             w.Write(RawVal);
         }
 
@@ -387,18 +381,13 @@ namespace CodeWalker.GameFiles
         public int Size { get; set; }
         public int Offset { get; set; }
 
-        public AwcChunkInfo(AwcChunkType type)
-        {
-            Type = type;
-        }
-        public AwcChunkInfo(DataReader r)
+        public void Read(DataReader r)
         {
             RawVal = r.ReadUInt64();
             Type = (AwcChunkType)(RawVal >> 56);
             Size = (int)((RawVal >> 28) & 0x0FFFFFFF);
             Offset = (int)(RawVal & 0x0FFFFFFF);
         }
-
         public void Write(DataWriter w)
         {
             RawVal = (((ulong)Offset) & 0x0FFFFFFF) + ((((ulong)Size) & 0x0FFFFFFF) << 28) + (((ulong)Type) << 56);
@@ -785,7 +774,7 @@ namespace CodeWalker.GameFiles
                 foreach (XmlNode inode in inodes)
                 {
                     var type = Xml.GetChildEnumInnerText<AwcChunkType>(node, "Type");
-                    var info = new AwcChunkInfo(type);
+                    var info = new AwcChunkInfo() { Type = type };
                     var chunk = CreateChunk(info);
                     chunk?.ReadXml(inode);
                     clist.Add(chunk);
@@ -1421,9 +1410,27 @@ namespace CodeWalker.GameFiles
             }
             public void WriteXml(StringBuilder sb, int indent)
             {
+                AwcXml.StringTag(sb, indent, "Name", AwcXml.HashString(Name));
+                AwcXml.ValueTag(sb, indent, "UnkUint1", UnkUint1.ToString());
+                AwcXml.ValueTag(sb, indent, "UnkFloat1", FloatUtil.ToString(UnkFloat1));
+                AwcXml.ValueTag(sb, indent, "UnkFloat2", FloatUtil.ToString(UnkFloat2));
+                AwcXml.ValueTag(sb, indent, "UnkFloat3", FloatUtil.ToString(UnkFloat3));
+                AwcXml.ValueTag(sb, indent, "UnkFloat4", FloatUtil.ToString(UnkFloat4));
+                AwcXml.ValueTag(sb, indent, "UnkFloat5", FloatUtil.ToString(UnkFloat5));
+                AwcXml.ValueTag(sb, indent, "UnkFloat6", FloatUtil.ToString(UnkFloat6));
+                AwcXml.ValueTag(sb, indent, "UnkUint2", UnkUint2.ToString());
             }
             public void ReadXml(XmlNode node)
             {
+                Name = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Name"));
+                UnkUint1 = Xml.GetChildUIntAttribute(node, "UnkUint1");
+                UnkFloat1 = Xml.GetChildFloatAttribute(node, "UnkFloat1");
+                UnkFloat2 = Xml.GetChildFloatAttribute(node, "UnkFloat2");
+                UnkFloat3 = Xml.GetChildFloatAttribute(node, "UnkFloat3");
+                UnkFloat4 = Xml.GetChildFloatAttribute(node, "UnkFloat4");
+                UnkFloat5 = Xml.GetChildFloatAttribute(node, "UnkFloat5");
+                UnkFloat6 = Xml.GetChildFloatAttribute(node, "UnkFloat6");
+                UnkUint2 = Xml.GetChildUIntAttribute(node, "UnkUint2");
             }
 
             public override string ToString()
@@ -1480,19 +1487,40 @@ namespace CodeWalker.GameFiles
         public GranularGrain[] GranularGrains { get; set; }
         public float UnkFloat1 { get; set; }
 
-        public class GranularGrain
+        public class GranularGrain : IMetaXmlItem
         {
             public uint UnkUint1 { get; set; }
             public float UnkFloat1 { get; set; }
             public ushort UnkUshort1 { get; set; }
             public ushort UnkUshort2 { get; set; }
 
-            public GranularGrain(DataReader r)
+            public void Read(DataReader r)
             {
                 UnkUint1 = r.ReadUInt32();
                 UnkFloat1 = r.ReadSingle();
                 UnkUshort1 = r.ReadUInt16();
                 UnkUshort2 = r.ReadUInt16();
+            }
+            public void Write(DataWriter w)
+            {
+                w.Write(UnkUint1);
+                w.Write(UnkFloat1);
+                w.Write(UnkUshort1);
+                w.Write(UnkUshort2);
+            }
+            public void WriteXml(StringBuilder sb, int indent)
+            {
+                AwcXml.ValueTag(sb, indent, "UnkUint1", UnkUint1.ToString());
+                AwcXml.ValueTag(sb, indent, "UnkFloat1", FloatUtil.ToString(UnkFloat1));
+                AwcXml.ValueTag(sb, indent, "UnkUshort1", UnkUshort1.ToString());
+                AwcXml.ValueTag(sb, indent, "UnkUshort2", UnkUshort2.ToString());
+            }
+            public void ReadXml(XmlNode node)
+            {
+                UnkUint1 = Xml.GetChildUIntAttribute(node, "UnkUint1");
+                UnkFloat1 = Xml.GetChildFloatAttribute(node, "UnkFloat1");
+                UnkUshort1 = (ushort)Xml.GetChildUIntAttribute(node, "UnkUshort1");
+                UnkUshort2 = (ushort)Xml.GetChildUIntAttribute(node, "UnkUshort2");
             }
 
             public override string ToString()
@@ -1516,7 +1544,9 @@ namespace CodeWalker.GameFiles
             GranularGrains = new GranularGrain[count];
             for (int i = 0; i < count; i++)
             {
-                GranularGrains[i] = new GranularGrain(r);
+                var g = new GranularGrain();
+                g.Read(r);
+                GranularGrains[i] = g;
             }
             UnkFloat1 = r.ReadSingle();
 
@@ -1528,14 +1558,22 @@ namespace CodeWalker.GameFiles
         }
         public override void Write(DataWriter w)
         {
+            for (int i = 0; i < (GranularGrains?.Length ?? 0); i++)
+            {
+                GranularGrains[i].Write(w);
+            }
+            w.Write(UnkFloat1);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             AwcXml.StringTag(sb, indent, "Type", ChunkInfo?.Type.ToString());
-
+            AwcXml.ValueTag(sb, indent, "UnkFloat1", FloatUtil.ToString(UnkFloat1));
+            AwcXml.WriteItemArray(sb, GranularGrains, indent, "GranularGrains");
         }
         public override void ReadXml(XmlNode node)
         {
+            UnkFloat1 = Xml.GetChildFloatAttribute(node, "UnkFloat1");
+            GranularGrains = XmlMeta.ReadItemArray<GranularGrain>(node, "GranularGrains");
         }
 
         public override string ToString()
@@ -1549,14 +1587,14 @@ namespace CodeWalker.GameFiles
         public uint GranularLoopsCount { get; set; }
         public GranularLoop[] GranularLoops { get; set; }
 
-        public class GranularLoop
+        public class GranularLoop : IMetaXmlItem
         {
             public uint UnkUint1 { get; set; } = 2;
             public uint GrainCount { get; set; }
             public MetaHash Hash { get; set; } = 0x4c633d07;
             public uint[] Grains { get; set; }
 
-            public GranularLoop(DataReader r)
+            public void Read(DataReader r)
             {
                 UnkUint1 = r.ReadUInt32();
                 GrainCount = r.ReadUInt32();
@@ -1567,26 +1605,50 @@ namespace CodeWalker.GameFiles
                     Grains[i] = r.ReadUInt32();
                 }
 
-                switch (UnkUint1)
+                //switch (UnkUint1)
+                //{
+                //    case 2:
+                //        break;
+                //    default:
+                //        break;//no hit
+                //}
+                //switch (Hash)
+                //{
+                //    case 0x4c633d07:
+                //        break;
+                //    default:
+                //        break;//no hit
+                //}
+            }
+            public void Write(DataWriter w)
+            {
+                GrainCount = (uint)(Grains?.Length ?? 0);
+                w.Write(UnkUint1);
+                w.Write(GrainCount);
+                w.Write(Hash);
+                for (int i = 0; i < GrainCount; i++)
                 {
-                    case 2:
-                        break;
-                    default:
-                        break;
+                    w.Write(Grains[i]);
                 }
-                switch (Hash)
-                {
-                    case 0x4c633d07:
-                        break;
-                    default:
-                        break;
-                }
+            }
+            public void WriteXml(StringBuilder sb, int indent)
+            {
+                //AwcXml.ValueTag(sb, indent, "UnkUint1", UnkUint1.ToString());
+                //AwcXml.StringTag(sb, indent, "Hash", AwcXml.HashString(Hash));
+                AwcXml.WriteRawArray(sb, Grains, indent, "Grains", "");
+            }
+            public void ReadXml(XmlNode node)
+            {
+                //UnkUint1 = Xml.GetChildUIntAttribute(node, "UnkUint1");
+                //Hash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Hash"));
+                Grains = Xml.GetChildRawUintArray(node, "Grains");
             }
 
             public override string ToString()
             {
                 return Hash.ToString() + ": " + UnkUint1.ToString() + ": " + GrainCount.ToString() + " items";
             }
+
         }
 
         public AwcGranularLoopsChunk(AwcChunkInfo info) : base(info)
@@ -1603,20 +1665,29 @@ namespace CodeWalker.GameFiles
             GranularLoops = new GranularLoop[GranularLoopsCount];
             for (int i = 0; i < GranularLoopsCount; i++)
             {
-                GranularLoops[i] = new GranularLoop(r);
+                var g = new GranularLoop();
+                g.Read(r);
+                GranularLoops[i] = g;
             }
 
         }
         public override void Write(DataWriter w)
         {
+            GranularLoopsCount = (uint)(GranularLoops?.Length ?? 0);
+            w.Write(GranularLoopsCount);
+            for (int i = 0; i < GranularLoopsCount; i++)
+            {
+                GranularLoops[i].Write(w);
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             AwcXml.StringTag(sb, indent, "Type", ChunkInfo?.Type.ToString());
-
+            AwcXml.WriteItemArray(sb, GranularLoops, indent, "GranularLoops");
         }
         public override void ReadXml(XmlNode node)
         {
+            GranularLoops = XmlMeta.ReadItemArray<GranularLoop>(node, "GranularLoops");
         }
 
         public override string ToString()
@@ -1629,14 +1700,14 @@ namespace CodeWalker.GameFiles
     {
         public Marker[] Markers { get; set; }
 
-        public class Marker
+        public class Marker : IMetaXmlItem
         {
             public MetaHash Name { get; set; }
             public MetaHash Value { get; set; }//usually a float, but in some cases a hash, or other value
             public uint SampleOffset { get; set; }
             public uint Unused { get; set; }
 
-            public Marker(DataReader r)
+            public void Read(DataReader r)
             {
                 Name = r.ReadUInt32();
                 Value = r.ReadUInt32();
@@ -1684,6 +1755,48 @@ namespace CodeWalker.GameFiles
                 //if (Unused != 0)
                 //{ }//no hit
             }
+            public void Write(DataWriter w)
+            {
+                w.Write(Name);
+                w.Write(Value);
+                w.Write(SampleOffset);
+                w.Write(Unused);
+            }
+            public void WriteXml(StringBuilder sb, int indent)
+            {
+                AwcXml.StringTag(sb, indent, "Name", AwcXml.HashString(Name));
+                switch (Name)
+                {
+                    case 0xf31b4f6a: // rockout
+                    case 0x08dba0f8: // dj
+                    case 0x14d857be: // g_s
+                        AwcXml.StringTag(sb, indent, "Value", AwcXml.HashString(Value));
+                        break;
+                    default:
+                        AwcXml.ValueTag(sb, indent, "Value", FloatUtil.ToString(Value.Float));
+                        break;
+                }
+                AwcXml.ValueTag(sb, indent, "SampleOffset", SampleOffset.ToString());
+
+            }
+            public void ReadXml(XmlNode node)
+            {
+                Name = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Name"));
+                switch (Name)
+                {
+                    case 0xf31b4f6a: // rockout
+                    case 0x08dba0f8: // dj
+                    case 0x14d857be: // g_s
+                        Value = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Value"));
+                        break;
+                    default:
+                        var f = Xml.GetChildFloatAttribute(node, "Value");
+                        Value = MetaTypes.ConvertData<uint>(BitConverter.GetBytes(f));
+                        break;
+                }
+                SampleOffset = Xml.GetChildUIntAttribute(node, "SampleOffset");
+
+            }
 
             public override string ToString()
             {
@@ -1699,6 +1812,7 @@ namespace CodeWalker.GameFiles
 
                 return Name.ToString() + ": " + valstr + ", " + SampleOffset.ToString() + ", " + Unused.ToString();
             }
+
         }
         
 
@@ -1714,20 +1828,27 @@ namespace CodeWalker.GameFiles
             Markers = new Marker[count];
             for (int i = 0; i < count; i++)
             {
-                Markers[i] = new Marker(r);
+                var m = new Marker();
+                m.Read(r);
+                Markers[i] = m;
             }
 
         }
         public override void Write(DataWriter w)
         {
+            for (int i = 0; i < (Markers?.Length ?? 0); i++)
+            {
+                Markers[i].Write(w);
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             AwcXml.StringTag(sb, indent, "Type", ChunkInfo?.Type.ToString());
-
+            AwcXml.WriteItemArray(sb, Markers, indent, "Markers");
         }
         public override void ReadXml(XmlNode node)
         {
+            Markers = XmlMeta.ReadItemArray<Marker>(node, "Markers");
         }
 
         public override string ToString()
@@ -1750,11 +1871,12 @@ namespace CodeWalker.GameFiles
         }
         public override void Write(DataWriter w)
         {
+            w.Write(Data);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             AwcXml.StringTag(sb, indent, "Type", ChunkInfo?.Type.ToString());
-
+            //this is just a placeholder, as midi data will be written as a midi file
         }
         public override void ReadXml(XmlNode node)
         {
@@ -1788,11 +1910,15 @@ namespace CodeWalker.GameFiles
         }
         public override void Write(DataWriter w)
         {
+            for (int i = 0; i < (SeekTable?.Length ?? 0); i++)
+            {
+                w.Write(SeekTable[i]);
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             AwcXml.StringTag(sb, indent, "Type", ChunkInfo?.Type.ToString());
-
+            //this is just a placeholder, since the seek table will be built dynamically by CW.
         }
         public override void ReadXml(XmlNode node)
         {
