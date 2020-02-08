@@ -1,10 +1,12 @@
 ﻿using CodeWalker.GameFiles;
+using FastColoredTextBoxNS;
 using SharpDX.Multimedia;
 using SharpDX.XAudio2;
 using System;
 using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace CodeWalker.Forms
 {
@@ -12,7 +14,7 @@ namespace CodeWalker.Forms
     {
         public AwcFile Awc { get; set; }
 
-        private AwcAudio currentAudio;
+        private AwcStream currentAudio;
         private XAudio2 xAudio2;
         private MasteringVoice masteringVoice;
         private AudioBuffer audioBuffer;
@@ -38,6 +40,10 @@ namespace CodeWalker.Forms
         private float trackLength;
         private bool trackFinished;
 
+        private bool LoadingXml = false;
+        private bool DelayHighlight = false;
+
+
         public AwcForm()
         {
             InitializeComponent();
@@ -48,6 +54,48 @@ namespace CodeWalker.Forms
         private void UpdateFormTitle()
         {
             Text = fileName + " - AWC Player - CodeWalker by dexyfex";
+        }
+
+        private void UpdateXmlTextBox(string xml)
+        {
+            LoadingXml = true;
+            XmlTextBox.Text = "";
+            XmlTextBox.Language = Language.XML;
+            DelayHighlight = false;
+
+            if (string.IsNullOrEmpty(xml))
+            {
+                LoadingXml = false;
+                return;
+            }
+            //if (xml.Length > (1048576 * 5))
+            //{
+            //    XmlTextBox.Language = Language.Custom;
+            //    XmlTextBox.Text = "[XML size > 10MB - Not shown due to performance limitations - Please use an external viewer for this file.]";
+            //    return;
+            //}
+            //else 
+            if (xml.Length > (1024 * 512))
+            {
+                XmlTextBox.Language = Language.Custom;
+                DelayHighlight = true;
+            }
+            //else
+            //{
+            //    XmlTextBox.Language = Language.XML;
+            //}
+
+
+            Cursor = Cursors.WaitCursor;
+
+
+
+            XmlTextBox.Text = xml;
+            //XmlTextBox.IsChanged = false;
+            XmlTextBox.ClearUndo();
+
+            Cursor = Cursors.Default;
+            LoadingXml = false;
         }
 
         public void LoadAwc(AwcFile awc)
@@ -64,11 +112,11 @@ namespace CodeWalker.Forms
             PlayListView.Items.Clear();
 
             float totalLength = 0;
-            if (awc.Audios != null)
+            if (awc.Streams != null)
             {
-                foreach (var audio in awc.Audios)
+                foreach (var audio in awc.Streams)
                 {
-                    if (audio.MultiChannelBlocks != null) continue;//don't display multichannel source audios
+                    if (audio.StreamBlocks != null) continue;//don't display multichannel source audios
                     var item = PlayListView.Items.Add(audio.Name);
                     item.SubItems.Add(audio.Type);
                     item.SubItems.Add(audio.LengthStr);
@@ -78,8 +126,42 @@ namespace CodeWalker.Forms
                 }
             }
 
-            LabelInfo.Text = awc.Audios.Length.ToString() + " track(s), Length: " + TimeSpan.FromSeconds((float)totalLength).ToString("h\\:mm\\:ss");
+            LabelInfo.Text = awc.Streams.Length.ToString() + " track(s), Length: " + TimeSpan.FromSeconds((float)totalLength).ToString("h\\:mm\\:ss");
             UpdateFormTitle();
+        }
+
+        public void LoadXml()
+        {
+            if (Awc != null)
+            {
+                var xml = AwcXml.GetXml(Awc);
+                UpdateXmlTextBox(xml);
+            }
+        }
+
+        private void HTMLSyntaxHighlight(Range range)
+        {
+            try
+            {
+                Style BlueStyle = new TextStyle(Brushes.Blue, null, FontStyle.Regular);
+                Style RedStyle = new TextStyle(Brushes.Red, null, FontStyle.Regular);
+                Style MaroonStyle = new TextStyle(Brushes.Maroon, null, FontStyle.Regular);
+
+                //clear style of changed range
+                range.ClearStyle(BlueStyle, MaroonStyle, RedStyle);
+                //tag brackets highlighting
+                range.SetStyle(BlueStyle, @"<|/>|</|>");
+                //tag name
+                range.SetStyle(MaroonStyle, @"<(?<range>[!\w]+)");
+                //end of tag
+                range.SetStyle(MaroonStyle, @"</(?<range>\w+)>");
+                //attributes
+                range.SetStyle(RedStyle, @"(?<range>\S+?)='[^']*'|(?<range>\S+)=""[^""]*""|(?<range>\S+)=\S+");
+                //attribute values
+                range.SetStyle(BlueStyle, @"\S+?=(?<range>'[^']*')|\S+=(?<range>""[^""]*"")|\S+=(?<range>\S+)");
+            }
+            catch
+            { }
         }
 
         private void Stop()
@@ -127,7 +209,7 @@ namespace CodeWalker.Forms
             }
         }
 
-        private void InitializeAudio(AwcAudio audio, float playBegin = 0)
+        private void InitializeAudio(AwcStream audio, float playBegin = 0)
         {
             currentAudio = audio;
             trackLength = audio.Length;
@@ -174,15 +256,15 @@ namespace CodeWalker.Forms
             if (PlayListView.SelectedItems.Count == 1)
             {
                 var item = PlayListView.SelectedItems[0];
-                var audio = item.Tag as AwcAudio;
+                var audio = item.Tag as AwcStream;
 
-                if ((audio?.Format != null) || (audio?.MultiChannelFormat != null))
+                if ((audio?.FormatChunk != null) || (audio?.StreamFormat != null))
                 {
                     InitializeAudio(audio);
                     sourceVoice.Start();
                     SetPlayerState(PlayerState.Playing);
                 }
-                else if (audio.MIDIData != null)
+                else if (audio.MidiChunk != null)
                 {
                     //todo: play MIDI?
                 }
@@ -335,10 +417,10 @@ namespace CodeWalker.Forms
             if (PlayListView.SelectedItems.Count == 1)
             {
                 var item = PlayListView.SelectedItems[0];
-                var audio = item.Tag as AwcAudio;
+                var audio = item.Tag as AwcStream;
 
                 var ext = ".wav";
-                if (audio?.MIDIData != null)
+                if (audio?.MidiChunk != null)
                 {
                     ext = ".midi";
                 }
@@ -346,11 +428,11 @@ namespace CodeWalker.Forms
                 saveFileDialog.FileName = audio.Name + ext;
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    if (audio?.MIDIData != null)
+                    if (audio?.MidiChunk != null)
                     {
-                        File.WriteAllBytes(saveFileDialog.FileName, audio.MIDIData.Data);
+                        File.WriteAllBytes(saveFileDialog.FileName, audio.MidiChunk.Data);
                     }
-                    else if ((audio?.Format != null) || (audio?.MultiChannelFormat != null))
+                    else if ((audio?.FormatChunk != null) || (audio?.StreamFormat != null))
                     {
                         Stream wavStream = audio.GetWavStream();
                         FileStream stream = File.Create(saveFileDialog.FileName);
@@ -369,13 +451,42 @@ namespace CodeWalker.Forms
             if (PlayListView.SelectedItems.Count == 1)
             {
                 var item = PlayListView.SelectedItems[0];
-                var audio = item.Tag as AwcAudio;
-                if (audio?.MIDIData != null)
+                var audio = item.Tag as AwcStream;
+                if (audio?.MidiChunk != null)
                 {
                     ExportAsWav.Text = "Export as .midi";
                 }
             }
         }
 
+        private void MainTabControl_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (MainTabControl.SelectedTab == XmlTabPage)
+            {
+                if (string.IsNullOrEmpty(XmlTextBox.Text))
+                {
+                    LoadXml();
+                }
+            }
+        }
+
+        private void XmlTextBox_VisibleRangeChangedDelayed(object sender, EventArgs e)
+        {
+            //this approach is much faster to load, but no outlining is available
+
+            //highlight only visible area of text
+            if (DelayHighlight)
+            {
+                HTMLSyntaxHighlight(XmlTextBox.VisibleRange);
+            }
+        }
+
+        private void XmlTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!LoadingXml)
+            {
+
+            }
+        }
     }
 }

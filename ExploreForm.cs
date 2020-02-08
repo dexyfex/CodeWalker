@@ -2661,7 +2661,7 @@ namespace CodeWalker
                         case MetaFormat.Awc:
                             {
                                 var awc = XmlAwc.GetAwc(doc, fpathin);
-                                if (awc.Audios == null)
+                                if (awc.Streams == null)
                                 {
                                     MessageBox.Show(fname + ": Schema not supported.", "Cannot import AWC XML");
                                     continue;
