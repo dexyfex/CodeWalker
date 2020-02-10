@@ -232,7 +232,7 @@ namespace CodeWalker.GameFiles
             {
                 for (int i = 0; i < StreamCount; i++)
                 {
-                    w.Write((i < (UnkUshorts?.Length ?? 0)) ? UnkUshorts[i] : 0);
+                    w.Write((i < (UnkUshorts?.Length ?? 0)) ? UnkUshorts[i] : (ushort)0);
                 }
             }
 
@@ -296,7 +296,7 @@ namespace CodeWalker.GameFiles
             if (snode != null)
             {
                 var slist = new List<AwcStream>();
-                var inodes = node.SelectNodes("Item");
+                var inodes = snode.SelectNodes("Item");
                 foreach (XmlNode inode in inodes)
                 {
                     var stream = new AwcStream(this);
@@ -377,6 +377,7 @@ namespace CodeWalker.GameFiles
                         }
                     }
                     streaminfo.Chunks = chunkinfos.ToArray();
+                    streaminfo.ChunkCount = (uint)chunkinfos.Count;
                 }
             }
             StreamInfos = streaminfos.ToArray();
@@ -662,22 +663,32 @@ namespace CodeWalker.GameFiles
         public void WriteXml(StringBuilder sb, int indent, string wavfolder)
         {
             AwcXml.StringTag(sb, indent, "Name", AwcXml.HashString(HashAdjusted));
-            if (StreamFormatChunk == null)
+            if (StreamFormatChunk == null) //skip the wave file output for multichannel sources
             {
-                //skip the wave file output for multichannel sources
-                var fname = Name?.Replace("/", "")?.Replace("\\", "");
-                AwcXml.StringTag(sb, indent, "FileName", AwcXml.XmlEscape(fname + ".wav"));
+                var export = !string.IsNullOrEmpty(wavfolder);
+                var fname = Name?.Replace("/", "")?.Replace("\\", "") ?? "0x0";
+                byte[] fdata = null;
+                if (MidiChunk != null)
+                {
+                    fname += ".midi";
+                    fdata = export ? MidiChunk.Data : null;
+                }
+                else
+                {
+                    fname += ".wav";
+                    fdata = export ? GetWavFile() : null;
+                }
+                AwcXml.StringTag(sb, indent, "FileName", AwcXml.XmlEscape(fname));
                 try
                 {
-                    if (!string.IsNullOrEmpty(wavfolder))
+                    if (export)
                     {
                         if (!Directory.Exists(wavfolder))
                         {
                             Directory.CreateDirectory(wavfolder);
                         }
-                        var filepath = Path.Combine(wavfolder, (fname ?? "null") + ".wav");
-                        var wav = GetWavFile();
-                        File.WriteAllBytes(filepath, wav);
+                        var filepath = Path.Combine(wavfolder, fname);
+                        File.WriteAllBytes(filepath, fdata);
                     }
                 }
                 catch
@@ -719,15 +730,16 @@ namespace CodeWalker.GameFiles
             {
                 StreamFormat = new AwcStreamFormat();
                 StreamFormat.ReadXml(fnode);
+                StreamFormat.Id = Hash;
             }
             var cnode = node.SelectSingleNode("Chunks");
             if (cnode != null)
             {
                 var clist = new List<AwcChunk>();
-                var inodes = node.SelectNodes("Item");
+                var inodes = cnode.SelectNodes("Item");
                 foreach (XmlNode inode in inodes)
                 {
-                    var type = Xml.GetChildEnumInnerText<AwcChunkType>(node, "Type");
+                    var type = Xml.GetChildEnumInnerText<AwcChunkType>(inode, "Type");
                     var info = new AwcChunkInfo() { Type = type };
                     var chunk = CreateChunk(info);
                     chunk?.ReadXml(inode);
@@ -746,9 +758,15 @@ namespace CodeWalker.GameFiles
                     var filepath = Path.Combine(wavfolder, filename);
                     if (File.Exists(filepath))
                     {
-                        var wav = File.ReadAllBytes(filepath);
-
-                        ParseWavFile(wav);
+                        var fdata = File.ReadAllBytes(filepath);
+                        if (MidiChunk != null)
+                        {
+                            MidiChunk.Data = fdata;
+                        }
+                        else
+                        {
+                            ParseWavFile(fdata);
+                        }
                     }
                 }
                 catch
@@ -927,10 +945,11 @@ namespace CodeWalker.GameFiles
                     if ((blkcnt == smblockcount) || (i == totsmblockcount-1))
                     {
                         var lgblockind = i / smblockcount;
+                        var blkstart = lgblockind * smblockcount;
                         var blk = streamblocks[lgblockind];
                         var chan = new AwcStreamDataChannel();
                         var bytcnt = blkcnt * 2048;
-                        var srcoff = i * 2048;
+                        var srcoff = blkstart * 2048;
                         var srccnt = Math.Min(bytcnt, cdlen - srcoff);
                         var data = new byte[bytcnt];
                         Buffer.BlockCopy(chandata, srcoff, data, 0, srccnt);
@@ -938,7 +957,7 @@ namespace CodeWalker.GameFiles
                         chan.SampleOffsets = chansmpoffs.ToArray();
                         chan.SampleCount = blkcnt * 4088;
                         chan.BlockCount = blkcnt;
-                        chan.StartBlock = i;
+                        chan.StartBlock = (c * smblockcount);
 
                         blk.Channels[c] = chan;
                         chansmpoffs.Clear();
@@ -949,6 +968,8 @@ namespace CodeWalker.GameFiles
             }
 
             StreamBlocks = streamblocks.ToArray();
+
+            StreamFormatChunk.BlockCount = (uint)streamblocks.Count;
 
             if (SeekTableChunk != null)
             {
@@ -976,7 +997,7 @@ namespace CodeWalker.GameFiles
             ms.Position = 0;
             ms.Read(bytes, 0, (int)ms.Length);
 
-            if (DataChunk != null)
+            if (DataChunk == null)
             {
                 DataChunk = new AwcDataChunk(new AwcChunkInfo() { Type = AwcChunkType.data });
             }
@@ -1114,10 +1135,10 @@ namespace CodeWalker.GameFiles
             var ms = new MemoryStream(wav);
             var r = new DataReader(ms);
 
-            var RIFF = r.ReadUInt32();
+            var RIFF = r.ReadUInt32(); // 0x46464952
             var wavLength = r.ReadInt32();
-            var WAVE = r.ReadUInt32();
-            var fmt_ = r.ReadUInt32();
+            var WAVE = r.ReadUInt32(); // 0x45564157
+            var fmt_ = r.ReadUInt32(); // 0x20746D66
             var fmtLength = r.ReadInt32();
             var formatcodec = r.ReadInt16();
             var channels = r.ReadInt16();
@@ -1132,8 +1153,8 @@ namespace CodeWalker.GameFiles
                 ext2 = r.ReadUInt16();
                 samplesPerBlock = r.ReadUInt16();
             }
-            var hdrlen = fmtLength + 20;
-            var datalen = wavLength - hdrlen;
+            var datatag = r.ReadUInt32(); // 0x61746164
+            var datalen = r.ReadInt32();
             var dataPCM = r.ReadBytes(datalen);
 
             if (r.Position != r.Length)
@@ -1162,7 +1183,7 @@ namespace CodeWalker.GameFiles
             {
                 if (StreamFormat != null)
                 {
-                    StreamFormat.Samples = (uint)sampleCount;
+                    //StreamFormat.Samples = (uint)sampleCount;
                     StreamFormat.SamplesPerSecond = (ushort)sampleRate;
 
                     DataChunk = new AwcDataChunk(null);
@@ -1173,7 +1194,7 @@ namespace CodeWalker.GameFiles
             {
                 if (FormatChunk != null)
                 {
-                    FormatChunk.Samples = (uint)sampleCount;
+                    //FormatChunk.Samples = (uint)sampleCount;
                     FormatChunk.SamplesPerSecond = (ushort)sampleRate;
 
                     if (DataChunk == null) DataChunk = new AwcDataChunk(new AwcChunkInfo() { Type = AwcChunkType.data });
@@ -1404,12 +1425,12 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             AwcXml.StringTag(sb, indent, "Type", ChunkInfo?.Type.ToString());
-            //AwcXml.ValueTag(sb, indent, "BlockSize", BlockSize.ToString());
+            AwcXml.ValueTag(sb, indent, "BlockSize", BlockSize.ToString());
             //this is mostly just a placeholder. in XML, channel format is written with each channel stream
         }
         public override void ReadXml(XmlNode node)
         {
-            //BlockSize = Xml.GetChildUIntAttribute(node, "BlockSize");
+            BlockSize = Xml.GetChildUIntAttribute(node, "BlockSize");
         }
 
         public override string ToString()
@@ -1538,11 +1559,6 @@ namespace CodeWalker.GameFiles
         public override void Write(DataWriter w)
         {
 
-            if (ClipDict != null)
-            {
-                Data = ResourceBuilder.Build(ClipDict, 46); //ycd is 46...
-            }
-
             w.Write(Data);
 
         }
@@ -1563,6 +1579,8 @@ namespace CodeWalker.GameFiles
             {
                 ClipDict = new ClipDictionary();
                 ClipDict.ReadXml(dnode);
+
+                Data = ResourceBuilder.Build(ClipDict, 46, false); //ycd is 46...
             }
         }
 
@@ -1596,6 +1614,13 @@ namespace CodeWalker.GameFiles
         }
         public override void Write(DataWriter w)
         {
+            if (Data != null)
+            {
+                for (int i = 0; i < Data.Length; i++)
+                {
+                    w.Write(Data[i]);
+                }
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
