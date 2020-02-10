@@ -306,7 +306,7 @@ namespace CodeWalker.GameFiles
                     hasUshorts = hasUshorts || stream.UnkUshort.HasValue;
                     unkUshorts.Add(stream.UnkUshort ?? 0);
 
-                    if (MultiChannelFlag && (stream.StreamFormatChunk != null))
+                    if (MultiChannelFlag && (stream.StreamFormatChunk != null) && (stream.Hash == 0))
                     {
                         MultiChannelSource = stream;
                     }
@@ -663,7 +663,7 @@ namespace CodeWalker.GameFiles
         public void WriteXml(StringBuilder sb, int indent, string wavfolder)
         {
             AwcXml.StringTag(sb, indent, "Name", AwcXml.HashString(HashAdjusted));
-            if (StreamFormatChunk == null) //skip the wave file output for multichannel sources
+            if (Hash != 0) //skip the wave file output for multichannel sources
             {
                 var export = !string.IsNullOrEmpty(wavfolder);
                 var fname = Name?.Replace("/", "")?.Replace("\\", "") ?? "0x0";
@@ -921,6 +921,7 @@ namespace CodeWalker.GameFiles
             var chansmpoffs = new List<int>();
             for (int c = 0; c < chancount; c++)
             {
+                var chaninfo = chanlist[c];
                 var chandata = chandatas[c];
                 var cdlen = chandata?.Length ?? 0;
                 var totsmblockcount = (cdlen / 2048) + (((cdlen % 2048) != 0) ? 1 : 0);
@@ -937,6 +938,7 @@ namespace CodeWalker.GameFiles
                 }
 
                 chansmpoffs.Clear();
+                var samplesrem = (int)chaninfo.Samples+1;
                 for (int i = 0; i < totsmblockcount; i++)
                 {
 
@@ -948,6 +950,7 @@ namespace CodeWalker.GameFiles
                         var blkstart = lgblockind * smblockcount;
                         var blk = streamblocks[lgblockind];
                         var chan = new AwcStreamDataChannel();
+                        var smpcnt = blkcnt * 4088;
                         var bytcnt = blkcnt * 2048;
                         var srcoff = blkstart * 2048;
                         var srccnt = Math.Min(bytcnt, cdlen - srcoff);
@@ -955,12 +958,13 @@ namespace CodeWalker.GameFiles
                         Buffer.BlockCopy(chandata, srcoff, data, 0, srccnt);
                         chan.Data = data;
                         chan.SampleOffsets = chansmpoffs.ToArray();
-                        chan.SampleCount = blkcnt * 4088;
+                        chan.SampleCount = Math.Min(smpcnt, samplesrem);
                         chan.BlockCount = blkcnt;
                         chan.StartBlock = (c * smblockcount);
 
                         blk.Channels[c] = chan;
                         chansmpoffs.Clear();
+                        samplesrem -= smpcnt;
                     }
 
                 }
@@ -971,9 +975,22 @@ namespace CodeWalker.GameFiles
 
             StreamFormatChunk.BlockCount = (uint)streamblocks.Count;
 
-            if (SeekTableChunk != null)
+            if (streams != null)
             {
-                SeekTableChunk.SeekTable = seektable.ToArray();
+                foreach (var stream in streams)
+                {
+                    if (stream.SeekTableChunk != null)
+                    {
+                        stream.SeekTableChunk.SeekTable = seektable.ToArray();
+                    }
+                    if (stream.StreamFormatChunk != null)
+                    {
+                        stream.StreamFormatChunk.BlockCount = StreamFormatChunk.BlockCount;
+                        stream.StreamFormatChunk.BlockSize = StreamFormatChunk.BlockSize;
+                        stream.StreamFormatChunk.ChannelCount = StreamFormatChunk.ChannelCount;
+                        stream.StreamFormatChunk.Channels = StreamFormatChunk.Channels;
+                    }
+                }
             }
 
 
