@@ -269,7 +269,6 @@ namespace CodeWalker.GameFiles
                 {
                     var stream = Streams[i];
                     stream.Write(w);
-                    stream.WriteDataChunks(w);
                 }
             }
 
@@ -731,7 +730,7 @@ namespace CodeWalker.GameFiles
             {
                 foreach (var chunk in Chunks)
                 {
-                    if (!(chunk is AwcDataChunk))
+                    if (!((chunk is AwcDataChunk) && Awc.MultiChannelFlag))
                     {
                         if (Awc.MultiChannelFlag && (chunk is AwcMarkersChunk))
                         {
@@ -747,6 +746,7 @@ namespace CodeWalker.GameFiles
         }
         public void WriteDataChunks(DataWriter w)
         {
+            //for use by multichannel only, to write the data at the end
 
             if (Chunks != null)
             {
@@ -754,12 +754,9 @@ namespace CodeWalker.GameFiles
                 {
                     if (chunk is AwcDataChunk)
                     {
-                        if (Awc.MultiChannelFlag)
-                        {
-                            //write padding to align to 16 bytes
-                            var padc = (16 - (w.Position % 16)) % 16;
-                            if (padc > 0) w.Write(new byte[padc]);
-                        }
+                        //write padding to align to 16 bytes
+                        var padc = (16 - (w.Position % 16)) % 16;
+                        if (padc > 0) w.Write(new byte[padc]);
 
                         chunk.Write(w);
                     }
