@@ -250,10 +250,27 @@ namespace CodeWalker.GameFiles
                     chunkinfo.Write(w);
                 }
             }
-            for (int i = 0; i < StreamCount; i++)
+            if (MultiChannelFlag)
             {
-                var stream = Streams[i];
-                stream.Write(w);
+                for (int i = 0; i < StreamCount; i++)
+                {
+                    var stream = Streams[i];
+                    stream.Write(w);
+                }
+                for (int i = 0; i < StreamCount; i++)
+                {
+                    var stream = Streams[i];
+                    stream.WriteDataChunks(w);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < StreamCount; i++)
+                {
+                    var stream = Streams[i];
+                    stream.Write(w);
+                    stream.WriteDataChunks(w);
+                }
             }
 
 
@@ -359,6 +376,71 @@ namespace CodeWalker.GameFiles
                 {
                     dataOffset += (stream?.Chunks?.Length ?? 0) * 8;
                 }
+                if (MultiChannelFlag)
+                {
+                    foreach (var stream in Streams)
+                    {
+                        if (stream.Chunks != null)
+                        {
+                            foreach (var chunk in stream.Chunks)
+                            {
+                                if (!(chunk is AwcDataChunk))
+                                {
+                                    if (chunk is AwcMarkersChunk)
+                                    {
+                                        //align to 4 bytes
+                                        var padc = (4 - (dataOffset % 4)) % 4;
+                                        dataOffset += padc;
+                                    }
+
+                                    var chunkinfo = chunk.ChunkInfo;
+                                    var size = chunk.ChunkSize;
+                                    chunkinfo.Size = size;
+                                    chunkinfo.Offset = dataOffset;
+                                    dataOffset += size;
+                                }
+                            }
+                        }
+                    }
+                    foreach (var stream in Streams)
+                    {
+                        if (stream.Chunks != null)
+                        {
+                            foreach (var chunk in stream.Chunks)
+                            {
+                                if (chunk is AwcDataChunk)
+                                {
+                                    //align to 16 bytes
+                                    var padc = (16 - (dataOffset % 16)) % 16;
+                                    dataOffset += padc;
+
+                                    var chunkinfo = chunk.ChunkInfo;
+                                    var size = chunk.ChunkSize;
+                                    chunkinfo.Size = size;
+                                    chunkinfo.Offset = dataOffset;
+                                    dataOffset += size;
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var stream in Streams)
+                    {
+                        if (stream.Chunks != null)
+                        {
+                            foreach (var chunk in stream.Chunks)
+                            {
+                                var chunkinfo = chunk.ChunkInfo;
+                                var size = chunk.ChunkSize;
+                                chunkinfo.Size = size;
+                                chunkinfo.Offset = dataOffset;
+                                dataOffset += size;
+                            }
+                        }
+                    }
+                }
                 foreach (var stream in Streams)
                 {
                     var streaminfo = stream.StreamInfo;
@@ -370,10 +452,6 @@ namespace CodeWalker.GameFiles
                         {
                             var chunkinfo = chunk.ChunkInfo;
                             chunkinfos.Add(chunkinfo);
-                            var size = chunk.ChunkSize;
-                            chunkinfo.Size = size;
-                            chunkinfo.Offset = dataOffset;
-                            dataOffset += size;
                         }
                     }
                     streaminfo.Chunks = chunkinfos.ToArray();
@@ -649,15 +727,44 @@ namespace CodeWalker.GameFiles
 
         public void Write(DataWriter w)
         {
+            if (Chunks != null)
+            {
+                foreach (var chunk in Chunks)
+                {
+                    if (!(chunk is AwcDataChunk))
+                    {
+                        if (Awc.MultiChannelFlag && (chunk is AwcMarkersChunk))
+                        {
+                            //write padding to align to 4 bytes
+                            var padc = (4 - (w.Position % 4)) % 4;
+                            if (padc > 0) w.Write(new byte[padc]);
+                        }
+
+                        chunk.Write(w);
+                    }
+                }
+            }
+        }
+        public void WriteDataChunks(DataWriter w)
+        {
 
             if (Chunks != null)
             {
                 foreach (var chunk in Chunks)
                 {
-                    chunk.Write(w);
+                    if (chunk is AwcDataChunk)
+                    {
+                        if (Awc.MultiChannelFlag)
+                        {
+                            //write padding to align to 16 bytes
+                            var padc = (16 - (w.Position % 16)) % 16;
+                            if (padc > 0) w.Write(new byte[padc]);
+                        }
+
+                        chunk.Write(w);
+                    }
                 }
             }
-
         }
 
         public void WriteXml(StringBuilder sb, int indent, string wavfolder)
