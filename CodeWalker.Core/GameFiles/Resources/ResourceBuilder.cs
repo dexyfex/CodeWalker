@@ -162,7 +162,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public static byte[] Build(ResourceFileBase fileBase, int version)
+        public static byte[] Build(ResourceFileBase fileBase, int version, bool compress = true)
         {
 
             fileBase.FilePagesInfo = new ResourcePagesInfo();
@@ -258,7 +258,7 @@ namespace CodeWalker.GameFiles
             Buffer.BlockCopy(gfxData, 0, tdata, sysDataSize, gfxDataSize);
 
 
-            var cdata = Compress(tdata);
+            var cdata = compress ? Compress(tdata) : tdata;
 
 
             var dataSize = 16 + cdata.Length;// sysDataSize + gfxDataSize;
