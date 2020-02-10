@@ -290,6 +290,7 @@ namespace CodeWalker.Vehicles
             }
 
             GameFileCache.EnableDlc = true;
+            GameFileCache.EnableMods = true;
             GameFileCache.LoadPeds = false;
             GameFileCache.LoadVehicles = true;
             GameFileCache.LoadArchetypes = false;//to speed things up a little
