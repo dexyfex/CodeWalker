@@ -1624,6 +1624,7 @@ namespace CodeWalker.GameFiles
 
 
             bool isrpf = false;
+            bool isawc = false;
             uint hdr = 0;
             if (len >= 16)
             {
@@ -1655,16 +1656,20 @@ namespace CodeWalker.GameFiles
             {
                 isrpf = true;
             }
+            if (namel.EndsWith(".awc"))
+            {
+                isawc = true;
+            }
 
             if (entry == null)
             {
                 //no RSC7 header present, import as a binary file.
-                var compressed = isrpf ? data : CompressBytes(data);
+                var compressed = (isrpf||isawc) ? data : CompressBytes(data);
                 var bentry = new RpfBinaryFileEntry();
                 bentry.EncryptionType = 0;//TODO: binary encryption
                 bentry.IsEncrypted = false;
                 bentry.FileUncompressedSize = (uint)data.Length;
-                bentry.FileSize = isrpf ? 0 : (uint)compressed.Length;
+                bentry.FileSize = (isrpf||isawc) ? 0 : (uint)compressed.Length;
                 if (bentry.FileSize > 0xFFFFFF)
                 {
                     bentry.FileSize = 0;
