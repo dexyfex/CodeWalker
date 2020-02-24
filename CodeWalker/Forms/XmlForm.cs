@@ -12,10 +12,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using Range = FastColoredTextBoxNS.Range;
 
 namespace CodeWalker.Forms
 {
-    public partial class MetaForm : Form
+    public partial class XmlForm : Form
     {
         private string xml;
         public string Xml
@@ -44,13 +45,11 @@ namespace CodeWalker.Forms
         private bool LoadingXml = false;
         private bool DelayHighlight = false;
 
-
         private ExploreForm exploreForm = null;
         public RpfFileEntry rpfFileEntry { get; private set; } = null;
-        private MetaFormat metaFormat = MetaFormat.XML;
 
 
-        public MetaForm(ExploreForm owner)
+        public XmlForm(ExploreForm owner)
         {
             exploreForm = owner;
 
@@ -58,10 +57,19 @@ namespace CodeWalker.Forms
         }
 
 
+
+        public void LoadXml(string filename, string filepath, string xml, RpfFileEntry e)
+        {
+            FileName = filename;
+            FilePath = filepath;
+            Xml = xml;
+            rpfFileEntry = e;
+            modified = false;
+        }
+
         private void UpdateFormTitle()
         {
-            string ro = "";// " [Read-Only]";
-            Text = fileName + " - Meta Editor" + ro + " - CodeWalker by dexyfex";
+            Text = fileName + " - XML Editor - CodeWalker by dexyfex";
         }
 
         private void UpdateTextBoxFromData()
@@ -107,6 +115,7 @@ namespace CodeWalker.Forms
         }
 
 
+
         private bool CloseDocument()
         {
             if (modified)
@@ -125,20 +134,15 @@ namespace CodeWalker.Forms
             FilePath = "";
             FileName = "";
             Xml = "";
-            RawPropertyGrid.SelectedObject = null;
             modified = false;
-            rpfFileEntry = null;
 
             return true;
         }
         private void NewDocument()
         {
-            if (!CloseDocument()) return;
+            if (!CloseDocument()) return; //same thing really..
 
             FileName = "New.xml";
-            rpfFileEntry = null;
-
-            //TODO: decide XML/RSC/PSO/RBF format..?
         }
         private void OpenDocument()
         {
@@ -155,14 +159,10 @@ namespace CodeWalker.Forms
             modified = false;
             FilePath = fn;
             FileName = new FileInfo(fn).Name;
-            RawPropertyGrid.SelectedObject = null;
-            rpfFileEntry = null;
-
-            //TODO: open RSC/PSO/RBF..?
         }
         private void SaveDocument(bool saveAs = false)
         {
-            if ((metaFormat != MetaFormat.XML) && (saveAs == false))
+            if (saveAs == false)
             {
                 var doc = new XmlDocument();
                 try
@@ -174,11 +174,11 @@ namespace CodeWalker.Forms
                     MessageBox.Show("There's something wrong with your XML document:\r\n" + ex.Message, "Unable to parse XML");
                     return;
                 }
-                if (SaveMeta(doc))
+                if (SaveToRPF(xml))
                 {
                     return;
                 }
-                //if Meta saving failed for whatever reason, fallback to saving the XML in the filesystem.
+                //if saving to RPF failed for whatever reason, fallback to saving the file in the filesystem.
                 saveAs = true;
             }
 
@@ -206,205 +206,25 @@ namespace CodeWalker.Forms
             modified = false;
             FilePath = fn;
             FileName = new FileInfo(fn).Name;
-            metaFormat = MetaFormat.XML;
         }
 
 
 
-        public void LoadMeta(YmtFile ymt)
-        {
-            string fn;
-            Xml = MetaXml.GetXml(ymt, out fn);
-            FileName = fn;
-            RawPropertyGrid.SelectedObject = ymt;
-            rpfFileEntry = ymt?.RpfFileEntry;
-            modified = false;
-            metaFormat = MetaFormat.XML;
-            if (ymt != null)
-            {
-                if (ymt.Meta != null) metaFormat = MetaFormat.RSC;
-                if (ymt.Pso != null) metaFormat = MetaFormat.PSO;
-                if (ymt.Rbf != null) metaFormat = MetaFormat.RBF;
-            }
-        }
-        public void LoadMeta(YmfFile ymf)
-        {
-            string fn;
-            Xml = MetaXml.GetXml(ymf, out fn);
-            FileName = fn;
-            RawPropertyGrid.SelectedObject = ymf;
-            rpfFileEntry = ymf?.FileEntry;
-            modified = false;
-            metaFormat = MetaFormat.XML;
-            if (ymf != null)
-            {
-                if (ymf.Meta != null) metaFormat = MetaFormat.RSC;
-                if (ymf.Pso != null) metaFormat = MetaFormat.PSO;
-                if (ymf.Rbf != null) metaFormat = MetaFormat.RBF;
-            }
-        }
-        public void LoadMeta(YmapFile ymap)
-        {
-            string fn;
-            Xml = MetaXml.GetXml(ymap, out fn);
-            FileName = fn;
-            RawPropertyGrid.SelectedObject = ymap;
-            rpfFileEntry = ymap?.RpfFileEntry;
-            modified = false;
-            metaFormat = MetaFormat.XML;
-            if (ymap != null)
-            {
-                if (ymap.Meta != null) metaFormat = MetaFormat.RSC;
-                if (ymap.Pso != null) metaFormat = MetaFormat.PSO;
-                if (ymap.Rbf != null) metaFormat = MetaFormat.RBF;
-            }
-        }
-        public void LoadMeta(YtypFile ytyp)
-        {
-            string fn;
-            Xml = MetaXml.GetXml(ytyp, out fn);
-            FileName = fn;
-            RawPropertyGrid.SelectedObject = ytyp;
-            rpfFileEntry = ytyp?.RpfFileEntry;
-            modified = false;
-            metaFormat = MetaFormat.XML;
-            if (ytyp != null)
-            {
-                if (ytyp.Meta != null) metaFormat = MetaFormat.RSC;
-                if (ytyp.Pso != null) metaFormat = MetaFormat.PSO;
-                if (ytyp.Rbf != null) metaFormat = MetaFormat.RBF;
-            }
-        }
-        public void LoadMeta(JPsoFile jpso)
-        {
-            string fn;
-            Xml = MetaXml.GetXml(jpso, out fn);
-            FileName = fn;
-            RawPropertyGrid.SelectedObject = jpso;
-            rpfFileEntry = jpso?.FileEntry;
-            modified = false;
-            metaFormat = MetaFormat.XML;
-            if (jpso != null)
-            {
-                if (jpso.Pso != null) metaFormat = MetaFormat.PSO;
-            }
-        }
-        public void LoadMeta(CutFile cut)
-        {
-            string fn;
-            Xml = MetaXml.GetXml(cut, out fn);
-            FileName = fn;
-            RawPropertyGrid.SelectedObject = cut;
-            rpfFileEntry = cut?.FileEntry;
-            modified = false;
-            metaFormat = MetaFormat.XML;
-            if (cut != null)
-            {
-                if (cut.Pso != null) metaFormat = MetaFormat.PSO;
-            }
-        }
-        public void LoadMeta(YndFile ynd)
-        {
-            var fn = ((ynd?.RpfFileEntry?.Name) ?? "") + ".xml";
-            Xml = MetaXml.GetXml(ynd, out fn);
-            FileName = fn;
-            RawPropertyGrid.SelectedObject = ynd;
-            rpfFileEntry = ynd?.RpfFileEntry;
-            modified = false;
-            metaFormat = MetaFormat.XML;
-            if (ynd?.RpfFileEntry != null)
-            {
-                metaFormat = MetaFormat.Ynd;
-            }
-        }
-        public void LoadMeta(CacheDatFile cachedat)
-        {
-            var fn = ((cachedat?.FileEntry?.Name) ?? "") + ".xml";
-            Xml = cachedat.GetXml();
-            FileName = fn;
-            RawPropertyGrid.SelectedObject = cachedat;
-            rpfFileEntry = cachedat?.FileEntry;
-            modified = false;
-            metaFormat = MetaFormat.XML;
-            if (cachedat?.FileEntry != null)
-            {
-                metaFormat = MetaFormat.CacheFile;
-            }
-        }
 
 
-
-        public bool SaveMeta(XmlDocument doc)
+        private bool SaveToRPF(string txt)
         {
-            //if explorer is in edit mode, and the current RpfFileEntry is valid, convert XML to the 
-            //current meta format and then save the file into the RPF.
-            //otherwise, save the generated file to disk? 
-            //(currently just return false and revert to XML file save)
 
             if (!(exploreForm?.EditMode ?? false)) return false;
             if (rpfFileEntry?.Parent == null) return false;
 
             byte[] data = null;
 
-#if !DEBUG
-            try
-#endif
-            {
-                switch (metaFormat)
-                {
-                    default:
-                    case MetaFormat.XML: return false;//what are we even doing here?
-                    case MetaFormat.RSC:
-                        var meta = XmlMeta.GetMeta(doc);
-                        if ((meta.DataBlocks?.Data == null) || (meta.DataBlocks.Count == 0))
-                        {
-                            MessageBox.Show("Schema not supported.", "Cannot import Meta XML");
-                            return false;
-                        }
-                        data = ResourceBuilder.Build(meta, 2); //meta is RSC "Version":2    (it's actually a type identifier, not a version!)
-                        break;
-                    case MetaFormat.PSO:
-                        var pso = XmlPso.GetPso(doc);
-                        if ((pso.DataSection == null) || (pso.DataMapSection == null) || (pso.SchemaSection == null))
-                        {
-                            MessageBox.Show("Schema not supported.", "Cannot import PSO XML");
-                            return false;
-                        }
-                        data = pso.Save();
-                        break;
-                    case MetaFormat.RBF:
-                        var rbf = XmlRbf.GetRbf(doc);
-                        if (rbf.current == null)
-                        {
-                            MessageBox.Show("Schema not supported.", "Cannot import RBF XML");
-                            return false;
-                        }
-                        data = rbf.Save();
-                        break;
-                    case MetaFormat.Ynd:
-                        var ynd = XmlYnd.GetYnd(doc);
-                        if (ynd.NodeDictionary == null)
-                        {
-                            MessageBox.Show("Schema not supported.", "Cannot import YND XML");
-                            return false;
-                        }
-                        data = ynd.Save();
-                        break;
-                    case MetaFormat.CacheFile:
-                        MessageBox.Show("Sorry, CacheFile import is not supported.", "Cannot import CacheFile XML");
-                        return false;
-                }
-            }
-#if !DEBUG
-            catch (Exception ex)
-            {
-                MessageBox.Show("Exception encountered!\r\n" + ex.ToString(), "Cannot convert XML");
-                return false;
-            }
-#endif
+            data = Encoding.UTF8.GetBytes(txt);
+
             if (data == null)
             {
-                MessageBox.Show("Schema not supported. (Unspecified error - data was null!)", "Cannot convert XML");
+                MessageBox.Show("Unspecified error - data was null!", "Cannot save XML file");
                 return false;
             }
 
@@ -429,7 +249,7 @@ namespace CodeWalker.Forms
 
                 modified = false;
 
-                StatusLabel.Text = metaFormat.ToString() + " file saved successfully at " + DateTime.Now.ToString();
+                StatusLabel.Text = "XML file saved successfully at " + DateTime.Now.ToString();
 
                 return true; //victory!
             }
@@ -440,6 +260,8 @@ namespace CodeWalker.Forms
 
             return false;
         }
+
+
 
 
 
@@ -464,7 +286,6 @@ namespace CodeWalker.Forms
             range.SetStyle(BlueStyle, @"\S+?=(?<range>'[^']*')|\S+=(?<range>""[^""]*"")|\S+=(?<range>\S+)");
         }
 
-
         private void XmlTextBox_VisibleRangeChangedDelayed(object sender, EventArgs e)
         {
             //this approach is much faster to load, but no outlining is available
@@ -476,7 +297,10 @@ namespace CodeWalker.Forms
             }
         }
 
-        private void XmlTextBox_TextChanged(object sender, FastColoredTextBoxNS.TextChangedEventArgs e)
+
+
+
+        private void XmlTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (!LoadingXml)
             {
@@ -525,7 +349,7 @@ namespace CodeWalker.Forms
             Close();
         }
 
-        private void MetaForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void XmlForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = !CloseDocument();
         }

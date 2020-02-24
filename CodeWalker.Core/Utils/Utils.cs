@@ -1,5 +1,4 @@
-﻿using SharpDX;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -8,6 +7,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using SharpDX;
+using Color = SharpDX.Color;
 
 namespace CodeWalker
 {
@@ -108,7 +109,6 @@ namespace CodeWalker
     {
         public static bool TryParse(string s, out float f)
         {
-            f = 0.0f;
             if (float.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out f))
             {
                 return true;
@@ -117,8 +117,7 @@ namespace CodeWalker
         }
         public static float Parse(string s)
         {
-            float f;
-            TryParse(s, out f);
+            TryParse(s, out float f);
             return f;
         }
         public static string ToString(float f)

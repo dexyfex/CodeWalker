@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Range = FastColoredTextBoxNS.Range;
 
 namespace CodeWalker.Forms
 {
@@ -38,10 +39,8 @@ namespace CodeWalker.Forms
         {
             InitializeComponent();
 
-            MainListView.ContextMenu = new ContextMenu(new[]
-            {
-                new MenuItem("Export to openFormats (.onim)...", this.ExportOnim_Click)
-            });
+            MainListView.ContextMenuStrip = new ContextMenuStrip();
+            MainListView.ContextMenuStrip.Items.Add(new ToolStripMenuItem("Export to openFormats (.onim)...", null, ExportOnim_Click));
         }
 
         private void ExportOnim_Click(object sender, EventArgs e)
@@ -228,16 +227,16 @@ namespace CodeWalker.Forms
 
                 if (MainPropertyGrid.SelectedObject is Animation)
                 {
-                    MainListView.ContextMenu.MenuItems[0].Enabled = true;
+                    MainListView.ContextMenuStrip.Items[0].Enabled = true;
                 }
                 else
                 {
-                    MainListView.ContextMenu.MenuItems[0].Enabled = false;
+                    MainListView.ContextMenuStrip.Items[0].Enabled = false;
                 }
             }
             else
             {
-                MainListView.ContextMenu.MenuItems[0].Enabled = false;
+                MainListView.ContextMenuStrip.Items[0].Enabled = false;
                 //MainPropertyGrid.SelectedObject = null;
             }
         }

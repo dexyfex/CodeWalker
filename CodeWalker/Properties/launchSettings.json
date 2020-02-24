@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CodeWalker": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\GitHub\\CodeWalker"
+    }
+  }
+}

@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using Range = FastColoredTextBoxNS.Range;
 
 namespace CodeWalker.Forms
 {

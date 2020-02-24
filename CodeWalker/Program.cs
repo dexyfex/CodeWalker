@@ -54,6 +54,7 @@ namespace CodeWalker
 
             EnsureJumpList();
 
+            //Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
