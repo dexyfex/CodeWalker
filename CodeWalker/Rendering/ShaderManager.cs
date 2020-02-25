@@ -573,13 +573,14 @@ namespace CodeWalker.Rendering
 
             if (DefScene != null)
             {
+                context.Rasterizer.State = rsSolid;
+
                 DefScene.SetSceneColour(context);
 
                 DefScene.RenderLights(context, camera, Shadowmap, GlobalLights);
 
                 if (RenderLODLights.Count > 0) //LOD lights pass
                 {
-                    context.Rasterizer.State = rsSolid;
                     context.OutputMerger.BlendState = bsAdd; //additive blend for lights...
                     context.OutputMerger.DepthStencilState = dsDisableWriteRev;//only render parts behind or at surface
                     DefScene.RenderLights(context, camera, RenderLODLights);
@@ -587,7 +588,6 @@ namespace CodeWalker.Rendering
 
                 if (RenderLights.Count > 0)
                 {
-                    context.Rasterizer.State = rsSolid;
                     context.OutputMerger.BlendState = bsAdd; //additive blend for lights...
                     context.OutputMerger.DepthStencilState = dsDisableWriteRev;//only render parts behind or at surface
                     DefScene.RenderLights(context, camera, RenderLights);
