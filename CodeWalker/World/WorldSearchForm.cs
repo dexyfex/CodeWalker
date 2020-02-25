@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace CodeWalker
+namespace CodeWalker.World
 {
     public partial class WorldSearchForm : Form
     {

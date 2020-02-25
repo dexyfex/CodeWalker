@@ -1,4 +1,4 @@
-﻿namespace CodeWalker
+﻿namespace CodeWalker.Utils
 {
     partial class SelectFolderForm
     {

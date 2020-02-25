@@ -1,4 +1,4 @@
-﻿namespace CodeWalker
+﻿namespace CodeWalker.World
 {
     partial class SettingsForm
     {

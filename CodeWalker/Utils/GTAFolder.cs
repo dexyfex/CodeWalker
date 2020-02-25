@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using CodeWalker.Properties;
 using Microsoft.Win32;
 using CodeWalker.GameFiles;
+using CodeWalker.Utils;
 
 namespace CodeWalker
 {

@@ -1,4 +1,5 @@
 ﻿using CodeWalker.Properties;
+using CodeWalker.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace CodeWalker
+namespace CodeWalker.World
 {
     public partial class SettingsForm : Form
     {

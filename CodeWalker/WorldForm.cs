@@ -14,6 +14,7 @@ using CodeWalker.Project;
 using CodeWalker.Rendering;
 using CodeWalker.GameFiles;
 using CodeWalker.Properties;
+using CodeWalker.Tools;
 
 namespace CodeWalker
 {

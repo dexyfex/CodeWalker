@@ -1,4 +1,4 @@
-﻿namespace CodeWalker
+﻿namespace CodeWalker.Tools
 {
     partial class JenkGenForm
     {

@@ -1,6 +1,6 @@
 ﻿using CodeWalker.WinForms;
 
-namespace CodeWalker
+namespace CodeWalker.World
 {
     partial class WorldInfoForm
     {
