@@ -468,7 +468,7 @@ namespace CodeWalker.Rendering
             Color4 lightnaturaldowncolour = new Color4(0.0f);
             Color4 lightartificialupcolour = new Color4(0.0f);
             Color4 lightartificialdowncolour = new Color4(0.0f);
-            bool hdr = shaders.hdr;
+            bool hdr = (shaders != null) ? shaders.hdr : false;
             float hdrint = 1.0f;
             Vector3 sundir = Vector3.Up;
             Vector3 moondir = Vector3.Down;
@@ -535,7 +535,7 @@ namespace CodeWalker.Rendering
 
                 //lightdir = Vector3.Normalize(weather.CurrentValues.sunDirection);
 
-                if (weather != null && weather.Inited)
+                if ((weather != null) && weather.Inited)
                 {
                     lightdircolour = (Color4)weather.CurrentValues.lightDirCol;
                     lightdirambcolour = (Color4)weather.CurrentValues.lightDirAmbCol;
