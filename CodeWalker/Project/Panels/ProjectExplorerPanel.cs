@@ -2277,8 +2277,9 @@ namespace CodeWalker.Project.Panels
 
         private void ProjectTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            bool addSelection = Focused && ((ModifierKeys & Keys.Control) > 0);
-            bool fillSelection = Focused && ((ModifierKeys & Keys.Shift) > 0);
+            bool focused = ProjectForm?.ContainsFocus ?? this.ContainsFocus;
+            bool addSelection = focused && ((ModifierKeys & Keys.Control) > 0);
+            bool fillSelection = focused && ((ModifierKeys & Keys.Shift) > 0);
             if (addSelection)
             {
                 if (SelectedNodes.Contains(e.Node))
