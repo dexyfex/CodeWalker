@@ -2381,6 +2381,11 @@ namespace CodeWalker.GameFiles
             {
                 this.VertexData = this.VertexBuffer.Data1 ?? this.VertexBuffer.Data2;
 
+                if (this.VerticesCount == 0)
+                {
+                    this.VerticesCount = (ushort)(this.VertexData?.VertexCount ?? 0);
+                }
+
                 //if (VertexBuffer.Data1 != VertexBuffer.Data2)
                 //{ }//no hit
                 //if (VertexDataPointer == 0)
