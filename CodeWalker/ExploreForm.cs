@@ -1916,7 +1916,7 @@ namespace CodeWalker
                 var idx = MainListView.SelectedIndices[0];
                 if ((idx < 0) || (idx >= CurrentFiles.Count)) return;
                 var file = CurrentFiles[idx];
-                var nl = file?.File?.NameLower;
+                var nl = file?.File?.NameLower ?? file?.Name?.ToLowerInvariant();
                 if (!string.IsNullOrEmpty(nl))
                 {
                     needfolder = nl.EndsWith(".ytd") || nl.EndsWith(".ydr") || nl.EndsWith(".ydd") || nl.EndsWith(".yft") || nl.EndsWith(".ypt") || nl.EndsWith(".awc");
@@ -1940,7 +1940,15 @@ namespace CodeWalker
                         }
 
                         string newfn;
-                        string xml = MetaXml.GetXml(file.File, data, out newfn);
+                        var fentry = file?.File;
+                        if (fentry == null)
+                        {
+                            //this should only happen when opening a file from filesystem...
+                            var name = new FileInfo(file.FullPath).Name;
+                            fentry = CreateFileEntry(name, file.FullPath, ref data);
+                        }
+
+                        string xml = MetaXml.GetXml(fentry, data, out newfn);
                         if (string.IsNullOrEmpty(xml))
                         {
                             MessageBox.Show("Unable to convert file to XML: " + file.Path);
@@ -1988,7 +1996,15 @@ namespace CodeWalker
                         }
 
                         string newfn;
-                        string xml = MetaXml.GetXml(file.File, data, out newfn, folderpath);
+                        var fentry = file?.File;
+                        if (fentry == null)
+                        {
+                            //this should only happen when opening a file from filesystem...
+                            var name = new FileInfo(file.FullPath).Name;
+                            fentry = CreateFileEntry(name, file.FullPath, ref data);
+                        }
+
+                        string xml = MetaXml.GetXml(fentry, data, out newfn, folderpath);
                         if (string.IsNullOrEmpty(xml))
                         {
                             errors.AppendLine("Unable to convert file to XML: " + file.Path);
