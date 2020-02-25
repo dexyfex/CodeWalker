@@ -1,4 +1,4 @@
-﻿namespace CodeWalker.Vehicles
+﻿namespace CodeWalker
 {
     partial class VehicleForm
     {

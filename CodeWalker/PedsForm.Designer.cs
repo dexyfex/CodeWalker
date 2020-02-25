@@ -1,4 +1,4 @@
-﻿namespace CodeWalker.Peds
+﻿namespace CodeWalker
 {
     partial class PedsForm
     {

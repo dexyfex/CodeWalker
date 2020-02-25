@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Color = SharpDX.Color;
 
-namespace CodeWalker.Vehicles
+namespace CodeWalker
 {
     public partial class VehicleForm : Form, DXForm
     {

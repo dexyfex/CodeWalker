@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CodeWalker.Vehicles": {
+      "commandName": "Project",
+      "workingDirectory": ".."
+    }
+  }
+}

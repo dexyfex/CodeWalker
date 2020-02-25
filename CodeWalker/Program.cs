@@ -83,11 +83,11 @@ namespace CodeWalker
                 }
                 else if (vehiclesmode)
                 {
-                    Application.Run(new Vehicles.VehicleForm());
+                    Application.Run(new VehicleForm());
                 }
                 else if (pedsmode)
                 {
-                    Application.Run(new Peds.PedsForm());
+                    Application.Run(new PedsForm());
                 }
                 else
                 {
