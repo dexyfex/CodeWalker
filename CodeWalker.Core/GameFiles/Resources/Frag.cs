@@ -395,7 +395,9 @@ namespace CodeWalker.GameFiles
                     var d = DrawableArray.data_items[i];
                     var name = (i < (danames?.Length ?? 0)) ? danames[i] : null;
                     if (d.Name != name.Value)
-                    { }
+                    {
+                        d.Name = name.Value;
+                    }
                     FragDrawable.WriteXmlNode(d, sb, indent + 1, ddsfolder, "Item");
                 }
                 YftXml.CloseTag(sb, indent, "DrawableArray");
