@@ -1189,13 +1189,13 @@ namespace CodeWalker.World
             Ped.Init(ped.StreamingName, gfc);
             Ped.LoadDefaultComponents(gfc);
 
-            if (ped.StreamingName == JenkHash.GenHash("player_zero"))
-            {
-                //for michael, switch his outfit so it's not glitching everywhere (until it's fixed?)
-                Ped.SetComponentDrawable(3, 27, 0, 0, gfc);
-                Ped.SetComponentDrawable(4, 19, 0, 0, gfc);
-                Ped.SetComponentDrawable(6, null, null, gfc);
-            }
+            //if (ped.StreamingName == JenkHash.GenHash("player_zero"))
+            //{
+            //    //for michael, switch his outfit so it's not glitching everywhere (until it's fixed?)
+            //    Ped.SetComponentDrawable(3, 27, 0, 0, gfc);
+            //    Ped.SetComponentDrawable(4, 19, 0, 0, gfc);
+            //    Ped.SetComponentDrawable(6, null, null, gfc);
+            //}
 
             AnimHash = ped.StreamingName;
         }
