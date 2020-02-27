@@ -910,6 +910,7 @@ namespace CodeWalker.GameFiles
                     matinds.Add(id);
                     mats.Add(mat);
                 }
+                FragMatricesCount = (ushort)mats.Count;
                 for (int i = mats.Count; i < cap; i++)
                 {
                     matinds.Add(0);
