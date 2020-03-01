@@ -186,6 +186,7 @@ namespace CodeWalker.GameFiles
                 //TestRbfs();
                 //TestCuts();
                 //TestYlds();
+                //TestYeds();
                 //TestYcds();
                 //TestYtds();
                 //TestYbns();
@@ -3183,6 +3184,44 @@ namespace CodeWalker.GameFiles
 
                             YldFile yld = new YldFile(rfe);
                             RpfMan.LoadFile(yld, rfe);
+
+                        }
+                    }
+#if !DEBUG
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                        exceptions.Add(ex);
+                    }
+#endif
+                }
+            }
+
+            if (exceptions.Count > 0)
+            { }
+        }
+        public void TestYeds()
+        {
+
+            var exceptions = new List<Exception>();
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+#if !DEBUG
+                    try
+#endif
+                    {
+                        var rfe = entry as RpfFileEntry;
+                        if (rfe == null) continue;
+
+                        if (rfe.NameLower.EndsWith(".yed"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+
+                            YedFile yed = new YedFile(rfe);
+                            RpfMan.LoadFile(yed, rfe);
 
                         }
                     }
