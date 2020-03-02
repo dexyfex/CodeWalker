@@ -399,11 +399,11 @@ namespace CodeWalker.GameFiles
             }
             Items = items.ToArray();
 
-            if (dr1.Position != dr1.Length)
+            if ((dr1.Length - dr1.Position) != 0)
             { }
-            if (dr2.Position != dr2.Length)
+            if ((dr2.Length - dr2.Position) != 0)
             { }
-            if (dr3.Position != dr3.Length)
+            if ((dr3.Length - dr3.Position) != 0)
             { }
 
 
@@ -414,30 +414,53 @@ namespace CodeWalker.GameFiles
         {
             switch (type)
             {
-                case 0x45: return new ExpressionUnk1_45();
-                case 0x44: return new ExpressionUnk1_44();
+                //case 0:
+                case 0x21:
+                case 0x30:
+                case 0x3D:
+                case 0x03:
+                case 0x01:
+                case 0x33:
+                case 0x2E:
+                case 0x31:
+                case 0x32:
+                case 0x2F:
+                case 0x04:
+                case 0x10:
+                case 0x3B:
+                case 0x36:
+                case 0x35:
+                case 0x39:
+                case 0x38:
+                case 0x37:
+                case 0x1D:
+                case 0x1E:
+                    return new ExpressionUnk1_Empty();
+
+                case 0x45:
+                case 0x44: 
+                    return new ExpressionUnk1_S1S2T2();
+
+                case 0x07:
+                case 0x09:
+                case 0x0A:
+                case 0x23:
+                case 0x26:
+                case 0x27: 
+                case 0x28:
+                case 0x20:
+                    return new ExpressionUnk1_S2();
+
+                case 0x2B:
+                case 0x2C: 
+                    return new ExpressionUnk1_2B2C();
+
+
                 case 0x0B: return new ExpressionUnk1_0B();
-                case 0x07: return new ExpressionUnk1_07();
-                case 0x09: return new ExpressionUnk1_09();
                 case 0x05: return new ExpressionUnk1_05();
-                case 0x28: return new ExpressionUnk1_28();
-                case 0x26: return new ExpressionUnk1_26();
-                case 0x2B: return new ExpressionUnk1_2B();
-                case 0x2C: return new ExpressionUnk1_2C();
-                case 0x21: return new ExpressionUnk1_Empty();   //case 0x21: return new ExpressionUnk1_21();
-                case 0x3D: return new ExpressionUnk1_Empty();
-                case 0x03: return new ExpressionUnk1_Empty();
-                case 0x37: return new ExpressionUnk1_Empty();
-                case 0x01: return new ExpressionUnk1_Empty();
-                case 0x30: return new ExpressionUnk1_Empty();
-                case 0x2E: return new ExpressionUnk1_Empty();
-                case 0x33: return new ExpressionUnk1_Empty();
-                case 0x31: return new ExpressionUnk1_Empty();
-                case 0x32: return new ExpressionUnk1_Empty();
-                case 0x2F: return new ExpressionUnk1_Empty();
-                case 0x04: return new ExpressionUnk1_Empty();
-                case 0x10: return new ExpressionUnk1_Empty();
-                case 0x3B: return new ExpressionUnk1_Empty();
+                case 0x3E: return new ExpressionUnk1_3E();
+                case 0x0E: return new ExpressionUnk1_0E();
+
             }
             return new ExpressionUnk1_Empty();
         }
@@ -598,7 +621,7 @@ namespace CodeWalker.GameFiles
             return TypeStr;
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_45 : ExpressionUnk1_Base
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_S1S2T2 : ExpressionUnk1_Base
     {
         public override void Read(DataReader r1, DataReader r2, DataReader r3)
         {
@@ -607,27 +630,50 @@ namespace CodeWalker.GameFiles
             Type2 = r3.ReadByte();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_44 : ExpressionUnk1_Base
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_S2 : ExpressionUnk1_Base
     {
         public override void Read(DataReader r1, DataReader r2, DataReader r3)
         {
-            ReadStruct1(r1);
             ReadStruct2(r2);
-            Type2 = r3.ReadByte();
+        }
+        public override string ToString()
+        {
+            var str = TypeStr;
+            if (Struct2 != null)
+            {
+                str += "   -   " + Struct2.ToString();
+            }
+            return str;
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_21 : ExpressionUnk1_Base
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_2B2C : ExpressionUnk1_Base
     {
+        public float UnkFloat1 { get; set; }
+        public uint UnkUint1 { get; set; }
+        public uint UnkUint2 { get; set; }
+
         public override void Read(DataReader r1, DataReader r2, DataReader r3)
         {
-            ReadStruct2(r2);
-            Type2 = r3.ReadByte();
+            UnkFloat1 = r2.ReadSingle();
+            UnkUint1 = r2.ReadUInt32();
+            UnkUint2 = r2.ReadUInt32();
+        }
+        public override string ToString()
+        {
+            return TypeStr + "   -   " + UnkFloat1.ToString() + ", " + UnkUint1.ToString() + ", " + UnkUint2.ToString();
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_0B : ExpressionUnk1_Base
     {
         public ExpressionUnk1_Base[] Children { get; set; }
         public Vector4 UnkVec1 { get; set; }
+
+        public List<ExpressionUnk1_Base[]> Sets { get; set; }
+        public void AddSet(ExpressionUnk1_Base[] set)
+        {
+            if (Sets == null) Sets = new List<ExpressionUnk1_Base[]>();
+            Sets.Add(set);
+        }
 
         public override void Read(DataReader r1, DataReader r2, DataReader r3)
         {
@@ -636,17 +682,31 @@ namespace CodeWalker.GameFiles
             while (r3.Position < r3.Length)
             {
                 var type = r3.ReadByte();
+                if (type == 0)
+                { break; }
+
+                var child = ExpressionUnk1.CreateItem(type);
+                child.Type = type;
+                child.Read(r1, r2, r3);
+                children.Add(child);
 
                 if ((type == 0x28) || (type == 0x26)) // 40, 38
                 {
                     Type2 = type;
                     break;
                 }
-
-                var child = ExpressionUnk1.CreateItem(type);
-                child.Type = type;
-                child.Read(r1, r2, r3);
-                children.Add(child);
+                if (type == 0x2E)
+                {
+                    Type2 = type;
+                    break;
+                }
+                //if ((type == 0x33) || (type == 0x3D))
+                //{
+                //    AddSet(children.ToArray());
+                //    children.Clear();
+                //    //Type2 = type;
+                //    //break;
+                //}
             }
 
             if (children.Count > 0)
@@ -654,128 +714,120 @@ namespace CodeWalker.GameFiles
                 Children = children.ToArray();
             }
 
-
-            ReadStruct2(r2);
-
+            //if ((Type2 == 0x28) || (Type2 == 0x26)) // 40, 38
+            //{
+            //    ReadStruct2(r2);
+            //}
             UnkVec1 = r1.ReadVector4();
 
         }
 
         public override string ToString()
         {
-            return base.ToString() + "   -   " + UnkVec1.ToString();// + "   -   " + (Items?.Length ?? 0).ToString() + " items";
-        }
-    }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_07 : ExpressionUnk1_Base
-    {
-        public override void Read(DataReader r1, DataReader r2, DataReader r3)
-        {
-            ReadStruct2(r2);
-        }
-        public override string ToString()
-        {
-            var str = TypeStr;
-            if (Struct2 != null)
-            {
-                str += "   -   " + Struct2.ToString();
-            }
-            return str;
-        }
-    }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_09 : ExpressionUnk1_Base
-    {
-        public override void Read(DataReader r1, DataReader r2, DataReader r3)
-        {
-            ReadStruct2(r2);
-        }
-        public override string ToString()
-        {
-            var str = TypeStr;
-            if (Struct2 != null)
-            {
-                str += "   -   " + Struct2.ToString();
-            }
+            var str = base.ToString() + "   -   " + UnkVec1.ToString() + "   -   " + (Children?.Length ?? 0).ToString() + " children";
+            if (Sets != null) str += ", " + Sets.Count.ToString() + " sets";
             return str;
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_05 : ExpressionUnk1_Base
     {
-        public float UnkFloat2 { get; set; }
+        public float UnkFloat { get; set; }
 
         public override void Read(DataReader r1, DataReader r2, DataReader r3)
         {
-            UnkFloat2 = r2.ReadSingle();
+            UnkFloat = r2.ReadSingle();
         }
 
         public override string ToString()
         {
-            return TypeStr + "   -   " + UnkFloat2.ToString();
+            return TypeStr + "   -   " + UnkFloat.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_28 : ExpressionUnk1_Base
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_3E : ExpressionUnk1_Base
     {
+        public Vector4 UnkVec1 { get; set; }
+        public uint UnkUint1 { get; set; }
+        public uint UnkUint2 { get; set; }
+        public uint UnkUint3 { get; set; }
+        public uint UnkUint4 { get; set; }
+
         public override void Read(DataReader r1, DataReader r2, DataReader r3)
         {
-            ReadStruct2(r2);
+            UnkVec1 = r1.ReadVector4();
+            UnkUint1 = r1.ReadUInt32();
+            UnkUint2 = r1.ReadUInt32();
+            UnkUint3 = r1.ReadUInt32();
+            UnkUint4 = r1.ReadUInt32();
         }
         public override string ToString()
         {
             var str = TypeStr;
-            if (Struct2 != null)
-            {
-                str += "   -   " + Struct2.ToString();
-            }
-            return str;
+            //return str + "   -   " + UnkVec1.ToString();
+            return str + "   -   " + UnkVec1.ToString() + "   -   " + UnkUint1.ToString() + ", " + UnkUint2.ToString() + ", " + UnkUint3.ToString() + ", " + UnkUint4.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_26 : ExpressionUnk1_Base
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_0E : ExpressionUnk1_Base
     {
+        public Vector3 UnkVec1 { get; set; }
+        public MetaHash UnkUint1 { get; set; }
+        public Vector3 UnkVec2 { get; set; }
+        public MetaHash UnkUint2 { get; set; }
+        public Vector3 UnkVec3 { get; set; }
+        public MetaHash UnkUint3 { get; set; }
+        public Vector3 UnkVec4 { get; set; }
+        public MetaHash UnkUint4 { get; set; }
+        public Vector3 UnkVec5 { get; set; }
+        public MetaHash UnkUint5 { get; set; }
+        public Vector3 UnkVec6 { get; set; }
+        public MetaHash UnkUint6 { get; set; }
+        public Vector3 UnkVec7 { get; set; }
+        public MetaHash UnkUint7 { get; set; }
+        public Vector3 UnkVec8 { get; set; }
+        public MetaHash UnkUint8 { get; set; }
+        public Vector3 UnkVec9 { get; set; }
+        public MetaHash UnkUint9 { get; set; }
+        public Vector3 UnkVec10 { get; set; }
+        public MetaHash UnkUint10 { get; set; }
+        public MetaHash UnkUint11 { get; set; }
+        public MetaHash UnkUint12 { get; set; }
+        public MetaHash UnkUint13 { get; set; }
+        public MetaHash UnkUint14 { get; set; }
+
         public override void Read(DataReader r1, DataReader r2, DataReader r3)
         {
-            ReadStruct2(r2);
+            UnkVec1 = r1.ReadVector3();
+            UnkUint1 = r1.ReadUInt32();//2x short
+            UnkVec2 = r1.ReadVector3();
+            UnkUint2 = r1.ReadUInt32();//2x short
+            UnkVec3 = r1.ReadVector3();
+            UnkUint3 = r1.ReadUInt32();//2x short
+            UnkVec4 = r1.ReadVector3();
+            UnkUint4 = r1.ReadUInt32();//1x short, 2 bytes (first 0)
+            UnkVec5 = r1.ReadVector3();//0
+            UnkUint5 = r1.ReadUInt32();//1x short, 2 bytes (first 0)
+            UnkVec6 = r1.ReadVector3();//0
+            UnkUint6 = r1.ReadUInt32();//0
+            UnkVec7 = r1.ReadVector3();//0
+            UnkUint7 = r1.ReadUInt32();//1x short, 2 bytes (first 0)
+            UnkVec8 = r1.ReadVector3();//0
+            UnkUint8 = r1.ReadUInt32();//1x short (0), 2 bytes
+            UnkVec9 = r1.ReadVector3();//down vector (0,0,-1)
+            UnkUint9 = r1.ReadUInt32();//1x short, 2 bytes (first 0)
+            UnkVec10 = r1.ReadVector3();//gravity vector? (0, 0, -9.8)
+            UnkUint10 = r1.ReadUInt32();//2x short (2nd 0)
+            UnkUint11 = r1.ReadUInt32();
+            UnkUint12 = r1.ReadUInt32();
+            UnkUint13 = r1.ReadUInt32();
+            UnkUint14 = r1.ReadUInt32();
         }
         public override string ToString()
         {
             var str = TypeStr;
-            if (Struct2 != null)
+            if (Struct1 != null)
             {
-                str += "   -   " + Struct2.ToString();
+                str += "   -   " + Struct1.ToString();
             }
             return str;
-        }
-    }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_2B : ExpressionUnk1_Base
-    {
-        public float UnkFloat1 { get; set; }
-        public uint UnkUint1 { get; set; }
-        public uint UnkUint2 { get; set; }
-
-        public override void Read(DataReader r1, DataReader r2, DataReader r3)
-        {
-            UnkFloat1 = r2.ReadSingle();
-            UnkUint1 = r2.ReadUInt32();
-            UnkUint2 = r2.ReadUInt32();
-        }
-        public override string ToString()
-        {
-            return TypeStr + "   -   " + UnkFloat1.ToString() + ", " + UnkUint1.ToString() + ", " + UnkUint2.ToString();
-        }
-    }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_2C : ExpressionUnk1_Base
-    {
-        public float UnkFloat1 { get; set; }
-        public uint UnkUint1 { get; set; }
-        public uint UnkUint2 { get; set; }
-
-        public override void Read(DataReader r1, DataReader r2, DataReader r3)
-        {
-            UnkFloat1 = r2.ReadSingle();
-            UnkUint1 = r2.ReadUInt32();
-            UnkUint2 = r2.ReadUInt32();
-        }
-        public override string ToString()
-        {
-            return TypeStr + "   -   " + UnkFloat1.ToString() + ", " + UnkUint1.ToString() + ", " + UnkUint2.ToString();
         }
     }
 
