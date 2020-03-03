@@ -306,9 +306,9 @@ namespace CodeWalker.GameFiles
             this.Data2 = reader.ReadBytes((int)len2);
             this.Data3 = reader.ReadBytes((int)len3);
 
-#if DEBUG
+//#if DEBUG
             ParseDatas();
-#endif
+//#endif
 
             //switch (Unknown_Eh)
             //{
@@ -503,12 +503,49 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_S1 : ExpressionUnk1_Base
     {
         public uint Length { get; set; }
-        public uint ItemCount { get; set; }//is this right?
-        public uint ItemType { get; set; }//is this right?
+        public uint ItemCount { get; set; }
+        public uint ItemType { get; set; }
         public uint Unk1 { get; set; } // 0x00000000
 
-        public byte[] Data { get; set; }
-        
+        [TypeConverter(typeof(ExpandableObjectConverter))] public class Struct1
+        {
+            public ushort Unk1 { get; set; }//bone index?
+            public ushort Unk2 { get; set; }
+
+            public float[] Values { get; set; }
+
+            public void Read(DataReader r)
+            {
+                Unk1 = r.ReadUInt16();
+                Unk2 = r.ReadUInt16();
+
+                switch (Unk2)
+                {
+                    case 0:
+                    case 4:
+                    case 8:
+                        break;
+                    default:
+                        break;//no hit
+                }
+            }
+            public override string ToString()
+            {
+                var str = Unk1.ToString() + ", " + Unk2.ToString();
+                if (Values != null)
+                {
+                    str += "   -   ";
+                    for (int i = 0; i < Values.Length; i++)
+                    {
+                        if (i != 0) str += ", ";
+                        str += Values[i].ToString();
+                    }
+                }
+                return str;
+            }
+        }
+        public Struct1[] Items { get; set; }
+
 
         public override void Read(DataReader r1, DataReader r2, DataReader r3)
         {
@@ -517,36 +554,28 @@ namespace CodeWalker.GameFiles
             ItemType = r1.ReadUInt32();
             Unk1 = r1.ReadUInt32();
 
-            var len = Length;
-            var dlen = (int)len - 16;
-            if (dlen > 0)
+            var valcnt = ((int)ItemType - 1) * 9 + 6;
+            var hlen = (int)ItemCount * 4 + 16;
+            var dlen = (int)Length - hlen;
+            var tlen = (int)ItemCount * valcnt * 4;
+            if (tlen != dlen)
+            { }//no hitting
+
+
+            Items = new Struct1[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
             {
-                Data = r1.ReadBytes(dlen);
+                var item1 = new Struct1();
+                item1.Read(r1);
+                Items[i] = item1;
+                Items[i].Values = new float[valcnt];
             }
-            else
-            { }//no hit
-
-
-            var ib = (int)(ItemCount * ItemType * 32);
-            var idif = (int)Length - ib;
-            switch (idif)
+            for (int n = 0; n < valcnt; n++)
             {
-                case 16:
-                case 0:
-                case -16:
-                case 48:
-                case 80:
-                case 32:
-                case 112:
-                case 144:
-                case 64:
-                case -32:
-                case -64:
-                case -48:
-                case -80:
-                    break;
-                default:
-                    break;//no hit
+                for (int i = 0; i < ItemCount; i++)
+                {
+                    Items[i].Values[n] = r1.ReadSingle();
+                }
             }
 
 
@@ -576,11 +605,10 @@ namespace CodeWalker.GameFiles
             }
             switch (ItemType)
             {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                    break;
+                case 1: break;
+                case 2: break;
+                case 3: break;
+                case 4: break;
                 default:
                     break;//no hit
             }
@@ -589,7 +617,12 @@ namespace CodeWalker.GameFiles
         }
         public override string ToString()
         {
-            return TypeStr + ", 1:   -   " + Length.ToString() + ", " + ItemCount.ToString() + ", " + ItemType.ToString();
+            var str = TypeStr + ", 1:   -   " + Length.ToString() + ", " + ItemCount.ToString() + ", " + ItemType.ToString();
+            if (Items != null)
+            {
+                str += "   -   " + Items.Length.ToString() + " items";
+            }
+            return str;
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_S2 : ExpressionUnk1_Base
@@ -617,19 +650,100 @@ namespace CodeWalker.GameFiles
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_2B2C2D : ExpressionUnk1_Base
     {
-        public float UnkFloat1 { get; set; }
         public uint UnkUint1 { get; set; }
         public uint UnkUint2 { get; set; }
+        public uint UnkUint3 { get; set; }
 
         public override void Read(DataReader r1, DataReader r2, DataReader r3)
         {
-            UnkFloat1 = r2.ReadSingle();
             UnkUint1 = r2.ReadUInt32();
             UnkUint2 = r2.ReadUInt32();
+            UnkUint3 = r2.ReadUInt32();
+
+            switch (UnkUint1)//flags?
+            {
+                case 0:
+                case 128:
+                case 464:
+                case 352:
+                case 240:
+                case 16:
+                    break;
+                default:
+                    break;//no hit
+            }
+            switch (UnkUint2)//some index?
+            {
+                case 24:
+                case 12:
+                case 0:
+                case 8:
+                case 60:
+                case 48:
+                case 20:
+                case 44:
+                case 16:
+                case 52:
+                case 28:
+                case 4:
+                case 88:
+                case 64:
+                case 128:
+                case 104:
+                case 68:
+                case 80:
+                case 92:
+                case 84:
+                case 56:
+                case 108:
+                case 116:
+                case 72:
+                case 32:
+                case 40:
+                case 512:
+                case 36:
+                case 100:
+                case 140:
+                    break;
+                default:
+                    break;//no hit
+            }
+            switch (UnkUint3)//some index?
+            {
+                case 5:
+                case 4:
+                case 2:
+                case 3:
+                case 6:
+                case 17:
+                case 16:
+                case 15:
+                case 14:
+                case 12:
+                case 7:
+                case 19:
+                case 34:
+                case 26:
+                case 22:
+                case 18:
+                case 11:
+                case 20:
+                case 8:
+                case 30:
+                case 9:
+                case 10:
+                case 24:
+                case 77:
+                case 38:
+                    break;
+                default:
+                    break;//no hit
+            }
+
         }
         public override string ToString()
         {
-            return TypeStr + ", 2:   -   " + UnkFloat1.ToString() + ", " + UnkUint1.ToString() + ", " + UnkUint2.ToString();
+            return TypeStr + ", 2:   -   " + UnkUint1.ToString() + ", " + UnkUint2.ToString() + ", " + UnkUint3.ToString();
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_0B : ExpressionUnk1_Base
@@ -664,10 +778,10 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_3E : ExpressionUnk1_Base
     {
         public Vector4 UnkVec1 { get; set; }
-        public uint UnkUint1 { get; set; }
-        public uint UnkUint2 { get; set; }
-        public uint UnkUint3 { get; set; }
-        public uint UnkUint4 { get; set; }
+        public uint UnkUint1 { get; set; } // 0, 1, 2
+        public uint UnkUint2 { get; set; } // 0, 2
+        public uint UnkUint3 { get; set; } // 0, 2
+        public uint UnkUint4 { get; set; } // 0x00000000
 
         public override void Read(DataReader r1, DataReader r2, DataReader r3)
         {
@@ -676,6 +790,39 @@ namespace CodeWalker.GameFiles
             UnkUint2 = r1.ReadUInt32();
             UnkUint3 = r1.ReadUInt32();
             UnkUint4 = r1.ReadUInt32();
+
+            switch (UnkUint1)
+            {
+                case 0:
+                case 2:
+                case 1:
+                    break;
+                default:
+                    break;//no hit
+            }
+            switch (UnkUint2)
+            {
+                case 2:
+                case 0:
+                    break;
+                default:
+                    break;//no hit
+            }
+            switch (UnkUint3)
+            {
+                case 2:
+                case 0:
+                    break;
+                default:
+                    break;//no hit
+            }
+            switch (UnkUint4)
+            {
+                case 0:
+                    break;
+                default:
+                    break;//no hit
+            }
         }
         public override string ToString()
         {
