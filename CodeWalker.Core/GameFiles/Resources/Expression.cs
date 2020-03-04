@@ -272,6 +272,136 @@ namespace CodeWalker.GameFiles
 
 
 
+    public class ExpressionTreeReader
+    {
+        public byte[] Data1 { get; set; }
+        public byte[] Data2 { get; set; }
+        public byte[] Data3 { get; set; }
+
+        public ExpressionUnk1_Base[] Items { get; set; }
+
+        public ExpressionTreeReader(byte[] d1, byte[] d2, byte[] d3)
+        {
+            Data1 = d1;
+            Data2 = d2;
+            Data3 = d3;
+        }
+
+        public ExpressionUnk1_Base[] ReadItems()
+        {
+
+            var ms1 = new MemoryStream(Data1);
+            var ms2 = new MemoryStream(Data2);
+            var ms3 = new MemoryStream(Data3);
+            var dr1 = new DataReader(ms1);
+            var dr2 = new DataReader(ms2);
+            var dr3 = new DataReader(ms3);
+
+            var items = new List<ExpressionUnk1_Base>();
+            while (ms3.Position < ms3.Length)
+            {
+                var type = dr3.ReadByte();
+                if (type == 0)
+                {
+                    if (ms3.Position != ms3.Length)
+                    { }
+                    break;
+                }
+                var item = ExpressionUnk1.CreateItem(type);
+                item.Type = type;
+                item.Read(dr1, dr2, dr3);
+                items.Add(item);
+            }
+            Items = items.ToArray();
+
+            if ((dr1.Length - dr1.Position) != 0)
+            { }
+            if ((dr2.Length - dr2.Position) != 0)
+            { }
+            if ((dr3.Length - dr3.Position) != 0)
+            { }
+
+            return Items;
+        }
+
+        public ExpressionUnk1_Base[] ReadTree()
+        {
+
+            if (Items == null) return null;
+
+            var stack = new Stack<ExpressionUnk1_Base>();
+
+            for (int i = 0; i < Items.Length; i++)
+            {
+                var item = Items[i];
+
+                switch (item.Type)
+                {
+                    case 0x01: break;
+                    case 0x03: break;
+                    case 0x04: break;
+                    case 0x05: break;
+                    case 0x06: item.Children = new[] { stack.Pop() }; break;
+                    case 0x07: break;
+                    case 0x09: break;
+                    case 0x0A: break;
+                    case 0x0B: break;
+                    case 0x0E: break;
+                    case 0x10: item.Children = new[] { stack.Pop()/*, stack.Pop()*/ }; break; //####### maybe not
+                    case 0x11: item.Children = new[] { stack.Pop() }; break;
+                    case 0x1B: item.Children = new[] { stack.Pop() }; break;
+                    case 0x1D: item.Children = new[] { stack.Pop() }; break;
+                    case 0x1E: item.Children = new[] { stack.Pop() }; break;
+                    case 0x1F: item.Children = new[] { stack.Pop() }; break;
+                    case 0x20: break;//first in list
+                    case 0x21: item.Children = new[] { stack.Pop()/*, stack.Pop()*/ }; break;
+                    case 0x22: item.Children = new[] { stack.Pop() }; break;
+                    case 0x23: item.Children = new[] { stack.Pop() }; break;
+                    case 0x26: item.Children = new[] { stack.Pop() }; break;
+                    case 0x27: item.Children = new[] { stack.Pop() }; break;
+                    case 0x28: item.Children = new[] { stack.Pop() }; break;
+                    case 0x2A: item.Children = new[] { stack.Pop() }; break;
+                    case 0x2B: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case 0x2C: item.Children = new[] { stack.Pop()/*, stack.Pop()*/ }; break; //##########################
+                    case 0x2D: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case 0x2E: item.Children = new[] { stack.Pop(), stack.Pop()/*, stack.Pop()*/ }; break; //maybe
+                    case 0x2F: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case 0x30: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case 0x31: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case 0x32: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case 0x33: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case 0x35: item.Children = new[] { stack.Pop(), stack.Pop() }; break;//can't be more than 2
+                    case 0x36: item.Children = new[] { stack.Pop(), stack.Pop() }; break; //can't be more than 2
+                    case 0x37: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop()/**/ }; break;
+                    case 0x38: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case 0x39: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case 0x3A: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case 0x3B: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break; //####### maybe not                       
+                    case 0x3C: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case 0x3D: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case 0x3E: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case 0x3F: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case 0x40: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case 0x42: break;//first in list
+                    case 0x43: item.Children = new[] { stack.Pop() }; break;
+                    case 0x44: break;
+                    case 0x45: break;
+                    case 0x46: item.Children = new[] { stack.Pop() }; break;
+                    case 0x49: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    default: break;//no hit
+                }
+
+                stack.Push(item);
+            }
+
+            var roots = stack.Reverse().ToArray();
+
+            return roots;
+        }
+
+
+    }
+
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1 : ResourceSystemBlock
     {
         public override long BlockLength
@@ -281,9 +411,9 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public MetaHash Unknown_0h { get; set; }
-        public uint len1 { get; set; }
-        public uint len2 { get; set; }
-        public ushort len3 { get; set; }
+        public uint Data1Length { get; set; }
+        public uint Data2Length { get; set; }
+        public ushort Data3Length { get; set; }
         public ushort Unknown_Eh { get; set; }
         public byte[] Data1 { get; set; }
         public byte[] Data2 { get; set; }
@@ -291,6 +421,7 @@ namespace CodeWalker.GameFiles
 
 
         public ExpressionUnk1_Base[] Items { get; set; }
+        public ExpressionUnk1_Base[] Roots { get; set; }
 
 
 
@@ -298,18 +429,20 @@ namespace CodeWalker.GameFiles
         {
             // read structure data
             this.Unknown_0h = reader.ReadUInt32();
-            this.len1 = reader.ReadUInt32();
-            this.len2 = reader.ReadUInt32();
-            this.len3 = reader.ReadUInt16();
+            this.Data1Length = reader.ReadUInt32();
+            this.Data2Length = reader.ReadUInt32();
+            this.Data3Length = reader.ReadUInt16();
             this.Unknown_Eh = reader.ReadUInt16();
-            this.Data1 = reader.ReadBytes((int)len1);
-            this.Data2 = reader.ReadBytes((int)len2);
-            this.Data3 = reader.ReadBytes((int)len3);
+            this.Data1 = reader.ReadBytes((int)Data1Length);
+            this.Data2 = reader.ReadBytes((int)Data2Length);
+            this.Data3 = reader.ReadBytes((int)Data3Length);
 
-//#if DEBUG
-            ParseDatas();
-//#endif
 
+            var treereader = new ExpressionTreeReader(Data1, Data2, Data3);
+            Items = treereader.ReadItems();
+            Roots = treereader.ReadTree();
+
+            #region testing
             //switch (Unknown_Eh)
             //{
             //    case 2:
@@ -356,58 +489,21 @@ namespace CodeWalker.GameFiles
             //    default:
             //        break;//no hit
             //}
-
+            #endregion
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
             writer.Write(this.Unknown_0h);
-            writer.Write(this.len1);
-            writer.Write(this.len2);
-            writer.Write(this.len3);
+            writer.Write(this.Data1Length);
+            writer.Write(this.Data2Length);
+            writer.Write(this.Data3Length);
             writer.Write(this.Unknown_Eh);
             writer.Write(this.Data1);
             writer.Write(this.Data2);
             writer.Write(this.Data3);
         }
 
-
-        public void ParseDatas()
-        {
-
-            var ms1 = new MemoryStream(Data1);
-            var ms2 = new MemoryStream(Data2);
-            var ms3 = new MemoryStream(Data3);
-            var dr1 = new DataReader(ms1);
-            var dr2 = new DataReader(ms2);
-            var dr3 = new DataReader(ms3);
-
-            var items = new List<ExpressionUnk1_Base>();
-            while (ms3.Position < ms3.Length)
-            {
-                var type = dr3.ReadByte();
-                if (type == 0)
-                {
-                    if (ms3.Position != ms3.Length)
-                    { }
-                    break;
-                }
-                var item = CreateItem(type);
-                item.Type = type;
-                item.Read(dr1, dr2, dr3);
-                items.Add(item);
-            }
-            Items = items.ToArray();
-
-            if ((dr1.Length - dr1.Position) != 0)
-            { }
-            if ((dr2.Length - dr2.Position) != 0)
-            { }
-            if ((dr3.Length - dr3.Position) != 0)
-            { }
-
-
-        }
 
 
         public static ExpressionUnk1_Base CreateItem(byte type)
@@ -491,6 +587,8 @@ namespace CodeWalker.GameFiles
     {
         public byte Type { get; set; }
         public string TypeStr { get => Type.ToString("X").PadLeft(2, '0'); }
+
+        public ExpressionUnk1_Base[] Children { get; set; }
 
         public virtual void Read(DataReader r1, DataReader r2, DataReader r3)
         { }
