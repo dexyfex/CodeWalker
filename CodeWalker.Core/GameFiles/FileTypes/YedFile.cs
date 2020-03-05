@@ -15,6 +15,10 @@ namespace CodeWalker.GameFiles
         public string LoadException { get; set; }
 
 
+        public Dictionary<MetaHash, Expression> ExprMap { get; set; }
+
+
+
         public YedFile() : base(null, GameFileType.Yed)
         {
         }
@@ -47,6 +51,14 @@ namespace CodeWalker.GameFiles
             }
 
             ExpressionDictionary = rd?.ReadBlock<ExpressionDictionary>();
+
+
+            InitDictionaries();
+        }
+
+        public void InitDictionaries()
+        {
+            ExprMap = ExpressionDictionary?.ExprMap ?? new Dictionary<MetaHash, Expression>();
 
         }
     }

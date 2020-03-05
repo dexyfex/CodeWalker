@@ -19,6 +19,7 @@ namespace CodeWalker.World
         public YtdFile Ytd { get; set; } = null; //ped textures
         public YldFile Yld { get; set; } = null; //ped clothes
         public YcdFile Ycd { get; set; } = null; //ped animations
+        public YedFile Yed { get; set; } = null; //ped expressions
         public YftFile Yft { get; set; } = null; //ped skeleton YFT
         public PedFile Ymt { get; set; } = null; //ped variation info
         public Dictionary<MetaHash, RpfFileEntry> DrawableFilesDict { get; set; } = null;
@@ -28,9 +29,11 @@ namespace CodeWalker.World
         public RpfFileEntry[] TextureFiles { get; set; } = null;
         public RpfFileEntry[] ClothFiles { get; set; } = null;
         public ClipMapEntry AnimClip { get; set; } = null;
+        public Expression Expression { get; set; } = null;
         public string[] DrawableNames { get; set; } = new string[12];
         public Drawable[] Drawables { get; set; } = new Drawable[12];
         public Texture[] Textures { get; set; } = new Texture[12];
+        public Expression[] Expressions { get; set; } = new Expression[12];
         public ClothInstance[] Clothes { get; set; } = new ClothInstance[12];
         public bool EnableRootMotion { get; set; } = false; //used to toggle whether or not to include root motion when playing animations
         public Skeleton Skeleton { get; set; } = null;
@@ -55,7 +58,9 @@ namespace CodeWalker.World
             InitData = null;
             Ydd = null;
             Ytd = null;
+            Yld = null;
             Ycd = null;
+            Yed = null;
             Yft = null;
             Ymt = null;
             AnimClip = null;
@@ -63,6 +68,7 @@ namespace CodeWalker.World
             {
                 Drawables[i] = null;
                 Textures[i] = null;
+                Expressions[i] = null;
             }
 
 
@@ -70,6 +76,7 @@ namespace CodeWalker.World
             if (!gfc.PedsInitDict.TryGetValue(pedhash, out initdata)) return;
 
             var ycdhash = JenkHash.GenHash(initdata.ClipDictionaryName.ToLowerInvariant());
+            var yedhash = JenkHash.GenHash(initdata.ExpressionDictionaryName.ToLowerInvariant());
 
             //bool pedchange = NameHash != pedhash;
             //Name = pedname;
@@ -78,6 +85,7 @@ namespace CodeWalker.World
             Ydd = gfc.GetYdd(pedhash);
             Ytd = gfc.GetYtd(pedhash);
             Ycd = gfc.GetYcd(ycdhash);
+            Yed = gfc.GetYed(yedhash);
             Yft = gfc.GetYft(pedhash);
 
             PedFile pedFile = null;
@@ -123,6 +131,11 @@ namespace CodeWalker.World
                 Thread.Sleep(1);//kinda hacky
                 Ycd = gfc.GetYcd(ycdhash);
             }
+            while ((Yed != null) && (!Yed.Loaded))
+            {
+                Thread.Sleep(1);//kinda hacky
+                Yed = gfc.GetYed(yedhash);
+            }
             while ((Yft != null) && (!Yft.Loaded))
             {
                 Thread.Sleep(1);//kinda hacky
@@ -136,6 +149,11 @@ namespace CodeWalker.World
             ClipMapEntry cme = null;
             Ycd?.ClipMap?.TryGetValue(cliphash, out cme);
             AnimClip = cme;
+
+            var exprhash = JenkHash.GenHash(initdata.ExpressionName.ToLowerInvariant());
+            Expression expr = null;
+            Yed?.ExprMap?.TryGetValue(exprhash, out expr);
+            Expression = expr;
 
 
             UpdateEntity();
@@ -152,6 +170,7 @@ namespace CodeWalker.World
                 DrawableNames[index] = null;
                 Drawables[index] = null;
                 Textures[index] = null;
+                Expressions[index] = null;
                 return;
             }
 
@@ -232,10 +251,17 @@ namespace CodeWalker.World
                 c.Init(cc, Skeleton);
             }
 
+            Expression e = null;
+            if (Yed?.ExprMap != null)
+            {
+                Yed.ExprMap.TryGetValue(namehash, out e);
+            }
+
 
             if (d != null) Drawables[index] = d.ShallowCopy() as Drawable;
             if (t != null) Textures[index] = t;
             if (c != null) Clothes[index] = c;
+            if (e != null) Expressions[index] = e;
 
             DrawableNames[index] = name;
         }

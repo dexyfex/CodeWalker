@@ -83,6 +83,7 @@ namespace CodeWalker.Rendering
         public double CurrentAnimTime = 0;
         public YcdFile ClipDict;
         public ClipMapEntry ClipMapEntry;
+        public Expression Expression;
         public Dictionary<ushort, RenderableModel> ModelBoneLinks;
 
         public bool EnableRootMotion = false; //used to toggle whether or not to include root motion when playing animations
@@ -520,10 +521,27 @@ namespace CodeWalker.Rendering
             for (int i = 0; i < anim.BoneIds.data_items.Length; i++)
             {
                 var boneiditem = anim.BoneIds.data_items[i];
+                var boneid = boneiditem.BoneId;
                 var track = boneiditem.Track;
 
+                if (Expression?.BoneTracksDict != null)
+                {
+                    var exprbt = new ExpressionBoneTrack() { BoneTag = boneid, Track = track, Flags = boneiditem.Unk0 };
+                    var exprbtmap = exprbt;
+
+                    if ((track == 24) || (track == 25) || (track == 26))
+                    {
+                        if (Expression.BoneTracksDict.TryGetValue(exprbt, out exprbtmap))
+                        {
+                            boneid = exprbtmap.BoneTag;
+                        }
+                        else
+                        { }
+                    }
+                }
+
                 Bone bone = null;
-                skel?.BonesMap?.TryGetValue(boneiditem.BoneId, out bone);
+                skel?.BonesMap?.TryGetValue(boneid, out bone);
                 if (bone == null)
                 {
                     continue;
@@ -564,11 +582,19 @@ namespace CodeWalker.Rendering
                         break;
                     case 8://quaternion... (camera rotation?)
                         break;
-                    case 24://face stuff?
+                    case 24://face stuff
+                        v = anim.EvaluateVector4(frame, i, interpolate); //single float
+                        //bone.AnimTranslation = v.XYZ();
+                        //bone.AnimRotation = Quaternion.RotationYawPitchRoll(v.X, 0.0f, 0.0f);
                         break;
-                    case 25://face stuff?
+                    case 25://face stuff
+                        v = anim.EvaluateVector4(frame, i, interpolate); //vector3 roll/pitch/yaw
+                        var mult = -0.314159265f;
+                        bone.AnimRotation = Quaternion.RotationYawPitchRoll(v.Z * mult, v.Y * mult, v.X * mult);
                         break;
-                    case 26://face stuff?
+                    case 26://face stuff
+                        q = anim.EvaluateQuaternion(frame, i, interpolate);
+                        //bone.AnimRotation = q;
                         break;
                     case 27:
                     case 50:

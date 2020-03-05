@@ -47,6 +47,7 @@ namespace CodeWalker.GameFiles
         public Dictionary<uint, RpfFileEntry> YftDict { get; private set; }
         public Dictionary<uint, RpfFileEntry> YbnDict { get; private set; }
         public Dictionary<uint, RpfFileEntry> YcdDict { get; private set; }
+        public Dictionary<uint, RpfFileEntry> YedDict { get; private set; }
         public Dictionary<uint, RpfFileEntry> YnvDict { get; private set; }
         public Dictionary<uint, RpfFileEntry> Gxt2Dict { get; private set; }
 
@@ -925,6 +926,7 @@ namespace CodeWalker.GameFiles
             YtdDict = new Dictionary<uint, RpfFileEntry>();
             YftDict = new Dictionary<uint, RpfFileEntry>();
             YcdDict = new Dictionary<uint, RpfFileEntry>();
+            YedDict = new Dictionary<uint, RpfFileEntry>();
             foreach (var rpffile in AllRpfs)
             {
                 if (rpffile.AllEntries == null) continue;
@@ -957,6 +959,11 @@ namespace CodeWalker.GameFiles
                         {
                             YcdDict[entry.NameHash] = fentry;
                             YcdDict[entry.ShortNameHash] = fentry;
+                        }
+                        else if (entry.NameLower.EndsWith(".yed"))
+                        {
+                            YedDict[entry.NameHash] = fentry;
+                            YedDict[entry.ShortNameHash] = fentry;
                         }
                     }
                 }
@@ -2148,6 +2155,41 @@ namespace CodeWalker.GameFiles
                 return ycd;
             }
         }
+        public YedFile GetYed(uint hash)
+        {
+            if (!IsInited) return null;
+            lock (requestSyncRoot)
+            {
+                var key = new GameFileCacheKey(hash, GameFileType.Yed);
+                YedFile yed = mainCache.TryGet(key) as YedFile;
+                if (yed == null)
+                {
+                    var e = GetYedEntry(hash);
+                    if (e != null)
+                    {
+                        yed = new YedFile(e);
+                        if (mainCache.TryAdd(key, yed))
+                        {
+                            TryLoadEnqueue(yed);
+                        }
+                        else
+                        {
+                            yed.LoadQueued = false;
+                            //ErrorLog("Out of cache space - couldn't load yed: " + JenkIndex.GetString(hash)); //too spammy...
+                        }
+                    }
+                    else
+                    {
+                        //ErrorLog("Yed not found: " + JenkIndex.GetString(hash)); //too spammy...
+                    }
+                }
+                else if (!yed.Loaded)
+                {
+                    TryLoadEnqueue(yed);
+                }
+                return yed;
+            }
+        }
         public YnvFile GetYnv(uint hash)
         {
             if (!IsInited) return null;
@@ -2228,6 +2270,12 @@ namespace CodeWalker.GameFiles
         {
             RpfFileEntry entry;
             YcdDict.TryGetValue(hash, out entry);
+            return entry;
+        }
+        public RpfFileEntry GetYedEntry(uint hash)
+        {
+            RpfFileEntry entry;
+            YedDict.TryGetValue(hash, out entry);
             return entry;
         }
         public RpfFileEntry GetYnvEntry(uint hash)
@@ -2318,6 +2366,9 @@ namespace CodeWalker.GameFiles
                         break;
                     case GameFileType.Ycd:
                         req.Loaded = LoadFile(req as YcdFile);
+                        break;
+                    case GameFileType.Yed:
+                        req.Loaded = LoadFile(req as YedFile);
                         break;
                     case GameFileType.Ynv:
                         req.Loaded = LoadFile(req as YnvFile);

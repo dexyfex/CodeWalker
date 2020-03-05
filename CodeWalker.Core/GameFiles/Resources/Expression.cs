@@ -47,6 +47,10 @@ namespace CodeWalker.GameFiles
         public ResourceSimpleList64_s<MetaHash> ExpressionNameHashes { get; set; }
         public ResourcePointerList64<Expression> Expressions { get; set; }
 
+        
+        public Dictionary<MetaHash, Expression> ExprMap { get; set; }
+
+
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -58,6 +62,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_1Ch = reader.ReadUInt32();
             this.ExpressionNameHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
             this.Expressions = reader.ReadBlock<ResourcePointerList64<Expression>>();
+
+            BuildMap();
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
@@ -84,6 +90,27 @@ namespace CodeWalker.GameFiles
                 new Tuple<long, IResourceBlock>(0x30, Expressions)
             };
         }
+
+
+        public void BuildMap()
+        {
+            ExprMap = new Dictionary<MetaHash, Expression>();
+
+            if ((Expressions?.data_items != null) && (ExpressionNameHashes?.data_items != null))
+            {
+                var exprs = Expressions.data_items;
+                var names = ExpressionNameHashes.data_items;
+
+                for (int i = 0; i < exprs.Length; i++)
+                {
+                    var expr = exprs[i];
+                    var name = (i < names.Length) ? names[i] : (MetaHash)JenkHash.GenHash(expr?.Name?.ToString()?.ToLowerInvariant() ?? "");
+                    ExprMap[name] = expr;
+                }
+            }
+
+        }
+
     }
 
 
@@ -104,7 +131,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_18h { get; set; } // 0x00000000
         public uint Unknown_1Ch { get; set; } // 0x00000000
         public ResourcePointerList64<ExpressionUnk1> Unknown_20h { get; set; }
-        public ResourceSimpleList64_s<ExpressionUnk3> Unknown_30h { get; set; } // bone tags / animation tracks..??
+        public ResourceSimpleList64_s<ExpressionBoneTrack> BoneTracks { get; set; } // bone tags / animation tracks..??
         public ResourceSimpleList64<ExpressionUnk2> Unknown_40h { get; set; }
         public ResourceSimpleList64_s<MetaHash> Unknown_50h { get; set; }  // only for: faceinit.expr, independent_mover.expr
         public ulong NamePointer { get; set; }
@@ -124,6 +151,10 @@ namespace CodeWalker.GameFiles
         // reference data
         public string_r Name;
 
+
+        public Dictionary<ExpressionBoneTrack, ExpressionBoneTrack> BoneTracksDict { get; set; }
+
+
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -136,7 +167,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
             this.Unknown_20h = reader.ReadBlock<ResourcePointerList64<ExpressionUnk1>>();
-            this.Unknown_30h = reader.ReadBlock<ResourceSimpleList64_s<ExpressionUnk3>>();
+            this.BoneTracks = reader.ReadBlock<ResourceSimpleList64_s<ExpressionBoneTrack>>();
             this.Unknown_40h = reader.ReadBlock<ResourceSimpleList64<ExpressionUnk2>>();
             this.Unknown_50h = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
             this.NamePointer = reader.ReadUInt64();
@@ -160,6 +191,8 @@ namespace CodeWalker.GameFiles
 
             //if (Unknown_50h?.data_items?.Length > 0)
             //{ } // faceinit.expr, independent_mover.expr
+
+            BuildBoneTracksDict();
 
             #region testing
             //long tlen = 0;
@@ -229,7 +262,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
             writer.WriteBlock(this.Unknown_20h);
-            writer.WriteBlock(this.Unknown_30h);
+            writer.WriteBlock(this.BoneTracks);
             writer.WriteBlock(this.Unknown_40h);
             writer.WriteBlock(this.Unknown_50h);
             writer.Write(this.NamePointer);
@@ -257,10 +290,34 @@ namespace CodeWalker.GameFiles
         {
             return new Tuple<long, IResourceBlock>[] {
                 new Tuple<long, IResourceBlock>(0x20, Unknown_20h),
-                new Tuple<long, IResourceBlock>(0x30, Unknown_30h),
+                new Tuple<long, IResourceBlock>(0x30, BoneTracks),
                 new Tuple<long, IResourceBlock>(0x40, Unknown_40h),
                 new Tuple<long, IResourceBlock>(0x50, Unknown_50h)
             };
+        }
+
+
+        public void BuildBoneTracksDict()
+        {
+            BoneTracksDict = new Dictionary<ExpressionBoneTrack, ExpressionBoneTrack>();
+
+            if (BoneTracks?.data_items == null) return;
+
+            var mapto = new ExpressionBoneTrack();
+            for(int i=0; i< BoneTracks.data_items.Length;i++)
+            {
+                var bt = BoneTracks.data_items[i];
+                if ((bt.Flags & 128) == 0)
+                {
+                    mapto = bt;
+                }
+                else if (bt.BoneTag != 0)
+                {
+                    bt.Flags &= 0x7F;
+                    BoneTracksDict[bt] = mapto;
+                }
+            }
+
         }
 
 
@@ -347,24 +404,24 @@ namespace CodeWalker.GameFiles
                     case 0x0A: break;
                     case 0x0B: break;
                     case 0x0E: break;
-                    case 0x10: item.Children = new[] { stack.Pop()/*, stack.Pop()*/ }; break; //####### maybe not
+                    case 0x10: item.Children = new[] { stack.Pop() }; break; //####### maybe not
                     case 0x11: item.Children = new[] { stack.Pop() }; break;
                     case 0x1B: item.Children = new[] { stack.Pop() }; break;
                     case 0x1D: item.Children = new[] { stack.Pop() }; break;
                     case 0x1E: item.Children = new[] { stack.Pop() }; break;
                     case 0x1F: item.Children = new[] { stack.Pop() }; break;
                     case 0x20: break;//first in list
-                    case 0x21: item.Children = new[] { stack.Pop()/*, stack.Pop()*/ }; break;
+                    case 0x21: item.Children = new[] { stack.Pop() }; break;
                     case 0x22: item.Children = new[] { stack.Pop() }; break;
                     case 0x23: item.Children = new[] { stack.Pop() }; break;
                     case 0x26: item.Children = new[] { stack.Pop() }; break;
                     case 0x27: item.Children = new[] { stack.Pop() }; break;
                     case 0x28: item.Children = new[] { stack.Pop() }; break;
                     case 0x2A: item.Children = new[] { stack.Pop() }; break;
-                    case 0x2B: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
-                    case 0x2C: item.Children = new[] { stack.Pop()/*, stack.Pop()*/ }; break; //##########################
-                    case 0x2D: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
-                    case 0x2E: item.Children = new[] { stack.Pop(), stack.Pop()/*, stack.Pop()*/ }; break; //maybe
+                    case 0x2B: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case 0x2C: item.Children = new[] { stack.Pop() }; break;
+                    case 0x2D: item.Children = new[] { stack.Pop(), stack.Pop() }; break;//4 maybe?
+                    case 0x2E: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
                     case 0x2F: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
                     case 0x30: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
                     case 0x31: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
@@ -372,7 +429,7 @@ namespace CodeWalker.GameFiles
                     case 0x33: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
                     case 0x35: item.Children = new[] { stack.Pop(), stack.Pop() }; break;//can't be more than 2
                     case 0x36: item.Children = new[] { stack.Pop(), stack.Pop() }; break; //can't be more than 2
-                    case 0x37: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop()/**/ }; break;
+                    case 0x37: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop() }; break;
                     case 0x38: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
                     case 0x39: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
                     case 0x3A: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
@@ -1127,15 +1184,15 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct ExpressionUnk3
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct ExpressionBoneTrack
     {
-        public ushort Unk0 { get; set; } // bone tag? need to check
-        public byte Unk2 { get; set; } // animation track?
-        public byte Unk3 { get; set; } // ..flags?
+        public ushort BoneTag { get; set; }
+        public byte Track { get; set; }
+        public byte Flags { get; set; }
 
         public override string ToString()
         {
-            return Unk0.ToString() + ", " + Unk2.ToString() + ", " + Unk3.ToString();
+            return BoneTag.ToString() + ", " + Track.ToString() + ", " + Flags.ToString();
         }
     }
 
