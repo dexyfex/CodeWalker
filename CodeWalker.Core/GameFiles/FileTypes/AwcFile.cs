@@ -37,6 +37,9 @@ namespace CodeWalker.GameFiles
         public AwcStream[] Streams { get; set; }
         public AwcStream MultiChannelSource { get; set; }
 
+        public Dictionary<uint, AwcStream> StreamDict { get; set; }
+
+
         static public void Decrypt_RSXXTEA(byte[] data, uint[] key)
         {
             // Rockstar's modified version of XXTEA
@@ -212,6 +215,8 @@ namespace CodeWalker.GameFiles
             Streams = streams.ToArray();
 
             MultiChannelSource?.AssignMultiChannelSources(Streams);
+
+            BuildStreamDict();
         }
 
         private void Write(DataWriter w)
@@ -343,6 +348,7 @@ namespace CodeWalker.GameFiles
 
             BuildStreamInfos();
 
+            BuildStreamDict();
         }
         public static void WriteXmlNode(AwcFile f, StringBuilder sb, int indent, string wavfolder, string name = "AudioWaveContainer")
         {
@@ -461,6 +467,15 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public void BuildStreamDict()
+        {
+            StreamDict = new Dictionary<uint, AwcStream>();
+            if (Streams == null) return;
+            foreach (var stream in Streams)
+            {
+                StreamDict[stream.Hash] = stream;
+            }
+        }
     }
 
     public enum AwcCodecType
@@ -538,6 +553,7 @@ namespace CodeWalker.GameFiles
         public AwcGranularLoopsChunk GranularLoopsChunk { get; set; }
         public AwcStreamFormatChunk StreamFormatChunk { get; set; }
         public AwcSeekTableChunk SeekTableChunk { get; set; }
+        public AwcStream[] ChannelStreams { get; set; }
         public AwcStream StreamSource { get; set; }
         public AwcStreamFormat StreamFormat { get; set; }
         public AwcStreamDataBlock[] StreamBlocks { get; set; }
@@ -646,6 +662,11 @@ namespace CodeWalker.GameFiles
             {
                 if (FormatChunk != null) return (float)FormatChunk.Samples / FormatChunk.SamplesPerSecond;
                 if (StreamFormat != null) return (float)StreamFormat.Samples / StreamFormat.SamplesPerSecond;
+                if ((StreamFormatChunk != null) && (StreamFormatChunk.Channels?.Length > 0))
+                {
+                    var chan = StreamFormatChunk.Channels[0];
+                    return (float)chan.Samples / chan.SamplesPerSecond;
+                }
                 return 0;
             }
         }
@@ -965,6 +986,7 @@ namespace CodeWalker.GameFiles
 
         public void AssignMultiChannelSources(AwcStream[] streams)
         {
+            var cstreams = new List<AwcStream>();
             for (int i = 0; i < (streams?.Length ?? 0); i++)
             {
                 var stream = streams[i];
@@ -990,9 +1012,10 @@ namespace CodeWalker.GameFiles
                     stream.StreamSource = this;
                     stream.StreamFormat = (srcind < chancnt) ? StreamFormatChunk.Channels[srcind] : null;
                     stream.StreamChannelIndex = srcind;
+                    cstreams.Add(stream);
                 }
-
             }
+            ChannelStreams = cstreams.ToArray();
         }
 
         public void CompactMultiChannelSources(AwcStream[] streams)

@@ -106,8 +106,11 @@ namespace CodeWalker.Forms
                 strlist.Sort((a, b) => a.Name.CompareTo(b.Name));
                 foreach (var audio in strlist)
                 {
-                    if (audio.StreamBlocks != null) continue;//don't display multichannel source audios
-                    var item = PlayListView.Items.Add(audio.Name);
+                    var stereo = (audio.ChannelStreams?.Length == 2);
+                    if ((audio.StreamBlocks != null) && (!stereo)) continue;//don't display multichannel source audios
+                    var name = audio.Name;
+                    if (stereo) name = "(Stereo Playback)";
+                    var item = PlayListView.Items.Add(name);
                     item.SubItems.Add(audio.Type);
                     item.SubItems.Add(audio.LengthStr);
                     item.SubItems.Add(TextUtil.GetBytesReadable(audio.ByteLength));
@@ -170,11 +173,23 @@ namespace CodeWalker.Forms
             {
                 var item = PlayListView.SelectedItems[0];
                 var audio = item.Tag as AwcStream;
-
-                if ((audio?.FormatChunk != null) || (audio?.StreamFormat != null))
+                var stereo = (audio?.ChannelStreams?.Length == 2);
+                if (stereo)
                 {
+                    var name0 = audio.ChannelStreams[0].Name;
+                    var left0 = name0.EndsWith("left") || name0.EndsWith(".l");
+                    var f0 = left0 ? 1.0f : 0.0f;
+                    var f1 = left0 ? 0.0f : 1.0f;
+                    Player.LoadAudio(audio.ChannelStreams);
                     Player.SetVolume(VolumeTrackBar.Value / 100.0f);
+                    Player.SetOutputMatrix(0, f0, f1);
+                    Player.SetOutputMatrix(1, f1, f0);
+                    Player.Play();
+                }
+                else if ((audio?.FormatChunk != null) || (audio?.StreamFormat != null))
+                {
                     Player.LoadAudio(audio);
+                    Player.SetVolume(VolumeTrackBar.Value / 100.0f);
                     Player.Play();
                 }
                 else if (audio.MidiChunk != null)
@@ -360,6 +375,13 @@ namespace CodeWalker.Forms
             {
                 var item = PlayListView.SelectedItems[0];
                 var audio = item.Tag as AwcStream;
+                var stereo = (audio?.ChannelStreams?.Length == 2);
+
+                if (stereo)
+                {
+                    MessageBox.Show("Sorry, export for stereo output is not currently available.");
+                    return;
+                }
 
                 var ext = ".wav";
                 if (audio?.MidiChunk != null)
