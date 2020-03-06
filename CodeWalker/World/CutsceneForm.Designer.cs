@@ -130,11 +130,14 @@
             this.TimeTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.TimeTrackBar.AutoSize = false;
+            this.TimeTrackBar.LargeChange = 0;
             this.TimeTrackBar.Location = new System.Drawing.Point(91, 34);
             this.TimeTrackBar.Maximum = 100;
             this.TimeTrackBar.Name = "TimeTrackBar";
             this.TimeTrackBar.Size = new System.Drawing.Size(509, 30);
             this.TimeTrackBar.TabIndex = 7;
+            this.TimeTrackBar.Scroll += new System.EventHandler(this.TimeTrackBar_Scroll);
+            this.TimeTrackBar.MouseUp += new System.Windows.Forms.MouseEventHandler(this.TimeTrackBar_MouseUp);
             // 
             // TimeLabel
             // 

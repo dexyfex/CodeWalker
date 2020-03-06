@@ -23,6 +23,7 @@ namespace CodeWalker.World
 
         private bool AnimateCamera = true;
         private bool Playing = false;
+        private bool PositionScrolled = false;
 
 
         class CutsceneDropdownItem
@@ -298,8 +299,48 @@ namespace CodeWalker.World
                 UpdateTimeLabel();
             }
         }
-    }
 
+        private void TimeTrackBar_Scroll(object sender, EventArgs e)
+        {
+            PositionScrolled = true;
+
+            var t = TimeTrackBar.Value / 10.0f;
+
+            if (Cutscene != null)
+            {
+                Cutscene.Update(t);
+            }
+
+            if (!Playing)
+            {
+                UpdateTimeLabel();
+            }
+        }
+
+        private void TimeTrackBar_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (PositionScrolled)
+            {
+                PositionScrolled = false;
+                return;
+            }
+            PositionScrolled = false;
+
+            var f = Math.Min(Math.Max((e.X - 13.0f) / (TimeTrackBar.Width - 26.0f), 0.0f), 1.0f);
+            var v = f * (TimeTrackBar.Maximum / 10.0f);
+
+            if (Cutscene != null)
+            {
+                Cutscene.Update(v);
+            }
+
+            if (!Playing)
+            {
+                UpdateTimeTrackBar();
+                UpdateTimeLabel();
+            }
+        }
+    }
 
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Cutscene
@@ -314,6 +355,7 @@ namespace CodeWalker.World
 
         public float Duration { get; set; } = 0.0f;
         public float PlaybackTime { get; set; } = 0.0f;
+        private bool Seeking = false;
 
 
         public Dictionary<int, CutObject> Objects { get; set; } = null;
@@ -409,6 +451,7 @@ namespace CodeWalker.World
             else
             {
                 //reset playback to beginning, and seek to newTime
+                Seeking = true;
                 RaiseEvents(Duration);//raise all events up to the end first
                 PlaybackTime = 0.0f;
                 NextLoadEvent = 0;
@@ -416,6 +459,7 @@ namespace CodeWalker.World
                 NextCameraCut = 0;
                 NextConcatData = 0;
                 RaiseEvents(newTime);
+                Seeking = false;
             }
 
             PlaybackTime = newTime;
@@ -918,6 +962,8 @@ namespace CodeWalker.World
             if (args == null)
             { return; }
 
+            if (Seeking) return; //don't raise subtitle events while seeking backwards...
+
             if (WorldForm != null)
             {
                 var txt = args.cName.ToString();
@@ -942,6 +988,7 @@ namespace CodeWalker.World
             if (oe == null)
             { return; }
 
+            if (Seeking) return; //this gets a bit messy when seeking backwards
 
             CutsceneObject cso = null;
             SceneObjects.TryGetValue(oe.iObjectId, out cso);
