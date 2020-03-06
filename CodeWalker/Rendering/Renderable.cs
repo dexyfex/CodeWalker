@@ -595,7 +595,7 @@ namespace CodeWalker.Rendering
                         break;
                     case 26://face stuff
                         q = anim.EvaluateQuaternion(frame, i, interpolate);
-                        //bone.AnimRotation = q;
+                        bone.AnimRotation = bone.Rotation * q;//is this right?
                         break;
                     case 27:
                     case 50:
