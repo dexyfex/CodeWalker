@@ -584,13 +584,14 @@ namespace CodeWalker.Rendering
                         break;
                     case 24://face stuff
                         v = anim.EvaluateVector4(frame, i, interpolate); //single float
-                        //bone.AnimTranslation = v.XYZ();
-                        //bone.AnimRotation = Quaternion.RotationYawPitchRoll(v.X, 0.0f, 0.0f);
+                        var fv = new Vector3(0, v.X * 0.005f, 0);//not sure about this
+                        bone.AnimTranslation = bone.Translation + bone.AnimRotation.Multiply(fv);//not sure about this
                         break;
                     case 25://face stuff
                         v = anim.EvaluateVector4(frame, i, interpolate); //vector3 roll/pitch/yaw
                         var mult = -0.314159265f;
-                        bone.AnimRotation = Quaternion.RotationYawPitchRoll(v.Z * mult, v.Y * mult, v.X * mult);
+                        q = Quaternion.RotationYawPitchRoll(v.Z * mult, v.Y * mult, v.X * mult);
+                        bone.AnimRotation = bone.Rotation * q;
                         break;
                     case 26://face stuff
                         q = anim.EvaluateQuaternion(frame, i, interpolate);
