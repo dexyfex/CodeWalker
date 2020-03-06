@@ -63,7 +63,8 @@ namespace CodeWalker.World
 
                     if (Cutscene.CameraClipUpdate)
                     {
-                        WorldForm.SetCameraClipPlanes(Cutscene.CameraNearClip, Cutscene.CameraFarClip);
+                        //// disabled this because it seems to be causing some rendering issues
+                        //WorldForm.SetCameraClipPlanes(Cutscene.CameraNearClip, Cutscene.CameraFarClip);
                         Cutscene.CameraClipUpdate = false;
                     }
                 }
@@ -262,7 +263,7 @@ namespace CodeWalker.World
 
             if (!AnimateCamera)
             {
-                WorldForm?.ResetCameraClipPlanes();
+                //WorldForm?.ResetCameraClipPlanes();
             }
             else
             {
