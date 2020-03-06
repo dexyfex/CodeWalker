@@ -2090,10 +2090,10 @@ namespace CodeWalker.GameFiles
             XmlDocument doc = new XmlDocument();
             XmlNode node = doc.CreateElement("root");
             node.InnerText = unescaped;
-            var escaped = node.InnerXml;
+            var escaped = node.InnerXml.Replace("\"", "&quot;");
             if (escaped != unescaped)
             { }
-            return node.InnerXml;
+            return escaped;
         }
 
 
