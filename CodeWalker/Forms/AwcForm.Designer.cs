@@ -51,10 +51,10 @@
             this.PositionTrackBar = new System.Windows.Forms.TrackBar();
             this.DetailsTabPage = new System.Windows.Forms.TabPage();
             this.DetailsPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
-            this.Timer = new System.Windows.Forms.Timer(this.components);
-            this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.XmlTabPage = new System.Windows.Forms.TabPage();
             this.XmlTextBox = new FastColoredTextBoxNS.FastColoredTextBox();
+            this.Timer = new System.Windows.Forms.Timer(this.components);
+            this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.MainTabControl.SuspendLayout();
             this.PlayerTabPage.SuspendLayout();
             this.contextMenuStrip.SuspendLayout();
@@ -135,7 +135,7 @@
             this.VolumeLabel.AutoSize = true;
             this.VolumeLabel.Location = new System.Drawing.Point(538, 395);
             this.VolumeLabel.Name = "VolumeLabel";
-            this.VolumeLabel.Size = new System.Drawing.Size(60, 13);
+            this.VolumeLabel.Size = new System.Drawing.Size(56, 13);
             this.VolumeLabel.TabIndex = 9;
             this.VolumeLabel.Text = "🕩 Volume";
             // 
@@ -245,12 +245,13 @@
             // VolumeTrackBar
             // 
             this.VolumeTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.VolumeTrackBar.AutoSize = false;
             this.VolumeTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.VolumeTrackBar.LargeChange = 10;
             this.VolumeTrackBar.Location = new System.Drawing.Point(588, 391);
             this.VolumeTrackBar.Maximum = 100;
             this.VolumeTrackBar.Name = "VolumeTrackBar";
-            this.VolumeTrackBar.Size = new System.Drawing.Size(105, 45);
+            this.VolumeTrackBar.Size = new System.Drawing.Size(105, 28);
             this.VolumeTrackBar.TabIndex = 6;
             this.VolumeTrackBar.TickStyle = System.Windows.Forms.TickStyle.None;
             this.VolumeTrackBar.Value = 50;
@@ -260,15 +261,17 @@
             // 
             this.PositionTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.PositionTrackBar.AutoSize = false;
             this.PositionTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.PositionTrackBar.LargeChange = 1000;
+            this.PositionTrackBar.LargeChange = 0;
             this.PositionTrackBar.Location = new System.Drawing.Point(6, 353);
             this.PositionTrackBar.Maximum = 1000;
             this.PositionTrackBar.Name = "PositionTrackBar";
-            this.PositionTrackBar.Size = new System.Drawing.Size(687, 45);
+            this.PositionTrackBar.Size = new System.Drawing.Size(687, 32);
             this.PositionTrackBar.TabIndex = 1;
             this.PositionTrackBar.TickStyle = System.Windows.Forms.TickStyle.None;
             this.PositionTrackBar.Scroll += new System.EventHandler(this.PositionTrackBar_Scroll);
+            this.PositionTrackBar.MouseUp += new System.Windows.Forms.MouseEventHandler(this.PositionTrackBar_MouseUp);
             // 
             // DetailsTabPage
             // 
@@ -289,17 +292,6 @@
             this.DetailsPropertyGrid.Name = "DetailsPropertyGrid";
             this.DetailsPropertyGrid.Size = new System.Drawing.Size(695, 416);
             this.DetailsPropertyGrid.TabIndex = 0;
-            // 
-            // Timer
-            // 
-            this.Timer.Enabled = true;
-            this.Timer.Interval = 25;
-            this.Timer.Tick += new System.EventHandler(this.Timer_Tick);
-            // 
-            // saveFileDialog
-            // 
-            this.saveFileDialog.DefaultExt = "wav";
-            this.saveFileDialog.Filter = "Wave files (*.wav)|*.wav";
             // 
             // XmlTabPage
             // 
@@ -327,7 +319,7 @@
             this.XmlTextBox.AutoIndentChars = false;
             this.XmlTextBox.AutoIndentCharsPatterns = "";
             this.XmlTextBox.AutoIndentExistingLines = false;
-            this.XmlTextBox.AutoScrollMinSize = new System.Drawing.Size(27, 14);
+            this.XmlTextBox.AutoScrollMinSize = new System.Drawing.Size(2, 14);
             this.XmlTextBox.BackBrush = null;
             this.XmlTextBox.CharHeight = 14;
             this.XmlTextBox.CharWidth = 8;
@@ -352,6 +344,17 @@
             this.XmlTextBox.Zoom = 100;
             this.XmlTextBox.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.XmlTextBox_TextChanged);
             this.XmlTextBox.VisibleRangeChangedDelayed += new System.EventHandler(this.XmlTextBox_VisibleRangeChangedDelayed);
+            // 
+            // Timer
+            // 
+            this.Timer.Enabled = true;
+            this.Timer.Interval = 25;
+            this.Timer.Tick += new System.EventHandler(this.Timer_Tick);
+            // 
+            // saveFileDialog
+            // 
+            this.saveFileDialog.DefaultExt = "wav";
+            this.saveFileDialog.Filter = "Wave files (*.wav)|*.wav";
             // 
             // AwcForm
             // 

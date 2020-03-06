@@ -1,7 +1,6 @@
 ﻿using CodeWalker.GameFiles;
+using CodeWalker.Utils;
 using FastColoredTextBoxNS;
-using SharpDX.Multimedia;
-using SharpDX.XAudio2;
 using System;
 using System.IO;
 using System.Diagnostics;
@@ -16,12 +15,6 @@ namespace CodeWalker.Forms
     {
         public AwcFile Awc { get; set; }
 
-        private AwcStream currentAudio;
-        private XAudio2 xAudio2;
-        private MasteringVoice masteringVoice;
-        private AudioBuffer audioBuffer;
-        private SourceVoice sourceVoice;
-
         private string fileName;
         public string FileName
         {
@@ -34,23 +27,16 @@ namespace CodeWalker.Forms
         }
         public string FilePath { get; set; }
 
-        private enum PlayerState { Stopped, Playing, Paused };
-        private PlayerState playerState = PlayerState.Stopped;
-
-        private Stopwatch playtime;
-        private int playBeginMs;
-        private float trackLength;
-        private bool trackFinished;
-
         private bool LoadingXml = false;
         private bool DelayHighlight = false;
 
+        private AudioPlayer Player = new AudioPlayer();
+
+        private bool PositionScrolled = false;
 
         public AwcForm()
         {
             InitializeComponent();
-
-            playtime = new Stopwatch();
         }
 
         private void UpdateFormTitle()
@@ -168,89 +154,12 @@ namespace CodeWalker.Forms
             { }
         }
 
+
         private void Stop()
         {
-            if (playerState != PlayerState.Stopped)
-            {
-                sourceVoice.DestroyVoice();
-                sourceVoice.Dispose();
-                audioBuffer.Stream.Dispose();
-                SetPlayerState(PlayerState.Stopped);
-            }
-        }
-
-        private void SetPlayerState(PlayerState newState)
-        {
-            if (playerState != newState)
-            {
-                switch (newState)
-                {
-                    case PlayerState.Playing:
-                        if (playerState == PlayerState.Stopped)
-                            playtime.Reset();
-                        playtime.Start();
-
-                        PlayButton.Text = "\u275A\u275A";
-                        StopButton.Enabled = true;
-                        LabelTime.Visible = true;
-                        break;
-                    case PlayerState.Paused:
-                        playtime.Stop();
-                        PlayButton.Text = "\u25B6";
-                        StopButton.Enabled = true;
-                        LabelTime.Visible = true;
-                        break;
-                    case PlayerState.Stopped:
-                        playtime.Stop();
-                        PlayButton.Text = "\u25B6";
-                        LabelTime.Visible = false;
-                        StopButton.Enabled = true;
-                        break;
-                }
-
-                playerState = newState;
-                UpdateUI();
-            }
-        }
-
-        private void InitializeAudio(AwcStream audio, float playBegin = 0)
-        {
-            currentAudio = audio;
-            trackLength = audio.Length;
-
-            if (xAudio2 == null)
-            {
-                xAudio2 = new XAudio2();
-                masteringVoice = new MasteringVoice(xAudio2);
-            }
-
-            Stream wavStream = audio.GetWavStream();
-            SoundStream soundStream = new SoundStream(wavStream);
-            audioBuffer = new AudioBuffer
-            {
-                Stream = soundStream.ToDataStream(),
-                AudioBytes = (int)soundStream.Length,
-                Flags = BufferFlags.EndOfStream
-            };
-            if (playBegin > 0)
-            {
-                audioBuffer.PlayBegin = (int)(soundStream.Format.SampleRate * playBegin) / 128 * 128;
-                if (playtime.IsRunning)
-                    playtime.Restart();
-                else
-                    playtime.Reset();
-                playBeginMs = (int)(playBegin * 1000);
-            }
-            else
-                playBeginMs = 0;
-            soundStream.Close();
-            wavStream.Close();
-
-            trackFinished = false;
-            sourceVoice = new SourceVoice(xAudio2, soundStream.Format, true);
-            sourceVoice.SubmitSourceBuffer(audioBuffer, soundStream.DecodedPacketsInfo);
-            sourceVoice.BufferEnd += (context) => trackFinished = true;
-            sourceVoice.SetVolume((float)VolumeTrackBar.Value / 100);
+            Player.Stop();
+            UpdateUI();
+            UpdatePlayerButtons();
         }
 
         private void Play()
@@ -264,15 +173,18 @@ namespace CodeWalker.Forms
 
                 if ((audio?.FormatChunk != null) || (audio?.StreamFormat != null))
                 {
-                    InitializeAudio(audio);
-                    sourceVoice.Start();
-                    SetPlayerState(PlayerState.Playing);
+                    Player.SetVolume(VolumeTrackBar.Value / 100.0f);
+                    Player.LoadAudio(audio);
+                    Player.Play();
                 }
                 else if (audio.MidiChunk != null)
                 {
                     //todo: play MIDI?
                 }
             }
+
+            UpdateUI();
+            UpdatePlayerButtons();
         }
 
         private void PlayPrevious()
@@ -307,41 +219,76 @@ namespace CodeWalker.Forms
 
         private void Pause()
         {
-            if (playerState == PlayerState.Playing)
-            {
-                sourceVoice.Stop();
-                SetPlayerState(PlayerState.Paused);
-            }
+            Player.Pause();
+            UpdatePlayerButtons();
         }
 
         private void Resume()
         {
-            if (playerState == PlayerState.Paused)
+            Player.Resume();
+            UpdatePlayerButtons();
+        }
+
+        private void UpdateUI()
+        {
+            if ((Player.State != AudioPlayer.PlayerState.Stopped) && Player.trackFinished)
             {
-                sourceVoice.Start();
-                SetPlayerState(PlayerState.Playing);
+                if (chbAutoJump.Checked)
+                    PlayNext();
+                else
+                    Stop();
+            }
+
+            if (Player.State != AudioPlayer.PlayerState.Stopped)
+            {
+                int playedMs = Player.PlayTimeMS;
+                int totalMs = Player.TotalTimeMS;
+                PositionTrackBar.Maximum = totalMs;
+                PositionTrackBar.Value = playedMs < totalMs ? playedMs : totalMs;
+
+                LabelTime.Text = TimeSpan.FromSeconds(playedMs / 1000).ToString("m\\:ss")
+                    + " / " + TimeSpan.FromSeconds(totalMs / 1000).ToString("m\\:ss");
+            }
+            else
+            {
+                PositionTrackBar.Value = 0;
             }
         }
 
-        private void PositionTrackBar_Scroll(object sender, EventArgs e)
+        private void UpdatePlayerButtons()
         {
-
-            //sourceVoice.Stop();
-            //InitializeAudio(currentAudio, PositionTrackBar.Value / 1000);
-            //sourceVoice.Start();
+            switch (Player.State)
+            {
+                case AudioPlayer.PlayerState.Playing:
+                    PlayButton.Text = "\u275A\u275A";
+                    StopButton.Enabled = true;
+                    LabelTime.Visible = true;
+                    break;
+                case AudioPlayer.PlayerState.Paused:
+                    PlayButton.Text = "\u25B6";
+                    StopButton.Enabled = true;
+                    LabelTime.Visible = true;
+                    break;
+                case AudioPlayer.PlayerState.Stopped:
+                    PlayButton.Text = "\u25B6";
+                    StopButton.Enabled = true;
+                    LabelTime.Visible = false;
+                    break;
+            }
         }
+
 
         private void PlayButton_Click(object sender, EventArgs e)
         {
-            switch (playerState)
+            switch (Player.State)
             {
-                case PlayerState.Stopped:
+                case AudioPlayer.PlayerState.Stopped:
                     Play();
                     break;
-                case PlayerState.Playing:
+                case AudioPlayer.PlayerState.Playing:
                     Pause();
                     break;
-                case PlayerState.Paused:
+                case AudioPlayer.PlayerState.Paused:
                     Resume();
                     break;
             }
@@ -362,36 +309,33 @@ namespace CodeWalker.Forms
             PlayNext();
         }
 
-        private void VolumeTrackBar_Scroll(object sender, EventArgs e)
+        private void PositionTrackBar_Scroll(object sender, EventArgs e)
         {
-            if (playerState == PlayerState.Playing)
-                sourceVoice.SetVolume((float)VolumeTrackBar.Value / 100);
+            PositionScrolled = true;
+
+            var t = PositionTrackBar.Value / 1000.0f;
+
+            Player.Seek(t);
         }
 
-        private void UpdateUI()
+        private void PositionTrackBar_MouseUp(object sender, MouseEventArgs e)
         {
-            if (playerState != PlayerState.Stopped && trackFinished)
+            if (PositionScrolled)
             {
-                if (chbAutoJump.Checked)
-                    PlayNext();
-                else
-                    Stop();
+                PositionScrolled = false;
+                return;
             }
+            PositionScrolled = false;
 
-            if (playerState != PlayerState.Stopped)
-            {
-                int playedMs = (int)playtime.Elapsed.TotalMilliseconds + playBeginMs;
-                int totalMs = (int)(trackLength * 1000);
-                PositionTrackBar.Maximum = totalMs;
-                PositionTrackBar.Value = playedMs < totalMs ? playedMs : totalMs;
+            var f = Math.Min(Math.Max((e.X-13.0f) / (PositionTrackBar.Width-26.0f), 0.0f), 1.0f);
+            var v = f * (PositionTrackBar.Maximum / 1000.0f);
 
-                LabelTime.Text = TimeSpan.FromSeconds(playedMs / 1000).ToString("m\\:ss")
-                    + " / " + TimeSpan.FromSeconds(totalMs / 1000).ToString("m\\:ss");
-            }
-            else
-            {
-                PositionTrackBar.Value = 0;
-            }
+            Player.Seek(v);
+        }
+
+        private void VolumeTrackBar_Scroll(object sender, EventArgs e)
+        {
+            Player.SetVolume((float)VolumeTrackBar.Value / 100);
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -401,19 +345,13 @@ namespace CodeWalker.Forms
 
         private void PlayListView_DoubleClick(object sender, EventArgs e)
         {
-            if (playerState == PlayerState.Playing)
-                Stop();
             Play();
         }
 
         private void AwcForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Stop();
-            if (xAudio2 != null)
-            {
-                masteringVoice.Dispose();
-                xAudio2.Dispose();
-            }
+            Player.DisposeAudio();
         }
 
         private void ExportAsWav_Click(object sender, EventArgs e)
