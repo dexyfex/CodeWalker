@@ -2733,7 +2733,7 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat54StreamingSound : Dat54Sound
     {
-        int Duration { get; set; } //0x0-0x4
+        public int Duration { get; set; } //0x0-0x4
 
         public Dat54StreamingSound(RelFile rel) : base(rel, Dat54SoundType.StreamingSound)
         { }
