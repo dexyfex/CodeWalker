@@ -1,5 +1,6 @@
 ﻿using CodeWalker.GameFiles;
 using CodeWalker.Rendering;
+using CodeWalker.Utils;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -18,13 +19,16 @@ namespace CodeWalker.World
     {
         private WorldForm WorldForm;
         private GameFileCache GameFileCache;
+        private AudioDatabase AudioDatabase;
 
         private Cutscene Cutscene = null;
 
         private bool AnimateCamera = true;
+        private bool EnableSubtitles = true;
+        private bool EnableAudio = true;
         private bool Playing = false;
         private bool PositionScrolled = false;
-
+        private float Volume = 0.5f;
 
         class CutsceneDropdownItem
         {
@@ -40,6 +44,7 @@ namespace CodeWalker.World
         {
             WorldForm = worldForm;
             GameFileCache = WorldForm.GameFileCache;
+            AudioDatabase = new AudioDatabase();
             InitializeComponent();
         }
 
@@ -53,6 +58,14 @@ namespace CodeWalker.World
                 {
                     var newt = Cutscene.PlaybackTime + elapsed;
                     Cutscene.Update(newt);
+
+                    if (Cutscene.PlaybackTime != newt)
+                    {
+                        if (EnableAudio) // handle looping cutscenes, loop the audio also
+                        {
+                            BeginInvoke(new Action(() => PlayAudio(Cutscene.PlaybackTime)));
+                        }
+                    }
                 }
 
                 if (AnimateCamera && (Cutscene.CameraObject != null))
@@ -99,6 +112,11 @@ namespace CodeWalker.World
 
                 if (GameFileCache.IsInited)
                 {
+                    if (!AudioDatabase.IsInited)
+                    {
+                        AudioDatabase.Init(GameFileCache);
+                    }
+
                     var entry = dditem?.RpfEntry as RpfFileEntry;
                     if (entry != null)
                     {
@@ -107,7 +125,7 @@ namespace CodeWalker.World
                         GameFileCache.RpfMan.LoadFile(cutFile, entry);
 
                         cutscene = new Cutscene();
-                        cutscene.Init(cutFile, GameFileCache, WorldForm);
+                        cutscene.Init(cutFile, GameFileCache, WorldForm, AudioDatabase);
 
                     }
                 }
@@ -129,7 +147,19 @@ namespace CodeWalker.World
                 return;
             }
 
+            DisposeAudio();
+
             Cutscene = cs;
+
+            if (cs != null)
+            {
+                cs.EnableSubtitles = EnableSubtitles;
+
+                if (Playing)
+                {
+                    PlayAudio(cs.PlaybackTime);
+                }
+            }
 
             LoadTreeView(cs);
 
@@ -211,8 +241,52 @@ namespace CodeWalker.World
 
 
 
-
-
+        private void PlayAudio(float playTime = 0.0f)
+        {
+            StopAudio();
+            if (!EnableAudio) return;
+            var sp = Cutscene?.SoundPlayer;
+            if (sp != null)
+            {
+                sp.SetVolume(Volume);
+                sp.Play(Cutscene.SoundStartOffset + playTime);
+            }
+        }
+        private void StopAudio()
+        {
+            var sp = Cutscene?.SoundPlayer;
+            if (sp != null)
+            {
+                sp.Stop();
+            }
+        }
+        private void PauseAudio()
+        {
+            if (!EnableAudio) return;
+            var sp = Cutscene?.SoundPlayer;
+            if (sp != null)
+            {
+                sp.Pause();
+            }
+        }
+        private void ResumeAudio()
+        {
+            if (!EnableAudio) return;
+            var sp = Cutscene?.SoundPlayer;
+            if (sp != null)
+            {
+                sp.Resume();
+            }
+        }
+        private void DisposeAudio()
+        {
+            var sp = Cutscene?.SoundPlayer;
+            if (sp != null)
+            {
+                sp.Stop();
+                sp.DisposeAudio();
+            }
+        }
 
 
         private void CutsceneForm_Load(object sender, EventArgs e)
@@ -240,6 +314,11 @@ namespace CodeWalker.World
             CutsceneComboBox.Items.AddRange(dditems.ToArray());
 
 
+        }
+
+        private void CutsceneForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            DisposeAudio();
         }
 
         private void CutsceneForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -275,6 +354,31 @@ namespace CodeWalker.World
             }
         }
 
+        private void SubtitlesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            EnableSubtitles = SubtitlesCheckBox.Checked;
+            if (Cutscene != null)
+            {
+                Cutscene.EnableSubtitles = EnableSubtitles;
+            }
+        }
+
+        private void AudioCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            EnableAudio = AudioCheckBox.Checked;
+            if (!EnableAudio)
+            {
+                StopAudio();
+            }
+            else
+            {
+                if (Playing && (Cutscene != null))
+                {
+                    PlayAudio(Cutscene.PlaybackTime);
+                }
+            }
+        }
+
         private void PlayStopButton_Click(object sender, EventArgs e)
         {
             if (Playing)
@@ -282,12 +386,14 @@ namespace CodeWalker.World
                 Playing = false;
                 PlayStopButton.Text = "Play";
                 PlaybackTimer.Enabled = false;
+                StopAudio();
             }
             else
             {
                 Playing = true;
                 PlayStopButton.Text = "Stop";
                 PlaybackTimer.Enabled = true;
+                PlayAudio(Cutscene.PlaybackTime);
             }
         }
 
@@ -309,6 +415,11 @@ namespace CodeWalker.World
             if (Cutscene != null)
             {
                 Cutscene.Update(t);
+
+                if (Playing)
+                {
+                    PlayAudio(t);
+                }
             }
 
             if (!Playing)
@@ -327,17 +438,33 @@ namespace CodeWalker.World
             PositionScrolled = false;
 
             var f = Math.Min(Math.Max((e.X - 13.0f) / (TimeTrackBar.Width - 26.0f), 0.0f), 1.0f);
-            var v = f * (TimeTrackBar.Maximum / 10.0f);
+            var t = f * (TimeTrackBar.Maximum / 10.0f);
 
             if (Cutscene != null)
             {
-                Cutscene.Update(v);
+                Cutscene.Update(t);
+
+                if (Playing)
+                {
+                    StopAudio();
+                    PlayAudio(t);
+                }
             }
 
             if (!Playing)
             {
                 UpdateTimeTrackBar();
                 UpdateTimeLabel();
+            }
+        }
+
+        private void VolumeTrackBar_Scroll(object sender, EventArgs e)
+        {
+            Volume = VolumeTrackBar.Value / 100.0f;
+            var sp = Cutscene?.SoundPlayer;
+            if (sp != null)
+            {
+                sp.SetVolume(Volume);
             }
         }
     }
@@ -348,6 +475,7 @@ namespace CodeWalker.World
         public CutFile CutFile { get; set; } = null;
         private GameFileCache GameFileCache = null;
         private WorldForm WorldForm = null;
+        private AudioDatabase AudioDB = null;
 
         public float[] CameraCutList { get; set; } = null;
         public YcdFile[] Ycds { get; set; } = null;
@@ -356,6 +484,8 @@ namespace CodeWalker.World
         public float Duration { get; set; } = 0.0f;
         public float PlaybackTime { get; set; } = 0.0f;
         private bool Seeking = false;
+
+        public bool EnableSubtitles { get; set; } = true;
 
 
         public Dictionary<int, CutObject> Objects { get; set; } = null;
@@ -381,14 +511,17 @@ namespace CodeWalker.World
         public bool CameraClipUpdate = false;//signal to the form to update the camera clip planes
         public Quaternion CameraRotationOffset = Quaternion.RotationAxis(Vector3.UnitX, -1.57079632679f) * Quaternion.RotationAxis(Vector3.UnitZ, 3.141592653f);
 
+        public AudioPlayer SoundPlayer { get; set; } = null;
+        public float SoundStartOffset { get; set; }
 
 
 
-        public void Init(CutFile cutFile, GameFileCache gfc, WorldForm wf)
+        public void Init(CutFile cutFile, GameFileCache gfc, WorldForm wf, AudioDatabase adb)
         {
             CutFile = cutFile;
             GameFileCache = gfc;
             WorldForm = wf;
+            AudioDB = adb;
 
             var csf = cutFile?.CutsceneFile2;
             if (csf == null) return;
@@ -766,6 +899,37 @@ namespace CodeWalker.World
             if (args == null)
             { return; }
 
+            var obje = e as CutObjectIdEvent;
+            if (obje == null)
+            { return; }
+
+            var obj = obje.Object as CutAudioObject;
+            if (obj == null)
+            { return; }
+
+            if (Seeking) return;
+
+            if (SceneObjects.TryGetValue(obje.iObjectId, out CutsceneObject audobj))
+            {
+                if (audobj.SoundPlayer != null)
+                {
+                    SoundStartOffset = obj.fOffset;
+                    if (SoundPlayer != audobj.SoundPlayer)
+                    {
+                        if (SoundPlayer != null)
+                        {
+                            SoundPlayer.Stop();
+                            SoundPlayer.DisposeAudio();
+                            SoundPlayer = null;
+                        }
+                        SoundPlayer = audobj.SoundPlayer;
+                    }
+                }
+                else
+                { }
+            }
+            else
+            { }
         }
         private void LoadModels(CutEvent e)
         {
@@ -962,6 +1126,7 @@ namespace CodeWalker.World
             if (args == null)
             { return; }
 
+            if (!EnableSubtitles) return;
             if (Seeking) return; //don't raise subtitle events while seeking backwards...
 
             if (WorldForm != null)
@@ -1109,7 +1274,7 @@ namespace CodeWalker.World
             foreach (var obj in Objects.Values)
             {
                 var sobj = new CutsceneObject();
-                sobj.Init(obj, GameFileCache);
+                sobj.Init(obj, GameFileCache, AudioDB);
                 SceneObjects[sobj.ObjectID] = sobj;
 
                 if (sobj.AnimHash != 0)
@@ -1148,10 +1313,14 @@ namespace CodeWalker.World
         public MetaHash AnimHash { get; set; }
         public ClipMapEntry AnimClip { get; set; }
 
+        public Dat54Sound SoundInfo { get; set; }
+        public AwcStream[] SoundStreams { get; set; }
+        public AudioPlayer SoundPlayer { get; set; }
+
         public bool Enabled { get; set; } = false;
 
 
-        public void Init(CutObject obj, GameFileCache gfc)
+        public void Init(CutObject obj, GameFileCache gfc, AudioDatabase adb)
         {
             CutObject = obj;
             ObjectID = obj?.iObjectId ?? -1;
@@ -1169,6 +1338,10 @@ namespace CodeWalker.World
             }
             else if (obj is CutCameraObject cam)
             {
+            }
+            else if (obj is CutAudioObject aud)
+            {
+                InitAudio(aud, gfc, adb);
             }
             else if (obj is CutPedModelObject ped)
             {
@@ -1214,9 +1387,6 @@ namespace CodeWalker.World
             else if (obj is CutOverlayObject ovr)
             {
             }
-            else if (obj is CutAudioObject aud)
-            {
-            }
             else if (obj is CutSubtitleObject sub)
             {
             }
@@ -1228,6 +1398,112 @@ namespace CodeWalker.World
             }
             else
             { }
+        }
+
+        private void InitAudio(CutAudioObject aud, GameFileCache gfc, AudioDatabase adb)
+        {
+
+            //how to know the correct name/hash to use?
+            //sound name in the format: cutscenes_name_mastered_only
+            var name = aud.cName.ToCleanString().ToLowerInvariant().Replace(".wav", "");
+            var soundname = "cutscenes_" + name + "_mastered";
+            var soundname2 = "cutscenes_" + name + "_mastered_only";
+            uint soundhash = JenkHash.GenHash(soundname);
+            uint soundhash2 = JenkHash.GenHash(soundname2);
+
+            if (adb?.SoundsDB != null)
+            {
+                if (adb.SoundsDB.TryGetValue(soundhash, out Dat54Sound snd))
+                {
+                    SoundInfo = snd;
+                }
+                else if (adb.SoundsDB.TryGetValue(soundhash2, out Dat54Sound snd2))
+                {
+                    SoundInfo = snd2;
+                }
+            }
+
+
+            if (SoundInfo is Dat54StreamingSound strsnd)
+            {
+                int dur = strsnd.Duration;
+                MetaHash awchash = 0;
+                AwcFile awc = null;
+
+                var streaminfs = new List<Dat54SimpleSound>();
+                var streamlist = new List<AwcStream>();
+
+                foreach (var chan in strsnd.AudioTracks)
+                {
+                    if (chan is Dat54SimpleSound chansnd)
+                    {
+                        var chanawchash = chansnd.ContainerName;
+                        if (chanawchash != awchash)
+                        {
+                            awchash = chanawchash;
+                            if (adb.ContainerDB.TryGetValue(awchash, out RpfFileEntry awcentry))
+                            {
+                                awc = new AwcFile();
+                                gfc.RpfMan.LoadFile(awc, awcentry);
+                            }
+                            else
+                            { }
+                        }
+
+                        if (awc?.StreamDict != null)
+                        {
+                            var chanhash = chansnd.FileName & 0x1FFFFFFF;
+                            if (awc.StreamDict.TryGetValue(chanhash, out AwcStream chanstream))
+                            {
+                                streaminfs.Add(chansnd);
+                                streamlist.Add(chanstream);
+                            }
+                            else
+                            { }
+                        }
+                        else
+                        { }
+                    }
+                    else
+                    { }
+                }
+
+                var streams = streamlist.ToArray();
+
+                SoundPlayer = new AudioPlayer();
+                SoundPlayer.LoadAudio(streams);
+                for (int i = 0; i < streaminfs.Count; i++)
+                {
+                    var streaminf = streaminfs[i];
+                    var left = 1.0f;
+                    var right = 1.0f;
+                    switch (streaminf.Header?.Unk06 ?? 0)
+                    {
+                        case 0://center/default
+                            left = 1.0f;
+                            right = 1.0f;
+                            break;
+                        case 0x133: // 307://left channel
+                            left = 1.0f;
+                            right = 0.0f;
+                            break;
+                        case 0x35: // 53://right channel
+                            left = 0.0f;
+                            right = 1.0f;
+                            break;
+                        default:
+                            break;
+                    }
+                    SoundPlayer.SetOutputMatrix(i, left, right);
+                }
+
+            }
+            else if (SoundInfo != null)
+            { }
+            if (SoundInfo == null)
+            { }
+
+
         }
 
         private void InitPed(CutPedModelObject ped, GameFileCache gfc)
