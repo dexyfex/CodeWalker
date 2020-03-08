@@ -1576,6 +1576,7 @@ namespace CodeWalker.GameFiles
             AwcXml.ValueTag(sb, indent, "PlayEnd", PlayEnd.ToString());
             AwcXml.ValueTag(sb, indent, "LoopBegin", LoopBegin.ToString());
             AwcXml.ValueTag(sb, indent, "LoopEnd", LoopEnd.ToString());
+            AwcXml.ValueTag(sb, indent, "LoopPoint", LoopPoint.ToString());
             if (UnkExtra.HasValue)
             {
                 AwcXml.ValueTag(sb, indent, "UnkExtra", UnkExtra.Value.ToString());
@@ -1591,6 +1592,7 @@ namespace CodeWalker.GameFiles
             PlayEnd = (ushort)Xml.GetChildUIntAttribute(node, "PlayEnd");
             LoopBegin = (ushort)Xml.GetChildUIntAttribute(node, "LoopBegin");
             LoopEnd = (ushort)Xml.GetChildUIntAttribute(node, "LoopEnd");
+            LoopPoint = Xml.GetChildIntAttribute(node, "LoopPoint");
             var unode = node.SelectSingleNode("UnkExtra");
             if (unode != null)
             {
