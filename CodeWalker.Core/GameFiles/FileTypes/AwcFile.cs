@@ -310,7 +310,6 @@ namespace CodeWalker.GameFiles
             Version = (ushort)Xml.GetChildUIntAttribute(node, "Version");
             MultiChannelFlag = Xml.GetChildBoolAttribute(node, "MultiChannel");
 
-            var unkUshorts = new List<ushort>();
             var hasUshorts = false;
 
             var snode = node.SelectSingleNode("Streams");
@@ -325,7 +324,6 @@ namespace CodeWalker.GameFiles
                     slist.Add(stream);
 
                     hasUshorts = hasUshorts || stream.UnkUshort.HasValue;
-                    unkUshorts.Add(stream.UnkUshort ?? 0);
 
                     if (MultiChannelFlag && (stream.StreamFormatChunk != null) && (stream.Hash == 0))
                     {
@@ -342,6 +340,14 @@ namespace CodeWalker.GameFiles
 
             if (hasUshorts)
             {
+                var unkUshorts = new List<ushort>();
+                if (Streams != null)
+                {
+                    foreach (var stream in Streams)
+                    {
+                        unkUshorts.Add(stream.UnkUshort ?? 0);
+                    }
+                }
                 UnkUshorts = unkUshorts.ToArray();
                 UnkUshortsFlag = true;
             }
