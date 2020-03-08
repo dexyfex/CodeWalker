@@ -18,18 +18,18 @@ namespace CodeWalker.GameFiles
         public string ErrorMessage { get; set; }
 
         public uint Magic { get; set; } = 0x54414441;
-        public ushort Version { get; set; }
+        public ushort Version { get; set; } = 1;
         public ushort Flags { get; set; } = 0xFF00;
         public int StreamCount { get; set; }
         public int DataOffset { get; set; }
 
-        public bool UnkUshortsFlag { get { return ((Flags & 1) == 1); } set { Flags = (ushort)((Flags & 0xFFFE) + (value ? 1 : 0)); } }
+        public bool ChunkIndicesFlag { get { return ((Flags & 1) == 1); } set { Flags = (ushort)((Flags & 0xFFFE) + (value ? 1 : 0)); } }
         public bool SingleChannelEncryptFlag { get { return ((Flags & 2) == 2); } set { Flags = (ushort)((Flags & 0xFFFD) + (value ? 2 : 0)); } }
         public bool MultiChannelFlag { get { return ((Flags & 4) == 4); } set { Flags = (ushort)((Flags & 0xFFFB) + (value ? 4 : 0)); } }
         public bool MultiChannelEncryptFlag { get { return ((Flags & 8) == 8); } set { Flags = (ushort)((Flags & 0xFFF7) + (value ? 8 : 0)); } }
 
-        public ushort[] UnkUshorts { get; set; } //offsets of some sort?
-
+        public ushort[] ChunkIndices { get; set; } //index of first chunk for each stream
+        public AwcChunkInfo[] ChunkInfos { get; set; } // just for browsing convenience really
 
         public bool WholeFileEncrypted { get; set; }
 
@@ -147,25 +147,26 @@ namespace CodeWalker.GameFiles
             DataOffset = r.ReadInt32();
 
 
-            //if ((Flags >> 8) != 0xFF)
-            //{ }//no hit
-
-            if (UnkUshortsFlag)
+            if (ChunkIndicesFlag)
             {
-                UnkUshorts = new ushort[StreamCount]; //offsets of some sort?
+                ChunkIndices = new ushort[StreamCount]; //index of first chunk for each stream
                 for (int i = 0; i < StreamCount; i++)
                 {
-                    UnkUshorts[i] = r.ReadUInt16();
+                    ChunkIndices[i] = r.ReadUInt16();
                 }
             }
 
 
-            //var infoStart = 16 + (UnkUshortsFlag ? (StreamCount * 2) : 0);
+            //if ((Flags >> 8) != 0xFF)
+            //{ }//no hit
+
+            //var infoStart = 16 + (ChunkIndicesFlag ? (StreamCount * 2) : 0);
             //if (r.Position != infoStart)
             //{ }//no hit
 
 
             var infos = new List<AwcStreamInfo>();
+            var chunks = new List<AwcChunkInfo>();
 
             for (int i = 0; i < StreamCount; i++)
             {
@@ -180,11 +181,12 @@ namespace CodeWalker.GameFiles
                 {
                     var chunk = new AwcChunkInfo();
                     chunk.Read(r);
+                    chunks.Add(chunk);
                     info.Chunks[j] = chunk;
                 }
             }
             StreamInfos = infos.ToArray();
-
+            ChunkInfos = chunks.ToArray();
 
             //var dataOffset = infoStart + StreamCount * 4;
             //foreach (var info in infos) dataOffset += (int)info.ChunkCount * 8;
@@ -204,8 +206,6 @@ namespace CodeWalker.GameFiles
                 stream.Read(r);
                 streams.Add(stream);
 
-                stream.UnkUshort = (UnkUshorts != null) ? (ushort?)UnkUshorts[i] : null;
-
                 if (MultiChannelFlag && (stream.DataChunk != null))
                 {
                     MultiChannelSource = stream;
@@ -217,12 +217,14 @@ namespace CodeWalker.GameFiles
             MultiChannelSource?.AssignMultiChannelSources(Streams);
 
             BuildStreamDict();
+
+            //TestChunkOrdering(r.Length);
         }
 
         private void Write(DataWriter w)
         {
             StreamCount = StreamInfos?.Length ?? 0;
-            var infoStart = 16 + (UnkUshortsFlag ? (StreamCount * 2) : 0);
+            var infoStart = 16 + (ChunkIndicesFlag ? (StreamCount * 2) : 0);
             var dataOffset = infoStart + StreamCount * 4;
             foreach (var info in StreamInfos) dataOffset += (int)info.ChunkCount * 8;
             DataOffset = dataOffset;
@@ -233,11 +235,11 @@ namespace CodeWalker.GameFiles
             w.Write(StreamCount);
             w.Write(DataOffset);
 
-            if (UnkUshortsFlag)
+            if (ChunkIndicesFlag)
             {
                 for (int i = 0; i < StreamCount; i++)
                 {
-                    w.Write((i < (UnkUshorts?.Length ?? 0)) ? UnkUshorts[i] : (ushort)0);
+                    w.Write((i < (ChunkIndices?.Length ?? 0)) ? ChunkIndices[i] : (ushort)0);
                 }
             }
 
@@ -255,28 +257,20 @@ namespace CodeWalker.GameFiles
                     chunkinfo.Write(w);
                 }
             }
-            if (MultiChannelFlag)
-            {
-                for (int i = 0; i < StreamCount; i++)
-                {
-                    var stream = Streams[i];
-                    stream.Write(w);
-                }
-                for (int i = 0; i < StreamCount; i++)
-                {
-                    var stream = Streams[i];
-                    stream.WriteDataChunks(w);
-                }
-            }
-            else
-            {
-                for (int i = 0; i < StreamCount; i++)
-                {
-                    var stream = Streams[i];
-                    stream.Write(w);
-                }
-            }
 
+
+            var chunks = GetSortedChunks();
+            foreach (var chunk in chunks)
+            {
+                var chunkinfo = chunk.ChunkInfo;
+                var align = chunkinfo.Align;
+                if (align > 0)
+                {
+                    var padc = (align - (w.Position % align)) % align;
+                    if (padc > 0) w.Write(new byte[padc]);
+                }
+                chunk.Write(w);
+            }
 
 
         }
@@ -286,6 +280,10 @@ namespace CodeWalker.GameFiles
         public void WriteXml(StringBuilder sb, int indent, string wavfolder)
         {
             AwcXml.ValueTag(sb, indent, "Version", Version.ToString());
+            if (ChunkIndicesFlag)
+            {
+                AwcXml.ValueTag(sb, indent, "ChunkIndices", true.ToString());
+            }
             if (MultiChannelFlag)
             {
                 AwcXml.ValueTag(sb, indent, "MultiChannel", true.ToString());
@@ -308,9 +306,8 @@ namespace CodeWalker.GameFiles
         public void ReadXml(XmlNode node, string wavfolder)
         {
             Version = (ushort)Xml.GetChildUIntAttribute(node, "Version");
+            ChunkIndicesFlag = Xml.GetChildBoolAttribute(node, "ChunkIndices");
             MultiChannelFlag = Xml.GetChildBoolAttribute(node, "MultiChannel");
-
-            var hasUshorts = false;
 
             var snode = node.SelectSingleNode("Streams");
             if (snode != null)
@@ -322,8 +319,6 @@ namespace CodeWalker.GameFiles
                     var stream = new AwcStream(this);
                     stream.ReadXml(inode, wavfolder);
                     slist.Add(stream);
-
-                    hasUshorts = hasUshorts || stream.UnkUshort.HasValue;
 
                     if (MultiChannelFlag && (stream.StreamFormatChunk != null) && (stream.Hash == 0))
                     {
@@ -338,19 +333,7 @@ namespace CodeWalker.GameFiles
                 
             }
 
-            if (hasUshorts)
-            {
-                var unkUshorts = new List<ushort>();
-                if (Streams != null)
-                {
-                    foreach (var stream in Streams)
-                    {
-                        unkUshorts.Add(stream.UnkUshort ?? 0);
-                    }
-                }
-                UnkUshorts = unkUshorts.ToArray();
-                UnkUshortsFlag = true;
-            }
+            BuildChunkIndices();
 
             BuildStreamInfos();
 
@@ -372,6 +355,157 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public AwcChunk[] GetSortedChunks()
+        {
+            var chunks = new List<AwcChunk>();
+
+            if (Streams != null)
+            {
+                foreach (var stream in Streams)
+                {
+                    if (stream.Chunks != null)
+                    {
+                        chunks.AddRange(stream.Chunks);
+                    }
+                }
+            }
+
+            var issorted = MultiChannelFlag || !SingleChannelEncryptFlag;
+            if (issorted)
+            {
+                chunks.Sort((a, b) => b.ChunkInfo?.SortOrder.CompareTo(a.ChunkInfo?.SortOrder ?? 0) ?? -1);
+                chunks.Reverse();
+            }
+
+            return chunks.ToArray();
+        }
+
+        public void TestChunkOrdering(long datalength)
+        {
+            if (Streams == null) return;
+            if (StreamInfos == null) return;
+
+            var issorted = MultiChannelFlag || !SingleChannelEncryptFlag;
+
+            var chunklist = ChunkInfos.ToList();
+            chunklist.Sort((a, b) => a.Offset.CompareTo(b.Offset));
+            var chunks = chunklist.ToArray();
+
+            //var chunks2 = GetAllChunks();
+
+            var infoStart = 16 + (ChunkIndicesFlag ? (StreamCount * 2) : 0);
+            var offset = infoStart + (StreamCount * 4) + (chunks.Length * 8);
+            foreach (var chunk in chunks)
+            {
+                if (issorted)
+                {
+                    var align = chunk.Align;
+                    if (align != 0)
+                    {
+                        offset += ((align - (offset % align)) % align);
+                    }
+                }
+                switch (chunk.Type)
+                {
+                    case AwcChunkType.animation:
+                        if (issorted)
+                        { }//no hit
+                        switch (chunk.Offset - offset)
+                        {
+                            case 12:
+                            case 8:
+                            case 0:
+                            case 4:
+                                break;
+                            default:
+                                break;//no hit
+                        }
+                        offset = chunk.Offset;//what is correct padding for this? seems to be inconsistent
+                        break;
+                    case AwcChunkType.gesture:
+                        if (issorted)
+                        { }//no hit
+                        switch (chunk.Offset - offset)
+                        {
+                            case 0:
+                            case 2:
+                                break;
+                            default:
+                                break;//no hit
+                        }
+                        offset = chunk.Offset;//what is correct padding for this? seems to be inconsistent
+                        break;
+                    case AwcChunkType.seektable:
+                        break;
+                }
+                if ((chunk.Offset - offset) != 0)
+                { offset = chunk.Offset; }//no hit
+                offset += chunk.Size;
+            }
+
+            if (WholeFileEncrypted) offset += (4 - (offset % 4)) % 4;
+            if ((datalength - offset) != 0)
+            { }//no hit
+
+
+            if (issorted)
+            {
+
+                bool datachunk = false;
+                bool markerchunk = false;
+                foreach (var chunk in chunks)
+                {
+                    if ((chunk.Type == AwcChunkType.data) || (chunk.Type == AwcChunkType.mid)) datachunk = true;
+                    else if (datachunk)
+                    { }//no hit
+                    if ((chunk.Type == AwcChunkType.markers) || (chunk.Type == AwcChunkType.granulargrains) || (chunk.Type == AwcChunkType.granularloops)) markerchunk = true;
+                    else if (markerchunk && !datachunk)
+                    { }//no hit
+                }
+            }
+            else
+            {
+                if (ChunkInfos[0].Type != AwcChunkType.data)
+                { }//no hit
+            }
+        }
+
+        public void BuildChunkIndices()
+        {
+            if (Streams == null) return;
+
+            var inds = new List<ushort>();
+            ushort ind = 0;
+            foreach (var stream in Streams)
+            {
+                inds.Add(ind);
+                ind += (ushort)(stream.Chunks?.Length ?? 0);
+            }
+
+            //if (ChunkIndices != null)
+            //{
+            //    if (ChunkIndices.Length == inds.Count)
+            //    {
+            //        for (int i = 0; i < inds.Count; i++)
+            //        {
+            //            if (inds[i] != ChunkIndices[i])
+            //            { }//no hit
+            //        }
+            //    }
+            //    else
+            //    { }//no hit
+            //}
+
+            if (ChunkIndicesFlag)
+            {
+                ChunkIndices = inds.ToArray();
+            }
+            else
+            {
+                ChunkIndices = null;
+            }
+
+        }
 
         public void BuildStreamInfos()
         {
@@ -380,78 +514,30 @@ namespace CodeWalker.GameFiles
             var chunkinfos = new List<AwcChunkInfo>();
             if (Streams != null)
             {
-                var streamCount = Streams?.Length ?? 0;
-                var infoStart = 16 + (UnkUshortsFlag ? (streamCount * 2) : 0);
+                var streamCount = Streams.Length;
+                var infoStart = 16 + (ChunkIndicesFlag ? (streamCount * 2) : 0);
                 var dataOffset = infoStart + streamCount * 4;
                 foreach (var stream in Streams)
                 {
                     dataOffset += (stream?.Chunks?.Length ?? 0) * 8;
                 }
-                if (MultiChannelFlag)
-                {
-                    foreach (var stream in Streams)
-                    {
-                        if (stream.Chunks != null)
-                        {
-                            foreach (var chunk in stream.Chunks)
-                            {
-                                if (!(chunk is AwcDataChunk))
-                                {
-                                    if (chunk is AwcMarkersChunk)
-                                    {
-                                        //align to 4 bytes
-                                        var padc = (4 - (dataOffset % 4)) % 4;
-                                        dataOffset += padc;
-                                    }
 
-                                    var chunkinfo = chunk.ChunkInfo;
-                                    var size = chunk.ChunkSize;
-                                    chunkinfo.Size = size;
-                                    chunkinfo.Offset = dataOffset;
-                                    dataOffset += size;
-                                }
-                            }
-                        }
-                    }
-                    foreach (var stream in Streams)
-                    {
-                        if (stream.Chunks != null)
-                        {
-                            foreach (var chunk in stream.Chunks)
-                            {
-                                if (chunk is AwcDataChunk)
-                                {
-                                    //align to 16 bytes
-                                    var padc = (16 - (dataOffset % 16)) % 16;
-                                    dataOffset += padc;
-
-                                    var chunkinfo = chunk.ChunkInfo;
-                                    var size = chunk.ChunkSize;
-                                    chunkinfo.Size = size;
-                                    chunkinfo.Offset = dataOffset;
-                                    dataOffset += size;
-                                }
-                            }
-                        }
-                    }
-                }
-                else
+                var chunks = GetSortedChunks();
+                foreach (var chunk in chunks)
                 {
-                    foreach (var stream in Streams)
+                    var chunkinfo = chunk.ChunkInfo;
+                    var size = chunk.ChunkSize;
+                    var align = chunkinfo.Align;
+                    if (align > 0)
                     {
-                        if (stream.Chunks != null)
-                        {
-                            foreach (var chunk in stream.Chunks)
-                            {
-                                var chunkinfo = chunk.ChunkInfo;
-                                var size = chunk.ChunkSize;
-                                chunkinfo.Size = size;
-                                chunkinfo.Offset = dataOffset;
-                                dataOffset += size;
-                            }
-                        }
+                        var padc = (align - (dataOffset % align)) % align;
+                        dataOffset += padc;
                     }
+                    chunkinfo.Size = size;
+                    chunkinfo.Offset = dataOffset;
+                    dataOffset += size;
                 }
+
                 foreach (var stream in Streams)
                 {
                     var streaminfo = stream.StreamInfo;
@@ -524,6 +610,49 @@ namespace CodeWalker.GameFiles
         public int Size { get; set; }
         public int Offset { get; set; }
 
+        public int SortOrder
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case AwcChunkType.data:
+                    case AwcChunkType.mid:
+                        return 3;
+                    case AwcChunkType.markers:
+                    case AwcChunkType.granulargrains:
+                    case AwcChunkType.granularloops:
+                    case AwcChunkType.animation:
+                    case AwcChunkType.gesture:
+                        return 2;
+                    case AwcChunkType.seektable:
+                        return 1;
+                    case AwcChunkType.peak:
+                    case AwcChunkType.format:
+                    case AwcChunkType.streamformat:
+                        return 0;
+                }
+                return 0;
+            }
+        }
+        public int Align
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case AwcChunkType.data:
+                    case AwcChunkType.mid:
+                        return 16;
+                    case AwcChunkType.markers:
+                    case AwcChunkType.granulargrains:
+                    case AwcChunkType.granularloops:
+                        return 4;
+                }
+                return 0;
+            }
+        }
+
         public void Read(DataReader r)
         {
             RawVal = r.ReadUInt64();
@@ -580,8 +709,6 @@ namespace CodeWalker.GameFiles
                 return (int)(FormatChunk?.Samples ?? StreamFormat?.Samples ?? 0);
             }
         }
-
-        public ushort? UnkUshort { get; set; } // stored in root of AWC, will have value if present
 
         public MetaHash Hash
         {
@@ -753,42 +880,7 @@ namespace CodeWalker.GameFiles
 
         public void Write(DataWriter w)
         {
-            if (Chunks != null)
-            {
-                foreach (var chunk in Chunks)
-                {
-                    if (!((chunk is AwcDataChunk) && Awc.MultiChannelFlag))
-                    {
-                        if (Awc.MultiChannelFlag && (chunk is AwcMarkersChunk))
-                        {
-                            //write padding to align to 4 bytes
-                            var padc = (4 - (w.Position % 4)) % 4;
-                            if (padc > 0) w.Write(new byte[padc]);
-                        }
-
-                        chunk.Write(w);
-                    }
-                }
-            }
-        }
-        public void WriteDataChunks(DataWriter w)
-        {
-            //for use by multichannel only, to write the data at the end
-
-            if (Chunks != null)
-            {
-                foreach (var chunk in Chunks)
-                {
-                    if (chunk is AwcDataChunk)
-                    {
-                        //write padding to align to 16 bytes
-                        var padc = (16 - (w.Position % 16)) % 16;
-                        if (padc > 0) w.Write(new byte[padc]);
-
-                        chunk.Write(w);
-                    }
-                }
-            }
+            //not used since chunks are collected and sorted, then written separately
         }
 
         public void WriteXml(StringBuilder sb, int indent, string wavfolder)
@@ -825,10 +917,6 @@ namespace CodeWalker.GameFiles
                 catch
                 { }
             }
-            if (UnkUshort.HasValue)
-            {
-                AwcXml.ValueTag(sb, indent, "UnkUshort", UnkUshort.Value.ToString());
-            }
             if (StreamFormat != null)
             {
                 AwcXml.OpenTag(sb, indent, "StreamFormat");
@@ -851,11 +939,6 @@ namespace CodeWalker.GameFiles
         public void ReadXml(XmlNode node, string wavfolder)
         {
             Hash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Name"));
-            var unode = node.SelectSingleNode("UnkUshort");
-            if (unode != null)
-            {
-                UnkUshort = (ushort)Xml.GetUIntAttribute(unode, "value");
-            }
             var fnode = node.SelectSingleNode("StreamFormat");
             if (fnode != null)
             {
