@@ -1782,12 +1782,14 @@ namespace CodeWalker.GameFiles
             sb.Append(">");
             if (appendLine) sb.AppendLine();
         }
-        public static void ValueTag(StringBuilder sb, int indent, string name, string val)
+        public static void ValueTag(StringBuilder sb, int indent, string name, string val, string attr = "value")
         {
             Indent(sb, indent);
             sb.Append("<");
             sb.Append(name);
-            sb.Append(" value=\"");
+            sb.Append(" ");
+            sb.Append(attr);
+            sb.Append("=\"");
             sb.Append(val);
             sb.Append("\" />");
             sb.AppendLine();

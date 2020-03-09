@@ -3548,7 +3548,7 @@ namespace CodeWalker.GameFiles
 
         exportcamera = 962998194, //cutscene related stuff
 
-
+        loop = 1281572103, //found in AWCs GranularLoop
 
 
 
