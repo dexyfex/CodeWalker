@@ -538,7 +538,7 @@ namespace CodeWalker.GameFiles
             AssignChildrenSkeletonsAndBounds();
             AssignChildrenShaders();
 
-            FileUnknown = 1;
+            FileVFT = 1079456040;
         }
         public static void WriteXmlNode(FragType f, StringBuilder sb, int indent, string ddsfolder, string name = "Fragment")
         {
@@ -927,6 +927,8 @@ namespace CodeWalker.GameFiles
             {
                 Bound = Bounds.ReadXmlNode(bnode, this);
             }
+
+            FileVFT = 1080060872;
         }
         public static void WriteXmlNode(FragDrawable d, StringBuilder sb, int indent, string ddsfolder, string name = "FragDrawable")
         {
@@ -2008,7 +2010,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080055472;
         public uint Unknown_04h = 1; // 0x00000001
         public ulong Unknown_08h; // 0x0000000000000000
         public ulong PhysicsLOD1Pointer { get; set; }
@@ -2121,7 +2123,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080055512;
         public uint Unknown_04h = 1; // 0x00000001
         public ulong Unknown_08h; // 0x0000000000000000
         public uint Unknown_10h; // 0x00000000
@@ -2722,7 +2724,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080211704;
         public uint Unknown_04h = 1; // 0x00000001
         public ulong Unknown_08h; // 0x0000000000000000
         public uint[] ItemIndices { get; set; } // array of 22 uints
@@ -3071,6 +3073,8 @@ namespace CodeWalker.GameFiles
             Unknown_80h = Xml.GetChildVector4Attributes(node, "Unknown80");
             Unknown_90h = Xml.GetChildVector4Attributes(node, "Unknown90");
             Unknown_A0h = Xml.GetChildVector4Attributes(node, "UnknownA0");
+
+            VFT = 1080212656;
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class FragPhysJoint3DofType : FragPhysJointType
@@ -3194,6 +3198,8 @@ namespace CodeWalker.GameFiles
             //Unknown_C0h = Xml.GetChildVector4Attributes(node, "UnknownC0");
             //Unknown_D0h = Xml.GetChildVector4Attributes(node, "UnknownD0");
             //Unknown_E0h = Xml.GetChildVector4Attributes(node, "UnknownE0");
+
+            VFT = 1080212544;
         }
     }
 
@@ -3205,7 +3211,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080043536;
         public uint Unknown_04h = 1; // 0x00000001
         public ulong Unknown_08h; // 0x0000000000000000
         public uint MatricesCount { get; set; }
@@ -3280,7 +3286,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080215944;
         public uint Unknown_04h = 1; // 0x00000001
         public ulong Unknown_08h; // 0x0000000000000000
         public ulong Unknown_10h = 2; // 0x0000000000000002
@@ -3553,7 +3559,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080061712;
         public uint Unknown_04h = 1; // 0x00000001
         public float Mass1 { get; set; }
         public float Mass2 { get; set; }
@@ -3840,7 +3846,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080060072;
         public uint Unknown_04h = 1; // 0x00000001
         public ulong Unknown_08h; // 0x0000000000000000
         public ulong Unknown_10h; // 0x0000000000000000

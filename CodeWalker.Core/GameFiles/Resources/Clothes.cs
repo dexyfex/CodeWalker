@@ -1426,7 +1426,7 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x80;
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080059352;
         public uint Unknown_4h = 1; // 0x00000001
         public ulong Unknown_8h; // 0x0000000000000000
         public ulong InstanceTuningPointer { get; set; }

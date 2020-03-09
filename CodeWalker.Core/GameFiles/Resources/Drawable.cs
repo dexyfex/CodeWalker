@@ -18,7 +18,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080113136;
         public uint Unknown_4h = 1; // 0x00000001
         public ulong TextureDictionaryPointer { get; set; }
         public ulong ShadersPointer { get; set; }
@@ -860,7 +860,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080114336;
         public uint Unknown_4h { get; set; } = 1; // 0x00000001
         public ulong Unknown_8h; // 0x0000000000000000
         public ulong BoneTagsPointer { get; set; }
@@ -1754,7 +1754,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080130656;
         public uint Unknown_4h = 1; // 0x00000001
         public ulong Unknown_8h; // 0x0000000000000000
         public ulong RotationLimitsPointer { get; set; }
@@ -2028,7 +2028,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080101528;
         public uint Unknown_4h = 1; // 0x00000001
         public ulong GeometriesPointer { get; set; }
         public ushort GeometriesCount1 { get; set; }
@@ -2295,7 +2295,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080133528;
         public uint Unknown_4h = 1; // 0x00000001
         public ulong Unknown_8h; // 0x0000000000000000
         public ulong Unknown_10h; // 0x0000000000000000
@@ -2578,7 +2578,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080153080;
         public uint Unknown_4h = 1; // 0x00000001
         public ushort VertexStride { get; set; }
         public ushort Flags { get; set; } //only 0 or 1024
@@ -3457,7 +3457,7 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint VFT { get; set; }
+        public uint VFT { get; set; } = 1080152408;
         public uint Unknown_4h = 1; // 0x00000001
         public uint IndicesCount { get; set; }
         public uint Unknown_Ch; // 0x00000000
@@ -4255,7 +4255,7 @@ namespace CodeWalker.GameFiles
             BuildAllModels();
             BuildVertexDecls();
 
-            FileUnknown = 1;
+            FileVFT = 1079456120;
         }
 
         public override IResourceBlock[] GetReferences()

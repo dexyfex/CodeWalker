@@ -543,6 +543,11 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class BoundSphere : Bounds
     {
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            FileVFT = 1080221960;
+        }
         public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
         {
             var res = new SpaceSphereIntersectResult();
@@ -608,6 +613,11 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_78h);
             writer.Write(this.Unknown_7Ch);
         }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            FileVFT = 1080213112;
+        }
 
         public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
         {
@@ -646,6 +656,11 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class BoundBox : Bounds
     {
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            FileVFT = 1080221016;
+        }
         public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
         {
             var res = new SpaceSphereIntersectResult();
@@ -730,6 +745,11 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_78h);
             writer.Write(this.Unknown_7Ch);
         }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            FileVFT = 1080229960;
+        }
 
         public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
         {
@@ -799,6 +819,11 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_74h);
             writer.Write(this.Unknown_78h);
             writer.Write(this.Unknown_7Ch);
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            FileVFT = 1080202872;
         }
 
         public override SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph)
@@ -1220,6 +1245,8 @@ namespace CodeWalker.GameFiles
             UpdateEdgeIndices();
             UpdateTriangleAreas();
             UpdateUnknown1Counts();
+
+            FileVFT = 1080226408;
         }
 
         public override IResourceBlock[] GetReferences()
@@ -2155,6 +2182,11 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_148h);
             writer.Write(this.Unknown_14Ch);
         }
+        public override void ReadXml(XmlNode node)
+        {
+            base.ReadXml(node);
+            FileVFT = 1080228536;
+        }
 
         public override IResourceBlock[] GetReferences()
         {
@@ -2649,7 +2681,7 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-
+            FileVFT = 1080212136;
         }
 
         public override IResourceBlock[] GetReferences()
