@@ -402,51 +402,31 @@ namespace CodeWalker.GameFiles
 
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ShaderParameter : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ShaderParameter
     {
-        public override long BlockLength
-        {
-            get { return 16; }
-        }
-
-        // structure data
         public byte DataType { get; set; } //0: texture, 1: vector4
         public byte Unknown_1h { get; set; }
         public ushort Unknown_2h; // 0x0000
         public uint Unknown_4h; // 0x00000000
         public ulong DataPointer { get; set; }
 
-        //public IResourceBlock Data { get; set; }
         public object Data { get; set; }
 
-        public override void Read(ResourceDataReader reader, params object[] parameters)
+        public void Read(ResourceDataReader reader)
         {
-            // read structure data
             this.DataType = reader.ReadByte();
             this.Unknown_1h = reader.ReadByte();
             this.Unknown_2h = reader.ReadUInt16();
             this.Unknown_4h = reader.ReadUInt32();
             this.DataPointer = reader.ReadUInt64();
-
-            // DONT READ DATA...
         }
-        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        public void Write(ResourceDataWriter writer)
         {
-            // write structure data
             writer.Write(this.DataType);
             writer.Write(this.Unknown_1h);
             writer.Write(this.Unknown_2h);
             writer.Write(this.Unknown_4h);
             writer.Write(this.DataPointer);
-
-            // DONT WRITE DATA
-        }
-
-        public override IResourceBlock[] GetReferences()
-        {
-            var list = new List<IResourceBlock>(base.GetReferences());
-            //if (Data != null) list.Add(Data);
-            return list.ToArray();
         }
 
         public override string ToString()
@@ -455,7 +435,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ShaderParametersBlock : ResourceSystemBlock, IResourceNoCacheBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ShaderParametersBlock : ResourceSystemBlock
     {
 
         public override long BlockLength
@@ -522,7 +502,9 @@ namespace CodeWalker.GameFiles
             var paras = new List<ShaderParameter>();
             for (int i = 0; i < Count; i++)
             {
-                paras.Add(reader.ReadBlock<ShaderParameter>());
+                var p = new ShaderParameter();
+                p.Read(reader);
+                paras.Add(p);
             }
 
             int offset = 0;
@@ -609,11 +591,6 @@ namespace CodeWalker.GameFiles
         {
 
             // update pointers...
-            //foreach (var f in Parameters)
-            //    if (f.Data != null)
-            //        f.DataPointer = (ulong)f.Data.Position;
-            //    else
-            //        f.DataPointer = 0;
             for (int i = 0; i < Parameters.Length; i++)
             {
                 var param = Parameters[i];
@@ -639,14 +616,11 @@ namespace CodeWalker.GameFiles
 
             // write parameter infos
             foreach (var f in Parameters)
-                writer.WriteBlock(f);
+            {
+                f.Write(writer);
+            }
 
             // write vector data
-            //foreach (var f in Parameters)
-            //{
-            //    if (f.DataType != 0)
-            //        writer.WriteBlock(f.Data);
-            //}
             for (int i = 0; i < Parameters.Length; i++)
             {
                 var param = Parameters[i];
@@ -664,7 +638,9 @@ namespace CodeWalker.GameFiles
 
             // write hashes
             foreach (var h in Hashes)
+            {
                 writer.Write((uint)h);
+            }
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -804,8 +780,12 @@ namespace CodeWalker.GameFiles
             list.AddRange(base.GetReferences());
 
             foreach (var x in Parameters)
+            {
                 if (x.DataType == 0)
+                {
                     list.Add(x.Data as TextureBase);
+                }
+            }
 
             return list.ToArray();
         }
@@ -815,13 +795,7 @@ namespace CodeWalker.GameFiles
             var list = new List<Tuple<long, IResourceBlock>>();
             list.AddRange(base.GetParts());
 
-            long offset = 0;
-            foreach (var x in Parameters)
-            {
-                list.Add(new Tuple<long, IResourceBlock>(offset, x));
-                offset += 16;
-            }
-
+            long offset = Parameters.Length * 16;
 
             var blist = new List<ResourceSystemStructBlock<Vector4>>();
             foreach (var x in Parameters)
