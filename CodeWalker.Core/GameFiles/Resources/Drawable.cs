@@ -383,6 +383,7 @@ namespace CodeWalker.GameFiles
                 ParameterCount = (byte)ParametersList.Count;
                 ParameterSize = ParametersList.ParametersSize;
                 ParameterDataSize = ParametersList.ParametersDataSize;//is it right?
+                TextureParametersCount = ParametersList.TextureParamsCount;
             }
         }
 
