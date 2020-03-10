@@ -2266,7 +2266,16 @@ namespace CodeWalker.GameFiles
     {
         public override long BlockLength
         {
-            get { return 152; }
+            get 
+            {
+                long l = 152;
+                if (BoneIds != null)
+                {
+                    if (BoneIds.Length > 4) l += 8;
+                    l += (BoneIds.Length) * 2;
+                }
+                return l;
+            }
         }
 
         // structure data
@@ -2299,16 +2308,14 @@ namespace CodeWalker.GameFiles
         // reference data
         public VertexBuffer VertexBuffer { get; set; }
         public IndexBuffer IndexBuffer { get; set; }
-        public ushort[] BoneIds { get; set; }
         public VertexData VertexData { get; set; }
+        public ushort[] BoneIds { get; set; }//embedded at the end of this struct
         public ShaderFX Shader { get; set; }//written by parent DrawableBase, using ShaderID
         public ushort ShaderID { get; set; }//read/written by parent model
         public AABB_s AABB { get; set; }//read/written by parent model
 
-        private ResourceSystemStructBlock<ushort> BoneIdsBlock = null;//for saving only
 
-
-        public bool UpdateRenderableParameters { get; set; } = false; //used by model material editor...
+        public bool UpdateRenderableParameters = false; //used by model material editor...
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -2351,6 +2358,13 @@ namespace CodeWalker.GameFiles
             if (this.BoneIds != null) //skinned mesh bones to use? peds, also yft props...
             {
             }
+            //if (BoneIdsPointer != 0)
+            //{
+            //    var pos = (ulong)reader.Position;
+            //    if (BoneIdsCount > 4) pos += 8;
+            //    if (BoneIdsPointer != pos)
+            //    { }//no hit - interesting alignment, boneids array always packed after this struct
+            //}
 
             if (this.VertexBuffer != null)
             {
@@ -2423,13 +2437,14 @@ namespace CodeWalker.GameFiles
             // update structure data
             this.VertexBufferPointer = (ulong)(this.VertexBuffer != null ? this.VertexBuffer.FilePosition : 0);
             this.IndexBufferPointer = (ulong)(this.IndexBuffer != null ? this.IndexBuffer.FilePosition : 0);
-            this.BoneIdsPointer = (ulong)(this.BoneIdsBlock != null ? this.BoneIdsBlock.FilePosition : 0);
-            this.BoneIdsCount = (ushort)(this.BoneIdsBlock != null ? this.BoneIdsBlock.ItemCount : 0);
             this.VertexDataPointer = (ulong)(this.VertexData != null ? this.VertexData.FilePosition : 0);
             this.VerticesCount = (ushort)(this.VertexData != null ? this.VertexData.VertexCount : 0); //TODO: fix?
             this.VertexStride = (ushort)(this.VertexBuffer != null ? this.VertexBuffer.VertexStride : 0); //TODO: fix?
             this.IndicesCount = (this.IndexBuffer != null ? this.IndexBuffer.IndicesCount : 0); //TODO: fix?
             this.TrianglesCount = this.IndicesCount / 3; //TODO: fix?
+            this.BoneIdsPointer = (BoneIds != null) ? (ulong)(writer.Position + 152 + ((BoneIds.Length > 4) ? 8 : 0)) : 0;
+            this.BoneIdsCount = (ushort)(BoneIds?.Length ?? 0);
+            
 
             // write structure data
             writer.Write(this.VFT);
@@ -2457,6 +2472,19 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_80h);
             writer.Write(this.Unknown_88h);
             writer.Write(this.Unknown_90h);
+
+            if (BoneIds != null)
+            {
+                if (BoneIds.Length > 4)
+                {
+                    writer.Write((ulong)0);
+                }
+                for (int i = 0; i < BoneIds.Length; i++)
+                {
+                    writer.Write(BoneIds[i]);
+                }
+            }
+
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -2530,11 +2558,6 @@ namespace CodeWalker.GameFiles
             var list = new List<IResourceBlock>();
             if (VertexBuffer != null) list.Add(VertexBuffer);
             if (IndexBuffer != null) list.Add(IndexBuffer);
-            if (BoneIds != null)
-            {
-                BoneIdsBlock = new ResourceSystemStructBlock<ushort>(BoneIds);
-                list.Add(BoneIdsBlock);
-            }
             if (VertexData != null) list.Add(VertexData);
             return list.ToArray();
         }
