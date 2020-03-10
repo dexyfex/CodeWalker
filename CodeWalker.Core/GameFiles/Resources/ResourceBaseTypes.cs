@@ -636,7 +636,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleArray<T> : ListBase<T> where T : IResourceSystemBlock, new()
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleArray<T> : ListBase<T>, IResourceNoCacheBlock where T : IResourceSystemBlock, new()
     {
         /// <summary>
         /// Gets the length of the data block.
@@ -722,7 +722,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64<T> : ResourceSystemBlock where T : IResourceSystemBlock, new()
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64<T> : ResourceSystemBlock, IResourceNoCacheBlock where T : IResourceSystemBlock, new()
     {
         public override long BlockLength
         {
@@ -814,7 +814,7 @@ namespace CodeWalker.GameFiles
             return "(Count: " + EntriesCount.ToString() + ")";
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_s<T> : ResourceSystemBlock where T : struct
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_s<T> : ResourceSystemBlock, IResourceNoCacheBlock where T : struct
     {
         public override long BlockLength
         {
@@ -892,7 +892,7 @@ namespace CodeWalker.GameFiles
             return "(Count: " + EntriesCount.ToString() + ")";
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64b_s<T> : ResourceSystemBlock where T : struct
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64b_s<T> : ResourceSystemBlock, IResourceNoCacheBlock where T : struct
     {
         //this version uses uints for the count/cap!
 
@@ -972,7 +972,7 @@ namespace CodeWalker.GameFiles
             return "(Count: " + EntriesCount.ToString() + ")";
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_byte : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_byte : ResourceSystemBlock, IResourceNoCacheBlock
     {
         public override long BlockLength
         {
@@ -1050,7 +1050,7 @@ namespace CodeWalker.GameFiles
             return "(Count: " + EntriesCount.ToString() + ")";
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_ushort : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_ushort : ResourceSystemBlock, IResourceNoCacheBlock
     {
         public override long BlockLength
         {
@@ -1128,7 +1128,7 @@ namespace CodeWalker.GameFiles
             return "(Count: " + EntriesCount.ToString() + ")";
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_uint : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_uint : ResourceSystemBlock, IResourceNoCacheBlock
     {
         public override long BlockLength
         {
@@ -1206,7 +1206,7 @@ namespace CodeWalker.GameFiles
             return "(Count: " + EntriesCount.ToString() + ")";
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_ulong : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_ulong : ResourceSystemBlock, IResourceNoCacheBlock
     {
         public override long BlockLength
         {
@@ -1284,7 +1284,7 @@ namespace CodeWalker.GameFiles
             return "(Count: " + EntriesCount.ToString() + ")";
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_float : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceSimpleList64_float : ResourceSystemBlock, IResourceNoCacheBlock
     {
         public override long BlockLength
         {

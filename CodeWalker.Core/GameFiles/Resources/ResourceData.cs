@@ -50,7 +50,7 @@ namespace CodeWalker.GameFiles
 
         // this is a dictionary that contains all the resource blocks
         // which were read from this resource reader
-        private Dictionary<long, List<IResourceBlock>> blockPool;
+        public Dictionary<long, IResourceBlock> blockPool = new Dictionary<long, IResourceBlock>();
 
         /// <summary>
         /// Gets the length of the underlying stream.
@@ -80,7 +80,6 @@ namespace CodeWalker.GameFiles
         {
             this.systemStream = systemStream;
             this.graphicsStream = graphicsStream;
-            this.blockPool = new Dictionary<long, List<IResourceBlock>>();
         }
 
         public ResourceDataReader(RpfResourceFileEntry resentry, byte[] data, Endianess endianess = Endianess.LittleEndian)
@@ -105,16 +104,14 @@ namespace CodeWalker.GameFiles
 
             this.systemStream = new MemoryStream(data, 0, systemSize);
             this.graphicsStream = new MemoryStream(data, systemSize, graphicsSize);
-            this.blockPool = new Dictionary<long, List<IResourceBlock>>();
             Position = 0x50000000;
         }
 
         public ResourceDataReader(int systemSize, int graphicsSize, byte[] data, Endianess endianess = Endianess.LittleEndian)
-    : base((Stream)null, endianess)
+            : base((Stream)null, endianess)
         {
             this.systemStream = new MemoryStream(data, 0, systemSize);
             this.graphicsStream = new MemoryStream(data, systemSize, graphicsSize);
-            this.blockPool = new Dictionary<long, List<IResourceBlock>>();
             Position = 0x50000000;
         }
 
@@ -171,20 +168,24 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public T ReadBlock<T>(params object[] parameters) where T : IResourceBlock, new()
         {
-            // make sure to return the same object if the same
-            // block is read again...
-            if (blockPool.ContainsKey(Position))
+            var usepool = !typeof(IResourceNoCacheBlock).IsAssignableFrom(typeof(T));
+            if (usepool)
             {
-                var blocks = blockPool[Position];
-                foreach (var block in blocks)
-                    if (block is T)
+                // make sure to return the same object if the same
+                // block is read again...
+                if (blockPool.ContainsKey(Position))
+                {
+                    var block = blockPool[Position];
+                    if (block is T tblk)
                     {
                         Position += block.BlockLength;
-
-                        // since a resource block of the same type
-                        // has been found at the same address, return it
-                        return (T)block;
+                        return tblk;
                     }
+                    else
+                    {
+                        usepool = false;
+                    }
+                }
             }
 
             var result = new T();
@@ -192,30 +193,25 @@ namespace CodeWalker.GameFiles
 
             // replace with correct type...
             if (result is IResourceXXSystemBlock)
+            {
                 result = (T)((IResourceXXSystemBlock)result).GetType(this, parameters);
+            }
 
             if (result == null)
             {
                 return default(T);
             }
 
-
-            // add block to the block pool...
-            if (blockPool.ContainsKey(Position))
+            if (usepool)
             {
-                blockPool[Position].Add(result);
-            }
-            else
-            {
-                var blocks = new List<IResourceBlock>();
-                blocks.Add(result);
-                blockPool.Add(Position, blocks);
+                blockPool[Position] = result;
             }
 
             var classPosition = Position;
             result.Read(this, parameters);
             //result.Position = classPosition; //TODO: need this if writing stuff!
-            return (T)result;
+
+            return result;
         }
 
         /// <summary>
@@ -595,6 +591,11 @@ namespace CodeWalker.GameFiles
     { }
 
 
+    /// <summary>
+    /// Represents a data block that won't get cached while loading. Used for 0-length object parts
+    /// </summary>
+    public interface IResourceNoCacheBlock : IResourceBlock
+    { }
 
 
 
