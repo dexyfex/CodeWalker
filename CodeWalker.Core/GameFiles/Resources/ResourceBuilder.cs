@@ -20,86 +20,166 @@ namespace CodeWalker.GameFiles
         {
             var systemBlocks = new HashSet<IResourceBlock>();
             var graphicBlocks = new HashSet<IResourceBlock>();
-            var protectedBlocks = new List<IResourceBlock>();
-
-            var stack = new Stack<IResourceBlock>();
-            stack.Push(rootBlock);
-
             var processed = new HashSet<IResourceBlock>();
-            processed.Add(rootBlock);
 
-            while (stack.Count > 0)
+
+
+            //var protectedBlocks = new List<IResourceBlock>();
+            //var stack = new Stack<IResourceBlock>();
+            //stack.Push(rootBlock);
+            //processed.Add(rootBlock);
+            //while (stack.Count > 0)
+            //{
+            //    var block = stack.Pop();
+            //    if (block == null)
+            //        continue;
+            //    if (block is IResourceSystemBlock)
+            //    {
+            //        if (!systemBlocks.Contains(block))
+            //            systemBlocks.Add(block);
+            //        // for system blocks, also process references...
+            //        var references = ((IResourceSystemBlock)block).GetReferences();
+            //        //Array.Reverse(references);
+            //        foreach (var reference in references)
+            //            if (!processed.Contains(reference))
+            //            {
+            //                stack.Push(reference);
+            //                processed.Add(reference);
+            //            }
+            //        var subs = new Stack<IResourceSystemBlock>();
+            //        foreach (var part in ((IResourceSystemBlock)block).GetParts())
+            //            subs.Push((IResourceSystemBlock)part.Item2);
+            //        while (subs.Count > 0)
+            //        {
+            //            var sub = subs.Pop();
+            //            foreach (var x in sub.GetReferences())
+            //                if (!processed.Contains(x))
+            //                {
+            //                    stack.Push(x);
+            //                    processed.Add(x);
+            //                }
+            //            foreach (var x in sub.GetParts())
+            //                subs.Push((IResourceSystemBlock)x.Item2);
+            //            protectedBlocks.Add(sub);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        if (!graphicBlocks.Contains(block))
+            //            graphicBlocks.Add(block);
+            //    }
+            //}
+            //// there are now sys-blocks in the list that actually
+            //// only substructures and therefore must not get
+            //// a new position!
+            //// -> remove them from the list
+            //foreach (var q in protectedBlocks)
+            //    if (systemBlocks.Contains(q))
+            //        systemBlocks.Remove(q);
+
+
+
+
+
+
+
+
+
+
+            void addBlock(IResourceBlock block)
             {
-                var block = stack.Pop();
-                if (block == null)
-                    continue;
-
                 if (block is IResourceSystemBlock)
                 {
-                    if (!systemBlocks.Contains(block))
-                        systemBlocks.Add(block);
-
-                    // for system blocks, also process references...
-
-                    var references = ((IResourceSystemBlock)block).GetReferences();
-                    //Array.Reverse(references);
+                    if (!systemBlocks.Contains(block)) systemBlocks.Add(block);
+                }
+                else if(block is IResourceGraphicsBlock)
+                {
+                    if (!graphicBlocks.Contains(block)) graphicBlocks.Add(block);
+                }
+            }
+            void addChildren(IResourceBlock block)
+            {
+                if (block is IResourceSystemBlock sblock)
+                {
+                    var references = sblock.GetReferences();
                     foreach (var reference in references)
+                    {
                         if (!processed.Contains(reference))
                         {
-                            stack.Push(reference);
                             processed.Add(reference);
+                            addBlock(reference);
+                            addChildren(reference);
                         }
-                    var subs = new Stack<IResourceSystemBlock>();
-                    foreach (var part in ((IResourceSystemBlock)block).GetParts())
-                        subs.Push((IResourceSystemBlock)part.Item2);
-                    while (subs.Count > 0)
-                    {
-                        var sub = subs.Pop();
-
-                        foreach (var x in sub.GetReferences())
-                            if (!processed.Contains(x))
-                            {
-                                stack.Push(x);
-                                processed.Add(x);
-                            }
-                        foreach (var x in sub.GetParts())
-                            subs.Push((IResourceSystemBlock)x.Item2);
-
-                        protectedBlocks.Add(sub);
                     }
-
-                }
-                else
-                {
-                    if (!graphicBlocks.Contains(block))
-                        graphicBlocks.Add(block);
+                    var parts = sblock.GetParts();
+                    foreach (var part in parts)
+                    {
+                        addChildren(part.Item2);
+                    }
                 }
             }
 
-            //var result = new List<IResourceBlock>();
-            //result.AddRange(systemBlocks);
-            //result.AddRange(graphicBlocks);
-            //return result;
+            addBlock(rootBlock);
+            addChildren(rootBlock);
 
-            // there are now sys-blocks in the list that actually
-            // only substructures and therefore must not get
-            // a new position!
-            // -> remove them from the list
-            foreach (var q in protectedBlocks)
-                if (systemBlocks.Contains(q))
-                    systemBlocks.Remove(q);
+
+
 
 
             sys = new List<IResourceBlock>();
             foreach (var s in systemBlocks)
+            {
                 sys.Add(s);
+            }
             gfx = new List<IResourceBlock>();
             foreach (var s in graphicBlocks)
+            {
                 gfx.Add(s);
+            }
         }
 
         public static void AssignPositions(IList<IResourceBlock> blocks, uint basePosition, ref int pageSize, out int pageCount)
         {
+
+            IResourceBlock getFirstBlock()
+            {
+                if (blocks.Count > 0)
+                {
+                    return blocks[0];
+                }
+                return null;
+            }
+            HashSet<IResourceBlock> getBlockSet()
+            {
+                var blockset = new HashSet<IResourceBlock>();
+                for (int i = 1; i < blocks.Count; i++)
+                {
+                    blockset.Add(blocks[i]);
+                }
+                return blockset;
+            }
+            IResourceBlock takeBestBlock(long maxSize, HashSet<IResourceBlock> blockset)
+            {
+                if (maxSize <= 0) return null;
+                IResourceBlock r = null;
+                long rlen = 0;
+                foreach (var block in blockset)
+                {
+                    var blockLength = block.BlockLength;
+                    if ((blockLength <= maxSize) && (blockLength > rlen))
+                    {
+                        r = block;
+                        rlen = blockLength;
+                    }
+                }
+                if (r != null)
+                {
+                    blockset.Remove(r);
+                }
+                return r;
+            }
+
+
             // find largest structure
             long largestBlockSize = 0;
             foreach (var block in blocks)
@@ -113,41 +193,76 @@ namespace CodeWalker.GameFiles
             while (currentPageSize < largestBlockSize)
                 currentPageSize *= 2;
 
-            long currentPageCount;
-            long currentPosition;
+            long currentPageCount = 0;
+            long currentPosition = 0;
             while (true)
             {
-                currentPageCount = 0;
-                currentPosition = 0;
+                if (blocks.Count == 0) break;
 
                 // reset all positions
                 foreach (var block in blocks)
                     block.FilePosition = -1;
 
-                foreach (var block in blocks)
+                //currentPageCount = 0;
+                //currentPosition = 0;
+                //foreach (var block in blocks)
+                //{
+                //    //if (block.FilePosition != -1)
+                //    //    throw new Exception("Block was already assigned a position!");
+                //    //if (block.Length == 0)
+                //    //    throw new Exception("A length of 0 is not allowed!");
+                //
+                //    // check if new page is necessary...
+                //    // if yes, add a new page and align to it
+                //    long maxSpace = currentPageCount * currentPageSize - currentPosition;
+                //    if (maxSpace < (block.BlockLength + SKIP_SIZE))
+                //    {
+                //        currentPageCount++;
+                //        currentPosition = currentPageSize * (currentPageCount - 1);
+                //    }
+                //
+                //    // set position
+                //    block.FilePosition = basePosition + currentPosition;
+                //    currentPosition += block.BlockLength + SKIP_SIZE;
+                //
+                //    // align...
+                //    if ((currentPosition % ALIGN_SIZE) != 0)
+                //        currentPosition += (ALIGN_SIZE - (currentPosition % ALIGN_SIZE));
+                //}
+
+
+
+                currentPageCount = 1;
+                currentPosition = 0;
+                var blockset = getBlockSet();
+                while (true)
                 {
-                    if (block.FilePosition != -1)
-                        throw new Exception("Block was already assigned a position!");
-                    //if (block.Length == 0)
-                    //    throw new Exception("A length of 0 is not allowed!");
-
-                    // check if new page is necessary...
-                    // if yes, add a new page and align to it
-                    long maxSpace = currentPageCount * currentPageSize - currentPosition;
-                    if (maxSpace < (block.BlockLength + SKIP_SIZE))
+                    var maxSize = currentPageCount * currentPageSize - currentPosition;
+                    var isroot = (currentPosition == 0);
+                    var block = isroot ? getFirstBlock() : takeBestBlock(maxSize, blockset);
+                    if (block != null)
                     {
-                        currentPageCount++;
-                        currentPosition = currentPageSize * (currentPageCount - 1);
+                        block.FilePosition = basePosition + currentPosition;
+
+                        currentPosition += block.BlockLength;
+
+                        if ((currentPosition % ALIGN_SIZE) != 0)
+                        {
+                            currentPosition += (ALIGN_SIZE - (currentPosition % ALIGN_SIZE));
+                        }
                     }
-
-                    // set position
-                    block.FilePosition = basePosition + currentPosition;
-                    currentPosition += block.BlockLength + SKIP_SIZE;
-
-                    // align...
-                    if ((currentPosition % ALIGN_SIZE) != 0)
-                        currentPosition += (ALIGN_SIZE - (currentPosition % ALIGN_SIZE));
+                    else if (blockset.Count > 0)
+                    {
+                        currentPosition = currentPageSize * currentPageCount;
+                        currentPageCount++;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
+
+
 
                 // break if everything fits...
                 if (currentPageCount < 128)
