@@ -106,6 +106,7 @@ namespace CodeWalker.GameFiles
 
         public YftFile Yft { get; set; }
 
+        //public ResourceAnalyzer Analyzer { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -196,6 +197,7 @@ namespace CodeWalker.GameFiles
 
             AssignChildrenShaders();
 
+            //Analyzer = new ResourceAnalyzer(reader);
 
 
             ////just testing!!
@@ -303,8 +305,6 @@ namespace CodeWalker.GameFiles
             //    default:
             //        break;//no hit
             //}
-
-
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
