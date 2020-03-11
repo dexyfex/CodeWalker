@@ -60,7 +60,7 @@ namespace CodeWalker.GameFiles
                 item.GraphicsBlock = kvp.Value as ResourceGraphicsBlock;
                 if (kvp.Value is ResourcePagesInfo rpi)
                 {
-                    item.Length = 20 + (rpi.SystemPagesCount + rpi.GraphicsPagesCount) * 8;
+                    item.Length = 16 + (rpi.SystemPagesCount + rpi.GraphicsPagesCount) * 8;
                 }
                 dlist.Add(item);
             }
@@ -93,8 +93,14 @@ namespace CodeWalker.GameFiles
 
             var dlist2 = new List<ResourceAnalyzerItem>();
             long pos = 0;
+            bool gfx = false;
             foreach (var item in dlist)
             {
+                if ((item.GraphicsBlock != null) && (!gfx))
+                {
+                    pos = 0;
+                    gfx = true;
+                }
                 if (item.Offset > pos)
                 {
                     var gap = new ResourceAnalyzerItem();
