@@ -416,6 +416,7 @@ namespace CodeWalker.GameFiles
             Position = newpos;
             var result = ReadString();
             Position = lastpos;
+            arrayPool[newpos] = result;
             return result;
         }
 

@@ -22,6 +22,7 @@ namespace CodeWalker.GameFiles
             public ResourceSystemBlock SystemBlock { get; set; }
             public ResourceGraphicsBlock GraphicsBlock { get; set; }
             public Array Array { get; set; }
+            public string String { get; set; }
 
 
             public override string ToString()
@@ -31,13 +32,17 @@ namespace CodeWalker.GameFiles
                 {
                     type = SystemBlock.GetType().Name;
                 }
-                if (GraphicsBlock != null)
+                else if (GraphicsBlock != null)
                 {
                     type = GraphicsBlock.GetType().Name;
                 }
-                if (Array != null)
+                else if (Array != null)
                 {
                     type = Array.GetType().Name + " (" + Array.Length.ToString() + ")";
+                }
+                else if (String != null)
+                {
+                    type = "string - \"" + String + "\"";
                 }
                 return Offset.ToString() + " - " + Length.ToString() + " - " + type + (Overlapping ? "   (embedded)" : "");
             }
@@ -53,6 +58,10 @@ namespace CodeWalker.GameFiles
                 item.Length = kvp.Value.BlockLength;
                 item.SystemBlock = kvp.Value as ResourceSystemBlock;
                 item.GraphicsBlock = kvp.Value as ResourceGraphicsBlock;
+                if (kvp.Value is ResourcePagesInfo rpi)
+                {
+                    item.Length = 20 + (rpi.SystemPagesCount + rpi.GraphicsPagesCount) * 8;
+                }
                 dlist.Add(item);
             }
             foreach (var kvp in reader.arrayPool)
@@ -65,6 +74,14 @@ namespace CodeWalker.GameFiles
                     var typ = item.Array.GetType().GetElementType();
                     var siz = Marshal.SizeOf(typ);
                     item.Length = item.Array.Length * siz;
+                }
+                else
+                {
+                    item.String = kvp.Value as string;
+                    if (item.String != null)
+                    {
+                        item.Length = item.String.Length + 1;
+                    }
                 }
                 dlist.Add(item);
             }
@@ -90,7 +107,10 @@ namespace CodeWalker.GameFiles
                 {
                     dlist2.Add(item);
                     pos = item.Offset + item.Length;
-                    if ((pos % 16) != 0) pos += (16 - (pos % 16));//ignore alignment paddings
+                    if (item.String == null)
+                    {
+                        if ((pos % 16) != 0) pos += (16 - (pos % 16));//ignore alignment paddings
+                    }
                 }
                 else
                 {
