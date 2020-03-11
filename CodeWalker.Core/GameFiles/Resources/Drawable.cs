@@ -294,7 +294,8 @@ namespace CodeWalker.GameFiles
             // read reference data
             this.ParametersList = reader.ReadBlockAt<ShaderParametersBlock>(
                 this.ParametersPointer, // offset
-                this.ParameterCount
+                this.ParameterCount,
+                this
             );
 
             //// just testing...
@@ -378,6 +379,7 @@ namespace CodeWalker.GameFiles
             if (pnode != null)
             {
                 ParametersList = new ShaderParametersBlock();
+                ParametersList.Owner = this;
                 ParametersList.ReadXml(pnode);
 
                 ParameterCount = (byte)ParametersList.Count;
@@ -442,7 +444,17 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                long offset = 0;
+                var bsize = BaseSize;
+                var psize = ParametersDataSize;
+                return bsize + psize*4;
+            }
+        }
+
+        public long BaseSize
+        {
+            get
+            {
+                long offset = 32;
                 foreach (var x in Parameters)
                 {
                     offset += 16;
@@ -450,11 +462,9 @@ namespace CodeWalker.GameFiles
                 }
 
                 offset += Parameters.Length * 4;
-
                 return offset;
             }
         }
-
         public ushort ParametersSize
         {
             get
@@ -471,8 +481,9 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                ushort size = (ushort)(BlockLength + 36);//TODO: figure out how to calculate this correctly!!
-                return size;
+                var size = BaseSize;
+                if ((size % 16) != 0) size += (16 - (size % 16));
+                return (ushort)size;
             }
         }
 
@@ -493,11 +504,14 @@ namespace CodeWalker.GameFiles
         public MetaName[] Hashes { get; set; }
         public int Count { get; set; }
 
+        public ShaderFX Owner { get; set; }
+
         private ResourceSystemStructBlock<Vector4>[] ParameterDataBlocks = null;
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             Count = Convert.ToInt32(parameters[0]);
+            Owner = parameters[1] as ShaderFX;
 
             var paras = new List<ShaderParameter>();
             for (int i = 0; i < Count; i++)
@@ -543,16 +557,27 @@ namespace CodeWalker.GameFiles
             Hashes = hashes.ToArray();
 
 
-            //####### TODO: investigate missing data here!!! #######
-            //var bytes = reader.ReadBytes(142 * Count);
-            //if (bytes != null)
+            ////testing padding area at the end of the block...
+            //var psiz1 = Owner.ParameterDataSize;
+            //var psiz2 = ParametersDataSize;
+            //if (psiz1 != psiz2)
+            //{ }//no hit
+            //var unk0 = reader.ReadStructs<MetaHash>(8);
+            //foreach (var u0i in unk0)
             //{
-            //    for (int i = 0; i < bytes.Length; i++)
+            //    if (u0i != 0)
+            //    { }//no hit
+            //}
+            //if (Owner.Unknown_12h != 0)
+            //{
+            //    var unk1 = reader.ReadStructs<MetaHash>(psiz1);
+            //    foreach (var u1i in unk1)
             //    {
-            //        if (bytes[i] != 0)
-            //        { break; }
+            //        if (u1i != 0)
+            //        { break; }//no hit
             //    }
             //}
+
 
             //// just testing...
             //for (int i = 0; i < Parameters.Length; i++)
@@ -652,6 +677,12 @@ namespace CodeWalker.GameFiles
             {
                 writer.Write((uint)h);
             }
+
+
+            //write end padding stuff
+            var psiz = ParametersDataSize;
+            writer.Write(new byte[32 + psiz*4]);
+
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -4473,6 +4504,11 @@ namespace CodeWalker.GameFiles
         private string_r NameBlock = null;//only used when saving..
 
 
+#if DEBUG
+        public ResourceAnalyzer Analyzer { get; set; }
+#endif
+
+
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
@@ -4508,6 +4544,12 @@ namespace CodeWalker.GameFiles
 
             if (UnkPointer != 0)
             { }
+
+
+#if DEBUG
+            Analyzer = new ResourceAnalyzer(reader);
+#endif
+
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
