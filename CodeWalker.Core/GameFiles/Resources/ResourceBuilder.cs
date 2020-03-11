@@ -244,7 +244,7 @@ namespace CodeWalker.GameFiles
                     {
                         block.FilePosition = basePosition + currentPosition;
 
-                        currentPosition += block.BlockLength + SKIP_SIZE;
+                        currentPosition += block.BlockLength;
 
                         if ((currentPosition % ALIGN_SIZE) != 0)
                         {

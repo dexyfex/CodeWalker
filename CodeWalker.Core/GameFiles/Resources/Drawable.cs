@@ -543,6 +543,17 @@ namespace CodeWalker.GameFiles
             Hashes = hashes.ToArray();
 
 
+            //####### TODO: investigate missing data here!!! #######
+            //var bytes = reader.ReadBytes(142 * Count);
+            //if (bytes != null)
+            //{
+            //    for (int i = 0; i < bytes.Length; i++)
+            //    {
+            //        if (bytes[i] != 0)
+            //        { break; }
+            //    }
+            //}
+
             //// just testing...
             //for (int i = 0; i < Parameters.Length; i++)
             //{
@@ -661,7 +672,6 @@ namespace CodeWalker.GameFiles
                     {
                         YdrXml.OpenTag(sb, indent, otstr);
                         YdrXml.StringTag(sb, cind, "Name", YdrXml.XmlEscape(tex.Name));
-                        YdrXml.ValueTag(sb, cind, "Unk32", tex.Unknown_32h.ToString());
                         YdrXml.CloseTag(sb, indent, "Item");
                     }
                     else
@@ -715,6 +725,7 @@ namespace CodeWalker.GameFiles
                     {
                         var tex = new TextureBase();
                         tex.ReadXml(pnode, null);//embedded textures will get replaced in ShaderFX ReadXML
+                        tex.Unknown_32h = 2;
                         p.Data = tex;
                     }
                 }

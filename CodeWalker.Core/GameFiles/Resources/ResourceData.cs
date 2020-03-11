@@ -51,6 +51,7 @@ namespace CodeWalker.GameFiles
         // this is a dictionary that contains all the resource blocks
         // which were read from this resource reader
         public Dictionary<long, IResourceBlock> blockPool = new Dictionary<long, IResourceBlock>();
+        public Dictionary<long, object> arrayPool = new Dictionary<long, object>();
 
         /// <summary>
         /// Gets the length of the underlying stream.
@@ -207,9 +208,7 @@ namespace CodeWalker.GameFiles
                 blockPool[Position] = result;
             }
 
-            var classPosition = Position;
             result.Read(this, parameters);
-            //result.Position = classPosition; //TODO: need this if writing stuff!
 
             return result;
         }
@@ -244,6 +243,7 @@ namespace CodeWalker.GameFiles
             Position = pos;
             var result = ReadBytes((int)count);
             Position = posbackup;
+            arrayPool[(long)position] = result;
             return result;
         }
         public ushort[] ReadUshortsAt(ulong position, uint count)
@@ -263,6 +263,9 @@ namespace CodeWalker.GameFiles
             //    result2[i] = ReadUInt16();
             //}
             //Position = posbackup;
+
+            arrayPool[(long)position] = result;
+
             return result;
         }
         public short[] ReadShortsAt(ulong position, uint count)
@@ -272,6 +275,9 @@ namespace CodeWalker.GameFiles
             var length = count * 2;
             byte[] data = ReadBytesAt(position, length);
             Buffer.BlockCopy(data, 0, result, 0, (int)length);
+
+            arrayPool[(long)position] = result;
+
             return result;
         }
         public uint[] ReadUintsAt(ulong position, uint count)
@@ -291,6 +297,9 @@ namespace CodeWalker.GameFiles
             //    result[i] = ReadUInt32();
             //}
             //Position = posbackup;
+
+            arrayPool[(long)position] = result;
+
             return result;
         }
         public ulong[] ReadUlongsAt(ulong position, uint count)
@@ -310,6 +319,9 @@ namespace CodeWalker.GameFiles
             //    result[i] = ReadUInt64();
             //}
             //Position = posbackup;
+
+            arrayPool[(long)position] = result;
+
             return result;
         }
         public float[] ReadFloatsAt(ulong position, uint count)
@@ -329,6 +341,9 @@ namespace CodeWalker.GameFiles
             //    result[i] = ReadSingle();
             //}
             //Position = posbackup;
+
+            arrayPool[(long)position] = result;
+
             return result;
         }
         public T[] ReadStructsAt<T>(ulong position, uint count)//, uint structsize)
@@ -350,6 +365,8 @@ namespace CodeWalker.GameFiles
                 result[i] = Marshal.PtrToStructure<T>(h + (int)(i * structsize));
             }
             handle.Free();
+
+            arrayPool[(long)position] = result;
 
             return result;
         }
@@ -592,7 +609,7 @@ namespace CodeWalker.GameFiles
 
 
     /// <summary>
-    /// Represents a data block that won't get cached while loading. Used for 0-length object parts
+    /// Represents a data block that won't get cached while loading.
     /// </summary>
     public interface IResourceNoCacheBlock : IResourceBlock
     { }

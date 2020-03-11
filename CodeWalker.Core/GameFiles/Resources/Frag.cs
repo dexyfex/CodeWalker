@@ -106,7 +106,9 @@ namespace CodeWalker.GameFiles
 
         public YftFile Yft { get; set; }
 
-        //public ResourceAnalyzer Analyzer { get; set; }
+#if DEBUG
+        public ResourceAnalyzer Analyzer { get; set; }
+#endif
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -197,8 +199,9 @@ namespace CodeWalker.GameFiles
 
             AssignChildrenShaders();
 
-            //Analyzer = new ResourceAnalyzer(reader);
-
+#if DEBUG
+            Analyzer = new ResourceAnalyzer(reader);
+#endif
 
             ////just testing!!
             //if (BoundingSphereRadius <= 0.0f)

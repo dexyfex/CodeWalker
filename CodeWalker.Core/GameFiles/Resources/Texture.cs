@@ -181,7 +181,7 @@ namespace CodeWalker.GameFiles
     {
         public override long BlockLength
         {
-            get { return 64; }
+            get { return 80; }
         }
 
         // structure data
@@ -201,12 +201,43 @@ namespace CodeWalker.GameFiles
         public uint Unknown_34h { get; set; } // 0x00000000
         public uint Unknown_38h { get; set; } // 0x00000000
         public uint Unknown_3Ch { get; set; } // 0x00000000
+        public uint UsageData { get; set; }
+        public uint Unknown_44h { get; set; } // 0x00000000
+        public uint ExtraFlags { get; set; } // 0, 1
+        public uint Unknown_4Ch { get; set; } // 0x00000000
 
         // reference data
         public string Name { get; set; }
         public uint NameHash { get; set; }
 
         private string_r NameBlock = null;
+
+
+
+        public TextureUsage Usage
+        {
+            get
+            {
+                return (TextureUsage)(UsageData & 0x1F);
+            }
+            set
+            {
+                UsageData = (UsageData & 0xFFFFFFE0) + (((uint)value) & 0x1F);
+            }
+        }
+        public TextureUsageFlags UsageFlags
+        {
+            get
+            {
+                return (TextureUsageFlags)(UsageData >> 5);
+            }
+            set
+            {
+                UsageData = (UsageData & 0x1F) + (((uint)value) << 5);
+            }
+        }
+
+
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -227,6 +258,12 @@ namespace CodeWalker.GameFiles
             this.Unknown_34h = reader.ReadUInt32();
             this.Unknown_38h = reader.ReadUInt32();
             this.Unknown_3Ch = reader.ReadUInt32();
+            this.UsageData = reader.ReadUInt32();
+            this.Unknown_44h = reader.ReadUInt32();
+            this.ExtraFlags = reader.ReadUInt32();
+            this.Unknown_4Ch = reader.ReadUInt32();
+
+
 
             // read reference data
             this.Name = reader.ReadStringAt( //BlockAt<string_r>(
@@ -238,21 +275,86 @@ namespace CodeWalker.GameFiles
                 NameHash = JenkHash.GenHash(Name.ToLowerInvariant());
             }
 
-            switch (Unknown_32h)
-            {
-                case 0x20:
-                case 0x28:
-                case 0x30:
-                case 0x38:
-                case 0x40:
-                case 0x48:
-                case 0x80:
-                case 0x90:
-                case 0x2://embedded
-                    break;
-                default:
-                    break;
-            }
+            //switch (Unknown_32h)
+            //{
+            //    case 0x20:
+            //    case 0x28:
+            //    case 0x30:
+            //    case 0x38:
+            //    case 0x40:
+            //    case 0x48:
+            //    case 0x80:
+            //    case 0x90:
+            //    case 0x2://base/shaderparam
+            //        break;
+            //    default:
+            //        break;//no hit
+            //}
+
+            //switch (Usage)
+            //{
+            //    case TextureUsage.UNKNOWN:// = 0,
+            //    case TextureUsage.DEFAULT:// = 1,
+            //    case TextureUsage.TERRAIN:// = 2,
+            //    case TextureUsage.CLOUDDENSITY:// = 3,
+            //    case TextureUsage.CLOUDNORMAL:// = 4,
+            //    case TextureUsage.CABLE:// = 5,
+            //    case TextureUsage.FENCE:// = 6,
+            //    case TextureUsage.SCRIPT:// = 8,
+            //    case TextureUsage.WATERFLOW:// = 9,
+            //    case TextureUsage.WATERFOAM:// = 10,
+            //    case TextureUsage.WATERFOG:// = 11,
+            //    case TextureUsage.WATEROCEAN:// = 12,
+            //    case TextureUsage.FOAMOPACITY:// = 14,
+            //    case TextureUsage.DIFFUSEMIPSHARPEN:// = 16,
+            //    case TextureUsage.DIFFUSEDARK:// = 18,
+            //    case TextureUsage.DIFFUSEALPHAOPAQUE:// = 19,
+            //    case TextureUsage.DIFFUSE:// = 20,
+            //    case TextureUsage.DETAIL:// = 21,
+            //    case TextureUsage.NORMAL:// = 22,
+            //    case TextureUsage.SPECULAR:// = 23,
+            //    case TextureUsage.EMISSIVE:// = 24,
+            //    case TextureUsage.TINTPALETTE:// = 25,
+            //    case TextureUsage.SKIPPROCESSING:// = 26,
+            //        break;
+            //    case TextureUsage.ENVEFF:// = 7, //unused by V
+            //    case TextureUsage.WATER:// = 13, //unused by V
+            //    case TextureUsage.FOAM:// = 15,  //unused by V
+            //    case TextureUsage.DIFFUSEDETAIL:// = 17, //unused by V
+            //    case TextureUsage.DONOTOPTIMIZE:// = 27, //unused by V
+            //    case TextureUsage.TEST:// = 28,  //unused by V
+            //    case TextureUsage.COUNT:// = 29, //unused by V
+            //        break;//no hit
+            //    default:
+            //        break;//no hit
+            //}
+
+            //var uf = UsageFlags;
+            //if ((uf & TextureUsageFlags.EMBEDDEDSCRIPTRT) > 0) // .ydr embedded script_rt textures, only 3 uses
+            //{ }
+            //if ((uf & TextureUsageFlags.UNK19) > 0)
+            //{ }//no hit
+            //if ((uf & TextureUsageFlags.UNK20) > 0)
+            //{ }//no hit
+            //if ((uf & TextureUsageFlags.UNK21) > 0)
+            //{ }//no hit
+            //if ((uf & TextureUsageFlags.UNK24) == 0)//wtf isthis? only 0 on special resident(?) textures and some reused ones
+            //{ }
+
+            //if (!(this is Texture))
+            //{
+            //    if (Unknown_32h != 0x2)//base/shaderparam
+            //    { }//no hit
+            //    if (UsageData != 0)
+            //    { }//no hit
+            //    if (Unknown_44h != 0)
+            //    { }//no hit
+            //    if (ExtraFlags != 0)
+            //    { }//no hit
+            //    if (Unknown_4Ch != 0)
+            //    { }//no hit
+            //}
+
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
@@ -276,17 +378,27 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_34h);
             writer.Write(this.Unknown_38h);
             writer.Write(this.Unknown_3Ch);
+            writer.Write(this.UsageData);
+            writer.Write(this.Unknown_44h);
+            writer.Write(this.ExtraFlags);
+            writer.Write(this.Unknown_4Ch);
         }
         public virtual void WriteXml(StringBuilder sb, int indent, string ddsfolder)
         {
             YtdXml.StringTag(sb, indent, "Name", YtdXml.XmlEscape(Name));
             YtdXml.ValueTag(sb, indent, "Unk32", Unknown_32h.ToString());
+            YtdXml.StringTag(sb, indent, "Usage", Usage.ToString());
+            YtdXml.StringTag(sb, indent, "UsageFlags", UsageFlags.ToString());
+            YtdXml.ValueTag(sb, indent, "ExtraFlags", ExtraFlags.ToString());
         }
         public virtual void ReadXml(XmlNode node, string ddsfolder)
         {
             Name = Xml.GetChildInnerText(node, "Name");
             NameHash = JenkHash.GenHash(Name?.ToLowerInvariant());
             Unknown_32h = (ushort)Xml.GetChildUIntAttribute(node, "Unk32", "value");
+            Usage = Xml.GetChildEnumInnerText<TextureUsage>(node, "Usage");
+            UsageFlags = Xml.GetChildEnumInnerText<TextureUsageFlags>(node, "UsageFlags");
+            ExtraFlags = Xml.GetChildUIntAttribute(node, "ExtraFlags", "value");
         }
 
 
@@ -315,10 +427,6 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public uint UsageData { get; set; }
-        public uint Unknown_44h { get; set; } // 0x00000000
-        public uint ExtraFlags { get; set; } // 0, 1
-        public uint Unknown_4Ch { get; set; } // 0x00000000
         public ushort Width { get; set; }
         public ushort Height { get; set; }
         public ushort Depth { get; set; } = 1;  //is depth > 1 supported?
@@ -338,29 +446,6 @@ namespace CodeWalker.GameFiles
         public uint Unknown_84h { get; set; } // 0x00000000
         public uint Unknown_88h { get; set; } // 0x00000000
         public uint Unknown_8Ch { get; set; } // 0x00000000
-
-        public TextureUsage Usage
-        {
-            get
-            {
-                return (TextureUsage)(UsageData & 0x1F);
-            }
-            set
-            {
-                UsageData = (UsageData & 0xFFFFFFE0) + (((uint)value) & 0x1F);
-            }
-        }
-        public TextureUsageFlags UsageFlags
-        {
-            get
-            {
-                return (TextureUsageFlags)(UsageData >> 5);
-            }
-            set
-            {
-                UsageData = (UsageData & 0x1F) + (((uint)value) << 5);
-            }
-        }
 
 
         // reference data
@@ -384,10 +469,6 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.UsageData = reader.ReadUInt32();
-            this.Unknown_44h = reader.ReadUInt32();
-            this.ExtraFlags = reader.ReadUInt32();
-            this.Unknown_4Ch = reader.ReadUInt32();
             this.Width = reader.ReadUInt16();
             this.Height = reader.ReadUInt16();
             this.Depth = reader.ReadUInt16();
@@ -411,56 +492,6 @@ namespace CodeWalker.GameFiles
             // read reference data
             this.Data = reader.ReadBlockAt<TextureData>(this.DataPointer, this.Format, this.Width, this.Height, this.Levels, this.Stride);
 
-
-            switch (Usage)
-            {
-                case TextureUsage.UNKNOWN:// = 0,
-                case TextureUsage.DEFAULT:// = 1,
-                case TextureUsage.TERRAIN:// = 2,
-                case TextureUsage.CLOUDDENSITY:// = 3,
-                case TextureUsage.CLOUDNORMAL:// = 4,
-                case TextureUsage.CABLE:// = 5,
-                case TextureUsage.FENCE:// = 6,
-                case TextureUsage.SCRIPT:// = 8,
-                case TextureUsage.WATERFLOW:// = 9,
-                case TextureUsage.WATERFOAM:// = 10,
-                case TextureUsage.WATERFOG:// = 11,
-                case TextureUsage.WATEROCEAN:// = 12,
-                case TextureUsage.FOAMOPACITY:// = 14,
-                case TextureUsage.DIFFUSEMIPSHARPEN:// = 16,
-                case TextureUsage.DIFFUSEDARK:// = 18,
-                case TextureUsage.DIFFUSEALPHAOPAQUE:// = 19,
-                case TextureUsage.DIFFUSE:// = 20,
-                case TextureUsage.DETAIL:// = 21,
-                case TextureUsage.NORMAL:// = 22,
-                case TextureUsage.SPECULAR:// = 23,
-                case TextureUsage.EMISSIVE:// = 24,
-                case TextureUsage.TINTPALETTE:// = 25,
-                case TextureUsage.SKIPPROCESSING:// = 26,
-                    break;
-                case TextureUsage.ENVEFF:// = 7, //unused by V
-                case TextureUsage.WATER:// = 13, //unused by V
-                case TextureUsage.FOAM:// = 15,  //unused by V
-                case TextureUsage.DIFFUSEDETAIL:// = 17, //unused by V
-                case TextureUsage.DONOTOPTIMIZE:// = 27, //unused by V
-                case TextureUsage.TEST:// = 28,  //unused by V
-                case TextureUsage.COUNT:// = 29, //unused by V
-                    break;
-                default:
-                    break;
-            }
-
-            var uf = UsageFlags;
-            if ((uf & TextureUsageFlags.EMBEDDEDSCRIPTRT) > 0) // .ydr embedded script_rt textures, only 3 uses
-            { }
-            if ((uf & TextureUsageFlags.UNK19) > 0)
-            { }
-            if ((uf & TextureUsageFlags.UNK20) > 0)
-            { }
-            if ((uf & TextureUsageFlags.UNK21) > 0)
-            { }
-            if ((uf & TextureUsageFlags.UNK24) == 0)//wtf isthis? only 0 on special resident(?) textures and some reused ones
-            { }
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
@@ -469,10 +500,6 @@ namespace CodeWalker.GameFiles
             this.DataPointer = (ulong)this.Data.FilePosition;
 
             // write structure data
-            writer.Write(this.UsageData);
-            writer.Write(this.Unknown_44h);
-            writer.Write(this.ExtraFlags);
-            writer.Write(this.Unknown_4Ch);
             writer.Write(this.Width);
             writer.Write(this.Height);
             writer.Write(this.Depth);
@@ -500,9 +527,6 @@ namespace CodeWalker.GameFiles
             YtdXml.ValueTag(sb, indent, "Height", Height.ToString());
             YtdXml.ValueTag(sb, indent, "MipLevels", Levels.ToString());
             YtdXml.StringTag(sb, indent, "Format", Format.ToString());
-            YtdXml.StringTag(sb, indent, "Usage", Usage.ToString());
-            YtdXml.StringTag(sb, indent, "UsageFlags", UsageFlags.ToString());
-            YtdXml.ValueTag(sb, indent, "ExtraFlags", ExtraFlags.ToString());
             YtdXml.StringTag(sb, indent, "FileName", YtdXml.XmlEscape((Name ?? "null") + ".dds"));
 
             try
@@ -527,9 +551,6 @@ namespace CodeWalker.GameFiles
             Height = (ushort)Xml.GetChildUIntAttribute(node, "Height", "value");
             Levels = (byte)Xml.GetChildUIntAttribute(node, "MipLevels", "value");
             Format = Xml.GetChildEnumInnerText<TextureFormat>(node, "Format");
-            Usage = Xml.GetChildEnumInnerText<TextureUsage>(node, "Usage");
-            UsageFlags = Xml.GetChildEnumInnerText<TextureUsageFlags>(node, "UsageFlags");
-            ExtraFlags = Xml.GetChildUIntAttribute(node, "ExtraFlags", "value");
             var filename = Xml.GetChildInnerText(node, "FileName");
 
             try

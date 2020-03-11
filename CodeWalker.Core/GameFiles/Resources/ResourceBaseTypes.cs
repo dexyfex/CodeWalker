@@ -1362,19 +1362,6 @@ namespace CodeWalker.GameFiles
             return "(Count: " + EntriesCount.ToString() + ")";
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct ResourceSimpleList64Ptr
-    {
-        // structure data
-        public ulong EntriesPointer { get; private set; }
-        public ushort EntriesCount { get; private set; }
-        public ushort EntriesCapacity { get; private set; }
-        public uint Unused1 { get; private set; }
-
-        public override string ToString()
-        {
-            return "(Count: " + EntriesCount.ToString() + ")";
-        }
-    }
 
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourcePointerArray64<T> : ResourceSystemBlock, IList<T> where T : IResourceSystemBlock, new()
