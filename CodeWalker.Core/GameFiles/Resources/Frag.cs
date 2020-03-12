@@ -2178,7 +2178,7 @@ namespace CodeWalker.GameFiles
         // reference data
         public FragPhysArticulatedBodyType ArticulatedBodyType { get; set; }
         public float[] ChildrenUnkFloats { get; set; }
-        public ResourcePointerArray64_s<FragPhysNameStruct_s> GroupNames { get; set; }
+        public FragPhysGroupNamesBlock GroupNames { get; set; }
         public ResourcePointerArray64<FragPhysTypeGroup> Groups { get; set; }
         public ResourcePointerArray64<FragPhysTypeChild> Children { get; set; }
         public FragPhysArchetype Archetype1 { get; set; }
@@ -2253,8 +2253,8 @@ namespace CodeWalker.GameFiles
             // read reference data
             this.ArticulatedBodyType = reader.ReadBlockAt<FragPhysArticulatedBodyType>(this.ArticulatedBodyTypePointer);
             this.ChildrenUnkFloats = reader.ReadFloatsAt(this.ChildrenUnkFloatsPointer, this.ChildrenCount);
-            this.GroupNames = reader.ReadBlockAt<ResourcePointerArray64_s<FragPhysNameStruct_s>>(this.GroupNamesPointer, this.GroupsCount);
             this.Groups = reader.ReadBlockAt<ResourcePointerArray64<FragPhysTypeGroup>>(this.GroupsPointer, this.GroupsCount);
+            this.GroupNames = reader.ReadBlockAt<FragPhysGroupNamesBlock>(this.GroupNamesPointer, this.GroupsCount, this.Groups?.data_items);
             this.Children = reader.ReadBlockAt<ResourcePointerArray64<FragPhysTypeChild>>(this.ChildrenPointer, this.ChildrenCount);
             this.Archetype1 = reader.ReadBlockAt<FragPhysArchetype>(this.Archetype1Pointer);
             this.Archetype2 = reader.ReadBlockAt<FragPhysArchetype>(this.Archetype2Pointer);
@@ -2377,8 +2377,6 @@ namespace CodeWalker.GameFiles
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            BuildGroupsData();
-
             // update structure data
             this.ArticulatedBodyTypePointer = (ulong)(this.ArticulatedBodyType != null ? this.ArticulatedBodyType.FilePosition : 0);
             this.ChildrenUnkFloatsPointer = (ulong)(this.ChildrenUnkFloatsBlock != null ? this.ChildrenUnkFloatsBlock.FilePosition : 0);
@@ -2399,16 +2397,6 @@ namespace CodeWalker.GameFiles
             this.GroupsCount = (byte)(this.Groups != null ? this.Groups.Count : 0);
             this.ChildrenCount = (byte)(this.Children != null ? this.Children.Count : 0);
             this.ChildrenCount2 = this.ChildrenCount;
-
-            if ((Groups?.data_items != null) && (GroupNames != null))
-            {
-                var gnplist = new List<ulong>();
-                foreach (var grp in Groups?.data_items)
-                {
-                    gnplist.Add((ulong)grp.FilePosition + 128);//manually write group names pointers as offsets to the groups
-                }
-                GroupNames.data_pointers = gnplist.ToArray();
-            }
 
 
             // write structure data
@@ -2664,8 +2652,9 @@ namespace CodeWalker.GameFiles
 
             if (grpnames.Count > 0)
             {
-                if (GroupNames == null) GroupNames = new ResourcePointerArray64_s<FragPhysNameStruct_s>();
+                if (GroupNames == null) GroupNames = new FragPhysGroupNamesBlock();
                 GroupNames.data_items = grpnames.ToArray();
+                GroupNames.Groups = Groups?.data_items;
             }
             else
             {
@@ -2712,7 +2701,6 @@ namespace CodeWalker.GameFiles
             }
             if (GroupNames != null)
             {
-                GroupNames.ManualPointerOverride = (Groups != null); //we'll just write a set of pointers into the Groups
                 list.Add(GroupNames);
             }
             return list.ToArray();
@@ -4196,6 +4184,108 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             return Name.ToString();
+        }
+
+    }
+
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class FragPhysGroupNamesBlock : ResourceSystemBlock
+    {
+
+        public override long BlockLength
+        {
+            get { return (data_items?.Length ?? 0) * 8 + 8; }
+        }
+
+
+        public ulong[] data_pointers { get; set; }
+        public FragPhysNameStruct_s[] data_items { get; set; }
+
+        public uint UnkVFT { get; set; } = 1095046985;
+        public uint UnkUint1 { get; set; } = 1;
+
+
+        public FragPhysTypeGroup[] Groups;//for writing purposes
+
+
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            int numElements = Convert.ToInt32(parameters[0]);
+            Groups = parameters[1] as FragPhysTypeGroup[];
+
+            data_pointers = new ulong[numElements];
+            for (int i = 0; i < numElements; i++)
+            {
+                data_pointers[i] = reader.ReadUInt64();
+            }
+
+            UnkVFT = reader.ReadUInt32();
+            UnkUint1 = reader.ReadUInt32();
+
+            //switch (UnkVFT)
+            //{
+            //    case 1095030569:
+            //    case 1080035264:
+            //    case 1080043424:
+            //    case 1080043456:
+            //    case 1079473328:
+            //    case 1079970608:
+            //    case 1079970704:
+            //    case 1079985584:
+            //    case 1079976016:
+            //    case 1080043488:
+            //    case 1079992976:
+            //    case 1095046985:
+            //    case 1095046905:
+            //        break;
+            //    default:
+            //        break;//no hit
+            //}
+            //switch (UnkUint1)
+            //{
+            //    case 1:
+            //        break;
+            //    default:
+            //        break;//no hit
+            //}
+
+            data_items = new FragPhysNameStruct_s[numElements];
+            for (int i = 0; i < numElements; i++)
+            {
+                data_items[i] = reader.ReadStructAt<FragPhysNameStruct_s>((long)data_pointers[i]);
+            }
+
+        }
+
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+
+
+            var gnplist = new List<ulong>();
+            foreach (var grp in Groups)
+            {
+                gnplist.Add((ulong)grp.FilePosition + 128);//manually write group names pointers as offsets to the groups
+            }
+            data_pointers = gnplist.ToArray();
+
+
+
+            foreach (var x in data_pointers)
+            {
+                writer.Write(x);
+            }
+
+            writer.Write(UnkVFT);
+            writer.Write(UnkUint1);
+
+        }
+
+
+
+
+        public override string ToString()
+        {
+            return "(Count: " + ((data_items != null) ? data_items.Length : 0).ToString() + ")";
         }
 
     }
