@@ -947,8 +947,8 @@ namespace CodeWalker.GameFiles
         public float Unknown_ACh { get; set; }
         public ulong VerticesPointer { get; set; }
         public ulong VertexColoursPointer { get; set; }
-        public ulong Unknown1CountsPointer { get; set; }
-        public ulong Unknown1DataPointer { get; set; }
+        public ulong OctantsPointer { get; set; }
+        public ulong OctantItemsPointer { get; set; }
         public uint VerticesCount { get; set; }
         public uint PolygonsCount { get; set; }
         public uint Unknown_D8h { get; set; } // 0x00000000
@@ -978,8 +978,7 @@ namespace CodeWalker.GameFiles
         public BoundPolygon[] Polygons { get; set; }
         public Vector3[] Vertices { get; set; }
         public BoundMaterialColour[] VertexColours { get; set; }//not sure, it seems like colours anyway, see eg. prologue03_10.ybn
-        public uint[] Unknown1Counts { get; set; }
-        public BoundGeomUnknown1 Unknown1Data { get; set; }
+        public BoundGeomOctants Octants { get; set; }
         public BoundMaterial_s[] Materials { get; set; }
         public BoundMaterialColour[] MaterialColours { get; set; }
         public byte[] PolygonMaterialIndices { get; set; }
@@ -988,7 +987,6 @@ namespace CodeWalker.GameFiles
         private ResourceSystemDataBlock PolygonsBlock = null;
         private ResourceSystemStructBlock<BoundVertex_s> VerticesBlock = null;
         private ResourceSystemStructBlock<BoundMaterialColour> VertexColoursBlock = null;
-        private ResourceSystemStructBlock<uint> Unknown1CountsBlock = null;
         private ResourceSystemStructBlock<BoundMaterial_s> MaterialsBlock = null;
         private ResourceSystemStructBlock<BoundMaterialColour> MaterialColoursBlock = null;
         private ResourceSystemStructBlock<byte> PolygonMaterialIndicesBlock = null;
@@ -1013,8 +1011,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_ACh = reader.ReadSingle();
             this.VerticesPointer = reader.ReadUInt64();
             this.VertexColoursPointer = reader.ReadUInt64();
-            this.Unknown1CountsPointer = reader.ReadUInt64();
-            this.Unknown1DataPointer = reader.ReadUInt64();
+            this.OctantsPointer = reader.ReadUInt64();
+            this.OctantItemsPointer = reader.ReadUInt64();
             this.VerticesCount = reader.ReadUInt32();
             this.PolygonsCount = reader.ReadUInt32();
             this.Unknown_D8h = reader.ReadUInt32();
@@ -1066,11 +1064,7 @@ namespace CodeWalker.GameFiles
 
             this.VertexColours = reader.ReadStructsAt<BoundMaterialColour>(this.VertexColoursPointer, this.VerticesCount);
 
-            this.Unknown1Counts = reader.ReadUintsAt(this.Unknown1CountsPointer, 8);//item counts
-            if (this.Unknown1Counts != null)
-            {
-                this.Unknown1Data = reader.ReadBlockAt<BoundGeomUnknown1>(this.Unknown1DataPointer, this.Unknown1Counts);
-            }
+            this.Octants = reader.ReadBlockAt<BoundGeomOctants>(this.OctantsPointer, this.OctantItemsPointer);
 
             this.Materials = reader.ReadStructsAt<BoundMaterial_s>(this.MaterialsPointer, this.MaterialsCount);
 
@@ -1080,21 +1074,27 @@ namespace CodeWalker.GameFiles
 
 
 
-            if (Vertices2Count != VerticesCount)
-            { }//no hit here
-            if (Unknown_9Ch != 0)
-            { }
-            if (Unknown_ACh != 0)
-            { }
+            //if (Vertices2Count != VerticesCount)
+            //{ }//no hit here
+            //if (Unknown_9Ch != 0)
+            //{ }
+            //if (Unknown_ACh != 0)
+            //{ }
 
-            switch (Unknown_82h)
-            {
-                case 0:
-                case 1://ybns
-                    break;
-                default://des_.ydr's? some extra data to read..?? is this some extra poly count?
-                    break;
-            }
+            //switch (Unknown_82h)
+            //{
+            //    case 0:
+            //    case 1://ybns
+            //        break;
+            //    default://des_.ydr's? some extra data to read..?? is this some extra poly count?
+            //        break;
+            //}
+
+            //if (OctantsPointer != 0)
+            //{
+            //    if (OctantItemsPointer != OctantsPointer + 32)
+            //    { }//no hit
+            //}
 
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -1106,8 +1106,8 @@ namespace CodeWalker.GameFiles
             this.PolygonsPointer = (ulong)(this.PolygonsBlock != null ? this.PolygonsBlock.FilePosition : 0);
             this.VerticesPointer = (ulong)(this.VerticesBlock != null ? this.VerticesBlock.FilePosition : 0);
             this.VertexColoursPointer = (ulong)(this.VertexColoursBlock != null ? this.VertexColoursBlock.FilePosition : 0);
-            this.Unknown1CountsPointer = (ulong)(this.Unknown1CountsBlock != null ? this.Unknown1CountsBlock.FilePosition : 0);
-            this.Unknown1DataPointer = (ulong)(this.Unknown1Data != null ? this.Unknown1Data.FilePosition : 0);
+            this.OctantsPointer = (ulong)(this.Octants != null ? this.Octants.FilePosition : 0);
+            this.OctantItemsPointer = (OctantsPointer != 0) ? OctantsPointer + 32 : 0;
             this.VerticesCount = (uint)(this.VerticesBlock != null ? this.VerticesBlock.ItemCount : 0);
             this.Vertices2Count = this.VerticesCount;
             this.PolygonsCount = (uint)(this.Polygons != null ? this.Polygons.Length : 0);
@@ -1132,8 +1132,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_ACh);
             writer.Write(this.VerticesPointer);
             writer.Write(this.VertexColoursPointer);
-            writer.Write(this.Unknown1CountsPointer);
-            writer.Write(this.Unknown1DataPointer);
+            writer.Write(this.OctantsPointer);
+            writer.Write(this.OctantItemsPointer);
             writer.Write(this.VerticesCount);
             writer.Write(this.PolygonsCount);
             writer.Write(this.Unknown_D8h);
@@ -1190,11 +1190,11 @@ namespace CodeWalker.GameFiles
             {
                 YbnXml.WriteCustomItemArray(sb, Polygons, indent, "Polygons");
             }
-            if (Unknown1Data != null)
+            if (Octants != null)
             {
-                YbnXml.OpenTag(sb, indent, "UnkData");
-                Unknown1Data.WriteXml(sb, indent + 1);
-                YbnXml.CloseTag(sb, indent, "UnkData");
+                YbnXml.OpenTag(sb, indent, "Octants");
+                Octants.WriteXml(sb, indent + 1);
+                YbnXml.CloseTag(sb, indent, "Octants");
             }
         }
         public override void ReadXml(XmlNode node)
@@ -1233,18 +1233,17 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            var unode = node.SelectSingleNode("UnkData");
-            if (unode != null)
+            var onode = node.SelectSingleNode("Octants");
+            if (onode != null)
             {
-                Unknown1Data = new BoundGeomUnknown1();
-                Unknown1Data.ReadXml(unode);
+                Octants = new BoundGeomOctants();
+                Octants.ReadXml(onode);
             }
 
             BuildMaterials();
             CalculateQuantum();
             UpdateEdgeIndices();
             UpdateTriangleAreas();
-            UpdateUnknown1Counts();
 
             FileVFT = 1080226408;
         }
@@ -1311,14 +1310,9 @@ namespace CodeWalker.GameFiles
                 VertexColoursBlock = new ResourceSystemStructBlock<BoundMaterialColour>(VertexColours);
                 list.Add(VertexColoursBlock);
             }
-            if (Unknown1Counts != null)
+            if (Octants != null)
             {
-                Unknown1CountsBlock = new ResourceSystemStructBlock<uint>(Unknown1Counts);
-                list.Add(Unknown1CountsBlock);
-            }
-            if (Unknown1Data != null)
-            {
-                list.Add(Unknown1Data);//this one is already a resource block!
+                list.Add(Octants);//this one is already a resource block!
             }
             if (Materials != null)
             {
@@ -1892,18 +1886,6 @@ namespace CodeWalker.GameFiles
                     //if (Math.Abs(btri.triArea - area) > Math.Max(area*0.1f,0.1f))
                     //{ }//ehh good enough
                     btri.triArea = area;
-                }
-            }
-        }
-
-        public void UpdateUnknown1Counts()
-        {
-            if (Unknown1Data?.Items != null)
-            {
-                Unknown1Counts = new uint[8];
-                for (int i = 0; i < 8; i++)
-                {
-                    Unknown1Counts[i] = (i < Unknown1Data.Items.Length) ? (uint)(Unknown1Data.Items[i]?.Length ?? 0) : 0;
                 }
             }
         }
@@ -4073,25 +4055,23 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public class BoundGeomUnknown1 : ResourceSystemBlock, IMetaXmlItem
+    [TC(typeof(EXP))] public class BoundGeomOctants : ResourceSystemBlock, IMetaXmlItem
     {
-        public uint[][] Items { get; private set; }
-
-        private ResourceSystemStructBlock<uint>[] ItemBlocks = null;
+        public uint[] Counts { get; set; } = new uint[8];
+        public uint[][] Items { get; private set; } = new uint[8][];
 
 
         public override long BlockLength
         {
             get
             {
-                return Items != null ? (Items.Length*8) : 0; //main pointer array has 8 items, 8 bytes each
+                long len = 128; // (8*(4 + 8)) + 32
+                for (int i = 0; i < 8; i++)
+                {
+                    len += (Counts[i] * 4);
+                }
+                return len;
             }
-        }
-
-        public BoundGeomUnknown1() { }
-        public BoundGeomUnknown1(uint[][] items)
-        {
-            Items = items;
         }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -4099,31 +4079,61 @@ namespace CodeWalker.GameFiles
             if ((parameters?.Length ?? 0) < 1)
             { return; } //shouldn't happen!
 
-            var itemcounts = (uint[])parameters[0];
-            ulong ptr = (ulong)reader.Position; //pointer array pointer
+            ulong ptr = (ulong)parameters[0]; //pointer array pointer
 
-            if (itemcounts != null)
+            for (int i = 0; i < 8; i++)
             {
-                ulong[] ptrlist = reader.ReadUlongsAt(ptr, (uint)itemcounts.Length);
-                Items = new uint[itemcounts.Length][];
-                for (int i = 0; i < itemcounts.Length; i++)
-                {
-                    Items[i] = reader.ReadUintsAt(ptrlist[i], itemcounts[i]);
-                }
+                Counts[i] = reader.ReadUInt32();
             }
+
+            ulong[] ptrlist = reader.ReadUlongsAt(ptr, 8);
+
+            //if (ptr != (ulong)reader.Position)
+            //{ }//no hit
+            //ptr += 64;
+
+            for (int i = 0; i < 8; i++)
+            {
+                Items[i] = reader.ReadUintsAt(ptrlist[i], Counts[i]);
+
+                //if (ptrlist[i] != ptr)
+                //{ ptr = ptrlist[i]; }//no hit
+                //ptr += (Counts[i] * 4);
+            }
+
+            //reader.Position = (long)ptr;
+            //var b = reader.ReadBytes(32);
+            //for (int i = 0; i < b.Length; i++)
+            //{
+            //    if (b[i] != 0)
+            //    { }//no hit
+            //}
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-
-            //just write the pointer array.
-            if (ItemBlocks != null)
+            var ptr = writer.Position + 96;
+            for (int i = 0; i < 8; i++)
             {
-                foreach (var item in ItemBlocks)
+                writer.Write(Counts[i]);
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                writer.Write((ulong)ptr);
+                ptr += (Counts[i] * 4);
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                var items = (i < Items.Length) ? Items[i] : null;
+                if (items == null)
+                { continue; }
+                var c = Counts[i];
+                for (int n = 0; n < c; n++)
                 {
-                    writer.Write((ulong)item.FilePosition);
+                    var v = (n < items.Length) ? items[n] : 0;
+                    writer.Write(v);
                 }
             }
-            
+            writer.Write(new byte[32]);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -4168,26 +4178,21 @@ namespace CodeWalker.GameFiles
                 collist.Add(rowlist.ToArray());
             }
             Items = collist.ToArray();
+
+            UpdateCounts();
         }
 
-        public override IResourceBlock[] GetReferences()
+
+
+        public void UpdateCounts()
         {
-            var list = new List<IResourceBlock>(base.GetReferences());
-
-            var ilist = new List<ResourceSystemStructBlock<uint>>();
-            if (Items != null)
+            for (int i = 0; i < 8; i++)
             {
-                foreach (var item in Items)
-                {
-                    var block = new ResourceSystemStructBlock<uint>(item);
-                    ilist.Add(block);
-                    list.Add(block);
-                }
+                Counts[i] = (i < (Items?.Length ?? 0)) ? (uint)(Items[i]?.Length ?? 0) : 0;
             }
-            ItemBlocks = ilist.ToArray();
-
-            return list.ToArray();
         }
+
+
     }
 
 
