@@ -847,6 +847,9 @@ namespace CodeWalker.GameFiles
 
             //TODO: NEEDS TO BE TESTED!!!
             data_items = reader.ReadStructsAt<T>(EntriesPointer, EntriesCount);
+
+            if (EntriesCount != EntriesCapacity)
+            { }
         }
 
         /// <summary>
@@ -926,7 +929,7 @@ namespace CodeWalker.GameFiles
             // read reference data
 
             //TODO: NEEDS TO BE TESTED!!!
-            data_items = reader.ReadStructsAt<T>(EntriesPointer, EntriesCount);
+            data_items = reader.ReadStructsAt<T>(EntriesPointer, EntriesCapacity);
         }
 
         /// <summary>

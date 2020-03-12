@@ -2141,6 +2141,19 @@ namespace CodeWalker.GameFiles
                 this.BVH = reader.ReadBlockAt<BVH>(
                     this.BvhPointer // offset
                 );
+
+                //var cap = BVH.Nodes.EntriesCount;//how to calc this?
+                //var diff = BVH.Nodes.EntriesCapacity - cap;
+                //switch (diff)
+                //{
+                //    case 0:
+                //    case 1:
+                //    case 2:
+                //        break;
+                //    default:
+                //        break;//no hit
+                //}
+
             }
             else
             {
@@ -2453,23 +2466,21 @@ namespace CodeWalker.GameFiles
             this.BVHPointer = reader.ReadUInt64();
 
             // read reference data
-            this.Children = reader.ReadBlockAt<ResourcePointerArray64<Bounds>>(
-                this.ChildrenPointer, // offset
-                this.ChildrenCount1
-            );
-
+            this.Children = reader.ReadBlockAt<ResourcePointerArray64<Bounds>>(this.ChildrenPointer, this.ChildrenCount1);
             this.ChildrenTransformation1 = reader.ReadStructsAt<Matrix4F_s>(this.ChildrenTransformation1Pointer, this.ChildrenCount1);
             this.ChildrenTransformation2 = reader.ReadStructsAt<Matrix4F_s>(this.ChildrenTransformation2Pointer, this.ChildrenCount1);
             this.ChildrenBoundingBoxes = reader.ReadStructsAt<AABB_s>(this.ChildrenBoundingBoxesPointer, this.ChildrenCount1);
             this.ChildrenFlags1 = reader.ReadStructsAt<BoundCompositeChildrenFlags>(this.ChildrenFlags1Pointer, this.ChildrenCount1);
             this.ChildrenFlags2 = reader.ReadStructsAt<BoundCompositeChildrenFlags>(this.ChildrenFlags2Pointer, this.ChildrenCount1);
+            this.BVH = reader.ReadBlockAt<BVH>(this.BVHPointer);
 
-            this.BVH = reader.ReadBlockAt<BVH>(
-                this.BVHPointer // offset
-            );
-
-
-
+            //if (BVH != null)
+            //{
+            //    var cap = Math.Max(BVH.Nodes.EntriesCount + 2, ChildrenCount1 * 2 + 1);
+            //    var diff = BVH.Nodes.EntriesCapacity - cap;
+            //    if (diff != 0)
+            //    { }//no hit
+            //}
 
             var childTransforms = ChildrenTransformation1 ?? ChildrenTransformation2;
             if ((Children != null) && (Children.data_items != null))

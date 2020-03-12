@@ -18,6 +18,10 @@ namespace CodeWalker.GameFiles
         //used by the editor:
         public bool HasChanged { get; set; } = false;
 
+#if DEBUG
+        public ResourceAnalyzer Analyzer { get; set; }
+#endif
+
 
         public YbnFile() : base(null, GameFileType.Ybn)
         {
@@ -54,6 +58,10 @@ namespace CodeWalker.GameFiles
 
             Bounds.OwnerYbn = this;
             Bounds.OwnerName = entry.Name;
+
+#if DEBUG
+            Analyzer = new ResourceAnalyzer(rd);
+#endif
 
             Loaded = true;
         }

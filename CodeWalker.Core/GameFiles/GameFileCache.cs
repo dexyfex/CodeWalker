@@ -3654,7 +3654,7 @@ namespace CodeWalker.GameFiles
         }
         public void TestYbns()
         {
-            bool xmltest = true;
+            bool xmltest = false;
             bool savetest = false;
             bool reloadtest = false;
             var errorfiles = new List<RpfEntry>();
@@ -3878,7 +3878,7 @@ namespace CodeWalker.GameFiles
                     //}
                 }
             }
-            if (errorfiles.Count > 0)
+            if (errorfiles.Count != 13)
             { }
         }
         public void TestYdds()
