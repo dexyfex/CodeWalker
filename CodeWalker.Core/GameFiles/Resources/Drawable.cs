@@ -2044,21 +2044,21 @@ namespace CodeWalker.GameFiles
             get 
             {
                 var off = (long)48;
-                //off += (GeometriesCount1 * 2); //ShaderMapping
-                //if (GeometriesCount1 == 1) off += 6;
-                //else off += ((16 - (off % 16)) % 16);
-                //off += (GeometriesCount1 * 8); //Geometries pointers
-                //off += ((16 - (off % 16)) % 16);
-                //off += (GeometriesCount1 + ((GeometriesCount1 > 1) ? 1 : 0)) * 32; //BoundsData
-                //for (int i = 0; i < GeometriesCount1; i++)
-                //{
-                //    var geom = Geometries?.data_items[i];
-                //    if (geom != null)
-                //    {
-                //        off += ((16 - (off % 16)) % 16);
-                //        off += geom.BlockLength; //Geometries
-                //    }
-                //}
+                off += (GeometriesCount1 * 2); //ShaderMapping
+                if (GeometriesCount1 == 1) off += 6;
+                else off += ((16 - (off % 16)) % 16);
+                off += (GeometriesCount1 * 8); //Geometries pointers
+                off += ((16 - (off % 16)) % 16);
+                off += (GeometriesCount1 + ((GeometriesCount1 > 1) ? 1 : 0)) * 32; //BoundsData
+                for (int i = 0; i < GeometriesCount1; i++)
+                {
+                    var geom = (Geometries != null) ? Geometries[i] : null;
+                    if (geom != null)
+                    {
+                        off += ((16 - (off % 16)) % 16);
+                        off += geom.BlockLength; //Geometries
+                    }
+                }
                 return off;
             }
         }
@@ -2075,6 +2075,10 @@ namespace CodeWalker.GameFiles
         public uint SkeletonBinding { get; set; }//4th byte is bone index, 2nd byte for skin meshes
         public ushort RenderMaskFlags { get; set; } //First byte is called "Mask" in GIMS EVO
         public ushort GeometriesCount3 { get; set; } //always equal to GeometriesCount1, is it ShaderMappingCount?
+        public ushort[] ShaderMapping { get; set; }
+        public ulong[] GeometryPointers { get; set; }
+        public AABB_s[] BoundsData { get; set; }
+        public DrawableGeometry[] Geometries { get; set; }
 
         public byte BoneIndex
         {
@@ -2110,14 +2114,6 @@ namespace CodeWalker.GameFiles
 
 
 
-        // reference data
-        public ResourcePointerArray64<DrawableGeometry> Geometries { get; set; }
-        public AABB_s[] BoundsData { get; set; }
-        public ushort[] ShaderMapping { get; set; }
-
-
-        private ResourceSystemStructBlock<AABB_s> BoundsDataBlock = null; //for saving only
-        private ResourceSystemStructBlock<ushort> ShaderMappingBlock = null;
 
 
 
@@ -2126,9 +2122,9 @@ namespace CodeWalker.GameFiles
             get
             {
                 long val = 0;
-                if ((Geometries != null) && (Geometries.data_items != null))
+                if (Geometries != null)
                 {
-                    foreach(var geom in Geometries.data_items)
+                    foreach(var geom in Geometries)
                     {
                         if (geom == null) continue;
                         if (geom.VertexData != null)
@@ -2175,17 +2171,16 @@ namespace CodeWalker.GameFiles
             this.RenderMaskFlags = reader.ReadUInt16();
             this.GeometriesCount3 = reader.ReadUInt16();
 
+            this.ShaderMapping = reader.ReadUshortsAt(this.ShaderMappingPointer, this.GeometriesCount1, false);
+            this.GeometryPointers = reader.ReadUlongsAt(this.GeometriesPointer, this.GeometriesCount1, false);
+            this.BoundsData = reader.ReadStructsAt<AABB_s>(this.BoundsPointer, (uint)(this.GeometriesCount1 > 1 ? this.GeometriesCount1 + 1 : this.GeometriesCount1), false);
+            this.Geometries = reader.ReadBlocks<DrawableGeometry>(this.GeometryPointers);
 
-            // read reference data
-            this.Geometries = reader.ReadBlockAt<ResourcePointerArray64<DrawableGeometry>>(this.GeometriesPointer, this.GeometriesCount1);
-            this.BoundsData = reader.ReadStructsAt<AABB_s>(this.BoundsPointer, (uint)(this.GeometriesCount1 > 1 ? this.GeometriesCount1 + 1 : this.GeometriesCount1));
-            this.ShaderMapping = reader.ReadUshortsAt(this.ShaderMappingPointer, this.GeometriesCount1);
-
-            if (Geometries?.data_items != null)
+            if (Geometries != null)
             {
-                for (int i = 0; i < Geometries.data_items.Length; i++)
+                for (int i = 0; i < Geometries.Length; i++)
                 {
-                    var geom = Geometries.data_items[i];
+                    var geom = Geometries[i];
                     if (geom != null)
                     {
                         geom.ShaderID = ((ShaderMapping != null) && (i < ShaderMapping.Length)) ? ShaderMapping[i] : (ushort)0;
@@ -2258,13 +2253,34 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.GeometriesPointer = (ulong)(this.Geometries != null ? this.Geometries.FilePosition : 0);
-            this.GeometriesCount1 = (ushort)(this.Geometries != null ? this.Geometries.Count : 0);
+            this.GeometriesCount1 = (ushort)(this.Geometries != null ? this.Geometries.Length : 0);
             this.GeometriesCount2 = this.GeometriesCount1;//is this correct?
             this.GeometriesCount3 = this.GeometriesCount1;//is this correct?
-            this.BoundsPointer = (ulong)(this.BoundsDataBlock != null ? this.BoundsDataBlock.FilePosition : 0);
-            this.ShaderMappingPointer = (ulong)(this.ShaderMappingBlock != null ? this.ShaderMappingBlock.FilePosition : 0);
             
+            long pad(long o) => ((16 - (o % 16)) % 16);
+            var off = writer.Position + 48;
+            this.ShaderMappingPointer = (ulong)off;
+            off += (GeometriesCount1 * 2); //ShaderMapping
+            if (GeometriesCount1 == 1) off += 6;
+            else off += pad(off);
+            this.GeometriesPointer = (ulong)off;
+            off += (GeometriesCount1 * 8); //Geometries pointers
+            off += pad(off);
+            this.BoundsPointer = (ulong)off;
+            off += (BoundsData.Length) * 32; //BoundsData
+            this.GeometryPointers = new ulong[GeometriesCount1];
+            for (int i = 0; i < GeometriesCount1; i++)
+            {
+                var geom = (Geometries != null) ? Geometries[i] : null;
+                if (geom != null)
+                {
+                    off += pad(off);
+                    this.GeometryPointers[i] = (ulong)off;
+                    off += geom.BlockLength; //Geometries
+                }
+            }
+
+
 
             // write structure data
             writer.Write(this.VFT);
@@ -2278,6 +2294,39 @@ namespace CodeWalker.GameFiles
             writer.Write(this.SkeletonBinding);
             writer.Write(this.RenderMaskFlags);
             writer.Write(this.GeometriesCount3);
+
+
+            for (int i = 0; i < GeometriesCount1; i++)
+            {
+                writer.Write(ShaderMapping[i]);
+            }
+            if (GeometriesCount1 == 1)
+            {
+                writer.Write(new byte[6]);
+            }
+            else
+            {
+                writer.WritePadding(16);
+            }
+            for (int i = 0; i < GeometriesCount1; i++)
+            {
+                writer.Write(GeometryPointers[i]);
+            }
+            writer.WritePadding(16);
+            for (int i = 0; i < BoundsData.Length; i++)
+            {
+                writer.WriteStruct(BoundsData[i]);
+            }
+            for (int i = 0; i < GeometriesCount1; i++)
+            {
+                var geom = (Geometries != null) ? Geometries[i] : null;
+                if (geom != null)
+                {
+                    writer.WritePadding(16);
+                    writer.WriteBlock(geom);
+                }
+            }
+
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -2287,9 +2336,9 @@ namespace CodeWalker.GameFiles
             YdrXml.ValueTag(sb, indent, "BoneIndex", BoneIndex.ToString());
             YdrXml.ValueTag(sb, indent, "Unknown1", SkeletonBindUnk1.ToString());
 
-            if (Geometries?.data_items != null)
+            if (Geometries != null)
             {
-                YdrXml.WriteItemArray(sb, Geometries.data_items, indent, "Geometries");
+                YdrXml.WriteItemArray(sb, Geometries, indent, "Geometries");
             }
 
         }
@@ -2308,8 +2357,7 @@ namespace CodeWalker.GameFiles
             var geoms = XmlMeta.ReadItemArray<DrawableGeometry>(node, "Geometries");
             if (geoms != null)
             {
-                Geometries = new ResourcePointerArray64<DrawableGeometry>();
-                Geometries.data_items = geoms;
+                Geometries = geoms;
                 foreach (var geom in geoms)
                 {
                     aabbs.Add(geom.AABB);
@@ -2330,26 +2378,35 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public override IResourceBlock[] GetReferences()
+        public override Tuple<long, IResourceBlock>[] GetParts()
         {
-            var list = new List<IResourceBlock>();
-            if (Geometries != null) list.Add(Geometries);
-            if (BoundsData != null)
+            var parts = new List<Tuple<long, IResourceBlock>>();
+            parts.AddRange(base.GetParts());
+
+            var off = (long)48;
+            off += (GeometriesCount1 * 2); //ShaderMapping
+            if (GeometriesCount1 == 1) off += 6;
+            else off += ((16 - (off % 16)) % 16);
+            off += (GeometriesCount1 * 8); //Geometries pointers
+            off += ((16 - (off % 16)) % 16);
+            off += (GeometriesCount1 + ((GeometriesCount1 > 1) ? 1 : 0)) * 32; //BoundsData
+            for (int i = 0; i < GeometriesCount1; i++)
             {
-                BoundsDataBlock = new ResourceSystemStructBlock<AABB_s>(BoundsData);
-                list.Add(BoundsDataBlock);
+                var geom = (Geometries != null) ? Geometries[i] : null;
+                if (geom != null)
+                {
+                    off += ((16 - (off % 16)) % 16);
+                    parts.Add(new Tuple<long, IResourceBlock>(off, geom));
+                    off += geom.BlockLength; //Geometries
+                }
             }
-            if (ShaderMapping != null)
-            {
-                ShaderMappingBlock = new ResourceSystemStructBlock<ushort>(ShaderMapping);
-                list.Add(ShaderMappingBlock);
-            }
-            return list.ToArray();
+
+            return parts.ToArray();
         }
 
         public override string ToString()
         {
-            return "(" + Geometries.Count + " geometr" + (Geometries.Count != 1 ? "ies)" : "y)");
+            return "(" + (Geometries?.Length ?? 0).ToString() + " geometr" + ((Geometries?.Length ?? 0) != 1 ? "ies)" : "y)");
         }
 
     }
@@ -4376,12 +4433,12 @@ namespace CodeWalker.GameFiles
                 var shaders = shaderGrp.Shaders.data_items;
                 foreach (DrawableModel model in AllModels)
                 {
-                    if (model?.Geometries?.data_items == null) continue;
+                    if (model?.Geometries == null) continue;
 
-                    int geomcount = model.Geometries.data_items.Length;
+                    int geomcount = model.Geometries.Length;
                     for (int i = 0; i < geomcount; i++)
                     {
-                        var geom = model.Geometries.data_items[i];
+                        var geom = model.Geometries[i];
                         var sid = geom.ShaderID;
                         geom.Shader = (sid < shaders.Length) ? shaders[sid] : null;
                     }
@@ -4414,7 +4471,8 @@ namespace CodeWalker.GameFiles
             var vds = new Dictionary<ulong, VertexDeclaration>();
             foreach (DrawableModel model in AllModels)
             {
-                foreach (var geom in model.Geometries.data_items)
+                if (model.Geometries == null) continue;
+                foreach (var geom in model.Geometries)
                 {
                     var info = geom.VertexBuffer.Info;
                     var declid = info.GetDeclarationId();

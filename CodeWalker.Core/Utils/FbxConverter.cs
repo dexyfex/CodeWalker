@@ -102,8 +102,8 @@ namespace CodeWalker
             var bsRad = 0.0f;
             foreach (var m in mlistall)
             {
-                if (m?.Model?.Geometries?.data_items == null) continue;
-                foreach (var g in m.Model.Geometries.data_items)
+                if (m?.Model?.Geometries == null) continue;
+                foreach (var g in m.Model.Geometries)
                 {
                     var vb = g.VertexData.VertexBytes;
                     var vs = g.VertexData.VertexStride;
@@ -135,9 +135,9 @@ namespace CodeWalker
             var smapp = new List<ushort>();
             foreach (var m in mlAll)
             {
-                if (m?.Geometries?.data_items == null) continue;
+                if (m?.Geometries == null) continue;
                 smapp.Clear();
-                foreach (var g in m.Geometries.data_items)
+                foreach (var g in m.Geometries)
                 {
                     smapp.Add((ushort)slist.Count);
                     slist.Add(g.Shader);
@@ -498,8 +498,7 @@ namespace CodeWalker
             dModel.VFT = 1080101496;//is this needed?
             dModel.Unknown_4h = 1;
             dModel.RenderMaskFlags = 0x00FF; //GIMS "Mask"
-            dModel.Geometries = new ResourcePointerArray64<DrawableGeometry>();
-            dModel.Geometries.data_items = dGeoms.ToArray();
+            dModel.Geometries = dGeoms.ToArray();
             dModel.GeometriesCount1 = (ushort)dGeoms.Count;
             dModel.GeometriesCount2 = (ushort)dGeoms.Count;
             dModel.GeometriesCount3 = (ushort)dGeoms.Count;

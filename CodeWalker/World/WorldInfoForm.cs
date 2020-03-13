@@ -217,9 +217,9 @@ namespace CodeWalker.World
                 var tmnode = SelDrawableTexturesTreeView.Nodes.Add(mprefix + " " + model.ToString());
                 tmnode.Tag = model;
 
-                if ((model.Geometries == null) || (model.Geometries.data_items == null)) continue;
+                if (model.Geometries == null) continue;
 
-                foreach (var geom in model.Geometries.data_items)
+                foreach (var geom in model.Geometries)
                 {
                     var gname = geom.ToString();
                     var gnode = mnode.Nodes.Add(gname);

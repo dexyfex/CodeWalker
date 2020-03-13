@@ -106,9 +106,9 @@ namespace CodeWalker.Forms
                 var mnode = tnc.Add(mprefix + " " + model.ToString());
                 mnode.Tag = model;
 
-                if ((model.Geometries == null) || (model.Geometries.data_items == null)) continue;
+                if (model.Geometries == null) continue;
 
-                foreach (var geom in model.Geometries.data_items)
+                foreach (var geom in model.Geometries)
                 {
                     var gname = geom.ToString();
                     var gnode = mnode.Nodes.Add(gname);
@@ -259,8 +259,8 @@ namespace CodeWalker.Forms
         {
             foreach (var model in dwbl.AllModels)
             {
-                if (model?.Geometries?.data_items == null) continue;
-                foreach (var geom in model.Geometries.data_items)
+                if (model?.Geometries == null) continue;
+                foreach (var geom in model.Geometries)
                 {
                     if (geom.Shader == shader)
                     {

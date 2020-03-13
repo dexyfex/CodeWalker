@@ -1100,9 +1100,9 @@ namespace CodeWalker.Forms
                     Renderer.SelectionModelDrawFlags[model] = false;
                 }
 
-                if ((model.Geometries == null) || (model.Geometries.data_items == null)) continue;
+                if (model.Geometries == null) continue;
 
-                foreach (var geom in model.Geometries.data_items)
+                foreach (var geom in model.Geometries)
                 {
                     var gname = geom.ToString();
                     var gnode = mnode.Nodes.Add(gname);

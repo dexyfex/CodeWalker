@@ -234,6 +234,18 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public T[] ReadBlocks<T>(ulong[] pointers) where T : IResourceBlock, new()
+        {
+            if (pointers == null) return null;
+            var count = pointers.Length;
+            var items = new T[count];
+            for (int i = 0; i < count; i++)
+            {
+                items[i] = ReadBlockAt<T>(pointers[i]);
+            }
+            return items;
+        }
+
 
         public byte[] ReadBytesAt(ulong position, uint count, bool cache = true)
         {
@@ -548,6 +560,17 @@ namespace CodeWalker.GameFiles
             }
         }
 
+
+
+        /// <summary>
+        /// Write enough bytes to the stream to get to the specified alignment.
+        /// </summary>
+        /// <param name="alignment">value to align to</param>
+        public void WritePadding(int alignment)
+        {
+            var pad = ((alignment - (Position % alignment)) % alignment);
+            if (pad > 0) Write(new byte[pad]);
+        }
 
     }
 

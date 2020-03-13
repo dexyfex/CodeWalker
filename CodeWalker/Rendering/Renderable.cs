@@ -763,14 +763,14 @@ namespace CodeWalker.Rendering
             BoneIndex = (int)((SkeletonBinding >> 24) & 0xFF);
 
             DrawableModel = dmodel;
-            long geomcount = dmodel.Geometries.data_items.Length;
+            long geomcount = dmodel.Geometries.Length;
             Geometries = new RenderableGeometry[geomcount];
             GeometryBounds = new AABB_s[geomcount];
 
             GeometrySize = 0;
             for (int i = 0; i < geomcount; i++)
             {
-                var dgeom = dmodel.Geometries.data_items[i];
+                var dgeom = dmodel.Geometries[i];
                 var rgeom = new RenderableGeometry();
                 rgeom.Init(dgeom);
                 rgeom.Owner = this;
