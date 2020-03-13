@@ -235,7 +235,7 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public byte[] ReadBytesAt(ulong position, uint count)
+        public byte[] ReadBytesAt(ulong position, uint count, bool cache = true)
         {
             long pos = (long)position;
             if ((pos <= 0) || (count == 0)) return null;
@@ -243,16 +243,16 @@ namespace CodeWalker.GameFiles
             Position = pos;
             var result = ReadBytes((int)count);
             Position = posbackup;
-            arrayPool[(long)position] = result;
+            if (cache) arrayPool[(long)position] = result;
             return result;
         }
-        public ushort[] ReadUshortsAt(ulong position, uint count)
+        public ushort[] ReadUshortsAt(ulong position, uint count, bool cache = true)
         {
             if ((position <= 0) || (count == 0)) return null;
 
             var result = new ushort[count];
             var length = count * 2;
-            byte[] data = ReadBytesAt(position, length);
+            byte[] data = ReadBytesAt(position, length, false);
             Buffer.BlockCopy(data, 0, result, 0, (int)length);
 
             //var posbackup = Position;
@@ -264,29 +264,29 @@ namespace CodeWalker.GameFiles
             //}
             //Position = posbackup;
 
-            arrayPool[(long)position] = result;
+            if (cache) arrayPool[(long)position] = result;
 
             return result;
         }
-        public short[] ReadShortsAt(ulong position, uint count)
+        public short[] ReadShortsAt(ulong position, uint count, bool cache = true)
         {
             if ((position <= 0) || (count == 0)) return null;
             var result = new short[count];
             var length = count * 2;
-            byte[] data = ReadBytesAt(position, length);
+            byte[] data = ReadBytesAt(position, length, false);
             Buffer.BlockCopy(data, 0, result, 0, (int)length);
 
-            arrayPool[(long)position] = result;
+            if (cache) arrayPool[(long)position] = result;
 
             return result;
         }
-        public uint[] ReadUintsAt(ulong position, uint count)
+        public uint[] ReadUintsAt(ulong position, uint count, bool cache = true)
         {
             if ((position <= 0) || (count == 0)) return null;
 
             var result = new uint[count];
             var length = count * 4;
-            byte[] data = ReadBytesAt(position, length);
+            byte[] data = ReadBytesAt(position, length, false);
             Buffer.BlockCopy(data, 0, result, 0, (int)length);
 
             //var posbackup = Position;
@@ -298,17 +298,17 @@ namespace CodeWalker.GameFiles
             //}
             //Position = posbackup;
 
-            arrayPool[(long)position] = result;
+            if (cache) arrayPool[(long)position] = result;
 
             return result;
         }
-        public ulong[] ReadUlongsAt(ulong position, uint count)
+        public ulong[] ReadUlongsAt(ulong position, uint count, bool cache = true)
         {
             if ((position <= 0) || (count == 0)) return null;
 
             var result = new ulong[count];
             var length = count * 8;
-            byte[] data = ReadBytesAt(position, length);
+            byte[] data = ReadBytesAt(position, length, false);
             Buffer.BlockCopy(data, 0, result, 0, (int)length);
 
             //var posbackup = Position;
@@ -320,17 +320,17 @@ namespace CodeWalker.GameFiles
             //}
             //Position = posbackup;
 
-            arrayPool[(long)position] = result;
+            if (cache) arrayPool[(long)position] = result;
 
             return result;
         }
-        public float[] ReadFloatsAt(ulong position, uint count)
+        public float[] ReadFloatsAt(ulong position, uint count, bool cache = true)
         {
             if ((position <= 0) || (count == 0)) return null;
 
             var result = new float[count];
             var length = count * 4;
-            byte[] data = ReadBytesAt(position, length);
+            byte[] data = ReadBytesAt(position, length, false);
             Buffer.BlockCopy(data, 0, result, 0, (int)length);
 
             //var posbackup = Position;
@@ -342,17 +342,17 @@ namespace CodeWalker.GameFiles
             //}
             //Position = posbackup;
 
-            arrayPool[(long)position] = result;
+            if (cache) arrayPool[(long)position] = result;
 
             return result;
         }
-        public T[] ReadStructsAt<T>(ulong position, uint count)//, uint structsize)
+        public T[] ReadStructsAt<T>(ulong position, uint count, bool cache = true)
         {
             if ((position <= 0) || (count == 0)) return null;
 
             uint structsize = (uint)Marshal.SizeOf(typeof(T));
             var length = count * structsize;
-            byte[] data = ReadBytesAt(position, length);
+            byte[] data = ReadBytesAt(position, length, false);
 
             //var result2 = new T[count];
             //Buffer.BlockCopy(data, 0, result2, 0, (int)length); //error: "object must be an array of primitives" :(
@@ -366,7 +366,7 @@ namespace CodeWalker.GameFiles
             }
             handle.Free();
 
-            arrayPool[(long)position] = result;
+            if (cache) arrayPool[(long)position] = result;
 
             return result;
         }

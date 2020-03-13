@@ -1408,7 +1408,7 @@ namespace CodeWalker.GameFiles
             int numElements = Convert.ToInt32(parameters[0]);
 
 
-            data_pointers = reader.ReadUlongsAt((ulong)reader.Position, (uint)numElements);
+            data_pointers = reader.ReadUlongsAt((ulong)reader.Position, (uint)numElements, false);
 
 
             data_items = new T[numElements];

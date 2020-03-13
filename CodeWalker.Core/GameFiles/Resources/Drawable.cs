@@ -539,7 +539,7 @@ namespace CodeWalker.GameFiles
                         break;
                     default:
                         offset += 16 * p.DataType;
-                        p.Data = reader.ReadStructsAt<Vector4>(p.DataPointer, p.DataType);
+                        p.Data = reader.ReadStructsAt<Vector4>(p.DataPointer, p.DataType, false);
                         break;
                 }
             }
@@ -2041,7 +2041,26 @@ namespace CodeWalker.GameFiles
     {
         public override long BlockLength
         {
-            get { return 48; }
+            get 
+            {
+                var off = (long)48;
+                //off += (GeometriesCount1 * 2); //ShaderMapping
+                //if (GeometriesCount1 == 1) off += 6;
+                //else off += ((16 - (off % 16)) % 16);
+                //off += (GeometriesCount1 * 8); //Geometries pointers
+                //off += ((16 - (off % 16)) % 16);
+                //off += (GeometriesCount1 + ((GeometriesCount1 > 1) ? 1 : 0)) * 32; //BoundsData
+                //for (int i = 0; i < GeometriesCount1; i++)
+                //{
+                //    var geom = Geometries?.data_items[i];
+                //    if (geom != null)
+                //    {
+                //        off += ((16 - (off % 16)) % 16);
+                //        off += geom.BlockLength; //Geometries
+                //    }
+                //}
+                return off;
+            }
         }
 
         // structure data
@@ -2158,13 +2177,9 @@ namespace CodeWalker.GameFiles
 
 
             // read reference data
-            this.Geometries = reader.ReadBlockAt<ResourcePointerArray64<DrawableGeometry>>(
-                this.GeometriesPointer, // offset
-                this.GeometriesCount1
-            );
+            this.Geometries = reader.ReadBlockAt<ResourcePointerArray64<DrawableGeometry>>(this.GeometriesPointer, this.GeometriesCount1);
             this.BoundsData = reader.ReadStructsAt<AABB_s>(this.BoundsPointer, (uint)(this.GeometriesCount1 > 1 ? this.GeometriesCount1 + 1 : this.GeometriesCount1));
             this.ShaderMapping = reader.ReadUshortsAt(this.ShaderMappingPointer, this.GeometriesCount1);
-
 
             if (Geometries?.data_items != null)
             {
@@ -2181,6 +2196,41 @@ namespace CodeWalker.GameFiles
 
 
             ////just testing!
+            
+            //var pos = (ulong)reader.Position;
+            //var off = (ulong)0;
+            //if (ShaderMappingPointer != (pos+off))
+            //{ }//no hit
+            //off += (ulong)(GeometriesCount1 * 2); //ShaderMapping
+            //if (GeometriesCount1 == 1) off += 6;
+            //else off += ((16 - (off % 16)) % 16);
+            //if (GeometriesPointer != (pos+off))
+            //{ }//no hit
+            //off += (ulong)(GeometriesCount1 * 8); //Geometries pointers
+            //off += ((16 - (off % 16)) % 16);
+            //if (BoundsPointer != (pos+off))
+            //{ }//no hit
+            //off += (ulong)((GeometriesCount1 + ((GeometriesCount1 > 1) ? 1 : 0)) * 32); //BoundsData
+            //if ((Geometries?.data_pointers != null) && (Geometries?.data_items != null))
+            //{
+            //    for (int i = 0; i < GeometriesCount1; i++)
+            //    {
+            //        var geomptr = Geometries.data_pointers[i];
+            //        var geom = Geometries.data_items[i];
+            //        if (geom != null)
+            //        {
+            //            off += ((16 - (off % 16)) % 16);
+            //            if (geomptr != (pos + off))
+            //            { }//no hit
+            //            off += (ulong)geom.BlockLength;
+            //        }
+            //        else
+            //        { }//no hit
+            //    }
+            //}
+            //else
+            //{ }//no hit
+
             //if (SkeletonBindUnk2 != 0)
             //{ }//no hit
             //switch (SkeletonBindUnk1)
@@ -2396,7 +2446,7 @@ namespace CodeWalker.GameFiles
             this.IndexBuffer = reader.ReadBlockAt<IndexBuffer>(
                 this.IndexBufferPointer // offset
             );
-            this.BoneIds = reader.ReadUshortsAt(this.BoneIdsPointer, this.BoneIdsCount);
+            this.BoneIds = reader.ReadUshortsAt(this.BoneIdsPointer, this.BoneIdsCount, false);
             if (this.BoneIds != null) //skinned mesh bones to use? peds, also yft props...
             {
             }

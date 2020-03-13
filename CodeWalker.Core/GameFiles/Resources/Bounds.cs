@@ -4097,7 +4097,7 @@ namespace CodeWalker.GameFiles
                 Counts[i] = reader.ReadUInt32();
             }
 
-            ulong[] ptrlist = reader.ReadUlongsAt(ptr, 8);
+            ulong[] ptrlist = reader.ReadUlongsAt(ptr, 8, false);
 
             //if (ptr != (ulong)reader.Position)
             //{ }//no hit
@@ -4105,7 +4105,7 @@ namespace CodeWalker.GameFiles
 
             for (int i = 0; i < 8; i++)
             {
-                Items[i] = reader.ReadUintsAt(ptrlist[i], Counts[i]);
+                Items[i] = reader.ReadUintsAt(ptrlist[i], Counts[i], false);
 
                 //if (ptrlist[i] != ptr)
                 //{ ptr = ptrlist[i]; }//no hit
