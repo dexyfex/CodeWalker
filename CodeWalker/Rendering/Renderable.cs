@@ -170,7 +170,7 @@ namespace CodeWalker.Rendering
             Matrix[] fragtransforms = null;
             Vector4 fragoffset = Vector4.Zero;
             int fragtransformid = 0;
-            List<Bone> bones = null;
+            Bone[] bones = null;
             bool usepose = false;
             if (skeleton != null)
             {
@@ -246,8 +246,8 @@ namespace CodeWalker.Rendering
                 }
 
                 hastransforms = (modeltransforms != null) || (fragtransforms != null);
-                hasbones = ((skeleton.Bones != null) && (skeleton.Bones.Data != null));
-                bones = hasbones ? skeleton.Bones.Data : null;
+                hasbones = ((skeleton.Bones != null) && (skeleton.Bones.Items != null));
+                bones = hasbones ? skeleton.Bones.Items : null;
             }
 
             HasSkeleton = hasskeleton;
@@ -268,7 +268,7 @@ namespace CodeWalker.Rendering
                     int boneidx = model.BoneIndex;
 
                     Matrix trans = (boneidx < modeltransforms.Length) ? modeltransforms[boneidx] : Matrix.Identity;
-                    Bone bone = (hasbones && (boneidx < bones.Count)) ? bones[boneidx] : null;
+                    Bone bone = (hasbones && (boneidx < bones.Length)) ? bones[boneidx] : null;
 
                     if (mi < HDModels.Length) //populate bone links map for hd models
                     {
@@ -398,11 +398,11 @@ namespace CodeWalker.Rendering
         }
         private void UpdateBoneTransforms()
         {
-            if (Skeleton?.Bones?.Data == null) return;
+            if (Skeleton?.Bones?.Items == null) return;
 
             Skeleton.UpdateBoneTransforms();
 
-            var bones = Skeleton.Bones?.Data;
+            var bones = Skeleton.Bones?.Items;
             var bonetransforms = Skeleton.BoneTransforms;
 
             var drawbl = Key;
@@ -416,7 +416,7 @@ namespace CodeWalker.Rendering
                     var geom = model.Geometries[g];
                     var boneids = geom?.DrawableGeom?.BoneIds;
                     if (boneids == null) continue;
-                    if (boneids.Length != bones.Count)
+                    if (boneids.Length != bones.Length)
                     {
                         var idc = boneids.Length;
                         if (geom.BoneTransforms == null)
@@ -511,7 +511,7 @@ namespace CodeWalker.Rendering
 
             var dwbl = this.Key;
             var skel = Skeleton;
-            var bones = skel?.Bones;
+            var bones = skel?.Bones?.Items;
             if (bones == null)
             { return; }
 
@@ -615,7 +615,7 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            for (int i = 0; i < bones.Count; i++)
+            for (int i = 0; i < bones.Length; i++)
             {
                 var bone = bones[i];
                 var tag = bone.Tag;
@@ -636,7 +636,7 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            for (int i = 0; i < bones.Count; i++)
+            for (int i = 0; i < bones.Length; i++)
             {
                 var bone = bones[i];
                 bone.UpdateAnimTransform();

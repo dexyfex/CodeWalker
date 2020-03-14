@@ -149,11 +149,11 @@ namespace CodeWalker.Project.Panels
                                     Matrix xform = Matrix.Identity;
                                     int boneidx = 0;
                                     var skeleton = dwbl.Skeleton;
-                                    if (skeleton?.Bones?.Data != null)
+                                    if (skeleton?.Bones?.Items != null)
                                     {
-                                        for (int j = 0; j < skeleton.Bones.Data.Count; j++)
+                                        for (int j = 0; j < skeleton.Bones.Items.Length; j++)
                                         {
-                                            var tbone = skeleton.Bones.Data[j];
+                                            var tbone = skeleton.Bones.Items[j];
                                             if (tbone.Tag == la.BoneId)
                                             {
                                                 boneidx = j;

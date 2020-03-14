@@ -902,7 +902,7 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public ResourcePointerArray64<SkeletonBoneTag> BoneTags { get; set; }
-        public ResourceSimpleArray<Bone> Bones { get; set; }
+        public SkeletonBonesBlock Bones { get; set; }
 
         public Matrix[] TransformationsInverted { get; set; }
         public Matrix[] Transformations { get; set; }
@@ -948,14 +948,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_68h = reader.ReadUInt64();
 
             // read reference data
-            this.BoneTags = reader.ReadBlockAt<ResourcePointerArray64<SkeletonBoneTag>>(
-                this.BoneTagsPointer, // offset
-                this.BoneTagsCapacity
-            );
-            this.Bones = reader.ReadBlockAt<ResourceSimpleArray<Bone>>(
-                this.BonesPointer, // offset
-                this.BonesCount
-            );
+            this.BoneTags = reader.ReadBlockAt<ResourcePointerArray64<SkeletonBoneTag>>(this.BoneTagsPointer, this.BoneTagsCapacity);
+            this.Bones = reader.ReadBlockAt<SkeletonBonesBlock>((this.BonesPointer != 0) ? (BonesPointer - 16) : 0, (uint)this.BonesCount);
             this.TransformationsInverted = reader.ReadStructsAt<Matrix>(this.TransformationsInvertedPointer, this.BonesCount);
             this.Transformations = reader.ReadStructsAt<Matrix>(this.TransformationsPointer, this.BonesCount);
             this.ParentIndices = reader.ReadShortsAt(this.ParentIndicesPointer, this.BonesCount);
@@ -971,6 +965,15 @@ namespace CodeWalker.GameFiles
             //BuildTransformations();//testing!
             //if (BoneTagsCount != Math.Min(BonesCount, BoneTagsCapacity))
             //{ }//no hits
+
+            //if (BonesPointer != 0)
+            //{
+            //    var bhdr = reader.ReadStructAt<ResourcePointerListHeader>((long)BonesPointer - 16);
+            //    if (bhdr.Pointer != BonesCount)
+            //    { }//no hit
+            //    if ((bhdr.Count != 0) || (bhdr.Capacity != 0) || (bhdr.Unknown != 0))
+            //    { }//no hit
+            //}
 
             //if (Unknown_8h != 0)
             //{ }
@@ -988,12 +991,12 @@ namespace CodeWalker.GameFiles
             // update structure data
             this.BoneTagsPointer = (ulong)(this.BoneTags != null ? this.BoneTags.FilePosition : 0);
             this.BoneTagsCapacity = (ushort)(this.BoneTags != null ? this.BoneTags.Count : 0);
-            this.BonesPointer = (ulong)(this.Bones != null ? this.Bones.FilePosition : 0);
+            this.BonesPointer = (ulong)(this.Bones != null ? this.Bones.FilePosition+16 : 0);
             this.TransformationsInvertedPointer = (ulong)(this.TransformationsInvertedBlock != null ? this.TransformationsInvertedBlock.FilePosition : 0);
             this.TransformationsPointer = (ulong)(this.TransformationsBlock != null ? this.TransformationsBlock.FilePosition : 0);
             this.ParentIndicesPointer = (ulong)(this.ParentIndicesBlock != null ? this.ParentIndicesBlock.FilePosition : 0);
             this.ChildIndicesPointer = (ulong)(this.ChildIndicesBlock != null ? this.ChildIndicesBlock.FilePosition : 0);
-            this.BonesCount = (ushort)(this.Bones != null ? this.Bones.Count : 0);
+            this.BonesCount = (ushort)(this.Bones?.Items != null ? this.Bones.Items.Length : 0);
             this.ChildIndicesCount = (ushort)(this.ChildIndicesBlock != null ? this.ChildIndicesBlock.ItemCount : 0);
             this.BoneTagsCount = Math.Min(BonesCount, BoneTagsCapacity);
 
@@ -1029,9 +1032,9 @@ namespace CodeWalker.GameFiles
             YdrXml.ValueTag(sb, indent, "Unknown54", Unknown_54h.Hash.ToString());
             YdrXml.ValueTag(sb, indent, "Unknown58", Unknown_58h.Hash.ToString());
 
-            if (Bones?.Data != null)
+            if (Bones?.Items != null)
             {
-                YdrXml.WriteItemArray(sb, Bones.Data.ToArray(), indent, "Bones");
+                YdrXml.WriteItemArray(sb, Bones.Items, indent, "Bones");
             }
 
         }
@@ -1045,8 +1048,8 @@ namespace CodeWalker.GameFiles
             var bones = XmlMeta.ReadItemArray<Bone>(node, "Bones");
             if (bones != null)
             {
-                Bones = new ResourceSimpleArray<Bone>();
-                Bones.Data = bones.ToList();
+                Bones = new SkeletonBonesBlock();
+                Bones.Items = bones;
             }
 
             BuildIndices();
@@ -1093,16 +1096,16 @@ namespace CodeWalker.GameFiles
 
         public void AssignBoneParents()
         {
-            if ((Bones != null) && (ParentIndices != null))
+            if ((Bones?.Items != null) && (ParentIndices != null))
             {
-                var maxcnt = Math.Min(Bones.Count, ParentIndices.Length);
+                var maxcnt = Math.Min(Bones.Items.Length, ParentIndices.Length);
                 for (int i = 0; i < maxcnt; i++)
                 {
-                    var bone = Bones[i];
+                    var bone = Bones.Items[i];
                     var pind = ParentIndices[i];
-                    if ((pind >= 0) && (pind < Bones.Count))
+                    if ((pind >= 0) && (pind < Bones.Items.Length))
                     {
-                        bone.Parent = Bones[pind];
+                        bone.Parent = Bones.Items[pind];
                     }
                 }
             }
@@ -1111,11 +1114,11 @@ namespace CodeWalker.GameFiles
         public void BuildBonesMap()
         {
             BonesMap = new Dictionary<ushort, Bone>();
-            if (Bones != null)
+            if (Bones?.Items != null)
             {
-                for (int i = 0; i < Bones.Count; i++)
+                for (int i = 0; i < Bones.Items.Length; i++)
                 {
-                    var bone = Bones[i];
+                    var bone = Bones.Items[i];
                     BonesMap[bone.Tag] = bone;
 
                     bone.UpdateAnimTransform();
@@ -1131,12 +1134,12 @@ namespace CodeWalker.GameFiles
         {
             var parents = new List<short>();
             var childs = new List<short>();
-            if (Bones != null)
+            if (Bones?.Items != null)
             {
                 Bone lastbone = null;
-                for (int i = 0; i < Bones.Count; i++)
+                for (int i = 0; i < Bones.Items.Length; i++)
                 {
-                    var bone = Bones[i];
+                    var bone = Bones.Items[i];
                     var pind = bone.ParentIndex;
                     parents.Add(pind);
                     if (pind >= 0)
@@ -1187,11 +1190,11 @@ namespace CodeWalker.GameFiles
         public void BuildBoneTags()
         {
             var tags = new List<SkeletonBoneTag>();
-            if (Bones?.Data != null)
+            if (Bones?.Items != null)
             {
-                for (int i = 0; i < Bones.Count; i++)
+                for (int i = 0; i < Bones.Items.Length; i++)
                 {
-                    var bone = Bones[i];
+                    var bone = Bones.Items[i];
                     var tag = new SkeletonBoneTag();
                     tag.BoneTag = bone.Tag;
                     tag.BoneIndex = (uint)i;
@@ -1277,9 +1280,9 @@ namespace CodeWalker.GameFiles
         {
             var transforms = new List<Matrix>();
             var transformsinv = new List<Matrix>();
-            if (Bones?.Data != null)
+            if (Bones?.Items != null)
             {
-                foreach (var bone in Bones.Data)
+                foreach (var bone in Bones.Items)
                 {
                     var pos = bone.Translation;
                     var ori = bone.Rotation;
@@ -1367,8 +1370,8 @@ namespace CodeWalker.GameFiles
 
         public void ResetBoneTransforms()
         {
-            if (Bones?.Data == null) return;
-            foreach (var bone in Bones.Data)
+            if (Bones?.Items == null) return;
+            foreach (var bone in Bones.Items)
             {
                 bone.ResetAnimTransform();
             }
@@ -1376,14 +1379,14 @@ namespace CodeWalker.GameFiles
         }
         public void UpdateBoneTransforms()
         {
-            if (Bones?.Data == null) return;
-            if ((BoneTransforms == null) || (BoneTransforms.Length != Bones.Data.Count))
+            if (Bones?.Items == null) return;
+            if ((BoneTransforms == null) || (BoneTransforms.Length != Bones.Items.Length))
             {
-                BoneTransforms = new Matrix3_s[Bones.Data.Count];
+                BoneTransforms = new Matrix3_s[Bones.Items.Length];
             }
-            for (int i = 0; i < Bones.Data.Count; i++)
+            for (int i = 0; i < Bones.Items.Length; i++)
             {
-                var bone = Bones.Data[i];
+                var bone = Bones.Items[i];
                 Matrix b = bone.SkinTransform;
                 Matrix3_s bt = new Matrix3_s();
                 bt.Row1 = b.Column1;
@@ -1439,13 +1442,13 @@ namespace CodeWalker.GameFiles
             }
             if (Bones != null)
             {
-                skel.Bones = new ResourceSimpleArray<Bone>();
-                if (Bones.Data != null)
+                skel.Bones = new SkeletonBonesBlock();
+                if (Bones.Items != null)
                 {
-                    skel.Bones.Data = new List<Bone>();
-                    for (int i = 0; i < Bones.Data.Count; i++)
+                    skel.Bones.Items = new Bone[Bones.Items.Length];
+                    for (int i = 0; i < Bones.Items.Length; i++)
                     {
-                        var ob = Bones.Data[i];
+                        var ob = Bones.Items[i];
                         var nb = new Bone();
                         nb.Rotation = ob.Rotation;
                         nb.Translation = ob.Translation;
@@ -1463,7 +1466,7 @@ namespace CodeWalker.GameFiles
                         nb.AnimTransform = ob.AnimTransform;
                         nb.BindTransformInv = ob.BindTransformInv;
                         nb.SkinTransform = ob.SkinTransform;
-                        skel.Bones.Data.Add(nb);
+                        skel.Bones.Items[i] = nb;
                     }
                 }
             }
@@ -1481,6 +1484,89 @@ namespace CodeWalker.GameFiles
 
 
 
+    }
+
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class SkeletonBonesBlock : ResourceSystemBlock
+    {
+        public override long BlockLength
+        {
+            get
+            {
+                long length = 16;
+                if (Items != null)
+                {
+                    foreach (var b in Items)
+                    {
+                        length += b.BlockLength;
+                    }
+                }
+                return length;
+            }
+        }
+
+        public uint Count { get; set; }
+        public uint Unk0; // 0
+        public uint Unk1; // 0
+        public uint Unk2; // 0
+        public Bone[] Items { get; set; }
+
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            Count = reader.ReadUInt32();
+            Unk0 = reader.ReadUInt32();
+            Unk1 = reader.ReadUInt32();
+            Unk2 = reader.ReadUInt32();
+
+            var count = (uint)parameters[0];
+            var items = new Bone[count];
+            for (uint i = 0; i < count; i++)
+            {
+                items[i] = reader.ReadBlock<Bone>();
+            }
+            Items = items;
+
+
+            //if (Count != count)
+            //{ }//no hit
+            //if (Unk0 != 0)
+            //{ }//no hit
+            //if (Unk1 != 0)
+            //{ }//no hit
+            //if (Unk2 != 0)
+            //{ }//no hit
+
+        }
+
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            Count = (uint)(Items?.Length ?? 0);
+
+            writer.Write(Count);
+            writer.Write(Unk0);
+            writer.Write(Unk1);
+            writer.Write(Unk2);
+
+            foreach (var b in Items)
+            {
+                b.Write(writer);
+            }
+        }
+
+        public override Tuple<long, IResourceBlock>[] GetParts()
+        {
+            var list = new List<Tuple<long, IResourceBlock>>();
+            long length = 16;
+            if (Items != null)
+            {
+                foreach (var b in Items)
+                {
+                    list.Add(new Tuple<long, IResourceBlock>(length, b));
+                    length += b.BlockLength;
+                }
+            }
+            return list.ToArray();
+        }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class SkeletonBoneTag : ResourceSystemBlock

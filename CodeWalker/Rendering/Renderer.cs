@@ -1263,11 +1263,11 @@ namespace CodeWalker.Rendering
                 Vector3 campos = camera.Position - (entity?.Position ?? Vector3.Zero);
 
                 var pinds = skeleton.ParentIndices;
-                var bones = skeleton.Bones;
+                var bones = skeleton.Bones?.Items;
                 if ((pinds == null) || (bones == null)) continue;
                 var xforms = skeleton.Transformations;
 
-                int cnt = Math.Min(pinds.Length, bones.Count);
+                int cnt = Math.Min(pinds.Length, bones.Length);
                 for (int i = 0; i < cnt; i++)
                 {
                     var pind = pinds[i];
@@ -3172,15 +3172,18 @@ namespace CodeWalker.Rendering
                 else if (drawable.Skeleton != skel)
                 {
                     var dskel = drawable.Skeleton; //put the bones of the fragment into the drawable. drawable's bones in this case seem messed up!
-                    for (int b = 0; b < skel.Bones.Count; b++)
+                    if (skel.Bones?.Items != null)
                     {
-                        var srcbone = skel.Bones[b];
-                        var dstbone = srcbone;
-                        if (dskel.BonesMap.TryGetValue(srcbone.Tag, out dstbone))
+                        for (int b = 0; b < skel.Bones.Items.Length; b++)
                         {
-                            if (srcbone == dstbone) break; //bone reassignment already done!
-                            dskel.Bones[dstbone.Index] = srcbone;
-                            dskel.BonesMap[srcbone.Tag] = srcbone;
+                            var srcbone = skel.Bones.Items[b];
+                            var dstbone = srcbone;
+                            if (dskel.BonesMap.TryGetValue(srcbone.Tag, out dstbone))
+                            {
+                                if (srcbone == dstbone) break; //bone reassignment already done!
+                                dskel.Bones.Items[dstbone.Index] = srcbone;
+                                dskel.BonesMap[srcbone.Tag] = srcbone;
+                            }
                         }
                     }
                 }
