@@ -1066,12 +1066,33 @@ namespace CodeWalker.GameFiles
 
             this.Octants = reader.ReadBlockAt<BoundGeomOctants>(this.OctantsPointer, this.OctantItemsPointer);
 
-            this.Materials = reader.ReadStructsAt<BoundMaterial_s>(this.MaterialsPointer, this.MaterialsCount);
+            this.Materials = reader.ReadStructsAt<BoundMaterial_s>(this.MaterialsPointer, (this.MaterialsCount < 4) ? 4u : MaterialsCount);
 
             this.MaterialColours = reader.ReadStructsAt<BoundMaterialColour>(this.MaterialColoursPointer, this.MaterialColoursCount);
 
             this.PolygonMaterialIndices = reader.ReadBytesAt(this.PolygonMaterialIndicesPointer, (uint)PolygonsCount);
 
+
+
+            if ((MaterialsPointer != 0) && (MaterialsCount < 4))
+            {
+                //for (var i = MaterialsCount; i < 4; i++)
+                //{
+                //    var m = Materials[i];
+                //    if ((m.Data1 != 0) || (m.Data2 != 0))
+                //    { }//no hit
+                //}
+
+
+                //the read array was padded, so remove the padding from this array. will re-add padding in BuildMaterials...
+                var mats = new BoundMaterial_s[MaterialsCount];
+                for (int i = 0; i < MaterialsCount; i++)
+                {
+                    mats[i] = Materials[i];
+                }
+                Materials = mats;
+
+            }
 
 
             //if (Vertices2Count != VerticesCount)
@@ -1114,7 +1135,7 @@ namespace CodeWalker.GameFiles
             this.MaterialsPointer = (ulong)(this.MaterialsBlock != null ? this.MaterialsBlock.FilePosition : 0);
             this.MaterialColoursPointer = (ulong)(this.MaterialColoursBlock != null ? this.MaterialColoursBlock.FilePosition : 0);
             this.PolygonMaterialIndicesPointer = (ulong)(this.PolygonMaterialIndicesBlock != null ? this.PolygonMaterialIndicesBlock.FilePosition : 0);
-            this.MaterialsCount = (byte)(this.MaterialsBlock != null ? this.MaterialsBlock.ItemCount : 0);
+            //this.MaterialsCount = (byte)(this.MaterialsBlock != null ? this.MaterialsBlock.ItemCount : 0);//this is updated by BuildMaterials, and the array could include padding!
             this.MaterialColoursCount = (byte)(this.MaterialColoursBlock != null ? this.MaterialColoursBlock.ItemCount : 0);
 
 
@@ -1748,6 +1769,14 @@ namespace CodeWalker.GameFiles
                         polymats.Add(matidx);
                     }
                 }
+            }
+
+            MaterialsCount = (byte)matlist.Count;
+
+            //add padding to the array for writing
+            for (int i = matlist.Count; i < 4; i++)
+            {
+                matlist.Add(new BoundMaterial_s());
             }
 
             Materials = matlist.ToArray();
