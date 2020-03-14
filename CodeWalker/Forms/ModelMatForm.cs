@@ -36,10 +36,10 @@ namespace CodeWalker.Forms
             ModelsTreeView.ShowRootLines = false;
             if (drawable != null)
             {
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsHigh, "High Detail");
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsMedium, "Medium Detail");
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail");
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail");
+                AddDrawableModelsTreeNodes(drawable.DrawableModels?.High, "High Detail");
+                AddDrawableModelsTreeNodes(drawable.DrawableModels?.Med, "Medium Detail");
+                AddDrawableModelsTreeNodes(drawable.DrawableModels?.Low, "Low Detail");
+                AddDrawableModelsTreeNodes(drawable.DrawableModels?.VLow, "Very Low Detail");
 
                 var fdrawable = drawable as FragDrawable;
                 if (fdrawable != null)
@@ -55,10 +55,10 @@ namespace CodeWalker.Forms
                                 if (cdrwbl.Owner is FragDrawable) continue; //it's a copied drawable... eg a wheel
 
                                 var dname = child.GroupName;
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsHigh, dname + " - High Detail");
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsMedium, dname + " - Medium Detail");
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsLow, dname + " - Low Detail");
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsVeryLow, dname + " - Very Low Detail");
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModels?.High, dname + " - High Detail");
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModels?.Med, dname + " - Medium Detail");
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModels?.Low, dname + " - Low Detail");
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModels?.VLow, dname + " - Very Low Detail");
                             }
                         }
                     }
@@ -82,26 +82,25 @@ namespace CodeWalker.Forms
                     var dnode = ModelsTreeView.Nodes.Add(mhash.ToString());
                     dnode.Tag = drawable;
 
-                    AddDrawableModelsTreeNodes(drawable.DrawableModelsHigh, "High Detail", dnode);
-                    AddDrawableModelsTreeNodes(drawable.DrawableModelsMedium, "Medium Detail", dnode);
-                    AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", dnode);
-                    AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", dnode);
+                    AddDrawableModelsTreeNodes(drawable.DrawableModels?.High, "High Detail", dnode);
+                    AddDrawableModelsTreeNodes(drawable.DrawableModels?.Med, "Medium Detail", dnode);
+                    AddDrawableModelsTreeNodes(drawable.DrawableModels?.Low, "Low Detail", dnode);
+                    AddDrawableModelsTreeNodes(drawable.DrawableModels?.VLow, "Very Low Detail", dnode);
 
                     dnode.Expand();
                 }
             }
         }
 
-        private void AddDrawableModelsTreeNodes(ResourcePointerList64<DrawableModel> models, string prefix, TreeNode parentDrawableNode = null)
+        private void AddDrawableModelsTreeNodes(DrawableModel[] models, string prefix, TreeNode parentDrawableNode = null)
         {
             if (models == null) return;
-            if (models.data_items == null) return;
 
-            for (int mi = 0; mi < models.data_items.Length; mi++)
+            for (int mi = 0; mi < models.Length; mi++)
             {
                 var tnc = (parentDrawableNode != null) ? parentDrawableNode.Nodes : ModelsTreeView.Nodes;
 
-                var model = models.data_items[mi];
+                var model = models[mi];
                 string mprefix = prefix + " " + (mi + 1).ToString();
                 var mnode = tnc.Add(mprefix + " " + model.ToString());
                 mnode.Tag = model;

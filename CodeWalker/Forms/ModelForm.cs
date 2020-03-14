@@ -964,11 +964,11 @@ namespace CodeWalker.Forms
             TexturesTreeView.Nodes.Clear();
             if (drawable != null)
             {
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsHigh, "High Detail", true);
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsMedium, "Medium Detail", false);
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", false);
-                AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", false);
-                //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false);
+                AddDrawableModelsTreeNodes(drawable.DrawableModels?.High, "High Detail", true);
+                AddDrawableModelsTreeNodes(drawable.DrawableModels?.Med, "Medium Detail", false);
+                AddDrawableModelsTreeNodes(drawable.DrawableModels?.Low, "Low Detail", false);
+                AddDrawableModelsTreeNodes(drawable.DrawableModels?.VLow, "Very Low Detail", false);
+                //AddDrawableModelsTreeNodes(drawable.DrawableModels?.Extra, "X Detail", false);
 
                 var fdrawable = drawable as FragDrawable;
                 if (fdrawable != null)
@@ -984,10 +984,10 @@ namespace CodeWalker.Forms
                                 if (cdrwbl.Owner is FragDrawable) continue; //it's a copied drawable... eg a wheel
 
                                 var dname = child.GroupName;
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsHigh, dname + " - High Detail", true);
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsMedium, dname + " - Medium Detail", false);
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsLow, dname + " - Low Detail", false);
-                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModelsVeryLow, dname + " - Very Low Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModels?.High, dname + " - High Detail", true);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModels?.Med, dname + " - Medium Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModels?.Low, dname + " - Low Detail", false);
+                                AddDrawableModelsTreeNodes(cdrwbl.DrawableModels?.VLow, dname + " - Very Low Detail", false);
                             }
                         }
                     }
@@ -1070,23 +1070,22 @@ namespace CodeWalker.Forms
             dnode.Tag = drawable;
             dnode.Checked = check;
 
-            AddDrawableModelsTreeNodes(drawable.DrawableModelsHigh, "High Detail", true, dnode);
-            AddDrawableModelsTreeNodes(drawable.DrawableModelsMedium, "Medium Detail", false, dnode);
-            AddDrawableModelsTreeNodes(drawable.DrawableModelsLow, "Low Detail", false, dnode);
-            AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow, "Very Low Detail", false, dnode);
-            //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false, dnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModels?.High, "High Detail", true, dnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModels?.Med, "Medium Detail", false, dnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModels?.Low, "Low Detail", false, dnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModels?.VLow, "Very Low Detail", false, dnode);
+            //AddDrawableModelsTreeNodes(drawable.DrawableModels?.Extra, "X Detail", false, dnode);
 
         }
-        private void AddDrawableModelsTreeNodes(ResourcePointerList64<DrawableModel> models, string prefix, bool check, TreeNode parentDrawableNode = null)
+        private void AddDrawableModelsTreeNodes(DrawableModel[] models, string prefix, bool check, TreeNode parentDrawableNode = null)
         {
             if (models == null) return;
-            if (models.data_items == null) return;
 
-            for (int mi = 0; mi < models.data_items.Length; mi++)
+            for (int mi = 0; mi < models.Length; mi++)
             {
                 var tnc = (parentDrawableNode != null) ? parentDrawableNode.Nodes : ModelsTreeView.Nodes;
 
-                var model = models.data_items[mi];
+                var model = models[mi];
                 string mprefix = prefix + " " + (mi + 1).ToString();
                 var mnode = tnc.Add(mprefix + " " + model.ToString());
                 mnode.Tag = model;

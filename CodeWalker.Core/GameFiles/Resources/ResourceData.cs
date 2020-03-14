@@ -572,6 +572,16 @@ namespace CodeWalker.GameFiles
             if (pad > 0) Write(new byte[pad]);
         }
 
+        public void WriteUlongs(ulong[] val)
+        {
+            if (val == null) return;
+            foreach (var v in val)
+            {
+                Write(v);
+            }
+        }
+
+
     }
 
 

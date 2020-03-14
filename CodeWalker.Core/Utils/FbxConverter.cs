@@ -167,34 +167,30 @@ namespace CodeWalker
             d.Unknown_9Ah = 33;//WTF is this???
             d.FileVFT = 1079446584;
             d.FileUnknown = 1;
+            d.DrawableModels = new DrawableModelsBlock();
             if (mlHigh.Count > 0)
             {
-                d.DrawableModelsHigh = new ResourcePointerList64<DrawableModel>();
-                d.DrawableModelsHigh.data_items = mlHigh.ToArray();
+                d.DrawableModels.High = mlHigh.ToArray();
                 d.FlagsHigh = 1;//what flags should be used??
             }
             if (mlMed.Count > 0)
             {
-                d.DrawableModelsMedium = new ResourcePointerList64<DrawableModel>();
-                d.DrawableModelsMedium.data_items = mlMed.ToArray();
+                d.DrawableModels.Med = mlMed.ToArray();
                 d.LodDistHigh = bsRad * 2.0f; //when med models present, generate a high lod dist..
                 d.FlagsMed = 1;
             }
             if (mlLow.Count > 0)
             {
-                d.DrawableModelsLow = new ResourcePointerList64<DrawableModel>();
-                d.DrawableModelsLow.data_items = mlLow.ToArray();
+                d.DrawableModels.Low = mlLow.ToArray();
                 d.LodDistMed = bsRad * 8.0f; //when low models present, generate a med lod dist..
                 d.FlagsLow = 1;
             }
             if (mlVlow.Count > 0)
             {
-                d.DrawableModelsVeryLow = new ResourcePointerList64<DrawableModel>();
-                d.DrawableModelsVeryLow.data_items = mlVlow.ToArray();
+                d.DrawableModels.VLow = mlVlow.ToArray();
                 d.LodDistLow = bsRad * 32.0f; //when vlow models present, generate a low lod dist..
                 d.FlagsVlow = 1;
             }
-            d.DrawableModelsX = d.DrawableModelsHigh;
 
             d.BuildRenderMasks();
 

@@ -2035,7 +2035,233 @@ namespace CodeWalker.GameFiles
 
 
 
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableModelsBlock : ResourceSystemBlock
+    {
+        public override long BlockLength
+        {
+            get
+            {
+                long len = 0;
+                len += ListLength(High, len);
+                len += ListLength(Med, len);
+                len += ListLength(Low, len);
+                len += ListLength(VLow, len);
+                len += ListLength(Extra, len);
+                return len;
+            }
+        }
 
+        public DrawableBase Owner;
+
+        public DrawableModel[] High { get; set; }
+        public DrawableModel[] Med { get; set; }
+        public DrawableModel[] Low { get; set; }
+        public DrawableModel[] VLow { get; set; }
+        public DrawableModel[] Extra { get; set; } //shouldn't be used
+
+        public ResourcePointerListHeader HighHeader { get; set; }
+        public ResourcePointerListHeader MedHeader { get; set; }
+        public ResourcePointerListHeader LowHeader { get; set; }
+        public ResourcePointerListHeader VLowHeader { get; set; }
+        public ResourcePointerListHeader ExtraHeader { get; set; }
+
+        public ulong[] HighPointers { get; set; }
+        public ulong[] MedPointers { get; set; }
+        public ulong[] LowPointers { get; set; }
+        public ulong[] VLowPointers { get; set; }
+        public ulong[] ExtraPointers { get; set; }
+
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            Owner = parameters[0] as DrawableBase;
+            var pos = (ulong)reader.Position;
+            var highPointer = (Owner?.DrawableModelsHighPointer ?? 0);
+            var medPointer = (Owner?.DrawableModelsMediumPointer ?? 0);
+            var lowPointer = (Owner?.DrawableModelsLowPointer ?? 0);
+            var vlowPointer = (Owner?.DrawableModelsVeryLowPointer ?? 0);
+            var extraPointer = (pos != highPointer) ? pos : 0;
+
+            if (highPointer != 0)
+            {
+                HighHeader = reader.ReadStructAt<ResourcePointerListHeader>((long)highPointer);
+                HighPointers = reader.ReadUlongsAt(HighHeader.Pointer, HighHeader.Capacity, false);
+                High = reader.ReadBlocks<DrawableModel>(HighPointers);
+            }
+            if (medPointer != 0)
+            {
+                MedHeader = reader.ReadStructAt<ResourcePointerListHeader>((long)medPointer);
+                MedPointers = reader.ReadUlongsAt(MedHeader.Pointer, MedHeader.Capacity, false);
+                Med = reader.ReadBlocks<DrawableModel>(MedPointers);
+            }
+            if (lowPointer != 0)
+            {
+                LowHeader = reader.ReadStructAt<ResourcePointerListHeader>((long)lowPointer);
+                LowPointers = reader.ReadUlongsAt(LowHeader.Pointer, LowHeader.Capacity, false);
+                Low = reader.ReadBlocks<DrawableModel>(LowPointers);
+            }
+            if (vlowPointer != 0)
+            {
+                VLowHeader = reader.ReadStructAt<ResourcePointerListHeader>((long)vlowPointer);
+                VLowPointers = reader.ReadUlongsAt(VLowHeader.Pointer, VLowHeader.Capacity, false);
+                VLow = reader.ReadBlocks<DrawableModel>(VLowPointers);
+            }
+            if (extraPointer != 0)
+            {
+                ExtraHeader = reader.ReadStructAt<ResourcePointerListHeader>((long)extraPointer);
+                ExtraPointers = reader.ReadUlongsAt(ExtraHeader.Pointer, ExtraHeader.Capacity, false);
+                Extra = reader.ReadBlocks<DrawableModel>(ExtraPointers);
+            }
+        }
+
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+
+            ResourcePointerListHeader makeHeader(ref long p, int c)
+            {
+                p += Pad(p);
+                var h = new ResourcePointerListHeader() { Pointer = (ulong)(p + 16), Count = (ushort)c, Capacity = (ushort)c };
+                p += HeaderLength(c);
+                return h;
+            }
+            ulong[] makePointers(ref long p, DrawableModel[] a)
+            {
+                var ptrs = new ulong[a.Length];
+                for (int i = 0; i < a.Length; i++)
+                {
+                    p += Pad(p);
+                    ptrs[i] = (ulong)p;
+                    p += a[i].BlockLength;
+                }
+                return ptrs;
+            }
+            void write(ResourcePointerListHeader h, ulong[] p, DrawableModel[] a)
+            {
+                writer.WritePadding(16);
+                writer.WriteStruct(h);
+                writer.WriteUlongs(p);
+                for (int i = 0; i < a.Length; i++)
+                {
+                    writer.WritePadding(16);
+                    writer.WriteBlock(a[i]);
+                }
+            }
+
+            var ptr = writer.Position;
+            if (High != null)
+            {
+                HighHeader = makeHeader(ref ptr, High.Length);
+                HighPointers = makePointers(ref ptr, High);
+                write(HighHeader, HighPointers, High);
+            }
+            if (Med != null)
+            {
+                MedHeader = makeHeader(ref ptr, Med.Length);
+                MedPointers = makePointers(ref ptr, Med);
+                write(MedHeader, MedPointers, Med);
+            }
+            if (Low != null)
+            {
+                LowHeader = makeHeader(ref ptr, Low.Length);
+                LowPointers = makePointers(ref ptr, Low);
+                write(LowHeader, LowPointers, Low);
+            }
+            if (VLow != null)
+            {
+                VLowHeader = makeHeader(ref ptr, VLow.Length);
+                VLowPointers = makePointers(ref ptr, VLow);
+                write(VLowHeader, VLowPointers, VLow);
+            }
+            if (Extra != null)
+            {
+                ExtraHeader = makeHeader(ref ptr, Extra.Length);
+                ExtraPointers = makePointers(ref ptr, Extra);
+                write(ExtraHeader, ExtraPointers, Extra);
+            }
+
+        }
+
+
+        private long Pad(long o) => ((16 - (o % 16)) % 16);
+        private long HeaderLength(int listlength) => 16 + ((listlength) * 8);
+        private long ListLength(DrawableModel[] list, long o)
+        {
+            if (list == null) return 0;
+            long l = 0;
+            l += HeaderLength(list.Length);
+            foreach (var m in list) l += Pad(l) + m.BlockLength;
+            return Pad(o) + l;
+        }
+
+
+        public override Tuple<long, IResourceBlock>[] GetParts()
+        {
+            var parts = new List<Tuple<long, IResourceBlock>>();
+            parts.AddRange(base.GetParts());
+
+            void addParts(ref long p, DrawableModel[] a)
+            {
+                if (a == null) return;
+                p += Pad(p);
+                p += HeaderLength(a.Length);
+                foreach (var m in a)
+                {
+                    p += Pad(p);
+                    parts.Add(new Tuple<long, IResourceBlock>(p, m));
+                    p += m.BlockLength;
+                }
+            }
+
+            var ptr = (long)0;
+            addParts(ref ptr, High);
+            addParts(ref ptr, Med);
+            addParts(ref ptr, Low);
+            addParts(ref ptr, VLow);
+            addParts(ref ptr, Extra);
+
+            return parts.ToArray();
+        }
+
+
+        public long GetHighPointer()
+        {
+            if (High == null) return 0;
+            return FilePosition;
+        }
+        public long GetMedPointer()
+        {
+            if (Med == null) return 0;
+            var p = FilePosition;
+            p += ListLength(High, p);
+            p += Pad(p);
+            return p;
+        }
+        public long GetLowPointer()
+        {
+            if (Low == null) return 0;
+            var p = GetMedPointer();
+            p += ListLength(Med, p);
+            p += Pad(p);
+            return p;
+        }
+        public long GetVLowPointer()
+        {
+            if (VLow == null) return 0;
+            var p = GetLowPointer();
+            p += ListLength(Low, p);
+            p += Pad(p);
+            return p;
+        }
+        public long GetExtraPointer()
+        {
+            if (Extra == null) return 0;
+            var p = GetVLowPointer();
+            p += ListLength(VLow, p);
+            p += Pad(p);
+            return p;
+        }
+
+    }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableModel : ResourceSystemBlock, IMetaXmlItem
     {
@@ -2191,27 +2417,27 @@ namespace CodeWalker.GameFiles
 
 
             ////just testing!
-            
+
             //var pos = (ulong)reader.Position;
             //var off = (ulong)0;
-            //if (ShaderMappingPointer != (pos+off))
+            //if (ShaderMappingPointer != (pos + off))
             //{ }//no hit
             //off += (ulong)(GeometriesCount1 * 2); //ShaderMapping
             //if (GeometriesCount1 == 1) off += 6;
             //else off += ((16 - (off % 16)) % 16);
-            //if (GeometriesPointer != (pos+off))
+            //if (GeometriesPointer != (pos + off))
             //{ }//no hit
             //off += (ulong)(GeometriesCount1 * 8); //Geometries pointers
             //off += ((16 - (off % 16)) % 16);
-            //if (BoundsPointer != (pos+off))
+            //if (BoundsPointer != (pos + off))
             //{ }//no hit
             //off += (ulong)((GeometriesCount1 + ((GeometriesCount1 > 1) ? 1 : 0)) * 32); //BoundsData
-            //if ((Geometries?.data_pointers != null) && (Geometries?.data_items != null))
+            //if ((GeometryPointers != null) && (Geometries != null))
             //{
             //    for (int i = 0; i < GeometriesCount1; i++)
             //    {
-            //        var geomptr = Geometries.data_pointers[i];
-            //        var geom = Geometries.data_items[i];
+            //        var geomptr = GeometryPointers[i];
+            //        var geom = Geometries[i];
             //        if (geom != null)
             //        {
             //            off += ((16 - (off % 16)) % 16);
@@ -3902,7 +4128,7 @@ namespace CodeWalker.GameFiles
         public ushort Unknown_98h { get; set; } // 0x0000
         public ushort Unknown_9Ah { get; set; }
         public uint Unknown_9Ch { get; set; } // 0x00000000
-        public ulong DrawableModelsXPointer { get; set; }
+        public ulong DrawableModelsPointer { get; set; }
 
         public byte FlagsHigh
         {
@@ -3949,12 +4175,9 @@ namespace CodeWalker.GameFiles
         // reference data
         public ShaderGroup ShaderGroup { get; set; }
         public Skeleton Skeleton { get; set; }
-        public ResourcePointerList64<DrawableModel> DrawableModelsHigh { get; set; }
-        public ResourcePointerList64<DrawableModel> DrawableModelsMedium { get; set; }
-        public ResourcePointerList64<DrawableModel> DrawableModelsLow { get; set; }
-        public ResourcePointerList64<DrawableModel> DrawableModelsVeryLow { get; set; }
         public Joints Joints { get; set; }
-        public ResourcePointerList64<DrawableModel> DrawableModelsX { get; set; }
+        public DrawableModelsBlock DrawableModels { get; set; }
+
 
         public DrawableModel[] AllModels { get; set; }
         public Dictionary<ulong, VertexDeclaration> VertexDecls { get; set; }
@@ -4014,45 +4237,60 @@ namespace CodeWalker.GameFiles
             this.Unknown_98h = reader.ReadUInt16();
             this.Unknown_9Ah = reader.ReadUInt16();
             this.Unknown_9Ch = reader.ReadUInt32();
-            this.DrawableModelsXPointer = reader.ReadUInt64();
+            this.DrawableModelsPointer = reader.ReadUInt64();
 
             // read reference data
-            this.ShaderGroup = reader.ReadBlockAt<ShaderGroup>(
-                this.ShaderGroupPointer // offset
-            );
-            this.Skeleton = reader.ReadBlockAt<Skeleton>(
-                this.SkeletonPointer // offset
-            );
-            this.DrawableModelsHigh = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
-                this.DrawableModelsHighPointer // offset
-            );
-            this.DrawableModelsMedium = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
-                this.DrawableModelsMediumPointer // offset
-            );
-            this.DrawableModelsLow = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
-                this.DrawableModelsLowPointer // offset
-            );
-            this.DrawableModelsVeryLow = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
-                this.DrawableModelsVeryLowPointer // offset
-            );
-            this.Joints = reader.ReadBlockAt<Joints>(
-                this.JointsPointer // offset
-            );
-            this.DrawableModelsX = reader.ReadBlockAt<ResourcePointerList64<DrawableModel>>(
-                this.DrawableModelsXPointer // offset
-            );
+            this.ShaderGroup = reader.ReadBlockAt<ShaderGroup>(this.ShaderGroupPointer);
+            this.Skeleton = reader.ReadBlockAt<Skeleton>(this.SkeletonPointer);
+            this.Joints = reader.ReadBlockAt<Joints>(this.JointsPointer);
+            this.DrawableModels = reader.ReadBlockAt<DrawableModelsBlock>(this.DrawableModelsPointer, this);
 
 
             BuildAllModels();
             BuildVertexDecls();
-
             AssignGeometryShaders(ShaderGroup);
 
 
-
-
-
             ////just testing!!!
+
+            //long pad(long o) => ((16 - (o % 16)) % 16);
+            //long listlength(DrawableModel[] list)
+            //{
+            //    long l = 16;
+            //    l += (list.Length) * 8;
+            //    foreach (var m in list) l += pad(l) + m.BlockLength;
+            //    return l;
+            //}
+            //var ptr = (long)DrawableModelsPointer;
+            //if (DrawableModels?.High != null)
+            //{
+            //    if (ptr != (long)DrawableModelsHighPointer)
+            //    { }//no hit
+            //    ptr += listlength(DrawableModels?.High);
+            //}
+            //if (DrawableModels?.Med != null)
+            //{
+            //    ptr += pad(ptr);
+            //    if (ptr != (long)DrawableModelsMediumPointer)
+            //    { }//no hit
+            //    ptr += listlength(DrawableModels?.Med);
+            //}
+            //if (DrawableModels?.Low != null)
+            //{
+            //    ptr += pad(ptr);
+            //    if (ptr != (long)DrawableModelsLowPointer)
+            //    { }//no hit
+            //    ptr += listlength(DrawableModels?.Low);
+            //}
+            //if (DrawableModels?.VLow != null)
+            //{
+            //    ptr += pad(ptr);
+            //    if (ptr != (long)DrawableModelsVeryLowPointer)
+            //    { }//no hit
+            //    ptr += listlength(DrawableModels?.VLow);
+            //}
+
+
             //switch (Unknown_3Ch)
             //{
             //    case 0x7f800001:
@@ -4242,12 +4480,12 @@ namespace CodeWalker.GameFiles
             // update structure data
             this.ShaderGroupPointer = (ulong)(this.ShaderGroup != null ? this.ShaderGroup.FilePosition : 0);
             this.SkeletonPointer = (ulong)(this.Skeleton != null ? this.Skeleton.FilePosition : 0);
-            this.DrawableModelsHighPointer = (ulong)(this.DrawableModelsHigh != null ? this.DrawableModelsHigh.FilePosition : 0);
-            this.DrawableModelsMediumPointer = (ulong)(this.DrawableModelsMedium != null ? this.DrawableModelsMedium.FilePosition : 0);
-            this.DrawableModelsLowPointer = (ulong)(this.DrawableModelsLow != null ? this.DrawableModelsLow.FilePosition : 0);
-            this.DrawableModelsVeryLowPointer = (ulong)(this.DrawableModelsVeryLow != null ? this.DrawableModelsVeryLow.FilePosition : 0);
+            this.DrawableModelsHighPointer = (ulong)(DrawableModels?.GetHighPointer() ?? 0);
+            this.DrawableModelsMediumPointer = (ulong)(DrawableModels?.GetMedPointer() ?? 0);
+            this.DrawableModelsLowPointer = (ulong)(DrawableModels?.GetLowPointer() ?? 0);
+            this.DrawableModelsVeryLowPointer = (ulong)(DrawableModels?.GetVLowPointer() ?? 0);
             this.JointsPointer = (ulong)(this.Joints != null ? this.Joints.FilePosition : 0);
-            this.DrawableModelsXPointer = (ulong)(this.DrawableModelsX != null ? this.DrawableModelsX.FilePosition : 0);
+            this.DrawableModelsPointer = (ulong)(DrawableModels?.FilePosition ?? 0);
 
             // write structure data
             writer.Write(this.ShaderGroupPointer);
@@ -4274,7 +4512,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_98h);
             writer.Write(this.Unknown_9Ah);
             writer.Write(this.Unknown_9Ch);
-            writer.Write(this.DrawableModelsXPointer);
+            writer.Write(this.DrawableModelsPointer);
         }
         public virtual void WriteXml(StringBuilder sb, int indent, string ddsfolder)
         {
@@ -4309,25 +4547,25 @@ namespace CodeWalker.GameFiles
                 Joints.WriteXml(sb, indent + 1);
                 YdrXml.CloseTag(sb, indent, "Joints");
             }
-            if (DrawableModelsHigh?.data_items != null)
+            if (DrawableModels?.High != null)
             {
-                YdrXml.WriteItemArray(sb, DrawableModelsHigh.data_items, indent, "DrawableModelsHigh");
+                YdrXml.WriteItemArray(sb, DrawableModels.High, indent, "DrawableModelsHigh");
             }
-            if (DrawableModelsMedium?.data_items != null)
+            if (DrawableModels?.Med != null)
             {
-                YdrXml.WriteItemArray(sb, DrawableModelsMedium.data_items, indent, "DrawableModelsMedium");
+                YdrXml.WriteItemArray(sb, DrawableModels.Med, indent, "DrawableModelsMedium");
             }
-            if (DrawableModelsLow?.data_items != null)
+            if (DrawableModels?.Low != null)
             {
-                YdrXml.WriteItemArray(sb, DrawableModelsLow.data_items, indent, "DrawableModelsLow");
+                YdrXml.WriteItemArray(sb, DrawableModels.Low, indent, "DrawableModelsLow");
             }
-            if (DrawableModelsVeryLow?.data_items != null)
+            if (DrawableModels?.VLow != null)
             {
-                YdrXml.WriteItemArray(sb, DrawableModelsVeryLow.data_items, indent, "DrawableModelsVeryLow");
+                YdrXml.WriteItemArray(sb, DrawableModels.VLow, indent, "DrawableModelsVeryLow");
             }
-            if ((DrawableModelsX?.data_items != null) && (DrawableModelsX != DrawableModelsHigh))//is this right? duplicates..?
+            if (DrawableModels?.Extra != null)//is this right? duplicates..?
             {
-                YdrXml.WriteItemArray(sb, DrawableModelsX.data_items, indent, "DrawableModelsX");
+                YdrXml.WriteItemArray(sb, DrawableModels.Extra, indent, "DrawableModelsX");
             }
         }
         public virtual void ReadXml(XmlNode node, string ddsfolder)
@@ -4363,39 +4601,15 @@ namespace CodeWalker.GameFiles
                 Joints = new Joints();
                 Joints.ReadXml(jnode);
             }
-            var dmhigh = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsHigh");
-            if (dmhigh != null)
+            this.DrawableModels = new DrawableModelsBlock();
+            this.DrawableModels.High = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsHigh");
+            this.DrawableModels.Med = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsMedium");
+            this.DrawableModels.Low = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsLow");
+            this.DrawableModels.VLow = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsVeryLow");
+            this.DrawableModels.Extra = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsX");
+            if (DrawableModels.BlockLength == 0)
             {
-                DrawableModelsHigh = new ResourcePointerList64<DrawableModel>();
-                DrawableModelsHigh.data_items = dmhigh;
-            }
-            var dmmed = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsMedium");
-            if (dmmed != null)
-            {
-                DrawableModelsMedium = new ResourcePointerList64<DrawableModel>();
-                DrawableModelsMedium.data_items = dmmed;
-            }
-            var dmlow = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsLow");
-            if (dmlow != null)
-            {
-                DrawableModelsLow = new ResourcePointerList64<DrawableModel>();
-                DrawableModelsLow.data_items = dmlow;
-            }
-            var dmvlow = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsVeryLow");
-            if (dmvlow != null)
-            {
-                DrawableModelsVeryLow = new ResourcePointerList64<DrawableModel>();
-                DrawableModelsVeryLow.data_items = dmvlow;
-            }
-            var dmx = XmlMeta.ReadItemArray<DrawableModel>(node, "DrawableModelsX");
-            if (dmx != null)
-            {
-                DrawableModelsX = new ResourcePointerList64<DrawableModel>();
-                DrawableModelsX.data_items = dmx;
-            }
-            else
-            {
-                DrawableModelsX = DrawableModelsHigh;
+                DrawableModels = null;
             }
 
             BuildRenderMasks();
@@ -4410,12 +4624,8 @@ namespace CodeWalker.GameFiles
             var list = new List<IResourceBlock>(base.GetReferences());
             if (ShaderGroup != null) list.Add(ShaderGroup);
             if (Skeleton != null) list.Add(Skeleton);
-            if (DrawableModelsHigh != null) list.Add(DrawableModelsHigh);
-            if (DrawableModelsMedium != null) list.Add(DrawableModelsMedium);
-            if (DrawableModelsLow != null) list.Add(DrawableModelsLow);
-            if (DrawableModelsVeryLow != null) list.Add(DrawableModelsVeryLow);
             if (Joints != null) list.Add(Joints);
-            if (DrawableModelsX != null) list.Add(DrawableModelsX);
+            if (DrawableModels != null) list.Add(DrawableModels);
             return list.ToArray();
         }
 
@@ -4455,14 +4665,11 @@ namespace CodeWalker.GameFiles
         public void BuildAllModels()
         {
             var allModels = new List<DrawableModel>();
-            if (DrawableModelsHigh != null) allModels.AddRange(DrawableModelsHigh.data_items);
-            if (DrawableModelsMedium != null) allModels.AddRange(DrawableModelsMedium.data_items);
-            if (DrawableModelsLow != null) allModels.AddRange(DrawableModelsLow.data_items);
-            if (DrawableModelsVeryLow != null) allModels.AddRange(DrawableModelsVeryLow.data_items);
-            if ((DrawableModelsX != null) && (DrawableModelsX != DrawableModelsHigh))
-            {
-                allModels.AddRange(DrawableModelsX.data_items);
-            }
+            if (DrawableModels?.High != null) allModels.AddRange(DrawableModels.High);
+            if (DrawableModels?.Med != null) allModels.AddRange(DrawableModels.Med);
+            if (DrawableModels?.Low != null) allModels.AddRange(DrawableModels.Low);
+            if (DrawableModels?.VLow != null) allModels.AddRange(DrawableModels.VLow);
+            if (DrawableModels?.Extra != null) allModels.AddRange(DrawableModels.Extra);
             AllModels = allModels.ToArray();
         }
 
@@ -4495,10 +4702,10 @@ namespace CodeWalker.GameFiles
 
         public void BuildRenderMasks()
         {
-            var hmask = BuildRenderMask(DrawableModelsHigh?.data_items);
-            var mmask = BuildRenderMask(DrawableModelsMedium?.data_items);
-            var lmask = BuildRenderMask(DrawableModelsLow?.data_items);
-            var vmask = BuildRenderMask(DrawableModelsVeryLow?.data_items);
+            var hmask = BuildRenderMask(DrawableModels?.High);
+            var mmask = BuildRenderMask(DrawableModels?.Med);
+            var lmask = BuildRenderMask(DrawableModels?.Low);
+            var vmask = BuildRenderMask(DrawableModels?.VLow);
 
             ////just testing
             //if (hmask != RenderMaskHigh)
@@ -4574,11 +4781,12 @@ namespace CodeWalker.GameFiles
                 r.Unknown_9Ah = Unknown_9Ah;
                 r.ShaderGroup = ShaderGroup;
                 r.Skeleton = Skeleton?.Clone();
-                r.DrawableModelsHigh = DrawableModelsHigh;
-                r.DrawableModelsMedium = DrawableModelsMedium;
-                r.DrawableModelsLow = DrawableModelsLow;
-                r.DrawableModelsVeryLow = DrawableModelsVeryLow;
-                r.DrawableModelsX = DrawableModelsX;
+                r.DrawableModels = new DrawableModelsBlock();
+                r.DrawableModels.High = DrawableModels?.High;
+                r.DrawableModels.Med = DrawableModels?.Med;
+                r.DrawableModels.Low = DrawableModels?.Low;
+                r.DrawableModels.VLow = DrawableModels?.VLow;
+                r.DrawableModels.Extra = DrawableModels?.Extra;
                 r.Joints = Joints;
                 r.AllModels = AllModels;
                 r.VertexDecls = VertexDecls;

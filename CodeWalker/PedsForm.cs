@@ -515,11 +515,11 @@ namespace CodeWalker
             dnode.Tag = drawable;
             dnode.Checked = check;
 
-            AddDrawableModelsTreeNodes(drawable.DrawableModelsHigh?.data_items, "High Detail", true, dnode, tnode);
-            AddDrawableModelsTreeNodes(drawable.DrawableModelsMedium?.data_items, "Medium Detail", false, dnode, tnode);
-            AddDrawableModelsTreeNodes(drawable.DrawableModelsLow?.data_items, "Low Detail", false, dnode, tnode);
-            AddDrawableModelsTreeNodes(drawable.DrawableModelsVeryLow?.data_items, "Very Low Detail", false, dnode, tnode);
-            //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false, dnode, tnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModels?.High, "High Detail", true, dnode, tnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModels?.Med, "Medium Detail", false, dnode, tnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModels?.Low, "Low Detail", false, dnode, tnode);
+            AddDrawableModelsTreeNodes(drawable.DrawableModels?.VLow, "Very Low Detail", false, dnode, tnode);
+            //AddDrawableModelsTreeNodes(drawable.DrawableModels?.Extra, "X Detail", false, dnode, tnode);
 
         }
         private void AddDrawableModelsTreeNodes(DrawableModel[] models, string prefix, bool check, TreeNode parentDrawableNode = null, TreeNode parentTextureNode = null)

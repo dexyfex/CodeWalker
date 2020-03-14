@@ -101,10 +101,10 @@ namespace CodeWalker.Rendering
 
             DataSize = 0;
 
-            var hd = Key.DrawableModelsHigh?.data_items ?? Key.AllModels;
-            var med = Key.DrawableModelsMedium?.data_items;
-            var low = Key.DrawableModelsLow?.data_items;
-            var vlow = Key.DrawableModelsVeryLow?.data_items;
+            var hd = Key.DrawableModels?.High ?? Key.AllModels;
+            var med = Key.DrawableModels?.Med;
+            var low = Key.DrawableModels?.Low;
+            var vlow = Key.DrawableModels?.VLow;
             int totmodels = (hd?.Length ?? 0) + (med?.Length ?? 0) + (low?.Length ?? 0) + (vlow?.Length ?? 0);
             int curmodel = hd?.Length ?? 0;
             AllModels = new RenderableModel[totmodels];

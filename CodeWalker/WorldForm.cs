@@ -2401,14 +2401,14 @@ namespace CodeWalker
 
 
             bool usegeomboxes = SelectByGeometry;
-            var dmodels = drawable.DrawableModelsHigh;
-            if((dmodels==null)||(dmodels.data_items==null))
+            var dmodels = drawable.DrawableModels?.High;
+            if (dmodels == null)
             { usegeomboxes = false; }
             if (usegeomboxes)
             {
-                for (int i = 0; i < dmodels.data_items.Length; i++)
+                for (int i = 0; i < dmodels.Length; i++)
                 {
-                    var m = dmodels.data_items[i];
+                    var m = dmodels[i];
                     if (m.BoundsData == null)
                     { usegeomboxes = false; break; }
                 }
@@ -2428,9 +2428,9 @@ namespace CodeWalker
             {
                 //geometry bounding boxes version
                 float ghitdist = float.MaxValue;
-                for (int i = 0; i < dmodels.data_items.Length; i++)
+                for (int i = 0; i < dmodels.Length; i++)
                 {
-                    var m = dmodels.data_items[i];
+                    var m = dmodels[i];
                     int gbbcount = m.BoundsData.Length;
                     for (int j = 0; j < gbbcount; j++) //first box seems to be whole model
                     {
@@ -3538,11 +3538,11 @@ namespace CodeWalker
             SelDrawableTexturesTreeView.Nodes.Clear();
             if (item.Drawable != null)
             {
-                AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsHigh, "High Detail", true);
-                AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsMedium, "Medium Detail", false);
-                AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsLow, "Low Detail", false);
-                AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsVeryLow, "Very Low Detail", false);
-                //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModelsX, "X Detail", false);
+                AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModels?.High, "High Detail", true);
+                AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModels?.Med, "Medium Detail", false);
+                AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModels?.Low, "Low Detail", false);
+                AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModels?.VLow, "Very Low Detail", false);
+                //AddSelectionDrawableModelsTreeNodes(item.Drawable.DrawableModels?.Extra, "X Detail", false);
             }
 
 
@@ -3765,14 +3765,13 @@ namespace CodeWalker
                 }
             }
         }
-        private void AddSelectionDrawableModelsTreeNodes(ResourcePointerList64<DrawableModel> models, string prefix, bool check)
+        private void AddSelectionDrawableModelsTreeNodes(DrawableModel[] models, string prefix, bool check)
         {
             if (models == null) return;
-            if (models.data_items == null) return;
 
-            for (int mi = 0; mi < models.data_items.Length; mi++)
+            for (int mi = 0; mi < models.Length; mi++)
             {
-                var model = models.data_items[mi];
+                var model = models[mi];
                 string mprefix = prefix + " " + (mi + 1).ToString();
                 var mnode = SelDrawableModelsTreeView.Nodes.Add(mprefix + " " + model.ToString());
                 mnode.Tag = model;
