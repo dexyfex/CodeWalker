@@ -2182,8 +2182,8 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class RpfResourceFileEntry : RpfFileEntry
     {
-        public uint SystemFlags { get; set; }
-        public uint GraphicsFlags { get; set; }
+        public RpfResourcePageFlags SystemFlags { get; set; }
+        public RpfResourcePageFlags GraphicsFlags { get; set; }
 
 
         public static int GetSizeFromFlags(uint flags)
@@ -2204,6 +2204,7 @@ namespace CodeWalker.GameFiles
             return (int)size;
 
 
+            #region dexyfex testing
             //var type = flags >> 28;
             //var test = GetFlagsFromSize((int)size, type);
             //s0 = ((test >> 27) & 0x1) << 0;   // 1 bit  - 27        (*1)
@@ -2251,6 +2252,7 @@ namespace CodeWalker.GameFiles
 
 
 
+            #endregion
 
 
 
@@ -2492,41 +2494,14 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                var sv = (SystemFlags >> 28);
-                switch(sv)
-                {
-                    case 0: break; //ytd, ytyp, ...
-                    case 10:break;//ydr, ydd, yft
-                    case 4:break; //ypt
-                    case 2:break; //ycd
-                    case 1:break;//yed
-                    default:break;
-                }
-
-                return GetSizeFromFlags(SystemFlags);
+                return (int)SystemFlags.Size;
             }
         }
         public int GraphicsSize
         {
             get
             {
-                var gv = (GraphicsFlags >> 28);
-                switch (gv)
-                {
-                    case 0: break; //empty? some vehicle addon yft
-                    case 1: break; //ynd
-                    case 2: break; //ytyp, ymap
-                    case 4: break; //yfd
-                    case 5: break; //ydd, ydr, yft
-                    case 9: break; //yed
-                    case 10: break; //ysc
-                    case 11: break; //ybn
-                    case 13: break; //ytd
-                    case 14: break; //ycd
-                    default: break;
-                }
-
-                return GetSizeFromFlags(GraphicsFlags);
+                return (int)GraphicsFlags.Size;
             }
         }
 
@@ -2595,7 +2570,172 @@ namespace CodeWalker.GameFiles
         }
     }
 
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct RpfResourcePageFlags
+    {
+        public uint Value { get; set; }
+        
+        public RpfResourcePage[] Pages
+        {
+            get
+            {
+                var count = Count;
+                if (count == 0) return null;
+                var pages = new RpfResourcePage[count];
+                var counts = PageCounts;
+                var sizes = BaseSizes;
+                int n = 0;
+                uint o = 0;
+                for (int i = 0; i < counts.Length; i++)
+                {
+                    var c = counts[i];
+                    var s = sizes[i];
+                    for (int p = 0; p < c; p++)
+                    {
+                        pages[n] = new RpfResourcePage() { Size = s, Offset = o };
+                        o += s;
+                        n++;
+                    }
+                }
+                return pages;
+            }
+        }
 
+        public uint TypeVal { get { return (Value >> 28) & 0xF; } }
+        public uint BaseShift { get { return (Value & 0xF); } }
+        public uint BaseSize { get { return (0x200u << (int)BaseShift); } }
+        public uint[] BaseSizes
+        {
+            get
+            {
+                var baseSize = BaseSize;
+                return new uint[]
+                {
+                    baseSize << 8,
+                    baseSize << 7,
+                    baseSize << 6,
+                    baseSize << 5,
+                    baseSize << 4,
+                    baseSize << 3,
+                    baseSize << 2,
+                    baseSize << 1,
+                    baseSize << 0,
+                };
+            }
+        }
+        public uint[] PageCounts
+        {
+            get
+            {
+                return new uint[]
+                {
+                    ((Value >> 4)  & 0x1),
+                    ((Value >> 5)  & 0x3),
+                    ((Value >> 7)  & 0xF),
+                    ((Value >> 11) & 0x3F),
+                    ((Value >> 17) & 0x7F),
+                    ((Value >> 24) & 0x1),
+                    ((Value >> 25) & 0x1),
+                    ((Value >> 26) & 0x1),
+                    ((Value >> 27) & 0x1),
+                };
+            }
+        }
+        public uint[] PageSizes
+        {
+            get
+            {
+                var counts = PageCounts;
+                var baseSizes = BaseSizes;
+                return new uint[]
+                {
+                    baseSizes[0] * counts[0],
+                    baseSizes[1] * counts[1],
+                    baseSizes[2] * counts[2],
+                    baseSizes[3] * counts[3],
+                    baseSizes[4] * counts[4],
+                    baseSizes[5] * counts[5],
+                    baseSizes[6] * counts[6],
+                    baseSizes[7] * counts[7],
+                    baseSizes[8] * counts[8],
+                };
+            }
+        }
+        public uint Count
+        {
+            get
+            {
+                var c = PageCounts;
+                return c[0] + c[1] + c[2] + c[3] + c[4] + c[5] + c[6] + c[7] + c[8];
+            }
+        }
+        public uint Size 
+        { 
+            get 
+            {
+                var flags = Value;
+                var s0 = ((flags >> 27) & 0x1)  << 0;
+                var s1 = ((flags >> 26) & 0x1)  << 1;
+                var s2 = ((flags >> 25) & 0x1)  << 2;
+                var s3 = ((flags >> 24) & 0x1)  << 3;
+                var s4 = ((flags >> 17) & 0x7F) << 4;
+                var s5 = ((flags >> 11) & 0x3F) << 5;
+                var s6 = ((flags >> 7)  & 0xF)  << 6;
+                var s7 = ((flags >> 5)  & 0x3)  << 7;
+                var s8 = ((flags >> 4)  & 0x1)  << 8;
+                var ss = ((flags >> 0)  & 0xF);
+                var baseSize = 0x200u << (int)ss;
+                return baseSize * (s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8);
+            }
+        }
+
+
+
+        public RpfResourcePageFlags(uint v)
+        {
+            Value = v;
+        }
+
+        public RpfResourcePageFlags(uint[] pageCounts, uint baseShift)
+        {
+            var v = baseShift & 0xF;
+            v += (pageCounts[0] & 0x1)  << 4;
+            v += (pageCounts[1] & 0x3)  << 5;
+            v += (pageCounts[2] & 0xF)  << 7;
+            v += (pageCounts[3] & 0x3F) << 11;
+            v += (pageCounts[4] & 0x7F) << 17;
+            v += (pageCounts[5] & 0x1)  << 24;
+            v += (pageCounts[6] & 0x1)  << 25;
+            v += (pageCounts[7] & 0x1)  << 26;
+            v += (pageCounts[8] & 0x1)  << 27;
+            Value = v;
+        }
+
+
+        public static implicit operator uint(RpfResourcePageFlags f)
+        {
+            return f.Value;  //implicit conversion
+        }
+        public static implicit operator RpfResourcePageFlags(uint v)
+        {
+            return new RpfResourcePageFlags(v);
+        }
+
+        public override string ToString()
+        {
+            return "Size: " + Size.ToString() + ", Pages: " + Count.ToString();
+        }
+    }
+
+    [TypeConverter(typeof(ExpandableObjectConverter))] public struct RpfResourcePage
+    {
+        public uint Size { get; set; }
+        public uint Offset { get; set; }
+
+        public override string ToString()
+        {
+            return Size.ToString() + ": " + Offset.ToString();
+        }
+    }
 
     public interface PackedFile //interface for the different file types to use
     {
