@@ -275,6 +275,169 @@ namespace CodeWalker.GameFiles
             pageCount = (int)currentPageCount;
         }
 
+        public static void AssignPositions(IList<IResourceBlock> blocks, uint basePosition, out RpfResourcePageFlags pageFlags)
+        {
+            var sys = (basePosition == 0x50000000);
+
+            IResourceBlock getRootBlock()
+            {
+                if (sys && (blocks.Count > 0))
+                {
+                    return blocks[0];
+                }
+                return null;
+            }
+            HashSet<IResourceBlock> getBlockSet()
+            {
+                var blockset = new HashSet<IResourceBlock>();
+                int start = sys ? 1 : 0;
+                for (int i = start; i < blocks.Count; i++)
+                {
+                    blockset.Add(blocks[i]);
+                }
+                return blockset;
+            }
+            IResourceBlock findBestBlock(long maxSize, HashSet<IResourceBlock> blockset)
+            {
+                if (maxSize <= 0) return null;
+                IResourceBlock r = null;
+                long rlen = 0;
+                foreach (var block in blockset)
+                {
+                    var blockLength = block.BlockLength;
+                    if ((blockLength <= maxSize) && (blockLength > rlen))
+                    {
+                        r = block;
+                        rlen = blockLength;
+                    }
+                }
+                return r;
+            }
+            IResourceBlock takeBestBlock(long maxSize, HashSet<IResourceBlock> blockset)
+            {
+                var r = findBestBlock(maxSize, blockset);
+                if (r != null)
+                {
+                    blockset.Remove(r);
+                }
+                return r;
+            }
+            long pad(long p)
+            {
+                return ((ALIGN_SIZE - (p % ALIGN_SIZE)) % ALIGN_SIZE);
+            }
+
+
+            long largestBlockSize = 0; // find largest structure
+            long startPageSize = BASE_SIZE;// 0x2000; // find starting page size
+            long totalBlockSize = 0;
+            foreach (var block in blocks)
+            {
+                var blockLength = block.BlockLength;
+                totalBlockSize += blockLength;
+                totalBlockSize += pad(totalBlockSize);
+                if (largestBlockSize < blockLength)
+                {
+                    largestBlockSize = blockLength;
+                }
+            }
+            while (startPageSize < largestBlockSize)
+            {
+                startPageSize *= 2;
+            }
+
+
+            pageFlags = new RpfResourcePageFlags();
+
+            while (true)
+            {
+                if (blocks.Count == 0) break;
+
+                var currentPosition = 0L;
+                var currentPageSize = startPageSize;
+                var currentPageStart = 0L;
+                var currentPageSpace = startPageSize;
+                var currentRemainder = totalBlockSize;
+                var rootblock = getRootBlock();
+                var blockset = getBlockSet();
+
+                var pageCount = 1;
+                var pageCounts = new uint[9];
+                var pageCountIndex = 0;
+                var targetPageSize = Math.Max(65536, startPageSize >> 5);
+                var minPageSize = Math.Max(512, Math.Min(targetPageSize, startPageSize) >> 4);
+                var baseShift = 0u;
+                var baseSize = 512;
+                while (baseSize < minPageSize)
+                {
+                    baseShift++;
+                    baseSize *= 2;
+                    if (baseShift >= 0xF) break;
+                }
+                var baseSizeMax = baseSize << 8;
+                var baseSizeMaxTest = startPageSize;
+                while (baseSizeMaxTest < baseSizeMax)
+                {
+                    pageCountIndex++;
+                    baseSizeMaxTest *= 2;
+                }
+                pageCounts[pageCountIndex] = 1;
+
+                while (true)
+                {
+                    var isroot = sys && (currentPosition == 0);
+                    var block = isroot ? rootblock : takeBestBlock(currentPageSpace, blockset);
+                    var blockLength = block?.BlockLength ?? 0;
+                    if (block != null)
+                    {
+                        //add this block to the current page.
+                        block.FilePosition = basePosition + currentPosition;
+                        var opos = currentPosition;
+                        currentPosition += blockLength;
+                        currentPosition += pad(currentPosition);
+                        var usedspace = currentPosition - opos;
+                        currentPageSpace -= usedspace;
+                        currentRemainder -= usedspace;//blockLength;// 
+
+                    }
+                    else if (blockset.Count > 0)
+                    {
+                        //allocate a new page
+                        currentPageStart += currentPageSize;
+                        currentPosition = currentPageStart;
+                        block = findBestBlock(long.MaxValue, blockset);//just find the biggest block
+                        blockLength = block?.BlockLength ?? 0;
+                        while (blockLength <= (currentPageSize >> 1))//determine best new page size
+                        {
+                            if (currentPageSize <= minPageSize) break;
+                            if (pageCountIndex >= 8) break;
+                            if ((currentPageSize <= targetPageSize) && (currentRemainder >= (currentPageSize - minPageSize))) break;
+
+                            currentPageSize = currentPageSize >> 1;
+                            pageCountIndex++;
+                        }
+                        currentPageSpace = currentPageSize;
+                        pageCounts[pageCountIndex]++;
+                        pageCount++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+
+                pageFlags = new RpfResourcePageFlags(pageCounts, baseShift);
+
+                if ((pageCount == pageFlags.Count) && (pageFlags.Size >= currentPosition)) //make sure page counts fit in the flags value
+                {
+                    break;
+                }
+
+                startPageSize *= 2;
+            }
+
+        }
 
 
         public static byte[] Build(ResourceFileBase fileBase, int version, bool compress = true)
@@ -286,13 +449,20 @@ namespace CodeWalker.GameFiles
             IList<IResourceBlock> graphicBlocks;
             GetBlocks(fileBase, out systemBlocks, out graphicBlocks);
 
-            int systemPageSize = BASE_SIZE;// *4;
-            int systemPageCount;
-            AssignPositions(systemBlocks, 0x50000000, ref systemPageSize, out systemPageCount);
+            //int systemPageSize = BASE_SIZE;// *4;
+            //int systemPageCount;
+            //AssignPositions(systemBlocks, 0x50000000, ref systemPageSize, out systemPageCount);
 
-            int graphicsPageSize = BASE_SIZE;
-            int graphicsPageCount;
-            AssignPositions(graphicBlocks, 0x60000000, ref graphicsPageSize, out graphicsPageCount);
+            //int graphicsPageSize = BASE_SIZE;
+            //int graphicsPageCount;
+            //AssignPositions(graphicBlocks, 0x60000000, ref graphicsPageSize, out graphicsPageCount);
+
+            
+            RpfResourcePageFlags systemPageFlags;
+            AssignPositions(systemBlocks, 0x50000000, out systemPageFlags);
+            
+            RpfResourcePageFlags graphicsPageFlags;
+            AssignPositions(graphicBlocks, 0x60000000, out graphicsPageFlags);
 
 
 
@@ -300,8 +470,8 @@ namespace CodeWalker.GameFiles
             //fileBase.FilePagesInfo.SystemPagesCount = 0;
             //if (systemPageCount > 0)
             //    fileBase.FilePagesInfo.SystemPagesCount = 1; // (byte)systemPageCount; //1
-            fileBase.FilePagesInfo.SystemPagesCount = (byte)systemPageCount;
-            fileBase.FilePagesInfo.GraphicsPagesCount = (byte)graphicsPageCount;
+            fileBase.FilePagesInfo.SystemPagesCount = (byte)systemPageFlags.Count;// systemPageCount;
+            fileBase.FilePagesInfo.GraphicsPagesCount = (byte)graphicsPageFlags.Count;// graphicsPageCount;
 
 
 
@@ -342,14 +512,14 @@ namespace CodeWalker.GameFiles
 
 
 
-            var sysDataSize = systemPageCount * systemPageSize;
+            var sysDataSize = (int)systemPageFlags.Size;// systemPageCount * systemPageSize;
             var sysData = new byte[sysDataSize];
             systemStream.Flush();
             systemStream.Position = 0;
             systemStream.Read(sysData, 0, (int)systemStream.Length);
 
 
-            var gfxDataSize = graphicsPageCount * graphicsPageSize;
+            var gfxDataSize = (int)graphicsPageFlags.Size;// graphicsPageCount * graphicsPageSize;
             var gfxData = new byte[gfxDataSize];
             graphicsStream.Flush();
             graphicsStream.Position = 0;
@@ -363,9 +533,11 @@ namespace CodeWalker.GameFiles
 
             //uint sf = RpfResourceFileEntry.GetFlagsFromSize(sysDataSize, sv);
             //uint gf = RpfResourceFileEntry.GetFlagsFromSize(gfxDataSize, gv); //TODO: might be broken...
+            //uint sf = RpfResourceFileEntry.GetFlagsFromBlocks((uint)systemPageCount, (uint)systemPageSize, sv);
+            //uint gf = RpfResourceFileEntry.GetFlagsFromBlocks((uint)graphicsPageCount, (uint)graphicsPageSize, gv);
+            uint sf = systemPageFlags.Value + (sv << 28);
+            uint gf = graphicsPageFlags.Value + (gv << 28);
 
-            uint sf = RpfResourceFileEntry.GetFlagsFromBlocks((uint)systemPageCount, (uint)systemPageSize, sv);
-            uint gf = RpfResourceFileEntry.GetFlagsFromBlocks((uint)graphicsPageCount, (uint)graphicsPageSize, gv);
 
             var tdatasize = sysDataSize + gfxDataSize;
             var tdata = new byte[tdatasize];
