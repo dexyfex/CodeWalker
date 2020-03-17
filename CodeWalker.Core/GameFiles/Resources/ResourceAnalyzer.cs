@@ -9,7 +9,10 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class ResourceAnalyzer
     {
-
+        public RpfResourceFileEntry FileEntry { get; set; }
+        public ResourcePagesInfo FilePagesInfo { get; set; }
+        public RpfResourcePage[] SystemPages { get; set; }
+        public RpfResourcePage[] GraphicsPages { get; set; }
         public ResourceAnalyzerItem[] Blocks { get; set; }
 
         [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -50,6 +53,10 @@ namespace CodeWalker.GameFiles
 
         public ResourceAnalyzer(ResourceDataReader reader)
         {
+            FileEntry = reader.FileEntry;
+            SystemPages = FileEntry?.SystemFlags.Pages;
+            GraphicsPages = FileEntry?.GraphicsFlags.Pages;
+
             var dlist = new List<ResourceAnalyzerItem>();
             foreach (var kvp in reader.blockPool)
             {
@@ -61,6 +68,7 @@ namespace CodeWalker.GameFiles
                 if (kvp.Value is ResourcePagesInfo rpi)
                 {
                     item.Length = 16 + (rpi.SystemPagesCount + rpi.GraphicsPagesCount) * 8;
+                    FilePagesInfo = rpi;
                 }
                 dlist.Add(item);
             }
