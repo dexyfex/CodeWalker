@@ -38,11 +38,18 @@ namespace CodeWalker.ErrorReport
                     {
                         var msg = errLastEntry.Message;
                         var lines = msg.Split('\n');
-                        if ((lines.Length > 0) && (lines[0].Contains("CodeWalker.exe")))
+                        if (lines.Length > 0)
                         {
-                            ErrorTextBox.Text = msg.Replace("\n", "\r\n");
-                            found = true;
-                            break;
+                            var l = lines[0];
+                            if (l.Contains("CodeWalker.exe") ||
+                                l.Contains("CodeWalker RPF Explorer.exe") ||
+                                l.Contains("CodeWalker Ped Viewer.exe") ||
+                                l.Contains("CodeWalker Vehicle Viewer.exe"))
+                            {
+                                ErrorTextBox.Text = msg.Replace("\n", "\r\n");
+                                found = true;
+                                break;
+                            }
                         }
                     }
                 }
