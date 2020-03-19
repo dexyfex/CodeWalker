@@ -21,6 +21,9 @@ namespace CodeWalker.GameFiles
 
         public string ErrorMessage { get; set; }
 
+#if DEBUG
+        public ResourceAnalyzer Analyzer { get; set; }
+#endif
 
         public YptFile() : base(null, GameFileType.Ypt)
         {
@@ -59,6 +62,10 @@ namespace CodeWalker.GameFiles
 
             BuildDrawableDict();
             BuildParticleDict();
+
+#if DEBUG
+            Analyzer = new ResourceAnalyzer(rd);
+#endif
 
             Loaded = true;
 
