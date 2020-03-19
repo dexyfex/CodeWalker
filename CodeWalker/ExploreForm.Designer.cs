@@ -587,6 +587,7 @@
             // 
             // LocationTextBox
             // 
+            this.LocationTextBox.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.LocationTextBox.Name = "LocationTextBox";
             this.LocationTextBox.Size = new System.Drawing.Size(423, 25);
             this.LocationTextBox.Enter += new System.EventHandler(this.LocationTextBox_Enter);
@@ -637,6 +638,7 @@
             // 
             // SearchTextBox
             // 
+            this.SearchTextBox.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.SearchTextBox.Name = "SearchTextBox";
             this.SearchTextBox.Size = new System.Drawing.Size(140, 25);
             this.SearchTextBox.Enter += new System.EventHandler(this.SearchTextBox_Enter);
@@ -726,6 +728,7 @@
             // MainSplitContainer
             // 
             this.MainSplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MainSplitContainer.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
             this.MainSplitContainer.Location = new System.Drawing.Point(0, 49);
             this.MainSplitContainer.Name = "MainSplitContainer";
             // 
