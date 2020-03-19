@@ -1383,10 +1383,6 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                if (ManualPointerOverride)
-                {
-                    return (data_pointers != null) ? 8 * data_pointers.Length : 0;
-                }
                 return (data_items != null) ? 8 * data_items.Length : 0;
             }
         }
@@ -1395,8 +1391,7 @@ namespace CodeWalker.GameFiles
         public ulong[] data_pointers { get; set; }
         public T[] data_items { get; set; }
 
-        public bool ManualPointerOverride = false;//use this to manually write data_pointers
-
+        public bool ManualReferenceOverride = false;//use this if the items are embedded in something else
 
 
         public ResourcePointerArray64()
@@ -1423,22 +1418,20 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update...
-            if (ManualPointerOverride == false)
+            var list = new List<ulong>();
+            foreach (var x in data_items)
             {
-                var list = new List<ulong>();
-                foreach (var x in data_items)
+                if (x != null)
                 {
-                    if (x != null)
-                    {
-                        list.Add((uint)x.FilePosition);
-                    }
-                    else
-                    {
-                        list.Add(0);
-                    }
+                    list.Add((uint)x.FilePosition);
                 }
-                data_pointers = list.ToArray();
+                else
+                {
+                    list.Add(0);
+                }
             }
+            data_pointers = list.ToArray();
+
 
             // write...
             foreach (var x in data_pointers)
@@ -1450,7 +1443,7 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>();
 
-            if (ManualPointerOverride == false)
+            if (ManualReferenceOverride == false)
             {
                 foreach (var x in data_items)
                 {
@@ -1571,6 +1564,7 @@ namespace CodeWalker.GameFiles
         public T[] data_items { get; set; }
 
         public bool ManualCountOverride = false; //use this to manually specify the count
+        public bool ManualReferenceOverride = false; //use this if the items are embedded in something else
 
         private ResourcePointerArray64<T> data_block;//used for saving.
 
@@ -1587,7 +1581,7 @@ namespace CodeWalker.GameFiles
             //    this.EntriesCount
             //);
 
-            data_pointers = reader.ReadUlongsAt(EntriesPointer, EntriesCount);
+            data_pointers = reader.ReadUlongsAt(EntriesPointer, EntriesCapacity);
             data_items = new T[EntriesCount];
             for (int i = 0; i < EntriesCount; i++)
             {
@@ -1623,6 +1617,7 @@ namespace CodeWalker.GameFiles
             {
                 data_block = new ResourcePointerArray64<T>();
                 data_block.data_items = data_items;
+                data_block.ManualReferenceOverride = ManualReferenceOverride;
                 list.Add(data_block);
             }
             else

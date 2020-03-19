@@ -5198,10 +5198,12 @@ namespace CodeWalker.GameFiles
                     drawablehashes.Add(h);
                 }
             }
-
-            Hashes = drawablehashes.ToArray();
-            Drawables = new ResourcePointerArray64<DrawablePtfx>();
-            Drawables.data_items = drawables.ToArray();
+            if (drawables.Count > 0)
+            {
+                Hashes = drawablehashes.ToArray();
+                Drawables = new ResourcePointerArray64<DrawablePtfx>();
+                Drawables.data_items = drawables.ToArray();
+            }
         }
         public static void WriteXmlNode(DrawablePtfxDictionary d, StringBuilder sb, int indent, string ddsfolder, string name = "DrawableDictionary")
         {

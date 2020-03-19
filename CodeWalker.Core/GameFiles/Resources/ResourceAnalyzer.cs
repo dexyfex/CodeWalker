@@ -31,13 +31,16 @@ namespace CodeWalker.GameFiles
             public override string ToString()
             {
                 var type = "########## ??? ##########";
+                var val = "";
                 if (SystemBlock != null)
                 {
                     type = SystemBlock.GetType().Name;
+                    //val = SystemBlock.ToString();
                 }
                 else if (GraphicsBlock != null)
                 {
                     type = GraphicsBlock.GetType().Name;
+                    //val = GraphicsBlock.ToString();
                 }
                 else if (Array != null)
                 {
@@ -45,9 +48,11 @@ namespace CodeWalker.GameFiles
                 }
                 else if (String != null)
                 {
-                    type = "string - \"" + String + "\"";
+                    type = "string";
+                    val = "\"" + String + "\"";
                 }
-                return Offset.ToString() + " - " + Length.ToString() + " - " + type + (Overlapping ? "   (embedded)" : "");
+                var valstr = (string.IsNullOrEmpty(val) ? "" : " - " + val);
+                return Offset.ToString() + " - " + Length.ToString() + " - " + type + valstr + (Overlapping ? "   (embedded)" : "");
             }
         }
 

@@ -2059,8 +2059,8 @@ namespace CodeWalker.GameFiles
         public uint VFT2 { get; set; } = 0x4060e3e8; // 0x4060e3e8, 0x40610408
         public uint Unknown_34h = 1; // 0x00000001
         public ulong EventEmittersPointer { get; set; }
-        public ushort EventEmittersCount1 { get; set; }
-        public ushort EventEmittersCount2 { get; set; } = 32; //always 32
+        public ushort EventEmittersCount { get; set; }
+        public ushort EventEmittersCapacity { get; set; } = 32; //always 32
         public uint Unknown_44h; // 0x00000000
         public ulong UnknownData1Pointer { get; set; }
         public uint Unknown_50h { get; set; } // 0, 0xffffffff
@@ -2095,8 +2095,8 @@ namespace CodeWalker.GameFiles
         public ParticleKeyframeProp KeyframeProp3 { get; set; }
         public ParticleKeyframeProp KeyframeProp4 { get; set; }
         public ulong KeyframePropsPointer { get; set; } //pointer to a list, which is pointing back to above items
-        public ushort KeyframePropsCount1 { get; set; } = 5; //always 5
-        public ushort KeyframePropsCount2 { get; set; } = 16; //always 16
+        public ushort KeyframePropsCount { get; set; } = 5; //always 5
+        public ushort KeyframePropsCapacity { get; set; } = 16; //always 16
         public uint Unknown_39Ch; // 0x00000000
         public uint Unknown_3A0h { get; set; } // eg. 0x00090100
         public uint Unknown_3A4h; // 0x00000000
@@ -2129,8 +2129,8 @@ namespace CodeWalker.GameFiles
             this.VFT2 = reader.ReadUInt32();
             this.Unknown_34h = reader.ReadUInt32();
             this.EventEmittersPointer = reader.ReadUInt64();
-            this.EventEmittersCount1 = reader.ReadUInt16();
-            this.EventEmittersCount2 = reader.ReadUInt16();
+            this.EventEmittersCount = reader.ReadUInt16();
+            this.EventEmittersCapacity = reader.ReadUInt16();
             this.Unknown_44h = reader.ReadUInt32();
             this.UnknownData1Pointer = reader.ReadUInt64();
             this.Unknown_50h = reader.ReadUInt32();
@@ -2165,8 +2165,8 @@ namespace CodeWalker.GameFiles
             this.KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
             this.KeyframeProp4 = reader.ReadBlock<ParticleKeyframeProp>();
             this.KeyframePropsPointer = reader.ReadUInt64();
-            this.KeyframePropsCount1 = reader.ReadUInt16();
-            this.KeyframePropsCount2 = reader.ReadUInt16();
+            this.KeyframePropsCount = reader.ReadUInt16();
+            this.KeyframePropsCapacity = reader.ReadUInt16();
             this.Unknown_39Ch = reader.ReadUInt32();
             this.Unknown_3A0h = reader.ReadUInt32();
             this.Unknown_3A4h = reader.ReadUInt32();
@@ -2177,9 +2177,9 @@ namespace CodeWalker.GameFiles
 
             // read reference data
             this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
-            this.EventEmitters = reader.ReadBlockAt<ResourcePointerArray64<ParticleEventEmitter>>(this.EventEmittersPointer, this.EventEmittersCount1);
+            this.EventEmitters = reader.ReadBlockAt<ResourcePointerArray64<ParticleEventEmitter>>(this.EventEmittersPointer, this.EventEmittersCapacity);
             this.UnknownData = reader.ReadBlockAt<ParticleUnknown1>(this.UnknownData1Pointer);
-            this.KeyframeProps = reader.ReadBlockAt<ResourcePointerArray64<ParticleKeyframeProp>>(this.KeyframePropsPointer, this.KeyframePropsCount1);
+            this.KeyframeProps = reader.ReadBlockAt<ResourcePointerArray64<ParticleKeyframeProp>>(this.KeyframePropsPointer, this.KeyframePropsCapacity);
 
             if (!string.IsNullOrEmpty(Name?.Value))
             {
@@ -2507,17 +2507,6 @@ namespace CodeWalker.GameFiles
             this.UnknownData1Pointer = (ulong)(this.UnknownData != null ? this.UnknownData.FilePosition : 0);
             this.KeyframePropsPointer = (ulong)(this.KeyframeProps != null ? this.KeyframeProps.FilePosition : 0);
 
-            if (KeyframeProps?.data_items != null)
-            {
-                var kfplist = new List<ulong>();
-                foreach (var kf in KeyframeProps?.data_items)
-                {
-                    kfplist.Add((ulong)kf.FilePosition);//manually write pointers for this
-                }
-                for (int i = kfplist.Count; i < 16; i++) kfplist.Add(0);
-                KeyframeProps.data_pointers = kfplist.ToArray();
-            }
-
             // write structure data
             writer.Write(this.VFT);
             writer.Write(this.Unknown_4h);
@@ -2530,8 +2519,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.VFT2);
             writer.Write(this.Unknown_34h);
             writer.Write(this.EventEmittersPointer);
-            writer.Write(this.EventEmittersCount1);
-            writer.Write(this.EventEmittersCount2);
+            writer.Write(this.EventEmittersCount);
+            writer.Write(this.EventEmittersCapacity);
             writer.Write(this.Unknown_44h);
             writer.Write(this.UnknownData1Pointer);
             writer.Write(this.Unknown_50h);
@@ -2566,8 +2555,8 @@ namespace CodeWalker.GameFiles
             writer.WriteBlock(this.KeyframeProp3);
             writer.WriteBlock(this.KeyframeProp4);
             writer.Write(this.KeyframePropsPointer);
-            writer.Write(this.KeyframePropsCount1);
-            writer.Write(this.KeyframePropsCount2);
+            writer.Write(this.KeyframePropsCount);
+            writer.Write(this.KeyframePropsCapacity);
             writer.Write(this.Unknown_39Ch);
             writer.Write(this.Unknown_3A0h);
             writer.Write(this.Unknown_3A4h);
@@ -2603,11 +2592,15 @@ namespace CodeWalker.GameFiles
             YptXml.ValueTag(sb, indent, "Unknown3A0", YptXml.UintString(Unknown_3A0h));
             if (EventEmitters?.data_items != null)
             {
-                YptXml.WriteItemArray(sb, EventEmitters.data_items, indent, "EventEmitters");
+                var ee = new ParticleEventEmitter[EventEmittersCount];//trim the unused items from this array
+                Array.Copy(EventEmitters.data_items, 0, ee, 0, EventEmittersCount);
+                YptXml.WriteItemArray(sb, ee, indent, "EventEmitters");
             }
             if (KeyframeProps?.data_items != null)
             {
-                YptXml.WriteItemArray(sb, KeyframeProps.data_items, indent, "KeyframeProperties");
+                var kp = new ParticleKeyframeProp[KeyframePropsCount];//trim the unused items from this array
+                Array.Copy(KeyframeProps.data_items, 0, kp, 0, KeyframePropsCount);
+                YptXml.WriteItemArray(sb, kp, indent, "KeyframeProperties");
             }
             if (UnknownData != null)
             {
@@ -2644,7 +2637,7 @@ namespace CodeWalker.GameFiles
             Unknown_3A0h = Xml.GetChildUIntAttribute(node, "Unknown3A0");
 
             var emlist = XmlMeta.ReadItemArray<ParticleEventEmitter>(node, "EventEmitters")?.ToList() ?? new List<ParticleEventEmitter>();
-            EventEmittersCount1 = (ushort)emlist.Count;
+            EventEmittersCount = (ushort)emlist.Count;
             for (int i = emlist.Count; i < 32; i++) emlist.Add(null);
             EventEmitters = new ResourcePointerArray64<ParticleEventEmitter>();
             EventEmitters.data_items = emlist.ToArray();
@@ -2663,9 +2656,12 @@ namespace CodeWalker.GameFiles
             KeyframeProp2 = (kflist.Count > 2) ? kflist[2] : new ParticleKeyframeProp();
             KeyframeProp3 = (kflist.Count > 3) ? kflist[3] : new ParticleKeyframeProp();
             KeyframeProp4 = (kflist.Count > 4) ? kflist[4] : new ParticleKeyframeProp();
+            for (int i = kflist.Count; i < 16; i++) kflist.Add(null);
             KeyframeProps = new ResourcePointerArray64<ParticleKeyframeProp>();
             KeyframeProps.data_items = kflist.ToArray();
-            KeyframePropsCount1 = 5;//this should always be 5.......
+            KeyframeProps.ManualReferenceOverride = true;
+            KeyframePropsCount = 5;//this should always be 5.......
+            KeyframePropsCapacity = 16;//should always be 16...
 
             var udnode = node.SelectSingleNode("UnknownData");
             if (udnode != null)
@@ -2684,8 +2680,7 @@ namespace CodeWalker.GameFiles
             if (UnknownData != null) list.Add(UnknownData);
             if (KeyframeProps != null)
             {
-                KeyframeProps.ManualPointerOverride = true;
-                KeyframeProps.data_pointers = new ulong[16];
+                KeyframeProps.ManualReferenceOverride = true;
                 list.Add(KeyframeProps);
             }
             return list.ToArray();
@@ -3606,17 +3601,6 @@ namespace CodeWalker.GameFiles
             this.KeyframeProps2Pointer = (ulong)(this.KeyframeProps2 != null ? this.KeyframeProps2.FilePosition : 0);
             //this.refcnt2 = (ushort)(this.refs != null ? this.refs.Count : 0);
 
-            if ((KeyframeProps1 != null) && (KeyframeProps2 != null))
-            {
-                var kfplist = new List<ulong>();
-                foreach (var kf in KeyframeProps1)
-                {
-                    kfplist.Add((ulong)kf.FilePosition);//manually write pointers for this
-                }
-                for (int i = kfplist.Count; i < 10; i++) kfplist.Add(0);
-                KeyframeProps2.data_pointers = kfplist.ToArray();
-            }
-
 
             // write structure data
             writer.Write(this.VFT);
@@ -3679,7 +3663,8 @@ namespace CodeWalker.GameFiles
             }
 
             KeyframeProps2 = new ResourcePointerArray64<ParticleKeyframeProp>();
-            KeyframeProps2.data_items = KeyframeProps1;//just temporary to make correct block length
+            KeyframeProps2.data_items = KeyframeProps1;
+            KeyframeProps2.ManualReferenceOverride = true;
         }
 
         public override IResourceBlock[] GetReferences()
@@ -3691,8 +3676,7 @@ namespace CodeWalker.GameFiles
             if (Domain3 != null) list.Add(Domain3);
             if (KeyframeProps2 != null)
             {
-                KeyframeProps2.ManualPointerOverride = true;
-                KeyframeProps2.data_pointers = new ulong[10];
+                KeyframeProps2.ManualReferenceOverride = true;
                 list.Add(KeyframeProps2);
             }
             return list.ToArray();
@@ -4205,8 +4189,6 @@ namespace CodeWalker.GameFiles
 
 
 
-
-
     public enum ParticleDomainType : byte
     {
         Box = 0,
@@ -4445,6 +4427,7 @@ namespace CodeWalker.GameFiles
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             KeyframeProps.ManualCountOverride = true;
+            KeyframeProps.ManualReferenceOverride = true;
             KeyframeProps.EntriesCount = 4;
             KeyframeProps.EntriesCapacity = 16;
 
@@ -4569,6 +4552,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_28h = reader.ReadUInt64();
 
             KeyframeProps.ManualCountOverride = true; //incase re-saving again
+            KeyframeProps.ManualReferenceOverride = true;
 
             //if (Unknown_4h != 1)
             //{ }//no hit
@@ -4676,17 +4660,28 @@ namespace CodeWalker.GameFiles
         public void CreateKeyframeProps(params ParticleKeyframeProp[] props)
         {
             var plist = props.ToList();
-            for (int i = plist.Count; i < 16; i++)
+            if (plist.Count > 0)
             {
-                plist.Add(null);
+                for (int i = plist.Count; i < 16; i++)
+                {
+                    plist.Add(null);
+                }
             }
 
             KeyframeProps = new ResourcePointerList64<ParticleKeyframeProp>();
             KeyframeProps.data_items = plist.ToArray();
             KeyframeProps.ManualCountOverride = true;
+            KeyframeProps.ManualReferenceOverride = true;
             KeyframeProps.EntriesCount = (ushort)(props?.Length ?? 0);
-            KeyframeProps.EntriesCapacity = 16;
+            KeyframeProps.EntriesCapacity = (ushort)((plist.Count > 0) ? 16 : 0);
 
+        }
+
+        public override Tuple<long, IResourceBlock>[] GetParts()
+        {
+            return new Tuple<long, IResourceBlock>[] {
+                new Tuple<long, IResourceBlock>(0x10, KeyframeProps)
+            };
         }
 
     }
