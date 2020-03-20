@@ -3130,6 +3130,7 @@ namespace CodeWalker.GameFiles
                     blk.Name = item.Name;
                     blist.Add(blk);
                 }
+                blist.Sort((a, b) => a.Name.Hash.CompareTo(b.Name.Hash));
                 Unknown_28h.data_items = blist.ToArray();
             }
         }
@@ -3248,13 +3249,6 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Name);
             writer.Write(this.Unknown_4h);
             writer.Write(this.ItemPointer);
-        }
-
-        public override IResourceBlock[] GetReferences()
-        {
-            var list = new List<IResourceBlock>();
-            if (Item != null) list.Add(Item);
-            return list.ToArray();
         }
 
         public override string ToString()
