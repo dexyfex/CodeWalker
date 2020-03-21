@@ -343,7 +343,6 @@ namespace CodeWalker.Forms
             //(currently just return false and revert to XML file save)
 
             if (!(exploreForm?.EditMode ?? false)) return false;
-            if (rpfFileEntry?.Parent == null) return false;
 
             byte[] data = null;
 
@@ -409,34 +408,56 @@ namespace CodeWalker.Forms
                 return false;
             }
 
-            if (!rpfFileEntry.Path.ToLowerInvariant().StartsWith("mods"))
+            if (rpfFileEntry?.Parent != null)
             {
-                if (MessageBox.Show("This file is NOT located in the mods folder - Are you SURE you want to save this file?\r\nWARNING: This could cause permanent damage to your game!!!", "WARNING: Are you sure about this?", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                if (!rpfFileEntry.Path.ToLowerInvariant().StartsWith("mods"))
                 {
-                    return false;//that was a close one
+                    if (MessageBox.Show("This file is NOT located in the mods folder - Are you SURE you want to save this file?\r\nWARNING: This could cause permanent damage to your game!!!", "WARNING: Are you sure about this?", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    {
+                        return false;//that was a close one
+                    }
+                }
+
+                try
+                {
+                    if (!(exploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false)) return false;
+
+                    var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
+                    if (newentry != rpfFileEntry)
+                    { }
+                    rpfFileEntry = newentry;
+
+                    exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+
+                    modified = false;
+
+                    StatusLabel.Text = metaFormat.ToString() + " file saved successfully at " + DateTime.Now.ToString();
+
+                    return true; //victory!
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error saving file to RPF! The RPF archive may be corrupted...\r\n" + ex.ToString(), "Really Bad Error");
                 }
             }
-
-            try
+            else if (!string.IsNullOrEmpty(rpfFileEntry?.Path))
             {
-                if (!(exploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false)) return false;
+                try
+                {
+                    File.WriteAllBytes(rpfFileEntry.Path, data);
 
-                var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
-                if (newentry != rpfFileEntry)
-                { }
-                rpfFileEntry = newentry;
+                    exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
 
-                exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+                    modified = false;
 
-                modified = false;
+                    StatusLabel.Text = metaFormat.ToString() + " file saved successfully at " + DateTime.Now.ToString();
 
-                StatusLabel.Text = metaFormat.ToString() + " file saved successfully at " + DateTime.Now.ToString();
-
-                return true; //victory!
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error saving file to RPF! The RPF archive may be corrupted...\r\n" + ex.ToString(), "Really Bad Error");
+                    return true; //victory!
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error saving file to filesystem!\r\n" + ex.ToString(), "File I/O Error");
+                }
             }
 
             return false;

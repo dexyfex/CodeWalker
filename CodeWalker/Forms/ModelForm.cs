@@ -1223,7 +1223,7 @@ namespace CodeWalker.Forms
             if (string.IsNullOrEmpty(FilePath))
             {
                 if (!editMode) saveAs = true;
-                if (rpfFileEntry?.Parent == null) saveAs = true;
+                if (rpfFileEntry == null) saveAs = true;
             }
             else
             {
@@ -1251,6 +1251,7 @@ namespace CodeWalker.Forms
 
                 if (SaveFileDialog.ShowDialog() != DialogResult.OK) return;
                 fn = SaveFileDialog.FileName;
+                FilePath = fn;
             }
 
 
@@ -1335,12 +1336,18 @@ namespace CodeWalker.Forms
             }
             else
             {
+                if (string.IsNullOrEmpty(fn))
+                {
+                    fn = rpfFileEntry?.Path;
+                }
+
                 try
                 {
                     File.WriteAllBytes(fn, fileBytes);
 
                     fileName = Path.GetFileName(fn);
-                    FilePath = fn;
+
+                    exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
 
                     StatusLabel.Text = fileName + " saved successfully at " + DateTime.Now.ToString();
                 }
