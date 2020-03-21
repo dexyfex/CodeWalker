@@ -50,6 +50,7 @@
             this.EditCopyMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditCopyPathMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditCopyFileListMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.EditPasteMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.EditRenameMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditDeleteMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -152,7 +153,6 @@
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.VSExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
-            this.EditPasteMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.MainStatusBar.SuspendLayout();
@@ -195,20 +195,20 @@
             // FileOpenFolderMenu
             // 
             this.FileOpenFolderMenu.Name = "FileOpenFolderMenu";
-            this.FileOpenFolderMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileOpenFolderMenu.Size = new System.Drawing.Size(180, 22);
             this.FileOpenFolderMenu.Text = "Open Folder...";
             this.FileOpenFolderMenu.Click += new System.EventHandler(this.FileOpenFolderMenu_Click);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(145, 6);
+            this.toolStripSeparator7.Size = new System.Drawing.Size(177, 6);
             // 
             // FileExitMenu
             // 
             this.FileExitMenu.Name = "FileExitMenu";
-            this.FileExitMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.FileExitMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileExitMenu.ShortcutKeyDisplayString = "Alt+F4";
+            this.FileExitMenu.Size = new System.Drawing.Size(180, 22);
             this.FileExitMenu.Text = "Exit";
             this.FileExitMenu.Click += new System.EventHandler(this.FileExitMenu_Click);
             // 
@@ -243,7 +243,7 @@
             // 
             this.EditViewMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditViewMenu.Image")));
             this.EditViewMenu.Name = "EditViewMenu";
-            this.EditViewMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.P)));
+            this.EditViewMenu.ShortcutKeyDisplayString = "Ctrl+P";
             this.EditViewMenu.Size = new System.Drawing.Size(208, 22);
             this.EditViewMenu.Text = "View...";
             this.EditViewMenu.Click += new System.EventHandler(this.EditViewMenu_Click);
@@ -252,7 +252,7 @@
             // 
             this.EditViewHexMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditViewHexMenu.Image")));
             this.EditViewHexMenu.Name = "EditViewHexMenu";
-            this.EditViewHexMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.H)));
+            this.EditViewHexMenu.ShortcutKeyDisplayString = "Ctrl+H";
             this.EditViewHexMenu.Size = new System.Drawing.Size(208, 22);
             this.EditViewHexMenu.Text = "View Hex...";
             this.EditViewHexMenu.Click += new System.EventHandler(this.EditViewHexMenu_Click);
@@ -266,7 +266,7 @@
             // 
             this.EditExportXmlMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditExportXmlMenu.Image")));
             this.EditExportXmlMenu.Name = "EditExportXmlMenu";
-            this.EditExportXmlMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.EditExportXmlMenu.ShortcutKeyDisplayString = "Ctrl+S";
             this.EditExportXmlMenu.Size = new System.Drawing.Size(208, 22);
             this.EditExportXmlMenu.Text = "Export XML...";
             this.EditExportXmlMenu.Click += new System.EventHandler(this.EditExportXmlMenu_Click);
@@ -275,7 +275,7 @@
             // 
             this.EditExtractRawMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditExtractRawMenu.Image")));
             this.EditExtractRawMenu.Name = "EditExtractRawMenu";
-            this.EditExtractRawMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
+            this.EditExtractRawMenu.ShortcutKeyDisplayString = "Ctrl+E";
             this.EditExtractRawMenu.Size = new System.Drawing.Size(208, 22);
             this.EditExtractRawMenu.Text = "Extract Raw...";
             this.EditExtractRawMenu.Click += new System.EventHandler(this.EditExtractRawMenu_Click);
@@ -283,8 +283,7 @@
             // EditExtractAllMenu
             // 
             this.EditExtractAllMenu.Name = "EditExtractAllMenu";
-            this.EditExtractAllMenu.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.E)));
+            this.EditExtractAllMenu.ShortcutKeyDisplayString = "Ctrl+Shift+E";
             this.EditExtractAllMenu.Size = new System.Drawing.Size(208, 22);
             this.EditExtractAllMenu.Text = "Extract All...";
             this.EditExtractAllMenu.Click += new System.EventHandler(this.EditExtractAllMenu_Click);
@@ -306,7 +305,7 @@
             // 
             this.EditImportXmlMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditImportXmlMenu.Image")));
             this.EditImportXmlMenu.Name = "EditImportXmlMenu";
-            this.EditImportXmlMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.Insert)));
+            this.EditImportXmlMenu.ShortcutKeyDisplayString = "Shift+Ins";
             this.EditImportXmlMenu.Size = new System.Drawing.Size(208, 22);
             this.EditImportXmlMenu.Text = "Import XML...";
             this.EditImportXmlMenu.Visible = false;
@@ -316,7 +315,7 @@
             // 
             this.EditImportRawMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditImportRawMenu.Image")));
             this.EditImportRawMenu.Name = "EditImportRawMenu";
-            this.EditImportRawMenu.ShortcutKeys = System.Windows.Forms.Keys.Insert;
+            this.EditImportRawMenu.ShortcutKeyDisplayString = "Ins";
             this.EditImportRawMenu.Size = new System.Drawing.Size(208, 22);
             this.EditImportRawMenu.Text = "Import Raw...";
             this.EditImportRawMenu.Visible = false;
@@ -332,7 +331,7 @@
             // 
             this.EditCopyMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditCopyMenu.Image")));
             this.EditCopyMenu.Name = "EditCopyMenu";
-            this.EditCopyMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.EditCopyMenu.ShortcutKeyDisplayString = "Ctrl+C";
             this.EditCopyMenu.Size = new System.Drawing.Size(208, 22);
             this.EditCopyMenu.Text = "Copy";
             this.EditCopyMenu.Click += new System.EventHandler(this.EditCopyMenu_Click);
@@ -340,8 +339,7 @@
             // EditCopyPathMenu
             // 
             this.EditCopyPathMenu.Name = "EditCopyPathMenu";
-            this.EditCopyPathMenu.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.C)));
+            this.EditCopyPathMenu.ShortcutKeyDisplayString = "Ctrl+Shift+C";
             this.EditCopyPathMenu.Size = new System.Drawing.Size(208, 22);
             this.EditCopyPathMenu.Text = "Copy Path";
             this.EditCopyPathMenu.Click += new System.EventHandler(this.EditCopyPathMenu_Click);
@@ -353,6 +351,13 @@
             this.EditCopyFileListMenu.Text = "Copy File List";
             this.EditCopyFileListMenu.Click += new System.EventHandler(this.EditCopyFileListMenu_Click);
             // 
+            // EditPasteMenu
+            // 
+            this.EditPasteMenu.Name = "EditPasteMenu";
+            this.EditPasteMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditPasteMenu.Text = "Paste";
+            this.EditPasteMenu.Click += new System.EventHandler(this.EditPasteMenu_Click);
+            // 
             // toolStripSeparator9
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
@@ -362,7 +367,7 @@
             // 
             this.EditRenameMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditRenameMenu.Image")));
             this.EditRenameMenu.Name = "EditRenameMenu";
-            this.EditRenameMenu.ShortcutKeys = System.Windows.Forms.Keys.F2;
+            this.EditRenameMenu.ShortcutKeyDisplayString = "F2";
             this.EditRenameMenu.Size = new System.Drawing.Size(208, 22);
             this.EditRenameMenu.Text = "Rename...";
             this.EditRenameMenu.Visible = false;
@@ -372,7 +377,7 @@
             // 
             this.EditDeleteMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditDeleteMenu.Image")));
             this.EditDeleteMenu.Name = "EditDeleteMenu";
-            this.EditDeleteMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.Delete)));
+            this.EditDeleteMenu.ShortcutKeyDisplayString = "Shift+Del";
             this.EditDeleteMenu.Size = new System.Drawing.Size(208, 22);
             this.EditDeleteMenu.Text = "Delete";
             this.EditDeleteMenu.Visible = false;
@@ -387,7 +392,7 @@
             // EditSelectAllMenu
             // 
             this.EditSelectAllMenu.Name = "EditSelectAllMenu";
-            this.EditSelectAllMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
+            this.EditSelectAllMenu.ShortcutKeyDisplayString = "Ctrl+A";
             this.EditSelectAllMenu.Size = new System.Drawing.Size(208, 22);
             this.EditSelectAllMenu.Text = "Select All";
             this.EditSelectAllMenu.Click += new System.EventHandler(this.EditSelectAllMenu_Click);
@@ -408,21 +413,21 @@
             // ViewLargeIconsMenu
             // 
             this.ViewLargeIconsMenu.Name = "ViewLargeIconsMenu";
-            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewLargeIconsMenu.Text = "Large Icons";
             this.ViewLargeIconsMenu.Click += new System.EventHandler(this.ViewLargeIconsMenu_Click);
             // 
             // ViewSmallIconsMenu
             // 
             this.ViewSmallIconsMenu.Name = "ViewSmallIconsMenu";
-            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewSmallIconsMenu.Text = "Small Icons";
             this.ViewSmallIconsMenu.Click += new System.EventHandler(this.ViewSmallIconsMenu_Click);
             // 
             // ViewListMenu
             // 
             this.ViewListMenu.Name = "ViewListMenu";
-            this.ViewListMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewListMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewListMenu.Text = "List";
             this.ViewListMenu.Click += new System.EventHandler(this.ViewListMenu_Click);
             // 
@@ -431,14 +436,14 @@
             this.ViewDetailsMenu.Checked = true;
             this.ViewDetailsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ViewDetailsMenu.Name = "ViewDetailsMenu";
-            this.ViewDetailsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewDetailsMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewDetailsMenu.Text = "Details";
             this.ViewDetailsMenu.Click += new System.EventHandler(this.ViewDetailsMenu_Click);
             // 
             // toolStripSeparator11
             // 
             this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(131, 6);
+            this.toolStripSeparator11.Size = new System.Drawing.Size(177, 6);
             // 
             // ViewThemeMenu
             // 
@@ -448,7 +453,7 @@
             this.ViewThemeLightMenu,
             this.ViewThemeDarkMenu});
             this.ViewThemeMenu.Name = "ViewThemeMenu";
-            this.ViewThemeMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewThemeMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewThemeMenu.Text = "Theme";
             // 
             // ViewThemeWindowsMenu
@@ -493,14 +498,14 @@
             // ToolsBinSearchMenu
             // 
             this.ToolsBinSearchMenu.Name = "ToolsBinSearchMenu";
-            this.ToolsBinSearchMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsBinSearchMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolsBinSearchMenu.Text = "Binary Search...";
             this.ToolsBinSearchMenu.Click += new System.EventHandler(this.ToolsBinSearchMenu_Click);
             // 
             // ToolsRpfBrowserMenu
             // 
             this.ToolsRpfBrowserMenu.Name = "ToolsRpfBrowserMenu";
-            this.ToolsRpfBrowserMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsRpfBrowserMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolsRpfBrowserMenu.Text = "Old RPF Browser";
             this.ToolsRpfBrowserMenu.Click += new System.EventHandler(this.ToolsRpfBrowserMenu_Click);
             // 
@@ -516,7 +521,7 @@
             // OptionsStartInEditModeMenu
             // 
             this.OptionsStartInEditModeMenu.Name = "OptionsStartInEditModeMenu";
-            this.OptionsStartInEditModeMenu.Size = new System.Drawing.Size(168, 22);
+            this.OptionsStartInEditModeMenu.Size = new System.Drawing.Size(180, 22);
             this.OptionsStartInEditModeMenu.Text = "Start in Edit mode";
             this.OptionsStartInEditModeMenu.Click += new System.EventHandler(this.OptionsStartInEditModeMenu_Click);
             // 
@@ -528,7 +533,7 @@
             this.OptionsStartInFolderDefaultMenu,
             this.OptionsStartInFolderCurrentMenu});
             this.OptionsStartInFolderMenu.Name = "OptionsStartInFolderMenu";
-            this.OptionsStartInFolderMenu.Size = new System.Drawing.Size(168, 22);
+            this.OptionsStartInFolderMenu.Size = new System.Drawing.Size(180, 22);
             this.OptionsStartInFolderMenu.Text = "Start in Folder";
             // 
             // OptionsStartInFolderValueMenu
@@ -982,7 +987,7 @@
             // 
             this.ListContextViewMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextViewMenu.Image")));
             this.ListContextViewMenu.Name = "ListContextViewMenu";
-            this.ListContextViewMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.P)));
+            this.ListContextViewMenu.ShortcutKeyDisplayString = "Ctrl+P";
             this.ListContextViewMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextViewMenu.Text = "View...";
             this.ListContextViewMenu.Click += new System.EventHandler(this.ListContextViewMenu_Click);
@@ -991,7 +996,7 @@
             // 
             this.ListContextViewHexMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextViewHexMenu.Image")));
             this.ListContextViewHexMenu.Name = "ListContextViewHexMenu";
-            this.ListContextViewHexMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.H)));
+            this.ListContextViewHexMenu.ShortcutKeyDisplayString = "Ctrl+H";
             this.ListContextViewHexMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextViewHexMenu.Text = "View Hex...";
             this.ListContextViewHexMenu.Click += new System.EventHandler(this.ListContextViewHexMenu_Click);
@@ -1005,7 +1010,7 @@
             // 
             this.ListContextExportXmlMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextExportXmlMenu.Image")));
             this.ListContextExportXmlMenu.Name = "ListContextExportXmlMenu";
-            this.ListContextExportXmlMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.ListContextExportXmlMenu.ShortcutKeyDisplayString = "Ctrl+S";
             this.ListContextExportXmlMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextExportXmlMenu.Text = "Export XML...";
             this.ListContextExportXmlMenu.Click += new System.EventHandler(this.ListContextExportXmlMenu_Click);
@@ -1014,7 +1019,7 @@
             // 
             this.ListContextExtractRawMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextExtractRawMenu.Image")));
             this.ListContextExtractRawMenu.Name = "ListContextExtractRawMenu";
-            this.ListContextExtractRawMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
+            this.ListContextExtractRawMenu.ShortcutKeyDisplayString = "Ctrl+E";
             this.ListContextExtractRawMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextExtractRawMenu.Text = "Extract Raw...";
             this.ListContextExtractRawMenu.Click += new System.EventHandler(this.ListContextExtractRawMenu_Click);
@@ -1029,8 +1034,7 @@
             // ListContextExtractAllMenu
             // 
             this.ListContextExtractAllMenu.Name = "ListContextExtractAllMenu";
-            this.ListContextExtractAllMenu.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.E)));
+            this.ListContextExtractAllMenu.ShortcutKeyDisplayString = "Ctrl+Shift+E";
             this.ListContextExtractAllMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextExtractAllMenu.Text = "Extract All...";
             this.ListContextExtractAllMenu.Click += new System.EventHandler(this.ListContextExtractAllMenu_Click);
@@ -1074,7 +1078,7 @@
             // 
             this.ListContextImportXmlMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextImportXmlMenu.Image")));
             this.ListContextImportXmlMenu.Name = "ListContextImportXmlMenu";
-            this.ListContextImportXmlMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.Insert)));
+            this.ListContextImportXmlMenu.ShortcutKeyDisplayString = "Shift+Ins";
             this.ListContextImportXmlMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextImportXmlMenu.Text = "Import XML...";
             this.ListContextImportXmlMenu.Click += new System.EventHandler(this.ListContextImportXmlMenu_Click);
@@ -1083,7 +1087,7 @@
             // 
             this.ListContextImportRawMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextImportRawMenu.Image")));
             this.ListContextImportRawMenu.Name = "ListContextImportRawMenu";
-            this.ListContextImportRawMenu.ShortcutKeys = System.Windows.Forms.Keys.Insert;
+            this.ListContextImportRawMenu.ShortcutKeyDisplayString = "Ins";
             this.ListContextImportRawMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextImportRawMenu.Text = "Import Raw...";
             this.ListContextImportRawMenu.Click += new System.EventHandler(this.ListContextImportRawMenu_Click);
@@ -1097,7 +1101,7 @@
             // 
             this.ListContextCopyMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextCopyMenu.Image")));
             this.ListContextCopyMenu.Name = "ListContextCopyMenu";
-            this.ListContextCopyMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.ListContextCopyMenu.ShortcutKeyDisplayString = "Ctrl+C";
             this.ListContextCopyMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextCopyMenu.Text = "Copy";
             this.ListContextCopyMenu.Click += new System.EventHandler(this.ListContextCopyMenu_Click);
@@ -1105,8 +1109,7 @@
             // ListContextCopyPathMenu
             // 
             this.ListContextCopyPathMenu.Name = "ListContextCopyPathMenu";
-            this.ListContextCopyPathMenu.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.C)));
+            this.ListContextCopyPathMenu.ShortcutKeyDisplayString = "Ctrl+Shift+C";
             this.ListContextCopyPathMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextCopyPathMenu.Text = "Copy Path";
             this.ListContextCopyPathMenu.Click += new System.EventHandler(this.ListContextCopyPathMenu_Click);
@@ -1121,7 +1124,7 @@
             // ListContextPasteMenu
             // 
             this.ListContextPasteMenu.Name = "ListContextPasteMenu";
-            this.ListContextPasteMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
+            this.ListContextPasteMenu.ShortcutKeyDisplayString = "Ctrl+V";
             this.ListContextPasteMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextPasteMenu.Text = "Paste";
             this.ListContextPasteMenu.Click += new System.EventHandler(this.ListContextPasteMenu_Click);
@@ -1147,7 +1150,7 @@
             // 
             this.ListContextRenameMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextRenameMenu.Image")));
             this.ListContextRenameMenu.Name = "ListContextRenameMenu";
-            this.ListContextRenameMenu.ShortcutKeys = System.Windows.Forms.Keys.F2;
+            this.ListContextRenameMenu.ShortcutKeyDisplayString = "F2";
             this.ListContextRenameMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextRenameMenu.Text = "Rename";
             this.ListContextRenameMenu.Click += new System.EventHandler(this.ListContextRenameMenu_Click);
@@ -1156,7 +1159,7 @@
             // 
             this.ListContextDeleteMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextDeleteMenu.Image")));
             this.ListContextDeleteMenu.Name = "ListContextDeleteMenu";
-            this.ListContextDeleteMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Delete)));
+            this.ListContextDeleteMenu.ShortcutKeyDisplayString = "Shift+Del";
             this.ListContextDeleteMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextDeleteMenu.Text = "Delete";
             this.ListContextDeleteMenu.Click += new System.EventHandler(this.ListContextDeleteMenu_Click);
@@ -1181,7 +1184,7 @@
             // ListContextSelectAllMenu
             // 
             this.ListContextSelectAllMenu.Name = "ListContextSelectAllMenu";
-            this.ListContextSelectAllMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
+            this.ListContextSelectAllMenu.ShortcutKeyDisplayString = "Ctrl+A";
             this.ListContextSelectAllMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextSelectAllMenu.Text = "Select All";
             this.ListContextSelectAllMenu.Click += new System.EventHandler(this.ListContextSelectAllMenu_Click);
@@ -1261,13 +1264,6 @@
             // VSExtender
             // 
             this.VSExtender.DefaultRenderer = null;
-            // 
-            // EditPasteMenu
-            // 
-            this.EditPasteMenu.Name = "EditPasteMenu";
-            this.EditPasteMenu.Size = new System.Drawing.Size(208, 22);
-            this.EditPasteMenu.Text = "Paste";
-            this.EditPasteMenu.Click += new System.EventHandler(this.EditPasteMenu_Click);
             // 
             // ExploreForm
             // 

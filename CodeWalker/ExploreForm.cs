@@ -606,6 +606,7 @@ namespace CodeWalker
                         isfile = isfile || (file.Folder == null);
                         canview = canview || CanViewFile(file);
                         canexportxml = canexportxml || CanExportXml(file);
+                        canedit = EditMode && !issearch;
                     }
                 }
                 str += ", " + sc.ToString() + " selected";
@@ -3624,7 +3625,7 @@ namespace CodeWalker
                     RenameSelected();
                     break;
                 case Keys.Delete:
-                    if (ctrl) DeleteSelected();
+                    if (shft) DeleteSelected();
                     break;
                 case Keys.A:
                     if (ctrl) SelectAll();
@@ -3634,6 +3635,7 @@ namespace CodeWalker
 
         private void MainListView_KeyUp(object sender, KeyEventArgs e)
         {
+            if (e.Control || (e.KeyCode == Keys.ControlKey)) return;
             UpdateSelectionUI(); //need to use this instead of SelectedIndexChanged because of shift-click bug :/
         }
 
