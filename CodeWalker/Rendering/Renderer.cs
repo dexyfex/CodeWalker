@@ -3243,15 +3243,27 @@ namespace CodeWalker.Rendering
             {
                 RenderableBoundGeometryInst rbginst = new RenderableBoundGeometryInst();
                 rbginst.Inst.Renderable = rndbc;
-                rbginst.Inst.Orientation = orientation;
-                rbginst.Inst.Scale = scale;
                 if (rndbc.Geometries != null)
                 {
                     foreach (var geom in rndbc.Geometries)
                     {
                         if (geom == null) continue;
                         rbginst.Geom = geom;
-                        rbginst.Inst.Position = position + orientation.Multiply(geom.CenterGeom * scale);
+                        
+                        var pos = position;
+                        var ori = orientation;
+                        var sca = scale;
+                        if (geom.Bound is BoundGeometry bgeom)
+                        {
+                            var rmat = bgeom.Transform;
+                            sca = scale * rmat.ScaleVector;
+                            pos = position + orientation.Multiply(rmat.TranslationVector);
+                            rmat.TranslationVector = Vector3.Zero;
+                            ori = orientation * Quaternion.RotationMatrix(rmat);
+                        }
+                        rbginst.Inst.Position = pos + ori.Multiply(geom.CenterGeom * sca);
+                        rbginst.Inst.Orientation = ori;
+                        rbginst.Inst.Scale = sca;
                         rbginst.Inst.CamRel = rbginst.Inst.Position - camera.Position;
                         shaders.Enqueue(ref rbginst);
                     }
