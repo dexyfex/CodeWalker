@@ -52,7 +52,6 @@
             this.EditCopyFileListMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.EditRenameMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.EditReplaceMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditDeleteMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditEditModeMenuSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.EditSelectAllMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -135,7 +134,6 @@
             this.ListContextOpenFileLocationMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextOpenFileLocationSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.ListContextRenameMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ListContextReplaceMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextDeleteMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextEditSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.ListContextDefragmentMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -154,6 +152,7 @@
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.VSExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
+            this.EditPasteMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.MainStatusBar.SuspendLayout();
@@ -230,9 +229,9 @@
             this.EditCopyMenu,
             this.EditCopyPathMenu,
             this.EditCopyFileListMenu,
+            this.EditPasteMenu,
             this.toolStripSeparator9,
             this.EditRenameMenu,
-            this.EditReplaceMenu,
             this.EditDeleteMenu,
             this.EditEditModeMenuSeparator,
             this.EditSelectAllMenu});
@@ -368,16 +367,6 @@
             this.EditRenameMenu.Text = "Rename...";
             this.EditRenameMenu.Visible = false;
             this.EditRenameMenu.Click += new System.EventHandler(this.EditRenameMenu_Click);
-            // 
-            // EditReplaceMenu
-            // 
-            this.EditReplaceMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditReplaceMenu.Image")));
-            this.EditReplaceMenu.Name = "EditReplaceMenu";
-            this.EditReplaceMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.Insert)));
-            this.EditReplaceMenu.Size = new System.Drawing.Size(208, 22);
-            this.EditReplaceMenu.Text = "Replace...";
-            this.EditReplaceMenu.Visible = false;
-            this.EditReplaceMenu.Click += new System.EventHandler(this.EditReplaceMenu_Click);
             // 
             // EditDeleteMenu
             // 
@@ -981,14 +970,13 @@
             this.ListContextOpenFileLocationMenu,
             this.ListContextOpenFileLocationSeparator,
             this.ListContextRenameMenu,
-            this.ListContextReplaceMenu,
             this.ListContextDeleteMenu,
             this.ListContextEditSeparator,
             this.ListContextDefragmentMenu,
             this.ListContextDefragmentSeparator,
             this.ListContextSelectAllMenu});
             this.ListContextMenu.Name = "MainContextMenu";
-            this.ListContextMenu.Size = new System.Drawing.Size(209, 508);
+            this.ListContextMenu.Size = new System.Drawing.Size(209, 464);
             // 
             // ListContextViewMenu
             // 
@@ -1164,15 +1152,6 @@
             this.ListContextRenameMenu.Text = "Rename";
             this.ListContextRenameMenu.Click += new System.EventHandler(this.ListContextRenameMenu_Click);
             // 
-            // ListContextReplaceMenu
-            // 
-            this.ListContextReplaceMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextReplaceMenu.Image")));
-            this.ListContextReplaceMenu.Name = "ListContextReplaceMenu";
-            this.ListContextReplaceMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.Insert)));
-            this.ListContextReplaceMenu.Size = new System.Drawing.Size(208, 22);
-            this.ListContextReplaceMenu.Text = "Replace...";
-            this.ListContextReplaceMenu.Click += new System.EventHandler(this.ListContextReplaceMenu_Click);
-            // 
             // ListContextDeleteMenu
             // 
             this.ListContextDeleteMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextDeleteMenu.Image")));
@@ -1283,6 +1262,13 @@
             // 
             this.VSExtender.DefaultRenderer = null;
             // 
+            // EditPasteMenu
+            // 
+            this.EditPasteMenu.Name = "EditPasteMenu";
+            this.EditPasteMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditPasteMenu.Text = "Paste";
+            this.EditPasteMenu.Click += new System.EventHandler(this.EditPasteMenu_Click);
+            // 
             // ExploreForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1370,7 +1356,6 @@
         private System.Windows.Forms.ToolStripMenuItem ListContextCopyMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripMenuItem ListContextRenameMenu;
-        private System.Windows.Forms.ToolStripMenuItem ListContextReplaceMenu;
         private System.Windows.Forms.ToolStripMenuItem ListContextDeleteMenu;
         private System.Windows.Forms.ContextMenuStrip TreeContextMenu;
         private System.Windows.Forms.ToolStripMenuItem TreeContextCopyPathMenu;
@@ -1398,7 +1383,6 @@
         private System.Windows.Forms.ToolStripMenuItem EditCopyFileListMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.ToolStripMenuItem EditRenameMenu;
-        private System.Windows.Forms.ToolStripMenuItem EditReplaceMenu;
         private System.Windows.Forms.ToolStripMenuItem EditDeleteMenu;
         private System.Windows.Forms.ToolStripSeparator EditEditModeMenuSeparator;
         private System.Windows.Forms.ToolStripMenuItem EditSelectAllMenu;
@@ -1447,5 +1431,6 @@
         private System.Windows.Forms.ToolStripMenuItem OptionsStartInFolderDefaultMenu;
         private System.Windows.Forms.ToolStripMenuItem OptionsStartInFolderCurrentMenu;
         private System.Windows.Forms.ToolStripMenuItem ListContextPasteMenu;
+        private System.Windows.Forms.ToolStripMenuItem EditPasteMenu;
     }
 }

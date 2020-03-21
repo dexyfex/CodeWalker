@@ -585,7 +585,9 @@ namespace CodeWalker
             bool canview = false;
             bool canedit = false;
             bool canexportxml = false;
-            bool canimport = EditMode && (CurrentFolder?.RpfFolder != null) && !issearch;
+            bool canimport = EditMode && !issearch;// && (CurrentFolder?.RpfFolder != null);
+            bool canpaste = EditMode && (CopiedFiles.Count > 0);
+
             if (sc != 0)
             {
                 long bc = 0;
@@ -629,9 +631,10 @@ namespace CodeWalker
 
             EditCopyMenu.Enabled = isfile;
             EditCopyPathMenu.Enabled = isitem;
+            EditPasteMenu.Enabled = canpaste;
+            EditPasteMenu.Visible = EditMode;
 
             EditRenameMenu.Visible = canedit;
-            EditReplaceMenu.Visible = canedit;
             EditDeleteMenu.Visible = canedit;
             EditEditModeMenuSeparator.Visible = canedit;
 
@@ -1865,7 +1868,6 @@ namespace CodeWalker
             ListContextOpenFileLocationSeparator.Visible = issearch;
 
             ListContextRenameMenu.Visible = canedit;
-            ListContextReplaceMenu.Visible = canedit;
             ListContextDeleteMenu.Visible = canedit;
             ListContextEditSeparator.Visible = canedit;
 
@@ -3112,17 +3114,6 @@ namespace CodeWalker
             }
 
         }
-        private void ReplaceSelected()
-        {
-            if (!EditMode) return;
-            if (CurrentFolder?.IsSearchResults ?? false) return;
-            if (MainListView.SelectedIndices.Count != 1) return;
-            MessageBox.Show("ReplaceSelected TODO...");
-            //delete the selected items, and replace with... choose
-
-            //if (!EnsureRpfEncryptionType()) return;
-
-        }
         private void DeleteSelected()
         {
             if (!EditMode) return;
@@ -3619,15 +3610,8 @@ namespace CodeWalker
                     else if (ctrl) ExtractRaw();
                     break;
                 case Keys.Insert:
-                    if (MainListView.SelectedIndices.Count == 1)
-                    {
-                        if (shft) ReplaceSelected();
-                    }
-                    else
-                    {
-                        if (shft) ImportXml();
-                        else if (!ctrl) ImportRaw();
-                    }
+                    if (shft) ImportXml();
+                    else if (!ctrl) ImportRaw();
                     break;
                 case Keys.C:
                     if (ctrlshft) CopyPath();
@@ -4054,11 +4038,6 @@ namespace CodeWalker
             RenameSelected();
         }
 
-        private void ListContextReplaceMenu_Click(object sender, EventArgs e)
-        {
-            ReplaceSelected();
-        }
-
         private void ListContextDeleteMenu_Click(object sender, EventArgs e)
         {
             DeleteSelected();
@@ -4139,14 +4118,14 @@ namespace CodeWalker
             CopyFileList();
         }
 
+        private void EditPasteMenu_Click(object sender, EventArgs e)
+        {
+            Paste();
+        }
+
         private void EditRenameMenu_Click(object sender, EventArgs e)
         {
             RenameSelected();
-        }
-
-        private void EditReplaceMenu_Click(object sender, EventArgs e)
-        {
-            ReplaceSelected();
         }
 
         private void EditDeleteMenu_Click(object sender, EventArgs e)
