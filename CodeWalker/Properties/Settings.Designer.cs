@@ -12,7 +12,7 @@ namespace CodeWalker.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.4.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.5.0.0")]
     public sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -780,6 +780,54 @@ namespace CodeWalker.Properties {
             }
             set {
                 this["JumpListInitialised"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RPFExplorerSelectedFolder {
+            get {
+                return ((string)(this["RPFExplorerSelectedFolder"]));
+            }
+            set {
+                this["RPFExplorerSelectedFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RPFExplorerExtraFolders {
+            get {
+                return ((string)(this["RPFExplorerExtraFolders"]));
+            }
+            set {
+                this["RPFExplorerExtraFolders"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool RPFExplorerStartInEditMode {
+            get {
+                return ((bool)(this["RPFExplorerStartInEditMode"]));
+            }
+            set {
+                this["RPFExplorerStartInEditMode"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RPFExplorerStartFolder {
+            get {
+                return ((string)(this["RPFExplorerStartFolder"]));
+            }
+            set {
+                this["RPFExplorerStartFolder"] = value;
             }
         }
     }

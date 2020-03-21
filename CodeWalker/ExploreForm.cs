@@ -27,8 +27,11 @@ namespace CodeWalker
         private Dictionary<string, FileTypeInfo> FileTypes;
 
         private MainTreeFolder RootFolder;
+        private List<MainTreeFolder> ExtraRootFolders = new List<MainTreeFolder>();
         private MainTreeFolder CurrentFolder;
         private List<MainListItem> CurrentFiles;
+        private bool FirstRefreshed = false;
+        private List<MainListItem> CopiedFiles = new List<MainListItem>();
 
         private Stack<MainTreeFolder> BackSteps = new Stack<MainTreeFolder>();
         private Stack<MainTreeFolder> ForwardSteps = new Stack<MainTreeFolder>();
@@ -57,6 +60,8 @@ namespace CodeWalker
             SetTheme(Settings.Default.ExplorerWindowTheme, false);
 
             ShowMainListViewPathColumn(false);
+
+            LoadSettings();
         }
 
         private void SetTheme(string themestr, bool changing = true)
@@ -124,6 +129,43 @@ namespace CodeWalker
             //if (File.Exists(configFile)) MainDockPanel.LoadFromXml(configFile, m_deserializeDockContent);
         }
 
+        private void LoadSettings()
+        {
+            var s = Settings.Default;
+
+            OptionsStartInEditModeMenu.Checked = s.RPFExplorerStartInEditMode;
+            OptionsStartInFolderValueMenu.Text = string.IsNullOrEmpty(s.RPFExplorerStartFolder) ? "(Default)" : s.RPFExplorerStartFolder;
+
+            var folders = s.RPFExplorerExtraFolders?.Split('\n');
+            if (folders != null)
+            {
+                foreach (var folder in folders)
+                {
+                    var folderPath = folder?.Trim();
+                    if (!string.IsNullOrEmpty(folderPath))
+                    {
+                        var root = new MainTreeFolder();
+                        root.FullPath = folderPath;
+                        root.Path = folderPath;
+                        root.Name = Path.GetFileName(Path.GetDirectoryName(folderPath));
+                        root.IsExtraFolder = true;
+                        ExtraRootFolders.Add(root);
+                    }
+                }
+            }
+        }
+        private void SaveSettings()
+        {
+            var extrafolders = new StringBuilder();
+            foreach (var folder in ExtraRootFolders)
+            {
+                if (extrafolders.Length > 0) extrafolders.Append("\n");
+                extrafolders.Append(folder.FullPath);
+            }
+            Settings.Default.RPFExplorerExtraFolders = extrafolders.ToString();
+
+            Settings.Default.Save();
+        }
 
         private void Init()
         {
@@ -153,14 +195,11 @@ namespace CodeWalker
                     return;
                 }
 
-                UpdateStatus("Scanning...");
-
                 RefreshMainTreeView();
 
                 UpdateStatus("Scan complete.");
 
                 InitFileCache();
-
 
                 while (!IsDisposed) //run the file cache content thread until the form exits.
                 {
@@ -628,24 +667,39 @@ namespace CodeWalker
         private void RefreshMainTreeView()
         {
             Ready = false;
-
-            var allRpfs = new List<RpfFile>();
+            AllRpfs = null;
 
             ClearMainTreeView();
 
-            string fullPath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
+            UpdateStatus("Scanning...");
 
-            string[] allpaths = Directory.GetFileSystemEntries(GTAFolder.CurrentGTAFolder, "*", SearchOption.AllDirectories);
-
-            Dictionary<string, MainTreeFolder> nodes = new Dictionary<string, MainTreeFolder>();
-
-            MainTreeFolder root = new MainTreeFolder();
+            var root = new MainTreeFolder();
             root.FullPath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
             root.Path = "";
             root.Name = "GTA V";
             RootFolder = root;
 
-            UpdateStatus("Scanning...");
+            RefreshMainTreeViewRoot(root);
+
+
+            foreach (var extraroot in ExtraRootFolders)
+            {
+                extraroot.Clear();
+                RefreshMainTreeViewRoot(extraroot);
+            }
+
+
+            Ready = true;
+
+            MainTreeViewRefreshComplete();
+        }
+        private void RefreshMainTreeViewRoot(MainTreeFolder f)
+        {
+            var allRpfs = new List<RpfFile>();
+            var fullPath = f.FullPath;
+            var subPath = f.Path;
+            var allpaths = Directory.GetFileSystemEntries(fullPath, "*", SearchOption.AllDirectories);
+            var nodes = new Dictionary<string, MainTreeFolder>();
 
             foreach (var path in allpaths)
             {
@@ -667,7 +721,7 @@ namespace CodeWalker
                     var exists = nodes.TryGetValue(parentpath, out node);
                     if (!exists)
                     {
-                        node = CreateRootDirTreeFolder(parentname, parentpath, fullPath + parentpath);
+                        node = CreateRootDirTreeFolder(parentname, subPath + parentpath, fullPath + parentpath);
                         nodes[parentpath] = node;
                     }
                     if (parentnode == null)
@@ -684,7 +738,7 @@ namespace CodeWalker
                     if (exists) break;
                     if (idx < 0)
                     {
-                        root.AddChild(node);
+                        f.AddChild(node);
                     }
                 }
 
@@ -711,7 +765,7 @@ namespace CodeWalker
                         }
                         else
                         {
-                            root.AddChild(node);
+                            f.AddChild(node);
                         }
                     }
                     else
@@ -722,30 +776,30 @@ namespace CodeWalker
                         }
                         else
                         {
-                            root.AddFile(path);
+                            f.AddFile(path);
                         }
                     }
                 }
             }
 
 
-            AddMainTreeViewRoot(root);
+            AddMainTreeViewRoot(f);
 
-            if (root.Children != null)
+            if (f.Children != null)
             {
-                root.Children.Sort((n1, n2) => n1.Name.CompareTo(n2.Name));
+                f.Children.Sort((n1, n2) => n1.Name.CompareTo(n2.Name));
 
-                foreach (var node in root.Children)
+                foreach (var node in f.Children)
                 {
                     AddMainTreeViewNode(node);
                 }
             }
 
-            AllRpfs = allRpfs;
+            if (AllRpfs == null)
+            {
+                AllRpfs = allRpfs;
+            }
 
-            Ready = true;
-
-            MainTreeViewRefreshComplete();
         }
         private void RecurseMainTreeViewRPF(MainTreeFolder f, List<RpfFile> allRpfs)
         {
@@ -827,7 +881,9 @@ namespace CodeWalker
                 }
                 else
                 {
-                    var rn = MainTreeView.Nodes.Add(f.Path, f.Name, 0, 0); //ROOT imageIndex
+                    int imgIndex = 1; //FOLDER imageIndex
+                    if (string.IsNullOrEmpty(f.Path)) imgIndex = 0; //ROOT imageIndex
+                    var rn = MainTreeView.Nodes.Add(f.Path, f.Name, imgIndex, imgIndex);
                     rn.ToolTipText = f.FullPath;
                     rn.Tag = f;
                     f.TreeNode = rn;
@@ -846,7 +902,7 @@ namespace CodeWalker
                 else
                 {
                     string n = f.Name;
-                    var root = (MainTreeView.Nodes.Count > 0) ? MainTreeView.Nodes[0] : null;
+                    var root = f.Parent?.TreeNode;
 
                     RecurseAddMainTreeViewNodes(f, root);
 
@@ -889,7 +945,11 @@ namespace CodeWalker
                 }
                 else
                 {
-                    if (CurrentFolder != null)
+                    if (!FirstRefreshed && !string.IsNullOrEmpty(Settings.Default.RPFExplorerStartFolder))
+                    {
+                        Navigate(Settings.Default.RPFExplorerStartFolder);
+                    }
+                    else if (CurrentFolder != null)
                     {
                         if (CurrentFolder.IsSearchResults)
                         {
@@ -906,6 +966,13 @@ namespace CodeWalker
                     {
                         Navigate(RootFolder);
                     }
+
+
+                    if (!FirstRefreshed && Settings.Default.RPFExplorerStartInEditMode)
+                    {
+                        EnableEditMode(true, false);
+                    }
+                    FirstRefreshed = true;
                 }
             }
             catch { }
@@ -1723,6 +1790,7 @@ namespace CodeWalker
             bool filesys = ((f.RpfFolder == null) && (f.RpfFile == null));
             bool expanded = ((n != null) && (n.IsExpanded));
             bool collapsed = ((n != null) && (!n.IsExpanded));
+            bool extrafldr = ((n?.Parent == null) && (f?.IsExtraFolder ?? false));
 
             if ((f.RpfFile != null) && (f.RpfFile.Parent == null))
             {
@@ -1732,6 +1800,8 @@ namespace CodeWalker
             TreeContextWinExplorerMenu.Enabled = filesys;
             TreeContextExpandMenu.Enabled = collapsed;
             TreeContextCollapseMenu.Enabled = expanded;
+            TreeContextCloseFolderSeparator.Visible = extrafldr;
+            TreeContextCloseFolderMenu.Visible = extrafldr;
 
 
             TreeContextMenu.Show(MainTreeView, p);
@@ -1746,14 +1816,16 @@ namespace CodeWalker
             bool isfolder = false;
             bool isarchive = false;
             bool isfilesys = false;
+            bool isrpffolder = (CurrentFolder?.RpfFolder != null);
             bool issearch = CurrentFolder?.IsSearchResults ?? false;
             bool canview = false;
             bool canexportxml = false;
             bool canextract = false;
-            bool canimport = EditMode && (CurrentFolder?.RpfFolder != null) && !issearch;
+            bool canimport = EditMode && !issearch;// && isrpffolder;
             bool cancreate = EditMode && !issearch;
             bool canedit = false;
             bool candefrag = false;
+            bool canpaste = EditMode && (CopiedFiles.Count > 0);
 
             if (item != null)
             {
@@ -1786,6 +1858,8 @@ namespace CodeWalker
 
             ListContextCopyMenu.Enabled = isfile;
             ListContextCopyPathMenu.Enabled = isitem;
+            ListContextPasteMenu.Enabled = canpaste;
+            ListContextPasteMenu.Visible = EditMode;
 
             ListContextOpenFileLocationMenu.Visible = issearch;
             ListContextOpenFileLocationSeparator.Visible = issearch;
@@ -1805,14 +1879,14 @@ namespace CodeWalker
 
 
 
-        private void EnableEditMode(bool enable)
+        private void EnableEditMode(bool enable, bool warn = true)
         {
             if (EditMode == enable)
             {
                 return;
             }
 
-            if (enable)
+            if (enable && warn)
             {
                 if (MessageBox.Show(this, "While in edit mode, all changes are automatically saved.\nDo you want to continue?", "Warning - Entering edit mode", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
                 {
@@ -1832,7 +1906,9 @@ namespace CodeWalker
         {
             bool mods = CurrentFolder.Path.ToLowerInvariant().StartsWith("mods");
             bool srch = CurrentFolder?.IsSearchResults ?? false;
-            bool show = EditMode && !mods && !srch;
+            bool fsys = CurrentFolder?.RpfFolder == null;
+            bool game = CurrentFolder?.Path != CurrentFolder?.FullPath;
+            bool show = EditMode && !mods && !srch && (!fsys || game);
             int gap = 3;
             int bot = MainListView.Bottom;
 
@@ -1878,6 +1954,40 @@ namespace CodeWalker
             });
 
             return RpfFile.EnsureValidEncryption(rpf, confirm);
+        }
+
+
+        public bool EnsureCurrentFolderEditable()
+        {
+            if (!EditMode) return false;
+
+            var parentrpffldr = CurrentFolder.RpfFolder;
+            var parentfullpath = CurrentFolder.FullPath;
+            if ((parentrpffldr == null) && (string.IsNullOrEmpty(parentfullpath)))
+            {
+                MessageBox.Show("No parent folder selected! This shouldn't happen. Refresh the view and try again.");
+                return false;
+            }
+
+            return true;
+        }
+
+
+        public string SelectFolder()
+        {
+            var selpath = Settings.Default.RPFExplorerSelectedFolder;
+            if (!string.IsNullOrEmpty(selpath))
+            {
+                FolderBrowserDialog.SelectedPath = selpath;
+            }
+
+            if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return "";
+            string folderpath = FolderBrowserDialog.SelectedPath;
+            if (!folderpath.EndsWith("\\")) folderpath += "\\";
+
+            Settings.Default.RPFExplorerSelectedFolder = folderpath;
+
+            return folderpath;
         }
 
 
@@ -1974,9 +2084,8 @@ namespace CodeWalker
             }
             else
             {
-                if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return;
-                string folderpath = FolderBrowserDialog.SelectedPath;
-                if (!folderpath.EndsWith("\\")) folderpath += "\\";
+                var folderpath = SelectFolder();
+                if (string.IsNullOrEmpty(folderpath)) return;
 
                 StringBuilder errors = new StringBuilder();
 
@@ -2065,9 +2174,8 @@ namespace CodeWalker
             }
             else
             {
-                if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return;
-                string folderpath = FolderBrowserDialog.SelectedPath;
-                if (!folderpath.EndsWith("\\")) folderpath += "\\";
+                var folderpath = SelectFolder();
+                if (string.IsNullOrEmpty(folderpath)) return;
 
                 StringBuilder errors = new StringBuilder();
 
@@ -2137,9 +2245,8 @@ namespace CodeWalker
             }
             else
             {
-                if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return;
-                string folderpath = FolderBrowserDialog.SelectedPath;
-                if (!folderpath.EndsWith("\\")) folderpath += "\\";
+                var folderpath = SelectFolder();
+                if (string.IsNullOrEmpty(folderpath)) return;
 
                 StringBuilder errors = new StringBuilder();
 
@@ -2178,9 +2285,9 @@ namespace CodeWalker
         private void ExtractAll()
         {
             if (CurrentFiles == null) return;
-            if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return;
-            string folderpath = FolderBrowserDialog.SelectedPath;
-            if (!folderpath.EndsWith("\\")) folderpath += "\\";
+            
+            var folderpath = SelectFolder();
+            if (string.IsNullOrEmpty(folderpath)) return;
 
             StringBuilder errors = new StringBuilder();
 
@@ -2329,15 +2436,9 @@ namespace CodeWalker
             if (!EditMode) return;
             if (CurrentFolder?.IsSearchResults ?? false) return;
 
+            if (!EnsureCurrentFolderEditable()) return;
 
-            RpfDirectoryEntry parentrpffldr = CurrentFolder.RpfFolder;
-            if (parentrpffldr == null)
-            {
-                MessageBox.Show("No parent RPF folder selected! This shouldn't happen. Refresh the view and try again.");
-                return;
-            }
-
-            if (!EnsureRpfValidEncryption()) return;
+            if (!EnsureRpfValidEncryption() && (CurrentFolder.RpfFolder != null)) return;
 
 
             OpenFileDialog.Filter = "FBX Files|*.fbx";
@@ -2408,7 +2509,17 @@ namespace CodeWalker
                 var data = kvp.Value;
                 if (data != null)
                 {
-                    RpfFile.CreateFile(parentrpffldr, fname, data);
+                    if (CurrentFolder.RpfFolder != null)
+                    {
+                        RpfFile.CreateFile(CurrentFolder.RpfFolder, fname, data);
+                    }
+                    else if (!string.IsNullOrEmpty(CurrentFolder.FullPath))
+                    {
+                        var outfpath = Path.Combine(CurrentFolder.FullPath, fname);
+                        File.WriteAllBytes(outfpath, data);
+                        CurrentFolder.EnsureFile(outfpath);
+                    }
+
                 }
             }
 
@@ -2421,14 +2532,9 @@ namespace CodeWalker
             if (!EditMode) return;
             if (CurrentFolder?.IsSearchResults ?? false) return;
 
-            RpfDirectoryEntry parentrpffldr = CurrentFolder.RpfFolder;
-            if (parentrpffldr == null)
-            {
-                MessageBox.Show("No parent RPF folder selected! This shouldn't happen. Refresh the view and try again.");
-                return;
-            }
+            if (!EnsureCurrentFolderEditable()) return;
 
-            if (!EnsureRpfValidEncryption()) return;
+            if (!EnsureRpfValidEncryption() && (CurrentFolder.RpfFolder != null)) return;
 
 
             OpenFileDialog.Filter = "XML Files|*.xml";
@@ -2691,7 +2797,16 @@ namespace CodeWalker
 
                     if (data != null)
                     {
-                        RpfFile.CreateFile(parentrpffldr, fname, data);
+                        if (CurrentFolder.RpfFolder != null)
+                        {
+                            RpfFile.CreateFile(CurrentFolder.RpfFolder, fname, data);
+                        }
+                        else if (!string.IsNullOrEmpty(CurrentFolder.FullPath))
+                        {
+                            var outfpath = Path.Combine(CurrentFolder.FullPath, fname);
+                            File.WriteAllBytes(outfpath, data);
+                            CurrentFolder.EnsureFile(outfpath);
+                        }
                     }
 
 
@@ -2713,7 +2828,7 @@ namespace CodeWalker
             if (!EditMode) return;
             if (CurrentFolder?.IsSearchResults ?? false) return;
 
-            if (!EnsureRpfValidEncryption()) return;
+            if (!EnsureRpfValidEncryption() && (CurrentFolder.RpfFolder != null)) return;
 
             OpenFileDialog.Filter = string.Empty;
             if (OpenFileDialog.ShowDialog(this) != DialogResult.OK)
@@ -2730,16 +2845,11 @@ namespace CodeWalker
             if (!EditMode) return;
             if (CurrentFolder?.IsSearchResults ?? false) return;
 
-            RpfDirectoryEntry parentrpffldr = CurrentFolder.RpfFolder;
-            if (parentrpffldr == null)
-            {
-                MessageBox.Show("No parent RPF folder selected! This shouldn't happen. Refresh the view and try again.");
-                return;
-            }
+            if (!EnsureCurrentFolderEditable()) return;
 
             if (checkEncryption)
             {
-                if (!EnsureRpfValidEncryption()) return;
+                if (!EnsureRpfValidEncryption() && (CurrentFolder.RpfFolder != null)) return;
             }
 
             var filelist = new List<string>();
@@ -2752,11 +2862,11 @@ namespace CodeWalker
                     {
                         filelist.Add(fpath);
                     }
-                    else if (Directory.Exists(fpath)) //create imported directory structure in the RPF.
+                    else if (Directory.Exists(fpath) && (CurrentFolder.RpfFolder != null)) //create imported directory structure in the RPF.
                     {
                         //create the first directory entry.
                         var fdi = new DirectoryInfo(fpath);
-                        var direntry = RpfFile.CreateDirectory(parentrpffldr, fdi.Name);
+                        var direntry = RpfFile.CreateDirectory(CurrentFolder.RpfFolder, fdi.Name);
                         dirdict[fpath] = direntry;
                         var dirpaths = Directory.GetFileSystemEntries(fpath, "*", SearchOption.AllDirectories);
                         var newfiles = new List<string>();
@@ -2793,7 +2903,7 @@ namespace CodeWalker
                             dirdict[newfile] = ndirentry;
                         }
 
-                        EnsureImportedFolder(direntry, parentrpffldr);
+                        EnsureImportedFolder(direntry, CurrentFolder.RpfFolder);
                     }
                     else
                     { } //nothing to see here!
@@ -2827,16 +2937,27 @@ namespace CodeWalker
 
                     byte[] data = File.ReadAllBytes(fpath);
 
-
-                    var rpffldr = parentrpffldr;
-                    if (dirdict.ContainsKey(fpath))
+                    if (CurrentFolder.RpfFolder != null)
                     {
-                        rpffldr = dirdict[fpath];
+                        var rpffldr = CurrentFolder.RpfFolder;
+                        if (dirdict.ContainsKey(fpath))
+                        {
+                            rpffldr = dirdict[fpath];
+                        }
+
+                        var entry = RpfFile.CreateFile(rpffldr, fname, data);
+
+                        EnsureImportedRpf(entry, rpffldr); //make sure structure is created if an RPF was imported
                     }
+                    else
+                    {
 
-                    var entry = RpfFile.CreateFile(rpffldr, fname, data);
+                        var outfpath = Path.Combine(CurrentFolder.FullPath, fname);
+                        File.WriteAllBytes(outfpath, data);
+                        CurrentFolder.EnsureFile(outfpath);
 
-                    EnsureImportedRpf(entry, rpffldr); //make sure structure is created if an RPF was imported
+                        //TODO: folders...
+                    }
 
                     Cursor = Cursors.Default;
                 }
@@ -2850,8 +2971,22 @@ namespace CodeWalker
         }
         private void CopySelected()
         {
-            //only really for edit mode...
-            MessageBox.Show("CopySelected TODO!");
+            CopiedFiles.Clear();
+            if (MainListView.SelectedIndices.Count <= 0) return;
+            var fnames = new StringBuilder();
+            foreach (int idx in MainListView.SelectedIndices)
+            {
+                if ((idx < 0) || (idx >= CurrentFiles.Count)) continue;
+                var f = CurrentFiles[idx];
+                CopiedFiles.Add(f);
+                if (fnames.Length > 0) fnames.AppendLine();
+                fnames.Append(f.Name);
+            }
+            if (fnames.Length > 0)
+            {
+                Clipboard.SetText(fnames.ToString());
+            }
+            UpdateStatus(CopiedFiles.Count.ToString() + " item" + ((CopiedFiles.Count != 1) ? "s" : "") + " copied");
         }
         private void CopyPath()
         {
@@ -3061,6 +3196,8 @@ namespace CodeWalker
                     else
                     {
                         File.Delete(item.FullPath);
+
+                        item.Parent?.RemoveFile(item.FullPath);
                     }
                 }
 
@@ -3182,6 +3319,7 @@ namespace CodeWalker
             {
                 ind = MainListView.SelectedIndices[0];
             }
+            if (ind < 0) return;
             if ((CurrentFiles != null) && (CurrentFiles.Count > ind))
             {
                 var file = CurrentFiles[ind];
@@ -3193,6 +3331,86 @@ namespace CodeWalker
                 }
                 Navigate(path);
             }
+        }
+        private void OpenFolder()
+        {
+            var folderPath = SelectFolder();
+            if (string.IsNullOrEmpty(folderPath)) return;
+            if (!Directory.Exists(folderPath)) return;
+
+            foreach (var folder in ExtraRootFolders)
+            {
+                if (folder.FullPath == folderPath) return;
+            }
+
+            var root = new MainTreeFolder();
+            root.FullPath = folderPath;
+            root.Path = folderPath;
+            root.Name = Path.GetFileName(Path.GetDirectoryName(folderPath));
+            root.IsExtraFolder = true;
+            ExtraRootFolders.Add(root);
+
+            Task.Run(() =>
+            {
+                RefreshMainTreeViewRoot(root);
+
+                Invoke(new Action(() => 
+                {
+                    MainTreeView.SelectedNode = root.TreeNode;
+                }));
+            });
+        }
+        private void CloseFolder(MainTreeFolder folder)
+        {
+            if (folder == null) return;
+            if (folder.IsExtraFolder == false) return;
+
+            folder.TreeNode.Remove();
+            ExtraRootFolders.Remove(folder);
+        }
+        private void Paste()
+        {
+            if (!EditMode) return;
+            if (CopiedFiles.Count == 0) return;
+            if (CurrentFolder?.IsSearchResults ?? false) return;
+
+            if (!EnsureCurrentFolderEditable()) return;
+
+            if (!EnsureRpfValidEncryption() && (CurrentFolder.RpfFolder != null)) return;
+
+            foreach (var file in CopiedFiles)
+            {
+                if (file.Parent?.FullPath == CurrentFolder?.FullPath) continue; //don't try to paste into the same folder
+                if ((file.Folder == null) || (file.Folder.RpfFile != null)) //it's a file (not a folder) [todo: copy/paste folders..]
+                {
+                    var data = GetFileDataCompressResources(file);
+                    if (data != null)
+                    {
+                        var fname = file.Name;
+                        if (CurrentFolder.RpfFolder != null)
+                        {
+                            var rpffldr = CurrentFolder.RpfFolder;
+                            var entry = RpfFile.CreateFile(rpffldr, fname, data);
+
+                            EnsureImportedRpf(entry, rpffldr); //make sure structure is created if an RPF was imported
+                        }
+                        else
+                        {
+                            var outfpath = Path.Combine(CurrentFolder.FullPath, fname);
+                            File.WriteAllBytes(outfpath, data);
+                            CurrentFolder.EnsureFile(outfpath);
+
+                            //TODO: folders...
+                        }
+
+                    }
+                }
+            }
+
+
+            RefreshMainListView();
+
+
         }
 
 
@@ -3286,6 +3504,7 @@ namespace CodeWalker
         private void ExploreForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             CleanupDropFolder();
+            SaveSettings();
         }
 
         private void MainTreeView_AfterSelect(object sender, TreeViewEventArgs e)
@@ -3414,11 +3633,14 @@ namespace CodeWalker
                     if (ctrlshft) CopyPath();
                     else if (ctrl) CopySelected();
                     break;
+                case Keys.V:
+                    if (ctrl) Paste();
+                    break;
                 case Keys.F2:
                     RenameSelected();
                     break;
                 case Keys.Delete:
-                    if (shft) DeleteSelected();
+                    if (ctrl) DeleteSelected();
                     break;
                 case Keys.A:
                     if (ctrl) SelectAll();
@@ -3645,8 +3867,6 @@ namespace CodeWalker
         {
             Task.Run(() =>
             {
-                UpdateStatus("Scanning...");
-
                 RefreshMainTreeView();
 
                 UpdateStatus("Scan complete.");
@@ -3743,6 +3963,12 @@ namespace CodeWalker
             }
         }
 
+        private void TreeContextCloseFolderMenu_Click(object sender, EventArgs e)
+        {
+            var folder = MainTreeView.SelectedNode?.Tag as MainTreeFolder;
+            CloseFolder(folder);
+        }
+
         private void ListContextViewMenu_Click(object sender, EventArgs e)
         {
             ViewSelected();
@@ -3813,6 +4039,11 @@ namespace CodeWalker
             CopyFileList();
         }
 
+        private void ListContextPasteMenu_Click(object sender, EventArgs e)
+        {
+            Paste();
+        }
+
         private void ListContextOpenFileLocationMenu_Click(object sender, EventArgs e)
         {
             OpenFileLocation();
@@ -3841,6 +4072,11 @@ namespace CodeWalker
         private void ListContextSelectAllMenu_Click(object sender, EventArgs e)
         {
             SelectAll();
+        }
+
+        private void FileOpenFolderMenu_Click(object sender, EventArgs e)
+        {
+            OpenFolder();
         }
 
         private void FileExitMenu_Click(object sender, EventArgs e)
@@ -3963,11 +4199,6 @@ namespace CodeWalker
             SetTheme("Dark");
         }
 
-        private void ToolsOptionsMenu_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Options TODO!");
-        }
-
         private void ToolsRpfBrowserMenu_Click(object sender, EventArgs e)
         {
             BrowseForm f = new BrowseForm();
@@ -3978,6 +4209,25 @@ namespace CodeWalker
         {
             BinarySearchForm f = new BinarySearchForm(FileCache);
             f.Show(this);
+        }
+
+        private void OptionsStartInEditModeMenu_Click(object sender, EventArgs e)
+        {
+            OptionsStartInEditModeMenu.Checked = !OptionsStartInEditModeMenu.Checked;
+            Settings.Default.RPFExplorerStartInEditMode = OptionsStartInEditModeMenu.Checked;
+        }
+
+        private void OptionsStartInFolderDefaultMenu_Click(object sender, EventArgs e)
+        {
+            Settings.Default.RPFExplorerStartFolder = string.Empty;
+            OptionsStartInFolderValueMenu.Text = "(Default)";
+        }
+
+        private void OptionsStartInFolderCurrentMenu_Click(object sender, EventArgs e)
+        {
+            if (CurrentFolder == null) return;
+            Settings.Default.RPFExplorerStartFolder = CurrentFolder.Path;
+            OptionsStartInFolderValueMenu.Text = string.IsNullOrEmpty(CurrentFolder.Path) ? "(Default)" : CurrentFolder.Path;
         }
     }
 
@@ -3997,6 +4247,7 @@ namespace CodeWalker
         public TreeNode TreeNode { get; set; }
         public bool IsSearchResults { get; set; }
         public string SearchTerm { get; set; }
+        public bool IsExtraFolder { get; set; }
 
         public void AddFile(string file)
         {
@@ -4032,6 +4283,22 @@ namespace CodeWalker
                 idx = relpath.IndexOf('\\', lidx);
             }
             parent.AddChild(child);
+        }
+
+        public void EnsureFile(string file)
+        {
+            if (Files != null)
+            {
+                if (Files.Contains(file)) return;
+            }
+            AddFile(file);
+        }
+        public void RemoveFile(string file)
+        {
+            if (Files != null)
+            {
+                Files.Remove(file);
+            }
         }
 
         public List<MainListItem> GetListItems()
@@ -4142,6 +4409,17 @@ namespace CodeWalker
             form.AddSearchResult(null);
 
             return resultcount;
+        }
+
+        public void Clear()
+        {
+            RpfFile = null;
+            RpfFolder = null;
+            Files = null;
+            Parent = null;
+            Children = null;
+            ListItems = null;
+            TreeNode = null;
         }
 
         public override string ToString()

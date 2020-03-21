@@ -32,6 +32,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExploreForm));
             this.MainMenu = new System.Windows.Forms.MenuStrip();
             this.FileMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.FileOpenFolderMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.FileExitMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditViewMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,8 +70,13 @@
             this.ToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsBinSearchMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsRpfBrowserMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolsOptionsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.OptionsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.OptionsStartInEditModeMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.OptionsStartInFolderMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.OptionsStartInFolderValueMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
+            this.OptionsStartInFolderDefaultMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.OptionsStartInFolderCurrentMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainToolbar = new System.Windows.Forms.ToolStrip();
             this.BackButton = new System.Windows.Forms.ToolStripSplitButton();
             this.BackListButton = new System.Windows.Forms.ToolStripMenuItem();
@@ -123,6 +130,7 @@
             this.ListContextCopyMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextCopyPathMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextCopyFileListMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ListContextPasteMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.ListContextOpenFileLocationMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextOpenFileLocationSeparator = new System.Windows.Forms.ToolStripSeparator();
@@ -140,6 +148,8 @@
             this.TreeContextExpandMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.TreeContextCollapseMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.TreeContextCollapseAllMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.TreeContextCloseFolderSeparator = new System.Windows.Forms.ToolStripSeparator();
+            this.TreeContextCloseFolderMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -165,7 +175,8 @@
             this.FileMenu,
             this.EditMenu,
             this.ViewMenu,
-            this.ToolsMenu});
+            this.ToolsMenu,
+            this.OptionsMenu});
             this.MainMenu.Location = new System.Drawing.Point(0, 0);
             this.MainMenu.Name = "MainMenu";
             this.MainMenu.Size = new System.Drawing.Size(876, 24);
@@ -175,16 +186,30 @@
             // FileMenu
             // 
             this.FileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.FileOpenFolderMenu,
+            this.toolStripSeparator7,
             this.FileExitMenu});
             this.FileMenu.Name = "FileMenu";
             this.FileMenu.Size = new System.Drawing.Size(37, 20);
             this.FileMenu.Text = "File";
             // 
+            // FileOpenFolderMenu
+            // 
+            this.FileOpenFolderMenu.Name = "FileOpenFolderMenu";
+            this.FileOpenFolderMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileOpenFolderMenu.Text = "Open Folder...";
+            this.FileOpenFolderMenu.Click += new System.EventHandler(this.FileOpenFolderMenu_Click);
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(145, 6);
+            // 
             // FileExitMenu
             // 
             this.FileExitMenu.Name = "FileExitMenu";
             this.FileExitMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.FileExitMenu.Size = new System.Drawing.Size(135, 22);
+            this.FileExitMenu.Size = new System.Drawing.Size(148, 22);
             this.FileExitMenu.Text = "Exit";
             this.FileExitMenu.Click += new System.EventHandler(this.FileExitMenu_Click);
             // 
@@ -471,9 +496,7 @@
             // 
             this.ToolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ToolsBinSearchMenu,
-            this.ToolsRpfBrowserMenu,
-            this.toolStripSeparator7,
-            this.ToolsOptionsMenu});
+            this.ToolsRpfBrowserMenu});
             this.ToolsMenu.Name = "ToolsMenu";
             this.ToolsMenu.Size = new System.Drawing.Size(46, 20);
             this.ToolsMenu.Text = "Tools";
@@ -492,17 +515,58 @@
             this.ToolsRpfBrowserMenu.Text = "Old RPF Browser";
             this.ToolsRpfBrowserMenu.Click += new System.EventHandler(this.ToolsRpfBrowserMenu_Click);
             // 
-            // toolStripSeparator7
+            // OptionsMenu
             // 
-            this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(158, 6);
+            this.OptionsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.OptionsStartInEditModeMenu,
+            this.OptionsStartInFolderMenu});
+            this.OptionsMenu.Name = "OptionsMenu";
+            this.OptionsMenu.Size = new System.Drawing.Size(61, 20);
+            this.OptionsMenu.Text = "Options";
             // 
-            // ToolsOptionsMenu
+            // OptionsStartInEditModeMenu
             // 
-            this.ToolsOptionsMenu.Name = "ToolsOptionsMenu";
-            this.ToolsOptionsMenu.Size = new System.Drawing.Size(161, 22);
-            this.ToolsOptionsMenu.Text = "Options...";
-            this.ToolsOptionsMenu.Click += new System.EventHandler(this.ToolsOptionsMenu_Click);
+            this.OptionsStartInEditModeMenu.Name = "OptionsStartInEditModeMenu";
+            this.OptionsStartInEditModeMenu.Size = new System.Drawing.Size(168, 22);
+            this.OptionsStartInEditModeMenu.Text = "Start in Edit mode";
+            this.OptionsStartInEditModeMenu.Click += new System.EventHandler(this.OptionsStartInEditModeMenu_Click);
+            // 
+            // OptionsStartInFolderMenu
+            // 
+            this.OptionsStartInFolderMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.OptionsStartInFolderValueMenu,
+            this.toolStripSeparator12,
+            this.OptionsStartInFolderDefaultMenu,
+            this.OptionsStartInFolderCurrentMenu});
+            this.OptionsStartInFolderMenu.Name = "OptionsStartInFolderMenu";
+            this.OptionsStartInFolderMenu.Size = new System.Drawing.Size(168, 22);
+            this.OptionsStartInFolderMenu.Text = "Start in Folder";
+            // 
+            // OptionsStartInFolderValueMenu
+            // 
+            this.OptionsStartInFolderValueMenu.Enabled = false;
+            this.OptionsStartInFolderValueMenu.Name = "OptionsStartInFolderValueMenu";
+            this.OptionsStartInFolderValueMenu.Size = new System.Drawing.Size(183, 22);
+            this.OptionsStartInFolderValueMenu.Text = "(Default)";
+            // 
+            // toolStripSeparator12
+            // 
+            this.toolStripSeparator12.Name = "toolStripSeparator12";
+            this.toolStripSeparator12.Size = new System.Drawing.Size(180, 6);
+            // 
+            // OptionsStartInFolderDefaultMenu
+            // 
+            this.OptionsStartInFolderDefaultMenu.Name = "OptionsStartInFolderDefaultMenu";
+            this.OptionsStartInFolderDefaultMenu.Size = new System.Drawing.Size(183, 22);
+            this.OptionsStartInFolderDefaultMenu.Text = "Set to Default";
+            this.OptionsStartInFolderDefaultMenu.Click += new System.EventHandler(this.OptionsStartInFolderDefaultMenu_Click);
+            // 
+            // OptionsStartInFolderCurrentMenu
+            // 
+            this.OptionsStartInFolderCurrentMenu.Name = "OptionsStartInFolderCurrentMenu";
+            this.OptionsStartInFolderCurrentMenu.Size = new System.Drawing.Size(183, 22);
+            this.OptionsStartInFolderCurrentMenu.Text = "Set to Current Folder";
+            this.OptionsStartInFolderCurrentMenu.Click += new System.EventHandler(this.OptionsStartInFolderCurrentMenu_Click);
             // 
             // MainToolbar
             // 
@@ -912,6 +976,7 @@
             this.ListContextCopyMenu,
             this.ListContextCopyPathMenu,
             this.ListContextCopyFileListMenu,
+            this.ListContextPasteMenu,
             this.toolStripSeparator6,
             this.ListContextOpenFileLocationMenu,
             this.ListContextOpenFileLocationSeparator,
@@ -923,7 +988,7 @@
             this.ListContextDefragmentSeparator,
             this.ListContextSelectAllMenu});
             this.ListContextMenu.Name = "MainContextMenu";
-            this.ListContextMenu.Size = new System.Drawing.Size(209, 464);
+            this.ListContextMenu.Size = new System.Drawing.Size(209, 508);
             // 
             // ListContextViewMenu
             // 
@@ -1065,6 +1130,14 @@
             this.ListContextCopyFileListMenu.Text = "Copy File List";
             this.ListContextCopyFileListMenu.Click += new System.EventHandler(this.ListContextCopyFileListMenu_Click);
             // 
+            // ListContextPasteMenu
+            // 
+            this.ListContextPasteMenu.Name = "ListContextPasteMenu";
+            this.ListContextPasteMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
+            this.ListContextPasteMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextPasteMenu.Text = "Paste";
+            this.ListContextPasteMenu.Click += new System.EventHandler(this.ListContextPasteMenu_Click);
+            // 
             // toolStripSeparator6
             // 
             this.toolStripSeparator6.Name = "toolStripSeparator6";
@@ -1104,7 +1177,7 @@
             // 
             this.ListContextDeleteMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextDeleteMenu.Image")));
             this.ListContextDeleteMenu.Name = "ListContextDeleteMenu";
-            this.ListContextDeleteMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.Delete)));
+            this.ListContextDeleteMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Delete)));
             this.ListContextDeleteMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextDeleteMenu.Text = "Delete";
             this.ListContextDeleteMenu.Click += new System.EventHandler(this.ListContextDeleteMenu_Click);
@@ -1142,9 +1215,11 @@
             this.toolStripSeparator8,
             this.TreeContextExpandMenu,
             this.TreeContextCollapseMenu,
-            this.TreeContextCollapseAllMenu});
+            this.TreeContextCollapseAllMenu,
+            this.TreeContextCloseFolderSeparator,
+            this.TreeContextCloseFolderMenu});
             this.TreeContextMenu.Name = "MainContextMenu";
-            this.TreeContextMenu.Size = new System.Drawing.Size(215, 120);
+            this.TreeContextMenu.Size = new System.Drawing.Size(215, 148);
             // 
             // TreeContextCopyPathMenu
             // 
@@ -1187,6 +1262,18 @@
             this.TreeContextCollapseAllMenu.Size = new System.Drawing.Size(214, 22);
             this.TreeContextCollapseAllMenu.Text = "Collapse All";
             this.TreeContextCollapseAllMenu.Click += new System.EventHandler(this.TreeContextCollapseAllMenu_Click);
+            // 
+            // TreeContextCloseFolderSeparator
+            // 
+            this.TreeContextCloseFolderSeparator.Name = "TreeContextCloseFolderSeparator";
+            this.TreeContextCloseFolderSeparator.Size = new System.Drawing.Size(211, 6);
+            // 
+            // TreeContextCloseFolderMenu
+            // 
+            this.TreeContextCloseFolderMenu.Name = "TreeContextCloseFolderMenu";
+            this.TreeContextCloseFolderMenu.Size = new System.Drawing.Size(214, 22);
+            this.TreeContextCloseFolderMenu.Text = "Close Folder";
+            this.TreeContextCloseFolderMenu.Click += new System.EventHandler(this.TreeContextCloseFolderMenu_Click);
             // 
             // OpenFileDialog
             // 
@@ -1320,9 +1407,7 @@
         private System.Windows.Forms.ToolStripMenuItem ViewListMenu;
         private System.Windows.Forms.ToolStripMenuItem ViewDetailsMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolsMenu;
-        private System.Windows.Forms.ToolStripMenuItem ToolsOptionsMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolsRpfBrowserMenu;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ColumnHeader MainPathColumnHeader;
         private System.Windows.Forms.ToolStripMenuItem ListContextOpenFileLocationMenu;
         private System.Windows.Forms.ToolStripSeparator ListContextOpenFileLocationSeparator;
@@ -1350,5 +1435,17 @@
         private System.Windows.Forms.ToolStripMenuItem ViewThemeWindowsMenu;
         private System.Windows.Forms.ToolStripMenuItem ListContextImportFbxMenu;
         private System.Windows.Forms.ToolStripMenuItem EditImportFbxMenu;
+        private System.Windows.Forms.ToolStripMenuItem FileOpenFolderMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+        private System.Windows.Forms.ToolStripMenuItem OptionsMenu;
+        private System.Windows.Forms.ToolStripMenuItem OptionsStartInEditModeMenu;
+        private System.Windows.Forms.ToolStripSeparator TreeContextCloseFolderSeparator;
+        private System.Windows.Forms.ToolStripMenuItem TreeContextCloseFolderMenu;
+        private System.Windows.Forms.ToolStripMenuItem OptionsStartInFolderMenu;
+        private System.Windows.Forms.ToolStripMenuItem OptionsStartInFolderValueMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
+        private System.Windows.Forms.ToolStripMenuItem OptionsStartInFolderDefaultMenu;
+        private System.Windows.Forms.ToolStripMenuItem OptionsStartInFolderCurrentMenu;
+        private System.Windows.Forms.ToolStripMenuItem ListContextPasteMenu;
     }
 }
