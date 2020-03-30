@@ -3901,19 +3901,19 @@ namespace CodeWalker.GameFiles
         public float Unknown_04h; // 0x00000000
         public float Unknown_08h; // 0x00000000
         public float Unknown_0Ch; // 0x00000000
-        public float UnkFloat10 { get; set; }
-        public float UnkFloat14 { get; set; }
-        public float UnkFloat18 { get; set; }
-        public float UnkFloat1C { get; set; }
-        public float UnkFloat20 { get; set; }
-        public float UnkFloat24 { get; set; }
-        public float UnkFloat28 { get; set; }
-        public float UnkFloat2C { get; set; }
-        public float UnkFloat30 { get; set; }
-        public float UnkFloat34 { get; set; }
-        public float UnkFloat38 { get; set; }
-        public float UnkFloat3C { get; set; }
-        public float UnkFloat40 { get; set; }
+        public float Strength { get; set; }
+        public float ForceTransmissionScaleUp { get; set; }
+        public float ForceTransmissionScaleDown { get; set; }
+        public float JointStiffness { get; set; }
+        public float MinSoftAngle1 { get; set; }
+        public float MaxSoftAngle1 { get; set; }
+        public float MaxSoftAngle2 { get; set; }
+        public float MaxSoftAngle3 { get; set; }
+        public float RotationSpeed { get; set; }
+        public float RotationStrength { get; set; }
+        public float RestoringStrength { get; set; }
+        public float RestoringMaxTorque { get; set; }
+        public float LatchStrength { get; set; }
         public float Mass { get; set; }
         public float Unknown_48h; // 0x00000000
         public byte UnkByte4C { get; set; }
@@ -3924,8 +3924,8 @@ namespace CodeWalker.GameFiles
         public byte UnkByte51 { get; set; } = 255; //0xFF
         public byte UnkByte52 { get; set; }
         public byte UnkByte53 { get; set; }
-        public float UnkFloat54 { get; set; }
-        public float UnkFloat58 { get; set; }
+        public float MinDamageForce { get; set; }
+        public float DamageHealth { get; set; }
         public float UnkFloat5C { get; set; }
         public float UnkFloat60 { get; set; }
         public float UnkFloat64 { get; set; }
@@ -3945,19 +3945,19 @@ namespace CodeWalker.GameFiles
             this.Unknown_04h = reader.ReadSingle();
             this.Unknown_08h = reader.ReadSingle();
             this.Unknown_0Ch = reader.ReadSingle();
-            this.UnkFloat10 = reader.ReadSingle();
-            this.UnkFloat14 = reader.ReadSingle();
-            this.UnkFloat18 = reader.ReadSingle();
-            this.UnkFloat1C = reader.ReadSingle();
-            this.UnkFloat20 = reader.ReadSingle();
-            this.UnkFloat24 = reader.ReadSingle();
-            this.UnkFloat28 = reader.ReadSingle();
-            this.UnkFloat2C = reader.ReadSingle();
-            this.UnkFloat30 = reader.ReadSingle();
-            this.UnkFloat34 = reader.ReadSingle();
-            this.UnkFloat38 = reader.ReadSingle();
-            this.UnkFloat3C = reader.ReadSingle();
-            this.UnkFloat40 = reader.ReadSingle();
+            this.Strength = reader.ReadSingle();
+            this.ForceTransmissionScaleUp = reader.ReadSingle();
+            this.ForceTransmissionScaleDown = reader.ReadSingle();
+            this.JointStiffness = reader.ReadSingle();
+            this.MinSoftAngle1 = reader.ReadSingle();
+            this.MaxSoftAngle1 = reader.ReadSingle();
+            this.MaxSoftAngle2 = reader.ReadSingle();
+            this.MaxSoftAngle3 = reader.ReadSingle();
+            this.RotationSpeed = reader.ReadSingle();
+            this.RotationStrength = reader.ReadSingle();
+            this.RestoringStrength = reader.ReadSingle();
+            this.RestoringMaxTorque = reader.ReadSingle();
+            this.LatchStrength = reader.ReadSingle();
             this.Mass = reader.ReadSingle();
             this.Unknown_48h = reader.ReadSingle();
             this.UnkByte4C = reader.ReadByte();
@@ -3968,8 +3968,8 @@ namespace CodeWalker.GameFiles
             this.UnkByte51 = reader.ReadByte();
             this.UnkByte52 = reader.ReadByte();
             this.UnkByte53 = reader.ReadByte();
-            this.UnkFloat54 = reader.ReadSingle();
-            this.UnkFloat58 = reader.ReadSingle();
+            this.MinDamageForce = reader.ReadSingle();
+            this.DamageHealth = reader.ReadSingle();
             this.UnkFloat5C = reader.ReadSingle();
             this.UnkFloat60 = reader.ReadSingle();
             this.UnkFloat64 = reader.ReadSingle();
@@ -4068,19 +4068,19 @@ namespace CodeWalker.GameFiles
             writer.Write(Unknown_04h);
             writer.Write(Unknown_08h);
             writer.Write(Unknown_0Ch);
-            writer.Write(UnkFloat10);
-            writer.Write(UnkFloat14);
-            writer.Write(UnkFloat18);
-            writer.Write(UnkFloat1C);
-            writer.Write(UnkFloat20);
-            writer.Write(UnkFloat24);
-            writer.Write(UnkFloat28);
-            writer.Write(UnkFloat2C);
-            writer.Write(UnkFloat30);
-            writer.Write(UnkFloat34);
-            writer.Write(UnkFloat38);
-            writer.Write(UnkFloat3C);
-            writer.Write(UnkFloat40);
+            writer.Write(Strength);
+            writer.Write(ForceTransmissionScaleUp);
+            writer.Write(ForceTransmissionScaleDown);
+            writer.Write(JointStiffness);
+            writer.Write(MinSoftAngle1);
+            writer.Write(MaxSoftAngle1);
+            writer.Write(MaxSoftAngle2);
+            writer.Write(MaxSoftAngle3);
+            writer.Write(RotationSpeed);
+            writer.Write(RotationStrength);
+            writer.Write(RestoringStrength);
+            writer.Write(RestoringMaxTorque);
+            writer.Write(LatchStrength);
             writer.Write(Mass);
             writer.Write(Unknown_48h);
             writer.Write(UnkByte4C);
@@ -4091,8 +4091,8 @@ namespace CodeWalker.GameFiles
             writer.Write(UnkByte51);
             writer.Write(UnkByte52);
             writer.Write(UnkByte53);
-            writer.Write(UnkFloat54);
-            writer.Write(UnkFloat58);
+            writer.Write(MinDamageForce);
+            writer.Write(DamageHealth);
             writer.Write(UnkFloat5C);
             writer.Write(UnkFloat60);
             writer.Write(UnkFloat64);
@@ -4117,22 +4117,22 @@ namespace CodeWalker.GameFiles
             YftXml.ValueTag(sb, indent, "UnkByte51", UnkByte51.ToString());
             YftXml.ValueTag(sb, indent, "UnkByte52", UnkByte52.ToString());
             YftXml.ValueTag(sb, indent, "UnkByte53", UnkByte53.ToString());
-            YftXml.ValueTag(sb, indent, "UnkFloat10", FloatUtil.ToString(UnkFloat10));
-            YftXml.ValueTag(sb, indent, "UnkFloat14", FloatUtil.ToString(UnkFloat14));
-            YftXml.ValueTag(sb, indent, "UnkFloat18", FloatUtil.ToString(UnkFloat18));
-            YftXml.ValueTag(sb, indent, "UnkFloat1C", FloatUtil.ToString(UnkFloat1C));
-            YftXml.ValueTag(sb, indent, "UnkFloat20", FloatUtil.ToString(UnkFloat20));
-            YftXml.ValueTag(sb, indent, "UnkFloat24", FloatUtil.ToString(UnkFloat24));
-            YftXml.ValueTag(sb, indent, "UnkFloat28", FloatUtil.ToString(UnkFloat28));
-            YftXml.ValueTag(sb, indent, "UnkFloat2C", FloatUtil.ToString(UnkFloat2C));
-            YftXml.ValueTag(sb, indent, "UnkFloat30", FloatUtil.ToString(UnkFloat30));
-            YftXml.ValueTag(sb, indent, "UnkFloat34", FloatUtil.ToString(UnkFloat34));
-            YftXml.ValueTag(sb, indent, "UnkFloat38", FloatUtil.ToString(UnkFloat38));
-            YftXml.ValueTag(sb, indent, "UnkFloat3C", FloatUtil.ToString(UnkFloat3C));
-            YftXml.ValueTag(sb, indent, "UnkFloat40", FloatUtil.ToString(UnkFloat40));
+            YftXml.ValueTag(sb, indent, nameof(Strength), FloatUtil.ToString(Strength));
+            YftXml.ValueTag(sb, indent, nameof(ForceTransmissionScaleUp), FloatUtil.ToString(ForceTransmissionScaleUp));
+            YftXml.ValueTag(sb, indent, nameof(ForceTransmissionScaleDown), FloatUtil.ToString(ForceTransmissionScaleDown));
+            YftXml.ValueTag(sb, indent, nameof(JointStiffness), FloatUtil.ToString(JointStiffness));
+            YftXml.ValueTag(sb, indent, nameof(MinSoftAngle1), FloatUtil.ToString(MinSoftAngle1));
+            YftXml.ValueTag(sb, indent, nameof(MaxSoftAngle1), FloatUtil.ToString(MaxSoftAngle1));
+            YftXml.ValueTag(sb, indent, nameof(MaxSoftAngle2), FloatUtil.ToString(MaxSoftAngle2));
+            YftXml.ValueTag(sb, indent, nameof(MaxSoftAngle3), FloatUtil.ToString(MaxSoftAngle3));
+            YftXml.ValueTag(sb, indent, nameof(RotationSpeed), FloatUtil.ToString(RotationSpeed));
+            YftXml.ValueTag(sb, indent, nameof(RotationStrength), FloatUtil.ToString(RotationStrength));
+            YftXml.ValueTag(sb, indent, nameof(RestoringStrength), FloatUtil.ToString(RestoringStrength));
+            YftXml.ValueTag(sb, indent, nameof(RestoringMaxTorque), FloatUtil.ToString(RestoringMaxTorque));
+            YftXml.ValueTag(sb, indent, nameof(LatchStrength), FloatUtil.ToString(LatchStrength));
             YftXml.ValueTag(sb, indent, "Mass", FloatUtil.ToString(Mass));
-            YftXml.ValueTag(sb, indent, "UnkFloat54", FloatUtil.ToString(UnkFloat54));
-            YftXml.ValueTag(sb, indent, "UnkFloat58", FloatUtil.ToString(UnkFloat58));
+            YftXml.ValueTag(sb, indent, nameof(MinDamageForce), FloatUtil.ToString(MinDamageForce));
+            YftXml.ValueTag(sb, indent, nameof(DamageHealth), FloatUtil.ToString(DamageHealth));
             YftXml.ValueTag(sb, indent, "UnkFloat5C", FloatUtil.ToString(UnkFloat5C));
             YftXml.ValueTag(sb, indent, "UnkFloat60", FloatUtil.ToString(UnkFloat60));
             YftXml.ValueTag(sb, indent, "UnkFloat64", FloatUtil.ToString(UnkFloat64));
@@ -4154,22 +4154,22 @@ namespace CodeWalker.GameFiles
             UnkByte51 = (byte)Xml.GetChildUIntAttribute(node, "UnkByte51", "value");
             UnkByte52 = (byte)Xml.GetChildUIntAttribute(node, "UnkByte52", "value");
             UnkByte53 = (byte)Xml.GetChildUIntAttribute(node, "UnkByte53", "value");
-            UnkFloat10 = Xml.GetChildFloatAttribute(node, "UnkFloat10", "value");
-            UnkFloat14 = Xml.GetChildFloatAttribute(node, "UnkFloat14", "value");
-            UnkFloat18 = Xml.GetChildFloatAttribute(node, "UnkFloat18", "value");
-            UnkFloat1C = Xml.GetChildFloatAttribute(node, "UnkFloat1C", "value");
-            UnkFloat20 = Xml.GetChildFloatAttribute(node, "UnkFloat20", "value");
-            UnkFloat24 = Xml.GetChildFloatAttribute(node, "UnkFloat24", "value");
-            UnkFloat28 = Xml.GetChildFloatAttribute(node, "UnkFloat28", "value");
-            UnkFloat2C = Xml.GetChildFloatAttribute(node, "UnkFloat2C", "value");
-            UnkFloat30 = Xml.GetChildFloatAttribute(node, "UnkFloat30", "value");
-            UnkFloat34 = Xml.GetChildFloatAttribute(node, "UnkFloat34", "value");
-            UnkFloat38 = Xml.GetChildFloatAttribute(node, "UnkFloat38", "value");
-            UnkFloat3C = Xml.GetChildFloatAttribute(node, "UnkFloat3C", "value");
-            UnkFloat40 = Xml.GetChildFloatAttribute(node, "UnkFloat40", "value");
+            Strength = Xml.GetChildFloatAttribute(node, nameof(Strength), "value");
+            ForceTransmissionScaleUp = Xml.GetChildFloatAttribute(node, nameof(ForceTransmissionScaleUp), "value");
+            ForceTransmissionScaleDown = Xml.GetChildFloatAttribute(node, nameof(ForceTransmissionScaleDown), "value");
+            JointStiffness = Xml.GetChildFloatAttribute(node, nameof(JointStiffness), "value");
+            MinSoftAngle1 = Xml.GetChildFloatAttribute(node, nameof(MinSoftAngle1), "value");
+            MaxSoftAngle1 = Xml.GetChildFloatAttribute(node, nameof(MaxSoftAngle1), "value");
+            MaxSoftAngle2 = Xml.GetChildFloatAttribute(node, nameof(MaxSoftAngle2), "value");
+            MaxSoftAngle3 = Xml.GetChildFloatAttribute(node, nameof(MaxSoftAngle3), "value");
+            RotationSpeed = Xml.GetChildFloatAttribute(node, nameof(RotationSpeed), "value");
+            RotationStrength = Xml.GetChildFloatAttribute(node, nameof(RotationStrength), "value");
+            RestoringStrength = Xml.GetChildFloatAttribute(node, nameof(RestoringStrength), "value");
+            RestoringMaxTorque = Xml.GetChildFloatAttribute(node, nameof(RestoringMaxTorque), "value");
+            LatchStrength = Xml.GetChildFloatAttribute(node, nameof(LatchStrength), "value");
             Mass = Xml.GetChildFloatAttribute(node, "Mass", "value");
-            UnkFloat54 = Xml.GetChildFloatAttribute(node, "UnkFloat54", "value");
-            UnkFloat58 = Xml.GetChildFloatAttribute(node, "UnkFloat58", "value");
+            MinDamageForce = Xml.GetChildFloatAttribute(node, nameof(MinDamageForce), "value");
+            DamageHealth = Xml.GetChildFloatAttribute(node, nameof(DamageHealth), "value");
             UnkFloat5C = Xml.GetChildFloatAttribute(node, "UnkFloat5C", "value");
             UnkFloat60 = Xml.GetChildFloatAttribute(node, "UnkFloat60", "value");
             UnkFloat64 = Xml.GetChildFloatAttribute(node, "UnkFloat64", "value");
