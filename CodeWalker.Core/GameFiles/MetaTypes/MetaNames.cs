@@ -9937,6 +9937,53 @@ namespace CodeWalker.GameFiles
 		water_splash_veh_trail = 2953510466,
 		water_splash_veh_wade = 3800884192,
 		
+		// Discovered by Carl Johnson and Siprus
+		// vfxpedsinfo.ymt
+		decalColR = 3528261443,
+		decalColB = 1061216933,
+		decalColG = 3956665062,
+		decalWetColR = 4105014621,
+		decalWetColG = 2811309689,
+		decalWetColB = 1416129183,
+									
+		// vfxregioninfo.ymt
+		vfxregioninfo_wetland = 874996631,
+		vfxregioninfo_snow = 3168151270,
+		vfxregioninfo_lake = 3419924620,
+		vfxregioninfo_coastal = 2766093715,
+		vfxregioninfo_desert_heavy = 1850745392,
+		vfxregioninfo_woodland_dense = 3392061133,
+									
+		// zonebind.ymt
+		CPopZoneData = 929500433,
+		popBaseRangeScale = 2457592777,
+		popRangeMultiplier = 840044851,
+		popRangeScaleEnd = 551529922,
+		popRangeScaleStart = 467411208,
+									
+		// vfxregioninfo.ymt
+		gpuPtFxTimeMax = 2399902437,
+		gpuPtFxTimeMin = 935218188,
+		gpuPtFxTempThresh = 4189187934,
+		gpuPtFxSunThresh = 2029307341,
+		gpuPtFxWindThresh = 2735737287,
+		gpuPtFxInterpRate = 2231491759,
+		env_snow_flakes = 1779515480,
+		wetland_flies_drop = 1139605251,
+		woodland_mist_ground = 1820858969,
+		env_wind_debris = 4061571382,
+		lake_fog_drop = 2201035953,
+		env_wind_debris_city = 14675244,
+		lake_fog_ground = 1099813381,
+		woodland_firefly_drop = 590680067,
+		woodland_pollen_drop = 989619586,
+		env_wind_debris_woodland = 847316211,
+		env_wind_debris_desert = 2513834763,
+		desert_ground = 918977310,
+		desert_ground_heavy = 653531081,
+		countryside_ground = 2684189712,
+		env_wind_debris_mountain = 2796944910,
+		
     }
 
 
