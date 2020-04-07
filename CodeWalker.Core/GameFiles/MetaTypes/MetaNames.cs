@@ -9743,9 +9743,46 @@ namespace CodeWalker.GameFiles
 
 
 
-        //Carl Johnson: I discovered  in zonebind
+        //Carl Johnson and Siprus
         specialZoneAttribute = 218662697,
-
+        CPopZoneData = 62557530
+        popBaseRangeScale = 2304154060
+        popRangeMultiplier = 1457405649
+        popRangeScaleEnd = 2056852733
+        popRangeScaleStart = 1430479029
+        gpuPtFxTimeMax = 1202806570
+		gpuPtFxTimeMin = 1775217766
+		gpuPtFxTempThresh = 2437695423
+		gpuPtFxSunThresh = 3099312282
+		gpuPtFxWindThresh = 3614737265
+		gpuPtFxInterpRate = 4204794351
+		env_snow_flakes = 119760577
+		wetland_flies_drop = 907634280
+		woodland_mist_ground = 1024959356
+		env_wind_debris = 1318711596
+		lake_fog_drop = 1763065767
+		env_wind_debris_city = 2141994130
+		lake_fog_ground = 2343701897
+		woodland_firefly_drop = 2380660330
+		woodland_pollen_drop = 2445487209
+		env_wind_debris_woodland = 2725669279
+		env_wind_debris_desert = 2969685141
+		desert_ground = 3058489211
+		desert_ground_heavy = 3376072566
+		countryside_ground = 3562022151
+		env_wind_debris_mountain = 3913560305
+        decalColR = 1369041264
+		decalColG = 1201263928
+		decalColB = 1596752989
+		decalWetColR = 2768457985
+		decalWetColG = 1822646338
+		decalWetColB = 2318441304
+        vfxregioninfo_wetland = 1959519183
+        vfxregioninfo_snow = 3023501349
+        vfxregioninfo_lake = 3702648742
+        vfxregioninfo_coastal = 4253054311
+        vfxregioninfo_desert_heavy = 1116439995
+        vfxregioninfo_woodland_dense = 3085166585
     }
 
 
