@@ -4329,7 +4329,7 @@ namespace CodeWalker.GameFiles
             this.ShaderGroup = reader.ReadBlockAt<ShaderGroup>(this.ShaderGroupPointer);
             this.Skeleton = reader.ReadBlockAt<Skeleton>(this.SkeletonPointer);
             this.Joints = reader.ReadBlockAt<Joints>(this.JointsPointer);
-            this.DrawableModels = reader.ReadBlockAt<DrawableModelsBlock>(this.DrawableModelsPointer, this);
+            this.DrawableModels = reader.ReadBlockAt<DrawableModelsBlock>((DrawableModelsPointer == 0) ? DrawableModelsHighPointer : DrawableModelsPointer, this);
 
 
             BuildAllModels();
