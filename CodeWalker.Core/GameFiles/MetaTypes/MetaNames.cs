@@ -9986,25 +9986,25 @@ namespace CodeWalker.GameFiles
 		
 		// Discoverd by Modifiver
 		// In .ycd files
-		heel = 734017572
-		lookik = 1232579448
-		create = 1654067888
-		destroy = 1838514158
-		moveevent = 2125062084
-		narrowest = 2148071861
-		full = 2467592022
-		foot = 3090039563
-		right = 3100427065
-		release = 3162248117
-		phonering = 3644489398
-		register = 877593208
-		blocked = 1452237324
-		stop = 2467080178
-		loopingaudio = 2736623395
-		allowed = 2814941113
-		vfxname = 2878731322
-		trigger = 3283079265
-		objectvfx = 4003617623
+		heel = 734017572,
+		lookik = 1232579448,
+		create = 1654067888,
+		destroy = 1838514158,
+		moveevent = 2125062084,
+		narrowest = 2148071861,
+		full = 2467592022,
+		foot = 3090039563,
+		right = 3100427065,
+		release = 3162248117,
+		phonering = 3644489398,
+		register = 877593208,
+		blocked = 1452237324,
+		stop = 2467080178,
+		loopingaudio = 2736623395,
+		allowed = 2814941113,
+		vfxname = 2878731322,
+		trigger = 3283079265,
+		objectvfx = 4003617623,
 		
     }
 
