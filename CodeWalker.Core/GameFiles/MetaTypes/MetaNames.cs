@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9743,46 +9743,268 @@ namespace CodeWalker.GameFiles
 
 
 
-        //Carl Johnson and Siprus
+        //Carl Johnson: I discovered  in zonebind
         specialZoneAttribute = 218662697,
-        CPopZoneData = 62557530
-        popBaseRangeScale = 2304154060
-        popRangeMultiplier = 1457405649
-        popRangeScaleEnd = 2056852733
-        popRangeScaleStart = 1430479029
-        gpuPtFxTimeMax = 1202806570
-		gpuPtFxTimeMin = 1775217766
-		gpuPtFxTempThresh = 2437695423
-		gpuPtFxSunThresh = 3099312282
-		gpuPtFxWindThresh = 3614737265
-		gpuPtFxInterpRate = 4204794351
-		env_snow_flakes = 119760577
-		wetland_flies_drop = 907634280
-		woodland_mist_ground = 1024959356
-		env_wind_debris = 1318711596
-		lake_fog_drop = 1763065767
-		env_wind_debris_city = 2141994130
-		lake_fog_ground = 2343701897
-		woodland_firefly_drop = 2380660330
-		woodland_pollen_drop = 2445487209
-		env_wind_debris_woodland = 2725669279
-		env_wind_debris_desert = 2969685141
-		desert_ground = 3058489211
-		desert_ground_heavy = 3376072566
-		countryside_ground = 3562022151
-		env_wind_debris_mountain = 3913560305
-        decalColR = 1369041264
-		decalColG = 1201263928
-		decalColB = 1596752989
-		decalWetColR = 2768457985
-		decalWetColG = 1822646338
-		decalWetColB = 2318441304
-        vfxregioninfo_wetland = 1959519183
-        vfxregioninfo_snow = 3023501349
-        vfxregioninfo_lake = 3702648742
-        vfxregioninfo_coastal = 4253054311
-        vfxregioninfo_desert_heavy = 1116439995
-        vfxregioninfo_woodland_dense = 3085166585
+		
+		
+		//vfxvehicleinfo CVfxVehicleInfo keys
+		vfxvehicleinfo_bulldozer = 12300880,
+		vfxvehicleinfo_car_deluxo = 193226246,
+		vfxvehicleinfo_car_generic_small = 267479565,
+		vfxvehicleinfo_boat_suntrap = 285789004,
+		vfxvehicleinfo_train_generic = 341505255,
+		vfxvehicleinfo_car_offroad = 352539006,
+		vfxvehicleinfo_rc = 364273431,
+		vfxvehicleinfo_car_generic = 398747547,
+		vfxvehicleinfo_truck_apc = 432634462,
+		vfxvehicleinfo_forklift = 439414653,
+		vfxvehicleinfo_plane_duster = 460220863,
+		vfxvehicleinfo_heli_skylift = 476793892,
+		vfxvehicleinfo_submersible = 478347832,
+		vfxvehicleinfo_motorbike_faggio = 528628720,
+		vfxvehicleinfo_boat_jetmax = 565430038,
+		vfxvehicleinfo_boat_tug = 597101868,
+		vfxvehicleinfo_trailer_grain = 607976407,
+		vfxvehicleinfo_tank_scarab = 625436129,
+		vfxvehicleinfo_trailer_small = 669566203,
+		vfxvehicleinfo_trailer_generic = 782560007,
+		vfxvehicleinfo_plane_generic = 815092152,
+		vfxvehicleinfo_quad_generic = 863941205,
+		vfxvehicleinfo_plane_pyro = 957605478,
+		vfxvehicleinfo_bus_generic = 1276791650,
+		vfxvehicleinfo_motorbike_sanctus = 1336855951,
+		vfxvehicleinfo_heli_cargobob = 1431569536,
+		vfxvehicleinfo_truck_yosemite2 = 1459413353,
+		vfxvehicleinfo_plane_cuban800 = 1555127620,
+		vfxvehicleinfo_jetski_generic = 1566387680,
+		vfxvehicleinfo_tank_rhino = 1607944266,
+		vfxvehicleinfo_trailer_tanker = 1708270255,
+		vfxvehicleinfo_plane_dodo = 1850680346,
+		vfxvehicleinfo_car_hotknife = 1851808812,
+		vfxvehicleinfo_car_amphibious = 1877246371,
+		vfxvehicleinfo_plane_molotok = 1919247874,
+		vfxvehicleinfo_car_electric = 2013519764,
+		vfxvehicleinfo_plane_vulkan = 2073365728,
+		vfxvehicleinfo_plane_strikeforce = 2323129017,
+		vfxvehicleinfo_plane_seabreeze = 2437703682,
+		vfxvehicleinfo_rc_tank = 2501528518,
+		vfxvehicleinfo_plane_cargo = 2524440911,
+		vfxvehicleinfo_boat_generic = 2560783619,
+		vfxvehicleinfo_truck_rig = 2591507893,
+		vfxvehicleinfo_truck_offroad = 2628360287,
+		vfxvehicleinfo_spacecraft_generic = 2648742720,
+		vfxvehicleinfo_heli_frogger = 2669495177,
+		vfxvehicleinfo_golf_car = 2745384957,
+		vfxvehicleinfo_heli_generic = 2839459097,
+		vfxvehicleinfo_trailer_bale = 2859808673,
+		vfxvehicleinfo_boat_dinghy = 2896583062,
+		vfxvehicleinfo_motorbike_oppressor = 2934587053,
+		vfxvehicleinfo_quad_amphibious = 2952651468,
+		vfxvehicleinfo_plane_starling = 3030608204,
+		vfxvehicleinfo_plane_mammatus = 3041307345,
+		vfxvehicleinfo_plane_tula = 3105010270,
+		vfxvehicleinfo_boat_marquis = 3118564227,
+		vfxvehicleinfo_trailer_home = 3168638753,
+		vfxvehicleinfo_plane_volatol = 3349751374,
+		vfxvehicleinfo_boat_tropic = 3434372937,
+		vfxvehicleinfo_heli_annihilator = 3465419791,
+		vfxvehicleinfo_plane_bombushka = 3557327940,
+		vfxvehicleinfo_car_bullet = 3565048690,
+		vfxvehicleinfo_truck_generic = 3567618790,
+		vfxvehicleinfo_truck_hidden_exhaust = 3618308064,
+		vfxvehicleinfo_thruster = 3826189364,
+		vfxvehicleinfo_trailer_log = 3865777938,
+		vfxvehicleinfo_car_stromberg = 3908332917,
+		vfxvehicleinfo_motorbike_generic = 3966923368,
+		vfxvehicleinfo_bicycle_generic = 4125608199,
+		vfxvehicleinfo_plane_avenger = 4170389369,
+		vfxvehicleinfo_plane_velum = 4243898520,
+		vfxvehicleinfo_plane_titan = 4275366687,
+		
+		//vfxvehicleinfo - exhaustPtFxName engineStartupPtFxName misfirePtFxName backfirePtFxName engineDamagePtFxNoPanelName engineDamagePtFxPanelOpenName 
+		//engineDamagePtFxPanelShutName leakPtFxOilName leakPtFxPetrolName wheelPuncturePtFxName wheelBurstPtFxName wheelFirePtFxName wreckedFirePtFxName 
+		//wreckedFire2PtFxName wreckedFire3PtFxName petrolTankFirePtFxName splashInPtFxName splashOutPtFxName splashWadePtFxName splashTrailPtFxName
+		_water_splash_veh_in = 1317936600,
+		_water_splash_veh_out = 1188557193,
+		_water_splash_veh_trail = 3793687577,
+		_water_splash_veh_wade = 841119790,
+		fire_petroltank_bike = 4058238859,
+		fire_petroltank_boat = 3781917422,
+		fire_petroltank_car = 286531323,
+		fire_petroltank_car_bullet = 325101383,
+		fire_petroltank_heli = 469524969,
+		fire_petroltank_plane = 822770859,
+		fire_petroltank_truck = 556948249,
+		fire_wheel = 2564117782,
+		fire_wheel_bike = 286338882,
+		fire_wrecked_bike = 2159199551,
+		fire_wrecked_boat = 2453269583,
+		fire_wrecked_bus = 3683539591,
+		fire_wrecked_car = 1033454750,
+		fire_wrecked_car_vent = 2390742284,
+		fire_wrecked_heli = 3334905053,
+		fire_wrecked_heli_cockpit = 977177896,
+		fire_wrecked_plane = 2046075258,
+		fire_wrecked_plane_cockpit = 16421732,
+		fire_wrecked_rc = 3285882749,
+		fire_wrecked_tank = 711770263,
+		fire_wrecked_tank_cockpit = 3365914925,
+		fire_wrecked_train = 202963129,
+		fire_wrecked_truck = 2114054471,
+		fire_wrecked_truck_vent = 1676943215,
+		veh_backfire = 302124928,
+		veh_exhaust_boat = 3991639095,
+		veh_exhaust_car = 4278361511,
+		veh_exhaust_cargo = 3625867230,
+		veh_exhaust_cuban800 = 3320655354,
+		veh_exhaust_heli = 1064411126,
+		veh_exhaust_heli_cargobob = 1842168540,
+		veh_exhaust_heli_cargobob_misfire = 1279967671,
+		veh_exhaust_heli_misfire = 442429522,
+		veh_exhaust_heli_skylift = 966577375,
+		veh_exhaust_hidden = 144796140,
+		veh_exhaust_misfire = 3217063320,
+		veh_exhaust_plane = 1299879749,
+		veh_exhaust_plane_misfire = 3078711485,
+		veh_exhaust_plane_start = 1139235276,
+		veh_exhaust_spacecraft = 1276587689,
+		veh_exhaust_starling = 1317403759,
+		veh_exhaust_start = 3164339072,
+		veh_exhaust_start_bike = 2038672349,
+		veh_exhaust_strikeforce = 3876913684,
+		veh_exhaust_titan = 1905226107,
+		veh_exhaust_trailer_chimney = 3683009021,
+		veh_exhaust_truck = 2723278228,
+		veh_exhaust_truck_rig = 2363972594,
+		veh_exhaust_tug = 2527588925,
+		veh_exhaust_velum = 2187349811,
+		veh_exhaust_vulkan = 2325868249,
+		veh_faggio_exhaust = 3405851763,
+		veh_oil_leak = 4038693171,
+		veh_panel_open_car = 608828042,
+		veh_panel_open_carhk = 2562161046,
+		veh_panel_open_truck = 2830143211,
+		veh_panel_shut_car = 976692688,
+		veh_panel_shut_tank = 2160667314,
+		veh_panel_shut_truck = 1012438887,
+		veh_petrol_leak = 4202984037,
+		veh_petrol_leak_bike = 4087050880,
+		veh_petrol_leak_bullet = 2473542845,
+		veh_sanctus_backfire = 2901830062,
+		veh_sanctus_exhaust = 1674950331,
+		veh_sanctus_exhaust_start = 3935546497,
+		veh_sm_car_small_backfire = 1489543669,
+		veh_vent_bike = 3812572075,
+		veh_vent_boat = 1895506455,
+		veh_vent_heli = 2917572657,
+		veh_vent_heli_anh = 139550781,
+		veh_vent_heli_cargobob = 892160507,
+		veh_vent_heli_frogger = 567422941,
+		veh_vent_heli_skylift = 361833230,
+		veh_vent_plane = 3252279465,
+		veh_vent_plane_bom = 2138528253,
+		veh_vent_plane_duster = 2112623789,
+		veh_vent_plane_lazer = 2156998603,
+		veh_vent_plane_starling = 2625845552,
+		veh_vent_plane_titan = 3591328632,
+		veh_vent_plane_tula = 1836402424,
+		veh_vent_plane_volatol = 921445090,
+		veh_vent_rc = 357002104,
+		veh_wheel_burst = 3039521151,
+		veh_wheel_puncture = 3869685395,
+		veh_wheel_puncture_rc = 3871952608,
+		veh_xm_strom_underwater_trail = 1211754772,
+		veh_xm_thruster_engine_damage = 2492561356,
+		veh_xm_thruster_wreck_fire = 1925614570,
+		veh_xm_vent_plane_avenger = 4012218664,
+		water_splash_bicycle_in = 3869191077,
+		water_splash_bicycle_out = 3104338404,
+		water_splash_bicycle_trail = 3908760766,
+		water_splash_bicycle_wade = 3977089222,
+		water_splash_bike_in = 4182206171,
+		water_splash_bike_out = 1267020131,
+		water_splash_bike_trail = 3888624892,
+		water_splash_bike_wade = 703565724,
+		water_splash_plane_in = 238058964,
+		water_splash_plane_out = 3327807348,
+		water_splash_plane_trail = 438571176,
+		water_splash_plane_wade = 3061312190,
+		water_splash_sub_in = 2259958166,
+		water_splash_sub_out = 2513782849,
+		water_splash_sub_wade = 223452235,
+		water_splash_veh_in = 2045224279,
+		water_splash_veh_out = 858904440,
+		water_splash_veh_trail = 2953510466,
+		water_splash_veh_wade = 3800884192,
+		
+		// Discovered by Carl Johnson and Siprus
+		// vfxpedsinfo.ymt
+		decalColR = 3528261443,
+		decalColB = 1061216933,
+		decalColG = 3956665062,
+		decalWetColR = 4105014621,
+		decalWetColG = 2811309689,
+		decalWetColB = 1416129183,
+									
+		// vfxregioninfo.ymt
+		vfxregioninfo_wetland = 874996631,
+		vfxregioninfo_snow = 3168151270,
+		vfxregioninfo_lake = 3419924620,
+		vfxregioninfo_coastal = 2766093715,
+		vfxregioninfo_desert_heavy = 1850745392,
+		vfxregioninfo_woodland_dense = 3392061133,
+									
+		// zonebind.ymt
+		CPopZoneData = 929500433,
+		popBaseRangeScale = 2457592777,
+		popRangeMultiplier = 840044851,
+		popRangeScaleEnd = 551529922,
+		popRangeScaleStart = 467411208,
+									
+		// vfxregioninfo.ymt
+		gpuPtFxTimeMax = 2399902437,
+		gpuPtFxTimeMin = 935218188,
+		gpuPtFxTempThresh = 4189187934,
+		gpuPtFxSunThresh = 2029307341,
+		gpuPtFxWindThresh = 2735737287,
+		gpuPtFxInterpRate = 2231491759,
+		env_snow_flakes = 1779515480,
+		wetland_flies_drop = 1139605251,
+		woodland_mist_ground = 1820858969,
+		env_wind_debris = 4061571382,
+		lake_fog_drop = 2201035953,
+		env_wind_debris_city = 14675244,
+		lake_fog_ground = 1099813381,
+		woodland_firefly_drop = 590680067,
+		woodland_pollen_drop = 989619586,
+		env_wind_debris_woodland = 847316211,
+		env_wind_debris_desert = 2513834763,
+		desert_ground = 918977310,
+		desert_ground_heavy = 653531081,
+		countryside_ground = 2684189712,
+		env_wind_debris_mountain = 2796944910,
+		
+		// ycd discoverd by Modifiver
+		heel = 734017572
+		lookik = 1232579448
+		create = 1654067888
+		destroy = 1838514158
+		moveevent = 2125062084
+		narrowest = 2148071861
+		full = 2467592022
+		foot = 3090039563
+		right = 3100427065
+		release = 3162248117
+		phonering = 3644489398
+		register = 877593208
+		blocked = 1452237324
+		stop = 2467080178
+		loopingaudio = 2736623395
+		allowed = 2814941113
+		vfxname = 2878731322
+		trigger = 3283079265
+		objectvfx = 4003617623
+		
     }
 
 
