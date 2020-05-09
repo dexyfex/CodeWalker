@@ -9984,7 +9984,8 @@ namespace CodeWalker.GameFiles
 		countryside_ground = 2684189712,
 		env_wind_debris_mountain = 2796944910,
 		
-		// ycd discoverd by Modifiver
+		// Discoverd by Modifiver
+		// In .ycd files
 		heel = 734017572
 		lookik = 1232579448
 		create = 1654067888
