@@ -52,6 +52,7 @@
             this.label9 = new System.Windows.Forms.Label();
             this.DeleteButton = new System.Windows.Forms.Button();
             this.AddEntityButton = new System.Windows.Forms.Button();
+            this.CalcPortalsButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
@@ -269,7 +270,7 @@
             // DeleteButton
             // 
             this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.DeleteButton.Location = new System.Drawing.Point(352, 277);
+            this.DeleteButton.Location = new System.Drawing.Point(390, 280);
             this.DeleteButton.Name = "DeleteButton";
             this.DeleteButton.Size = new System.Drawing.Size(95, 23);
             this.DeleteButton.TabIndex = 23;
@@ -279,7 +280,7 @@
             // 
             // AddEntityButton
             // 
-            this.AddEntityButton.Location = new System.Drawing.Point(110, 277);
+            this.AddEntityButton.Location = new System.Drawing.Point(75, 280);
             this.AddEntityButton.Name = "AddEntityButton";
             this.AddEntityButton.Size = new System.Drawing.Size(95, 23);
             this.AddEntityButton.TabIndex = 22;
@@ -287,11 +288,22 @@
             this.AddEntityButton.UseVisualStyleBackColor = true;
             this.AddEntityButton.Click += new System.EventHandler(this.AddEntityButton_Click);
             // 
+            // CalcPortalsButton
+            // 
+            this.CalcPortalsButton.Location = new System.Drawing.Point(205, 280);
+            this.CalcPortalsButton.Name = "CalcPortalsButton";
+            this.CalcPortalsButton.Size = new System.Drawing.Size(150, 23);
+            this.CalcPortalsButton.TabIndex = 24;
+            this.CalcPortalsButton.Text = "Calculate Portal Count";
+            this.CalcPortalsButton.UseVisualStyleBackColor = true;
+            this.CalcPortalsButton.Click += new System.EventHandler(this.CalcPortalCountButton_Click);
+            // 
             // EditYtypMloRoomPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(565, 505);
+            this.Controls.Add(this.CalcPortalsButton);
             this.Controls.Add(this.AddEntityButton);
             this.Controls.Add(this.DeleteButton);
             this.Controls.Add(this.ExteriorVisDepthTextBox);
@@ -348,5 +360,6 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Button DeleteButton;
         private System.Windows.Forms.Button AddEntityButton;
+        private System.Windows.Forms.Button CalcPortalsButton;
     }
 }

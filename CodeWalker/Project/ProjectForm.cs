@@ -2750,6 +2750,12 @@ namespace CodeWalker.Project
 
             return outEnt;
         }
+
+        public MloArchetype GetMloArchetype()
+        {
+            return CurrentMloRoom?.OwnerMlo;
+        }
+
         public MCMloRoomDef NewMloRoom(MCMloRoomDef copy = null)
         {
             var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? (CurrentArchetype as MloArchetype);

@@ -9,12 +9,13 @@ namespace CodeWalker.Project.Panels
     {
         public ProjectForm ProjectForm;
         public MCMloRoomDef CurrentRoom { get; set; }
-
+        public MloArchetype CurrentMLO { get; set; }
         private bool populatingui = false;
 
         public EditYtypMloRoomPanel(ProjectForm owner)
         {
             ProjectForm = owner;
+            CurrentMLO = ProjectForm.GetMloArchetype();
             InitializeComponent();
         }
 
@@ -267,6 +268,25 @@ namespace CodeWalker.Project.Panels
         {
             ProjectForm.SetProjectItem(CurrentRoom);
             ProjectForm.NewMloEntity();
+        }
+
+        private void CalcPortalCountButton_Click(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentRoom == null) return;
+            if (CurrentMLO == null) return;
+            uint portalCount = 0;
+            foreach (MCMloPortalDef portal in CurrentMLO.portals)
+            {
+                if (portal.Data.roomFrom == CurrentRoom.Index || portal.Data.roomTo == CurrentRoom.Index)
+                {
+                    portalCount++;
+                }
+            }
+            if (portalCount == CurrentRoom._Data.portalCount && PortalCountTextBox.Text == portalCount.ToString()) return;
+            CurrentRoom._Data.portalCount = portalCount;
+            PortalCountTextBox.Text = portalCount.ToString();
+            ProjectForm.SetYtypHasChanged(true);
         }
 
         private void DeleteButton_Click(object sender, EventArgs e)
