@@ -2020,7 +2020,7 @@ namespace CodeWalker.Project
             batch.Position = (batch.AABBMin + batch.AABBMax) * 0.5f;
             batch.Radius = (batch.AABBMax - batch.AABBMin).Length() * 0.5f;
             batch.Ymap = CurrentYmapFile;
-            
+
             if (WorldForm != null)
             {
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
@@ -2750,6 +2750,12 @@ namespace CodeWalker.Project
 
             return outEnt;
         }
+
+        public MloArchetype GetMloArchetype()
+        {
+            return CurrentMloRoom?.OwnerMlo;
+        }
+
         public MCMloRoomDef NewMloRoom(MCMloRoomDef copy = null)
         {
             var mlo = CurrentMloRoom?.OwnerMlo ?? CurrentMloPortal?.OwnerMlo ?? CurrentMloEntitySet?.OwnerMlo ?? (CurrentEntity?.MloParent.Archetype as MloArchetype) ?? (CurrentArchetype as MloArchetype);
@@ -5957,7 +5963,7 @@ namespace CodeWalker.Project
 
                 ProjectExplorer?.TrySelectAudioZoneTreeNode(ap);
                 CurrentAudioZone = ap;
-            
+
                 ShowEditAudioZonePanel(false);
             }
 
@@ -6105,7 +6111,7 @@ namespace CodeWalker.Project
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                 {
                     res = CurrentAudioFile.RemoveRelData(CurrentAudioEmitter.AudioEmitter);
-                    
+
                     WorldForm.UpdateAudioPlacementGraphics(CurrentAudioFile);
                 }
             }
