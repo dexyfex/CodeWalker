@@ -126,16 +126,9 @@ namespace CodeWalker.GameFiles
             addChildren(rootBlock);
 
 
-            sys = new List<IResourceBlock>();
-            foreach (var s in systemBlocks)
-            {
-                sys.Add(s);
-            }
-            gfx = new List<IResourceBlock>();
-            foreach (var s in graphicBlocks)
-            {
-                gfx.Add(s);
-            }
+            sys = new List<IResourceBlock>(systemBlocks);
+            gfx = new List<IResourceBlock>(graphicBlocks);
+
         }
 
         public static void AssignPositions(IList<IResourceBlock> blocks, uint basePosition, out RpfResourcePageFlags pageFlags)
