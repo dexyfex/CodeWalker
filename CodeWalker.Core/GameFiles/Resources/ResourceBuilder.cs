@@ -31,7 +31,6 @@ namespace CodeWalker.GameFiles
             public bool IsSystemSet = false;
             public ResourceBuilderBlock RootBlock = null;
             public LinkedList<ResourceBuilderBlock> BlockList = new LinkedList<ResourceBuilderBlock>();
-            public Dictionary<ResourceBuilderBlock, LinkedListNode<ResourceBuilderBlock>> BlockDict = new Dictionary<ResourceBuilderBlock, LinkedListNode<ResourceBuilderBlock>>();
 
             public int Count => BlockList.Count;
 
@@ -53,7 +52,6 @@ namespace CodeWalker.GameFiles
                 foreach (var bb in list)
                 {
                     var ln = BlockList.AddLast(bb);
-                    BlockDict[bb] = ln;
                 }
             }
 
@@ -72,11 +70,7 @@ namespace CodeWalker.GameFiles
                 var r = FindBestBlock(maxSize);
                 if (r != null)
                 {
-                    if (BlockDict.TryGetValue(r, out LinkedListNode<ResourceBuilderBlock> ln))
-                    {
-                        BlockList.Remove(ln);
-                        BlockDict.Remove(r);
-                    }
+                    BlockList.Remove(r);
                 }
                 return r;
             }
