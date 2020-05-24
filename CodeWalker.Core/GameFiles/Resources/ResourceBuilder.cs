@@ -94,11 +94,11 @@ namespace CodeWalker.GameFiles
             {
                 if (block is IResourceSystemBlock)
                 {
-                    if (!systemBlocks.Contains(block)) systemBlocks.Add(block);
+                    systemBlocks.Add(block);
                 }
                 else if(block is IResourceGraphicsBlock)
                 {
-                    if (!graphicBlocks.Contains(block)) graphicBlocks.Add(block);
+                    graphicBlocks.Add(block);
                 }
             }
             void addChildren(IResourceBlock block)
@@ -108,9 +108,8 @@ namespace CodeWalker.GameFiles
                     var references = sblock.GetReferences();
                     foreach (var reference in references)
                     {
-                        if (!processed.Contains(reference))
+                        if (processed.Add(reference))
                         {
-                            processed.Add(reference);
                             addBlock(reference);
                             addChildren(reference);
                         }
