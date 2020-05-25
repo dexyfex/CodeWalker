@@ -179,23 +179,13 @@ namespace CodeWalker.GameFiles
                 {
                     var isroot = sys && (currentPosition == 0);
                     var block = isroot ? rootblock : blockset.TakeBestBlock(currentPageSpace);
-                    if (block != null)
-                    {
-                        //add this block to the current page.
-                        block.FilePosition = basePosition + currentPosition;
-                        var opos = currentPosition;
-                        currentPosition += block.BlockLength;
-                        currentPosition += pad(currentPosition);
-                        var usedspace = currentPosition - opos;
-                        currentPageSpace -= usedspace;
-                        currentRemainder -= usedspace;//blockLength;// 
-                    }
-                    else
+                    
+                    if (block == null)
                     {
                         //allocate a new page
                         currentPageStart += currentPageSize;
                         currentPosition = currentPageStart;
-                        block = blockset.FindBestBlock(long.MaxValue); //just find the biggest block
+                        block = blockset.TakeBestBlock(long.MaxValue); //just find the biggest block
                         var blockLength = block?.BlockLength ?? 0;
                         while (blockLength <= (currentPageSize >> 1))//determine best new page size
                         {
@@ -210,6 +200,15 @@ namespace CodeWalker.GameFiles
                         pageCounts[pageCountIndex]++;
                         pageCount++;
                     }
+
+                    //add this block to the current page.
+                    block.FilePosition = basePosition + currentPosition;
+                    var opos = currentPosition;
+                    currentPosition += block.BlockLength;
+                    currentPosition += pad(currentPosition);
+                    var usedspace = currentPosition - opos;
+                    currentPageSpace -= usedspace;
+                    currentRemainder -= usedspace;//blockLength;// 
                 }
 
 
