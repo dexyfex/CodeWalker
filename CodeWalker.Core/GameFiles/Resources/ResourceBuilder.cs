@@ -43,26 +43,26 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            public IResourceBlock FindBestBlock(long maxSize)
+            private LinkedListNode<IResourceBlock> FindBestBlock(long maxSize)
             {
                 var n = BlockList.First;
                 while ((n != null) && (n.Value.BlockLength > maxSize))
                 {
                     n = n.Next;
                 }
-                return n?.Value;
+                return n;
             }
 
             public IResourceBlock TakeBestBlock(long maxSize)
             {
-                var r = FindBestBlock(maxSize);
-                if (r != null)
+                var n = FindBestBlock(maxSize);
+                if (n != null)
                 {
-                    BlockList.Remove(r);
+                    BlockList.Remove(n);
+                    return n.Value;
                 }
-                return r;
+                return null;
             }
-
         }
 
         public static void GetBlocks(IResourceBlock rootBlock, out IList<IResourceBlock> sys, out IList<IResourceBlock> gfx)
