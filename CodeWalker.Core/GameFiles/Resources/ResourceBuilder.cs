@@ -15,22 +15,11 @@ namespace CodeWalker.GameFiles
         private const int SKIP_SIZE = 16;//512;//256;//64;
         private const int ALIGN_SIZE = 16;//512;//64;
 
-        public class ResourceBuilderBlock
-        {
-            public IResourceBlock Block;
-            public long Length;
-
-            public ResourceBuilderBlock(IResourceBlock block)
-            {
-                Block = block;
-                Length = block?.BlockLength ?? 0;
-            }
-        }
         public class ResourceBuilderBlockSet
         {
             public bool IsSystemSet = false;
-            public ResourceBuilderBlock RootBlock = null;
-            public LinkedList<ResourceBuilderBlock> BlockList = new LinkedList<ResourceBuilderBlock>();
+            public IResourceBlock RootBlock = null;
+            public LinkedList<IResourceBlock> BlockList = new LinkedList<IResourceBlock>();
 
             public int Count => BlockList.Count;
 
@@ -39,33 +28,32 @@ namespace CodeWalker.GameFiles
                 IsSystemSet = sys;
                 if (sys && (blocks.Count > 0))
                 {
-                    RootBlock = new ResourceBuilderBlock(blocks[0]);
+                    RootBlock = blocks[0];
                 }
-                var list = new List<ResourceBuilderBlock>();
+                var list = new List<IResourceBlock>();
                 int start = sys ? 1 : 0;
                 for (int i = start; i < blocks.Count; i++)
                 {
-                    var bb = new ResourceBuilderBlock(blocks[i]);
-                    list.Add(bb);
+                    list.Add(blocks[i]);
                 }
-                list.Sort((a, b) => b.Length.CompareTo(a.Length));
+                list.Sort((a, b) => b.BlockLength.CompareTo(a.BlockLength));
                 foreach (var bb in list)
                 {
                     var ln = BlockList.AddLast(bb);
                 }
             }
 
-            public ResourceBuilderBlock FindBestBlock(long maxSize)
+            public IResourceBlock FindBestBlock(long maxSize)
             {
                 var n = BlockList.First;
-                while ((n != null) && (n.Value.Length > maxSize))
+                while ((n != null) && (n.Value.BlockLength > maxSize))
                 {
                     n = n.Next;
                 }
                 return n?.Value;
             }
 
-            public ResourceBuilderBlock TakeBestBlock(long maxSize)
+            public IResourceBlock TakeBestBlock(long maxSize)
             {
                 var r = FindBestBlock(maxSize);
                 if (r != null)
@@ -156,10 +144,8 @@ namespace CodeWalker.GameFiles
             pageFlags = new RpfResourcePageFlags();
             var pageSizeMult = 1;
 
-            while (true)
+            while (blocks.Count > 0)
             {
-                if (blocks.Count == 0) break;
-
                 var blockset = new ResourceBuilderBlockSet(blocks, sys);
                 var rootblock = blockset.RootBlock;
                 var currentPosition = 0L;
@@ -189,30 +175,28 @@ namespace CodeWalker.GameFiles
                 }
                 pageCounts[pageCountIndex] = 1;
 
-                while (true)
+                while (blockset.Count > 0)
                 {
                     var isroot = sys && (currentPosition == 0);
                     var block = isroot ? rootblock : blockset.TakeBestBlock(currentPageSpace);
-                    var blockLength = block?.Length ?? 0;
                     if (block != null)
                     {
                         //add this block to the current page.
-                        block.Block.FilePosition = basePosition + currentPosition;
+                        block.FilePosition = basePosition + currentPosition;
                         var opos = currentPosition;
-                        currentPosition += blockLength;
+                        currentPosition += block.BlockLength;
                         currentPosition += pad(currentPosition);
                         var usedspace = currentPosition - opos;
                         currentPageSpace -= usedspace;
                         currentRemainder -= usedspace;//blockLength;// 
-
                     }
-                    else if (blockset.Count > 0)
+                    else
                     {
                         //allocate a new page
                         currentPageStart += currentPageSize;
                         currentPosition = currentPageStart;
                         block = blockset.FindBestBlock(long.MaxValue); //just find the biggest block
-                        blockLength = block?.Length ?? 0;
+                        var blockLength = block?.BlockLength ?? 0;
                         while (blockLength <= (currentPageSize >> 1))//determine best new page size
                         {
                             if (currentPageSize <= minPageSize) break;
@@ -225,10 +209,6 @@ namespace CodeWalker.GameFiles
                         currentPageSpace = currentPageSize;
                         pageCounts[pageCountIndex]++;
                         pageCount++;
-                    }
-                    else
-                    {
-                        break;
                     }
                 }
 
