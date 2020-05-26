@@ -217,20 +217,33 @@ namespace CodeWalker
             for (int i = 0; i < readOnlySpan.Length; i++)
             {
                 if (!char.IsWhiteSpace(readOnlySpan[i]))
-                {
+                { 
                     length++;
-                    continue;
-                }
 
-                if (length > 0)
+                    // If it's last char
+                    if (i == readOnlySpan.Length - 1)
+                    {
+                        var item = readOnlySpan.Slice(i - length + 1, length).ToString();
+
+                        var val = Convert.ToByte(item, fromBase);
+                        data.Add(val);
+
+                        length = 0;
+                    }
+                }
+                else
                 {
-                    var item = readOnlySpan.Slice(i - length, length).ToString();
+                    // If previous weren't other whitespaces
+                    if (length > 0)
+                    {
+                        var item = readOnlySpan.Slice(i - length, length).ToString();
 
-                    var val = Convert.ToByte(item, fromBase);
-                    data.Add(val);
+                        var val = Convert.ToByte(item, fromBase);
+                        data.Add(val);
+
+                        length = 0;
+                    }
                 }
-
-                length = 0;
             }
             return data.ToArray();
         }
@@ -258,18 +271,31 @@ namespace CodeWalker
                 if (!char.IsWhiteSpace(readOnlySpan[i]))
                 {
                     length++;
-                    continue;
-                }
 
-                if (length > 0)
+                    // If it's last char
+                    if (i == readOnlySpan.Length - 1)
+                    {
+                        var item = readOnlySpan.Slice(i - length + 1, length).ToString();
+
+                        if(ushort.TryParse(item, out ushort val))
+                            data.Add(val);
+
+                        length = 0;
+                    }
+                }
+                else
                 {
-                    var item = readOnlySpan.Slice(i - length, length).ToString();
+                    // If previous weren't other whitespaces
+                    if (length > 0)
+                    {
+                        var item = readOnlySpan.Slice(i - length, length).ToString();
 
-                    if (ushort.TryParse(item, out ushort val))
-                        data.Add(val);
+                        if (ushort.TryParse(item, out ushort val))
+                            data.Add(val);
+
+                        length = 0;
+                    }
                 }
-
-                length = 0;
             }
             return data.ToArray();
         }
@@ -297,18 +323,31 @@ namespace CodeWalker
                 if (!char.IsWhiteSpace(readOnlySpan[i]))
                 {
                     length++;
-                    continue;
-                }
 
-                if (length > 0)
+                    // If it's last char
+                    if (i == readOnlySpan.Length - 1)
+                    {
+                        var item = readOnlySpan.Slice(i - length + 1, length).ToString();
+
+                        if (uint.TryParse(item, out uint val))
+                            data.Add(val);
+
+                        length = 0;
+                    }
+                }
+                else
                 {
-                    var item = readOnlySpan.Slice(i - length, length).ToString();
+                    // If previous weren't other whitespaces
+                    if (length > 0)
+                    {
+                        var item = readOnlySpan.Slice(i - length, length).ToString();
 
-                    if (uint.TryParse(item, out uint val))
-                        data.Add(val);
+                        if (uint.TryParse(item, out uint val))
+                            data.Add(val);
+
+                        length = 0;
+                    }
                 }
-
-                length = 0;
             }
             return data.ToArray();
         }
@@ -336,18 +375,31 @@ namespace CodeWalker
                 if (!char.IsWhiteSpace(readOnlySpan[i]))
                 {
                     length++;
-                    continue;
-                }
 
-                if (length > 0)
+                    // If it's last char
+                    if (i == readOnlySpan.Length - 1)
+                    {
+                        var item = readOnlySpan.Slice(i - length + 1, length).ToString();
+
+                        if (int.TryParse(item, out int val))
+                            data.Add(val);
+
+                        length = 0;
+                    }
+                }
+                else
                 {
-                    var item = readOnlySpan.Slice(i - length, length).ToString();
+                    // If previous weren't other whitespaces
+                    if (length > 0)
+                    {
+                        var item = readOnlySpan.Slice(i - length, length).ToString();
 
-                    if (int.TryParse(item, out int val))
-                        data.Add(val);
+                        if (int.TryParse(item, out int val))
+                            data.Add(val);
+
+                        length = 0;
+                    }
                 }
-
-                length = 0;
             }
             return data.ToArray();
         }
@@ -375,18 +427,31 @@ namespace CodeWalker
                 if (!char.IsWhiteSpace(readOnlySpan[i]))
                 {
                     length++;
-                    continue;
-                }
 
-                if (length > 0)
+                    // If it's last char
+                    if (i == readOnlySpan.Length - 1)
+                    {
+                        var item = readOnlySpan.Slice(i - length + 1, length).ToString();
+
+                        var val = FloatUtil.Parse(item);
+                        data.Add(val);
+
+                        length = 0;
+                    }
+                }
+                else
                 {
-                    var item = readOnlySpan.Slice(i - length, length).ToString();
+                    // If previous weren't other whitespaces
+                    if (length > 0)
+                    {
+                        var item = readOnlySpan.Slice(i - length, length).ToString();
 
-                    var val = FloatUtil.Parse(item);
-                    data.Add(val);
+                        var val = FloatUtil.Parse(item);
+                        data.Add(val);
+
+                        length = 0;
+                    }
                 }
-
-                length = 0;
             }
             return data.ToArray();
         }
