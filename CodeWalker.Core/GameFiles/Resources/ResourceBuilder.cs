@@ -141,19 +141,26 @@ namespace CodeWalker.GameFiles
             }
 
 
-            pageFlags = new RpfResourcePageFlags();
+            if(blocks.Count <= 0)
+            {
+                pageFlags = new RpfResourcePageFlags();
+                return;
+            }
+            
             var pageSizeMult = 1;
-
-            while (blocks.Count > 0)
+            int pageCount;
+            long currentPosition;
+            
+            do
             {
                 var blockset = new ResourceBuilderBlockSet(blocks, sys);
                 var rootblock = blockset.RootBlock;
-                var currentPosition = 0L;
+                currentPosition = 0L;
                 var currentPageSize = startPageSize;
                 var currentPageStart = 0L;
                 var currentPageSpace = startPageSize;
                 var currentRemainder = totalBlockSize;
-                var pageCount = 1;
+                pageCount = 1;
                 var pageCounts = new uint[9];
                 var pageCountIndex = 0;
                 var targetPageSize = Math.Max(65536 * pageSizeMult, startPageSize >> (sys ? 5 : 2));
@@ -179,7 +186,7 @@ namespace CodeWalker.GameFiles
                 {
                     var isroot = sys && (currentPosition == 0);
                     var block = isroot ? rootblock : blockset.TakeBestBlock(currentPageSpace);
-                    
+
                     if (block == null)
                     {
                         //allocate a new page
@@ -211,17 +218,12 @@ namespace CodeWalker.GameFiles
                     currentRemainder -= usedspace;//blockLength;// 
                 }
 
-
                 pageFlags = new RpfResourcePageFlags(pageCounts, baseShift);
-
-                if ((pageCount == pageFlags.Count) && (pageFlags.Size >= currentPosition)) //make sure page counts fit in the flags value
-                {
-                    break;
-                }
 
                 startPageSize *= 2;
                 pageSizeMult *= 2;
             }
+            while ((pageCount != pageFlags.Count) || (pageFlags.Size < currentPosition));
 
         }
 
