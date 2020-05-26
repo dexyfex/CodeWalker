@@ -213,26 +213,26 @@ namespace CodeWalker
             var data = new List<byte>();
             ReadOnlySpan<char> readOnlySpan = node.InnerText.AsSpan();
 
-            int lenght = 0;
+            int length = 0;
             for (int i = 0; i < readOnlySpan.Length; i++)
             {
                 char singleChar = readOnlySpan[i];
 
                 if (!char.IsWhiteSpace(singleChar))
                 {
-                    lenght++;
+                    length++;
                     continue;
                 }
 
-                if (lenght > 0)
+                if (length > 0)
                 {
-                    var item = readOnlySpan.Slice(i - lenght, lenght).ToString();
+                    var item = readOnlySpan.Slice(i - length, length).ToString();
 
                     var val = Convert.ToByte(item, fromBase);
                     data.Add(val);
                 }
 
-                lenght = 0;
+                length = 0;
             }
             return data.ToArray();
         }
@@ -254,26 +254,26 @@ namespace CodeWalker
             var data = new List<ushort>();
             ReadOnlySpan<char> readOnlySpan = node.InnerText.AsSpan();
 
-            int lenght = 0;
+            int length = 0;
             for (int i = 0; i < readOnlySpan.Length; i++)
             {
                 char singleChar = readOnlySpan[i];
 
                 if (!char.IsWhiteSpace(singleChar))
                 {
-                    lenght++;
+                    length++;
                     continue;
                 }
 
-                if (lenght > 0)
+                if (length > 0)
                 {
-                    var item = readOnlySpan.Slice(i - lenght, lenght).ToString();
+                    var item = readOnlySpan.Slice(i - length, length).ToString();
 
                     if (ushort.TryParse(item, out ushort val))
                         data.Add(val);
                 }
 
-                lenght = 0;
+                length = 0;
             }
             return data.ToArray();
         }
@@ -295,26 +295,26 @@ namespace CodeWalker
             var data = new List<uint>();
             ReadOnlySpan<char> readOnlySpan = node.InnerText.AsSpan();
 
-            int lenght = 0;
+            int length = 0;
             for (int i = 0; i < readOnlySpan.Length; i++)
             {
                 char singleChar = readOnlySpan[i];
 
                 if (!char.IsWhiteSpace(singleChar))
                 {
-                    lenght++;
+                    length++;
                     continue;
                 }
 
-                if (lenght > 0)
+                if (length > 0)
                 {
-                    var item = readOnlySpan.Slice(i - lenght, lenght).ToString();
+                    var item = readOnlySpan.Slice(i - length, length).ToString();
 
                     if (uint.TryParse(item, out uint val))
                         data.Add(val);
                 }
 
-                lenght = 0;
+                length = 0;
             }
             return data.ToArray();
         }
@@ -336,26 +336,26 @@ namespace CodeWalker
             var data = new List<int>();
             ReadOnlySpan<char> readOnlySpan = node.InnerText.AsSpan();
 
-            int lenght = 0;
+            int length = 0;
             for (int i = 0; i < readOnlySpan.Length; i++)
             {
                 char singleChar = readOnlySpan[i];
 
                 if (!char.IsWhiteSpace(singleChar))
                 {
-                    lenght++;
+                    length++;
                     continue;
                 }
 
-                if (lenght > 0)
+                if (length > 0)
                 {
-                    var item = readOnlySpan.Slice(i - lenght, lenght).ToString();
+                    var item = readOnlySpan.Slice(i - length, length).ToString();
 
                     if (int.TryParse(item, out int val))
                         data.Add(val);
                 }
 
-                lenght = 0;
+                length = 0;
             }
             return data.ToArray();
         }
@@ -377,26 +377,26 @@ namespace CodeWalker
             var data = new List<float>();
             ReadOnlySpan<char> readOnlySpan = node.InnerText.AsSpan();
 
-            int lenght = 0;
+            int length = 0;
             for (int i = 0; i < readOnlySpan.Length; i++)
             {
                 char singleChar = readOnlySpan[i];
 
                 if (!char.IsWhiteSpace(singleChar))
                 {
-                    lenght++;
+                    length++;
                     continue;
                 }
 
-                if (lenght > 0)
+                if (length > 0)
                 {
-                    var item = readOnlySpan.Slice(i - lenght, lenght).ToString();
+                    var item = readOnlySpan.Slice(i - length, length).ToString();
 
                     var val = FloatUtil.Parse(item);
                     data.Add(val);
                 }
 
-                lenght = 0;
+                length = 0;
             }
             return data.ToArray();
         }
