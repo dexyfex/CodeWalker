@@ -211,16 +211,28 @@ namespace CodeWalker
         {
             if (node == null) return new byte[0];
             var data = new List<byte>();
-            var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");
-            for (int i = 0; i < split.Length; i++)
+            ReadOnlySpan<char> readOnlySpan = node.InnerText.AsSpan();
+
+            int lenght = 0;
+            for (int i = 0; i < readOnlySpan.Length; i++)
             {
-                if (!string.IsNullOrEmpty(split[i]))
+                char singleChar = readOnlySpan[i];
+
+                if (!char.IsWhiteSpace(singleChar))
                 {
-                    var str = split[i];
-                    if (string.IsNullOrEmpty(str)) continue;
-                    var val = Convert.ToByte(str, fromBase);
+                    lenght++;
+                    continue;
+                }
+
+                if (lenght > 0)
+                {
+                    var item = readOnlySpan.Slice(i - lenght, lenght).ToString();
+
+                    var val = Convert.ToByte(item, fromBase);
                     data.Add(val);
                 }
+
+                lenght = 0;
             }
             return data.ToArray();
         }
@@ -281,17 +293,28 @@ namespace CodeWalker
         {
             if (node == null) return new uint[0];
             var data = new List<uint>();
-            var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");
-            for (int i = 0; i < split.Length; i++)
+            ReadOnlySpan<char> readOnlySpan = node.InnerText.AsSpan();
+
+            int lenght = 0;
+            for (int i = 0; i < readOnlySpan.Length; i++)
             {
-                if (!string.IsNullOrEmpty(split[i]))
+                char singleChar = readOnlySpan[i];
+
+                if (!char.IsWhiteSpace(singleChar))
                 {
-                    var str = split[i];
-                    if (string.IsNullOrEmpty(str)) continue;
-                    var val = 0u;
-                    uint.TryParse(str, out val);
-                    data.Add(val);
+                    lenght++;
+                    continue;
                 }
+
+                if (lenght > 0)
+                {
+                    var item = readOnlySpan.Slice(i - lenght, lenght).ToString();
+
+                    if (uint.TryParse(item, out uint val))
+                        data.Add(val);
+                }
+
+                lenght = 0;
             }
             return data.ToArray();
         }
@@ -311,17 +334,28 @@ namespace CodeWalker
         {
             if (node == null) return new int[0];
             var data = new List<int>();
-            var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");
-            for (int i = 0; i < split.Length; i++)
+            ReadOnlySpan<char> readOnlySpan = node.InnerText.AsSpan();
+
+            int lenght = 0;
+            for (int i = 0; i < readOnlySpan.Length; i++)
             {
-                if (!string.IsNullOrEmpty(split[i]))
+                char singleChar = readOnlySpan[i];
+
+                if (!char.IsWhiteSpace(singleChar))
                 {
-                    var str = split[i];
-                    if (string.IsNullOrEmpty(str)) continue;
-                    var val = 0;
-                    int.TryParse(str, out val);
-                    data.Add(val);
+                    lenght++;
+                    continue;
                 }
+
+                if (lenght > 0)
+                {
+                    var item = readOnlySpan.Slice(i - lenght, lenght).ToString();
+
+                    if (int.TryParse(item, out int val))
+                        data.Add(val);
+                }
+
+                lenght = 0;
             }
             return data.ToArray();
         }
@@ -340,16 +374,31 @@ namespace CodeWalker
         public static float[] GetRawFloatArray(XmlNode node)
         {
             if (node == null) return new float[0];
-            var items = new List<float>();
-            var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");//node.InnerText.Split('\n');// 
-            for (int i = 0; i < split.Length; i++)
+            var data = new List<float>();
+            ReadOnlySpan<char> readOnlySpan = node.InnerText.AsSpan();
+
+            int lenght = 0;
+            for (int i = 0; i < readOnlySpan.Length; i++)
             {
-                var s = split[i]?.Trim();
-                if (string.IsNullOrEmpty(s)) continue;
-                var f = FloatUtil.Parse(s);
-                items.Add(f);
+                char singleChar = readOnlySpan[i];
+
+                if (!char.IsWhiteSpace(singleChar))
+                {
+                    lenght++;
+                    continue;
+                }
+
+                if (lenght > 0)
+                {
+                    var item = readOnlySpan.Slice(i - lenght, lenght).ToString();
+
+                    var val = FloatUtil.Parse(item);
+                    data.Add(val);
+                }
+
+                lenght = 0;
             }
-            return items.ToArray();
+            return data.ToArray();
         }
         public static float[] GetChildRawFloatArray(XmlNode node, string name)
         {
