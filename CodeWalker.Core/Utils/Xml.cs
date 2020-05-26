@@ -240,17 +240,28 @@ namespace CodeWalker
         {
             if (node == null) return new ushort[0];
             var data = new List<ushort>();
-            var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");
-            for (int i = 0; i < split.Length; i++)
+            ReadOnlySpan<char> readOnlySpan = node.InnerText.AsSpan();
+
+            int lenght = 0;
+            for (int i = 0; i < readOnlySpan.Length; i++)
             {
-                if (!string.IsNullOrEmpty(split[i]))
+                char singleChar = readOnlySpan[i];
+
+                if (!char.IsWhiteSpace(singleChar))
                 {
-                    var str = split[i];
-                    if (string.IsNullOrEmpty(str)) continue;
-                    var val = (ushort)0;
-                    ushort.TryParse(str, out val);
-                    data.Add(val);
+                    lenght++;
+                    continue;
                 }
+
+                if (lenght > 0)
+                {
+                    var item = readOnlySpan.Slice(i - lenght, lenght).ToString();
+
+                    if (ushort.TryParse(item, out ushort val))
+                        data.Add(val);
+                }
+
+                lenght = 0;
             }
             return data.ToArray();
         }
