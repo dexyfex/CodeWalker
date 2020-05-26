@@ -414,36 +414,14 @@ namespace CodeWalker
 
         public static Vector2[] GetRawVector2Array(XmlNode node)
         {
-            if (node == null) return new Vector2[0];
-            float x = 0f;
-            float y = 0f;
+            float[] data = GetRawFloatArray(node);
             var items = new List<Vector2>();
-            var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
-            for (int i = 0; i < split.Length; i++)
+
+            if (data.Length % 2 != 0) return null;
+
+            for (int i = 0; i < data.Length; i += 2)
             {
-                var s = split[i]?.Trim();
-                if (string.IsNullOrEmpty(s)) continue;
-                var split2 = s.Split(',');// Regex.Split(s, @"[\s\t]");
-                int c = 0;
-                x = 0f; y = 0f;
-                for (int n = 0; n < split2.Length; n++)
-                {
-                    var ts = split2[n]?.Trim();
-                    if (string.IsNullOrEmpty(ts)) continue;
-                    var f = FloatUtil.Parse(ts);
-                    switch (c)
-                    {
-                        case 0: x = f; break;
-                        case 1: y = f; break;
-                        //case 2: z = f; break;
-                    }
-                    c++;
-                }
-                if (c >= 2)
-                {
-                    var val = new Vector2(x, y);
-                    items.Add(val);
-                }
+                items.Add(new Vector2(data[i], data[i + 1]));
             }
 
             return items.ToArray();
@@ -456,37 +434,14 @@ namespace CodeWalker
 
         public static Vector3[] GetRawVector3Array(XmlNode node)
         {
-            if (node == null) return new Vector3[0];
-            float x = 0f;
-            float y = 0f;
-            float z = 0f;
+            float[] data = GetRawFloatArray(node);
             var items = new List<Vector3>();
-            var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
-            for (int i = 0; i < split.Length; i++)
+
+            if (data.Length % 3 != 0) return null;
+
+            for (int i = 0; i < data.Length; i += 3)
             {
-                var s = split[i]?.Trim();
-                if (string.IsNullOrEmpty(s)) continue;
-                var split2 = s.Split(',');// Regex.Split(s, @"[\s\t]");
-                int c = 0;
-                x = 0f; y = 0f;
-                for (int n = 0; n < split2.Length; n++)
-                {
-                    var ts = split2[n]?.Trim();
-                    if (string.IsNullOrEmpty(ts)) continue;
-                    var f = FloatUtil.Parse(ts);
-                    switch (c)
-                    {
-                        case 0: x = f; break;
-                        case 1: y = f; break;
-                        case 2: z = f; break;
-                    }
-                    c++;
-                }
-                if (c >= 3)
-                {
-                    var val = new Vector3(x, y, z);
-                    items.Add(val);
-                }
+                items.Add(new Vector3(data[i], data[i + 1], data[i + 2]));
             }
 
             return items.ToArray();
@@ -505,39 +460,14 @@ namespace CodeWalker
 
         public static Vector4[] GetRawVector4Array(XmlNode node)
         {
-            if (node == null) return new Vector4[0];
-            float x = 0f;
-            float y = 0f;
-            float z = 0f;
-            float w = 0f;
+            float[] data = GetRawFloatArray(node);
             var items = new List<Vector4>();
-            var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
-            for (int i = 0; i < split.Length; i++)
+
+            if (data.Length % 4 != 0) return null;
+
+            for (int i = 0; i < data.Length; i += 4)
             {
-                var s = split[i]?.Trim();
-                if (string.IsNullOrEmpty(s)) continue;
-                var split2 = s.Split(',');// Regex.Split(s, @"[\s\t]");
-                int c = 0;
-                x = 0f; y = 0f;
-                for (int n = 0; n < split2.Length; n++)
-                {
-                    var ts = split2[n]?.Trim();
-                    if (string.IsNullOrEmpty(ts)) continue;
-                    var f = FloatUtil.Parse(ts);
-                    switch (c)
-                    {
-                        case 0: x = f; break;
-                        case 1: y = f; break;
-                        case 2: z = f; break;
-                        case 3: w = f; break;
-                    }
-                    c++;
-                }
-                if (c >= 4)
-                {
-                    var val = new Vector4(x, y, z, w);
-                    items.Add(val);
-                }
+                items.Add(new Vector4(data[i], data[i + 1], data[i + 2], data[i + 3]));
             }
 
             return items.ToArray();
