@@ -216,9 +216,7 @@ namespace CodeWalker
             int length = 0;
             for (int i = 0; i < readOnlySpan.Length; i++)
             {
-                char singleChar = readOnlySpan[i];
-
-                if (!char.IsWhiteSpace(singleChar))
+                if (!char.IsWhiteSpace(readOnlySpan[i]))
                 {
                     length++;
                     continue;
@@ -257,9 +255,7 @@ namespace CodeWalker
             int length = 0;
             for (int i = 0; i < readOnlySpan.Length; i++)
             {
-                char singleChar = readOnlySpan[i];
-
-                if (!char.IsWhiteSpace(singleChar))
+                if (!char.IsWhiteSpace(readOnlySpan[i]))
                 {
                     length++;
                     continue;
@@ -298,9 +294,7 @@ namespace CodeWalker
             int length = 0;
             for (int i = 0; i < readOnlySpan.Length; i++)
             {
-                char singleChar = readOnlySpan[i];
-
-                if (!char.IsWhiteSpace(singleChar))
+                if (!char.IsWhiteSpace(readOnlySpan[i]))
                 {
                     length++;
                     continue;
@@ -339,9 +333,7 @@ namespace CodeWalker
             int length = 0;
             for (int i = 0; i < readOnlySpan.Length; i++)
             {
-                char singleChar = readOnlySpan[i];
-
-                if (!char.IsWhiteSpace(singleChar))
+                if (!char.IsWhiteSpace(readOnlySpan[i]))
                 {
                     length++;
                     continue;
@@ -380,9 +372,7 @@ namespace CodeWalker
             int length = 0;
             for (int i = 0; i < readOnlySpan.Length; i++)
             {
-                char singleChar = readOnlySpan[i];
-
-                if (!char.IsWhiteSpace(singleChar))
+                if (!char.IsWhiteSpace(readOnlySpan[i]))
                 {
                     length++;
                     continue;
