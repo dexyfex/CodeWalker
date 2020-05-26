@@ -701,7 +701,7 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.Unk23: return new Dat151Unk23(d, br);
                 case Dat151RelType.Unk27: return new Dat151Unk27(d, br);
                 case Dat151RelType.Unk28: return new Dat151Unk28(d, br);
-                case Dat151RelType.Unk29: return new Dat151Unk29(d, br);
+                case Dat151RelType.PedR2PVG: return new Dat151PedR2PVG(d, br);
                 case Dat151RelType.Unk31: return new Dat151Unk31(d, br);
                 case Dat151RelType.Unk33: return new Dat151Unk33(d, br);
                 case Dat151RelType.PoliceScannerLocation: return new Dat151PoliceScannerLocation(d, br);
@@ -868,7 +868,7 @@ namespace CodeWalker.GameFiles
                         case Dat151RelType.Unk23: return new Dat151Unk23(this);
                         case Dat151RelType.Unk27: return new Dat151Unk27(this);
                         case Dat151RelType.Unk28: return new Dat151Unk28(this);
-                        case Dat151RelType.Unk29: return new Dat151Unk29(this);
+                        case Dat151RelType.PedR2PVG: return new Dat151PedR2PVG(this);
                         case Dat151RelType.Unk31: return new Dat151Unk31(this);
                         case Dat151RelType.Unk33: return new Dat151Unk33(this);
                         case Dat151RelType.PoliceScannerLocation: return new Dat151PoliceScannerLocation(this);
@@ -1084,7 +1084,7 @@ namespace CodeWalker.GameFiles
                                 break;
                             case Dat151RelType.Mood:
                             case Dat151RelType.Unk70:
-                            case Dat151RelType.Unk29:
+                            case Dat151RelType.PedR2PVG:
                             case Dat151RelType.SpeechParams:
                             case Dat151RelType.Unk11:
                             case Dat151RelType.AmbienceBankMap:
@@ -4950,7 +4950,7 @@ namespace CodeWalker.GameFiles
         RadioMusic = 26,
         Unk27 = 27,
         Unk28 = 28,
-        Unk29 = 29,
+        PedR2PVG = 29,
         PedPVG = 30, //maybe Ped Voice Group?
         Unk31 = 31,
         AmbientEmitterList = 32,
@@ -14992,42 +14992,42 @@ namespace CodeWalker.GameFiles
             Unk08 = Xml.GetChildFloatAttribute(node, "Unk08", "value");
         }
     }
-    [TC(typeof(EXP))] public class Dat151Unk29 : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151PedR2PVG : Dat151RelData
     {
         public FlagsUint Flags { get; set; }
         public MetaHash Unk01 { get; set; }//0
-        public MetaHash Unk02 { get; set; }
-        public MetaHash Unk03 { get; set; }
-        public MetaHash Unk04 { get; set; }
-        public MetaHash Unk05 { get; set; }
-        public MetaHash Unk06 { get; set; }//0
+        public MetaHash WhiPVG { get; set; }
+        public MetaHash BlaPVG { get; set; }
+        public MetaHash ChiPVG { get; set; }
+        public MetaHash LatPVG { get; set; }
+        public MetaHash Unk06 { get; set; }//0 I think this might be "ara", by analogy with texids
         public MetaHash Unk07 { get; set; }//0
         public MetaHash Unk08 { get; set; }//0
-        public MetaHash Unk09 { get; set; }
+        public MetaHash KorPVG { get; set; }
         public MetaHash Unk10 { get; set; }//0
-        public MetaHash Unk11 { get; set; }
+        public MetaHash PakPVG { get; set; }
         public int ItemCount { get; set; }
         public MetaHash[] Items { get; set; }
 
-        public Dat151Unk29(RelFile rel) : base(rel)
+        public Dat151PedR2PVG(RelFile rel) : base(rel)
         {
-            Type = Dat151RelType.Unk29;
+            Type = Dat151RelType.PedR2PVG;
             TypeID = (byte)Type;
         }
-        public Dat151Unk29(RelData d, BinaryReader br) : base(d, br)
+        public Dat151PedR2PVG(RelData d, BinaryReader br) : base(d, br)
         {
             Flags = br.ReadUInt32();
             Unk01 = br.ReadUInt32();//0
-            Unk02 = br.ReadUInt32();
-            Unk03 = br.ReadUInt32();
-            Unk04 = br.ReadUInt32();
-            Unk05 = br.ReadUInt32();
+            WhiPVG = br.ReadUInt32();
+            BlaPVG = br.ReadUInt32();
+            ChiPVG = br.ReadUInt32();
+            LatPVG = br.ReadUInt32();
             Unk06 = br.ReadUInt32();//0
             Unk07 = br.ReadUInt32();//0
             Unk08 = br.ReadUInt32();//0
-            Unk09 = br.ReadUInt32();
+            KorPVG = br.ReadUInt32();
             Unk10 = br.ReadUInt32();//0
-            Unk11 = br.ReadUInt32();
+            PakPVG = br.ReadUInt32();
             ItemCount = br.ReadInt32();
             Items = new MetaHash[ItemCount];
             for (int i = 0; i < ItemCount; i++)
@@ -15056,16 +15056,16 @@ namespace CodeWalker.GameFiles
 
             bw.Write(Flags);
             bw.Write(Unk01);
-            bw.Write(Unk02);
-            bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
+            bw.Write(WhiPVG);
+            bw.Write(BlaPVG);
+            bw.Write(ChiPVG);
+            bw.Write(LatPVG);
             bw.Write(Unk06);
             bw.Write(Unk07);
             bw.Write(Unk08);
-            bw.Write(Unk09);
+            bw.Write(KorPVG);
             bw.Write(Unk10);
-            bw.Write(Unk11);
+            bw.Write(PakPVG);
             bw.Write(ItemCount);
             for (int i = 0; i < ItemCount; i++)
             {
@@ -15076,32 +15076,32 @@ namespace CodeWalker.GameFiles
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
             RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
-            RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
-            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
-            RelXml.StringTag(sb, indent, "Unk04", RelXml.HashString(Unk04));
-            RelXml.StringTag(sb, indent, "Unk05", RelXml.HashString(Unk05));
+            RelXml.StringTag(sb, indent, "WhiPVG", RelXml.HashString(WhiPVG));
+            RelXml.StringTag(sb, indent, "BlaPVG", RelXml.HashString(BlaPVG));
+            RelXml.StringTag(sb, indent, "ChiPVG", RelXml.HashString(ChiPVG));
+            RelXml.StringTag(sb, indent, "LatPVG", RelXml.HashString(LatPVG));
             RelXml.StringTag(sb, indent, "Unk06", RelXml.HashString(Unk06));
             RelXml.StringTag(sb, indent, "Unk07", RelXml.HashString(Unk07));
             RelXml.StringTag(sb, indent, "Unk08", RelXml.HashString(Unk08));
-            RelXml.StringTag(sb, indent, "Unk09", RelXml.HashString(Unk09));
+            RelXml.StringTag(sb, indent, "KorPVG", RelXml.HashString(KorPVG));
             RelXml.StringTag(sb, indent, "Unk10", RelXml.HashString(Unk10));
-            RelXml.StringTag(sb, indent, "Unk11", RelXml.HashString(Unk11));
+            RelXml.StringTag(sb, indent, "PakPVG", RelXml.HashString(PakPVG));
             RelXml.WriteHashItemArray(sb, Items, indent, "Items");
         }
         public override void ReadXml(XmlNode node)
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
             Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
-            Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
-            Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
-            Unk04 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
-            Unk05 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
+            WhiPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
+            BlaPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
+            ChiPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
+            LatPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
             Unk06 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk06"));
             Unk07 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk07"));
             Unk08 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk08"));
-            Unk09 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk09"));
+            KorPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk09"));
             Unk10 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk10"));
-            Unk11 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk11"));
+            PakPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk11"));
             Items = XmlRel.ReadHashItemArray(node, "Items");
             ItemCount = (Items?.Length ?? 0);
         }
