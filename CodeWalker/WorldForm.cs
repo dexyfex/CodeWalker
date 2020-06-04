@@ -5958,7 +5958,16 @@ namespace CodeWalker
                 {
                     camera.MouseZoom(-1);
                 }
+                if (k.ToString() == "F1")
+                {
+                    ProjectForm?.ToggleRenderGtavMap();
+                }
+                if (k.ToString() == "F2")
+                {
+                    ProjectForm?.ToggleRenderProjectItems();
+                }
             }
+
 
 
             if (!Input.kbmoving) //don't trigger further actions if moving.

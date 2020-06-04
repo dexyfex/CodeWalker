@@ -8696,10 +8696,20 @@ namespace CodeWalker.Project
 
         private void RenderShowGtavMapMenu_Click(object sender, EventArgs e)
         {
+            ToggleRenderGtavMap();
+        }
+        private void RenderShowProjectItemsMenu_Click(object sender, EventArgs e)
+        {
+            ToggleRenderProjectItems();
+        }
+
+        public void ToggleRenderGtavMap()
+        {
             RenderShowGtavMapMenu.Checked = !RenderShowGtavMapMenu.Checked;
             hidegtavmap = !RenderShowGtavMapMenu.Checked;
         }
-        private void RenderShowProjectItemsMenu_Click(object sender, EventArgs e)
+        
+        public void ToggleRenderProjectItems()
         {
             RenderShowProjectItemsMenu.Checked = !RenderShowProjectItemsMenu.Checked;
             renderitems = RenderShowProjectItemsMenu.Checked;
