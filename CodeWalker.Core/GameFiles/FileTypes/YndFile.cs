@@ -668,9 +668,9 @@ namespace CodeWalker.GameFiles
         public bool CannotGoLeft { get { return (Flags0.Value & 128) > 0; } }
 
         // Flag1 Properties
-        public bool LeftTurnOnly { get { return (Flags1 & 1) > 0; } }
-        public bool KeepLeft { get { return (Flags1 & 2) > 0; } }
-        public bool KeepRight { get { return (Flags1 & 3) > 0; } }
+        public bool LeftTurnsOnly { get { return (Flags1 & 1) > 0; } }
+        public bool IndicateKeepLeft { get { return (Flags1 & 2) > 0; } }
+        public bool IndicateKeepRight { get { return (Flags1 & 3) > 0; } }
 
         /// <summary>
         /// Special type is the last 5 bits in Flags1. I cannot see a flag pattern here.
@@ -692,8 +692,8 @@ namespace CodeWalker.GameFiles
         public int Special { get { return Flags1.Value >> 3; } }
 
         // Flag2 Properties
-        public bool GpsDisabled { get { return (Flags2.Value & 1) > 0; } }
-        public bool IsHighwayNode { get { return (RawData.Flags2.Value & 64) > 0; } }
+        public bool NoGps { get { return (Flags2.Value & 1) > 0; } }
+        public bool Highway { get { return (RawData.Flags2.Value & 64) > 0; } }
         /// <summary>
         /// A node being "disabled" does not mean that a vehicle will not travel through it.
         /// </summary>
@@ -701,7 +701,7 @@ namespace CodeWalker.GameFiles
         public bool IsDisabledUnk1 { get { return (Flags2.Value & 16) > 0; } }
 
         // Flag3 Properties
-        public bool IsTunnel { get { return (Flags3 & 1) > 0; } }
+        public bool Tunnel { get { return (Flags3 & 1) > 0; } }
 
         /// <summary>
         /// The heuristic value takes up the rest of Flags3.
