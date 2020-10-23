@@ -668,9 +668,9 @@ namespace CodeWalker.GameFiles
         public bool CannotGoLeft { get { return (Flags0.Value & 128) > 0; } }
 
         // Flag1 Properties
-        public bool LeftTurnsOnly { get { return (Flags1 & 1) > 0; } }
+        public bool SlipRoad { get { return (Flags1 & 1) > 0; } }
         public bool IndicateKeepLeft { get { return (Flags1 & 2) > 0; } }
-        public bool IndicateKeepRight { get { return (Flags1 & 3) > 0; } }
+        public bool IndicateKeepRight { get { return (Flags1 & 4) > 0; } }
 
         /// <summary>
         /// Special type is the last 5 bits in Flags1. I cannot see a flag pattern here.
@@ -716,7 +716,10 @@ namespace CodeWalker.GameFiles
         /// <summary>
         /// The first 4 bits of Flag4 is the density of the node. This ranges from 0 to 15.
         /// </summary>
-        public int Density {get { return Flags4.Value & 15; } } 
+        public int Density {get { return Flags4.Value & 15; } }
+
+        public bool LeftTurnsOnly { get { return (Flags1 & 128) > 0; } }
+
 
         /// <summary>
         /// If Special is 10, 14 or 18 this is a ped node. There may be more Special types out there.
