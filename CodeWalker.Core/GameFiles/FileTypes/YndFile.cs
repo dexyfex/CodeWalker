@@ -625,6 +625,20 @@ namespace CodeWalker.GameFiles
         Faster = 3
     }
 
+    public enum YndNodeSpecialType
+    {
+        Normal = 0,
+        ParkingSpace = 2,
+        PedNavMeshLink = 10,
+        PedNodeGuidePlayer = 14,
+        TrafficLightJunctionStop = 15,
+        StopSign = 16,
+        Caution = 17,
+        PedNavMeshLinkUnk = 18,
+        RestrictedAccess = 19,
+        OffRoadJunction = 20
+    }
+
     [TypeConverter(typeof(ExpandableObjectConverter))] public class YndNode : BasePathNode
     {
         public Node _RawData;
@@ -660,7 +674,17 @@ namespace CodeWalker.GameFiles
         /// 2: Fast
         /// 3: Faster
         /// </summary>
-        public YndNodeSpeed Speed { get { return (YndNodeSpeed)(this.LinkCountUnk >> 1); } }
+        public YndNodeSpeed Speed
+        {
+            get
+            {
+                return (YndNodeSpeed)(this.LinkCountUnk >> 1);
+            }
+            set
+            {
+                this.LinkCountUnk = (this.LinkCountUnk & 0x1F3) | ((int) value << 1);
+            }
+        }
 
         //// Flag0 Properties
         public bool OffRoad { get { return (Flags0.Value & 8) > 0; } }
@@ -689,7 +713,7 @@ namespace CodeWalker.GameFiles
         /// RestrictedAccess?           = 19,   Appears in the airport entrance, the airbase, and the road where the house falls down. Probably to stop all nav.
         /// OffRoadJunctionNode?        = 20    Appears on a junction node with more than one edge where there is an off-road connection.
         /// </summary>
-        public int Special { get { return Flags1.Value >> 3; } }
+        public YndNodeSpecialType Special { get { return (YndNodeSpecialType) (Flags1.Value >> 3); } }
 
         // Flag2 Properties
         public bool NoGps { get { return (Flags2.Value & 1) > 0; } }
@@ -728,9 +752,9 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                return Special == 10
-                       || Special == 14
-                       || Special == 18;
+                return Special == YndNodeSpecialType.PedNavMeshLink
+                       || Special == YndNodeSpecialType.PedNodeGuidePlayer
+                       || Special == YndNodeSpecialType.PedNavMeshLinkUnk;
             }
         }
 
@@ -753,6 +777,21 @@ namespace CodeWalker.GameFiles
 
         public Color4 GetColour()
         {
+            if (IsDisabledUnk0 || IsDisabledUnk1)
+            {
+                return new Color4(1.0f, 0.0f, 0.0f, 1.0f);
+            }
+
+            if (IsPedNode)
+            {
+                return new Color4(1.0f, 0.0f, 1.0f, 1.0f);
+            }
+
+            if (Tunnel)
+            {
+                return new Color4(0.3f, 0.3f, 0.3f, 1.0f);
+            }
+
             Color4 c = new Color4(LinkCountUnk / 7.0f, Flags0.Value / 255.0f, Flags1.Value / 255.0f, 1.0f);
             //Color4 c = new Color4(0.0f, 0.0f, 0.0f, 1.0f);
 
