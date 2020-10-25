@@ -693,7 +693,7 @@ namespace CodeWalker.GameFiles
 
         // Flag2 Properties
         public bool NoGps { get { return (Flags2.Value & 1) > 0; } }
-        public bool Highway { get { return (RawData.Flags2.Value & 64) > 0; } }
+        public bool Highway { get { return (Flags2.Value & 64) > 0; } }
         /// <summary>
         /// A node being "disabled" does not mean that a vehicle will not travel through it.
         /// </summary>
@@ -722,7 +722,7 @@ namespace CodeWalker.GameFiles
 
 
         /// <summary>
-        /// If Special is 10, 14 or 18 this is a ped node. There may be more Special types out there.
+        /// If Special is 10, 14 or 18 this is a ped node.
         /// </summary>
         public bool IsPedNode
         {
