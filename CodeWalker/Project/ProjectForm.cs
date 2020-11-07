@@ -2335,6 +2335,15 @@ namespace CodeWalker.Project
                     ccg.perpendicularLength = 2.6f;
                     ccg.position = placement.Position;
                     ccg.carModel = placement.ModelHash;
+                    ccg.bodyColorRemap1 = -1;
+                    ccg.bodyColorRemap2 = -1;
+                    ccg.bodyColorRemap3 = -1;
+                    ccg.bodyColorRemap4 = -1;
+
+                    if (sbyte.TryParse(placement.VehicleProperties.FirstOrDefault(p => p.Name == "Livery")?.Value, out sbyte livery))
+                    {
+                        ccg.livery = livery;
+                    }
 
                     YmapCarGen cg = new YmapCarGen(CurrentYmapFile, ccg);
 
@@ -2367,6 +2376,10 @@ namespace CodeWalker.Project
                     cent.priorityLevel = rage__ePriorityLevel.PRI_REQUIRED;
                     cent.ambientOcclusionMultiplier = 255;
                     cent.artificialAmbientOcclusion = 255;
+                    if(uint.TryParse(placement.ObjectProperties.FirstOrDefault(p => p.Name == "TextureVariation")?.Value, out uint tint))
+                    {
+                        cent.tintValue = tint;
+                    }
 
                     YmapEntityDef ent = new YmapEntityDef(CurrentYmapFile, 0, ref cent);
 

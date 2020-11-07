@@ -87,7 +87,8 @@ namespace CodeWalker.Project
         public bool FrozenPos { get; set; }
         public string HashName { get; set; }
         public int InitialHandle { get; set; }
-        public List<MenyooXmlObjectProperty> ObjectProperties { get; set; }
+        public List<MenyooXmlProperty> ObjectProperties { get; set; }
+        public List<MenyooXmlProperty> VehicleProperties { get; set; }
         public int OpacityLevel { get; set; }
         public float LodDistance { get; set; }
         public bool IsVisible { get; set; }
@@ -135,15 +136,28 @@ namespace CodeWalker.Project
             if (enode != null)
             {
                 var objprops = Xml.GetChild(enode, "ObjectProperties");
-                ObjectProperties = new List<MenyooXmlObjectProperty>();
+                ObjectProperties = new List<MenyooXmlProperty>();
                 if (objprops != null)
                 {
                     foreach (XmlNode objpropn in objprops.ChildNodes)
                     {
-                        MenyooXmlObjectProperty pr = new MenyooXmlObjectProperty();
+                        MenyooXmlProperty pr = new MenyooXmlProperty();
                         pr.Name = objpropn.Name;
                         pr.Value = objpropn.InnerText;
                         ObjectProperties.Add(pr);
+                    }
+                }
+
+                var vehprops = Xml.GetChild(enode, "VehicleProperties");
+                VehicleProperties = new List<MenyooXmlProperty>();
+                if (vehprops != null)
+                {
+                    foreach (XmlNode vehpropn in vehprops.ChildNodes)
+                    {
+                        MenyooXmlProperty pr = new MenyooXmlProperty();
+                        pr.Name = vehpropn.Name;
+                        pr.Value = vehpropn.InnerText;
+                        VehicleProperties.Add(pr);
                     }
                 }
 
@@ -173,8 +187,6 @@ namespace CodeWalker.Project
             IsMeleeProof = Xml.GetChildBoolInnerText(node, "IsMeleeProof");
             IsOnlyDamagedByPlayer = Xml.GetChildBoolInnerText(node, "IsOnlyDamagedByPlayer");
             Attachment_isAttached = Xml.GetChildBoolAttribute(node, "Attachment", "isAttached");
-
-
         }
 
 
@@ -186,7 +198,7 @@ namespace CodeWalker.Project
 
     }
 
-    public class MenyooXmlObjectProperty
+    public class MenyooXmlProperty
     {
         public string Name { get; set; }
         public string Value { get; set; }
