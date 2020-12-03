@@ -1385,6 +1385,7 @@ namespace CodeWalker.GameFiles
 
             UpdateWidgetPosition();
             UpdateWidgetOrientation();
+            UpdateEntityHash();
         }
 
 
@@ -1515,26 +1516,10 @@ namespace CodeWalker.GameFiles
 
         public void UpdateEntityHash()
         {
-            unchecked
-            {
-                var ints = new int[4];
-                var pv = Position;
-                ints[0] = (int)pv.X;
-                ints[1] = (int)pv.Y;
-                ints[2] = (int)pv.Z;
-                ints[3] = (int)_CEntityDef.archetypeName.Hash;
-                var bytes = new byte[16];
-                for (int i = 0; i < 4; i++)
-                {
-                    var ib = i * 4;
-                    var b = BitConverter.GetBytes(ints[i]);
-                    bytes[ib + 0] = b[0];
-                    bytes[ib + 1] = b[1];
-                    bytes[ib + 2] = b[2];
-                    bytes[ib + 3] = b[3];
-                }
-                EntityHash = JenkHash.GenHash(bytes);
-            }
+            uint xhash = (uint)Math.Floor(Position.X * 100);
+            uint yhash = (uint)Math.Floor(Position.Y * 100);
+            uint zhash = (uint)Math.Floor(Position.Z * 100);
+            EntityHash = _CEntityDef.archetypeName.Hash ^ xhash ^ yhash ^ zhash & 0xffffffff;
         }
 
         public void SetOrientation(Quaternion ori, bool inverse = false)

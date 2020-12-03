@@ -864,6 +864,7 @@ namespace CodeWalker.GameFiles
             e.Orientation = Quaternion.Multiply(Owner.Orientation, e.MloRefOrientation);
             e.UpdateWidgetPosition();
             e.UpdateWidgetOrientation();
+            e.UpdateEntityHash();
         }
 
         public void AddEntity(YmapEntityDef e)
