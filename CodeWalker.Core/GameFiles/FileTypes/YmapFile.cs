@@ -1516,9 +1516,9 @@ namespace CodeWalker.GameFiles
 
         public void UpdateEntityHash()
         {
-            uint xhash = (uint)Math.Floor(Position.X * 100);
-            uint yhash = (uint)Math.Floor(Position.Y * 100);
-            uint zhash = (uint)Math.Floor(Position.Z * 100);
+            uint xhash = (uint)(Position.X * 100);
+            uint yhash = (uint)(Position.Y * 100);
+            uint zhash = (uint)(Position.Z * 100);
             EntityHash = _CEntityDef.archetypeName.Hash ^ xhash ^ yhash ^ zhash & 0xffffffff;
         }
 
