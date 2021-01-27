@@ -43,9 +43,9 @@
             this.label3 = new System.Windows.Forms.Label();
             this.Unk03TextBox = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.Unk04TextBox = new System.Windows.Forms.TextBox();
+            this.ReverbTextBox = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.Unk05TextBox = new System.Windows.Forms.TextBox();
+            this.EchoTextBox = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.Unk06TextBox = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
@@ -198,17 +198,17 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(42, 13);
             this.label4.TabIndex = 72;
-            this.label4.Text = "Unk04:";
+            this.label4.Text = "Reverb:";
             // 
             // Unk04TextBox
             // 
-            this.Unk04TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.ReverbTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Unk04TextBox.Location = new System.Drawing.Point(86, 132);
-            this.Unk04TextBox.Name = "Unk04TextBox";
-            this.Unk04TextBox.Size = new System.Drawing.Size(237, 20);
-            this.Unk04TextBox.TabIndex = 73;
-            this.Unk04TextBox.TextChanged += new System.EventHandler(this.Unk04TextBox_TextChanged);
+            this.ReverbTextBox.Location = new System.Drawing.Point(86, 132);
+            this.ReverbTextBox.Name = "ReverbTextBox";
+            this.ReverbTextBox.Size = new System.Drawing.Size(237, 20);
+            this.ReverbTextBox.TabIndex = 73;
+            this.ReverbTextBox.TextChanged += new System.EventHandler(this.ReverbTextBox_TextChanged);
             // 
             // label5
             // 
@@ -217,17 +217,17 @@
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(42, 13);
             this.label5.TabIndex = 74;
-            this.label5.Text = "Unk05:";
+            this.label5.Text = "Echo:";
             // 
             // Unk05TextBox
             // 
-            this.Unk05TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.EchoTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Unk05TextBox.Location = new System.Drawing.Point(86, 156);
-            this.Unk05TextBox.Name = "Unk05TextBox";
-            this.Unk05TextBox.Size = new System.Drawing.Size(237, 20);
-            this.Unk05TextBox.TabIndex = 75;
-            this.Unk05TextBox.TextChanged += new System.EventHandler(this.Unk05TextBox_TextChanged);
+            this.EchoTextBox.Location = new System.Drawing.Point(86, 156);
+            this.EchoTextBox.Name = "EchoTextBox";
+            this.EchoTextBox.Size = new System.Drawing.Size(237, 20);
+            this.EchoTextBox.TabIndex = 75;
+            this.EchoTextBox.TextChanged += new System.EventHandler(this.EchoTextBox_TextChanged);
             // 
             // label6
             // 
@@ -424,9 +424,9 @@
             this.Controls.Add(this.label6);
             this.Controls.Add(this.Unk06TextBox);
             this.Controls.Add(this.label5);
-            this.Controls.Add(this.Unk05TextBox);
+            this.Controls.Add(this.EchoTextBox);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.Unk04TextBox);
+            this.Controls.Add(this.ReverbTextBox);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.Unk03TextBox);
             this.Controls.Add(this.label2);
@@ -464,9 +464,9 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox Unk03TextBox;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TextBox Unk04TextBox;
+        private System.Windows.Forms.TextBox ReverbTextBox;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox Unk05TextBox;
+        private System.Windows.Forms.TextBox EchoTextBox;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox Unk06TextBox;
         private System.Windows.Forms.Label label7;

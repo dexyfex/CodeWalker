@@ -52,8 +52,8 @@ namespace CodeWalker.Project.Panels
                 Hash1TextBox.Text = string.Empty;
                 Unk02TextBox.Text = string.Empty;
                 Unk03TextBox.Text = string.Empty;
-                Unk04TextBox.Text = string.Empty;
-                Unk05TextBox.Text = string.Empty;
+                ReverbTextBox.Text = string.Empty;
+                EchoTextBox.Text = string.Empty;
                 Unk06TextBox.Text = string.Empty;
                 Unk07TextBox.Text = string.Empty;
                 Unk08TextBox.Text = string.Empty;
@@ -79,8 +79,8 @@ namespace CodeWalker.Project.Panels
                 Hash1TextBox.Text = cr.Hash1.ToString();
                 Unk02TextBox.Text = cr.Unk02.ToString();
                 Unk03TextBox.Text = FloatUtil.ToString(cr.Unk03);
-                Unk04TextBox.Text = FloatUtil.ToString(cr.Unk04);
-                Unk05TextBox.Text = FloatUtil.ToString(cr.Unk05);
+                ReverbTextBox.Text = FloatUtil.ToString(cr.Reverb);
+                EchoTextBox.Text = FloatUtil.ToString(cr.Echo);
                 Unk06TextBox.Text = cr.Unk06.ToString();
                 Unk07TextBox.Text = FloatUtil.ToString(cr.Unk07);
                 Unk08TextBox.Text = FloatUtil.ToString(cr.Unk08);
@@ -208,34 +208,34 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Unk04TextBox_TextChanged(object sender, EventArgs e)
+        private void ReverbTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRoom == null) return;
 
             float val = 0;
-            if (FloatUtil.TryParse(Unk04TextBox.Text, out val))
+            if (FloatUtil.TryParse(ReverbTextBox.Text, out val))
             {
-                if (CurrentRoom.Unk04 != val)
+                if (CurrentRoom.Reverb != val)
                 {
-                    CurrentRoom.Unk04 = val;
+                    CurrentRoom.Reverb = val;
 
                     ProjectItemChanged();
                 }
             }
         }
 
-        private void Unk05TextBox_TextChanged(object sender, EventArgs e)
+        private void EchoTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRoom == null) return;
 
             float val = 0;
-            if (FloatUtil.TryParse(Unk05TextBox.Text, out val))
+            if (FloatUtil.TryParse(EchoTextBox.Text, out val))
             {
-                if (CurrentRoom.Unk05 != val)
+                if (CurrentRoom.Echo != val)
                 {
-                    CurrentRoom.Unk05 = val;
+                    CurrentRoom.Echo = val;
 
                     ProjectItemChanged();
                 }

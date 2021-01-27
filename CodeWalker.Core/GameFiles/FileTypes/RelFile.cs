@@ -6216,8 +6216,8 @@ namespace CodeWalker.GameFiles
         public MetaHash Hash1 { get; set; }
         public uint Unk02 { get; set; }
         public float Unk03 { get; set; }
-        public float Unk04 { get; set; }
-        public float Unk05 { get; set; }
+        public float Reverb { get; set; }
+        public float Echo { get; set; }
         public MetaHash Unk06 { get; set; }
         public float Unk07 { get; set; }
         public float Unk08 { get; set; }
@@ -6240,8 +6240,8 @@ namespace CodeWalker.GameFiles
             Hash1 = br.ReadUInt32();
             Unk02 = br.ReadUInt32();
             Unk03 = br.ReadSingle();
-            Unk04 = br.ReadSingle();
-            Unk05 = br.ReadSingle();
+            Reverb = br.ReadSingle();
+            Echo = br.ReadSingle();
             Unk06 = br.ReadUInt32();
             Unk07 = br.ReadSingle();
             Unk08 = br.ReadSingle();
@@ -6265,8 +6265,8 @@ namespace CodeWalker.GameFiles
             bw.Write(Hash1);
             bw.Write(Unk02);
             bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
+            bw.Write(Reverb);
+            bw.Write(Echo);
             bw.Write(Unk06);
             bw.Write(Unk07);
             bw.Write(Unk08);
@@ -6284,8 +6284,8 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "Hash1", RelXml.HashString(Hash1));
             RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
             RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
-            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
-            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.ValueTag(sb, indent, "Reverb", FloatUtil.ToString(Reverb));
+            RelXml.ValueTag(sb, indent, "Echo", FloatUtil.ToString(Echo));
             RelXml.StringTag(sb, indent, "Unk06", RelXml.HashString(Unk06));
             RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
             RelXml.ValueTag(sb, indent, "Unk08", FloatUtil.ToString(Unk08));
@@ -6303,8 +6303,8 @@ namespace CodeWalker.GameFiles
             Hash1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Hash1"));
             Unk02 = Xml.GetChildUIntAttribute(node, "Unk02", "value");
             Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
-            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
-            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+            Reverb = Xml.GetChildFloatAttribute(node, "Reverb", "value");
+            Echo = Xml.GetChildFloatAttribute(node, "Echo", "value");
             Unk06 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk06"));
             Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
             Unk08 = Xml.GetChildFloatAttribute(node, "Unk08", "value");
