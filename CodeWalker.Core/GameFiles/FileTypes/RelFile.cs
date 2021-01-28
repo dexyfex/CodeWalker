@@ -1756,24 +1756,24 @@ namespace CodeWalker.GameFiles
 
         public FlagsUint Flags2 { get; set; }
         public ushort Unk01 { get; set; }
-        public ushort Unk02 { get; set; }
-        public ushort Unk03 { get; set; } //0xD-0xF
-        public ushort Unk04 { get; set; } //0xF-0x11
-        public ushort Unk05 { get; set; } //0x11-0x13
-        public ushort Unk06 { get; set; } //0x13-0x15
-        public ushort Unk07 { get; set; } //0x15-0x17
-        public ushort Unk08 { get; set; } //0x17-0x19
-        public ushort Unk09 { get; set; } //0x19-0x1B
-        public int UnkInt1 { get; set; } //0x1B-0x1F
-        public int UnkInt2 { get; set; } //0x1F-0x23
-        public ushort Unk10 { get; set; } //0x23-0x25
-        public ushort Unk11 { get; set; } //0x25-0x27
-        public ushort Unk12 { get; set; } //0x27-0x29
+        public ushort Volume { get; set; }
+        public ushort VolumeVariance { get; set; } //0xD-0xF
+        public ushort Pitch { get; set; } //0xF-0x11
+        public ushort PitchVariance { get; set; } //0x11-0x13
+        public ushort Pan { get; set; } //0x13-0x15
+        public ushort PanVariance { get; set; } //0x15-0x17
+        public ushort preDelay { get; set; } //0x17-0x19
+        public ushort preDelayVariance { get; set; } //0x19-0x1B
+        public int StartOffset { get; set; } //0x1B-0x1F
+        public int StartOffsetVariance { get; set; } //0x1F-0x23
+        public ushort AttackTime { get; set; } //0x23-0x25
+        public ushort ReleaseTime { get; set; } //0x25-0x27
+        public ushort DopplerFactor { get; set; } //0x27-0x29
         public MetaHash CategoryHash { get; set; } //0x29-0x2D
-        public ushort Unk14 { get; set; } //0x2D-0x2F
-        public ushort Unk15 { get; set; } //0x2F-0x31
-        public ushort Unk16 { get; set; } //0x31-0x33
-        public ushort Unk17 { get; set; } //0x33-0x35
+        public ushort LPFCutoff { get; set; } //0x2D-0x2F
+        public ushort LPFCutoffVariance { get; set; } //0x2F-0x31
+        public ushort HPFCutoff { get; set; } //0x31-0x33
+        public ushort HPFCutoffVariance { get; set; } //0x33-0x35
         public MetaHash UnkHash3 { get; set; } //0x35-0x39
         public ushort Unk18 { get; set; } //0x39-0x3B
         public byte Unk19 { get; set; } //0x3B-0x3C
@@ -1806,30 +1806,30 @@ namespace CodeWalker.GameFiles
             {
                 if (Bit(0)) Flags2 = br.ReadUInt32();
                 if (Bit(1)) Unk01 = br.ReadUInt16();
-                if (Bit(2)) Unk02 = br.ReadUInt16();
-                if (Bit(3)) Unk03 = br.ReadUInt16();
-                if (Bit(4)) Unk04 = br.ReadUInt16();
-                if (Bit(5)) Unk05 = br.ReadUInt16();
-                if (Bit(6)) Unk06 = br.ReadUInt16();
-                if (Bit(7)) Unk07 = br.ReadUInt16();
+                if (Bit(2)) Volume = br.ReadUInt16();
+                if (Bit(3)) VolumeVariance = br.ReadUInt16();
+                if (Bit(4)) Pitch = br.ReadUInt16();
+                if (Bit(5)) PitchVariance = br.ReadUInt16();
+                if (Bit(6)) Pan = br.ReadUInt16();
+                if (Bit(7)) PanVariance = br.ReadUInt16();
             }
             if ((Flags & 0xFF00) != 0xAA00)
             {
-                if (Bit(8)) Unk08 = br.ReadUInt16();
-                if (Bit(9)) Unk09 = br.ReadUInt16();
-                if (Bit(10)) UnkInt1 = br.ReadInt32();
-                if (Bit(11)) UnkInt2 = br.ReadInt32();
-                if (Bit(12)) Unk10 = br.ReadUInt16();
-                if (Bit(13)) Unk11 = br.ReadUInt16();
-                if (Bit(14)) Unk12 = br.ReadUInt16();
+                if (Bit(8)) preDelay = br.ReadUInt16();
+                if (Bit(9)) preDelayVariance = br.ReadUInt16();
+                if (Bit(10)) StartOffset = br.ReadInt32();
+                if (Bit(11)) StartOffsetVariance = br.ReadInt32();
+                if (Bit(12)) AttackTime = br.ReadUInt16();
+                if (Bit(13)) ReleaseTime = br.ReadUInt16();
+                if (Bit(14)) DopplerFactor = br.ReadUInt16();
                 if (Bit(15)) CategoryHash = br.ReadUInt32();
             }
             if ((Flags & 0xFF0000) != 0xAA0000)
             {
-                if (Bit(16)) Unk14 = br.ReadUInt16();
-                if (Bit(17)) Unk15 = br.ReadUInt16();
-                if (Bit(18)) Unk16 = br.ReadUInt16();
-                if (Bit(19)) Unk17 = br.ReadUInt16();
+                if (Bit(16)) LPFCutoff = br.ReadUInt16();
+                if (Bit(17)) LPFCutoffVariance = br.ReadUInt16();
+                if (Bit(18)) HPFCutoff = br.ReadUInt16();
+                if (Bit(19)) HPFCutoffVariance = br.ReadUInt16();
                 if (Bit(20)) UnkHash3 = br.ReadUInt32();
                 if (Bit(21)) Unk18 = br.ReadUInt16();
                 if (Bit(22)) Unk19 = br.ReadByte();
@@ -1860,30 +1860,30 @@ namespace CodeWalker.GameFiles
             {
                 if (Bit(0)) bw.Write(Flags2);
                 if (Bit(1)) bw.Write(Unk01);
-                if (Bit(2)) bw.Write(Unk02);
-                if (Bit(3)) bw.Write(Unk03);
-                if (Bit(4)) bw.Write(Unk04);
-                if (Bit(5)) bw.Write(Unk05);
-                if (Bit(6)) bw.Write(Unk06);
-                if (Bit(7)) bw.Write(Unk07);
+                if (Bit(2)) bw.Write(Volume);
+                if (Bit(3)) bw.Write(VolumeVariance);
+                if (Bit(4)) bw.Write(Pitch);
+                if (Bit(5)) bw.Write(PitchVariance);
+                if (Bit(6)) bw.Write(Pan);
+                if (Bit(7)) bw.Write(PanVariance);
             }
             if ((Flags & 0xFF00) != 0xAA00)
             {
-                if (Bit(8)) bw.Write(Unk08);
-                if (Bit(9)) bw.Write(Unk09);
-                if (Bit(10)) bw.Write(UnkInt1);
-                if (Bit(11)) bw.Write(UnkInt2);
-                if (Bit(12)) bw.Write(Unk10);
-                if (Bit(13)) bw.Write(Unk11);
-                if (Bit(14)) bw.Write(Unk12);
+                if (Bit(8)) bw.Write(preDelay);
+                if (Bit(9)) bw.Write(preDelayVariance);
+                if (Bit(10)) bw.Write(StartOffset);
+                if (Bit(11)) bw.Write(StartOffsetVariance);
+                if (Bit(12)) bw.Write(AttackTime);
+                if (Bit(13)) bw.Write(ReleaseTime);
+                if (Bit(14)) bw.Write(DopplerFactor);
                 if (Bit(15)) bw.Write(CategoryHash);
             }
             if ((Flags & 0xFF0000) != 0xAA0000)
             {
-                if (Bit(16)) bw.Write(Unk14);
-                if (Bit(17)) bw.Write(Unk15);
-                if (Bit(18)) bw.Write(Unk16);
-                if (Bit(19)) bw.Write(Unk17);
+                if (Bit(16)) bw.Write(LPFCutoff);
+                if (Bit(17)) bw.Write(LPFCutoffVariance);
+                if (Bit(18)) bw.Write(HPFCutoff);
+                if (Bit(19)) bw.Write(HPFCutoffVariance);
                 if (Bit(20)) bw.Write(UnkHash3);
                 if (Bit(21)) bw.Write(Unk18);
                 if (Bit(22)) bw.Write(Unk19);
@@ -1911,30 +1911,30 @@ namespace CodeWalker.GameFiles
             {
                 if (Bit(0)) RelXml.ValueTag(sb, indent, "Flags2", "0x" + Flags2.Hex);
                 if (Bit(1)) RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
-                if (Bit(2)) RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
-                if (Bit(3)) RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
-                if (Bit(4)) RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
-                if (Bit(5)) RelXml.ValueTag(sb, indent, "Unk05", Unk05.ToString());
-                if (Bit(6)) RelXml.ValueTag(sb, indent, "Unk06", Unk06.ToString());
-                if (Bit(7)) RelXml.ValueTag(sb, indent, "Unk07", Unk07.ToString());
+                if (Bit(2)) RelXml.ValueTag(sb, indent, "Volume", Volume.ToString());
+                if (Bit(3)) RelXml.ValueTag(sb, indent, "VolumeVariance", VolumeVariance.ToString());
+                if (Bit(4)) RelXml.ValueTag(sb, indent, "Pitch", Pitch.ToString());
+                if (Bit(5)) RelXml.ValueTag(sb, indent, "PitchVariance", PitchVariance.ToString());
+                if (Bit(6)) RelXml.ValueTag(sb, indent, "Pan", Pan.ToString());
+                if (Bit(7)) RelXml.ValueTag(sb, indent, "PanVariance", PanVariance.ToString());
             }
             if ((Flags & 0xFF00) != 0xAA00)
             {
-                if (Bit(8)) RelXml.ValueTag(sb, indent, "Unk08", Unk08.ToString());
-                if (Bit(9)) RelXml.ValueTag(sb, indent, "Unk09", Unk09.ToString());
-                if (Bit(10)) RelXml.ValueTag(sb, indent, "UnkInt1", UnkInt1.ToString());
-                if (Bit(11)) RelXml.ValueTag(sb, indent, "UnkInt2", UnkInt2.ToString());
-                if (Bit(12)) RelXml.ValueTag(sb, indent, "Unk10", Unk10.ToString());
-                if (Bit(13)) RelXml.ValueTag(sb, indent, "Unk11", Unk11.ToString());
-                if (Bit(14)) RelXml.ValueTag(sb, indent, "Unk12", Unk12.ToString());
+                if (Bit(8)) RelXml.ValueTag(sb, indent, "preDelay", preDelay.ToString());
+                if (Bit(9)) RelXml.ValueTag(sb, indent, "preDelayVariance", preDelayVariance.ToString());
+                if (Bit(10)) RelXml.ValueTag(sb, indent, "StartOffset", StartOffset.ToString());
+                if (Bit(11)) RelXml.ValueTag(sb, indent, "StartOffsetVariance", StartOffsetVariance.ToString());
+                if (Bit(12)) RelXml.ValueTag(sb, indent, "AttackTime", AttackTime.ToString());
+                if (Bit(13)) RelXml.ValueTag(sb, indent, "ReleaseTime", ReleaseTime.ToString());
+                if (Bit(14)) RelXml.ValueTag(sb, indent, "DopplerFactor", DopplerFactor.ToString());
                 if (Bit(15)) RelXml.StringTag(sb, indent, "Category", RelXml.HashString(CategoryHash));
             }
             if ((Flags & 0xFF0000) != 0xAA0000)
             {
-                if (Bit(16)) RelXml.ValueTag(sb, indent, "Unk14", Unk14.ToString());
-                if (Bit(17)) RelXml.ValueTag(sb, indent, "Unk15", Unk15.ToString());
-                if (Bit(18)) RelXml.ValueTag(sb, indent, "Unk16", Unk16.ToString());
-                if (Bit(19)) RelXml.ValueTag(sb, indent, "Unk17", Unk17.ToString());
+                    if (Bit(16)) RelXml.ValueTag(sb, indent, "LPFCutoff", LPFCutoff.ToString());
+                if (Bit(17)) RelXml.ValueTag(sb, indent, "LPFCutoffVariance", LPFCutoffVariance.ToString());
+                if (Bit(18)) RelXml.ValueTag(sb, indent, "HPFCutoff", HPFCutoff.ToString());
+                if (Bit(19)) RelXml.ValueTag(sb, indent, "HPFCutoffVariance", HPFCutoffVariance.ToString());
                 if (Bit(20)) RelXml.StringTag(sb, indent, "UnkHash3", RelXml.HashString(UnkHash3));
                 if (Bit(21)) RelXml.ValueTag(sb, indent, "Unk18", Unk18.ToString());
                 if (Bit(22)) RelXml.ValueTag(sb, indent, "Unk19", Unk19.ToString());
@@ -1961,30 +1961,30 @@ namespace CodeWalker.GameFiles
             {
                 if (Bit(0)) Flags2 = Xml.GetChildUIntAttribute(node, "Flags2", "value");
                 if (Bit(1)) Unk01 = (ushort)Xml.GetChildUIntAttribute(node, "Unk01", "value");
-                if (Bit(2)) Unk02 = (ushort)Xml.GetChildUIntAttribute(node, "Unk02", "value");
-                if (Bit(3)) Unk03 = (ushort)Xml.GetChildUIntAttribute(node, "Unk03", "value");
-                if (Bit(4)) Unk04 = (ushort)Xml.GetChildUIntAttribute(node, "Unk04", "value");
-                if (Bit(5)) Unk05 = (ushort)Xml.GetChildUIntAttribute(node, "Unk05", "value");
-                if (Bit(6)) Unk06 = (ushort)Xml.GetChildUIntAttribute(node, "Unk06", "value");
-                if (Bit(7)) Unk07 = (ushort)Xml.GetChildUIntAttribute(node, "Unk07", "value");
+                if (Bit(2)) Unk02 = (ushort)Xml.GetChildUIntAttribute(node, "Volume", "value");
+                if (Bit(3)) Unk03 = (ushort)Xml.GetChildUIntAttribute(node, "VolumeVariance", "value");
+                if (Bit(4)) Unk04 = (ushort)Xml.GetChildUIntAttribute(node, "Pitch", "value");
+                if (Bit(5)) Unk05 = (ushort)Xml.GetChildUIntAttribute(node, "PitchVariance", "value");
+                if (Bit(6)) Unk06 = (ushort)Xml.GetChildUIntAttribute(node, "Pan", "value");
+                if (Bit(7)) Unk07 = (ushort)Xml.GetChildUIntAttribute(node, "PanVariance", "value");
             }
             if ((Flags & 0xFF00) != 0xAA00)
             {
-                if (Bit(8)) Unk08 = (ushort)Xml.GetChildUIntAttribute(node, "Unk08", "value");
-                if (Bit(9)) Unk09 = (ushort)Xml.GetChildUIntAttribute(node, "Unk09", "value");
-                if (Bit(10)) UnkInt1 = Xml.GetChildIntAttribute(node, "UnkInt1", "value");
-                if (Bit(11)) UnkInt2 = Xml.GetChildIntAttribute(node, "UnkInt2", "value");
-                if (Bit(12)) Unk10 = (ushort)Xml.GetChildUIntAttribute(node, "Unk10", "value");
-                if (Bit(13)) Unk11 = (ushort)Xml.GetChildUIntAttribute(node, "Unk11", "value");
-                if (Bit(14)) Unk12 = (ushort)Xml.GetChildUIntAttribute(node, "Unk12", "value");
+                if (Bit(8)) Unk08 = (ushort)Xml.GetChildUIntAttribute(node, "preDelay", "value");
+                if (Bit(9)) Unk09 = (ushort)Xml.GetChildUIntAttribute(node, "preDelayVariance", "value");
+                if (Bit(10)) UnkInt1 = Xml.GetChildIntAttribute(node, "StartOffset", "value");
+                if (Bit(11)) UnkInt2 = Xml.GetChildIntAttribute(node, "StartOffsetVariance", "value");
+                if (Bit(12)) Unk10 = (ushort)Xml.GetChildUIntAttribute(node, "AttackTime", "value");
+                if (Bit(13)) Unk11 = (ushort)Xml.GetChildUIntAttribute(node, "ReleaseTime", "value");
+                if (Bit(14)) Unk12 = (ushort)Xml.GetChildUIntAttribute(node, "DopplerFactor", "value");
                 if (Bit(15)) CategoryHash = XmlRel.GetHash(Xml.GetChildInnerText(node, "Category"));
             }
             if ((Flags & 0xFF0000) != 0xAA0000)
             {
-                if (Bit(16)) Unk14 = (ushort)Xml.GetChildUIntAttribute(node, "Unk14", "value");
-                if (Bit(17)) Unk15 = (ushort)Xml.GetChildUIntAttribute(node, "Unk15", "value");
-                if (Bit(18)) Unk16 = (ushort)Xml.GetChildUIntAttribute(node, "Unk16", "value");
-                if (Bit(19)) Unk17 = (ushort)Xml.GetChildUIntAttribute(node, "Unk17", "value");
+                if (Bit(16)) Unk14 = (ushort)Xml.GetChildUIntAttribute(node, "LPFCutoff", "value");
+                if (Bit(17)) Unk15 = (ushort)Xml.GetChildUIntAttribute(node, "LPFCutoffVariance", "value");
+                if (Bit(18)) Unk16 = (ushort)Xml.GetChildUIntAttribute(node, "HPFCutoff", "value");
+                if (Bit(19)) Unk17 = (ushort)Xml.GetChildUIntAttribute(node, "HPFCutoffVariance", "value");
                 if (Bit(20)) UnkHash3 = XmlRel.GetHash(Xml.GetChildInnerText(node, "UnkHash3"));
                 if (Bit(21)) Unk18 = (ushort)Xml.GetChildUIntAttribute(node, "Unk18", "value");
                 if (Bit(22)) Unk19 = (byte)Xml.GetChildUIntAttribute(node, "Unk19", "value");
@@ -2012,30 +2012,30 @@ namespace CodeWalker.GameFiles
             {
                 if (Bit(0)) length += 4;// Flags2 = br.ReadUInt32();
                 if (Bit(1)) length += 2;// Unk01 = br.ReadUInt16();
-                if (Bit(2)) length += 2;// Unk02 = br.ReadUInt16();
-                if (Bit(3)) length += 2;// Unk03 = br.ReadUInt16();
-                if (Bit(4)) length += 2;// Unk04 = br.ReadUInt16();
-                if (Bit(5)) length += 2;// Unk05 = br.ReadUInt16();
-                if (Bit(6)) length += 2;// Unk06 = br.ReadUInt16();
-                if (Bit(7)) length += 2;// Unk07 = br.ReadUInt16();
+                if (Bit(2)) length += 2;// Volume = br.ReadUInt16();
+                if (Bit(3)) length += 2;// VolumeVariance = br.ReadUInt16();
+                if (Bit(4)) length += 2;// Pitch = br.ReadUInt16();
+                if (Bit(5)) length += 2;// PitchVariance = br.ReadUInt16();
+                if (Bit(6)) length += 2;// Pan = br.ReadUInt16();
+                if (Bit(7)) length += 2;// PanVariance = br.ReadUInt16();
             }
             if ((Flags & 0xFF00) != 0xAA00)
             {
-                if (Bit(8)) length += 2;// Unk08 = br.ReadUInt16();
-                if (Bit(9)) length += 2;// Unk09 = br.ReadUInt16();
-                if (Bit(10)) length += 4;// UnkHash1 = br.ReadUInt32();
-                if (Bit(11)) length += 4;// UnkHash2 = br.ReadUInt32();
-                if (Bit(12)) length += 2;// Unk10 = br.ReadUInt16();
-                if (Bit(13)) length += 2;// Unk11 = br.ReadUInt16();
-                if (Bit(14)) length += 2;// Unk12 = br.ReadUInt16();
+                if (Bit(8)) length += 2;// preDelay = br.ReadUInt16();
+                if (Bit(9)) length += 2;// preDelayVariance = br.ReadUInt16();
+                if (Bit(10)) length += 4;// StartOffset = br.ReadUInt32();
+                if (Bit(11)) length += 4;// StartOffsetVariance = br.ReadUInt32();
+                if (Bit(12)) length += 2;// AttackTime = br.ReadUInt16();
+                if (Bit(13)) length += 2;// ReleaseTime = br.ReadUInt16();
+                if (Bit(14)) length += 2;// DopplerFactor = br.ReadUInt16();
                 if (Bit(15)) length += 4;// CategoryHash = br.ReadUInt32();
             }
             if ((Flags & 0xFF0000) != 0xAA0000)
             {
-                if (Bit(16)) length += 2;// Unk14 = br.ReadUInt16();
-                if (Bit(17)) length += 2;// Unk15 = br.ReadUInt16();
-                if (Bit(18)) length += 2;// Unk16 = br.ReadUInt16();
-                if (Bit(19)) length += 2;// Unk17 = br.ReadUInt16();
+                if (Bit(16)) length += 2;// LPFCutoff = br.ReadUInt16();
+                if (Bit(17)) length += 2;// LPFCutoffVariance = br.ReadUInt16();
+                if (Bit(18)) length += 2;// HPFCutoff = br.ReadUInt16();
+                if (Bit(19)) length += 2;// HPFCutoffVariance = br.ReadUInt16();
                 if (Bit(20)) length += 4;// UnkHash3 = br.ReadUInt32();
                 if (Bit(21)) length += 2;// Unk18 = br.ReadUInt16();
                 if (Bit(22)) length += 1;// Unk19 = br.ReadByte();
@@ -2063,7 +2063,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return string.Format("{0}: {1}, {2}, {3}, {4}, {5}, {6}, {7}", Flags.Hex, Flags2.Hex, CategoryHash, UnkInt1, UnkInt2, UnkHash3, UnkHash4, UnkHash5);
+            return string.Format("{0}: {1}, {2}, {3}, {4}, {5}, {6}, {7}", Flags.Hex, Flags2.Hex, CategoryHash, StartOffset, StartOffsetVariance, UnkHash3, UnkHash4, UnkHash5);
         }
     }
 
