@@ -198,6 +198,7 @@ namespace CodeWalker.GameFiles
                 //TestYmaps();
                 //TestPlacements();
                 //TestDrawables();
+                //GetShadersXml();
                 //GetArchetypeTimesList();
                 //string typestr = PsoTypes.GetTypesString();
             }
@@ -3925,6 +3926,16 @@ namespace CodeWalker.GameFiles
                                 { continue; }
 
                             }
+                            if (ydd?.DrawableDict?.Hashes != null)
+                            {
+                                uint h = 0;
+                                foreach (uint th in ydd.DrawableDict.Hashes)
+                                {
+                                    if (th <= h) 
+                                    { } //should never happen
+                                    h = th;
+                                }
+                            }
                         }
                     }
                     //catch (Exception ex)
@@ -4416,6 +4427,173 @@ namespace CodeWalker.GameFiles
             UpdateStatus((DateTime.Now - starttime).ToString() + " elapsed, " + drawablecount.ToString() + " drawables, " + errs.Count.ToString() + " errors.");
 
         }
+        public void GetShadersXml()
+        {
+            bool doydr = true;
+            bool doydd = true;
+            bool doyft = true;
+            bool doypt = true;
+
+            var data = new Dictionary<MetaHash, ShaderXmlDataCollection>();
+
+            void collectDrawable(DrawableBase d)
+            {
+                if (d?.AllModels == null) return;
+                foreach (var model in d.AllModels)
+                {
+                    if (model?.Geometries == null) continue;
+                    foreach (var geom in model.Geometries)
+                    {
+                        var s = geom?.Shader;
+                        if (s == null) continue;
+                        ShaderXmlDataCollection dc = null;
+                        if (!data.TryGetValue(s.Name, out dc))
+                        {
+                            dc = new ShaderXmlDataCollection();
+                            dc.Name = s.Name;
+                            data.Add(s.Name, dc);
+                        }
+                        dc.AddShaderUse(s, geom);
+                    }
+                }
+            }
+
+
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    try
+                    {
+                        if (doydr && entry.NameLower.EndsWith(".ydr"))
+                        {
+                            UpdateStatus(entry.Path);
+                            YdrFile ydr = RpfMan.GetFile<YdrFile>(entry);
+
+                            if (ydr == null) { continue; }
+                            if (ydr.Drawable == null) { continue; }
+                            collectDrawable(ydr.Drawable);
+                        }
+                        else if (doydd & entry.NameLower.EndsWith(".ydd"))
+                        {
+                            UpdateStatus(entry.Path);
+                            YddFile ydd = RpfMan.GetFile<YddFile>(entry);
+
+                            if (ydd == null) { continue; }
+                            if (ydd.Dict == null) { continue; }
+                            foreach (var drawable in ydd.Dict.Values)
+                            {
+                                collectDrawable(drawable);
+                            }
+                        }
+                        else if (doyft && entry.NameLower.EndsWith(".yft"))
+                        {
+                            UpdateStatus(entry.Path);
+                            YftFile yft = RpfMan.GetFile<YftFile>(entry);
+
+                            if (yft == null) { continue; }
+                            if (yft.Fragment == null) { continue; }
+                            if (yft.Fragment.Drawable != null)
+                            {
+                                collectDrawable(yft.Fragment.Drawable);
+                            }
+                            if ((yft.Fragment.Cloths != null) && (yft.Fragment.Cloths.data_items != null))
+                            {
+                                foreach (var cloth in yft.Fragment.Cloths.data_items)
+                                {
+                                    collectDrawable(cloth.Drawable);
+                                }
+                            }
+                            if ((yft.Fragment.DrawableArray != null) && (yft.Fragment.DrawableArray.data_items != null))
+                            {
+                                foreach (var drawable in yft.Fragment.DrawableArray.data_items)
+                                {
+                                    collectDrawable(drawable);
+                                }
+                            }
+                        }
+                        else if (doypt && entry.NameLower.EndsWith(".ypt"))
+                        {
+                            UpdateStatus(entry.Path);
+                            YptFile ypt = RpfMan.GetFile<YptFile>(entry);
+
+                            if (ypt == null) { continue; }
+                            if (ypt.DrawableDict == null) { continue; }
+                            foreach (var drawable in ypt.DrawableDict.Values)
+                            {
+                                collectDrawable(drawable);
+                            }
+                        }
+                    }
+                    catch //(Exception ex)
+                    { }
+                }
+            }
+
+
+
+
+            var shaders = data.Values.ToList();
+            shaders.Sort((a, b) => { return b.GeomCount.CompareTo(a.GeomCount); });
+
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(MetaXml.XmlHeader);
+            MetaXml.OpenTag(sb, 0, "Shaders");
+            foreach (var s in shaders)
+            {
+                MetaXml.OpenTag(sb, 1, "Item");
+                MetaXml.StringTag(sb, 2, "Name", MetaXml.HashString(s.Name));
+                MetaXml.WriteHashItemArray(sb, s.GetSortedList(s.FileNames).ToArray(), 2, "FileName");
+                MetaXml.WriteRawArray(sb, s.GetSortedList(s.RenderBuckets).ToArray(), 2, "RenderBucket", "");
+                MetaXml.OpenTag(sb, 2, "Layout");
+                var layouts = s.GetSortedList(s.VertexLayouts);
+                foreach (var l in layouts)
+                {
+                    var vd = new VertexDeclaration();
+                    vd.Types = l.Types;
+                    vd.Flags = l.Flags;
+                    vd.WriteXml(sb, 3, "Item");
+                }
+                MetaXml.CloseTag(sb, 2, "Layout");
+                MetaXml.OpenTag(sb, 2, "Parameters");
+                var otstr = "Item name=\"{0}\" type=\"{1}\"";
+                var texparams = s.GetSortedList(s.TexParams);
+                var valparams = s.ValParams;
+                var arrparams = s.ArrParams;
+                foreach (var tp in texparams)
+                {
+                    MetaXml.SelfClosingTag(sb, 3, string.Format(otstr, ((ShaderParamNames)tp).ToString(), "Texture"));
+                }
+                foreach (var vp in valparams)
+                {
+                    var svp = s.GetSortedList(vp.Value);
+                    var defval = svp.FirstOrDefault();
+                    MetaXml.SelfClosingTag(sb, 3, string.Format(otstr, ((ShaderParamNames)vp.Key).ToString(), "Vector") + " " + FloatUtil.GetVector4XmlString(defval));
+                }
+                foreach (var ap in arrparams)
+                {
+                    var defval = ap.Value.FirstOrDefault();
+                    MetaXml.OpenTag(sb, 3, string.Format(otstr, ((ShaderParamNames)ap.Key).ToString(), "Array"));
+                    foreach (var vec in defval)
+                    {
+                        MetaXml.SelfClosingTag(sb, 4, "Value " + FloatUtil.GetVector4XmlString(vec));
+                    }
+                    MetaXml.CloseTag(sb, 3, "Item");
+                }
+                MetaXml.CloseTag(sb, 2, "Parameters");
+                MetaXml.CloseTag(sb, 1, "Item");
+            }
+            MetaXml.CloseTag(sb, 0, "Shaders");
+
+            var xml = sb.ToString();
+
+            File.WriteAllText("C:\\Shaders.xml", xml);
+
+
+        }
         public void GetArchetypeTimesList()
         {
 
@@ -4450,6 +4628,123 @@ namespace CodeWalker.GameFiles
 
         }
 
+
+        private class ShaderXmlDataCollection
+        {
+            public MetaHash Name { get; set; }
+            public Dictionary<MetaHash, int> FileNames { get; set; } = new Dictionary<MetaHash, int>();
+            public Dictionary<byte, int> RenderBuckets { get; set; } = new Dictionary<byte, int>();
+            public Dictionary<ShaderXmlVertexLayout, int> VertexLayouts { get; set; } = new Dictionary<ShaderXmlVertexLayout, int>();
+            public Dictionary<MetaName, int> TexParams { get; set; } = new Dictionary<MetaName, int>();
+            public Dictionary<MetaName, Dictionary<Vector4, int>> ValParams { get; set; } = new Dictionary<MetaName, Dictionary<Vector4, int>>();
+            public Dictionary<MetaName, List<Vector4[]>> ArrParams { get; set; } = new Dictionary<MetaName, List<Vector4[]>>();
+            public int GeomCount { get; set; } = 0;
+
+
+            public void AddShaderUse(ShaderFX s, DrawableGeometry g)
+            {
+                GeomCount++;
+
+                AddItem(s.FileName, FileNames);
+                AddItem(s.RenderBucket, RenderBuckets);
+
+                var info = g.VertexBuffer?.Info;
+                if (info != null)
+                {
+                    AddItem(new ShaderXmlVertexLayout() { Flags = info.Flags, Types = info.Types }, VertexLayouts);
+                }
+
+                if (s.ParametersList?.Parameters == null) return;
+                if (s.ParametersList?.Hashes == null) return;
+
+                for (int i = 0; i < s.ParametersList.Count; i++)
+                {
+                    var h = s.ParametersList.Hashes[i];
+                    var p = s.ParametersList.Parameters[i];
+
+                    if (p.DataType == 0)//texture
+                    {
+                        AddItem(h, TexParams);
+                    }
+                    else if (p.DataType == 1)//vector
+                    {
+                        var vp = GetItem(h, ValParams);
+                        if (p.Data is Vector4 vec)
+                        {
+                            AddItem(vec, vp);
+                        }
+                    }
+                    else if (p.DataType > 1)//array
+                    {
+                        var ap = GetItem(h, ArrParams);
+                        if (p.Data is Vector4[] arr)
+                        {
+                            bool found = false;
+                            foreach (var exarr in ap)
+                            {
+                                if (exarr.Length != arr.Length) continue;
+                                bool match = true;
+                                for (int j = 0; j < exarr.Length; j++)
+                                {
+                                    if (exarr[j] != arr[j])
+                                    {
+                                        match = false;
+                                        break;
+                                    }
+                                }
+                                if (match)
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found)
+                            {
+                                ap.Add(arr);
+                            }
+                        }
+                    }
+                }
+
+            }
+            public void AddItem<T>(T t, Dictionary<T, int> d)
+            {
+                if (d.ContainsKey(t))
+                {
+                    d[t]++;
+                }
+                else
+                {
+                    d[t] = 1;
+                }
+            }
+            public U GetItem<T, U>(T t, Dictionary<T, U> d) where U:new()
+            {
+                U r = default(U);
+                if (!d.TryGetValue(t, out r))
+                {
+                    r = new U();
+                    d[t] = r;
+                }
+                return r;
+            }
+            public List<T> GetSortedList<T>(Dictionary<T, int> d)
+            {
+                var kvps = d.ToList();
+                kvps.Sort((a, b) => { return b.Value.CompareTo(a.Value); });
+                return kvps.Select((a) => { return a.Key; }).ToList();
+            }
+        }
+        private struct ShaderXmlVertexLayout
+        {
+            public VertexDeclarationTypes Types { get; set; }
+            public uint Flags { get; set; }
+            public VertexType VertexType { get { return (VertexType)Flags; } }
+            public override string ToString()
+            {
+                return Types.ToString() + ", " + VertexType.ToString();
+            }
+        }
     }
 
 
