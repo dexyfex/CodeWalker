@@ -68,11 +68,11 @@
             this.CarFlagsCheckedListBox.CheckOnClick = true;
             this.CarFlagsCheckedListBox.FormattingEnabled = true;
             this.CarFlagsCheckedListBox.Items.AddRange(new object[] {
-            "1 - High priority",
+            "1 - Unk01",
             "2 - Unk02",
-            "4 - Police",
-            "8 - Firetruck",
-            "16 - Ambulance",
+            "4 - Unk03",
+            "8 - Unk04",
+            "16 - Unk05",
             "32 - Unk06",
             "64 - Unk07",
             "128 - Unk08",

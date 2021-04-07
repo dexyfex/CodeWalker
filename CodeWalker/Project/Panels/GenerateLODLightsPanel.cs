@@ -374,83 +374,69 @@ namespace CodeWalker.Project.Panels
 
 
 
-        static uint ComputeHash(IReadOnlyList<uint> ints, uint seed = 0)
-        {
-            var a2 = ints.Count;
-            var v3 = a2;
-            var v5 = (uint)(seed + 0xDEADBEEF + 4 * ints.Count);
-            var v6 = v5;
-            var v7 = v5;
-
-            var c = 0;
-            for (var i = 0; i < (ints.Count - 4) / 3 + 1; i++, v3 -= 3, c += 3)
-            {
-                var v9 = ints[c + 2] + v5;
-                var v10 = ints[c + 1] + v6;
-                var v11 = ints[c] - v9;
-                var v13 = v10 + v9;
-                var v14 = (v7 + v11) ^ RotateLeft(v9, 4);
-                var v15 = v10 - v14;
-                var v17 = v13 + v14;
-                var v18 = v15 ^ RotateLeft(v14, 6);
-                var v19 = v13 - v18;
-                var v21 = v17 + v18;
-                var v22 = v19 ^ RotateLeft(v18, 8);
-                var v23 = v17 - v22;
-                var v25 = v21 + v22;
-                var v26 = v23 ^ RotateLeft(v22, 16);
-                var v27 = v21 - v26;
-                var v29 = v27 ^ RotateRight(v26, 13);
-                var v30 = v25 - v29;
-                v7 = v25 + v26;
-                v6 = v7 + v29;
-                v5 = v30 ^ RotateLeft(v29, 4);
-            }
-
-            if (v3 == 3)
-            {
-                v5 += ints[c + 2];
-            }
-
-            if (v3 >= 2)
-            {
-                v6 += ints[c + 1];
-            }
-
-            if (v3 >= 1)
-            {
-                var v34 = (v6 ^ v5) - RotateLeft(v6, 14);
-                var v35 = (v34 ^ (v7 + ints[c])) - RotateLeft(v34, 11);
-                var v36 = (v35 ^ v6) - RotateRight(v35, 7);
-                var v37 = (v36 ^ v34) - RotateLeft(v36, 16);
-                var v38 = RotateLeft(v37, 4);
-                var v39 = (((v35 ^ v37) - v38) ^ v36) - RotateLeft((v35 ^ v37) - v38, 14);
-                return (v39 ^ v37) - RotateRight(v39, 8);
-            }
-
-            return v5;
-        }
-
         private uint GetLightHash(YmapEntityDef ent, int lightIndex)
         {
             unchecked
             {
-                var len = 7;
 
-                var center = ent.Position + ent.Archetype.BSCenter;
-                var aa = center + ent.Archetype.BBMin;
-                var bb = center + ent.Archetype.BBMax;
+                //var aabb1 = GetAABB(ent);
+                var aabb = GetAABB2(ent);
 
-                var ints = new uint[len];
-                ints[0] = (uint)(aa.X * 10.0f);
-                ints[1] = (uint)(aa.Y * 10.0f);
-                ints[2] = (uint)(aa.Z * 10.0f);
-                ints[3] = (uint)(bb.X * 10.0f);
-                ints[4] = (uint)(bb.Y * 10.0f);
-                ints[5] = (uint)(bb.Z * 10.0f);
-                ints[6] = (uint)lightIndex;
+                var hashData = new int[7];
+                hashData[0] = (int)(aabb.Min.X * 10.0f);
+                hashData[1] = (int)(aabb.Min.Y * 10.0f);
+                hashData[2] = (int)(aabb.Min.Z * 10.0f);
+                hashData[3] = (int)(aabb.Max.X * 10.0f);
+                hashData[4] = (int)(aabb.Max.Y * 10.0f);
+                hashData[5] = (int)(aabb.Max.Z * 10.0f);
+                hashData[6] = lightIndex;
 
-                return ComputeHash(ints);
+
+                int v3 = 7;
+                int v4 = 0;//=hashData index
+                int v5 = (int)0xDEADBEEF + 28;// -559038709;
+                int v6 = (int)0xDEADBEEF + 28;
+                int v7 = (int)0xDEADBEEF + 28;
+
+                uint v8 = 2;
+                do
+                {
+                    int v9 = hashData[v4 + 2] + v5;
+                    int v10 = hashData[v4 + 1] + v6;
+                    int v11 = hashData[v4 + 0] - v9;
+                    int v13 = v10 + v9;
+                    int v14 = (v7 + v11) ^ RotateLeft(v9, 4);
+                    int v17 = v13 + v14;
+                    int v18 = (v10 - v14) ^ RotateLeft(v14, 6);
+                    int v21 = v17 + v18;
+                    int v22 = (v13 - v18) ^ RotateLeft(v18, 8);
+                    int v25 = v21 + v22;
+                    int v26 = (v17 - v22) ^ RotateLeft(v22, 16);
+                    int v29 = (v21 - v26) ^ RotateRight(v26, 13);
+                    int v30 = v25 - v29;
+                    v7 = v25 + v26;
+                    v6 = v7 + v29;
+                    v5 = v30 ^ RotateLeft(v29, 4);
+                    v4 += 3;
+                    v3 -= 3;
+                    --v8;
+                }
+                while (v8 > 0);
+
+                int v32 = v3 - 1; //should always be 0
+                if (v32 != 0)
+                { }
+
+                int v50 = v7 + hashData[v4];
+                int v34 = (v6 ^ v5) - RotateLeft(v6, 14);
+                int v35 = (v34 ^ v50) - RotateLeft(v34, 11);
+                int v36 = (v35 ^ v6) - RotateRight(v35, 7);
+                int v37 = (v36 ^ v34) - RotateLeft(v36, 16);
+                int v51 = (v35 ^ v37) - RotateLeft(v37, 4);
+                int v38 = (v51 ^ v36) - RotateLeft(v51, 14);
+                int v53 = (v38 ^ v37) - RotateRight(v38, 8);
+                return (uint)v53;
+
             }
         }
 
