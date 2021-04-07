@@ -1136,48 +1136,127 @@ namespace CodeWalker.GameFiles
             var childs = new List<short>();
             if (Bones?.Items != null)
             {
-                Bone lastbone = null;
-                for (int i = 0; i < Bones.Items.Length; i++)
+
+                //crazy breadth-wise limited to 4 algorithm for generating the ChildIndices
+
+                var tbones = Bones.Items.ToList();
+                var rootbones = tbones.Where(b => (b.ParentIndex < 0)).ToList();
+                for (int i = 0; i < tbones.Count; i++)
                 {
                     var bone = Bones.Items[i];
                     var pind = bone.ParentIndex;
                     parents.Add(pind);
-                    if (pind >= 0)
-                    {
-                        childs.Add(bone.Index);
-                        childs.Add(pind);
-                        lastbone = bone;
-                    }
                 }
-                if (lastbone != null)
+
+                List<Bone> getChildren(Bone b)
                 {
-                    var npad = 8 - (childs.Count % 8);
-                    if (npad < 8)
+                    var r = new List<Bone>();
+                    if (b == null) return r;
+                    for (int i = 0; i < tbones.Count; i++)
                     {
-                        for (int i = 0; i < npad; i += 2)
+                        var tb = tbones[i];
+                        if (tb.ParentIndex == b.Index)
                         {
-                            childs.Add(lastbone.Index);
-                            childs.Add(lastbone.ParentIndex);
+                            r.Add(tb);
+                        }
+                    }
+                    return r;
+                }
+                List<Bone> getAllChildren(List<Bone> bones)
+                {
+                    var l = new List<Bone>();
+                    foreach (var b in bones)
+                    {
+                        var children = getChildren(b);
+                        l.AddRange(children);
+                    }
+                    return l;
+                }
+                
+                var layers = new List<List<Bone>>();
+                var layer = getAllChildren(rootbones);
+                while (layer.Count > 0)
+                {
+                    var numbones = Math.Min(layer.Count, 4);
+                    var inslayer = layer.GetRange(0, numbones);
+                    var extlayer = getAllChildren(inslayer);
+                    layers.Add(inslayer);
+                    layer.RemoveRange(0, numbones);
+                    layer.InsertRange(0, extlayer);
+                }
+
+
+
+                foreach (var l in layers)
+                {
+                    Bone lastbone = null;
+                    foreach (var b in l)
+                    {
+                        childs.Add(b.Index);
+                        childs.Add(b.ParentIndex);
+                        lastbone = b;
+                    }
+                    if (lastbone != null)
+                    {
+                        var npad = 8 - (childs.Count % 8);
+                        if (npad < 8)
+                        {
+                            for (int i = 0; i < npad; i += 2)
+                            {
+                                childs.Add(lastbone.Index);
+                                childs.Add(lastbone.ParentIndex);
+                            }
                         }
                     }
                 }
 
 
 
-                ////just testing - not really working properly - how to generate these arrays identical to originals? seem to have weird repeats? (not just end padding)
+
+
+                //////just testing
                 //var numchilds = ChildIndices?.Length ?? 0;
-                //if (numchilds < childs.Count)
-                //{ }
-                //else
+                //int diffstart = -1;
+                //int diffend = -1;
+                //int ndiff = Math.Abs(numchilds - childs.Count);
+                //int maxchilds = Math.Min(numchilds, childs.Count);
+                //for (int i = 0; i < maxchilds; i++)
                 //{
-                //    for (int i = 0; i < numchilds; i++)
+                //    var oc = ChildIndices[i];
+                //    var nc = childs[i];
+                //    if (nc != oc)
                 //    {
-                //        var oc = ChildIndices[i];
-                //        var nc = childs[i];
-                //        if (nc != oc)
-                //        { }
+                //        if (diffstart < 0) diffstart = i;
+                //        diffend = i;
+                //        ndiff++; 
                 //    }
                 //}
+                //if (ndiff > 0)
+                //{
+                //    var difffrac = ((float)ndiff) / ((float)numchilds);
+                //}
+                //if (numchilds != childs.Count)
+                //{ }
+
+
+
+
+                //var numbones = Bones.Items.Length;
+                //var numchilds = ChildIndices?.Length ?? 0;
+                //for (int i = 0; i < numchilds; i += 2)
+                //{
+                //    var bind = ChildIndices[i];
+                //    var pind = ChildIndices[i + 1];
+                //    if (bind > numbones)
+                //    { continue; }//shouldn't happen
+                //    var bone = Bones.Items[bind];
+                //    if (bone == null)
+                //    { continue; }//shouldn't happen
+                //    if (pind != bone.ParentIndex)
+                //    { }//shouldn't happen?
+                //}
+
+
 
 
             }
