@@ -118,12 +118,12 @@
             this.FlagsCheckedListBox.FormattingEnabled = true;
             this.FlagsCheckedListBox.Items.AddRange(new object[] {
             "1 - Unk01",
-            "2 - Unk02",
+            "2 - Disables wanted level",
             "4 - Disable exterior shadows",
             "8 - Unk04",
             "16 - Unk05",
-            "32 - Unk06",
-            "64 - Unk07",
+            "32 - Reduces vehicle population",
+            "64 - Reduces ped population",
             "128 - Unk08",
             "256 - Disable limbo portals",
             "512 - Unk10"});
