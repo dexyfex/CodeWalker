@@ -177,8 +177,8 @@
             this.FlagsCheckedListBox.CheckOnClick = true;
             this.FlagsCheckedListBox.FormattingEnabled = true;
             this.FlagsCheckedListBox.Items.AddRange(new object[] {
-            "1 - Hide inside from outside",
-            "2 - Hide outside from inside",
+            "1 - Disables exterior rendering",
+            "2 - Disables interior rendering",
             "4 - Mirror",
             "8 - Extra bloom",
             "16 - Unk05",
@@ -190,7 +190,7 @@
             "1024 - Mirror limbo entities",
             "2048 - Unk12",
             "4096 - Unk13",
-            "8192 - Unk14"});
+            "8192 - Disable farclipping"});
             this.FlagsCheckedListBox.Location = new System.Drawing.Point(318, 15);
             this.FlagsCheckedListBox.Name = "FlagsCheckedListBox";
             this.FlagsCheckedListBox.Size = new System.Drawing.Size(184, 214);

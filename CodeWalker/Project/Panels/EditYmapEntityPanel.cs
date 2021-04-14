@@ -814,5 +814,10 @@ namespace CodeWalker.Project.Panels
                 ProjectForm.ShowEditArchetypePanel(true);
             }
         }
+
+        private void EntityFlagsCheckedListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
