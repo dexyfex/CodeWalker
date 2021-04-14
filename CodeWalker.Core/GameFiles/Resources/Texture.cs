@@ -553,26 +553,37 @@ namespace CodeWalker.GameFiles
             Format = Xml.GetChildEnumInnerText<TextureFormat>(node, "Format");
             var filename = Xml.GetChildInnerText(node, "FileName");
 
-            try
+
+            if ((!string.IsNullOrEmpty(filename)) && (!string.IsNullOrEmpty(ddsfolder)))
             {
                 var filepath = Path.Combine(ddsfolder, filename);
                 if (File.Exists(filepath))
                 {
-                    var dds = File.ReadAllBytes(filepath);
-                    var tex = DDSIO.GetTexture(dds);
-                    if (tex != null)
+                    try
                     {
-                        Data = tex.Data;
-                        Width = tex.Width;
-                        Height = tex.Height;
-                        Depth = tex.Depth;
-                        Levels = tex.Levels;
-                        Format = tex.Format;
-                        Stride = tex.Stride;
+                        var dds = File.ReadAllBytes(filepath);
+                        var tex = DDSIO.GetTexture(dds);
+                        if (tex != null)
+                        {
+                            Data = tex.Data;
+                            Width = tex.Width;
+                            Height = tex.Height;
+                            Depth = tex.Depth;
+                            Levels = tex.Levels;
+                            Format = tex.Format;
+                            Stride = tex.Stride;
+                        }
+                    }
+                    catch
+                    {
+                        throw new Exception("Texture file format not supported:\n" + filepath);
                     }
                 }
+                else
+                {
+                    throw new Exception("Texture file not found:\n" + filepath);
+                }
             }
-            catch { }
 
 
         }
