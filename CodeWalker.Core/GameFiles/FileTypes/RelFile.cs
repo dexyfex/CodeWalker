@@ -1762,8 +1762,8 @@ namespace CodeWalker.GameFiles
         public ushort PitchVariance { get; set; } //0x11-0x13
         public ushort Pan { get; set; } //0x13-0x15
         public ushort PanVariance { get; set; } //0x15-0x17
-        public ushort preDelay { get; set; } //0x17-0x19
-        public ushort preDelayVariance { get; set; } //0x19-0x1B
+        public ushort PreDelay { get; set; } //0x17-0x19
+        public ushort PreDelayVariance { get; set; } //0x19-0x1B
         public int StartOffset { get; set; } //0x1B-0x1F
         public int StartOffsetVariance { get; set; } //0x1F-0x23
         public ushort AttackTime { get; set; } //0x23-0x25
@@ -1815,8 +1815,8 @@ namespace CodeWalker.GameFiles
             }
             if ((Flags & 0xFF00) != 0xAA00)
             {
-                if (Bit(8)) preDelay = br.ReadUInt16();
-                if (Bit(9)) preDelayVariance = br.ReadUInt16();
+                if (Bit(8)) PreDelay = br.ReadUInt16();
+                if (Bit(9)) PreDelayVariance = br.ReadUInt16();
                 if (Bit(10)) StartOffset = br.ReadInt32();
                 if (Bit(11)) StartOffsetVariance = br.ReadInt32();
                 if (Bit(12)) AttackTime = br.ReadUInt16();
@@ -1869,8 +1869,8 @@ namespace CodeWalker.GameFiles
             }
             if ((Flags & 0xFF00) != 0xAA00)
             {
-                if (Bit(8)) bw.Write(preDelay);
-                if (Bit(9)) bw.Write(preDelayVariance);
+                if (Bit(8)) bw.Write(PreDelay);
+                if (Bit(9)) bw.Write(PreDelayVariance);
                 if (Bit(10)) bw.Write(StartOffset);
                 if (Bit(11)) bw.Write(StartOffsetVariance);
                 if (Bit(12)) bw.Write(AttackTime);
@@ -1920,8 +1920,8 @@ namespace CodeWalker.GameFiles
             }
             if ((Flags & 0xFF00) != 0xAA00)
             {
-                if (Bit(8)) RelXml.ValueTag(sb, indent, "preDelay", preDelay.ToString());
-                if (Bit(9)) RelXml.ValueTag(sb, indent, "preDelayVariance", preDelayVariance.ToString());
+                if (Bit(8)) RelXml.ValueTag(sb, indent, "PreDelay", PreDelay.ToString());
+                if (Bit(9)) RelXml.ValueTag(sb, indent, "PreDelayVariance", PreDelayVariance.ToString());
                 if (Bit(10)) RelXml.ValueTag(sb, indent, "StartOffset", StartOffset.ToString());
                 if (Bit(11)) RelXml.ValueTag(sb, indent, "StartOffsetVariance", StartOffsetVariance.ToString());
                 if (Bit(12)) RelXml.ValueTag(sb, indent, "AttackTime", AttackTime.ToString());
@@ -1931,7 +1931,7 @@ namespace CodeWalker.GameFiles
             }
             if ((Flags & 0xFF0000) != 0xAA0000)
             {
-                    if (Bit(16)) RelXml.ValueTag(sb, indent, "LPFCutoff", LPFCutoff.ToString());
+                if (Bit(16)) RelXml.ValueTag(sb, indent, "LPFCutoff", LPFCutoff.ToString());
                 if (Bit(17)) RelXml.ValueTag(sb, indent, "LPFCutoffVariance", LPFCutoffVariance.ToString());
                 if (Bit(18)) RelXml.ValueTag(sb, indent, "HPFCutoff", HPFCutoff.ToString());
                 if (Bit(19)) RelXml.ValueTag(sb, indent, "HPFCutoffVariance", HPFCutoffVariance.ToString());
@@ -1961,30 +1961,30 @@ namespace CodeWalker.GameFiles
             {
                 if (Bit(0)) Flags2 = Xml.GetChildUIntAttribute(node, "Flags2", "value");
                 if (Bit(1)) Unk01 = (ushort)Xml.GetChildUIntAttribute(node, "Unk01", "value");
-                if (Bit(2)) Unk02 = (ushort)Xml.GetChildUIntAttribute(node, "Volume", "value");
-                if (Bit(3)) Unk03 = (ushort)Xml.GetChildUIntAttribute(node, "VolumeVariance", "value");
-                if (Bit(4)) Unk04 = (ushort)Xml.GetChildUIntAttribute(node, "Pitch", "value");
-                if (Bit(5)) Unk05 = (ushort)Xml.GetChildUIntAttribute(node, "PitchVariance", "value");
-                if (Bit(6)) Unk06 = (ushort)Xml.GetChildUIntAttribute(node, "Pan", "value");
-                if (Bit(7)) Unk07 = (ushort)Xml.GetChildUIntAttribute(node, "PanVariance", "value");
+                if (Bit(2)) Volume = (ushort)Xml.GetChildUIntAttribute(node, "Volume", "value");
+                if (Bit(3)) VolumeVariance = (ushort)Xml.GetChildUIntAttribute(node, "VolumeVariance", "value");
+                if (Bit(4)) Pitch = (ushort)Xml.GetChildUIntAttribute(node, "Pitch", "value");
+                if (Bit(5)) PitchVariance = (ushort)Xml.GetChildUIntAttribute(node, "PitchVariance", "value");
+                if (Bit(6)) Pan = (ushort)Xml.GetChildUIntAttribute(node, "Pan", "value");
+                if (Bit(7)) PanVariance = (ushort)Xml.GetChildUIntAttribute(node, "PanVariance", "value");
             }
             if ((Flags & 0xFF00) != 0xAA00)
             {
-                if (Bit(8)) Unk08 = (ushort)Xml.GetChildUIntAttribute(node, "preDelay", "value");
-                if (Bit(9)) Unk09 = (ushort)Xml.GetChildUIntAttribute(node, "preDelayVariance", "value");
-                if (Bit(10)) UnkInt1 = Xml.GetChildIntAttribute(node, "StartOffset", "value");
-                if (Bit(11)) UnkInt2 = Xml.GetChildIntAttribute(node, "StartOffsetVariance", "value");
-                if (Bit(12)) Unk10 = (ushort)Xml.GetChildUIntAttribute(node, "AttackTime", "value");
-                if (Bit(13)) Unk11 = (ushort)Xml.GetChildUIntAttribute(node, "ReleaseTime", "value");
-                if (Bit(14)) Unk12 = (ushort)Xml.GetChildUIntAttribute(node, "DopplerFactor", "value");
+                if (Bit(8)) PreDelay = (ushort)Xml.GetChildUIntAttribute(node, "PreDelay", "value");
+                if (Bit(9)) PreDelayVariance = (ushort)Xml.GetChildUIntAttribute(node, "PreDelayVariance", "value");
+                if (Bit(10)) StartOffset = Xml.GetChildIntAttribute(node, "StartOffset", "value");
+                if (Bit(11)) StartOffsetVariance = Xml.GetChildIntAttribute(node, "StartOffsetVariance", "value");
+                if (Bit(12)) AttackTime = (ushort)Xml.GetChildUIntAttribute(node, "AttackTime", "value");
+                if (Bit(13)) ReleaseTime = (ushort)Xml.GetChildUIntAttribute(node, "ReleaseTime", "value");
+                if (Bit(14)) DopplerFactor = (ushort)Xml.GetChildUIntAttribute(node, "DopplerFactor", "value");
                 if (Bit(15)) CategoryHash = XmlRel.GetHash(Xml.GetChildInnerText(node, "Category"));
             }
             if ((Flags & 0xFF0000) != 0xAA0000)
             {
-                if (Bit(16)) Unk14 = (ushort)Xml.GetChildUIntAttribute(node, "LPFCutoff", "value");
-                if (Bit(17)) Unk15 = (ushort)Xml.GetChildUIntAttribute(node, "LPFCutoffVariance", "value");
-                if (Bit(18)) Unk16 = (ushort)Xml.GetChildUIntAttribute(node, "HPFCutoff", "value");
-                if (Bit(19)) Unk17 = (ushort)Xml.GetChildUIntAttribute(node, "HPFCutoffVariance", "value");
+                if (Bit(16)) LPFCutoff = (ushort)Xml.GetChildUIntAttribute(node, "LPFCutoff", "value");
+                if (Bit(17)) LPFCutoffVariance = (ushort)Xml.GetChildUIntAttribute(node, "LPFCutoffVariance", "value");
+                if (Bit(18)) HPFCutoff = (ushort)Xml.GetChildUIntAttribute(node, "HPFCutoff", "value");
+                if (Bit(19)) HPFCutoffVariance = (ushort)Xml.GetChildUIntAttribute(node, "HPFCutoffVariance", "value");
                 if (Bit(20)) UnkHash3 = XmlRel.GetHash(Xml.GetChildInnerText(node, "UnkHash3"));
                 if (Bit(21)) Unk18 = (ushort)Xml.GetChildUIntAttribute(node, "Unk18", "value");
                 if (Bit(22)) Unk19 = (byte)Xml.GetChildUIntAttribute(node, "Unk19", "value");
@@ -2021,8 +2021,8 @@ namespace CodeWalker.GameFiles
             }
             if ((Flags & 0xFF00) != 0xAA00)
             {
-                if (Bit(8)) length += 2;// preDelay = br.ReadUInt16();
-                if (Bit(9)) length += 2;// preDelayVariance = br.ReadUInt16();
+                if (Bit(8)) length += 2;// PreDelay = br.ReadUInt16();
+                if (Bit(9)) length += 2;// PreDelayVariance = br.ReadUInt16();
                 if (Bit(10)) length += 4;// StartOffset = br.ReadUInt32();
                 if (Bit(11)) length += 4;// StartOffsetVariance = br.ReadUInt32();
                 if (Bit(12)) length += 2;// AttackTime = br.ReadUInt16();

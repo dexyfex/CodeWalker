@@ -1477,7 +1477,7 @@ namespace CodeWalker.World
                     var streaminf = streaminfs[i];
                     var left = 1.0f;
                     var right = 1.0f;
-                    switch (streaminf.Header?.Unk06 ?? 0)
+                    switch (streaminf.Header?.Pan ?? 0)
                     {
                         case 0://center/default
                             left = 1.0f;
