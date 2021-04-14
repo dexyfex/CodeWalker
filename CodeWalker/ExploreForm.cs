@@ -686,10 +686,25 @@ namespace CodeWalker
             RefreshMainTreeViewRoot(root);
 
 
+            var remFolders = new List<MainTreeFolder>();
+
             foreach (var extraroot in ExtraRootFolders)
             {
                 extraroot.Clear();
-                RefreshMainTreeViewRoot(extraroot);
+
+                if (Directory.Exists(extraroot.FullPath))
+                {
+                    RefreshMainTreeViewRoot(extraroot);
+                }
+                else
+                {
+                    remFolders.Add(extraroot);
+                }
+            }
+
+            foreach (var remFolder in remFolders)
+            {
+                ExtraRootFolders.Remove(remFolder);
             }
 
 
