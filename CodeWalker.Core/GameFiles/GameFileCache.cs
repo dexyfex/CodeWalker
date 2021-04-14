@@ -1115,7 +1115,7 @@ namespace CodeWalker.GameFiles
                     {
                         try
                         {
-                            if ((entry.NameLower == "gtxd.ymt") || (entry.NameLower == "gtxd.meta"))
+                            if ((entry.NameLower == "gtxd.ymt") || (entry.NameLower == "gtxd.meta") || (entry.NameLower == "mph4_gtxd.ymt"))
                             {
                                 GtxdFile ymt = RpfMan.GetFile<GtxdFile>(entry);
                                 if (ymt.TxdRelationships != null)
