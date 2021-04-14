@@ -15092,16 +15092,16 @@ namespace CodeWalker.GameFiles
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
             Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
-            WhiPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
-            BlaPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
-            ChiPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
-            LatPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
+            WhiPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "WhiPVG"));
+            BlaPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "BlaPVG"));
+            ChiPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "ChiPVG"));
+            LatPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "LatPVG"));
             Unk06 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk06"));
             Unk07 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk07"));
             Unk08 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk08"));
-            KorPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk09"));
+            KorPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "KorPVG"));
             Unk10 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk10"));
-            PakPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk11"));
+            PakPVG = XmlRel.GetHash(Xml.GetChildInnerText(node, "PakPVG"));
             Items = XmlRel.ReadHashItemArray(node, "Items");
             ItemCount = (Items?.Length ?? 0);
         }
