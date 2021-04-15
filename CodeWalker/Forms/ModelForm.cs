@@ -991,6 +991,26 @@ namespace CodeWalker.Forms
                             }
                         }
                     }
+
+                    var fdarr = fdrawable.OwnerFragment?.DrawableArray?.data_items;
+                    if (fdarr != null)
+                    {
+                        var fdnames = fdrawable.OwnerFragment?.DrawableArrayNames?.data_items;
+                        for (int i = 0; i < fdarr.Length; i++)
+                        {
+                            var arrd = fdarr[i];
+                            if ((arrd != null) && (arrd.AllModels?.Length > 0))
+                            {
+                                var dname = ((fdnames != null) && (i < fdnames.Length)) ? fdnames[i]?.Value : arrd.Name;
+                                if (string.IsNullOrEmpty(dname)) dname = "(No name)";
+                                AddDrawableModelsTreeNodes(arrd.DrawableModels?.High, dname + " - High Detail", false);
+                                AddDrawableModelsTreeNodes(arrd.DrawableModels?.Med, dname + " - Medium Detail", false);
+                                AddDrawableModelsTreeNodes(arrd.DrawableModels?.Low, dname + " - Low Detail", false);
+                                AddDrawableModelsTreeNodes(arrd.DrawableModels?.VLow, dname + " - Very Low Detail", false);
+                            }
+                        }
+                    }
+
                 }
             }
         }

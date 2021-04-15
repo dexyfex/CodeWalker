@@ -616,6 +616,17 @@ namespace CodeWalker.GameFiles
             assign(PhysicsLODGroup.PhysicsLOD2);
             assign(PhysicsLODGroup.PhysicsLOD3);
 
+
+
+            if (DrawableArray?.data_items != null)
+            {
+                foreach (var arrd in DrawableArray.data_items)
+                {
+                    assigndr(arrd, null, 0);
+                }
+            }
+
+
         }
 
         public void AssignChildrenSkeletonsAndBounds()

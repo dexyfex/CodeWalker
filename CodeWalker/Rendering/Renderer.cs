@@ -2729,6 +2729,21 @@ namespace CodeWalker.Rendering
                 }
             }
 
+
+            bool isselected = SelectionFlagsTestAll || (f.Drawable == SelectedDrawable);
+            if (isselected)
+            {
+                var darr = f.DrawableArray?.data_items;
+                if (darr != null)
+                {
+                    for (int i = 0; i < darr.Length; i++)
+                    {
+                        RenderDrawable(darr[i], arch, ent, txdhash, null, null, animClip);
+                    }
+                }
+            }
+
+
             return true;
         }
 
