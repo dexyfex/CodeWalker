@@ -732,7 +732,7 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.Alarm: return new Dat151Alarm(d, br);
                 case Dat151RelType.Unk105: return new Dat151Unk105(d, br);
                 case Dat151RelType.Scenario: return new Dat151Scenario(d, br);
-                case Dat151RelType.Unk107: return new Dat151Unk107(d, br);
+                case Dat151RelType.AudioOcclusionOverride: return new Dat151AudioOcclusionOverride(d, br);
                 case Dat151RelType.Unk108: return new Dat151Unk108(d, br);
                 case Dat151RelType.Unk109: return new Dat151Unk109(d, br);
                 case Dat151RelType.Unk110: return new Dat151Unk110(d, br);
@@ -899,7 +899,7 @@ namespace CodeWalker.GameFiles
                         case Dat151RelType.Alarm: return new Dat151Alarm(this);
                         case Dat151RelType.Unk105: return new Dat151Unk105(this);
                         case Dat151RelType.Scenario: return new Dat151Scenario(this);
-                        case Dat151RelType.Unk107: return new Dat151Unk107(this);
+                        case Dat151RelType.AudioOcclusionOverride: return new Dat151AudioOcclusionOverride(this);
                         case Dat151RelType.Unk108: return new Dat151Unk108(this);
                         case Dat151RelType.Unk109: return new Dat151Unk109(this);
                         case Dat151RelType.Unk110: return new Dat151Unk110(this);
@@ -5021,7 +5021,7 @@ namespace CodeWalker.GameFiles
         ForceRadioTrackAction = 104,
         Unk105 = 105,
         Scenario = 106, //eg world_human_musician
-        Unk107 = 107,
+        AudioOcclusionOverride = 107,
         Unk108 = 108,
         Unk109 = 109,
         Unk110 = 110, //conversation/speech related - for scenarios?
@@ -17821,18 +17821,24 @@ namespace CodeWalker.GameFiles
             ItemCount = (Items?.Length ?? 0);
         }
     }
-    [TC(typeof(EXP))] public class Dat151Unk107 : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151AudioOcclusionOverride : Dat151RelData
     {
-        public float Unk01 { get; set; }
+         /*
+         *  The 107th type for Dat151 is Audio Occlusion Override. It is used in conjunction with the 'SET_PORTAL_SETTINGS_OVERRIDE'
+         *  and 'REMOVE_PORTAL_SETTINGS_OVERRIDE' natives to do real time changes to audio occlusion for interior portals.
+         *  
+         *  MaxOcclusion is the new MaxOcclusion value to override for a particular portal.
+         */
+        public float MaxOcclusion { get; set; }
 
-        public Dat151Unk107(RelFile rel) : base(rel)
+        public Dat151AudioOcclusionOverride(RelFile rel) : base(rel)
         {
-            Type = Dat151RelType.Unk107;
+            Type = Dat151RelType.AudioOcclusionOverride;
             TypeID = (byte)Type;
         }
-        public Dat151Unk107(RelData d, BinaryReader br) : base(d, br)
+        public Dat151AudioOcclusionOverride(RelData d, BinaryReader br) : base(d, br)
         {
-            Unk01 = br.ReadSingle();
+            MaxOcclusion = br.ReadSingle();
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
@@ -17842,15 +17848,15 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
-            bw.Write(Unk01);
+            bw.Write(MaxOcclusion);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
+            RelXml.ValueTag(sb, indent, "MaxOcclusion", FloatUtil.ToString(MaxOcclusion));
         }
         public override void ReadXml(XmlNode node)
         {
-            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
+            MaxOcclusion = Xml.GetChildFloatAttribute(node, "MaxOcclusion", "value");
         }
     }
     [TC(typeof(EXP))] public class Dat151Unk108 : Dat151RelData
