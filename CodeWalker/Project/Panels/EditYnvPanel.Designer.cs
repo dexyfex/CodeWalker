@@ -44,7 +44,7 @@
             this.YnvPointCountLabel = new System.Windows.Forms.Label();
             this.YnvByteCountLabel = new System.Windows.Forms.Label();
             this.YnvFlagsGroupBox = new System.Windows.Forms.GroupBox();
-            this.YnvFlagsUnknownCheckBox = new System.Windows.Forms.CheckBox();
+            this.YnvFlagsUnknown8CheckBox = new System.Windows.Forms.CheckBox();
             this.YnvFlagsVehicleCheckBox = new System.Windows.Forms.CheckBox();
             this.YnvFlagsPortalsCheckBox = new System.Windows.Forms.CheckBox();
             this.YnvFlagsPolygonsCheckBox = new System.Windows.Forms.CheckBox();
@@ -57,6 +57,7 @@
             this.YnvProjectPathTextBox = new System.Windows.Forms.TextBox();
             this.label47 = new System.Windows.Forms.Label();
             this.YnvRpfPathTextBox = new System.Windows.Forms.TextBox();
+            this.YnvFlagsUnknown16CheckBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.YnvAreaIDYUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.YnvAreaIDXUpDown)).BeginInit();
             this.YnvFlagsGroupBox.SuspendLayout();
@@ -197,7 +198,8 @@
             // 
             // YnvFlagsGroupBox
             // 
-            this.YnvFlagsGroupBox.Controls.Add(this.YnvFlagsUnknownCheckBox);
+            this.YnvFlagsGroupBox.Controls.Add(this.YnvFlagsUnknown16CheckBox);
+            this.YnvFlagsGroupBox.Controls.Add(this.YnvFlagsUnknown8CheckBox);
             this.YnvFlagsGroupBox.Controls.Add(this.YnvFlagsVehicleCheckBox);
             this.YnvFlagsGroupBox.Controls.Add(this.YnvFlagsPortalsCheckBox);
             this.YnvFlagsGroupBox.Controls.Add(this.YnvFlagsPolygonsCheckBox);
@@ -208,21 +210,21 @@
             this.YnvFlagsGroupBox.TabStop = false;
             this.YnvFlagsGroupBox.Text = "Content flags";
             // 
-            // YnvFlagsUnknownCheckBox
+            // YnvFlagsUnknown8CheckBox
             // 
-            this.YnvFlagsUnknownCheckBox.AutoSize = true;
-            this.YnvFlagsUnknownCheckBox.Location = new System.Drawing.Point(12, 88);
-            this.YnvFlagsUnknownCheckBox.Name = "YnvFlagsUnknownCheckBox";
-            this.YnvFlagsUnknownCheckBox.Size = new System.Drawing.Size(78, 17);
-            this.YnvFlagsUnknownCheckBox.TabIndex = 3;
-            this.YnvFlagsUnknownCheckBox.Text = "[Unknown]";
-            this.YnvFlagsUnknownCheckBox.UseVisualStyleBackColor = true;
-            this.YnvFlagsUnknownCheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsUnknownCheckBox_CheckedChanged);
+            this.YnvFlagsUnknown8CheckBox.AutoSize = true;
+            this.YnvFlagsUnknown8CheckBox.Location = new System.Drawing.Point(12, 76);
+            this.YnvFlagsUnknown8CheckBox.Name = "YnvFlagsUnknown8CheckBox";
+            this.YnvFlagsUnknown8CheckBox.Size = new System.Drawing.Size(84, 17);
+            this.YnvFlagsUnknown8CheckBox.TabIndex = 3;
+            this.YnvFlagsUnknown8CheckBox.Text = "[Unknown8]";
+            this.YnvFlagsUnknown8CheckBox.UseVisualStyleBackColor = true;
+            this.YnvFlagsUnknown8CheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsUnknown8CheckBox_CheckedChanged);
             // 
             // YnvFlagsVehicleCheckBox
             // 
             this.YnvFlagsVehicleCheckBox.AutoSize = true;
-            this.YnvFlagsVehicleCheckBox.Location = new System.Drawing.Point(12, 65);
+            this.YnvFlagsVehicleCheckBox.Location = new System.Drawing.Point(12, 57);
             this.YnvFlagsVehicleCheckBox.Name = "YnvFlagsVehicleCheckBox";
             this.YnvFlagsVehicleCheckBox.Size = new System.Drawing.Size(61, 17);
             this.YnvFlagsVehicleCheckBox.TabIndex = 2;
@@ -233,7 +235,7 @@
             // YnvFlagsPortalsCheckBox
             // 
             this.YnvFlagsPortalsCheckBox.AutoSize = true;
-            this.YnvFlagsPortalsCheckBox.Location = new System.Drawing.Point(12, 42);
+            this.YnvFlagsPortalsCheckBox.Location = new System.Drawing.Point(12, 38);
             this.YnvFlagsPortalsCheckBox.Name = "YnvFlagsPortalsCheckBox";
             this.YnvFlagsPortalsCheckBox.Size = new System.Drawing.Size(58, 17);
             this.YnvFlagsPortalsCheckBox.TabIndex = 1;
@@ -341,6 +343,17 @@
             this.YnvRpfPathTextBox.Size = new System.Drawing.Size(470, 20);
             this.YnvRpfPathTextBox.TabIndex = 54;
             // 
+            // YnvFlagsUnknown16CheckBox
+            // 
+            this.YnvFlagsUnknown16CheckBox.AutoSize = true;
+            this.YnvFlagsUnknown16CheckBox.Location = new System.Drawing.Point(12, 95);
+            this.YnvFlagsUnknown16CheckBox.Name = "YnvFlagsUnknown16CheckBox";
+            this.YnvFlagsUnknown16CheckBox.Size = new System.Drawing.Size(90, 17);
+            this.YnvFlagsUnknown16CheckBox.TabIndex = 4;
+            this.YnvFlagsUnknown16CheckBox.Text = "[Unknown16]";
+            this.YnvFlagsUnknown16CheckBox.UseVisualStyleBackColor = true;
+            this.YnvFlagsUnknown16CheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsUnknown16CheckBox_CheckedChanged);
+            // 
             // EditYnvPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -399,7 +412,7 @@
         private System.Windows.Forms.Label YnvPointCountLabel;
         private System.Windows.Forms.Label YnvByteCountLabel;
         private System.Windows.Forms.GroupBox YnvFlagsGroupBox;
-        private System.Windows.Forms.CheckBox YnvFlagsUnknownCheckBox;
+        private System.Windows.Forms.CheckBox YnvFlagsUnknown8CheckBox;
         private System.Windows.Forms.CheckBox YnvFlagsVehicleCheckBox;
         private System.Windows.Forms.CheckBox YnvFlagsPortalsCheckBox;
         private System.Windows.Forms.CheckBox YnvFlagsPolygonsCheckBox;
@@ -412,5 +425,6 @@
         private System.Windows.Forms.TextBox YnvProjectPathTextBox;
         private System.Windows.Forms.Label label47;
         private System.Windows.Forms.TextBox YnvRpfPathTextBox;
+        private System.Windows.Forms.CheckBox YnvFlagsUnknown16CheckBox;
     }
 }

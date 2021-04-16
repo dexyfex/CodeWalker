@@ -1136,6 +1136,7 @@ namespace CodeWalker.GameFiles
         Portals = 2,
         Vehicle = 4,
         Unknown8 = 8,
+        Unknown16 = 16,
     }
 
 
