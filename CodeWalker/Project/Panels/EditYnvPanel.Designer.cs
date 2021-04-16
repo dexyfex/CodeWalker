@@ -47,7 +47,7 @@
             this.YnvFlagsUnknownCheckBox = new System.Windows.Forms.CheckBox();
             this.YnvFlagsVehicleCheckBox = new System.Windows.Forms.CheckBox();
             this.YnvFlagsPortalsCheckBox = new System.Windows.Forms.CheckBox();
-            this.YnvFlagsVerticesCheckBox = new System.Windows.Forms.CheckBox();
+            this.YnvFlagsPolygonsCheckBox = new System.Windows.Forms.CheckBox();
             this.YnvVersionUnkHashTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -200,7 +200,7 @@
             this.YnvFlagsGroupBox.Controls.Add(this.YnvFlagsUnknownCheckBox);
             this.YnvFlagsGroupBox.Controls.Add(this.YnvFlagsVehicleCheckBox);
             this.YnvFlagsGroupBox.Controls.Add(this.YnvFlagsPortalsCheckBox);
-            this.YnvFlagsGroupBox.Controls.Add(this.YnvFlagsVerticesCheckBox);
+            this.YnvFlagsGroupBox.Controls.Add(this.YnvFlagsPolygonsCheckBox);
             this.YnvFlagsGroupBox.Location = new System.Drawing.Point(247, 48);
             this.YnvFlagsGroupBox.Name = "YnvFlagsGroupBox";
             this.YnvFlagsGroupBox.Size = new System.Drawing.Size(103, 115);
@@ -241,16 +241,16 @@
             this.YnvFlagsPortalsCheckBox.UseVisualStyleBackColor = true;
             this.YnvFlagsPortalsCheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsPortalsCheckBox_CheckedChanged);
             // 
-            // YnvFlagsVerticesCheckBox
+            // YnvFlagsPolygonsCheckBox
             // 
-            this.YnvFlagsVerticesCheckBox.AutoSize = true;
-            this.YnvFlagsVerticesCheckBox.Location = new System.Drawing.Point(12, 19);
-            this.YnvFlagsVerticesCheckBox.Name = "YnvFlagsVerticesCheckBox";
-            this.YnvFlagsVerticesCheckBox.Size = new System.Drawing.Size(64, 17);
-            this.YnvFlagsVerticesCheckBox.TabIndex = 0;
-            this.YnvFlagsVerticesCheckBox.Text = "Vertices";
-            this.YnvFlagsVerticesCheckBox.UseVisualStyleBackColor = true;
-            this.YnvFlagsVerticesCheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsVerticesCheckBox_CheckedChanged);
+            this.YnvFlagsPolygonsCheckBox.AutoSize = true;
+            this.YnvFlagsPolygonsCheckBox.Location = new System.Drawing.Point(12, 19);
+            this.YnvFlagsPolygonsCheckBox.Name = "YnvFlagsPolygonsCheckBox";
+            this.YnvFlagsPolygonsCheckBox.Size = new System.Drawing.Size(69, 17);
+            this.YnvFlagsPolygonsCheckBox.TabIndex = 0;
+            this.YnvFlagsPolygonsCheckBox.Text = "Polygons";
+            this.YnvFlagsPolygonsCheckBox.UseVisualStyleBackColor = true;
+            this.YnvFlagsPolygonsCheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsVerticesCheckBox_CheckedChanged);
             // 
             // YnvVersionUnkHashTextBox
             // 
@@ -402,7 +402,7 @@
         private System.Windows.Forms.CheckBox YnvFlagsUnknownCheckBox;
         private System.Windows.Forms.CheckBox YnvFlagsVehicleCheckBox;
         private System.Windows.Forms.CheckBox YnvFlagsPortalsCheckBox;
-        private System.Windows.Forms.CheckBox YnvFlagsVerticesCheckBox;
+        private System.Windows.Forms.CheckBox YnvFlagsPolygonsCheckBox;
         private System.Windows.Forms.TextBox YnvVersionUnkHashTextBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;

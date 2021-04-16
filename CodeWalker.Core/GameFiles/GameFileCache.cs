@@ -195,6 +195,7 @@ namespace CodeWalker.GameFiles
                 //TestYdds();
                 //TestYfts();
                 //TestYpts();
+                //TestYnvs();
                 //TestYmaps();
                 //TestPlacements();
                 //TestDrawables();
@@ -4043,6 +4044,80 @@ namespace CodeWalker.GameFiles
                                 if (ypt2.PtfxList == null)
                                 { continue; }
                                 if (ypt2.PtfxList.Name?.Value != ypt.PtfxList.Name?.Value)
+                                { continue; }
+
+                            }
+                        }
+                    }
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //}
+                }
+            }
+            if (errorfiles.Count > 0)
+            { }
+        }
+        public void TestYnvs()
+        {
+            bool xmltest = true;
+            var savetest = false;
+            var errorfiles = new List<RpfEntry>();
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    //try
+                    {
+                        if (entry.NameLower.EndsWith(".ynv"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            YnvFile ynv = null;
+                            try
+                            {
+                                ynv = RpfMan.GetFile<YnvFile>(entry);
+                            }
+                            catch (Exception ex)
+                            {
+                                UpdateStatus("Error! " + ex.ToString());
+                                errorfiles.Add(entry);
+                            }
+                            if (xmltest && (ynv != null) && (ynv.Nav != null))
+                            {
+                                var xml = YnvXml.GetXml(ynv);
+                                if (xml != null)
+                                { }
+                                var ynv2 = XmlYnv.GetYnv(xml);
+                                if (ynv2 != null)
+                                { }
+                                var ynv2b = ynv2.Save();
+                                if (ynv2b != null)
+                                { }
+                                var ynv3 = new YnvFile();
+                                RpfFile.LoadResourceFile(ynv3, ynv2b, 2);
+                                var xml3 = YnvXml.GetXml(ynv3);
+                                if (xml.Length != xml3.Length)
+                                { }
+                                var xmllines = xml.Split('\n');
+                                var xml3lines = xml3.Split('\n');
+                                if (xmllines.Length != xml3lines.Length)
+                                { }
+                            }
+                            if (savetest && (ynv != null) && (ynv.Nav != null))
+                            {
+                                var fentry = entry as RpfFileEntry;
+                                if (fentry == null)
+                                { continue; } //shouldn't happen
+
+                                var bytes = ynv.Save();
+
+                                string origlen = TextUtil.GetBytesReadable(fentry.FileSize);
+                                string bytelen = TextUtil.GetBytesReadable(bytes.Length);
+
+                                var ynv2 = new YnvFile();
+                                RpfFile.LoadResourceFile(ynv2, bytes, 2);
+
+                                if (ynv2.Nav == null)
                                 { continue; }
 
                             }
