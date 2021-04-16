@@ -62,6 +62,11 @@ namespace CodeWalker.GameFiles
                 YndFile ynd = RpfFile.GetFile<YndFile>(e, data);
                 return GetXml(ynd, out filename);
             }
+            else if (fnl.EndsWith(".ynv"))
+            {
+                YnvFile ynv = RpfFile.GetFile<YnvFile>(e, data);
+                return GetXml(ynv, out filename);
+            }
             else if (fnl.EndsWith(".ycd"))
             {
                 YcdFile ycd = RpfFile.GetFile<YcdFile>(e, data);
@@ -171,6 +176,12 @@ namespace CodeWalker.GameFiles
             var fn = (ynd?.RpfFileEntry?.Name) ?? "";
             filename = fn + ".xml";
             return YndXml.GetXml(ynd);
+        }
+        public static string GetXml(YnvFile ynv, out string filename)
+        {
+            var fn = (ynv?.RpfFileEntry?.Name) ?? "";
+            filename = fn + ".xml";
+            return YnvXml.GetXml(ynv);
         }
         public static string GetXml(YcdFile ycd, out string filename)
         {
@@ -2127,15 +2138,16 @@ namespace CodeWalker.GameFiles
         CacheFile = 4,
         AudioRel = 5,
         Ynd = 6,
-        Ycd = 7,
-        Ybn = 8,
-        Ytd = 9,
-        Ydr = 10,
-        Ydd = 11,
-        Yft = 12,
-        Ypt = 13,
-        Yld = 14,
-        Awc = 15,
+        Ynv = 7,
+        Ycd = 8,
+        Ybn = 9,
+        Ytd = 10,
+        Ydr = 11,
+        Ydd = 12,
+        Yft = 13,
+        Ypt = 14,
+        Yld = 15,
+        Awc = 16,
     }
 
 }

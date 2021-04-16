@@ -274,7 +274,7 @@ namespace CodeWalker
             InitFileType(".pso", "Metadata (PSO)", 6, FileTypeAction.ViewJPso, true);
             InitFileType(".gfx", "Scaleform Flash", 7);
             InitFileType(".ynd", "Path Nodes", 8, FileTypeAction.ViewYnd, true);
-            InitFileType(".ynv", "Nav Mesh", 9, FileTypeAction.ViewModel);
+            InitFileType(".ynv", "Nav Mesh", 9, FileTypeAction.ViewModel, true);
             InitFileType(".yvr", "Vehicle Record", 9, FileTypeAction.ViewYvr);
             InitFileType(".ywr", "Waypoint Record", 9, FileTypeAction.ViewYwr);
             InitFileType(".fxc", "Compiled Shaders", 9, FileTypeAction.ViewFxc);
@@ -2603,6 +2603,10 @@ namespace CodeWalker
                     {
                         mformat = MetaFormat.Ynd;
                     }
+                    if (fnamel.EndsWith(".ynv.xml"))
+                    {
+                        mformat = MetaFormat.Ynv;
+                    }
                     if (fnamel.EndsWith(".ycd.xml"))
                     {
                         mformat = MetaFormat.Ycd;
@@ -2709,6 +2713,17 @@ namespace CodeWalker
                                     continue;
                                 }
                                 data = ynd.Save();
+                                break;
+                            }
+                        case MetaFormat.Ynv:
+                            {
+                                var ynv = XmlYnv.GetYnv(doc);
+                                if (ynv.Nav == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YNV XML");
+                                    continue;
+                                }
+                                data = ynv.Save();
                                 break;
                             }
                         case MetaFormat.Ycd:

@@ -68,6 +68,11 @@ namespace CodeWalker.Project.Panels
                 YnvAreaIDYUpDown.Value = 0;
                 YnvAreaIDInfoLabel.Text = "ID: -";
                 YnvAABBSizeTextBox.Text = string.Empty;
+                YnvFlagsPolygonsCheckBox.Checked = false;
+                YnvFlagsPortalsCheckBox.Checked = false;
+                YnvFlagsVehicleCheckBox.Checked = false;
+                YnvFlagsUnknown8CheckBox.Checked = false;
+                YnvFlagsUnknown16CheckBox.Checked = false;
                 YnvVertexCountLabel.Text = "Vertex count: -";
                 YnvPolyCountLabel.Text = "Poly count: -";
                 YnvPortalCountLabel.Text = "Portal count: -";
@@ -87,17 +92,18 @@ namespace CodeWalker.Project.Panels
                 YnvAreaIDYUpDown.Value = Ynv.CellY;
                 YnvAreaIDInfoLabel.Text = "ID: " + Ynv.AreaID.ToString();
                 YnvAABBSizeTextBox.Text = FloatUtil.GetVector3String(nv.AABBSize);
-                YnvFlagsVerticesCheckBox.Checked = nv.ContentFlags.HasFlag(NavMeshFlags.Vertices);
+                YnvFlagsPolygonsCheckBox.Checked = nv.ContentFlags.HasFlag(NavMeshFlags.Polygons);
                 YnvFlagsPortalsCheckBox.Checked = nv.ContentFlags.HasFlag(NavMeshFlags.Portals);
                 YnvFlagsVehicleCheckBox.Checked = nv.ContentFlags.HasFlag(NavMeshFlags.Vehicle);
-                YnvFlagsUnknownCheckBox.Checked = nv.ContentFlags.HasFlag(NavMeshFlags.Unknown8);
+                YnvFlagsUnknown8CheckBox.Checked = nv.ContentFlags.HasFlag(NavMeshFlags.Unknown8);
+                YnvFlagsUnknown16CheckBox.Checked = nv.ContentFlags.HasFlag(NavMeshFlags.Unknown16);
                 YnvVertexCountLabel.Text = "Vertex count: " + nv.VerticesCount.ToString();
                 YnvPolyCountLabel.Text = "Poly count: " + nv.PolysCount.ToString();
                 YnvPortalCountLabel.Text = "Portal count: " + nv.PortalsCount.ToString();
                 YnvPortalLinkCountLabel.Text = "Portal link count: " + nv.PortalLinksCount.ToString();
                 YnvPointCountLabel.Text = "Point count: " + nv.PointsCount.ToString();
                 YnvByteCountLabel.Text = "Byte count: " + nv.TotalBytes.ToString();
-                YnvVersionUnkHashTextBox.Text = nv.VersionUnk2.ToString();
+                YnvVersionUnkHashTextBox.Text = nv.VersionUnk2.Hash.ToString();
                 YnvAdjAreaIDsTextBox.Text = GetAdjAreaIDsString(nv.AdjAreaIDs.Values);
                 populatingui = false;
             }
@@ -154,11 +160,12 @@ namespace CodeWalker.Project.Panels
         {
             if (populatingui) return;
             if (Ynv?.Nav == null) return;
-            var verts = YnvFlagsVerticesCheckBox.Checked ? NavMeshFlags.Vertices : NavMeshFlags.None;
+            var verts = YnvFlagsPolygonsCheckBox.Checked ? NavMeshFlags.Polygons : NavMeshFlags.None;
             var ports = YnvFlagsPortalsCheckBox.Checked ? NavMeshFlags.Portals : NavMeshFlags.None;
             var vehcs = YnvFlagsVehicleCheckBox.Checked ? NavMeshFlags.Vehicle : NavMeshFlags.None;
-            var unk8s = YnvFlagsUnknownCheckBox.Checked ? NavMeshFlags.Unknown8 : NavMeshFlags.None;
-            var f = verts | ports | vehcs | unk8s;
+            var unk8s = YnvFlagsUnknown8CheckBox.Checked ? NavMeshFlags.Unknown8 : NavMeshFlags.None;
+            var unk16s = YnvFlagsUnknown16CheckBox.Checked ? NavMeshFlags.Unknown16 : NavMeshFlags.None;
+            var f = verts | ports | vehcs | unk8s | unk16s;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (Ynv.Nav.ContentFlags != f)
@@ -212,7 +219,12 @@ namespace CodeWalker.Project.Panels
             YnvFlagsCheckBoxChange();
         }
 
-        private void YnvFlagsUnknownCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void YnvFlagsUnknown8CheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            YnvFlagsCheckBoxChange();
+        }
+
+        private void YnvFlagsUnknown16CheckBox_CheckedChanged(object sender, EventArgs e)
         {
             YnvFlagsCheckBoxChange();
         }
