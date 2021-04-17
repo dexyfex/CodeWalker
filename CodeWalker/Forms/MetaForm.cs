@@ -332,6 +332,20 @@ namespace CodeWalker.Forms
                 metaFormat = MetaFormat.CacheFile;
             }
         }
+        public void LoadMeta(HeightmapFile heightmap)
+        {
+            var fn = ((heightmap?.RpfFileEntry?.Name) ?? "") + ".xml";
+            Xml = HmapXml.GetXml(heightmap);
+            FileName = fn;
+            RawPropertyGrid.SelectedObject = heightmap;
+            rpfFileEntry = heightmap?.RpfFileEntry;
+            modified = false;
+            metaFormat = MetaFormat.XML;
+            if (heightmap?.RpfFileEntry != null)
+            {
+                metaFormat = MetaFormat.Heightmap;
+            }
+        }
 
 
 
@@ -393,6 +407,15 @@ namespace CodeWalker.Forms
                     case MetaFormat.CacheFile:
                         MessageBox.Show("Sorry, CacheFile import is not supported.", "Cannot import CacheFile XML");
                         return false;
+                    case MetaFormat.Heightmap:
+                        var hmap = XmlHmap.GetHeightmap(doc);
+                        if (hmap.MaxHeights == null)
+                        {
+                            MessageBox.Show("Schema not supported.", "Cannot import Heightmap XML");
+                            return false;
+                        }
+                        data = hmap.Save();
+                        break;
                 }
             }
 #if !DEBUG

@@ -112,6 +112,16 @@ namespace CodeWalker.GameFiles
                 AwcFile awc = RpfFile.GetFile<AwcFile>(e, data);
                 return GetXml(awc, out filename, outputfolder);
             }
+            else if (fnl.EndsWith("cache_y.dat"))
+            {
+                CacheDatFile cdf = RpfFile.GetFile<CacheDatFile>(e, data);
+                return GetXml(cdf, out filename, outputfolder);
+            }
+            else if (fnl.EndsWith(".dat") && fnl.StartsWith("heightmap"))
+            {
+                HeightmapFile hmf = RpfFile.GetFile<HeightmapFile>(e, data);
+                return GetXml(hmf, out filename, outputfolder);
+            }
             filename = fn;
             return string.Empty;
         }
@@ -236,6 +246,18 @@ namespace CodeWalker.GameFiles
             var fn = (awc?.Name) ?? "";
             filename = fn + ".xml";
             return AwcXml.GetXml(awc, outputfolder);
+        }
+        public static string GetXml(CacheDatFile cdf, out string filename, string outputfolder)
+        {
+            var fn = (cdf?.FileEntry?.Name) ?? "";
+            filename = fn + ".xml";
+            return cdf.GetXml();
+        }
+        public static string GetXml(HeightmapFile hmf, out string filename, string outputfolder)
+        {
+            var fn = (hmf?.Name) ?? "";
+            filename = fn + ".xml";
+            return HmapXml.GetXml(hmf);
         }
 
 
@@ -2148,6 +2170,7 @@ namespace CodeWalker.GameFiles
         Ypt = 14,
         Yld = 15,
         Awc = 16,
+        Heightmap = 17,
     }
 
 }

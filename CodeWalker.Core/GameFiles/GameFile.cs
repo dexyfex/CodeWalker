@@ -80,6 +80,7 @@ namespace CodeWalker.GameFiles
         Yed = 24,
         Yld = 25,
         Yfd = 26,
+        Heightmap = 27,
     }
 
 

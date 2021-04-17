@@ -308,19 +308,21 @@ namespace CodeWalker
             InitFileType(".awc", "Audio Wave Container", 22, FileTypeAction.ViewAwc, true);
             InitFileType(".rel", "Audio Data (REL)", 23, FileTypeAction.ViewRel, true);
 
-            InitSubFileType(".dat", "cache_y.dat", "Cache File", 6, FileTypeAction.ViewCacheDat);
+            InitSubFileType(".dat", "cache_y.dat", "Cache File", 6, FileTypeAction.ViewCacheDat, true);
+            InitSubFileType(".dat", "heightmap.dat", "Heightmap", 6, FileTypeAction.ViewHeightmap, true);
+            InitSubFileType(".dat", "heightmapheistisland.dat", "Heightmap", 6, FileTypeAction.ViewHeightmap, true);
         }
         private void InitFileType(string ext, string name, int imgidx, FileTypeAction defaultAction = FileTypeAction.ViewHex, bool xmlConvertible = false)
         {
             var ft = new FileTypeInfo(ext, name, imgidx, defaultAction, xmlConvertible);
             FileTypes[ext] = ft;
         }
-        private void InitSubFileType(string ext, string subext, string name, int imgidx, FileTypeAction defaultAction = FileTypeAction.ViewHex)
+        private void InitSubFileType(string ext, string subext, string name, int imgidx, FileTypeAction defaultAction = FileTypeAction.ViewHex, bool xmlConvertible = false)
         {
             FileTypeInfo pti = null;
             if (FileTypes.TryGetValue(ext, out pti))
             {
-                var ft = new FileTypeInfo(subext, name, imgidx, defaultAction, pti.XmlConvertible);
+                var ft = new FileTypeInfo(subext, name, imgidx, defaultAction, xmlConvertible);
                 pti.AddSubType(ft);
             }
         }
@@ -1398,6 +1400,7 @@ namespace CodeWalker
                 case FileTypeAction.ViewYed:
                 case FileTypeAction.ViewYld:
                 case FileTypeAction.ViewYfd:
+                case FileTypeAction.ViewHeightmap:
                     return true;
                 case FileTypeAction.ViewHex:
                 default:
@@ -1523,6 +1526,9 @@ namespace CodeWalker
                         break;
                     case FileTypeAction.ViewYfd:
                         ViewYfd(name, path, data, fe);
+                        break;
+                    case FileTypeAction.ViewHeightmap:
+                        ViewHeightmap(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewHex:
                     default:
@@ -1757,6 +1763,13 @@ namespace CodeWalker
             MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(cachedat);
+        }
+        private void ViewHeightmap(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var heightmap = RpfFile.GetFile<HeightmapFile>(e, data);
+            MetaForm f = new MetaForm(this);
+            f.Show();
+            f.LoadMeta(heightmap);
         }
 
         private RpfFileEntry CreateFileEntry(string name, string path, ref byte[] data)
@@ -2643,6 +2656,14 @@ namespace CodeWalker
                     {
                         mformat = MetaFormat.Awc;
                     }
+                    if (fnamel.EndsWith("cache_y.dat.xml"))
+                    {
+                        mformat = MetaFormat.CacheFile;
+                    }
+                    if (fnamel.EndsWith(".dat.xml") && fnamel.StartsWith("heightmap"))
+                    {
+                        mformat = MetaFormat.Heightmap;
+                    }
 
                     fname = fname.Substring(0, fname.Length - trimlength);
                     fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
@@ -2823,6 +2844,24 @@ namespace CodeWalker
                                     continue;
                                 }
                                 data = awc.Save();
+                                break;
+                            }
+                        case MetaFormat.CacheFile:
+                            {
+                                var cdf = new CacheDatFile();
+                                //cdf.LoadXml() //TODO!!!
+                                MessageBox.Show(fname + ": CacheFile XML import still TODO!!!", "Cannot import CacheFile XML");
+                                break;
+                            }
+                        case MetaFormat.Heightmap:
+                            {
+                                var hmf = XmlHmap.GetHeightmap(doc);
+                                if (hmf.MaxHeights == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import Heightmap XML");
+                                    continue;
+                                }
+                                data = hmf.Save();
                                 break;
                             }
                     }
@@ -4653,6 +4692,7 @@ namespace CodeWalker
         ViewYed = 20,
         ViewYld = 21,
         ViewYfd = 22,
+        ViewHeightmap = 23,
     }
 
 

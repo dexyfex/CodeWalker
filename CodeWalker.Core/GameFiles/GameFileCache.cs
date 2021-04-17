@@ -199,6 +199,7 @@ namespace CodeWalker.GameFiles
                 //TestYmaps();
                 //TestPlacements();
                 //TestDrawables();
+                //TestHeightmaps();
                 //GetShadersXml();
                 //GetArchetypeTimesList();
                 //string typestr = PsoTypes.GetTypesString();
@@ -4501,6 +4502,41 @@ namespace CodeWalker.GameFiles
 
             UpdateStatus((DateTime.Now - starttime).ToString() + " elapsed, " + drawablecount.ToString() + " drawables, " + errs.Count.ToString() + " errors.");
 
+        }
+        public void TestHeightmaps()
+        {
+            var errorfiles = new List<RpfEntry>();
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    if (entry.NameLower.EndsWith(".dat") && entry.NameLower.StartsWith("heightmap"))
+                    {
+                        UpdateStatus(string.Format(entry.Path));
+                        HeightmapFile hmf = null;
+                        hmf = RpfMan.GetFile<HeightmapFile>(entry);
+                        var d1 = hmf.RawFileData;
+                        //var d2 = hmf.Save();
+                        var xml = HmapXml.GetXml(hmf);
+                        var hmf2 = XmlHmap.GetHeightmap(xml);
+                        var d2 = hmf2.Save();
+
+                        if (d1.Length == d2.Length)
+                        {
+                            for (int i = 0; i < d1.Length; i++)
+                            {
+                                if (d1[i] != d2[i])
+                                { }
+                            }
+                        }
+                        else
+                        { }
+
+                    }
+                }
+            }
+            if (errorfiles.Count > 0)
+            { }
         }
         public void GetShadersXml()
         {
