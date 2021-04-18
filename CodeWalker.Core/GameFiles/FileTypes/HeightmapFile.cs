@@ -13,6 +13,7 @@ namespace CodeWalker.GameFiles
     public class HeightmapFile : GameFile, PackedFile
     {
         public byte[] RawFileData { get; set; }
+        public Endianess Endianess { get; set; } = Endianess.BigEndian;
 
         public uint Magic { get; set; } = 0x484D4150; //'HMAP'
         public byte VersionMajor { get; set; } = 1;
@@ -45,18 +46,26 @@ namespace CodeWalker.GameFiles
                 Name = entry.Name;
             }
 
+            if (BitConverter.ToUInt32(data, 0) == Magic)
+            {
+                Endianess = Endianess.LittleEndian;
+            }
+
             using (MemoryStream ms = new MemoryStream(data))
             {
-                DataReader r = new DataReader(ms, Endianess.BigEndian);
+                DataReader r = new DataReader(ms, Endianess);
 
                 Read(r);
             }
+
+            //var pgm = GetPGM();
+
         }
 
         public byte[] Save()
         {
             MemoryStream s = new MemoryStream();
-            DataWriter w = new DataWriter(s, Endianess.BigEndian);
+            DataWriter w = new DataWriter(s, Endianess);
 
             Write(w);
 
@@ -201,6 +210,10 @@ namespace CodeWalker.GameFiles
 
         public void WriteXml(StringBuilder sb, int indent)
         {
+            if (Endianess != Endianess.BigEndian)
+            {
+                HmapXml.StringTag(sb, indent, "Endianess", Endianess.ToString());
+            }
             HmapXml.ValueTag(sb, indent, "Width", Width.ToString());
             HmapXml.ValueTag(sb, indent, "Height", Height.ToString());
             HmapXml.SelfClosingTag(sb, indent, "BBMin " + FloatUtil.GetVector3XmlString(BBMin));
@@ -210,6 +223,13 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node)
         {
+            var endianess = Xml.GetChildInnerText(node, "Endianess");
+            if (!string.IsNullOrEmpty(endianess))
+            {
+                var end = Endianess.BigEndian;
+                Enum.TryParse(endianess, out end);
+                Endianess = end;
+            }
             Width = (ushort)Xml.GetChildUIntAttribute(node, "Width");
             Height = (ushort)Xml.GetChildUIntAttribute(node, "Height");
             BBMin = Xml.GetChildVector3Attributes(node, "BBMin");
