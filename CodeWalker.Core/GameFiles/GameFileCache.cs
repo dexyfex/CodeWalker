@@ -200,6 +200,7 @@ namespace CodeWalker.GameFiles
                 //TestPlacements();
                 //TestDrawables();
                 //TestHeightmaps();
+                //TestWatermaps();
                 //GetShadersXml();
                 //GetArchetypeTimesList();
                 //string typestr = PsoTypes.GetTypesString();
@@ -3953,6 +3954,8 @@ namespace CodeWalker.GameFiles
         {
             bool savetest = false;
             var errorfiles = new List<RpfEntry>();
+            var sb = new StringBuilder();
+            int[] flagcheck = new int[16];
             foreach (RpfFile file in AllRpfs)
             {
                 foreach (RpfEntry entry in file.AllEntries)
@@ -3993,6 +3996,25 @@ namespace CodeWalker.GameFiles
                                 { continue; }
 
                             }
+                            var groups = yft?.Fragment?.PhysicsLODGroup?.PhysicsLOD1?.Groups?.data_items;
+                            if (groups != null)
+                            {
+                                foreach (var g in groups)
+                                {
+                                    ushort f = (ushort)(g.UnkByte52 + (g.UnkByte53 << 8));
+                                    for (int i = 0; i < 16; i++)
+                                    {
+                                        if (flagcheck[i]>=3) continue;
+                                        var t = 1 << i;
+                                        if ((f & t) > 0)
+                                        {
+                                            sb.AppendLine(entry.Path + ": " + g.Name.ToString() + ", UnkByte52:" + g.UnkByte52.ToString() + ", UnkByte53:" + g.UnkByte53.ToString() + "  zflag:" + (i+1).ToString());
+                                            flagcheck[i]++;
+                                        }
+                                    }
+
+                                }
+                            }
                         }
                     }
                     //catch (Exception ex)
@@ -4001,6 +4023,8 @@ namespace CodeWalker.GameFiles
                     //}
                 }
             }
+            var teststr = sb.ToString();
+
             if (errorfiles.Count > 0)
             { }
         }
@@ -4531,6 +4555,41 @@ namespace CodeWalker.GameFiles
                         }
                         else
                         { }
+
+                    }
+                }
+            }
+            if (errorfiles.Count > 0)
+            { }
+        }
+        public void TestWatermaps()
+        {
+            var errorfiles = new List<RpfEntry>();
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    if (entry.NameLower.EndsWith(".dat") && entry.NameLower.StartsWith("waterheight"))
+                    {
+                        UpdateStatus(string.Format(entry.Path));
+                        WatermapFile wmf = null;
+                        wmf = RpfMan.GetFile<WatermapFile>(entry);
+                        //var d1 = wmf.RawFileData;
+                        //var d2 = wmf.Save();
+                        //var xml = WatermapXml.GetXml(wmf);
+                        //var wmf2 = XmlWatermap.GetWatermap(xml);
+                        //var d2 = wmf2.Save();
+
+                        //if (d1.Length == d2.Length)
+                        //{
+                        //    for (int i = 0; i < d1.Length; i++)
+                        //    {
+                        //        if (d1[i] != d2[i])
+                        //        { }
+                        //    }
+                        //}
+                        //else
+                        //{ }
 
                     }
                 }

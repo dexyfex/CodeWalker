@@ -32,8 +32,10 @@ namespace CodeWalker
         MloInstance = 13,
         Scenario = 14,
         PopZone = 15,
-        Audio = 16,
-        Occlusion = 17,
+        Heightmap = 16,
+        Watermap = 17,
+        Audio = 18,
+        Occlusion = 19,
     }
 
 

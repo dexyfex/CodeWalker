@@ -40,6 +40,8 @@ namespace CodeWalker
         Trains trains = new Trains();
         Scenarios scenarios = new Scenarios();
         PopZones popzones = new PopZones();
+        Heightmaps heightmaps = new Heightmaps();
+        Watermaps watermaps = new Watermaps();
         AudioZones audiozones = new AudioZones();
 
         public Space Space { get { return space; } }
@@ -138,6 +140,8 @@ namespace CodeWalker
         List<YmtFile> renderscenariolist = new List<YmtFile>();
 
         bool renderpopzones = false;
+        bool renderheightmaps = false;
+        bool renderwatermaps = false;
 
         bool renderaudiozones = false;
         bool renderaudioouterbounds = true;
@@ -729,6 +733,14 @@ namespace CodeWalker
             {
                 RenderWorldPopZones();
             }
+            if (renderheightmaps || (SelectionMode == MapSelectionMode.Heightmap))
+            {
+                RenderWorldHeightmaps();
+            }
+            if (renderwatermaps || (SelectionMode == MapSelectionMode.Watermap))
+            {
+                RenderWorldWatermaps();
+            }
             if (renderaudiozones || (SelectionMode == MapSelectionMode.Audio))
             {
                 RenderWorldAudioZones();
@@ -887,6 +899,36 @@ namespace CodeWalker
             }
 
             Renderer.RenderPopZones(popzones);
+        }
+
+        private void RenderWorldHeightmaps()
+        {
+            if (!heightmaps.Inited) return;
+
+            //renderheightmaplist.Clear();
+            //renderheightmaplist.AddRange(heightmaps.Heightmaps);
+
+            if (ProjectForm != null)
+            {
+                //ProjectForm.GetVisibleHeightmaps(camera, renderheightmaplist);
+            }
+
+            Renderer.RenderBasePath(heightmaps);
+        }
+
+        private void RenderWorldWatermaps()
+        {
+            if (!watermaps.Inited) return;
+
+            //renderwatermaplist.Clear();
+            //renderwatermaplist.AddRange(watermaps.Watermaps);
+
+            if (ProjectForm != null)
+            {
+                //ProjectForm.GetVisibleWatermaps(camera, renderwatermaplist);
+            }
+
+            Renderer.RenderBasePath(watermaps);
         }
 
         private void RenderWorldAudioZones()
@@ -4009,6 +4051,12 @@ namespace CodeWalker
 
             UpdateStatus("Loading popzones...");
             popzones.Init(gameFileCache, UpdateStatus);
+
+            UpdateStatus("Loading heightmaps...");
+            heightmaps.Init(gameFileCache, UpdateStatus);
+
+            UpdateStatus("Loading watermaps...");
+            watermaps.Init(gameFileCache, UpdateStatus);
 
             UpdateStatus("Loading audio zones...");
             audiozones.Init(gameFileCache, UpdateStatus);
