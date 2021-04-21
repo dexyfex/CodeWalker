@@ -1191,6 +1191,18 @@ namespace CodeWalker.GameFiles
                 }
             }
 
+            if (CarGenerators != null)
+            {
+                foreach (var cargen in CarGenerators)
+                {
+                    emin = Vector3.Min(emin, cargen.BBMin);
+                    emax = Vector3.Max(emax, cargen.BBMax);
+
+                    smin = Vector3.Min(smin, cargen.BBMin - cargen._CCarGen.perpendicularLength); //just a random guess, maybe should be more?
+                    smax = Vector3.Max(smax, cargen.BBMax + cargen._CCarGen.perpendicularLength);
+                }
+            }
+
 
             bool change = false;
             if (_CMapData.entitiesExtentsMin != emin)

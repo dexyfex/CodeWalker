@@ -82,6 +82,8 @@ namespace CodeWalker.Project
 
         private bool renderitems = true;
         private bool hidegtavmap = false;
+        private bool autoymapflags = true;
+        private bool autoymapextents = true;
 
         private object projectsyncroot = new object();
         public object ProjectSyncRoot { get { return projectsyncroot; } }
@@ -1689,6 +1691,7 @@ namespace CodeWalker.Project
                 saveas = true;
             }
 
+            AutoUpdateYmapFlagsExtents();
 
             byte[] data;
             lock (projectsyncroot) //need to sync writes to ymap objects...
@@ -1699,14 +1702,15 @@ namespace CodeWalker.Project
                     filepath = ShowSaveDialog("Ymap files|*.ymap", filepath);
                     if (string.IsNullOrEmpty(filepath))
                     { return; }
-
-                    string newname = Path.GetFileNameWithoutExtension(filepath);
-                    JenkIndex.Ensure(newname);
-                    CurrentYmapFile.FilePath = filepath;
-                    CurrentYmapFile.RpfFileEntry.Name = new FileInfo(filepath).Name;
-                    CurrentYmapFile.Name = CurrentYmapFile.RpfFileEntry.Name;
-                    CurrentYmapFile._CMapData.name = new MetaHash(JenkHash.GenHash(newname));
                 }
+
+                filepath = filepath.ToLowerInvariant();
+                string newname = Path.GetFileNameWithoutExtension(filepath);
+                JenkIndex.Ensure(newname);
+                CurrentYmapFile.FilePath = filepath;
+                CurrentYmapFile.RpfFileEntry.Name = new FileInfo(filepath).Name;
+                CurrentYmapFile.Name = CurrentYmapFile.RpfFileEntry.Name;
+                CurrentYmapFile._CMapData.name = new MetaHash(JenkHash.GenHash(newname));
 
                 data = CurrentYmapFile.Save();
             }
@@ -1788,6 +1792,23 @@ namespace CodeWalker.Project
             if (ymap == null) return false;
             if (CurrentProjectFile == null) return false;
             return CurrentProjectFile.ContainsYmap(ymap);
+        }
+        public void AutoUpdateYmapFlagsExtents()
+        {
+            if (CurrentYmapFile == null) return;
+            if (autoymapextents)
+            {
+                CurrentYmapFile.CalcExtents();
+            }
+            if (autoymapflags)
+            {
+                CurrentYmapFile.CalcFlags();
+            }
+            var panel = FindPanel((EditYmapPanel p) => p.Tag == CurrentYmapFile);
+            if (panel != null)
+            {
+                panel.SetYmap(CurrentYmapFile);
+            }
         }
 
         public YmapEntityDef NewEntity(YmapEntityDef copy = null, bool copyPosition = false, bool selectNew = true)
@@ -8701,15 +8722,25 @@ namespace CodeWalker.Project
             ImportMenyooXml();
         }
 
-        private void RenderShowGtavMapMenu_Click(object sender, EventArgs e)
+        private void OptionsRenderGtavMapMenu_Click(object sender, EventArgs e)
         {
-            RenderShowGtavMapMenu.Checked = !RenderShowGtavMapMenu.Checked;
-            hidegtavmap = !RenderShowGtavMapMenu.Checked;
+            OptionsRenderGtavMapMenu.Checked = !OptionsRenderGtavMapMenu.Checked;
+            hidegtavmap = !OptionsRenderGtavMapMenu.Checked;
         }
-        private void RenderShowProjectItemsMenu_Click(object sender, EventArgs e)
+        private void OptionsRenderProjectItemsMenu_Click(object sender, EventArgs e)
         {
-            RenderShowProjectItemsMenu.Checked = !RenderShowProjectItemsMenu.Checked;
-            renderitems = RenderShowProjectItemsMenu.Checked;
+            OptionsRenderProjectItemsMenu.Checked = !OptionsRenderProjectItemsMenu.Checked;
+            renderitems = OptionsRenderProjectItemsMenu.Checked;
+        }
+        private void OptionsAutoCalcYmapFlagsMenu_Click(object sender, EventArgs e)
+        {
+            OptionsAutoCalcYmapFlagsMenu.Checked = !OptionsAutoCalcYmapFlagsMenu.Checked;
+            autoymapflags = OptionsAutoCalcYmapFlagsMenu.Checked;
+        }
+        private void OptionsAutoCalcYmapExtentsMenu_Click(object sender, EventArgs e)
+        {
+            OptionsAutoCalcYmapExtentsMenu.Checked = !OptionsAutoCalcYmapExtentsMenu.Checked;
+            autoymapextents = OptionsAutoCalcYmapExtentsMenu.Checked;
         }
 
         private void ToolbarNewButton_ButtonClick(object sender, EventArgs e)
