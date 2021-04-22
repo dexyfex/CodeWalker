@@ -405,6 +405,7 @@ namespace CodeWalker.GameFiles
                 LODLights.coneInnerAngle = MetaTypes.GetByteArray(Meta, soa.coneInnerAngle);
                 LODLights.coneOuterAngleOrCapExt = MetaTypes.GetByteArray(Meta, soa.coneOuterAngleOrCapExt);
                 LODLights.coronaIntensity = MetaTypes.GetByteArray(Meta, soa.coronaIntensity);
+                LODLights.CalcBB();
             }
         }
 
@@ -873,6 +874,36 @@ namespace CodeWalker.GameFiles
 
 
         }
+
+
+        public void ConnectToParent(YmapFile pymap)
+        {
+            Parent = pymap;
+            if (RootEntities != null) //parent changed or first set, make sure to link entities hierarchy
+            {
+                for (int i = 0; i < RootEntities.Length; i++)
+                {
+                    var ent = RootEntities[i];
+                    int pind = ent._CEntityDef.parentIndex;
+                    if (pind >= 0) //connect root entities to parents if they have them..
+                    {
+                        YmapEntityDef p = null;
+                        if ((pymap != null) && (pymap.AllEntities != null))
+                        {
+                            if ((pind < pymap.AllEntities.Length))
+                            {
+                                p = pymap.AllEntities[pind];
+                                ent.Parent = p;
+                                ent.ParentName = p._CEntityDef.archetypeName;
+                            }
+                        }
+                        else
+                        { }//should only happen if parent ymap not loaded yet...
+                    }
+                }
+            }
+        }
+
 
 
 
@@ -2261,6 +2292,15 @@ namespace CodeWalker.GameFiles
             }
 
         }
+        
+        public override string ToString()
+        {
+            if (Ymap != null)
+            {
+                return Ymap.ToString();
+            }
+            return base.ToString();
+        }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -2280,26 +2320,185 @@ namespace CodeWalker.GameFiles
         public Vector3 BBMax { get; set; }
         public YmapFile Ymap { get; set; }
 
+        public YmapLODLight[] Lights { get; set; }
+
+        public PathBVH BVH { get; set; }
+
+        public void Init(YmapDistantLODLights parent)
+        {
+            if (parent == null) return;
+
+            var n = direction?.Length ?? 0;
+            n = Math.Min(n, parent.positions?.Length ?? 0);
+            n = Math.Min(n, parent.colours?.Length ?? 0);
+            n = Math.Min(n, falloff?.Length ?? 0);
+            n = Math.Min(n, falloffExponent?.Length ?? 0);
+            n = Math.Min(n, timeAndStateFlags?.Length ?? 0);
+            n = Math.Min(n, hash?.Length ?? 0);
+            n = Math.Min(n, coneInnerAngle?.Length ?? 0);
+            n = Math.Min(n, coneOuterAngleOrCapExt?.Length ?? 0);
+            n = Math.Min(n, coronaIntensity?.Length ?? 0);
+            if (n == 0) return;
+
+            Lights = new YmapLODLight[n];
+            for (int i = 0; i < n; i++)
+            {
+                var l = new YmapLODLight();
+                l.Init(this, parent, i);
+                Lights[i] = l;
+            }
+
+            BuildBVH();
+        }
+
+        public void BuildBVH()
+        {
+            BVH = new PathBVH(Lights, 10, 10);
+        }
+
+
         public void CalcBB()
         {
-            //if (positions != null)
-            //{
-            //    Vector3 min = new Vector3(float.MaxValue);
-            //    Vector3 max = new Vector3(float.MinValue);
-            //    for (int i = 0; i < positions.Length; i++)
-            //    {
-            //        var p = positions[i];
-            //        Vector3 pv = p.ToVector3();
-            //        min = Vector3.Min(min, pv);
-            //        max = Vector3.Max(max, pv);
-            //    }
-            //    BBMin = min;
-            //    BBMax = max;
-            //}
+            var positions = Ymap?.Parent?.DistantLODLights?.positions;
+            if (positions != null)
+            {
+                Vector3 min = new Vector3(float.MaxValue);
+                Vector3 max = new Vector3(float.MinValue);
+                for (int i = 0; i < positions.Length; i++)
+                {
+                    var p = positions[i];
+                    Vector3 pv = p.ToVector3();
+                    min = Vector3.Min(min, pv);
+                    max = Vector3.Max(max, pv);
+                }
+                BBMin = min;
+                BBMax = max;
+            }
+            else if (Ymap != null)
+            {
+                BBMin = Ymap._CMapData.entitiesExtentsMin;
+                BBMax = Ymap._CMapData.entitiesExtentsMax;
+            }
+            else
+            { }
+        }
 
+        public override string ToString()
+        {
+            if (Ymap != null)
+            {
+                return Ymap.ToString();
+            }
+            return base.ToString();
         }
     }
 
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class YmapLODLight : BasePathNode
+    {
+        public YmapLODLights LodLights { get; set; }
+        public YmapDistantLODLights DistLodLights { get; set; }
+        public int Index { get; set; }
+        public Color Colour { get; set; }
+        public Vector3 Position { get; set; }
+        public Vector3 Direction { get; set; }
+        public float Falloff { get; set; }
+        public float FalloffExponent { get; set; }
+        public FlagsUint TimeAndStateFlags { get; set; }
+        public uint Hash { get; set; }
+        public byte ConeInnerAngle { get; set; }
+        public byte ConeOuterAngleOrCapExt { get; set; }
+        public byte CoronaIntensity { get; set; }
+
+        public Quaternion Orientation { get; set; }
+        public Vector3 Scale { get; set; }
+
+        public Vector3 TangentX { get; set; }
+        public Vector3 TangentY { get; set; }
+
+        public LightType Type
+        {
+            get
+            {
+                return (LightType)((TimeAndStateFlags >> 26) & 7);
+            }
+        }
+
+
+        public void Init(YmapLODLights l, YmapDistantLODLights p, int i)
+        {
+            LodLights = l;
+            DistLodLights = p;
+            Index = i;
+
+            if (p.colours == null) return;
+            if ((i < 0) || (i >= p.colours.Length)) return;
+
+            Colour = Color.FromBgra(p.colours[i]);
+            Position = p.positions[i].ToVector3();
+            Direction = l.direction[i].ToVector3();
+            Falloff = l.falloff[i];
+            FalloffExponent = l.falloffExponent[i];
+            TimeAndStateFlags = l.timeAndStateFlags[i];
+            Hash = l.hash[i];
+            ConeInnerAngle = l.coneInnerAngle[i];
+            ConeOuterAngleOrCapExt = l.coneOuterAngleOrCapExt[i];
+            CoronaIntensity = l.coronaIntensity[i];
+
+            switch (Type)
+            {
+                default:
+                case LightType.Point:
+                    TangentX = Vector3.UnitX;
+                    TangentY = Vector3.UnitY;
+                    Orientation = Quaternion.Identity;
+                    break;
+                case LightType.Spot:
+                    TangentX = Vector3.Normalize(Direction.GetPerpVec());
+                    TangentY = Vector3.Normalize(Vector3.Cross(Direction, TangentX));
+                    break;
+                case LightType.Capsule:
+                    TangentX = -Vector3.Normalize(Direction.GetPerpVec());
+                    TangentY = Vector3.Normalize(Vector3.Cross(Direction, TangentX));
+                    break;
+            }
+
+            if (Type == LightType.Point)
+            {
+                Orientation = Quaternion.Identity;
+            }
+            else
+            {
+                var m = new Matrix();
+                m.Row1 = new Vector4(TangentX, 0);
+                m.Row2 = new Vector4(TangentY, 0);
+                m.Row3 = new Vector4(Direction, 0);
+                Orientation = Quaternion.RotationMatrix(m);
+            }
+
+
+            Scale = Vector3.One;
+        }
+
+        public void SetPosition(Vector3 pos)
+        {
+            Position = pos;
+        }
+        public void SetOrientation(Quaternion ori)
+        {
+            Orientation = ori;
+        }
+        public void SetScale(Vector3 scale)
+        {
+            Scale = scale;
+        }
+
+
+        public override string ToString()
+        {
+            return Index.ToString() + ": " + Position.ToString();
+        }
+    }
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class YmapTimeCycleModifier

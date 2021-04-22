@@ -28,7 +28,7 @@ namespace CodeWalker
         NavMesh = 9,
         Path = 10,
         TrainTrack = 11,
-        DistantLodLights = 12,
+        LodLights = 12,
         MloInstance = 13,
         Scenario = 14,
         PopZone = 15,
@@ -52,7 +52,7 @@ namespace CodeWalker
         public YmapTimeCycleModifier TimeCycleModifier { get; set; }
         public YmapCarGen CarGenerator { get; set; }
         public YmapGrassInstanceBatch GrassBatch { get; set; }
-        public YmapDistantLODLights DistantLodLights { get; set; }
+        public YmapLODLight LodLight { get; set; }
         public YmapBoxOccluder BoxOccluder { get; set; }
         public YmapOccludeModel OccludeModel { get; set; }
         public YmapEntityDef MloEntityDef { get; set; }
@@ -108,7 +108,7 @@ namespace CodeWalker
                     (NavPortal != null) ||
                     (PathNode != null) ||
                     (TrainTrackNode != null) ||
-                    (DistantLodLights != null) ||
+                    (LodLight != null) ||
                     (BoxOccluder != null) ||
                     (OccludeModel != null) ||
                     (MloEntityDef != null) ||
@@ -134,7 +134,7 @@ namespace CodeWalker
                 || (EntityExtension != mhit.EntityExtension)
                 || (CarGenerator != mhit.CarGenerator)
                 || (MloEntityDef != mhit.MloEntityDef)
-                || (DistantLodLights != mhit.DistantLodLights)
+                || (LodLight != mhit.LodLight)
                 || (GrassBatch != mhit.GrassBatch)
                 || (BoxOccluder != mhit.BoxOccluder)
                 || (OccludeModel != mhit.OccludeModel)
@@ -161,7 +161,7 @@ namespace CodeWalker
                 || (EntityExtension != null)
                 || (CarGenerator != null)
                 || (MloEntityDef != null)
-                || (DistantLodLights != null)
+                || (LodLight != null)
                 || (GrassBatch != null)
                 || (BoxOccluder != null)
                 || (OccludeModel != null)
@@ -204,7 +204,7 @@ namespace CodeWalker
             PathNode = null;
             PathLink = null;
             TrainTrackNode = null;
-            DistantLodLights = null;
+            LodLight = null;
             MloEntityDef = null;
             ScenarioNode = null;
             ScenarioEdge = null;
@@ -261,9 +261,9 @@ namespace CodeWalker
             {
                 name = (GrassBatch.Ymap?.Name ?? "") + ": " + GrassBatch.Archetype?.Name ?? "";
             }
-            else if (DistantLodLights != null)
+            else if (LodLight != null)
             {
-                name = DistantLodLights.Ymap?.Name ?? "";
+                name = (LodLight.LodLights?.Ymap?.Name ?? "") + ": " + LodLight.Index.ToString();
             }
             else if (BoxOccluder != null)
             {
@@ -484,6 +484,10 @@ namespace CodeWalker
                 {
                     res = true;
                 }
+                else if (LodLight != null)
+                {
+                    res = true;
+                }
                 else if (NavPoly != null)
                 {
                     res = true;
@@ -558,6 +562,10 @@ namespace CodeWalker
                 {
                     return CarGenerator.Position;
                 }
+                else if (LodLight != null)
+                {
+                    return LodLight.Position;
+                }
                 else if (NavPoly != null)
                 {
                     return NavPoly.Position;
@@ -620,6 +628,10 @@ namespace CodeWalker
                 {
                     return CarGenerator.Orientation;
                 }
+                else if (LodLight != null)
+                {
+                    return LodLight.Orientation;
+                }
                 else if (NavPoly != null)
                 {
                     return Quaternion.Identity;
@@ -679,6 +691,10 @@ namespace CodeWalker
                 {
                     return WidgetAxis.Z;
                 }
+                else if (LodLight != null)
+                {
+                    return WidgetAxis.XYZ;
+                }
                 else if (NavPoly != null)
                 {
                     return WidgetAxis.XYZ;
@@ -737,6 +753,10 @@ namespace CodeWalker
                 else if (CarGenerator != null)
                 {
                     return new Vector3(CarGenerator.CCarGen.perpendicularLength);
+                }
+                else if (LodLight != null)
+                {
+                    return LodLight.Scale;
                 }
                 else if (NavPoly != null)
                 {
@@ -810,6 +830,7 @@ namespace CodeWalker
                 else if (CollisionBounds != null) return true;
                 else if (EntityDef != null) return true;
                 else if (CarGenerator != null) return true;
+                else if (LodLight != null) return true;
                 else if (PathNode != null) return true;
                 else if (NavPoly != null) return true;
                 else if (NavPoint != null) return true;
@@ -927,6 +948,10 @@ namespace CodeWalker
             {
                 CarGenerator.SetPosition(newpos);
             }
+            else if (LodLight != null)
+            {
+                LodLight.SetPosition(newpos);
+            }
             else if (PathNode != null)
             {
                 PathNode.SetPosition(newpos);
@@ -1035,6 +1060,10 @@ namespace CodeWalker
             {
                 CarGenerator.SetOrientation(newrot);
             }
+            else if (LodLight != null)
+            {
+                LodLight.SetOrientation(newrot);
+            }
             else if (ScenarioNode != null)
             {
                 ScenarioNode.SetOrientation(newrot);
@@ -1121,6 +1150,10 @@ namespace CodeWalker
             {
                 CarGenerator.SetScale(newscale);
                 AABB = new BoundingBox(CarGenerator.BBMin, CarGenerator.BBMax);
+            }
+            else if (LodLight != null)
+            {
+                LodLight.SetScale(newscale);
             }
         }
 
@@ -1278,6 +1311,7 @@ namespace CodeWalker
             else if (CollisionBounds != null) return CollisionBounds;
             else if (EntityDef != null) return EntityDef;
             else if (CarGenerator != null) return CarGenerator;
+            else if (LodLight != null) return LodLight;
             else if (PathNode != null) return PathNode;
             else if (NavPoly != null) return NavPoly;
             else if (NavPoint != null) return NavPoint;
@@ -1316,6 +1350,11 @@ namespace CodeWalker
             {
                 ms.CarGenerator = cargen;
                 ms.AABB = new BoundingBox(cargen.BBMin, cargen.BBMax);
+            }
+            else if (o is YmapLODLight lodlight)
+            {
+                ms.LodLight = lodlight;
+                ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
             }
             else if (o is YmapGrassInstanceBatch batch)
             {

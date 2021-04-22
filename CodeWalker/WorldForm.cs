@@ -1376,6 +1376,17 @@ namespace CodeWalker
                     Renderer.RenderCar(cg.Position, cgori, cg._CCarGen.carModel, cg._CCarGen.popGroup);
                 }
             }
+            if (selectionItem.LodLight != null)
+            {
+                Renderer.RenderSelectionLodLight(selectionItem.LodLight);
+
+                if (selectionItem.LodLight.LodLights != null)
+                {
+                    bbmin = selectionItem.LodLight.LodLights.BBMin;
+                    bbmax = selectionItem.LodLight.LodLights.BBMax;
+                }
+
+            }
             if (selectionItem.PathNode != null)
             {
                 camrel = selectionItem.PathNode.Position - camera.Position;
@@ -2753,7 +2764,27 @@ namespace CodeWalker
                     }
                 }
             }
-            if ((SelectionMode == MapSelectionMode.DistantLodLights) && (ymap.DistantLODLights != null))
+            if ((SelectionMode == MapSelectionMode.LodLights) && (ymap.LODLights != null))
+            {
+                var ll = ymap.LODLights;
+                if ((((ll.BBMin + ll.BBMax) * 0.5f) - camera.Position).Length() <= dmax)
+                {
+
+                    MapBox mb = new MapBox();
+                    mb.CamRelPos = -camera.Position;
+                    mb.BBMin = ll.BBMin;
+                    mb.BBMax = ll.BBMax;
+                    mb.Orientation = Quaternion.Identity;
+                    mb.Scale = Vector3.One;
+                    Renderer.BoundingBoxes.Add(mb);
+
+                    if (ll.BVH != null)
+                    {
+                        UpdateMouseHits(ll.BVH, ref mray);
+                    }
+                }
+            }
+            if ((SelectionMode == MapSelectionMode.LodLights) && (ymap.DistantLODLights != null))
             {
                 var dll = ymap.DistantLODLights;
                 if ((((dll.BBMin + dll.BBMax) * 0.5f) - camera.Position).Length() <= dmax)
@@ -2765,16 +2796,6 @@ namespace CodeWalker
                     mb.Orientation = Quaternion.Identity;
                     mb.Scale = Vector3.One;
                     Renderer.BoundingBoxes.Add(mb);
-
-                    bbox.Minimum = mb.BBMin;
-                    bbox.Maximum = mb.BBMax;
-                    if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
-                    {
-                        CurMouseHit.DistantLodLights = dll;
-                        CurMouseHit.HitDist = hitdist;
-                        CurMouseHit.CamRel = mb.CamRelPos;
-                        CurMouseHit.AABB = bbox;
-                    }
                 }
             }
             if ((SelectionMode == MapSelectionMode.Occlusion) && (ymap.BoxOccluders != null))
@@ -3296,6 +3317,7 @@ namespace CodeWalker
                             CurMouseHit.PathNode = n as YndNode;
                             CurMouseHit.TrainTrackNode = n as TrainTrackNode;
                             CurMouseHit.ScenarioNode = n as ScenarioNode;
+                            CurMouseHit.LodLight = n as YmapLODLight;
                             CurMouseHit.NavPoint = n as YnvPoint;
                             CurMouseHit.NavPortal = n as YnvPortal;
                             CurMouseHit.NavPoly = null;
@@ -3624,10 +3646,10 @@ namespace CodeWalker
                 ToolbarDeleteItemButton.Enabled = true;
                 ToolbarDeleteItemButton.Text = "Delete car generator";
             }
-            else if (item.DistantLodLights != null)
+            else if (item.LodLight != null)
             {
-                SelectionEntityTabPage.Text = "DistLodLight";
-                SelEntityPropertyGrid.SelectedObject = item.DistantLodLights;
+                SelectionEntityTabPage.Text = "LodLight";
+                SelEntityPropertyGrid.SelectedObject = item.LodLight;
             }
             else if (item.GrassBatch != null)
             {
@@ -5429,9 +5451,9 @@ namespace CodeWalker
                     mode = MapSelectionMode.TrainTrack;
                     ToolbarSelectTrainTrackButton.Checked = true;
                     break;
-                case "Distant Lod Lights":
-                    mode = MapSelectionMode.DistantLodLights;
-                    ToolbarSelectDistantLodLightsButton.Checked = true;
+                case "Lod Lights":
+                    mode = MapSelectionMode.LodLights;
+                    ToolbarSelectLodLightsButton.Checked = true;
                     break;
                 case "Mlo Instance":
                     mode = MapSelectionMode.MloInstance;
@@ -7184,9 +7206,9 @@ namespace CodeWalker
             SetMouseSelect(true);
         }
 
-        private void ToolbarSelectDistantLodLightsButton_Click(object sender, EventArgs e)
+        private void ToolbarSelectLodLightsButton_Click(object sender, EventArgs e)
         {
-            SetSelectionMode("Distant Lod Lights");
+            SetSelectionMode("Lod Lights");
             SetMouseSelect(true);
         }
 

@@ -862,6 +862,109 @@ namespace CodeWalker.Rendering
             }
         }
 
+        public void RenderSelectionCircle(Vector3 position, Vector3 ax, Vector3 ay, float radius, uint col)
+        {
+            const int Reso = 36;
+            const float MaxDeg = 360f;
+            const float DegToRad = 0.0174533f;
+            const float Ang = DegToRad * MaxDeg / Reso;
+
+            var c = new VertexTypePC[Reso];
+
+            for (var i = 0; i < Reso; i++)
+            {
+                var a = i * Ang;
+                var x = (float)Math.Sin(a);
+                var y = (float)Math.Cos(a);
+                c[i].Position = position + (ax * (x * radius)) + (ay * (y * radius));
+                c[i].Colour = col;
+            }
+
+            for (var i = 0; i < c.Length; i++)
+            {
+                SelectionLineVerts.Add(c[i]);
+                SelectionLineVerts.Add(c[(i + 1) % c.Length]);
+            }
+        }
+
+        public void RenderSelectionArc(Vector3 position, Vector3 ax, Vector3 ay, float radius, float angle, uint col)
+        {
+            int res = (int)(angle * 0.1f);
+            const float DegToRad = 0.0174533f;
+            float ang = DegToRad * angle / res;
+
+            var c = new VertexTypePC[res+1];
+
+            for (var i = 0; i <= res; i++)
+            {
+                var a = i * ang;
+                var x = (float)Math.Sin(a);
+                var y = (float)Math.Cos(a);
+                c[i].Position = position + (ax * (x * radius)) + (ay * (y * radius));
+                c[i].Colour = col;
+            }
+
+            for (var i = 1; i < c.Length; i++)
+            {
+                SelectionLineVerts.Add(c[i-1]);
+                SelectionLineVerts.Add(c[i]);
+            }
+        }
+
+        public void RenderSelectionLine(Vector3 p1, Vector3 p2, uint col)
+        {
+            SelectionLineVerts.Add(new VertexTypePC() { Position = p1, Colour = col });
+            SelectionLineVerts.Add(new VertexTypePC() { Position = p2, Colour = col });
+        }
+
+        public void RenderSelectionCone(Vector3 position, Vector3 ax, Vector3 ay, Vector3 dir, float radius, float height, uint col)
+        {
+            const int Reso = 36;
+            const float MaxDeg = 360f;
+            const float DegToRad = 0.0174533f;
+            const float Ang = DegToRad * MaxDeg / Reso;
+
+            var c = new VertexTypePC[Reso];
+            var p = new VertexTypePC() { Position = position, Colour = col };
+
+            var circpos = position + (dir * height);
+
+            for (var i = 0; i < Reso; i++)
+            {
+                var a = i * Ang;
+                var x = (float)Math.Sin(a);
+                var y = (float)Math.Cos(a);
+                c[i].Position = circpos + (ax * (x * radius)) + (ay * (y * radius));
+                c[i].Colour = col;
+            }
+
+            for (var i = 0; i < c.Length; i++)
+            {
+                SelectionLineVerts.Add(c[i]);
+                SelectionLineVerts.Add(c[(i + 1) % c.Length]);
+                SelectionLineVerts.Add(c[i]);
+                SelectionLineVerts.Add(p);
+            }
+        }
+
+        public void RenderSelectionCapsule(Vector3 position, Vector3 ax, Vector3 ay, Vector3 dir, float radius, float height, uint col)
+        {
+            var cp1 = position - (dir * height);
+            var cp2 = position + (dir * height);
+            var axr = ax * radius;
+            var ayr = ay * radius;
+            RenderSelectionCircle(cp1, ax, ay, radius, col);
+            RenderSelectionCircle(cp2, ax, ay, radius, col);
+            RenderSelectionArc(cp1, -dir, ax, radius, 180, col);
+            RenderSelectionArc(cp1, -dir, ay, radius, 180, col);
+            RenderSelectionArc(cp2, dir, ax, radius, 180, col);
+            RenderSelectionArc(cp2, dir, ay, radius, 180, col);
+            RenderSelectionLine(cp1 + axr, cp2 + axr, col);
+            RenderSelectionLine(cp1 + ayr, cp2 + ayr, col);
+            RenderSelectionLine(cp1 - axr, cp2 - axr, col);
+            RenderSelectionLine(cp1 - ayr, cp2 - ayr, col);
+        }
+
         public void RenderSelectionBox(Vector3 p1, Vector3 p2, Vector3 a2, Vector3 a3, uint col)
         {
             VertexTypePC v = new VertexTypePC();
@@ -891,6 +994,42 @@ namespace CodeWalker.Rendering
             v.Position = c7; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
             v.Position = c8; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
             v.Position = c5; SelectionLineVerts.Add(v);
+        }
+
+        public void RenderSelectionLodLight(YmapLODLight lodlight)
+        {
+
+            var colblu = (uint)(new Color(0, 0, 255, 255).ToRgba());
+            var colwht = (uint)(new Color(255, 255, 255, 255).ToRgba());
+
+            var pos = lodlight.Position;
+            var dir = lodlight.Direction;
+            var tx = lodlight.TangentX;
+            var ty = lodlight.TangentY;
+            var extent = lodlight.Falloff;
+            var innerAngle = lodlight.ConeInnerAngle * 0.0087266462f; //pi/360
+            var outerAngle = lodlight.ConeOuterAngleOrCapExt * 0.0087266462f; //pi/360
+            var type = lodlight.Type;
+            switch (type)
+            {
+                case LightType.Point:
+                    RenderSelectionCircle(pos, Vector3.UnitX, Vector3.UnitZ, extent, colwht);
+                    RenderSelectionCircle(pos, Vector3.UnitX, Vector3.UnitY, extent, colwht);
+                    RenderSelectionCircle(pos, Vector3.UnitY, Vector3.UnitZ, extent, colwht);
+                    break;
+                case LightType.Spot:
+                    float coneouterrad = extent * (float)Math.Tan(outerAngle);
+                    float coneinnerrad = extent * (float)Math.Tan(innerAngle);
+                    RenderSelectionCone(pos, tx, ty, dir, coneouterrad, extent, colblu);
+                    RenderSelectionCone(pos, tx, ty, dir, coneinnerrad, extent, colwht);
+                    break;
+                case LightType.Capsule:
+                    outerAngle = lodlight.ConeOuterAngleOrCapExt * 0.25f;
+                    RenderSelectionCapsule(pos, tx, ty, dir, extent, outerAngle, colwht);
+                    break;
+            }
+
+
         }
 
         public void RenderSelectionNavPoly(YnvPoly poly)
@@ -3685,38 +3824,14 @@ namespace CodeWalker.Rendering
             foreach (var kvp in ymaps)
             {
                 var ymap = kvp.Value;
-                var pymap = ymap.Parent;
                 if (ymap._CMapData.parent != 0) //ensure parent references on ymaps
                 {
-                    ymaps.TryGetValue(ymap._CMapData.parent, out pymap);
+                    ymaps.TryGetValue(ymap._CMapData.parent, out YmapFile pymap);
                     if (pymap == null) //skip adding ymaps until parents are available
                     { continue; }
                     if (ymap.Parent != pymap)
                     {
-                        ymap.Parent = pymap;
-                        if (ymap.RootEntities != null) //parent changed or first set, make sure to link entities hierarchy
-                        {
-                            for (int i = 0; i < ymap.RootEntities.Length; i++)
-                            {
-                                var ent = ymap.RootEntities[i];
-                                int pind = ent._CEntityDef.parentIndex;
-                                if (pind >= 0) //connect root entities to parents if they have them..
-                                {
-                                    YmapEntityDef p = null;
-                                    if ((pymap != null) && (pymap.AllEntities != null))
-                                    {
-                                        if ((pind < pymap.AllEntities.Length))
-                                        {
-                                            p = pymap.AllEntities[pind];
-                                            ent.Parent = p;
-                                            ent.ParentName = p._CEntityDef.archetypeName;
-                                        }
-                                    }
-                                    else
-                                    { }//should only happen if parent ymap not loaded yet...
-                                }
-                            }
-                        }
+                        ymap.ConnectToParent(pymap);
                     }
                 }
             }

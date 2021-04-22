@@ -542,7 +542,7 @@ namespace CodeWalker.World
             "Nav Mesh",
             "Path",
             "Train Track",
-            "Distant Lod Lights",
+            "Lod Lights",
             "Mlo Instance",
             "Scenario",
             "Audio",

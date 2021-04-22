@@ -264,7 +264,7 @@ namespace CodeWalker
             this.ToolbarSelectNavMeshButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectPathButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectTrainTrackButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectDistantLodLightsButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSelectLodLightsButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectMloInstanceButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectAudioButton = new System.Windows.Forms.ToolStripMenuItem();
@@ -280,6 +280,16 @@ namespace CodeWalker
             this.ToolbarSnapToGroundButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSnapToGridButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSnapToGroundGridButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSnapGridSizeButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnappingButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnappingOffButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnapping1Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnapping2Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnapping5Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnapping10Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnapping45Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnapping90Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarRotationSnappingCustomButton = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.ToolbarUndoButton = new System.Windows.Forms.ToolStripSplitButton();
             this.ToolbarUndoListButton = new System.Windows.Forms.ToolStripMenuItem();
@@ -302,16 +312,6 @@ namespace CodeWalker
             this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.SubtitleLabel = new System.Windows.Forms.Label();
             this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
-            this.ToolbarRotationSnappingButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnappingOffButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnapping1Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnapping2Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnapping5Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnapping10Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnappingCustomButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnapping45Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnapping90Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSnapGridSizeButton = new System.Windows.Forms.ToolStripMenuItem();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -1088,7 +1088,7 @@ namespace CodeWalker
             "Nav Mesh",
             "Path",
             "Train Track",
-            "Distant Lod Lights",
+            "Lod Lights",
             "Mlo Instance",
             "Scenario",
             "Audio",
@@ -2884,7 +2884,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(585, 25);
+            this.Toolbar.Size = new System.Drawing.Size(554, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -3070,7 +3070,7 @@ namespace CodeWalker
             this.ToolbarSelectNavMeshButton,
             this.ToolbarSelectPathButton,
             this.ToolbarSelectTrainTrackButton,
-            this.ToolbarSelectDistantLodLightsButton,
+            this.ToolbarSelectLodLightsButton,
             this.ToolbarSelectMloInstanceButton,
             this.ToolbarSelectScenarioButton,
             this.ToolbarSelectAudioButton,
@@ -3162,12 +3162,12 @@ namespace CodeWalker
             this.ToolbarSelectTrainTrackButton.Text = "Train Track";
             this.ToolbarSelectTrainTrackButton.Click += new System.EventHandler(this.ToolbarSelectTrainTrackButton_Click);
             // 
-            // ToolbarSelectDistantLodLightsButton
+            // ToolbarSelectLodLightsButton
             // 
-            this.ToolbarSelectDistantLodLightsButton.Name = "ToolbarSelectDistantLodLightsButton";
-            this.ToolbarSelectDistantLodLightsButton.Size = new System.Drawing.Size(182, 22);
-            this.ToolbarSelectDistantLodLightsButton.Text = "Distant Lod Lights";
-            this.ToolbarSelectDistantLodLightsButton.Click += new System.EventHandler(this.ToolbarSelectDistantLodLightsButton_Click);
+            this.ToolbarSelectLodLightsButton.Name = "ToolbarSelectLodLightsButton";
+            this.ToolbarSelectLodLightsButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectLodLightsButton.Text = "Lod Lights";
+            this.ToolbarSelectLodLightsButton.Click += new System.EventHandler(this.ToolbarSelectLodLightsButton_Click);
             // 
             // ToolbarSelectMloInstanceButton
             // 
@@ -3254,7 +3254,7 @@ namespace CodeWalker
             this.ToolbarObjectSpaceButton.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ToolbarObjectSpaceButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarObjectSpaceButton.Image")));
             this.ToolbarObjectSpaceButton.Name = "ToolbarObjectSpaceButton";
-            this.ToolbarObjectSpaceButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarObjectSpaceButton.Size = new System.Drawing.Size(142, 22);
             this.ToolbarObjectSpaceButton.Text = "Object space";
             this.ToolbarObjectSpaceButton.Click += new System.EventHandler(this.ToolbarObjectSpaceButton_Click);
             // 
@@ -3262,7 +3262,7 @@ namespace CodeWalker
             // 
             this.ToolbarWorldSpaceButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarWorldSpaceButton.Image")));
             this.ToolbarWorldSpaceButton.Name = "ToolbarWorldSpaceButton";
-            this.ToolbarWorldSpaceButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarWorldSpaceButton.Size = new System.Drawing.Size(142, 22);
             this.ToolbarWorldSpaceButton.Text = "World space";
             this.ToolbarWorldSpaceButton.Click += new System.EventHandler(this.ToolbarWorldSpaceButton_Click);
             // 
@@ -3306,6 +3306,86 @@ namespace CodeWalker
             this.ToolbarSnapToGroundGridButton.Size = new System.Drawing.Size(205, 22);
             this.ToolbarSnapToGroundGridButton.Text = "Snap to Grid and Ground";
             this.ToolbarSnapToGroundGridButton.Click += new System.EventHandler(this.ToolbarSnapToGroundGridButton_Click);
+            // 
+            // ToolbarSnapGridSizeButton
+            // 
+            this.ToolbarSnapGridSizeButton.Name = "ToolbarSnapGridSizeButton";
+            this.ToolbarSnapGridSizeButton.Size = new System.Drawing.Size(205, 22);
+            this.ToolbarSnapGridSizeButton.Text = "Grid Size...";
+            this.ToolbarSnapGridSizeButton.Click += new System.EventHandler(this.ToolbarSnapGridSizeButton_Click);
+            // 
+            // ToolbarRotationSnappingButton
+            // 
+            this.ToolbarRotationSnappingButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolbarRotationSnappingOffButton,
+            this.ToolbarRotationSnapping1Button,
+            this.ToolbarRotationSnapping2Button,
+            this.ToolbarRotationSnapping5Button,
+            this.ToolbarRotationSnapping10Button,
+            this.ToolbarRotationSnapping45Button,
+            this.ToolbarRotationSnapping90Button,
+            this.ToolbarRotationSnappingCustomButton});
+            this.ToolbarRotationSnappingButton.Name = "ToolbarRotationSnappingButton";
+            this.ToolbarRotationSnappingButton.Size = new System.Drawing.Size(205, 22);
+            this.ToolbarRotationSnappingButton.Text = "Rotation Snapping";
+            // 
+            // ToolbarRotationSnappingOffButton
+            // 
+            this.ToolbarRotationSnappingOffButton.Name = "ToolbarRotationSnappingOffButton";
+            this.ToolbarRotationSnappingOffButton.Size = new System.Drawing.Size(131, 22);
+            this.ToolbarRotationSnappingOffButton.Text = "Off";
+            this.ToolbarRotationSnappingOffButton.Click += new System.EventHandler(this.ToolbarRotationSnappingOffButton_Click);
+            // 
+            // ToolbarRotationSnapping1Button
+            // 
+            this.ToolbarRotationSnapping1Button.Name = "ToolbarRotationSnapping1Button";
+            this.ToolbarRotationSnapping1Button.Size = new System.Drawing.Size(131, 22);
+            this.ToolbarRotationSnapping1Button.Text = "1 Degree";
+            this.ToolbarRotationSnapping1Button.Click += new System.EventHandler(this.ToolbarRotationSnapping1Button_Click);
+            // 
+            // ToolbarRotationSnapping2Button
+            // 
+            this.ToolbarRotationSnapping2Button.Name = "ToolbarRotationSnapping2Button";
+            this.ToolbarRotationSnapping2Button.Size = new System.Drawing.Size(131, 22);
+            this.ToolbarRotationSnapping2Button.Text = "2 Degrees";
+            this.ToolbarRotationSnapping2Button.Click += new System.EventHandler(this.ToolbarRotationSnapping2Button_Click);
+            // 
+            // ToolbarRotationSnapping5Button
+            // 
+            this.ToolbarRotationSnapping5Button.Checked = true;
+            this.ToolbarRotationSnapping5Button.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ToolbarRotationSnapping5Button.Name = "ToolbarRotationSnapping5Button";
+            this.ToolbarRotationSnapping5Button.Size = new System.Drawing.Size(131, 22);
+            this.ToolbarRotationSnapping5Button.Text = "5 Degrees";
+            this.ToolbarRotationSnapping5Button.Click += new System.EventHandler(this.ToolbarRotationSnapping5Button_Click);
+            // 
+            // ToolbarRotationSnapping10Button
+            // 
+            this.ToolbarRotationSnapping10Button.Name = "ToolbarRotationSnapping10Button";
+            this.ToolbarRotationSnapping10Button.Size = new System.Drawing.Size(131, 22);
+            this.ToolbarRotationSnapping10Button.Text = "10 Degrees";
+            this.ToolbarRotationSnapping10Button.Click += new System.EventHandler(this.ToolbarRotationSnapping10Button_Click);
+            // 
+            // ToolbarRotationSnapping45Button
+            // 
+            this.ToolbarRotationSnapping45Button.Name = "ToolbarRotationSnapping45Button";
+            this.ToolbarRotationSnapping45Button.Size = new System.Drawing.Size(131, 22);
+            this.ToolbarRotationSnapping45Button.Text = "45 Degrees";
+            this.ToolbarRotationSnapping45Button.Click += new System.EventHandler(this.ToolbarRotationSnapping45Button_Click);
+            // 
+            // ToolbarRotationSnapping90Button
+            // 
+            this.ToolbarRotationSnapping90Button.Name = "ToolbarRotationSnapping90Button";
+            this.ToolbarRotationSnapping90Button.Size = new System.Drawing.Size(131, 22);
+            this.ToolbarRotationSnapping90Button.Text = "90 Degrees";
+            this.ToolbarRotationSnapping90Button.Click += new System.EventHandler(this.ToolbarRotationSnapping90Button_Click);
+            // 
+            // ToolbarRotationSnappingCustomButton
+            // 
+            this.ToolbarRotationSnappingCustomButton.Name = "ToolbarRotationSnappingCustomButton";
+            this.ToolbarRotationSnappingCustomButton.Size = new System.Drawing.Size(131, 22);
+            this.ToolbarRotationSnappingCustomButton.Text = "Custom...";
+            this.ToolbarRotationSnappingCustomButton.Click += new System.EventHandler(this.ToolbarRotationSnappingCustomButton_Click);
             // 
             // toolStripSeparator2
             // 
@@ -3509,86 +3589,6 @@ namespace CodeWalker
             // SubtitleTimer
             // 
             this.SubtitleTimer.Tick += new System.EventHandler(this.SubtitleTimer_Tick);
-            // 
-            // ToolbarRotationSnappingButton
-            // 
-            this.ToolbarRotationSnappingButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolbarRotationSnappingOffButton,
-            this.ToolbarRotationSnapping1Button,
-            this.ToolbarRotationSnapping2Button,
-            this.ToolbarRotationSnapping5Button,
-            this.ToolbarRotationSnapping10Button,
-            this.ToolbarRotationSnapping45Button,
-            this.ToolbarRotationSnapping90Button,
-            this.ToolbarRotationSnappingCustomButton});
-            this.ToolbarRotationSnappingButton.Name = "ToolbarRotationSnappingButton";
-            this.ToolbarRotationSnappingButton.Size = new System.Drawing.Size(205, 22);
-            this.ToolbarRotationSnappingButton.Text = "Rotation Snapping";
-            // 
-            // ToolbarRotationSnappingOffButton
-            // 
-            this.ToolbarRotationSnappingOffButton.Name = "ToolbarRotationSnappingOffButton";
-            this.ToolbarRotationSnappingOffButton.Size = new System.Drawing.Size(180, 22);
-            this.ToolbarRotationSnappingOffButton.Text = "Off";
-            this.ToolbarRotationSnappingOffButton.Click += new System.EventHandler(this.ToolbarRotationSnappingOffButton_Click);
-            // 
-            // ToolbarRotationSnapping1Button
-            // 
-            this.ToolbarRotationSnapping1Button.Name = "ToolbarRotationSnapping1Button";
-            this.ToolbarRotationSnapping1Button.Size = new System.Drawing.Size(180, 22);
-            this.ToolbarRotationSnapping1Button.Text = "1 Degree";
-            this.ToolbarRotationSnapping1Button.Click += new System.EventHandler(this.ToolbarRotationSnapping1Button_Click);
-            // 
-            // ToolbarRotationSnapping2Button
-            // 
-            this.ToolbarRotationSnapping2Button.Name = "ToolbarRotationSnapping2Button";
-            this.ToolbarRotationSnapping2Button.Size = new System.Drawing.Size(180, 22);
-            this.ToolbarRotationSnapping2Button.Text = "2 Degrees";
-            this.ToolbarRotationSnapping2Button.Click += new System.EventHandler(this.ToolbarRotationSnapping2Button_Click);
-            // 
-            // ToolbarRotationSnapping5Button
-            // 
-            this.ToolbarRotationSnapping5Button.Checked = true;
-            this.ToolbarRotationSnapping5Button.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ToolbarRotationSnapping5Button.Name = "ToolbarRotationSnapping5Button";
-            this.ToolbarRotationSnapping5Button.Size = new System.Drawing.Size(180, 22);
-            this.ToolbarRotationSnapping5Button.Text = "5 Degrees";
-            this.ToolbarRotationSnapping5Button.Click += new System.EventHandler(this.ToolbarRotationSnapping5Button_Click);
-            // 
-            // ToolbarRotationSnapping10Button
-            // 
-            this.ToolbarRotationSnapping10Button.Name = "ToolbarRotationSnapping10Button";
-            this.ToolbarRotationSnapping10Button.Size = new System.Drawing.Size(180, 22);
-            this.ToolbarRotationSnapping10Button.Text = "10 Degrees";
-            this.ToolbarRotationSnapping10Button.Click += new System.EventHandler(this.ToolbarRotationSnapping10Button_Click);
-            // 
-            // ToolbarRotationSnappingCustomButton
-            // 
-            this.ToolbarRotationSnappingCustomButton.Name = "ToolbarRotationSnappingCustomButton";
-            this.ToolbarRotationSnappingCustomButton.Size = new System.Drawing.Size(180, 22);
-            this.ToolbarRotationSnappingCustomButton.Text = "Custom...";
-            this.ToolbarRotationSnappingCustomButton.Click += new System.EventHandler(this.ToolbarRotationSnappingCustomButton_Click);
-            // 
-            // ToolbarRotationSnapping45Button
-            // 
-            this.ToolbarRotationSnapping45Button.Name = "ToolbarRotationSnapping45Button";
-            this.ToolbarRotationSnapping45Button.Size = new System.Drawing.Size(180, 22);
-            this.ToolbarRotationSnapping45Button.Text = "45 Degrees";
-            this.ToolbarRotationSnapping45Button.Click += new System.EventHandler(this.ToolbarRotationSnapping45Button_Click);
-            // 
-            // ToolbarRotationSnapping90Button
-            // 
-            this.ToolbarRotationSnapping90Button.Name = "ToolbarRotationSnapping90Button";
-            this.ToolbarRotationSnapping90Button.Size = new System.Drawing.Size(180, 22);
-            this.ToolbarRotationSnapping90Button.Text = "90 Degrees";
-            this.ToolbarRotationSnapping90Button.Click += new System.EventHandler(this.ToolbarRotationSnapping90Button_Click);
-            // 
-            // ToolbarSnapGridSizeButton
-            // 
-            this.ToolbarSnapGridSizeButton.Name = "ToolbarSnapGridSizeButton";
-            this.ToolbarSnapGridSizeButton.Size = new System.Drawing.Size(205, 22);
-            this.ToolbarSnapGridSizeButton.Text = "Grid Size...";
-            this.ToolbarSnapGridSizeButton.Click += new System.EventHandler(this.ToolbarSnapGridSizeButton_Click);
             // 
             // WorldForm
             // 
@@ -3900,7 +3900,7 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectWaterQuadButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectCollisionButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectPathButton;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarSelectDistantLodLightsButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarSelectLodLightsButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectMloInstanceButton;
         private System.Windows.Forms.ToolStripMenuItem ToolsMenuJenkInd;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectTrainTrackButton;

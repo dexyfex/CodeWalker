@@ -102,10 +102,10 @@ namespace CodeWalker.World
                 SelectionEntityTabPage.Text = "Car Generator";
                 SelEntityPropertyGrid.SelectedObject = item.CarGenerator;
             }
-            else if (item.DistantLodLights != null)
+            else if (item.LodLight!= null)
             {
-                SelectionEntityTabPage.Text = "Distant LOD Lights";
-                SelEntityPropertyGrid.SelectedObject = item.DistantLodLights;
+                SelectionEntityTabPage.Text = "LOD Light";
+                SelEntityPropertyGrid.SelectedObject = item.LodLight;
             }
             else if (item.GrassBatch != null)
             {

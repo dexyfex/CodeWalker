@@ -1483,16 +1483,15 @@ namespace CodeWalker.Rendering
             if (ll == null) return;
             if (dll == null) return;
 
-            var n = dll.positions?.Length ?? 0;
-            n = Math.Min(n, dll.colours?.Length ?? 0);
-            n = Math.Min(n, ll.direction?.Length ?? 0);
-            n = Math.Min(n, ll.falloff?.Length ?? 0);
-            n = Math.Min(n, ll.falloffExponent?.Length ?? 0);
-            n = Math.Min(n, ll.timeAndStateFlags?.Length ?? 0);
-            n = Math.Min(n, ll.hash?.Length ?? 0);
-            n = Math.Min(n, ll.coneInnerAngle?.Length ?? 0);
-            n = Math.Min(n, ll.coneOuterAngleOrCapExt?.Length ?? 0);
-            n = Math.Min(n, ll.coronaIntensity?.Length ?? 0);
+            if (ll.Lights == null)
+            {
+                ll.Init(dll);
+            }
+
+            if (ll.Lights == null) 
+            { return; }
+
+            var n = ll.Lights.Length;
 
             if (n <= 0)
             { return; }
@@ -1504,18 +1503,19 @@ namespace CodeWalker.Rendering
 
             for (int i = 0; i < n; i++)
             {
+                var l = ll.Lights[i];
                 var light = new LODLight();
-                light.Position = dll.positions[i].ToVector3();
-                light.Colour = dll.colours[i];
-                light.Direction = ll.direction[i].ToVector3();
-                light.TimeAndStateFlags = ll.timeAndStateFlags[i];
-                light.TangentX = new Vector4(Vector3.Normalize(light.Direction.GetPerpVec()), 0.0f);
-                light.TangentY = new Vector4(Vector3.Cross(light.Direction, light.TangentX.XYZ()), 0.0f);
-                light.Falloff = ll.falloff[i];
-                light.FalloffExponent = Math.Max(ll.falloffExponent[i]*0.01f, 0.5f);//is this right?
-                light.InnerAngle = ll.coneInnerAngle[i] * 0.0087266462f; //pi/360
-                light.OuterAngleOrCapExt = ll.coneOuterAngleOrCapExt[i] * 0.0087266462f; //pi/360
-                var type = (LightType)((light.TimeAndStateFlags >> 26) & 7);
+                light.Position = l.Position;
+                light.Colour = (uint)l.Colour.ToBgra();
+                light.Direction = l.Direction;
+                light.TimeAndStateFlags = l.TimeAndStateFlags;
+                light.TangentX = new Vector4(l.TangentX, 0.0f);
+                light.TangentY = new Vector4(l.TangentY, 0.0f);
+                light.Falloff = l.Falloff;
+                light.FalloffExponent = Math.Max(l.FalloffExponent*0.01f, 0.5f);//is this right?
+                light.InnerAngle = l.ConeInnerAngle * 0.0087266462f; //pi/360
+                light.OuterAngleOrCapExt = l.ConeOuterAngleOrCapExt * 0.0087266462f; //pi/360
+                var type = l.Type;
                 switch (type)
                 {
                     case LightType.Point:
@@ -1525,7 +1525,7 @@ namespace CodeWalker.Rendering
                         spots.Add(light);
                         break;
                     case LightType.Capsule:
-                        light.OuterAngleOrCapExt = ll.coneOuterAngleOrCapExt[i] * 0.25f;
+                        light.OuterAngleOrCapExt = l.ConeOuterAngleOrCapExt * 0.25f;
                         caps.Add(light);
                         break;
                     default: break;//just checking...
