@@ -408,6 +408,10 @@ namespace CodeWalker.Rendering
         {
             renderableCache.Invalidate(batch);
         }
+        public void Invalidate(YmapLODLight lodlight)
+        {
+            renderableCache.Invalidate(lodlight);
+        }
 
 
         public void UpdateSelectionDrawFlags(DrawableModel model, DrawableGeometry geom, bool rem)

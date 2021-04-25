@@ -554,7 +554,6 @@ namespace CodeWalker.GameFiles
                 CCarGens[i] = CarGenerators[i].CCarGen;
             }
         }
-
         public void BuildInstances()
         {
             if (GrassInstanceBatches == null)
@@ -580,6 +579,16 @@ namespace CodeWalker.GameFiles
                 GrassInstanceBatches[i].Batch = b;
             }
         }
+        public void BuildLodLights()
+        {
+            if (LODLights == null) return;
+            LODLights.RebuildFromLodLights();
+        }
+        public void BuildDistantLodLights()
+        {
+            //how to rebuild these here? the LODlights array is on the child ymap...
+            //for now, they are being updated as they are edited in project window
+        }
 
         public byte[] Save()
         {
@@ -590,10 +599,10 @@ namespace CodeWalker.GameFiles
             BuildCEntityDefs(); //technically this isn't required anymore since the CEntityDefs is no longer used for saving.
             BuildCCarGens();
             BuildInstances();
+            BuildLodLights();
+            BuildDistantLodLights();
 
             //TODO:
-            //BuildLodLights();
-            //BuildDistantLodLights();
             //BuildTimecycleModifiers(); //already being saved - update them..
             //BuildBoxOccluders();
             //BuildOccludeModels();
@@ -654,8 +663,6 @@ namespace CodeWalker.GameFiles
             if (mapdata.occludeModels.Count1 != 0) LogSaveWarning("occludeModels were not saved. (TODO!)");
             if (mapdata.boxOccluders.Count1 != 0) LogSaveWarning("boxOccluders were not saved. (TODO!)");
             if (mapdata.instancedData.PropInstanceList.Count1 != 0) LogSaveWarning("instancedData.PropInstanceList was not saved. (TODO!)");
-            if (mapdata.LODLightsSOA.direction.Count1 != 0) LogSaveWarning("LODLightsSOA was not saved. (TODO!)");
-            if (mapdata.DistantLODLightsSOA.position.Count1 != 0) LogSaveWarning("DistantLODLightsSOA was not saved. (TODO!)");
             mapdata.containerLods = new Array_Structure();
             mapdata.occludeModels = new Array_Structure();
             mapdata.boxOccluders = new Array_Structure();
@@ -1019,6 +1026,70 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public void AddLodLight(YmapLODLight lodlight)
+        {
+            if (LODLights == null)
+            {
+                LODLights = new YmapLODLights();
+                LODLights.Ymap = this;
+            }
+            List<YmapLODLight> lodlights = new List<YmapLODLight>();
+            if (LODLights?.LodLights != null) lodlights.AddRange(LODLights.LodLights);
+            lodlight.LodLights = this.LODLights;
+            lodlight.Index = lodlights.Count;
+            lodlights.Add(lodlight);
+            LODLights.LodLights = lodlights.ToArray();
+
+            HasChanged = true;
+
+            if (Parent?.DistantLODLights != null)
+            {
+                Parent.DistantLODLights.RebuildFromLodLights(LODLights.LodLights);
+                Parent.HasChanged = true;
+            }
+        }
+
+        public bool RemoveLodLight(YmapLODLight lodlight)
+        {
+            if (lodlight == null) return false;
+
+            List<YmapLODLight> newlodlights = new List<YmapLODLight>();
+
+            var lodlights = LODLights?.LodLights;
+            if (lodlights != null)
+            {
+                for (int i = 0; i < lodlights.Length; i++)
+                {
+                    var ll = lodlights[i];
+                    if (ll != lodlight)
+                    {
+                        newlodlights.Add(ll);
+                    }
+                }
+                if (newlodlights.Count == lodlights.Length)
+                {
+                    return false; //nothing removed... wasn't present?
+                }
+            }
+
+            for (int i = 0; i < newlodlights.Count; i++)
+            {
+                newlodlights[i].Index = i;
+            }
+
+            LODLights.LodLights = newlodlights.ToArray();
+
+            HasChanged = true;
+
+            if (Parent?.DistantLODLights != null)
+            {
+                Parent.DistantLODLights.RebuildFromLodLights(LODLights.LodLights);
+                Parent.HasChanged = true;
+            }
+
+            return true;
+        }
+
         public void AddGrassBatch(YmapGrassInstanceBatch newbatch)
         {
             List<YmapGrassInstanceBatch> batches = new List<YmapGrassInstanceBatch>();
@@ -1118,6 +1189,14 @@ namespace CodeWalker.GameFiles
             {
                 contentFlags = SetBit(contentFlags, 10); //64
             }
+            if ((LODLights != null) && ((LODLights.direction?.Length ?? 0) > 0))
+            {
+                contentFlags = SetBit(contentFlags, 7); //128
+            }
+            if ((DistantLODLights != null) && ((DistantLODLights.positions?.Length ?? 0) > 0))
+            {
+                flags = SetBit(flags, 1); //2
+            }
 
 
             bool change = false;
@@ -1203,7 +1282,6 @@ namespace CodeWalker.GameFiles
 
                     emin = Vector3.Min(emin, bbmin);
                     emax = Vector3.Max(emax, bbmax);
-
                     smin = Vector3.Min(smin, sbmin);
                     smax = Vector3.Max(smax, sbmax);
                 }
@@ -1216,7 +1294,6 @@ namespace CodeWalker.GameFiles
                 {
                     emin = Vector3.Min(emin, batch.AABBMin);
                     emax = Vector3.Max(emax, batch.AABBMax);
-
                     smin = Vector3.Min(smin, (batch.AABBMin - batch.Batch.lodDist)); // + lodoffset
                     smax = Vector3.Max(smax, (batch.AABBMax + batch.Batch.lodDist)); // - lodoffset
                 }
@@ -1226,14 +1303,31 @@ namespace CodeWalker.GameFiles
             {
                 foreach (var cargen in CarGenerators)
                 {
-                    emin = Vector3.Min(emin, cargen.BBMin);
-                    emax = Vector3.Max(emax, cargen.BBMax);
-
-                    smin = Vector3.Min(smin, cargen.BBMin - cargen._CCarGen.perpendicularLength); //just a random guess, maybe should be more?
-                    smax = Vector3.Max(smax, cargen.BBMax + cargen._CCarGen.perpendicularLength);
+                    var len = cargen._CCarGen.perpendicularLength;
+                    emin = Vector3.Min(emin, cargen.Position - len);
+                    emax = Vector3.Max(emax, cargen.Position + len);
+                    smin = Vector3.Min(smin, cargen.Position - len*2.0f); //just a random guess, maybe should be more?
+                    smax = Vector3.Max(smax, cargen.Position + len*2.0f);
                 }
             }
 
+            if (LODLights != null)
+            {
+                LODLights.CalcBB();
+                emin = Vector3.Min(emin, LODLights.BBMin - 20.0f); //about right
+                emax = Vector3.Max(emax, LODLights.BBMax + 20.0f);
+                smin = Vector3.Min(smin, (LODLights.BBMin - 950.0f)); //seems correct
+                smax = Vector3.Max(smax, (LODLights.BBMax + 950.0f));
+            }
+
+            if (DistantLODLights != null)
+            {
+                DistantLODLights.CalcBB();
+                emin = Vector3.Min(emin, DistantLODLights.BBMin - 20.0f); //not exact, but probably close enough
+                emax = Vector3.Max(emax, DistantLODLights.BBMax + 20.0f);
+                smin = Vector3.Min(smin, (DistantLODLights.BBMin - 3000.0f)); //seems correct
+                smax = Vector3.Max(smax, (DistantLODLights.BBMax + 3000.0f));
+            }
 
             bool change = false;
             if (_CMapData.entitiesExtentsMin != emin)
@@ -2292,7 +2386,35 @@ namespace CodeWalker.GameFiles
             }
 
         }
-        
+
+
+        public void RebuildFromLodLights(YmapLODLight[] lodlights)
+        {
+            var n = lodlights?.Length ?? 0;
+            if (n == 0) return;
+
+            colours = new uint[n];
+            positions = new MetaVECTOR3[n];
+            var nstreetlights = 0;
+            for (int i = 0; i < n; i++)
+            {
+                var ll = lodlights[i];
+                colours[i] = (uint)(ll.Colour.ToBgra());
+                positions[i] = new MetaVECTOR3(ll.Position);
+                if ((ll.StateFlags1 & 1) > 0)
+                {
+                    nstreetlights++;
+                }
+            }
+
+            var cdll = CDistantLODLight;
+            cdll.numStreetLights = (ushort)nstreetlights;
+
+            CalcBB();
+
+        }
+
+
         public override string ToString()
         {
             if (Ymap != null)
@@ -2320,7 +2442,7 @@ namespace CodeWalker.GameFiles
         public Vector3 BBMax { get; set; }
         public YmapFile Ymap { get; set; }
 
-        public YmapLODLight[] Lights { get; set; }
+        public YmapLODLight[] LodLights { get; set; }
 
         public PathBVH BVH { get; set; }
 
@@ -2340,20 +2462,21 @@ namespace CodeWalker.GameFiles
             n = Math.Min(n, coronaIntensity?.Length ?? 0);
             if (n == 0) return;
 
-            Lights = new YmapLODLight[n];
+            LodLights = new YmapLODLight[n];
             for (int i = 0; i < n; i++)
             {
                 var l = new YmapLODLight();
                 l.Init(this, parent, i);
-                Lights[i] = l;
+                LodLights[i] = l;
             }
 
+            CalcBB();
             BuildBVH();
         }
 
         public void BuildBVH()
         {
-            BVH = new PathBVH(Lights, 10, 10);
+            BVH = new PathBVH(LodLights, 10, 10);
         }
 
 
@@ -2383,6 +2506,48 @@ namespace CodeWalker.GameFiles
             { }
         }
 
+        public void RebuildFromLodLights()
+        {
+            var n = LodLights?.Length ?? 0;
+            if (n <= 0)
+            {
+                direction = null;
+                falloff = null;
+                falloffExponent = null;
+                timeAndStateFlags = null;
+                hash = null;
+                coneInnerAngle = null;
+                coneOuterAngleOrCapExt = null;
+                coronaIntensity = null;
+            }
+            else
+            {
+                direction = new MetaVECTOR3[n];
+                falloff = new float[n];
+                falloffExponent = new float[n];
+                timeAndStateFlags = new uint[n];
+                hash = new uint[n];
+                coneInnerAngle = new byte[n];
+                coneOuterAngleOrCapExt = new byte[n];
+                coronaIntensity = new byte[n];
+
+                for (int i = 0; i < n; i++)
+                {
+                    var ll = LodLights[i];
+                    direction[i] = new MetaVECTOR3(ll.Direction);
+                    falloff[i] = ll.Falloff;
+                    falloffExponent[i] = ll.FalloffExponent;
+                    timeAndStateFlags[i] = ll.TimeAndStateFlags;
+                    hash[i] = ll.Hash;
+                    coneInnerAngle[i] = ll.ConeInnerAngle;
+                    coneOuterAngleOrCapExt[i] = ll.ConeOuterAngleOrCapExt;
+                    coronaIntensity[i] = ll.CoronaIntensity;
+                }
+            }
+
+        }
+
+
         public override string ToString()
         {
             if (Ymap != null)
@@ -2396,6 +2561,7 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class YmapLODLight : BasePathNode
     {
+        public YmapFile Ymap { get { return LodLights?.Ymap ?? DistLodLights?.Ymap; } }
         public YmapLODLights LodLights { get; set; }
         public YmapDistantLODLights DistLodLights { get; set; }
         public int Index { get; set; }
@@ -2404,7 +2570,7 @@ namespace CodeWalker.GameFiles
         public Vector3 Direction { get; set; }
         public float Falloff { get; set; }
         public float FalloffExponent { get; set; }
-        public FlagsUint TimeAndStateFlags { get; set; }
+        public uint TimeAndStateFlags { get; set; }
         public uint Hash { get; set; }
         public byte ConeInnerAngle { get; set; }
         public byte ConeOuterAngleOrCapExt { get; set; }
@@ -2421,6 +2587,43 @@ namespace CodeWalker.GameFiles
             get
             {
                 return (LightType)((TimeAndStateFlags >> 26) & 7);
+            }
+            set
+            {
+                TimeAndStateFlags = (TimeAndStateFlags & 0xE3FFFFFF) + (((uint)value & 7) << 26);
+            }
+        }
+        public FlagsUint TimeFlags
+        {
+            get
+            {
+                return (TimeAndStateFlags & 0xFFFFFF);
+            }
+            set
+            {
+                TimeAndStateFlags = (TimeAndStateFlags & 0xFF000000) + (value & 0xFFFFFF);
+            }
+        }
+        public uint StateFlags1
+        {
+            get
+            {
+                return (TimeAndStateFlags >> 24) & 3;
+            }
+            set
+            {
+                TimeAndStateFlags = (TimeAndStateFlags & 0xFCFFFFFF) + ((value & 3) << 24);
+            }
+        }
+        public uint StateFlags2
+        {
+            get
+            {
+                return (TimeAndStateFlags >> 29) & 7;
+            }
+            set
+            {
+                TimeAndStateFlags = (TimeAndStateFlags & 0x1FFFFFFF) + ((value & 7) << 29);
             }
         }
 
@@ -2445,6 +2648,13 @@ namespace CodeWalker.GameFiles
             ConeOuterAngleOrCapExt = l.coneOuterAngleOrCapExt[i];
             CoronaIntensity = l.coronaIntensity[i];
 
+            UpdateTangentsAndOrientation();
+
+            Scale = Vector3.One;
+        }
+
+        public void UpdateTangentsAndOrientation()
+        {
             switch (Type)
             {
                 default:
@@ -2475,14 +2685,27 @@ namespace CodeWalker.GameFiles
                 m.Row3 = new Vector4(Direction, 0);
                 Orientation = Quaternion.RotationMatrix(m);
             }
-
-
-            Scale = Vector3.One;
         }
 
+        public void SetColour(Color c)
+        {
+            Colour = c;
+
+            if ((DistLodLights?.colours != null) && (DistLodLights.colours.Length >= Index))
+            {
+                DistLodLights.colours[Index] = (uint)(c.ToBgra());
+            }
+
+        }
         public void SetPosition(Vector3 pos)
         {
             Position = pos;
+
+            if ((DistLodLights?.positions != null) && (DistLodLights.positions.Length >= Index))
+            {
+                DistLodLights.positions[Index] = new MetaVECTOR3(pos);
+            }
+
         }
         public void SetOrientation(Quaternion ori)
         {
@@ -2491,6 +2714,27 @@ namespace CodeWalker.GameFiles
         public void SetScale(Vector3 scale)
         {
             Scale = scale;
+        }
+
+
+
+        public void CopyFrom(YmapLODLight l)
+        {
+            Colour = l.Colour;
+            Position = l.Position;
+            Direction = l.Direction;
+            Falloff = l.Falloff;
+            FalloffExponent = l.FalloffExponent;
+            TimeAndStateFlags = l.TimeAndStateFlags;
+            Hash = l.Hash;
+            ConeInnerAngle = l.ConeInnerAngle;
+            ConeOuterAngleOrCapExt = l.ConeOuterAngleOrCapExt;
+            CoronaIntensity = l.CoronaIntensity;
+
+            Orientation = l.Orientation;
+            Scale = l.Scale;
+            TangentX = l.TangentX;
+            TangentY = l.TangentY;
         }
 
 

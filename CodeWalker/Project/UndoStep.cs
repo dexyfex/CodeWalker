@@ -470,6 +470,135 @@ namespace CodeWalker.Project
 
 
 
+    public abstract class LodLightUndoStep : UndoStep
+    {
+        public YmapLODLight LodLight { get; set; }
+
+        protected void UpdateGraphics(WorldForm wf)
+        {
+            if (LodLight != null)
+            {
+                wf.UpdateLodLightGraphics(LodLight);
+            }
+        }
+    }
+    public class LodLightPositionUndoStep : LodLightUndoStep
+    {
+        public Vector3 StartPosition { get; set; }
+        public Vector3 EndPosition { get; set; }
+
+        public LodLightPositionUndoStep(YmapLODLight lodlight, Vector3 startpos)
+        {
+            LodLight = lodlight;
+            StartPosition = startpos;
+            EndPosition = lodlight?.Position ?? Vector3.Zero;
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
+        {
+            LodLight?.SetPosition(p);
+
+            if (LodLight != sel.LodLight) wf.SelectObject(LodLight);
+            wf.SetWidgetPosition(p);
+
+            UpdateGraphics(wf);
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartPosition);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndPosition);
+        }
+
+        public override string ToString()
+        {
+            return "LodLight " + (LodLight?.Index.ToString() ?? "") + ": Position";
+        }
+    }
+    public class LodLightRotationUndoStep : LodLightUndoStep
+    {
+        public Quaternion StartRotation { get; set; }
+        public Quaternion EndRotation { get; set; }
+
+        public LodLightRotationUndoStep(YmapLODLight lodlight, Quaternion startrot)
+        {
+            LodLight = lodlight;
+            StartRotation = startrot;
+            EndRotation = lodlight?.Orientation ?? Quaternion.Identity;
+        }
+
+
+        private void Update(WorldForm wf, ref MapSelection sel, Quaternion q)
+        {
+            LodLight?.SetOrientation(q);
+
+            if (LodLight != sel.LodLight) wf.SelectObject(LodLight);
+            wf.SetWidgetRotation(q);
+
+            UpdateGraphics(wf);
+        }
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartRotation);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndRotation);
+        }
+
+        public override string ToString()
+        {
+            return "LodLight " + (LodLight?.Index.ToString() ?? "") + ": Rotation";
+        }
+    }
+    public class LodLightScaleUndoStep : LodLightUndoStep
+    {
+        public Vector3 StartScale { get; set; }
+        public Vector3 EndScale { get; set; }
+
+        public LodLightScaleUndoStep(YmapLODLight lodlight, Vector3 startscale)
+        {
+            LodLight = lodlight;
+            StartScale = startscale;
+            EndScale = lodlight?.Scale ?? new Vector3(1.0f);
+        }
+
+        private void Update(WorldForm wf, ref MapSelection sel, Vector3 s)
+        {
+            LodLight?.SetScale(s);
+
+            if (LodLight != sel.LodLight) wf.SelectObject(LodLight);
+            wf.SetWidgetScale(s);
+
+            UpdateGraphics(wf);
+        }
+
+
+        public override void Undo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, StartScale);
+        }
+
+        public override void Redo(WorldForm wf, ref MapSelection sel)
+        {
+            Update(wf, ref sel, EndScale);
+        }
+
+        public override string ToString()
+        {
+            return "LodLight " + (LodLight?.Index.ToString() ?? "") + ": Scale";
+        }
+    }
+
+
+
+
     public class CollisionPositionUndoStep : UndoStep
     {
         public Bounds Bounds { get; set; }

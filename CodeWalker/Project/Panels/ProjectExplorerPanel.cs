@@ -255,6 +255,19 @@ namespace CodeWalker.Project.Panels
                     ccgnode.Tag = cargen;
                 }
             }
+            if ((ymap.LODLights?.LodLights != null) && (ymap.LODLights.LodLights.Length > 0))
+            {
+                var lodlightsnode = node.Nodes.Add("LOD Lights (" + ymap.LODLights.LodLights.Length.ToString() + ")");
+                lodlightsnode.Name = "LodLights";
+                lodlightsnode.Tag = ymap;
+                var lodlights = ymap.LODLights.LodLights;
+                for (int i = 0; i < lodlights.Length; i++)
+                {
+                    var lodlight = lodlights[i];
+                    var llnode = lodlightsnode.Nodes.Add(lodlight.ToString());
+                    llnode.Tag = lodlight;
+                }
+            }
             if ((ymap.GrassInstanceBatches != null) && (ymap.GrassInstanceBatches.Length > 0))
             {
                 var grassbatchesnodes = node.Nodes.Add("Grass Batches (" + ymap.GrassInstanceBatches.Length.ToString() + ")");
@@ -1013,6 +1026,20 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
+        public TreeNode FindLodLightTreeNode(YmapLODLight lodlight)
+        {
+            if (lodlight == null) return null;
+            TreeNode ymapnode = FindYmapTreeNode(lodlight.Ymap);
+            if (ymapnode == null) return null;
+            var lodlightsnode = GetChildTreeNode(ymapnode, "LodLights");
+            if (lodlightsnode == null) return null;
+            for (int i = 0; i < lodlightsnode.Nodes.Count; i++)
+            {
+                TreeNode lodlightnode = lodlightsnode.Nodes[i];
+                if (lodlightnode.Tag == lodlight) return lodlightnode;
+            }
+            return null;
+        }
         public TreeNode FindGrassTreeNode(YmapGrassInstanceBatch batch)
         {
             if (batch == null) return null;
@@ -1432,6 +1459,21 @@ namespace CodeWalker.Project.Panels
         {
             ProjectTreeView.SelectedNode = null;
         }
+        public void TrySelectYmapTreeNode(YmapFile ymap)
+        {
+            TreeNode ymapnode = FindYmapTreeNode(ymap);
+            if (ymapnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == ymapnode)
+                {
+                    OnItemSelected?.Invoke(ymap);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = ymapnode;
+                }
+            }
+        }
         public void TrySelectEntityTreeNode(YmapEntityDef ent)
         {
             TreeNode entnode = FindEntityTreeNode(ent);
@@ -1459,6 +1501,21 @@ namespace CodeWalker.Project.Panels
                 else
                 {
                     ProjectTreeView.SelectedNode = cargennode;
+                }
+            }
+        }
+        public void TrySelectLodLightTreeNode(YmapLODLight lodlight)
+        {
+            TreeNode lodlightnode = FindLodLightTreeNode(lodlight);
+            if (lodlightnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == lodlightnode)
+                {
+                    OnItemSelected?.Invoke(lodlight);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = lodlightnode;
                 }
             }
         }
@@ -1959,6 +2016,14 @@ namespace CodeWalker.Project.Panels
                 tn.Text = cargen.ToString();
             }
         }
+        public void UpdateLodLightTreeNode(YmapLODLight lodlight)
+        {
+            var tn = FindLodLightTreeNode(lodlight);
+            if (tn != null)
+            {
+                tn.Text = lodlight.ToString();
+            }
+        }
         public void UpdatePathNodeTreeNode(YndNode node)
         {
             var tn = FindPathNodeTreeNode(node);
@@ -2057,6 +2122,25 @@ namespace CodeWalker.Project.Panels
             {
                 tn.Parent.Text = "Car Generators (" + cargen.Ymap.CarGenerators.Length.ToString() + ")";
                 tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveLodLightTreeNode(YmapLODLight lodlight)
+        {
+            var lodlights = lodlight?.LodLights?.LodLights;
+            var tn = FindLodLightTreeNode(lodlight);
+            if ((tn != null) && (tn.Parent != null) && (lodlights != null))
+            {
+                var pn = tn.Parent;
+                var yn = pn.Parent;
+                yn.Nodes.Remove(pn);
+                pn = yn.Nodes.Add("LOD Lights (" + (lodlights?.Length.ToString() ?? "0") + ")");
+                pn.Name = "LodLights";
+                pn.Tag = lodlight.LodLights.Ymap;
+                foreach (var ll in lodlights)
+                {
+                    var ntn = pn.Nodes.Add(ll.ToString());
+                    ntn.Tag = ll;
+                }
             }
         }
         public void RemoveGrassBatchTreeNode(YmapGrassInstanceBatch batch)

@@ -1951,6 +1951,16 @@ namespace CodeWalker
             }
         }
 
+        public void UpdateLodLightGraphics(YmapLODLight lodlight)
+        {
+
+            lodlight.LodLights?.BuildBVH();
+
+            //lock (Renderer.RenderSyncRoot)
+            {
+                Renderer.Invalidate(lodlight);
+            }
+        }
         public void UpdateGrassBatchGraphics(YmapGrassInstanceBatch grassBatch)
         {
             //lock (Renderer.RenderSyncRoot)
@@ -3650,6 +3660,10 @@ namespace CodeWalker
             {
                 SelectionEntityTabPage.Text = "LodLight";
                 SelEntityPropertyGrid.SelectedObject = item.LodLight;
+                ymap = item.LodLight.Ymap;
+                ToolbarCopyButton.Enabled = true;
+                ToolbarDeleteItemButton.Enabled = true;
+                ToolbarDeleteItemButton.Text = "Delete LOD light";
             }
             else if (item.GrassBatch != null)
             {

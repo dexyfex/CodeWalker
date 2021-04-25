@@ -263,7 +263,7 @@ namespace CodeWalker
             }
             else if (LodLight != null)
             {
-                name = (LodLight.LodLights?.Ymap?.Name ?? "") + ": " + LodLight.Index.ToString();
+                name = (LodLight.Ymap?.Name ?? "") + ": " + LodLight.Index.ToString();
             }
             else if (BoxOccluder != null)
             {
@@ -336,6 +336,7 @@ namespace CodeWalker
             if (MultipleSelectionItems != null) return true;
             if (EntityDef != null) return true;
             if (CarGenerator != null) return true;
+            if (LodLight != null) return true;
             if (CollisionBounds != null) return true;
             if (CollisionPoly != null) return true;
             if (CollisionVertex != null) return true;
@@ -411,6 +412,15 @@ namespace CodeWalker
                     case WidgetMode.Position: return new CarGenPositionUndoStep(CarGenerator, startPos);
                     case WidgetMode.Rotation: return new CarGenRotationUndoStep(CarGenerator, startRot);
                     case WidgetMode.Scale: return new CarGenScaleUndoStep(CarGenerator, startScale);
+                }
+            }
+            else if (LodLight != null)
+            {
+                switch (mode)
+                {
+                    case WidgetMode.Position: return new LodLightPositionUndoStep(LodLight, startPos);
+                    case WidgetMode.Rotation: return new LodLightRotationUndoStep(LodLight, startRot);
+                    case WidgetMode.Scale: return new LodLightScaleUndoStep(LodLight, startScale);
                 }
             }
             else if (PathNode != null)
@@ -1200,6 +1210,7 @@ namespace CodeWalker
                 Dictionary<TrainTrack, int> trainTracks = new Dictionary<TrainTrack, int>();
                 Dictionary<YmtFile, int> scenarioYmts = new Dictionary<YmtFile, int>();
                 Dictionary<Bounds, int> bounds = new Dictionary<Bounds, int>();
+                Dictionary<YmapLODLights, int> lodlights = new Dictionary<YmapLODLights, int>();
 
                 foreach (var item in MultipleSelectionItems)
                 {
@@ -1239,6 +1250,10 @@ namespace CodeWalker
                     {
                         bounds[item.CollisionVertex.Owner] = 1;
                     }
+                    if (item.LodLight?.LodLights != null)
+                    {
+                        lodlights[item.LodLight.LodLights] = 1;
+                    }
                 }
                 foreach (var kvp in bounds)
                 {
@@ -1259,6 +1274,13 @@ namespace CodeWalker
                 foreach (var kvp in scenarioYmts)
                 {
                     wf.UpdateScenarioGraphics(kvp.Key, false);
+                }
+                foreach (var kvp in lodlights)
+                {
+                    if ((kvp.Key.LodLights != null) && (kvp.Key.LodLights.Length > 0))
+                    {
+                        wf.UpdateLodLightGraphics(kvp.Key.LodLights[0]);
+                    }
                 }
             }
             else
@@ -1298,6 +1320,10 @@ namespace CodeWalker
                 else if (CollisionBounds != null)
                 {
                     wf.UpdateCollisionBoundsGraphics(CollisionBounds);
+                }
+                else if (LodLight != null)
+                {
+                    wf.UpdateLodLightGraphics(LodLight);
                 }
             }
         }

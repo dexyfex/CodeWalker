@@ -1483,15 +1483,15 @@ namespace CodeWalker.Rendering
             if (ll == null) return;
             if (dll == null) return;
 
-            if (ll.Lights == null)
+            if (ll.LodLights == null)
             {
                 ll.Init(dll);
             }
 
-            if (ll.Lights == null) 
+            if (ll.LodLights == null) 
             { return; }
 
-            var n = ll.Lights.Length;
+            var n = ll.LodLights.Length;
 
             if (n <= 0)
             { return; }
@@ -1503,7 +1503,7 @@ namespace CodeWalker.Rendering
 
             for (int i = 0; i < n; i++)
             {
-                var l = ll.Lights[i];
+                var l = ll.LodLights[i];
                 var light = new LODLight();
                 light.Position = l.Position;
                 light.Colour = (uint)l.Colour.ToBgra();

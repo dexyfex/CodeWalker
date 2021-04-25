@@ -243,7 +243,11 @@ namespace CodeWalker.Rendering
         {
             instbatches.Invalidate(batch);
         }
-
+        public void Invalidate(YmapLODLight lodlight)
+        {
+            lodlights.Invalidate(lodlight.LodLights?.Ymap);
+            distlodlights.Invalidate(lodlight.DistLodLights);
+        }
 
     }
 

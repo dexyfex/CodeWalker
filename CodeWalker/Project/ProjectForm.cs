@@ -42,6 +42,7 @@ namespace CodeWalker.Project
         private YmapFile CurrentYmapFile;
         private YmapEntityDef CurrentEntity;
         private YmapCarGen CurrentCarGen;
+        private YmapLODLight CurrentLodLight;
         private YmapGrassInstanceBatch CurrentGrassBatch;
 
         private YtypFile CurrentYtypFile;
@@ -387,6 +388,13 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetCarGen(CurrentCarGen); }, //updateFunc
                 (panel) => { return panel.CurrentCarGen == CurrentCarGen; }); //findFunc
         }
+        public void ShowEditYmapLodLightPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYmapLodLightPanel(this); }, //createFunc
+                (panel) => { panel.SetLodLight(CurrentLodLight); }, //updateFunc
+                (panel) => { return panel.CurrentLodLight == CurrentLodLight; }); //findFunc
+        }
         public void ShowEditYmapGrassBatchPanel(bool promote)
         {
             ShowPanel(promote,
@@ -630,6 +638,10 @@ namespace CodeWalker.Project
             {
                 ShowEditYmapCarGenPanel(promote);
             }
+            else if (CurrentLodLight != null)
+            {
+                ShowEditYmapLodLightPanel(promote);
+            }
             else if (CurrentGrassBatch != null)
             {
                 ShowEditYmapGrassBatchPanel(promote);
@@ -756,6 +768,7 @@ namespace CodeWalker.Project
             CurrentMloEntity = item as MCEntityDef;
             CurrentEntity = item as YmapEntityDef;
             CurrentCarGen = item as YmapCarGen;
+            CurrentLodLight = item as YmapLODLight;
             CurrentGrassBatch = item as YmapGrassInstanceBatch;
             CurrentYtypFile = item as YtypFile;
             CurrentArchetype = item as Archetype;
@@ -823,6 +836,10 @@ namespace CodeWalker.Project
             else if (CurrentCarGen != null)
             {
                 CurrentYmapFile = CurrentCarGen.Ymap;
+            }
+            else if (CurrentLodLight != null)
+            {
+                CurrentYmapFile = CurrentLodLight.Ymap;
             }
             else if (CurrentGrassBatch != null)
             {
@@ -1773,6 +1790,10 @@ namespace CodeWalker.Project
             {
                 ProjectExplorer?.TrySelectCarGenTreeNode(CurrentCarGen);
             }
+            else if (CurrentLodLight != null)
+            {
+                ProjectExplorer?.TrySelectLodLightTreeNode(CurrentLodLight);
+            }
             else if (CurrentGrassBatch != null)
             {
                 ProjectExplorer?.TrySelectGrassBatchTreeNode(CurrentGrassBatch);
@@ -2282,6 +2303,140 @@ namespace CodeWalker.Project
         public bool IsCurrentCarGen(YmapCarGen cargen)
         {
             return CurrentCarGen == cargen;
+        }
+
+        public YmapLODLight NewLodLight(YmapLODLight copy = null, bool copyPosition = false, bool selectNew = true)
+        {
+            if (CurrentYmapFile == null) return null;
+
+            Vector3 pos = GetSpawnPos(10.0f);
+
+            YmapLODLight yll = new YmapLODLight();
+
+            if (copy != null)
+            {
+                yll.CopyFrom(copy);
+            }
+            else
+            {
+                yll.TimeAndStateFlags = 0x00FFFFFF;
+                yll.Type = LightType.Point;
+                yll.Colour = new SharpDX.Color(255, 255, 255, 127);
+                yll.Direction = Vector3.ForwardRH;
+                yll.Falloff = 10.0f;
+                //...
+            }
+
+            if (!copyPosition || (copy == null))
+            {
+                yll.Position = pos;
+            }
+
+
+
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    CurrentYmapFile.AddLodLight(yll);
+                }
+
+                WorldForm.UpdateLodLightGraphics(yll);
+
+            }
+            else
+            {
+                CurrentYmapFile.AddLodLight(yll);
+            }
+
+
+            if (selectNew)
+            {
+                LoadProjectTree();
+                ProjectExplorer?.TrySelectLodLightTreeNode(yll);
+                CurrentLodLight = yll;
+                ShowEditYmapLodLightPanel(false);
+            }
+            return yll;
+        }
+        public void AddLodLightToProject()
+        {
+            if (CurrentLodLight == null) return;
+
+            if (!YmapExistsInProject(CurrentLodLight.Ymap))
+            {
+                var lodlight = CurrentLodLight;
+                if (lodlight.DistLodLights?.Ymap != null)
+                {
+                    AddYmapToProject(lodlight.DistLodLights.Ymap);
+                    CurrentYmapFile.HasChanged = true;
+                }
+
+                CurrentYmapFile = lodlight.Ymap;
+                CurrentYmapFile.HasChanged = true;
+                AddYmapToProject(CurrentYmapFile);
+
+                CurrentLodLight = lodlight; //bug fix for some reason the treeview selects the project node here.
+                CurrentYmapFile = lodlight.Ymap;
+                ProjectExplorer?.TrySelectLodLightTreeNode(lodlight);
+            }
+        }
+        public bool DeleteLodLight()
+        {
+            if (CurrentYmapFile == null) return false;
+            if (CurrentLodLight == null) return false;
+            if (CurrentLodLight.Ymap != CurrentYmapFile) return false;
+            //if (CurrentYmapFile.LODLights == null) return false; //nothing to delete..
+
+            //if (MessageBox.Show("Are you sure you want to delete this LOD light?\n" + CurrentLodLight.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
+
+            var delyll = CurrentLodLight;
+            var lodlights = delyll.LodLights;
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentYmapFile.RemoveLodLight(CurrentLodLight);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentYmapFile.RemoveLodLight(CurrentLodLight);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unable to delete the LOD light. This shouldn't happen!");
+            }
+
+            ProjectExplorer?.RemoveLodLightTreeNode(CurrentLodLight);
+            ProjectExplorer?.SetYmapHasChanged(CurrentYmapFile, true);
+
+            ClosePanel((EditYmapLodLightPanel p) => { return p.Tag == delyll; });
+
+            CurrentLodLight = null;
+            CurrentYmapFile = null;
+
+            if (WorldForm != null)
+            {
+                if ((lodlights?.LodLights != null) && (lodlights.LodLights.Length > 0))
+                {
+                    WorldForm.UpdateLodLightGraphics(lodlights.LodLights[0]);
+                }
+
+                WorldForm.SelectItem(null);
+            }
+
+            return true;
+        }
+        public bool IsCurrentLodLight(YmapLODLight lodlight)
+        {
+            return CurrentLodLight == lodlight;
         }
 
         private void ImportMenyooXml()
@@ -6887,6 +7042,7 @@ namespace CodeWalker.Project
                     var room = sel.MloRoomDef;
                     var ent = sel.EntityDef;
                     var cargen = sel.CarGenerator;
+                    var lodlight = sel.LodLight;
                     var grassbatch = sel.GrassBatch;
                     var collvert = sel.CollisionVertex;
                     var collpoly = sel.CollisionPoly;
@@ -6902,7 +7058,7 @@ namespace CodeWalker.Project
                     var audiopl = sel.Audio;
                     Archetype arch = mlo?.Archetype ?? ent?.MloParent?.Archetype ?? ent?.Archetype;
                     YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.OwnerMlo?.Ytyp;
-                    YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
+                    YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? lodlight?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
                     YbnFile ybn = collbound?.GetRootYbn();
                     YndFile ynd = pathnode?.Ynd;
                     YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
@@ -6920,6 +7076,10 @@ namespace CodeWalker.Project
                         if (wasmult || (cargen != CurrentCarGen))
                         {
                             ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
+                        }
+                        if (wasmult || (lodlight != CurrentLodLight))
+                        {
+                            ProjectExplorer?.TrySelectLodLightTreeNode(lodlight);
                         }
                         if (wasmult || (grassbatch != CurrentGrassBatch))
                         {
@@ -7024,6 +7184,7 @@ namespace CodeWalker.Project
                     CurrentArchetype = arch;
                     CurrentEntity = ent ?? mlo;
                     CurrentCarGen = cargen;
+                    CurrentLodLight = lodlight;
                     CurrentGrassBatch = grassbatch;
                     CurrentYbnFile = ybn;
                     CurrentCollisionVertex = collvert;
@@ -7090,6 +7251,10 @@ namespace CodeWalker.Project
                     else if (sel.CarGenerator != null)
                     {
                         OnWorldCarGenModified(sel.CarGenerator);
+                    }
+                    else if (sel.LodLight != null)
+                    {
+                        OnWorldLodLightModified(sel.LodLight);
                     }
                     else if (sel.PathNode != null)
                     {
@@ -7232,6 +7397,41 @@ namespace CodeWalker.Project
                 ProjectExplorer?.UpdateCarGenTreeNode(cargen);
 
                 if (cargen.Ymap != null)
+                {
+                    SetYmapHasChanged(true);
+                }
+            }
+
+        }
+        private void OnWorldLodLightModified(YmapLODLight lodlight)
+        {
+            if (lodlight?.Ymap == null) return;
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            if (!YmapExistsInProject(lodlight.Ymap))
+            {
+                lodlight.Ymap.HasChanged = true;
+                AddYmapToProject(lodlight.Ymap);
+                ProjectExplorer?.TrySelectLodLightTreeNode(lodlight);
+            }
+
+            if (lodlight != CurrentLodLight)
+            {
+                CurrentLodLight = lodlight;
+                ProjectExplorer?.TrySelectLodLightTreeNode(lodlight);
+            }
+
+            if (lodlight == CurrentLodLight)
+            {
+                ShowEditYmapLodLightPanel(false);
+
+                ProjectExplorer?.UpdateLodLightTreeNode(lodlight);
+
+                if (lodlight.Ymap != null)
                 {
                     SetYmapHasChanged(true);
                 }
