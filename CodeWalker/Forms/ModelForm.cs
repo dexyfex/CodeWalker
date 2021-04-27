@@ -138,6 +138,7 @@ namespace CodeWalker.Forms
             Renderer.renderclouds = false;
             Renderer.rendermoon = false;
             Renderer.renderskeletons = false;
+            Renderer.renderfragwindows = false;
             Renderer.SelectionFlagsTestAll = true;
 
             //var timeofday = 13.6f;
@@ -272,6 +273,7 @@ namespace CodeWalker.Forms
 
             Renderer.RenderQueued();
 
+            Renderer.RenderSelectionGeometry(MapSelectionMode.Entity);
 
             Renderer.RenderFinalPass();
 
@@ -1875,6 +1877,11 @@ namespace CodeWalker.Forms
         private void SkeletonsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Renderer.renderskeletons = SkeletonsCheckBox.Checked;
+        }
+
+        private void FragGlassCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderfragwindows = FragGlassCheckBox.Checked;
         }
 
         private void ErrorConsoleCheckBox_CheckedChanged(object sender, EventArgs e)

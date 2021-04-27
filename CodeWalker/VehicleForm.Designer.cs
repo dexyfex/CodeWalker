@@ -90,6 +90,7 @@
             this.ToolsPanelShowButton = new System.Windows.Forms.Button();
             this.ConsolePanel = new System.Windows.Forms.Panel();
             this.ConsoleTextBox = new CodeWalker.WinForms.TextBoxFix();
+            this.ShatterMapsCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -419,6 +420,7 @@
             // 
             // ToolsOptionsTabPage
             // 
+            this.ToolsOptionsTabPage.Controls.Add(this.ShatterMapsCheckBox);
             this.ToolsOptionsTabPage.Controls.Add(this.HDTexturesCheckBox);
             this.ToolsOptionsTabPage.Controls.Add(this.SkeletonsCheckBox);
             this.ToolsOptionsTabPage.Controls.Add(this.TimeOfDayLabel);
@@ -594,7 +596,7 @@
             this.StatusBarCheckBox.AutoSize = true;
             this.StatusBarCheckBox.Checked = true;
             this.StatusBarCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.StatusBarCheckBox.Location = new System.Drawing.Point(19, 480);
+            this.StatusBarCheckBox.Location = new System.Drawing.Point(19, 519);
             this.StatusBarCheckBox.Name = "StatusBarCheckBox";
             this.StatusBarCheckBox.Size = new System.Drawing.Size(74, 17);
             this.StatusBarCheckBox.TabIndex = 23;
@@ -605,7 +607,7 @@
             // ErrorConsoleCheckBox
             // 
             this.ErrorConsoleCheckBox.AutoSize = true;
-            this.ErrorConsoleCheckBox.Location = new System.Drawing.Point(105, 480);
+            this.ErrorConsoleCheckBox.Location = new System.Drawing.Point(105, 519);
             this.ErrorConsoleCheckBox.Name = "ErrorConsoleCheckBox";
             this.ErrorConsoleCheckBox.Size = new System.Drawing.Size(88, 17);
             this.ErrorConsoleCheckBox.TabIndex = 24;
@@ -804,6 +806,17 @@
             this.ConsoleTextBox.Size = new System.Drawing.Size(695, 95);
             this.ConsoleTextBox.TabIndex = 0;
             // 
+            // ShatterMapsCheckBox
+            // 
+            this.ShatterMapsCheckBox.AutoSize = true;
+            this.ShatterMapsCheckBox.Location = new System.Drawing.Point(19, 467);
+            this.ShatterMapsCheckBox.Name = "ShatterMapsCheckBox";
+            this.ShatterMapsCheckBox.Size = new System.Drawing.Size(161, 17);
+            this.ShatterMapsCheckBox.TabIndex = 25;
+            this.ShatterMapsCheckBox.Text = "Show Window Shatter Maps";
+            this.ShatterMapsCheckBox.UseVisualStyleBackColor = true;
+            this.ShatterMapsCheckBox.CheckedChanged += new System.EventHandler(this.ShatterMapsCheckBox_CheckedChanged);
+            // 
             // VehicleForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -908,5 +921,6 @@
         private System.Windows.Forms.Button ConvRoofButton;
         private System.Windows.Forms.Label ConvRoofNameLabel;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.CheckBox ShatterMapsCheckBox;
     }
 }

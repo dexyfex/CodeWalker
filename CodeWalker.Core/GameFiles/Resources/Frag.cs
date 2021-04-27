@@ -198,6 +198,7 @@ namespace CodeWalker.GameFiles
 
 
             AssignChildrenShaders();
+            AssignGlassWindowsGroups();
 
 #if DEBUG
             Analyzer = new ResourceAnalyzer(reader);
@@ -666,6 +667,54 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public void AssignGlassWindowsGroups()
+        {
+
+            void assign(FragPhysicsLOD lod)
+            {
+                if (lod?.Groups?.data_items == null) return;
+                foreach (var grp in lod.Groups.data_items)
+                {
+                    var windx = grp.UnkByte52;
+                    var flags = grp.UnkByte53;
+                    if ((flags & 2) > 0)
+                    {
+                        if (GlassWindows?.data_items != null)
+                        {
+                            if (windx < GlassWindows.data_items.Length)
+                            {
+                                var wind = GlassWindows.data_items[windx];
+                                wind.Group = grp;
+                                wind.GroupLOD = lod;
+                            }
+                        }
+                    }
+                }
+            }
+            assign(PhysicsLODGroup?.PhysicsLOD1);
+            assign(PhysicsLODGroup?.PhysicsLOD2);
+            assign(PhysicsLODGroup?.PhysicsLOD3);
+
+            //if (VehicleGlassWindows?.Windows != null)
+            //{
+            //    var groups = PhysicsLODGroup?.PhysicsLOD1?.Groups?.data_items;
+            //    if (groups != null)
+            //    {
+            //        var groupdict = new Dictionary<int, FragPhysTypeGroup>();
+            //        foreach (var grp in groups)
+            //        {
+            //            groupdict[grp.Index] = grp;
+            //        }
+            //        foreach (var wind in VehicleGlassWindows.Windows)
+            //        {
+            //            groupdict.TryGetValue(wind.ItemID, out var grp);
+            //            wind.Group = grp;
+            //            wind.GroupLOD = PhysicsLODGroup.PhysicsLOD1;
+            //        }
+            //    }
+            //}
+
+        }
 
 
         public override IResourceBlock[] GetReferences()
@@ -1113,6 +1162,8 @@ namespace CodeWalker.GameFiles
         public float UnkFloat22 { get; set; }
         public uint UnkUint4 = 0x7f800001; // 0x7f800001
 
+        public FragPhysTypeGroup Group { get; set; }
+        public FragPhysicsLOD GroupLOD { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -1840,6 +1891,23 @@ namespace CodeWalker.GameFiles
 
             }
 
+            public int GetValue(int x)
+            {
+                if (x < 0) return -1;
+                if (Data1 != null)
+                {
+                    if (x < Start1) return -1;
+                    var cpos = x - Start1;
+                    if (cpos < Data1.Length) return Data1[cpos];
+                }
+                if (Data2 != null)
+                {
+                    if (x < Start2) return 256;
+                    var cpos = x - Start2;
+                    if (cpos < Data2.Length) return Data2[cpos];
+                }
+                return -1;
+            }
 
             public override string ToString()
             {
@@ -3933,8 +4001,8 @@ namespace CodeWalker.GameFiles
         public byte UnkByte4F { get; set; }
         public byte UnkByte50 { get; set; }
         public byte UnkByte51 { get; set; } = 255; //0xFF
-        public byte UnkByte52 { get; set; }
-        public byte UnkByte53 { get; set; }
+        public byte UnkByte52 { get; set; }//GlassWindows index
+        public byte UnkByte53 { get; set; }//flags: 1=?, 2=glass, 4=?, ...
         public float UnkFloat54 { get; set; }
         public float UnkFloat58 { get; set; }
         public float UnkFloat5C { get; set; }

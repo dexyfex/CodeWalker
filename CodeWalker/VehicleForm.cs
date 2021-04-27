@@ -101,6 +101,7 @@ namespace CodeWalker
             //Renderer.individualcloudfrag = "Contrails";
             Renderer.rendermoon = false;
             Renderer.renderskeletons = false;
+            Renderer.renderfragwindows = false;
             Renderer.SelectionFlagsTestAll = true;
 
         }
@@ -202,7 +203,7 @@ namespace CodeWalker
 
             //Renderer.RenderBounds(MapSelectionMode.Entity);
 
-            //Renderer.RenderSelectionGeometry(MapSelectionMode.Entity);
+            Renderer.RenderSelectionGeometry(MapSelectionMode.Entity);
 
             //RenderMoused();
 
@@ -1349,6 +1350,11 @@ namespace CodeWalker
         private void SkeletonsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Renderer.renderskeletons = SkeletonsCheckBox.Checked;
+        }
+
+        private void ShatterMapsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderfragwindows = ShatterMapsCheckBox.Checked;
         }
 
         private void ErrorConsoleCheckBox_CheckedChanged(object sender, EventArgs e)

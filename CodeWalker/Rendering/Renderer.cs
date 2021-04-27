@@ -111,6 +111,7 @@ namespace CodeWalker.Rendering
         public bool renderlodlights = true; //render LOD lights from ymaps
         public bool renderdistlodlights = true; //render distant lod lights (coronas)
         public bool rendercars = false;
+        public bool renderfragwindows = false; //render selection geometry for window glass data in fragments 
 
         public bool rendercollisionmeshes = Settings.Default.ShowCollisionMeshes;
         public bool rendercollisionmeshlayerdrawable = true;
@@ -919,6 +920,20 @@ namespace CodeWalker.Rendering
         {
             SelectionLineVerts.Add(new VertexTypePC() { Position = p1, Colour = col });
             SelectionLineVerts.Add(new VertexTypePC() { Position = p2, Colour = col });
+        }
+
+        public void RenderSelectionQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, uint col)
+        {
+            var v1 = new VertexTypePC() { Position = p1, Colour = col };
+            var v2 = new VertexTypePC() { Position = p2, Colour = col };
+            var v3 = new VertexTypePC() { Position = p3, Colour = col };
+            var v4 = new VertexTypePC() { Position = p4, Colour = col };
+            SelectionTriVerts.Add(v1);
+            SelectionTriVerts.Add(v2);
+            SelectionTriVerts.Add(v3);
+            SelectionTriVerts.Add(v3);
+            SelectionTriVerts.Add(v4);
+            SelectionTriVerts.Add(v1);
         }
 
         public void RenderSelectionCone(Vector3 position, Vector3 ax, Vector3 ay, Vector3 dir, float radius, float height, uint col)
@@ -2882,6 +2897,123 @@ namespace CodeWalker.Rendering
                     for (int i = 0; i < darr.Length; i++)
                     {
                         RenderDrawable(darr[i], arch, ent, txdhash, null, null, animClip);
+                    }
+                }
+            }
+
+
+
+            if (renderfragwindows)
+            {
+                var colblu = (uint)(new Color(0, 0, 255, 255).ToRgba());
+                var colred = (uint)(new Color(255, 0, 0, 255).ToRgba());
+                var eori = Quaternion.Identity;
+                var epos = Vector3.Zero;
+                if (ent != null)
+                {
+                    eori = ent.Orientation;
+                    epos = ent.Position;
+                }
+
+                if (f.GlassWindows?.data_items != null)
+                {
+                    for (int i = 0; i < f.GlassWindows.data_items.Length; i++)
+                    {
+                        var gw = f.GlassWindows.data_items[i];
+                        var projt = new Vector3(gw.UnkFloat1, gw.UnkFloat2, gw.UnkFloat3);//row0? or row3? maybe investigate more
+                        var proju = new Vector3(gw.UnkFloat5, gw.UnkFloat6, gw.UnkFloat7);//row1 of XYZ>UV projection
+                        var projv = new Vector3(gw.UnkFloat9, gw.UnkFloat10, gw.UnkFloat11);//row2 of XYZ>UV projection
+                        //var unk01 = new Vector2(gw.UnkFloat13, gw.UnkFloat14);//offset?
+                        //var unk02 = new Vector2(gw.UnkFloat15, gw.UnkFloat16);//scale? sum of this and above often gives integers eg 1, 6
+                        //var thick = gw.UnkFloat17; //thickness of the glass
+                        //var unkuv = new Vector2(gw.UnkFloat18, gw.UnkFloat19); //another scale in UV space..?
+                        //var tangt = new Vector3(gw.UnkFloat20, gw.UnkFloat21, gw.UnkFloat22);//direction of surface tangent
+                        //var bones = f.Drawable?.Skeleton?.Bones?.Items; //todo: use bones instead?
+                        var grp = gw.Group;
+                        var grplod = gw.GroupLOD;
+                        var xforms = grplod?.FragTransforms?.Matrices;
+                        var xoffs = Vector3.Zero;
+                        if ((grp != null) && (xforms != null) && (grp.Index < xforms.Length) && (grplod != null))
+                        {
+                            var xform = xforms[grp.Index];
+                            xoffs = xform.TranslationVector + grplod.Unknown_30h;
+                        }
+                        var m = new Matrix();
+                        m.Row1 = new Vector4(projt, 0);
+                        m.Row2 = new Vector4(proju, 0);
+                        m.Row3 = new Vector4(projv, 0);
+                        m.Row4 = new Vector4(xoffs, 1);
+                        var v0 = m.Multiply(new Vector3(1, 0, 0));
+                        var v1 = m.Multiply(new Vector3(1, 0, 1));
+                        var v2 = m.Multiply(new Vector3(1, 1, 1));
+                        var v3 = m.Multiply(new Vector3(1, 1, 0));
+                        var c0 = eori.Multiply(v0) + epos;
+                        var c1 = eori.Multiply(v1) + epos;
+                        var c2 = eori.Multiply(v2) + epos;
+                        var c3 = eori.Multiply(v3) + epos;
+                        RenderSelectionLine(c0, c1, colblu);
+                        RenderSelectionLine(c1, c2, colblu);
+                        RenderSelectionLine(c2, c3, colblu);
+                        RenderSelectionLine(c3, c0, colblu);
+                        //RenderSelectionLine(c0, c0 + tangt, colred);
+                    }
+                }
+                if (f.VehicleGlassWindows?.Windows != null)
+                {
+                    for (int i = 0; i < f.VehicleGlassWindows.Windows.Length; i++)
+                    {
+                        var vgw = f.VehicleGlassWindows.Windows[i];
+                        var projt = new Vector3(vgw.UnkFloat1, vgw.UnkFloat2, vgw.UnkFloat3);//row1
+                        var proju = new Vector3(vgw.UnkFloat5, vgw.UnkFloat6, vgw.UnkFloat7);//row2
+                        var projv = new Vector3(vgw.UnkFloat9, vgw.UnkFloat10, vgw.UnkFloat11);//row3
+                        var projw = new Vector3(vgw.UnkFloat13, vgw.UnkFloat14, vgw.UnkFloat15);//row4
+                        //var grp = vgw.Group;
+                        //var grplod = vgw.GroupLOD;
+                        var m = new Matrix();
+                        m.Row1 = new Vector4(projt, 0);
+                        m.Row2 = new Vector4(proju, 0);
+                        m.Row3 = new Vector4(projv, 0);
+                        m.Row4 = new Vector4(projw, 1);
+                        m.Invert();//ouch
+                        var min = (new Vector3(0, 0, 0));
+                        var max = (new Vector3(vgw.ShatterMapWidth, vgw.ItemDataCount, 1));
+                        var v0 = m.MultiplyW(new Vector3(min.X, min.Y, 0));
+                        var v1 = m.MultiplyW(new Vector3(min.X, max.Y, 0));
+                        var v2 = m.MultiplyW(new Vector3(max.X, max.Y, 0));
+                        var v3 = m.MultiplyW(new Vector3(max.X, min.Y, 0));
+                        var c0 = eori.Multiply(v0) + epos;
+                        var c1 = eori.Multiply(v1) + epos;
+                        var c2 = eori.Multiply(v2) + epos;
+                        var c3 = eori.Multiply(v3) + epos;
+                        RenderSelectionLine(c0, c1, colblu);
+                        RenderSelectionLine(c1, c2, colblu);
+                        RenderSelectionLine(c2, c3, colblu);
+                        RenderSelectionLine(c3, c0, colblu);
+                        if (vgw.ShatterMap != null)
+                        {
+                            var width = vgw.ShatterMapWidth;
+                            var height = vgw.ShatterMap.Length;
+                            for (int y = 0; y < height; y++)
+                            {
+                                var smr = vgw.ShatterMap[y];
+                                for (int x = 0; x < width; x++)
+                                {
+                                    var v = smr.GetValue(x);
+                                    if ((v < 0) || (v > 255)) continue;
+                                    var col = (uint)(new Color(v, v, v, 127).ToRgba());
+                                    v0 = m.MultiplyW(new Vector3(x, y, 0));
+                                    v1 = m.MultiplyW(new Vector3(x, y+1, 0));
+                                    v2 = m.MultiplyW(new Vector3(x+1, y+1, 0));
+                                    v3 = m.MultiplyW(new Vector3(x+1, y, 0));
+                                    c0 = eori.Multiply(v0) + epos;
+                                    c1 = eori.Multiply(v1) + epos;
+                                    c2 = eori.Multiply(v2) + epos;
+                                    c3 = eori.Multiply(v3) + epos;
+                                    RenderSelectionQuad(c0, c1, c2, c3, col);//extra ouch
+                                }
+                            }
+                        }
+
                     }
                 }
             }
