@@ -117,10 +117,10 @@ namespace CodeWalker.World
                 SelectionEntityTabPage.Text = "Box Occluder";
                 SelEntityPropertyGrid.SelectedObject = item.BoxOccluder;
             }
-            else if (item.OccludeModel != null)
+            else if (item.OccludeModelTri != null)
             {
-                SelectionEntityTabPage.Text = "Occlude Model";
-                SelEntityPropertyGrid.SelectedObject = item.OccludeModel;
+                SelectionEntityTabPage.Text = "Occlude Model Triangle";
+                SelEntityPropertyGrid.SelectedObject = item.OccludeModelTri;
             }
             else if (item.WaterQuad != null)
             {

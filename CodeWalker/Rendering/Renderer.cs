@@ -936,6 +936,16 @@ namespace CodeWalker.Rendering
             SelectionTriVerts.Add(v1);
         }
 
+        public void RenderSelectionTriangleOutline(Vector3 p1, Vector3 p2, Vector3 p3, uint col)
+        {
+            SelectionLineVerts.Add(new VertexTypePC() { Position = p1, Colour = col });
+            SelectionLineVerts.Add(new VertexTypePC() { Position = p2, Colour = col });
+            SelectionLineVerts.Add(new VertexTypePC() { Position = p2, Colour = col });
+            SelectionLineVerts.Add(new VertexTypePC() { Position = p3, Colour = col });
+            SelectionLineVerts.Add(new VertexTypePC() { Position = p3, Colour = col });
+            SelectionLineVerts.Add(new VertexTypePC() { Position = p1, Colour = col });
+        }
+
         public void RenderSelectionCone(Vector3 position, Vector3 ax, Vector3 ay, Vector3 dir, float radius, float height, uint col)
         {
             const int Reso = 36;

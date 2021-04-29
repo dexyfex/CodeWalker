@@ -43,6 +43,9 @@ namespace CodeWalker.Project
         private YmapEntityDef CurrentEntity;
         private YmapCarGen CurrentCarGen;
         private YmapLODLight CurrentLodLight;
+        private YmapBoxOccluder CurrentBoxOccluder;
+        private YmapOccludeModel CurrentOccludeModel;
+        private YmapOccludeModelTriangle CurrentOccludeModelTri;
         private YmapGrassInstanceBatch CurrentGrassBatch;
 
         private YtypFile CurrentYtypFile;
@@ -395,6 +398,27 @@ namespace CodeWalker.Project
                 (panel) => { panel.SetLodLight(CurrentLodLight); }, //updateFunc
                 (panel) => { return panel.CurrentLodLight == CurrentLodLight; }); //findFunc
         }
+        public void ShowEditYmapBoxOccluderPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYmapBoxOccluderPanel(this); }, //createFunc
+                (panel) => { panel.SetBoxOccluder(CurrentBoxOccluder); }, //updateFunc
+                (panel) => { return panel.CurrentBoxOccluder == CurrentBoxOccluder; }); //findFunc
+        }
+        public void ShowEditYmapOccludeModelPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYmapOccludeModelPanel(this); }, //createFunc
+                (panel) => { panel.SetOccludeModel(CurrentOccludeModel); }, //updateFunc
+                (panel) => { return panel.CurrentOccludeModel == CurrentOccludeModel; }); //findFunc
+        }
+        public void ShowEditYmapOccludeModelTrianglePanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { return new EditYmapOccludeModelPanel(this); }, //createFunc
+                (panel) => { panel.SetOccludeModelTriangle(CurrentOccludeModelTri); }, //updateFunc
+                (panel) => { return panel.CurrentOccludeModel == CurrentOccludeModel; }); //findFunc
+        }
         public void ShowEditYmapGrassBatchPanel(bool promote)
         {
             ShowPanel(promote,
@@ -642,6 +666,18 @@ namespace CodeWalker.Project
             {
                 ShowEditYmapLodLightPanel(promote);
             }
+            else if (CurrentBoxOccluder != null)
+            {
+                ShowEditYmapBoxOccluderPanel(promote);
+            }
+            else if (CurrentOccludeModelTri != null)
+            {
+                ShowEditYmapOccludeModelTrianglePanel(promote);
+            }
+            else if (CurrentOccludeModel != null)
+            {
+                ShowEditYmapOccludeModelPanel(promote);
+            }
             else if (CurrentGrassBatch != null)
             {
                 ShowEditYmapGrassBatchPanel(promote);
@@ -769,6 +805,9 @@ namespace CodeWalker.Project
             CurrentEntity = item as YmapEntityDef;
             CurrentCarGen = item as YmapCarGen;
             CurrentLodLight = item as YmapLODLight;
+            CurrentBoxOccluder = item as YmapBoxOccluder;
+            CurrentOccludeModelTri = item as YmapOccludeModelTriangle;
+            CurrentOccludeModel = (item as YmapOccludeModel) ?? CurrentOccludeModelTri?.Model;
             CurrentGrassBatch = item as YmapGrassInstanceBatch;
             CurrentYtypFile = item as YtypFile;
             CurrentArchetype = item as Archetype;
@@ -840,6 +879,18 @@ namespace CodeWalker.Project
             else if (CurrentLodLight != null)
             {
                 CurrentYmapFile = CurrentLodLight.Ymap;
+            }
+            else if (CurrentBoxOccluder != null)
+            {
+                CurrentYmapFile = CurrentBoxOccluder.Ymap;
+            }
+            else if (CurrentOccludeModel != null)
+            {
+                CurrentYmapFile = CurrentOccludeModel.Ymap;
+            }
+            else if (CurrentOccludeModelTri != null)
+            {
+                CurrentYmapFile = CurrentOccludeModelTri.Ymap;
             }
             else if (CurrentGrassBatch != null)
             {
@@ -1571,6 +1622,9 @@ namespace CodeWalker.Project
             else if (sel.CollisionBounds != null) return NewCollisionBounds(sel.CollisionBounds.Type, sel.CollisionBounds, copyPosition, selectNew);
             else if (sel.EntityDef != null) return NewEntity(sel.EntityDef, copyPosition, selectNew);
             else if (sel.CarGenerator != null) return NewCarGen(sel.CarGenerator, copyPosition, selectNew);
+            else if (sel.LodLight != null) return NewLodLight(sel.LodLight, copyPosition, selectNew);
+            else if (sel.BoxOccluder != null) return NewBoxOccluder(sel.BoxOccluder, copyPosition, selectNew);
+            else if (sel.OccludeModelTri != null) return NewOccludeModelTriangle(sel.OccludeModelTri, copyPosition, selectNew);
             else if (sel.PathNode != null) return NewPathNode(sel.PathNode, copyPosition, selectNew);
             else if (sel.NavPoly != null) return NewNavPoly(sel.NavPoly, copyPosition, selectNew);
             else if (sel.NavPoint != null) return NewNavPoint(sel.NavPoint, copyPosition, selectNew);
@@ -1596,6 +1650,9 @@ namespace CodeWalker.Project
             else if (sel.CollisionBounds != null) DeleteCollisionBounds();
             else if (sel.EntityDef != null) DeleteEntity();
             else if (sel.CarGenerator != null) DeleteCarGen();
+            else if (sel.LodLight != null) DeleteLodLight();
+            else if (sel.BoxOccluder != null) DeleteBoxOccluder();
+            else if (sel.OccludeModelTri != null) DeleteOccludeModelTriangle();
             else if (sel.PathNode != null) DeletePathNode();
             else if (sel.NavPoly != null) DeleteNavPoly();
             else if (sel.NavPoint != null) DeleteNavPoint();
@@ -1613,6 +1670,9 @@ namespace CodeWalker.Project
             else if (sel.CollisionBounds != null) SetProjectItem(sel.CollisionBounds, false);
             else if (sel.EntityDef != null) SetProjectItem(sel.EntityDef, false);
             else if (sel.CarGenerator != null) SetProjectItem(sel.CarGenerator, false);
+            else if (sel.LodLight != null) SetProjectItem(sel.LodLight, false);
+            else if (sel.BoxOccluder != null) SetProjectItem(sel.BoxOccluder, false);
+            else if (sel.OccludeModelTri != null) SetProjectItem(sel.OccludeModelTri, false);
             else if (sel.PathNode != null) SetProjectItem(sel.PathNode, false);
             else if (sel.NavPoly != null) SetProjectItem(sel.NavPoly, false);
             else if (sel.NavPoint != null) SetProjectItem(sel.NavPoint, false);
@@ -2437,6 +2497,364 @@ namespace CodeWalker.Project
         public bool IsCurrentLodLight(YmapLODLight lodlight)
         {
             return CurrentLodLight == lodlight;
+        }
+
+        public YmapBoxOccluder NewBoxOccluder(YmapBoxOccluder copy = null, bool copyPosition = false, bool selectNew = true)
+        {
+            if (CurrentYmapFile == null) return null;
+
+            Vector3 pos = GetSpawnPos(10.0f);
+
+            YmapBoxOccluder bo;
+
+            if (copy != null)
+            {
+                bo = new YmapBoxOccluder(CurrentYmapFile, copy._Box);
+            }
+            else
+            {
+                bo = new YmapBoxOccluder(CurrentYmapFile, new BoxOccluder());
+                //...
+            }
+
+            if (!copyPosition || (copy == null))
+            {
+                bo.Position = pos;
+            }
+
+
+
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    CurrentYmapFile.AddBoxOccluder(bo);
+                }
+
+                WorldForm.UpdateBoxOccluderGraphics(bo);
+
+            }
+            else
+            {
+                CurrentYmapFile.AddBoxOccluder(bo);
+            }
+
+
+            if (selectNew)
+            {
+                LoadProjectTree();
+                ProjectExplorer?.TrySelectBoxOccluderTreeNode(bo);
+                CurrentBoxOccluder = bo;
+                ShowEditYmapBoxOccluderPanel(false);
+            }
+            return bo;
+        }
+        public void AddBoxOccluderToProject()
+        {
+            if (CurrentBoxOccluder == null) return;
+
+            if (!YmapExistsInProject(CurrentBoxOccluder.Ymap))
+            {
+                var box = CurrentBoxOccluder;
+
+                CurrentYmapFile = box.Ymap;
+                CurrentYmapFile.HasChanged = true;
+                AddYmapToProject(CurrentYmapFile);
+
+                CurrentBoxOccluder = box; //bug fix for some reason the treeview selects the project node here.
+                CurrentYmapFile = box.Ymap;
+                ProjectExplorer?.TrySelectBoxOccluderTreeNode(box);
+            }
+        }
+        public bool DeleteBoxOccluder()
+        {
+            if (CurrentYmapFile == null) return false;
+            if (CurrentBoxOccluder == null) return false;
+            if (CurrentBoxOccluder.Ymap != CurrentYmapFile) return false;
+
+            //if (MessageBox.Show("Are you sure you want to delete this box occluder?\n" + CurrentBoxOccluder.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
+
+            var delbox = CurrentBoxOccluder;
+            
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentYmapFile.RemoveBoxOccluder(CurrentBoxOccluder);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentYmapFile.RemoveBoxOccluder(CurrentBoxOccluder);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unable to delete the box occluder. This shouldn't happen!");
+            }
+
+            ProjectExplorer?.RemoveBoxOccluderTreeNode(CurrentBoxOccluder);
+            ProjectExplorer?.SetYmapHasChanged(CurrentYmapFile, true);
+
+            ClosePanel((EditYmapBoxOccluderPanel p) => { return p.Tag == delbox; });
+
+            CurrentBoxOccluder = null;
+            CurrentYmapFile = null;
+
+            if (WorldForm != null)
+            {
+                WorldForm.SelectItem(null);
+            }
+
+            return true;
+        }
+        public bool IsCurrentBoxOccluder(YmapBoxOccluder box)
+        {
+            return CurrentBoxOccluder == box;
+        }
+
+        public YmapOccludeModel NewOccludeModel(YmapOccludeModel copy = null, bool copyPosition = false, bool selectNew = true)
+        {
+            if (CurrentYmapFile == null) return null;
+
+            Vector3 pos = GetSpawnPos(10.0f);
+
+            YmapOccludeModel om;
+
+            if (copy != null)
+            {
+                om = new YmapOccludeModel(CurrentYmapFile, copy._OccludeModel);
+            }
+            else
+            {
+                om = new YmapOccludeModel(CurrentYmapFile, new OccludeModel());
+                //...
+            }
+
+            if (!copyPosition || (copy == null))
+            {
+                //om.Center = pos;
+            }
+
+
+
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    CurrentYmapFile.AddOccludeModel(om);
+                }
+
+                WorldForm.UpdateOccludeModelGraphics(om);
+
+            }
+            else
+            {
+                CurrentYmapFile.AddOccludeModel(om);
+            }
+
+
+            if (selectNew)
+            {
+                LoadProjectTree();
+                ProjectExplorer?.TrySelectOccludeModelTreeNode(om);
+                CurrentOccludeModel = om;
+                ShowEditYmapOccludeModelPanel(false);
+            }
+            return om;
+        }
+        public void AddOccludeModelToProject()
+        {
+            if (CurrentOccludeModel == null) return;
+
+            if (!YmapExistsInProject(CurrentOccludeModel.Ymap))
+            {
+                var model = CurrentOccludeModel;
+
+                CurrentYmapFile = model.Ymap;
+                CurrentYmapFile.HasChanged = true;
+                AddYmapToProject(CurrentYmapFile);
+
+                CurrentOccludeModel = model; //bug fix for some reason the treeview selects the project node here.
+                CurrentYmapFile = model.Ymap;
+                ProjectExplorer?.TrySelectOccludeModelTreeNode(model);
+            }
+        }
+        public bool DeleteOccludeModel()
+        {
+            if (CurrentYmapFile == null) return false;
+            if (CurrentOccludeModel == null) return false;
+            if (CurrentOccludeModel.Ymap != CurrentYmapFile) return false;
+
+            //if (MessageBox.Show("Are you sure you want to delete this occlude model?\n" + CurrentOccludeModel.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
+
+            var delmodel = CurrentOccludeModel;
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentYmapFile.RemoveOccludeModel(CurrentOccludeModel);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentYmapFile.RemoveOccludeModel(CurrentOccludeModel);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unable to delete the occlude model. This shouldn't happen!");
+            }
+
+            ProjectExplorer?.RemoveOccludeModelTreeNode(CurrentOccludeModel);
+            ProjectExplorer?.SetYmapHasChanged(CurrentYmapFile, true);
+
+            ClosePanel((EditYmapOccludeModelPanel p) => { return p.Tag == delmodel; });
+
+            CurrentOccludeModel = null;
+            CurrentYmapFile = null;
+
+            if (WorldForm != null)
+            {
+                WorldForm.SelectItem(null);
+            }
+
+            return true;
+        }
+        public bool IsCurrentOccludeModel(YmapOccludeModel model)
+        {
+            return CurrentOccludeModel == model;
+        }
+
+        public YmapOccludeModelTriangle NewOccludeModelTriangle(YmapOccludeModelTriangle copy = null, bool copyPosition = false, bool selectNew = true)
+        {
+            if (CurrentYmapFile == null) return null;
+
+            Vector3 pos = GetSpawnPos(10.0f);
+
+            YmapOccludeModelTriangle ot;
+
+            if (copy != null)
+            {
+                ot = new YmapOccludeModelTriangle(copy.Model, copy.Corner1, copy.Corner2, copy.Corner3, copy.Model.Triangles?.Length ?? 0);
+            }
+            else
+            {
+                ot = new YmapOccludeModelTriangle(CurrentOccludeModel, pos, pos + Vector3.UnitY, pos + Vector3.UnitX, CurrentOccludeModel?.Triangles?.Length ?? 0);
+                //...
+            }
+
+            if (!copyPosition || (copy == null))
+            {
+                //om.Center = pos;
+            }
+
+
+
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    CurrentYmapFile.AddOccludeModelTriangle(ot);
+                }
+
+                WorldForm.UpdateOccludeModelGraphics(ot.Model);
+
+            }
+            else
+            {
+                CurrentYmapFile.AddOccludeModelTriangle(ot);
+            }
+
+
+            if (selectNew)
+            {
+                LoadProjectTree();
+                ProjectExplorer?.TrySelectOccludeModelTriangleTreeNode(ot);
+                CurrentOccludeModel = ot.Model;
+                CurrentOccludeModelTri = ot;
+                ShowEditYmapOccludeModelTrianglePanel(false);
+            }
+            return ot;
+        }
+        public void AddOccludeModelTriangleToProject()
+        {
+            if (CurrentOccludeModelTri == null) return;
+
+            if (!YmapExistsInProject(CurrentOccludeModelTri.Ymap))
+            {
+                var tri = CurrentOccludeModelTri;
+
+                CurrentYmapFile = tri.Ymap;
+                CurrentYmapFile.HasChanged = true;
+                AddYmapToProject(CurrentYmapFile);
+
+                CurrentOccludeModelTri = tri; //bug fix for some reason the treeview selects the project node here.
+                CurrentOccludeModel = tri.Model;
+                CurrentYmapFile = tri.Ymap;
+                ProjectExplorer?.TrySelectOccludeModelTriangleTreeNode(tri);
+            }
+        }
+        public bool DeleteOccludeModelTriangle()
+        {
+            if (CurrentYmapFile == null) return false;
+            if (CurrentOccludeModelTri == null) return false;
+            if (CurrentOccludeModelTri.Ymap != CurrentYmapFile) return false;
+
+            //if (MessageBox.Show("Are you sure you want to delete this occlude model triangle?\n" + CurrentOccludeModelTri.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            //{
+            //    return true;
+            //}
+
+            var deltri = CurrentOccludeModelTri;
+
+            bool res = false;
+            if (WorldForm != null)
+            {
+                lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
+                {
+                    res = CurrentYmapFile.RemoveOccludeModelTriangle(CurrentOccludeModelTri);
+                    //WorldForm.SelectItem(null, null, null);
+                }
+            }
+            else
+            {
+                res = CurrentYmapFile.RemoveOccludeModelTriangle(CurrentOccludeModelTri);
+            }
+            if (!res)
+            {
+                MessageBox.Show("Unable to delete the occlude model triangle. This shouldn't happen!");
+            }
+
+            ProjectExplorer?.UpdateOccludeModelTreeNode(CurrentOccludeModelTri?.Model);
+            ProjectExplorer?.SetYmapHasChanged(CurrentYmapFile, true);
+
+            ClosePanel((EditYmapOccludeModelPanel p) => { return p.CurrentTriangle == deltri; });
+
+            CurrentOccludeModelTri = null;
+            CurrentOccludeModel = null;
+            CurrentYmapFile = null;
+
+            if (WorldForm != null)
+            {
+                WorldForm.UpdateOccludeModelGraphics(deltri.Model);
+                WorldForm.SelectItem(null);
+            }
+
+            return true;
+        }
+        public bool IsCurrentOccludeModelTriangle(YmapOccludeModelTriangle tri)
+        {
+            return CurrentOccludeModelTri == tri;
         }
 
         private void ImportMenyooXml()
@@ -7043,6 +7461,8 @@ namespace CodeWalker.Project
                     var ent = sel.EntityDef;
                     var cargen = sel.CarGenerator;
                     var lodlight = sel.LodLight;
+                    var boxoccluder = sel.BoxOccluder;
+                    var occludetri = sel.OccludeModelTri;
                     var grassbatch = sel.GrassBatch;
                     var collvert = sel.CollisionVertex;
                     var collpoly = sel.CollisionPoly;
@@ -7058,7 +7478,7 @@ namespace CodeWalker.Project
                     var audiopl = sel.Audio;
                     Archetype arch = mlo?.Archetype ?? ent?.MloParent?.Archetype ?? ent?.Archetype;
                     YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.OwnerMlo?.Ytyp;
-                    YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? lodlight?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
+                    YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? lodlight?.Ymap ?? boxoccluder?.Ymap ?? occludetri?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
                     YbnFile ybn = collbound?.GetRootYbn();
                     YndFile ynd = pathnode?.Ynd;
                     YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
@@ -7080,6 +7500,14 @@ namespace CodeWalker.Project
                         if (wasmult || (lodlight != CurrentLodLight))
                         {
                             ProjectExplorer?.TrySelectLodLightTreeNode(lodlight);
+                        }
+                        if (wasmult || (boxoccluder != CurrentBoxOccluder))
+                        {
+                            ProjectExplorer?.TrySelectBoxOccluderTreeNode(boxoccluder);
+                        }
+                        if (wasmult || (occludetri != CurrentOccludeModelTri))
+                        {
+                            ProjectExplorer?.TrySelectOccludeModelTriangleTreeNode(occludetri);
                         }
                         if (wasmult || (grassbatch != CurrentGrassBatch))
                         {
@@ -7185,6 +7613,9 @@ namespace CodeWalker.Project
                     CurrentEntity = ent ?? mlo;
                     CurrentCarGen = cargen;
                     CurrentLodLight = lodlight;
+                    CurrentBoxOccluder = boxoccluder;
+                    CurrentOccludeModelTri = occludetri;
+                    CurrentOccludeModel = occludetri?.Model;
                     CurrentGrassBatch = grassbatch;
                     CurrentYbnFile = ybn;
                     CurrentCollisionVertex = collvert;
@@ -7255,6 +7686,14 @@ namespace CodeWalker.Project
                     else if (sel.LodLight != null)
                     {
                         OnWorldLodLightModified(sel.LodLight);
+                    }
+                    else if (sel.BoxOccluder != null)
+                    {
+                        OnWorldBoxOccluderModified(sel.BoxOccluder);
+                    }
+                    else if (sel.OccludeModelTri != null)
+                    {
+                        OnWorldOccludeModelTriModified(sel.OccludeModelTri);
                     }
                     else if (sel.PathNode != null)
                     {
@@ -7432,6 +7871,76 @@ namespace CodeWalker.Project
                 ProjectExplorer?.UpdateLodLightTreeNode(lodlight);
 
                 if (lodlight.Ymap != null)
+                {
+                    SetYmapHasChanged(true);
+                }
+            }
+
+        }
+        private void OnWorldBoxOccluderModified(YmapBoxOccluder box)
+        {
+            if (box?.Ymap == null) return;
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            if (!YmapExistsInProject(box.Ymap))
+            {
+                box.Ymap.HasChanged = true;
+                AddYmapToProject(box.Ymap);
+                ProjectExplorer?.TrySelectBoxOccluderTreeNode(box);
+            }
+
+            if (box != CurrentBoxOccluder)
+            {
+                CurrentBoxOccluder = box;
+                ProjectExplorer?.TrySelectBoxOccluderTreeNode(box);
+            }
+
+            if (box == CurrentBoxOccluder)
+            {
+                ShowEditYmapBoxOccluderPanel(false);
+
+                ProjectExplorer?.UpdateBoxOccluderTreeNode(box);
+
+                if (box.Ymap != null)
+                {
+                    SetYmapHasChanged(true);
+                }
+            }
+
+        }
+        private void OnWorldOccludeModelTriModified(YmapOccludeModelTriangle tri)
+        {
+            if (tri?.Ymap == null) return;
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            if (!YmapExistsInProject(tri.Ymap))
+            {
+                tri.Ymap.HasChanged = true;
+                AddYmapToProject(tri.Ymap);
+                ProjectExplorer?.TrySelectOccludeModelTriangleTreeNode(tri);
+            }
+
+            if (tri != CurrentOccludeModelTri)
+            {
+                CurrentOccludeModelTri = tri;
+                ProjectExplorer?.TrySelectOccludeModelTriangleTreeNode(tri);
+            }
+
+            if (tri == CurrentOccludeModelTri)
+            {
+                ShowEditYmapOccludeModelTrianglePanel(false);
+
+                //ProjectExplorer?.UpdateOccludeModelTriangleTreeNode(tri);
+
+                if (tri.Ymap != null)
                 {
                     SetYmapHasChanged(true);
                 }

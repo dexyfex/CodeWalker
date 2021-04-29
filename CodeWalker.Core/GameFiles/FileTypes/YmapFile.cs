@@ -589,6 +589,28 @@ namespace CodeWalker.GameFiles
             //how to rebuild these here? the LODlights array is on the child ymap...
             //for now, they are being updated as they are edited in project window
         }
+        public void BuildBoxOccluders()
+        {
+            if (BoxOccluders == null) return;
+            if (BoxOccluders.Length == 0) return;
+
+            var boxes = new BoxOccluder[BoxOccluders.Length];
+            for (int i = 0; i < BoxOccluders.Length; i++)
+            {
+                var box = BoxOccluders[i];
+                box.UpdateBoxStruct();
+                boxes[i] = box._Box;
+            }
+
+            CBoxOccluders = boxes;
+
+        }
+        public void BuildOccludeModels()
+        {
+            if (OccludeModels == null) return;
+            if (OccludeModels.Length == 0) return;
+            //nothing to do here, has to be done later due to embedded data
+        }
 
         public byte[] Save()
         {
@@ -601,11 +623,11 @@ namespace CodeWalker.GameFiles
             BuildInstances();
             BuildLodLights();
             BuildDistantLodLights();
+            BuildBoxOccluders();
+            BuildOccludeModels();
 
             //TODO:
             //BuildTimecycleModifiers(); //already being saved - update them..
-            //BuildBoxOccluders();
-            //BuildOccludeModels();
             //BuildContainerLods();
 
 
@@ -658,14 +680,12 @@ namespace CodeWalker.GameFiles
 
             mapdata.carGenerators = mb.AddItemArrayPtr(MetaName.CCarGen, CCarGens);
 
-            //clear everything out for now - TODO: fix
+
+
+            //clear everything else out for now - TODO: fix
             if (mapdata.containerLods.Count1 != 0) LogSaveWarning("containerLods were not saved. (TODO!)");
-            if (mapdata.occludeModels.Count1 != 0) LogSaveWarning("occludeModels were not saved. (TODO!)");
-            if (mapdata.boxOccluders.Count1 != 0) LogSaveWarning("boxOccluders were not saved. (TODO!)");
             if (mapdata.instancedData.PropInstanceList.Count1 != 0) LogSaveWarning("instancedData.PropInstanceList was not saved. (TODO!)");
             mapdata.containerLods = new Array_Structure();
-            mapdata.occludeModels = new Array_Structure();
-            mapdata.boxOccluders = new Array_Structure();
 
             if ((GrassInstanceBatches != null) && (GrassInstanceBatches.Length > 0))
             {
@@ -720,6 +740,32 @@ namespace CodeWalker.GameFiles
                 mapdata.DistantLODLightsSOA = new CDistantLODLight();
             }
 
+            if ((CBoxOccluders != null) && (CBoxOccluders.Length > 0))
+            {
+                mapdata.boxOccluders = mb.AddItemArrayPtr(MetaName.BoxOccluder, CBoxOccluders);
+            }
+            else
+            {
+                mapdata.boxOccluders = new Array_Structure();
+            }
+            if ((OccludeModels != null) && (OccludeModels.Length > 0))
+            {
+                COccludeModels = new OccludeModel[OccludeModels.Length];
+                for (int i = 0; i < OccludeModels.Length; i++)
+                {
+                    var model = OccludeModels[i];
+                    model.BuildVertices();
+                    model.BuildData();
+                    var cocc = model._OccludeModel;
+                    cocc.verts = mb.AddDataBlockPtr(model.Data, (MetaName)MetaStructureEntryDataType.UnsignedByte);//17
+                    COccludeModels[i] = cocc;
+                }
+                mapdata.occludeModels = mb.AddItemArrayPtr(MetaName.OccludeModel, COccludeModels);
+            }
+            else
+            {
+                mapdata.occludeModels = new Array_Structure();
+            }
 
 
             var block = new CBlockDesc();
@@ -751,9 +797,17 @@ namespace CodeWalker.GameFiles
             mb.AddStructureInfo(MetaName.CDistantLODLight);
             mb.AddStructureInfo(MetaName.CBlockDesc);
             mb.AddStructureInfo(MetaName.CMapData);
-            mb.AddStructureInfo(MetaName.CEntityDef);
-            mb.AddStructureInfo(MetaName.CMloInstanceDef);
-            mb.AddStructureInfo(MetaName.CTimeCycleModifier);
+            if ((AllEntities != null) && (AllEntities.Length > 0))
+            {
+                mb.AddStructureInfo(MetaName.CEntityDef);
+                mb.AddStructureInfo(MetaName.CMloInstanceDef);
+                mb.AddEnumInfo(MetaName.rage__eLodType); //LODTYPES_
+                mb.AddEnumInfo(MetaName.rage__ePriorityLevel);  //PRI_
+            }
+            if ((CTimeCycleModifiers != null) && (CTimeCycleModifiers.Length > 0))
+            {
+                mb.AddStructureInfo(MetaName.CTimeCycleModifier);
+            }
             if ((CCarGens != null) && (CCarGens.Length > 0))
             {
                 mb.AddStructureInfo(MetaName.CCarGen);
@@ -766,9 +820,14 @@ namespace CodeWalker.GameFiles
             {
                 mb.AddStructureInfo(MetaName.FloatXYZ);
             }
-
-            mb.AddEnumInfo(MetaName.rage__eLodType); //LODTYPES_
-            mb.AddEnumInfo(MetaName.rage__ePriorityLevel);  //PRI_
+            if ((CBoxOccluders != null) && (CBoxOccluders.Length > 0))
+            {
+                mb.AddStructureInfo(MetaName.BoxOccluder);
+            }
+            if ((COccludeModels != null) && (COccludeModels.Length > 0))
+            {
+                mb.AddStructureInfo(MetaName.OccludeModel);
+            }
 
 
             Meta meta = mb.GetMeta();
@@ -1090,6 +1149,131 @@ namespace CodeWalker.GameFiles
             return true;
         }
 
+
+        public void AddBoxOccluder(YmapBoxOccluder box)
+        {
+            if (box == null) return;
+            var boxes = new List<YmapBoxOccluder>();
+            if (BoxOccluders != null) boxes.AddRange(BoxOccluders);
+            box.Ymap = this;
+            box.Index = boxes.Count;
+            boxes.Add(box);
+            BoxOccluders = boxes.ToArray();
+
+            HasChanged = true;
+        }
+
+        public bool RemoveBoxOccluder(YmapBoxOccluder box)
+        {
+            if (box == null) return false;
+            var newboxes = new List<YmapBoxOccluder>();
+            if (BoxOccluders != null)
+            {
+                foreach (var oldbox in BoxOccluders)
+                {
+                    if (oldbox != box)
+                    {
+                        oldbox.Index = newboxes.Count;
+                        newboxes.Add(oldbox);
+                    }
+                }
+                if (newboxes.Count == BoxOccluders.Length)
+                {
+                    return false;//nothing removed... wasn't present?
+                }
+            }
+
+            BoxOccluders = newboxes.ToArray();
+
+            HasChanged = true;
+
+            return true;
+        }
+
+
+        public void AddOccludeModel(YmapOccludeModel model)
+        {
+            if (model == null) return;
+            var models = new List<YmapOccludeModel>();
+            if (OccludeModels != null) models.AddRange(OccludeModels);
+            model.Ymap = this;
+            models.Add(model);
+            OccludeModels = models.ToArray();
+
+            HasChanged = true;
+        }
+
+        public bool RemoveOccludeModel(YmapOccludeModel model)
+        {
+            if (model == null) return false;
+            var newmodels = new List<YmapOccludeModel>();
+            if (OccludeModels != null)
+            {
+                foreach (var oldmodel in OccludeModels)
+                {
+                    if (oldmodel != model)
+                    {
+                        oldmodel.Index = newmodels.Count;
+                        newmodels.Add(oldmodel);
+                    }
+                }
+                if (newmodels.Count == OccludeModels.Length)
+                {
+                    return false;//nothing removed... wasn't present?
+                }
+            }
+
+            OccludeModels = newmodels.ToArray();
+
+            HasChanged = true;
+
+            return true;
+        }
+
+
+        public void AddOccludeModelTriangle(YmapOccludeModelTriangle tri)
+        {
+            if (tri == null) return;
+            if (tri.Model == null) return;
+
+            var tris = tri.Model.Triangles.ToList();
+            tri.Index = tris.Count;
+            tris.Add(tri);
+            tri.Model.Triangles = tris.ToArray();
+
+            //tri.Model.BuildBVH();
+            //...
+
+            HasChanged = true;
+        }
+
+        public bool RemoveOccludeModelTriangle(YmapOccludeModelTriangle tri)
+        {
+            if (tri == null) return false;
+            if (tri.Model == null) return false;
+
+            var newtris = new List<YmapOccludeModelTriangle>();
+            if (tri.Model.Triangles != null)
+            {
+                foreach (var oldtri in tri.Model.Triangles)
+                {
+                    if (oldtri != tri)
+                    {
+                        oldtri.Index = newtris.Count;
+                        newtris.Add(oldtri);
+                    }
+                }
+            }
+            tri.Model.Triangles = newtris.ToArray();
+            //tri.Model.BuildBVH();
+            //...
+
+            HasChanged = true;
+
+            return true;
+        }
+
+
         public void AddGrassBatch(YmapGrassInstanceBatch newbatch)
         {
             List<YmapGrassInstanceBatch> batches = new List<YmapGrassInstanceBatch>();
@@ -1196,6 +1380,10 @@ namespace CodeWalker.GameFiles
             if ((DistantLODLights != null) && ((DistantLODLights.positions?.Length ?? 0) > 0))
             {
                 flags = SetBit(flags, 1); //2
+            }
+            if ((BoxOccluders != null) || (OccludeModels != null))
+            {
+                contentFlags = SetBit(contentFlags, 5); //32
             }
 
 
@@ -1327,6 +1515,29 @@ namespace CodeWalker.GameFiles
                 emax = Vector3.Max(emax, DistantLODLights.BBMax + 20.0f);
                 smin = Vector3.Min(smin, (DistantLODLights.BBMin - 3000.0f)); //seems correct
                 smax = Vector3.Max(smax, (DistantLODLights.BBMax + 3000.0f));
+            }
+
+            if (BoxOccluders != null)
+            {
+                foreach (var box in BoxOccluders)
+                {
+                    var siz = box.Size.Length() * 0.5f;//should really use box rotation instead....
+                    emin = Vector3.Min(emin, box.Position - siz);
+                    emax = Vector3.Max(emax, box.Position + siz);
+                    smin = Vector3.Min(smin, box.Position - siz);//check this! for some vanilla ymaps it seems right, others not
+                    smax = Vector3.Max(smax, box.Position + siz);//occluders don't seem to have a loddist
+                }
+            }
+
+            if (OccludeModels != null)
+            {
+                foreach (var model in OccludeModels)
+                {
+                    emin = Vector3.Min(emin, (model.BVH?.Box.Minimum ?? model._OccludeModel.bmin));//this needs to be updated!
+                    emax = Vector3.Max(emax, (model.BVH?.Box.Maximum ?? model._OccludeModel.bmax));
+                    smin = Vector3.Min(smin, (model.BVH?.Box.Minimum ?? model._OccludeModel.bmin));//check this! for some vanilla ymaps it seems right, others not
+                    smax = Vector3.Max(smax, (model.BVH?.Box.Maximum ?? model._OccludeModel.bmax));//occluders don't seem to have a loddist
+                }
             }
 
             bool change = false;
@@ -2854,6 +3065,21 @@ namespace CodeWalker.GameFiles
         public byte[] Indices { get; set; }
         public int Index { get; set; }
 
+        public YmapOccludeModelTriangle[] Triangles { get; set; }
+        public TriangleBVH BVH { get; set; }
+
+        public FlagsUint Flags
+        {
+            get
+            {
+                return _OccludeModel.flags;
+            }
+            set
+            {
+                _OccludeModel.flags = value;
+            }
+        }
+
         public YmapOccludeModel(YmapFile ymap, OccludeModel model)
         {
             Ymap = ymap;
@@ -2875,11 +3101,118 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public void BuildTriangles()
+        {
+            if ((Vertices == null) || (Indices == null))
+            {
+                Triangles = null;
+                return;
+            }
+            var tris = new List<YmapOccludeModelTriangle>();
+            for (int i = 0; i < Indices.Length; i += 3)
+            {
+                var tri = new YmapOccludeModelTriangle(this, Vertices[Indices[i]], Vertices[Indices[i+1]], Vertices[Indices[i+2]], tris.Count);
+                tris.Add(tri);
+            }
+            Triangles = tris.ToArray();
+        }
+        public void BuildBVH()
+        {
+            if (Triangles == null)
+            {
+                BVH = null;
+                return;
+            }
+
+            BVH = new TriangleBVH(Triangles);
+
+        }
+        public void BuildVertices()
+        {
+            //create vertices and indices arrays from Triangles
+            if (Triangles == null)
+            {
+                Vertices = null;
+                Indices = null;
+                return;
+            }
+            var vdict = new Dictionary<Vector3, byte>();
+            var verts = new List<Vector3>();
+            var inds = new List<byte>();
+            byte ensureVert(Vector3 v)
+            {
+                if (vdict.TryGetValue(v, out byte b))
+                {
+                    return b;
+                }
+                if (verts.Count > 255)
+                {
+                    return 0;
+                }
+                var i = (byte)verts.Count;
+                vdict[v] = i;
+                verts.Add(v);
+                return i;
+            }
+            for (int i = 0; i < Triangles.Length; i++)
+            {
+                var tri = Triangles[i];
+                inds.Add(ensureVert(tri.Corner1));
+                inds.Add(ensureVert(tri.Corner2));
+                inds.Add(ensureVert(tri.Corner3));
+            }
+            Vertices = verts.ToArray();
+            Indices = inds.ToArray();
+        }
+        public void BuildData()
+        {
+            //create Data from vertices and indices arrays
+            if (Vertices == null) return;
+            if (Indices == null) return;
+            var dlen = (Vertices.Length * 12) + (Indices.Length * 1);
+            var d = new byte[dlen];
+            var vbytes = MetaTypes.ConvertArrayToBytes(Vertices);
+            var ibytes = Indices;
+            Buffer.BlockCopy(vbytes, 0, d, 0, vbytes.Length);
+            Buffer.BlockCopy(ibytes, 0, d, vbytes.Length, ibytes.Length);
+            Data = d;
+            var min = new Vector3(float.MaxValue);
+            var max = new Vector3(float.MinValue);
+            for (int i = 0; i < Vertices.Length; i++)
+            {
+                min = Vector3.Min(min, Vertices[i]);
+                max = Vector3.Max(max, Vertices[i]);
+            }
+            _OccludeModel.bmin = min;
+            _OccludeModel.bmax = max;
+            _OccludeModel.Unused0 = min.X;
+            _OccludeModel.Unused1 = max.X;
+            _OccludeModel.dataSize = (uint)dlen;
+            _OccludeModel.numVertsInBytes = (ushort)vbytes.Length;
+            _OccludeModel.numTris = (ushort)((ibytes.Length / 3) + 32768);//is this actually a flag lurking..?
+            //_OccludeModel.flags = ...
+        }
+
+        public YmapOccludeModelTriangle RayIntersect(ref Ray ray, ref float hitdist)
+        {
+            if (Triangles == null)
+            {
+                BuildTriangles();
+                BuildBVH();
+            }
+            else if (BVH == null)
+            {
+                BuildBVH();
+            }
+            if (BVH == null) return null;
+            return BVH.RayIntersect(ref ray, ref hitdist) as YmapOccludeModelTriangle;
+        }
+
         public EditorVertex[] GetTriangleVertices()
         {
             if ((Vertices == null) || (Indices == null)) return null;
             EditorVertex[] res = new EditorVertex[Indices.Length];//changing from indexed to nonindexed triangle list
-            var colour = new Color4(1.0f, 1.0f, 1.0f, 0.2f); //todo: colours for occlude models? currently transparent white
+            var colour = new Color4(1.0f, 0.0f, 0.0f, 0.8f); //todo: colours for occluders?
             var colourval = (uint)colour.ToRgba();
             for (int i = 0; i < Indices.Length; i++)
             {
@@ -2888,7 +3221,6 @@ namespace CodeWalker.GameFiles
             }
             return res;
         }
-
         public EditorVertex[] GetPathVertices()
         {
             return null;
@@ -2897,10 +3229,32 @@ namespace CodeWalker.GameFiles
         {
             return null;
         }
+
+        public override string ToString()
+        {
+            return Index.ToString() + ": " + (Vertices?.Length ?? 0).ToString() + " vertices, " + (Triangles?.Length ?? 0).ToString() + " triangles";
+        }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class YmapBoxOccluder
+    public class YmapOccludeModelTriangle : TriangleBVHItem
+    {
+        public YmapOccludeModel Model { get; set; }
+        public YmapFile Ymap { get { return Model?.Ymap; } }
+        public int Index { get; set; }
+
+        public YmapOccludeModelTriangle(YmapOccludeModel model, Vector3 v1, Vector3 v2, Vector3 v3, int i)
+        {
+            Model = model;
+            Corner1 = v1;
+            Corner2 = v2;
+            Corner3 = v3;
+            Index = i;
+        }
+    }
+
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class YmapBoxOccluder : BasePathData
     {
         public BoxOccluder _Box;
         public BoxOccluder Box { get { return _Box; } set { _Box = value; } }
@@ -2914,6 +3268,7 @@ namespace CodeWalker.GameFiles
         public Vector3 BBMax { get; set; }
         public Quaternion Orientation { get; set; }
         public int Index { get; set; }
+
 
 
         public YmapBoxOccluder(YmapFile ymap, BoxOccluder box)
@@ -2934,6 +3289,68 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public void UpdateBoxStruct()
+        {
+            _Box.iCenterX = (short)Math.Round(Position.X * 4.0f);
+            _Box.iCenterY = (short)Math.Round(Position.Y * 4.0f);
+            _Box.iCenterZ = (short)Math.Round(Position.Z * 4.0f);
+            _Box.iLength = (short)Math.Round(Size.X * 4.0f);
+            _Box.iWidth = (short)Math.Round(Size.Y * 4.0f);
+            _Box.iHeight = (short)Math.Round(Size.Z * 4.0f);
+
+            var dir = Orientation.Multiply(Vector3.UnitX) * 0.5f;
+            _Box.iSinZ = (short)Math.Round(dir.X * 32767.0f);
+            _Box.iCosZ = (short)Math.Round(dir.Y * 32767.0f);
+        }
+
+
+        public void SetSize(Vector3 s)
+        {
+            Size = s;
+            BBMin = Size * -0.5f;
+            BBMax = Size * 0.5f;
+        }
+
+
+        public EditorVertex[] GetTriangleVertices()
+        {
+            Vector3 xform(float x, float y, float z)
+            {
+                return Orientation.Multiply(new Vector3(x, y, z)) + Position;
+            }
+            EditorVertex[] res = new EditorVertex[36];
+            var colour = new Color4(0.0f, 0.0f, 1.0f, 0.8f); //todo: colours for occluders?
+            var c = (uint)colour.ToRgba();
+            var s = Size * 0.5f;
+            var v0 = new EditorVertex() { Position = xform(-s.X, -s.Y, -s.Z), Colour = c };
+            var v1 = new EditorVertex() { Position = xform(-s.X, -s.Y, +s.Z), Colour = c };
+            var v2 = new EditorVertex() { Position = xform(-s.X, +s.Y, -s.Z), Colour = c };
+            var v3 = new EditorVertex() { Position = xform(-s.X, +s.Y, +s.Z), Colour = c };
+            var v4 = new EditorVertex() { Position = xform(+s.X, -s.Y, -s.Z), Colour = c };
+            var v5 = new EditorVertex() { Position = xform(+s.X, -s.Y, +s.Z), Colour = c };
+            var v6 = new EditorVertex() { Position = xform(+s.X, +s.Y, -s.Z), Colour = c };
+            var v7 = new EditorVertex() { Position = xform(+s.X, +s.Y, +s.Z), Colour = c };
+            res[00] = v0; res[01] = v1; res[02] = v2; res[03] = v2; res[04] = v1; res[05] = v3;
+            res[06] = v2; res[07] = v3; res[08] = v6; res[09] = v6; res[10] = v3; res[11] = v7;
+            res[12] = v1; res[13] = v5; res[14] = v3; res[15] = v3; res[16] = v5; res[17] = v7;
+            res[18] = v6; res[19] = v7; res[20] = v4; res[21] = v4; res[22] = v7; res[23] = v5;
+            res[24] = v4; res[25] = v5; res[26] = v0; res[27] = v0; res[28] = v5; res[29] = v1;
+            res[30] = v2; res[31] = v6; res[32] = v0; res[33] = v0; res[34] = v6; res[35] = v4;
+            return res;
+        }
+        public EditorVertex[] GetPathVertices()
+        {
+            return null;
+        }
+        public Vector4[] GetNodePositions()
+        {
+            return null;
+        }
+
+        public override string ToString()
+        {
+            return Index.ToString() + ": " + FloatUtil.GetVector3String(Position);
+        }
     }
 
 }

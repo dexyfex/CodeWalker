@@ -268,6 +268,32 @@ namespace CodeWalker.Project.Panels
                     llnode.Tag = lodlight;
                 }
             }
+            if ((ymap.BoxOccluders != null) && (ymap.BoxOccluders.Length > 0))
+            {
+                var boxocclsnode = node.Nodes.Add("Box Occluders (" + ymap.BoxOccluders.Length.ToString() + ")");
+                boxocclsnode.Name = "BoxOccluders";
+                boxocclsnode.Tag = ymap;
+                var boxes = ymap.BoxOccluders;
+                for (int i = 0; i < boxes.Length; i++)
+                {
+                    var box = boxes[i];
+                    var boxnode = boxocclsnode.Nodes.Add(box.ToString());
+                    boxnode.Tag = box;
+                }
+            }
+            if ((ymap.OccludeModels != null) && (ymap.OccludeModels.Length > 0))
+            {
+                var occlmodsnode = node.Nodes.Add("Occlude Models (" + ymap.OccludeModels.Length.ToString() + ")");
+                occlmodsnode.Name = "OccludeModels";
+                occlmodsnode.Tag = ymap;
+                var models = ymap.OccludeModels;
+                for (int i = 0; i < models.Length; i++)
+                {
+                    var model = models[i];
+                    var modnode = occlmodsnode.Nodes.Add(model.ToString());
+                    modnode.Tag = model;
+                }
+            }
             if ((ymap.GrassInstanceBatches != null) && (ymap.GrassInstanceBatches.Length > 0))
             {
                 var grassbatchesnodes = node.Nodes.Add("Grass Batches (" + ymap.GrassInstanceBatches.Length.ToString() + ")");
@@ -1040,6 +1066,48 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
+        public TreeNode FindBoxOccluderTreeNode(YmapBoxOccluder box)
+        {
+            if (box == null) return null;
+            TreeNode ymapnode = FindYmapTreeNode(box.Ymap);
+            if (ymapnode == null) return null;
+            var boxesnode = GetChildTreeNode(ymapnode, "BoxOccluders");
+            if (boxesnode == null) return null;
+            for (int i = 0; i < boxesnode.Nodes.Count; i++)
+            {
+                TreeNode boxnode = boxesnode.Nodes[i];
+                if (boxnode.Tag == box) return boxnode;
+            }
+            return null;
+        }
+        public TreeNode FindOccludeModelTreeNode(YmapOccludeModel model)
+        {
+            if (model == null) return null;
+            TreeNode ymapnode = FindYmapTreeNode(model.Ymap);
+            if (ymapnode == null) return null;
+            var modelsnode = GetChildTreeNode(ymapnode, "OccludeModels");
+            if (modelsnode == null) return null;
+            for (int i = 0; i < modelsnode.Nodes.Count; i++)
+            {
+                TreeNode modelnode = modelsnode.Nodes[i];
+                if (modelnode.Tag == model) return modelnode;
+            }
+            return null;
+        }
+        public TreeNode FindOccludeModelTriangleTreeNode(YmapOccludeModelTriangle tri)
+        {
+            if (tri == null) return null;
+            TreeNode ymapnode = FindYmapTreeNode(tri.Ymap);
+            if (ymapnode == null) return null;
+            var modelsnode = GetChildTreeNode(ymapnode, "OccludeModels");
+            if (modelsnode == null) return null;
+            for (int i = 0; i < modelsnode.Nodes.Count; i++)
+            {
+                TreeNode modelnode = modelsnode.Nodes[i];
+                if (modelnode.Tag == tri.Model) return modelnode;
+            }
+            return null;
+        }
         public TreeNode FindGrassTreeNode(YmapGrassInstanceBatch batch)
         {
             if (batch == null) return null;
@@ -1516,6 +1584,53 @@ namespace CodeWalker.Project.Panels
                 else
                 {
                     ProjectTreeView.SelectedNode = lodlightnode;
+                }
+            }
+        }
+        public void TrySelectBoxOccluderTreeNode(YmapBoxOccluder box)
+        {
+            TreeNode boxnode = FindBoxOccluderTreeNode(box);
+            if (boxnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == boxnode)
+                {
+                    OnItemSelected?.Invoke(box);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = boxnode;
+                }
+            }
+        }
+        public void TrySelectOccludeModelTreeNode(YmapOccludeModel model)
+        {
+            TreeNode modelnode = FindOccludeModelTreeNode(model);
+            if (modelnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == modelnode)
+                {
+                    OnItemSelected?.Invoke(model);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = modelnode;
+                }
+            }
+        }
+        public void TrySelectOccludeModelTriangleTreeNode(YmapOccludeModelTriangle tri)
+        {
+            TreeNode trinode = FindOccludeModelTriangleTreeNode(tri);
+            if (trinode != null)
+            {
+                if (ProjectTreeView.SelectedNode == trinode)
+                {
+                    OnItemSelected?.Invoke(tri);
+                }
+                else
+                {
+                    trinode.Tag = tri;//hack to allow the model's node to be selected instead
+                    ProjectTreeView.SelectedNode = trinode;
+                    trinode.Tag = tri.Model;
                 }
             }
         }
@@ -2024,6 +2139,22 @@ namespace CodeWalker.Project.Panels
                 tn.Text = lodlight.ToString();
             }
         }
+        public void UpdateBoxOccluderTreeNode(YmapBoxOccluder box)
+        {
+            var tn = FindBoxOccluderTreeNode(box);
+            if (tn != null)
+            {
+                tn.Text = box.ToString();
+            }
+        }
+        public void UpdateOccludeModelTreeNode(YmapOccludeModel model)
+        {
+            var tn = FindOccludeModelTreeNode(model);
+            if (tn != null)
+            {
+                tn.Text = model.ToString();
+            }
+        }
         public void UpdatePathNodeTreeNode(YndNode node)
         {
             var tn = FindPathNodeTreeNode(node);
@@ -2140,6 +2271,50 @@ namespace CodeWalker.Project.Panels
                 {
                     var ntn = pn.Nodes.Add(ll.ToString());
                     ntn.Tag = ll;
+                }
+            }
+        }
+        public void RemoveBoxOccluderTreeNode(YmapBoxOccluder box)
+        {
+            var ymap = box?.Ymap;
+            var tn = FindBoxOccluderTreeNode(box);
+            if ((tn != null) && (tn.Parent != null) && (box != null))
+            {
+                var pn = tn.Parent;
+                var yn = pn.Parent;
+                yn.Nodes.Remove(pn);
+                pn = yn.Nodes.Add("Box Occluders (" + (ymap?.BoxOccluders?.Length.ToString() ?? "0") + ")");
+                pn.Name = "BoxOccluders";
+                pn.Tag = ymap;
+                if (ymap.BoxOccluders != null)
+                {
+                    foreach (var b in ymap.BoxOccluders)
+                    {
+                        var ntn = pn.Nodes.Add(b.ToString());
+                        ntn.Tag = b;
+                    }
+                }
+            }
+        }
+        public void RemoveOccludeModelTreeNode(YmapOccludeModel model)
+        {
+            var ymap = model?.Ymap;
+            var tn = FindOccludeModelTreeNode(model);
+            if ((tn != null) && (tn.Parent != null) && (model != null))
+            {
+                var pn = tn.Parent;
+                var yn = pn.Parent;
+                yn.Nodes.Remove(pn);
+                pn = yn.Nodes.Add("Occlude Models (" + (ymap?.OccludeModels?.Length.ToString() ?? "0") + ")");
+                pn.Name = "OccludeModels";
+                pn.Tag = ymap;
+                if (ymap.OccludeModels != null)
+                {
+                    foreach (var m in ymap.OccludeModels)
+                    {
+                        var ntn = pn.Nodes.Add(m.ToString());
+                        ntn.Tag = m;
+                    }
                 }
             }
         }
