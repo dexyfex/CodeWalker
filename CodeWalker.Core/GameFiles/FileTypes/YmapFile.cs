@@ -2861,7 +2861,7 @@ namespace CodeWalker.GameFiles
 
             UpdateTangentsAndOrientation();
 
-            Scale = Vector3.One;
+            Scale = new Vector3(Falloff);
         }
 
         public void UpdateTangentsAndOrientation()
@@ -2920,10 +2920,26 @@ namespace CodeWalker.GameFiles
         }
         public void SetOrientation(Quaternion ori)
         {
+            var inv = Quaternion.Invert(Orientation);
+            var delta = ori * inv;
+            TangentX = Vector3.Normalize(delta.Multiply(TangentX));
+            TangentY = Vector3.Normalize(delta.Multiply(TangentY));
+            Direction = Vector3.Normalize(delta.Multiply(Direction));
             Orientation = ori;
         }
         public void SetScale(Vector3 scale)
         {
+            switch (Type)
+            {
+                case LightType.Point:
+                case LightType.Spot:
+                    Falloff = scale.Z;
+                    break;
+                case LightType.Capsule:
+                    Falloff = scale.X;
+                    ConeOuterAngleOrCapExt = (byte)Math.Min(255, Math.Max(0, Math.Round(Math.Max((uint)ConeOuterAngleOrCapExt, 2) * Math.Abs(scale.Z / Math.Max(Scale.Z, 0.01f)))));//lols
+                    break;
+            }
             Scale = scale;
         }
 
