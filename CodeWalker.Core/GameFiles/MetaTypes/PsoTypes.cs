@@ -14110,7 +14110,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.UInt, 0, 0, 0),
                      new PsoStructureEntryInfo(MetaName.timeAndStateFlags, PsoDataType.Array, 56, 0, (MetaName)6),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.UInt, 0, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)MetaTypeName.HASH, PsoDataType.Array, 72, 0, (MetaName)8),
+                     new PsoStructureEntryInfo(MetaName.hash, PsoDataType.Array, 72, 0, (MetaName)8),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.UByte, 0, 0, 0),
                      new PsoStructureEntryInfo(MetaName.coneInnerAngle, PsoDataType.Array, 88, 0, (MetaName)10),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.UByte, 0, 0, 0),

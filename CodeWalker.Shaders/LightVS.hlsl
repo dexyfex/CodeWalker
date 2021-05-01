@@ -49,9 +49,9 @@ VS_Output main(float4 ipos : POSITION, uint iid : SV_InstanceID)
     else if (InstType == 2)//spot (cone)
     {
         float arads = InstConeOuterAngle;
-        float3 cpos = ipos.xyz * (tan(arads) * extent);
-        cpos.y += ipos.w * extent;
-        opos = (cpos.x * InstTangentX) + (cpos.y * InstDirection) + (cpos.z * InstTangentY);
+        float3 tpos = (ipos.xyz * sin(arads)) + float3(0, 0, ipos.w * cos(arads));
+        float3 cpos = ((ipos.w > 0) ? normalize(tpos) : tpos) * extent;
+        opos = (cpos.x * InstTangentX) + (cpos.y * InstTangentY) + (cpos.z * InstDirection);
     }
     else if (InstType == 4)//capsule
     {

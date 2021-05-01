@@ -1513,8 +1513,8 @@ namespace CodeWalker.Rendering
                 light.TangentY = new Vector4(l.TangentY, 0.0f);
                 light.Falloff = l.Falloff;
                 light.FalloffExponent = Math.Max(l.FalloffExponent*0.01f, 0.5f);//is this right?
-                light.InnerAngle = l.ConeInnerAngle * 0.0087266462f; //pi/360
-                light.OuterAngleOrCapExt = l.ConeOuterAngleOrCapExt * 0.0087266462f; //pi/360
+                light.InnerAngle = l.ConeInnerAngle * 0.012319971f; //pi/255
+                light.OuterAngleOrCapExt = l.ConeOuterAngleOrCapExt * 0.012319971f; //pi/255
                 var type = l.Type;
                 switch (type)
                 {

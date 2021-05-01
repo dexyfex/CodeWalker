@@ -90,7 +90,7 @@ namespace CodeWalker.Rendering
         VertexShader LightVS;
         PixelShader LightPS;
         PixelShader LightMSPS;
-        UnitCone LightCone;
+        LightCone LightCone;
         UnitSphere LightSphere;
         UnitCapsule LightCapsule;
         UnitQuad LightQuad;
@@ -160,8 +160,8 @@ namespace CodeWalker.Rendering
             }
 
 
-            LightCone = new UnitCone(device, bLodLightVS, 4, false);
-            LightSphere = new UnitSphere(device, bLodLightVS, 4, true);
+            LightCone = new LightCone(device, bLodLightVS, 2);
+            LightSphere = new UnitSphere(device, bLodLightVS, 3, true);
             LightCapsule = new UnitCapsule(device, bLodLightVS, 4, false);
             LightQuad = new UnitQuad(device, true);
             LightQuadLayout = new InputLayout(device, bDirLightVS, new[]

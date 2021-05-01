@@ -1036,8 +1036,8 @@ namespace CodeWalker.Rendering
             var tx = lodlight.TangentX;
             var ty = lodlight.TangentY;
             var extent = lodlight.Falloff;
-            var innerAngle = lodlight.ConeInnerAngle * 0.0087266462f; //pi/360
-            var outerAngle = lodlight.ConeOuterAngleOrCapExt * 0.0087266462f; //pi/360
+            var innerAngle = lodlight.ConeInnerAngle * 0.012319971f; //pi/255
+            var outerAngle = lodlight.ConeOuterAngleOrCapExt * 0.012319971f; //pi/255
             var type = lodlight.Type;
             switch (type)
             {
@@ -1047,10 +1047,8 @@ namespace CodeWalker.Rendering
                     RenderSelectionCircle(pos, Vector3.UnitY, Vector3.UnitZ, extent, colwht);
                     break;
                 case LightType.Spot:
-                    float coneouterrad = extent * (float)Math.Tan(outerAngle);
-                    float coneinnerrad = extent * (float)Math.Tan(innerAngle);
-                    RenderSelectionCone(pos, tx, ty, dir, coneouterrad, extent, colblu);
-                    RenderSelectionCone(pos, tx, ty, dir, coneinnerrad, extent, colwht);
+                    RenderSelectionCone(pos, tx, ty, dir, (float)Math.Sin(outerAngle)*extent, (float)Math.Cos(outerAngle)*extent, colblu);
+                    RenderSelectionCone(pos, tx, ty, dir, (float)Math.Sin(innerAngle)*extent, (float)Math.Cos(innerAngle)*extent, colwht);
                     break;
                 case LightType.Capsule:
                     outerAngle = lodlight.ConeOuterAngleOrCapExt * 0.25f;
