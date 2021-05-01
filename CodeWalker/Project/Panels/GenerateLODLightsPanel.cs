@@ -208,7 +208,7 @@ namespace CodeWalker.Project.Panels
                                     uint c = (i << 24) + (r << 16) + (g << 8) + b;
 
 
-                                    uint h = GetLightHash(ent, li);// (uint)rnd.NextLong();
+                                    uint h = GetLightHash(ent, dwbl, li);
 
                                     if (ent._CEntityDef.guid == 91259075)
                                     { } //h = 2324437992?     should be:19112537
@@ -232,8 +232,12 @@ namespace CodeWalker.Project.Panels
                                     uint unk = isStreetLight ? 1u : 0;//2 bits - isStreetLight low bit, unk high bit
                                     uint t = la.TimeFlags | (type << 26) | (unk << 24);
 
-                                    var maxext = (byte)Math.Max(Math.Max(la.Extent.X, la.Extent.Y), la.Extent.Z);
-
+                                    var inner = (byte)Math.Round(la.ConeInnerAngle * 1.4117647f);
+                                    var outer = (byte)Math.Round(la.ConeOuterAngle * 1.4117647f);
+                                    if (type == 4)
+                                    {
+                                        outer = (byte)Math.Max(Math.Max(la.Extent.X, la.Extent.Y), la.Extent.Z);
+                                    }
 
 
                                     var light = new Light();
@@ -244,8 +248,8 @@ namespace CodeWalker.Project.Panels
                                     light.falloffExponent = la.FalloffExponent;
                                     light.timeAndStateFlags = t;
                                     light.hash = h;
-                                    light.coneInnerAngle = (byte)la.ConeInnerAngle;
-                                    light.coneOuterAngleOrCapExt = Math.Max((byte)la.ConeOuterAngle, maxext);
+                                    light.coneInnerAngle = inner;
+                                    light.coneOuterAngleOrCapExt = outer;
                                     light.coronaIntensity = (byte)(la.CoronaIntensity * 6);
                                     light.isStreetLight = isStreetLight;
                                     lights.Add(light);
@@ -309,11 +313,16 @@ namespace CodeWalker.Project.Panels
                 var ll = new YmapLODLights();
                 var dl = new YmapDistantLODLights();
                 var cdl = new CDistantLODLight();
+                distymap.DistantLODLights = dl;
+                lodymap.LODLights = ll;
+                lodymap.Parent = distymap;
                 cdl.category = 1;//0=small, 1=med, 2=large
                 cdl.numStreetLights = numStreetLights;
                 dl.CDistantLODLight = cdl;
                 dl.positions = position.ToArray();
                 dl.colours = colour.ToArray();
+                dl.Ymap = distymap;
+                dl.CalcBB();
                 ll.direction = direction.ToArray();
                 ll.falloff = falloff.ToArray();
                 ll.falloffExponent = falloffExponent.ToArray();
@@ -322,24 +331,16 @@ namespace CodeWalker.Project.Panels
                 ll.coneInnerAngle = coneInnerAngle.ToArray();
                 ll.coneOuterAngleOrCapExt = coneOuterAngleOrCapExt.ToArray();
                 ll.coronaIntensity = coronaIntensity.ToArray();
+                ll.Ymap = lodymap;
+                ll.BuildLodLights(dl);
+                ll.CalcBB();
+                ll.BuildBVH();
 
+                lodymap.CalcFlags();
+                lodymap.CalcExtents();
+                distymap.CalcFlags();
+                distymap.CalcExtents();
 
-                lodymap._CMapData.flags = 0;
-                distymap._CMapData.flags = 2;
-                lodymap._CMapData.contentFlags = 128;
-                distymap._CMapData.contentFlags = 256;
-
-                lodymap._CMapData.entitiesExtentsMin = eemin;
-                lodymap._CMapData.entitiesExtentsMax = eemax;
-                lodymap._CMapData.streamingExtentsMin = semin - 1000f;
-                lodymap._CMapData.streamingExtentsMax = semax + 1000f; //vanilla = ~1km
-                distymap._CMapData.entitiesExtentsMin = eemin;
-                distymap._CMapData.entitiesExtentsMax = eemax;
-                distymap._CMapData.streamingExtentsMin = semin - 5000f; //make it huge
-                distymap._CMapData.streamingExtentsMax = semax + 5000f; //vanilla = ~3km
-
-                lodymap.LODLights = ll;
-                distymap.DistantLODLights = dl;
 
                 var lodname = pname + "_lodlights";
                 var distname = pname + "_distantlights";
@@ -355,7 +356,8 @@ namespace CodeWalker.Project.Panels
                 distymap.RpfFileEntry.NameLower = distname + ".ymap";
 
                 lodymap._CMapData.parent = distymap._CMapData.name;
-
+                lodymap.Loaded = true;
+                distymap.Loaded = true;
 
                 UpdateStatus("Adding new ymap files to project...");
 
@@ -431,24 +433,59 @@ namespace CodeWalker.Project.Panels
             return v5;
         }
 
-        private uint GetLightHash(YmapEntityDef ent, int lightIndex)
+        private uint GetLightHash(YmapEntityDef ent, DrawableBase dwbl, int lightIndex)
         {
             unchecked
             {
                 var len = 7;
 
-                var center = ent.Position + ent.Archetype.BSCenter;
-                var aa = center + ent.Archetype.BBMin;
-                var bb = center + ent.Archetype.BBMax;
+                var ori = ent.Orientation;
+                var pos = ent.Position;
+                var abmin = Vector3.Min(ent.Archetype.BBMin, dwbl.BoundingBoxMin);
+                var abmax = Vector3.Max(ent.Archetype.BBMax, dwbl.BoundingBoxMax);
+
+                Bounds b = null;
+                if (dwbl is Drawable ddwbl)
+                {
+                    b = ddwbl.Bound;
+                }
+                if (dwbl is FragDrawable fdwbl)
+                {
+                    b = fdwbl.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1?.Bound;
+                }
+                if (b != null)
+                {
+                    abmin = Vector3.Min(abmin, b.BoxMin);
+                    abmax = Vector3.Max(abmax, b.BoxMax);
+                }
+
+                Vector3[] c = new Vector3[8];
+                c[0] = abmin;
+                c[1] = new Vector3(abmin.X, abmin.Y, abmax.Z);
+                c[2] = new Vector3(abmin.X, abmax.Y, abmin.Z);
+                c[3] = new Vector3(abmin.X, abmax.Y, abmax.Z);
+                c[4] = new Vector3(abmax.X, abmin.Y, abmin.Z);
+                c[5] = new Vector3(abmax.X, abmin.Y, abmax.Z);
+                c[6] = new Vector3(abmax.X, abmax.Y, abmin.Z);
+                c[7] = abmax;
+                var bbmin = new Vector3(float.MaxValue);
+                var bbmax = new Vector3(float.MinValue);
+                for (int j = 0; j < 8; j++)
+                {
+                    Vector3 corn = ori.Multiply(c[j]) + pos;
+                    bbmin = Vector3.Min(bbmin, corn);
+                    bbmax = Vector3.Max(bbmax, corn);
+                }
+
 
                 var ints = new uint[len];
-                ints[0] = (uint)(aa.X * 10.0f);
-                ints[1] = (uint)(aa.Y * 10.0f);
-                ints[2] = (uint)(aa.Z * 10.0f);
-                ints[3] = (uint)(bb.X * 10.0f);
-                ints[4] = (uint)(bb.Y * 10.0f);
-                ints[5] = (uint)(bb.Z * 10.0f);
-                ints[6] = (uint)lightIndex;
+                ints[0] = (uint)(bbmin.X * 10.0f);
+                ints[1] = (uint)(bbmin.Y * 10.0f);
+                ints[2] = (uint)(bbmin.Z * 10.0f);
+                ints[3] = (uint)(bbmax.X * 10.0f);
+                ints[4] = (uint)(bbmax.Y * 10.0f);
+                ints[5] = (uint)(bbmax.Z * 10.0f);
+                ints[6] = (uint)lightIndex + 1;
 
                 return ComputeHash(ints);
             }

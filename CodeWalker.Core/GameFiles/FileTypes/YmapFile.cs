@@ -1380,6 +1380,7 @@ namespace CodeWalker.GameFiles
             if ((DistantLODLights != null) && ((DistantLODLights.positions?.Length ?? 0) > 0))
             {
                 flags = SetBit(flags, 1); //2
+                contentFlags = SetBit(contentFlags, 8); //256
             }
             if ((BoxOccluders != null) || (OccludeModels != null))
             {
@@ -2661,6 +2662,13 @@ namespace CodeWalker.GameFiles
         {
             if (parent == null) return;
 
+            BuildLodLights(parent);
+            CalcBB();
+            BuildBVH();
+        }
+
+        public void BuildLodLights(YmapDistantLODLights parent)
+        {
             var n = direction?.Length ?? 0;
             n = Math.Min(n, parent.positions?.Length ?? 0);
             n = Math.Min(n, parent.colours?.Length ?? 0);
@@ -2680,9 +2688,6 @@ namespace CodeWalker.GameFiles
                 l.Init(this, parent, i);
                 LodLights[i] = l;
             }
-
-            CalcBB();
-            BuildBVH();
         }
 
         public void BuildBVH()
