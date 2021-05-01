@@ -3263,15 +3263,20 @@ namespace CodeWalker.Rendering
             }
 
 
-            if (renderlights && shaders.deferred && (rndbl.Lights != null) && interiorent)//only interior ents making lights! todo: fix LOD lights
+            if (renderlights && shaders.deferred && (rndbl.Lights != null))
             {
-                var linst = new RenderableLightInst();
-                for (int i = 0; i < rndbl.Lights.Length; i++)
+                entity?.EnsureLights(rndbl.Key);
+
+                if (interiorent)//only interior ents making lights! todo: fix LOD lights
                 {
-                    linst.EntityPosition = position;
-                    linst.EntityRotation = orientation;
-                    linst.Light = rndbl.Lights[i];
-                    shaders.Enqueue(ref linst);
+                    var linst = new RenderableLightInst();
+                    for (int i = 0; i < rndbl.Lights.Length; i++)
+                    {
+                        linst.EntityPosition = position;
+                        linst.EntityRotation = orientation;
+                        linst.Light = rndbl.Lights[i];
+                        shaders.Enqueue(ref linst);
+                    }
                 }
             }
 

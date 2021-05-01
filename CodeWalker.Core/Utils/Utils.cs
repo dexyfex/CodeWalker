@@ -267,6 +267,14 @@ namespace CodeWalker
             if (flag) return SetBit(value, bit);
             else return ClearBit(value, bit);
         }
+        public static uint RotateLeft(uint value, int count)
+        {
+            return (value << count) | (value >> (32 - count));
+        }
+        public static uint RotateRight(uint value, int count)
+        {
+            return (value >> count) | (value << (32 - count));
+        }
     }
 
 
