@@ -1682,6 +1682,7 @@ namespace CodeWalker.GameFiles
 
 
         public LightInstance[] Lights { get; set; }
+        //public uint[] LightHashTest { get; set; }
 
 
         public string Name
@@ -2096,12 +2097,12 @@ namespace CodeWalker.GameFiles
             }
             if (lightAttrs == null) return;
 
-            var abmin = Vector3.Min(Archetype.BBMin, db.BoundingBoxMin);
-            var abmax = Vector3.Max(Archetype.BBMax, db.BoundingBoxMax);
+            var abmin = db.BoundingBoxMin;
+            var abmax = db.BoundingBoxMax;
             if (b != null)
             {
-                abmin = Vector3.Min(abmin, b.BoxMin);
-                abmax = Vector3.Max(abmax, b.BoxMax);
+                abmin = b.BoxMin;
+                abmax = b.BoxMax;
             }
             var bb = new BoundingBox(abmin, abmax).Transform(Position, Orientation, Scale);
             var ints = new uint[7];
@@ -2125,6 +2126,13 @@ namespace CodeWalker.GameFiles
                 lightInsts[i] = li;
             }
             Lights = lightInsts;
+
+            //LightHashTest = new uint[25];
+            //for (int i = 0; i < 25; i++)
+            //{
+            //    ints[6] = (uint)(i);
+            //    LightHashTest[i] = ComputeLightHash(ints);
+            //}
 
         }
 
