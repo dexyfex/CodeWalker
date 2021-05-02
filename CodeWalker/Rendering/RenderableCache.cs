@@ -186,14 +186,14 @@ namespace CodeWalker.Rendering
 
         public void RenderThreadSync()
         {
-            renderables.RenderThreadSync();
-            textures.RenderThreadSync();
-            boundcomps.RenderThreadSync();
-            instbatches.RenderThreadSync();
-            lodlights.RenderThreadSync();
-            distlodlights.RenderThreadSync();
-            pathbatches.RenderThreadSync();
-            waterquads.RenderThreadSync();
+            renderables.RenderThreadSync(currentDevice);
+            textures.RenderThreadSync(currentDevice);
+            boundcomps.RenderThreadSync(currentDevice);
+            instbatches.RenderThreadSync(currentDevice);
+            lodlights.RenderThreadSync(currentDevice);
+            distlodlights.RenderThreadSync(currentDevice);
+            pathbatches.RenderThreadSync(currentDevice);
+            waterquads.RenderThreadSync(currentDevice);
         }
 
         public Renderable GetRenderable(DrawableBase drawable)
@@ -270,7 +270,6 @@ namespace CodeWalker.Rendering
     {
         private ConcurrentQueue<TVal> itemsToLoad = new ConcurrentQueue<TVal>();
         private ConcurrentQueue<TVal> itemsToUnload = new ConcurrentQueue<TVal>();
-        private ConcurrentQueue<TVal> itemsToInvalidate = new ConcurrentQueue<TVal>();
         private ConcurrentQueue<TKey> keysToInvalidate = new ConcurrentQueue<TKey>();
         private LinkedList<TVal> loadeditems = new LinkedList<TVal>();//only use from content thread!
         private Dictionary<TKey, TVal> cacheitems = new Dictionary<TKey, TVal>();//only use from render thread!
@@ -319,7 +318,6 @@ namespace CodeWalker.Rendering
             loadeditems.Clear();
             cacheitems.Clear();
             itemsToUnload = new ConcurrentQueue<TVal>();
-            itemsToInvalidate = new ConcurrentQueue<TVal>();
             keysToInvalidate = new ConcurrentQueue<TKey>();
         }
 
@@ -352,18 +350,6 @@ namespace CodeWalker.Rendering
                 }
                 if (LoadedCount >= maxitemsperloop) break;
             }
-            while (itemsToInvalidate.TryDequeue(out item))
-            {
-                try
-                {
-                    item.Load(device); //invalidated items just need to get reloaded. (they are already unloaded and re-inited)
-                    Interlocked.Add(ref CacheUse, item.DataSize);
-                }
-                catch //(Exception ex)
-                {
-                    //todo: error handling...
-                }
-            }
             return LoadedCount;
         }
 
@@ -390,7 +376,7 @@ namespace CodeWalker.Rendering
 
         }
 
-        public void RenderThreadSync()
+        public void RenderThreadSync(Device device)
         {
             LastFrameTime = DateTime.UtcNow.ToBinary();
             TVal item;
@@ -399,11 +385,11 @@ namespace CodeWalker.Rendering
             {
                 if (cacheitems.TryGetValue(key, out item))
                 {
+                    Interlocked.Add(ref CacheUse, -item.DataSize);
                     item.Unload();
                     item.Init(key);
-                    item.LoadQueued = true;
-                    itemsToInvalidate.Enqueue(item);
-                    Interlocked.Add(ref CacheUse, -item.DataSize);
+                    item.Load(device);
+                    Interlocked.Add(ref CacheUse, item.DataSize);
                 }
             }
             while (itemsToUnload.TryDequeue(out item))
