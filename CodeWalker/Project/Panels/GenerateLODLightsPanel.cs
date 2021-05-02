@@ -124,66 +124,6 @@ namespace CodeWalker.Project.Panels
                                 {
                                     var elight = elights[li];
                                     var la = elight.Attributes;
-                                    //transform this light with the entity position and orientation
-                                    //generate lights data from it!
-
-
-                                    //gotta transform the light position by the given bone! annoying
-                                    Bone bone = null;
-                                    Matrix xform = Matrix.Identity;
-                                    int boneidx = 0;
-                                    var skeleton = dwbl.Skeleton;
-                                    if (skeleton?.Bones?.Items != null)
-                                    {
-                                        for (int j = 0; j < skeleton.Bones.Items.Length; j++)
-                                        {
-                                            var tbone = skeleton.Bones.Items[j];
-                                            if (tbone.Tag == la.BoneId)
-                                            {
-                                                boneidx = j;
-                                                bone = tbone;
-                                                break;
-                                            }
-                                        }
-                                        if (bone != null)
-                                        {
-                                            var modeltransforms = skeleton.Transformations;
-                                            var fragtransforms = fphys?.OwnerFragPhysLod?.FragTransforms?.Matrices;
-                                            var fragtransformid = fphys?.OwnerFragPhysIndex ?? 0;
-                                            var fragoffset = new Vector4(fphys?.OwnerFragPhysLod.Unknown_30h ?? Vector3.Zero, 0.0f);
-
-                                            if ((fragtransforms != null) && (fragtransformid < fragtransforms.Length))
-                                            {
-                                                xform = fragtransforms[fragtransformid];
-                                                xform.Row4 += fragoffset;
-                                            }
-                                            else
-                                            {
-                                                //when using the skeleton's matrices, they need to be transformed by parent
-                                                xform = modeltransforms[boneidx];
-                                                xform.Column4 = Vector4.UnitW;
-                                                //xform = Matrix.Identity;
-                                                short[] pinds = skeleton.ParentIndices;
-                                                short parentind = ((pinds != null) && (boneidx < pinds.Length)) ? pinds[boneidx] : (short)-1;
-                                                while ((parentind >= 0) && (parentind < pinds.Length))
-                                                {
-                                                    Matrix ptrans = (parentind < modeltransforms.Length) ? modeltransforms[parentind] : Matrix.Identity;
-                                                    ptrans.Column4 = Vector4.UnitW;
-                                                    xform = Matrix.Multiply(ptrans, xform);
-                                                    parentind = ((pinds != null) && (parentind < pinds.Length)) ? pinds[parentind] : (short)-1;
-                                                }
-                                            }
-                                        }
-                                    }
-
-
-
-                                    Vector3 lpos = la.Position;
-                                    Vector3 ldir = la.Direction;
-                                    Vector3 bpos = xform.Multiply(lpos);
-                                    Vector3 bdir = xform.MultiplyRot(ldir);
-                                    Vector3 epos = ent.Orientation.Multiply(bpos) + ent.Position;
-                                    Vector3 edir = ent.Orientation.Multiply(bdir);
 
                                     uint r = la.ColorR;
                                     uint g = la.ColorG;
@@ -191,12 +131,6 @@ namespace CodeWalker.Project.Panels
                                     uint i = (byte)Math.Min(la.Intensity*4, 255);
                                     uint c = (i << 24) + (r << 16) + (g << 8) + b;
                                     uint h = elight.Hash;
-
-                                    if (ent._CEntityDef.guid == 91259075)
-                                    { } //h = 2324437992?     should be:19112537
-                                    if (ent._CEntityDef.guid == 889043351)
-                                    { } //h = 422028630 ?     should be:4267224866
-
 
 
                                     //any other way to know if it's a streetlight?
@@ -223,9 +157,9 @@ namespace CodeWalker.Project.Panels
 
 
                                     var light = new Light();
-                                    light.position = new MetaVECTOR3(epos);
+                                    light.position = new MetaVECTOR3(elight.Position);
                                     light.colour = c;
-                                    light.direction = new MetaVECTOR3(edir);
+                                    light.direction = new MetaVECTOR3(elight.Direction);
                                     light.falloff = la.Falloff;
                                     light.falloffExponent = la.FalloffExponent;
                                     light.timeAndStateFlags = t;

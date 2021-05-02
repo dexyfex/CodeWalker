@@ -2083,6 +2083,7 @@ namespace CodeWalker.GameFiles
 
             var dd = db as Drawable;
             var fd = db as FragDrawable;
+            var skel = db.Skeleton;
             LightAttributes_s[] lightAttrs = null;
             Bounds b = null;
             if (dd != null)
@@ -2092,8 +2093,10 @@ namespace CodeWalker.GameFiles
             }
             else if (fd != null)
             {
-                lightAttrs = fd.OwnerFragment?.LightAttributes?.data_items;
-                b = fd.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1?.Bound;
+                var frag = fd?.OwnerFragment;
+                skel = skel ?? frag?.Drawable?.Skeleton;
+                lightAttrs = frag?.LightAttributes?.data_items;
+                b = frag?.PhysicsLODGroup?.PhysicsLOD1?.Bound;
             }
             if (lightAttrs == null) return;
 
@@ -2120,9 +2123,19 @@ namespace CodeWalker.GameFiles
             for (int i = 0; i < lightAttrs.Length; i++)
             {
                 ints[6] = (uint)(exts + i);
+                var la = lightAttrs[i];
+
+                var xform = Matrix.Identity;
+                if ((skel != null) && (skel.BonesMap.TryGetValue(la.BoneId, out Bone bone)))
+                {
+                    xform = bone.AbsTransform;
+                }
+
                 var li = new LightInstance();
-                li.Attributes = lightAttrs[i];
+                li.Attributes = la;
                 li.Hash = ComputeLightHash(ints);
+                li.Position = Orientation.Multiply(xform.Multiply(la.Position)) + Position;
+                li.Direction = Orientation.Multiply(xform.MultiplyRot(la.Direction));
                 lightInsts[i] = li;
             }
             Lights = lightInsts;
@@ -2200,6 +2213,8 @@ namespace CodeWalker.GameFiles
         {
             public LightAttributes_s Attributes { get; set; } //just for display purposes!
             public uint Hash { get; set; }
+            public Vector3 Position { get; set; }
+            public Vector3 Direction { get; set; }
 
             public override string ToString()
             {

@@ -1122,6 +1122,7 @@ namespace CodeWalker.GameFiles
                     BonesMap[bone.Tag] = bone;
 
                     bone.UpdateAnimTransform();
+                    bone.AbsTransform = bone.AnimTransform;
                     bone.BindTransformInv = (i < (TransformationsInverted?.Length ?? 0)) ? TransformationsInverted[i] : Matrix.Invert(bone.AnimTransform);
                     bone.BindTransformInv.M44 = 1.0f;
                     bone.UpdateSkinTransform();
@@ -1759,6 +1760,7 @@ namespace CodeWalker.GameFiles
         public Matrix AnimTransform;//absolute world transform, animated
         public Matrix BindTransformInv;//inverse of bind pose transform
         public Matrix SkinTransform;//transform to use for skin meshes
+        public Matrix AbsTransform;//original absolute transform from loaded file, calculated from bones hierarchy
         public Vector4 TransformUnk { get; set; } //unknown value (column 4) from skeleton's transform array, used for IO purposes
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
