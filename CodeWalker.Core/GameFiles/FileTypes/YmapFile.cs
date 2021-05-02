@@ -2112,10 +2112,13 @@ namespace CodeWalker.GameFiles
             ints[4] = (uint)(bb.Maximum.Y * 10.0f);
             ints[5] = (uint)(bb.Maximum.Z * 10.0f);
 
+            var exts = (Archetype.Extensions?.Length ?? 0);// + (Extensions?.Length ?? 0);//seems entity extensions aren't included in this
+            //todo: create extension light instances
+
             var lightInsts = new LightInstance[lightAttrs.Length];
             for (int i = 0; i < lightAttrs.Length; i++)
             {
-                ints[6] = (uint)(i + 1);
+                ints[6] = (uint)(exts + i);
                 var li = new LightInstance();
                 li.Attributes = lightAttrs[i];
                 li.Hash = ComputeLightHash(ints);
