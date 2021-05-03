@@ -968,6 +968,15 @@ namespace CodeWalker.GameFiles
                     }
                 }
             }
+            if (LODLights != null)
+            {
+                if (Parent?.DistantLODLights != null)
+                {
+                    LODLights.Init(Parent.DistantLODLights);
+                }
+                else
+                { }
+            }
         }
 
 
@@ -2116,6 +2125,7 @@ namespace CodeWalker.GameFiles
             ints[4] = (uint)(bb.Maximum.Y * 10.0f);
             ints[5] = (uint)(bb.Maximum.Z * 10.0f);
 
+            var bones = skel?.BonesMap;
             var exts = (Archetype.Extensions?.Length ?? 0);// + (Extensions?.Length ?? 0);//seems entity extensions aren't included in this
             //todo: create extension light instances
 
@@ -2126,7 +2136,7 @@ namespace CodeWalker.GameFiles
                 var la = lightAttrs[i];
 
                 var xform = Matrix.Identity;
-                if ((skel != null) && (skel.BonesMap.TryGetValue(la.BoneId, out Bone bone)))
+                if ((bones != null) && (bones.TryGetValue(la.BoneId, out Bone bone)))
                 {
                     xform = bone.AbsTransform;
                 }
@@ -2995,6 +3005,7 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public bool Enabled { get; set; } = true;
 
         public void Init(YmapLODLights l, YmapDistantLODLights p, int i)
         {

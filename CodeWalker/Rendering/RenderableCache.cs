@@ -248,6 +248,10 @@ namespace CodeWalker.Rendering
             lodlights.Invalidate(lodlight.LodLights?.Ymap);
             distlodlights.Invalidate(lodlight.DistLodLights);
         }
+        public void InvalidateImmediate(YmapLODLights lodlightsonly)
+        {
+            lodlights.UpdateImmediate(lodlightsonly?.Ymap, currentDevice);
+        }
 
     }
 
@@ -432,7 +436,18 @@ namespace CodeWalker.Rendering
             keysToInvalidate.Enqueue(key);
 
         }
-
+        public void UpdateImmediate(TKey key, Device device)
+        {
+            TVal item;
+            if (cacheitems.TryGetValue(key, out item))
+            {
+                Interlocked.Add(ref CacheUse, -item.DataSize);
+                item.Unload();
+                item.Init(key);
+                item.Load(device);
+                Interlocked.Add(ref CacheUse, item.DataSize);
+            }
+        }
     }
 
 }

@@ -312,6 +312,7 @@ namespace CodeWalker
             this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.SubtitleLabel = new System.Windows.Forms.Label();
             this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
+            this.HDLightsCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -2249,6 +2250,7 @@ namespace CodeWalker
             // 
             // OptionsLightingTabPage
             // 
+            this.OptionsLightingTabPage.Controls.Add(this.HDLightsCheckBox);
             this.OptionsLightingTabPage.Controls.Add(this.DeferredShadingCheckBox);
             this.OptionsLightingTabPage.Controls.Add(this.WeatherRegionComboBox);
             this.OptionsLightingTabPage.Controls.Add(this.label29);
@@ -2304,7 +2306,7 @@ namespace CodeWalker
             this.WeatherRegionComboBox.Location = new System.Drawing.Point(61, 355);
             this.WeatherRegionComboBox.Name = "WeatherRegionComboBox";
             this.WeatherRegionComboBox.Size = new System.Drawing.Size(133, 21);
-            this.WeatherRegionComboBox.TabIndex = 43;
+            this.WeatherRegionComboBox.TabIndex = 50;
             this.WeatherRegionComboBox.SelectedIndexChanged += new System.EventHandler(this.WeatherRegionComboBox_SelectedIndexChanged);
             this.WeatherRegionComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.WeatherRegionComboBox_KeyPress);
             // 
@@ -2314,7 +2316,7 @@ namespace CodeWalker
             this.label29.Location = new System.Drawing.Point(4, 358);
             this.label29.Name = "label29";
             this.label29.Size = new System.Drawing.Size(44, 13);
-            this.label29.TabIndex = 64;
+            this.label29.TabIndex = 49;
             this.label29.Text = "Region:";
             // 
             // CloudParamTrackBar
@@ -2327,7 +2329,7 @@ namespace CodeWalker
             this.CloudParamTrackBar.Maximum = 200;
             this.CloudParamTrackBar.Name = "CloudParamTrackBar";
             this.CloudParamTrackBar.Size = new System.Drawing.Size(188, 45);
-            this.CloudParamTrackBar.TabIndex = 63;
+            this.CloudParamTrackBar.TabIndex = 55;
             this.CloudParamTrackBar.TickFrequency = 10;
             this.CloudParamTrackBar.Value = 100;
             this.CloudParamTrackBar.Scroll += new System.EventHandler(this.CloudParamTrackBar_Scroll);
@@ -2341,7 +2343,7 @@ namespace CodeWalker
             this.CloudParamComboBox.Location = new System.Drawing.Point(78, 409);
             this.CloudParamComboBox.Name = "CloudParamComboBox";
             this.CloudParamComboBox.Size = new System.Drawing.Size(116, 21);
-            this.CloudParamComboBox.TabIndex = 62;
+            this.CloudParamComboBox.TabIndex = 54;
             this.CloudParamComboBox.SelectedIndexChanged += new System.EventHandler(this.CloudParamComboBox_SelectedIndexChanged);
             this.CloudParamComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CloudParamComboBox_KeyPress);
             // 
@@ -2351,7 +2353,7 @@ namespace CodeWalker
             this.label23.Location = new System.Drawing.Point(4, 412);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(69, 13);
-            this.label23.TabIndex = 61;
+            this.label23.TabIndex = 53;
             this.label23.Text = "Cloud param:";
             // 
             // CloudsComboBox
@@ -2363,7 +2365,7 @@ namespace CodeWalker
             this.CloudsComboBox.Location = new System.Drawing.Point(61, 382);
             this.CloudsComboBox.Name = "CloudsComboBox";
             this.CloudsComboBox.Size = new System.Drawing.Size(133, 21);
-            this.CloudsComboBox.TabIndex = 60;
+            this.CloudsComboBox.TabIndex = 52;
             this.CloudsComboBox.SelectedIndexChanged += new System.EventHandler(this.CloudsComboBox_SelectedIndexChanged);
             this.CloudsComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CloudsComboBox_KeyPress);
             // 
@@ -2373,7 +2375,7 @@ namespace CodeWalker
             this.label21.Location = new System.Drawing.Point(4, 385);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(42, 13);
-            this.label21.TabIndex = 59;
+            this.label21.TabIndex = 51;
             this.label21.Text = "Clouds:";
             // 
             // TimeSpeedLabel
@@ -2382,7 +2384,7 @@ namespace CodeWalker
             this.TimeSpeedLabel.Location = new System.Drawing.Point(78, 263);
             this.TimeSpeedLabel.Name = "TimeSpeedLabel";
             this.TimeSpeedLabel.Size = new System.Drawing.Size(63, 13);
-            this.TimeSpeedLabel.TabIndex = 58;
+            this.TimeSpeedLabel.TabIndex = 44;
             this.TimeSpeedLabel.Text = "0.5 min/sec";
             // 
             // label20
@@ -2391,7 +2393,7 @@ namespace CodeWalker
             this.label20.Location = new System.Drawing.Point(3, 263);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(65, 13);
-            this.label20.TabIndex = 57;
+            this.label20.TabIndex = 43;
             this.label20.Text = "Time speed:";
             // 
             // TimeSpeedTrackBar
@@ -2404,7 +2406,7 @@ namespace CodeWalker
             this.TimeSpeedTrackBar.Minimum = 40;
             this.TimeSpeedTrackBar.Name = "TimeSpeedTrackBar";
             this.TimeSpeedTrackBar.Size = new System.Drawing.Size(133, 45);
-            this.TimeSpeedTrackBar.TabIndex = 41;
+            this.TimeSpeedTrackBar.TabIndex = 46;
             this.TimeSpeedTrackBar.TickFrequency = 5;
             this.TimeSpeedTrackBar.Value = 50;
             this.TimeSpeedTrackBar.Scroll += new System.EventHandler(this.TimeSpeedTrackBar_Scroll);
@@ -2414,7 +2416,7 @@ namespace CodeWalker
             this.TimeStartStopButton.Location = new System.Drawing.Point(10, 279);
             this.TimeStartStopButton.Name = "TimeStartStopButton";
             this.TimeStartStopButton.Size = new System.Drawing.Size(45, 23);
-            this.TimeStartStopButton.TabIndex = 40;
+            this.TimeStartStopButton.TabIndex = 45;
             this.TimeStartStopButton.Text = "Start";
             this.TimeStartStopButton.UseVisualStyleBackColor = true;
             this.TimeStartStopButton.Click += new System.EventHandler(this.TimeStartStopButton_Click);
@@ -2427,7 +2429,7 @@ namespace CodeWalker
             this.ArtificialAmbientLightCheckBox.Location = new System.Drawing.Point(10, 137);
             this.ArtificialAmbientLightCheckBox.Name = "ArtificialAmbientLightCheckBox";
             this.ArtificialAmbientLightCheckBox.Size = new System.Drawing.Size(124, 17);
-            this.ArtificialAmbientLightCheckBox.TabIndex = 36;
+            this.ArtificialAmbientLightCheckBox.TabIndex = 37;
             this.ArtificialAmbientLightCheckBox.Text = "Artificial ambient light";
             this.ArtificialAmbientLightCheckBox.UseVisualStyleBackColor = true;
             this.ArtificialAmbientLightCheckBox.CheckedChanged += new System.EventHandler(this.ArtificialAmbientLightCheckBox_CheckedChanged);
@@ -2440,7 +2442,7 @@ namespace CodeWalker
             this.NaturalAmbientLightCheckBox.Location = new System.Drawing.Point(10, 115);
             this.NaturalAmbientLightCheckBox.Name = "NaturalAmbientLightCheckBox";
             this.NaturalAmbientLightCheckBox.Size = new System.Drawing.Size(122, 17);
-            this.NaturalAmbientLightCheckBox.TabIndex = 35;
+            this.NaturalAmbientLightCheckBox.TabIndex = 36;
             this.NaturalAmbientLightCheckBox.Text = "Natural ambient light";
             this.NaturalAmbientLightCheckBox.UseVisualStyleBackColor = true;
             this.NaturalAmbientLightCheckBox.CheckedChanged += new System.EventHandler(this.NaturalAmbientLightCheckBox_CheckedChanged);
@@ -2450,10 +2452,10 @@ namespace CodeWalker
             this.LODLightsCheckBox.AutoSize = true;
             this.LODLightsCheckBox.Checked = true;
             this.LODLightsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.LODLightsCheckBox.Location = new System.Drawing.Point(10, 93);
+            this.LODLightsCheckBox.Location = new System.Drawing.Point(89, 93);
             this.LODLightsCheckBox.Name = "LODLightsCheckBox";
             this.LODLightsCheckBox.Size = new System.Drawing.Size(75, 17);
-            this.LODLightsCheckBox.TabIndex = 34;
+            this.LODLightsCheckBox.TabIndex = 35;
             this.LODLightsCheckBox.Text = "LOD lights";
             this.LODLightsCheckBox.UseVisualStyleBackColor = true;
             this.LODLightsCheckBox.CheckedChanged += new System.EventHandler(this.LODLightsCheckBox_CheckedChanged);
@@ -2479,7 +2481,7 @@ namespace CodeWalker
             this.ControlTimeOfDayCheckBox.Location = new System.Drawing.Point(10, 181);
             this.ControlTimeOfDayCheckBox.Name = "ControlTimeOfDayCheckBox";
             this.ControlTimeOfDayCheckBox.Size = new System.Drawing.Size(166, 17);
-            this.ControlTimeOfDayCheckBox.TabIndex = 38;
+            this.ControlTimeOfDayCheckBox.TabIndex = 39;
             this.ControlTimeOfDayCheckBox.Text = "Control time of day (right-drag)";
             this.ControlTimeOfDayCheckBox.UseVisualStyleBackColor = true;
             this.ControlTimeOfDayCheckBox.CheckedChanged += new System.EventHandler(this.ControlTimeOfDayCheckBox_CheckedChanged);
@@ -2490,7 +2492,7 @@ namespace CodeWalker
             this.TimeOfDayLabel.Location = new System.Drawing.Point(75, 208);
             this.TimeOfDayLabel.Name = "TimeOfDayLabel";
             this.TimeOfDayLabel.Size = new System.Drawing.Size(34, 13);
-            this.TimeOfDayLabel.TabIndex = 54;
+            this.TimeOfDayLabel.TabIndex = 41;
             this.TimeOfDayLabel.Text = "12:00";
             // 
             // label19
@@ -2499,7 +2501,7 @@ namespace CodeWalker
             this.label19.Location = new System.Drawing.Point(4, 208);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(65, 13);
-            this.label19.TabIndex = 53;
+            this.label19.TabIndex = 40;
             this.label19.Text = "Time of day:";
             // 
             // TimeOfDayTrackBar
@@ -2512,7 +2514,7 @@ namespace CodeWalker
             this.TimeOfDayTrackBar.Maximum = 1440;
             this.TimeOfDayTrackBar.Name = "TimeOfDayTrackBar";
             this.TimeOfDayTrackBar.Size = new System.Drawing.Size(188, 45);
-            this.TimeOfDayTrackBar.TabIndex = 39;
+            this.TimeOfDayTrackBar.TabIndex = 42;
             this.TimeOfDayTrackBar.TickFrequency = 60;
             this.TimeOfDayTrackBar.Value = 720;
             this.TimeOfDayTrackBar.Scroll += new System.EventHandler(this.TimeOfDayTrackBar_Scroll);
@@ -2526,7 +2528,7 @@ namespace CodeWalker
             this.WeatherComboBox.Location = new System.Drawing.Point(61, 328);
             this.WeatherComboBox.Name = "WeatherComboBox";
             this.WeatherComboBox.Size = new System.Drawing.Size(133, 21);
-            this.WeatherComboBox.TabIndex = 42;
+            this.WeatherComboBox.TabIndex = 48;
             this.WeatherComboBox.SelectedIndexChanged += new System.EventHandler(this.WeatherComboBox_SelectedIndexChanged);
             this.WeatherComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.WeatherComboBox_KeyPress);
             // 
@@ -2536,7 +2538,7 @@ namespace CodeWalker
             this.label17.Location = new System.Drawing.Point(4, 331);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(51, 13);
-            this.label17.TabIndex = 39;
+            this.label17.TabIndex = 47;
             this.label17.Text = "Weather:";
             // 
             // ControlLightDirectionCheckBox
@@ -2545,7 +2547,7 @@ namespace CodeWalker
             this.ControlLightDirectionCheckBox.Location = new System.Drawing.Point(10, 159);
             this.ControlLightDirectionCheckBox.Name = "ControlLightDirectionCheckBox";
             this.ControlLightDirectionCheckBox.Size = new System.Drawing.Size(177, 17);
-            this.ControlLightDirectionCheckBox.TabIndex = 37;
+            this.ControlLightDirectionCheckBox.TabIndex = 38;
             this.ControlLightDirectionCheckBox.Text = "Control light direction (right-drag)";
             this.ControlLightDirectionCheckBox.UseVisualStyleBackColor = true;
             this.ControlLightDirectionCheckBox.CheckedChanged += new System.EventHandler(this.ControlLightDirectionCheckBox_CheckedChanged);
@@ -3590,6 +3592,19 @@ namespace CodeWalker
             // 
             this.SubtitleTimer.Tick += new System.EventHandler(this.SubtitleTimer_Tick);
             // 
+            // HDLightsCheckBox
+            // 
+            this.HDLightsCheckBox.AutoSize = true;
+            this.HDLightsCheckBox.Checked = true;
+            this.HDLightsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.HDLightsCheckBox.Location = new System.Drawing.Point(10, 93);
+            this.HDLightsCheckBox.Name = "HDLightsCheckBox";
+            this.HDLightsCheckBox.Size = new System.Drawing.Size(69, 17);
+            this.HDLightsCheckBox.TabIndex = 34;
+            this.HDLightsCheckBox.Text = "HD lights";
+            this.HDLightsCheckBox.UseVisualStyleBackColor = true;
+            this.HDLightsCheckBox.CheckedChanged += new System.EventHandler(this.HDLightsCheckBox_CheckedChanged);
+            // 
             // WorldForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3962,5 +3977,6 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnapping45Button;
         private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnapping90Button;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSnapGridSizeButton;
+        private System.Windows.Forms.CheckBox HDLightsCheckBox;
     }
 }

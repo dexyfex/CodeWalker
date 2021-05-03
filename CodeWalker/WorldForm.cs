@@ -7013,6 +7013,11 @@ namespace CodeWalker
             //Monitor.Exit(rendersyncroot);
         }
 
+        private void HDLightsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderlights = HDLightsCheckBox.Checked;
+        }
+
         private void LODLightsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Renderer.renderdistlodlights = LODLightsCheckBox.Checked;

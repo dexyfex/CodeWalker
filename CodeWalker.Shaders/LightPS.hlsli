@@ -92,6 +92,12 @@ float4 GetLineSegmentNearestPoint(float3 v, float3 a, float3 b)
     }
 }
 
+float GetAttenuation(float ldist, float falloff, float falloffExponent)
+{
+    float d = ldist / falloff;
+    return saturate((1 - d) / (1 + d*d*falloffExponent));
+}
+
 
 float3 DeferredDirectionalLight(float3 camRel, float3 norm, float4 diffuse, float4 specular, float4 irradiance)
 {
@@ -123,14 +129,14 @@ float4 DeferredLODLight(float3 camRel, float3 norm, float4 diffuse, float4 specu
     if (ldist <= 0) return 0;
     
     float4 rgbi = Unpack4x8UNF(lodlight.Colour).gbar;
-    float3 lcol = rgbi.rgb * rgbi.a * 5.0f;
+    float3 lcol = rgbi.rgb * rgbi.a * 100.0f;
     float3 ldir = srpos / ldist;
     float pclit = saturate(dot(ldir, norm));
     float lamt = 1;
     
     if (LightType == 1)//point (sphere)
     {
-        lamt *= pow(saturate(1 - (ldist / lodlight.Falloff)), lodlight.FalloffExponent);
+        lamt *= GetAttenuation(ldist, lodlight.Falloff, lodlight.FalloffExponent);
     }
     else if (LightType == 2)//spot (cone)
     {
@@ -139,11 +145,11 @@ float4 DeferredLODLight(float3 camRel, float3 norm, float4 diffuse, float4 specu
         float oang = lodlight.OuterAngleOrCapExt;
         if (ang > oang) return 0;
         lamt *= saturate(1 - ((ang - iang) / (oang - iang)));
-        lamt *= pow(saturate(1 - (ldist / lodlight.Falloff)), lodlight.FalloffExponent);
+        lamt *= GetAttenuation(ldist, lodlight.Falloff, lodlight.FalloffExponent);
     }
     else if (LightType == 4)//capsule
     {
-        lamt *= pow(saturate(1 - (ldist / lodlight.Falloff)), lodlight.FalloffExponent); //TODO! proper capsule lighting... (use point-line dist!)
+        lamt *= GetAttenuation(ldist, lodlight.Falloff, lodlight.FalloffExponent); //TODO! proper capsule lighting... (use point-line dist!)
     }
     
     pclit *= lamt;
@@ -185,7 +191,7 @@ float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular
     
     if (InstType == 1)//point (sphere)
     {
-        lamt *= pow(saturate(1 - (ldist / InstFalloff)), InstFalloffExponent);
+        lamt *= GetAttenuation(ldist, InstFalloff, InstFalloffExponent);
     }
     else if (InstType == 2)//spot (cone)
     {
@@ -194,11 +200,11 @@ float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular
         float oang = InstConeOuterAngle;
         if (ang > oang) return 0;
         lamt *= saturate(1 - ((ang - iang) / (oang - iang)));
-        lamt *= pow(saturate(1 - (ldist / InstFalloff)), InstFalloffExponent);
+        lamt *= GetAttenuation(ldist, InstFalloff, InstFalloffExponent);
     }
     else if (InstType == 4)//capsule
     {
-        lamt *= pow(saturate(1 - (ldist / InstFalloff)), InstFalloffExponent);
+        lamt *= GetAttenuation(ldist, InstFalloff, InstFalloffExponent);
     }
     
     pclit *= lamt;

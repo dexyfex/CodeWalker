@@ -1373,17 +1373,28 @@ namespace CodeWalker.Rendering
 
         public void Init(ref LightAttributes_s l)
         {
-            Position = l.Position;
-            Colour = new Vector3(l.ColorR, l.ColorG, l.ColorB) * ((l.Intensity * 5.0f)  / 255.0f);
-            Direction = l.Direction;
-            TangentX = l.Tangent;
-            TangentY = Vector3.Cross(l.Direction, l.Tangent);
+            var pos = l.Position;
+            var dir = l.Direction;
+            var tan = l.Tangent;
+            var bones = Owner?.Skeleton?.BonesMap;
+            if ((bones != null) && (bones.TryGetValue(l.BoneId, out Bone bone)))
+            {
+                var xform = bone.AbsTransform;
+                pos = xform.Multiply(pos);
+                dir = xform.MultiplyRot(dir);
+                tan = xform.MultiplyRot(tan);
+            }
+            Position = pos;
+            Colour = new Vector3(l.ColorR, l.ColorG, l.ColorB) * (2.0f * l.Intensity  / 255.0f);
+            Direction = dir;
+            TangentX = tan;
+            TangentY = Vector3.Normalize(Vector3.Cross(l.Direction, TangentX));
             Type = l.Type;
             Intensity = l.Intensity;
             Falloff = l.Falloff;
-            FalloffExponent = Math.Max(l.FalloffExponent * 0.25f, 0.5f);//is this right?
-            ConeInnerAngle = l.ConeInnerAngle * 0.01745329f; //is this right??
-            ConeOuterAngle = l.ConeOuterAngle * 0.01745329f; //pi/180
+            FalloffExponent = l.FalloffExponent;
+            ConeInnerAngle = Math.Min(l.ConeInnerAngle, l.ConeOuterAngle) * 0.01745329f; //is this right??
+            ConeOuterAngle = Math.Max(l.ConeInnerAngle, l.ConeOuterAngle) * 0.01745329f; //pi/180
             CapsuleExtent = l.Extent;
             CullingPlaneNormal = l.CullingPlaneNormal;
             CullingPlaneOffset = l.CullingPlaneOffset;
@@ -1483,11 +1494,6 @@ namespace CodeWalker.Rendering
             if (ll == null) return;
             if (dll == null) return;
 
-            if (ll.LodLights == null)
-            {
-                ll.Init(dll);
-            }
-
             if (ll.LodLights == null) 
             { return; }
 
@@ -1504,6 +1510,7 @@ namespace CodeWalker.Rendering
             for (int i = 0; i < n; i++)
             {
                 var l = ll.LodLights[i];
+                if (l.Enabled == false) continue;
                 var light = new LODLight();
                 light.Position = l.Position;
                 light.Colour = (uint)l.Colour.ToBgra();
@@ -1512,7 +1519,7 @@ namespace CodeWalker.Rendering
                 light.TangentX = new Vector4(l.TangentX, 0.0f);
                 light.TangentY = new Vector4(l.TangentY, 0.0f);
                 light.Falloff = l.Falloff;
-                light.FalloffExponent = Math.Max(l.FalloffExponent*0.01f, 0.5f);//is this right?
+                light.FalloffExponent = l.FalloffExponent;
                 light.InnerAngle = l.ConeInnerAngle * 0.012319971f; //pi/255
                 light.OuterAngleOrCapExt = l.ConeOuterAngleOrCapExt * 0.012319971f; //pi/255
                 var type = l.Type;

@@ -550,7 +550,7 @@ namespace CodeWalker.Rendering
                     lightartificialdowncolour = (Color4)weather.CurrentValues.lightArtificialExtDown;
                     float lamult = weather.CurrentValues.lightDirAmbIntensityMult;
                     float abounce = weather.CurrentValues.lightDirAmbBounce;
-                    float minmult = hdr ? 0.1f : 0.5f;
+                    float minmult = hdr ? 0.0f : 0.5f;
                     lightdircolour *= Math.Max(lightdircolour.Alpha, minmult);
                     lightdirambcolour *= lightdirambcolour.Alpha * lamult; // 0.1f * lamult;
 
@@ -1831,11 +1831,17 @@ namespace CodeWalker.Rendering
             LodManager.MapViewEnabled = MapViewEnabled;
             LodManager.MapViewDist = camera.OrthographicSize / MapViewDetail;
             LodManager.ShowScriptedYmaps = ShowScriptedYmaps;
+            LodManager.LODLightsEnabled = renderlodlights;
+            LodManager.HDLightsEnabled = renderlights;
             LodManager.Update(renderworldVisibleYmapDict, camera, currentElapsedTime);
 
+            foreach (var updatelodlights in LodManager.UpdateLodLights)
+            {
+                renderableCache.InvalidateImmediate(updatelodlights);
+            }
 
 
-            var ents = LodManager.GetVisibleLeaves();
+            var ents = LodManager.VisibleLeaves;
 
             for (int i = 0; i < ents.Count; i++)
             {
@@ -3267,16 +3273,13 @@ namespace CodeWalker.Rendering
             {
                 entity?.EnsureLights(rndbl.Key);
 
-                if (interiorent)//only interior ents making lights! todo: fix LOD lights
+                var linst = new RenderableLightInst();
+                for (int i = 0; i < rndbl.Lights.Length; i++)
                 {
-                    var linst = new RenderableLightInst();
-                    for (int i = 0; i < rndbl.Lights.Length; i++)
-                    {
-                        linst.EntityPosition = position;
-                        linst.EntityRotation = orientation;
-                        linst.Light = rndbl.Lights[i];
-                        shaders.Enqueue(ref linst);
-                    }
+                    linst.EntityPosition = position;
+                    linst.EntityRotation = orientation;
+                    linst.Light = rndbl.Lights[i];
+                    shaders.Enqueue(ref linst);
                 }
             }
 
@@ -3956,6 +3959,8 @@ namespace CodeWalker.Rendering
         public bool MapViewEnabled = false;
         public float MapViewDist = 1.0f;
         public bool ShowScriptedYmaps = true;
+        public bool HDLightsEnabled = true;
+        public bool LODLightsEnabled = true;
 
         public Camera Camera = null;
         public Vector3 Position = Vector3.Zero;
@@ -3964,6 +3969,11 @@ namespace CodeWalker.Rendering
         private List<MetaHash> RemoveYmaps = new List<MetaHash>();
         public Dictionary<YmapEntityDef, YmapEntityDef> RootEntities = new Dictionary<YmapEntityDef, YmapEntityDef>();
         public List<YmapEntityDef> VisibleLeaves = new List<YmapEntityDef>();
+
+        public Dictionary<uint, YmapLODLight> LodLightsDict = new Dictionary<uint, YmapLODLight>();
+        public HashSet<YmapEntityDef.LightInstance> VisibleLights = new HashSet<YmapEntityDef.LightInstance>();
+        public HashSet<YmapEntityDef.LightInstance> VisibleLightsPrev = new HashSet<YmapEntityDef.LightInstance>();
+        public HashSet<YmapLODLights> UpdateLodLights = new HashSet<YmapLODLights>();
 
         public void Update(Dictionary<MetaHash, YmapFile> ymaps, Camera camera, float elapsed)
         {
@@ -4014,6 +4024,14 @@ namespace CodeWalker.Rendering
                         }
                     }
                 }
+                var remLodLights = ymap.LODLights?.LodLights;
+                if (remLodLights != null)
+                {
+                    for (int i = 0; i < remLodLights.Length; i++)
+                    {
+                        LodLightsDict.Remove(remLodLights[i].Hash);
+                    }
+                }
                 ymap.LodManagerUpdate = false;
                 ymap.LodManagerOldEntities = null;
             }
@@ -4042,15 +4060,21 @@ namespace CodeWalker.Rendering
                             }
                         }
                     }
+                    var addLodLights = ymap.LODLights?.LodLights;
+                    if (addLodLights != null)
+                    {
+                        for (int i = 0; i < addLodLights.Length; i++)
+                        {
+                            var light = addLodLights[i];
+                            LodLightsDict[light.Hash] = light;
+                        }
+                    }
                 }
             }
 
 
-        }
-
-        public List<YmapEntityDef> GetVisibleLeaves()
-        {
             VisibleLeaves.Clear();
+            VisibleLights.Clear();
             foreach (var kvp in RootEntities)
             {
                 var ent = kvp.Key;
@@ -4063,8 +4087,37 @@ namespace CodeWalker.Rendering
                     }
                 }
             }
-            return VisibleLeaves;
+
+            UpdateLodLights.Clear();
+            foreach (var light in VisibleLights)
+            {
+                if (VisibleLightsPrev.Contains(light) == false)
+                {
+                    if (LodLightsDict.TryGetValue(light.Hash, out var lodlight))
+                    {
+                        lodlight.Enabled = false;
+                        UpdateLodLights.Add(lodlight.LodLights);
+                    }
+                }
+            }
+            foreach (var light in VisibleLightsPrev)
+            {
+                if (VisibleLights.Contains(light) == false)
+                {
+                    if (LodLightsDict.TryGetValue(light.Hash, out var lodlight))
+                    {
+                        lodlight.Enabled = true;
+                        UpdateLodLights.Add(lodlight.LodLights);
+                    }
+                }
+            }
+
+
+            var vl = VisibleLights;
+            VisibleLights = VisibleLightsPrev;
+            VisibleLightsPrev = vl;
         }
+
         private void RecurseAddVisibleLeaves(YmapEntityDef ent)
         {
             var clist = GetEntityChildren(ent);
@@ -4082,6 +4135,14 @@ namespace CodeWalker.Rendering
                 if (EntityVisible(ent))
                 {
                     VisibleLeaves.Add(ent);
+
+                    if (HDLightsEnabled && (ent.Lights != null))
+                    {
+                        for (int i = 0; i < ent.Lights.Length; i++)
+                        {
+                            VisibleLights.Add(ent.Lights[i]);
+                        }
+                    }
                 }
             }
         }
