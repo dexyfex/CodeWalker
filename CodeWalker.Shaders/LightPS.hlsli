@@ -129,7 +129,7 @@ float4 DeferredLODLight(float3 camRel, float3 norm, float4 diffuse, float4 specu
     if (ldist <= 0) return 0;
     
     float4 rgbi = Unpack4x8UNF(lodlight.Colour).gbar;
-    float3 lcol = rgbi.rgb * rgbi.a * 100.0f;
+    float3 lcol = rgbi.rgb * rgbi.a * 96.0f;
     float3 ldir = srpos / ldist;
     float pclit = saturate(dot(ldir, norm));
     float lamt = 1;

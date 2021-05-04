@@ -128,7 +128,7 @@ namespace CodeWalker.Project.Panels
                                     uint r = la.ColorR;
                                     uint g = la.ColorG;
                                     uint b = la.ColorB;
-                                    uint i = (byte)Math.Min(la.Intensity*4, 255);
+                                    uint i = (byte)Math.Max(Math.Min(Math.Round(la.Intensity * 5.3125f), 255), 0);//5.1=255/48
                                     uint c = (i << 24) + (r << 16) + (g << 8) + b;
                                     uint h = elight.Hash;
 
