@@ -1162,6 +1162,8 @@ namespace CodeWalker.GameFiles
         public float UnkFloat22 { get; set; }
         public uint UnkUint4 = 0x7f800001; // 0x7f800001
 
+        public byte FlagsLo { get { return (byte)((Flags >> 0) & 0xFF); } }
+        public byte FlagsHi { get { return (byte)((Flags >> 8) & 0xFF); } }
         public FragPhysTypeGroup Group { get; set; }
         public FragPhysicsLOD GroupLOD { get; set; }
 

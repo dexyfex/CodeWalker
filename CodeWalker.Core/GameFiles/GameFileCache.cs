@@ -3955,7 +3955,7 @@ namespace CodeWalker.GameFiles
             bool savetest = false;
             var errorfiles = new List<RpfEntry>();
             var sb = new StringBuilder();
-            int[] flagcheck = new int[16];
+            var flagdict = new Dictionary<uint, int>();
             foreach (RpfFile file in AllRpfs)
             {
                 foreach (RpfEntry entry in file.AllEntries)
@@ -3996,25 +3996,24 @@ namespace CodeWalker.GameFiles
                                 { continue; }
 
                             }
-                            var groups = yft?.Fragment?.PhysicsLODGroup?.PhysicsLOD1?.Groups?.data_items;
-                            if (groups != null)
-                            {
-                                foreach (var g in groups)
-                                {
-                                    ushort f = (ushort)(g.UnkByte52 + (g.UnkByte53 << 8));
-                                    for (int i = 0; i < 16; i++)
-                                    {
-                                        if (flagcheck[i]>=3) continue;
-                                        var t = 1 << i;
-                                        if ((f & t) > 0)
-                                        {
-                                            sb.AppendLine(entry.Path + ": " + g.Name.ToString() + ", UnkByte52:" + g.UnkByte52.ToString() + ", UnkByte53:" + g.UnkByte53.ToString() + "  zflag:" + (i+1).ToString());
-                                            flagcheck[i]++;
-                                        }
-                                    }
 
+                            if (yft?.Fragment?.GlassWindows?.data_items != null)
+                            {
+                                var lastf = -1;
+                                for (int i = 0; i < yft.Fragment.GlassWindows.data_items.Length; i++)
+                                {
+                                    var w = yft.Fragment.GlassWindows.data_items[i];
+                                    if (w.Flags == lastf) continue;
+                                    lastf = w.Flags;
+                                    flagdict.TryGetValue(w.Flags, out int n);
+                                    if (n < 10)
+                                    {
+                                        flagdict[w.Flags] = n + 1;
+                                        sb.AppendLine(entry.Path + " Window " + i.ToString() + ": Flags " + w.Flags.ToString() + ", Low:" + w.FlagsLo.ToString() + ", High:" + w.FlagsHi.ToString());
+                                    }
                                 }
                             }
+
                         }
                     }
                     //catch (Exception ex)
