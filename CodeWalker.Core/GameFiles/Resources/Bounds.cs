@@ -2623,7 +2623,7 @@ namespace CodeWalker.GameFiles
             // update structure data
             this.ChildrenPointer = (ulong)(this.Children != null ? this.Children.FilePosition : 0);
             this.ChildrenTransformation1Pointer = (ulong)(this.ChildrenTransformation1Block != null ? this.ChildrenTransformation1Block.FilePosition : 0);
-            this.ChildrenTransformation2Pointer = (ulong)(this.ChildrenTransformation2Block != null ? this.ChildrenTransformation2Block.FilePosition : 0);
+            this.ChildrenTransformation2Pointer = (ulong)(this.ChildrenTransformation2Block != null ? this.ChildrenTransformation2Block.FilePosition : (long)ChildrenTransformation1Pointer);
             this.ChildrenBoundingBoxesPointer = (ulong)(this.ChildrenBoundingBoxesBlock != null ? this.ChildrenBoundingBoxesBlock.FilePosition : 0);
             this.ChildrenFlags1Pointer = (ulong)(this.ChildrenFlags1Block != null ? this.ChildrenFlags1Block.FilePosition : 0);
             this.ChildrenFlags2Pointer = (ulong)(this.ChildrenFlags2Block != null ? this.ChildrenFlags2Block.FilePosition : 0);
@@ -2872,7 +2872,6 @@ namespace CodeWalker.GameFiles
             }
 
             var ct1 = new List<Matrix4F_s>();
-            var ct2 = new List<Matrix4F_s>();
             foreach (var child in Children.data_items)
             {
                 var m = Matrix4F_s.Identity;
@@ -2898,11 +2897,10 @@ namespace CodeWalker.GameFiles
                 }
 
                 ct1.Add(m);
-                ct2.Add(m);
             }
 
             ChildrenTransformation1 = ct1.ToArray();
-            ChildrenTransformation2 = ct2.ToArray();
+            ChildrenTransformation2 = null;
 
         }
 
