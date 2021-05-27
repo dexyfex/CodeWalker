@@ -96,7 +96,7 @@ namespace CodeWalker.GameFiles
     {
         public override long BlockLength
         {
-            get { return 20 + (256 * 16); }
+            get { return 16 + (8 * SystemPagesCount) + (8 * GraphicsPagesCount); }
         }
 
         // structure data
@@ -106,7 +106,19 @@ namespace CodeWalker.GameFiles
         public byte GraphicsPagesCount { get; set; }
         public ushort Unknown_Ah { get; set; }
         public uint Unknown_Ch { get; set; }
-        public uint Unknown_10h { get; set; }
+        public ulong[] SystemPagesPointers { get; set; }
+        public ulong[] GraphicsPagesPointers { get; set; }
+
+        public ResourcePagesInfo()
+        {
+
+        }
+
+        public ResourcePagesInfo(byte systemPagesCount, byte graphicsPagesCount)
+        {
+            SystemPagesCount = systemPagesCount;
+            GraphicsPagesCount = graphicsPagesCount;
+        }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -120,7 +132,20 @@ namespace CodeWalker.GameFiles
             this.GraphicsPagesCount = reader.ReadByte();
             this.Unknown_Ah = reader.ReadUInt16();
             this.Unknown_Ch = reader.ReadUInt32();
-            this.Unknown_10h = reader.ReadUInt32();
+
+            if(SystemPagesCount > 0)
+            {
+                SystemPagesPointers = new ulong[SystemPagesCount];
+                for (int i = 0; i < SystemPagesCount; i++)
+                    SystemPagesPointers[i] = reader.ReadUInt64();
+            }
+
+            if(GraphicsPagesCount > 0)
+            {
+                GraphicsPagesPointers = new ulong[GraphicsPagesCount];
+                for (int i = 0; i < GraphicsPagesCount; i++)
+                    GraphicsPagesPointers[i] = reader.ReadUInt64();
+            }
         }
 
         /// <summary>
@@ -135,10 +160,28 @@ namespace CodeWalker.GameFiles
             writer.Write(this.GraphicsPagesCount);
             writer.Write(this.Unknown_Ah);
             writer.Write(this.Unknown_Ch);
-            writer.Write(this.Unknown_10h);
 
-            var pad = 256 * 16;
-            writer.Write(new byte[pad]);
+            if(SystemPagesCount > 0)
+            {
+                //if (SystemPagesPointers != null && SystemPagesPointers.Length == SystemPagesCount)
+                //    writer.WriteUlongs(SystemPagesPointers);
+                //else
+                //{
+                    var pad = 8 * SystemPagesCount;
+                    writer.Write(new byte[pad]);
+                //}
+            }
+            
+            if(GraphicsPagesCount > 0)
+            {
+                //if (GraphicsPagesPointers != null && GraphicsPagesPointers.Length == GraphicsPagesCount)
+                //    writer.WriteUlongs(GraphicsPagesPointers);
+                //else
+                //{
+                    var pad = 8 * GraphicsPagesCount;
+                    writer.Write(new byte[pad]);
+                //}
+            }
         }
 
         public override string ToString()
