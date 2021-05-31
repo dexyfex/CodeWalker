@@ -135,22 +135,21 @@ for storing game and engine related data.
 
 The main formats when it comes to rendering GTAV content are:
 
-`.ytd` - Texture Dictionary - Stores texture data in a DirectX format convenient for loading to the GPU. 
-`.ydr` - Drawable - Contains a single asset's 3d model. Can contain a Texture Dictionary, and up to 4 LODs of a model.
-`.ydd` - Drawable Dictionary - A collection of Drawables packed into a single file.
-`.yft` - Fragment - Contains a Drawable, along with other metadata for example physics data.
-
+`.ytd` - Texture Dictionary - Stores texture data in a DirectX format convenient for loading to the GPU.  
+`.ydr` - Drawable - Contains a single asset's 3d model. Can contain a Texture Dictionary, and up to 4 LODs of a model.  
+`.ydd` - Drawable Dictionary - A collection of Drawables packed into a single file.  
+`.yft` - Fragment - Contains a Drawable, along with other metadata for example physics data.  
 
 The content Assets are pieced together to create the GTAV world via MapTypes (Archetypes) and MapData
 (Entity placements). At a high level, Archeypes define objects that are placeable, and Entities define
 where those objects are placed to make up the world. The collision mesh data for the world is stored in Bounds 
 files.
+
 ### The formats for these are:
 
-`.ytyp` - MapTypes - Contains a group of MapTypes (Archetypes), each defining an object that could be placed.
-`.ymap` - MapData - Contains placements of Archetypes, each defining an Entity in the world.
-`.ybn` - Bounds - Contains collision mesh / bounding data for pieces of the world.
-
+`.ytyp` - MapTypes - Contains a group of MapTypes (Archetypes), each defining an object that could be placed.  
+`.ymap` - MapData - Contains placements of Archetypes, each defining an Entity in the world.  
+`.ybn` - Bounds - Contains collision mesh / bounding data for pieces of the world.  
 
 The EntityData contained within the MapData (`.ymap`) files forms the LOD hierarchy. This hierarchy is arranged
 such that the lowest detail version of the world, at the root of the hierarchy, is represented by a small number
