@@ -297,7 +297,7 @@ namespace CodeWalker
             InitFileType(".png", "Portable Network Graphics", 16);
             InitFileType(".dds", "DirectDraw Surface", 16);
             InitFileType(".ytd", "Texture Dictionary", 16, FileTypeAction.ViewYtd, true);
-            InitFileType(".mrf", "MRF File", 18);
+            InitFileType(".mrf", "Move Network File", 18, FileTypeAction.ViewMrf);
             InitFileType(".ycd", "Clip Dictionary", 18, FileTypeAction.ViewYcd, true);
             InitFileType(".ypt", "Particle Effect", 18, FileTypeAction.ViewModel, true);
             InitFileType(".ybn", "Static Collisions", 19, FileTypeAction.ViewModel, true);
@@ -1401,6 +1401,7 @@ namespace CodeWalker
                 case FileTypeAction.ViewYld:
                 case FileTypeAction.ViewYfd:
                 case FileTypeAction.ViewHeightmap:
+                case FileTypeAction.ViewMrf:
                     return true;
                 case FileTypeAction.ViewHex:
                 default:
@@ -1529,6 +1530,9 @@ namespace CodeWalker
                         break;
                     case FileTypeAction.ViewHeightmap:
                         ViewHeightmap(name, path, data, fe);
+                        break;
+                    case FileTypeAction.ViewMrf:
+                        ViewMrf(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewHex:
                     default:
@@ -1771,7 +1775,13 @@ namespace CodeWalker
             f.Show();
             f.LoadMeta(heightmap);
         }
-
+        private void ViewMrf(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var mrf = RpfFile.GetFile<MrfFile>(e, data);
+            GenericForm f = new GenericForm(this);
+            f.Show();
+            f.LoadFile(mrf, mrf.RpfFileEntry);
+        }
         private RpfFileEntry CreateFileEntry(string name, string path, ref byte[] data)
         {
             //this should only really be used when loading a file from the filesystem.
@@ -4693,6 +4703,7 @@ namespace CodeWalker
         ViewYld = 21,
         ViewYfd = 22,
         ViewHeightmap = 23,
+        ViewMrf = 24,
     }
 
 
