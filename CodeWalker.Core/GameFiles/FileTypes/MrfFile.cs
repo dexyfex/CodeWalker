@@ -80,7 +80,7 @@ namespace CodeWalker.GameFiles
         public uint Unk2 { get; set; }
         public uint Unk3 { get; set; }
         public uint Unk4 { get; set; }
-        public uint Unk5 { get; set; }
+        public MetaHash Unk5 { get; set; }
         public uint Unk6 { get; set; }
 
         public override void Parse(DataReader r)
@@ -103,7 +103,7 @@ namespace CodeWalker.GameFiles
                 if (unkTypeFlag != 1)
                     return;
 
-                Unk5 = r.ReadUInt32();
+                Unk5 = new MetaHash(r.ReadUInt32());
             }
 
             Unk6 = r.ReadUInt32();
@@ -140,7 +140,7 @@ namespace CodeWalker.GameFiles
     {
         public MrfHeaderNameFlag Header { get; set; }
         public uint Unk1 { get; set; }
-        public uint Unk2 { get; set; }
+        public MetaHash Unk2 { get; set; }
         public uint Unk3 { get; set; }
 
         public override void Parse(DataReader r)
@@ -156,7 +156,7 @@ namespace CodeWalker.GameFiles
                 if (unkTypeFlag != 1)
                     return;
 
-                Unk2 = r.ReadUInt32();
+                Unk2 = new MetaHash(r.ReadUInt32());
             }
 
             Unk3 = r.ReadUInt32();
@@ -1049,9 +1049,9 @@ namespace CodeWalker.GameFiles
         public MrfHeaderNameFlag Header { get; set; }
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
-        public MetaHash Unk3 { get; set; }
-        public uint Unk4 { get; set; }
-        public uint Unk5 { get; set; }
+        public MetaHash DictName { get; set; }
+        public MetaHash ClipName { get; set; }
+        public float Unk5 { get; set; }
         public uint Unk6 { get; set; }
         public uint Unk7 { get; set; }
         public uint Unk8 { get; set; }
@@ -1065,10 +1065,10 @@ namespace CodeWalker.GameFiles
                 case 1:
                     {
                         Unk2 = r.ReadUInt32();
-                        Unk3 = new MetaHash(r.ReadUInt32());
+                        DictName = new MetaHash(r.ReadUInt32());
 
                         if (Unk2 != 3)
-                            Unk4 = r.ReadUInt32();
+                            ClipName = new MetaHash(r.ReadUInt32());
 
                         break;
                     }
@@ -1078,7 +1078,7 @@ namespace CodeWalker.GameFiles
             }
 
             if (((Header.Flags >> 2) & 3) != 0)
-                Unk5 = r.ReadUInt32();
+                Unk5 = r.ReadSingle();
 
             if (((Header.Flags >> 4) & 3) != 0)
                 Unk6 = r.ReadUInt32();
@@ -1278,10 +1278,10 @@ namespace CodeWalker.GameFiles
         public MrfHeaderNameFlag Header { get; set; }
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
-        public uint Unk3 { get; set; }
+        public MetaHash Unk3 { get; set; }
         public uint Unk4 { get; set; }
         public uint Unk5 { get; set; }
-        public uint Unk6 { get; set; }
+        public float Unk6 { get; set; }
         public uint[][] Unk7 { get; set; }
 
         public override void Parse(DataReader r)
@@ -1292,7 +1292,7 @@ namespace CodeWalker.GameFiles
             switch (Header.Flags & 3)
             {
                 case 1:
-                    Unk3 = r.ReadUInt32();
+                    Unk3 = new MetaHash(r.ReadUInt32());
                     Unk4 = r.ReadUInt32();
                     break;
                 case 2:
@@ -1301,7 +1301,7 @@ namespace CodeWalker.GameFiles
             }
 
             if (((Header.Flags >> 2) & 3) != 0)
-                Unk6 = r.ReadUInt32();
+                Unk6 = r.ReadSingle();
 
             var unk7Count = (Header.Flags >> 28);
 
@@ -1453,7 +1453,7 @@ namespace CodeWalker.GameFiles
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
         public uint Unk3 { get; set; }
-        public uint Unk4 { get; set; }
+        public MetaHash Unk4 { get; set; }
         public uint Unk5 { get; set; }
 
         public override void Parse(DataReader r)
@@ -1473,7 +1473,7 @@ namespace CodeWalker.GameFiles
                 if (unkTypeFlag != 1)
                     return;
 
-                Unk4 = r.ReadUInt32();
+                Unk4 = new MetaHash(r.ReadUInt32());
             }
 
             Unk5 = r.ReadUInt32();
