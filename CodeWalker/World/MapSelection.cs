@@ -58,6 +58,8 @@ namespace CodeWalker
         public YmapEntityDef MloEntityDef { get; set; }
         public MCMloRoomDef MloRoomDef { get; set; }
         public WaterQuad WaterQuad { get; set; }
+        public WaterCalmingQuad CalmingQuad { get; set; }
+        public WaterWaveQuad WaveQuad { get; set; }
         public Bounds CollisionBounds { get; set; }
         public BoundPolygon CollisionPoly { get; set; }
         public BoundVertex CollisionVertex { get; set; }

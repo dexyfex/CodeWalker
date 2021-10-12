@@ -127,7 +127,8 @@ namespace CodeWalker
         List<YndFile> renderpathynds = new List<YndFile>();
 
         bool renderwaterquads = true;
-        List<WaterQuad> renderwaterquadlist = new List<WaterQuad>();
+        bool rendercalmingquads = true;
+        bool renderwavequads = true;
 
         bool rendertraintracks = false;
         List<TrainTrack> rendertraintracklist = new List<TrainTrack>();
@@ -709,6 +710,14 @@ namespace CodeWalker
             {
                 RenderWorldWaterQuads();
             }
+            if (renderwavequads)
+            {
+                RenderWorldWaterWaveQuads();
+            }
+            if (rendercalmingquads)
+            {
+                RenderWorldWaterCalmingQuads();
+            }
             if (rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision))
             {
                 RenderWorldCollisionMeshes();
@@ -803,17 +812,23 @@ namespace CodeWalker
 
         private void RenderWorldWaterQuads()
         {
-            renderwaterquadlist = water.GetVisibleQuads(camera, water.WaterQuads);
+            var quads = RenderWorldBaseWaterQuads(water.WaterQuads);
+            Renderer.RenderWaterQuads(quads);
+        }
 
-            if (ProjectForm != null)
-            {
-                ProjectForm.GetVisibleWaterQuads(camera, renderwaterquadlist);
-            }
+        private void RenderWorldWaterCalmingQuads() => RenderWorldBaseWaterQuads(water.CalmingQuads);
 
-            Renderer.RenderWaterQuads(renderwaterquadlist);
+        private void RenderWorldWaterWaveQuads() => RenderWorldBaseWaterQuads(water.WaveQuads);
+
+        private List<T> RenderWorldBaseWaterQuads<T>(IEnumerable<T> quads) where T : BaseWaterQuad
+        {
+            List<T> renderwaterquadlist = water.GetVisibleQuads<T>(camera, quads);
+
+            ProjectForm?.GetVisibleWaterQuads<T>(camera, renderwaterquadlist);
 
             UpdateMouseHits(renderwaterquadlist);
 
+            return renderwaterquadlist;
         }
 
         private void RenderWorldPaths()
@@ -2889,7 +2904,7 @@ namespace CodeWalker
             }
 
         }
-        private void UpdateMouseHits(List<WaterQuad> waterquads)
+        private void UpdateMouseHits<T>(List<T> waterquads) where T : BaseWaterQuad
         {
             if (SelectionMode != MapSelectionMode.WaterQuad) return;
 
@@ -2900,7 +2915,7 @@ namespace CodeWalker
             float hitdist = float.MaxValue;
 
 
-            foreach (var quad in waterquads)
+            foreach (T quad in waterquads)
             {
                 MapBox mb = new MapBox();
                 mb.CamRelPos = -camera.Position;
@@ -2914,10 +2929,13 @@ namespace CodeWalker
                 bbox.Maximum = mb.BBMax;
                 if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
                 {
-                    CurMouseHit.WaterQuad = quad;
                     CurMouseHit.HitDist = hitdist;
                     CurMouseHit.CamRel = mb.CamRelPos;
                     CurMouseHit.AABB = bbox;
+
+                    CurMouseHit.WaterQuad = quad as WaterQuad;
+                    CurMouseHit.WaveQuad = quad as WaterWaveQuad;
+                    CurMouseHit.CalmingQuad = quad as WaterCalmingQuad;
                 }
             }
         }
