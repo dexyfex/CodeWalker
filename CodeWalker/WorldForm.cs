@@ -803,9 +803,7 @@ namespace CodeWalker
 
         private void RenderWorldWaterQuads()
         {
-            renderwaterquadlist.Clear();
-
-            water.GetVisibleQuads(camera, renderwaterquadlist);
+            renderwaterquadlist = water.GetVisibleQuads(camera, water.WaterQuads);
 
             if (ProjectForm != null)
             {

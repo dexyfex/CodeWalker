@@ -61,47 +61,61 @@ namespace CodeWalker.World
 
 
 
-        public void GetVisibleQuads(Camera camera, List<WaterQuad> quads)
+        public List<T> GetVisibleQuads<T>(Camera camera, IEnumerable<T> allQuads) where T : BaseWaterQuad
         {
-            if (!Inited) return;
+            List<T> quads = new List<T>();
+
+            if (!Inited) return quads;
 
             var vf = camera.ViewFrustum;
-            for (int i = 0; i < WaterQuads.Count; i++)
+            foreach (var quad in allQuads)
             {
-                var quad = WaterQuads[i];
-
                 Vector3 camrel = quad.BSCenter - camera.Position;
                 if (vf.ContainsSphereNoClipNoOpt(ref camrel, quad.BSRadius))
                 {
                     quads.Add(quad);
                 }
             }
+
+            return quads;
         }
 
     }
 
-
-    public class WaterQuad
+    public abstract class BaseWaterQuad
     {
         public float minX { get; set; }
         public float maxX { get; set; }
         public float minY { get; set; }
         public float maxY { get; set; }
+        public float z { get; set; } = 0;
+
+        public abstract void Init(XmlNode node);
+
+        public void CalcBS()
+        {
+            BSCenter = new Vector3((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, z);
+            BSRadius = new Vector2(maxX - minX, maxY - minY).Length() * 0.5f;
+        }
+        
+        public Vector3 BSCenter { get; private set; }
+        public float BSRadius { get; private set; }
+
+    }
+
+    public class WaterQuad : BaseWaterQuad
+    {
         public int Type { get; set; }
         public bool IsInvisible { get; set; }
         public bool HasLimitedDepth { get; set; }
-        public float z { get; set; }
         public float a1 { get; set; }
         public float a2 { get; set; }
         public float a3 { get; set; }
         public float a4 { get; set; }
         public bool NoStencil { get; set; }
 
-        public Vector3 BSCenter;
-        public float BSRadius;
 
-
-        public void Init(XmlNode node)
+        public override void Init(XmlNode node)
         {
             minX = Xml.GetChildFloatAttribute(node, "minX", "value");
             maxX = Xml.GetChildFloatAttribute(node, "maxX", "value");
@@ -133,10 +147,7 @@ namespace CodeWalker.World
             <NoStencil value="false" />
              */
 
-
-            BSCenter = new Vector3((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, z);
-            BSRadius = new Vector2(maxX - minX, maxY - minY).Length() * 0.5f;
-
+            CalcBS();
         }
 
         public override string ToString()
@@ -146,15 +157,11 @@ namespace CodeWalker.World
 
     }
 
-    public class WaterCalmingQuad
+    public class WaterCalmingQuad : BaseWaterQuad
     {
-        public float minX { get; set; }
-        public float maxX { get; set; }
-        public float minY { get; set; }
-        public float maxY { get; set; }
         public float fDampening { get; set; }
 
-        public void Init(XmlNode node)
+        public override void Init(XmlNode node)
         {
             minX = Xml.GetChildFloatAttribute(node, "minX", "value");
             maxX = Xml.GetChildFloatAttribute(node, "maxX", "value");
@@ -170,21 +177,18 @@ namespace CodeWalker.World
             <fDampening value="0.05" />
              */
 
+            CalcBS();
         }
 
     }
 
-    public class WaterWaveQuad
+    public class WaterWaveQuad : BaseWaterQuad
     {
-        public float minX { get; set; }
-        public float maxX { get; set; }
-        public float minY { get; set; }
-        public float maxY { get; set; }
         public float Amplitude { get; set; }
         public float XDirection { get; set; }
         public float YDirection { get; set; }
 
-        public void Init(XmlNode node)
+        public override void Init(XmlNode node)
         {
             minX = Xml.GetChildFloatAttribute(node, "minX", "value");
             maxX = Xml.GetChildFloatAttribute(node, "maxX", "value");
@@ -204,6 +208,7 @@ namespace CodeWalker.World
             <YDirection value="-0.797584" />
              */
 
+            CalcBS();
         }
 
     }
