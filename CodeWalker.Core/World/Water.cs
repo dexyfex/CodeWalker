@@ -188,6 +188,8 @@ namespace CodeWalker.World
         public float Amplitude { get; set; }
         public float XDirection { get; set; }
         public float YDirection { get; set; }
+        public Quaternion WaveOrientation { get; set; }
+
 
         public override void Init(XmlNode node, int index)
         {
@@ -199,6 +201,9 @@ namespace CodeWalker.World
             Amplitude = Xml.GetChildFloatAttribute(node, "Amplitude", "value");
             XDirection = Xml.GetChildFloatAttribute(node, "XDirection", "value");
             YDirection = Xml.GetChildFloatAttribute(node, "YDirection", "value");
+
+            float angl = (float)Math.Atan2(YDirection, XDirection);
+            WaveOrientation = Quaternion.RotationYawPitchRoll(0.0f, 0.0f, angl);
 
             /*
             <minX value="1664" />

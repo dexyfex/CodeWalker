@@ -1389,6 +1389,15 @@ namespace CodeWalker
                     Renderer.RenderCar(cg.Position, cgori, cg._CCarGen.carModel, cg._CCarGen.popGroup);
                 }
             }
+            if (selectionItem.WaveQuad != null)
+            {
+                var quad = selectionItem.WaveQuad;
+                Vector3 quadArrowPos = new Vector3(quad.minX + (quad.maxX - quad.minX) * 0.5f, quad.minY + (quad.maxY - quad.minY) * 0.5f, 5);
+                Quaternion waveOri = quad.WaveOrientation;
+                float arrowlen = quad.Amplitude * 50;
+                float arrowrad = arrowlen * 0.066f;
+                Renderer.RenderSelectionArrowOutline(quadArrowPos, Vector3.UnitX, Vector3.UnitY, waveOri, arrowlen, arrowrad, cgrn);
+            }
             if (selectionItem.LodLight != null)
             {
                 Renderer.RenderSelectionLodLight(selectionItem.LodLight);
