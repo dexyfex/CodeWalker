@@ -34,7 +34,7 @@ namespace CodeWalker.World
             for (int i = 0; i < waterquads.Count; i++)
             {
                 var waterquad = new WaterQuad();
-                waterquad.Init(waterquads[i]);
+                waterquad.Init(waterquads[i], i);
                 WaterQuads.Add(waterquad);
             }
 
@@ -43,7 +43,7 @@ namespace CodeWalker.World
             for (int i = 0; i < calmingquads.Count; i++)
             {
                 var calmingquad = new WaterCalmingQuad();
-                calmingquad.Init(calmingquads[i]);
+                calmingquad.Init(calmingquads[i], i);
                 CalmingQuads.Add(calmingquad);
             }
 
@@ -52,7 +52,7 @@ namespace CodeWalker.World
             for (int i = 0; i < wavequads.Count; i++)
             {
                 var wavequad = new WaterWaveQuad();
-                wavequad.Init(wavequads[i]);
+                wavequad.Init(wavequads[i], i);
                 WaveQuads.Add(wavequad);
             }
 
@@ -84,23 +84,28 @@ namespace CodeWalker.World
 
     public abstract class BaseWaterQuad
     {
+        public int xmlNodeIndex { get; set; }
         public float minX { get; set; }
         public float maxX { get; set; }
         public float minY { get; set; }
         public float maxY { get; set; }
-        public float z { get; set; } = 0;
+        public float? z { get; set; } = null;
 
-        public abstract void Init(XmlNode node);
+        public abstract void Init(XmlNode node, int index);
 
         public void CalcBS()
         {
-            BSCenter = new Vector3((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, z);
+            BSCenter = new Vector3((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, z ?? 0);
             BSRadius = new Vector2(maxX - minX, maxY - minY).Length() * 0.5f;
         }
         
         public Vector3 BSCenter { get; private set; }
         public float BSRadius { get; private set; }
 
+        public override string ToString()
+        {
+            return string.Format("[{0}] X=({1} : {2}), Y=({3} : {4})", xmlNodeIndex, minX, maxX, minY, maxY);
+        }
     }
 
     public class WaterQuad : BaseWaterQuad
@@ -115,8 +120,9 @@ namespace CodeWalker.World
         public bool NoStencil { get; set; }
 
 
-        public override void Init(XmlNode node)
+        public override void Init(XmlNode node, int index)
         {
+            xmlNodeIndex = index;
             minX = Xml.GetChildFloatAttribute(node, "minX", "value");
             maxX = Xml.GetChildFloatAttribute(node, "maxX", "value");
             minY = Xml.GetChildFloatAttribute(node, "minY", "value");
@@ -149,20 +155,15 @@ namespace CodeWalker.World
 
             CalcBS();
         }
-
-        public override string ToString()
-        {
-            return string.Format("{0}, {1}, {2}", FloatUtil.ToString(minX), FloatUtil.ToString(minY), FloatUtil.ToString(z), FloatUtil.ToString(maxX), FloatUtil.ToString(maxY));
-        }
-
     }
 
     public class WaterCalmingQuad : BaseWaterQuad
     {
         public float fDampening { get; set; }
 
-        public override void Init(XmlNode node)
+        public override void Init(XmlNode node, int index)
         {
+            xmlNodeIndex = index;
             minX = Xml.GetChildFloatAttribute(node, "minX", "value");
             maxX = Xml.GetChildFloatAttribute(node, "maxX", "value");
             minY = Xml.GetChildFloatAttribute(node, "minY", "value");
@@ -188,8 +189,9 @@ namespace CodeWalker.World
         public float XDirection { get; set; }
         public float YDirection { get; set; }
 
-        public override void Init(XmlNode node)
+        public override void Init(XmlNode node, int index)
         {
+            xmlNodeIndex = index;
             minX = Xml.GetChildFloatAttribute(node, "minX", "value");
             maxX = Xml.GetChildFloatAttribute(node, "maxX", "value");
             minY = Xml.GetChildFloatAttribute(node, "minY", "value");

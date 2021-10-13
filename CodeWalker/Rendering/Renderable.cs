@@ -1767,16 +1767,16 @@ namespace CodeWalker.Rendering
 
             VertexCount = 4;
             Vertices = new VertexTypePCT[4];
-            Vertices[0].Position = new Vector3(key.minX, key.minY, key.z);
+            Vertices[0].Position = new Vector3(key.minX, key.minY, key.z.Value);
             Vertices[0].Texcoord = new Vector2(0.0f, 0.0f);
             Vertices[0].Colour = (uint)new Color4(key.a1 / 255.0f).ToRgba();
-            Vertices[1].Position = new Vector3(key.maxX, key.minY, key.z);
+            Vertices[1].Position = new Vector3(key.maxX, key.minY, key.z.Value);
             Vertices[1].Texcoord = new Vector2(sx, 0.0f);
             Vertices[1].Colour = (uint)new Color4(key.a2 / 255.0f).ToRgba();
-            Vertices[2].Position = new Vector3(key.minX, key.maxY, key.z);
+            Vertices[2].Position = new Vector3(key.minX, key.maxY, key.z.Value);
             Vertices[2].Texcoord = new Vector2(0.0f, sy);
             Vertices[2].Colour = (uint)new Color4(key.a3 / 255.0f).ToRgba();
-            Vertices[3].Position = new Vector3(key.maxX, key.maxY, key.z);
+            Vertices[3].Position = new Vector3(key.maxX, key.maxY, key.z.Value);
             Vertices[3].Texcoord = new Vector2(sx, sy);
             Vertices[3].Colour = (uint)new Color4(key.a4 / 255.0f).ToRgba();
 

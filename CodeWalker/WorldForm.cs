@@ -2915,8 +2915,8 @@ namespace CodeWalker
             {
                 MapBox mb = new MapBox();
                 mb.CamRelPos = -camera.Position;
-                mb.BBMin = new Vector3(quad.minX, quad.minY, quad.z);
-                mb.BBMax = new Vector3(quad.maxX, quad.maxY, quad.z);
+                mb.BBMin = new Vector3(quad.minX, quad.minY, quad.z ?? 0);
+                mb.BBMax = new Vector3(quad.maxX, quad.maxY, quad.z ?? 0);
                 mb.Orientation = Quaternion.Identity;
                 mb.Scale = Vector3.One;
                 Renderer.BoundingBoxes.Add(mb);
@@ -3724,6 +3724,16 @@ namespace CodeWalker
             {
                 SelectionEntityTabPage.Text = "WaterQuad";
                 SelEntityPropertyGrid.SelectedObject = item.WaterQuad;
+            }
+            else if (item.CalmingQuad != null)
+            {
+                SelectionEntityTabPage.Text = "CalmingQuad";
+                SelEntityPropertyGrid.SelectedObject = item.CalmingQuad;
+            }
+            else if (item.WaveQuad != null)
+            {
+                SelectionEntityTabPage.Text = "WaveQuad";
+                SelEntityPropertyGrid.SelectedObject = item.WaveQuad;
             }
             else if (item.PathNode != null)
             {

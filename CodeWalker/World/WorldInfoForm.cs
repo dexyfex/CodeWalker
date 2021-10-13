@@ -127,6 +127,16 @@ namespace CodeWalker.World
                 SelectionEntityTabPage.Text = "Water Quad";
                 SelEntityPropertyGrid.SelectedObject = item.WaterQuad;
             }
+            else if (item.CalmingQuad != null)
+            {
+                SelectionEntityTabPage.Text = "Water Calming Quad";
+                SelEntityPropertyGrid.SelectedObject = item.CalmingQuad;
+            }
+            else if (item.WaveQuad != null)
+            {
+                SelectionEntityTabPage.Text = "Water Wave Quad";
+                SelEntityPropertyGrid.SelectedObject = item.WaveQuad;
+            }
             else if (item.NavPoly != null)
             {
                 SelectionEntityTabPage.Text = "Nav Poly";
