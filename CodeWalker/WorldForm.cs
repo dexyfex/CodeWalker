@@ -5559,9 +5559,11 @@ namespace CodeWalker
                     break;
                 case "Water Calming Quad":
                     mode = MapSelectionMode.CalmingQuad;
+                    ToolbarSelectCalmingQuadButton.Checked = true;
                     break;
                 case "Water Wave Quad":
                     mode = MapSelectionMode.WaveQuad;
+                    ToolbarSelectWaveQuadButton.Checked = true;
                     break;
                 case "Collision":
                     mode = MapSelectionMode.Collision;
@@ -7312,6 +7314,18 @@ namespace CodeWalker
         private void ToolbarSelectWaterQuadButton_Click(object sender, EventArgs e)
         {
             SetSelectionMode("Water Quad");
+            SetMouseSelect(true);
+        }
+
+        private void ToolbarSelectCalmingQuadButton_Click(object sender, EventArgs e)
+        {
+            SetSelectionMode("Water Calming Quad");
+            SetMouseSelect(true);
+        }
+
+        private void ToolbarSelectWaveQuadButton_Click(object sender, EventArgs e)
+        {
+            SetSelectionMode("Water Wave Quad");
             SetMouseSelect(true);
         }
 
