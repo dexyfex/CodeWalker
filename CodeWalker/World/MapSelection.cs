@@ -36,6 +36,8 @@ namespace CodeWalker
         Watermap = 17,
         Audio = 18,
         Occlusion = 19,
+        CalmingQuad = 20,
+        WaveQuad = 21,
     }
 
 

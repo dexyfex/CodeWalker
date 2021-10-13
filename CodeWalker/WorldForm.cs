@@ -127,8 +127,6 @@ namespace CodeWalker
         List<YndFile> renderpathynds = new List<YndFile>();
 
         bool renderwaterquads = true;
-        bool rendercalmingquads = true;
-        bool renderwavequads = true;
 
         bool rendertraintracks = false;
         List<TrainTrack> rendertraintracklist = new List<TrainTrack>();
@@ -710,11 +708,11 @@ namespace CodeWalker
             {
                 RenderWorldWaterQuads();
             }
-            if (renderwavequads)
+            if (SelectionMode == MapSelectionMode.WaveQuad)
             {
                 RenderWorldWaterWaveQuads();
             }
-            if (rendercalmingquads)
+            if (SelectionMode == MapSelectionMode.CalmingQuad)
             {
                 RenderWorldWaterCalmingQuads();
             }
@@ -812,21 +810,21 @@ namespace CodeWalker
 
         private void RenderWorldWaterQuads()
         {
-            var quads = RenderWorldBaseWaterQuads(water.WaterQuads);
+            var quads = RenderWorldBaseWaterQuads(water.WaterQuads, MapSelectionMode.WaterQuad);
             Renderer.RenderWaterQuads(quads);
         }
 
-        private void RenderWorldWaterCalmingQuads() => RenderWorldBaseWaterQuads(water.CalmingQuads);
+        private void RenderWorldWaterCalmingQuads() => RenderWorldBaseWaterQuads(water.CalmingQuads, MapSelectionMode.CalmingQuad);
 
-        private void RenderWorldWaterWaveQuads() => RenderWorldBaseWaterQuads(water.WaveQuads);
+        private void RenderWorldWaterWaveQuads() => RenderWorldBaseWaterQuads(water.WaveQuads, MapSelectionMode.WaveQuad);
 
-        private List<T> RenderWorldBaseWaterQuads<T>(IEnumerable<T> quads) where T : BaseWaterQuad
+        private List<T> RenderWorldBaseWaterQuads<T>(IEnumerable<T> quads, MapSelectionMode requiredMode) where T : BaseWaterQuad
         {
             List<T> renderwaterquadlist = water.GetVisibleQuads<T>(camera, quads);
 
             ProjectForm?.GetVisibleWaterQuads<T>(camera, renderwaterquadlist);
 
-            UpdateMouseHits(renderwaterquadlist);
+            if(SelectionMode == requiredMode) UpdateMouseHits(renderwaterquadlist);
 
             return renderwaterquadlist;
         }
@@ -2906,8 +2904,6 @@ namespace CodeWalker
         }
         private void UpdateMouseHits<T>(List<T> waterquads) where T : BaseWaterQuad
         {
-            if (SelectionMode != MapSelectionMode.WaterQuad) return;
-
             BoundingBox bbox = new BoundingBox();
             Ray mray = new Ray();
             mray.Position = camera.MouseRay.Position + camera.Position;
@@ -5541,6 +5537,12 @@ namespace CodeWalker
                 case "Water Quad":
                     mode = MapSelectionMode.WaterQuad;
                     ToolbarSelectWaterQuadButton.Checked = true;
+                    break;
+                case "Water Calming Quad":
+                    mode = MapSelectionMode.CalmingQuad;
+                    break;
+                case "Water Wave Quad":
+                    mode = MapSelectionMode.WaveQuad;
                     break;
                 case "Collision":
                     mode = MapSelectionMode.Collision;
