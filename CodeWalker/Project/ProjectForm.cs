@@ -3217,6 +3217,50 @@ namespace CodeWalker.Project
 
             return archetype;
         }
+        public Archetype NewArchetypeFromYdr()
+        {
+            if (CurrentYtypFile == null) return null;
+            var archetype = CurrentYtypFile.AddArchetype();
+
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            dlg.Multiselect = false;
+            dlg.CheckFileExists = true;
+            dlg.AddExtension = true;
+            dlg.DefaultExt = ".ydr";
+            dlg.Filter = "Ydr files|*.ydr";
+
+            bool? result = dlg.ShowDialog();
+            if (result == true)
+            {
+                YdrFile fileYdr = new YdrFile();
+                RpfFile.LoadResourceFile<YdrFile>(fileYdr, File.ReadAllBytes(dlg.FileName), 165);
+                fileYdr.Drawable.Name = fileYdr.Drawable.Name.Replace(".#dr", "");
+                var name_hash = JenkHash.GenHash(fileYdr.Drawable.Name);
+                archetype._BaseArchetypeDef.name = name_hash;
+                archetype._BaseArchetypeDef.assetName = name_hash;
+                archetype._BaseArchetypeDef.assetType = rage__fwArchetypeDef__eAssetType.ASSET_TYPE_DRAWABLE;
+
+                if (fileYdr.Drawable.ShaderGroup.TextureDictionary != null) archetype._BaseArchetypeDef.textureDictionary = name_hash;
+                if (fileYdr.Drawable.Bound != null) archetype._BaseArchetypeDef.physicsDictionary = name_hash;
+
+                archetype._BaseArchetypeDef.specialAttribute = 0;
+                archetype._BaseArchetypeDef.flags = 32;
+                archetype._BaseArchetypeDef.bbMin = fileYdr.Drawable.BoundingBoxMin;
+                archetype._BaseArchetypeDef.bbMax = fileYdr.Drawable.BoundingBoxMax;
+                archetype._BaseArchetypeDef.bsCentre = fileYdr.Drawable.BoundingCenter;
+                archetype._BaseArchetypeDef.bsRadius = fileYdr.Drawable.BoundingSphereRadius;
+                archetype._BaseArchetypeDef.hdTextureDist = 60.0f;
+                archetype._BaseArchetypeDef.lodDist = 60.0f;
+            }
+
+            LoadProjectTree();
+            ProjectExplorer?.TrySelectArchetypeTreeNode(archetype);
+            CurrentArchetype = archetype;
+
+            AddProjectArchetype(archetype);
+
+            return archetype;
+        }
         public YmapEntityDef NewMloEntity(YmapEntityDef copy = null, bool copyTransform = false, bool selectNew = true)
         {
             if ((CurrentArchetype == null) || !(CurrentArchetype is MloArchetype mloArch))
@@ -8727,6 +8771,7 @@ namespace CodeWalker.Project
             bool ismlo = ((CurrentEntity != null) && (CurrentEntity.MloParent != null)) || (CurrentMloRoom != null) || (CurrentMloPortal != null) || (CurrentMloEntitySet != null) || (CurrentArchetype is MloArchetype);
 
             YtypNewArchetypeMenu.Enabled = enable && inproj;
+            YtypNewArchetypeFromYdrMenu.Enabled = enable && inproj;
             YtypMloToolStripMenuItem.Enabled = enable && inproj && ismlo;
             YtypMloNewEntityToolStripMenuItem.Enabled = YtypMloToolStripMenuItem.Enabled;
 
@@ -9225,6 +9270,10 @@ namespace CodeWalker.Project
         private void YtypNewArchetypeMenu_Click(object sender, EventArgs e)
         {
             NewArchetype();
+        }
+        private void YtypNewArchetypeFromYdrMenu_Click(object sender, EventArgs e)
+        {
+            NewArchetypeFromYdr();
         }
         private void YtypMloNewEntityToolStripMenuItem_Click(object sender, EventArgs e)
         {
