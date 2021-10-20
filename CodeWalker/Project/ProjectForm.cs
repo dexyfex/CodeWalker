@@ -3229,7 +3229,7 @@ namespace CodeWalker.Project
             dlg.Filter = "Ydr files|*.ydr";
             
             bool? result = dlg.ShowDialog();
-            if (result == true && dlg.FileNames.Length > -0)
+            if (result == true && dlg.FileNames.Length > 0)
             {
                 foreach(string path in dlg.FileNames)
                 {
