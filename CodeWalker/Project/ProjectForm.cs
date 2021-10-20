@@ -3217,49 +3217,50 @@ namespace CodeWalker.Project
 
             return archetype;
         }
-        public Archetype NewArchetypeFromYdr()
+        public void NewArchetypeFromYdr()
         {
-            if (CurrentYtypFile == null) return null;
-            var archetype = CurrentYtypFile.AddArchetype();
+            if (CurrentYtypFile == null) return;
 
             Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-            dlg.Multiselect = false;
+            dlg.Multiselect = true;
             dlg.CheckFileExists = true;
             dlg.AddExtension = true;
             dlg.DefaultExt = ".ydr";
             dlg.Filter = "Ydr files|*.ydr";
-
+            
             bool? result = dlg.ShowDialog();
-            if (result == true)
+            if (result == true && dlg.FileNames.Length > -0)
             {
-                YdrFile fileYdr = new YdrFile();
-                RpfFile.LoadResourceFile<YdrFile>(fileYdr, File.ReadAllBytes(dlg.FileName), 165);
-                fileYdr.Drawable.Name = fileYdr.Drawable.Name.Replace(".#dr", "");
-                var name_hash = JenkHash.GenHash(fileYdr.Drawable.Name);
-                archetype._BaseArchetypeDef.name = name_hash;
-                archetype._BaseArchetypeDef.assetName = name_hash;
-                archetype._BaseArchetypeDef.assetType = rage__fwArchetypeDef__eAssetType.ASSET_TYPE_DRAWABLE;
+                foreach(string path in dlg.FileNames)
+                {
+                    var archetype = CurrentYtypFile.AddArchetype();
+                    YdrFile fileYdr = new YdrFile();
+                    RpfFile.LoadResourceFile<YdrFile>(fileYdr, File.ReadAllBytes(path), 165);
+                    fileYdr.Drawable.Name = fileYdr.Drawable.Name.Replace(".#dr", "");
+                    var name_hash = JenkHash.GenHash(fileYdr.Drawable.Name);
+                    archetype._BaseArchetypeDef.name = name_hash;
+                    archetype._BaseArchetypeDef.assetName = name_hash;
+                    archetype._BaseArchetypeDef.assetType = rage__fwArchetypeDef__eAssetType.ASSET_TYPE_DRAWABLE;
 
-                if (fileYdr.Drawable.ShaderGroup.TextureDictionary != null) archetype._BaseArchetypeDef.textureDictionary = name_hash;
-                if (fileYdr.Drawable.Bound != null) archetype._BaseArchetypeDef.physicsDictionary = name_hash;
+                    if (fileYdr.Drawable.ShaderGroup.TextureDictionary != null) archetype._BaseArchetypeDef.textureDictionary = name_hash;
+                    if (fileYdr.Drawable.Bound != null) archetype._BaseArchetypeDef.physicsDictionary = name_hash;
 
-                archetype._BaseArchetypeDef.specialAttribute = 0;
-                archetype._BaseArchetypeDef.flags = 32;
-                archetype._BaseArchetypeDef.bbMin = fileYdr.Drawable.BoundingBoxMin;
-                archetype._BaseArchetypeDef.bbMax = fileYdr.Drawable.BoundingBoxMax;
-                archetype._BaseArchetypeDef.bsCentre = fileYdr.Drawable.BoundingCenter;
-                archetype._BaseArchetypeDef.bsRadius = fileYdr.Drawable.BoundingSphereRadius;
-                archetype._BaseArchetypeDef.hdTextureDist = 60.0f;
-                archetype._BaseArchetypeDef.lodDist = 60.0f;
+                    archetype._BaseArchetypeDef.specialAttribute = 0;
+                    archetype._BaseArchetypeDef.flags = 32;
+                    archetype._BaseArchetypeDef.bbMin = fileYdr.Drawable.BoundingBoxMin;
+                    archetype._BaseArchetypeDef.bbMax = fileYdr.Drawable.BoundingBoxMax;
+                    archetype._BaseArchetypeDef.bsCentre = fileYdr.Drawable.BoundingCenter;
+                    archetype._BaseArchetypeDef.bsRadius = fileYdr.Drawable.BoundingSphereRadius;
+                    archetype._BaseArchetypeDef.hdTextureDist = 60.0f;
+                    archetype._BaseArchetypeDef.lodDist = 60.0f;
+
+                    LoadProjectTree();
+                    ProjectExplorer?.TrySelectArchetypeTreeNode(archetype);
+                    CurrentArchetype = archetype;
+
+                    AddProjectArchetype(archetype);
+                }
             }
-
-            LoadProjectTree();
-            ProjectExplorer?.TrySelectArchetypeTreeNode(archetype);
-            CurrentArchetype = archetype;
-
-            AddProjectArchetype(archetype);
-
-            return archetype;
         }
         public YmapEntityDef NewMloEntity(YmapEntityDef copy = null, bool copyTransform = false, bool selectNew = true)
         {
