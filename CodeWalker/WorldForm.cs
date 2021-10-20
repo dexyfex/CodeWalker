@@ -4609,6 +4609,8 @@ namespace CodeWalker
             StatusBarCheckBox.Checked = s.ShowStatusBar;
             SnapGridSizeUpDown.Value = (decimal)s.SnapGridSize;
             SetRotationSnapping(s.SnapRotationDegrees);
+
+            camera.FieldOfView = s.CameraFieldOfView;
             
 
             EnableModsCheckBox.Checked = s.EnableMods;
@@ -4647,7 +4649,7 @@ namespace CodeWalker
             s.ShowStatusBar = StatusBarCheckBox.Checked;
             s.SnapRotationDegrees = (float)SnapAngleUpDown.Value;
             s.SnapGridSize = (float)SnapGridSizeUpDown.Value;
-
+            s.CameraFieldOfView = camera.FieldOfView;
 
             //additional settings from gamefilecache...
             s.EnableMods = gameFileCache.EnableMods;
