@@ -3119,7 +3119,9 @@ namespace CodeWalker.Project
                     CurrentYtypFile.FilePath = filepath;
                     CurrentYtypFile.RpfFileEntry.Name = new FileInfo(filepath).Name;
                     CurrentYtypFile.Name = CurrentYtypFile.RpfFileEntry.Name;
-                    CurrentYtypFile._CMapTypes.name = new MetaHash(JenkHash.GenHash(newname));
+                    MetaHash metaHash = new MetaHash(JenkHash.GenHash(newname));
+                    CurrentYtypFile._CMapTypes.name = metaHash;
+                    CurrentYtypFile.NameHash = metaHash.Hash;
                 }
 
                 data = CurrentYtypFile.Save();
