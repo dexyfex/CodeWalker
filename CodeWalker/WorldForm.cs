@@ -4489,7 +4489,7 @@ namespace CodeWalker
             camera.TargetDistance = bl > 1f ? bl : 1f;
         }
 
-        private MapMarker AddMarker(Vector3 pos, string name, bool addtotxtbox = false)
+        public MapMarker AddMarker(Vector3 pos, string name, bool addtotxtbox = false)
         {
             string str = pos.X.ToString() + ", " + pos.Y.ToString() + ", " + pos.Z.ToString();
             if (!string.IsNullOrEmpty(name))
@@ -4650,6 +4650,7 @@ namespace CodeWalker
             s.SnapRotationDegrees = (float)SnapAngleUpDown.Value;
             s.SnapGridSize = (float)SnapGridSizeUpDown.Value;
             s.CameraFieldOfView = camera.FieldOfView;
+            FieldOfViewTrackBar.Value = (int)Math.Floor(camera.FieldOfView) * 100;
 
             //additional settings from gamefilecache...
             s.EnableMods = gameFileCache.EnableMods;
