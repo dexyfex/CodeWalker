@@ -49,6 +49,7 @@ namespace CodeWalker.World
             this.SelDrawableTexturesTreeView = new CodeWalker.WinForms.TreeViewFix();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.SaveTextureButton = new System.Windows.Forms.Button();
             this.SelTextureDimensionsLabel = new System.Windows.Forms.Label();
             this.SelTextureMipTrackBar = new System.Windows.Forms.TrackBar();
             this.SelTextureMipLabel = new System.Windows.Forms.Label();
@@ -68,6 +69,7 @@ namespace CodeWalker.World
             this.label1 = new System.Windows.Forms.Label();
             this.label25 = new System.Windows.Forms.Label();
             this.SelectionModeComboBox = new System.Windows.Forms.ComboBox();
+            this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.SelectionTabControl.SuspendLayout();
             this.SelectionEntityTabPage.SuspendLayout();
             this.SelectionArchetypeTabPage.SuspendLayout();
@@ -313,6 +315,7 @@ namespace CodeWalker.World
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.SaveTextureButton);
             this.tabPage3.Controls.Add(this.SelTextureDimensionsLabel);
             this.tabPage3.Controls.Add(this.SelTextureMipTrackBar);
             this.tabPage3.Controls.Add(this.SelTextureMipLabel);
@@ -329,11 +332,21 @@ namespace CodeWalker.World
             this.tabPage3.Text = "Texture";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
+            // SaveTextureButton
+            // 
+            this.SaveTextureButton.Location = new System.Drawing.Point(346, 396);
+            this.SaveTextureButton.Name = "SaveTextureButton";
+            this.SaveTextureButton.Size = new System.Drawing.Size(54, 23);
+            this.SaveTextureButton.TabIndex = 38;
+            this.SaveTextureButton.Text = "Save...";
+            this.SaveTextureButton.UseVisualStyleBackColor = true;
+            this.SaveTextureButton.Click += new System.EventHandler(this.SaveTextureButton_Click);
+            // 
             // SelTextureDimensionsLabel
             // 
             this.SelTextureDimensionsLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.SelTextureDimensionsLabel.AutoSize = true;
-            this.SelTextureDimensionsLabel.Location = new System.Drawing.Point(334, 400);
+            this.SelTextureDimensionsLabel.Location = new System.Drawing.Point(262, 400);
             this.SelTextureDimensionsLabel.Name = "SelTextureDimensionsLabel";
             this.SelTextureDimensionsLabel.Size = new System.Drawing.Size(10, 13);
             this.SelTextureDimensionsLabel.TabIndex = 37;
@@ -348,7 +361,7 @@ namespace CodeWalker.World
             this.SelTextureMipTrackBar.Location = new System.Drawing.Point(59, 394);
             this.SelTextureMipTrackBar.Maximum = 0;
             this.SelTextureMipTrackBar.Name = "SelTextureMipTrackBar";
-            this.SelTextureMipTrackBar.Size = new System.Drawing.Size(265, 31);
+            this.SelTextureMipTrackBar.Size = new System.Drawing.Size(187, 31);
             this.SelTextureMipTrackBar.TabIndex = 36;
             this.SelTextureMipTrackBar.Scroll += new System.EventHandler(this.SelTextureMipTrackBar_Scroll);
             // 
@@ -639,5 +652,7 @@ namespace CodeWalker.World
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.TreeView HierarchyTreeView;
         private PropertyGridFix HierarchyPropertyGrid;
+        private System.Windows.Forms.Button SaveTextureButton;
+        private System.Windows.Forms.SaveFileDialog SaveFileDialog;
     }
 }

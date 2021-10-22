@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -24,6 +25,7 @@ namespace CodeWalker.World
         MapSelection Selection;
         string SelectionMode = "";
         bool MouseSelectEnable = false;
+        Texture currentTex; // Used by save button
 
         public WorldInfoForm(WorldForm worldForm)
         {
@@ -389,6 +391,7 @@ namespace CodeWalker.World
             }
             if (tex != null)
             {
+                currentTex = tex;
                 int mip = 0;
                 if (mipchange)
                 {
@@ -423,6 +426,7 @@ namespace CodeWalker.World
                 SelTextureMipTrackBar.Value = 0;
                 SelTextureMipTrackBar.Maximum = 0;
                 SelTextureDimensionsLabel.Text = "-";
+                currentTex = null;
             }
         }
 
@@ -522,6 +526,17 @@ namespace CodeWalker.World
         {
             var sele = HierarchyTreeView.SelectedNode?.Tag as YmapEntityDef;
             HierarchyPropertyGrid.SelectedObject = sele;
+        }
+
+        private void SaveTextureButton_Click(object sender, EventArgs e)
+        {
+            if (currentTex == null) return;
+            string fname = currentTex.Name + ".dds";
+            SaveFileDialog.FileName = fname;
+            if (SaveFileDialog.ShowDialog() != DialogResult.OK) return;
+            string fpath = SaveFileDialog.FileName;
+            byte[] dds = DDSIO.GetDDSFile(currentTex);
+            File.WriteAllBytes(fpath, dds);
         }
     }
 }
