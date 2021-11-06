@@ -557,13 +557,13 @@ namespace CodeWalker.Project.Panels
             var paramstrs = ExtParamsTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             if (paramstrs?.Length > 0)
             {
-                var paramlist = new List<Dat151AmbientEmitter.ExtParam>();
+                var paramlist = new List<Dat151AmbientRule.ExtParam>();
                 foreach (var paramstr in paramstrs)
                 {
                     var paramvals = paramstr.Split(',');
                     if (paramvals?.Length == 3)
                     {
-                        var param = new Dat151AmbientEmitter.ExtParam();
+                        var param = new Dat151AmbientRule.ExtParam();
                         var hashstr = paramvals[0].Trim();
                         var valstr = paramvals[1].Trim();
                         var flgstr = paramvals[2].Trim();
@@ -593,7 +593,7 @@ namespace CodeWalker.Project.Panels
         {
             if (CurrentEmitter == null) return;
             if (ProjectForm.WorldForm == null) return;
-            ProjectForm.WorldForm.GoToPosition(CurrentEmitter.Position, CurrentEmitter.AudioZone.InnerSize);
+            ProjectForm.WorldForm.GoToPosition(CurrentEmitter.Position, CurrentEmitter.AudioZone.PlaybackZoneSize);
         }
 
         private void AddToProjectButton_Click(object sender, EventArgs e)

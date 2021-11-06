@@ -87,18 +87,18 @@ namespace CodeWalker.Project.Panels
                 var z = CurrentZone.AudioZone;
                 NameTextBox.Text = z.NameHash.ToString();
                 ShapeComboBox.Text = z.Shape.ToString();
-                InnerPosTextBox.Text = FloatUtil.GetVector3String(z.InnerPos);
-                InnerSizeTextBox.Text = FloatUtil.GetVector3String(z.InnerSize);
-                InnerAngleTextBox.Text = z.InnerAngle.ToString();
-                InnerVec1TextBox.Text = FloatUtil.GetVector4String(z.InnerVec1);
-                InnerVec2TextBox.Text = FloatUtil.GetVector4String(z.InnerVec2);
-                InnerVec3TextBox.Text = FloatUtil.GetVector3String(z.InnerVec3);
-                OuterPosTextBox.Text = FloatUtil.GetVector3String(z.OuterPos);
-                OuterSizeTextBox.Text = FloatUtil.GetVector3String(z.OuterSize);
-                OuterAngleTextBox.Text = z.OuterAngle.ToString();
-                OuterVec1TextBox.Text = FloatUtil.GetVector4String(z.OuterVec1);
-                OuterVec2TextBox.Text = FloatUtil.GetVector4String(z.OuterVec2);
-                OuterVec3TextBox.Text = FloatUtil.GetVector3String(z.OuterVec3);
+                InnerPosTextBox.Text = FloatUtil.GetVector3String(z.PlaybackZonePosition);
+                InnerSizeTextBox.Text = FloatUtil.GetVector3String(z.PlaybackZoneSize);
+                InnerAngleTextBox.Text = z.PlaybackZoneAngle.ToString();
+                InnerVec1TextBox.Text = FloatUtil.GetVector4String(z.PlaybackZoneVec1);
+                InnerVec2TextBox.Text = FloatUtil.GetVector4String(z.PlaybackZoneVec2);
+                InnerVec3TextBox.Text = FloatUtil.GetVector3String(z.PlaybackZoneVec3);
+                OuterPosTextBox.Text = FloatUtil.GetVector3String(z.ActivationZonePosition);
+                OuterSizeTextBox.Text = FloatUtil.GetVector3String(z.ActivationZoneSize);
+                OuterAngleTextBox.Text = z.ActivationZoneAngle.ToString();
+                OuterVec1TextBox.Text = FloatUtil.GetVector4String(z.ActivationZoneVec1);
+                OuterVec2TextBox.Text = FloatUtil.GetVector4String(z.ActivationZoneVec2);
+                OuterVec3TextBox.Text = FloatUtil.GetVector3String(z.ActivationZoneVec3);
                 UnkVec1TextBox.Text = FloatUtil.GetVector4String(z.UnkVec1);
                 UnkVec2TextBox.Text = FloatUtil.GetVector4String(z.UnkVec2);
                 UnkVec3TextBox.Text = FloatUtil.GetVector2String(z.UnkVec3);
@@ -110,9 +110,9 @@ namespace CodeWalker.Project.Panels
                 Hash1TextBox.Text = z.UnkHash1.ToString();
 
                 StringBuilder sb = new StringBuilder();
-                if (z.Hashes != null)
+                if (z.Rules != null)
                 {
-                    foreach (var hash in z.Hashes)
+                    foreach (var hash in z.Rules)
                     {
                         sb.AppendLine(hash.ToString());
                     }
@@ -204,9 +204,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentZone?.AudioZone == null) return;
 
             var vec = FloatUtil.ParseVector3String(InnerPosTextBox.Text);
-            if (CurrentZone.AudioZone.InnerPos != vec)
+            if (CurrentZone.AudioZone.PlaybackZonePosition != vec)
             {
-                CurrentZone.AudioZone.InnerPos = vec;
+                CurrentZone.AudioZone.PlaybackZonePosition = vec;
 
                 ProjectItemChanged();
 
@@ -227,9 +227,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentZone?.AudioZone == null) return;
 
             var vec = FloatUtil.ParseVector3String(InnerSizeTextBox.Text);
-            if (CurrentZone.AudioZone.InnerSize != vec)
+            if (CurrentZone.AudioZone.PlaybackZoneSize != vec)
             {
-                CurrentZone.AudioZone.InnerSize = vec;
+                CurrentZone.AudioZone.PlaybackZoneSize = vec;
 
                 ProjectItemChanged();
             }
@@ -243,9 +243,9 @@ namespace CodeWalker.Project.Panels
             uint ang = 0;
             if (uint.TryParse(InnerAngleTextBox.Text, out ang))
             {
-                if (CurrentZone.AudioZone.InnerAngle != ang)
+                if (CurrentZone.AudioZone.PlaybackZoneAngle != ang)
                 {
-                    CurrentZone.AudioZone.InnerAngle = ang;
+                    CurrentZone.AudioZone.PlaybackZoneAngle = ang;
 
                     ProjectItemChanged();
                 }
@@ -258,9 +258,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentZone?.AudioZone == null) return;
 
             var vec = FloatUtil.ParseVector4String(InnerVec1TextBox.Text);
-            if (CurrentZone.AudioZone.InnerVec1 != vec)
+            if (CurrentZone.AudioZone.PlaybackZoneVec1 != vec)
             {
-                CurrentZone.AudioZone.InnerVec1 = vec;
+                CurrentZone.AudioZone.PlaybackZoneVec1 = vec;
 
                 ProjectItemChanged();
             }
@@ -272,9 +272,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentZone?.AudioZone == null) return;
 
             var vec = FloatUtil.ParseVector4String(InnerVec2TextBox.Text);
-            if (CurrentZone.AudioZone.InnerVec2 != vec)
+            if (CurrentZone.AudioZone.PlaybackZoneVec2 != vec)
             {
-                CurrentZone.AudioZone.InnerVec2 = vec;
+                CurrentZone.AudioZone.PlaybackZoneVec2 = vec;
 
                 ProjectItemChanged();
             }
@@ -286,9 +286,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentZone?.AudioZone == null) return;
 
             var vec = FloatUtil.ParseVector3String(InnerVec3TextBox.Text);
-            if (CurrentZone.AudioZone.InnerVec3 != vec)
+            if (CurrentZone.AudioZone.PlaybackZoneVec3 != vec)
             {
-                CurrentZone.AudioZone.InnerVec3 = vec;
+                CurrentZone.AudioZone.PlaybackZoneVec3 = vec;
 
                 ProjectItemChanged();
             }
@@ -300,9 +300,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentZone?.AudioZone == null) return;
 
             var vec = FloatUtil.ParseVector3String(OuterPosTextBox.Text);
-            if (CurrentZone.AudioZone.OuterPos != vec)
+            if (CurrentZone.AudioZone.ActivationZonePosition != vec)
             {
-                CurrentZone.AudioZone.OuterPos = vec;
+                CurrentZone.AudioZone.ActivationZonePosition = vec;
 
                 ProjectItemChanged();
             }
@@ -314,9 +314,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentZone?.AudioZone == null) return;
 
             var vec = FloatUtil.ParseVector3String(OuterSizeTextBox.Text);
-            if (CurrentZone.AudioZone.OuterSize != vec)
+            if (CurrentZone.AudioZone.ActivationZoneSize != vec)
             {
-                CurrentZone.AudioZone.OuterSize = vec;
+                CurrentZone.AudioZone.ActivationZoneSize = vec;
 
                 ProjectItemChanged();
             }
@@ -330,9 +330,9 @@ namespace CodeWalker.Project.Panels
             uint ang = 0;
             if (uint.TryParse(OuterAngleTextBox.Text, out ang))
             {
-                if (CurrentZone.AudioZone.OuterAngle != ang)
+                if (CurrentZone.AudioZone.ActivationZoneAngle != ang)
                 {
-                    CurrentZone.AudioZone.OuterAngle = ang;
+                    CurrentZone.AudioZone.ActivationZoneAngle = ang;
 
                     ProjectItemChanged();
                 }
@@ -345,9 +345,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentZone?.AudioZone == null) return;
 
             var vec = FloatUtil.ParseVector4String(OuterVec1TextBox.Text);
-            if (CurrentZone.AudioZone.OuterVec1 != vec)
+            if (CurrentZone.AudioZone.ActivationZoneVec1 != vec)
             {
-                CurrentZone.AudioZone.OuterVec1 = vec;
+                CurrentZone.AudioZone.ActivationZoneVec1 = vec;
 
                 ProjectItemChanged();
             }
@@ -359,9 +359,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentZone?.AudioZone == null) return;
 
             var vec = FloatUtil.ParseVector4String(OuterVec2TextBox.Text);
-            if (CurrentZone.AudioZone.OuterVec2 != vec)
+            if (CurrentZone.AudioZone.ActivationZoneVec2 != vec)
             {
-                CurrentZone.AudioZone.OuterVec2 = vec;
+                CurrentZone.AudioZone.ActivationZoneVec2 = vec;
 
                 ProjectItemChanged();
             }
@@ -373,9 +373,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentZone?.AudioZone == null) return;
 
             var vec = FloatUtil.ParseVector3String(OuterVec3TextBox.Text);
-            if (CurrentZone.AudioZone.OuterVec3 != vec)
+            if (CurrentZone.AudioZone.ActivationZoneVec3 != vec)
             {
-                CurrentZone.AudioZone.OuterVec3 = vec;
+                CurrentZone.AudioZone.ActivationZoneVec3 = vec;
 
                 ProjectItemChanged();
             }
@@ -555,8 +555,8 @@ namespace CodeWalker.Project.Panels
                     hashlist.Add(hash);
                 }
 
-                CurrentZone.AudioZone.Hashes = hashlist.ToArray();
-                CurrentZone.AudioZone.HashesCount = (byte)hashlist.Count;
+                CurrentZone.AudioZone.Rules = hashlist.ToArray();
+                CurrentZone.AudioZone.RulesCount = (byte)hashlist.Count;
 
                 ProjectItemChanged();
             }
@@ -602,7 +602,7 @@ namespace CodeWalker.Project.Panels
         {
             if (CurrentZone == null) return;
             if (ProjectForm.WorldForm == null) return;
-            ProjectForm.WorldForm.GoToPosition(CurrentZone.Position, CurrentZone.AudioZone.InnerSize);
+            ProjectForm.WorldForm.GoToPosition(CurrentZone.Position, CurrentZone.AudioZone.PlaybackZoneSize);
         }
 
         private void AddToProjectButton_Click(object sender, EventArgs e)
